@@ -48,20 +48,28 @@ struct CMessageClass;
 // ExtensionDicts and UnknownFields containers do NOT follow this rule. They
 // don't store any data, and always refer to their parent message.
 
-// Defines the mutability and allocation state of a CMessage.
-// A default instance can be either mutable (MESSAGE_MUTABLE_DEFAULT) or frozen
-// (MESSAGE_FROZEN).
+// Defines the mutability and promotion state of a CMessage.
 enum MessageMutabilityState {
-  // Backed by a fully allocated, mutable C++ Message object.
+  // Backed by a fully allocated, mutable C++ Message object whose parent
+  // hierarchy is already mutable / marked dirty. Mutations on this message
+  // do not require promoting the parent hierarchy.
   MESSAGE_MUTABLE = 0,
 
-  // Backed by a const default instance that is mutable on write (not frozen).
-  // Acts as a "stub".
-  // Will automatically transition to MESSAGE_MUTABLE upon first mutation.
-  MESSAGE_MUTABLE_DEFAULT = 1,
+  // Backed by a const Message* (e.g., a default instance, a submessage inside
+  // an unpromoted parent, a message backed by a LazyField, or a read-only
+  // element from a repeated or map field) that is mutable on write (not
+  // frozen).
+  //
+  // Even if the C++ Message* is already allocated (e.g., in a RepeatedPtrField
+  // or Map), it must remain in MESSAGE_UNPROMOTED until the first mutation so
+  // that AssureWritable promotes the entire parent hierarchy (e.g., allocating
+  // default submessages, setting oneof cases, and marking LazyField ancestors
+  // as dirty). Transitions to MESSAGE_MUTABLE upon the first mutation via
+  // AssureWritable.
+  MESSAGE_UNPROMOTED = 1,
 
   // Permanently read-only (e.g., Descriptor Options).
-  // Any attempt to mutate will raise a Python TypeError.
+  // Any attempt to mutate will raise a Python FrozenInstanceError.
   MESSAGE_FROZEN = 2,
 };
 
@@ -132,7 +140,8 @@ typedef struct CMessage : public ContainerBase {
   // pointer to a message.
   CMessage* BuildSubMessageFromPointer(const FieldDescriptor* field_descriptor,
                                        const Message* sub_message,
-                                       CMessageClass* message_class);
+                                       CMessageClass* message_class,
+                                       MessageMutabilityState state);
   CMessage* MaybeReleaseSubMessage(const Message* sub_message);
 } CMessage;
 
@@ -360,6 +369,12 @@ PyObject* SetFrozenError(const char* msg);
 // Sets a Python FrozenInstanceError with the default error message for messages
 // type and returns nullptr.
 PyObject* SetMessageFrozenError();
+// Emits a DeprecationWarning when mutating a frozen message or container in
+// OSS.
+int WarnMessageFrozen();
+// Returns 0 if writable (might have thrown warning).
+// Returns -1 on error (sets Python exception).
+int CheckFrozen(CMessage* parent, const char* error_msg);
 
 PyObject* PyMessage_New(const Descriptor* descriptor,
                         PyObject* py_message_factory);

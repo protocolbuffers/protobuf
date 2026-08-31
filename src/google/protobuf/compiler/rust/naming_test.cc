@@ -9,16 +9,41 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 using google::protobuf::compiler::rust::CamelToSnakeCase;
-using google::protobuf::compiler::rust::RustInternalModuleName;
+using google::protobuf::compiler::rust::RustModuleName;
 using google::protobuf::compiler::rust::ScreamingSnakeToUpperCamelCase;
 
 namespace {
-TEST(RustProtoNaming, RustInternalModuleName) {
-  google::protobuf::FileDescriptorProto foo_file;
-  foo_file.set_name("strong_bad/lol.proto");
-  google::protobuf::DescriptorPool pool;
-  const google::protobuf::FileDescriptor* fd = pool.BuildFile(foo_file);
-  EXPECT_EQ(RustInternalModuleName(*fd), "strong__bad_slol");
+TEST(RustProtoNaming, RustModuleName) {
+  auto get_internal_module_name = [](const std::string& name) {
+    google::protobuf::FileDescriptorProto file_proto;
+    file_proto.set_name(name);
+    google::protobuf::DescriptorPool pool;
+    return RustModuleName(*pool.BuildFile(file_proto));
+  };
+
+  EXPECT_EQ(get_internal_module_name("strong_bad/lol.proto"),
+            "strong_bad_lol_proto");
+  EXPECT_EQ(get_internal_module_name("0.1.proto"), "pb_0_1_proto");
+  EXPECT_EQ(get_internal_module_name("2fa.proto"), "pb_2fa_proto");
+  EXPECT_EQ(get_internal_module_name("_.proto"), "pb___proto");
+  EXPECT_EQ(get_internal_module_name("abc   .proto"), "abc_20__20__20__proto");
+  EXPECT_EQ(get_internal_module_name("hello (2).proto"),
+            "hello_20__28_2_29__proto");
+  EXPECT_EQ(get_internal_module_name("k8s.min.proto"), "k8s_min_proto");
+  EXPECT_EQ(get_internal_module_name("c++.proto"), "c_2b__2b__proto");
+  EXPECT_EQ(get_internal_module_name("hello,world.proto"),
+            "hello_2c_world_proto");
+  EXPECT_EQ(get_internal_module_name("hello..world.proto"),
+            "hello__world_proto");
+  EXPECT_EQ(get_internal_module_name("hello_你好.proto"),
+            "hello__e4__bd__a0__e5__a5__bd__proto");
+  // Common separators (`/`, `-`, `.`, `_`) all collapse to a single underscore,
+  // so files differing only by these separators intentionally map to the same
+  // module name (any collision surfaces as a rustc E0428 error at build time).
+  EXPECT_EQ(get_internal_module_name("my-message.proto"), "my_message_proto");
+  EXPECT_EQ(get_internal_module_name("my_message.proto"), "my_message_proto");
+  EXPECT_EQ(get_internal_module_name("foo-bar.proto"),
+            get_internal_module_name("foo_bar.proto"));
 }
 
 TEST(RustProtoNaming, CamelToSnakeCase) {

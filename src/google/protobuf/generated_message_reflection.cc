@@ -58,6 +58,7 @@
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
@@ -119,8 +120,7 @@ ReflectionSchema::ReflectionSchema(const Message* default_instance,
                                    const uint32_t* has_bit_indices,
                                    int has_bits_offset, int extensions_offset,
                                    int oneof_case_offset, int object_size,
-                                   int weak_field_map_offset, int split_offset,
-                                   int sizeof_split)
+                                   int split_offset, int sizeof_split)
     : default_instance_(default_instance),
       offsets_(offsets),
       has_bit_indices_(has_bit_indices),
@@ -128,7 +128,6 @@ ReflectionSchema::ReflectionSchema(const Message* default_instance,
       extensions_offset_(extensions_offset),
       oneof_case_offset_(oneof_case_offset),
       object_size_(object_size),
-      weak_field_map_offset_(weak_field_map_offset),
       split_offset_(split_offset),
       sizeof_split_(sizeof_split) {}
 
@@ -162,7 +161,7 @@ ReflectionSchema ReflectionSchema::MigrationToReflectionSchema(
   result.has_bits_offset_ = next();
   result.extensions_offset_ = next();
   result.oneof_case_offset_ = next();
-  result.weak_field_map_offset_ = next();
+  next();  // Skip weak_field_map_offset.
   // Old result.inlined_string_donated_offset_
   ABSL_CHECK_EQ(next(), ~uint32_t{});
   result.split_offset_ = next();
@@ -233,22 +232,15 @@ PROTOBUF_NOINLINE const std::string& NameOfDenseEnumSlow(
   if (v < deci->min_val || v > deci->max_val)
     return GetEmptyStringAlreadyInited();
 
-  const std::string** new_cache =
-      MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
-  const std::string** old_cache = nullptr;
-
-  if (deci->cache.compare_exchange_strong(old_cache, new_cache,
-                                          std::memory_order_release,
-                                          std::memory_order_acquire)) {
-    // We successfully stored our new cache, and the old value was nullptr.
-    return *new_cache[v - deci->min_val];
-  } else {
-    // In the time it took to create our enum cache, another thread also
-    //  created one, and put it into deci->cache.  So delete ours, and
-    // use theirs instead.
-    delete[] new_cache;
-    return *old_cache[v - deci->min_val];
-  }
+  // Use run_once to avoid a race condition in initializing the cache.
+  absl::call_once(deci->loaded, [deci]() {
+    const std::string** new_cache =
+        MakeDenseEnumCache(deci->descriptor_fn(), deci->min_val, deci->max_val);
+    // Atomically publish the cache. Doing this inside the call_once ensures
+    // that no thread sees the uninitialized or partially initialized cache.
+    deci->cache.store(new_cache, std::memory_order_release);
+  });
+  return *deci->cache.load(std::memory_order_acquire)[v - deci->min_val];
 }
 
 bool IsMatchingCType(const FieldDescriptor* field, int ctype) {
@@ -483,14 +475,11 @@ static void ReportReflectionUsageEnumTypeError(
 Reflection::Reflection(const Descriptor* descriptor,
                        const internal::ReflectionSchema& schema,
                        const DescriptorPool* pool, MessageFactory* factory)
-    : last_non_weak_field_index_(-1),
-      descriptor_(descriptor),
+    : descriptor_(descriptor),
       message_factory_(factory),
       descriptor_pool_(
           (pool == nullptr) ? DescriptorPool::internal_generated_pool() : pool),
-      schema_(schema) {
-  last_non_weak_field_index_ = descriptor_->field_count() - 1;
-}
+      schema_(schema) {}
 
 Reflection::~Reflection() {
   // No need to use sized delete. This code path is uncommon and it would not be
@@ -550,8 +539,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
   if (schema_.HasExtensionSet()) {
     total_size += GetExtensionSet(message).SpaceUsedExcludingSelfLong();
   }
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
+  for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (field->is_repeated()) {
       switch (field->cpp_type()) {
 #define HANDLE_TYPE(UPPERCASE, LOWERCASE)                          \
@@ -603,6 +591,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
       if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
         continue;
       }
+
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_INT32:
         case FieldDescriptor::CPPTYPE_INT64:
@@ -670,6 +659,7 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
       }
     }
   }
+
   if (internal::DebugHardenFuzzMessageSpaceUsedLong()) {
     // Use both `this` and `dummy` to generate the seed so that the scale factor
     // is both per-object and non-predictable, but consistent across multiple
@@ -1404,9 +1394,9 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
 
   MutableInternalMetadata(lhs)->InternalSwap(MutableInternalMetadata(rhs));
 
-  for (int i = 0; i <= last_non_weak_field_index_; i++) {
-    const FieldDescriptor* field = descriptor_->field(i);
+  for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     if (schema_.InRealOneof(field)) continue;
+
     if (schema_.IsSplit(field)) {
       continue;
     }
@@ -1415,6 +1405,7 @@ void Reflection::InternalSwap(Message* lhs, Message* rhs) const {
   if (schema_.IsSplit()) {
     std::swap(*MutableSplitField(lhs), *MutableSplitField(rhs));
   }
+
   const int oneof_decl_count = descriptor_->real_oneof_decl_count();
   for (int i = 0; i < oneof_decl_count; i++) {
     const OneofDescriptor* oneof = descriptor_->real_oneof_decl(i);
@@ -1557,6 +1548,7 @@ void Reflection::ClearField(Message* message,
   } else if (schema_.InRealOneof(field)) {
     ClearOneofField(message, field);
     return;
+
   } else if (!HasFieldWithHasbits(*message, field)) {
     // Clear the has bit even if the field is not present. If this is an empty
     // repeated field with a set has bit, we want to clear the has bit.
@@ -1878,10 +1870,10 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   uint32_t last = 0;  // UINT32_MAX if out-of-order
   // Stifle unused variable compilation error when kForIsEmpty is true.
   [[maybe_unused]] const auto append_to_output =
-      [&last, output](const FieldDescriptor& field) {
+      [&last, output](const FieldDescriptor* field [[maybe_unused]]) {
         if constexpr (!kForIsEmpty) {
-          CheckInOrder(&field, &last);
-          output->push_back(&field);
+          CheckInOrder(field, &last);
+          output->push_back(field);
         }
       };
   // Core functionality difference depending on the value of kForIsEmpty. If we
@@ -1896,25 +1888,25 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   } while (false)
 
   int i = -1;
-  for (const FieldDescriptor& field :
-       absl::MakeSpan(descriptor.fields_, last_non_weak_field_index_ + 1)) {
+  for (const FieldDescriptor* field : internal::FieldRange(&descriptor)) {
     ++i;
-    const OneofDescriptor* containing_oneof = field.containing_oneof();
-    if (schema_.InRealOneof(&field)) {
+    const OneofDescriptor* containing_oneof = field->containing_oneof();
+    if (schema_.InRealOneof(field)) {
       uint32_t oneof_case = GetConstRefAtOffset<uint32_t>(
           message, schema_.GetOneofCaseOffset(containing_oneof));
       // Equivalent to: HasOneofField(message, field)
-      if (static_cast<int64_t>(oneof_case) == field.number()) {
+      if (static_cast<int64_t>(oneof_case) == field->number()) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
+
     } else if (uint32_t hasbit_index =
-                   schema_.HasBitIndex(&field, /*field_index=*/i);
+                   schema_.HasBitIndex(field, /*field_index=*/i);
                hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
-      if (IsFieldPresentGivenHasbits(message, &field, has_bits, hasbit_index)) {
+      if (IsFieldPresentGivenHasbits(message, field, has_bits, hasbit_index)) {
         PROTO_REFLECTION_APPEND_OR_RETURN();
       }
-    } else if (HasFieldWithHasbits(message, &field)) {
+    } else if (HasFieldWithHasbits(message, field)) {
       PROTO_REFLECTION_APPEND_OR_RETURN();
     }
   }
@@ -1942,6 +1934,7 @@ void Reflection::ListFields(const Message& message,
     last = output->back()->number();
   }
   size_t last_size = output->size();
+
   if (schema_.HasExtensionSet()) {
     // Descriptors of ExtensionSet are appended in their increasing order.
     GetExtensionSet(message).AppendToList(descriptor, descriptor_pool_, output);
@@ -1967,6 +1960,7 @@ bool Reflection::IsEmptyIgnoringUnknownFieldsImpl(
     return false;
   }
   return
+
       !(schema_.HasExtensionSet() && !GetExtensionSet(message).IsEmpty());
 }
 
@@ -2573,7 +2567,7 @@ void Reflection::AddEnumValueInternal(Message* message,
 
 // -------------------------------------------------------------------
 
-const Message* Reflection::GetDefaultMessageInstance(
+const internal::ClassData* Reflection::GetMessageClassData(
     const FieldDescriptor* field) const {
   // If we are using the generated factory, we cache the prototype in the field
   // descriptor for faster access.
@@ -2581,11 +2575,13 @@ const Message* Reflection::GetDefaultMessageInstance(
   // means they contain null pointers on their message fields and can't be used
   // to get the default of submessages.
   if (message_factory_ == MessageFactory::generated_factory()) {
-    auto& ptr = field->default_generated_instance_;
+    auto& ptr = field->generated_class_data_;
     auto* res = ptr.load(std::memory_order_acquire);
     if (res == nullptr) {
       // First time asking for this field's default. Load it and cache it.
-      res = message_factory_->GetPrototype(field->message_type());
+      const MessageLite* prototype =
+          message_factory_->GetPrototype(field->message_type());
+      res = internal::GetClassData(*prototype);
       ptr.store(res, std::memory_order_release);
     }
     return res;
@@ -2601,12 +2597,13 @@ const Message* Reflection::GetDefaultMessageInstance(
   PROTOBUF_IGNORE_DEPRECATION_STOP
   if (!field->is_extension() && !field->is_repeated() && !field_is_weak &&
       !IsLazyField(field) && !schema_.InRealOneof(field)) {
-    auto* res = DefaultRaw<const Message*>(field);
-    ABSL_DCHECK_NE(res, nullptr);
-    return res;
+    const Message* prototype = DefaultRaw<const Message*>(field);
+    ABSL_DCHECK_NE(prototype, nullptr);
+    return internal::GetClassData(*prototype);
   }
   // Otherwise, just go to the factory.
-  return message_factory_->GetPrototype(field->message_type());
+  return internal::GetClassData(
+      *message_factory_->GetPrototype(field->message_type()));
 }
 
 const Message& Reflection::GetMessage(const Message& message,
@@ -2621,11 +2618,13 @@ const Message& Reflection::GetMessage(const Message& message,
         message.GetArena(), field->number(), field->message_type(), factory));
   } else {
     if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
-      return *GetDefaultMessageInstance(field);
+      return *DownCastMessage<Message>(
+          GetMessageClassData(field)->default_instance());
     }
     const Message* result = GetRaw<const Message*>(message, field);
     if (result == nullptr) {
-      result = GetDefaultMessageInstance(field);
+      result = DownCastMessage<Message>(
+          GetMessageClassData(field)->default_instance());
     }
     return *result;
   }
@@ -2651,16 +2650,16 @@ Message* Reflection::MutableMessage(Message* message,
       if (!HasOneofField(*message, field)) {
         ClearOneof(message, field->containing_oneof());
         result_holder = MutableField<Message*>(message, field);
-        const Message* default_message = GetDefaultMessageInstance(field);
-        *result_holder = default_message->New(arena);
+        *result_holder =
+            DownCastMessage<Message>(GetMessageClassData(field)->New(arena));
       }
     } else {
       SetHasBit(message, field);
     }
 
     if (*result_holder == nullptr) {
-      const Message* default_message = GetDefaultMessageInstance(field);
-      *result_holder = default_message->New(arena);
+      *result_holder =
+          DownCastMessage<Message>(GetMessageClassData(field)->New(arena));
     }
     result = *result_holder;
     return result;
@@ -2671,7 +2670,6 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     Message* message, Message* sub_message,
     const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
-
 
   Arena* arena = message->GetArena();
   if (field->is_extension()) {
@@ -3309,9 +3307,6 @@ bool Reflection::IsFieldPresentGivenHasbits(const Message& message,
 
 bool Reflection::HasFieldWithHasbits(const Message& message,
                                      const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   ABSL_DCHECK(!field->is_extension());
   if (schema_.HasBitIndex(field) != static_cast<uint32_t>(kNoHasbit)) {
     return IsFieldPresentGivenHasbits(message, field, GetHasBits(message),
@@ -3344,9 +3339,6 @@ bool Reflection::HasFieldWithHasbits(const Message& message,
 
 void Reflection::SetHasBit(Message* message,
                            const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] |=
@@ -3355,9 +3347,6 @@ void Reflection::SetHasBit(Message* message,
 
 void Reflection::ClearHasBit(Message* message,
                              const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   const uint32_t index = schema_.HasBitIndex(field);
   if (index == static_cast<uint32_t>(kNoHasbit)) return;
   MutableHasBits(message)[index / 32] &=
@@ -3366,9 +3355,6 @@ void Reflection::ClearHasBit(Message* message,
 
 void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
                                  const FieldDescriptor* field) const {
-  PROTOBUF_IGNORE_DEPRECATION_START
-  ABSL_DCHECK(!field->options().weak());
-  PROTOBUF_IGNORE_DEPRECATION_STOP
   if (!schema_.HasHasbits() ||
       schema_.HasBitIndex(field) == static_cast<uint32_t>(kNoHasbit)) {
     return;
@@ -3721,18 +3707,6 @@ static void PopulateTcParseLookupTable(
   *lookup_table++ = 0xFFFF;
 }
 
-static std::vector<uint32_t> MakeEnumValidatorData(const EnumDescriptor* desc) {
-  std::vector<int> numbers;
-  numbers.reserve(desc->value_count());
-  for (int i = 0; i < desc->value_count(); ++i) {
-    numbers.push_back(desc->value(i)->number());
-  }
-
-  absl::c_sort(numbers);
-  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
-  return internal::GenerateEnumData(numbers);
-}
-
 void Reflection::PopulateTcParseEntries(
     internal::TailCallTableInfo& table_info,
     TcParseTableBase::FieldEntry* entries) const {
@@ -3770,8 +3744,10 @@ void Reflection::PopulateTcParseFieldAux(
       case internal::TailCallTableInfo::kSplitSizeof:
         field_aux++->offset = schema_.SizeofSplit();
         break;
-      case internal::TailCallTableInfo::kSubTable:
-      case internal::TailCallTableInfo::kSubMessageGlobalsWeak:
+      case internal::TailCallTableInfo::kClassData:
+        field_aux++->class_data_p = GetMessageClassData(aux_entry.field);
+        break;
+      case internal::TailCallTableInfo::kClassDataWeak:
       case internal::TailCallTableInfo::kMessageVerifyFunc:
       case internal::TailCallTableInfo::kSelfVerifyFunc:
         ABSL_LOG(FATAL) << "Not supported";
@@ -3784,21 +3760,13 @@ void Reflection::PopulateTcParseFieldAux(
         // unsupported to fallback to reflection.
         field_aux++->map_info = internal::MapAuxInfo{};
         break;
-      case internal::TailCallTableInfo::kSubMessageGlobals:
-        field_aux++->message_globals_p =
-            MessageGlobalsBase::FromDefaultInstance(
-                GetDefaultMessageInstance(aux_entry.field));
-        break;
       case internal::TailCallTableInfo::kEnumRange:
         field_aux++->enum_range = {aux_entry.enum_range.first,
                                    aux_entry.enum_range.last};
         break;
       case internal::TailCallTableInfo::kEnumValidator:
         field_aux++->enum_data =
-            DescriptorPool::MemoizeProjection(
-                aux_entry.field->enum_type(),
-                [](auto* e) { return MakeEnumValidatorData(e); })
-                .data();
+            aux_entry.field->enum_type()->GetEnumValidationData();
         break;
       case internal::TailCallTableInfo::kNumericOffset:
         field_aux++->offset = aux_entry.offset;
@@ -3876,7 +3844,8 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
           schema_.HasHasbits()
               ? schema_.HasBitsOffset()
               // Just put something safe here. _cached_size_ is fine.
-              : schema_.default_instance()->GetClassData()->cached_size_offset),
+              : internal::GetClassData(*schema_.default_instance())
+                    ->cached_size_offset),
       schema_.HasExtensionSet()
           ? static_cast<uint16_t>(schema_.GetExtensionSetOffset())
           : uint16_t{0},
@@ -3888,20 +3857,9 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(fields.size()),
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
-      schema_.default_instance()->GetClassData(),
+      internal::GetClassData(*schema_.default_instance()),
       nullptr,
-      GetFastParseFunction(table_info.fallback_function)
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-          ,
-      nullptr
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
-  };
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-  // We'll prefetch `to_prefetch->to_prefetch` unconditionally to avoid
-  // branches. Here we don't know which field is the hottest, so set the pointer
-  // to itself to avoid nullptr.
-  res->to_prefetch = res;
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+      GetFastParseFunction(table_info.fallback_function)};
 
   // Now copy the rest of the payloads
   PopulateTcParseFastEntries(table_info, res);
@@ -3949,7 +3907,7 @@ class AssignDescriptorsHelper {
     if (message_globals_data_[0] != nullptr) {
       auto* default_instance =
           MessageGlobalsBase::ToDefaultInstance(message_globals_data_[0]);
-      auto& class_data = default_instance->GetClassData()->full();
+      auto& class_data = *internal::GetClassData(*default_instance);
       // If there is no descriptor_table in the class data, then it is not
       // interested in receiving reflection information either.
       if (class_data.descriptor_table() != nullptr) {
@@ -4078,21 +4036,23 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   // we hit data races and would need to add locks.
   [[maybe_unused]] static std::true_type lazy_register =
       (internal::ExtensionSet::RegisterMessageExtension(
-           &FeatureSet::default_instance(), pb::cpp.number(),
+           internal::MessageTraits<FeatureSet>::class_data(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
-           &pb::CppFeatures::default_instance(),
+           internal::MessageTraits<pb::CppFeatures>::class_data(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        internal::ExtensionSet::RegisterMessageExtension(
-           &FileOptions::default_instance(), pb::file::cpp.number(),
-           FieldDescriptor::TYPE_MESSAGE, false, false,
-           &pb::file::CppFileOptions::default_instance(),
+           internal::MessageTraits<FileOptions>::class_data(),
+           pb::file::cpp.number(), FieldDescriptor::TYPE_MESSAGE, false, false,
+           internal::MessageTraits<pb::file::CppFileOptions>::class_data(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        internal::ExtensionSet::RegisterMessageExtension(
-           &EnumValueOptions::default_instance(), pb::enumvalue::json.number(),
-           FieldDescriptor::TYPE_MESSAGE, false, false,
-           &pb::enumvalue::JsonEnumValueOptions::default_instance(),
+           internal::MessageTraits<EnumValueOptions>::class_data(),
+           pb::enumvalue::json.number(), FieldDescriptor::TYPE_MESSAGE, false,
+           false,
+           internal::MessageTraits<
+               pb::enumvalue::JsonEnumValueOptions>::class_data(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        std::true_type{});
@@ -4217,14 +4177,14 @@ bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
 }
 
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
-const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index, bool force_build) {
+const ClassData* GetClassDataForWeakDescriptor(const DescriptorTable* table,
+                                               int index, bool force_build) {
   // First, make sure we inject the surviving default instances.
   InitProtobufDefaults();
 
   // Now check if the table has it. If so, return it.
   if (const auto* globals = table->message_globals[index]) {
-    return MessageGlobalsBase::ToDefaultInstance<Message>(globals);
+    return MessageGlobalsBase::GetClassData(globals);
   }
 
   if (!force_build) {
@@ -4246,7 +4206,8 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
         return nullptr;
       });
 
-  return MessageFactory::generated_factory()->GetPrototype(descriptor);
+  return internal::GetClassData(
+      *MessageFactory::generated_factory()->GetPrototype(descriptor));
 }
 #endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 

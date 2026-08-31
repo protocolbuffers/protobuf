@@ -1,0 +1,10 @@
+edition = "2024";
+
+local message Parent {
+  local message NestedNamespace {
+    export enum NestedEnum {
+      NESTED_ENUM_UNSPECIFIED = 0;
+    }
+    reserved 1 to max;
+  }
+}

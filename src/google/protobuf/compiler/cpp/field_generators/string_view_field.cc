@@ -356,7 +356,7 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
 void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      $field_$.Destroy();
+      this_.$field_$.Destroy();
     )cc");
     return;
   }
@@ -372,7 +372,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
 
   if (is_inlined() && HasHasbit(field_, options_)) {
     p->Emit(R"cc(
-      $DCHK$(!$field_$.IsDefault());
+      $DCHK$(!this_.$field_$.IsDefault());
     )cc");
   }
 
@@ -407,20 +407,20 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
 
   if (use_micro_string()) {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
     return;
   }
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      $field_$.InternalSwap(&$field_$, &other->$field_$, arena);
+      this_.$field_$.InternalSwap(&this_.$field_$, &other->$field_$, arena);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
+    ::_pbi::InlinedStringField::InternalSwap(&this_.$field_$, &other->$field_$,
                                              arena);
   )cc");
 }
@@ -566,7 +566,7 @@ class RepeatedStringView : public FieldGeneratorBase {
     if (should_split()) {
       p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 
@@ -610,7 +610,7 @@ class RepeatedStringView : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 

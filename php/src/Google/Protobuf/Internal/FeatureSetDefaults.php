@@ -55,7 +55,8 @@ class FeatureSetDefaults extends \Google\Protobuf\Internal\Message
      *           after this will not have reliable defaults.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

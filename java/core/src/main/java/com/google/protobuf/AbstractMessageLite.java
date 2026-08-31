@@ -52,7 +52,11 @@ public abstract class AbstractMessageLite<
   @Override
   public byte[] toByteArray() {
     try {
-      final byte[] result = new byte[getSerializedSize()];
+      final int size = getSerializedSize();
+      if (size == 0) {
+        return Internal.EMPTY_BYTE_ARRAY;
+      }
+      final byte[] result = new byte[size];
       final CodedOutputStream output = CodedOutputStream.newInstance(result);
       writeTo(output);
       output.checkNoSpaceLeft();
@@ -316,6 +320,9 @@ public abstract class AbstractMessageLite<
         return false;
       }
       final int size = CodedInputStream.readRawVarint32(firstByte, input);
+      if (size < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
       final InputStream limitedInput = new LimitedInputStream(input, size);
       mergeFrom(limitedInput, extensionRegistry);
       return true;

@@ -42,7 +42,8 @@ class Struct extends \Google\Protobuf\Internal\Message
      *           Unordered map of dynamically typed values.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Struct::initOnce();
         parent::__construct($data);
     }

@@ -29,24 +29,27 @@
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/extension.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/test.upbdefs.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/message/value.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/debug_string.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
-#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
@@ -57,6 +60,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 #include "upb/wire/types.h"
 #include "upb/wire/writer.h"
 
@@ -176,6 +180,18 @@ TEST(MessageTest, ExtensionsDeterministic) {
       &deterministic_size);
   ASSERT_TRUE(deterministic_serialized != nullptr);
   ASSERT_EQ(deterministic_size, size);
+}
+
+TEST(MessageTest, ExtensionsSkipUnknownDeterministic) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 123, arena.ptr());
+
+  size_t deterministic_size;
+  char* deterministic_serialized = upb_test_TestExtensions_serialize_ex(
+      ext_msg, kUpb_EncodeOption_Deterministic | kUpb_EncodeOption_SkipUnknown,
+      arena.ptr(), &deterministic_size);
+  ASSERT_TRUE(deterministic_serialized != nullptr);
 }
 
 TEST(MessageTest, ExtensionsEmpty) {
@@ -653,7 +669,8 @@ TEST(MessageTest, MaxRequiredFields) {
   for (int i = 1; i <= 61; i++) {
     upb::FieldDefPtr f = m.FindFieldByNumber(i);
     ASSERT_TRUE(f);
-    upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val, arena.ptr());
+    ASSERT_TRUE(upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val,
+                                          arena.ptr()));
   }
 
   // Fails, field 63 still isn't set.
@@ -664,7 +681,8 @@ TEST(MessageTest, MaxRequiredFields) {
   // Succeeds, all required fields are set.
   upb::FieldDefPtr f = m.FindFieldByNumber(62);
   ASSERT_TRUE(f);
-  upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val, arena.ptr());
+  ASSERT_TRUE(upb_Message_SetFieldByDef(UPB_UPCAST(test_msg), f.ptr(), val,
+                                        arena.ptr()));
   serialized = upb_test_TestMaxRequiredFields_serialize_ex(
       test_msg, kUpb_EncodeOption_CheckRequired, arena.ptr(), &size);
   ASSERT_TRUE(serialized != nullptr);
@@ -772,11 +790,12 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
                    kUpb_DecodeOption_AliasString, arena.ptr());
     ASSERT_EQ(status, kUpb_DecodeStatus_Ok);
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region, data.data);
-    EXPECT_EQ(sizeof(region), data.size);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    upb_MessageUnknown data;
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region, data.value.bytes.data);
+    EXPECT_EQ(sizeof(region), data.value.bytes.size);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
   }
 
   upb_Message_Clear(msg, table);
@@ -784,24 +803,30 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
   // Separate decodes should not produce merged aliases, even with adjacent
   // entries as we don't know that they're part of the same object
   {
-    upb_Decode(region, 300, msg, table, nullptr, kUpb_DecodeOption_AliasString,
-               arena.ptr());
-    upb_Decode(region + 300, 300, msg, table, nullptr,
-               kUpb_DecodeOption_AliasString, arena.ptr());
-    upb_Decode(region + 600, 300, msg, table, nullptr,
-               kUpb_DecodeOption_AliasString, arena.ptr());
-    upb_StringView data;
+    EXPECT_EQ(kUpb_DecodeStatus_Ok,
+              upb_Decode(region, 300, msg, table, nullptr,
+                         kUpb_DecodeOption_AliasString, arena.ptr()));
+    EXPECT_EQ(kUpb_DecodeStatus_Ok,
+              upb_Decode(region + 300, 300, msg, table, nullptr,
+                         kUpb_DecodeOption_AliasString, arena.ptr()));
+    EXPECT_EQ(kUpb_DecodeStatus_Ok,
+              upb_Decode(region + 600, 300, msg, table, nullptr,
+                         kUpb_DecodeOption_AliasString, arena.ptr()));
+    upb_MessageUnknown data;
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region + 300, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region + 600, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region + 300, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region + 600, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
   }
 }
 
@@ -898,6 +923,196 @@ TEST(MessageTest, Freeze) {
     upb_Message_Freeze(msg, &upb_0test__TestExtensions_msg_init);
     ASSERT_TRUE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Message_IsFrozen(submsg_upcast));
+  }
+}
+
+TEST(MessageTest, FreezeNonCanonicalExtensions) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Create sub-message
+  protobuf_test_messages_proto3_TestAllTypesProto3* ext_submsg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
+      ext_submsg, 456);
+
+  // Attach as non-canonical extension
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg,
+      arena.ptr()));
+
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(ext_submsg)));
+
+  // Freeze the parent message
+  upb_Message_Freeze(UPB_UPCAST(msg), &upb_0test__TestExtensions_msg_init);
+
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+  // The non-canonical extension sub-message must be recursively frozen too!
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(ext_submsg)));
+}
+
+TEST(MessageTest, DiscardUnknownsNonCanonicalExtensions) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Create sub-message
+  protobuf_test_messages_proto3_TestAllTypesProto3* ext_submsg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  // Attach as non-canonical extension
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg,
+      arena.ptr()));
+
+  // Add a canonical extension
+  upb_test_TestExtensions_set_optional_int32_ext(msg, 123, arena.ptr());
+
+  // Add some standard raw unknown bytes
+  char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), raw_unknown, sizeof(raw_unknown) - 1, arena.ptr(),
+      kUpb_AddUnknown_Copy));
+
+  // Verify both are present initially
+  {
+    upb_MessageUnknown data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    bool has_non_canonical = false;
+    bool has_bytes = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+      if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        has_non_canonical = true;
+      } else if (data.type == kUpb_MessageUnknownType_StringView) {
+        has_bytes = true;
+      }
+    }
+    EXPECT_TRUE(has_non_canonical);
+    EXPECT_TRUE(has_bytes);
+  }
+
+  // Discard unknown fields on the message
+  _upb_Message_DiscardUnknown_shallow(UPB_UPCAST(msg));
+
+  // Verify both non-canonical extension and raw unknown bytes are discarded!
+  {
+    upb_MessageUnknown data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    bool has_non_canonical = false;
+    bool has_bytes = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+      if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        has_non_canonical = true;
+      } else if (data.type == kUpb_MessageUnknownType_StringView) {
+        has_bytes = true;
+      }
+    }
+    EXPECT_FALSE(has_non_canonical);
+    EXPECT_FALSE(has_bytes);
+  }
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 123);
+}
+
+TEST(MessageTest, AppendNonCanonicalExtensionDuplicates) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  int32_t val2 = 43;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val2, arena.ptr()));
+
+  // Count non-canonical extensions
+  int count = 0;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+    if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      if (unknown.value.extension->ext ==
+          upb_test_TestExtensions_optional_int32_ext_ext) {
+        count++;
+      }
+    }
+  }
+  EXPECT_EQ(count, 2);
+}
+
+TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtension) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  // 1. Set as Non-Canonical
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  // 2. Set as Canonical
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 43, arena.ptr());
+
+  // Verify Canonical accessor sees 43
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(ext_msg), 43);
+
+  // Verify Non-Canonical iterator sees 42
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found = false;
+    while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        if (unknown.value.extension->ext ==
+            upb_test_TestExtensions_optional_int32_ext_ext) {
+          const int32_t* pval = (const int32_t*)&unknown.value.extension->data;
+          EXPECT_EQ(*pval, 42);
+          found = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+}
+
+TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtensionReverse) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  // 1. Set as Canonical
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 43, arena.ptr());
+
+  // 2. Set as Non-Canonical
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  // Verify Canonical accessor sees 43
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(ext_msg), 43);
+
+  // Verify Non-Canonical iterator sees 42
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found = false;
+    while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        if (unknown.value.extension->ext ==
+            upb_test_TestExtensions_optional_int32_ext_ext) {
+          const int32_t* pval = (const int32_t*)&unknown.value.extension->data;
+          EXPECT_EQ(*pval, 42);
+          found = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found);
   }
 }
 
@@ -1008,4 +1223,559 @@ TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
   uintptr_t space_allocated_after =
       upb_Arena_SpaceAllocated(arena.ptr(), nullptr);
   EXPECT_GT(space_allocated_after, space_allocated_before + 297u);
+}
+
+TEST(MessageTest, NextUnknown2AndDeleteUnknown2) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // 0. Verify a clean/empty message doesn't report unknowns and handles NULL
+  //    internal data correctly.
+  EXPECT_FALSE(upb_Message_HasUnknown(UPB_UPCAST(ext_msg)));
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    EXPECT_FALSE(
+        upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+  }
+
+  // Tag 5 (varint), value 147
+  char region[] = {0x28, static_cast<char>(0x93), 0x01};
+  upb_DecodeStatus decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 2. Add a non-canonical extension of tag 1000
+  int32_t val = 42;
+  bool set_ext_ok = UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(ext_msg), upb_test_TestExtensions_optional_int32_ext_ext, &val,
+      arena.ptr());
+  ASSERT_TRUE(set_ext_ok);
+
+  // 2.5 Add a canonical extension of tag 1002 (should be skipped by
+  //     NextUnknown2)
+  upb_test_TestExtensions* sub_msg = upb_test_TestExtensions_new(arena.ptr());
+  bool set_canonical_ok = upb_Message_SetExtension(
+      UPB_UPCAST(ext_msg), upb_test_optional_msg_ext_ext, &sub_msg,
+      arena.ptr());
+  ASSERT_TRUE(set_canonical_ok);
+
+  // 3. Iterate over the unknown fields using upb_Message_NextUnknown2
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found_bytes = false;
+    bool found_ext = false;
+
+    while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_StringView) {
+        EXPECT_FALSE(found_bytes);
+        found_bytes = true;
+        EXPECT_EQ(unknown.value.bytes.size, sizeof(region));
+        EXPECT_EQ(memcmp(unknown.value.bytes.data, region, sizeof(region)), 0);
+      } else if (unknown.type ==
+                 kUpb_MessageUnknownType_NonCanonicalExtension) {
+        EXPECT_FALSE(found_ext);
+        found_ext = true;
+        const upb_Extension* ext =
+            (const upb_Extension*)unknown.value.extension;
+        EXPECT_EQ(ext->ext, upb_test_TestExtensions_optional_int32_ext_ext);
+        EXPECT_EQ(ext->data.int32_val, 42);
+      } else {
+        FAIL() << "Unexpected unknown type: " << (int)unknown.type;
+      }
+    }
+    EXPECT_TRUE(found_bytes);
+    EXPECT_TRUE(found_ext);
+  }
+
+  // 4. Test upb_Message_HasUnknown (it uses upb_Message_NextUnknown2
+  //    under the hood)
+  EXPECT_TRUE(upb_Message_HasUnknown(UPB_UPCAST(ext_msg)));
+
+  // 5. Test upb_Message_DeleteUnknown2 on non-canonical extension
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool deleted_ext = false;
+
+    if (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      do {
+        if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+          upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+              UPB_UPCAST(ext_msg), &unknown, &iter, arena.ptr());
+          EXPECT_TRUE(status == kUpb_DeleteUnknown_IterUpdated ||
+                      status == kUpb_DeleteUnknown_DeletedLast);
+          deleted_ext = true;
+          if (status == kUpb_DeleteUnknown_DeletedLast) {
+            break;
+          }
+          continue;
+        }
+      } while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    }
+    EXPECT_TRUE(deleted_ext);
+
+    // After deleting the extension, verify only the bytes unknown field
+    // remains.
+    iter = kUpb_Message_UnknownBegin;
+    bool found_bytes = false;
+    bool found_ext = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_StringView) {
+        found_bytes = true;
+      } else if (unknown.type ==
+                 kUpb_MessageUnknownType_NonCanonicalExtension) {
+        found_ext = true;
+      }
+    }
+    EXPECT_TRUE(found_bytes);
+    EXPECT_FALSE(found_ext);
+  }
+
+  // 6. Test deleting the remaining unknown bytes field.
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool deleted_bytes = false;
+
+    if (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter)) {
+      do {
+        if (unknown.type == kUpb_MessageUnknownType_StringView) {
+          upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+              UPB_UPCAST(ext_msg), &unknown, &iter, arena.ptr());
+          EXPECT_EQ(status, kUpb_DeleteUnknown_DeletedLast);
+          deleted_bytes = true;
+          break;
+        }
+      } while (upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    }
+    EXPECT_TRUE(deleted_bytes);
+    EXPECT_FALSE(upb_Message_HasUnknown(UPB_UPCAST(ext_msg)));
+  }
+}
+
+TEST(MessageTest, DeleteUnknown2Partial) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Add 10 bytes of unknown data: tag 5, length delimited, value "12345678"
+  // Tag 5, wire type 2: 0x2A
+  // Length 8: 0x08
+  // Data: "12345678"
+  char region[] = {0x2A, 0x08, '1', '2', '3', '4', '5', '6', '7', '8'};
+  upb_DecodeStatus decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 1. Test Strip Prefix
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+    ASSERT_EQ(unknown.value.bytes.size, sizeof(region));
+
+    // We want to delete the first 2 bytes: {0x2A, 0x08}
+    upb_MessageUnknown to_delete = unknown;
+    to_delete.value.bytes.size = 2;
+
+    upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+        UPB_UPCAST(ext_msg), &to_delete, &iter, arena.ptr());
+    EXPECT_EQ(status, kUpb_DeleteUnknown_IterUpdated);
+
+    // After Strip Prefix, the remaining part should be returned in to_delete
+    EXPECT_EQ(to_delete.value.bytes.size, sizeof(region) - 2);
+    EXPECT_EQ(to_delete.value.bytes.data, unknown.value.bytes.data + 2);
+
+    // Verify message state: Reset iter and verify the remaining part is there
+    iter = kUpb_Message_UnknownBegin;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, sizeof(region) - 2);
+    EXPECT_EQ(unknown.value.bytes.data, to_delete.value.bytes.data);
+  }
+
+  // Reload the message with fresh data for the next test
+  ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 2. Test Split in Middle
+  {
+    // Add a non-canonical extension to ensure in->size > 1, triggering memmove
+    int32_t val = 42;
+    ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+        UPB_UPCAST(ext_msg), upb_test_TestExtensions_optional_int32_ext_ext,
+        &val, arena.ptr()));
+
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+
+    // We want to delete bytes 4 and 5: {'3', '4'}
+    upb_MessageUnknown to_delete = unknown;
+    to_delete.value.bytes.data = unknown.value.bytes.data + 4;
+    to_delete.value.bytes.size = 2;
+
+    upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+        UPB_UPCAST(ext_msg), &to_delete, &iter, arena.ptr());
+    EXPECT_EQ(status, kUpb_DeleteUnknown_IterUpdated);
+
+    // After Split in Middle, DeleteUnknown2 falls through and calls
+    // NextUnknown2. It should return the SUFFIX block!
+    EXPECT_EQ(to_delete.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(to_delete.value.bytes.size, 4u);
+    EXPECT_EQ(to_delete.value.bytes.data, unknown.value.bytes.data + 6);
+
+    // Verify message state: Reset iter and verify we have THREE blocks now
+    // (Prefix, Suffix, Extension).
+    iter = kUpb_Message_UnknownBegin;
+
+    // First block (Prefix)
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, 4u);
+    EXPECT_EQ(memcmp(unknown.value.bytes.data, region, 4), 0);
+
+    // Second block (Suffix)
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, 4u);
+    EXPECT_EQ(memcmp(unknown.value.bytes.data, region + 6, 4), 0);
+
+    // Third block (Extension)
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+
+    // No more blocks
+    EXPECT_FALSE(
+        upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+  }
+
+  // Reload the message with fresh data for the next test
+  ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  decode_status =
+      upb_Decode(region, sizeof(region), UPB_UPCAST(ext_msg),
+                 &upb_0test__TestExtensions_msg_init, nullptr, 0, arena.ptr());
+  ASSERT_EQ(decode_status, kUpb_DecodeStatus_Ok);
+
+  // 3. Test Truncate Suffix
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+
+    // We want to delete the last 2 bytes: {'7', '8'}
+    upb_MessageUnknown to_delete = unknown;
+    to_delete.value.bytes.data = unknown.value.bytes.data + 8;
+    to_delete.value.bytes.size = 2;
+
+    upb_Message_DeleteUnknownStatus status = upb_Message_DeleteUnknown2(
+        UPB_UPCAST(ext_msg), &to_delete, &iter, arena.ptr());
+    EXPECT_EQ(status, kUpb_DeleteUnknown_DeletedLast);
+
+    // Verify message state
+    iter = kUpb_Message_UnknownBegin;
+    ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(ext_msg), &unknown, &iter));
+    EXPECT_EQ(unknown.value.bytes.size, 8u);
+    EXPECT_EQ(memcmp(unknown.value.bytes.data, region, 8), 0);
+  }
+}
+
+TEST(MessageTest, NextSerializableField) {
+  upb::Arena arena;
+  upb_test_TestRequiredFields* test_msg =
+      upb_test_TestRequiredFields_new(arena.ptr());
+
+  const upb_MiniTable* mt = &upb_0test__TestRequiredFields_msg_init;
+  const upb_MiniTableField* f = nullptr;
+  uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+
+  // 1. When no fields are set, iteration should return false immediately.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 2. Set one field. Iteration should find exactly this field.
+  upb_test_TestRequiredFields_set_required_int32(test_msg, 42);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1u);  // required_int32 is field 1
+
+  // Next step should return false.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 3. Set another field. Iteration should find both.
+  upb_test_TestRequiredFields_set_required_int64(test_msg, 100);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+
+  // First field: field 1
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1u);
+
+  // Second field: field 3 (required_int64 is field 3)
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 3u);
+
+  // End of iteration
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 4. Proto2 presence for default values (0):
+  // Setting an optional field to 0 sets its hasbit, so it is included.
+  upb_test_TestRequiredFields* google_protobuf_msg =
+      upb_test_TestRequiredFields_new(arena.ptr());
+  upb_test_TestRequiredFields_set_optional_int32(google_protobuf_msg, 0);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(google_protobuf_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 2u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(google_protobuf_msg), mt, &f, &iter));
+
+  // 5. Repeated fields and map fields (NULL vs allocated):
+  const upb_MiniTable* freeze_mt = &upb_0test__TestFreeze_msg_init;
+
+  // - Repeated field:
+  //   * NULL repeated field (default) is ignored.
+  upb_test_TestFreeze* msg_arr = upb_test_TestFreeze_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated repeated field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  upb_test_TestFreeze_resize_array_int(msg_arr, 0, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), freeze_mt,
+                                                &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 20u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated non-empty repeated field (size > 0) is yielded.
+  upb_test_TestFreeze* msg_arr_nonempty = upb_test_TestFreeze_new(arena.ptr());
+  upb_test_TestFreeze_resize_array_int(msg_arr_nonempty, 3, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                freeze_mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 20u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                 freeze_mt, &f, &iter));
+
+  // - Map field:
+  //   * NULL map field (default) is ignored.
+  upb_test_TestFreeze* msg_map = upb_test_TestFreeze_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated map field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  upb_test_TestFreeze_map_int_set(msg_map, 1, 2, arena.ptr());
+  upb_test_TestFreeze_map_int_delete(msg_map, 1);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map), freeze_mt,
+                                                &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 10u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated non-empty map field (size > 0) is yielded.
+  upb_test_TestFreeze* msg_map_nonempty = upb_test_TestFreeze_new(arena.ptr());
+  upb_test_TestFreeze_map_int_set(msg_map_nonempty, 1, 2, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                freeze_mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 10u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                 freeze_mt, &f, &iter));
+
+  // 6. Submessages (NULL vs allocated):
+  // - NULL submessage (default) is ignored.
+  upb_test_TestRequiredFields* msg_sub =
+      upb_test_TestRequiredFields_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  // - Allocated submessage is included.
+  upb_test_TestRequiredFields_set_optional_message(
+      msg_sub, upb_test_TestRequiredFields_new(arena.ptr()));
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 4u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+}
+
+extern "C" const upb_MiniTable
+    protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+TEST(MessageTest, NextSerializableFieldProto3) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  const upb_MiniTableField* f = nullptr;
+  uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+
+  // 1. When no fields are set, iteration should return false immediately.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 2. The field at MiniTable index 0: optional_int32 (number 1, index 0).
+  // Non-default value (123) should be serializable.
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 123);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 3. Proto3 scalar fields set to default (0, empty string) vs non-default:
+  // - Setting a field to 0 or empty string should be ignored (skipped).
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
+      msg, 0);  // Reset
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
+      msg, upb_StringView_FromString(""));  // Set to empty string
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 4. Repeated fields and map fields (NULL vs allocated):
+  // - Repeated field:
+  //   * NULL repeated field (default) is ignored.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_arr =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), mt, &f, &iter));
+  //   * Allocated repeated field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  protobuf_test_messages_proto3_TestAllTypesProto3_resize_repeated_int32(
+      msg_arr, 0, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 31u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), mt, &f, &iter));
+  //   * Allocated non-empty repeated field (size > 0) is yielded.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_arr_nonempty =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(
+      msg_arr_nonempty, 99, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 31u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                 mt, &f, &iter));
+
+  // - Map field:
+  //   * NULL map field (default) is ignored.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_map =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_map), mt, &f, &iter));
+  //   * Allocated map field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
+      msg_map, 1, 2, arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_delete(
+      msg_map, 1);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_map), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 56u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_map), mt, &f, &iter));
+  //   * Allocated non-empty map field (size > 0) is yielded.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_map_nonempty =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
+      msg_map_nonempty, 1, 2, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 56u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                 mt, &f, &iter));
+
+  // 5. Fields in oneofs (presence test for default values):
+  // Since oneofs have presence, setting a oneof scalar to its default value (0)
+  // should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_oneof =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_oneof_uint32(msg_oneof,
+                                                                    0);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_oneof), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 111u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_oneof), mt, &f, &iter));
+
+  // 6. Submessages (NULL vs allocated):
+  // - NULL submessage (default) should be ignored.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_sub =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  // - Allocated submessage should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3_mutable_optional_nested_message(
+      msg_sub, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 18u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
 }

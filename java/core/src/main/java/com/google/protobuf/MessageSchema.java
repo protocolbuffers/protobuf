@@ -20,6 +20,7 @@ import static com.google.protobuf.ArrayDecoders.decodeFixed64List;
 import static com.google.protobuf.ArrayDecoders.decodeFloat;
 import static com.google.protobuf.ArrayDecoders.decodeFloatList;
 import static com.google.protobuf.ArrayDecoders.decodeGroupList;
+import static com.google.protobuf.ArrayDecoders.decodeLengthPrefixVarint;
 import static com.google.protobuf.ArrayDecoders.decodeMessageField;
 import static com.google.protobuf.ArrayDecoders.decodeMessageList;
 import static com.google.protobuf.ArrayDecoders.decodePackedBoolList;
@@ -63,9 +64,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Schema used for standard messages. */
+/**
+ * Table-driven support for Lite (Android / Mobile) messages.
+ *
+ * <p>Note: in a previous effort, this was experimentally evaluated as the future direction for
+ * standard "full" JavaProto (targeted for JVM use), but that path has since been rejected. This is
+ * exclusively used for "Lite" use going forward. It is included as part of the standard runtime
+ * only on the basis that the standard runtime is the complete superset of class to support both
+ * standard and lite gencode.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @CheckReturnValue
 @SuppressWarnings({"unchecked", "rawtypes", "removal"})
+@ForLiteOnly
 final class MessageSchema<T> implements Schema<T> {
   private static final int INTS_PER_FIELD = 3;
   private static final int OFFSET_BITS = 20;
@@ -3011,11 +3024,8 @@ final class MessageSchema<T> implements Schema<T> {
       Map<K, V> target,
       Registers registers)
       throws IOException {
-    position = decodeVarint32(data, position, registers);
+    position = decodeLengthPrefixVarint(data, position, limit, registers);
     final int length = registers.int1;
-    if (length < 0 || length > limit - position) {
-      throw InvalidProtocolBufferException.truncatedMessage();
-    }
     final int end = position + length;
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
@@ -3326,7 +3336,7 @@ final class MessageSchema<T> implements Schema<T> {
         break;
       case 59: // ONEOF_STRING:
         if (wireType == WireFormat.WIRETYPE_LENGTH_DELIMITED) {
-          position = decodeVarint32(data, position, registers);
+          position = decodeLengthPrefixVarint(data, position, data.length, registers);
           final int length = registers.int1;
           if (length == 0) {
             unsafe.putObject(message, fieldOffset, "");

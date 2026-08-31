@@ -21,8 +21,7 @@ namespace cpp {
 class FieldLayout {
  public:
   static FieldLayout BuildOptimizedLayout(
-      const Descriptor* absl_nonnull descriptor, const Options& options,
-      int& num_weak_fields);
+      const Descriptor* absl_nonnull descriptor, const Options& options);
 
   static PROTOC_EXPORT FieldLayout
   BuildForTesting(std::vector<const FieldDescriptor* absl_nonnull> fields,

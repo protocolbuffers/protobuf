@@ -20,6 +20,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <limits>
 #include <list>
@@ -39,10 +40,12 @@
 #include "absl/strings/str_format.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena_test_util.h"
+#include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 // TODO: Remove.
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
@@ -61,6 +64,7 @@ using ::testing::AnyOf;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::Ge;
+using ::testing::HasSubstr;
 using ::testing::Le;
 using ::testing::Lt;
 
@@ -162,6 +166,110 @@ TEST(RepeatedField, Small) {
 }
 
 
+class RepeatedFieldIsFullTest : public testing::Test {
+ protected:
+  void SetUp() override {
+    if (!internal::RunLargeMemoryTests()) {
+      GTEST_SKIP() << "Not enough memory for this test.";
+    }
+    if (internal::GetBoundsCheckMode() != internal::BoundsCheckMode::kAbort) {
+      GTEST_SKIP() << "Preemtive abort is not enabled.";
+    }
+  }
+
+  RepeatedField<bool> MakeFullField() {
+    // Using `bool` to make it easier on the system to allocate the memory.
+    RepeatedField<bool> field;
+    field.resize(std::numeric_limits<int>::max());
+    return field;
+  }
+};
+
+TEST_F(RepeatedFieldIsFullTest, AddAbortOnFull) {
+  EXPECT_DEATH(MakeFullField().Add(),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, AddValueAbortOnFull) {
+  EXPECT_DEATH(MakeFullField().Add(0),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, AddFwdIterAbortOnFull) {
+  int i = 2;
+  EXPECT_DEATH(MakeFullField().Add(&i, &i + 1),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, AddInputIterAbortOnFull) {
+  std::istringstream test_data("1 2 3 4 5");
+  EXPECT_DEATH(MakeFullField().Add(std::istream_iterator<int>(test_data),
+                                   std::istream_iterator<int>()),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, MergeFromAbortOnFull) {
+  RepeatedField<bool> f1 = MakeFullField();
+  RepeatedField<bool> f2;
+  f2.Add(true);
+  EXPECT_DEATH(f1.MergeFrom(f2),
+               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeOverflow) {
+  EXPECT_DEATH(MakeFullField().ExtractSubrange(2147483640, 10, nullptr),
+               HasSubstr("Value (2147483650) must be less than or equal to "
+                         "limit (2147483647)"));
+}
+TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeNegativeStart) {
+  RepeatedField<int> field;
+  EXPECT_DEATH(
+      field.ExtractSubrange(-1, 0, nullptr),
+      HasSubstr("Value (-1) must be greater than or equal to limit (0)"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeNegativeNum) {
+  RepeatedField<int> field;
+  EXPECT_DEATH(
+      field.ExtractSubrange(0, -1, nullptr),
+      HasSubstr("Value (-1) must be greater than or equal to limit (0)"));
+}
+
+TEST_F(RepeatedFieldIsFullTest, ParsedPackedOverflow) {
+  proto2_unittest::TestPackedTypes msg;
+  msg.mutable_packed_bool()->resize(10);
+  std::string str10 = msg.SerializeAsString();
+  // We use a different path for larger inputs.
+  msg.mutable_packed_bool()->resize(32);
+  std::string str32 = msg.SerializeAsString();
+
+  EXPECT_DEATH(
+      {
+        msg.mutable_packed_bool()->resize(std::numeric_limits<int>::max() - 4);
+        (void)msg.MergeFromString(str10);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
+  EXPECT_DEATH(
+      {
+        msg.mutable_packed_bool()->resize(std::numeric_limits<int>::max() - 4);
+        (void)msg.MergeFromString(str32);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
+}
+
+TEST_F(RepeatedFieldIsFullTest, RepeatedVarintOverflow) {
+  proto2_unittest::RepFieldWithBoolForFastOverflow msg;
+  msg.mutable_b()->resize(10);
+  std::string str10 = msg.SerializeAsString();
+
+  EXPECT_DEATH(
+      {
+        msg.mutable_b()->resize(std::numeric_limits<int>::max() - 4);
+        (void)msg.MergeFromString(str10);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
+}
+
 // Test operations on a RepeatedField which is large enough to allocate a
 // separate array.
 TEST(RepeatedField, Large) {
@@ -180,22 +288,6 @@ TEST(RepeatedField, Large) {
 
   int expected_usage = 16 * sizeof(int);
   EXPECT_GE(field.SpaceUsedExcludingSelf(), expected_usage);
-}
-
-TEST(RepeatedField, AddRangeThatOverflowsFailsWithATermination) {
-  if (sizeof(void*) < 8) {
-    GTEST_SKIP() << "Disabled on 32-bit builds due to insufficient memory";
-  }
-  RepeatedField<bool> field;
-
-  std::vector<bool> input;
-  // Overflows into "negative" ints.
-  input.resize(size_t{std::numeric_limits<int32_t>::max()} + 1);
-  EXPECT_DEATH(field.Add(input.begin(), input.end()), "Input too large");
-
-  // Overflows the ints completely.
-  input.resize(size_t{std::numeric_limits<uint32_t>::max()} + 1);
-  EXPECT_DEATH(field.Add(input.begin(), input.end()), "Input too large");
 }
 
 template <typename Rep>

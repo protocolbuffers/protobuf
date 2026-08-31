@@ -40,6 +40,7 @@
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -498,6 +499,64 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
            })pb"
       // clang-format on
   );
+
+  // [type_id, value, type_id (different)] -> first type_id and value honored.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateDifferentTypeId"),
+      RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(1547769))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
+
+  // [type_id, value, value] -> first value honored, no merge.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateValue"), RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  len(3,
+                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
+
+  // [value, type_id, value] -> first value honored, no merge.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateValueOutOfOrder"),
+      RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3,
+                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
 }
 
 void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
@@ -841,6 +900,66 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
   } else {
     test.set_failure_message("Should have failed to parse, but didn't.");
     suite_.ReportFailure(test, level, request, response);
+  }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    RunValidJsonTestOrParseFailure(const std::string& test_name,
+                                   ConformanceLevel level,
+                                   const std::string& input_json,
+                                   const std::string& equivalent_text_format) {
+  MessageType prototype;
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::PROTOBUF,
+      ::conformance::JSON_TEST, prototype, test_name, input_json);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  std::string effective_test_name =
+      absl::StrCat(setting.ConformanceLevelToString(level), ".",
+                   SyntaxIdentifier(), ".JsonInput.", test_name);
+
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(effective_test_name);
+  if (response.result_case() == ConformanceResponse::kParseError) {
+    suite_.ReportSuccess(test);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    suite_.ReportSkip(test, request, response);
+  } else {
+    std::unique_ptr<Message> reference_message(setting.NewTestMessage());
+    ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
+                                           reference_message.get()))
+        << "Failed to parse data for test case: " << setting.GetTestName()
+        << ", data: " << equivalent_text_format;
+    std::unique_ptr<Message> test_message(setting.NewTestMessage());
+    bool parsed = false;
+    if (response.result_case() == ConformanceResponse::kProtobufPayload) {
+      parsed = test_message->ParseFromString(response.protobuf_payload());
+    }
+    if (!parsed) {
+      test.set_failure_message("Malformed protobuf response");
+      suite_.ReportFailure(test, level, request, response);
+      return;
+    }
+
+    util::MessageDifferencer differencer;
+    util::DefaultFieldComparator field_comparator;
+    field_comparator.set_treat_nan_as_equal(true);
+    differencer.set_field_comparator(&field_comparator);
+    std::string differences;
+    differencer.ReportDifferencesToString(&differences);
+    if (differencer.Compare(*reference_message, *test_message)) {
+      suite_.ReportSuccess(test);
+    } else {
+      test.set_failure_message(
+          "Should have failed to parse or matched expected output but did "
+          "not.");
+      suite_.ReportFailure(test, level, request, response);
+    }
   }
 }
 
@@ -2369,22 +2488,27 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "MissingCommaMultiline", RECOMMENDED,
       "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
-  // Duplicated field names are not allowed.
-  ExpectParseFailureForJson("FieldNameDuplicate", RECOMMENDED,
-                            R"({
-        "optionalNestedMessage": {"a": 1},
-        "optionalNestedMessage": {}
-      })");
-  ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing1", RECOMMENDED,
-                            R"({
-        "optional_nested_message": {"a": 1},
-        "optionalNestedMessage": {}
-      })");
-  ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing2", RECOMMENDED,
-                            R"({
-        "optionalNestedMessage": {"a": 1},
-        "optional_nested_message": {}
-      })");
+  // Duplicated field names have either last-wins or parse failure.
+  RunValidJsonTestOrParseFailure("FieldNameDuplicate", RECOMMENDED,
+                                 R"({
+                                   "optionalNestedMessage": {"a": 1},
+                                   "optionalNestedMessage": {}
+                                 })",
+                                 "optional_nested_message: {}");
+  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing1",
+                                 RECOMMENDED,
+                                 R"({
+                                   "optional_nested_message": {"a": 1},
+                                   "optionalNestedMessage": {}
+                                 })",
+                                 "optional_nested_message: {}");
+  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing2",
+                                 RECOMMENDED,
+                                 R"({
+                                   "optionalNestedMessage": {"a": 1},
+                                   "optional_nested_message": {}
+                                 })",
+                                 "optional_nested_message: {}");
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator("FieldNameInLowerCamelCase", REQUIRED,
                                 R"({
@@ -2524,6 +2648,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalInt64": "0.5"})");
   ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
                             R"({"optionalUint64": "0.5"})");
+
+  // Parser reject boolean values for integer fields.
+  ExpectParseFailureForJson("Int32FieldTrueValue", REQUIRED,
+                            R"({"optionalInt32": true})");
+  ExpectParseFailureForJson("Int32FieldFalseValue", REQUIRED,
+                            R"({"optionalInt32": false})");
 
   // Parser reject non-numeric string values.
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
@@ -2696,6 +2826,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
                             REQUIRED, R"({"optionalFloat": "12谷歌34"})");
 
+  // Parser reject boolean values for float fields.
+  ExpectParseFailureForJson("FloatFieldTrueValue", REQUIRED,
+                            R"({"optionalFloat": true})");
+  ExpectParseFailureForJson("FloatFieldFalseValue", REQUIRED,
+                            R"({"optionalFloat": false})");
+
   // Double fields.
   RunValidJsonTest("DoubleFieldMinPositiveValue", REQUIRED,
                    R"({"optionalDouble": 2.22507e-308})",
@@ -2761,6 +2897,12 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("DoubleFieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalDouble": "abc"})");
 
+  // Parser reject boolean values for double fields.
+  ExpectParseFailureForJson("DoubleFieldTrueValue", REQUIRED,
+                            R"({"optionalDouble": true})");
+  ExpectParseFailureForJson("DoubleFieldFalseValue", REQUIRED,
+                            R"({"optionalDouble": false})");
+
   // Enum fields.
   RunValidJsonTest("EnumField", REQUIRED, R"({"optionalNestedEnum": "FOO"})",
                    "optional_nested_enum: FOO");
@@ -2789,6 +2931,17 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalNestedEnum": 0})", "optional_nested_enum: FOO");
   RunValidJsonTest("EnumFieldNumericValueNonZero", REQUIRED,
                    R"({"optionalNestedEnum": 1})", "optional_nested_enum: BAR");
+  // Arrays are not allowed for non-repeated enum fields.
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayEnumName", REQUIRED,
+                            R"({"optionalNestedEnum": ["FOO"]})");
+  ExpectParseFailureForJson("EnumFieldSingleElementArrayNumericValue", REQUIRED,
+                            R"({"optionalNestedEnum": [2]})");
+
+  // Booleans are not allowed for enum fields.
+  ExpectParseFailureForJson("EnumFieldTrueValue", REQUIRED,
+                            R"({"optionalNestedEnum": true})");
+  ExpectParseFailureForJson("EnumFieldFalseValue", REQUIRED,
+                            R"({"optionalNestedEnum": false})");
 
   if (run_proto3_tests_) {
     // Unknown enum values are represented as numeric values.
@@ -2854,8 +3007,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                    "optional_nested_message: {a: 1234}");
 
   // Oneof fields.
-  ExpectParseFailureForJson("OneofFieldDuplicate", REQUIRED,
-                            R"({"oneofUint32": 1, "oneofString": "test"})");
+  RunValidJsonTestOrParseFailure("OneofFieldDuplicate", REQUIRED,
+                                 R"({"oneofUint32": 1, "oneofString": "test"})",
+                                 "oneof_string: \"test\"");
+  RunValidJsonTestOrParseFailure("OneofFieldDuplicate2", REQUIRED,
+                                 R"({"oneofString": "test", "oneofUint32": 1})",
+                                 "oneof_uint32: 1");
   RunValidJsonTest("OneofFieldNullFirst", REQUIRED,
                    R"({"oneofUint32": null, "oneofString": "test"})",
                    "oneof_string: \"test\"");
@@ -3376,6 +3533,71 @@ void BinaryAndJsonConformanceSuiteImpl<
         return value["optionalTimestamp"].asString() ==
                "1970-01-01T00:00:00.000000010Z";
       });
+
+  // Out of bounds / invalid components should JSON parse fail
+  ExpectParseFailureForJson("TimestampJsonInputMonthTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-13-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputMonthZero", REQUIRED,
+                            R"({"optionalTimestamp": "1970-00-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputDayTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-32T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputDayZero", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-00T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputHourTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T24:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputHourTooLarge25", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T25:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputMinuteTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T00:60:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputSecondTooLarge", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-01T00:00:60Z"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidOffsetHour", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00+24:00"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidOffsetMinute", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00+00:60"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputOffsetBoundaryUnderflow", REQUIRED,
+      R"({"optionalTimestamp": "0001-01-01T00:00:00+00:01"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputOffsetBoundaryOverflow", REQUIRED,
+      R"({"optionalTimestamp": "9999-12-31T23:59:59-00:01"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidNanos", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00.1234567890Z"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputInvalidCharsInNanos", REQUIRED,
+      R"({"optionalTimestamp": "1970-01-01T00:00:00.123aZ"})");
+  ExpectParseFailureForJson("TimestampJsonInputYearTooShort", REQUIRED,
+                            R"({"optionalTimestamp": "999-01-01T00:00:00Z"})");
+  ExpectParseFailureForJson(
+      "TimestampJsonInputYearTooLong", REQUIRED,
+      R"({"optionalTimestamp": "00001-01-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputMonthTooShort", REQUIRED,
+                            R"({"optionalTimestamp": "1970-1-01T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputDayTooShort", REQUIRED,
+                            R"({"optionalTimestamp": "1970-01-1T00:00:00Z"})");
+  ExpectParseFailureForJson("TimestampJsonInputNonLeapFeb29", REQUIRED,
+                            R"({"optionalTimestamp": "2001-02-29T00:00:00Z"})");
+
+  // Honoring time zones correctly
+  RunValidJsonTest("TimestampJsonInputLeapFeb29", REQUIRED,
+                   R"({"optionalTimestamp": "2000-02-29T00:00:00Z"})",
+                   "optional_timestamp: {seconds: 951782400}");
+  RunValidJsonTest("TimestampWithOffsetShiftsDay", REQUIRED,
+
+                   R"({"optionalTimestamp": "1970-01-02T01:00:00+02:00"})",
+                   "optional_timestamp: {seconds: 82800}");
+  RunValidJsonTest("TimestampWithOffsetBoundaryInBoundsMin", REQUIRED,
+                   R"({"optionalTimestamp": "0001-01-01T00:00:00-00:01"})",
+                   "optional_timestamp: {seconds: -62135596740}");
+  RunValidJsonTest("TimestampWithOffsetBoundaryInBoundsMax", REQUIRED,
+                   R"({"optionalTimestamp": "9999-12-31T23:59:59+00:01"})",
+                   "optional_timestamp: {seconds: 253402300739}");
+  RunValidJsonTest("TimestampWithComplexOffset", REQUIRED,
+                   R"({"optionalTimestamp": "1970-01-01T00:00:00-11:30"})",
+                   "optional_timestamp: {seconds: 41400}");
 }
 
 template <typename MessageType>

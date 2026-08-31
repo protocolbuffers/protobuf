@@ -9,6 +9,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
@@ -201,6 +202,236 @@ TEST_F(RustGeneratorTest, EmitsEnumMetadata) {
       {google::protobuf::FileDescriptorProto::kEnumTypeFieldNumber, 0,
        google::protobuf::EnumDescriptorProto::kValueFieldNumber, 2},
       "Alias1", GeneratedCodeInfo::Annotation::NONE, 1);
+}
+
+TEST_F(RustGeneratorTest, EmitsPublicFileModuleInEntryPoint) {
+  constexpr absl::string_view kFooProto = R"schema(
+    syntax = "proto2";
+    package foo;
+    message Message {
+    })schema";
+  CreateTempFile("foo.proto", kFooProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, HasSubstr("pub mod foo_proto;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub use foo_proto::*;"));
+  EXPECT_THAT(entry_point, Not(HasSubstr("internal_do_not_use_")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("#[doc(hidden)]")));
+}
+
+TEST_F(RustGeneratorTest, EmitsPublicFileModulesForMultiFileCrate) {
+  constexpr absl::string_view kFooProto = R"schema(
+    syntax = "proto2";
+    package foo;
+    message Config {
+    })schema";
+  constexpr absl::string_view kBarProto = R"schema(
+    syntax = "proto2";
+    package bar;
+    message Config {
+    })schema";
+  CreateTempFile("foo.proto", kFooProto);
+  CreateTempFile("bar.proto", kBarProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto bar.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, HasSubstr("pub mod foo_proto;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub mod bar_proto;"));
+  EXPECT_THAT(entry_point, Not(HasSubstr("internal_do_not_use_")));
+}
+
+TEST_F(RustGeneratorTest, EmitsValidIdentifierForLeadingDigitFile) {
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package sample;
+    message Config {}
+  )schema";
+  CreateTempFile("0.1.proto", kProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "0.1.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  // A leading non-letter gets a `pb_` prefix so the module name is a valid
+  // identifier (`0.1.proto` must not produce `pub mod 0_1_proto;`).
+  EXPECT_THAT(entry_point, HasSubstr("pub mod pb_0_1_proto;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub use pb_0_1_proto::*;"));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub mod 0_1_proto;")));
+}
+
+TEST_F(RustGeneratorTest, EmitsReadableModuleNameForHyphenatedFile) {
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package sample;
+    message A {}
+  )schema";
+  CreateTempFile("my-service.proto", kProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "my-service.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  // Separators collapse to `_` and the `.proto` extension becomes `_proto`;
+  // no `_2d_` hex escaping is used for a plain hyphen.
+  EXPECT_THAT(entry_point, HasSubstr("pub mod my_service_proto;"));
+  EXPECT_THAT(entry_point, Not(HasSubstr("_2d_")));
+}
+
+TEST_F(RustGeneratorTest, EmitsQualifiedPathForSameFileMessageReference) {
+  // Foo uses Bar from the same file.
+  constexpr absl::string_view kFooProto = R"schema(
+    syntax = "proto2";
+    package foo;
+    message Bar {}
+    message Foo {
+      optional Bar bar = 1;
+    })schema";
+  CreateTempFile("foo.proto", kFooProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string foo = FileContents("foo.c.pb.rs");
+  EXPECT_THAT(foo, HasSubstr("super::foo_proto::BarView"));
+  EXPECT_THAT(foo, Not(HasSubstr("super::BarView")));
+}
+
+TEST_F(RustGeneratorTest, EmitsQualifiedPathForCrossFileMessageReference) {
+  constexpr absl::string_view kBarProto = R"schema(
+    syntax = "proto2";
+    package bar;
+    message Bar {})schema";
+
+  // Foo uses Bar from a different file in the same crate.
+  constexpr absl::string_view kFooProto = R"schema(
+    syntax = "proto2";
+    package foo;
+    import "bar.proto";
+    message Foo {
+      optional bar.Bar bar = 1;
+    })schema";
+  CreateTempFile("bar.proto", kBarProto);
+  CreateTempFile("foo.proto", kFooProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto bar.proto");
+  ExpectNoErrors();
+
+  std::string foo = FileContents("foo.c.pb.rs");
+  EXPECT_THAT(foo, HasSubstr("super::bar_proto::BarView"));
+  EXPECT_THAT(foo, Not(HasSubstr("super::BarView")));
+}
+
+TEST_F(RustGeneratorTest, EmitsQualifiedPathForNestedContainingType) {
+  constexpr absl::string_view kProto = R"schema(
+    syntax = "proto2";
+    package foo;
+    message Wrapper {
+      message Nested {}
+      enum Kind {
+        K0 = 0;
+        K1 = 1;
+      }
+    }
+    message User {
+      optional Wrapper.Nested nested = 1;
+      optional Wrapper.Kind kind = 2;
+    })schema";
+  CreateTempFile("foo.proto", kProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string foo = FileContents("foo.c.pb.rs");
+  EXPECT_THAT(foo, HasSubstr("super::foo_proto::wrapper::NestedView"));
+  EXPECT_THAT(foo, HasSubstr("super::foo_proto::wrapper::Kind"));
+}
+
+TEST_F(RustGeneratorTest, EmitsQualifiedPathForCrossCrateMessageReference) {
+  constexpr absl::string_view kBarProto = R"schema(
+    syntax = "proto2";
+    package bar;
+    message Bar {})schema";
+  // Foo uses Bar from a different crate.
+  constexpr absl::string_view kFooProto = R"schema(
+    syntax = "proto2";
+    package foo;
+    import "bar.proto";
+    message Foo {
+      optional bar.Bar bar = 1;
+    })schema";
+  CreateTempFile("bar.proto", kBarProto);
+  CreateTempFile("foo.proto", kFooProto);
+  CreateTempFile("mapping.txt", "bar_crate\n1\nbar.proto\n");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp,"
+      "crate_mapping=$tmpdir/mapping.txt "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string foo = FileContents("foo.c.pb.rs");
+  EXPECT_THAT(foo, HasSubstr("::bar_crate::bar_proto::BarView"));
+  EXPECT_THAT(foo, HasSubstr("IntoProxied<::bar_crate::bar_proto::Bar>"));
+  EXPECT_THAT(foo, Not(HasSubstr("::bar_crate::BarView")));
+}
+
+TEST_F(RustGeneratorTest, EmitsQualifiedExtendeePathForExtensions) {
+  constexpr absl::string_view kFooProto = R"schema(
+    syntax = "proto2";
+    package foo;
+    message Target {
+      optional int32 val = 1;
+      extensions 100 to 200;
+    }
+    extend Target {
+      optional int32 top_ext = 100;
+    }
+    message Container {
+      extend Target {
+        optional int32 nested_ext = 101;
+      }
+    })schema";
+  CreateTempFile("foo.proto", kFooProto);
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string foo = FileContents("foo.c.pb.rs");
+  // top_ext
+  EXPECT_THAT(foo, HasSubstr("ExtensionId<super::foo_proto::Target, i32>"));
+  // nested_ext
+  EXPECT_THAT(foo,
+              HasSubstr("ExtensionId<super::super::foo_proto::Target, i32>"));
 }
 
 }  // namespace

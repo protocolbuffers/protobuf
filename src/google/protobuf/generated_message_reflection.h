@@ -26,6 +26,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/has_bits.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -56,18 +57,18 @@ class DefaultEmptyOneof;
 struct MessageGlobalsBase;
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
-class WeakFieldMap;  // weak_field_map.h
 
-// Tag used on offsets for fields that don't have a real offset.
-// For example, weak message fields go into the WeakFieldMap and not in an
-// actual field.
-inline constexpr uint32_t kInvalidFieldOffsetTag = 0x40000000u;
+// Tags used in field offsets to indicate extra information about the field.
+// This information can't be derived from the descriptor.
+// We reuse tags that can't go on the same field.
+inline constexpr uint32_t kSplitFieldOffsetTag = 0x80000000u;
+inline constexpr uint32_t kLazyOffsetTag = 0x40000000u;
+inline constexpr uint32_t kInlinedOffsetTag = 0x40000000u;
+inline constexpr uint32_t kMicroStringOffsetTag = 0x20000000u;
 
-// Mask used on offsets for split fields.
-inline constexpr uint32_t kSplitFieldOffsetMask = 0x80000000u;
-inline constexpr uint32_t kLazyMask = 0x1u;
-inline constexpr uint32_t kInlinedMask = 0x1u;
-inline constexpr uint32_t kMicroStringMask = 0x2u;
+inline constexpr uint32_t kAllOffsetTags = kSplitFieldOffsetTag |
+                                           kLazyOffsetTag | kInlinedOffsetTag |
+                                           kMicroStringOffsetTag;
 
 // Structs that the code generator emits directly to describe a message.
 // These should never used directly except to build a ReflectionSchema
@@ -128,8 +129,7 @@ class ReflectionSchema {
   ReflectionSchema(const Message* default_instance, const uint32_t* offsets,
                    const uint32_t* has_bit_indices, int has_bits_offset,
                    int extensions_offset, int oneof_case_offset,
-                   int object_size, int weak_field_map_offset, int split_offset,
-                   int sizeof_split);
+                   int object_size, int split_offset, int sizeof_split);
 
   // Helper function to transform migration schema into reflection schema.
   static ReflectionSchema MigrationToReflectionSchema(
@@ -146,9 +146,8 @@ class ReflectionSchema {
   }
 
   // Offset of any field.
-  template <typename Type = void>
   uint32_t GetFieldOffset(const FieldDescriptor* field) const {
-    return OffsetValue<Type>(offsets_[field->index()], field->type());
+    return OffsetValue(offsets_[field->index()]);
   }
 
   bool IsFieldInlined(const FieldDescriptor* field) const {
@@ -202,10 +201,6 @@ class ReflectionSchema {
     return static_cast<uint32_t>(extensions_offset_);
   }
 
-  // The off set of WeakFieldMap when the message contains weak fields.
-  // The default is 0 for now.
-  int GetWeakFieldMapOffset() const { return weak_field_map_offset_; }
-
   bool IsDefaultInstance(const Message& message) const {
     return &message == default_instance_;
   }
@@ -214,7 +209,7 @@ class ReflectionSchema {
   // of the underlying data depends on the field's type.
   const void* GetFieldDefault(const FieldDescriptor* field) const {
     return reinterpret_cast<const uint8_t*>(default_instance_) +
-           OffsetValue<void>(offsets_[field->index()], field->type());
+           OffsetValue(offsets_[field->index()]);
   }
 
   // Returns true if the field is implicitly backed by LazyField.
@@ -228,7 +223,7 @@ class ReflectionSchema {
 
   bool IsSplit(const FieldDescriptor* field) const {
     return split_offset_ != -1 &&
-           (offsets_[field->index()] & kSplitFieldOffsetMask) != 0;
+           (offsets_[field->index()] & kSplitFieldOffsetTag) != 0;
   }
 
   // Byte offset of _split_.
@@ -243,33 +238,18 @@ class ReflectionSchema {
   }
 
 
-  bool HasWeakFields() const { return weak_field_map_offset_ > 0; }
 
  private:
   ReflectionSchema() = default;
 
   // We tag offset values to provide additional data about fields (such as
   // "unused" or "lazy" or "inlined").
-  template <typename Type>
-  static uint32_t OffsetValue(uint32_t v, FieldDescriptor::Type type) {
-    if constexpr (!std::is_void_v<Type>) {
-      // If the type is passed, statically use the alignment for the mask.
-      // Faster than checking `type`.
-      return v & ~kSplitFieldOffsetMask & ~(alignof(Type) - 1);
-    }
-    if (type == FieldDescriptor::TYPE_MESSAGE ||
-        type == FieldDescriptor::TYPE_STRING ||
-        type == FieldDescriptor::TYPE_BYTES) {
-      return v & ~kSplitFieldOffsetMask & ~kInlinedMask & ~kLazyMask &
-             ~kMicroStringMask;
-    }
-    return v & (~kSplitFieldOffsetMask);
-  }
+  static uint32_t OffsetValue(uint32_t v) { return v & ~kAllOffsetTags; }
 
   static bool Inlined(uint32_t v, FieldDescriptor::Type type) {
     if (type == FieldDescriptor::TYPE_STRING ||
         type == FieldDescriptor::TYPE_BYTES) {
-      return (v & kInlinedMask) != 0u;
+      return (v & kInlinedOffsetTag) != 0u;
     } else {
       // Non string/byte fields are not inlined.
       return false;
@@ -280,7 +260,7 @@ class ReflectionSchema {
     ABSL_DCHECK(type == FieldDescriptor::TYPE_STRING ||
                 type == FieldDescriptor::TYPE_BYTES)
         << type;
-    return (v & kMicroStringMask) != 0u;
+    return (v & kMicroStringOffsetTag) != 0u;
   }
 
   const Message* default_instance_;
@@ -290,7 +270,7 @@ class ReflectionSchema {
   int extensions_offset_;
   int oneof_case_offset_;
   int object_size_;
-  int weak_field_map_offset_;
+
   int split_offset_;
   int sizeof_split_;
 };
@@ -340,14 +320,15 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };
 
-// Retrieves the existing prototype out of a descriptor table.
+// Retrieves the existing ClassData out of a descriptor table.
 // If it doesn't exist:
 //  - If force_build is true, asks the generated message factory for one.
 //  - Otherwise, return null
-const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index, bool force_build);
+const ClassData* GetClassDataForWeakDescriptor(const DescriptorTable* table,
+                                               int index, bool force_build);
 
 struct DenseEnumCacheInfo {
+  absl::once_flag loaded;
   std::atomic<const std::string**> cache;
   int min_val;
   int max_val;
@@ -364,11 +345,11 @@ PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
 template <const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val>
 const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
-  static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
-                                    descriptor_fn};
-  const std::string** cache = deci.cache.load(std::memory_order_acquire);
-  if (ABSL_PREDICT_TRUE(cache != nullptr)) {
-    if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+  static DenseEnumCacheInfo deci = {/* once_flag */ {}, /* atomic ptr */ {},
+                                    min_val, max_val, descriptor_fn};
+  if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+    const std::string** cache = deci.cache.load(std::memory_order_acquire);
+    if (ABSL_PREDICT_TRUE(cache != nullptr)) {
       return *cache[v - min_val];
     }
   }

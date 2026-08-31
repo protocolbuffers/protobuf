@@ -28,23 +28,25 @@
 #include <variant>
 #include <vector>
 
-#include "absl/log/absl_log.h"
-
 #include "google/protobuf/stubs/common.h"
 #include "absl/base/casts.h"
 #include "absl/base/prefetch.h"
 #include "absl/container/btree_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/internal_visibility.h"
-#include "google/protobuf/port.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // clang-format off
 #include "google/protobuf/port_def.inc"  // Must be last
@@ -117,6 +119,8 @@ enum class LazyAnnotation : int8_t {
 };
 
 // Information about a registered extension.
+// TODO: Change ExtensionInfo to hold a ClassData instead of a
+// prototype.
 struct ExtensionInfo {
   constexpr ExtensionInfo()
       : is_packed(false), is_utf8(false), enum_validity_check() {}
@@ -154,37 +158,15 @@ struct ExtensionInfo {
   LazyAnnotation is_lazy = LazyAnnotation::kUndefined;
 
   struct EnumValidityCheck {
-    // TODO: Fully remove the function pointer approach.
-    EnumValidityFuncWithArg* func;
-    const void* arg;
-
+    const uint32_t* enum_data;
     bool IsValid(int value) const {
-      return func != nullptr ? func(arg, value)
-                             : internal::ValidateEnum(
-                                   value, static_cast<const uint32_t*>(arg));
+      return internal::ValidateEnum(value, enum_data);
     }
   };
 
   struct MessageInfo {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-    const internal::MessageGlobalsBase* globals = nullptr;
-#else
-    const MessageLite* prototype = nullptr;
-#endif
-    // The TcParse table used for this object. Never null. (except in platforms
-    // that don't constant initialize default instances)
-    const internal::TcParseTableBase* tc_table = nullptr;
-
-    // Create from prototype
-    const MessageLite* GetPrototype() const {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      return internal::MessageGlobalsBase::ToDefaultInstance(globals);
-#else
-      return prototype;
-#endif
-    }
-
-    const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
+    // Never null.
+    const internal::ClassData* class_data;
   };
 
   union {
@@ -244,7 +226,12 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
 };
 
 // Turn on direct LazyField access.
+// Use PROTOBUF_ENABLE_STABLE_EXPERIMENTS to turn on the old code for now.
+#if !defined(                                                                 \
+    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT) && \
+    !defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
 #define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
+#endif
 
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,
@@ -270,17 +257,17 @@ class PROTOBUF_EXPORT ExtensionSet {
   // to look up extensions for parsed field numbers.  Note that dynamic parsing
   // does not use ParseField(); only protocol-compiler-generated parsing
   // methods do.
-  static void RegisterExtension(const MessageLite* extendee, int number,
+  static void RegisterExtension(const ClassData* extendee, int number,
                                 FieldType type, bool is_repeated,
                                 bool is_packed, bool is_utf8 = false);
-  static void RegisterEnumExtension(const MessageLite* extendee, int number,
+  static void RegisterEnumExtension(const ClassData* extendee, int number,
                                     FieldType type, bool is_repeated,
                                     bool is_packed,
                                     const uint32_t* validation_data);
-  static void RegisterMessageExtension(const MessageLite* extendee, int number,
+  static void RegisterMessageExtension(const ClassData* extendee, int number,
                                        FieldType type, bool is_repeated,
                                        bool is_packed,
-                                       const MessageLite* prototype,
+                                       const ClassData* inner_data,
                                        LazyEagerVerifyFnType verify_func,
                                        LazyAnnotation is_lazy);
 
@@ -374,8 +361,8 @@ class PROTOBUF_EXPORT ExtensionSet {
     }
   }
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const MessageLite& GetMessage(
-      Arena* arena, int number, const MessageLite& default_value) const;
+  [[nodiscard]] const MessageLite& GetMessageByClassData(
+      Arena* arena, int number, const ClassData* class_data) const;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const MessageLite& GetMessage(
       Arena* arena, int number, const Descriptor* message_type,
       MessageFactory* factory) const;
@@ -385,8 +372,10 @@ class PROTOBUF_EXPORT ExtensionSet {
   // type.
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* MutableString(Arena* arena, int number, FieldType type, desc);
-  MessageLite* MutableMessage(Arena* arena, int number, FieldType type,
-                              const MessageLite& prototype, desc);
+
+  MessageLite* MutableMessageByClassData(Arena* arena, int number,
+                                         FieldType type,
+                                         const ClassData* class_data, desc);
   MessageLite* MutableMessage(Arena* arena, const FieldDescriptor* descriptor,
                               MessageFactory* factory);
   // Adds the given message to the ExtensionSet, taking ownership of the
@@ -399,9 +388,9 @@ class PROTOBUF_EXPORT ExtensionSet {
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
   [[nodiscard]] MessageLite* ReleaseMessage(Arena* arena, int number,
-                                            const MessageLite& prototype);
+                                            const ClassData* class_data);
   MessageLite* UnsafeArenaReleaseMessage(Arena* arena, int number,
-                                         const MessageLite& prototype);
+                                         const ClassData* class_data);
 
   [[nodiscard]] MessageLite* ReleaseMessage(Arena* arena,
                                             const FieldDescriptor* descriptor,
@@ -475,7 +464,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
   std::string* AddString(Arena* arena, int number, FieldType type, desc);
   MessageLite* AddMessage(Arena* arena, int number, FieldType type,
-                          const MessageLite& prototype, desc);
+                          const ClassData* class_data, desc);
   MessageLite* AddMessage(Arena* arena, const FieldDescriptor* descriptor,
                           MessageFactory* factory);
   void AddAllocatedMessage(Arena* arena, const FieldDescriptor* descriptor,
@@ -561,7 +550,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* _InternalSerialize(
       const MessageLite* extendee, int start_field_number, int end_field_number,
       uint8_t* target, io::EpsCopyOutputStream* stream) const {
-    if (flat_size_ == 0) {
+    if (flat_size() == 0) {
       assert(!is_large());
       return target;
     }
@@ -573,7 +562,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* _InternalSerializeAll(
       const MessageLite* extendee, uint8_t* target,
       io::EpsCopyOutputStream* stream) const {
-    if (flat_size_ == 0) {
+    if (flat_size() == 0) {
       assert(!is_large());
       return target;
     }
@@ -677,7 +666,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   static bool FieldTypeIsPointer(FieldType type);
 
   size_t GetMessageByteSizeLong(int number) const;
-  uint8_t* InternalSerializeMessage(int number, const MessageLite* prototype,
+  uint8_t* InternalSerializeMessage(int number, const ClassData* class_data,
                                     uint8_t* target,
                                     io::EpsCopyOutputStream* stream) const;
 
@@ -872,12 +861,39 @@ class PROTOBUF_EXPORT ExtensionSet {
   // the number of elements is small enough that linear search is faster than
   // binary search.
 
-  struct KeyValue {
+  struct FlatItem {
     int first;
+    // flat_capacity and flat_size are only valid in the first element (index 0)
+    // of flat map array.
+    uint16_t flat_capacity;
+    uint16_t flat_size;
     Extension second;
   };
 
+  static void SetFlatCapacityAndSize(FlatItem& item, uint16_t flat_capacity,
+                                     uint16_t flat_size) {
+    item.flat_capacity = flat_capacity;
+    item.flat_size = flat_size;
+  }
+
+
+  // Constant to represent an empty ExtensionSet.
+  static const FlatItem kEmptyKeyValue;
+
   using LargeMap = absl::btree_map<int, Extension>;
+
+  struct LargeRep {
+    int unused_padding;
+    uint16_t flat_capacity = ~uint16_t{};
+    uint16_t flat_size = ~uint16_t{};
+    LargeMap large;
+  };
+
+  static_assert(offsetof(FlatItem, flat_capacity) ==
+                    offsetof(LargeRep, flat_capacity),
+                "KeyValue and LargeRep layout mismatch");
+  static_assert(offsetof(FlatItem, flat_size) == offsetof(LargeRep, flat_size),
+                "KeyValue and LargeRep layout mismatch");
 
   // Wrapper API that switches between flat-map and LargeMap.
 
@@ -908,7 +924,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   void InternalReserveSmallCapacityFromEmpty(Arena* arena,
                                              size_t minimum_new_capacity);
 
-  bool is_large() const { return static_cast<int16_t>(flat_size_) < 0; }
+  bool is_large() const { return static_cast<int16_t>(flat_size()) < 0; }
 
   // Removes a key from the ExtensionSet.
   void Erase(int key);
@@ -916,7 +932,8 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Returns the number of elements in the ExtensionSet, including cleared
   // extensions.
   size_t Size() const {
-    return ABSL_PREDICT_FALSE(is_large()) ? map_.large->size() : flat_size_;
+    return ABSL_PREDICT_FALSE(is_large()) ? map_.large->large.size()
+                                          : flat_size();
   }
 
   // For use as `PrefetchFunctor`s in `ForEach`.
@@ -960,7 +977,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) {
     if (ABSL_PREDICT_FALSE(is_large())) {
-      ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+      ForEachPrefetchImpl(map_.large->large.begin(), map_.large->large.end(),
                           std::move(func), std::move(prefetch_func));
       return;
     }
@@ -971,7 +988,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename KeyValueFunctor, typename PrefetchFunctor>
   void ForEach(KeyValueFunctor func, PrefetchFunctor prefetch_func) const {
     if (ABSL_PREDICT_FALSE(is_large())) {
-      ForEachPrefetchImpl(map_.large->begin(), map_.large->end(),
+      ForEachPrefetchImpl(map_.large->large.begin(), map_.large->large.end(),
                           std::move(func), std::move(prefetch_func));
       return;
     }
@@ -1004,7 +1021,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename KeyValueFunctor>
   void ForEachNoPrefetch(KeyValueFunctor func) {
     if (ABSL_PREDICT_FALSE(is_large())) {
-      ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+      ForEachNoPrefetch(map_.large->large.begin(), map_.large->large.end(),
                         std::move(func));
       return;
     }
@@ -1015,7 +1032,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename KeyValueFunctor>
   void ForEachNoPrefetch(KeyValueFunctor func) const {
     if (ABSL_PREDICT_FALSE(is_large())) {
-      ForEachNoPrefetch(map_.large->begin(), map_.large->end(),
+      ForEachNoPrefetch(map_.large->large.begin(), map_.large->large.end(),
                         std::move(func));
       return;
     }
@@ -1028,16 +1045,14 @@ class PROTOBUF_EXPORT ExtensionSet {
   template <typename KeyValueFunctor>
   bool AnyOfNoPrefetch(KeyValueFunctor predicate) const {
     if (ABSL_PREDICT_FALSE(is_large())) {
-      return AnyOfNoPrefetch(map_.large->begin(), map_.large->end(),
+      return AnyOfNoPrefetch(map_.large->large.begin(), map_.large->large.end(),
                              std::move(predicate));
     }
     return AnyOfNoPrefetch(flat_begin(), flat_end(), std::move(predicate));
   }
 
   // Returns true if nothing is allocated in the ExtensionSet.
-  bool IsCompletelyEmpty() const {
-    return flat_size_ == 0 && flat_capacity_ == 0;
-  }
+  bool IsCompletelyEmpty() const { return flat_capacity() == 0; }
 
   // Reduces the flat_capacity_ to the smallest power of 2 >= flat_size_.
   void InternalReduceSmallCapacity(Arena* arena);
@@ -1113,9 +1128,9 @@ class PROTOBUF_EXPORT ExtensionSet {
     return expected_wire_type == wire_type;
   }
 
-  // Find the prototype for a LazyMessage from the extension registry. Returns
-  // null if the extension is not found.
-  static const MessageLite* GetPrototypeForLazyMessage(
+  // Returns the ClassData for a LazyMessage from the extension registry.
+  // Returns null if the extension is not found.
+  static const ClassData* GetClassDataForLazyMessage(
       const MessageLite* extendee, int number);
 
   // Returns true if extension is present and lazy.
@@ -1204,39 +1219,56 @@ class PROTOBUF_EXPORT ExtensionSet {
   static inline size_t RepeatedMessage_SpaceUsedExcludingSelfLong(
       RepeatedPtrFieldBase* field);
 
-  KeyValue* flat_begin() {
+  FlatItem* flat_begin() {
     assert(!is_large());
     return map_.flat;
   }
-  const KeyValue* flat_begin() const {
+  const FlatItem* flat_begin() const {
     assert(!is_large());
     return map_.flat;
   }
-  KeyValue* flat_end() {
+  FlatItem* flat_end() {
     assert(!is_large());
-    return map_.flat + flat_size_;
+    return map_.flat + flat_size();
   }
-  const KeyValue* flat_end() const {
+  const FlatItem* flat_end() const {
     assert(!is_large());
-    return map_.flat + flat_size_;
+    return map_.flat + flat_size();
   }
 
-  static KeyValue* AllocateFlatMap(Arena* arena,
+  static FlatItem* AllocateFlatMap(Arena* arena,
                                    uint16_t powerof2_flat_capacity);
-  static void DeleteFlatMap(const KeyValue* flat, uint16_t flat_capacity);
+  static void DeleteFlatMap(const FlatItem* flat, uint16_t flat_capacity);
+
+  uint16_t flat_capacity() const {
+    ABSL_DCHECK(map_.flat != nullptr);
+    return map_.flat->flat_capacity;
+  }
+  uint16_t flat_size() const {
+    ABSL_DCHECK(map_.flat != nullptr);
+    return map_.flat->flat_size;
+  }
+  void set_flat_capacity_and_size(uint16_t capacity, uint16_t size) {
+    ABSL_DCHECK(map_.flat != &kEmptyKeyValue);
+    SetFlatCapacityAndSize(*map_.flat, capacity, size);
+  }
+  void set_flat_size(uint16_t size) {
+    ABSL_DCHECK(map_.flat != &kEmptyKeyValue);
+    map_.flat->flat_size = size;
+  }
 
   // Manual memory-management:
-  // map_.flat is an allocated array of flat_capacity_ elements.
-  // [map_.flat, map_.flat + flat_size_) is the currently-in-use prefix.
-  uint16_t flat_capacity_ = 0;
-  uint16_t flat_size_ = 0;  // negative int16_t(flat_size_) indicates is_large()
+  // map_.flat is either pointer to kEmptyKeyValue or an allocated array of
+  // flat_capacity elements. [map_.flat, map_.flat + flat_size) is the
+  // currently-in-use prefix.
+  // flat_capacity and flat_size are stored in the first element of the array.
   union AllocatedData {
-    KeyValue* flat;
+    FlatItem* flat;
 
-    // If flat_capacity_ > kMaximumFlatCapacity, switch to LargeMap,
+    // If flat_capacity > kMaximumFlatCapacity, switch to LargeMap,
     // which guarantees O(n lg n) CPU but larger constant factors.
-    LargeMap* large;
-  } map_ = {nullptr};
+    LargeRep* large;
+  } map_ = {const_cast<FlatItem*>(&kEmptyKeyValue)};
 };
 
 // ===================================================================
@@ -1633,11 +1665,14 @@ class MessageTypeTraits {
   typedef MessageTypeTraits<Type> Singular;
   static constexpr bool kLifetimeBound = true;
 
+  static constexpr const internal::ClassData* class_data() {
+    return internal::MessageTraits<Type>::class_data();
+  }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline ConstType Get(
       Arena* arena, int number, const ExtensionSet& set,
-      ConstType default_value) {
+      ConstType /* default_value */) {
     return static_cast<const Type&>(
-        set.GetMessage(arena, number, default_value));
+        set.GetMessageByClassData(arena, number, class_data()));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline std::nullptr_t GetPtr(
       int /* number */, const ExtensionSet& /* set */,
@@ -1647,8 +1682,8 @@ class MessageTypeTraits {
   }
   static inline MutableType Mutable(Arena* arena, int number,
                                     FieldType field_type, ExtensionSet* set) {
-    return static_cast<Type*>(set->MutableMessage(
-        arena, number, field_type, Type::default_instance(), nullptr));
+    return static_cast<Type*>(set->MutableMessageByClassData(
+        arena, number, field_type, class_data(), nullptr));
   }
   static inline void SetAllocated(Arena* arena, int number,
                                   FieldType field_type, MutableType message,
@@ -1665,14 +1700,13 @@ class MessageTypeTraits {
   [[nodiscard]] static inline MutableType Release(Arena* arena, int number,
                                                   FieldType /* field_type */,
                                                   ExtensionSet* set) {
-    return static_cast<Type*>(
-        set->ReleaseMessage(arena, number, Type::default_instance()));
+    return static_cast<Type*>(set->ReleaseMessage(arena, number, class_data()));
   }
   static inline MutableType UnsafeArenaRelease(Arena* arena, int number,
                                                FieldType /* field_type */,
                                                ExtensionSet* set) {
-    return static_cast<Type*>(set->UnsafeArenaReleaseMessage(
-        arena, number, Type::default_instance()));
+    return static_cast<Type*>(
+        set->UnsafeArenaReleaseMessage(arena, number, class_data()));
   }
 };
 
@@ -1718,7 +1752,7 @@ class RepeatedMessageTypeTraits {
   static inline MutableType Add(Arena* arena, int number, FieldType field_type,
                                 ExtensionSet* set) {
     return static_cast<Type*>(set->AddMessage(
-        arena, number, field_type, Type::default_instance(), nullptr));
+        arena, number, field_type, MessageTraits<Type>::class_data(), nullptr));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline const RepeatedPtrField<
       Type>&

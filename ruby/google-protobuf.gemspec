@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
-  s.version     = "4.36.0"
+  s.version     = "4.37.0"
   git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"
@@ -38,9 +38,7 @@ Gem::Specification.new do |s|
       "ext/google/protobuf_c/Rakefile"
     ]
   end
-  s.required_ruby_version = '>= 3.1'
-  # bigdecimal must be used as a non-built in gem as of ruby-3.4
-  s.add_dependency "bigdecimal"
+  s.required_ruby_version = '>= 3.2'
   # TODO: evaluate removing Rakefile and moving logic to extconf.rb, so that we
   # can remove this runtime dependency on rake. See the discussion here for
   # more details:
@@ -51,4 +49,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake-compiler", "~> 1.3"
   s.add_development_dependency "rake-compiler-dock", "~> 1.11"
   s.add_development_dependency "test-unit", '~> 3.7'
+  # bigdecimal is used in tests. It's no longer a built-in gem as of Ruby 3.4
+  # so an explicit dependency is needed.
+  s.add_development_dependency "bigdecimal"
 end

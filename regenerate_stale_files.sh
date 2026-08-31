@@ -24,12 +24,14 @@ STALENESS_TESTS=(
   "php:proto_staleness_test"
   "ruby/ext/google/protobuf_c:test_amalgamation_staleness"
   "upb/reflection:descriptor_upb_proto_staleness_test"
+  "upb/reflection:json_enumvalue_options_upb_proto_staleness_test"
   "upb_generator:plugin_upb_proto_staleness_test"
 )
 
 # Run and fix all staleness tests.
 for test in ${STALENESS_TESTS[@]}; do
-  ${BazelBin} test $test "$@" || ./bazel-bin/${test%%:*}/${test#*:} --fix
+  ${BazelBin} build $test "$@"
+  ./bazel-bin/${test%%:*}/${test#*:} --fix --print-diffs
 done
 
 # Generate C# code.

@@ -601,9 +601,12 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
-    _upb_mapsorter_pushmap(
-        &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
-        map, &sorted);
+    if (!_upb_mapsorter_pushmap(
+            &e->sorter,
+            layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype), map,
+            &sorted)) {
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    }
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
       ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
@@ -638,40 +641,7 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
 static bool encode_shouldencode(const upb_Message* msg,
                                 const upb_MiniTableField* f) {
-  if (f->presence == 0) {
-    // Proto3 presence or map/array.
-    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
-    switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
-      case kUpb_FieldRep_1Byte: {
-        char ch;
-        memcpy(&ch, mem, 1);
-        return ch != 0;
-      }
-      case kUpb_FieldRep_4Byte: {
-        uint32_t u32;
-        memcpy(&u32, mem, 4);
-        return u32 != 0;
-      }
-      case kUpb_FieldRep_8Byte: {
-        uint64_t u64;
-        memcpy(&u64, mem, 8);
-        return u64 != 0;
-      }
-      case kUpb_FieldRep_StringView: {
-        const upb_StringView* str = (const upb_StringView*)mem;
-        return str->size != 0;
-      }
-      default:
-        UPB_UNREACHABLE();
-    }
-  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
-    // Proto2 presence: hasbit.
-    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
-  } else {
-    // Field is in a oneof.
-    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, f) ==
-           upb_MiniTableField_Number(f);
-  }
+  return UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, f);
 }
 
 static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
@@ -724,8 +694,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
 
-  /* Encode all extensions together. Unlike C++, we do not attempt to keep
-   * these in field number order relative to normal fields or even to each
+  /* Encode all canonical extensions together. Unlike C++, we do not attempt to
+   * keep these in field number order relative to normal fields or even to each
    * other. */
   uintptr_t iter = kUpb_Message_ExtensionBegin;
   const upb_MiniTableExtension* ext;
@@ -739,7 +709,7 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
     if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
-      // TODO: b/378744096 - handle alloc failure
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
@@ -770,22 +740,26 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if ((e->options & kUpb_EncodeOption_SkipUnknown) == 0) {
-    size_t unknown_size = 0;
-    uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView unknown;
-    // Need to write in reverse order, but iteration is in-order; scan to
-    // reserve capacity up front, then write in-order
-    while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-      unknown_size += unknown.size;
-    }
-    if (unknown_size != 0) {
-      ptr = encode_reserve(ptr, e, unknown_size);
-      char* tmp_ptr = ptr;
-      iter = kUpb_Message_UnknownBegin;
-      while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-        memcpy(tmp_ptr, unknown.data, unknown.size);
-        tmp_ptr += unknown.size;
+  bool skip_unknown = (e->options & kUpb_EncodeOption_SkipUnknown) != 0;
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!skip_unknown && in) {
+    // Iterate backwards because the encoder builds the buffer in reverse
+    // (from end to start). This ensures that unknown fields and non-canonical
+    // extensions are emitted in their original forward order.
+    size_t i = in->size;
+    while (i > 0) {
+      i--;
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        const upb_StringView* unknown =
+            upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+        ptr = encode_bytes(ptr, e, unknown->data, unknown->size);
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        ptr = encode_ext(ptr, e, ext->ext, ext->data,
+                         UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                             kUpb_ExtMode_IsMessageSet);
       }
     }
   }

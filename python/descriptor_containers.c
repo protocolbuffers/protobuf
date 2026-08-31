@@ -39,6 +39,21 @@ typedef enum {
   kPyUpb_CompareNotImplemented,
 } PyUpb_CompareResult;
 
+static PyUpb_CompareResult PyUpb_CompareUnrecognized(void) {
+#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
+  return kPyUpb_CompareNotImplemented;
+#else
+  if (PyErr_WarnEx(
+          PyExc_FutureWarning,
+          "Comparing descriptor containers with unrecognized types will return "
+          "NotImplemented in 2027.",
+          3) < 0) {
+    return kPyUpb_CompareError;
+  }
+  return kPyUpb_CompareNotEqual;
+#endif
+}
+
 // -----------------------------------------------------------------------------
 // ByNameIterator
 // -----------------------------------------------------------------------------
@@ -234,11 +249,7 @@ static PyUpb_CompareResult PyUpb_GenericSequence_IsEqual(
   }
 
   if (!PyList_Check(other)) {
-#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
-    return kPyUpb_CompareNotImplemented;
-#else
-    return kPyUpb_CompareNotEqual;
-#endif
+    return PyUpb_CompareUnrecognized();
   }
 
   // return list(self) == other
@@ -554,11 +565,7 @@ static PyUpb_CompareResult PyUpb_ByNameMap_IsEqual(PyUpb_ByNameMap* self,
   }
 
   if (!PyDict_Check(other)) {
-#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
-    return kPyUpb_CompareNotImplemented;
-#else
-    return kPyUpb_CompareNotEqual;
-#endif
+    return PyUpb_CompareUnrecognized();
   }
 
   PyObject* self_dict = PyDict_New();
@@ -807,11 +814,7 @@ static PyUpb_CompareResult PyUpb_ByNumberMap_IsEqual(PyUpb_ByNumberMap* self,
   }
 
   if (!PyDict_Check(other)) {
-#if PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED
-    return kPyUpb_CompareNotImplemented;
-#else
-    return kPyUpb_CompareNotEqual;
-#endif
+    return PyUpb_CompareUnrecognized();
   }
 
   PyObject* self_dict = PyDict_New();

@@ -36,7 +36,8 @@ class BytesValue extends \Google\Protobuf\Internal\Message
      *           The bytes value.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Wrappers::initOnce();
         parent::__construct($data);
     }

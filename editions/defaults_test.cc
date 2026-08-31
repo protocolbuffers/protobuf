@@ -123,6 +123,10 @@ TEST(DefaultsTest, Check2026) {
   EXPECT_EQ(
       defaults->defaults()[4].overridable_features().enforce_proto_limits(),
       FeatureSet::ProtoLimitsFeature::PROTO_LIMITS2026);
+  EXPECT_EQ(defaults->defaults()[4]
+                .overridable_features()
+                .default_symbol_visibility(),
+            FeatureSet::VisibilityFeature::STRICT);
 }
 
 TEST(DefaultsTest, CheckFuture) {
@@ -429,7 +433,7 @@ TEST_F(OverridableDefaultsTest, Edition2026) {
                 message_encoding: LENGTH_PREFIXED
                 json_format: ALLOW
                 enforce_naming_style: STYLE2026
-                default_symbol_visibility: EXPORT_TOP_LEVEL
+                default_symbol_visibility: STRICT
                 enforce_proto_limits: PROTO_LIMITS2026
                 [pb.cpp] {
                   legacy_closed_enum: false

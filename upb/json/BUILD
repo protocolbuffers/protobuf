@@ -26,6 +26,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
+        "//third_party/utf8_range",
         "//upb/base",
         "//upb/lex",
         "//upb/mem",
@@ -42,6 +43,8 @@ cc_test(
     srcs = ["decode_test.cc"],
     deps = [
         ":json",
+        ":json_enumval_custom_string_upb_proto",
+        ":json_enumval_custom_string_upb_reflection_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
         "//:any_upb_proto",
@@ -49,7 +52,10 @@ cc_test(
         "//:struct_upb_proto",
         "//upb/base",
         "//upb/mem",
+        "//upb/message",
         "//upb/reflection",
+        "//upb/reflection:internal_cc",
+        "//upb/reflection:reflection_cc",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -60,6 +66,8 @@ cc_test(
     srcs = ["encode_test.cc"],
     deps = [
         ":json",
+        ":json_enumval_custom_string_upb_proto",
+        ":json_enumval_custom_string_upb_reflection_proto",
         ":test_upb_proto",
         ":test_upb_proto_reflection",
         "//:any_upb_proto",
@@ -67,7 +75,10 @@ cc_test(
         "//:struct_upb_proto",
         "//upb/base",
         "//upb/mem",
+        "//upb/message",
         "//upb/reflection",
+        "//upb/reflection:internal_cc",
+        "//upb/reflection:reflection_cc",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -96,6 +107,18 @@ upb_proto_reflection_library(
     deps = [":test_proto"],
 )
 
+upb_c_proto_library(
+    name = "json_enumval_custom_string_upb_proto",
+    testonly = 1,
+    deps = ["//src/google/protobuf/json:json_enumval_custom_string_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "json_enumval_custom_string_upb_reflection_proto",
+    testonly = 1,
+    deps = ["//src/google/protobuf/json:json_enumval_custom_string_proto"],
+)
+
 filegroup(
     name = "test_srcs",
     srcs = glob(
@@ -109,10 +132,15 @@ filegroup(
 
 filegroup(
     name = "test_protos",
+    testonly = 1,
     srcs = glob(
         [
             "**/*test.proto",
         ],
-    ),
+    ) + [
+        "//src/google/protobuf:json_enumvalue_options.proto",
+        "//src/google/protobuf:json_options.proto",
+        "//src/google/protobuf/json:json_enumval_custom_string_proto_srcs",
+    ],
     visibility = ["//upb:__pkg__"],
 )

@@ -22,9 +22,12 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/type_id.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -53,7 +56,7 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   Rep* new_rep = nullptr;
 
   int new_capacity = internal::CalculateReserveSize<void*, kRepHeaderSize>(
-      old_capacity, old_capacity + extend_amount);
+      old_capacity, internal::CheckedAdd(old_capacity, extend_amount));
   {
     ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
         << "New capacity is too large to fit into internal representation";
@@ -116,6 +119,13 @@ void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
       absl::PrefetchToLocalCacheNta(elems[i + 5]);
     }
     auto* ptr = cast<H>(elems[i]);
+
+    ABSL_DCHECK_EQ(GetClassData(*ptr), class_data)
+        << "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites: found "
+           "element of type "
+        << GetClassData(*ptr)->DebugName() << " at index " << i
+        << " in a repeated field of " << class_data->DebugName();
+
     destroy(*ptr);
     internal::SizedDelete(ptr, allocation_size);
   }
@@ -173,7 +183,7 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = current_size_ + from.current_size_;
+  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   auto dst = reinterpret_cast<T**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<T* const*>(from.elements());
   auto end = src + from.current_size_;
@@ -221,11 +231,10 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
   int count = std::min(ClearedCount(), from.current_size_);
+  const ClassData* class_data = GetClassData(*src[0]);
   for (int i = 0; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
-    ABSL_DCHECK(TypeId::Get(*src[i]) == TypeId::Get(*src[0]))
-        << src[i]->GetTypeName() << " vs " << src[0]->GetTypeName();
-    dst[i]->CheckTypeAndMergeFrom(*src[i]);
+    class_data->MergeToFrom(*dst[i], *src[i]);
   }
   return count;
 }
@@ -266,28 +275,18 @@ template <>
 void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
     const RepeatedPtrFieldBase& from, Arena* arena) {
   ABSL_DCHECK(from.current_size_ > 0);
-  int new_size = current_size_ + from.current_size_;
-  auto dst = reinterpret_cast<MessageLite**>(InternalReserve(new_size, arena));
-  auto src = reinterpret_cast<MessageLite const* const*>(from.elements());
-  auto end = src + from.current_size_;
-  const MessageLite* prototype = src[0];
-  ABSL_DCHECK(prototype != nullptr);
-  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
-    int recycled = MergeIntoClearedMessages(from);
-    dst += recycled;
-    src += recycled;
-  }
-  for (; src < end; ++src, ++dst) {
-    ABSL_DCHECK(*src != nullptr);
-    ABSL_DCHECK(TypeId::Get(**src) == TypeId::Get(*prototype))
-        << (**src).GetTypeName() << " vs " << prototype->GetTypeName();
-    *dst = prototype->New(arena);
-    (*dst)->CheckTypeAndMergeFrom(**src);
-  }
-  ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
-  }
+  const ClassData* class_data =
+      GetClassData(*reinterpret_cast<const MessageLite*>(from.element_at(0)));
+  MergeFromInternal<MessageLite>(
+      from, arena,
+      [class_data](Arena* arena, MessageLite* dst, const MessageLite& src) {
+        class_data->MergeToFrom(*dst, src);
+      },
+      [class_data](Arena* arena, const MessageLite& src) -> MessageLite* {
+        MessageLite* dst = class_data->New(arena);
+        class_data->MergeToFrom(*dst, src);
+        return dst;
+      });
 }
 
 }  // namespace internal

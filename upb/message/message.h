@@ -18,10 +18,10 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -51,44 +51,24 @@ UPB_NODISCARD UPB_API upb_Message* upb_Message_New(const upb_MiniTable* m,
 #define kUpb_Message_UnknownBegin 0
 #define kUpb_Message_ExtensionBegin 0
 
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_NextUnknown2` for
+// messages that may have non-canonical extensions.
 UPB_INLINE bool upb_Message_NextUnknown(const upb_Message* msg,
                                         upb_StringView* data, uintptr_t* iter);
 
-UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg);
-
-// Removes a segment of unknown data from the message, advancing to the next
-// segment.  Returns false if the removed segment was at the end of the last
-// chunk.
-//
-// This must be done while iterating:
-//
-//   uintptr_t iter = kUpb_Message_UnknownBegin;
-//   upb_StringView data;
-//   // Iterate chunks
-//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
-//     // Iterate within a chunk, deleting ranges
-//     while (ShouldDeleteSubSegment(&data)) {
-//       // Data now points to the region to be deleted
-//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
-//         case kUpb_Message_DeleteUnknown_DeletedLast: return ok;
-//         case kUpb_Message_DeleteUnknown_IterUpdated: break;
-//         // If DeleteUnknown returned kUpb_Message_DeleteUnknown_IterUpdated,
-//         // then data now points to the remaining unknown fields after the
-//         // region that was just deleted.
-//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
-//       }
-//     }
-//   }
-//
-// The range given in `data` must be contained inside the most recently
-// returned region.
-typedef enum upb_Message_DeleteUnknownStatus {
-  kUpb_DeleteUnknown_DeletedLast,
-  kUpb_DeleteUnknown_IterUpdated,
-  kUpb_DeleteUnknown_AllocFail,
-} upb_Message_DeleteUnknownStatus;
-UPB_NODISCARD upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
-    upb_Message* msg, upb_StringView* data, uintptr_t* iter, upb_Arena* arena);
+UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!in) return false;
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    if (!upb_TaggedAuxPtr_IsNull(tagged_ptr) &&
+        !upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // Returns the number of extensions present in this message.
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
@@ -103,6 +83,29 @@ UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
     const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
     upb_MessageValue* out_v, uintptr_t* iter);
+
+#define kUpb_Message_SerializableFieldBegin 0
+
+// Iterates over all fields in the message that are set/present.
+//
+// NOTE: Unset/NULL repeated fields and maps are not considered set and will be
+// ignored. However, allocated repeated fields and maps (non-NULL pointer) with
+// zero elements are considered set/present and will be returned by this
+// iterator. Callers that need to skip empty collections should check their
+// sizes explicitly.
+//
+// To start iterating, set `iter = kUpb_Message_SerializableFieldBegin`.
+// Returns true if a serializable field was found, sets `*f` to that field,
+// and updates `*iter`. Returns false when iteration is complete.
+//
+//   const upb_MiniTableField* f;
+//   uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+//   while (upb_Message_NextSerializableField(msg, mt, &f, &iter)) {
+//     // ...
+//   }
+UPB_NODISCARD UPB_API bool upb_Message_NextSerializableField(
+    const upb_Message* msg, const upb_MiniTable* mt,
+    const upb_MiniTableField** f, uintptr_t* iter);
 
 // Mark a message and all of its descendents as frozen/immutable.
 UPB_API void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m);

@@ -152,6 +152,8 @@ objects.
 *   https://github.com/twitchtv/twirp (Multiple languages)
 *   https://github.com/icerpc/icerpc-csharp (C#)
 *   https://philips-software.github.io/amp-embedded-infra-lib (C++, C#, Java)
+*   https://github.com/tdaira/blerpc (C/nanopb, Python, Kotlin, Swift, Dart,
+    TypeScript; RPC over Bluetooth Low Energy)
 
 Inactive:
 

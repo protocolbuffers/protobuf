@@ -313,6 +313,72 @@ std::string GetFieldRep(const DefPoolPair& pools, upb::FieldDefPtr field) {
 }
 
 void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
+  if (c.options().bootstrap_stage == 0) {
+    c.Emit(
+        {
+            {"ident_base", ExtensionIdentBase(ext)},
+            {"name", ext.name()},
+            {"ctype", MessageType(ext.containing_type())},
+        },
+        R"cc(
+          // In stage0 bootstrapping, extensions are not present.
+          UPB_INLINE bool $ident_base$_has_$name$(const struct $ctype$* msg) {
+            (void)msg;
+            return false;
+          }
+
+          UPB_INLINE void $ident_base$_clear_$name$(struct $ctype$* msg) { (void)msg; }
+        )cc");
+
+    if (ext.IsSequence()) {
+      // Repeated extensions are accessed via generic upb_Array and
+      // upb_Message_GetExtension APIs.
+    } else {
+      c.Emit(
+          {
+              {"ctype_const", CTypeConst(ext)},
+              {"ident_base", ExtensionIdentBase(ext)},
+              {"name", ext.name()},
+              {"ctype", MessageType(ext.containing_type())},
+              {"default", FieldDefault(ext)},
+          },
+          R"cc(
+            UPB_INLINE $ctype_const$
+            $ident_base$_$name$(const struct $ctype$* msg) {
+              (void)msg;
+              return $default$;
+            }
+
+            UPB_INLINE void $ident_base$_set_$name$(struct $ctype$* msg,
+                                                    $ctype_const$ val,
+                                                    upb_Arena* arena) {
+              (void)msg;
+              (void)val;
+              (void)arena;
+            }
+          )cc");
+
+      if (ext.IsSubMessage()) {
+        c.Emit(
+            {
+                {"sub_ctype", MessageType(ext.message_type())},
+                {"ident_base", ExtensionIdentBase(ext)},
+                {"name", ext.name()},
+                {"ctype", MessageType(ext.containing_type())},
+            },
+            R"cc(
+              UPB_INLINE struct $sub_ctype$* $ident_base$_mutable_$name$(
+                  struct $ctype$* msg, upb_Arena* arena) {
+                (void)msg;
+                (void)arena;
+                return NULL;
+              }
+            )cc");
+      }
+    }
+    return;
+  }
+
   c.Emit(
       {
           {"ident_base", ExtensionIdentBase(ext)},
@@ -331,7 +397,8 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
       )cc");
 
   if (ext.IsSequence()) {
-    // TODO: We need generated accessors for repeated extensions.
+    // Repeated extensions are accessed via generic upb_Array and
+    // upb_Message_GetExtension APIs.
   } else {
     c.Emit(
         {
@@ -719,6 +786,7 @@ void GenerateMapSetters(Context& c, upb::FieldDefPtr field,
           const upb_MiniTableField field = $field_init$;
           upb_Map* map = _upb_Message_GetOrCreateMutableMap(
               UPB_UPCAST(msg), &field, $key_size$, $val_size$, a);
+          if (!map) return false;
           return _upb_Map_Insert(map, &key, $key_size$, &val, $val_size$, a) !=
                  kUpb_MapInsertStatus_OutOfMemory;
         }
@@ -1170,29 +1238,33 @@ void WriteResolveCalls(Context& c, upb::MessageDefPtr msg) {
     upb::FieldDefPtr field = msg.field(i);
     if (!field.message_type() && !field.enum_subdef()) continue;
     if (field.message_type()) {
-      c.Emit(
-          {{"number", absl::StrCat(field.number())},
-           {"msg_mini_table",
-            MessageMiniTableRef(field.message_type(), c.options())}},
-          R"cc(
-            upb_MiniTable_SetSubMessage(
-                mini_table,
-                (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                                     $number$),
-                $msg_mini_table$);
-          )cc");
+      c.Emit({{"number", absl::StrCat(field.number())},
+              {"msg_mini_table",
+               MessageMiniTableRef(field.message_type(), c.options())}},
+             R"cc(
+               if (!upb_MiniTable_SetSubMessage(
+                       mini_table,
+                       (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+                           mini_table, $number$),
+                       $msg_mini_table$)) {
+                 fprintf(stderr, "Failed to link submessage for $name$\n");
+                 abort();
+               }
+             )cc");
     } else if (field.enum_subdef() && field.enum_subdef().is_closed()) {
-      c.Emit(
-          {{"number", absl::StrCat(field.number())},
-           {"enum_mini_table",
-            EnumMiniTableRef(field.enum_subdef(), c.options())}},
-          R"cc(
-            upb_MiniTable_SetSubEnum(
-                mini_table,
-                (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(mini_table,
-                                                                     $number$),
-                $enum_mini_table$);
-          )cc");
+      c.Emit({{"number", absl::StrCat(field.number())},
+              {"enum_mini_table",
+               EnumMiniTableRef(field.enum_subdef(), c.options())}},
+             R"cc(
+               if (!upb_MiniTable_SetSubEnum(
+                       mini_table,
+                       (upb_MiniTableField*)upb_MiniTable_FindFieldByNumber(
+                           mini_table, $number$),
+                       $enum_mini_table$)) {
+                 fprintf(stderr, "Failed to link enum for $name$\n");
+                 abort();
+               }
+             )cc");
     }
   }
 }
@@ -1202,7 +1274,7 @@ void WriteMessageMiniDescriptorInitializer(Context& c, upb::MessageDefPtr msg) {
           {"mini_descriptor", msg.MiniDescriptorEncode()},
           {"resolve_calls", [&] { WriteResolveCalls(c, msg); }}},
          R"cc(
-           const upb_MiniTable* $name$() {
+           const upb_MiniTable* $name$(void) {
              static upb_MiniTable* mini_table = NULL;
              static const char* mini_descriptor = "$mini_descriptor$";
              if (mini_table) return mini_table;
@@ -1225,7 +1297,7 @@ void WriteEnumMiniDescriptorInitializer(Context& c, upb::EnumDefPtr enum_def) {
   c.Emit({{"name", MiniTableEnumVarName(enum_def.full_name())},
           {"mini_descriptor", enum_def.MiniDescriptorEncode()}},
          R"cc(
-           const upb_MiniTableEnum* $name$() {
+           const upb_MiniTableEnum* $name$(void) {
              static const upb_MiniTableEnum* mini_table = NULL;
              static const char* mini_descriptor = "$mini_descriptor$";
              if (mini_table) return mini_table;
@@ -1258,7 +1330,7 @@ void WriteMiniDescriptorSource(Context& c, upb::FileDefPtr file) {
 
   c.Emit(
       R"cc(
-        static upb_Arena* upb_BootstrapArena() {
+        static upb_Arena* upb_BootstrapArena(void) {
           static upb_Arena* arena = NULL;
           if (!arena) arena = upb_Arena_New();
           return arena;

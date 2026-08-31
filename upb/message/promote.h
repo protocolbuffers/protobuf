@@ -14,6 +14,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
@@ -47,12 +48,6 @@ UPB_NODISCARD upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, upb_MessageValue* value);
 
-typedef enum {
-  kUpb_FindUnknown_Ok,
-  kUpb_FindUnknown_NotPresent,
-  kUpb_FindUnknown_ParseError,
-} upb_FindUnknown_Status;
-
 typedef struct {
   upb_FindUnknown_Status status;
   // Start of unknown field data in message arena.
@@ -62,11 +57,14 @@ typedef struct {
   uintptr_t iter;
 } upb_FindUnknownRet;
 
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_FindUnknown2` for
+// messages that may have non-canonical extensions.
+//
 // Finds first occurrence of unknown data by tag id in message.
 // A depth_limit of zero means to just use the upb default depth limit.
-upb_FindUnknownRet upb_Message_FindUnknown(const upb_Message* msg,
-                                           uint32_t field_number,
-                                           int depth_limit);
+UPB_DEPRECATED upb_FindUnknownRet upb_Message_FindUnknown(
+    const upb_Message* msg, uint32_t field_number, int depth_limit);
 
 typedef enum {
   kUpb_UnknownToMessage_Ok,

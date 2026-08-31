@@ -1,7 +1,5 @@
 source 'https://rubygems.org'
 
-gem "bigdecimal"
-
 # FFI is required for JRuby platforms, but optional elsewhere
 if defined? $JRUBY_VERSION
   gem "ffi", "~>1", platforms: %i[jruby]
@@ -15,6 +13,7 @@ end
 
 group :test do
   gem "test-unit", '~> 3.7'
+  gem "bigdecimal"
 end
 
 group :development do

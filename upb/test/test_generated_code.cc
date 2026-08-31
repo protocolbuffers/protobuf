@@ -916,7 +916,7 @@ TEST(GeneratedCode, Maps) {
   key.str_val = test_str_view;
   val.str_val = test_str_view2;
 
-  upb_Map_Set(sb, key, val, arena.ptr());
+  ASSERT_TRUE(upb_Map_Set(sb, key, val, arena.ptr()));
 }
 
 TEST(GeneratedCode, MapWithRequiredFields) {
@@ -933,7 +933,7 @@ TEST(GeneratedCode, MapWithRequiredFields) {
   val.msg_val =
       (const upb_Message*)upb_test_ModelWithRequiredFields_new(arena.ptr());
 
-  upb_Map_Set(im_required, key, val, arena.ptr());
+  ASSERT_TRUE(upb_Map_Set(im_required, key, val, arena.ptr()));
 
   // Serializing fails if we are checking required fields, but succeeds if we
   // don't.

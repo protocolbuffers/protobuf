@@ -114,7 +114,7 @@ TEST(ArenaTest, ShinkLastAfterReallocHwasanRegression) {
   };
 
   upb_Arena* arena = upb_Arena_Init(nullptr, 1000, &upb_alloc_global);
-  (void)upb_Arena_Malloc(arena, 1);
+  EXPECT_NE(upb_Arena_Malloc(arena, 1), nullptr);
   // Will force a full-size block since the initial allocated block has tons of
   // free space and the max block size is tiny
   void* to_realloc = upb_Arena_Malloc(arena, 2000);
@@ -225,7 +225,7 @@ class OverheadTest {
   }
 
   void Alloc(size_t size) {
-    upb_Arena_Malloc(arena_, size);
+    EXPECT_NE(upb_Arena_Malloc(arena_, size), nullptr);
     arena_alloced_ += size;
     arena_alloc_count_++;
   }
@@ -384,6 +384,16 @@ TEST(ArenaTest, FuseWithInitialBlock) {
   for (int i = 0; i < size; ++i) upb_Arena_Free(arenas[i]);
 }
 
+TEST(ArenaTest, FixedInitialBlockNoAlloc) {
+  char buf[1024];
+  upb_Arena* arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
+
+  EXPECT_EQ(upb_Arena_Malloc(arena, 2048), nullptr);
+  EXPECT_EQ(upb_Arena_Malloc(arena, 1024), nullptr);
+
+  upb_Arena_Free(arena);
+}
+
 class Environment {
  public:
   void RandomNewFree(absl::BitGen& gen, size_t min_index = 0) {
@@ -522,7 +532,7 @@ TEST(ArenaTest, MaxBlockSize) {
   // Perform 600 1k allocations (600k total) and ensure that the amount of
   // memory allocated does not exceed 700k.
   for (int i = 0; i < 600; ++i) {
-    upb_Arena_Malloc(arena, 1024);
+    EXPECT_NE(upb_Arena_Malloc(arena, 1024), nullptr);
   }
   EXPECT_LE(upb_Arena_SpaceAllocated(arena, nullptr), 700 * 1024);
   upb_Arena_Free(arena);
@@ -618,7 +628,7 @@ TEST(ArenaTest, FuzzFuseFreeAllocatorRace) {
     arr[0] = upb_Arena_New();
     for (size_t j = 1; j < thread_count + 1; ++j) {
       arr[j] = upb_Arena_New();
-      upb_Arena_Fuse(arr[j - 1], arr[j]);
+      EXPECT_TRUE(upb_Arena_Fuse(arr[j - 1], arr[j]));
     }
     arenas.push_back(arr);
   }
@@ -676,7 +686,7 @@ TEST(ArenaTest, FuzzFuseSpaceAllocatedRace) {
         upb_Arena* read = arenas[arenaCtr++];
         for (size_t j = 0; j < fuses_per_thread; ++j) {
           upb_Arena* fuse = upb_Arena_New();
-          upb_Arena_Fuse(read, fuse);
+          EXPECT_TRUE(upb_Arena_Fuse(read, fuse));
           upb_Arena_Free(read);
           read = fuse;
         }
@@ -785,7 +795,7 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   // Create two arenas and fuse them.
   std::shared_ptr<const upb::Arena> a = env.IndexedNonNullArena(0);
   std::shared_ptr<const upb::Arena> b = env.IndexedNonNullArena(1);
-  upb_Arena_Fuse(a->ptr(), b->ptr());
+  EXPECT_TRUE(upb_Arena_Fuse(a->ptr(), b->ptr()));
   EXPECT_TRUE(upb_Arena_IsFused(a->ptr(), b->ptr()));
 
   absl::Notification done;
@@ -870,7 +880,7 @@ TEST(ArenaTest, ArenaRef) {
   upb_Arena* arena1 = upb_Arena_New();
   upb_Arena* arena2 = upb_Arena_New();
 
-  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_RefArena(arena1, arena2));
   EXPECT_TRUE(upb_Arena_HasRef(arena1, arena2));
   EXPECT_FALSE(upb_Arena_HasRef(arena2, arena1));
 
@@ -887,7 +897,7 @@ TEST(ArenaTest, ArenaRefPreventsFree) {
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
 
   // arena1 now owns a ref to arena2. arena2 has refcount 2.
-  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_RefArena(arena1, arena2));
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
 
   // User of arena2 frees it. Refcount goes to 1. Arena is not freed.
@@ -909,7 +919,7 @@ TEST(ArenaTest, ArenaOwnerFreedFirst) {
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 1);
 
   // arena1 now owns a ref to arena2. arena2 has refcount 2.
-  upb_Arena_RefArena(arena1, arena2);
+  EXPECT_TRUE(upb_Arena_RefArena(arena1, arena2));
   EXPECT_EQ(upb_Arena_DebugRefCount(arena2), 2);
 
   // Freeing the owner releases its ref on arena2. Refcount goes to 1.
@@ -1009,5 +1019,44 @@ TEST(ArenaDeathTest, ArenaRefFuseCycle) {
 #endif  // DEBUG
 
 #endif  // UPB_SUPPRESS_MISSING_ATOMICS
+
+TEST(ArenaTest, AllocationCountFailureInjection) {
+  if (!upb_AllocationCount_IsAvailable()) {
+    return;
+  }
+  // Try normal scenario
+  upb_AllocationCount_Reset();
+  upb_Arena* arena = upb_Arena_New();
+  EXPECT_NE(arena, nullptr);
+  // Allocate some blocks
+  for (int i = 0; i < 10; ++i) {
+    void* p = upb_Arena_Malloc(arena, 500);
+    EXPECT_NE(p, nullptr);
+  }
+  size_t total = upb_AllocationCount_Get();
+  EXPECT_GT(total, 0);
+  upb_Arena_Free(arena);
+
+  // Now verify failure after i allocations
+  for (size_t i = 0; i < total; ++i) {
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(i);
+    // The i-th arena-level initial or block allocation should fail.
+    upb_Arena* fail_arena = upb_Arena_New();
+    if (fail_arena != nullptr) {
+      bool failed = false;
+      for (int j = 0; j < 10; ++j) {
+        void* p = upb_Arena_Malloc(fail_arena, 500);
+        if (p == nullptr) {
+          failed = true;
+          break;
+        }
+      }
+      upb_Arena_Free(fail_arena);
+      EXPECT_TRUE(failed);
+    }
+  }
+  upb_AllocationCount_Reset();
+}
 
 }  // namespace

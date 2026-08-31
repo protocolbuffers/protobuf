@@ -39,7 +39,8 @@ class GeneratedCodeInfo extends \Google\Protobuf\Internal\Message
      *           of its generating .proto file.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

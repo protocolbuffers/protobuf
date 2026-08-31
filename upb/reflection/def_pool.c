@@ -367,6 +367,16 @@ const upb_FileDef* upb_DefPool_FindFileContainingSymbol(const upb_DefPool* s,
 }
 
 static void remove_filedef(upb_DefPool* s, upb_FileDef* file) {
+  intptr_t ext_iter = UPB_INTTABLE_BEGIN;
+  uintptr_t ext_key;
+  upb_value ext_val;
+  while (upb_inttable_next(&s->exts, &ext_key, &ext_val, &ext_iter)) {
+    const upb_FieldDef* ext = upb_value_getconstptr(ext_val);
+    if (upb_FieldDef_File(ext) == file) {
+      upb_inttable_removeiter(&s->exts, &ext_iter);
+    }
+  }
+
   intptr_t iter = UPB_INTTABLE_BEGIN;
   upb_StringView key;
   upb_value val;
@@ -415,10 +425,13 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
     _upb_DefBuilder_OomErr(builder);
   } else {
     _upb_FileDef_Create(builder, file_proto);
-    upb_strtable_insert(&s->files, name.data, name.size,
-                        upb_value_constptr(builder->file), builder->arena);
+    bool ok =
+        upb_strtable_insert(&s->files, name.data, name.size,
+                            upb_value_constptr(builder->file), builder->arena);
+    UPB_ASSERT(ok);
     UPB_ASSERT(upb_Status_IsOk(status));
-    upb_Arena_Fuse(s->arena, builder->arena);
+    ok = upb_Arena_Fuse(s->arena, builder->arena);
+    UPB_ASSERT(ok);
   }
 
   if (builder->arena) upb_Arena_Free(builder->arena);

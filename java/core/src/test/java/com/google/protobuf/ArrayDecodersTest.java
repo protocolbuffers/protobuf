@@ -313,6 +313,76 @@ public class ArrayDecodersTest {
                 TAG, badBytesList, 0, badBytes.length, new ProtobufArrayList<>(), registers));
   }
 
+  @Test
+  public void testException_decodeString_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class, () -> ArrayDecoders.decodeString(data, 0, registers));
+  }
+
+  @Test
+  public void testException_decodeStringRequireUtf8_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.decodeStringRequireUtf8(data, 0, registers));
+  }
+
+  @Test
+  public void testException_decodeStringList_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringList(
+                TAG, data, 0, data.length, new ProtobufArrayList<Object>(), registers));
+  }
+
+  @Test
+  public void testException_decodeStringListRequireUtf8_truncated() {
+    byte[] data = packedSizeBytesNoTag(Integer.MAX_VALUE);
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.decodeStringListRequireUtf8(
+                TAG, data, 0, data.length, new ProtobufArrayList<Object>(), registers));
+  }
+
+  @Test
+  public void testException_skipField_negativeSize_standard() {
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            ArrayDecoders.skipField(
+                TAG,
+                NEGATIVE_SIZE_0.toByteArray(),
+                0,
+                NEGATIVE_SIZE_0.size(),
+                registers));
+  }
+
+  @Test
+  public void testException_skipField_negativeSize_crafted() {
+    // -6 encoded as 5-byte varint
+    byte[] data = new byte[] {(byte) 0xFA, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0x0F};
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.skipField(TAG, data, 0, data.length, registers));
+  }
+
+  @Test(timeout = 1000)
+  public void testException_skipField_infiniteLoop() {
+    // Payload that triggers the infinite loop:
+    // Byte 0: 0x0B (Start Group 1)
+    // Byte 1: 0x12 (Length Delimited 2)
+    // Byte 2-6: FA FF FF FF 0F (Length -6)
+    byte[] data =
+        new byte[] {0x0B, 0x12, (byte) 0xFA, (byte) 0xFF, (byte) 0xFF, (byte) 0xFF, (byte) 0x0F};
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () -> ArrayDecoders.skipField(0x0B, data, 1, data.length, registers));
+  }
+
   // Encodes a single varint without a tag prefix.
   // For use when testing decoding of packed primitive lists.
   // e.g. size = -1 is not a proper byte size for a list.

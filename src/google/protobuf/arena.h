@@ -72,7 +72,8 @@ namespace internal {
 
 struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
-class LazyField;             // defined in lazy_field.h
+template <typename MessageType>
+class ByTemplate;            // defined in static_message_factory.h
 class EpsCopyInputStream;    // defined in parse_context.h
 class UntypedMapBase;        // defined in map.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
@@ -521,7 +522,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     struct Rank1 : Rank0 {};
 
     static void InternalSwap(T* PROTOBUF_NONNULL a, T* PROTOBUF_NONNULL b) {
-      a->InternalSwap(b);
+      if constexpr (std::is_base_of_v<MessageLite, T>) {
+        T::Helpers_::InternalSwap(*a, b);
+      } else {
+        a->InternalSwap(b);
+      }
     }
 
     static Arena* PROTOBUF_NULLABLE GetArena(T* PROTOBUF_NONNULL p) {
@@ -832,7 +837,8 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename Type>
   friend class internal::GenericTypeHandler;
   friend class internal::InternalMetadata;    // For user_arena().
-  friend class internal::LazyField;           // For DefaultConstruct.
+  template <typename>
+  friend class internal::ByTemplate;          // For DefaultConstruct.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
   friend class MessageLite;

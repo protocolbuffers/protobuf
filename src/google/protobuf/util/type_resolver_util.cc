@@ -133,12 +133,11 @@ void ConvertOptionField(const Reflection* reflection, const Message& options,
       return;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      const EnumValueDescriptor* val =
-          field->is_repeated()
-              ? reflection->GetRepeatedEnum(options, field, index)
-              : reflection->GetEnum(options, field);
+      int val = field->is_repeated()
+                    ? reflection->GetRepeatedEnumValue(options, field, index)
+                    : reflection->GetEnumValue(options, field);
       // TODO: Remove this suppression.
-      (void)value->PackFrom(WrapValue<Int32Value>(val->number()));
+      (void)value->PackFrom(WrapValue<Int32Value>(val));
       return;
     }
   }

@@ -58,8 +58,7 @@ class MutableRepeatedFieldRef;
 
 // RepeatedFieldRef definition for non-message types.
 template <typename T>
-class RepeatedFieldRef<
-    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
+class RepeatedFieldRef<T, std::enable_if_t<!std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
@@ -106,7 +105,7 @@ class RepeatedFieldRef<
 // MutableRepeatedFieldRef definition for non-message types.
 template <typename T>
 class MutableRepeatedFieldRef<
-    T, typename std::enable_if<!std::is_base_of<Message, T>::value>::type> {
+    T, std::enable_if_t<!std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -139,7 +138,8 @@ class MutableRepeatedFieldRef<
     if constexpr (internal::CanMakeConstSpan<T, Container>::value) {
       absl::Span<const T> span = absl::MakeConstSpan(container);
       if (!span.empty()) {
-        accessor_->AddRange(data_, span.data(), sizeof(T), span.size());
+        accessor_->AddRange(data_, span.data(), sizeof(T), span.size(),
+                            /*prototype=*/nullptr);
       }
     } else {
       for (const auto& value : container) {
@@ -169,8 +169,7 @@ class MutableRepeatedFieldRef<
 
 // RepeatedFieldRef definition for message types.
 template <typename T>
-class RepeatedFieldRef<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+class RepeatedFieldRef<T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::iterator IteratorType;
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
@@ -234,8 +233,8 @@ class RepeatedFieldRef<
 
 // MutableRepeatedFieldRef definition for message types.
 template <typename T>
-class MutableRepeatedFieldRef<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+class MutableRepeatedFieldRef<T,
+                              std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef typename internal::RefTypeTraits<T>::AccessorType AccessorType;
 
  public:
@@ -257,7 +256,9 @@ class MutableRepeatedFieldRef<
   void Set(int index, const T& value) const {
     accessor_->Set(data_, index, &value);
   }
-  void Add(const T& value) const { accessor_->Add(data_, &value); }
+  void Add(const T& value) const {
+    accessor_->Add(data_, &value, default_instance_);
+  }
   void RemoveLast() const { accessor_->RemoveLast(data_); }
   void SwapElements(int index1, int index2) const {
     accessor_->SwapElements(data_, index1, index2);
@@ -273,7 +274,8 @@ class MutableRepeatedFieldRef<
     if constexpr (internal::CanMakeConstSpan<T, Container>::value) {
       absl::Span<const T> span = absl::MakeConstSpan(container);
       if (!span.empty()) {
-        accessor_->AddRange(data_, span.data(), sizeof(T), span.size());
+        accessor_->AddRange(data_, span.data(), sizeof(T), span.size(),
+                            default_instance_);
       }
     } else {
       for (const auto& value : container) {
@@ -355,10 +357,12 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
   virtual void Set(Field* PROTOBUF_NONNULL data, int index,
                    const Value* PROTOBUF_NONNULL value) const = 0;
   virtual void Add(Field* PROTOBUF_NONNULL data,
-                   const Value* PROTOBUF_NONNULL value) const = 0;
+                   const Value* PROTOBUF_NONNULL value,
+                   const Value* PROTOBUF_NULLABLE prototype) const = 0;
   virtual void AddRange(Field* PROTOBUF_NONNULL data,
                         const Value* PROTOBUF_NONNULL values, int value_size,
-                        size_t size) const = 0;
+                        size_t size,
+                        const Value* PROTOBUF_NULLABLE prototype) const = 0;
   virtual void RemoveLast(Field* PROTOBUF_NONNULL data) const = 0;
   virtual void SwapElements(Field* PROTOBUF_NONNULL data, int index1,
                             int index2) const = 0;
@@ -431,7 +435,7 @@ class PROTOBUF_EXPORT RepeatedFieldAccessor {
     // may be a generated enum type while ActualType is int32_t). To be safe
     // we make a copy to get a temporary ActualType object and use it.
     ActualType tmp = static_cast<ActualType>(value);
-    Add(data, static_cast<const Value*>(&tmp));
+    Add(data, static_cast<const Value*>(&tmp), /*prototype=*/nullptr);
   }
 
  protected:
@@ -551,8 +555,7 @@ DEFINE_PRIMITIVE(BOOL, bool)
 #undef DEFINE_PRIMITIVE
 
 template <typename T>
-struct RefTypeTraits<
-    T, typename std::enable_if<PrimitiveTraits<T>::is_primitive>::type> {
+struct RefTypeTraits<T, std::enable_if_t<PrimitiveTraits<T>::is_primitive>> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef T AccessorValueType;
@@ -582,8 +585,7 @@ struct RefTypeTraits<
 };
 
 template <typename T>
-struct RefTypeTraits<
-    T, typename std::enable_if<std::is_same<std::string, T>::value>::type> {
+struct RefTypeTraits<T, std::enable_if_t<std::is_same_v<std::string, T>>> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef std::string AccessorValueType;
@@ -608,8 +610,7 @@ struct MessageDescriptorGetter<Message> {
 };
 
 template <typename T>
-struct RefTypeTraits<
-    T, typename std::enable_if<std::is_base_of<Message, T>::value>::type> {
+struct RefTypeTraits<T, std::enable_if_t<std::is_base_of_v<Message, T>>> {
   typedef RepeatedFieldRefIterator<T> iterator;
   typedef RepeatedFieldAccessor AccessorType;
   typedef Message AccessorValueType;

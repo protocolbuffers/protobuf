@@ -319,6 +319,15 @@ public class CodedInputStreamTest {
     assertReadVarintFailure(
         InvalidProtocolBufferException.malformedVarint(),
         bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00));
+    assertReadVarintFailure(
+        InvalidProtocolBufferException.malformedVarint(),
+        bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80));
+    assertReadVarintFailure(
+        InvalidProtocolBufferException.malformedVarint(),
+        bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x81));
+    assertReadVarintFailure(
+        InvalidProtocolBufferException.malformedVarint(),
+        bytes(0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x81, 0x00));
     assertReadVarintFailure(InvalidProtocolBufferException.truncatedMessage(), bytes(0x80));
   }
 
@@ -362,6 +371,49 @@ public class CodedInputStreamTest {
         bytes(0xf0, 0xde, 0xbc, 0x9a, 0x78, 0x56, 0x34, 0x12), 0x123456789abcdef0L);
     assertReadLittleEndian64(
         bytes(0x78, 0x56, 0x34, 0x12, 0xf0, 0xde, 0xbc, 0x9a), 0x9abcdef012345678L);
+  }
+
+  /** Tests countPackedVarints(). */
+  @Test
+  public void testCountPackedVarints() throws Exception {
+    byte[] data =
+        bytes(
+            0x01, // 1 byte varint
+            0x80, 0x01, // 2 byte varint
+            0x80, 0x80, 0x01, // 3 byte varint
+            0x7f, // 1 byte varint
+            0x80, 0x80, 0x80, 0x80, 0x01, // 5 byte varint
+            0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 // 8 1-byte varints
+            );
+
+    CodedInputStream input = CodedInputStream.newInstance(data);
+    assertThat(input.countPackedVarints(0)).isEqualTo(0);
+    assertThat(input.countPackedVarints(-1)).isEqualTo(0);
+    assertThat(input.countPackedVarints(data.length + 1)).isEqualTo(0);
+
+    // Length < 8
+    assertThat(input.countPackedVarints(1)).isEqualTo(1);
+    assertThat(input.countPackedVarints(3)).isEqualTo(2);
+    assertThat(input.countPackedVarints(6)).isEqualTo(3);
+    assertThat(input.countPackedVarints(7)).isEqualTo(4);
+
+    // Length >= 8
+    assertThat(input.countPackedVarints(12)).isEqualTo(5);
+    assertThat(input.countPackedVarints(20)).isEqualTo(13);
+
+    // Offset in buffer
+    input.readRawByte();
+    assertThat(input.countPackedVarints(19)).isEqualTo(12);
+
+    // Verify reading matches count
+    CodedInputStream verifyStream = CodedInputStream.newInstance(data);
+    int expectedCount = verifyStream.countPackedVarints(data.length);
+    int actualCount = 0;
+    while (!verifyStream.isAtEnd()) {
+      verifyStream.readRawVarint64();
+      actualCount++;
+    }
+    assertThat(actualCount).isEqualTo(expectedCount);
   }
 
   /** Test decodeZigZag32() and decodeZigZag64(). */
@@ -502,6 +554,66 @@ public class CodedInputStreamTest {
       byte[] remaining = decoder.readRawBytes(10);
       assertArrayEquals(Arrays.copyOfRange(blob, blobSize - 10, blobSize), remaining);
     }
+  }
+
+  @Test
+  public void testSkipRawBytesSizeLimit() throws Exception {
+    InputStream input =
+        new InputStream() {
+          private long remaining = 5L * Integer.MAX_VALUE; // 10GB
+
+          @Override
+          public int read() throws IOException {
+            if (remaining <= 0) {
+              return -1;
+            }
+            remaining--;
+            return 0;
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) throws IOException {
+            if (remaining <= 0) {
+              return -1;
+            }
+            int toRead = (int) Math.min(len, remaining);
+            Arrays.fill(b, off, off + toRead, (byte) 0);
+            remaining -= toRead;
+            return toRead;
+          }
+
+          @Override
+          public long skip(long n) throws IOException {
+            long toSkip = Math.min(n, remaining);
+            remaining -= toSkip;
+            return toSkip;
+          }
+
+          @Override
+          public int available() {
+            return remaining > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) remaining;
+          }
+        };
+
+    CodedInputStream stream = CodedInputStream.newInstance(input);
+    stream.setSizeLimit(100);
+
+    // Skip 50 bytes (should succeed)
+    stream.skipRawBytes(50);
+
+    // Attempting to skip beyond the size limit should throw sizeLimitExceeded.
+    // We try to skip 100 bytes more (total 150, exceeds sizeLimit 100)
+    assertThrows(InvalidProtocolBufferException.class, () -> stream.skipRawBytes(100));
+
+    // Also try to skip a huge amount that would overflow the old naive check.
+    // In old code, this would succeed and allow further reads.
+    CodedInputStream stream2 = CodedInputStream.newInstance(input);
+    stream2.setSizeLimit(Integer.MAX_VALUE);
+    stream2.skipRawBytes(Integer.MAX_VALUE - 50); // should succeed
+
+    // This second skip will overflow A + size in buggy code, but in fixed code it should throw.
+    assertThrows(
+        InvalidProtocolBufferException.class, () -> stream2.skipRawBytes(Integer.MAX_VALUE));
   }
 
   @Test
@@ -1892,6 +2004,54 @@ public class CodedInputStreamTest {
     assertThat(cis.readFixed64()).isEqualTo(0x123456789abcdef0L);
   }
 
+  @Test
+  public void testReadRawBytesPastLimitAligns() throws Exception {
+    byte[] data = bytes(1, 2, 3, 4, 5);
+    CodedInputStream input = InputType.STREAM.newDecoder(data);
+    int limit = input.pushLimit(3); // Limit covers [1, 2, 3]
+
+    // Try to read 4 bytes, which exceeds the limit of 3.
+    try {
+      input.readRawBytes(4);
+      assertWithMessage("Should have thrown truncatedMessage").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected.getMessage())
+          .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    }
+
+    // Pop the limit.
+    input.popLimit(limit);
+
+    // The guaranteed behavior in the case of a truncated message is the stream should have been
+    // aligned to the limit (index 3, value 4). So the next byte read should be 4.
+    // This maybe shouldn't be guaranteed, but has been the behavior since 2008.
+    assertThat(input.readRawByte()).isEqualTo(4);
+  }
+
+  @Test
+  public void testSkipRawBytesPastLimitAligns() throws Exception {
+    byte[] data = bytes(1, 2, 3, 4, 5);
+    CodedInputStream input = InputType.STREAM.newDecoder(data);
+    int limit = input.pushLimit(3); // Limit covers [1, 2, 3]
+
+    // Try to skip 4 bytes, which exceeds the limit of 3.
+    try {
+      input.skipRawBytes(4);
+      assertWithMessage("Should have thrown truncatedMessage").fail();
+    } catch (InvalidProtocolBufferException expected) {
+      assertThat(expected.getMessage())
+          .isEqualTo(InvalidProtocolBufferException.truncatedMessage().getMessage());
+    }
+
+    // Pop the limit.
+    input.popLimit(limit);
+
+    // The guaranteed behavior in the case of a truncated message is the stream should have been
+    // aligned to the limit (index 3, value 4). So the next byte read should be 4.
+    // This maybe shouldn't be guaranteed, but has been the behavior since 2008.
+    assertThat(input.readRawByte()).isEqualTo(4);
+  }
+
   /**
    * A {@link ByteArrayInputStream} that matches the behavior of {@link
    * InputStream#read(byte[],int,int)} when the requested length is 0.
@@ -1925,5 +2085,82 @@ public class CodedInputStreamTest {
       pos += len;
       return len;
     }
+  }
+
+  @Test
+  public void testStreamDecoderTryRefillBufferIterativeNoStackOverflow() throws Exception {
+    int n = 50000;
+    byte[] stringTagAndLength;
+    {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      CodedOutputStream cos = CodedOutputStream.newInstance(baos);
+      cos.writeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+      cos.writeRawVarint32(n);
+      cos.flush();
+      stringTagAndLength = baos.toByteArray();
+    }
+
+    ByteArrayOutputStream unknownFieldBaos = new ByteArrayOutputStream();
+    CodedOutputStream unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
+    unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    unknownCos.writeRawVarint32(n);
+    unknownCos.flush();
+    int prefixLen = unknownFieldBaos.toByteArray().length;
+    int padLength = n - stringTagAndLength.length - prefixLen;
+
+    unknownFieldBaos.reset();
+    unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
+    unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    unknownCos.writeRawVarint32(padLength);
+    unknownCos.writeRawBytes(new byte[padLength]);
+    unknownCos.writeRawBytes(stringTagAndLength);
+    unknownCos.flush();
+    byte[] bulkBytes = unknownFieldBaos.toByteArray();
+    assertThat(bulkBytes.length).isEqualTo(n);
+
+    byte[] stringBytes = new byte[n];
+    Arrays.fill(stringBytes, (byte) 'x');
+
+    InputStream dripStream =
+        new InputStream() {
+          private int bulkIndex = 0;
+          private int stringIndex = 0;
+
+          @Override
+          public int read() {
+            if (bulkIndex < bulkBytes.length) {
+              return bulkBytes[bulkIndex++] & 0xFF;
+            }
+            if (stringIndex < stringBytes.length) {
+              return stringBytes[stringIndex++] & 0xFF;
+            }
+            return -1;
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) {
+            if (bulkIndex < bulkBytes.length) {
+              int toRead = Math.min(len, bulkBytes.length - bulkIndex);
+              System.arraycopy(bulkBytes, bulkIndex, b, off, toRead);
+              bulkIndex += toRead;
+              return toRead;
+            }
+            if (stringIndex < stringBytes.length) {
+              b[off] = stringBytes[stringIndex++];
+              return 1;
+            }
+            return -1;
+          }
+        };
+
+    CodedInputStream cis = CodedInputStream.newInstance(dripStream, n);
+    int tag2 = cis.readTag();
+    assertThat(WireFormat.getTagFieldNumber(tag2)).isEqualTo(2);
+    cis.skipField(tag2);
+
+    int tag1 = cis.readTag();
+    assertThat(WireFormat.getTagFieldNumber(tag1)).isEqualTo(1);
+    String s = cis.readString();
+    assertThat(s.length()).isEqualTo(n);
   }
 }

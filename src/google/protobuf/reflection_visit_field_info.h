@@ -12,6 +12,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
@@ -57,10 +58,10 @@ class iterator_range {
   // Users who need to know the "size" of a non-random-access iterator_range
   // should pass the range to `absl::c_distance()` instead.
   template <class It = IteratorT>
-  typename std::enable_if<std::is_base_of<std::random_access_iterator_tag,
-                                          typename std::iterator_traits<
-                                              It>::iterator_category>::value,
-                          size_t>::type
+  std::enable_if_t<
+      std::is_base_of_v<std::random_access_iterator_tag,
+                        typename std::iterator_traits<It>::iterator_category>,
+      size_t>
   size() const {
     return std::distance(begin_iterator_, end_iterator_);
   }

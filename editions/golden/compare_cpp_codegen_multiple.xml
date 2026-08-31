@@ -1,17 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites tests="1" name="AllTests">
+<testsuites tests="4" name="AllTests">
 <testsuite name="EditionsCodegenTests">
-<testcase name="third_party/protobuf/editions/golden/simple_proto2.pb.cc" status="run" result="completed" classname="DiffTest">
+<testcase name="third_party/protobuf/editions/golden/simple_proto2.pb.cc (Go)" status="run" result="completed" classname="DiffTest">
 </testcase>
-<testcase name="third_party/protobuf/editions/golden/simple_proto2.pb.h" status="run" result="completed" classname="DiffTest">
+<testcase name="third_party/protobuf/editions/golden/simple_proto2.pb.cc (Java)" status="run" result="completed" classname="DiffTest">
 </testcase>
-<testcase name="third_party/protobuf/editions/golden/simple_proto2.proto.static_reflection.h" status="run" result="completed" classname="DiffTest">
+<testcase name="third_party/protobuf/editions/golden/simple_proto2.pb.h (Go)" status="run" result="completed" classname="DiffTest">
 </testcase>
-<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.cc" status="run" result="completed" classname="DiffTest">
+<testcase name="third_party/protobuf/editions/golden/simple_proto2.pb.h (Java)" status="run" result="completed" classname="DiffTest">
 </testcase>
-<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.h" status="run" result="completed" classname="DiffTest">
+<testcase name="third_party/protobuf/editions/golden/simple_proto2.proto.static_reflection.h (Go)" status="run" result="completed" classname="DiffTest">
 </testcase>
-<testcase name="third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h" status="run" result="completed" classname="DiffTest">
+<testcase name="third_party/protobuf/editions/golden/simple_proto2.proto.static_reflection.h (Java)" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.cc (Go)" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.cc (Java)" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.h (Go)" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.pb.h (Java)" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h (Go)" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.proto.static_reflection.h (Java)" status="run" result="completed" classname="DiffTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto2.proto (Go vs Java Equivalence)" status="run" result="completed" classname="EquivalenceTest">
+</testcase>
+<testcase name="third_party/protobuf/editions/golden/simple_proto3.proto (Go vs Java Equivalence)" status="run" result="completed" classname="EquivalenceTest">
 </testcase>
 </testsuite>
 </testsuites>

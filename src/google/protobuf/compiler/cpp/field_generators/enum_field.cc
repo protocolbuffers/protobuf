@@ -94,7 +94,7 @@ class SingularEnum : public FieldGeneratorBase {
     if (is_oneof()) return;
 
     p->Emit(R"cc(
-      swap($field_$, other->$field_$);
+      swap(this_.$field_$, other->$field_$);
     )cc");
   }
 
@@ -244,18 +244,30 @@ class RepeatedEnum : public FieldGeneratorBase {
       )cc");
     }
 
+#if defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
     if (has_cached_size_) {
       p->Emit(R"cc(
         $pbi$::CachedSize $cached_size_name$;
       )cc");
     }
+#endif
+  }
+
+  void GenerateSecondaryPrivateMembers(io::Printer* p) const override {
+#if !defined(PROTOBUF_INTERNAL_TEMPORARY_CACHED_SIZE_LAYOUT_OPTOUT)
+    if (has_cached_size_) {
+      p->Emit(R"cc(
+        $pbi$::CachedSize $cached_size_name$;
+      )cc");
+    }
+#endif
   }
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit("this_.$field_$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$field_$.Clear();\n");
+      p->Emit("this_.$field_$.Clear();\n");
     }
   }
 
@@ -289,7 +301,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 

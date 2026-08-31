@@ -1606,7 +1606,12 @@ def _SetFrozen(self):
 
 def _AssureWritable(self):
   if self._frozen:
-    raise message_mod.FrozenInstanceError('Message is immutable')
+    warnings.warn(
+        'Mutating messages or containers returned by GetOptions() is'
+        ' deprecated and will raise an exception in a future release.',
+        category=FutureWarning,
+        stacklevel=3,
+    )
   return self
 
 

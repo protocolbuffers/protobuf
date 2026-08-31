@@ -607,7 +607,7 @@ class TypeDefinedMapFieldBase : public MapFieldBase {
 // This class provides access to map field using generated api. It is used for
 // internal generated message implementation only. Users should never use this
 // directly.
-template <typename Derived, typename Key, typename T>
+template <auto* kGlobals, typename Key, typename T>
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapField final
     : public TypeDefinedMapFieldBase<Key, T> {
  public:
@@ -625,14 +625,12 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapField final
   MapField(InternalVisibility, InternalMetadataOffset offset, Arena* arena,
            const MapField& from)
       : TypeDefinedMapFieldBase<Key, T>(
-            MessageGlobalsBase::ToDefaultInstance<Message>(
-                Derived::internal_message_globals()),
-            offset, arena, from) {}
+            MessageGlobalsBase::ToDefaultInstance<Message>(kGlobals), offset,
+            arena, from) {}
 
  private:
   explicit constexpr MapField(InternalMetadataOffset offset)
-      : MapField::TypeDefinedMapFieldBase(Derived::internal_message_globals(),
-                                          offset) {}
+      : MapField::TypeDefinedMapFieldBase(kGlobals, offset) {}
 
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
@@ -651,23 +649,25 @@ bool AllAreInitialized(const TypeDefinedMapFieldBase<Key, T>& field) {
   return true;
 }
 
-template <typename Derived, typename Key, typename T>
-using MapFieldWithArena = FieldWithArena<MapField<Derived, Key, T>>;
+template <auto* kGlobals, typename Key, typename T>
+using MapFieldWithArena = FieldWithArena<MapField<kGlobals, Key, T>>;
 
-template <typename Derived, typename Key, typename T>
-struct FieldArenaRep<MapField<Derived, Key, T>> {
-  using Type = MapFieldWithArena<Derived, Key, T>;
+// We don't use `auto* globals` here because GCC fails to deduce the
+// specialization.
+template <typename Globals, const Globals* kGlobals, typename Key, typename T>
+struct FieldArenaRep<MapField<kGlobals, Key, T>> {
+  using Type = MapFieldWithArena<kGlobals, Key, T>;
 
-  static inline MapField<Derived, Key, T>* Get(Type* arena_rep) {
+  static MapField<kGlobals, Key, T>* Get(Type* arena_rep) {
     return &arena_rep->field();
   }
 };
 
-template <typename Derived, typename Key, typename T>
-struct FieldArenaRep<const MapField<Derived, Key, T>> {
-  using Type = const MapFieldWithArena<Derived, Key, T>;
+template <typename Globals, const Globals* kGlobals, typename Key, typename T>
+struct FieldArenaRep<const MapField<kGlobals, Key, T>> {
+  using Type = const MapFieldWithArena<kGlobals, Key, T>;
 
-  static inline const MapField<Derived, Key, T>* Get(Type* arena_rep) {
+  static const MapField<kGlobals, Key, T>* Get(Type* arena_rep) {
     return &arena_rep->field();
   }
 };
@@ -748,7 +748,7 @@ class PROTOBUF_EXPORT MapValueConstRef {
   FieldDescriptor::CppType type_;
 
  private:
-  template <typename Derived, typename K, typename V>
+  template <auto* kGlobals, typename K, typename V>
   friend class internal::MapField;
   template <typename K, typename V>
   friend class internal::TypeDefinedMapFieldBase;
@@ -852,7 +852,7 @@ class PROTOBUF_EXPORT MapIteratorBase {
  protected:
   template <typename Key, typename T>
   friend class internal::TypeDefinedMapFieldBase;
-  template <typename Derived, typename Key, typename T>
+  template <auto* kGlobals, typename Key, typename T>
   friend class internal::MapField;
   friend class internal::MapFieldBase;
 

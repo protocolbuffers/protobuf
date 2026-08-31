@@ -1,5 +1,5 @@
 // Test proto for redaction
-edition = "2024";
+edition = "2026";
 
 package proto2_unittest;
 

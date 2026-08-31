@@ -2293,6 +2293,54 @@ TEST_F(ParseErrorTest, NestingIsLimitedWithoutCrashing) {
   ExpectHasErrors(input(), error);
 }
 
+TEST_F(ParseErrorTest, NestedMessagesInExtendGroupAreLimited) {
+  std::string start =
+      "syntax = \"proto2\";\n"
+      "message Extendable { extensions 1 to max; }\n"
+      "extend Extendable {\n"
+      "  optional group Ext = 1 {\n";
+  std::string end = "  }\n}\n";
+
+  const auto add = [&] {
+    absl::StrAppend(&start, "message M {");
+    absl::StrAppend(&end, "}");
+  };
+  const auto input = [&] { return absl::StrCat(start, end); };
+
+  // The first ones work correctly.
+  // We test up to MaxMessageDeclarationNestingDepth() - 2 to be portable
+  // between configurations (flag on/off, OSS/Google3).
+  for (int i = 1; i < internal::cpp::MaxMessageDeclarationNestingDepth() - 1;
+       ++i) {
+    add();
+    const std::string str = input();
+    SetupParser(str);
+    FileDescriptorProto proto;
+    proto.set_name("foo.proto");
+    EXPECT_TRUE(parser_->Parse(input_.get(), &proto)) << input();
+    EXPECT_EQ(io::Tokenizer::TYPE_END, input_->current().type);
+    ASSERT_EQ("", error_collector_.text_);
+    DescriptorPool pool;
+    ASSERT_TRUE(pool.BuildFile(proto));
+  }
+
+  // The rest have parsing errors but they don't crash no matter how deep we
+  // make them.
+  const auto error = testing::HasSubstr(
+      "Reached maximum recursion limit for nested messages.");
+
+  // Add enough levels to trigger error in all configurations.
+  for (int i = 0; i < 5; ++i) {
+    add();
+  }
+  ExpectHasErrors(input(), error);
+
+  for (int i = 0; i < 1000; ++i) {
+    add();
+  }
+  ExpectHasErrors(input(), error);
+}
+
 TEST_F(ParseErrorTest, MissingFieldNumber) {
   ExpectHasErrors(
       "message TestMessage {\n"
@@ -3858,7 +3906,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     const std::string debug_string =
         descriptor->DebugStringWithOptions(debug_string_options);
 
-    for (size_t i = 0; i < ABSL_ARRAYSIZE(expected_comments); ++i) {
+    for (size_t i = 0; i < std::size(expected_comments); ++i) {
       std::string::size_type found_pos =
           debug_string.find(expected_comments[i]);
       EXPECT_TRUE(found_pos != std::string::npos)

@@ -51,7 +51,8 @@ class FeatureSetEditionDefault extends \Google\Protobuf\Internal\Message
      *           Defaults of features that can't be overridden in this edition.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }

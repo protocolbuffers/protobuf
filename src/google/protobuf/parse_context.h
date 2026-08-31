@@ -173,20 +173,34 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     // This add is safe due to the invariant above, because
     // ptr - buffer_end_ <= kSlopBytes.
     limit += static_cast<int>(ptr - buffer_end_);
-    limit_end_ = buffer_end_ + (std::min)(0, limit);
+    if (ABSL_PREDICT_TRUE(limit <= 0)) {
+      limit_end_ = buffer_end_ + limit;
+    } else {
+      limit_end_ = buffer_end_;
+    }
     auto old_limit = limit_;
     limit_ = limit;
     return LimitToken(old_limit - limit);
   }
 
-  [[nodiscard]] bool PopLimit(LimitToken delta) {
+  // Takes the token by rvalue reference rather than by value. LimitToken uses
+  // ASan memory poisoning, and a by-value parameter can share a stack slot with
+  // the moved-from caller token; the move then poisons the slot the parameter
+  // occupies, and reading it here trips a use-after-poison. Binding directly to
+  // the caller's token avoids the extra copy and the shared-slot hazard.
+  [[nodiscard]] bool PopLimit(LimitToken&& delta) {
     // We must update the limit first before the early return. Otherwise, we can
     // end up with an invalid limit and it can lead to integer overflows.
-    limit_ = limit_ + std::move(delta).token();
+    int old_limit = limit_ + std::move(delta).token();
+    limit_ = old_limit;
     if (ABSL_PREDICT_FALSE(!EndedAtLimit())) return false;
     // TODO We could remove this line and hoist the code to
     // DoneFallback. Study the perf/bin-size effects.
-    limit_end_ = buffer_end_ + (std::min)(0, limit_);
+    if (ABSL_PREDICT_TRUE(old_limit <= 0)) {
+      limit_end_ = buffer_end_ + old_limit;
+    } else {
+      limit_end_ = buffer_end_;
+    }
     return true;
   }
 
@@ -670,7 +684,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
 using LazyEagerVerifyFnType = const char* (*)(const char* ptr,
                                               ParseContext* ctx);
-using LazyEagerVerifyFnRef = std::remove_pointer<LazyEagerVerifyFnType>::type&;
+using LazyEagerVerifyFnRef = std::remove_pointer_t<LazyEagerVerifyFnType>&;
 
 // ParseContext holds all data that is global to the entire parse. Most
 // importantly it contains the input stream, but also recursion depth and also
@@ -689,20 +703,27 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     *start = InitFrom(std::forward<T>(args)...);
   }
 
+  template <int kReduction>
   struct Spawn {};
-  static constexpr Spawn kSpawn = {};
+  static constexpr Spawn<0> kSpawn = {};
 
   // Creates a new context from a given "ctx" to inherit a few attributes to
   // emulate continued parsing. For example, recursion depth or descriptor pools
   // must be passed down to a new "spawned" context to maintain the same parse
   // context. Note that the spawned context always disables aliasing (different
   // input).
-  template <typename... T>
-  ParseContext(Spawn, const ParseContext& ctx, const char** start, T&&... args)
+  template <int kDepthReduction, typename... T>
+  ParseContext(Spawn<kDepthReduction>, const ParseContext& ctx,
+               const char** start, T&&... args)
       : EpsCopyInputStream(false),
-        depth_(ctx.depth_),
+        depth_(ctx.depth_ - kDepthReduction),
         data_(ctx.data_)
   {
+    if (kDepthReduction != 0 && depth_ < 0) {
+      // Fail right away.
+      *start = nullptr;
+      return;
+    }
     *start = InitFrom(std::forward<T>(args)...);
   }
 
@@ -1569,7 +1590,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
         if (VerifyBoolsAssumingLargeArray(ptr, end)) {
           // Each byte is 0 or 1.
           const int count = end - ptr;
-          out.ReserveWithArena(arena, out.size() + count);
+          out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
           T* x = out.AddNAlreadyReserved(count);
           // For T being bool, conv must be equivalent to a conversion to bool
           // (zigzag encoding is not applicable), so it can be skipped.
@@ -1582,7 +1603,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     if (count == end - ptr) {
       // We have exactly one element per byte, so avoid the costly varint
       // parsing.
-      out.ReserveWithArena(arena, out.size() + count);
+      out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
       T* x = out.AddNAlreadyReserved(count);
       for (; ptr != end; ++ptr) {
         *x = conv(static_cast<uint8_t>(*ptr));
@@ -1593,7 +1614,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
       // we need to account for that.
       if (end[-1] & 0x80) count++;
       int old_size = out.size();
-      out.ReserveWithArena(arena, old_size + count);
+      out.ReserveWithArena(arena, internal::CheckedAdd(old_size, count));
       T* x = out.AddNAlreadyReserved(count);
       ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
         *x = conv(varint);

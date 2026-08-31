@@ -48,3 +48,28 @@ message MessageWithSelfAndSelfUnderscoreField {
   optional int32 self = 2;
   optional int32 self_ = 3 [json_name = "self_underscore"];
 }
+
+message NestedMessageForFT {
+  optional string value = 1;
+}
+
+message ReproMessageForLazy {
+  optional NestedMessageForFT lazy_field = 1 [lazy = true];
+}
+
+message MessageWithRepeatedComposite {
+  repeated NestedMessageForFT items = 1;
+}
+
+message ContainerForRepeatedComposite {
+  optional MessageWithRepeatedComposite submessage = 1;
+}
+
+message MessageWithRepeatedAndMap {
+  repeated NestedMessageForFT repeated_items = 1;
+  map<string, NestedMessageForFT> map_items = 2;
+}
+
+message ContainerForLazyRepeatedAndMap {
+  optional MessageWithRepeatedAndMap lazy_field = 1 [lazy = true];
+}

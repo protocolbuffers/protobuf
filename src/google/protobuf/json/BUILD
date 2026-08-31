@@ -111,7 +111,6 @@ cc_library(
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
@@ -223,6 +222,7 @@ cc_library(
         "//src/google/protobuf:port",
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
@@ -292,7 +292,6 @@ cc_library(
         "//src/google/protobuf/io:zero_copy_sink",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:type_resolver",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
@@ -315,6 +314,11 @@ proto_library(
     testonly = True,
     srcs = ["json_enumval_custom_string.proto"],
     strip_import_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+        "//upb:__subpackages__",
+    ],
     deps = ["//src/google/protobuf:json_options_proto"],
 )
 
@@ -337,7 +341,11 @@ cc_test(
     deps = [
         ":json",
         ":json_enumval_custom_string_cc_proto",
+        "//src/google/protobuf:arena",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

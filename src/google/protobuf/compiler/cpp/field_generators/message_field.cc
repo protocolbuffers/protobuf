@@ -364,7 +364,9 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
-  p->Emit("swap($field_$, other->$field_$);\n");
+  p->Emit(R"cc(
+    swap(this_.$field_$, other->$field_$);
+  )cc");
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
@@ -501,7 +503,6 @@ class OneofMessage : public SingularMessage {
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
-  void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateCopyConstructorCode(io::Printer* p) const override;
@@ -649,10 +650,6 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
               $poison_or_clear$;
             }
           )cc");
-}
-
-void OneofMessage::GenerateMessageClearingCode(io::Printer* p) const {
-  GenerateClearingCode(p);
 }
 
 void OneofMessage::GenerateSwappingCode(io::Printer* p) const {
@@ -954,7 +951,7 @@ void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit("this_.$field_$.ClearIfNotDefault();\n");
   } else {
-    p->Emit("$field_$.Clear();\n");
+    p->Emit("this_.$field_$.Clear();\n");
   }
 }
 
@@ -990,7 +987,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   ABSL_CHECK(!should_split());
   p->Emit(R"cc(
-    $field_$.InternalSwap(&other->$field_$);
+    this_.$field_$.InternalSwap(&other->$field_$);
   )cc");
 }
 

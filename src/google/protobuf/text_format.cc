@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <limits>
 #include <memory>
 #include <random>
@@ -26,10 +27,11 @@
 #include <utility>
 #include <vector>
 
-#include "absl/base/macros.h"
+#include "absl/base/optimization.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -336,6 +338,24 @@ const Descriptor* DefaultFinderFindAnyType(const Message& message,
                                            const std::string& name) {
   return message.GetDescriptor()->file()->pool()->FindMessageTypeByName(name);
 }
+
+void ReportErrorImpl(int line, int col, absl::string_view message,
+                     const Descriptor* root_message_type,
+                     io::ErrorCollector* error_collector) {
+  if (error_collector == nullptr) {
+    if (line >= 0) {
+      ABSL_LOG(ERROR) << "Error parsing text-format "
+                      << root_message_type->full_name() << ": " << (line + 1)
+                      << ":" << (col + 1) << ": " << message;
+    } else {
+      ABSL_LOG(ERROR) << "Error parsing text-format "
+                      << root_message_type->full_name() << ": " << message;
+    }
+  } else {
+    error_collector->RecordError(line, col, message);
+  }
+}
+
 }  // namespace
 
 auto TextFormat::Parser::UnsetFieldsMetadata::GetUnsetFieldId(
@@ -453,18 +473,7 @@ class TextFormat::Parser::ParserImpl {
 
   void ReportError(int line, int col, absl::string_view message) {
     had_errors_ = true;
-    if (error_collector_ == nullptr) {
-      if (line >= 0) {
-        ABSL_LOG(ERROR) << "Error parsing text-format "
-                        << root_message_type_->full_name() << ": " << (line + 1)
-                        << ":" << (col + 1) << ": " << message;
-      } else {
-        ABSL_LOG(ERROR) << "Error parsing text-format "
-                        << root_message_type_->full_name() << ": " << message;
-      }
-    } else {
-      error_collector_->RecordError(line, col, message);
-    }
+    ReportErrorImpl(line, col, message, root_message_type_, error_collector_);
   }
 
   void ReportWarning(int line, int col, const absl::string_view message) {
@@ -577,7 +586,7 @@ class TextFormat::Parser::ParserImpl {
 
       // If a parse info tree exists, add the location for the parsed
       // field.
-      if (parse_info_tree_ != nullptr) {
+      if (parse_info_tree_ != nullptr && field != nullptr) {
         int end_line = tokenizer_.previous().line;
         int end_column = tokenizer_.previous().end_column;
 
@@ -607,6 +616,16 @@ class TextFormat::Parser::ParserImpl {
       }
       std::string url_prefix_and_full_type_name =
           absl::StrCat(url_prefix, full_type_name);
+      if (parse_info_tree_ != nullptr) {
+        ParseLocationRange type_url_range(
+            ParseLocation(n_start_line, n_start_column),
+            ParseLocation(n_end_line, n_end_column));
+        RecordNameLocation(parse_info_tree_, any_type_url_field,
+                           type_url_range);
+        RecordValueLocation(parse_info_tree_, any_type_url_field,
+                            type_url_range);
+        RecordLocation(parse_info_tree_, any_type_url_field, type_url_range);
+      }
       TryConsumeWhitespace();
       // ':' is optional between message labels and values.
       if (TryConsumeBeforeWhitespace(":")) {
@@ -623,15 +642,7 @@ class TextFormat::Parser::ParserImpl {
                                  "\" stored in google.protobuf.Any."));
         return false;
       }
-      int v_start_line = tokenizer_.current().line;
-      int v_start_column = tokenizer_.current().column;
       DO(ConsumeAnyValue(value_descriptor, &serialized_value));
-      record_value_location(v_start_line, v_start_column);
-
-      record_name_location(
-          any_type_url_field,
-          ParseLocationRange(ParseLocation(n_start_line, n_start_column),
-                             ParseLocation(n_end_line, n_end_column)));
 
       if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
         // Fail if any_type_url_field has already been specified.
@@ -1662,6 +1673,7 @@ class TextFormat::Printer::TextGenerator
           // Saw newline.  If there is more text, we may need to insert an
           // indent here.  So, write what we have so far, including the '\n'.
           Write(text + pos, i - pos + 1);
+          if (failed_) return;
           pos = i + 1;
 
           // Setting this true will cause the next Write() to insert an indent
@@ -1957,22 +1969,18 @@ TextFormat::Parser::Parser()
       allow_singular_overwrites_(false),
       recursion_limit_(kDefaultRecursionLimit) {}
 
-namespace {
-
 template <typename T>
-bool CheckParseInputSize(T& input, io::ErrorCollector* error_collector) {
+bool TextFormat::Parser::CheckParseInputSize(T& input, Message* output) const {
   if (input.size() > INT_MAX) {
-    error_collector->RecordError(
-        -1, 0,
-        absl::StrCat(
-            "Input size too large: ", static_cast<int64_t>(input.size()),
-            " bytes", " > ", INT_MAX, " bytes."));
+    ReportErrorImpl(-1, 0,
+                    absl::StrCat("Input size too large: ",
+                                 static_cast<int64_t>(input.size()), " bytes",
+                                 " > ", INT_MAX, " bytes."),
+                    output->GetDescriptor(), error_collector_);
     return false;
   }
   return true;
 }
-
-}  // namespace
 
 bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
                                Message* output) {
@@ -1993,14 +2001,14 @@ bool TextFormat::Parser::Parse(io::ZeroCopyInputStream* input,
 
 bool TextFormat::Parser::ParseFromString(absl::string_view input,
                                          Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Parse(&input_stream, output);
 }
 
 bool TextFormat::Parser::ParseFromCord(const absl::Cord& input,
                                        Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::CordInputStream input_stream(&input);
   return Parse(&input_stream, output);
 }
@@ -2018,7 +2026,7 @@ bool TextFormat::Parser::Merge(io::ZeroCopyInputStream* input,
 
 bool TextFormat::Parser::MergeFromString(absl::string_view input,
                                          Message* output) {
-  DO(CheckParseInputSize(input, error_collector_));
+  DO(CheckParseInputSize(input, output));
   io::ArrayInputStream input_stream(input.data(), input.size());
   return Merge(&input_stream, output);
 }
@@ -2203,11 +2211,28 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
   generator->PrintString(name);
 }
 
+namespace {
+
+bool ContainsCharactersToCEscape(absl::string_view val) {
+  bool needs_escape = false;
+  for (unsigned char c : val) {
+    needs_escape |=
+        ((c < 32) | (c > 126) | (c == '"') | (c == '\'') | (c == '\\'));
+  }
+  return needs_escape;
+}
+
+}  // namespace
+
 void TextFormat::FastFieldValuePrinter::PrintString(
     const std::string& val, BaseTextGenerator* generator) const {
   generator->PrintLiteral("\"");
   if (!val.empty()) {
-    generator->PrintString(absl::CEscape(val));
+    if (ABSL_PREDICT_FALSE(ContainsCharactersToCEscape(val))) {
+      generator->PrintString(absl::CEscape(val));
+    } else {
+      generator->PrintString(val);
+    }
   }
   generator->PrintLiteral("\"");
 }
@@ -2596,6 +2621,7 @@ void TextFormat::Printer::PrintMessage(const Message& message,
     std::sort(fields.begin(), fields.end(), FieldIndexSorter());
   }
   for (const FieldDescriptor* field : fields) {
+    if (generator->failed()) return;
     PrintField(message, reflection, field, generator);
   }
   if (!hide_unknown_fields_) {
@@ -3037,6 +3063,7 @@ void TextFormat::Printer::PrintUnknownFields(
     const UnknownFieldSet& unknown_fields, BaseTextGenerator* generator,
     int recursion_budget) const {
   for (int i = 0; i < unknown_fields.field_count(); i++) {
+    if (generator->failed()) return;
     const UnknownField& field = unknown_fields.field(i);
 
     switch (field.type()) {
@@ -3204,6 +3231,10 @@ TextFormat::RedactionState TextFormat::IsOptionSensitive(
                          : reflection->GetEnumValue(opts, option);
       const EnumValueDescriptor* option_value =
           option->enum_type()->FindValueByNumber(enum_val);
+      if (option_value == nullptr) {
+        // Ignore values we don't know about.
+        continue;
+      }
       if (option_value->options().debug_redact()) {
         return TextFormat::RedactionState{true, false};
       }
@@ -3316,7 +3347,7 @@ TextMarkerGenerator TextMarkerGenerator::CreateRandom() {
       static_cast<uint64_t>(absl::ToUnixMicros(absl::Now()))};
 
   size_t redaction_marker_index = std::uniform_int_distribution<size_t>{
-      0, ABSL_ARRAYSIZE(kRedactionMarkers) - 1}(random);
+      0, std::size(kRedactionMarkers) - 1}(random);
 
   size_t random_marker_size =
       std::uniform_int_distribution<size_t>{1, kRandomMarker.size()}(random);

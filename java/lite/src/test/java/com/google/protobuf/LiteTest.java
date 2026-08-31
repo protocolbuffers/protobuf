@@ -36,6 +36,8 @@ import map_lite_test.MapTestProto.TestMap;
 import map_lite_test.MapTestProto.TestMap.MessageValue;
 import proto2_unittest.NestedExtensionLite;
 import proto2_unittest.NonNestedExtensionLite;
+import proto2_unittest.UnittestMset.TestMessageSetExtension1;
+import proto2_unittest.UnittestMset.TestMessageSetExtension2;
 import proto2_unittest.UnittestProto.TestOneof2;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.Bar;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.BarPrime;
@@ -44,6 +46,7 @@ import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.NestedValue;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofEquals;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestOneofWithMultipleVariants;
 import proto2_unittest.lite_equals_and_hash.LiteEqualsAndHash.TestRecursiveOneof;
+import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,6 +60,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
@@ -1498,10 +1502,9 @@ public class LiteTest {
             },
             bytes.length - 1);
     TestOneof2.Builder builder = TestOneof2.newBuilder();
-
     try {
       builder.mergeFrom(failingInputStream, ExtensionRegistryLite.getEmptyRegistry());
-      assertWithMessage("Expected mergeFrom to fail").fail();
+      assertWithMessage("Expected mergeFrom to fail. Builder state: %s", builder).fail();
     } catch (IOException e) {
       assertThat(e).isSameInstanceAs(injectedException);
     }
@@ -1835,7 +1838,7 @@ public class LiteTest {
         0; // Set invalid tag
     try {
       RecursiveMessage.parseFrom(result);
-      assertWithMessage("Result was: " + Arrays.toString(result)).fail();
+      assertWithMessage("Result was: %s", Arrays.toString(result)).fail();
     } catch (InvalidProtocolBufferException expected) {
       boolean found = false;
       int exceptionCount = 0;
@@ -1878,7 +1881,7 @@ public class LiteTest {
         0; // Set invalid tag
     try {
       RecursiveMessage.parseFrom(CodedInputStream.newInstance(new ByteArrayInputStream(result)));
-      assertWithMessage("Result was: " + Arrays.toString(result)).fail();
+      assertWithMessage("Result was: %s", Arrays.toString(result)).fail();
     } catch (InvalidProtocolBufferException expected) {
       boolean found = false;
       int exceptionCount = 0;
@@ -3175,5 +3178,78 @@ public class LiteTest {
     TestOneofWithMultipleVariants int2 =
         TestOneofWithMultipleVariants.newBuilder().setIntegerValue(2).build();
     assertThat(int1).isNotEqualTo(int2);
+  }
+
+  @Test
+  public void testLazyParserRegistration() throws Exception {
+    // Force class initialization to trigger registration
+    @SuppressWarnings({"CheckReturnValue", "IgnoredPureGetter"})
+    Object unused = TestAllTypesLite.getDefaultInstance();
+
+    Class<TestAllTypesLite> clazz = TestAllTypesLite.class;
+
+    // Get the map via reflection
+    Field mapField = GeneratedMessageLite.class.getDeclaredField("parserOrInstanceMap");
+    mapField.setAccessible(true);
+    Map<?, ?> map = (Map<?, ?>) mapField.get(null);
+
+    Object before = map.get(clazz);
+    assertThat(before).isNotNull();
+    // It should be the default instance, not the parser
+    assertThat(before).isInstanceOf(GeneratedMessageLite.class);
+    assertThat(before).isNotInstanceOf(Parser.class);
+
+    // Now trigger parser creation
+    Parser<TestAllTypesLite> parser = GeneratedMessageLite.getParserForClass(clazz);
+    assertThat(parser).isNotNull();
+
+    Object after = map.get(clazz);
+    // Now it should be the parser
+    assertThat(after).isInstanceOf(Parser.class);
+    assertThat(after).isSameInstanceAs(parser);
+  }
+
+  private ByteString makeRecursivePayload(int depth) throws IOException {
+    ByteString payload = ByteString.copyFromUtf8("payload");
+    for (int i = 0; i < depth; ++i) {
+      ByteString.Output extOut = ByteString.newOutput();
+      CodedOutputStream extCout = CodedOutputStream.newInstance(extOut);
+      // Write to the `recursive` field.
+      extCout.writeBytes(16, payload);
+      extCout.flush();
+      ByteString extPayload = extOut.toByteString();
+
+      ByteString.Output out = ByteString.newOutput();
+      CodedOutputStream cout = CodedOutputStream.newInstance(out);
+
+      // Item 1: normal order, ID first
+      cout.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+      cout.writeUInt32(2, TestMessageSetExtension1.messageSetExtension.getNumber());
+      cout.writeBytes(3, ByteString.EMPTY);
+      cout.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+
+      // Item 2: reversed order, payload first
+      cout.writeTag(1, WireFormat.WIRETYPE_START_GROUP);
+      cout.writeBytes(3, extPayload);
+      cout.writeUInt32(2, TestMessageSetExtension1.messageSetExtension.getNumber());
+      cout.writeTag(1, WireFormat.WIRETYPE_END_GROUP);
+
+      cout.flush();
+      payload = out.toByteString();
+    }
+    return payload;
+  }
+
+  @Test
+  public void testMessageSetRecursionLimit() throws Exception {
+    ByteString payload = makeRecursivePayload(2000);
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    registry.add(TestMessageSetExtension1.messageSetExtension);
+
+    Throwable exception =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> TestMessageSet.parseFrom(payload, registry));
+    assertThat(exception).hasMessageThat().contains("too many levels of nesting");
   }
 }

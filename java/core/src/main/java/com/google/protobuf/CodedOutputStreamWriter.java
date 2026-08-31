@@ -18,7 +18,7 @@ import java.util.Map;
 /** A writer that performs serialization of protobuf message fields. */
 @CheckReturnValue
 @ExperimentalApi
-@SuppressWarnings({"unchecked", "rawtypes"})
+@SuppressWarnings("rawtypes")
 final class CodedOutputStreamWriter {
   private final CodedOutputStream output;
 

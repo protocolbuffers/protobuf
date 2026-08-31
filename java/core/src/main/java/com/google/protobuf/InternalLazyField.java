@@ -215,7 +215,7 @@ class InternalLazyField {
         // extension, and we should fall back to the old behavior of silently returning the default
         // instance on corrupted extensions i.e. full parse.
         value =
-            ExtensionRegistryLite.lazyExtensionEnabled()
+            extensionRegistry.lazyExtensionEnabled()
                 ? defaultInstance.getParserForType().parsePartialFrom(bytes, extensionRegistry)
                 : defaultInstance.getParserForType().parseFrom(bytes, extensionRegistry);
       } catch (InvalidProtocolBufferException e) {
@@ -237,7 +237,7 @@ class InternalLazyField {
       ensureInitialized();
       return value;
     } catch (InvalidProtocolBufferException e) {
-      if (ExtensionRegistryLite.lazyExtensionEnabled()) {
+      if (extensionRegistry.lazyExtensionEnabled()) {
         // New behavior: runtime exception on corrupted extensions.
         throw new InvalidProtobufRuntimeException(e);
       } else {

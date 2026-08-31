@@ -10,6 +10,7 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_serialized_len(m: RawMessage) -> usize;
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
+    pub fn proto2_rust_Message_take_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_get_descriptor(m: RawMessage) -> *const std::ffi::c_void;
 }
 
@@ -20,6 +21,13 @@ unsafe extern "C" {
     /// - `raw1` and `raw2` legally dereferenceable MessageLite* pointers.
     #[link_name = "proto2_rust_messagelite_equals"]
     pub fn raw_message_equals(raw1: RawMessage, raw2: RawMessage) -> bool;
+
+    /// From compare.h
+    ///
+    /// # Safety
+    /// - `actual` and `expected` legally dereferenceable MessageLite* pointers.
+    #[link_name = "proto2_rust_messagelite_partially_equals"]
+    pub fn raw_message_partially_equals(actual: RawMessage, expected: RawMessage) -> bool;
 }
 
 #[derive(Debug)]
@@ -247,6 +255,24 @@ where
     }
 }
 
+/// Message equality definition for checking partial equality of two messages. Fields that are not
+/// set in the expected message are ignored when comparing against the actual message.
+///
+/// This should only be used for testing purposes.
+pub fn message_partially_eq<T>(actual: &T, expected: &T) -> bool
+where
+    T: AsView + Debug,
+    for<'a> View<'a, <T as AsView>::Proxied>: CppGetRawMessage,
+{
+    // Safety: we provide valid pointers and the C++ code does not retain them.
+    unsafe {
+        raw_message_partially_equals(
+            actual.as_view().get_raw_message(Private),
+            expected.as_view().get_raw_message(Private),
+        )
+    }
+}
+
 impl<T> MatcherEq for T
 where
     Self: AsView + Debug,
@@ -254,6 +280,10 @@ where
 {
     fn matches(&self, o: &Self) -> bool {
         message_eq(self, o)
+    }
+
+    fn matches_partially(&self, expected: &Self) -> bool {
+        message_partially_eq(self, expected)
     }
 }
 
@@ -302,14 +332,16 @@ impl<T: CppGetRawMessage> Serialize for T {
 
 impl<T> TakeFrom for T
 where
-    Self: CopyFrom + AsMut,
-    for<'a> Mut<'a, <Self as AsMut>::MutProxied>: Clear,
+    Self: AsMut,
+    for<'a> Mut<'a, Self::Proxied>: CppGetRawMessageMut,
 {
     fn take_from(&mut self, mut src: impl AsMut<MutProxied = Self::Proxied>) {
-        let mut src = src.as_mut();
-        // TODO: b/393559271 - Optimize this copy out.
-        CopyFrom::copy_from(self, AsView::as_view(&src));
-        Clear::clear(&mut src);
+        unsafe {
+            proto2_rust_Message_take_from(
+                self.as_mut().get_raw_message_mut(Private),
+                src.as_mut().get_raw_message_mut(Private),
+            );
+        }
     }
 }
 

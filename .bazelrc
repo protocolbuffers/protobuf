@@ -1,40 +1,35 @@
-build --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
-
 # TODO: ErrorProne's SelfAssertions are violated in protobuf's test
 build --javacopt=-Xep:SelfAssertion:WARN
 
 # Disable prebuilt protoc on CI. On both main and release branches,
 # PROTOBUF_VERSION ordinarily points to the next release, which doesn't
 # exist and therefore doesn't have a prebuilt yet.
-#build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
+build --@com_google_protobuf//bazel/toolchains:prefer_prebuilt_protoc=false
 
 # This flag works around some issues with Rust linking.
 build --@rules_rust//rust/settings:experimental_use_cc_common_link=True
 
-build:dbg --compilation_mode=dbg
+# Build with all --incompatible flags that we can. This helps us prepare for
+# upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
+# running bazelisk with the --migrate flag and filtering out all flags that
+# default to true or are deprecated.
+build --incompatible_check_sharding_support
+build --incompatible_config_setting_private_default_visibility
+build --incompatible_default_to_explicit_init_py
+build --incompatible_disable_native_android_rules
+build --incompatible_disable_starlark_host_transitions
+build --incompatible_disable_target_provider_fields
+build --incompatible_disallow_empty_glob
+build --incompatible_dont_use_javasourceinfoprovider
+build --incompatible_enable_android_toolchain_resolution
+build --incompatible_enable_apple_toolchain_resolution
+build --incompatible_exclusive_test_sandboxed
+build --incompatible_top_level_aspects_require_providers
+build --incompatible_use_cc_configure_from_rules_cc
 
-build:opt --compilation_mode=opt
-
-build:san-common --config=dbg --strip=never --copt=-O0 --copt=-fno-omit-frame-pointer
-
-build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
-# ASAN hits ODR violations with shared linkage due to rules_proto.
-build:asan --dynamic_mode=off
-
-build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=memory
-build:msan --copt=-fsanitize-memory-track-origins
-build:msan --copt=-fsanitize-memory-use-after-dtor
-build:msan --action_env=MSAN_OPTIONS=poison_in_dtor=1
-
-build:tsan --config=san-common --copt=-fsanitize=thread --linkopt=-fsanitize=thread
-
-build:ubsan --config=san-common --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined
-build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
-# Workaround for the fact that Bazel links with $CC, not $CXX
-# https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
-build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
-# Abseil passes nullptr to memcmp with 0 size
-build:ubsan --copt=-fno-sanitize=nonnull-attribute
+# For easier debugging of build failures.
+common --announce_rc
+build --verbose_failures
 
 # Important: this flag ensures that we remain compliant with the C++ layering
 # check.
@@ -47,7 +42,76 @@ common --incompatible_check_testonly_for_output_files
 # Import Bazel 9 specific flags (such as --repo_contents_cache)
 # TODO: Remove it when --repo_contents_cache issue
 # has been resolved in bazel
-try-import-if-bazel-version >=9.0.0 %workspace%/ci/bazel9.bazelrc
+try-import-if-bazel-version >=9.0.0 %workspace%/bazel9.bazelrc
+
+# ==============================================================================
+# COMPILATION MODES & SANITIZERS
+# ==============================================================================
+build:dbg --compilation_mode=dbg
+build:opt --compilation_mode=opt
+
+build:san-common --config=dbg --strip=never --copt=-O1 --copt=-fno-omit-frame-pointer
+# TODO ASAN hits ODR violations with shared linkage due to
+# rules_proto / cc_proto_library cyclic dependency.
+build:san-common --dynamic_mode=off
+
+build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
+
+build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=memory
+build:msan --copt=-fsanitize-memory-track-origins
+build:msan --copt=-fsanitize-memory-use-after-dtor
+build:msan --action_env=MSAN_OPTIONS=poison_in_dtor=1
+
+# Use our instrumented LLVM libc++ in GHA.
+build:docker-msan --config=msan
+build:docker-msan --linkopt=-L/opt/libcxx_msan/lib --linkopt=-lc++abi
+build:docker-msan --linkopt=-Wl,-rpath,/opt/libcxx_msan/lib
+build:docker-msan --cxxopt=-stdlib=libc++ --linkopt=-stdlib=libc++
+
+build:tsan --config=san-common --copt=-fsanitize=thread --linkopt=-fsanitize=thread
+
+build:ubsan --config=san-common --copt=-fsanitize=undefined --linkopt=-fsanitize=undefined
+build:ubsan --action_env=UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+# Workaround for the fact that Bazel links with $CC, not $CXX
+# https://github.com/bazelbuild/bazel/issues/11122#issuecomment-613746748
+build:ubsan --copt=-fno-sanitize=function --copt=-fno-sanitize=vptr
+# Abseil passes nullptr to memcmp with 0 size
+build:ubsan --copt=-fno-sanitize=nonnull-attribute
+
+
+# ==============================================================================
+# LINUX & macOS PLATFORM CONFIG
+# ==============================================================================
+build:clang --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
+build:clang --cxxopt="-Woverloaded-virtual"
+build:clang --copt="-Wpointer-arith"
+build:clang --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"
+
+# Suppress all compiler warnings in external dependencies
+build:clang --per_file_copt=external/.*@-w
+build:clang --host_per_file_copt=external/.*@-w
+
+build:linux --config=clang
+
+build:macos --config=clang
+common:macos --xcode_version_config=@com_google_protobuf//.github:host_xcodes
+
+build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
+build:macos --crosstool_top=@local_config_apple_cc//:toolchain
+build:macos --host_crosstool_top=@local_config_apple_cc//:toolchain
+
+
+# ==============================================================================
+# WINDOWS PLATFORM CONFIG
+# ==============================================================================
+# Workaround for maximum path length issues
+build:windows --cxxopt=/std:c++17 --host_cxxopt=/std:c++17
+common:windows --enable_runfiles
 
 # Use clang-cl by default on Windows (see https://github.com/protocolbuffers/protobuf/issues/20085).
-build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl
+build:windows --extra_toolchains=@local_config_cc//:cc-toolchain-x64_windows-clang-cl
+build:clang-cl --extra_execution_platforms=//build_defs:x64_windows-clang-cl --host_platform=//build_defs:x64_windows-clang-cl
+build:msvc-cl --extra_execution_platforms=//build_defs:x64_windows-msvc-cl --host_platform=//build_defs:x64_windows-msvc-cl
+build:windows --config=clang-cl
+# Set BAZEL_SH, this is needed for bazel 8.6.0 WORKSPACE on windows
+build:windows --action_env=BAZEL_SH="C:/Program Files/Git/bin/bash.exe"

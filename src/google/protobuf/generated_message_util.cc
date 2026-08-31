@@ -19,16 +19,17 @@
 #include <type_traits>
 
 #include "absl/log/absl_check.h"
-
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/wire_format_lite.h"
+
 
 // Must be included last
 #include "google/protobuf/port_def.inc"
@@ -387,12 +388,13 @@ MessageLite* DuplicateIfNonNullInternal(MessageLite* message) {
 }
 
 void GenericSwap(MessageLite* lhs, MessageLite* rhs) {
-  std::unique_ptr<MessageLite> tmp(lhs->New());
-  tmp->CheckTypeAndMergeFrom(*lhs);
+  const ClassData* class_data = GetClassData(*lhs);
+  std::unique_ptr<MessageLite> tmp(class_data->New(nullptr));
+  class_data->MergeToFrom(*tmp, *lhs);
   lhs->Clear();
-  lhs->CheckTypeAndMergeFrom(*rhs);
+  class_data->MergeToFrom(*lhs, *rhs);
   rhs->Clear();
-  rhs->CheckTypeAndMergeFrom(*tmp);
+  class_data->MergeToFrom(*rhs, *tmp);
 }
 
 // Returns a message owned by this Arena.  This may require Own()ing or

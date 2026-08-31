@@ -868,6 +868,79 @@ TEST(MESSAGE_TEST_NAME, DynamicCastMessage) {
                                  test_all_types_pointer_const_ref));
 }
 
+TEST(MESSAGE_TEST_NAME, DynamicCastMessageBetweenBaseClasses) {
+  UNITTEST::TestAllTypes test_all_types;
+  MessageLite* message_lite_ptr = &test_all_types;
+  Message* message_ptr = &test_all_types;
+
+  // Tests MessageLite -> Message casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_lite_ptr), message_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_lite_const_ptr), message_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_lite_ref), message_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_lite_const_ref),
+              message_ptr);
+  }
+
+  // Tests Message -> MessageLite casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_ptr), message_lite_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_const_ptr),
+              message_lite_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_ref), message_lite_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests MessageLite -> MessageLite casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_lite_ptr),
+              message_lite_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_lite_const_ptr),
+              message_lite_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_lite_ref),
+              message_lite_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_lite_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests Message -> Message casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_ptr), message_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_const_ptr), message_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_ref), message_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DynamicCastMessage<Message>(message_const_ref), message_ptr);
+  }
+}
+
 TEST(MESSAGE_TEST_NAME, DynamicCastMessageLiteSharedPtrs) {
   auto test_all_types = std::make_shared<UNITTEST::TestAllTypes>();
 
@@ -948,6 +1021,77 @@ TEST(MESSAGE_TEST_NAME, DownCastMessageValidType) {
   const MessageLite& test_all_types_pointer_const_ref = test_all_types;
   EXPECT_EQ(&test_all_types, &DownCastMessage<UNITTEST::TestAllTypes>(
                                  test_all_types_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastMessageBetweenBaseClasses) {
+  UNITTEST::TestAllTypes test_all_types;
+  MessageLite* message_lite_ptr = &test_all_types;
+  Message* message_ptr = &test_all_types;
+
+  // Tests MessageLite -> Message casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_lite_ptr), message_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_lite_const_ptr), message_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_lite_ref), message_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_lite_const_ref), message_ptr);
+  }
+
+  // Tests Message -> MessageLite casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_ptr), message_lite_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_const_ptr),
+              message_lite_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_ref), message_lite_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests MessageLite -> MessageLite casts.
+  {
+    MessageLite* message_lite_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_lite_ptr), message_lite_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_lite_const_ptr),
+              message_lite_ptr);
+
+    MessageLite& message_lite_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_lite_ref),
+              message_lite_ptr);
+
+    const MessageLite& message_lite_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_lite_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests Message -> Message casts.
+  {
+    Message* message_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_ptr), message_ptr);
+
+    const Message* message_const_ptr = &test_all_types;
+    EXPECT_EQ(DownCastMessage<Message>(message_const_ptr), message_ptr);
+
+    Message& message_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_ref), message_ptr);
+
+    const Message& message_const_ref = test_all_types;
+    EXPECT_EQ(&DownCastMessage<Message>(message_const_ref), message_ptr);
+  }
 }
 
 TEST(MESSAGE_TEST_NAME, DownCastMessageLiteSharedPtrs) {
@@ -1040,6 +1184,52 @@ TEST(MESSAGE_TEST_NAME, CordFieldGetsProperlyRegisteredInTheArena) {
   EXPECT_THAT(internal::ArenaTestPeer::PeekCleanupListForTesting(&arena),
               Not(IsEmpty()));
   // We expect memory leaks here if the Cord was not properly destroyed.
+}
+
+TEST(MESSAGE_TEST_NAME, StringFieldDoesNotLeak_b552593973) {
+  const std::string long_string(1000, 'x');
+  {
+    Arena arena;
+    auto* msg = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    msg->set_optional_string(long_string);
+  }
+  {
+    Arena arena;
+    auto* msg = Arena::Create<UNITTEST::NestedTestAllTypes>(&arena);
+    msg->mutable_payload()->set_optional_string(long_string);
+  }
+  {
+    Arena arena;
+    UNITTEST::TestAllTypes src;
+    src.set_optional_string(long_string);
+    std::string serialized = src.SerializeAsString();
+    auto* msg1 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    ASSERT_TRUE(msg1->ParseFromString(serialized));
+
+    // Normal swap
+    auto* msg2 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    msg2->Swap(&*msg1);
+    EXPECT_EQ(msg1->optional_string(), "");
+    EXPECT_EQ(msg2->optional_string(), long_string);
+  }
+  {
+    Arena arena;
+    UNITTEST::TestAllTypes src;
+    src.set_optional_string(long_string);
+    std::string serialized = src.SerializeAsString();
+    auto* msg1 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    ASSERT_TRUE(msg1->ParseFromString(serialized));
+
+    // Change serialized so we can see differences after swap, but we expect
+    // both strings to be in a potentially donated state if inlined.
+    src.set_optional_string(long_string + long_string);
+    serialized = src.SerializeAsString();
+    auto* msg2 = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    ASSERT_TRUE(msg2->ParseFromString(serialized));
+    msg2->Swap(&*msg1);
+    EXPECT_EQ(msg1->optional_string(), long_string + long_string);
+    EXPECT_EQ(msg2->optional_string(), long_string);
+  }
 }
 
 #if GTEST_HAS_DEATH_TEST  // death tests do not work on Windows yet.
@@ -1528,9 +1718,6 @@ TEST(MESSAGE_TEST_NAME, MOMIParserEdgeCases) {
 }
 
 TEST(MESSAGE_TEST_NAME, MessageTraitsWork) {
-  EXPECT_EQ(
-      &UNITTEST::TestAllTypes::default_instance(),
-      internal::MessageTraits<UNITTEST::TestAllTypes>::default_instance());
   EXPECT_EQ(internal::GetClassData(UNITTEST::TestAllTypes::default_instance()),
             internal::MessageTraits<UNITTEST::TestAllTypes>::class_data());
 }

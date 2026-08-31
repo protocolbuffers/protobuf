@@ -34,13 +34,24 @@ bootstrap_upb_proto_library(
     strip_prefix = "third_party/protobuf/github/bootstrap/src",
 )
 
+bootstrap_upb_proto_library(
+    name = "json_enumvalue_options_upb_proto",
+    bootstrap_hdr = "json_enumvalue_options_bootstrap.h",
+    proto_lib_deps = ["//src/google/protobuf:json_enumvalue_options_proto"],
+    src_files = ["google/protobuf/json_enumvalue_options.proto"],
+    src_rules = [
+        "//:descriptor_proto_srcs",
+        "//:json_enumvalue_options_proto_srcs",
+    ],
+    strip_prefix = "third_party/protobuf/github/bootstrap/src",
+    deps = [":descriptor_upb_proto"],
+)
+
 bootstrap_cc_library(
     name = "reflection",
     hdrs = [
         "def.h",
-        "def.hpp",
         "message.h",
-        "message.hpp",
     ],
     bootstrap_deps = [
         ":internal",
@@ -57,6 +68,33 @@ bootstrap_cc_library(
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/port",
+    ],
+)
+
+bootstrap_cc_library(
+    name = "reflection_cc",
+    hdrs = [
+        "def.hpp",
+        "message.hpp",
+    ],
+    bootstrap_deps = [
+        ":descriptor_upb_proto",
+        ":internal",
+        ":internal_cc",
+        ":reflection",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/port",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -86,7 +124,6 @@ bootstrap_cc_library(
     hdrs = [
         "common.h",
         "def.h",
-        "def.hpp",
         "def_pool.h",
         "def_type.h",
         "enum_def.h",
@@ -110,14 +147,16 @@ bootstrap_cc_library(
         "internal/service_def.h",
         "internal/upb_edition_defaults.h",
         "message.h",
-        "message.hpp",
         "message_def.h",
         "message_reserved_range.h",
         "method_def.h",
         "oneof_def.h",
         "service_def.h",
     ],
-    bootstrap_deps = [":descriptor_upb_proto"],
+    bootstrap_deps = [
+        ":descriptor_upb_proto",
+        ":json_enumvalue_options_upb_proto",
+    ],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
@@ -135,6 +174,31 @@ bootstrap_cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire",
+    ],
+)
+
+bootstrap_cc_library(
+    name = "internal_cc",
+    hdrs = [
+        "def.hpp",
+        "message.hpp",
+    ],
+    bootstrap_deps = [
+        ":descriptor_upb_proto",
+        ":internal",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//upb:__subpackages__"],
+    deps = [
+        "//upb/base",
+        "//upb/mem",
+        "//upb/message",
+        "//upb/mini_descriptor",
+        "//upb/mini_table",
+        "//upb/port",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -175,6 +239,7 @@ cc_test(
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/port",
+        "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -188,7 +253,9 @@ cc_test(
     ],
     deps = [
         ":internal",
+        ":internal_cc",
         ":reflection",
+        ":reflection_cc",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:unittest_upb_reflection_proto",
@@ -211,7 +278,7 @@ compile_edition_defaults(
     srcs = [
         "//:descriptor_proto",
     ],
-    maximum_edition = "2024",
+    maximum_edition = "2026",
     minimum_edition = "PROTO2",
 )
 

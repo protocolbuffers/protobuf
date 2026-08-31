@@ -206,14 +206,17 @@ static std::string RustModuleForContainingType(
     parent = parent->containing_type();
   }
 
-  // Reverse the vector to get submodules in outer-to-inner order).
+  // Reverse the vector to get submodules in outer-to-inner order.
   std::reverse(modules.begin(), modules.end());
 
-  // If there are any modules at all, push an empty string on the end so that
-  // we get the trailing ::
-  if (!modules.empty()) {
-    modules.push_back("");
-  }
+  // Every type is defined inside its file's mod. References becomes the
+  // canonical `super::<file_mod>::<type_mod>` path instead of relying on the
+  // crate-root re-export, which will be disabled soon.
+  modules.insert(modules.begin(), RustModuleName(file));
+
+  // Push an empty string on the end so that we get the trailing :: to connect
+  // to the type mod name.
+  modules.push_back("");
 
   std::string crate_relative = absl::StrJoin(modules, "::");
 
@@ -241,13 +244,36 @@ std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
                                      *oneof.file());
 }
 
-std::string RustInternalModuleName(const FileDescriptor& file) {
-  return RsSafeName(
-      absl::StrReplaceAll(StripProto(file.name()), {
-                                                       {"_", "__"},
-                                                       {"/", "_s"},
-                                                       {"-", "__"},
-                                                   }));
+std::string RustModuleName(const FileDescriptor& file) {
+  // Derive a readable and (mostly) unique Rust module name from the full
+  // proto file path, e.g. `foo/bar/baz.proto` becomes `foo_bar_baz_proto`.
+  absl::string_view name = file.name();
+  absl::string_view prefix = "pb_";
+
+  std::string result;
+  result.reserve(name.size() + prefix.size());
+
+  // Rust identifiers must start with a letter or underscore. If the path begins
+  // with anything else (e.g. a digit), prepend `pb_` so the result is valid.
+  if (name.empty() || !absl::ascii_isalpha(name[0])) {
+    result += prefix;
+  }
+
+  for (char c : name) {
+    // Common path/file separators (`/`, `-`, `.`, and `_`) all collapse to a
+    // single underscore for better readability.
+    if (c == '/' || c == '-' || c == '.' || c == '_') {
+      result += '_';
+    } else if (absl::ascii_isalnum(c)) {
+      result += c;
+    } else {
+      // Escape any other characters that aren't valid in Rust identifiers
+      // by substituting them with an underscore followed by their hex value
+      // and another underscore.
+      absl::StrAppendFormat(&result, "_%02x_", static_cast<unsigned char>(c));
+    }
+  }
+  return RsSafeName(result);
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {

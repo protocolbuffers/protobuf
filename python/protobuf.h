@@ -125,7 +125,7 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void);
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map);
 
 // Adds the given object to the map, indexed by the given key.
-void PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj);
+bool PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj);
 
 // Removes the given key from the cache. It must exist in the cache currently.
 void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key);
@@ -160,8 +160,8 @@ void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
 
 // The object cache is a global WeakMap for mapping upb objects to the
 // corresponding wrapper.
-void PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
-void PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
+bool PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
+bool PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
                              PyObject* py_obj);
 void PyUpb_ObjCache_Delete(const void* key);
 PyObject* PyUpb_ObjCache_Get(const void* key);  // returns NULL if not present.
@@ -173,6 +173,8 @@ PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
 
 PyObject* PyUpb_Arena_New(void);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
+bool PyUpb_Arena_IsFrozen(PyObject* arena);
+void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen);
 
 // -----------------------------------------------------------------------------
 // Utilities
@@ -205,7 +207,11 @@ static inline void PyUpb_Dealloc(void* self) {
   PyTypeObject* tp = Py_TYPE(self);
   assert(PyType_GetFlags(tp) & Py_TPFLAGS_HEAPTYPE);
   freefunc tp_free = (freefunc)PyType_GetSlot(tp, Py_tp_free);
-  tp_free(self);
+  if (tp_free) {
+    tp_free(self);
+  } else {
+    PyObject_Free(self);
+  }
   Py_DECREF(tp);
 }
 
@@ -234,5 +240,9 @@ PyObject* PyUpb_SetFrozenError(void);
 // Sets a Python FrozenInstanceError with the given custom message and returns
 // NULL.
 PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg);
+// Emits a DeprecationWarning when mutating a frozen message or container in
+// OSS.
+int PyUpb_WarnFrozen(void);
+bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg);
 
 #endif  // PYUPB_PROTOBUF_H__

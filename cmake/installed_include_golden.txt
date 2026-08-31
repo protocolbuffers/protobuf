@@ -10,6 +10,7 @@ google/protobuf/arena_cleanup.h
 google/protobuf/arenastring.h
 google/protobuf/arenaz_sampler.h
 google/protobuf/c_sharp_features.proto
+google/protobuf/class_data.h
 google/protobuf/compiler/code_generator.h
 google/protobuf/compiler/code_generator_lite.h
 google/protobuf/compiler/command_line_interface.h
@@ -34,6 +35,7 @@ google/protobuf/compiler/php/names.h
 google/protobuf/compiler/plugin.h
 google/protobuf/compiler/plugin.pb.h
 google/protobuf/compiler/plugin.proto
+google/protobuf/compiler/python/names.h
 google/protobuf/compiler/retention.h
 google/protobuf/compiler/scc.h
 google/protobuf/compiler/subprocess.h
@@ -44,6 +46,7 @@ google/protobuf/cpp_features.pb.h
 google/protobuf/cpp_features.proto
 google/protobuf/cpp_file_options.pb.h
 google/protobuf/cpp_file_options.proto
+google/protobuf/cpp_options.proto
 google/protobuf/descriptor.h
 google/protobuf/descriptor.pb.h
 google/protobuf/descriptor.proto
@@ -94,6 +97,9 @@ google/protobuf/java_features.proto
 google/protobuf/json/json.h
 google/protobuf/json_enumvalue_options.pb.h
 google/protobuf/json_enumvalue_options.proto
+google/protobuf/json_enumvalue_options.upb.h
+google/protobuf/json_enumvalue_options.upb_minitable.h
+google/protobuf/json_options.proto
 google/protobuf/map.h
 google/protobuf/map_entry.h
 google/protobuf/map_field.h
@@ -101,10 +107,13 @@ google/protobuf/map_field_lite.h
 google/protobuf/map_type_handler.h
 google/protobuf/message.h
 google/protobuf/message_lite.h
+google/protobuf/message_traits.h
 google/protobuf/metadata.h
 google/protobuf/metadata_lite.h
 google/protobuf/micro_string.h
 google/protobuf/naming_style.h
+google/protobuf/offset_ptr.h
+google/protobuf/option_interpreter.h
 google/protobuf/os_macros_restore.inc
 google/protobuf/os_macros_undef.inc
 google/protobuf/parse_context.h
@@ -127,6 +136,7 @@ google/protobuf/serial_arena.h
 google/protobuf/service.h
 google/protobuf/source_context.pb.h
 google/protobuf/source_context.proto
+google/protobuf/static_message_factory.h
 google/protobuf/string_block.h
 google/protobuf/struct.pb.h
 google/protobuf/struct.proto
@@ -143,6 +153,7 @@ google/protobuf/timestamp.pb.h
 google/protobuf/timestamp.proto
 google/protobuf/type.pb.h
 google/protobuf/type.proto
+google/protobuf/type_id.h
 google/protobuf/unknown_field_set.h
 google/protobuf/util/delimited_message_util.h
 google/protobuf/util/field_comparator.h
@@ -172,7 +183,6 @@ upb/json/decode.h
 upb/json/encode.h
 upb/lex/atoi.h
 upb/lex/round_trip.h
-upb/lex/strtod.h
 upb/lex/unicode.h
 upb/mem/alloc.h
 upb/mem/arena.h
@@ -187,6 +197,7 @@ upb/message/map.h
 upb/message/map_gencode_util.h
 upb/message/merge.h
 upb/message/message.h
+upb/message/unknown_fields.h
 upb/message/value.h
 upb/mini_descriptor/build_enum.h
 upb/mini_descriptor/decode.h
@@ -203,12 +214,12 @@ upb/mini_table/message.h
 upb/mini_table/sub.h
 upb/port/atomic.h
 upb/port/def.inc
+upb/port/overflow.h
 upb/port/sanitizers.h
 upb/port/undef.inc
 upb/port/vsnprintf_compat.h
 upb/reflection/common.h
 upb/reflection/def.h
-upb/reflection/def.hpp
 upb/reflection/def_pool.h
 upb/reflection/def_type.h
 upb/reflection/descriptor_bootstrap.h
@@ -218,8 +229,8 @@ upb/reflection/enum_value_def.h
 upb/reflection/extension_range.h
 upb/reflection/field_def.h
 upb/reflection/file_def.h
+upb/reflection/json_enumvalue_options_bootstrap.h
 upb/reflection/message.h
-upb/reflection/message.hpp
 upb/reflection/message_def.h
 upb/reflection/message_reserved_range.h
 upb/reflection/method_def.h
@@ -236,6 +247,7 @@ upb/wire/decode_fast/combinations.h
 upb/wire/decode_fast/data.h
 upb/wire/decode_fast/select.h
 upb/wire/encode.h
+upb/wire/encode_extension.h
 upb/wire/eps_copy_input_stream.h
 upb/wire/reader.h
 upb/wire/types.h

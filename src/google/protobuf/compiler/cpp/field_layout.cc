@@ -37,16 +37,14 @@ std::unique_ptr<MessageLayoutHelper> CreateMessageLayoutHelper(
 }  // namespace
 
 FieldLayout FieldLayout::BuildOptimizedLayout(
-    const google::protobuf::Descriptor* absl_nonnull descriptor, const Options& options,
-    int& num_weak_fields) {
+    const google::protobuf::Descriptor* absl_nonnull descriptor, const Options& options) {
   std::vector<const google::protobuf::FieldDescriptor* absl_nonnull> optimized_order;
   std::vector<int> has_bit_indices;
   int max_has_bit_index = 0;
 
   // Compute optimized field order to be used for layout and initialization
   // purposes.
-  num_weak_fields =
-      CollectFieldsExcludingWeakAndOneof(descriptor, options, optimized_order);
+  CollectFieldsExcludingOneof(descriptor, options, optimized_order);
   const size_t initial_size = optimized_order.size();
 
   auto message_layout_helper = CreateMessageLayoutHelper(descriptor, options);

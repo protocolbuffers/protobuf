@@ -36,6 +36,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/recursive_message_set.pb.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/test_util2.h"
 #include "google/protobuf/text_format.h"
@@ -45,6 +46,7 @@
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
 #include "google/protobuf/unittest_proto3_extensions.pb.h"
 #include "google/protobuf/unittest_utf8_string_extensions.pb.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
@@ -523,8 +525,8 @@ TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
 }
 
 TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
-  if (sizeof(void*) != 8) {
-    GTEST_SKIP() << "This test is only correct on 64-bit systems.";
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
   }
   Arena arena;
   auto* message = Arena::Create<unittest::TestAllExtensions>(&arena);
@@ -2059,6 +2061,71 @@ TEST(ExtensionSet, BytesWithInvalidUTF8Succeeds) {
   EXPECT_THAT(parsed_message, google::protobuf::EqualsProto(R"pb(
                 [proto2_unittest.optional_bytes_extension]: "\xFF"
               )pb"));
+}
+
+TEST(ExtensionSetTest, MessageSetRecursionLimitIsConsistent) {
+  DynamicMessageFactory factory;
+  const Descriptor* desc =
+      DescriptorPool::generated_pool()->FindMessageTypeByName(
+          "proto2_unittest.RecursiveMessageSet");
+  const Message* prototype = factory.GetPrototype(desc);
+
+  const auto find_first_failure = [&](bool invert_fields, bool dynamic) {
+    int depth = 0;
+    std::string serialized;
+    while (true) {
+      ++depth;
+      proto2_unittest::TestEmptyMessage empty;
+      UnknownFieldSet* ufs = empty.mutable_unknown_fields();
+      UnknownFieldSet* group = ufs->AddGroup(1);
+      constexpr int kFieldNumber =
+          proto2_unittest::RecursiveMessageSet::kMessageSetExtensionFieldNumber;
+      if (invert_fields) {
+        group->AddLengthDelimited(3, serialized);
+        group->AddVarint(2, kFieldNumber);
+      } else {
+        group->AddVarint(2, kFieldNumber);
+        group->AddLengthDelimited(3, serialized);
+      }
+      serialized = empty.SerializeAsString();
+
+      std::unique_ptr<Message> msg(
+          dynamic ? prototype->New()
+                  : new proto2_unittest::RecursiveMessageSet());
+      if (!msg->ParseFromString(serialized)) {
+        return depth;
+      }
+    }
+  };
+
+  int control = find_first_failure(false, false);
+
+  for (bool invert_fields : {false, true}) {
+    SCOPED_TRACE(invert_fields);
+    for (bool dynamic : {false, true}) {
+      SCOPED_TRACE(dynamic);
+      int depth = find_first_failure(invert_fields, dynamic);
+
+      EXPECT_EQ(control, depth);
+      EXPECT_LE(depth, io::CodedInputStream::GetDefaultRecursionLimit());
+    }
+  }
+}
+
+TEST(ExtensionSetTest, MergeLargeExtensionSetToEmpty) {
+  ExtensionSet src;
+  ExtensionSet dst;
+  constexpr int kNumExtensions = 70000;  // > 2**16 (65536)
+  for (int i = 1; i <= kNumExtensions; ++i) {
+    src.Set<int32_t>(/*arena=*/nullptr, i, WireFormatLite::TYPE_INT32, i,
+                     /*descriptor=*/nullptr);
+  }
+  dst.MergeFrom(/*arena=*/nullptr, /*extendee=*/nullptr, src,
+                /*other_arena=*/nullptr);
+  EXPECT_EQ(dst.NumExtensions(), kNumExtensions);
+  for (int i = 1; i <= kNumExtensions; ++i) {
+    EXPECT_EQ(dst.Get<int32_t>(i, 0), i);
+  }
 }
 
 }  // namespace

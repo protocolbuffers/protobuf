@@ -8,6 +8,7 @@
 package com.google.protobuf;
 
 import static com.google.protobuf.Internal.checkNotNull;
+import static java.lang.Math.min;
 
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.EnumDescriptor;
@@ -128,8 +129,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
    * @param getBytesForString whether to generate ByteString for string fields
    */
   private Map<FieldDescriptor, Object> getAllFieldsMutable(boolean getBytesForString) {
-    final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
     final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
+    // Cap the initial map capacity at 256. Messages with an enormous number of fields (such as
+    // giant oneofs) are typically very sparse in practice, so allocating a massive array upfront
+    // would be pointlessly wasteful.
+    final SmallSortedMap<FieldDescriptor> result =
+        new SmallSortedMap<>(min(fieldAccessorTable.fields.length, 256));
 
     final Descriptor descriptor = fieldAccessorTable.descriptor;
     final List<FieldDescriptor> fields = descriptor.getFields();
@@ -456,7 +461,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     if (minCapacity <= size) {
       minCapacity = size * 2;
     }
-    if (minCapacity <= 0) {
+    if (minCapacity < 0) {
       minCapacity = AbstractProtobufList.DEFAULT_CAPACITY;
     }
 
@@ -506,6 +511,18 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   @SuppressWarnings("unchecked")
   public abstract static class Builder<BuilderT extends Builder<BuilderT>>
       extends AbstractMessage.Builder<BuilderT> {
+    protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(ListT list) {
+      return GeneratedMessage.makeMutableCopy(list, 0);
+    }
+
+    protected static <ListT extends ProtobufList<?>> ListT makeMutableCopy(
+        ListT list, int minCapacity) {
+      return GeneratedMessage.makeMutableCopy(list, minCapacity);
+    }
+
+    protected static <T> ProtobufList<T> emptyList(Class<T> elementType) {
+      return GeneratedMessage.emptyList(elementType);
+    }
 
     private BuilderParent builderParent;
 
@@ -599,8 +616,12 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
     /** Internal helper which returns a mutable map. */
     private Map<FieldDescriptor, Object> getAllFieldsMutable() {
-      final TreeMap<FieldDescriptor, Object> result = new TreeMap<>();
       final FieldAccessorTable fieldAccessorTable = internalGetFieldAccessorTable();
+      // Cap the initial map capacity at 256. Messages with an enormous number of fields (such as
+      // giant oneofs) are typically very sparse in practice, so allocating a massive array upfront
+      // would be pointlessly wasteful.
+      final SmallSortedMap<FieldDescriptor> result =
+          new SmallSortedMap<>(min(fieldAccessorTable.fields.length, 256));
       final Descriptor descriptor = fieldAccessorTable.descriptor;
       final List<FieldDescriptor> fields = descriptor.getFields();
 
@@ -915,6 +936,11 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       // Note that we can't use descriptor names here because this method will
       // be called when descriptor is being initialized.
       throw new IllegalArgumentException("No map fields found in " + getClass().getName());
+    }
+
+    // Needed to provide access from builder subclasses.
+    protected static boolean isStringEmpty(final Object value) {
+      return GeneratedMessage.isStringEmpty(value);
     }
   }
 
@@ -3465,8 +3491,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
     Arrays.sort(keys);
     for (int key : keys) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3489,8 +3514,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     }
     Arrays.sort(keys);
     for (long key : keys) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3512,8 +3536,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
     keys = m.keySet().toArray(keys);
     Arrays.sort(keys);
     for (String key : keys) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3540,8 +3563,7 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       boolean key)
       throws IOException {
     if (m.containsKey(key)) {
-      out.writeMessage(
-          fieldNumber, defaultEntry.newBuilderForType().setKey(key).setValue(m.get(key)).build());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, key, m.get(key));
     }
   }
 
@@ -3550,13 +3572,16 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       CodedOutputStream out, Map<K, V> m, MapEntry<K, V> defaultEntry, int fieldNumber)
       throws IOException {
     for (Map.Entry<K, V> entry : m.entrySet()) {
-      out.writeMessage(
-          fieldNumber,
-          defaultEntry
-              .newBuilderForType()
-              .setKey(entry.getKey())
-              .setValue(entry.getValue())
-              .buildPartial());
+      serializeMapFieldEntryTo(out, defaultEntry, fieldNumber, entry.getKey(), entry.getValue());
     }
+  }
+
+  private static <K, V> void serializeMapFieldEntryTo(
+      CodedOutputStream out, MapEntry<K, V> defaultEntry, int fieldNumber, K key, V value)
+      throws IOException {
+    out.writeTag(fieldNumber, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    out.writeUInt32NoTag(
+        MapEntryLite.computeSerializedSize(defaultEntry.getMetadata(), key, value));
+    MapEntryLite.writeTo(out, defaultEntry.getMetadata(), key, value);
   }
 }

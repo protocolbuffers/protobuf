@@ -28,6 +28,9 @@ void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
       {
           {"virts", [&] { GenerateMethodSignatures(kVirtual, printer); }},
           {"impls", [&] { GenerateMethodSignatures(kNonVirtual, printer); }},
+          {"done_t",
+           "::google::protobuf::Closure*"
+          },
       },
       R"cc(
         class $classname$_Stub;
@@ -55,7 +58,7 @@ void ServiceGenerator::GenerateDeclarations(io::Printer* printer) {
               $pb$::RpcController* $nullable$ controller,
               const $pb$::Message* $nonnull$ request,
               $pb$::Message* $nonnull$ response,
-              ::google::protobuf::Closure* $nullable$ done) override;
+              $done_t$ $nullable$ done) override;
 
           const $pb$::Message& GetRequestPrototype(
               const $pb$::MethodDescriptor* $nonnull$ method) const override;
@@ -109,7 +112,8 @@ void ServiceGenerator::GenerateMethodSignatures(VirtualOrNot virtual_or_not,
                                 const $input$* $nonnull$ request,
                                 $output$* $nonnull$ response,
                                 ::google::protobuf::Closure* $nullable$ done)$ override$;
-        )");
+        )"
+    );
   }
 }
 
@@ -179,7 +183,8 @@ void ServiceGenerator::GenerateNotImplementedMethods(io::Printer* printer) {
             controller->SetFailed("Method $name$() not implemented.");
             done->Run();
           }
-        )cc");
+        )cc"
+    );
   }
 }
 
@@ -189,22 +194,25 @@ void ServiceGenerator::GenerateCallMethod(io::Printer* printer) {
           {"index", absl::StrCat(index_in_metadata_)},
           {"cases", [&] { GenerateCallMethodCases(printer); }},
       },
-      R"cc(
+      R"(
         void $classname$::CallMethod(
             const $pb$::MethodDescriptor* $nonnull$ method,
             $pb$::RpcController* $nullable$ controller,
             const $pb$::Message* $nonnull$ request,
             $pb$::Message* $nonnull$ response, ::google::protobuf::Closure* $nullable$ done) {
-          ABSL_DCHECK_EQ(method->service(), $file_level_service_descriptors$[$index$]);
-          switch (method->index()) {
-            $cases$;
+      )"
+      R"(
+        ABSL_DCHECK_EQ(method->service(),
+                       $file_level_service_descriptors$[$index$]);
+        switch (method->index()) {
+          $cases$;
 
-            default:
-              ABSL_LOG(FATAL) << "Bad method index; this should never happen.";
-              break;
-          }
+          default:
+            ABSL_LOG(FATAL) << "Bad method index; this should never happen.";
+            break;
         }
-      )cc");
+      }
+      )");
 }
 
 void ServiceGenerator::GenerateGetPrototype(RequestOrResponse which,
@@ -287,7 +295,8 @@ void ServiceGenerator::GenerateStubMethods(io::Printer* printer) {
             channel_->CallMethod(descriptor()->method($index$), controller,
                                  request, response, done);
           }
-        )cc");
+        )cc"
+    );
   }
 }
 

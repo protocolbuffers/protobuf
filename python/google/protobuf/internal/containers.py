@@ -19,6 +19,7 @@ are:
 import collections.abc
 import copy
 import pickle
+import warnings
 from typing import (
     Any,
     Iterable,
@@ -40,6 +41,16 @@ _V = TypeVar('_V')
 
 from google.protobuf.descriptor import FieldDescriptor
 from google.protobuf import message
+
+
+def _CheckFrozen(is_frozen: bool, msg: str) -> None:
+  if is_frozen:
+    warnings.warn(
+        'Mutating messages or containers returned by GetOptions() is'
+        ' deprecated and will raise an exception in a future release.',
+        category=FutureWarning,
+        stacklevel=3,
+    )
 
 
 class BaseContainer(Sequence[_T]):
@@ -89,8 +100,7 @@ class BaseContainer(Sequence[_T]):
     self._frozen = True
 
   def _AssureWritable(self) -> 'BaseContainer[_T]':
-    if self._frozen:
-      raise message.FrozenInstanceError('Container is immutable')
+    _CheckFrozen(self._frozen, 'Container is immutable')
     return self
 
   def sort(self, *args, **kwargs) -> None:
@@ -447,8 +457,7 @@ class ScalarMap(MutableMapping[_K, _V]):
     self._frozen = True
 
   def _AssureWritable(self) -> 'ScalarMap[_K, _V]':
-    if self._frozen:
-      raise message.FrozenInstanceError('Map is immutable')
+    _CheckFrozen(self._frozen, 'Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:
@@ -582,8 +591,7 @@ class MessageMap(MutableMapping[_K, _V]):
       val._SetFrozen()
 
   def _AssureWritable(self) -> 'MessageMap[_K, _V]':
-    if self._frozen:
-      raise message.FrozenInstanceError('Map is immutable')
+    _CheckFrozen(self._frozen, 'Map is immutable')
     return self
 
   def __getitem__(self, key: _K) -> _V:

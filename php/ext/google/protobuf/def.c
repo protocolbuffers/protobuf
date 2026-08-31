@@ -971,7 +971,7 @@ static void add_descriptor(upb_DefPool* symtab,
  * Adds the given descriptor data to this DescriptorPool.
  */
 static void add_descriptor_set(upb_DefPool* symtab, const char* data,
-                               int data_len, upb_Arena* arena) {
+                               size_t data_len, upb_Arena* arena) {
   size_t i, n;
   google_protobuf_FileDescriptorSet* set;
   const google_protobuf_FileDescriptorProto* const* files;
@@ -1020,12 +1020,19 @@ PHP_METHOD(DescriptorPool, internalAddGeneratedFile) {
   char* data = NULL;
   zend_long data_len;
   zend_bool use_nested_submsg = false;
+  zval* custom_json_names = NULL;
   upb_Arena* arena;
 
-  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|b", &data, &data_len,
-                            &use_nested_submsg) != SUCCESS) {
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|bz", &data, &data_len,
+                            &use_nested_submsg,
+                            &custom_json_names) != SUCCESS) {
     return;
   }
+
+  // custom_json_names is passed by generated PHP metadata for pure-PHP mode,
+  // but is unused in the C extension because upb parses enum JSON names
+  // directly from the descriptor data.
+  (void)custom_json_names;
 
   arena = upb_Arena_New();
   add_descriptor_set(intern->symtab, data, data_len, arena);
@@ -1037,9 +1044,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_lookupByName, 0, 0, 1)
   ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_addgeneratedfile, 0, 0, 2)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_addgeneratedfile, 0, 0, 1)
   ZEND_ARG_INFO(0, data)
-  ZEND_ARG_INFO(0, data_len)
+  ZEND_ARG_INFO(0, use_nested_submsg)
+  ZEND_ARG_INFO(0, custom_json_names)
 ZEND_END_ARG_INFO()
 
 static zend_function_entry DescriptorPool_methods[] = {

@@ -1420,6 +1420,38 @@ TEST(LiteTest, DynamicCastMessageInvalidReferenceType) {
 #endif
 }
 
+TEST(MESSAGE_TEST_NAME, DynamicCastMessageBetweenBaseClasses) {
+  CastType1 test_type_1;
+
+  // Tests MessageLite -> MessageLite casts.
+  {
+    MessageLite* message_lite_ptr = &test_type_1;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_lite_ptr),
+              message_lite_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_type_1;
+    EXPECT_EQ(DynamicCastMessage<MessageLite>(message_lite_const_ptr),
+              message_lite_ptr);
+
+    MessageLite& message_lite_ref = test_type_1;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_lite_ref),
+              message_lite_ptr);
+
+    const MessageLite& message_lite_const_ref = test_type_1;
+    EXPECT_EQ(&DynamicCastMessage<MessageLite>(message_lite_const_ref),
+              message_lite_ptr);
+  }
+
+  // Tests MessageLite -> Message casts fail.
+  {
+    MessageLite* message_lite_ptr = &test_type_1;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_lite_ptr), nullptr);
+
+    const MessageLite* message_lite_const_ptr = &test_type_1;
+    EXPECT_EQ(DynamicCastMessage<Message>(message_lite_const_ptr), nullptr);
+  }
+}
+
 TEST(LiteTest, DownCastMessageValidType) {
   CastType1 test_type_1;
 
@@ -1439,6 +1471,28 @@ TEST(LiteTest, DownCastMessageValidType) {
   const MessageLite& test_type_1_pointer_const_ref = test_type_1;
   EXPECT_EQ(&test_type_1,
             &DownCastMessage<CastType1>(test_type_1_pointer_const_ref));
+}
+
+TEST(MESSAGE_TEST_NAME, DownCastMessageBetweenBaseClasses) {
+  CastType1 test_type_1;
+
+  // Tests MessageLite -> MessageLite casts.
+  {
+    MessageLite* message_lite_ptr = &test_type_1;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_lite_ptr), message_lite_ptr);
+
+    const MessageLite* message_lite_const_ptr = &test_type_1;
+    EXPECT_EQ(DownCastMessage<MessageLite>(message_lite_const_ptr),
+              message_lite_ptr);
+
+    MessageLite& message_lite_ref = test_type_1;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_lite_ref),
+              message_lite_ptr);
+
+    const MessageLite& message_lite_const_ref = test_type_1;
+    EXPECT_EQ(&DownCastMessage<MessageLite>(message_lite_const_ref),
+              message_lite_ptr);
+  }
 }
 
 #if GTEST_HAS_DEATH_TEST
@@ -1462,6 +1516,31 @@ TEST(LiteTest, DownCastMessageInvalidReferenceType) {
       (void)DownCastMessage<CastType2>(test_type_1_pointer),
       absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(), " to ",
                    CastType2::default_instance().GetTypeName()));
+}
+
+TEST(LiteTest, DynamicCastMessageLiteReferenceToFullFails) {
+  CastType1 test_type_1;
+
+  MessageLite& test_type_1_ref = test_type_1;
+
+#if defined(ABSL_HAVE_EXCEPTIONS)
+  EXPECT_THROW((void)DynamicCastMessage<Message>(test_type_1_ref),
+               std::bad_cast);
+#else
+  ASSERT_DEATH((void)DynamicCastMessage<Message>(test_type_1_ref),
+               absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(),
+                            " to Message"));
+#endif
+}
+
+TEST(LiteTest, DownCastMessageLiteToFullFails) {
+  CastType1 test_type_1;
+
+  MessageLite& test_type_1_ref = test_type_1;
+
+  ASSERT_DEBUG_DEATH((void)DownCastMessage<Message>(test_type_1_ref),
+                     absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(),
+                                  " to Message"));
 }
 #endif  // GTEST_HAS_DEATH_TEST
 

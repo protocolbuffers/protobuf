@@ -61,7 +61,8 @@ class ServiceOptions extends \Google\Protobuf\Internal\Message
      *           The parser stores options it doesn't recognize here. See above.
      * }
      */
-    public function __construct($data = NULL) {
+    public function __construct($data = null)
+    {
         \GPBMetadata\Google\Protobuf\Internal\Descriptor::initOnce();
         parent::__construct($data);
     }
