@@ -26,6 +26,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
@@ -813,17 +814,23 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedFixed(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  auto& field = RefAt<RepeatedField<LayoutType>>(msg, data.offset());
-  Arena* arena = msg->GetArena();
   const auto tag = UnalignedLoad<TagType>(ptr);
-  do {
-    field.AddWithArena(arena, UnalignedLoad<LayoutType>(ptr + sizeof(TagType)));
-    ptr += sizeof(TagType) + sizeof(LayoutType);
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-  } while (UnalignedLoad<TagType>(ptr) == tag);
+  {
+    auto adder = RefAt<RepeatedField<LayoutType>>(msg, data.offset())
+                     .MakeAdder(GetSerialArena(msg->GetArena()));
+    do {
+      adder.Add(UnalignedLoad<LayoutType>(ptr + sizeof(TagType)));
+      ptr += sizeof(TagType) + sizeof(LayoutType);
+      // We use Done to make sure we trim when we are really done with the
+      // field.
+      if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+        goto parse_loop;
+      }
+    } while (UnalignedLoad<TagType>(ptr) == tag);
+  }
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+parse_loop:
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastF32R1(PROTOBUF_TC_PARAM_DECL) {
@@ -1129,40 +1136,67 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedVarint(
   SetCachedHasBit(hasbits, data.hasbit_idx());
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
-  // Count the number of varint (same as number of bytes with 0 in top bit)
-  // and preallocte space in repeated field.
-  int len = 0;
-  auto ptr2 = ptr;
-  do {
-    ptr2 += sizeof(TagType);
-    // Defend against overflowing available data due to malformed input of
-    // infinite number of bytes with top bit set. Longest legal varint is 10
-    // bytes, which is also < 16 bytes of slop.
-    int limit = 10;
-    while ((*ptr2 & 0x80) && limit--) ptr2++;
-    len++;
-    ptr2++;
-  } while (ctx->DataAvailable(ptr2) &&
-           UnalignedLoad<TagType>(ptr2) == expected_tag);
-  int added = 0;
-  field.Reserve(internal::CheckedAdd(field.size(), len));
-  // Allows us to skip SOO checks.
-  FieldType* x = field.AddNAlreadyReserved(len);
-  do {
-    ABSL_DCHECK(ctx->DataAvailable(ptr));
-    ABSL_DCHECK_EQ(UnalignedLoad<TagType>(ptr), expected_tag);
-    ptr += sizeof(TagType);
-    FieldType tmp;
-    ptr = ParseVarint(ptr, &tmp);
-    if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
-      field.Truncate(x - field.data());
-      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-    added++;
-    *x = ZigZagDecodeHelper<FieldType, zigzag>(tmp);
-    x++;
-  } while (added < len);
+  SerialArena* arena = GetSerialArena(msg->GetArena());
+  if (arena != nullptr) {
+    // If we have an arena, we skip the scanning because we can grow in place.
+    auto adder = field.MakeAdder(arena);
+    do {
+      ptr += sizeof(TagType);
+      FieldType tmp;
+      ptr = ParseVarint(ptr, &tmp);
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+        goto error;
+      }
+      adder.Add(ZigZagDecodeHelper<FieldType, zigzag>(tmp));
+      // We use Done to make sure we trim when we are really done with the
+      // field.
+      if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+        goto parse_loop;
+      }
+    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+    goto tag_dispatch;
+  } else {
+    // Count the number of varint (same as number of bytes with 0 in top bit)
+    // and preallocate space in repeated field.
+    int len = 0;
+    auto ptr2 = ptr;
+    do {
+      ptr2 += sizeof(TagType);
+      // Defend against overflowing available data due to malformed input of
+      // infinite number of bytes with top bit set. Longest legal varint is 10
+      // bytes, which is also < 16 bytes of slop.
+      int limit = 10;
+      while ((*ptr2 & 0x80) && limit--) ptr2++;
+      len++;
+      ptr2++;
+    } while (ctx->DataAvailable(ptr2) &&
+             UnalignedLoad<TagType>(ptr2) == expected_tag);
+    int added = 0;
+    field.Reserve(internal::CheckedAdd(field.size(), len));
+    // Allows us to skip SOO checks.
+    FieldType* x = field.AddNAlreadyReserved(len);
+    do {
+      ABSL_DCHECK(ctx->DataAvailable(ptr));
+      ABSL_DCHECK_EQ(UnalignedLoad<TagType>(ptr), expected_tag);
+      ptr += sizeof(TagType);
+      FieldType tmp;
+      ptr = ParseVarint(ptr, &tmp);
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+        field.Truncate(x - field.data());
+        goto error;
+      }
+      added++;
+      *x = ZigZagDecodeHelper<FieldType, zigzag>(tmp);
+      x++;
+    } while (added < len);
+  }
+
+tag_dispatch:
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+parse_loop:
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+error:
+  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8R1(PROTOBUF_TC_PARAM_DECL) {
@@ -1219,20 +1253,19 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
+  SerialArena* arena = GetSerialArena(msg->GetArena());
+  if (arena != nullptr) {
+    // If we have an arena, we skip the scanning because we can grow in place.
+    auto adder = field.MakeAdder(arena);
+    return ctx->ReadPackedVarint(ptr, [&](uint64_t v) {
+      adder.Add(
+          ZigZagDecodeHelper<FieldType, zigzag>(static_cast<FieldType>(v)));
+    });
+  }
   return ctx->ReadPackedVarintWithField(
-      ptr, msg->GetArena(),
-      [](uint64_t varint) {
-        FieldType val;
-        if (zigzag) {
-          if (sizeof(FieldType) == 8) {
-            val = WireFormatLite::ZigZagDecode64(varint);
-          } else {
-            val = WireFormatLite::ZigZagDecode32(varint);
-          }
-        } else {
-          val = varint;
-        }
-        return val;
+      ptr, arena,
+      [](uint64_t v) {
+        return ZigZagDecodeHelper<FieldType, zigzag>(static_cast<FieldType>(v));
       },
       field);
 }
@@ -1362,33 +1395,41 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnum(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
-  Arena* arena = msg->GetArena();
   const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   PrefetchEnumData(xform_val, aux);
-  do {
-    const char* ptr2 = ptr;  // save for unknown enum case
-    ptr += sizeof(TagType);
-    uint64_t tmp;
-    ptr = ParseVarint(ptr, &tmp);
-    if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
-      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-    if (ABSL_PREDICT_FALSE(
-            !EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, aux))) {
-      // We can avoid duplicate work in MiniParse by directly calling
-      // table->fallback.
-      ptr = ptr2;
-      PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
-    }
-    field.AddWithArena(arena, static_cast<int32_t>(tmp));
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  {
+    auto adder = RefAt<RepeatedField<int32_t>>(msg, data.offset())
+                     .MakeAdder(GetSerialArena(msg->GetArena()));
+    do {
+      const char* ptr2 = ptr;  // save for unknown enum case
+      ptr += sizeof(TagType);
+      uint64_t tmp;
+      ptr = ParseVarint(ptr, &tmp);
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) goto error;
+      if (ABSL_PREDICT_FALSE(
+              !EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, aux))) {
+        // We can avoid duplicate work in MiniParse by directly calling
+        // table->fallback.
+        ptr = ptr2;
+        goto unknown;
+      }
+      adder.Add(static_cast<int32_t>(tmp));
+      // We use Done to make sure we trim when we are really done with the
+      // field.
+      if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+        goto parse_loop;
+      }
+    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+parse_loop:
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+error:
+  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+unknown:
+  PROTOBUF_MUSTTAIL return FastUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
 }
 
 void TcParser::WriteVarintToUnknown(MessageLite* msg,
@@ -1458,15 +1499,15 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnum(
   // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
   // pending hasbits now:
   SyncHasbits(msg, hasbits, table);
-  auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
-  Arena* arena = msg->GetArena();
+  auto adder = RefAt<RepeatedField<int32_t>>(msg, data.offset())
+                   .MakeAdder(GetSerialArena(msg->GetArena()));
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   PrefetchEnumData(xform_val, aux);
-  return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
+  return ctx->ReadPackedVarint(ptr, [=, &adder](int32_t value) {
     if (!EnumIsValidAux(value, xform_val, aux)) {
       AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), value);
     } else {
-      field->AddWithArena(arena, value);
+      adder.Add(value);
     }
   });
 }
@@ -1550,23 +1591,33 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedEnumSmallRange(
     PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
   }
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  auto& field = RefAt<RepeatedField<int32_t>>(msg, data.offset());
-  Arena* arena = msg->GetArena();
-  auto expected_tag = UnalignedLoad<TagType>(ptr);
+  const auto expected_tag = UnalignedLoad<TagType>(ptr);
   const uint8_t max = data.aux_idx();
-  do {
-    uint8_t v = ptr[sizeof(TagType)];
-    if (ABSL_PREDICT_FALSE(min > v || v > max)) {
-      PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-    field.AddWithArena(arena, static_cast<int32_t>(v));
-    ptr += sizeof(TagType) + 1;
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) {
-      PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  {
+    auto adder = RefAt<RepeatedField<int32_t>>(msg, data.offset())
+                     .MakeAdder(GetSerialArena(msg->GetArena()));
+    do {
+      uint8_t v = ptr[sizeof(TagType)];
+      if (ABSL_PREDICT_FALSE(min > v || v > max)) {
+        // Non canonical values can trigger this so we want the slow parse,
+        // instead of unknown fields directly.
+        goto mini_parse;
+      }
+      adder.Add(static_cast<int32_t>(v));
+      ptr += sizeof(TagType) + 1;
+      // We use Done to make sure we trim when we are really done with the
+      // field.
+      if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+        goto parse_loop;
+      }
+    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  }
 
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+parse_loop:
+  PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+mini_parse:
+  PROTOBUF_MUSTTAIL return MiniParse(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0R1(PROTOBUF_TC_PARAM_DECL) {
@@ -1602,45 +1653,58 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
 
   const auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
-  auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
   const uint8_t max = data.aux_idx();
-  Arena* arena = msg->GetArena();
 
-  return ctx->ReadPackedVarint(
-      ptr,
-      [=](int32_t v) {
-        if (ABSL_PREDICT_FALSE(min > v || v > max)) {
-          AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
-        } else {
-          field->AddWithArena(arena, v);
-        }
-      },
-      /*size_callback=*/
-      [=](int32_t size_bytes) {
-        // For enums that fit in one varint byte, optimistically assume that all
-        // the values are one byte long (i.e. no large unknown values).  If so,
-        // we know exactly how many values we're going to get.
-        //
-        // But! size_bytes might be much larger than the total size of the
-        // serialized proto (e.g. input corruption, or parsing msg1 as msg2).
-        // We don't want a small serialized proto to lead to giant memory
-        // allocations.
-        //
-        // Ideally we'd restrict size_bytes to the total size of the input, but
-        // we don't know that value.  The best we can do is to restrict it to
-        // the remaining bytes in the chunk, plus a "benefit of the doubt"
-        // factor if we're very close to the end of the chunk.
-        //
-        // Do these calculations in int64 because it's possible we overflow
-        // int32 (imgaine that field->size() and size_bytes are both large).
-        int64_t new_size =
-            int64_t{field->size()} +
-            std::min(size_bytes, std::max(1024, ctx->MaximumReadSize(ptr)));
-        field->ReserveWithArena(
-            arena,
-            static_cast<int32_t>(std::min(
-                new_size, int64_t{std::numeric_limits<int32_t>::max()})));
-      });
+  internal::SerialArena* arena = GetSerialArena(msg->GetArena());
+
+  if (arena != nullptr) {
+    auto adder =
+        RefAt<RepeatedField<int32_t>>(msg, data.offset()).MakeAdder(arena);
+    return ctx->ReadPackedVarint(ptr, [=, &adder](int32_t v) {
+      if (ABSL_PREDICT_FALSE(min > v || v > max)) {
+        AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
+      } else {
+        adder.Add(v);
+      }
+    });
+  } else {
+    auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
+    return ctx->ReadPackedVarint(
+        ptr,
+        [=](int32_t v) {
+          if (ABSL_PREDICT_FALSE(min > v || v > max)) {
+            AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
+          } else {
+            field->AddWithArena(nullptr, v);
+          }
+        },
+        /*size_callback=*/
+        [=](int32_t size_bytes) {
+          // For enums that fit in one varint byte, optimistically assume that
+          // all the values are one byte long (i.e. no large unknown values). If
+          // so, we know exactly how many values we're going to get.
+          //
+          // But! size_bytes might be much larger than the total size of the
+          // serialized proto (e.g. input corruption, or parsing msg1 as msg2).
+          // We don't want a small serialized proto to lead to giant memory
+          // allocations.
+          //
+          // Ideally we'd restrict size_bytes to the total size of the input,
+          // but we don't know that value.  The best we can do is to restrict it
+          // to the remaining bytes in the chunk, plus a "benefit of the doubt"
+          // factor if we're very close to the end of the chunk.
+          //
+          // Do these calculations in int64 because it's possible we overflow
+          // int32 (imgaine that field->size() and size_bytes are both large).
+          int64_t new_size =
+              int64_t{field->size()} +
+              std::min(size_bytes, std::max(1024, ctx->MaximumReadSize(ptr)));
+          field->ReserveWithArena(
+              nullptr,
+              static_cast<int32_t>(std::min(
+                  new_size, int64_t{std::numeric_limits<int32_t>::max()})));
+        });
+  }
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0P1(PROTOBUF_TC_PARAM_DECL) {
@@ -2143,21 +2207,25 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   const uint16_t type_card = entry.type_card;
   const uint16_t rep = type_card & field_layout::kRepMask;
-  Arena* arena = msg->GetArena();
   if (rep == field_layout::kRep64Bits) {
     if (decoded_wiretype != WireFormatLite::WIRETYPE_FIXED64) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
-    auto& field = MaybeCreateRepeatedFieldRefAt<uint64_t, is_split>(
-        base, entry.offset, msg);
+    auto adder = MaybeCreateRepeatedFieldRefAt<uint64_t, is_split>(
+                     base, entry.offset, msg)
+                     .MakeAdder(GetSerialArena(msg->GetArena()));
     constexpr auto size = sizeof(uint64_t);
     const char* ptr2 = ptr;
     uint32_t next_tag;
     do {
       ptr = ptr2;
-      *field.AddWithArena(arena) = UnalignedLoad<uint64_t>(ptr);
+      adder.Add(UnalignedLoad<uint64_t>(ptr));
       ptr += size;
-      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+      // We use Done to make sure we trim when we are really done with the
+      // field.
+      if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+        goto parse_loop;
+      }
       ptr2 = ReadTag(ptr, &next_tag);
       if (ABSL_PREDICT_FALSE(ptr2 == nullptr)) goto error;
     } while (next_tag == decoded_tag);
@@ -2166,16 +2234,21 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedFixed(
     if (decoded_wiretype != WireFormatLite::WIRETYPE_FIXED32) {
       PROTOBUF_MUSTTAIL return table->fallback(PROTOBUF_TC_PARAM_PASS);
     }
-    auto& field = MaybeCreateRepeatedFieldRefAt<uint32_t, is_split>(
-        base, entry.offset, msg);
+    auto adder = MaybeCreateRepeatedFieldRefAt<uint32_t, is_split>(
+                     base, entry.offset, msg)
+                     .MakeAdder(GetSerialArena(msg->GetArena()));
     constexpr auto size = sizeof(uint32_t);
     const char* ptr2 = ptr;
     uint32_t next_tag;
     do {
       ptr = ptr2;
-      *field.AddWithArena(arena) = UnalignedLoad<uint32_t>(ptr);
+      adder.Add(UnalignedLoad<uint32_t>(ptr));
       ptr += size;
-      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+      // We use Done to make sure we trim when we are really done with the
+      // field.
+      if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+        goto parse_loop;
+      }
       ptr2 = ReadTag(ptr, &next_tag);
       if (ABSL_PREDICT_FALSE(ptr2 == nullptr)) goto error;
     } while (next_tag == decoded_tag);
@@ -2301,9 +2374,6 @@ const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
   const char* ptr2 = ptr;
   uint32_t next_tag;
   void* const base = MaybeGetSplitBase(msg, is_split, table);
-  auto& field = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
-      base, entry.offset, msg);
-  Arena* arena = msg->GetArena();
 
   TcParseTableBase::FieldAux aux;
   if (is_validated_enum) {
@@ -2311,29 +2381,41 @@ const char* TcParser::MpRepeatedVarintT(PROTOBUF_TC_PARAM_DECL) {
     PrefetchEnumData(xform_val, aux);
   }
 
-  do {
-    uint64_t tmp;
-    ptr = ParseVarint(ptr2, &tmp);
-    if (ABSL_PREDICT_FALSE(ptr == nullptr)) goto error;
-    if (is_validated_enum) {
-      if (!EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, aux)) {
-        ptr = ptr2;
-        PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
+  {
+    auto adder = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
+                     base, entry.offset, msg)
+                     .MakeAdder(GetSerialArena(msg->GetArena()));
+    do {
+      uint64_t tmp;
+      ptr = ParseVarint(ptr2, &tmp);
+      if (ABSL_PREDICT_FALSE(ptr == nullptr)) goto error;
+      if (is_validated_enum) {
+        if (!EnumIsValidAux(static_cast<int32_t>(tmp), xform_val, aux)) {
+          ptr = ptr2;
+          goto unknown;
+        }
+      } else if (is_zigzag) {
+        tmp = sizeof(FieldType) == 8 ? WireFormatLite::ZigZagDecode64(tmp)
+                                     : WireFormatLite::ZigZagDecode32(tmp);
       }
-    } else if (is_zigzag) {
-      tmp = sizeof(FieldType) == 8 ? WireFormatLite::ZigZagDecode64(tmp)
-                                   : WireFormatLite::ZigZagDecode32(tmp);
-    }
-    field.AddWithArena(arena, static_cast<FieldType>(tmp));
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-    ptr2 = ReadTag(ptr, &next_tag);
-    if (ABSL_PREDICT_FALSE(ptr2 == nullptr)) goto error;
-  } while (next_tag == decoded_tag);
+      adder.Add(static_cast<FieldType>(tmp));
+      // We use Done to make sure we trim when we are really done with the
+      // field.
+      if (ABSL_PREDICT_FALSE(ctx->Done(&ptr))) {
+        goto parse_loop;
+      }
+      ptr2 = ReadTag(ptr, &next_tag);
+      if (ABSL_PREDICT_FALSE(ptr2 == nullptr)) goto error;
+    } while (next_tag == decoded_tag);
+  }
 
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 parse_loop:
   PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 error:
   PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+unknown:
+  PROTOBUF_MUSTTAIL return MpUnknownEnumFallback(PROTOBUF_TC_PARAM_PASS);
 }
 
 template <bool is_split>
@@ -2411,28 +2493,27 @@ const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
   const bool is_validated_enum = xform_val & field_layout::kTvEnum;
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
-  auto* field = &MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
-      base, entry.offset, msg);
-  Arena* arena = msg->GetArena();
+  auto adder = MaybeCreateRepeatedFieldRefAt<FieldType, is_split>(
+                   base, entry.offset, msg)
+                   .MakeAdder(GetSerialArena(msg->GetArena()));
 
   if (is_validated_enum) {
     const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
     PrefetchEnumData(xform_val, aux);
-    return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
+    return ctx->ReadPackedVarint(ptr, [=, &adder](int32_t value) {
       if (!EnumIsValidAux(value, xform_val, aux)) {
         AddUnknownEnum(msg, table, data.tag(), value);
       } else {
-        field->AddWithArena(arena, value);
+        adder.Add(value);
       }
     });
   } else {
-    return ctx->ReadPackedVarint(ptr, [=](uint64_t value) {
-      field->AddWithArena(
-          arena, is_zigzag ? (sizeof(FieldType) == 8
-                                  ? WireFormatLite::ZigZagDecode64(value)
-                                  : WireFormatLite::ZigZagDecode32(
-                                        static_cast<uint32_t>(value)))
-                           : value);
+    return ctx->ReadPackedVarint(ptr, [=, &adder](uint64_t value) {
+      adder.Add(is_zigzag ? (sizeof(FieldType) == 8
+                                 ? WireFormatLite::ZigZagDecode64(value)
+                                 : WireFormatLite::ZigZagDecode32(
+                                       static_cast<uint32_t>(value)))
+                          : value);
     });
   }
 }

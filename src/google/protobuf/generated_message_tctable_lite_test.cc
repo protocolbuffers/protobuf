@@ -20,6 +20,8 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -32,6 +34,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/repeated_field_test.pb.h"
 #include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -872,29 +875,34 @@ TEST_F(FindFieldEntryTest, BigMessage) {
 }
 
 TEST(GeneratedMessageTctableLiteTest, PackedEnumSmallRange) {
-  // RepeatedField::Reserve(n) may set the capacity to something greater than n,
-  // and this "upgrade" algorithm can even be different depending on compiler
-  // optimizations!  This value is chosen such that -- with the current
-  // implementation of Reserve() -- Reserve(kNumVals) always results in a
-  // different final capacity than you'd get by adding elements one at a time.
   constexpr int kNumVals = 1023;
   proto2_unittest::TestPackedEnumSmallRange proto;
   for (int i = 0; i < kNumVals; i++) {
     proto.add_vals(proto2_unittest::TestPackedEnumSmallRange::FOO);
   }
 
-  proto2_unittest::TestPackedEnumSmallRange new_proto;
-  ABSL_CHECK(new_proto.ParseFromString(proto.SerializeAsString()));
+  google::protobuf::Arena arena;
+  auto* new_proto =
+      google::protobuf::Arena::Create<proto2_unittest::TestPackedEnumSmallRange>(&arena);
+  ASSERT_TRUE(new_proto->ParseFromString(proto.SerializeAsString()));
 
-  // We should have reserved exactly the right size for new_proto's `vals`,
-  // rather than growing it on demand like we did in `proto`.
-  EXPECT_LT(new_proto.vals().Capacity(), proto.vals().Capacity());
+  // On arena, parsing trims capacity to the exact number of elements (rounded
+  // to a multiple of 8 bytes).
+  const int expected_capacity = kNumVals + kNumVals % 2;
+  EXPECT_EQ(new_proto->vals().Capacity(), expected_capacity);
+  EXPECT_LT(new_proto->vals().Capacity(), proto.vals().Capacity());
 
-  // Check that new_proto's capacity is equal to exactly what we'd get from
-  // calling Reserve(n).
+  void* next_alloc = arena.AllocateAligned(8);
+  const void* expected_next = new_proto->vals().data() + expected_capacity;
+  EXPECT_EQ(next_alloc, expected_next);
+
+  // On heap, parsing pre-reserves using size_callback.
+  proto2_unittest::TestPackedEnumSmallRange heap_proto;
+  ASSERT_TRUE(heap_proto.ParseFromString(proto.SerializeAsString()));
+  EXPECT_LT(heap_proto.vals().Capacity(), proto.vals().Capacity());
   proto2_unittest::TestPackedEnumSmallRange empty_proto;
   empty_proto.mutable_vals()->Reserve(kNumVals);
-  EXPECT_EQ(new_proto.vals().Capacity(), empty_proto.vals().Capacity());
+  EXPECT_EQ(heap_proto.vals().Capacity(), empty_proto.vals().Capacity());
 }
 
 // Create a serialized proto which falsely claims to have a packed array of
@@ -1069,6 +1077,160 @@ TEST(TcParserTest, OobGenReproduction) {
   }
 
   (void)msg->ParseFromString(payload);
+}
+
+TEST(GeneratedMessageTctableLiteTest, FastTableRepeatedFieldsTrimMemory) {
+  proto2_unittest::TestAllRepeatedFields src_base;
+  // Choose element counts that require trimming from an exponential allocation
+  // to a non-power-of-two size:
+  // - 7 int32s: allocated 64 B (capacity 14) -> trimmed to 40 B (capacity 8)
+  for (int i = 0; i < 7; ++i) src_base.add_repeated_int32(i * 10);
+  // - 4 int64s: allocated 64 B (capacity 7) -> trimmed to 40 B (capacity 4)
+  for (int i = 0; i < 4; ++i) src_base.add_repeated_int64(i * 20);
+  // - 1 fixed32: stays in SOO buffer (capacity 2)
+  src_base.add_repeated_fixed32(42);
+  // - 5 fixed64s: allocated 64 B (capacity 7) -> trimmed to 48 B (capacity 5)
+  for (int i = 0; i < 5; ++i) src_base.add_repeated_fixed64(i * 30);
+  // - 7 enums: allocated 64 B (capacity 14) -> trimmed to 40 B (capacity 8)
+  for (int i = 0; i < 7; ++i) {
+    src_base.add_repeated_enum(
+        static_cast<proto2_unittest::TestAllRepeatedFields::TestEnum>(i % 3));
+  }
+  // - 3 large enums: allocated 32 B (capacity 6) -> trimmed to 24 B (capacity
+  // 4)
+  for (int i = 0; i < 3; ++i) {
+    src_base.add_repeated_large_enum(
+        proto2_unittest::TestAllRepeatedFields::TEST_LARGE_ENUM_BAZ);
+  }
+  // - 7 packed int32s: allocated 64 B (capacity 14) -> trimmed to 40 B
+  // (capacity 8)
+  for (int i = 0; i < 7; ++i) src_base.add_packed_int32(i * 100);
+  // - 4 packed int64s: allocated 64 B (capacity 7) -> trimmed to 40 B (capacity
+  // 4)
+  for (int i = 0; i < 4; ++i) src_base.add_packed_int64(i * 200);
+  for (int i = 0; i < 3; ++i) src_base.add_packed_fixed32(i * 300);
+  for (int i = 0; i < 3; ++i) src_base.add_packed_fixed64(i * 400);
+  // - 7 packed enums: allocated 64 B (capacity 14) -> trimmed to 40 B (capacity
+  // 8)
+  for (int i = 0; i < 7; ++i) {
+    src_base.add_packed_enum(
+        static_cast<proto2_unittest::TestAllRepeatedFields::TestEnum>(i % 3));
+  }
+
+  // Populate a separate message with a single field, so concatenating their
+  // serialized wire formats guarantees which field is parsed last.
+  proto2_unittest::TestAllRepeatedFields src_last;
+  // - 3 packed large enums: allocated 32 B (capacity 6) -> trimmed to 24 B
+  // (capacity 4)
+  for (int i = 0; i < 3; ++i) {
+    src_last.add_packed_large_enum(
+        proto2_unittest::TestAllRepeatedFields::TEST_LARGE_ENUM_BAZ);
+  }
+
+  const std::string serialized =
+      src_base.SerializeAsString() + src_last.SerializeAsString();
+
+  google::protobuf::Arena arena;
+  auto* dst =
+      google::protobuf::Arena::Create<proto2_unittest::TestAllRepeatedFields>(&arena);
+  ASSERT_TRUE(dst->ParseFromString(serialized));
+
+  // Verify sizes and values.
+  ASSERT_EQ(dst->repeated_int32_size(), 7);
+  ASSERT_EQ(dst->repeated_int64_size(), 4);
+  ASSERT_EQ(dst->repeated_fixed32_size(), 1);
+  ASSERT_EQ(dst->repeated_fixed64_size(), 5);
+  ASSERT_EQ(dst->repeated_enum_size(), 7);
+  ASSERT_EQ(dst->repeated_large_enum_size(), 3);
+  ASSERT_EQ(dst->packed_int32_size(), 7);
+  ASSERT_EQ(dst->packed_int64_size(), 4);
+  ASSERT_EQ(dst->packed_fixed32_size(), 3);
+  ASSERT_EQ(dst->packed_fixed64_size(), 3);
+  ASSERT_EQ(dst->packed_enum_size(), 7);
+  ASSERT_EQ(dst->packed_large_enum_size(), 3);
+
+  // 4-byte fields trimmed to non-power-of-two allocations:
+  // 8 elements * 4 B + 8 B header = 40 B (trimmed from 64 B)
+  EXPECT_EQ(dst->repeated_int32().Capacity(), 8);
+  EXPECT_EQ(dst->repeated_fixed32().Capacity(),
+            RepeatedField<uint32_t>().Capacity());  // SOO
+  EXPECT_EQ(dst->repeated_enum().Capacity(), 8);
+  // 4 elements * 4 B + 8 B header = 24 B (trimmed from 32 B)
+  EXPECT_EQ(dst->repeated_large_enum().Capacity(), 4);
+  EXPECT_EQ(dst->packed_int32().Capacity(), 8);
+  EXPECT_EQ(dst->packed_fixed32().Capacity(), 6);
+  EXPECT_EQ(dst->packed_enum().Capacity(), 8);
+  EXPECT_EQ(dst->packed_large_enum().Capacity(), 4);
+
+  // 8-byte fields trimmed to non-power-of-two allocations:
+  // 4 elements * 8 B + 8 B header = 40 B (trimmed from 64 B)
+  EXPECT_EQ(dst->repeated_int64().Capacity(), 4);
+  // 5 elements * 8 B + 8 B header = 48 B (trimmed from 64 B)
+  EXPECT_EQ(dst->repeated_fixed64().Capacity(), 5);
+  EXPECT_EQ(dst->packed_int64().Capacity(), 4);
+  EXPECT_EQ(dst->packed_fixed64().Capacity(), 3);
+
+
+  // The last field serialized and parsed on the wire is packed_large_enum
+  // (from src_last). Verify that subsequent arena allocation is contiguous
+  // with its trimmed capacity.
+  void* next_alloc = arena.AllocateAligned(8);
+  const void* expected_next =
+      dst->packed_large_enum().data() + dst->packed_large_enum().Capacity();
+  EXPECT_EQ(next_alloc, expected_next);
+}
+
+TEST(GeneratedMessageTctableLiteTest, MiniParseRepeatedFieldsTrimMemory) {
+  proto2_unittest::TestAllRepeatedFields src_base;
+  // - 7 int32s: allocated 64 B -> trimmed to 40 B (capacity 8)
+  for (int i = 0; i < 7; ++i) src_base.add_miniparse_int32(i * 10);
+  // - 3 fixed32s: allocated 32 B -> trimmed to 24 B (capacity 4)
+  for (int i = 0; i < 3; ++i) src_base.add_miniparse_fixed32(i * 20);
+
+  // Single field message concatenated last to guarantee parse order.
+  proto2_unittest::TestAllRepeatedFields src_last;
+  // - 7 packed int32s: allocated 64 B -> trimmed to 40 B (capacity 8)
+  for (int i = 0; i < 7; ++i) src_last.add_miniparse_packed(i * 30);
+
+  const std::string serialized =
+      src_base.SerializeAsString() + src_last.SerializeAsString();
+
+  google::protobuf::Arena arena;
+  auto* dst =
+      google::protobuf::Arena::Create<proto2_unittest::TestAllRepeatedFields>(&arena);
+  ASSERT_TRUE(dst->ParseFromString(serialized));
+
+  ASSERT_EQ(dst->miniparse_int32_size(), 7);
+  ASSERT_EQ(dst->miniparse_fixed32_size(), 3);
+  ASSERT_EQ(dst->miniparse_packed_size(), 7);
+
+  // 40 B, 24 B, 40 B: all non-power-of-two
+  EXPECT_EQ(dst->miniparse_int32().Capacity(), 8);
+  EXPECT_EQ(dst->miniparse_fixed32().Capacity(), 4);
+  EXPECT_EQ(dst->miniparse_packed().Capacity(), 8);
+
+  // miniparse_packed was parsed last on the wire from src_last.
+  void* next_alloc = arena.AllocateAligned(8);
+  const void* expected_next =
+      dst->miniparse_packed().data() + dst->miniparse_packed().Capacity();
+  EXPECT_EQ(next_alloc, expected_next);
+}
+
+TEST(GeneratedMessageTctableLiteTest, RepeatedFieldsHeapAllocated) {
+  proto2_unittest::TestAllRepeatedFields src;
+  for (int i = 0; i < 15; ++i) src.add_repeated_int32(i * 10);
+  for (int i = 0; i < 15; ++i) src.add_packed_int32(i * 20);
+  const std::string serialized = src.SerializeAsString();
+
+  proto2_unittest::TestAllRepeatedFields dst;
+  ASSERT_TRUE(dst.ParseFromString(serialized));
+
+  ASSERT_EQ(dst.repeated_int32_size(), 15);
+  ASSERT_EQ(dst.packed_int32_size(), 15);
+  for (int i = 0; i < 15; ++i) {
+    EXPECT_EQ(dst.repeated_int32(i), i * 10);
+    EXPECT_EQ(dst.packed_int32(i), i * 20);
+  }
 }
 
 }  // namespace internal

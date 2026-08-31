@@ -22,6 +22,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/port.h"
@@ -128,6 +129,63 @@ class PROTOBUF_EXPORT SerialArena {
       return ptr;
     }
     return AllocateAlignedFallback(n);
+  }
+
+  // Attempts to grow an existing allocation `p` of size `n` bytes in place at
+  // the tail of the arena.
+  //
+  // If `p` is at the tail of the arena and space is available in the current
+  // block, extends the allocation by up to `n` bytes (doubling), trimmed down
+  // to a multiple of `step`. Returns the new total size in bytes if successful,
+  // or `absl::nullopt` if `p` is not at the tail or no additional `step` bytes
+  // are available.
+  //
+  // REQUIRES: `step` is a power-of-two.
+  // REQUIRES: `n` is a multiple of `step`.
+  absl::optional<size_t> TryGrowAlloc(void* p, size_t n,
+                                      size_t step = ArenaAlignDefault::align) {
+    char* end = ptr();
+    // If the user buffer is not at the tail, fail.
+    if (static_cast<char*>(p) + n != end) {
+      return absl::nullopt;
+    }
+    ABSL_DCHECK(absl::has_single_bit(step));
+    ABSL_DCHECK_EQ(n % step, 0);
+    const size_t available = ArenaAlign{step}.Floor(limit_ - end);
+    // If we can't extend here at all, fail.
+    if (available == 0) {
+      return absl::nullopt;
+    }
+    // Try to double, or use what's left, trimmed to a multiple of step.
+    const size_t extra_size = std::min<size_t>(n, available);
+    internal::UnpoisonMemoryRegion(end, extra_size);
+    set_ptr(end + extra_size);
+    return n + extra_size;
+  }
+
+  // Attempts to shrink an allocation at the tail of the arena by moving the
+  // bump pointer back from `current_end` to `new_end`.
+  //
+  // If `current_end` matches the current tail pointer of the arena and is
+  // strictly greater than `new_end`, moves the tail pointer back to `new_end`
+  // and returns `true`. Returns `false` otherwise.
+  //
+  // REQUIRES: `current_end >= new_end`.
+  bool TryShrinkToFit(void* current_end, void* new_end) {
+    ABSL_DCHECK_GE(current_end, new_end);
+    if (current_end == new_end) {
+      return false;
+    }
+    char* end = ptr();
+    // Not in the tail, fail.
+    if (ABSL_PREDICT_FALSE(current_end != end)) {
+      return false;
+    }
+    size_t returned_size =
+        static_cast<char*>(current_end) - static_cast<char*>(new_end);
+    internal::PoisonMemoryRegion(new_end, returned_size);
+    set_ptr(static_cast<char*>(new_end));
+    return true;
   }
 
  private:
