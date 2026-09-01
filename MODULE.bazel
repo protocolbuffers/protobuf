@@ -213,7 +213,10 @@ crate.spec(
     package = "syn",
     version = ">=2, <3",
 )
-crate.from_specs()
+crate.from_specs(
+    cargo_lockfile = "//rust:Cargo.lock",
+    lockfile = "//rust:Cargo.Bazel.lock",
+)
 use_repo(crate, crate_index = "crates")
 
 # Keep this list minimal; these dependencies will be part of the common `maven` install and could affect end-user projects.
