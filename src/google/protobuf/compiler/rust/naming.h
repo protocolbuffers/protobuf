@@ -64,6 +64,12 @@ std::string MessageRsName(const Descriptor& desc);
 std::string EnumRsName(const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
+// Returns the Rust identifier for a message extension, emitted as a
+// `pub const <NAME>: ExtensionId<...>`. Centralizing this here keeps the name
+// used by the code generator in sync with any future mangling (e.g. for
+// extension names that are not valid Rust identifiers).
+std::string ExtensionRsName(const FieldDescriptor& extension);
+
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
 
