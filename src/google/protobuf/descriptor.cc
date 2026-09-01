@@ -1965,7 +1965,11 @@ bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
   }
 }
 
-void FileDescriptorTables::FinalizeTables() {}
+void FileDescriptorTables::FinalizeTables() {
+  symbols_by_parent_.rehash(0);
+  fields_by_number_.rehash(0);
+  enum_values_by_number_.rehash(0);
+}
 
 bool FileDescriptorTables::AddFieldByNumber(FieldDescriptor* field) {
   // Skip fields that are at the start of the sequence.
