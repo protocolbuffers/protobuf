@@ -41,11 +41,11 @@ jobs:
             # Test using WORKSPACE with our oldest support Python version.
           - version: "3.10"
           - version: "3.11"
-            continuous-only: true
+#            continuous-only: true
           - version: "3.12"
-            continuous-only: true
+#            continuous-only: true
           - version: "3.13"
-            continuous-only: true
+#            continuous-only: true
           - version: "3.14"
             kokoro_python_version: "3.14.4"
           - type: C++
