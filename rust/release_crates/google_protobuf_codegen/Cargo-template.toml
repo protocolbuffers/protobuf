@@ -1,5 +1,6 @@
 [package]
 name = "google-protobuf-codegen"
+readme = "README.md"
 version = "{PROTOBUF_RUST_VERSION}"
 edition = "2021"
 license = "BSD-3-Clause"
