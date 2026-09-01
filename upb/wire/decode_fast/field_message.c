@@ -19,29 +19,10 @@
 #include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_parsers.h"
-#include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
 
 // Must be last.
 #include "upb/port/def.inc"
-
-typedef struct {
-  const upb_MiniTable* table;
-  bool is_repeated;
-  upb_Message* msg;
-} upb_DecodeFast_MessageContext;
-
-UPB_FORCEINLINE
-const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
-                                       const char* ptr, int size, void* ctx) {
-  upb_Decoder* d = (upb_Decoder*)st;
-  upb_DecodeFast_MessageContext* c = ctx;
-  ptr = _upb_Decoder_DecodeMessage((upb_Decoder*)st, ptr, c->msg, c->table);
-  if (d->end_group != DECODE_NOGROUP) {
-    _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  }
-  return ptr;
-}
 
 UPB_FORCEINLINE
 bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
