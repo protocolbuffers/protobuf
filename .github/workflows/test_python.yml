@@ -47,7 +47,7 @@ jobs:
 #          - version: "3.13"
 #            continuous-only: true
           - version: "3.14"
-            kokoro_python_version: "3.14.6"
+            kokoro_python_version: "3.14.4"
           - type: C++
             version: aarch64
             targets: //python/... //python:aarch64_test
