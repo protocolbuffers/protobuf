@@ -1384,13 +1384,18 @@ std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t res);
 // otherwise returns nullptr. Caller must ensure it is safe to call.
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t ReadSize(const char** pp) {
-  auto p = *pp;
-  uint32_t res = static_cast<uint8_t>(p[0]);
-  if (res < 128) {
+  const char* p = *pp;
+  uint32_t b0 = static_cast<uint8_t>(p[0]);
+  if (ABSL_PREDICT_TRUE(b0 < 128)) {
     *pp = p + 1;
-    return res;
+    return b0;
   }
-  auto x = ReadSizeFallback(p, res);
+  uint32_t b1 = static_cast<uint8_t>(p[1]);
+  if (ABSL_PREDICT_TRUE(b1 < 128)) {
+    *pp = p + 2;
+    return (b0 & 0x7F) | (b1 << 7);
+  }
+  auto x = ReadSizeFallback(p, b0);
   *pp = x.first;
   return x.second;
 }
