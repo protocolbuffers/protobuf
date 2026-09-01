@@ -331,7 +331,9 @@ bool Generator::Generate(const FileDescriptor* file,
   printer.Print("# @@protoc_insertion_point(module_scope)\n");
 
 
-  return !printer.failed();
+  bool success = !printer.failed();
+  printer_ = nullptr;
+  return success;
 }
 
 // file output by this generator.
