@@ -566,12 +566,19 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // Returns true if it has enough available data given requested. Note that
   // "available" can be negative but "requested" must not. Casting is done to
   // preserve sign bit for the latter only.
-  bool IsRequestedLessThanOrEqualTo(int requested, int available);
+  PROTOBUF_ALWAYS_INLINE bool IsRequestedLessThanOrEqualTo(
+      int requested, int available) const {
+    return static_cast<int64_t>(static_cast<uint32_t>(requested)) <=
+           static_cast<int64_t>(available);
+  }
 
   // Returns true if "requested" bytes can be read contiguously from "ptr". Note
   // that negative "requested" is converted to uint32_t before comparison, which
   // will cause failure.
-  bool CanReadFromPtr(int requested, const char* ptr);
+  PROTOBUF_ALWAYS_INLINE bool CanReadFromPtr(int requested,
+                                             const char* ptr) const {
+    return IsRequestedLessThanOrEqualTo(requested, BytesAvailable(ptr));
+  }
 
   // Returns true if "requested" bytes are avilable till limit. Note that
   // negative "requested" is converted to uint32_t before comparison.
@@ -1384,13 +1391,18 @@ std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t res);
 // otherwise returns nullptr. Caller must ensure it is safe to call.
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t ReadSize(const char** pp) {
-  auto p = *pp;
-  uint32_t res = static_cast<uint8_t>(p[0]);
-  if (res < 128) {
+  const char* p = *pp;
+  uint32_t b0 = static_cast<uint8_t>(p[0]);
+  if (ABSL_PREDICT_TRUE(b0 < 128)) {
     *pp = p + 1;
-    return res;
+    return b0;
   }
-  auto x = ReadSizeFallback(p, res);
+  uint32_t b1 = static_cast<uint8_t>(p[1]);
+  if (ABSL_PREDICT_TRUE(b1 < 128)) {
+    *pp = p + 2;
+    return (b0 & 0x7F) | (b1 << 7);
+  }
+  auto x = ReadSizeFallback(p, b0);
   *pp = x.first;
   return x.second;
 }

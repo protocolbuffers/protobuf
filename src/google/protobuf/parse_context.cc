@@ -86,15 +86,7 @@ bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
 }
 }  // namespace
 
-bool EpsCopyInputStream::IsRequestedLessThanOrEqualTo(int requested,
-                                                      int available) {
-  return static_cast<int64_t>(static_cast<uint32_t>(requested)) <=
-         static_cast<int64_t>(available);
-}
 
-bool EpsCopyInputStream::CanReadFromPtr(int requested, const char* ptr) {
-  return IsRequestedLessThanOrEqualTo(requested, BytesAvailable(ptr));
-}
 
 bool EpsCopyInputStream::HasEnoughTillLimit(int requested, const char* ptr) {
   return IsRequestedLessThanOrEqualTo(requested, BytesUntilLimit(ptr));
