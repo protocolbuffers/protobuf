@@ -391,6 +391,10 @@ std::string EnumRsName(const EnumDescriptor& desc) {
   return name;
 }
 
+std::string ExtensionRsName(const FieldDescriptor& extension) {
+  return absl::AsciiStrToUpper(extension.name());
+}
+
 std::string EnumValueRsName(const EnumValueDescriptor& value) {
   MultiCasePrefixStripper stripper(value.type()->name());
   return EnumValueRsName(stripper, value.name());

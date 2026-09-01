@@ -434,6 +434,211 @@ TEST_F(RustGeneratorTest, EmitsQualifiedExtendeePathForExtensions) {
               HasSubstr("ExtensionId<super::super::foo_proto::Target, i32>"));
 }
 
+TEST_F(RustGeneratorTest, DropsReexportForEntireCrate) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    message Foo { optional int32 x = 1; })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    message Foo { optional int32 y = 1; })schema");
+  CreateTempFile("c.proto", R"schema(
+    syntax = "proto2";
+    package pkg_c;
+    message Unique { optional int32 z = 1; })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto c.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, HasSubstr("pub mod a_proto;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub mod b_proto;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub mod c_proto;"));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use a_proto::*;")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use b_proto::*;")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use c_proto::*;")));
+}
+
+TEST_F(RustGeneratorTest, DropsReexportOnEnumCollision) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    enum Status { UNKNOWN = 0; OK = 1; })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    enum Status { PENDING = 0; DONE = 1; })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, HasSubstr("pub mod a_proto;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub mod b_proto;"));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use a_proto::*;")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use b_proto::*;")));
+}
+
+TEST_F(RustGeneratorTest, KeepsReexportForNonCollidingFiles) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    message Alpha {
+      optional int32 x = 1;
+    })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    message Beta {
+      optional int32 y = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, HasSubstr("pub use a_proto::*;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub use b_proto::*;"));
+}
+
+TEST_F(RustGeneratorTest, DropsReexportOnViewCollision) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    message BarView { optional int32 x = 1; })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    message Bar { optional int32 y = 1; })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use a_proto::*;")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use b_proto::*;")));
+}
+
+TEST_F(RustGeneratorTest, DropsReexportOnMutCollision) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    message QuxMut { optional int32 x = 1; })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    message Qux { optional int32 y = 1; })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use a_proto::*;")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use b_proto::*;")));
+}
+
+TEST_F(RustGeneratorTest, DropsReexportOnSubmoduleCollision) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    message data { optional int32 x = 1; })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    message Data {
+      message Row { optional int32 v = 1; }
+      optional Row row = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use a_proto::*;")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use b_proto::*;")));
+}
+
+TEST_F(RustGeneratorTest, DropsReexportOnExtensionCollision) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    message TargetA { extensions 100 to 200; }
+    extend TargetA { optional int32 shared = 100; })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    message TargetB { extensions 100 to 200; }
+    extend TargetB { optional int32 shared = 100; })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use a_proto::*;")));
+  EXPECT_THAT(entry_point, Not(HasSubstr("pub use b_proto::*;")));
+}
+
+TEST_F(RustGeneratorTest, KeepsReexportForCrateWithFeaturesButNoCollision) {
+  CreateTempFile("a.proto", R"schema(
+    syntax = "proto2";
+    package pkg_a;
+    message AlphaMsg {
+      message AlphaInner { optional int32 v = 1; }
+      extensions 100 to 200;
+      oneof alpha_choice {
+        int32 a = 1;
+        int32 b = 2;
+      }
+    }
+    enum AlphaEnum { AE0 = 0; AE1 = 1; }
+    extend AlphaMsg { optional int32 alpha_ext = 100; })schema");
+  CreateTempFile("b.proto", R"schema(
+    syntax = "proto2";
+    package pkg_b;
+    message BetaMsg {
+      message BetaInner { optional int32 v = 1; }
+      extensions 100 to 200;
+      oneof beta_choice {
+        int32 a = 1;
+        int32 b = 2;
+      }
+    }
+    enum BetaEnum { BE0 = 0; BE1 = 1; }
+    extend BetaMsg { optional int32 beta_ext = 100; })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "a.proto b.proto");
+  ExpectNoErrors();
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, HasSubstr("pub use a_proto::*;"));
+  EXPECT_THAT(entry_point, HasSubstr("pub use b_proto::*;"));
+}
+
 }  // namespace
 }  // namespace rust
 }  // namespace compiler
