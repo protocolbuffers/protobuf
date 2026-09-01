@@ -225,17 +225,17 @@ jobs:
 #    with:
 #      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
 #    secrets: inherit
-#
-#  upb:
-#    name: μpb
-#    needs: [set-vars]
-#    uses: ./.github/workflows/test_upb.yml
-#    with:
-#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-#    secrets: inherit
-#
+
+  upb:
+    name: μpb
+    needs: [set-vars]
+    uses: ./.github/workflows/test_upb.yml
+    with:
+      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+    secrets: inherit
+
 #  hpb:
 #    name: hpb
 #    needs: [set-vars]
@@ -261,7 +261,9 @@ jobs:
     needs: [
 #      set-vars, validate-yaml, bazel, cpp, java,
       python,
-#      ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness
+#      ruby, php, php-ext, csharp, objectivec, rust,
+      upb,
+#      hpb, staleness
     ]
     runs-on: ubuntu-latest
     steps:
