@@ -51,7 +51,7 @@ rust_test(
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -69,7 +69,7 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -85,7 +85,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:child_upb_rust_proto",
         "//rust/test:parent_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -101,7 +101,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:child_cpp_rust_proto",
         "//rust/test:parent_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -112,7 +112,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:edition2023_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -123,7 +123,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:edition2023_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -139,7 +139,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:enums_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -155,7 +155,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:enums_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -166,7 +166,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:import_public_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -177,7 +177,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:import_public_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -190,7 +190,7 @@ rust_test(
         "//rust/test:dots_in_package_cpp_rust_proto",
         "//rust/test:no_package_cpp_rust_proto",
         "//rust/test:package_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -203,7 +203,7 @@ rust_test(
         "//rust/test:dots_in_package_upb_rust_proto",
         "//rust/test:no_package_upb_rust_proto",
         "//rust/test:package_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -233,7 +233,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:bad_names_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -249,7 +249,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:bad_names_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -260,7 +260,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -271,7 +271,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -290,7 +290,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cpp_rust_proto",
         "//rust/test:unittest_import_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -309,7 +309,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_import_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -325,7 +325,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_proto3_cpp_rust_proto",
         "//rust/test:unittest_proto3_optional_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -341,7 +341,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -361,7 +361,7 @@ rust_test(
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -381,7 +381,7 @@ rust_test(
         "//rust/test:unittest_cpp_rust_proto",
         "//rust/test:unittest_proto3_cpp_rust_proto",
         "//rust/test:unittest_proto3_optional_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -397,7 +397,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:map_unittest_cpp_rust_proto",
         "//rust/test:nested_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -413,7 +413,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:nested_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -431,7 +431,7 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -449,7 +449,7 @@ rust_test(
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -469,7 +469,7 @@ rust_test(
         "//rust/test:enums_cpp_rust_proto",
         "//rust/test:map_unittest_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -489,7 +489,7 @@ rust_test(
         "//rust/test:enums_upb_rust_proto",
         "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -502,7 +502,7 @@ rust_test(
         "//rust:protobuf_cpp_export",
         "//rust/test:fields_with_imported_types_cpp_rust_proto",
         "//rust/test:imported_types_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -515,7 +515,7 @@ rust_test(
         "//rust:protobuf_upb_export",
         "//rust/test:fields_with_imported_types_upb_rust_proto",
         "//rust/test:imported_types_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -530,7 +530,7 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -545,7 +545,7 @@ rust_test(
     deps = [
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -560,7 +560,7 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -575,7 +575,7 @@ rust_test(
     deps = [
         "//rust:protobuf_upb",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -591,7 +591,7 @@ rust_test(
         "//rust:protobuf_cpp",
         "//rust/test:map_unittest_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -609,7 +609,7 @@ rust_test(
         "//rust:protobuf_upb",
         "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -633,7 +633,7 @@ rust_test(
         "//rust/test:unittest_cpp_rust_proto",
         "//rust/test:unittest_proto3_cpp_rust_proto",
         "//rust/test:unittest_proto3_optional_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -657,7 +657,7 @@ rust_test(
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -671,7 +671,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -685,7 +685,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -700,7 +700,7 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cpp_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -715,6 +715,6 @@ rust_test(
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_upb_rust_proto",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )

@@ -18,7 +18,7 @@ rust_test(
         ":no_features_proto2_cpp_rust_proto",
         ":no_features_proto3_cpp_rust_proto",
         "//rust:protobuf_cpp_export",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
@@ -34,7 +34,7 @@ rust_test(
         ":no_features_proto2_upb_rust_proto",
         ":no_features_proto3_upb_rust_proto",
         "//rust:protobuf_upb_export",
-        "@crate_index//:googletest",
+        "@crate_dev_index//:googletest",
     ],
 )
 
