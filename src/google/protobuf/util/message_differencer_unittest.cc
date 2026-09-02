@@ -14,8 +14,10 @@
 #include "google/protobuf/util/message_differencer.h"
 
 #include <algorithm>
+#include <numeric>
 #include <random>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -2242,7 +2244,7 @@ TEST(MessageDifferencerTest, RepeatedFieldMapTest_MultipleFieldPathsAsKey) {
   util::MessageDifferencer differencer;
   differencer.TreatAsSet(GetFieldDescriptor(msg1, "item.m.rc"));
   EXPECT_FALSE(differencer.Compare(msg1, msg2));
-  std::vector<std::vector<const FieldDescriptor*> > key_field_paths;
+  std::vector<std::vector<const FieldDescriptor*>> key_field_paths;
   std::vector<const FieldDescriptor*> key_field_path1;
   key_field_path1.push_back(GetFieldDescriptor(msg1, "item.m"));
   key_field_path1.push_back(GetFieldDescriptor(msg1, "item.m.a"));
