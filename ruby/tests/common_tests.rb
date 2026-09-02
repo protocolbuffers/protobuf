@@ -416,6 +416,33 @@ module CommonTests
     end
   end
 
+  def test_map_delete_missing
+    m = Google::Protobuf::Map.new(:string, :int32)
+    m["a"] = 1
+    assert_nil m.delete("b")
+    assert_equal 1, m.delete("a")
+    assert_nil m.delete("a")
+
+    m_str = Google::Protobuf::Map.new(:int32, :string)
+    m_str[1] = "hello"
+    assert_nil m_str.delete(2)
+    assert_equal "hello", m_str.delete(1)
+    assert_nil m_str.delete(1)
+
+    m_bytes = Google::Protobuf::Map.new(:int32, :bytes)
+    m_bytes[1] = "world"
+    assert_nil m_bytes.delete(2)
+    assert_equal "world", m_bytes.delete(1)
+    assert_nil m_bytes.delete(1)
+
+    m_msg = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage)
+    msg = proto_module::TestMessage.new(:optional_int32 => 42)
+    m_msg["a"] = msg
+    assert_nil m_msg.delete("b")
+    assert_equal msg, m_msg.delete("a")
+    assert_nil m_msg.delete("a")
+  end
+
   # This is a regression test for a bug in Map.hash. It used to return an
   # inconsistent result when there was a collision in the map (two keys mapping
   # to the same hash table entry).
