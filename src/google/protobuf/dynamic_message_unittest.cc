@@ -200,8 +200,11 @@ std::unique_ptr<OverflowTestCase> GenerateOverflowTestCase(int num_oneofs) {
 std::unique_ptr<OverflowTestCase> FindOverflowTestCase() {
   int low = 1, hi = std::numeric_limits<uint16_t>::max() / sizeof(uint32_t);
 
+  // Each oneof in DynamicMessage adds sizeof(uint32_t) (4 bytes) to the message
+  // layout. Start search close to the expected 16-bit boundary to minimize
+  // expensive prototype iterations.
+  int mid = (std::numeric_limits<uint16_t>::max() - 48) / sizeof(uint32_t);
   while (true) {
-    int mid = (low + hi) / 2;
     ABSL_CHECK_NE(mid, low) << "Bad initial bounds.";
     ABSL_CHECK_NE(mid, hi) << "Bad initial bounds.";
     auto test_case = GenerateOverflowTestCase(mid);
@@ -221,6 +224,15 @@ std::unique_ptr<OverflowTestCase> FindOverflowTestCase() {
     } else {
       // Perfect padding
       return test_case;
+    }
+    int step = (static_cast<int>(std::numeric_limits<uint16_t>::max()) -
+                static_cast<int>(test_case->table->field_entries()[0].offset)) /
+               static_cast<int>(sizeof(uint32_t));
+    int next_mid = mid + step;
+    if (next_mid <= low || next_mid >= hi) {
+      mid = (low + hi) / 2;
+    } else {
+      mid = next_mid;
     }
   }
 }
