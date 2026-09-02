@@ -99,7 +99,7 @@ def _test_disallowed_in_different_package(name):
 def _test_disallowed_in_different_package_impl(env, target):
     env.expect.that_target(target).failures().contains_predicate(
         matching.str_matches(
-            "Error in fail: lang_proto_library '*_check_collocated'" +
+            "lang_proto_library '*_check_collocated'" +
             " may only be created in the same package as proto_library " +
             "'*/testdata:simple_proto'",
         ),
@@ -123,7 +123,7 @@ def _test_export_not_allowed(name):
 def _test_export_not_allowed_impl(env, target):
     env.expect.that_target(target).failures().contains_predicate(
         matching.str_matches(
-            "Error in fail: lang_proto_library '*_check_collocated'" +
+            "lang_proto_library '*_check_collocated'" +
             " may only be created in the same package as proto_library " +
             "'*/testdata:disallow_exports_proto'",
         ),
