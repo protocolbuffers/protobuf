@@ -1190,6 +1190,19 @@ class TextFormatParserTests(TextFormatBase):
         message,
     )
 
+  def testParseUntilEndToken(self, message_module):
+    text = r"""
+               optional_int32: 1
+               END_TOKEN
+               required_int32 = 2
+    """
+
+    parsed_message = message_module.TestAllTypes()
+    text_format.Parse(text, parsed_message, end_token='END_TOKEN')
+    self.assertEqual(
+        message_module.TestAllTypes(optional_int32=1), parsed_message
+    )
+
 
 @parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
@@ -1230,6 +1243,19 @@ class TextFormatMergeTests(TextFormatBase):
     m2 = message_module.TestAllTypes()
     text_format.Merge(m_string, m2)
     self.assertEqual('oneof_string', m2.WhichOneof('oneof_field'))
+
+  def testParseUntilEndToken(self, message_module):
+    text = r"""
+               optional_int32: 1
+               END_TOKEN
+               required_int32 = 2
+    """
+
+    parsed_message = message_module.TestAllTypes()
+    text_format.Merge(text, parsed_message, end_token='END_TOKEN')
+    self.assertEqual(
+        message_module.TestAllTypes(optional_int32=1), parsed_message
+    )
 
 
 # These are tests that aren't fundamentally specific to proto2, but are at
@@ -3136,19 +3162,19 @@ class TokenizerTest(parameterized.TestCase):
     msg = unittest_pb2.TestAllTypes(
         repeatedgroup=[unittest_pb2.TestAllTypes.RepeatedGroup(a=1)]
     )
-    if api_implementation.Type() == 'upb':
-      self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
-    else:
-      self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
+      if api_implementation.Type() == 'upb':
+        self.assertEqual('repeatedgroup {\n  a: 1\n}\n', str(msg))
+      else:
+        self.assertEqual('RepeatedGroup {\n  a: 1\n}\n', str(msg))
 
   def testPrintGroupLikeDelimited(self):
     msg = unittest_delimited_pb2.TestDelimited(
         grouplike=unittest_delimited_pb2.TestDelimited.GroupLike(a=1)
     )
-    if api_implementation.Type() == 'upb':
-      self.assertEqual(str(msg), 'grouplike {\n  a: 1\n}\n')
-    else:
-      self.assertEqual(str(msg), 'GroupLike {\n  a: 1\n}\n')
+      if api_implementation.Type() == 'upb':
+        self.assertEqual(str(msg), 'grouplike {\n  a: 1\n}\n')
+      else:
+        self.assertEqual(str(msg), 'GroupLike {\n  a: 1\n}\n')
 
   def testPrintGroupLikeDelimitedExtension(self):
     msg = unittest_delimited_pb2.TestDelimited()
