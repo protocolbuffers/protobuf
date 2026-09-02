@@ -52,27 +52,30 @@ void UPB_PRIVATE(_upb_Arena_SwapIn)(struct upb_Arena* des,
 void UPB_PRIVATE(_upb_Arena_SwapOut)(struct upb_Arena* des,
                                      const struct upb_Arena* src);
 
-UPB_INLINE size_t UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
+UPB_NODISCARD UPB_INLINE size_t
+UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
-UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_AllocSpan)(size_t size) {
+UPB_NODISCARD UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_AllocSpan)(size_t size) {
   return UPB_ALIGN_MALLOC(size) + UPB_PRIVATE(kUpb_Asan_GuardSize);
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(
-    const struct upb_Arena* a, void* ptr, size_t size) {
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(
+    _upb_Arena_WasLastAllocFromCurrentBlock)(const struct upb_Arena* a,
+                                             void* ptr, size_t size) {
   return UPB_PRIVATE(upb_Xsan_PtrEq)(
       (char*)ptr + UPB_PRIVATE(_upb_Arena_AllocSpan)(size),
       a->UPB_ONLYBITS(ptr));
 }
 
-UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(const void* ptr) {
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(
+    const void* ptr) {
   return (uintptr_t)ptr % UPB_MALLOC_ALIGN == 0;
 }
 
-UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(struct upb_Arena* a,
-                                                 size_t size) {
+UPB_NODISCARD UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(
+    struct upb_Arena* a, size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
 
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
@@ -91,7 +94,8 @@ UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(struct upb_Arena* a,
   return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
 }
 
-UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a, size_t size) {
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a,
+                                                    size_t size) {
   if (!upb_AllocationCount_IncrementAndCheck()) {
     return NULL;
   }
@@ -120,8 +124,9 @@ UPB_API_INLINE void upb_Arena_ShrinkLast(struct upb_Arena* a, void* ptr,
   }
 }
 
-UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
-                                        size_t oldsize, size_t size) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a,
+                                                      void* ptr, size_t oldsize,
+                                                      size_t size) {
   UPB_ASSERT(ptr);
   UPB_ASSERT(size > oldsize);
 
@@ -138,8 +143,9 @@ UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a, void* ptr,
   return false;
 }
 
-UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a, void* ptr,
-                                       size_t oldsize, size_t size) {
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a,
+                                                     void* ptr, size_t oldsize,
+                                                     size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
 
   void* ret;

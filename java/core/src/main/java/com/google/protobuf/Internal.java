@@ -361,11 +361,10 @@ public final class Internal {
     }
   }
 
-  @SuppressWarnings("unchecked")
   public static <T extends MessageLite> T getDefaultInstance(Class<T> clazz) {
     try {
       Method method = clazz.getMethod("getDefaultInstance");
-      return (T) method.invoke(method);
+      return clazz.cast(method.invoke(method));
     } catch (Exception e) {
       throw new RuntimeException("Failed to get default instance for " + clazz, e);
     }
@@ -612,10 +611,10 @@ public final class Internal {
     ProtobufList<E> mutableCopyWithCapacity(int capacity);
 
     /** Appends the values to the end of the list. */
-    @SuppressWarnings("unchecked")
     static <E> ProtobufList<E> concatenate(ProtobufList<E> list, Iterable<? extends E> values) {
       // If the list is empty and the values are a ProtobufList, we may be able to avoid a copy.
       if (list.isEmpty() && values instanceof ProtobufList) {
+        @SuppressWarnings("unchecked")
         ProtobufList<E> other = (ProtobufList<E>) values;
         if (other.isEmpty()) {
           return list;
@@ -631,7 +630,7 @@ public final class Internal {
 
       // If values is a Collection, we can pre-size the list.
       if (values instanceof Collection) {
-        Collection<? extends E> other = (Collection<? extends E>) values;
+        Collection<?> other = (Collection<?>) values;
 
         if (!list.isModifiable()) {
           list = list.mutableCopyWithCapacity(list.size() + other.size());

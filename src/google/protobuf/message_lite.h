@@ -247,31 +247,7 @@ PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-struct MessageGlobalsBase {
-  template <typename T = MessageLite>
-  static const T* ToDefaultInstance(const void* globals) {
-    return reinterpret_cast<const T*>(globals);
-  }
-
-  static const MessageGlobalsBase* FromDefaultInstance(
-      const void* default_instance) {
-    return reinterpret_cast<const MessageGlobalsBase*>(default_instance);
-  }
-
-  static const MessageGlobalsBase* FromClassData(const ClassData* class_data) {
-    return FromDefaultInstance(class_data->default_instance());
-  }
-};
-
-template <const auto* kDefault, const auto* kClassData>
-struct GeneratedMessageTraitsT {
-  static constexpr const void* default_instance() { return kDefault; }
-  static constexpr const auto* class_data() { return kClassData->base(); }
-  static constexpr const auto* tc_table() { return class_data()->tc_table; }
-  static constexpr auto StrongPointer() { return default_instance(); }
-};
-#else
+// TODO: Remove unnecessary members, or move into ClassData.
 struct MessageGlobalsBase {
   template <size_t R, size_t KnownAlignment = 0>
   static constexpr size_t RoundUpTo(size_t n) {
@@ -327,16 +303,9 @@ struct MessageGlobalsBase {
 
 template <const auto* kGlobals>
 struct GeneratedMessageTraitsT {
-  static const void* default_instance() {
-    return MessageGlobalsBase::ToDefaultInstance(kGlobals);
-  }
   static const auto* class_data() {
     return MessageGlobalsBase::GetClassData(kGlobals);
   }
-  static const auto* tc_table() {
-    return MessageGlobalsBase::ToParseTableBase(kGlobals);
-  }
-  static constexpr const auto* globals() { return kGlobals; }
   static constexpr auto StrongPointer() { return kGlobals; }
 };
 
@@ -345,22 +314,12 @@ inline const MessageLite* ClassData::default_instance() const {
   return MessageGlobalsBase::ToDefaultInstance(this);
 }
 
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-
 inline const TcParseTableBase* ClassData::GetTcParseTable() const {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   if (ABSL_PREDICT_FALSE(is_dynamic)) {
-#else
-  if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
-#endif
     ABSL_DCHECK(!is_lite);
     return descriptor_methods()->get_tc_table(this);
   }
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   return MessageGlobalsBase::ToParseTableBase(this);
-#else
-  return tc_table;
-#endif
 }
 
 }  // namespace internal

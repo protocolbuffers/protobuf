@@ -666,8 +666,9 @@ PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
     _static_init2_ [[maybe_unused]] =
         (::_pbi::AddDescriptors(&descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto),
         ::_pbi::ExtensionSet::RegisterMessageExtension(
-            &::google::protobuf::FeatureSet::default_instance(), 1001, 11,
-            false, false, &::pb::JavaFeatures::default_instance(),
+            ::_pbi::MessageTraits<::google::protobuf::FeatureSet>::class_data(), 1001,
+            11, false, false,
+            ::_pbi::MessageTraits<::pb::JavaFeatures>::class_data(),
             nullptr, ::_pbi::LazyAnnotation::kUndefined),
          ::std::false_type{});
 #include "google/protobuf/port_undef.inc"

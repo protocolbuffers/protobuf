@@ -330,9 +330,9 @@ UPB_API_INLINE void upb_Message_SetBaseField(struct upb_Message* msg,
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), val);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
-                                             const upb_MiniTableExtension* e,
-                                             const void* val, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtension(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
+    upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
@@ -343,9 +343,10 @@ UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
   return true;
 }
 
-UPB_API_INLINE bool UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
-    upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
+    _upb_Message_SetNonCanonicalExtension)(struct upb_Message* msg,
+                                           const upb_MiniTableExtension* e,
+                                           const void* val, upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
@@ -372,7 +373,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_SetField)(struct upb_Message* msg,
   }
 }
 
-UPB_API_INLINE const upb_Array* upb_Message_GetArray(
+UPB_NODISCARD UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
   upb_Array* ret;
@@ -545,6 +546,44 @@ upb_Message_GetOrCreateMutableMessage(struct upb_Message* msg,
     UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);
   }
   return sub_message;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_FieldIsSet)(
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
+  if (f->presence == 0) {
+    // Proto3 presence or map/array.
+    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
+    switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
+      case kUpb_FieldRep_1Byte: {
+        char ch;
+        memcpy(&ch, mem, 1);
+        return ch != 0;
+      }
+      case kUpb_FieldRep_4Byte: {
+        uint32_t u32;
+        memcpy(&u32, mem, 4);
+        return u32 != 0;
+      }
+      case kUpb_FieldRep_8Byte: {
+        uint64_t u64;
+        memcpy(&u64, mem, 8);
+        return u64 != 0;
+      }
+      case kUpb_FieldRep_StringView: {
+        const upb_StringView* str = (const upb_StringView*)mem;
+        return str->size != 0;
+      }
+      default:
+        UPB_UNREACHABLE();
+    }
+  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
+    // Proto2 presence: hasbit.
+    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
+  } else {
+    // Field is in a oneof.
+    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, f) ==
+           upb_MiniTableField_Number(f);
+  }
 }
 
 UPB_API_INLINE upb_StringView

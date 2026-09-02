@@ -348,7 +348,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
       ::google::protobuf::internal::TcParseTable<2, 4,
                           0, 0,
                           2>;
-  friend class ::google::protobuf::internal::TcParser;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -618,7 +617,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
       ::google::protobuf::internal::TcParseTable<2, 4,
                           1, 0,
                           2>;
-  friend class ::google::protobuf::internal::TcParser;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -917,7 +915,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
       ::google::protobuf::internal::TcParseTable<3, 5,
                           1, 0,
                           2>;
-  friend class ::google::protobuf::internal::TcParser;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1228,7 +1225,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
       ::google::protobuf::internal::TcParseTable<3, 5,
                           3, 0,
                           2>;
-  friend class ::google::protobuf::internal::TcParser;
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

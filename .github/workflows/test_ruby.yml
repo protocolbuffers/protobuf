@@ -48,12 +48,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.2.0-{0}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -73,20 +73,20 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for i386
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v6
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           architecture: linux-i386
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v6
         with:
           image: i386/ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -105,14 +105,14 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Cross compile protoc for aarch64
         if: ${{ inputs.continuous-run }}
         id: cross-compile
-        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v5
+        uses: protocolbuffers/protobuf-ci/cross-compile-protoc@v6
         with:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -120,7 +120,7 @@ jobs:
 
       - name: Run tests
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v6
         with:
           image: ruby:3.2.11-bookworm
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -155,7 +155,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
 
@@ -171,7 +171,7 @@ jobs:
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@v6
         with:
           version: 9.2.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -203,12 +203,12 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:9.2.0-{0}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ', matrix.ruby) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}

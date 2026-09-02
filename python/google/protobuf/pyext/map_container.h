@@ -62,6 +62,12 @@ extern MessageMapContainer* NewMessageMapContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class);
 
+// Promote a const child message mapped_type to mutable.
+// The parent message is already mutable.
+Message* PromoteConstMapValueMessage(Message* parent_message,
+                                     const FieldDescriptor* field,
+                                     const Message* message);
+
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google

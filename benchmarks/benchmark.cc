@@ -407,7 +407,7 @@ static absl::string_view UpbJsonEncode(upb_benchmark_FileDescriptorProto* proto,
   return absl::string_view(buf, size);
 }
 
-static void BM_JsonParse_Upb(benchmark::State& state) {
+static void BM_JsonParse_Upb(benchmark::State& state, int options) {
   upb_Arena* arena = upb_Arena_New();
   upb_benchmark_FileDescriptorProto* set =
       upb_benchmark_FileDescriptorProto_parse(descriptor.data, descriptor.size,
@@ -429,14 +429,28 @@ static void BM_JsonParse_Upb(benchmark::State& state) {
     upb_Status status;
     upb_Status_Clear(&status);
     bool ok = upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(proto), md,
-                             defpool.ptr(), 0, arena, &status);
+                             defpool.ptr(), options, arena, &status);
     ABSL_CHECK(ok) << "Failed to parse: " << status.msg;
     benchmark::DoNotOptimize(proto);
     upb_Arena_Free(arena);
   }
   state.SetBytesProcessed(state.iterations() * json.size());
 }
-BENCHMARK(BM_JsonParse_Upb);
+
+static void BM_JsonParse_Upb_Default(benchmark::State& state) {
+  BM_JsonParse_Upb(state, 0);
+}
+BENCHMARK(BM_JsonParse_Upb_Default);
+
+static void BM_JsonParse_Upb_Utf8Disable(benchmark::State& state) {
+  BM_JsonParse_Upb(state, upb_JsonDecode_ValidateUtf8_Disable);
+}
+BENCHMARK(BM_JsonParse_Upb_Utf8Disable);
+
+static void BM_JsonParse_Upb_Utf8Enforce(benchmark::State& state) {
+  BM_JsonParse_Upb(state, upb_JsonDecode_ValidateUtf8_Enforce);
+}
+BENCHMARK(BM_JsonParse_Upb_Utf8Enforce);
 
 static void BM_JsonParse_Proto2(benchmark::State& state) {
   protobuf::FileDescriptorProto proto;

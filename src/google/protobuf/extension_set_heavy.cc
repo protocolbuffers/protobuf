@@ -262,7 +262,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
           << extension->full_name();
       output->message_info.class_data =
           &MessageGlobalsBase::FromDefaultInstance(prototype)->class_data;
-      output->message_info.tc_table = prototype->GetTcParseTable();
 
     } else if (extension->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
       output->enum_validity_check.enum_data =
@@ -444,7 +443,7 @@ bool ExtensionSet::ShouldRegisterAtThisTime(
     std::initializer_list<WeakPrototypeRef> messages, bool is_preregistration) {
   bool has_all = true;
   for (auto ref : messages) {
-    has_all = has_all && GetPrototypeForWeakDescriptor(ref.table, ref.index,
+    has_all = has_all && GetClassDataForWeakDescriptor(ref.table, ref.index,
                                                        false) != nullptr;
   }
   return has_all == is_preregistration;
