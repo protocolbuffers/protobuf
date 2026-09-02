@@ -641,9 +641,9 @@ TEST(DecodeTest, DecodeNonCanonicalExtensionAsUnknown) {
                                    upb_StringView_FromString("World"));
 
   // 3. msg has a non-canonical extension A
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
+      arena.ptr()));
 
   // Verify extension count is 0 before encoding/decoding.
   EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
@@ -704,9 +704,9 @@ TEST(DecodeTest, DecodeExtensionAsUnknownWithPreexistingUnknown) {
 
   // 3. Attach to tmp_msg as a non-canonical extension so we can serialize it to
   // get the bytes
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(tmp_msg), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
+      arena.ptr()));
 
   // 5. Obtain encoded extension A by serializing tmp_msg
   char* buf;

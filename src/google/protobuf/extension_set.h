@@ -119,6 +119,8 @@ enum class LazyAnnotation : int8_t {
 };
 
 // Information about a registered extension.
+// TODO: Change ExtensionInfo to hold a ClassData instead of a
+// prototype.
 struct ExtensionInfo {
   constexpr ExtensionInfo()
       : is_packed(false), is_utf8(false), enum_validity_check() {}
@@ -165,13 +167,6 @@ struct ExtensionInfo {
   struct MessageInfo {
     // Never null.
     const internal::ClassData* class_data;
-    // TODO: Remove `tc_table` now that we can easily get it from
-    // `class_data`.
-    // The TcParse table used for this object. Never null. (except in platforms
-    // that don't constant initialize default instances)
-    const internal::TcParseTableBase* tc_table = nullptr;
-
-    const internal::TcParseTableBase* GetTcTable() const { return tc_table; }
   };
 
   union {
@@ -262,17 +257,17 @@ class PROTOBUF_EXPORT ExtensionSet {
   // to look up extensions for parsed field numbers.  Note that dynamic parsing
   // does not use ParseField(); only protocol-compiler-generated parsing
   // methods do.
-  static void RegisterExtension(const MessageLite* extendee, int number,
+  static void RegisterExtension(const ClassData* extendee, int number,
                                 FieldType type, bool is_repeated,
                                 bool is_packed, bool is_utf8 = false);
-  static void RegisterEnumExtension(const MessageLite* extendee, int number,
+  static void RegisterEnumExtension(const ClassData* extendee, int number,
                                     FieldType type, bool is_repeated,
                                     bool is_packed,
                                     const uint32_t* validation_data);
-  static void RegisterMessageExtension(const MessageLite* extendee, int number,
+  static void RegisterMessageExtension(const ClassData* extendee, int number,
                                        FieldType type, bool is_repeated,
                                        bool is_packed,
-                                       const MessageLite* prototype,
+                                       const ClassData* inner_data,
                                        LazyEagerVerifyFnType verify_func,
                                        LazyAnnotation is_lazy);
 

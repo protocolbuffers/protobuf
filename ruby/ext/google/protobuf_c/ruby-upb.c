@@ -495,7 +495,7 @@ Error, UINTPTR_MAX is undefined
 
 /* aarch64 supports big and little endian modes; fasttable performs multibyte
  * tag loads assumes the tag of a varint is in the low bits. */
-#if (defined(__x86_64__) || defined(__AARCH64EL__)) && \
+#if !defined(_WIN32) && (defined(__x86_64__) || defined(__AARCH64EL__)) && \
     UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
@@ -514,7 +514,11 @@ Error, UINTPTR_MAX is undefined
  * This is useful for releasing code that might be used on multiple platforms,
  * for example the PHP or Ruby C extensions. */
 #elif defined(UPB_TRY_ENABLE_FASTTABLE)
-#define UPB_FASTTABLE UPB_FASTTABLE_SUPPORTED
+#if UPB_FASTTABLE_SUPPORTED
+#define UPB_FASTTABLE 1
+#else
+#define UPB_FASTTABLE 0
+#endif
 #else
 #define UPB_FASTTABLE 0
 #endif
@@ -566,6 +570,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_RETAIN __attribute__((retain))
 #else
 #define UPB_RETAIN
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_HIDDEN __attribute__((visibility("hidden")))
+#else
+#define UPB_HIDDEN
 #endif
 
 // Linker arrays combine elements from multiple translation units into a single
@@ -621,7 +631,7 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__MACH__)
 
-/* As described in: https://stackoverflow.com/a/22366882 */
+  /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
@@ -640,10 +650,10 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(_MSC_VER)
 
-/* See:
- *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
- *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
- *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
+  /* See:
+   *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
+   *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
+   *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
 #define UPB_STRINGIFY_INTERNAL(x) #x
 #define UPB_STRINGIFY(x) UPB_STRINGIFY_INTERNAL(x)
 #define UPB_CONCAT(a, b, c) a##b##c
@@ -652,7 +662,7 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name)                      \
   __pragma(section(UPB_LINKARR_NAME(name, $j), read)) \
       __declspec(allocate(UPB_LINKARR_NAME(name, $j)))
-// clang-format off
+  // clang-format off
 #define UPB_LINKARR_DECLARE(name, type)                          \
   __pragma(message(UPB_LINKARR_NAME(name, $j)))                  \
   __pragma(section(UPB_LINKARR_NAME(name, $a), read))            \
@@ -663,13 +673,13 @@ Error, UINTPTR_MAX is undefined
             type __stop_linkarr_##name;                          \
   UPB_LINKARR_APPEND(name)                                       \
   __declspec(selectany) type UPB_linkarr_internal_empty_##name[1] = {0}
-// clang-format on
+  // clang-format on
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #else
 
-// Linker arrays are not supported on this platform.  Make macros no-ops.
+  // Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
 #define UPB_LINKARR_DECLARE(name, type)          \
   UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17, \
@@ -2682,7 +2692,7 @@ UPB_INLINE int _upb_popcnt32(uint32_t i) {
 
 #undef UPB_FAST_POPCOUNT32
 
-UPB_INLINE uint8_t _upb_log2_table_size(upb_table* t) {
+UPB_INLINE uint8_t _upb_log2_table_size(const upb_table* t) {
   return _upb_popcnt32(t->mask);
 }
 
@@ -3219,6 +3229,44 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
   return true;
 }
 
+bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
+                       upb_Arena* a) {
+  if (src->t.count == 0) {
+    return upb_strtable_init(dest, 0, a);
+  }
+  dest->t.count = src->t.count;
+  dest->t.mask = src->t.mask;
+  dest->t.entries =
+      upb_Arena_Malloc(a, upb_table_size(&src->t) * sizeof(upb_tabent));
+  if (!dest->t.entries) return false;
+  upb_tabent* restrict dest_entries = dest->t.entries;
+  const upb_tabent* restrict src_entries = src->t.entries;
+  size_t table_size = upb_table_size(&src->t);
+  for (size_t i = 0; i < table_size; i++) {
+    upb_tabent* dest_ent = &dest_entries[i];
+    const upb_tabent* src_ent = &src_entries[i];
+    if (!upb_tabent_isempty(src_ent)) {
+      upb_StringView sv = upb_key_strview(src_ent->key);
+      upb_SizePrefixString* size_prefix_string =
+          upb_SizePrefixString_Copy(sv, a);
+      if (!size_prefix_string) return false;
+      dest_ent->key.str = size_prefix_string;
+      // The caller is responsible for cloning values if they are not
+      // primitives.
+      dest_ent->val = src_ent->val;
+      if (UPB_UNPREDICTABLE(upb_tabent_hasnext(src_ent))) {
+        size_t offset = upb_tabent_next(src_ent) - src_entries;
+        upb_tabent_setnext(dest_ent, dest_entries + offset);
+      } else {
+        upb_tabent_clearnext(dest_ent);
+      }
+    } else {
+      *dest_ent = (upb_tabent){};
+    }
+  }
+  return true;
+}
+
 bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
                          upb_value v, upb_Arena* a) {
   if (isfull(&t->t)) {
@@ -3442,6 +3490,41 @@ bool upb_inttable_init(upb_inttable* t, upb_Arena* a) {
   return upb_inttable_sizedinit(t, 3, a);
 }
 
+bool upb_inttable_copy(upb_inttable* dest, const upb_inttable* src,
+                       upb_Arena* a) {
+  if (src->t.count == 0) {
+    return upb_inttable_sizedinit(dest, 0, a);
+  }
+
+  if (!upb_inttable_sizedinit(
+          dest, src->t.mask ? _upb_log2_table_size(&src->t) : 0, a)) {
+    return false;
+  }
+  dest->t.count = src->t.count;
+
+  upb_tabent* restrict dest_entries = dest->t.entries;
+  const upb_tabent* restrict src_entries = src->t.entries;
+  size_t table_size = upb_table_size(&src->t);
+  for (size_t i = 0; i < table_size; i++) {
+    upb_tabent* dest_ent = &dest_entries[i];
+    const upb_tabent* src_ent = &src_entries[i];
+    if (!upb_tabent_isempty(src_ent)) {
+      // The caller is responsible for cloning these if they are not primitives.
+      dest_ent->key = src_ent->key;
+      dest_ent->val = src_ent->val;
+      if (UPB_UNPREDICTABLE(upb_tabent_hasnext(src_ent))) {
+        size_t offset = upb_tabent_next(src_ent) - src_entries;
+        upb_tabent_setnext(dest_ent, dest_entries + offset);
+      } else {
+        upb_tabent_clearnext(dest_ent);
+      }
+    } else {
+      *dest_ent = (upb_tabent){};
+    }
+  }
+  return true;
+}
+
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
                          upb_Arena* a) {
   if (isfull(&t->t)) {
@@ -3536,9 +3619,11 @@ upb_value upb_inttable_iter_value(const upb_inttable* t, intptr_t iter) {
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "utf8_range.h"
 
 // Must be last.
 
@@ -5098,6 +5183,23 @@ int upb_JsonDecodeDetectingNonconformance(const char* buf, size_t size,
 
   if (size == 0) return true;
 
+  UPB_ASSERT(!((options & upb_JsonDecode_ValidateUtf8_Disable) &&
+               (options & upb_JsonDecode_ValidateUtf8_Enforce)));
+
+  if (!(options & upb_JsonDecode_ValidateUtf8_Disable)) {
+    if (!utf8_range_IsValid(buf, size)) {
+      if (options & upb_JsonDecode_ValidateUtf8_Enforce) {
+        upb_Status_SetErrorMessage(status, "Invalid UTF-8 in JSON input");
+        return kUpb_JsonDecodeResult_Error;
+      } else {
+        fprintf(
+            stderr,
+            "Invalid UTF-8 in JSON input. This will be rejected starting in "
+            "the 2027-Q1 breaking change\n");
+      }
+    }
+  }
+
   d.ptr = buf;
   d.end = buf + size;
   d.arena = arena;
@@ -5359,43 +5461,47 @@ static void jsonenc_bytes(jsonenc* e, upb_StringView str) {
   jsonenc_putstr(e, "\"");
 }
 
+static void jsonenc_put_escaped_char(jsonenc* e, char ch) {
+  switch (ch) {
+    case '\n':
+      jsonenc_putstr(e, "\\n");
+      break;
+    case '\r':
+      jsonenc_putstr(e, "\\r");
+      break;
+    case '\t':
+      jsonenc_putstr(e, "\\t");
+      break;
+    case '\"':
+      jsonenc_putstr(e, "\\\"");
+      break;
+    case '\f':
+      jsonenc_putstr(e, "\\f");
+      break;
+    case '\b':
+      jsonenc_putstr(e, "\\b");
+      break;
+    case '\\':
+      jsonenc_putstr(e, "\\\\");
+      break;
+    default:
+      if ((uint8_t)ch < 0x20) {
+        jsonenc_printf(e, "\\u%04x", (int)(uint8_t)ch);
+      } else {
+        /* This could be a non-ASCII byte.  We rely on the string being valid
+         * UTF-8. */
+        jsonenc_putbytes(e, &ch, 1);
+      }
+      break;
+  }
+}
+
 static void jsonenc_stringbody(jsonenc* e, upb_StringView str) {
   const char* ptr = str.data;
   const char* end = UPB_PTRADD(ptr, str.size);
 
   while (ptr < end) {
-    switch (*ptr) {
-      case '\n':
-        jsonenc_putstr(e, "\\n");
-        break;
-      case '\r':
-        jsonenc_putstr(e, "\\r");
-        break;
-      case '\t':
-        jsonenc_putstr(e, "\\t");
-        break;
-      case '\"':
-        jsonenc_putstr(e, "\\\"");
-        break;
-      case '\f':
-        jsonenc_putstr(e, "\\f");
-        break;
-      case '\b':
-        jsonenc_putstr(e, "\\b");
-        break;
-      case '\\':
-        jsonenc_putstr(e, "\\\\");
-        break;
-      default:
-        if ((uint8_t)*ptr < 0x20) {
-          jsonenc_printf(e, "\\u%04x", (int)(uint8_t)*ptr);
-        } else {
-          /* This could be a non-ASCII byte.  We rely on the string being valid
-           * UTF-8. */
-          jsonenc_putbytes(e, ptr, 1);
-        }
-        break;
-    }
+    jsonenc_put_escaped_char(e, *ptr);
     ptr++;
   }
 }
@@ -5543,7 +5649,7 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
       ch = *++ptr - 32;
     }
 
-    jsonenc_putbytes(e, &ch, 1);
+    jsonenc_put_escaped_char(e, ch);
     ptr++;
   }
 }
@@ -7438,7 +7544,7 @@ upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
 bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
   upb_value v;
   const bool removed = _upb_Map_Delete(map, &key, map->key_size, &v);
-  if (val) _upb_map_fromvalue(v, val, map->val_size);
+  if (removed && val) _upb_map_fromvalue(v, val, map->val_size);
   return removed;
 }
 
@@ -7960,6 +8066,25 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   }
 }
 
+bool upb_Message_NextSerializableField(const upb_Message* msg,
+                                       const upb_MiniTable* mt,
+                                       const upb_MiniTableField** f,
+                                       uintptr_t* iter) {
+  const size_t field_count = upb_MiniTable_FieldCount(mt);
+  uintptr_t i = *iter;
+  while (i < field_count) {
+    const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(mt, i);
+    if (UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, field)) {
+      *f = field;
+      *iter = i + 1;
+      return true;
+    }
+    i++;
+  }
+  *iter = i;
+  return false;
+}
+
 
 #include <stddef.h>
 #include <stdint.h>
@@ -7967,6 +8092,33 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
 
 
 // Must be last.
+
+bool upb_Message_NextWireFormatUnknown(const struct upb_Message* msg,
+                                       struct upb_Arena** arena,
+                                       upb_StringView* data, uintptr_t* iter) {
+  upb_MessageUnknown unknown;
+  if (!upb_Message_NextUnknown2(msg, &unknown, iter)) {
+    return false;
+  }
+  if (unknown.type == kUpb_MessageUnknownType_StringView) {
+    *data = unknown.value.bytes;
+    return true;
+  }
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+  if (!*arena) {
+    *arena = upb_Arena_New();
+    if (!*arena) {
+      return false;
+    }
+  }
+  upb_EncodeStatus status =
+      upb_EncodeExtension(unknown.value.extension, *arena, data,
+                          /*encode_options=*/0);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return false;
+  }
+  return true;
+}
 
 static upb_FindUnknownRet2 upb_FindUnknownRet2_ParseError(void) {
   return (upb_FindUnknownRet2){.status = kUpb_FindUnknown_ParseError};
@@ -8344,7 +8496,7 @@ bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,
   if (!(options & kUpb_CompareOption_IncludeUnknownFields)) return true;
 
   // The wire encoder enforces a maximum depth of 100 so we match that here.
-  return UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(msg1, msg2, 100) ==
+  return _upb_Message_UnknownFieldsAreEqual(msg1, msg2, 100) ==
          kUpb_UnknownCompareResult_Equal;
 }
 
@@ -8407,10 +8559,17 @@ static void upb_UnknownFields_Grow(upb_UnknownField_Context* ctx,
                                    upb_UnknownField** ptr,
                                    upb_UnknownField** end) {
   size_t old = (*ptr - *base);
-  size_t new = UPB_MAX(4, old * 2);
+  size_t new;
+  if (upb_MulOverflow((uint32_t)2, old, &new)) {
+    upb_UnknownFields_OutOfMemory(ctx);
+  }
+  new = UPB_MAX(4, new);
+  size_t new_bytes;
+  if (upb_MulOverflow(new, sizeof(**base), &new_bytes)) {
+    upb_UnknownFields_OutOfMemory(ctx);
+  }
 
-  *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base),
-                            new * sizeof(**base));
+  *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base), new_bytes);
   if (!*base) upb_UnknownFields_OutOfMemory(ctx);
 
   *ptr = *base + old;
@@ -8458,11 +8617,25 @@ static void upb_UnknownFields_SortRecursive(upb_UnknownField* arr, size_t start,
 static void upb_UnknownFields_Sort(upb_UnknownField_Context* ctx,
                                    upb_UnknownFields* fields) {
   if (ctx->tmp_size < fields->size) {
-    const int oldsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    size_t oldsize;
+    if (upb_MulOverflow(sizeof(*ctx->tmp), ctx->tmp_size, &oldsize)) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
     ctx->tmp_size = UPB_MAX(8, ctx->tmp_size);
-    while (ctx->tmp_size < fields->size) ctx->tmp_size *= 2;
-    const int newsize = ctx->tmp_size * sizeof(*ctx->tmp);
-    ctx->tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    while (ctx->tmp_size < fields->size) {
+      if (upb_MulOverflow((uint32_t)2, ctx->tmp_size, &ctx->tmp_size)) {
+        upb_UnknownFields_OutOfMemory(ctx);
+      }
+    }
+    size_t newsize;
+    if (upb_MulOverflow(ctx->tmp_size, sizeof(*ctx->tmp), &newsize)) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    upb_UnknownField* tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    if (!tmp) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    ctx->tmp = tmp;
   }
   upb_UnknownFields_SortRecursive(fields->fields, 0, fields->size, ctx->tmp);
 }
@@ -8706,7 +8879,7 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   return ret;
 }
 
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+upb_UnknownCompareResult _upb_Message_UnknownFieldsAreEqual(
     const upb_Message* msg1, const upb_Message* msg2, int max_depth) {
   bool msg1_empty = !upb_Message_HasUnknown(msg1);
   bool msg2_empty = !upb_Message_HasUnknown(msg2);
@@ -8785,29 +8958,80 @@ static bool upb_Clone_MessageValue(void* value, upb_CType value_type,
   UPB_UNREACHABLE();
 }
 
+static bool upb_Clone_MapValue(upb_value* tabval, size_t map_val_size,
+                               upb_CType value_field_type,
+                               const upb_MiniTable* value_sub, upb_Arena* arena,
+                               upb_value* cloned_tabval) {
+  upb_MessageValue val;
+  _upb_map_fromvalue(*tabval, &val, map_val_size);
+  if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
+    return false;
+  }
+  *cloned_tabval = (upb_value){0};  // Initialize
+  if (!_upb_map_tovalue(&val, map_val_size, cloned_tabval, arena)) {
+    return false;
+  }
+  return true;
+}
+
 upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
                            upb_CType value_type,
                            const upb_MiniTable* map_entry_table,
                            upb_Arena* arena) {
-  upb_Map* cloned_map = _upb_Map_New(arena, map->key_size, map->val_size);
+  upb_Map* cloned_map = upb_Arena_Malloc(arena, sizeof(upb_Map));
   if (cloned_map == NULL) {
     return NULL;
   }
-  upb_MessageValue key, val;
-  size_t iter = kUpb_Map_Begin;
-  while (upb_Map_Next(map, &key, &val, &iter)) {
-    const upb_MiniTableField* value_field =
-        upb_MiniTable_MapValue(map_entry_table);
-    const upb_MiniTable* value_sub =
-        upb_MiniTableField_CType(value_field) == kUpb_CType_Message
-            ? upb_MiniTable_GetSubMessageTable(value_field)
-            : NULL;
-    upb_CType value_field_type = upb_MiniTableField_CType(value_field);
-    if (!upb_Clone_MessageValue(&val, value_field_type, value_sub, arena)) {
+  cloned_map->key_size = map->key_size;
+  cloned_map->val_size = map->val_size;
+  cloned_map->UPB_PRIVATE(is_frozen) = false;
+  cloned_map->UPB_PRIVATE(is_strtable) = map->UPB_PRIVATE(is_strtable);
+
+  const upb_MiniTableField* value_field =
+      upb_MiniTable_MapValue(map_entry_table);
+  const upb_MiniTable* value_sub = upb_MiniTable_SubMessage(value_field);
+  upb_CType value_field_type = upb_MiniTableField_CType(value_field);
+
+  bool is_primitive = value_field_type != kUpb_CType_Message &&
+                      value_field_type != kUpb_CType_String &&
+                      value_field_type != kUpb_CType_Bytes;
+
+  if (map->UPB_PRIVATE(is_strtable)) {
+    if (!upb_strtable_copy(&cloned_map->t.strtable, &map->t.strtable, arena)) {
       return NULL;
     }
-    if (!upb_Map_Set(cloned_map, key, val, arena)) {
+    if (!is_primitive) {
+      intptr_t iter = UPB_STRTABLE_BEGIN;
+      upb_StringView key;
+      upb_value tabval;
+      while (
+          upb_strtable_next2(&cloned_map->t.strtable, &key, &tabval, &iter)) {
+        upb_value cloned_tabval;
+        if (!upb_Clone_MapValue(&tabval, map->val_size, value_field_type,
+                                value_sub, arena, &cloned_tabval)) {
+          return NULL;
+        }
+        upb_strtable_setentryvalue(&cloned_map->t.strtable, iter,
+                                   cloned_tabval);
+      }
+    }
+  } else {
+    if (!upb_inttable_copy(&cloned_map->t.inttable, &map->t.inttable, arena)) {
       return NULL;
+    }
+    if (!is_primitive) {
+      intptr_t iter = UPB_INTTABLE_BEGIN;
+      uintptr_t key;
+      upb_value tabval;
+      while (upb_inttable_next(&cloned_map->t.inttable, &key, &tabval, &iter)) {
+        upb_value cloned_tabval;
+        if (!upb_Clone_MapValue(&tabval, map->val_size, value_field_type,
+                                value_sub, arena, &cloned_tabval)) {
+          return NULL;
+        }
+        upb_inttable_setentryvalue(&cloned_map->t.inttable, iter,
+                                   cloned_tabval);
+      }
     }
   }
   return cloned_map;
@@ -9069,6 +9293,7 @@ bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
   // so we don't want to unnecessarily have the bad API or bloat the passed-in
   // arena with this very-short-term allocation.
   upb_Arena* encode_arena = upb_Arena_New();
+  if (!encode_arena) return false;
   upb_EncodeStatus e_status = upb_Encode(src, mt, 0, encode_arena, &buf, &size);
   if (e_status != kUpb_EncodeStatus_Ok) {
     upb_Arena_Free(encode_arena);
@@ -14019,7 +14244,12 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
   } else {
     // Remove components from base until we find an entry or run out.
     size_t baselen = base ? strlen(base) : 0;
-    char* tmp = upb_gmalloc(sym.size + baselen + 1);
+    size_t alloc_size;
+    if (upb_AddOverflow(sym.size, baselen + 1, &alloc_size)) {
+      _upb_DefBuilder_OomErr(ctx);
+    }
+    char* tmp = upb_gmalloc(alloc_size);
+    if (!tmp) _upb_DefBuilder_OomErr(ctx);
     while (1) {
       char* p = tmp;
       if (baselen) {
@@ -18664,40 +18894,7 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
 static bool encode_shouldencode(const upb_Message* msg,
                                 const upb_MiniTableField* f) {
-  if (f->presence == 0) {
-    // Proto3 presence or map/array.
-    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
-    switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
-      case kUpb_FieldRep_1Byte: {
-        char ch;
-        memcpy(&ch, mem, 1);
-        return ch != 0;
-      }
-      case kUpb_FieldRep_4Byte: {
-        uint32_t u32;
-        memcpy(&u32, mem, 4);
-        return u32 != 0;
-      }
-      case kUpb_FieldRep_8Byte: {
-        uint64_t u64;
-        memcpy(&u64, mem, 8);
-        return u64 != 0;
-      }
-      case kUpb_FieldRep_StringView: {
-        const upb_StringView* str = (const upb_StringView*)mem;
-        return str->size != 0;
-      }
-      default:
-        UPB_UNREACHABLE();
-    }
-  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
-    // Proto2 presence: hasbit.
-    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
-  } else {
-    // Field is in a oneof.
-    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, f) ==
-           upb_MiniTableField_Number(f);
-  }
+  return UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, f);
 }
 
 static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
@@ -19107,3 +19304,5 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef _UPB_STRINGIFY
 #undef _UPB_STRINGIFY2
 #undef UPB_CONSTRUCTOR
+#undef UPB_RETAIN
+#undef UPB_HIDDEN

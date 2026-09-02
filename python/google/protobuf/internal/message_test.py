@@ -1101,6 +1101,52 @@ class MessageTest(unittest.TestCase):
         [k.bb for k in message.repeated_nested_message], [6, 5, 4, 3, 2, 1]
     )
 
+  def testRepeatedCompositeSubscriptMutation(self, message_module):
+    """Check that accessing repeated composite items via subscript and mutating works."""
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    msg.repeated_nested_message.add(bb=2)
+    serialized = msg.SerializeToString()
+
+    msg2 = message_module.TestAllTypes()
+    msg2.ParseFromString(serialized)
+    item0 = msg2.repeated_nested_message[0]
+    item1 = msg2.repeated_nested_message[1]
+    # item0 and item1 start as default/lazy submessages.
+    # Mutating them promotes them in-place.
+    item0.bb = 10
+    item1.bb = 20
+    self.assertEqual(msg2.repeated_nested_message[0].bb, 10)
+    self.assertEqual(msg2.repeated_nested_message[1].bb, 20)
+    self.assertEqual(item0.bb, 10)
+    self.assertEqual(item1.bb, 20)
+
+  def testSortingRepeatedCompositeFieldsWithSubscriptReferences(
+      self, message_module
+  ):
+    """Check sorting repeated composite fields after retrieving elements via subscript."""
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=30)
+    msg.repeated_nested_message.add(bb=10)
+    msg.repeated_nested_message.add(bb=20)
+    serialized = msg.SerializeToString()
+
+    msg2 = message_module.TestAllTypes()
+    msg2.ParseFromString(serialized)
+    ref0 = msg2.repeated_nested_message[0]
+    ref1 = msg2.repeated_nested_message[1]
+    ref2 = msg2.repeated_nested_message[2]
+
+    msg2.repeated_nested_message.sort(key=operator.attrgetter('bb'))
+    self.assertEqual([k.bb for k in msg2.repeated_nested_message], [10, 20, 30])
+
+    ref0.bb = 300
+    ref1.bb = 100
+    ref2.bb = 200
+    self.assertEqual(
+        [k.bb for k in msg2.repeated_nested_message], [100, 200, 300]
+    )
+
   def testRepeatedScalarFieldSortArguments(self, message_module):
     """Check sorting a scalar field using list.sort() arguments."""
     message = message_module.TestAllTypes()
@@ -1482,6 +1528,26 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(m.foo_message.moo_int, 0)
     m.foo_message.CopyFrom(reference)
     self.assertEqual(m.foo_message.moo_int, 123)
+
+  def testLazyFieldRepeatedChildMutation(self, message_module):
+    orig = message_module.NestedTestAllTypes()
+    child = orig.lazy_child if hasattr(orig, 'lazy_child') else orig.child
+    child.payload.repeated_nested_message.add().bb = 123
+    serialized = orig.SerializeToString()
+
+    parsed = message_module.NestedTestAllTypes.FromString(serialized)
+    child = parsed.lazy_child if hasattr(parsed, 'lazy_child') else parsed.child
+    item = child.payload.repeated_nested_message[0]
+    item.bb = 456
+
+    reserialized = parsed.SerializeToString()
+    reparsed = message_module.NestedTestAllTypes.FromString(reserialized)
+    reparsed_child = (
+        reparsed.lazy_child
+        if hasattr(reparsed, 'lazy_child')
+        else reparsed.child
+    )
+    self.assertEqual(reparsed_child.payload.repeated_nested_message[0].bb, 456)
 
   def testNestedOneofRleaseMergeFrom(self, message_module):
     m = message_module.NestedTestAllTypes()
@@ -2995,6 +3061,24 @@ class Proto3Test(unittest.TestCase):
         str(msg2.map_int32_foreign_message),
         ('{-456: , 123: c: 1\n}', '{123: c: 1\n, -456: }'),
     )
+
+  def testMessageMapMutationAfterReprAndIteration(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[123].c = 1
+    msg.map_int32_foreign_message[456].c = 2
+
+    # Formatting/repr exercises const iteration over map elements.
+    _ = str(msg.map_int32_foreign_message)
+    _ = repr(msg.map_int32_foreign_message)
+    _ = str(msg)
+
+    # Mutating existing and new entries after repr/str must succeed.
+    msg.map_int32_foreign_message[123].c = 10
+    msg.map_int32_foreign_message[456].c = 20
+    msg.map_int32_foreign_message[789].c = 30
+    self.assertEqual(msg.map_int32_foreign_message[123].c, 10)
+    self.assertEqual(msg.map_int32_foreign_message[456].c, 20)
+    self.assertEqual(msg.map_int32_foreign_message[789].c, 30)
 
   def testNestedMessageMapItemDelete(self):
     msg = map_unittest_pb2.TestMap()

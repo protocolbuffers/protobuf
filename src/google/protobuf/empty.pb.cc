@@ -36,9 +36,18 @@ namespace google {
 namespace protobuf {
 class Empty::_Internal {
  public:
+
+  static constexpr Empty::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
-constexpr Empty::ParseTableT_ Empty::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr Empty::ParseTableT_ Empty::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(Empty,
@@ -54,9 +63,6 @@ constexpr Empty::ParseTableT_ Empty::InternalGenerateParseTable_(const ::_pbi::C
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::Empty>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       {::_pbi::TcParser::MiniParse, {}},
     }}, {{
@@ -77,38 +83,31 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Empty::Empty(
 #endif  // PROTOBUF_CUSTOM_VTABLE
       ) {
 }
-inline void* PROTOBUF_NONNULL Empty::PlacementNew_(
+inline void* PROTOBUF_NONNULL Empty::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Empty(arena);
 }
-constexpr auto Empty::InternalNewImpl_() {
+constexpr auto Empty::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(Empty), alignof(Empty));
 }
-constexpr auto Empty::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-          tc_table,
-          nullptr,  // IsInitialized
-          &Empty::MergeImpl,
-          Super_::GetNewImpl<Empty>(),
+constexpr auto Empty::_Internal::GenerateClassData() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &Empty::MergeImpl,
+      Super_::GetNewImpl<Empty>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Empty::SharedDtor,
-          &Empty::Clear, &Empty::ByteSizeLong, &Empty::_InternalSerialize,
+      &Empty::Helpers_::SharedDtor,
+      &Empty::Clear, &Empty::ByteSizeLong, &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
-          false,
-      },
+      PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),
       &file_reflection_data[0],
   };
 }
 struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr EmptyGlobalsTypeInternal()
-      : MessageGlobalsBase(Empty::InternalGenerateClassData_(
-            _default, &Empty_globals_._table.header)),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<Empty>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Empty>(
             GetClassData())) {}
@@ -176,7 +175,7 @@ namespace protobuf {
 
 Empty::Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Empty_globals_.GetClassData()) {
+    : Super_(arena, &Empty_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -186,7 +185,7 @@ Empty::Empty(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Empty& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Empty_globals_.GetClassData()) {
+    : Super_(arena, &Empty_globals_.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -204,7 +203,7 @@ Empty::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Empty_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Empty_globals_));
-  return Empty_globals_.GetClassData();
+  return &Empty_globals_.class_data;
 }
 
 
@@ -214,7 +213,7 @@ Empty::GetClassData() const {
 
 
 ::google::protobuf::Metadata Empty::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(Empty_globals_.class_data);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

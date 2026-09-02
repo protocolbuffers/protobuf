@@ -342,6 +342,61 @@ module CommonTests
     end
   end
 
+  def test_rptfield_eq
+    rf_int32 = Google::Protobuf::RepeatedField.new(:int32)
+    rf_int64 = Google::Protobuf::RepeatedField.new(:int64)
+    rf_string = Google::Protobuf::RepeatedField.new(:string)
+    rf_msg1 = Google::Protobuf::RepeatedField.new(:message, proto_module::TestMessage)
+    rf_msg2 = Google::Protobuf::RepeatedField.new(:message, proto_module::TestMessage2)
+    rf_enum = Google::Protobuf::RepeatedField.new(:enum, proto_module::TestEnum)
+
+    assert_equal [], rf_int32
+    assert_equal rf_int32, []
+    assert_equal [], rf_int64
+    assert_equal rf_int64, []
+    assert_equal [], rf_string
+    assert_equal rf_string, []
+    assert_equal [], rf_msg1
+    assert_equal rf_msg1, []
+    assert_equal [], rf_enum
+    assert_equal rf_enum, []
+
+    l1 = Google::Protobuf::RepeatedField.new(:int32)
+    l2 = Google::Protobuf::RepeatedField.new(:int32)
+    assert_equal l1, l2
+    l1.push 1
+    l2.push 1
+    assert_equal l1, l2
+    assert_equal [1], l1
+    assert_equal l1, [1]
+
+    if !defined?(JRUBY_VERSION) && Google::Protobuf::IMPLEMENTATION == :NATIVE
+      refute_equal rf_int32, rf_int64
+      refute_equal rf_int32, rf_string
+      refute_equal rf_int32, rf_msg1
+      refute_equal rf_msg1, rf_msg2
+    else
+      assert_equal rf_int32, rf_int64
+      assert_equal rf_int32, rf_string
+      assert_equal rf_int32, rf_msg1
+      assert_equal rf_msg1, rf_msg2
+    end
+
+    rf_int32_one = Google::Protobuf::RepeatedField.new(:int32, [1])
+    rf_int64_one = Google::Protobuf::RepeatedField.new(:int64, [1])
+
+    if defined?(JRUBY_VERSION) && Google::Protobuf::IMPLEMENTATION == :NATIVE
+      assert_equal rf_int32_one, rf_int64_one
+    else
+      refute_equal rf_int32_one, rf_int64_one
+    end
+
+    msg1 = Google::Protobuf::RepeatedField.new(:message, proto_module::TestMessage, [proto_module::TestMessage.new])
+    msg2 = Google::Protobuf::RepeatedField.new(:message, proto_module::TestMessage2, [proto_module::TestMessage2.new])
+    refute_equal msg1, msg2
+    refute_equal rf_int32_one, msg1
+  end
+
   def test_rptfield_array_ducktyping
     l = Google::Protobuf::RepeatedField.new(:int32)
     length_methods = %w(count length size)
@@ -414,6 +469,33 @@ module CommonTests
     assert_raises RangeError do
       m["asdf"] = 0x1_0000_0000
     end
+  end
+
+  def test_map_delete_missing
+    m = Google::Protobuf::Map.new(:string, :int32)
+    m["a"] = 1
+    assert_nil m.delete("b")
+    assert_equal 1, m.delete("a")
+    assert_nil m.delete("a")
+
+    m_str = Google::Protobuf::Map.new(:int32, :string)
+    m_str[1] = "hello"
+    assert_nil m_str.delete(2)
+    assert_equal "hello", m_str.delete(1)
+    assert_nil m_str.delete(1)
+
+    m_bytes = Google::Protobuf::Map.new(:int32, :bytes)
+    m_bytes[1] = "world"
+    assert_nil m_bytes.delete(2)
+    assert_equal "world", m_bytes.delete(1)
+    assert_nil m_bytes.delete(1)
+
+    m_msg = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage)
+    msg = proto_module::TestMessage.new(:optional_int32 => 42)
+    m_msg["a"] = msg
+    assert_nil m_msg.delete("b")
+    assert_equal msg, m_msg.delete("a")
+    assert_nil m_msg.delete("a")
   end
 
   # This is a regression test for a bug in Map.hash. It used to return an
@@ -564,6 +646,44 @@ module CommonTests
     refute_same m, m2
     refute_same m["a"], m2["a"]
     refute_same m["b"], m2["b"]
+  end
+
+  def test_map_eq
+    map_str_int32 = Google::Protobuf::Map.new(:string, :int32)
+    map_str_int64 = Google::Protobuf::Map.new(:string, :int64)
+    map_int32_str = Google::Protobuf::Map.new(:int32, :string)
+    map_int32_int32 = Google::Protobuf::Map.new(:int32, :int32)
+    map_str_msg1 = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage)
+    map_str_msg2 = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage2)
+    map_str_enum = Google::Protobuf::Map.new(:string, :enum, proto_module::TestEnum)
+
+    assert_equal map_str_int32, {}
+    assert_equal map_str_int64, {}
+    assert_equal map_int32_str, {}
+    assert_equal map_str_msg1, {}
+    # TODO: In CRuby Native, Map_new_this_type (called by Map_eq when comparing against a Hash)
+    # fails to populate value_type_class for enums in Map_GetRubyWrapper, causing an assertion failure.
+    # assert_equal map_str_enum, {}
+
+    m1 = Google::Protobuf::Map.new(:string, :int32)
+    m2 = Google::Protobuf::Map.new(:string, :int32)
+    assert_equal m1, m2
+    m1["a"] = 1
+    m2["a"] = 1
+    assert_equal m1, m2
+    assert_equal m1, {"a" => 1}
+
+    refute_equal map_str_int32, map_str_int64
+    refute_equal map_str_int32, map_int32_int32
+    refute_equal map_str_msg1, map_str_msg2
+    refute_equal map_str_enum, map_str_int32
+
+    refute_equal Google::Protobuf::Map.new(:string, :int32, {"a" => 1}),
+                 Google::Protobuf::Map.new(:string, :int64, {"a" => 1})
+    refute_equal Google::Protobuf::Map.new(:string, :int32, {"1" => 1}),
+                 Google::Protobuf::Map.new(:int32, :int32, {1 => 1})
+    refute_equal Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage, {"a" => proto_module::TestMessage.new}),
+                 Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage2, {"a" => proto_module::TestMessage2.new})
   end
 
   def test_oneof_descriptors

@@ -162,12 +162,12 @@ TEST(CompareTest, MessageIsEqualWithIdenticalNonCanonicalExtensions) {
                                    upb_StringView_FromString("World"));
 
   // 3. Attach identical non-canonical extensions to both messages
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg1), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      arena.ptr()));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg2), upb_test_ModelExtension1_model_ext_ext, &extension2,
-      arena.ptr());
+      arena.ptr()));
 
   // 4. Verify upb_Message_IsEqual yields true
   bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
@@ -198,12 +198,12 @@ TEST(CompareTest, MessageIsEqualWithDifferentNonCanonicalExtensions) {
                                    upb_StringView_FromString("Hello"));
 
   // 4. Attach different non-canonical extensions to the two messages
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg1), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      arena.ptr()));
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg2), upb_test_ModelExtension1_model_ext_ext, &extension2,
-      arena.ptr());
+      arena.ptr()));
 
   // Verify that NextUnknown2 successfully yields the non-canonical extension
   upb_MessageUnknown udata;
@@ -234,9 +234,9 @@ TEST(CompareTest, MessageIsEqualWithOnlyOneHavingNonCanonicalExtension) {
                                    upb_StringView_FromString("World"));
 
   // 3. Attach only to msg1
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg1), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
+      arena.ptr()));
 
   // 4. Verify upb_Message_IsEqual yields false with IncludeUnknownFields
   bool is_equal_with_unknowns =
@@ -264,9 +264,9 @@ TEST(CompareTest, MessageIsEqualWithNonCanonicalExtensionMatchingRawUnknown) {
   // 2. Obtain encoded raw wire bytes of Extension A by serializing tmp_msg
   upb_test_ModelWithExtensions* tmp_msg =
       upb_test_ModelWithExtensions_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(tmp_msg), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
+      arena.ptr()));
 
   char* buf;
   size_t size;
@@ -279,9 +279,9 @@ TEST(CompareTest, MessageIsEqualWithNonCanonicalExtensionMatchingRawUnknown) {
   // 3. Create msg1 with non-canonical extension A
   upb_test_ModelWithExtensions* msg1 =
       upb_test_ModelWithExtensions_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg1), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
+      arena.ptr()));
 
   // 4. Create msg2 with raw unknown bytes representing A
   upb_test_ModelWithExtensions* msg2 =
@@ -306,9 +306,9 @@ TEST(CompareTest, MessageSetNonCanonicalExtMatchesUnknown) {
 
   // 2. Obtain encoded raw wire bytes of Extension A by serializing tmp_msg
   upb_test_TestMessageSet* tmp_msg = upb_test_TestMessageSet_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(tmp_msg), upb_test_MessageSetMember_message_set_extension_ext,
-      &extension1, arena.ptr());
+      &extension1, arena.ptr()));
 
   char* buf;
   size_t size;
@@ -320,9 +320,9 @@ TEST(CompareTest, MessageSetNonCanonicalExtMatchesUnknown) {
 
   // 3. Create msg1 with non-canonical extension A
   upb_test_TestMessageSet* msg1 = upb_test_TestMessageSet_new(arena.ptr());
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg1), upb_test_MessageSetMember_message_set_extension_ext,
-      &extension1, arena.ptr());
+      &extension1, arena.ptr()));
 
   // 4. Create msg2 with raw unknown bytes representing A
   upb_test_TestMessageSet* msg2 = upb_test_TestMessageSet_new(arena.ptr());
@@ -355,9 +355,9 @@ TEST(CompareTest, MessageIsEqualWithCanonicalAndNonCanonicalExtensions) {
       upb_test_ModelExtension1_new(arena.ptr());
   upb_test_ModelExtension1_set_str(ext_msg2,
                                    upb_StringView_FromString("World"));
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg2), upb_test_ModelExtension1_model_ext_ext, &ext_msg2,
-      arena.ptr());
+      arena.ptr()));
 
   // 3. Verify upb_Message_IsEqual registers them as NOT equal
   bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),

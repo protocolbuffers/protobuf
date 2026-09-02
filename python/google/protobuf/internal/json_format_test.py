@@ -2067,6 +2067,54 @@ class JsonFormatTest(JsonFormatBase):
         msg.armor, json_enumval_custom_string_pb2.Armor.ARMOR_UNKNOWN
     )
 
+  def testParseMapFieldWithCustomEnumNameOk(self):
+    msg = json_enumval_custom_string_pb2.Knight()
+    json_format.Parse(
+        '{"armor_map": {"helmet": "gr8 helm", "boots": "sabaton", "chest": 8}}',
+        msg,
+    )
+    self.assertEqual(
+        msg.armor_map['helmet'],
+        json_enumval_custom_string_pb2.Armor.ARMOR_GREAT_HELM,
+    )
+    self.assertEqual(
+        msg.armor_map['boots'],
+        json_enumval_custom_string_pb2.Armor.ARMOR_SABATON,
+    )
+    self.assertEqual(
+        msg.armor_map['chest'],
+        json_enumval_custom_string_pb2.Armor.ARMOR_HACHI_MAI_DO,
+    )
+
+  def testGetCustomJsonEnumNames(self):
+    enum_type = json_enumval_custom_string_pb2.Armor.DESCRIPTOR
+    cache = {}
+    names = json_format._GetCustomJsonEnumNames(enum_type, cache)
+    self.assertIn('gr8 helm', names)
+    self.assertEqual(names['gr8 helm'].name, 'ARMOR_GREAT_HELM')
+    self.assertEqual(names['gr8 helm'].number, 1)
+    self.assertIn('sabaton', names)
+    self.assertEqual(names['sabaton'].number, 7)
+    self.assertIn(names['sabaton'].name, ('ARMOR_SABATON', 'ARMOR_SOLLERET'))
+    self.assertIn('8', names)
+    self.assertEqual(names['8'].name, 'ARMOR_HACHI_MAI_DO')
+    self.assertEqual(names['8'].number, 8)
+    self.assertNotIn('ARMOR_GORGET', names)
+
+    # Verify cache is populated and subsequent calls return the cached dict.
+    self.assertIn(enum_type, cache)
+    self.assertIs(cache[enum_type], names)
+    cached_names = json_format._GetCustomJsonEnumNames(enum_type, cache)
+    self.assertIs(cached_names, names)
+
+  def testGetCustomJsonEnumNamesNoCustomOptions(self):
+    enum_type = unittest_pb2.ForeignEnum.DESCRIPTOR
+    cache = {}
+    names = json_format._GetCustomJsonEnumNames(enum_type, cache)
+    self.assertEqual(names, {})
+    self.assertIn(enum_type, cache)
+    self.assertEqual(cache[enum_type], {})
+
 
 if __name__ == '__main__':
   unittest.main()

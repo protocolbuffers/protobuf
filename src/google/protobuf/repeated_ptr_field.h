@@ -1133,8 +1133,8 @@ class GenericTypeHandler {
 
   static const Type& default_instance() {
     static_assert(has_default_instance());
-    return *static_cast<const GenericType*>(
-        MessageTraits<Type>::default_instance());
+    return *reinterpret_cast<const GenericType*>(
+        MessageTraits<Type>::class_data()->default_instance());
   }
   static constexpr bool has_default_instance() {
     return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;

@@ -6,6 +6,9 @@ some rough edges, including missing documentation and features.
 An example for how to use this crate can be found in the
 [protobuf_example crate](http://crates.io/crates/protobuf_example)
 
+As of V4.36.0, this crate is a shallow wrapper around the `google_protobuf`
+crate that it reexports.
+
 # V4 ownership and implementation change
 
 V4 of this crate is officially supported by the Protobuf team at Google. Prior
