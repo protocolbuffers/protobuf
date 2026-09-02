@@ -1190,6 +1190,19 @@ class TextFormatParserTests(TextFormatBase):
         message,
     )
 
+  def testParseUntilEndToken(self, message_module):
+    text = r"""
+               optional_int32: 1
+               END_TOKEN
+               required_int32 = 2
+    """
+
+    parsed_message = message_module.TestAllTypes()
+    text_format.Parse(text, parsed_message, end_token='END_TOKEN')
+    self.assertEqual(
+        message_module.TestAllTypes(optional_int32=1), parsed_message
+    )
+
 
 @parameterized.parameters(unittest_pb2, unittest_proto3_arena_pb2)
 class TextFormatMergeTests(TextFormatBase):
@@ -1230,6 +1243,19 @@ class TextFormatMergeTests(TextFormatBase):
     m2 = message_module.TestAllTypes()
     text_format.Merge(m_string, m2)
     self.assertEqual('oneof_string', m2.WhichOneof('oneof_field'))
+
+  def testMergeUntilEndToken(self, message_module):
+    text = r"""
+               optional_int32: 1
+               END_TOKEN
+               required_int32 = 2
+    """
+
+    parsed_message = message_module.TestAllTypes()
+    text_format.Merge(text, parsed_message, end_token='END_TOKEN')
+    self.assertEqual(
+        message_module.TestAllTypes(optional_int32=1), parsed_message
+    )
 
 
 # These are tests that aren't fundamentally specific to proto2, but are at
