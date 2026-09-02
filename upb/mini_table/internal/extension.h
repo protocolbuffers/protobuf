@@ -13,6 +13,7 @@
 
 #include "upb/base/descriptor_constants.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/sub.h"
 
 // Must be last.
@@ -73,6 +74,9 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
           kUpb_FieldType_Message &&
       e->UPB_PRIVATE(field).UPB_PRIVATE(descriptortype) !=
           kUpb_FieldType_Group) {
+    return false;
+  }
+  if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
     return false;
   }
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
