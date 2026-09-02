@@ -48,10 +48,11 @@ static UPB_PRESERVE_MOST void _upb_FastDecoder_AddEnumValueToUnknown(
   // unpacked.
   uint32_t varint_tag = (field_num << 3) | kUpb_WireType_Varint;
 
-  char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
+  char buf[kUpb_Decoder_EncodeVarint32MaxSize +
+           kUpb_Decoder_EncodeVarint64MaxSize];
   char* end = buf;
   end = upb_Decoder_EncodeVarint32(varint_tag, end);
-  end = upb_Decoder_EncodeVarint32(val, end);
+  end = upb_Decoder_EncodeVarint64(val, end);
 
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, &d->arena,
                                             kUpb_AddUnknown_Copy)) {
