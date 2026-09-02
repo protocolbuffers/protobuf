@@ -124,7 +124,9 @@ public final class GeneratorNames {
       }
     }
     return (T)
-        Descriptors.getEditionDefaults(edition).getExtension(ext).toBuilder()
+        Descriptors.getEditionDefaults(Descriptors.getJavaEditionDefaults(), edition)
+            .getExtension(ext)
+            .toBuilder()
             .mergeFrom(features.getExtension(ext))
             .build();
   }

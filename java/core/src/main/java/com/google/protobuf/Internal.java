@@ -55,12 +55,31 @@ public final class Internal {
   }
 
   /**
+   * Throws an appropriate {@link IllegalStateException} if the given condition is {@code false}.
+   */
+  static void checkState(boolean condition) {
+    if (!condition) {
+      throw new IllegalStateException();
+    }
+  }
+
+  /** Find the next index non-null entry in the array starting at {@code startIndex + 1}. */
+  static <T> int findNextNonNull(T[] entries, int startIndex) {
+    for (int i = startIndex + 1; i < entries.length; ++i) {
+      if (entries[i] != null) {
+        return i;
+      }
+    }
+    return entries.length;
+  }
+
+  /**
    * Throws an {@link IllegalArgumentException} for unrecognized enum values.
    *
    * <p>Used from Enum.getNumber().
    *
    * @return nothing, but typed as int, so we can "return" the result of this method directly from
-   * Enum.getNumber(), generating smaller dex code for every enum.
+   *     Enum.getNumber(), generating smaller dex code for every enum.
    */
   @DoNotInline
   public static int throwCannotGetNumberOfUnrecognized() {
