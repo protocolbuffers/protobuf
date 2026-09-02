@@ -361,14 +361,22 @@ void PyiGenerator::PrintTopLevelEnums() const {
 }
 
 template <typename DescriptorT>
-void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
+void PyiGenerator::PrintExtensions(const DescriptorT& descriptor,
+                                   bool is_classvar) const {
   for (int i = 0; i < descriptor.extension_count(); ++i) {
     const FieldDescriptor* extension_field = descriptor.extension(i);
     std::string constant_name =
         absl::StrCat(extension_field->name(), "_FIELD_NUMBER");
     absl::AsciiStrToUpper(&constant_name);
-    printer_->Print("$constant_name$: _ClassVar[int]\n",
-                    "constant_name", constant_name);
+    // ClassVar is only a valid annotation inside a class body, so it is used for a message's
+    // nested extensions and not for a file's top-level ones.
+    if (is_classvar) {
+      printer_->Print("$constant_name$: _ClassVar[int]\n",
+                      "constant_name", constant_name);
+    } else {
+      printer_->Print("$constant_name$: int\n",
+                      "constant_name", constant_name);
+    }
     Annotate("constant_name", extension_field);
     printer_->Print("$name$: _descriptor.FieldDescriptor\n",
                     "name", extension_field->name());
@@ -478,7 +486,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     PrintMessage(*message_descriptor.nested_type(i), true);
   }
 
-  PrintExtensions(message_descriptor);
+  PrintExtensions(message_descriptor, /* is_classvar = */ true);
 
   // Prints field number
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
