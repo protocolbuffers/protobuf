@@ -45,7 +45,6 @@ jobs:
           - version: "3.13"
             continuous-only: true
           - version: "3.14"
-            kokoro_python_version: "3.14.4"
           - type: C++
             version: aarch64
             targets: //python/... //python:aarch64_test
@@ -64,8 +63,6 @@ jobs:
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v6
-        env:
-          KOKORO_PYTHON_VERSION: ${{ matrix.kokoro_python_version }}
         with:
           image: ${{ matrix.image || format('us-docker.pkg.dev/protobuf-build/containers/test/linux/python:9.2.0-{0}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ', matrix.version) }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -75,7 +72,7 @@ jobs:
             ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }}
             ${{ matrix.version != 'aarch64' && '--//python:use_hermetic_python=true' || '' }}
             ${{ matrix.version != 'aarch64' && format('--@rules_python//python/config_settings:python_version={0}', matrix.version) || '' }}
-            --test_env=KOKORO_PYTHON_VERSION=${{ matrix.kokoro_python_version }}
+            --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version }}
 
 
   macos:
