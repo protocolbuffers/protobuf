@@ -120,8 +120,6 @@ jobs:
 
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel@v5
-        env:
-          KOKORO_PYTHON_VERSION: ${{ matrix.version }}
         with:
           version: 9.2.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
