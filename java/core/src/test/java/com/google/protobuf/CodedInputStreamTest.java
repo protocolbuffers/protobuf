@@ -2095,7 +2095,7 @@ public class CodedInputStreamTest {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       CodedOutputStream cos = CodedOutputStream.newInstance(baos);
       cos.writeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      cos.writeRawVarint32(n);
+      cos.writeUInt32NoTag(n);
       cos.flush();
       stringTagAndLength = baos.toByteArray();
     }
@@ -2103,7 +2103,7 @@ public class CodedInputStreamTest {
     ByteArrayOutputStream unknownFieldBaos = new ByteArrayOutputStream();
     CodedOutputStream unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
     unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    unknownCos.writeRawVarint32(n);
+    unknownCos.writeUInt32NoTag(n);
     unknownCos.flush();
     int prefixLen = unknownFieldBaos.toByteArray().length;
     int padLength = n - stringTagAndLength.length - prefixLen;
@@ -2111,7 +2111,7 @@ public class CodedInputStreamTest {
     unknownFieldBaos.reset();
     unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
     unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    unknownCos.writeRawVarint32(padLength);
+    unknownCos.writeUInt32NoTag(padLength);
     unknownCos.writeRawBytes(new byte[padLength]);
     unknownCos.writeRawBytes(stringTagAndLength);
     unknownCos.flush();
