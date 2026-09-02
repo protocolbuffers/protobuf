@@ -2312,12 +2312,31 @@ public class JsonFormat {
     // values never exceed ~350 characters, so 1000 is a generous upper bound.
     private static final int MAX_NUMERIC_STRING_LENGTH = 1000;
 
+    // Largest |BigDecimal.scale()| accepted for a JSON numeric value. Comfortably
+    // above the exponent range of double (~1e-324 to 1e308), the widest protobuf
+    // numeric type, and small enough that the BigInteger materialized by later
+    // arithmetic stays bounded.
+    private static final int MAX_NUMERIC_SCALE = 1000;
+
     private static BigDecimal parseBigDecimal(String value) throws InvalidProtocolBufferException {
       if (value.length() > MAX_NUMERIC_STRING_LENGTH) {
         throw new InvalidProtocolBufferException(
             "Numeric value is too long: " + value.length() + " characters");
       }
-      return new BigDecimal(value);
+      BigDecimal result = new BigDecimal(value);
+      // Compact scientific notation such as "1e536870000" is short enough to pass
+      // the length check above, but materializes a multi-million-digit BigInteger
+      // inside the compareTo()/remainder() calls made by the callers below, which
+      // can occupy a thread for minutes. Bound the exponent as well as the string
+      // length. The widest protobuf numeric type is double, whose magnitude spans
+      // roughly 1e-324 to 1e308, so no valid value approaches this limit; at the
+      // limit the BigInteger is about a thousand digits and the arithmetic stays
+      // in the low milliseconds.
+      if (Math.abs(result.scale()) > MAX_NUMERIC_SCALE) {
+        throw new InvalidProtocolBufferException(
+            "Numeric value is out of range: " + value);
+      }
+      return result;
     }
 
     private long parseUint64(JsonElement json) throws InvalidProtocolBufferException {
