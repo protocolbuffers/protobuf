@@ -1384,13 +1384,28 @@ std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t res);
 // otherwise returns nullptr. Caller must ensure it is safe to call.
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t ReadSize(const char** pp) {
-  auto p = *pp;
-  uint32_t res = static_cast<uint8_t>(p[0]);
-  if (res < 128) {
+  const char* p = *pp;
+  uint32_t b0 = static_cast<uint8_t>(p[0]);
+  // Fast path for 1-byte varints (sizes 0 to 127 bytes).
+  if (ABSL_PREDICT_TRUE(b0 < 128)) {
     *pp = p + 1;
-    return res;
+    return b0;
   }
-  auto x = ReadSizeFallback(p, res);
+  // Inlined fast path for 2-byte varints (sizes 128 to 16,383 bytes).
+  // Safety: All buffers processed by EpsCopyInputStream and ParseContext have a
+  // minimum of kSlopBytes = 16 bytes of readable padding past the stream limit.
+  // Reading p[0] and p[1] is therefore always memory-safe and cannot fault.
+  // The vast majority of real-world submessages and string payloads fall within
+  // this 128 B to 16 KB range, so inlining avoids ABI function call overhead
+  // and register spills to ReadSizeFallback.
+  uint32_t b1 = static_cast<uint8_t>(p[1]);
+  if (ABSL_PREDICT_TRUE(b1 < 128)) {
+    *pp = p + 2;
+    return (b0 & 0x7F) | (b1 << 7);
+  }
+  // Fall back to out-of-line parsing for 3+ byte varints (>= 16,384 bytes)
+  // or malformed inputs.
+  auto x = ReadSizeFallback(p, b0);
   *pp = x.first;
   return x.second;
 }
