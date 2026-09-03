@@ -51,6 +51,18 @@ final class FieldMaskTree {
     final NavigableMap<String, Node> children = new TreeMap<>();
   }
 
+  private static final class PathStackElement {
+    final Node node;
+    final String segment;
+    final int prefixLength;
+
+    PathStackElement(Node node, String segment, int prefixLength) {
+      this.node = node;
+      this.segment = segment;
+      this.prefixLength = prefixLength;
+    }
+  }
+
   private final Node root = new Node();
 
   /** Creates an empty FieldMaskTree. */
@@ -182,33 +194,39 @@ final class FieldMaskTree {
     return FieldMask.newBuilder().addAllPaths(paths).build();
   }
 
-  private static void getFieldPaths(Node node, String path, List<String> paths) {
-    class PathStackElement {
-      final Node node;
-      final String path;
-
-      PathStackElement(Node node, String path) {
-        this.node = node;
-        this.path = path;
+  private static void getFieldPaths(Node rootNode, String initialPath, List<String> paths) {
+    if (rootNode.children.isEmpty()) {
+      if (!initialPath.isEmpty()) {
+        paths.add(initialPath);
       }
+      return;
     }
 
+    StringBuilder currentPath = new StringBuilder(initialPath);
     Deque<PathStackElement> stack = new ArrayDeque<>();
-    stack.push(new PathStackElement(node, path));
+
+    // Pushing the children in reverse order so that they are processed in ascending order
+    // will maintain the behavior that the paths are alphabetically sorted in the final
+    // FieldMask.
+    for (Entry<String, Node> entry : rootNode.children.descendingMap().entrySet()) {
+      stack.push(new PathStackElement(entry.getValue(), entry.getKey(), currentPath.length()));
+    }
 
     while (!stack.isEmpty()) {
       PathStackElement element = stack.pop();
-      if (element.node.children.isEmpty()) {
-        paths.add(element.path);
-        continue;
+      currentPath.setLength(element.prefixLength);
+      if (element.prefixLength > 0) {
+        currentPath.append('.');
       }
-      // Pushing the children in reverse order so that they are processed in ascending order
-      // will maintain the behavior that the paths are alphabetically sorted in the final
-      // FieldMask.
-      for (Entry<String, Node> entry : element.node.children.descendingMap().entrySet()) {
-        String childPath =
-            element.path.isEmpty() ? entry.getKey() : element.path + "." + entry.getKey();
-        stack.push(new PathStackElement(entry.getValue(), childPath));
+      currentPath.append(element.segment);
+
+      if (element.node.children.isEmpty()) {
+        paths.add(currentPath.toString());
+      } else {
+        int currentLength = currentPath.length();
+        for (Entry<String, Node> entry : element.node.children.descendingMap().entrySet()) {
+          stack.push(new PathStackElement(entry.getValue(), entry.getKey(), currentLength));
+        }
       }
     }
   }
