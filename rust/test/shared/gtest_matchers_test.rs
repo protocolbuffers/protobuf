@@ -5,11 +5,14 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use googletest::matcher::MatcherResult;
 use googletest::prelude::*;
 use map_unittest_rust_proto::TestMap;
 use paste::paste;
-use protobuf::proto;
-use protobuf_gtest_matchers::{proto_eq, proto_partially_eq};
+use protobuf::{proto, Serialize};
+use protobuf_gtest_matchers::{
+    proto_eq, proto_partially_eq, when_deserialized, when_deserialized_as,
+};
 use unittest_proto3_rust_proto::test_all_types::NestedMessage;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
 use unittest_rust_proto::TestAllTypes;
@@ -202,5 +205,165 @@ fn proto_eq_works_on_view() {
             proto_eq(proto!(NestedMessage { bb: 20 }).as_view()),
             proto_eq(proto!(NestedMessage { bb: 30 }).as_view()),
         ]
+    );
+}
+
+#[gtest]
+fn test_when_deserialized_matching() -> Result<()> {
+    let mut msg = TestAllTypes::new();
+    msg.set_optional_int32(42);
+    let serialized = msg.serialize()?;
+
+    let mut expected = TestAllTypes::new();
+    expected.set_optional_int32(42);
+
+    // Matches with slice, reference, and owned Vec<u8>
+    assert_that!(&serialized, when_deserialized(proto_eq(expected.clone())));
+    assert_that!(serialized.as_slice(), when_deserialized(proto_eq(expected.clone())));
+    assert_that!(serialized, when_deserialized(proto_eq(expected)));
+
+    Ok(())
+}
+
+#[gtest]
+fn test_when_deserialized_string_types() {
+    // Tag 8 (field 1 varint) = 0 is valid ASCII / UTF-8
+    let s: &str = "\x08\0";
+    let string: String = s.to_string();
+
+    let mut expected = TestAllTypes::new();
+    expected.set_optional_int32(0);
+
+    assert_that!(s, when_deserialized(proto_eq(expected.clone())));
+    assert_that!(&string, when_deserialized(proto_eq(expected.clone())));
+    assert_that!(string, when_deserialized(proto_eq(expected)));
+}
+
+#[gtest]
+fn test_when_deserialized_array_types() {
+    let arr: [u8; 2] = [8, 0];
+    let mut expected = TestAllTypes::new();
+    expected.set_optional_int32(0);
+
+    assert_that!(&arr, when_deserialized(proto_eq(expected.clone())));
+    assert_that!(arr, when_deserialized(proto_eq(expected)));
+}
+
+#[gtest]
+fn test_when_deserialized_not_matching_different_values() -> Result<()> {
+    let mut msg = TestAllTypes::new();
+    msg.set_optional_int32(42);
+    let serialized = msg.serialize()?;
+
+    let mut diff = TestAllTypes::new();
+    diff.set_optional_int32(99);
+
+    assert_that!(&serialized, not(when_deserialized(proto_eq(diff.clone()))));
+    // Inner not matcher: matches valid bytes that deserialize to a proto not equal to diff
+    assert_that!(&serialized, when_deserialized(not(proto_eq(diff.clone()))));
+    // But invalid bytes cannot be deserialized, so they do NOT match even with an inner not matcher
+    let invalid_bytes: &[u8] = b"not a valid proto!";
+    assert_that!(invalid_bytes, not(when_deserialized(not(proto_eq(diff)))));
+
+    Ok(())
+}
+
+#[gtest]
+fn test_when_deserialized_with_anything() -> Result<()> {
+    let mut msg = TestAllTypes::new();
+    msg.set_optional_int32(42);
+    let serialized = msg.serialize()?;
+
+    // With explicit type parameter, anything() can be used to test that bytes are valid protobuf
+    assert_that!(&serialized, when_deserialized::<TestAllTypes, _>(anything()));
+    assert_that!(&serialized, when_deserialized_as::<TestAllTypes, _>(anything()));
+
+    let invalid_bytes: &[u8] = b"not a valid proto!";
+    assert_that!(invalid_bytes, not(when_deserialized::<TestAllTypes, _>(anything())));
+    assert_that!(invalid_bytes, not(when_deserialized_as::<TestAllTypes, _>(anything())));
+
+    Ok(())
+}
+
+#[gtest]
+fn test_when_deserialized_invalid_bytes() -> Result<()> {
+    let mut expected = TestAllTypes::new();
+    expected.set_optional_int32(42);
+
+    // Invalid protobuf wire format should not match
+    let invalid_bytes: &[u8] = b"this is not a valid proto wire format!";
+    assert_that!(invalid_bytes, not(when_deserialized(proto_eq(expected))));
+
+    Ok(())
+}
+
+#[gtest]
+fn test_when_deserialized_partially_eq() -> Result<()> {
+    let mut actual = TestAllTypes::new();
+    actual.set_optional_int32(1);
+    actual.set_optional_int64(42);
+    let serialized = actual.serialize()?;
+
+    let mut expected = TestAllTypes::new();
+    expected.set_optional_int32(1);
+
+    // actual has extra field -> matches partially
+    assert_that!(&serialized, when_deserialized(proto_partially_eq(expected)));
+
+    let mut diff = TestAllTypes::new();
+    diff.set_optional_int32(2);
+    assert_that!(&serialized, not(when_deserialized(proto_partially_eq(diff))));
+
+    Ok(())
+}
+
+#[gtest]
+fn test_when_deserialized_proto3() -> Result<()> {
+    let mut msg = TestAllTypesProto3::new();
+    msg.set_optional_int32(123);
+    let serialized = msg.serialize()?;
+
+    let mut expected = TestAllTypesProto3::new();
+    expected.set_optional_int32(123);
+
+    assert_that!(&serialized, when_deserialized(proto_eq(expected)));
+
+    Ok(())
+}
+
+#[gtest]
+fn test_when_deserialized_describe() {
+    let mut expected = TestAllTypes::new();
+    expected.set_optional_int32(42);
+    let matcher = when_deserialized(proto_eq(expected));
+
+    assert_that!(
+        Matcher::<&[u8]>::describe(&matcher, MatcherResult::Match).to_string(),
+        starts_with("can be deserialized as a protobuf which is equal to")
+    );
+    assert_that!(
+        Matcher::<&[u8]>::describe(&matcher, MatcherResult::NoMatch).to_string(),
+        starts_with("cannot be deserialized as a protobuf which is equal to")
+    );
+}
+
+#[gtest]
+fn test_when_deserialized_explain_match() {
+    let mut msg = TestAllTypes::new();
+    msg.set_optional_int32(42);
+    let serialized = msg.serialize().unwrap();
+
+    let mut expected = TestAllTypes::new();
+    expected.set_optional_int32(42);
+    let matcher = when_deserialized(proto_eq(expected));
+
+    let explanation_match = matcher.explain_match(serialized.as_slice());
+    assert_that!(explanation_match.to_string(), starts_with("which deserializes to"));
+
+    let invalid_bytes: &[u8] = b"\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\x7f";
+    let explanation_invalid = matcher.explain_match(invalid_bytes);
+    assert_that!(
+        explanation_invalid.to_string(),
+        starts_with("which cannot be deserialized as a protobuf")
     );
 }
