@@ -172,11 +172,11 @@ void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
-    [[nodiscard]] $DEPRECATED$ $Type$ $name$() const;
+    [[nodiscard]] $DEPRECATED$ PROTOBUF_PURE $Type$ $name$() const;
     $DEPRECATED$ void $set_name$($Type$ value);
 
     private:
-    $Type$ $_internal_name$() const;
+    PROTOBUF_PURE $Type$ $_internal_name$() const;
     void $_internal_set_name$($Type$ value);
 
     public:
@@ -186,7 +186,7 @@ void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
 void SingularPrimitive::GenerateInlineAccessorDefinitions(
     io::Printer* p) const {
   p->Emit(R"cc(
-    inline $Type$ $Msg$::$name$() const {
+    inline PROTOBUF_PURE $Type$ $Msg$::$name$() const {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
@@ -207,7 +207,7 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Type$ $Msg$::_internal_$name_internal$() const {
+      inline PROTOBUF_PURE $Type$ $Msg$::_internal_$name_internal$() const {
         if ($has_field$) {
           return $field_$;
         }
@@ -224,7 +224,7 @@ void SingularPrimitive::GenerateInlineAccessorDefinitions(
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Type$ $Msg$::_internal_$name_internal$() const {
+      inline PROTOBUF_PURE $Type$ $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return $field_$;
       }
@@ -466,8 +466,9 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
     switch (cpp_repeated_type_) {
       case FieldDescriptor::CppRepeatedType::kRepeated:
         p->Emit(R"cc(
-          [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$()
-              const;
+          [[nodiscard]] $DEPRECATED$ PROTOBUF_PURE const
+              $pb$::RepeatedField<$Type$>&
+              $name$() const;
           $DEPRECATED$ $pb$::RepeatedField<$Type$>* $nonnull$ $mutable_name$();
         )cc");
         break;
@@ -489,7 +490,7 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
             $decl_field_accessors$;
 
             private:
-            const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
+            PROTOBUF_PURE const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
             $pb$::RepeatedField<$Type$>* $nonnull$ $_internal_mutable_name$();
 
             public:
@@ -532,8 +533,8 @@ void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
   switch (cpp_repeated_type_) {
     case FieldDescriptor::CppRepeatedType::kRepeated:
       p->Emit(R"cc(
-        inline const $pb$::RepeatedField<$Type$>& $Msg$::$name$() const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline PROTOBUF_PURE const $pb$::RepeatedField<$Type$>& $Msg$::$name$()
+            const ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_list$;
           // @@protoc_insertion_point(field_list:$pkg.Msg.field$)
