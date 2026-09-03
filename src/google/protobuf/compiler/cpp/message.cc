@@ -4553,7 +4553,10 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                           const Options& options)
         : mg_(mg), p_(p), options_(options), cached_has_bit_index_(kNoHasbit) {}
 
-    ~LazySerializerEmitter() { Flush(); }
+    ~LazySerializerEmitter() {
+      Flush();
+      CloseSplit();
+    }
 
     // If conditions allow, try to accumulate a run of fields from the same
     // oneof, and handle them at the next Flush().
@@ -4564,31 +4567,21 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       if (field->real_containing_oneof()) {
         v_.push_back(field);
       } else {
-        if (ShouldSplit(field, options_)) {
-          OpenSplit();
-        } else {
-          CloseSplit();
-        }
-
         // TODO: Defer non-oneof fields similarly to oneof fields.
         if (HasHasbit(field, options_)) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
-          int has_word_index =
-              mg_->field_layout_.GetHasWordIndex(field).value();
-          if (cached_has_bit_index_ != has_word_index) {
-            // Reload.
-            int new_index = has_word_index;
-            p_->Emit({{"index", new_index}},
-                     R"cc(
-                       cached_has_bits = this_._impl_._has_bits_[$index$];
-                     )cc");
-            cached_has_bit_index_ = new_index;
+          if (MustFlush(field)) {
+            Flush();
+          } else {
+            v_.push_back(field);
           }
+        } else {
+          if (ShouldSplit(field, options_)) {
+            OpenSplit();
+          } else {
+            CloseSplit();
+          }
+          mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
         }
-
-        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
       }
     }
 
@@ -4599,22 +4592,52 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
     }
 
     void Flush() {
-      CloseSplit();
-      if (!v_.empty()) {
+      if (v_.empty()) return;
+      auto first = v_.front();
+      if (first->real_containing_oneof()) {
+        CloseSplit();
         mg_->GenerateSerializeOneofFields(p_, v_);
-        v_.clear();
+      } else if (HasHasbit(first, options_)) {
+        if (ShouldSplit(first, options_)) {
+          OpenSplit();
+        } else {
+          CloseSplit();
+        }
+        // We speculatively load the entire _has_bits_[index] contents, even
+        // if it is for only one field.  Deferring non-oneof emitting would
+        // allow us to determine whether this is going to be useful.
+        int has_word_index = mg_->field_layout_.GetHasWordIndex(first).value();
+        if (cached_has_bit_index_ != has_word_index) {
+          // Reload.
+          int new_index = has_word_index;
+          p_->Emit({{"index", new_index}},
+                   R"cc(
+                     cached_has_bits = this_._impl_._has_bits_[$index$];
+                   )cc");
+          cached_has_bit_index_ = new_index;
+        }
+
+        auto emit_for_fields = [&] {
+          for (auto field : v_) {
+            mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
+          }
+        };
+        if (v_.size() > 1) {
+          uint32_t chunk_mask = GenChunkMask(v_, mg_->field_layout_);
+          p_->Emit({{"mask", absl::StrFormat("0x%08xU", chunk_mask)},
+                    {"emit_fields", emit_for_fields}},
+                   R"cc(
+                     if (BatchCheckHasBit(cached_has_bits, $mask$)) {
+                       $emit_fields$;
+                     }
+                   )cc");
+        } else {
+          emit_for_fields();
+        }
       }
+      v_.clear();
     }
 
-   private:
-    void OpenSplit() {
-      if (is_split_open_) return;
-      is_split_open_ = true;
-      p_->Emit(R"cc(
-        if (ABSL_PREDICT_FALSE(serialize_split_fields)) {
-      )cc");
-      p_->Indent();
-    }
     void CloseSplit() {
       if (!is_split_open_) return;
       is_split_open_ = false;
@@ -4627,11 +4650,29 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       cached_has_bit_index_ = -1;
     }
 
+   private:
+    void OpenSplit() {
+      if (is_split_open_) return;
+      is_split_open_ = true;
+      p_->Emit(R"cc(
+        if (ABSL_PREDICT_FALSE(serialize_split_fields)) {
+      )cc");
+      p_->Indent();
+    }
+
     // If we have multiple fields in v_ then they all must be from the same
     // oneof.  Would adding field to v_ break that invariant?
     bool MustFlush(const FieldDescriptor* field) {
-      return !v_.empty() &&
-             v_[0]->containing_oneof() != field->containing_oneof();
+      if (v_.empty()) return false;
+      auto first = v_.front();
+      auto& layout = mg_->field_layout_;
+      return (first->real_containing_oneof() &&
+              first->containing_oneof() != field->containing_oneof()) ||
+             (HasHasbit(first, options_) &&
+              (IsLikelyPresent(first, options_) ||
+               IsLikelyPresent(field, options_) ||
+               ShouldSplit(first, options_) != ShouldSplit(field, options_) ||
+               layout.GetHasWordIndex(first) != layout.GetHasWordIndex(field)));
     }
 
     MessageGenerator* mg_;
@@ -4721,13 +4762,16 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
                     ordered_fields[i]->number() <
                         sorted_extensions[j]->start_number())) {
                  const FieldDescriptor* field = ordered_fields[i++];
+                 e.CloseSplit();
                  re.Flush(no_more_extensions);
                  e.Emit(field);
                } else {
                  e.Flush();
+                 e.CloseSplit();
                  re.AddToRange(sorted_extensions[j++]);
                }
              }
+             e.CloseSplit();
              re.Flush(/*is_last_range=*/true);
            }},
           {"handle_unknown_fields",
