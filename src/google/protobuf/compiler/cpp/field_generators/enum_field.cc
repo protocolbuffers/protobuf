@@ -155,12 +155,12 @@ void SingularEnum::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
-    [[nodiscard]] $DEPRECATED$ $Enum$ $name$() const;
-    $DEPRECATED$ void $set_name$($Enum$ value);
+    [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ $Enum$ $name$() const;
+    PROTOBUF_NOALIAS $DEPRECATED$ void $set_name$($Enum$ value);
 
     private:
-    $Enum$ $_internal_name$() const;
-    void $_internal_set_name$($Enum$ value);
+    PROTOBUF_PURE $Enum$ $_internal_name$() const;
+    PROTOBUF_NOALIAS void $_internal_set_name$($Enum$ value);
 
     public:
   )cc");
@@ -168,7 +168,7 @@ void SingularEnum::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
-    inline $Enum$ $Msg$::$name$() const {
+    inline PROTOBUF_PURE $Enum$ $Msg$::$name$() const {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
@@ -178,7 +178,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
   if (is_oneof()) {
     p->Emit(R"cc(
-      inline void $Msg$::set_$name$($Enum$ value) {
+      inline PROTOBUF_NOALIAS void $Msg$::set_$name$($Enum$ value) {
         $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
         $assert_valid$;
@@ -190,7 +190,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Enum$ $Msg$::_internal_$name_internal$() const {
+      inline PROTOBUF_PURE $Enum$ $Msg$::_internal_$name_internal$() const {
         if ($has_field$) {
           return static_cast<$Enum$>($field_$);
         }
@@ -199,7 +199,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      inline void $Msg$::set_$name$($Enum$ value) {
+      inline PROTOBUF_NOALIAS void $Msg$::set_$name$($Enum$ value) {
         $WeakDescriptorSelfPin$;
         $PrepareSplitMessageForWrite$;
         _internal_set_$name_internal$(value);
@@ -207,11 +207,12 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
-      inline $Enum$ $Msg$::_internal_$name_internal$() const {
+      inline PROTOBUF_PURE $Enum$ $Msg$::_internal_$name_internal$() const {
         $TsanDetectConcurrentRead$;
         return static_cast<$Enum$>($field_$);
       }
-      inline void $Msg$::_internal_set_$name_internal$($Enum$ value) {
+      inline PROTOBUF_NOALIAS void $Msg$::_internal_set_$name_internal$(
+          $Enum$ value) {
         $TsanDetectConcurrentMutation$;
         $assert_valid$;
         $field_$ = value;
@@ -392,8 +393,9 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
     switch (cpp_repeated_type_) {
       case FieldDescriptor::CppRepeatedType::kRepeated:
         p->Emit(R"cc(
-          [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<int>& $name$()
-              const;
+          [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ const
+              $pb$::RepeatedField<int>&
+              $name$() const;
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedField<int>* $nonnull$ $mutable_name$();
         )cc");
         break;
@@ -409,13 +411,13 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
 
   p->Emit({{"decl_field_accessors", decl_field_accessors}}, R"cc(
     public:
-    [[nodiscard]] $DEPRECATED$ $Enum$ $name$(int index) const;
-    $DEPRECATED$ void $set_name$(int index, $Enum$ value);
-    $DEPRECATED$ void $add_name$($Enum$ value);
+    [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ $Enum$ $name$(int index) const;
+    PROTOBUF_NOALIAS $DEPRECATED$ void $set_name$(int index, $Enum$ value);
+    PROTOBUF_NOALIAS $DEPRECATED$ void $add_name$($Enum$ value);
     $decl_field_accessors$;
 
     private:
-    const $pb$::RepeatedField<int>& $_internal_name$() const;
+    PROTOBUF_PURE const $pb$::RepeatedField<int>& $_internal_name$() const;
     $pb$::RepeatedField<int>* $nonnull$ $_internal_mutable_name$();
 
     public:
@@ -424,7 +426,7 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
 
 void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   p->Emit(R"cc(
-    inline $Enum$ $Msg$::$name$(int index) const {
+    inline PROTOBUF_PURE $Enum$ $Msg$::$name$(int index) const {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
       // @@protoc_insertion_point(field_get:$pkg.Msg.field$)
@@ -435,7 +437,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     //~ Note: no need to set hasbit in set_$name$(int index). Hasbits only
     //~ need to be updated if a new element is (potentially) added, not if an
     //~ existing element is mutated.
-    inline void $Msg$::set_$name$(int index, $Enum$ value) {
+    inline PROTOBUF_NOALIAS void $Msg$::set_$name$(int index, $Enum$ value) {
       $WeakDescriptorSelfPin$;
       $assert_valid$;
       _internal_mutable_$name_internal$()->Set(index, value);
@@ -444,7 +446,7 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::add_$name$($Enum$ value) {
+    inline PROTOBUF_NOALIAS void $Msg$::add_$name$($Enum$ value) {
       $WeakDescriptorSelfPin$;
       $assert_valid$;
       $TsanDetectConcurrentMutation$;
@@ -459,8 +461,8 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   switch (cpp_repeated_type_) {
     case FieldDescriptor::CppRepeatedType::kRepeated:
       p->Emit(R"cc(
-        inline const $pb$::RepeatedField<int>& $Msg$::$name$() const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline PROTOBUF_PURE const $pb$::RepeatedField<int>& $Msg$::$name$()
+            const ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_list$;
           // @@protoc_insertion_point(field_list:$pkg.Msg.field$)

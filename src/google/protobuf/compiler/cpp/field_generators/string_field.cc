@@ -234,20 +234,22 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    [[nodiscard]] $DEPRECATED$ const ::std::string& $name$() const;
+    [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ const ::std::string& $name$()
+        const;
     //~ Using `Arg_ = const std::string&` will make the type of `arg`
     //~ default to `const std::string&`, due to reference collapse. This
     //~ is necessary because there are a handful of users that rely on
     //~ this default.
     template <typename Arg_ = const ::std::string&, typename... Args_>
-    $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
+    PROTOBUF_NOALIAS $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
     $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$();
     $DEPRECATED$ [[nodiscard]] ::std::string* $nullable$ $release_name$();
     $DEPRECATED$ void $set_allocated_name$(::std::string* $nullable$ value);
 
     private:
-    const ::std::string& _internal_$name$() const;
-    PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(const ::std::string& value);
+    PROTOBUF_PURE const ::std::string& _internal_$name$() const;
+    PROTOBUF_ALWAYS_INLINE PROTOBUF_NOALIAS void _internal_set_$name$(
+        const ::std::string& value);
     ::std::string* $nonnull$ _internal_mutable_$name$();
 
     public:
@@ -395,7 +397,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   };
   absl::string_view code =
       R"cc(
-    inline const ::std::string& $Msg$::$name$() const
+    inline PROTOBUF_PURE const ::std::string& $Msg$::$name$() const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
@@ -404,7 +406,8 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       return _internal_$name_internal$();
     }
     template <typename Arg_, typename... Args_>
-    PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg, Args_... args) {
+    PROTOBUF_ALWAYS_INLINE PROTOBUF_NOALIAS void $Msg$::set_$name$(
+        Arg_&& arg, Args_... args) {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
@@ -423,12 +426,14 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
       return _s;
     }
-    inline const ::std::string& $Msg$::_internal_$name_internal$() const {
+    inline PROTOBUF_PURE const ::std::string& $Msg$::_internal_$name_internal$()
+        const {
       $TsanDetectConcurrentRead$;
       $check_hasbit$;
       return $field_$.Get();
     }
-    inline void $Msg$::_internal_set_$name_internal$(const ::std::string& value) {
+    inline PROTOBUF_NOALIAS void $Msg$::_internal_set_$name_internal$(
+        const ::std::string& value) {
       $TsanDetectConcurrentMutation$;
       //~ Don't use $Set$ here; we always want the std::string variant
       //~ regardless of whether this is a `bytes` field.
@@ -781,7 +786,7 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
     switch (cpp_repeated_type_) {
       case FieldDescriptor::CppRepeatedType::kRepeated:
         p->Emit(R"cc(
-          [[nodiscard]] $DEPRECATED$ const
+          [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ const
               $pb$::RepeatedPtrField<::std::string>&
               $name$() const;
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>*
@@ -802,17 +807,21 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
   };
 
   p->Emit({{"decl_field_accessors", decl_field_accessors}}, R"cc(
-    [[nodiscard]] $DEPRECATED$ const ::std::string& $name$(int index) const;
+    [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ const ::std::string& $name$(
+        int index) const;
     $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$(int index);
     template <typename Arg_ = const ::std::string&, typename... Args_>
-    $DEPRECATED$ void set_$name$(int index, Arg_&& value, Args_... args);
-    $DEPRECATED$ ::std::string* $nonnull$ $add_name$();
+    PROTOBUF_NOALIAS $DEPRECATED$ void set_$name$(int index, Arg_&& value,
+                                                  Args_... args);
+    PROTOBUF_NOALIAS PROTOBUF_MALLOC $DEPRECATED$ ::std::string* $nonnull$
+    $add_name$();
     template <typename Arg_ = const ::std::string&, typename... Args_>
-    $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
+    PROTOBUF_NOALIAS $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
     $decl_field_accessors$;
 
     private:
-    const $pb$::RepeatedPtrField<::std::string>& _internal_$name$() const;
+    PROTOBUF_PURE const $pb$::RepeatedPtrField<::std::string>&
+    _internal_$name$() const;
     $pb$::RepeatedPtrField<::std::string>* $nonnull$ _internal_mutable_$name$();
 
     public:
@@ -831,8 +840,9 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
            }},
       },
       R"cc(
-        inline ::std::string* $nonnull$ $Msg$::add_$name$()
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        PROTOBUF_ALWAYS_INLINE PROTOBUF_NOALIAS
+            PROTOBUF_MALLOC ::std::string* $nonnull$
+            $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           ::std::string* _s =
@@ -843,7 +853,7 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_add_mutable:$pkg.Msg.field$)
           return _s;
         }
-        inline const ::std::string& $Msg$::$name$(int index) const
+        inline PROTOBUF_PURE const ::std::string& $Msg$::$name$(int index) const
             ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_get$;
@@ -864,7 +874,8 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         //~ need to be updated if a new element is (potentially) added, not if
         //~ an existing element is mutated.
         template <typename Arg_, typename... Args_>
-        inline void $Msg$::set_$name$(int index, Arg_&& value, Args_... args) {
+        inline PROTOBUF_NOALIAS void $Msg$::set_$name$(int index, Arg_&& value,
+                                                       Args_... args) {
           $WeakDescriptorSelfPin$;
           $pbi$::AssignToString(
               *_internal_mutable_$name_internal$()->Mutable(index),
@@ -873,7 +884,8 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
         template <typename Arg_, typename... Args_>
-        inline void $Msg$::add_$name$(Arg_&& value, Args_... args) {
+        inline PROTOBUF_NOALIAS void $Msg$::add_$name$(Arg_&& value,
+                                                       Args_... args) {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
           $pbi$::AddToRepeatedPtrField(
@@ -888,8 +900,8 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     case FieldDescriptor::CppRepeatedType::kRepeated:
       p->Emit(
           R"cc(
-            inline const $pb$::RepeatedPtrField<::std::string>& $Msg$::$name$()
-                const ABSL_ATTRIBUTE_LIFETIME_BOUND {
+            inline PROTOBUF_PURE const $pb$::RepeatedPtrField<::std::string>&
+            $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
               $WeakDescriptorSelfPin$;
               $annotate_list$;
               // @@protoc_insertion_point(field_list:$pkg.Msg.field$)

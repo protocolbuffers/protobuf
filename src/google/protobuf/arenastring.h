@@ -296,21 +296,21 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // instance known to not carry any heap allocated value.
   inline void InitAllocated(std::string* str, Arena* arena);
 
-  void Set(absl::string_view value, Arena* arena);
-  void Set(std::string&& value, Arena* arena);
-  void Set(const absl::Cord& value, Arena* arena);
+  PROTOBUF_NOALIAS void Set(absl::string_view value, Arena* arena);
+  PROTOBUF_NOALIAS void Set(std::string&& value, Arena* arena);
+  PROTOBUF_NOALIAS void Set(const absl::Cord& value, Arena* arena);
   template <typename... OverloadDisambiguator>
-  void Set(const std::string& value, Arena* arena);
-  void Set(const char* s, Arena* arena);
-  void Set(const char* s, size_t n, Arena* arena);
+  PROTOBUF_NOALIAS void Set(const std::string& value, Arena* arena);
+  PROTOBUF_NOALIAS void Set(const char* s, Arena* arena);
+  PROTOBUF_NOALIAS void Set(const char* s, size_t n, Arena* arena);
 
-  void SetBytes(absl::string_view value, Arena* arena);
-  void SetBytes(std::string&& value, Arena* arena);
+  PROTOBUF_NOALIAS void SetBytes(absl::string_view value, Arena* arena);
+  PROTOBUF_NOALIAS void SetBytes(std::string&& value, Arena* arena);
   template <typename... OverloadDisambiguator>
-  void SetBytes(const std::string& value, Arena* arena);
-  void SetBytes(const absl::Cord& value, Arena* arena);
-  void SetBytes(const char* s, Arena* arena);
-  void SetBytes(const void* p, size_t n, Arena* arena);
+  PROTOBUF_NOALIAS void SetBytes(const std::string& value, Arena* arena);
+  PROTOBUF_NOALIAS void SetBytes(const absl::Cord& value, Arena* arena);
+  PROTOBUF_NOALIAS void SetBytes(const char* s, Arena* arena);
+  PROTOBUF_NOALIAS void SetBytes(const void* p, size_t n, Arena* arena);
 
   template <typename RefWrappedType>
   void Set(std::reference_wrapper<RefWrappedType> const_string_ref,
@@ -490,8 +490,8 @@ inline void ArenaStringPtr::SetBytes(absl::string_view value, Arena* arena) {
 }
 
 template <>
-PROTOBUF_EXPORT void ArenaStringPtr::Set(const std::string& value,
-                                         Arena* arena);
+PROTOBUF_EXPORT PROTOBUF_NOALIAS void ArenaStringPtr::Set(
+    const std::string& value, Arena* arena);
 
 template <>
 inline void ArenaStringPtr::SetBytes(const std::string& value, Arena* arena) {
