@@ -3954,6 +3954,9 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
           kUpb_FieldType_Group) {
     return false;
   }
+  if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
+    return false;
+  }
   e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
   return true;
 }

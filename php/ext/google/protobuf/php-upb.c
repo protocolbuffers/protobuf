@@ -11890,13 +11890,25 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   UPB_ASSERT(sub);
 
   const bool sub_is_map = sub->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
+  const bool table_is_map = table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
 
   switch (field->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Message:
       if (sub_is_map) {
-        const bool table_is_map =
-            table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
         if (UPB_UNLIKELY(table_is_map)) return false;
+
+        // A map field on the parent table must be repeated (or already marked
+        // as a map if SetSubMessage is called repeatedly), and cannot be in a
+        // oneof or an extension.
+        // TODO: Add this assert back once YouTube is updated to not
+        // call this function repeatedly.
+        // UPB_ASSERT(!upb_MiniTableField_IsMap(field));
+        if (UPB_UNLIKELY((!upb_MiniTableField_IsArray(field) &&
+                          !upb_MiniTableField_IsMap(field)) ||
+                         upb_MiniTableField_IsInOneof(field) ||
+                         upb_MiniTableField_IsExtension(field))) {
+          return false;
+        }
 
         field->UPB_PRIVATE(mode) =
             (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
@@ -11920,11 +11932,16 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
           }
         }
 #endif
+      } else if (table_is_map) {
+        // If table is a map entry, only field 2 (value) can be a submessage.
+        if (UPB_UNLIKELY(upb_MiniTableField_Number(field) != 2)) {
+          return false;
+        }
       }
       break;
 
     case kUpb_FieldType_Group:
-      if (UPB_UNLIKELY(sub_is_map)) return false;
+      if (UPB_UNLIKELY(sub_is_map || table_is_map)) return false;
       break;
 
     default:
@@ -11952,15 +11969,19 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
     return false;
   }
 
-  if ((table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) &&
-      !upb_MiniTableEnum_CheckValue(sub, 0)) {
-    // An enum used in a map must include 0 as a value.  This matches a check
-    // performed in protoc ("Enum value in map must define 0 as the first
-    // value").  Protoc should ensure that we never get here.
-    //
-    // This ends up being important if we receive wire messages where a map
-    // entry omits the value (and thus defaults to 0).
-    return false;
+  if (table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
+    if (UPB_UNLIKELY(upb_MiniTableField_Number(field) != 2)) {
+      return false;
+    }
+    if (!upb_MiniTableEnum_CheckValue(sub, 0)) {
+      // An enum used in a map must include 0 as a value.  This matches a check
+      // performed in protoc ("Enum value in map must define 0 as the first
+      // value").  Protoc should ensure that we never get here.
+      //
+      // This ends up being important if we receive wire messages where a map
+      // entry omits the value (and thus defaults to 0).
+      return false;
+    }
   }
 
   upb_MiniTableSubInternal* table_sub =
