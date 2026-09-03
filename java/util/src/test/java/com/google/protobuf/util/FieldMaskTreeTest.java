@@ -18,12 +18,18 @@ import proto2_unittest.UnittestProto.TestAllTypes;
 import proto2_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import proto2_unittest.UnittestProto.TestRequired;
 import proto2_unittest.UnittestProto.TestRequiredMessage;
+import com.sun.management.ThreadMXBean;
+import java.lang.management.ManagementFactory;
+import java.util.Collections;
+import java.util.logging.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class FieldMaskTreeTest {
+  private static final Logger logger = Logger.getLogger(FieldMaskTreeTest.class.getName());
+
   @Test
   public void testAddFieldPath() throws Exception {
     FieldMaskTree tree = new FieldMaskTree();
@@ -459,5 +465,30 @@ public class FieldMaskTreeTest {
         useDynamicMessage);
     assertThat(builder.hasPayload()).isTrue();
     assertThat(builder.getPayload().hasOptionalInt32()).isFalse();
+  }
+
+  @Test
+  public void testDeepFieldPath_memoryAllocationIsLinear() throws Exception {
+    String deepPath = String.join(".", Collections.nCopies(30_000, "a"));
+    FieldMaskTree tree = new FieldMaskTree();
+    tree.addFieldPath(deepPath);
+
+    if (ManagementFactory.getThreadMXBean() instanceof ThreadMXBean threadBean
+        && threadBean.isThreadAllocatedMemorySupported()) {
+      long bytesBefore = threadBean.getCurrentThreadAllocatedBytes();
+      FieldMask mask = tree.toFieldMask();
+      long bytesAllocated = threadBean.getCurrentThreadAllocatedBytes() - bytesBefore;
+
+      assertThat(mask.getPathsList()).containsExactly(deepPath);
+      // Linear O(N) allocation for 30k segments is < 10MB.
+      // O(N^2) string concatenation allocates ~900MB.
+      assertThat(bytesAllocated).isLessThan(10L * 1024 * 1024);
+    } else {
+      logger.warning(
+          "Skipping memory allocation assertion: Thread allocated memory tracking is not"
+              + " supported on this platform.");
+      FieldMask mask = tree.toFieldMask();
+      assertThat(mask.getPathsList()).containsExactly(deepPath);
+    }
   }
 }
