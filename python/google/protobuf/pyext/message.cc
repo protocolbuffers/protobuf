@@ -849,6 +849,15 @@ Message* AssureWritable(CMessage* self) {
 
   switch (self->state) {
     case MESSAGE_MUTABLE:
+      if (self->parent != nullptr && self->parent_field_descriptor != nullptr &&
+          self->parent_field_descriptor->is_map()) {
+        Message* parent_message = AssureWritable(self->parent);
+        if (parent_message == nullptr) {
+          return nullptr;
+        }
+        PromoteConstMapValueMessage(
+            parent_message, self->parent_field_descriptor, self->message);
+      }
       return const_cast<Message*>(self->message);
     case MESSAGE_FROZEN:
       if (CheckFrozen(self, "Message is immutable.") < 0) {

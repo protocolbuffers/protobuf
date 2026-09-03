@@ -58,7 +58,7 @@ struct MapIterator {
   // clang-format off
   PyObject_HEAD
 
-  std::unique_ptr<::google::protobuf::MapIterator> iter;
+  std::unique_ptr<::google::protobuf::ConstMapIterator> iter;
   // clang-format on
 
   // A pointer back to the container, so we can notice changes to the version.
@@ -377,25 +377,34 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
   if (!PythonToMapKey(self, key, &map_key)) {
     return nullptr;
   }
-  if (Message* message = self->GetMutableMessage(); message != nullptr) {
-    MapValueRef value;
-    const Reflection* reflection = message->GetReflection();
-    std::string map_key_string;
-    if (reflection->InsertOrLookupMapValue(
-            message, self->parent_field_descriptor, map_key, &value)) {
-      self->version++;
-    }
-    return MapValueRefToPython(self, value);
-  }
-  PyErr_Clear();
+  // 1. Read-only lookup without mutation if key exists.
   const Message* message = self->GetReadOnlyMessage();
   const Reflection* reflection = message->GetReflection();
   MapValueConstRef value;
-  if (!reflection->LookupMapValue(*message, self->parent_field_descriptor,
-                                  map_key, &value)) {
+  if (reflection->LookupMapValue(*message, self->parent_field_descriptor,
+                                 map_key, &value)) {
+    return MapValueRefToPython(self, value);
+  }
+
+  // 2. Frozen path: read-only lookup failed and message is frozen.
+  if (self->parent->state == MESSAGE_FROZEN) {
     return SetMessageFrozenError();
   }
-  return MapValueRefToPython(self, value);
+
+  // 3. Mutable path: insert default value for missing key.
+  if (Message* mutable_message = self->GetMutableMessage();
+      mutable_message != nullptr) {
+    MapValueRef mutable_value;
+    const Reflection* mutable_reflection = mutable_message->GetReflection();
+    if (mutable_reflection->InsertOrLookupMapValue(
+            mutable_message, self->parent_field_descriptor, map_key,
+            &mutable_value)) {
+      self->version++;
+    }
+    return MapValueRefToPython(self, mutable_value);
+  }
+
+  return nullptr;
 }
 
 int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
@@ -681,27 +690,38 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
     return nullptr;
   }
 
-  // Mutable path: insert-or-lookup and return mutable submessage wrapper.
-  if (Message* message = self->GetMutableMessage(); message != nullptr) {
-    const Reflection* reflection = message->GetReflection();
-    MapValueRef value;
-    if (reflection->InsertOrLookupMapValue(
-            message, self->parent_field_descriptor, map_key, &value)) {
-      self->version++;
-    }
-    return GetCMessage(self, value.MutableMessageValue(), MESSAGE_MUTABLE);
-  }
-
-  // Frozen path: read-only lookup without mutation.
-  PyErr_Clear();
+  // 1. Read-only lookup without mutation if key exists.
   const Message* message = self->GetReadOnlyMessage();
   const Reflection* reflection = message->GetReflection();
   MapValueConstRef value;
-  if (!reflection->LookupMapValue(*message, self->parent_field_descriptor,
-                                  map_key, &value)) {
+  if (reflection->LookupMapValue(*message, self->parent_field_descriptor,
+                                 map_key, &value)) {
+    MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
+                                       ? MESSAGE_FROZEN
+                                       : MESSAGE_UNPROMOTED;
+    return GetCMessage(self, &value.GetMessageValue(), state);
+  }
+
+  // 2. Frozen path: read-only lookup failed and message is frozen.
+  if (self->parent->state == MESSAGE_FROZEN) {
     return SetMessageFrozenError();
   }
-  return GetCMessage(self, &value.GetMessageValue(), MESSAGE_FROZEN);
+
+  // 3. Mutable path: insert default submessage for missing key.
+  if (Message* mutable_message = self->GetMutableMessage();
+      mutable_message != nullptr) {
+    const Reflection* mutable_reflection = mutable_message->GetReflection();
+    MapValueRef mutable_value;
+    if (mutable_reflection->InsertOrLookupMapValue(
+            mutable_message, self->parent_field_descriptor, map_key,
+            &mutable_value)) {
+      self->version++;
+    }
+    return GetCMessage(self, mutable_value.MutableMessageValue(),
+                       MESSAGE_MUTABLE);
+  }
+
+  return nullptr;
 }
 
 PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
@@ -743,16 +763,8 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
 Message* MapReflectionFriend::PromoteConstMapValueMessage(
     Message* parent_message, const FieldDescriptor* field,
     const Message* message) {
-  // -----------------------------------------------------------------------
-  // NOTE: THIS IS AN IMPLEMENTATION DETAIL.
-  // This is not part of the public contract but we can take advantage of it
-  // here for performance.
-  // -----------------------------------------------------------------------
-  // Elements in map fields already point to stable allocated Message objects in
-  // the parent's container. We mark the map dirty, but we don't need to mark
-  // the individual message dirty.
-  // -----------------------------------------------------------------------
-  (void)parent_message->GetReflection()->MutableMapData(parent_message, field);
+  google::protobuf::MapIterator it(parent_message, field);
+  it.MutableValueRef();
   return const_cast<Message*>(message);
 }
 
@@ -865,8 +877,8 @@ PyObject* MapReflectionFriend::GetIterator(PyObject* _self) {
     const Message* message = self->GetReadOnlyMessage();
     const Reflection* reflection = message->GetReflection();
 
-    iter->iter.reset(new ::google::protobuf::MapIterator(reflection->MapBegin(
-        const_cast<Message*>(message), self->parent_field_descriptor)));
+    iter->iter.reset(new ::google::protobuf::ConstMapIterator(
+        reflection->ConstMapBegin(message, self->parent_field_descriptor)));
   }
 
   return obj.release();
@@ -891,9 +903,8 @@ PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
   const Message* message = self->container->GetReadOnlyMessage();
   const Reflection* reflection = message->GetReflection();
 
-  if (*self->iter ==
-      reflection->MapEnd(const_cast<Message*>(message),
-                         self->container->parent_field_descriptor)) {
+  if (*self->iter == reflection->ConstMapEnd(
+                         message, self->container->parent_field_descriptor)) {
     return nullptr;
   }
 

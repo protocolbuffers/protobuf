@@ -623,6 +623,74 @@ class FreeThreadingTest(unittest.TestCase):
     )
     self.assertEqual(reparsed.lazy_field.map_items['key'].value, 'updated')
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentMapSubscriptReadAndSerialization(self):
+    """Verifies thread-safety of map subscript reads during serialization.
+
+    In CL 972081404, RepeatedCompositeContainer was updated to perform const
+    lookups returning MESSAGE_UNPROMOTED wrappers, ensuring that indexing into
+    repeated fields (e.g. `items[i]`) does not mutate parent message state and
+    is safe under Python free-threading (--nogil).
+
+    However, map containers (MessageMapContainer in map_container.cc) were not
+    included in CL 972081404. Subscript access (`map[key]`) and iteration
+    (`map.items()` / `__iter__`) still unconditionally called mutable paths
+    (e.g., GetMutableMessage(), InsertOrLookupMapValue(), and MapBegin with
+    const_cast<Message*>). This modified parent hasbits and cleared cached sizes
+    on read access.
+
+    Under free-threaded Python, when one thread reads map entries while another
+    thread serializes the message (SerializeToString), this causes
+    ThreadSanitizer
+    data races and wire corruption because cached sizes computed during Pass 1
+    of serialization are invalidated mid-operation before Pass 2 writes the
+    bytes.
+    """
+    msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+    for i in range(10):
+      msg.map_items[f'key_{i}'].value = f'val_{i}'
+
+    expected_bytes = msg.SerializeToString()
+    errors = []
+
+    def ReaderWorker():
+      try:
+        for _ in range(50):
+          for i in range(10):
+            val = msg.map_items[f'key_{i}'].value
+            if val != f'val_{i}':
+              errors.append(f'Unexpected value: {val}')
+          for k, v in msg.map_items.items():
+            _ = k, v.value
+      except Exception as e:
+        errors.append(str(e))
+
+    def SerializerWorker():
+      try:
+        for _ in range(50):
+          data = msg.SerializeToString()
+          if data != expected_bytes:
+            errors.append(
+                'Serialized bytes mismatch during concurrent map read'
+            )
+      except Exception as e:
+        errors.append(str(e))
+
+    threads = []
+    for _ in range(8):
+      threads.append(threading.Thread(target=ReaderWorker))
+      threads.append(threading.Thread(target=SerializerWorker))
+
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+
+    self.assertEqual(errors, [])
+
 
 if __name__ == '__main__':
   unittest.main()
