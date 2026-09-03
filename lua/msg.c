@@ -418,7 +418,9 @@ static int lupb_Array_Newindex(lua_State* L) {
   upb_MessageValue msgval = lupb_tomsgval(L, larray->type, 3, 1, LUPB_COPY);
 
   if (n == size) {
-    upb_Array_Append(larray->arr, msgval, lupb_Arenaget(L, 1));
+    if (!upb_Array_Append(larray->arr, msgval, lupb_Arenaget(L, 1))) {
+      luaL_error(L, "out of memory");
+    }
   } else {
     upb_Array_Set(larray->arr, n, msgval);
   }
@@ -561,7 +563,9 @@ static int lupb_Map_Newindex(lua_State* L) {
     upb_Map_Delete(map, key, NULL);
   } else {
     upb_MessageValue val = lupb_tomsgval(L, lmap->value_type, 3, 1, LUPB_COPY);
-    upb_Map_Set(map, key, val, lupb_Arenaget(L, 1));
+    if (!upb_Map_Set(map, key, val, lupb_Arenaget(L, 1))) {
+      luaL_error(L, "out of memory");
+    }
     if (lmap->value_type == kUpb_CType_Message) {
       lupb_Arena_Fuseobjs(L, 1, 3);
     }
@@ -861,7 +865,9 @@ static int lupb_Message_Newindex(lua_State* L) {
     lupb_Arena_Fuseobjs(L, 1, 3);
   }
 
-  upb_Message_SetFieldByDef(msg, f, msgval, lupb_Arenaget(L, 1));
+  if (!upb_Message_SetFieldByDef(msg, f, msgval, lupb_Arenaget(L, 1))) {
+    luaL_error(L, "out of memory");
+  }
 
   /* Return the new value for chained assignments. */
   lua_pushvalue(L, 3);
@@ -996,8 +1002,10 @@ static int lupb_jsondecode(lua_State* L) {
   msg = lupb_msg_pushnew(L, 1);
   arena = lupb_Arenaget(L, -1);
   upb_Status_Clear(&status);
-  upb_JsonDecode(json, len, msg, m, NULL, options, arena, &status);
-  lupb_checkstatus(L, &status);
+  if (!upb_JsonDecode(json, len, msg, m, NULL, options, arena, &status)) {
+    lupb_checkstatus(L, &status);
+    luaL_error(L, "Error decoding JSON.");
+  }
 
   return 1;
 }
