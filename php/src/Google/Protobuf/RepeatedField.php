@@ -177,6 +177,17 @@ class RepeatedField implements \ArrayAccess, \IteratorAggregate, \Countable
     }
 
     /**
+     * Add an element to the end of the repeated field.
+     *
+     * @param T $newval The element to add.
+     * @return void
+     */
+    public function append($newval)
+    {
+        $this->offsetSet(null, $newval);
+    }
+
+    /**
      * Remove the element at the given index.
      *
      * This will also be called for: unset($arr)
