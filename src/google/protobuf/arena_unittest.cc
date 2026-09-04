@@ -40,6 +40,7 @@
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
 #include "absl/utility/utility.h"
+#include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -425,6 +426,33 @@ TEST(ArenaTest, InitialBlockTooSmall) {
     // initially-provided block.
     memset(p, '\0', 96);
   }
+}
+
+TEST(TaggedAllocationPolicyPtr, PreservesTagsWhenPolicyChanges) {
+  alignas(8) unsigned char storage[2 * sizeof(internal::AllocationPolicy)];
+  auto* first = reinterpret_cast<internal::AllocationPolicy*>(storage);
+  auto* second = reinterpret_cast<internal::AllocationPolicy*>(
+      storage + sizeof(internal::AllocationPolicy));
+
+  internal::TaggedAllocationPolicyPtr tagged;
+  EXPECT_FALSE(tagged.has_policy());
+
+  tagged.set_policy(first);
+  tagged.set_is_user_owned_initial_block(true);
+  EXPECT_TRUE(tagged.has_policy());
+  EXPECT_EQ(tagged.get(), first);
+  EXPECT_TRUE(tagged.is_user_owned_initial_block());
+
+  const uintptr_t tags_before = tagged.get_tags();
+  tagged.set_policy(second);
+
+  EXPECT_EQ(tagged.get(), second);
+  EXPECT_EQ(tagged.get_tags(), tags_before);
+  EXPECT_TRUE(tagged.is_user_owned_initial_block());
+
+  tagged.set_is_user_owned_initial_block(false);
+  EXPECT_EQ(tagged.get(), second);
+  EXPECT_FALSE(tagged.is_user_owned_initial_block());
 }
 
 TEST(ArenaTest, CreateDestroy) {
