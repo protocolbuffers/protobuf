@@ -1540,6 +1540,19 @@ class Message
                     return false;
                 }
             }
+        } elseif (is_a($this, 'Google\Protobuf\Value')) {
+            $field = $this->desc->getFieldByName($this->getKind());
+            if (!$field) {
+                // A Value with no case of the oneof set is documented as 'invalid',
+                // but is trivially constructable and representable in binary format.
+                // Handle this as though `null_value` was set.
+                $output->writeRaw("null", 4);
+                return true;
+            } else {
+                if (!$this->serializeFieldToJsonStream($output, $field)) {
+                    return false;
+                }
+            }
         } else {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {
                 $output->writeRaw("{", 1);
@@ -2065,6 +2078,16 @@ class Message
             } else {
                 // Size for "{}".
                 $size += 2;
+            }
+        } elseif (is_a($this, 'Google\Protobuf\Value')) {
+            $field = $this->desc->getFieldByName($this->getKind());
+            if (!$field) {
+                // A Value with no case of the oneof set is documented as
+                // 'invalid', but is trivially constructable and representable
+                // in binary format. Handle this as though `null_value` was set.
+                $size += 4;
+            } else {
+                $size += $this->fieldJsonByteSize($field, $options);
             }
         } else {
             if (!GPBUtil::hasSpecialJsonMapping($this)) {

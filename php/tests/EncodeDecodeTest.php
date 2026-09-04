@@ -1160,6 +1160,9 @@ class EncodeDecodeTest extends TestBase
     public function testEncodeTopLevelValue()
     {
         $m = new Value();
+        $this->assertSame("null", $m->serializeToJsonString());
+
+        $m = new Value();
         $m->setStringValue("a");
         $this->assertSame("\"a\"", $m->serializeToJsonString());
 
@@ -1174,6 +1177,26 @@ class EncodeDecodeTest extends TestBase
         $m = new Value();
         $m->setNullValue(0);
         $this->assertSame("null", $m->serializeToJsonString());
+    }
+
+    public function testEncodeUnsetValue()
+    {
+        $m = new Struct();
+        $m->setFields(['k' => new Value()]);
+        $this->assertSame('{"k":null}', $m->serializeToJsonString());
+
+        $m = new ListValue();
+        $m->setValues([new Value(), new Value()]);
+        $this->assertSame('[null,null]', $m->serializeToJsonString());
+
+        // Unset Value decoded from 0-length sub-message wire bytes.
+        $m = new Struct();
+        $m->mergeFromString(hex2bin("0a050a016b1200"));
+        $this->assertSame('{"k":null}', $m->serializeToJsonString());
+
+        $m = new ListValue();
+        $m->mergeFromString(hex2bin("0a000a00"));
+        $this->assertSame('[null,null]', $m->serializeToJsonString());
     }
 
     public function testDecodeTopLevelListValue()
