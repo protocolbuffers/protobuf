@@ -10,11 +10,11 @@ VER="$1"
 TMP_DIR="/tmp/protoc-$VER/"
 
 # Cleanup the tmp dir on either clean or dirty exit
-trap "rm -r \"$TMP_DIR\"" EXIT
+trap "rm -rf \"$TMP_DIR\"" EXIT
 
 cd /tmp/
 wget -O protoc-$VER.zip "https://github.com/protocolbuffers/protobuf/releases/download/v$VER/protoc-$VER-linux-x86_64.zip"
-unzip protoc-$VER.zip -d "protoc-$VER/"
+unzip -o protoc-$VER.zip -d "protoc-$VER/"
 cd -
 
 PROTOC="/tmp/protoc-$VER/bin/protoc"
@@ -23,6 +23,20 @@ $PROTOC --version
 
 mkdir -p v$VER
 $PROTOC proto3_gencode_test.proto --java_out=v$VER
+# Extract the first segment of the version. Note that up to 3.20.0 the release versioning was
+# 3.x (major.minor.point), and after that it transitioned to 21.x (which corresponds to the
+# Java runtime's minor version, e.g. release 21.0 is Java 3.21.0).
+MAJOR="${VER%%.*}"
+
+# Proto2 extendable messages generated before 3.25.8 are not source compatible with the 4.x runtime
+# due to a generic typing conflict.
+if (( MAJOR < 25 )); then
+  echo "Skipping proto2 for $VER"
+else
+  $PROTOC proto2_gencode_test.proto --java_out=v$VER
+fi
+
+
 
 cp CHECKED_IN_GENCODE_BUILD.bazel.template v$VER/BUILD.bazel
 
