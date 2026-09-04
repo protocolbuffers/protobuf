@@ -197,11 +197,13 @@ class SooRep {
   explicit constexpr SooRep(InternalMetadataOffset offset)
       : resolver_(offset) {}
 
-  bool is_soo() const { return (resolver_.Tag() & kNotSooBit) == 0; }
+  PROTOBUF_PURE bool is_soo() const {
+    return (resolver_.Tag() & kNotSooBit) == 0;
+  }
   Arena* arena() const {
     return ResolveTaggedArena<&SooRep::resolver_, kResolverTaggedBits>(this);
   }
-  int size() const {
+  PROTOBUF_PURE int size() const {
     int res = size_;
     PROTOBUF_ASSUME(res >= 0);
     return res;
@@ -210,7 +212,7 @@ class SooRep {
     ABSL_DCHECK(!is_soo() || size <= kSooCapacityBytes);
     size_ = size;
   }
-  int capacity() const {
+  PROTOBUF_PURE int capacity() const {
     ABSL_DCHECK(!this->is_soo());
     return heap_rep_->capacity();
   }
@@ -226,7 +228,7 @@ class SooRep {
   }
 
   template <typename Element>
-  const Element* elements(bool is_soo) const {
+  PROTOBUF_PURE const Element* elements(bool is_soo) const {
     ABSL_DCHECK_EQ(is_soo, this->is_soo());
     if (is_soo) {
       return reinterpret_cast<const Element*>(soo_data_);
@@ -361,10 +363,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   ~RepeatedField();
 
-  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
-  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_FUTURE_ADD_NODISCARD pointer Mutable(int index)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -378,7 +380,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     return *Mutable(index);
   }
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -388,7 +390,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   // Appends a new element and returns a pointer to it.
   // The new element is uninitialized if |Element| is a POD type.
-  pointer Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_MALLOC pointer Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
   // Appends elements in the range [begin, end) after reserving
   // the appropriate number of elements.
   template <typename Iter>
@@ -399,8 +401,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void InternalAddWithArena(internal::InternalVisibility,
                             ArenaProvider arena_provider, Element value);
   template <typename ArenaProvider>
-  pointer InternalAddWithArena(internal::InternalVisibility,
-                               ArenaProvider arena_provider)
+  PROTOBUF_MALLOC pointer InternalAddWithArena(internal::InternalVisibility,
+                                               ArenaProvider arena_provider)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // Removes the last element in the array.
@@ -434,7 +436,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void Truncate(int new_size);
 
   void AddAlreadyReserved(Element value);
-  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
 
   // Adds `n` elements to this instance asserting there is enough capacity.
   // The added elements are uninitialized if `Element` is trivial.
@@ -706,7 +708,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     ABSL_DCHECK_GT(Capacity(is_soo), 0);
     return unsafe_elements(is_soo);
   }
-  const Element* elements(bool is_soo) const {
+  PROTOBUF_PURE const Element* elements(bool is_soo) const {
     ABSL_DCHECK_GT(Capacity(is_soo), 0);
     return unsafe_elements(is_soo);
   }
@@ -717,7 +719,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   Element* unsafe_elements(bool is_soo) {
     return soo_rep_.elements<Element>(is_soo);
   }
-  const Element* unsafe_elements(bool is_soo) const {
+  PROTOBUF_PURE const Element* unsafe_elements(bool is_soo) const {
     return soo_rep_.elements<Element>(is_soo);
   }
 

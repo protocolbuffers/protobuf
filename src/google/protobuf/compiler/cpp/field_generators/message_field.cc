@@ -160,7 +160,7 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ [[nodiscard]] const $Submsg$& $name$() const;
+    $DEPRECATED$ [[nodiscard]] PROTOBUF_PURE const $Submsg$& $name$() const;
     $DEPRECATED$ [[nodiscard]] $Submsg$* $nullable$ $release_name$();
     $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$();
     $DEPRECATED$ void $set_allocated_name$($Submsg$* $nullable$ value);
@@ -168,7 +168,7 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ $Submsg$* $nullable$ $unsafe_arena_release_name$();
 
     private:
-    const $Submsg$& _internal_$name$() const;
+    PROTOBUF_PURE const $Submsg$& _internal_$name$() const;
     $Submsg$* $nonnull$ _internal_mutable_$name$();
 
     public:
@@ -762,8 +762,9 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
     switch (cpp_repeated_type_) {
       case FieldDescriptor::CppRepeatedType::kRepeated:
         p->Emit(R"cc(
-          [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>&
-          $name$() const;
+          [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ const
+              $pb$::RepeatedPtrField<$Submsg$>&
+              $name$() const;
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
           $mutable_name$();
         )cc");
@@ -790,13 +791,14 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   p->Emit({{"decl_field_accessors", decl_field_accessors},
            {"maybe_weak_internal_accessors", maybe_weak_internal_accessors}},
           R"cc(
-            [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
+            [[nodiscard]] PROTOBUF_PURE $DEPRECATED$ const $Submsg$& $name$(
+                int index) const;
             [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
-            $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
+            PROTOBUF_NOALIAS PROTOBUF_MALLOC $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
             $decl_field_accessors$;
 
             private:
-            const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
+            PROTOBUF_PURE const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
             $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $_internal_mutable_name$();
             $maybe_weak_internal_accessors$;
 
@@ -808,7 +810,7 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   // TODO: move insertion points
 
   p->Emit(R"cc(
-    inline const $Submsg$& $Msg$::$name$(int index) const
+    inline PROTOBUF_PURE const $Submsg$& $Msg$::$name$(int index) const
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
@@ -832,8 +834,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   )cc");
 
   p->Emit(R"cc(
-    inline $Submsg$* $nonnull$ $Msg$::add_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+    PROTOBUF_ALWAYS_INLINE PROTOBUF_NOALIAS PROTOBUF_MALLOC $Submsg$* $nonnull$
+    $Msg$::add_$name$() ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $Submsg$* _add =
@@ -849,8 +851,8 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
   switch (cpp_repeated_type_) {
     case FieldDescriptor::CppRepeatedType::kRepeated:
       p->Emit(R"cc(
-        inline const $pb$::RepeatedPtrField<$Submsg$>& $Msg$::$name$() const
-            ABSL_ATTRIBUTE_LIFETIME_BOUND {
+        inline PROTOBUF_PURE const $pb$::RepeatedPtrField<$Submsg$>&
+        $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
           $WeakDescriptorSelfPin$;
           $annotate_list$;
           // @@protoc_insertion_point(field_list:$pkg.Msg.field$)

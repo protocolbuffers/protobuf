@@ -224,8 +224,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 #endif
   }
 
-  bool empty() const { return current_size_ == 0; }
-  int size() const {
+  PROTOBUF_PURE bool empty() const { return current_size_ == 0; }
+  PROTOBUF_PURE int size() const {
     int res = current_size_;
     PROTOBUF_ASSUME(res >= 0);
     return res;
@@ -236,7 +236,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   //   * prefer `SizeAtCapacity()` to `size() == Capacity()`;
   //   * prefer `AllocatedSizeAtCapacity()` to `allocated_size() == Capacity()`.
-  int Capacity() const {
+  PROTOBUF_PURE int Capacity() const {
     int res = using_sso() ? kSSOCapacity : rep()->capacity;
     PROTOBUF_ASSUME(res >= 0);
     return res;
@@ -263,7 +263,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  Value<TypeHandler>* Add(Arena* arena) {
+  PROTOBUF_MALLOC PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* Add(Arena* arena) {
     return cast<TypeHandler>(AddInternal(arena, TypeHandler::GetNewFunc()));
   }
 
@@ -871,7 +871,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // next available element slot.
   //
   // Pre-condition: |extend_amount| must be > 0.
-  void** InternalExtend(int extend_amount, Arena* arena);
+  PROTOBUF_NOALIAS void** InternalExtend(int extend_amount, Arena* arena);
 
   // Ensures that capacity is at least `n` elements.
   // Returns a pointer to the element directly beyond the last element.
@@ -886,7 +886,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Common implementation used by various Add* methods. `factory` is an object
   // used to construct a new element unless there are spare cleared elements
   // ready for reuse. Returns pointer to the new element.
-  void* AddInternal(Arena* arena, absl::FunctionRef<ElementNewFn> factory);
+  PROTOBUF_MALLOC void* AddInternal(Arena* arena,
+                                    absl::FunctionRef<ElementNewFn> factory);
 
   // A few notes on internal representation:
   //
@@ -922,7 +923,7 @@ PROTOBUF_EXPORT void RepeatedPtrFieldBase::MergeFrom<std::string>(
     const RepeatedPtrFieldBase& from, Arena* arena);
 
 
-inline void* RepeatedPtrFieldBase::AddInternal(
+PROTOBUF_MALLOC PROTOBUF_ALWAYS_INLINE void* RepeatedPtrFieldBase::AddInternal(
     Arena* arena, absl::FunctionRef<ElementNewFn> factory) {
   ABSL_DCHECK_EQ(arena, GetArena());
   if (tagged_rep_or_elem_ == nullptr) {
@@ -1278,10 +1279,10 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   ~RepeatedPtrField();
 
-  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
-  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_FUTURE_ADD_NODISCARD pointer Mutable(int index)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -1290,7 +1291,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // make a new element; it might re-use an element left over from when the
   // field was Clear()'d or resize()'d smaller.  For this reason, Add() is the
   // fastest API for adding a new element.
-  pointer Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_MALLOC pointer Add() ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // `Add(std::move(value));` is equivalent to `*Add() = std::move(value);`
   // It will either move-construct to the end of this field, or swap value
@@ -1333,7 +1334,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
     return *Mutable(index);
   }
 
-  PROTOBUF_FUTURE_ADD_NODISCARD const_reference
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   at(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
   PROTOBUF_FUTURE_ADD_NODISCARD reference at(int index)
       ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -1365,7 +1366,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // array is grown, it will always be at least doubled in size.
   void Reserve(int new_size);
 
-  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
+  PROTOBUF_PURE PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
@@ -1533,8 +1534,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // Like `Add()`, but uses the given arena instead of calling `GetArena()`. It
   // is the responsibility of the caller to ensure that this arena is the same
   // as the arena returned from `GetArena()`.
-  pointer InternalAddWithArena(internal::InternalVisibility,
-                               Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_MALLOC pointer InternalAddWithArena(
+      internal::InternalVisibility, Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   // For internal use only.
   //
@@ -1603,7 +1604,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                    RepeatedPtrField&& rhs);
 
 
-  pointer AddWithArena(Arena* arena) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+  PROTOBUF_MALLOC pointer AddWithArena(Arena* arena)
+      ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
   pointer AddWithArena(Arena* arena, Element&& value);
 

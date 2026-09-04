@@ -230,6 +230,42 @@
 #define PROTOBUF_MALLOC
 #endif
 
+#ifdef PROTOBUF_PURE
+#error PROTOBUF_PURE was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_PURE __attribute__((pure))
+#elif ABSL_HAVE_CPP_ATTRIBUTE(gnu::pure)
+#define PROTOBUF_PURE [[gnu::pure]]
+#else
+#define PROTOBUF_PURE ABSL_ATTRIBUTE_PURE_FUNCTION
+#endif
+
+#ifdef PROTOBUF_CONST
+#error PROTOBUF_CONST was previously defined
+#endif
+#if defined(__GNUC__)
+#define PROTOBUF_CONST __attribute__((const))
+#elif ABSL_HAVE_CPP_ATTRIBUTE(gnu::const)
+#define PROTOBUF_CONST [[gnu::const]]
+#else
+#define PROTOBUF_CONST ABSL_ATTRIBUTE_CONST_FUNCTION
+#endif
+
+#ifdef PROTOBUF_NOALIAS
+#error PROTOBUF_NOALIAS was previously defined
+#endif
+#if defined(__clang__) && defined(__has_declspec_attribute)
+#if __has_declspec_attribute(noalias)
+#define PROTOBUF_NOALIAS __declspec(noalias)
+#endif
+#elif defined(_MSC_VER)
+#define PROTOBUF_NOALIAS __declspec(noalias)
+#endif
+#ifndef PROTOBUF_NOALIAS
+#define PROTOBUF_NOALIAS
+#endif
+
 #ifdef PROTOBUF_MUSTTAIL
 #error PROTOBUF_MUSTTAIL was previously defined
 #endif
