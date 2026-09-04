@@ -914,10 +914,10 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
   size_t size = upb_Array_Size(arr);
-  if (index < 0) index += size;
+  if (index < 0) index += (Py_ssize_t)size;
 #if PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
 #else
-  if (index >= size) {
+  if (index >= (Py_ssize_t)size) {
     PyErr_WarnEx(PyExc_FutureWarning, "pop index out of range", 1);
     index = size - 1;
   }
