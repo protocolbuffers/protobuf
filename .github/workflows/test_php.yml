@@ -65,19 +65,18 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/php:9.2.0-${{ matrix.version }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: php_linux/${{ matrix.version }}
           bash: |
             set -ex
             COMPOSER_HOME=/workspace/composer-cache
-            export BAZEL_FLAGS='$BAZEL_FLAGS'
-            ./regenerate_stale_files.sh $BAZEL_FLAGS
+            ./regenerate_stale_files.sh
             pushd /workspace/php
             composer update
             ${{ matrix.command }}
             popd
-            bazel test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH $BAZEL_FLAGS
+            bazel test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH
 
   linux-32bit:
     strategy:
