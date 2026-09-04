@@ -28,12 +28,24 @@ bzl_library(
     ],
 )
 
+bzl_library(
+    name = "proto_plugin_bzl",
+    srcs = [
+        "proto_plugin.bzl",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//bazel/private:proto_plugin_rule_bzl",
+    ],
+)
+
 filegroup(
     name = "for_bazel_tests",
     testonly = True,
     srcs = [
         "BUILD",
         "proto_lang_toolchain_bzl",
+        "proto_plugin_bzl",
         "proto_toolchain_bzl",
     ],
     visibility = [

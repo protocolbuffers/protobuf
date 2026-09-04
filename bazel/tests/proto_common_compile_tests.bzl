@@ -30,6 +30,9 @@ def proto_common_compile_test_suite(name):
             _test_compile_noplugin,
             _test_compile_with_plugin_output,
             _test_compile_with_directory_plugin_output,
+            _test_compile_with_plugins,
+            _test_compile_with_plugins_no_plugin_output,
+            _test_toolchain_plugin_and_plugins_are_exclusive,
             _test_compile_additional_args,
             _test_compile_additional_tools,
             _test_compile_additional_tools_no_plugin,
@@ -161,6 +164,94 @@ def _test_compile_with_directory_plugin_output_impl(env, target):
             matching.equals_wrapper("-I."),
             matching.str_endswith("/A.proto"),
         ],
+    )
+
+# Verifies usage of `proto_common.compile` with a toolchain that sets `plugins`.
+def _test_compile_with_plugins(name):
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        proto_dep = ":simple_proto",
+        plugin_output = "single",
+        toolchain = "//bazel/tests/testdata:toolchain_plugins",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        impl = _test_compile_with_plugins_impl,
+    )
+
+def _test_compile_with_plugins_impl(env, target):
+    action = env.expect.that_target(target).action_named("MyMnemonic")
+    action.argv().contains_exactly_predicates(
+        [
+            _match_proto_compiler(),
+            matching.str_matches("--java_out=param1,param2:*out*test_compile_with_plugins_compile"),
+            # ":grpc_plugin" has an executable, so it gets both --plugin= and
+            # --grpc_out=. Both use its plugin_name ("grpc"), not its target name.
+            matching.str_matches("--plugin=protoc-gen-grpc=*out*testdata/plugin"),
+            matching.str_matches("--grpc_out=*out*test_compile_with_plugins_compile"),
+            # ":builtin" has no executable, so it only gets --builtin_out=, and no
+            # plugin_name, so protoc sees it under its target name.
+            matching.str_matches("--builtin_out=*out*test_compile_with_plugins_compile"),
+            matching.equals_wrapper("-I."),
+            matching.str_endswith("/A.proto"),
+        ],
+    ).in_order()
+    action.inputs().contains_at_least_predicates(
+        [
+            matching.any(matching.file_basename_equals("plugin"), matching.file_basename_equals("plugin.exe")),
+        ],
+    )
+
+# Verifies a toolchain with `plugins` passes no `--<name>_out` when there's no plugin output.
+def _test_compile_with_plugins_no_plugin_output(name):
+    util.helper_target(
+        compile_rule,
+        name = name + "_compile",
+        proto_dep = ":simple_proto",
+        toolchain = "//bazel/tests/testdata:toolchain_plugins",
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_compile",
+        impl = _test_compile_with_plugins_no_plugin_output_impl,
+    )
+
+def _test_compile_with_plugins_no_plugin_output_impl(env, target):
+    action = env.expect.that_target(target).action_named("MyMnemonic")
+    action.argv().contains_exactly_predicates(
+        [
+            _match_proto_compiler(),
+            matching.str_matches("--plugin=protoc-gen-grpc=*out*testdata/plugin"),
+            matching.equals_wrapper("-I."),
+            matching.str_endswith("/A.proto"),
+        ],
+    ).in_order()
+
+# Verifies a toolchain cannot set both `plugin` and `plugins`.
+def _test_toolchain_plugin_and_plugins_are_exclusive(name):
+    util.helper_target(
+        proto_lang_toolchain,
+        name = name + "_toolchain",
+        command_line = "--java_out=$(OUT)",
+        plugin = "//bazel/tests/testdata:plugin",
+        plugin_format_flag = "--plugin=%s",
+        plugins = ["//bazel/tests/testdata:grpc_plugin"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_toolchain",
+        impl = _test_toolchain_plugin_and_plugins_are_exclusive_impl,
+        expect_failure = True,
+    )
+
+def _test_toolchain_plugin_and_plugins_are_exclusive_impl(env, target):
+    env.expect.that_target(target).failures().contains_predicate(
+        matching.str_matches("Only one of 'plugin' and 'plugins' can be set."),
     )
 
 # Verifies usage of `proto_common.compile` with `additional_args` parameter
