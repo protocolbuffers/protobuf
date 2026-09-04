@@ -708,4 +708,50 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
+
+TEST(GeneratedCode, GetOrPromoteExtensionRejectsRepeatedMessage) {
+  upb::Arena arena;
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  upb::MtDataEncoder sub_enc;
+  ASSERT_TRUE(sub_enc.StartMessage(0));
+  ASSERT_TRUE(sub_enc.PutField(kUpb_FieldType_Int32, 1, 0));
+  upb_MiniTable* sub = upb_MiniTable_Build(
+      sub_enc.data().data(), sub_enc.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(status.ok);
+
+  upb::MtDataEncoder parent_enc;
+  ASSERT_TRUE(parent_enc.StartMessage(kUpb_MessageModifier_IsExtendable));
+  upb_MiniTable* parent = upb_MiniTable_Build(
+      parent_enc.data().data(), parent_enc.data().size(), arena.ptr(),
+      &status);
+  ASSERT_TRUE(status.ok);
+
+  upb::MtDataEncoder ext_enc;
+  ASSERT_TRUE(ext_enc.EncodeExtension(kUpb_FieldType_Message, 107,
+                                      kUpb_FieldModifier_IsRepeated));
+  upb_MiniTableExtension* repeated_ext = upb_MiniTableExtension_BuildMessage(
+      ext_enc.data().data(), ext_enc.data().size(), parent, sub, arena.ptr(),
+      &status);
+  ASSERT_TRUE(status.ok);
+  ASSERT_NE(repeated_ext, nullptr);
+
+  upb_Message* msg = upb_Message_New(parent, arena.ptr());
+  upb_MessageValue value;
+  EXPECT_EQ(kUpb_GetExtension_ParseError,
+            upb_Message_GetOrPromoteExtension(msg, repeated_ext, 0,
+                                              arena.ptr(), &value));
+
+  // Singular message extensions are unchanged (NotPresent on empty msg).
+  upb::MtDataEncoder singular_enc;
+  ASSERT_TRUE(singular_enc.EncodeExtension(kUpb_FieldType_Message, 108, 0));
+  upb_MiniTableExtension* singular_ext = upb_MiniTableExtension_BuildMessage(
+      singular_enc.data().data(), singular_enc.data().size(), parent, sub,
+      arena.ptr(), &status);
+  ASSERT_TRUE(status.ok);
+  EXPECT_EQ(kUpb_GetExtension_NotPresent,
+            upb_Message_GetOrPromoteExtension(msg, singular_ext, 0,
+                                              arena.ptr(), &value));
+}
 }  // namespace
