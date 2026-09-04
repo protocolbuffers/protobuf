@@ -38,7 +38,7 @@ jobs:
         include:
           # Set defaults
           - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.7.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
-          - targets: //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          - targets: //pkg/test/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           # Override cases with custom images
           - config: { name: "Bazel8", flags: --cxxopt="-Wno-self-assign-overloaded" }
             cache_key: Bazel8
@@ -103,7 +103,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-${{ matrix.version }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
-          bazel: fetch //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          bazel: fetch //pkg/test/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
@@ -111,7 +111,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-${{ matrix.version }}-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/gcc-${{ matrix.version }}
-          bazel: test //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
+          bazel: test //pkg/test/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
 
   linux-release:
     strategy:
@@ -180,6 +180,47 @@ jobs:
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         shell: bash
         run: df -h
+
+  protoc-release:
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Protoc Release (${{ matrix.platform }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Tier 1 platforms (Presubmit + Continuous)
+          - platform: linux-x86_64
+          - platform: linux-aarch_64
+          - platform: osx-aarch_64
+          - platform: win64
+
+          # Secondary / Exotic platforms (Continuous-only)
+          - platform: osx-x86_64
+            continuous-only: true
+          - platform: win32
+            continuous-only: true
+          - platform: linux-x86_32
+            continuous-only: true
+          - platform: linux-s390_64
+            continuous-only: true
+          - platform: linux-ppcle_64
+            continuous-only: true
+
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v6
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Build protoc release package
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:8.7.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: protoc_release/${{ matrix.platform }}
+          bazel: build --config=${{ matrix.platform }} //pkg:protoc_release
 
   linux-cmake:
     strategy:
