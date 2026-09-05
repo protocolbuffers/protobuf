@@ -627,6 +627,7 @@ cc_library(
         "serial_arena.h",
         "thread_safe_arena.h",
     ],
+    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
         "//:__subpackages__",
