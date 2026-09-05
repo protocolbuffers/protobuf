@@ -10,6 +10,7 @@
 
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
 

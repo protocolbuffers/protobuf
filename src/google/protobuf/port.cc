@@ -9,6 +9,7 @@
 
 #include <array>
 #include <atomic>
+#include <cmath>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -29,6 +30,7 @@
 #include "absl/strings/string_view.h"
 
 // Must be included last
+#include "absl/types/span.h"
 #include "google/protobuf/port_def.inc"
 
 
