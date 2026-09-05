@@ -46,7 +46,7 @@ class InternalVisibility {
   friend class InternalVisibilityForTesting;
 };
 
-inline constexpr InternalVisibility::InternalVisibility() = default;
+constexpr InternalVisibility::InternalVisibility() = default;
 
 }  // namespace internal
 }  // namespace protobuf
