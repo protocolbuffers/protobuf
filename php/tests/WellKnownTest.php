@@ -356,6 +356,22 @@ class WellKnownTest extends TestBase {
         $this->assertSame($from->format('u'), $to->format('u'));
     }
 
+    public function testTimestampWithNanosOutOfRangeThrows()
+    {
+        // Regression test: a google.protobuf.Timestamp with nanos outside
+        // [0, 1e9) is reachable from untrusted wire input (nanos is not
+        // range-checked on decode) and must not be converted to a DateTime.
+        // In the C extension this previously formatted an unparseable string
+        // ("0.-01000") whose failed parse led to a use-after-free; both
+        // implementations now reject it with an exception.
+        $timestamp = new Timestamp();
+        $timestamp->setSeconds(0);
+        $timestamp->setNanos(-1000000);
+
+        $this->expectException(Exception::class);
+        $timestamp->toDateTime();
+    }
+
     public function testType()
     {
         $m = new Type();
