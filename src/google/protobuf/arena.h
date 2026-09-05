@@ -291,13 +291,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
-  inline Arena() : impl_() {}
+  Arena() : impl_() {}
 
   // Construct an arena with default options, except for the supplied
   // initial block. It is more efficient to use this constructor
   // instead of passing ArenaOptions if the only configuration needed
   // by the caller is supplying an initial block.
-  inline Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
+  Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
       : impl_(initial_block, initial_block_size) {}
 
   // Arena constructor taking custom options. See ArenaOptions above for
@@ -316,7 +316,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       internal::ThreadSafeArena::kBlockHeaderSize +
       internal::ThreadSafeArena::kSerialArenaSize;
 
-  inline ~Arena() = default;
+  ~Arena() = default;
 
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.
