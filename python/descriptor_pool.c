@@ -7,14 +7,25 @@
 
 #include "python/descriptor_pool.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "google/protobuf/descriptor.upbdefs.h"
 #include "python/convert.h"
 #include "python/descriptor.h"
+#include "python/free_threading/weak_map.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "python/python_api.h"
+#include "upb/base/status.h"
+#include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
+#include "upb/mem/arena.h"
 #include "upb/message/compare.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/util/def_to_proto.h"
 
@@ -28,6 +39,7 @@ typedef struct {
   upb_DefPool* symtab;
   // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
+  PyUpb_WeakMap* obj_cache;
 } PyUpb_DescriptorPool;
 
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
@@ -54,8 +66,16 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   }
   pool->db = db;
   Py_XINCREF(pool->db);
-  if (!PyUpb_KnownObjCache_Add(obj_cache, pool->symtab, &pool->ob_base)) {
+  pool->obj_cache = PyUpb_WeakMap_New();
+  if (!pool->obj_cache) {
+    PyErr_SetNone(PyExc_MemoryError);
     goto err;
+  }
+  if (obj_cache) {
+    PyObject* self_obj = &pool->ob_base;
+    if (!PyUpb_WeakMap_Add(obj_cache, pool->symtab, &self_obj)) {
+      goto err;
+    }
   }
   return &pool->ob_base;
 err:
@@ -65,8 +85,8 @@ err:
 
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
                                                PyObject* db) {
-  return PyUpb_DescriptorPool_DoCreateWithCache(type, db,
-                                                PyUpb_ObjCache_Instance());
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  return PyUpb_DescriptorPool_DoCreateWithCache(type, db, state->obj_cache);
 }
 
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
@@ -85,7 +105,8 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
 }
 
 PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
-  PyObject* pool = PyUpb_ObjCache_Get(symtab);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyObject* pool = PyUpb_WeakMap_Get(state->obj_cache, symtab);
   assert(pool
 #if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
          || Py_IsFinalizing()
@@ -100,9 +121,35 @@ static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
 #endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  if (state && state->obj_cache) {
+    PyUpb_WeakMap_EraseIfEqual(state->obj_cache, self->symtab, &self->ob_base);
+  }
+  if (self->obj_cache) {
+    PyUpb_WeakMap_Free(self->obj_cache);
+  }
   upb_DefPool_Free(self->symtab);
-  PyUpb_ObjCache_Delete(self->symtab);
   PyUpb_Dealloc(self);
+}
+
+bool PyUpb_DescriptorPool_CacheAdd(PyObject* pool, const void* key,
+                                   PyObject** py_obj) {
+  PyUpb_DescriptorPool* pool_obj = (PyUpb_DescriptorPool*)pool;
+  if (!pool_obj || !pool_obj->obj_cache) return false;
+  return PyUpb_WeakMap_Add(pool_obj->obj_cache, key, py_obj);
+}
+
+PyObject* PyUpb_DescriptorPool_CacheGet(PyObject* pool, const void* key) {
+  PyUpb_DescriptorPool* pool_obj = (PyUpb_DescriptorPool*)pool;
+  if (!pool_obj || !pool_obj->obj_cache) return NULL;
+  return PyUpb_WeakMap_Get(pool_obj->obj_cache, key);
+}
+
+bool PyUpb_DescriptorPool_CacheEraseIfEqual(PyObject* pool, const void* key,
+                                            PyObject* obj) {
+  PyUpb_DescriptorPool* pool_obj = (PyUpb_DescriptorPool*)pool;
+  if (!pool_obj || !pool_obj->obj_cache) return false;
+  return PyUpb_WeakMap_EraseIfEqual(pool_obj->obj_cache, key, obj);
 }
 
 /*
@@ -276,7 +323,7 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
     const int options = kUpb_CompareOption_IncludeUnknownFields;
     if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
                                  options)) {
-      result = PyUpb_FileDescriptor_Get(file);
+      result = PyUpb_FileDescriptor_Get(_self, file);
       goto done;
     }
   }
@@ -297,7 +344,7 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
     goto done;
   }
 
-  result = PyUpb_FileDescriptor_Get(filedef);
+  result = PyUpb_FileDescriptor_Get(_self, filedef);
 
 done:
   upb_Arena_Free(arena);
@@ -424,7 +471,7 @@ static PyObject* PyUpb_DescriptorPool_FindFileByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find file %S", arg);
   }
 
-  return PyUpb_FileDescriptor_Get(file);
+  return PyUpb_FileDescriptor_Get(_self, file);
 }
 
 /*
@@ -451,7 +498,7 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find extension %S", arg);
   }
 
-  return PyUpb_FieldDescriptor_Get(field);
+  return PyUpb_FieldDescriptor_Get(_self, field);
 }
 
 /*
@@ -478,7 +525,7 @@ static PyObject* PyUpb_DescriptorPool_FindMessageTypeByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find message %S", arg);
   }
 
-  return PyUpb_Descriptor_Get(m);
+  return PyUpb_Descriptor_Get(_self, m);
 }
 
 // Splits a dotted symbol like foo.bar.baz on the last dot.  Returns the portion
@@ -526,7 +573,7 @@ static PyObject* PyUpb_DescriptorPool_FindFieldByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find field %S", arg);
   }
 
-  return PyUpb_FieldDescriptor_Get(f);
+  return PyUpb_FieldDescriptor_Get(_self, f);
 }
 
 /*
@@ -553,7 +600,7 @@ static PyObject* PyUpb_DescriptorPool_FindEnumTypeByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find enum %S", arg);
   }
 
-  return PyUpb_EnumDescriptor_Get(e);
+  return PyUpb_EnumDescriptor_Get(_self, e);
 }
 
 /*
@@ -586,7 +633,7 @@ static PyObject* PyUpb_DescriptorPool_FindOneofByName(PyObject* _self,
       if (!o) {
         return PyErr_Format(PyExc_KeyError, "Couldn't find oneof %S", arg);
       }
-      return PyUpb_OneofDescriptor_Get(o);
+      return PyUpb_OneofDescriptor_Get(_self, o);
     }
   }
 
@@ -611,7 +658,7 @@ static PyObject* PyUpb_DescriptorPool_FindServiceByName(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find service %S", arg);
   }
 
-  return PyUpb_ServiceDescriptor_Get(s);
+  return PyUpb_ServiceDescriptor_Get(_self, s);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
@@ -635,7 +682,7 @@ static PyObject* PyUpb_DescriptorPool_FindMethodByName(PyObject* _self,
   const upb_MethodDef* m = upb_ServiceDef_FindMethodByNameWithSize(
       parent, child, PyObject_Size(arg) - parent_size - 1);
   if (!m) goto err;
-  return PyUpb_MethodDescriptor_Get(m);
+  return PyUpb_MethodDescriptor_Get(_self, m);
 
 err:
   return PyErr_Format(PyExc_KeyError, "Couldn't find method %S", arg);
@@ -661,7 +708,7 @@ static PyObject* PyUpb_DescriptorPool_FindFileContainingSymbol(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find symbol %S", arg);
   }
 
-  return PyUpb_FileDescriptor_Get(f);
+  return PyUpb_FileDescriptor_Get(_self, f);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindExtensionByNumber(PyObject* _self,
@@ -686,7 +733,7 @@ static PyObject* PyUpb_DescriptorPool_FindExtensionByNumber(PyObject* _self,
     return PyErr_Format(PyExc_KeyError, "Couldn't find Extension %d", number);
   }
 
-  return PyUpb_FieldDescriptor_Get(f);
+  return PyUpb_FieldDescriptor_Get(_self, f);
 }
 
 static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
@@ -701,7 +748,7 @@ static PyObject* PyUpb_DescriptorPool_FindAllExtensions(PyObject* _self,
   PyObject* ret = PyList_New(n);
   if (!ret) goto done;
   for (size_t i = 0; i < n; i++) {
-    PyObject* field = PyUpb_FieldDescriptor_Get(ext[i]);
+    PyObject* field = PyUpb_FieldDescriptor_Get(_self, ext[i]);
     if (!field) {
       Py_DECREF(ret);
       ret = NULL;
@@ -745,9 +792,21 @@ static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
      "Gets all known extensions of the given message descriptor."},
     {NULL}};
 
+static PyObject* PyUpb_DescriptorPool_GetObjCacheCount(
+    PyUpb_DescriptorPool* self, void* closure) {
+  size_t count = self->obj_cache ? PyUpb_WeakMap_Count(self->obj_cache) : 0;
+  return PyLong_FromSize_t(count);
+}
+
+static PyGetSetDef PyUpb_DescriptorPool_Getters[] = {
+    {"_obj_cache_count", (getter)PyUpb_DescriptorPool_GetObjCacheCount, NULL,
+     "Number of entries in obj_cache.", NULL},
+    {NULL}};
+
 static PyType_Slot PyUpb_DescriptorPool_Slots[] = {
     {Py_tp_clear, PyUpb_DescriptorPool_Clear},
     {Py_tp_dealloc, PyUpb_DescriptorPool_Dealloc},
+    {Py_tp_getset, PyUpb_DescriptorPool_Getters},
     {Py_tp_methods, PyUpb_DescriptorPool_Methods},
     {Py_tp_new, PyUpb_DescriptorPool_New},
     {Py_tp_traverse, PyUpb_DescriptorPool_Traverse},
@@ -771,13 +830,15 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
 
 bool PyUpb_InitDescriptorPool(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
-  PyTypeObject* descriptor_pool_type =
-      PyUpb_AddClass(m, &PyUpb_DescriptorPool_Spec);
+  state->obj_cache = PyUpb_WeakMap_New();
+  if (!state->obj_cache) return false;
 
-  if (!descriptor_pool_type) return false;
+  state->descriptor_pool_type = PyUpb_AddClass(m, &PyUpb_DescriptorPool_Spec);
+
+  if (!state->descriptor_pool_type) return false;
 
   state->default_pool = PyUpb_DescriptorPool_DoCreateWithCache(
-      descriptor_pool_type, NULL, state->obj_cache);
+      state->descriptor_pool_type, NULL, state->obj_cache);
   return state->default_pool &&
          PyModule_AddObject(m, "default_pool", state->default_pool) == 0;
 }

@@ -16,20 +16,23 @@
 #include "python/protobuf.h"
 #include "upb/reflection/message.h"
 
-// Removes the wrapper object for this field from the unset subobject cache.
-void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f);
+// Removes the wrapper object `subobj` for field `f` from the unset subobject
+// cache, provided that `subobj` matches the cached entry.
+void PyUpb_Message_CacheDelete(PyObject* _self, const upb_FieldDef* f,
+                               PyObject* subobj);
 
-// Sets the field value for `f` to `subobj`, evicting the wrapper object from
-// the "unset subobject" cache now that real data exists for it.  The caller
-// must also update the wrapper associated with `f` to point to `subobj` also.
+// Sets the field value for `f` to `subobj`, evicting `py_subobj` from the
+// "unset subobject" cache now that real data exists for it. The caller must
+// also update `py_subobj` to point to `subobj`.
 bool PyUpb_Message_SetConcreteSubobj(PyObject* _self, const upb_FieldDef* f,
-                                     upb_MessageValue subobj);
+                                     upb_MessageValue subobj,
+                                     PyObject* py_subobj);
 
 // Gets a Python wrapper object for message `u_msg` of type `m`, returning a
 // cached wrapper if one was previously created.  If a new object is created,
 // it will reference `arena`, which must own `u_msg`.
-PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
-                            PyObject* arena);
+PyObject* PyUpb_Message_Get(PyObject* pool, upb_Message* u_msg,
+                            const upb_MessageDef* m, PyObject* arena);
 
 // Verifies that a Python object is a message.  Sets a TypeError exception and
 // returns false on failure.
@@ -38,6 +41,18 @@ bool PyUpb_Message_Verify(PyObject* self);
 // Gets the upb_Message* for this message object if the message is reified.
 // Otherwise returns NULL.
 upb_Message* PyUpb_Message_GetIfReified(PyObject* _self);
+
+// Returns the `PyUpb_Descriptor` for a given Message instance or class.
+PyObject* PyUpb_MessageClass_GetDescriptor(PyObject* cls);
+
+// Returns the `PyUpb_DescriptorPool` for a given Message instance or class.
+PyObject* PyUpb_Message_GetPool(PyObject* self);
+PyObject* PyUpb_MessageClass_GetPool(PyObject* cls);
+
+// Returns the Python class (PyTypeObject*) for sub-message field `f` of
+// `parent`.
+PyObject* PyUpb_MessageMeta_GetSubClass(PyObject* parent,
+                                        const upb_FieldDef* f);
 
 // Returns the `upb_MessageDef` for a given Message.
 const upb_MessageDef* PyUpb_Message_GetMsgdef(PyObject* self);

@@ -35,7 +35,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
 // If `arr` is NULL, an appropriate empty array will be constructed.
 upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* self, upb_Array* arr,
                                          PyUpb_WeakMap* subobj_map,
-                                         intptr_t iter);
+                                         intptr_t* iter);
 
 // Reifies this repeated object if it is not already reified, and ensures it is
 // mutable. If the parent message (for stubs) or the repeated array itself (for

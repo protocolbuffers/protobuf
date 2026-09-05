@@ -20,6 +20,8 @@
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
+#include "python/free_threading/lazy_ptr.h"
+#include "python/free_threading/weak_map.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/descriptor_constants.h"
@@ -47,10 +49,10 @@ typedef struct {
   PyObject_HEAD
   PyObject* pool;          // We own a ref.
   // clang-format on
-  const void* def;         // Type depends on the class. Kept alive by "pool".
-  PyObject* options;       // NULL if not present or not cached.
-  PyObject* features;      // NULL if not present or not cached.
-  PyObject* message_meta;  // We own a ref.
+  const void* def;  // Type depends on the class. Kept alive by "pool".
+  PYUPB_LAZYPTR(PyObject) options;   // NULL if not present or not cached.
+  PYUPB_LAZYPTR(PyObject) features;  // NULL if not present or not cached.
+  PyObject* message_meta;            // We own a ref.
 } PyUpb_DescriptorBase;
 
 PyObject* PyUpb_AnyDescriptor_GetPool(PyObject* desc) {
@@ -64,19 +66,22 @@ const void* PyUpb_AnyDescriptor_GetDef(PyObject* desc) {
 }
 
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
-    PyUpb_DescriptorType type, const void* def, const upb_FileDef* file) {
+    PyUpb_DescriptorType type, const void* def, PyObject* pool) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyTypeObject* type_obj = state->descriptor_types[type];
   assert(def);
+  assert(pool);
+  assert(type_obj);
 
   PyUpb_DescriptorBase* base = (void*)PyType_GenericAlloc(type_obj, 0);
-  base->pool = PyUpb_DescriptorPool_Get(upb_FileDef_Pool(file));
+  if (!base) return NULL;
+  base->pool = pool;
+  Py_INCREF(base->pool);
   base->def = def;
   base->options = NULL;
   base->features = NULL;
   base->message_meta = NULL;
 
-  PyUpb_ObjCache_Add(def, &base->ob_base);
   return base;
 }
 
@@ -84,16 +89,20 @@ static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
 // wrapper was previously created for this def, returns it, otherwise creates a
 // new wrapper.
 static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
-                                          const void* def,
-                                          const upb_FileDef* file) {
-  PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)PyUpb_ObjCache_Get(def);
+                                          const void* def, PyObject* pool) {
+  assert(pool);
+  PyObject* ret = PyUpb_DescriptorPool_CacheGet(pool, def);
+  if (ret) return ret;
 
-  if (!base) {
-    base = PyUpb_DescriptorBase_DoCreate(type, def, file);
-    if (!base) return NULL;
+  PyUpb_DescriptorBase* base = PyUpb_DescriptorBase_DoCreate(type, def, pool);
+  if (!base) return NULL;
+
+  PyObject* py_base = &base->ob_base;
+  if (!PyUpb_DescriptorPool_CacheAdd(pool, def, &py_base)) {
+    Py_DECREF(&base->ob_base);
+    return NULL;
   }
-
-  return &base->ob_base;
+  return py_base;
 }
 
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
@@ -111,90 +120,102 @@ static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
   return (PyUpb_DescriptorBase*)obj;
 }
 
-static PyObject* PyUpb_DescriptorBase_GetCached(PyObject** cached,
-                                                const upb_Message* opts,
-                                                const upb_MiniTable* layout,
-                                                const char* msg_name,
-                                                const char* strip_field) {
+typedef struct {
+  const upb_Message* opts;
+  const upb_MiniTable* layout;
+  const char* msg_name;
+  const char* strip_field;
+} PyUpb_GetCachedArgs;
+
+static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
+  PyUpb_GetCachedArgs* args = _args;
   PyObject* py_arena = NULL;
-  if (!*cached) {
-    // Load descriptors protos if they are not loaded already. We have to do
-    // this lazily, otherwise, it would lead to circular imports.
-    PyObject* mod = PyImport_ImportModuleLevel(PYUPB_DESCRIPTOR_MODULE, NULL,
-                                               NULL, NULL, 0);
-    if (mod == NULL) return NULL;
-    Py_DECREF(mod);
 
-    // Find the correct options message.
-    PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();
-    const upb_DefPool* symtab = PyUpb_DescriptorPool_GetSymtab(default_pool);
-    const upb_MessageDef* m = upb_DefPool_FindMessageByName(symtab, msg_name);
-    assert(m);
+  // Load descriptors protos if they are not loaded already. We have to do
+  // this lazily, otherwise, it would lead to circular imports.
+  PyObject* mod =
+      PyImport_ImportModuleLevel(PYUPB_DESCRIPTOR_MODULE, NULL, NULL, NULL, 0);
+  if (mod == NULL) return NULL;
+  Py_DECREF(mod);
 
-    // Copy the options message from C to Python using serialize+parse.
-    // We don't wrap the C object directly because there is no guarantee that
-    // the descriptor_pb2 that was loaded at runtime has the same members or
-    // layout as the C types that were compiled in.
-    size_t size;
-    py_arena = PyUpb_Arena_New();
-    if (!py_arena) goto err;
-    upb_Arena* arena = PyUpb_Arena_Get(py_arena);
-    char* pb;
-    upb_EncodeStatus es = upb_Encode(opts, layout, 0, arena, &pb, &size);
-    if (es != kUpb_EncodeStatus_Ok) {
-      if (es == kUpb_EncodeStatus_OutOfMemory) {
-        PyErr_SetNone(PyExc_MemoryError);
-      } else {
-        PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
-                     "Error parsing descriptor: %s",
-                     upb_EncodeStatus_String(es));
-      }
-      goto err;
-    }
-    const upb_MiniTable* opts2_layout = upb_MessageDef_MiniTable(m);
-    upb_Message* opts2 = upb_Message_New(opts2_layout, arena);
-    if (!opts2) {
+  // Find the correct options message.
+  PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();
+  const upb_DefPool* symtab = PyUpb_DescriptorPool_GetSymtab(default_pool);
+  const upb_MessageDef* m =
+      upb_DefPool_FindMessageByName(symtab, args->msg_name);
+  assert(m);
+
+  // Copy the options message from C to Python using serialize+parse.
+  // We don't wrap the C object directly because there is no guarantee that
+  // the descriptor_pb2 that was loaded at runtime has the same members or
+  // layout as the C types that were compiled in.
+  size_t size;
+  py_arena = PyUpb_Arena_New(default_pool);
+  if (!py_arena) goto err;
+  upb_Arena* arena = PyUpb_Arena_Get(py_arena);
+  char* pb;
+  upb_EncodeStatus es =
+      upb_Encode(args->opts, args->layout, 0, arena, &pb, &size);
+  if (es != kUpb_EncodeStatus_Ok) {
+    if (es == kUpb_EncodeStatus_OutOfMemory) {
       PyErr_SetNone(PyExc_MemoryError);
-      goto err;
+    } else {
+      PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+                   "Error parsing descriptor: %s", upb_EncodeStatus_String(es));
     }
-    upb_DecodeStatus ds =
-        upb_Decode(pb, size, opts2, opts2_layout,
-                   upb_DefPool_ExtensionRegistry(symtab), 0, arena);
-    if (ds != kUpb_DecodeStatus_Ok) {
-      if (ds == kUpb_DecodeStatus_OutOfMemory) {
-        PyErr_SetNone(PyExc_MemoryError);
-      } else {
-        PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
-                     "Error parsing descriptor: %s",
-                     upb_DecodeStatus_String(ds));
-      }
-      goto err;
+    goto err;
+  }
+  const upb_MiniTable* opts2_layout = upb_MessageDef_MiniTable(m);
+  upb_Message* opts2 = upb_Message_New(opts2_layout, arena);
+  if (!opts2) {
+    PyErr_SetNone(PyExc_MemoryError);
+    goto err;
+  }
+  upb_DecodeStatus ds =
+      upb_Decode(pb, size, opts2, opts2_layout,
+                 upb_DefPool_ExtensionRegistry(symtab), 0, arena);
+  if (ds != kUpb_DecodeStatus_Ok) {
+    if (ds == kUpb_DecodeStatus_OutOfMemory) {
+      PyErr_SetNone(PyExc_MemoryError);
+    } else {
+      PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+                   "Error parsing descriptor: %s", upb_DecodeStatus_String(ds));
     }
-
-    if (strip_field) {
-      const upb_FieldDef* field =
-          upb_MessageDef_FindFieldByName(m, strip_field);
-      assert(field);
-      upb_Message_ClearFieldByDef(opts2, field);
-    }
-
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
-    upb_Message_Freeze(opts2, opts2_layout);
-#else
-    PyUpb_Arena_SetFrozen(py_arena, true);
-#endif
-    *cached = PyUpb_Message_Get(opts2, m, py_arena);
-    Py_DECREF(py_arena);
+    goto err;
   }
 
-  Py_INCREF(*cached);
-  return *cached;
+  if (args->strip_field) {
+    const upb_FieldDef* field =
+        upb_MessageDef_FindFieldByName(m, args->strip_field);
+    assert(field);
+    upb_Message_ClearFieldByDef(opts2, field);
+  }
+
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+  upb_Message_Freeze(opts2, opts2_layout);
+#else
+  PyUpb_Arena_SetFrozen(py_arena, true);
+#endif
+  PyObject* val = PyUpb_Message_Get(default_pool, opts2, m, py_arena);
+  Py_DECREF(py_arena);
+  return val;
+
 err:
   Py_XDECREF(py_arena);
   return NULL;
 }
 
-static PyObject* PyUpb_DescriptorBase_GetOptions(PyObject** cached,
+static PyObject* PyUpb_DescriptorBase_GetCached(void* cached,
+                                                const upb_Message* opts,
+                                                const upb_MiniTable* layout,
+                                                const char* msg_name,
+                                                const char* strip_field) {
+  PyUpb_GetCachedArgs args = {opts, layout, msg_name, strip_field};
+  return PyUpb_LazyPtr_LazyInitPyObj(
+      cached, PyUpb_DescriptorBase_CreateCachedOptions, &args);
+}
+
+static PyObject* PyUpb_DescriptorBase_GetOptions(void* cached,
                                                  const upb_Message* opts,
                                                  const upb_MiniTable* layout,
                                                  const char* msg_name) {
@@ -202,7 +223,7 @@ static PyObject* PyUpb_DescriptorBase_GetOptions(PyObject** cached,
                                         "features");
 }
 
-static PyObject* PyUpb_DescriptorBase_GetFeatures(PyObject** cached,
+static PyObject* PyUpb_DescriptorBase_GetFeatures(void* cached,
                                                   const upb_Message* opts) {
   return PyUpb_DescriptorBase_GetCached(
       cached, opts, &google__protobuf__FeatureSet_msg_init,
@@ -266,7 +287,8 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   if (PyType_HasFeature(Py_TYPE(base), Py_TPFLAGS_HAVE_GC)) {
     PyObject_GC_UnTrack(base);
   }
-  PyUpb_ObjCache_Delete(base->def);
+  PyUpb_DescriptorPool_CacheEraseIfEqual(base->pool, base->def,
+                                         (PyObject*)base);
   // In addition to being visited by GC, instances can also (potentially) be
   // accessed whenever arbitrary code is executed. Destructors can execute
   // arbitrary code, so any struct members we DECREF should be set to NULL
@@ -274,8 +296,8 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   // (and Py_SETREF in Python 3.8+) takes care to do this safely.
   Py_CLEAR(base->message_meta);
   Py_CLEAR(base->pool);
-  Py_CLEAR(base->options);
-  Py_CLEAR(base->features);
+  PyUpb_LazyPtr_Clear(&base->options);
+  PyUpb_LazyPtr_Clear(&base->features);
   PyUpb_Dealloc(base);
 }
 
@@ -299,14 +321,16 @@ static int PyUpb_Descriptor_Clear(PyUpb_DescriptorBase* base) {
 // Descriptor
 // -----------------------------------------------------------------------------
 
-PyObject* PyUpb_Descriptor_Get(const upb_MessageDef* m) {
+PyObject* PyUpb_Descriptor_Get(PyObject* pool, const upb_MessageDef* m) {
   assert(m);
-  const upb_FileDef* file = upb_MessageDef_File(m);
-  return PyUpb_DescriptorBase_Get(kPyUpb_Descriptor, m, file);
+  assert(pool);
+  return PyUpb_DescriptorBase_Get(kPyUpb_Descriptor, m, pool);
 }
 
-PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
-  PyObject* ret = PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(m));
+PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m) {
+  assert(pool != NULL);
+  PyObject* ret =
+      PyUpb_DescriptorPool_CacheGet(pool, upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
@@ -315,12 +339,12 @@ PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m) {
     return NULL;
   }
 
-  // On demand create the clss if not exist. However, if users repeatedly
-  // create and destroy a class, it could trigger a loop. This is not an
-  // issue now, but if we see CPU waste for repeatedly create and destroy
+  // On demand create the class if it does not exist. However, if users
+  // repeatedly create and destroy a class, it could trigger a loop. This is not
+  // an issue now, but if we see CPU waste for repeatedly create and destroy
   // in the future, we could make PyUpb_Descriptor_Get() append the descriptor
   // to an internal list in DescriptorPool, let the pool keep descriptors alive.
-  PyObject* py_descriptor = PyUpb_Descriptor_Get(m);
+  PyObject* py_descriptor = PyUpb_Descriptor_Get(pool, m);
   if (py_descriptor == NULL) return NULL;
   const char* name = upb_MessageDef_Name(m);
   PyObject* dict = PyDict_New();
@@ -581,7 +605,7 @@ static PyObject* PyUpb_Descriptor_GetContainingType(PyObject* _self,
   const upb_MessageDef* parent = upb_DefPool_FindMessageByNameWithSize(
       symtab, full_name, last_dot - full_name);
   if (!parent) Py_RETURN_NONE;
-  return PyUpb_Descriptor_Get(parent);
+  return PyUpb_Descriptor_Get(self->pool, parent);
 }
 
 static PyObject* PyUpb_Descriptor_GetEnumTypesByName(PyObject* _self,
@@ -616,13 +640,16 @@ static PyObject* PyUpb_Descriptor_GetFullName(PyObject* self, void* closure) {
 
 static PyObject* PyUpb_Descriptor_GetConcreteClass(PyObject* self,
                                                    void* closure) {
+  PyUpb_DescriptorBase* base = (void*)self;
   const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(self);
-  return PyUpb_ObjCache_Get(upb_MessageDef_MiniTable(msgdef));
+  return PyUpb_DescriptorPool_CacheGet(base->pool,
+                                       upb_MessageDef_MiniTable(msgdef));
 }
 
-static PyObject* PyUpb_Descriptor_GetFile(PyObject* self, void* closure) {
-  const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(self);
-  return PyUpb_FileDescriptor_Get(upb_MessageDef_File(msgdef));
+static PyObject* PyUpb_Descriptor_GetFile(PyObject* _self, void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  const upb_MessageDef* msgdef = PyUpb_Descriptor_GetDef(_self);
+  return PyUpb_FileDescriptor_Get(self->pool, upb_MessageDef_File(msgdef));
 }
 
 static PyObject* PyUpb_Descriptor_GetFields(PyObject* _self, void* closure) {
@@ -687,7 +714,7 @@ static PyObject* PyUpb_Descriptor_GetEnumValuesByName(PyObject* _self,
       // bang for the buck.
       const upb_EnumValueDef* ev = upb_EnumDef_Value(e, j);
       const char* name = upb_EnumValueDef_Name(ev);
-      PyObject* val = PyUpb_EnumValueDescriptor_Get(ev);
+      PyObject* val = PyUpb_EnumValueDescriptor_Get(self->pool, ev);
       if (!val || PyDict_SetItemString(ret, name, val) < 0) {
         Py_XDECREF(val);
         Py_DECREF(ret);
@@ -783,9 +810,10 @@ const upb_MessageDef* PyUpb_Descriptor_GetDef(PyObject* _self) {
 // EnumDescriptor
 // -----------------------------------------------------------------------------
 
-PyObject* PyUpb_EnumDescriptor_Get(const upb_EnumDef* enumdef) {
-  const upb_FileDef* file = upb_EnumDef_File(enumdef);
-  return PyUpb_DescriptorBase_Get(kPyUpb_EnumDescriptor, enumdef, file);
+PyObject* PyUpb_EnumDescriptor_Get(PyObject* pool, const upb_EnumDef* enumdef) {
+  assert(enumdef);
+  assert(pool);
+  return PyUpb_DescriptorBase_Get(kPyUpb_EnumDescriptor, enumdef, pool);
 }
 
 const upb_EnumDef* PyUpb_EnumDescriptor_GetDef(PyObject* _self) {
@@ -805,9 +833,10 @@ static PyObject* PyUpb_EnumDescriptor_GetName(PyObject* self, void* closure) {
   return PyUnicode_FromString(upb_EnumDef_Name(enumdef));
 }
 
-static PyObject* PyUpb_EnumDescriptor_GetFile(PyObject* self, void* closure) {
-  const upb_EnumDef* enumdef = PyUpb_EnumDescriptor_GetDef(self);
-  return PyUpb_FileDescriptor_Get(upb_EnumDef_File(enumdef));
+static PyObject* PyUpb_EnumDescriptor_GetFile(PyObject* _self, void* closure) {
+  PyUpb_DescriptorBase* self = (void*)_self;
+  const upb_EnumDef* enumdef = PyUpb_EnumDescriptor_GetDef(_self);
+  return PyUpb_FileDescriptor_Get(self->pool, upb_EnumDef_File(enumdef));
 }
 
 static PyObject* PyUpb_EnumDescriptor_GetValues(PyObject* _self,
@@ -856,7 +885,7 @@ static PyObject* PyUpb_EnumDescriptor_GetContainingType(PyObject* _self,
   PyUpb_DescriptorBase* self = (void*)_self;
   const upb_MessageDef* m = upb_EnumDef_ContainingType(self->def);
   if (!m) Py_RETURN_NONE;
-  return PyUpb_Descriptor_Get(m);
+  return PyUpb_Descriptor_Get(self->pool, m);
 }
 
 static PyObject* PyUpb_EnumDescriptor_GetHasOptions(PyObject* _self,
@@ -935,9 +964,9 @@ static PyType_Spec PyUpb_EnumDescriptor_Spec = {
 // EnumValueDescriptor
 // -----------------------------------------------------------------------------
 
-PyObject* PyUpb_EnumValueDescriptor_Get(const upb_EnumValueDef* ev) {
-  const upb_FileDef* file = upb_EnumDef_File(upb_EnumValueDef_Enum(ev));
-  return PyUpb_DescriptorBase_Get(kPyUpb_EnumValueDescriptor, ev, file);
+PyObject* PyUpb_EnumValueDescriptor_Get(PyObject* pool,
+                                        const upb_EnumValueDef* ev) {
+  return PyUpb_DescriptorBase_Get(kPyUpb_EnumValueDescriptor, ev, pool);
 }
 
 static PyObject* PyUpb_EnumValueDescriptor_GetName(PyObject* self,
@@ -961,7 +990,7 @@ static PyObject* PyUpb_EnumValueDescriptor_GetIndex(PyObject* self,
 static PyObject* PyUpb_EnumValueDescriptor_GetType(PyObject* self,
                                                    void* closure) {
   PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)self;
-  return PyUpb_EnumDescriptor_Get(upb_EnumValueDef_Enum(base->def));
+  return PyUpb_EnumDescriptor_Get(base->pool, upb_EnumValueDef_Enum(base->def));
 }
 
 static PyObject* PyUpb_EnumValueDescriptor_GetHasOptions(PyObject* _self,
@@ -1028,14 +1057,16 @@ static PyType_Spec PyUpb_EnumValueDescriptor_Spec = {
 // -----------------------------------------------------------------------------
 
 const upb_FieldDef* PyUpb_FieldDescriptor_GetDef(PyObject* _self) {
+  assert(_self);
   PyUpb_DescriptorBase* self =
       PyUpb_DescriptorBase_Check(_self, kPyUpb_FieldDescriptor);
   return self ? self->def : NULL;
 }
 
-PyObject* PyUpb_FieldDescriptor_Get(const upb_FieldDef* field) {
-  const upb_FileDef* file = upb_FieldDef_File(field);
-  return PyUpb_DescriptorBase_Get(kPyUpb_FieldDescriptor, field, file);
+PyObject* PyUpb_FieldDescriptor_Get(PyObject* pool, const upb_FieldDef* field) {
+  assert(field);
+  assert(pool);
+  return PyUpb_DescriptorBase_Get(kPyUpb_FieldDescriptor, field, pool);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetFullName(PyUpb_DescriptorBase* self,
@@ -1076,7 +1107,7 @@ static PyObject* PyUpb_FieldDescriptor_GetFile(PyUpb_DescriptorBase* self,
                                                void* closure) {
   const upb_FileDef* file = upb_FieldDef_File(self->def);
   if (!file) Py_RETURN_NONE;
-  return PyUpb_FileDescriptor_Get(file);
+  return PyUpb_FileDescriptor_Get(self->pool, file);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetType(PyUpb_DescriptorBase* self,
@@ -1151,28 +1182,28 @@ static PyObject* PyUpb_FieldDescriptor_GetMessageType(
     PyUpb_DescriptorBase* self, void* closure) {
   const upb_MessageDef* subdef = upb_FieldDef_MessageSubDef(self->def);
   if (!subdef) Py_RETURN_NONE;
-  return PyUpb_Descriptor_Get(subdef);
+  return PyUpb_Descriptor_Get(self->pool, subdef);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetEnumType(PyUpb_DescriptorBase* self,
                                                    void* closure) {
   const upb_EnumDef* enumdef = upb_FieldDef_EnumSubDef(self->def);
   if (!enumdef) Py_RETURN_NONE;
-  return PyUpb_EnumDescriptor_Get(enumdef);
+  return PyUpb_EnumDescriptor_Get(self->pool, enumdef);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetContainingType(
     PyUpb_DescriptorBase* self, void* closure) {
   const upb_MessageDef* m = upb_FieldDef_ContainingType(self->def);
   if (!m) Py_RETURN_NONE;
-  return PyUpb_Descriptor_Get(m);
+  return PyUpb_Descriptor_Get(self->pool, m);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetExtensionScope(
     PyUpb_DescriptorBase* self, void* closure) {
   const upb_MessageDef* m = upb_FieldDef_ExtensionScope(self->def);
   if (!m) Py_RETURN_NONE;
-  return PyUpb_Descriptor_Get(m);
+  return PyUpb_Descriptor_Get(self->pool, m);
 }
 
 static PyObject* PyUpb_FieldDescriptor_HasDefaultValue(
@@ -1192,7 +1223,7 @@ static PyObject* PyUpb_FieldDescriptor_GetContainingOneof(
     PyUpb_DescriptorBase* self, void* closure) {
   const upb_OneofDef* oneof = upb_FieldDef_ContainingOneof(self->def);
   if (!oneof) Py_RETURN_NONE;
-  return PyUpb_OneofDescriptor_Get(oneof);
+  return PyUpb_OneofDescriptor_Get(self->pool, oneof);
 }
 
 static PyObject* PyUpb_FieldDescriptor_GetHasOptions(
@@ -1295,8 +1326,8 @@ static PyType_Spec PyUpb_FieldDescriptor_Spec = {
 // FileDescriptor
 // -----------------------------------------------------------------------------
 
-PyObject* PyUpb_FileDescriptor_Get(const upb_FileDef* file) {
-  return PyUpb_DescriptorBase_Get(kPyUpb_FileDescriptor, file, file);
+PyObject* PyUpb_FileDescriptor_Get(PyObject* pool, const upb_FileDef* file) {
+  return PyUpb_DescriptorBase_Get(kPyUpb_FileDescriptor, file, pool);
 }
 
 // These are not provided on upb_FileDef because they use the underlying
@@ -1546,9 +1577,8 @@ const upb_MethodDef* PyUpb_MethodDescriptor_GetDef(PyObject* _self) {
   return self ? self->def : NULL;
 }
 
-PyObject* PyUpb_MethodDescriptor_Get(const upb_MethodDef* m) {
-  const upb_FileDef* file = upb_ServiceDef_File(upb_MethodDef_Service(m));
-  return PyUpb_DescriptorBase_Get(kPyUpb_MethodDescriptor, m, file);
+PyObject* PyUpb_MethodDescriptor_Get(PyObject* pool, const upb_MethodDef* m) {
+  return PyUpb_DescriptorBase_Get(kPyUpb_MethodDescriptor, m, pool);
 }
 
 static PyObject* PyUpb_MethodDescriptor_GetName(PyObject* self, void* closure) {
@@ -1568,22 +1598,25 @@ static PyObject* PyUpb_MethodDescriptor_GetIndex(PyObject* self,
   return PyLong_FromLong(upb_MethodDef_Index(oneof));
 }
 
-static PyObject* PyUpb_MethodDescriptor_GetContainingService(PyObject* self,
+static PyObject* PyUpb_MethodDescriptor_GetContainingService(PyObject* _self,
                                                              void* closure) {
-  const upb_MethodDef* m = PyUpb_MethodDescriptor_GetDef(self);
-  return PyUpb_ServiceDescriptor_Get(upb_MethodDef_Service(m));
+  PyUpb_DescriptorBase* self = (void*)_self;
+  const upb_MethodDef* m = PyUpb_MethodDescriptor_GetDef(_self);
+  return PyUpb_ServiceDescriptor_Get(self->pool, upb_MethodDef_Service(m));
 }
 
-static PyObject* PyUpb_MethodDescriptor_GetInputType(PyObject* self,
+static PyObject* PyUpb_MethodDescriptor_GetInputType(PyObject* _self,
                                                      void* closure) {
-  const upb_MethodDef* m = PyUpb_MethodDescriptor_GetDef(self);
-  return PyUpb_Descriptor_Get(upb_MethodDef_InputType(m));
+  PyUpb_DescriptorBase* self = (void*)_self;
+  const upb_MethodDef* m = PyUpb_MethodDescriptor_GetDef(_self);
+  return PyUpb_Descriptor_Get(self->pool, upb_MethodDef_InputType(m));
 }
 
-static PyObject* PyUpb_MethodDescriptor_GetOutputType(PyObject* self,
+static PyObject* PyUpb_MethodDescriptor_GetOutputType(PyObject* _self,
                                                       void* closure) {
-  const upb_MethodDef* m = PyUpb_MethodDescriptor_GetDef(self);
-  return PyUpb_Descriptor_Get(upb_MethodDef_OutputType(m));
+  PyUpb_DescriptorBase* self = (void*)_self;
+  const upb_MethodDef* m = PyUpb_MethodDescriptor_GetDef(_self);
+  return PyUpb_Descriptor_Get(self->pool, upb_MethodDef_OutputType(m));
 }
 
 static PyObject* PyUpb_MethodDescriptor_GetClientStreaming(PyObject* self,
@@ -1676,10 +1709,8 @@ const upb_OneofDef* PyUpb_OneofDescriptor_GetDef(PyObject* _self) {
   return self ? self->def : NULL;
 }
 
-PyObject* PyUpb_OneofDescriptor_Get(const upb_OneofDef* oneof) {
-  const upb_FileDef* file =
-      upb_MessageDef_File(upb_OneofDef_ContainingType(oneof));
-  return PyUpb_DescriptorBase_Get(kPyUpb_OneofDescriptor, oneof, file);
+PyObject* PyUpb_OneofDescriptor_Get(PyObject* pool, const upb_OneofDef* oneof) {
+  return PyUpb_DescriptorBase_Get(kPyUpb_OneofDescriptor, oneof, pool);
 }
 
 static PyObject* PyUpb_OneofDescriptor_GetName(PyObject* self, void* closure) {
@@ -1700,10 +1731,11 @@ static PyObject* PyUpb_OneofDescriptor_GetIndex(PyObject* self, void* closure) {
   return PyLong_FromLong(upb_OneofDef_Index(oneof));
 }
 
-static PyObject* PyUpb_OneofDescriptor_GetContainingType(PyObject* self,
+static PyObject* PyUpb_OneofDescriptor_GetContainingType(PyObject* _self,
                                                          void* closure) {
-  const upb_OneofDef* oneof = PyUpb_OneofDescriptor_GetDef(self);
-  return PyUpb_Descriptor_Get(upb_OneofDef_ContainingType(oneof));
+  PyUpb_DescriptorBase* self = (void*)_self;
+  const upb_OneofDef* oneof = PyUpb_OneofDescriptor_GetDef(_self);
+  return PyUpb_Descriptor_Get(self->pool, upb_OneofDef_ContainingType(oneof));
 }
 
 static PyObject* PyUpb_OneofDescriptor_GetHasOptions(PyObject* _self,
@@ -1778,9 +1810,8 @@ const upb_ServiceDef* PyUpb_ServiceDescriptor_GetDef(PyObject* _self) {
   return self ? self->def : NULL;
 }
 
-PyObject* PyUpb_ServiceDescriptor_Get(const upb_ServiceDef* s) {
-  const upb_FileDef* file = upb_ServiceDef_File(s);
-  return PyUpb_DescriptorBase_Get(kPyUpb_ServiceDescriptor, s, file);
+PyObject* PyUpb_ServiceDescriptor_Get(PyObject* pool, const upb_ServiceDef* s) {
+  return PyUpb_DescriptorBase_Get(kPyUpb_ServiceDescriptor, s, pool);
 }
 
 static PyObject* PyUpb_ServiceDescriptor_GetFullName(PyObject* self,
@@ -1795,10 +1826,11 @@ static PyObject* PyUpb_ServiceDescriptor_GetName(PyObject* self,
   return PyUnicode_FromString(upb_ServiceDef_Name(s));
 }
 
-static PyObject* PyUpb_ServiceDescriptor_GetFile(PyObject* self,
+static PyObject* PyUpb_ServiceDescriptor_GetFile(PyObject* _self,
                                                  void* closure) {
-  const upb_ServiceDef* s = PyUpb_ServiceDescriptor_GetDef(self);
-  return PyUpb_FileDescriptor_Get(upb_ServiceDef_File(s));
+  PyUpb_DescriptorBase* self = (void*)_self;
+  const upb_ServiceDef* s = PyUpb_ServiceDescriptor_GetDef(_self);
+  return PyUpb_FileDescriptor_Get(self->pool, upb_ServiceDef_File(s));
 }
 
 static PyObject* PyUpb_ServiceDescriptor_GetIndex(PyObject* self,
@@ -1873,7 +1905,7 @@ static PyObject* PyUpb_ServiceDescriptor_FindMethodByName(PyObject* _self,
   if (method == NULL) {
     return PyErr_Format(PyExc_KeyError, "Couldn't find method %.200s", name);
   }
-  return PyUpb_MethodDescriptor_Get(method);
+  return PyUpb_MethodDescriptor_Get(self->pool, method);
 }
 
 static PyGetSetDef PyUpb_ServiceDescriptor_Getters[] = {
