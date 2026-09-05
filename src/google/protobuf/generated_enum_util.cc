@@ -21,6 +21,12 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+// This file has been migrated to use safe buffer abstractions (absl::Span).
+// Enforce -Wunsafe-buffer-usage to prevent backsliding.
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
 namespace google {
 namespace protobuf {
 namespace internal {
@@ -33,7 +39,7 @@ bool EnumCompareByName(const EnumEntry& a, const EnumEntry& b) {
 // Gets the numeric value of the EnumEntry at the given index, but returns a
 // special value for the index -1. This gives a way to use std::lower_bound on a
 // sorted array of indices while searching for value that we associate with -1.
-int GetValue(const EnumEntry* enums, int i, int target) {
+int GetValue(absl::Span<const EnumEntry> enums, int i, int target) {
   if (i == -1) {
     return target;
   } else {
@@ -45,9 +51,11 @@ int GetValue(const EnumEntry* enums, int i, int target) {
 
 bool LookUpEnumValue(const EnumEntry* enums, size_t size,
                      absl::string_view name, int* value) {
+  auto enum_span = absl::MakeConstSpan(enums, size);
   EnumEntry target{name, 0};
-  auto it = std::lower_bound(enums, enums + size, target, EnumCompareByName);
-  if (it != enums + size && it->name == name) {
+  auto it = std::lower_bound(enum_span.begin(), enum_span.end(), target,
+                              EnumCompareByName);
+  if (it != enum_span.end() && it->name == name) {
     *value = it->value;
     return true;
   }
@@ -56,13 +64,16 @@ bool LookUpEnumValue(const EnumEntry* enums, size_t size,
 
 int LookUpEnumName(const EnumEntry* enums, const int* sorted_indices,
                    size_t size, int value) {
-  auto comparator = [enums, value](int a, int b) {
-    return GetValue(enums, a, value) < GetValue(enums, b, value);
+  auto enum_span = absl::MakeConstSpan(enums, size);
+  auto indices_span = absl::MakeConstSpan(sorted_indices, size);
+  auto comparator = [enum_span, value](int a, int b) {
+    return GetValue(enum_span, a, value) < GetValue(enum_span, b, value);
   };
   auto it =
-      std::lower_bound(sorted_indices, sorted_indices + size, -1, comparator);
-  if (it != sorted_indices + size && enums[*it].value == value) {
-    return it - sorted_indices;
+      std::lower_bound(indices_span.begin(), indices_span.end(), -1,
+                        comparator);
+  if (it != indices_span.end() && enum_span[*it].value == value) {
+    return it - indices_span.begin();
   }
   return -1;
 }
@@ -70,15 +81,27 @@ int LookUpEnumName(const EnumEntry* enums, const int* sorted_indices,
 bool InitializeEnumStrings(
     const EnumEntry* enums, const int* sorted_indices, size_t size,
     internal::ExplicitlyConstructed<std::string>* enum_strings) {
+  auto enum_span = absl::MakeConstSpan(enums, size);
+  auto indices_span = absl::MakeConstSpan(sorted_indices, size);
+  auto strings_span = absl::MakeSpan(enum_strings, size);
   for (size_t i = 0; i < size; ++i) {
-    enum_strings[i].Construct(enums[sorted_indices[i]].name);
-    internal::OnShutdownDestroyString(enum_strings[i].get_mutable());
+    strings_span[i].Construct(enum_span[indices_span[i]].name);
+    internal::OnShutdownDestroyString(strings_span[i].get_mutable());
   }
   return true;
 }
 
 bool ValidateEnum(int value, const uint32_t* data) {
-  return ValidateEnumInlined(value, data);
+  // Trust boundary: read the self-describing header to compute total size,
+  // then delegate to the Span-based overload where all subsequent accesses
+  // are bounds-checkable.
+  PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
+  const uint16_t bitmap_bits = static_cast<uint16_t>(data[1] & 0xFFFF);
+  const uint16_t num_ordered = static_cast<uint16_t>(data[1] >> 16);
+  auto span = absl::MakeConstSpan(data,
+                                  2 + bitmap_bits / 32 + num_ordered);
+  PROTOBUF_UNSAFE_BUFFER_USAGE_END
+  return ValidateEnumInlined(value, span);
 }
 
 struct EytzingerLayoutSorter {
@@ -195,22 +218,24 @@ std::vector<uint32_t> GenerateEnumData(absl::Span<const int32_t> values) {
   std::vector<uint32_t> output(
       2 /* seq start + seq len + bitmap len + ordered len */ +
       bitmap_values.size() + fallback_values.size());
-  uint32_t* p = output.data();
+  auto out = absl::MakeSpan(output);
 
   ABSL_DCHECK_EQ(sequence_length, static_cast<uint16_t>(sequence_length));
-  *p++ = uint32_t{static_cast<uint16_t>(start_sequence.value_or(0))} |
-         (uint32_t{sequence_length} << 16);
+  out[0] = uint32_t{static_cast<uint16_t>(start_sequence.value_or(0))} |
+           (uint32_t{sequence_length} << 16);
   ABSL_DCHECK_EQ(
       kBitmapBlockSize * bitmap_values.size(),
       static_cast<uint16_t>(kBitmapBlockSize * bitmap_values.size()));
   ABSL_DCHECK_EQ(fallback_values.size(),
                  static_cast<uint16_t>(fallback_values.size()));
-  *p++ = static_cast<uint32_t>(kBitmapBlockSize * bitmap_values.size()) |
-         static_cast<uint32_t>(fallback_values.size() << 16);
-  p = std::copy(bitmap_values.begin(), bitmap_values.end(), p);
+  out[1] = static_cast<uint32_t>(kBitmapBlockSize * bitmap_values.size()) |
+           static_cast<uint32_t>(fallback_values.size() << 16);
+  auto bitmap_dest = out.subspan(2, bitmap_values.size());
+  std::copy(bitmap_values.begin(), bitmap_values.end(), bitmap_dest.begin());
 
   EytzingerLayoutSorter{fallback_values,
-                        absl::MakeSpan(p, fallback_values.size())}
+                        out.subspan(2 + bitmap_values.size(),
+                                    fallback_values.size())}
       .Sort();
 
   return output;
