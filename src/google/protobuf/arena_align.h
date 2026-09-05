@@ -76,11 +76,21 @@ struct ArenaAlignDefault {
     return (reinterpret_cast<uintptr_t>(ptr) & (align - 1)) == 0U;
   }
 
+  template <size_t AlignMultiplier = 1>
   static PROTOBUF_ALWAYS_INLINE constexpr size_t Ceil(size_t n) {
-    return (n + align - 1) & ~(align - 1);
+    if constexpr (AlignMultiplier % align == 0) {
+      return n;
+    } else {
+      return (n + align - 1) & ~(align - 1);
+    }
   }
+  template <size_t AlignMultiplier = 1>
   static PROTOBUF_ALWAYS_INLINE constexpr size_t Floor(size_t n) {
-    return (n & ~(align - 1));
+    if constexpr (AlignMultiplier % align == 0) {
+      return n;
+    } else {
+      return (n & ~(align - 1));
+    }
   }
 
   static PROTOBUF_ALWAYS_INLINE size_t Padded(size_t n) {
@@ -120,10 +130,20 @@ struct ArenaAlign {
     return (reinterpret_cast<uintptr_t>(ptr) & (align - 1)) == 0U;
   }
 
+  template <size_t AlignMultiplier = 1>
   constexpr size_t Ceil(size_t n) const {
+    if constexpr (AlignMultiplier % ArenaAlignDefault::align == 0) {
+      if (align == ArenaAlignDefault::align) return n;
+    }
     return (n + align - 1) & ~(align - 1);
   }
-  constexpr size_t Floor(size_t n) const { return (n & ~(align - 1)); }
+  template <size_t AlignMultiplier = 1>
+  constexpr size_t Floor(size_t n) const {
+    if constexpr (AlignMultiplier % ArenaAlignDefault::align == 0) {
+      if (align == ArenaAlignDefault::align) return n;
+    }
+    return (n & ~(align - 1));
+  }
 
   constexpr size_t Padded(size_t n) const {
     // TODO: there are direct callers of AllocateAligned() that violate

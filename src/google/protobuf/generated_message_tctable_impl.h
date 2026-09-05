@@ -909,6 +909,13 @@ class PROTOBUF_EXPORT TcParser final {
 
   PROTOBUF_NOINLINE PROTOBUF_CC static const char* FastUnknownEnumFallback(
       PROTOBUF_TC_PARAM_DECL);
+  PROTOBUF_CC static const char* MpToParseLoop(PROTOBUF_TC_PARAM_DECL) {
+    PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  PROTOBUF_NOINLINE
+  PROTOBUF_CC static const char* MpError(PROTOBUF_TC_PARAM_DECL) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
   PROTOBUF_NOINLINE
   PROTOBUF_CC static const char* MpUnknownEnumFallback(PROTOBUF_TC_PARAM_DECL);
 

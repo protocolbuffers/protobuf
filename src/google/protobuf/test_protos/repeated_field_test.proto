@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package proto2_unittest;
+
+message TestRepeatedInt {
+  repeated int32 repeated_int32_1 = 1;
+  repeated int64 repeated_int64_1 = 2;
+}
+
+message TestPackedInt {
+  repeated int32 repeated_int32_1 = 1 [packed = true];
+  repeated int64 repeated_int64_1 = 2 [packed = true];
+}

@@ -22,6 +22,7 @@
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/port.h"
@@ -128,6 +129,46 @@ class PROTOBUF_EXPORT SerialArena {
       return ptr;
     }
     return AllocateAlignedFallback(n);
+  }
+
+  absl::optional<size_t> ReallocForParse(void* p, size_t n) {
+    char* end = ptr();
+    // If the user buffer is not at the tail, fail.
+    if (ABSL_PREDICT_FALSE(static_cast<char*>(p) + n != end)) {
+      PROTOBUF_DEBUG_COUNTER("ReallocForParse.NotEnd").Inc();
+      return absl::nullopt;
+    }
+    // If we can't extend here at all, fail.
+    if (ABSL_PREDICT_FALSE(limit_ == end)) {
+      PROTOBUF_DEBUG_COUNTER("ReallocForParse.Empty").Inc();
+      return absl::nullopt;
+    }
+    // Try to double, or use what's left.
+    const size_t extra_size = std::min<size_t>(n, limit_ - end);
+    internal::UnpoisonMemoryRegion(end, extra_size);
+    set_ptr(end + extra_size);
+    PROTOBUF_DEBUG_COUNTER("ReallocForParse.Grows").IncLog(extra_size);
+    return n + extra_size;
+  }
+
+  bool TrimForParse(void* current_end, void* new_end) {
+    ABSL_DCHECK_GE(current_end, new_end);
+    if (current_end == new_end) {
+      PROTOBUF_DEBUG_COUNTER("TrimForParse.Same").Inc();
+      return false;
+    }
+    char* end = ptr();
+    // Not in the tail, fail.
+    if (ABSL_PREDICT_FALSE(current_end != end)) {
+      PROTOBUF_DEBUG_COUNTER("TrimForParse.NotTail").Inc();
+      return false;
+    }
+    size_t returned_size =
+        static_cast<char*>(current_end) - static_cast<char*>(new_end);
+    internal::PoisonMemoryRegion(new_end, returned_size);
+    set_ptr(static_cast<char*>(new_end));
+    PROTOBUF_DEBUG_COUNTER("TrimForParse.Trimmed").IncLog(returned_size);
+    return true;
   }
 
  private:

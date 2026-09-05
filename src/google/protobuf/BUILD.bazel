@@ -651,6 +651,7 @@ cc_library(
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -808,6 +809,7 @@ cc_library(
         "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:no_destructor",
         "@abseil-cpp//absl/base:prefetch",
+        "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/functional:function_ref",
@@ -1944,6 +1946,7 @@ cc_test(
     }),
     deps = [
         ":arena",
+        ":arena_align",
         ":arena_cleanup",
         ":cc_test_protos",
         ":lite_test_util",
@@ -2333,6 +2336,8 @@ cc_test(
         ],
     }),
     deps = [
+        ":arena",
+        ":arena_align",
         ":cc_test_protos",
         ":descriptor_visitor",
         ":port",
