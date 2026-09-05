@@ -2382,7 +2382,7 @@ TextFormat::Printer::Printer()
       report_sensitive_fields_(internal::FieldReporterLevel::kNoReport),
       hide_unknown_fields_(false),
       print_message_fields_in_index_order_(false),
-      expand_any_(false),
+      expand_any_(false), any_expansion_depth_(100),
       truncate_string_field_longer_than_(0LL),
       finder_(nullptr) {
   SetUseUtf8StringEscaping(false);
@@ -2532,6 +2532,18 @@ bool TextFormat::Printer::PrintAny(const Message& message,
                                         &value_field)) {
     return false;
   }
+
+  // Bound the recursion depth of nested Any expansion. Without this
+  // guard a chain of Any-of-Any messages drives PrintAny into
+  // unbounded recursion, which crashes the process on small stacks
+  // and produces exponentially-growing output otherwise.
+  if (any_expansion_depth_ <= 0) {
+    // Recursion budget exhausted. Returning false tells the caller to
+    // print this Any as a regular field (showing type_url and value
+    // literally) instead of recursing into the inner message.
+    return false;
+  }
+  --any_expansion_depth_;
 
   const Reflection* reflection = message.GetReflection();
 
