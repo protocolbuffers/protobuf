@@ -9,7 +9,7 @@ pkg_filegroup(
         "//rust/release_crates:license",
     ],
     prefix = "protobuf_macros",
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 pkg_files(
