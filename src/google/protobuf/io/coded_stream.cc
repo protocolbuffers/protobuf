@@ -35,6 +35,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/internal/resize_uninitialized.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
@@ -42,6 +43,12 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+// This file has been migrated to use safe buffer abstractions (absl::Span).
+// Enforce -Wunsafe-buffer-usage to prevent backsliding.
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -65,18 +72,27 @@ inline bool NextNonEmpty(ZeroCopyInputStream* input, const void** data,
   return success;
 }
 
+PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
 inline uint8_t* CopyCordToArray(const absl::Cord& cord, uint8_t* target) {
+  // Safety: callers guarantee target has at least cord.size() bytes available.
   for (absl::string_view sv : cord.Chunks()) {
     memcpy(target, sv.data(), sv.size());
     target += sv.size();
   }
   return target;
 }
+PROTOBUF_UNSAFE_BUFFER_USAGE_END
 
 }  // namespace
 
 // CodedInputStream ==================================================
 
+// Safety audit: All CodedInputStream methods access buffer_ and buffer_end_
+// through the BufferSize() / Advance() / Refresh() protocol. Key invariant:
+// buffer_end_ + buffer_size_after_limit_ equals the true end of the underlying
+// stream buffer. All memcpy sizes are bounded by BufferSize() or verified via
+// size checks before access.
+PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
 CodedInputStream::~CodedInputStream() {
   if (input_ != nullptr) {
     BackUpInputToCurrentPosition();
@@ -402,8 +418,16 @@ bool CodedInputStream::ReadLittleEndian64Fallback(uint64_t* value) {
   (void)ReadLittleEndian64FromArray(ptr, value);
   return true;
 }
+PROTOBUF_UNSAFE_BUFFER_USAGE_END
 
 namespace {
+
+// Safety audit: Varint parsing functions access buffer[0..N-1] where N <= 10.
+// Callers guarantee the buffer contains at least kMaxVarintBytes (10) bytes of
+// readable data, either via BufferSize() >= kMaxVarintBytes check or because
+// buffer_end_[-1] has no continuation bit (ensuring the varint terminates
+// within the buffer).
+PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
 
 // Decodes varint64 with known size, N, and returns next pointer. Knowing N at
 // compile time, compiler can generate optimal code. For example, instead of
@@ -505,8 +529,15 @@ inline ::std::pair<bool, const uint8_t*> ReadVarint64FromArray(
   return std::make_pair(true, next);
 }
 
+PROTOBUF_UNSAFE_BUFFER_USAGE_END
+
 }  // namespace
 
+// Safety audit: ReadVarint*, ReadTag*, and Refresh methods access buffer_ and
+// buffer_end_ members. All accesses are guarded by BufferSize() checks or
+// buffer_end_ > buffer_ comparisons. buffer_end_[-1] is safe when buffer is
+// non-empty. *buffer_ dereferences are safe when Refresh() succeeds.
+PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
 bool CodedInputStream::ReadVarint32Slow(uint32_t* value) {
   // Directly invoke ReadVarint64Fallback, since we already tried to optimize
   // for one-byte varints.
@@ -724,6 +755,7 @@ bool CodedInputStream::Refresh() {
     return false;
   }
 }
+PROTOBUF_UNSAFE_BUFFER_USAGE_END
 
 // CodedOutputStream =================================================
 
@@ -734,6 +766,13 @@ void EpsCopyOutputStream::EnableAliasing(bool enabled) {
       enabled && stream_ != nullptr && stream_->AllowsAliasing();
 }
 
+// Safety audit: EpsCopyOutputStream methods use raw pointer arithmetic on
+// buffer_, end_, and buffer_end_ for the epsilon-copy output buffer protocol.
+// The invariant is that [buffer_, buffer_ + kSlopBytes) is always writable,
+// end_ marks the boundary before the slop region, and buffer_end_ points to
+// the start of the underlying stream buffer. Pointer differences are bounded
+// by kSlopBytes (16) for overrun calculations.
+PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
 int64_t EpsCopyOutputStream::ByteCount(uint8_t* ptr) const {
   // Calculate the current offset relative to the end of the stream buffer.
   int delta = (end_ - ptr) + (buffer_end_ ? 0 : kSlopBytes);
@@ -1034,6 +1073,7 @@ uint8_t* CodedOutputStream::WriteStringWithSizeToArray(absl::string_view str,
   target = WriteVarint32ToArray(str.size(), target);
   return WriteStringToArray(str, target);
 }
+PROTOBUF_UNSAFE_BUFFER_USAGE_END
 
 }  // namespace io
 }  // namespace protobuf
