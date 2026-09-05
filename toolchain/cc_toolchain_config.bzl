@@ -6,6 +6,7 @@ load(
     "flag_group",
     "flag_set",
     "tool_path",
+    "variable_with_value",
     "with_feature_set",
 )
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
@@ -176,10 +177,51 @@ def _impl(ctx):
         ],
     )
 
+    archiver_flags = feature(
+        name = "archiver_flags",
+        enabled = True,
+        flag_sets = [
+            flag_set(
+                actions = [ACTION_NAMES.cpp_link_static_library],
+                flag_groups = [
+                    flag_group(
+                        flags = ["rcsD"],
+                    ),
+                    flag_group(
+                        expand_if_available = "output_execpath",
+                        flags = ["%{output_execpath}"],
+                    ),
+                    flag_group(
+                        expand_if_available = "libraries_to_link",
+                        iterate_over = "libraries_to_link",
+                        flag_groups = [
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "object_file",
+                                ),
+                                flags = ["%{libraries_to_link.name}"],
+                            ),
+                            flag_group(
+                                expand_if_equal = variable_with_value(
+                                    "libraries_to_link.type",
+                                    "object_file_group",
+                                ),
+                                iterate_over = "libraries_to_link.object_files",
+                                flags = ["%{libraries_to_link.object_files}"],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+        ],
+    )
+
     features = [
         linker_flags,
         compiler_flags,
         sysroot_flags,
+        archiver_flags,
         feature(name = "dbg"),
         feature(name = "opt"),
     ]
@@ -199,6 +241,13 @@ def _impl(ctx):
             ),
         )
 
+    if "apple" in ctx.attr.target_full_name or "osx" in ctx.attr.target_full_name or "darwin" in ctx.attr.target_full_name:
+        target_libc = "macosx"
+    elif "mingw" in ctx.attr.target_full_name:
+        target_libc = "mingw"
+    else:
+        target_libc = ctx.attr.target_cpu
+
     return cc_common.create_cc_toolchain_config_info(
         abi_libc_version = ctx.attr.abi_version,
         abi_version = ctx.attr.abi_version,
@@ -214,7 +263,7 @@ def _impl(ctx):
         features = features,
         host_system_name = "local",
         target_cpu = ctx.attr.target_cpu,
-        target_libc = ctx.attr.target_cpu,
+        target_libc = target_libc,
         target_system_name = ctx.attr.target_full_name,
         toolchain_identifier = ctx.attr.target_full_name,
         tool_paths = tool_paths,
