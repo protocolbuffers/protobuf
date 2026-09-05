@@ -245,9 +245,6 @@ upb/wire/byte_size.h
 upb/wire/decode.h
 upb/wire/decode_fast/combinations.h
 upb/wire/decode_fast/data.h
-upb/wire/decode_fast/dispatch.h
-upb/wire/decode_fast/field_parsers.h
-upb/wire/decode_fast/function_array.h
 upb/wire/decode_fast/select.h
 upb/wire/encode.h
 upb/wire/encode_extension.h
