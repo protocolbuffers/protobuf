@@ -290,6 +290,17 @@ class RepeatedFieldTest < Test::Unit::TestCase
     # end
   end
 
+  def test_failed_out_of_bounds_assignment_does_not_resize
+    repeated = Google::Protobuf::RepeatedField.new(:int32)
+    repeated.push(1, 2)
+
+    assert_raises(Google::Protobuf::TypeError) do
+      repeated[4] = 'bad'
+    end
+
+    assert_equal [1, 2], repeated.to_a
+  end
+
   def test_push
     m = TestMessage.new
     reference_arr = %w[foo bar baz]
