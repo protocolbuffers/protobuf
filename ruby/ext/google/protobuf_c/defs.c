@@ -214,6 +214,71 @@ static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
  *
  * @return [DescriptorPool]
  */
+static VALUE DescriptorPool_find_file_by_name(VALUE _self, VALUE name) {
+  DescriptorPool* self = ruby_to_DescriptorPool(_self);
+  if (SYMBOL_P(name)) {
+    name = rb_sym2str(name);
+  }
+  const char* name_str = StringValueCStr(name);
+  const upb_FileDef* filedef = upb_DefPool_FindFileByName(self->symtab, name_str);
+  if (filedef) {
+    return get_filedef_obj(_self, filedef);
+  }
+  return Qnil;
+}
+
+
+struct ext_ensure_args {
+  VALUE pool_self;
+  const upb_FieldDef** exts;
+  size_t count;
+  VALUE ary;
+};
+
+static VALUE build_ext_array(VALUE arg) {
+  struct ext_ensure_args* args = (struct ext_ensure_args*)arg;
+  for (size_t i = 0; i < args->count; i++) {
+    VALUE ext_obj = get_fielddef_obj(args->pool_self, args->exts[i]);
+    rb_ary_push(args->ary, ext_obj);
+  }
+  return Qnil;
+}
+
+static VALUE free_ext_array(VALUE arg) {
+  struct ext_ensure_args* args = (struct ext_ensure_args*)arg;
+  upb_gfree((void*)args->exts);
+  return Qnil;
+}
+
+static VALUE DescriptorPool_find_all_extensions(VALUE _self, VALUE extendee) {
+  DescriptorPool* self = ruby_to_DescriptorPool(_self);
+  const upb_MessageDef* msgdef = Descriptor_GetMsgDef(extendee);
+  size_t count;
+
+  const upb_FieldDef** exts = upb_DefPool_GetAllExtensions(self->symtab, msgdef, &count);
+  VALUE ary = rb_ary_new2(count);
+  if (exts) {
+    struct ext_ensure_args args = { _self, exts, count, ary };
+    rb_ensure(build_ext_array, (VALUE)&args, free_ext_array, (VALUE)&args);
+  }
+  rb_obj_freeze(ary);
+  return ary;
+}
+
+static VALUE DescriptorPool_find_extension_by_number(VALUE _self, VALUE extendee, VALUE number) {
+  DescriptorPool* self = ruby_to_DescriptorPool(_self);
+  const upb_MessageDef* msgdef = Descriptor_GetMsgDef(extendee);
+  int32_t num = NUM2INT(rb_to_int(number));
+
+  const upb_FieldDef* fielddef = upb_DefPool_FindExtensionByNumber(
+      self->symtab, msgdef, num);
+  if (fielddef) {
+    return get_fielddef_obj(_self, fielddef);
+  }
+
+  return Qnil;
+}
+
 static VALUE DescriptorPool_generated_pool(VALUE _self) {
   return generated_pool;
 }
@@ -224,6 +289,9 @@ static void DescriptorPool_register(VALUE module) {
   rb_define_method(klass, "add_serialized_file",
                    DescriptorPool_add_serialized_file, 1);
   rb_define_method(klass, "lookup", DescriptorPool_lookup, 1);
+  rb_define_method(klass, "find_file_by_name", DescriptorPool_find_file_by_name, 1);
+  rb_define_method(klass, "find_extension_by_number", DescriptorPool_find_extension_by_number, 2);
+  rb_define_method(klass, "find_all_extensions", DescriptorPool_find_all_extensions, 1);
   rb_define_singleton_method(klass, "generated_pool",
                              DescriptorPool_generated_pool, 0);
   rb_gc_register_address(&cDescriptorPool);
@@ -694,6 +762,31 @@ err:
   return Qnil;
 }
 
+/*
+ * call-seq:
+ *     FileDescriptor.dependencies => Array<FileDescriptor>
+ *
+ * Returns an array of FileDescriptors that this file depends on.
+ */
+static VALUE FileDescriptor_dependencies(VALUE _self) {
+  FileDescriptor* self = ruby_to_FileDescriptor(_self);
+  VALUE ivar_name = rb_intern("@dependencies");
+  VALUE memoized = rb_ivar_get(_self, ivar_name);
+  if (!NIL_P(memoized)) {
+    return memoized;
+  }
+  int count = upb_FileDef_DependencyCount(self->filedef);
+  VALUE ary = rb_ary_new2(count);
+  for (int i = 0; i < count; i++) {
+    const upb_FileDef* dep = upb_FileDef_Dependency(self->filedef, i);
+    VALUE dep_obj = get_filedef_obj(self->descriptor_pool, dep);
+    rb_ary_push(ary, dep_obj);
+  }
+  rb_obj_freeze(ary);
+  rb_ivar_set(_self, ivar_name, ary);
+  return ary;
+}
+
 static void FileDescriptor_register(VALUE module) {
   VALUE klass = rb_define_class_under(module, "FileDescriptor", rb_cObject);
   rb_define_alloc_func(klass, FileDescriptor_alloc);
@@ -701,6 +794,7 @@ static void FileDescriptor_register(VALUE module) {
   rb_define_method(klass, "name", FileDescriptor_name, 0);
   rb_define_method(klass, "options", FileDescriptor_options, 0);
   rb_define_method(klass, "to_proto", FileDescriptor_to_proto, 0);
+  rb_define_method(klass, "dependencies", FileDescriptor_dependencies, 0);
   rb_gc_register_address(&cFileDescriptor);
   cFileDescriptor = klass;
 }
