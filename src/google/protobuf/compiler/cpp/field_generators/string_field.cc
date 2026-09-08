@@ -234,14 +234,16 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    [[nodiscard]] $DEPRECATED$ const ::std::string& $name$() const;
+    [[nodiscard]] $DEPRECATED$ const ::std::string& $name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
     //~ Using `Arg_ = const std::string&` will make the type of `arg`
     //~ default to `const std::string&`, due to reference collapse. This
     //~ is necessary because there are a handful of users that rely on
     //~ this default.
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void $set_name$(Arg_&& arg, Args_... args);
-    $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$();
+    $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
     $DEPRECATED$ [[nodiscard]] ::std::string* $nullable$ $release_name$();
     $DEPRECATED$ void $set_allocated_name$(::std::string* $nullable$ value);
 
@@ -783,30 +785,33 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$ const
               $pb$::RepeatedPtrField<::std::string>&
-              $name$() const;
+              $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>*
               $nonnull$
-              $mutable_name$();
+              $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
       case FieldDescriptor::CppRepeatedType::kProxy:
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$
               $pb$::RepeatedFieldProxy<const ::std::string>
-              $name$() const;
+              $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<::std::string>
-          $mutable_name$();
+          $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
     }
   };
 
   p->Emit({{"decl_field_accessors", decl_field_accessors}}, R"cc(
-    [[nodiscard]] $DEPRECATED$ const ::std::string& $name$(int index) const;
-    $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$(int index);
+    [[nodiscard]] $DEPRECATED$ const ::std::string& $name$(int index) const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$(int index)
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void set_$name$(int index, Arg_&& value, Args_... args);
-    $DEPRECATED$ ::std::string* $nonnull$ $add_name$();
+    $DEPRECATED$ ::std::string* $nonnull$ $add_name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
     $decl_field_accessors$;
