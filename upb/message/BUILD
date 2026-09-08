@@ -285,6 +285,7 @@ cc_library(
         ":message",
         ":message_unknowns",
         "//upb/base",
+        "//upb/hash",
         "//upb/mem",
         "//upb/mini_table",
         "//upb/mini_table:internal",
