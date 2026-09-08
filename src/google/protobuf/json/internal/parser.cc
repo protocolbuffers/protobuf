@@ -1054,7 +1054,8 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
       }));
 
   // Build a new lexer over the skipped object.
-  absl::string_view any_text = mark.value.UpToUnread();
+  MaybeOwnedString any_text_storage = mark.value.UpToUnread();
+  absl::string_view any_text = any_text_storage.AsView();
   io::ArrayInputStream in(any_text.data(), any_text.size());
   // Copying lex.options() is important; it inherits the recursion
   // limit.
