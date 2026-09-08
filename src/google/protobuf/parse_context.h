@@ -1538,7 +1538,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
-    out->ReserveWithArena(arena, old_entries + num);
+    out->ReserveWithArena(arena, internal::CheckedAdd(old_entries, num));
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
@@ -1558,7 +1558,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
-  out->ReserveWithArena(arena, old_entries + num);
+  out->ReserveWithArena(arena, internal::CheckedAdd(old_entries, num));
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
