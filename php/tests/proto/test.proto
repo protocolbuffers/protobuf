@@ -3,6 +3,7 @@ syntax = "proto3";
 package foo;
 
 import 'google/protobuf/any.proto';
+import 'google/protobuf/field_mask.proto';
 import 'google/protobuf/struct.proto';
 import 'google/protobuf/wrappers.proto';
 import 'proto/test_empty_php_namespace.proto';
@@ -361,4 +362,10 @@ message Test32Fields {
   optional uint32 random_name_c8 = 30;
   optional uint32 random_name_c9 = 31;
   optional string version = 32;
+}
+
+message TestFieldMask {
+  google.protobuf.FieldMask mask = 1;
+  bool a = 2;
+  string z = 3;
 }

@@ -26,6 +26,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/has_bits.h"
+#include "google/protobuf/message_lite.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -319,14 +320,15 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };
 
-// Retrieves the existing prototype out of a descriptor table.
+// Retrieves the existing ClassData out of a descriptor table.
 // If it doesn't exist:
 //  - If force_build is true, asks the generated message factory for one.
 //  - Otherwise, return null
-const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index, bool force_build);
+const ClassData* GetClassDataForWeakDescriptor(const DescriptorTable* table,
+                                               int index, bool force_build);
 
 struct DenseEnumCacheInfo {
+  absl::once_flag loaded;
   std::atomic<const std::string**> cache;
   int min_val;
   int max_val;
@@ -343,11 +345,11 @@ PROTOBUF_EXPORT const std::string& NameOfDenseEnumSlow(int v,
 template <const EnumDescriptor* (*descriptor_fn)(), int min_val, int max_val>
 const std::string& NameOfDenseEnum(int v) {
   static_assert(max_val - min_val >= 0, "Too many enums between min and max.");
-  static DenseEnumCacheInfo deci = {/* atomic ptr */ {}, min_val, max_val,
-                                    descriptor_fn};
-  const std::string** cache = deci.cache.load(std::memory_order_acquire);
-  if (ABSL_PREDICT_TRUE(cache != nullptr)) {
-    if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+  static DenseEnumCacheInfo deci = {/* once_flag */ {}, /* atomic ptr */ {},
+                                    min_val, max_val, descriptor_fn};
+  if (ABSL_PREDICT_TRUE(v >= min_val && v <= max_val)) {
+    const std::string** cache = deci.cache.load(std::memory_order_acquire);
+    if (ABSL_PREDICT_TRUE(cache != nullptr)) {
       return *cache[v - min_val];
     }
   }

@@ -112,6 +112,49 @@ public class ByteStringTest {
   }
 
   @Test
+  public void testCompare_literalByteStrings_thorough() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    // Matching prefixes, different lengths
+    ByteString b1 = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    ByteString b2 = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
+    assertWithMessage("Shorter prefix string is less")
+        .that(comparator.compare(b1, b2) < 0)
+        .isTrue();
+    assertWithMessage("Longer string is greater").that(comparator.compare(b2, b1) > 0).isTrue();
+
+    // Mismatch at first byte
+    ByteString b3 = ByteString.copyFrom(new byte[] {2, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    assertWithMessage("Mismatch at byte 0").that(comparator.compare(b1, b3) < 0).isTrue();
+
+    // Mismatch in word 2 (index 9)
+    ByteString b4 = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 12});
+    assertWithMessage("Mismatch at index 9").that(comparator.compare(b1, b4) < 0).isTrue();
+  }
+
+  @Test
+  public void testCompare_heterogeneousByteStrings_fallbackPath() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    byte[] raw = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    ByteString literal = ByteString.copyFrom(raw);
+    // Substring creates BoundedByteString (LeafByteString but NOT LiteralByteString)
+    ByteString bounded1 = ByteString.copyFrom(raw).substring(0, 10);
+    ByteString bounded2 = ByteString.copyFrom(raw).substring(1, 11);
+
+    // Test Literal vs Bounded
+    assertWithMessage("Literal vs Bounded equal")
+        .that(comparator.compare(literal.substring(0, 10), bounded1))
+        .isEqualTo(0);
+    assertWithMessage("Literal vs Bounded different")
+        .that(comparator.compare(literal.substring(0, 10), bounded2) < 0)
+        .isTrue();
+    assertWithMessage("Bounded vs Literal different")
+        .that(comparator.compare(bounded2, literal.substring(0, 10)) > 0)
+        .isTrue();
+  }
+
+  @Test
   public void testSubstring_beginIndex() {
     byte[] bytes = getTestBytes();
     ByteString substring = ByteString.copyFrom(bytes).substring(500);

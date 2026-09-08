@@ -638,16 +638,6 @@ std::string QualifiedMsgGlobalsInstancePtr(const Descriptor* descriptor,
                       "ptr_");
 }
 
-std::string ClassDataType(const Descriptor* descriptor,
-                          const Options& options) {
-  return HasDescriptorMethods(descriptor->file(), options) ||
-                 // Bootstrap protos are always full, even when lite is forced
-                 // via options.
-                 IsBootstrapProto(options, descriptor->file())
-             ? "ClassDataFull"
-             : "ClassDataLite";
-}
-
 std::string DescriptorTableName(const FileDescriptor* file,
                                 const Options& options) {
   return UniqueName("descriptor_table", file, options);
@@ -1711,19 +1701,19 @@ std::string StrongReferenceToType(const Descriptor* desc,
                          ProtobufNamespace(options), name, name);
 }
 
-std::string WeakDescriptorDataSection(absl::string_view prefix,
-                                      const Descriptor* descriptor,
-                                      int index_in_file_messages,
-                                      const Options& options) {
-  const auto* file = descriptor->file();
-
+std::string WeakDefaultInstanceSection(const Descriptor* descriptor,
+                                       int index_in_file_messages,
+                                       const Options& options) {
+  absl::string_view prefix = !IsProfileDriven(options)               ? "def"
+                             : IsPresentMessage(descriptor, options) ? "gh"
+                                                                     : "gl";
   // To make a compact name we use the index of the object in its file
   // of its name.
   // So the name could be `pb_def_3_HASH` instead of
   // `pd_def_VeryLongClassName_WithNesting_AndMoreNames_HASH`
   // We need a know common prefix to merge the sections later on.
   return UniqueName(absl::StrCat("pb_", prefix, "_", index_in_file_messages),
-                    file, options);
+                    descriptor->file(), options);
 }
 
 bool UsingImplicitWeakFields(const FileDescriptor* file,

@@ -245,7 +245,8 @@ upb_Array* MakeStringArray(hpb::Arena& arena,
     upb_MessageValue message_value;
     message_value.str_val =
         upb_StringView_FromDataAndSize(CloneString(arena, str), str.size());
-    upb_Array_Append(arr, message_value, hpb::interop::upb::UnwrapArena(arena));
+    EXPECT_TRUE(upb_Array_Append(arr, message_value,
+                                 hpb::interop::upb::UnwrapArena(arena)));
   }
   return arr;
 }

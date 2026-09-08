@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/cpp/names.h"
 #include "google/protobuf/compiler/rust/accessors/default_value.h"
@@ -55,7 +54,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
 
   // The extension symbol defined by both backends is the same.
   ctx.Emit({{"extendee", RsTypePath(ctx, *extension.containing_type())},
-            {"extension", absl::AsciiStrToUpper(extension.name())},
+            {"extension", ExtensionRsName(extension)},
             {"type", extension.is_repeated()
                          ? absl::StrCat("::protobuf::Repeated<",
                                         RsTypePath(ctx, extension), ">")
@@ -114,8 +113,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
     }
   } else {
     std::string mini_descriptor =
-        pool.FindExtensionByName(std::string(extension.full_name()).c_str())
-            .MiniDescriptorEncode();
+        pool.FindExtensionByName(extension.full_name()).MiniDescriptorEncode();
 
     std::string extendee = RsTypePath(ctx, *extension.containing_type());
     std::string number = absl::StrCat(extension.number());

@@ -17,6 +17,7 @@
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -91,8 +92,8 @@ bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
   size_t src_len = upb_Array_Size(src);
   if (src_len == 0) return true;
   size_t dst_len = upb_Array_Size(dst);
-  size_t len = dst_len + src_len;
-  if (UPB_UNLIKELY(len < dst_len)) return false;
+  size_t len;
+  if (UPB_UNLIKELY(upb_AddOverflow(dst_len, src_len, &len))) return false;
   if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
     return false;
   }
@@ -118,10 +119,11 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
   UPB_ASSERT(arena);
   UPB_ASSERT(i <= arr->UPB_PRIVATE(size));
-  UPB_ASSERT(count + arr->UPB_PRIVATE(size) >= count);
+  size_t new_size;
+  const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
+  UPB_ASSERT(ok);
   const size_t oldsize = arr->UPB_PRIVATE(size);
-  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
-          arr, arr->UPB_PRIVATE(size) + count, arena)) {
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
     return false;
   }
   upb_Array_Move(arr, i + count, i, oldsize - i);
@@ -134,8 +136,9 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
  */
 void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
-  const size_t end = i + count;
-  UPB_ASSERT(i <= end);
+  size_t end;
+  const bool ok = !upb_AddOverflow(i, count, &end);
+  UPB_ASSERT(ok);
   UPB_ASSERT(end <= arr->UPB_PRIVATE(size));
   upb_Array_Move(arr, i, end, arr->UPB_PRIVATE(size) - end);
   arr->UPB_PRIVATE(size) -= count;

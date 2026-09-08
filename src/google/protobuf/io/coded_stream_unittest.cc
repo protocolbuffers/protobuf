@@ -1072,7 +1072,7 @@ TEST_P(BlockSizes, ReadCordReuseCord) {
                                  16, 17, 50, 100, 1023, 1024, 8000, 16000};
     int total_size = 0;
     std::vector<int> sizes;
-    for (size_t i = 0; i < ABSL_ARRAYSIZE(kSizes); ++i) {
+    for (size_t i = 0; i < std::size(kSizes); ++i) {
       sizes.push_back(kSizes[i]);
       total_size += kSizes[i];
     }

@@ -27,11 +27,11 @@
 #include <utility>
 #include <vector>
 
-#include "absl/base/macros.h"
 #include "absl/base/optimization.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -586,7 +586,7 @@ class TextFormat::Parser::ParserImpl {
 
       // If a parse info tree exists, add the location for the parsed
       // field.
-      if (parse_info_tree_ != nullptr) {
+      if (parse_info_tree_ != nullptr && field != nullptr) {
         int end_line = tokenizer_.previous().line;
         int end_column = tokenizer_.previous().end_column;
 
@@ -616,6 +616,16 @@ class TextFormat::Parser::ParserImpl {
       }
       std::string url_prefix_and_full_type_name =
           absl::StrCat(url_prefix, full_type_name);
+      if (parse_info_tree_ != nullptr) {
+        ParseLocationRange type_url_range(
+            ParseLocation(n_start_line, n_start_column),
+            ParseLocation(n_end_line, n_end_column));
+        RecordNameLocation(parse_info_tree_, any_type_url_field,
+                           type_url_range);
+        RecordValueLocation(parse_info_tree_, any_type_url_field,
+                            type_url_range);
+        RecordLocation(parse_info_tree_, any_type_url_field, type_url_range);
+      }
       TryConsumeWhitespace();
       // ':' is optional between message labels and values.
       if (TryConsumeBeforeWhitespace(":")) {
@@ -632,15 +642,7 @@ class TextFormat::Parser::ParserImpl {
                                  "\" stored in google.protobuf.Any."));
         return false;
       }
-      int v_start_line = tokenizer_.current().line;
-      int v_start_column = tokenizer_.current().column;
       DO(ConsumeAnyValue(value_descriptor, &serialized_value));
-      record_value_location(v_start_line, v_start_column);
-
-      record_name_location(
-          any_type_url_field,
-          ParseLocationRange(ParseLocation(n_start_line, n_start_column),
-                             ParseLocation(n_end_line, n_end_column)));
 
       if (singular_overwrite_policy_ == FORBID_SINGULAR_OVERWRITES) {
         // Fail if any_type_url_field has already been specified.

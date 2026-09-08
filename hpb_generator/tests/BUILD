@@ -6,10 +6,6 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
-load(
-    "//bazel:cc_proto_library.bzl",
-    "cc_proto_library",
-)
 load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//hpb/bazel:hpb_proto_library.bzl",
@@ -115,11 +111,6 @@ hpb_proto_library(
     deps = [
         ":no_package_enum_user_proto",
     ],
-)
-
-cc_proto_library(
-    name = "test_model_cc_proto",
-    deps = [":test_model_proto"],
 )
 
 proto_library(

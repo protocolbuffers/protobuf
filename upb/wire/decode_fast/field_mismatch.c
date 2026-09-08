@@ -54,13 +54,17 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
         field_num = _upb_DecodeFast_Tag2FieldNumber(tag);
         count = 2;
       }
-      data = field_num;
-      data2 =
-          upb_DecodeFastData2_PackWireTypeAndTagLen(data2, tag & 0x7, count);
-      ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(table) ==
-                    kUpb_ExtMode_NonExtendable
-                ? kUpb_DecodeFastNext_CheckMiniTable
-                : kUpb_DecodeFastNext_CheckExtRegMiniTable;
+      if (UPB_UNLIKELY(field_num == 0)) {
+        UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
+      } else {
+        data = field_num;
+        data2 =
+            upb_DecodeFastData2_PackWireTypeAndTagLen(data2, tag & 0x7, count);
+        ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(table) ==
+                      kUpb_ExtMode_NonExtendable
+                  ? kUpb_DecodeFastNext_CheckMiniTable
+                  : kUpb_DecodeFastNext_CheckExtRegMiniTable;
+      }
     } else {
       ret = kUpb_DecodeFastNext_DecodeLongTag;
     }
@@ -77,7 +81,8 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeLongTag(
 
   uint32_t field_num, tag_len;
   if (UPB_UNLIKELY(
-          !_upb_DecodeFast_ParseLongTag(ptr, tag, &field_num, &tag_len))) {
+          !_upb_DecodeFast_ParseLongTag(ptr, tag, &field_num, &tag_len) ||
+          field_num == 0)) {
     UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
     UPB_DECODEFAST_NEXT(ret);
   }

@@ -2379,7 +2379,7 @@ class TestIgnorer : public util::MessageDifferencer::IgnoreCriteria {
       absl::StrAppend(&name, parent_fields[i].field->name(), ".");
     }
     absl::StrAppend(&name, field->name());
-    for (size_t i = 0; i < ABSL_ARRAYSIZE(kIgnoredFields); ++i) {
+    for (size_t i = 0; i < std::size(kIgnoredFields); ++i) {
       if (name == kIgnoredFields[i]) {
         return true;
       }

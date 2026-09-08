@@ -353,6 +353,7 @@ set(libprotoc_public_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/versions.cc
@@ -383,6 +384,7 @@ set(libprotoc_public_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/php/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/scc.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/subprocess.h
@@ -449,6 +451,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_builder.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_field.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/oneof_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/primitive_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/service.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/string_field.cc
@@ -497,6 +500,7 @@ set(libprotoc_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.cc
@@ -592,6 +596,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_builder.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/message_field.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/oneof_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/primitive_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/service.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/full/string_field.h
@@ -648,6 +653,7 @@ set(libprotoc_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/plugin.pb.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/helpers.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/names.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/python/pyi_generator.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/retention.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/ruby/rbs_generator.h
@@ -748,6 +754,7 @@ set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/wire/decode.c
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.c
   ${protobuf_SOURCE_DIR}/upb/wire/encode.c
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.c
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.c
   ${protobuf_SOURCE_DIR}/upb/wire/internal/decoder.c
@@ -831,6 +838,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/mini_table/sub.h
   ${protobuf_SOURCE_DIR}/upb/port/atomic.h
   ${protobuf_SOURCE_DIR}/upb/port/def.inc
+  ${protobuf_SOURCE_DIR}/upb/port/overflow.h
   ${protobuf_SOURCE_DIR}/upb/port/sanitizers.h
   ${protobuf_SOURCE_DIR}/upb/port/undef.inc
   ${protobuf_SOURCE_DIR}/upb/port/vsnprintf_compat.h
@@ -878,6 +886,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/data.h
   ${protobuf_SOURCE_DIR}/upb/wire/decode_fast/select.h
   ${protobuf_SOURCE_DIR}/upb/wire/encode.h
+  ${protobuf_SOURCE_DIR}/upb/wire/encode_extension.h
   ${protobuf_SOURCE_DIR}/upb/wire/eps_copy_input_stream.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/back_alloc.h
   ${protobuf_SOURCE_DIR}/upb/wire/internal/constants.h
@@ -1434,6 +1443,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/message_serialization_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/name_resolver_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/java/plugin_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/generator_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/line_consumer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/names_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/objectivec/text_format_decode_data_unittest.cc

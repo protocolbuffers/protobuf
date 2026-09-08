@@ -13,7 +13,7 @@
 
 #include "upb/base/string_view.h"
 #include "upb/mem/internal/arena.h"
-#include "upb/message/internal/extension.h"
+#include "upb/message/internal/extension.h"  // IWYU pragma: export
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 
@@ -23,8 +23,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-struct upb_Extension;
 
 typedef enum {
   kUpb_MessageUnknownType_StringView,
@@ -72,6 +70,24 @@ UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
   return false;
 }
 
+// Iterates over unknown fields in wire format (upb_StringView).
+// If an unknown field is a non-canonical extension, it is automatically
+// encoded into wire format into `*arena` using default encode options (0).
+//
+// `arena` is a pointer to `upb_Arena*`. If `*arena` is NULL when a
+// non-canonical extension is encountered, an arena will be lazily created via
+// `upb_Arena_New()`. The caller is responsible for freeing `*arena` (if
+// non-NULL) using `upb_Arena_Free(*arena)` after iteration completes.
+//
+// NOTE: Automatically encoding non-canonical extensions into wire format may
+// incur a performance penalty if non-canonical extensions are present, as
+// encoding requires allocating temporary buffers in `*arena`. Use
+// `upb_Message_NextUnknown2` if you want to inspect non-canonical extensions
+// directly without encoding them.
+UPB_NODISCARD bool upb_Message_NextWireFormatUnknown(
+    const struct upb_Message* msg, struct upb_Arena** arena,
+    upb_StringView* data, uintptr_t* iter);
+
 typedef enum {
   kUpb_FindUnknown_Ok,
   kUpb_FindUnknown_NotPresent,
@@ -111,6 +127,39 @@ typedef enum {
 // This must be done while iterating:
 //
 //   uintptr_t iter = kUpb_Message_UnknownBegin;
+//   upb_StringView data;
+//   // Iterate chunks
+//   while (upb_Message_NextUnknown(msg, &data, &iter)) {
+//     // Iterate within a chunk, deleting ranges
+//     while (ShouldDeleteSubSegment(&data)) {
+//       // Data now points to the region to be deleted
+//       switch (upb_Message_DeleteUnknown(msg, &data, &iter)) {
+//         case kUpb_DeleteUnknown_DeletedLast: return ok;
+//         case kUpb_DeleteUnknown_IterUpdated: break;
+//         // If DeleteUnknown returned kUpb_DeleteUnknown_IterUpdated,
+//         // then data now points to the remaining unknown fields after the
+//         // region that was just deleted.
+//         case kUpb_DeleteUnknown_AllocFail: return err;
+//       }
+//     }
+//   }
+//
+// The range given in `data` must be contained inside the most recently
+// returned region.
+// TODO: b/510055656 - Legacy API that works with messages that only have
+// unknown data in upb_StringView format. Use `upb_Message_DeleteUnknown2` for
+// messages that may have non-canonical extensions.
+UPB_NODISCARD upb_Message_DeleteUnknownStatus
+upb_Message_DeleteUnknown(struct upb_Message* msg, upb_StringView* data,
+                          uintptr_t* iter, struct upb_Arena* arena);
+
+// Removes a segment of unknown data from the message, advancing to the next
+// segment.  Returns false if the removed segment was at the end of the last
+// chunk.
+//
+// This must be done while iterating:
+//
+//   uintptr_t iter = kUpb_Message_UnknownBegin;
 //   upb_MessageUnknown data;
 //   // Iterate chunks
 //   while (upb_Message_NextUnknown2(msg, &data, &iter)) {
@@ -123,7 +172,7 @@ typedef enum {
 //         // If DeleteUnknown returned kUpb_DeleteUnknown_IterUpdated,
 //         // then data now points to the remaining unknown fields after the
 //         // region that was just deleted.
-//         case kUpb_Message_DeleteUnknown_AllocFail: return err;
+//         case kUpb_DeleteUnknown_AllocFail: return err;
 //       }
 //     }
 //   }

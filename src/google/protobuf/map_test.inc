@@ -2731,7 +2731,7 @@ TEST(GeneratedMapFieldTest, SerializationToArray) {
 }
 
 TEST(GeneratedMapFieldTest, SerializeLargeString) {
-  if (sizeof(void*) < 8) {
+  if (!internal::RunLargeMemoryTests()) {
     GTEST_SKIP() << "Not enough memory for this test.";
   }
   UNITTEST::TestMap msg;

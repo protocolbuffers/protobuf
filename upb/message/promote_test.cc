@@ -535,12 +535,13 @@ TEST(GeneratedCode, PromoteNonCanonicalExtension) {
   val_str.str_val = upb_StringView_FromString("World");
   const upb_MiniTableField* custom_f =
       upb_MiniTable_GetFieldByIndex(custom_sub_table, 0);
-  upb_Message_SetString(extension1, custom_f, val_str.str_val, arena.ptr());
+  EXPECT_TRUE(upb_Message_SetString(extension1, custom_f, val_str.str_val,
+                                    arena.ptr()));
 
   // 4. Attach custom parsed submessage "World" to msg as a non-canonical
   // extension under the different custom mini-table layout.
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr());
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr()));
 
   // 5. Promote the extension using standard compiled mini-table ModelExtension1
   upb_MessageValue val;
@@ -592,9 +593,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithSameMinitable) {
   upb_test_ModelExtension1_set_str(extension1,
                                    upb_StringView_FromString("World"));
 
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext,
-      (upb_Message**)&extension1, arena.ptr());
+      (upb_Message**)&extension1, arena.ptr()));
 
   upb_MessageValue val;
   upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
@@ -660,11 +661,11 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
   upb_Message* extension1 = _upb_Message_New(custom_sub_table_ext, arena.ptr());
   const upb_MiniTableField* custom_f =
       upb_MiniTable_GetFieldByIndex(custom_sub_table_ext, 0);
-  upb_Message_SetInt32(extension1, custom_f, 42, arena.ptr());
+  EXPECT_TRUE(upb_Message_SetInt32(extension1, custom_f, 42, arena.ptr()));
 
   // 7. Attach it as a non-canonical extension to msg using field 1547
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr());
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr()));
 
   // 8. Run extension promotion using targeting target_ext layout
   upb_MessageValue val;

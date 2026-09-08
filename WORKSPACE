@@ -262,29 +262,6 @@ http_archive(
     url = "https://github.com/bazelbuild/rules_testing/releases/download/v0.9.0/rules_testing-v0.9.0.tar.gz",
 )
 
-# For checking breaking changes to well-known types from the previous release version.
-http_archive(
-    name = "com_google_protobuf_previous_release",
-    integrity = "sha256-EKDVjzmhqQnpXgDougtbHcZNApl/dBFRlTorNln254w=",
-    strip_prefix = "protobuf-29.0",
-    urls = ["https://github.com/protocolbuffers/protobuf/releases/download/v29.0/protobuf-29.0.tar.gz"],
-)
-
-http_archive(
-    name = "rules_buf",
-    integrity = "sha256-Hr64Q/CaYr0E3ptAjEOgdZd1yc+cBjp7OG1wzuf3DIs=",
-    strip_prefix = "rules_buf-0.3.0",
-    urls = [
-        "https://github.com/bufbuild/rules_buf/archive/refs/tags/v0.3.0.zip",
-    ],
-)
-
-load("@rules_buf//buf:repositories.bzl", "rules_buf_dependencies", "rules_buf_toolchains")
-
-rules_buf_dependencies()
-
-rules_buf_toolchains(version = "v1.32.1")
-
 register_toolchains(
     "//toolchain:osx-x86_64-toolchain",
     "//toolchain:osx-aarch_64-toolchain",

@@ -522,7 +522,11 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     struct Rank1 : Rank0 {};
 
     static void InternalSwap(T* PROTOBUF_NONNULL a, T* PROTOBUF_NONNULL b) {
-      a->InternalSwap(b);
+      if constexpr (std::is_base_of_v<MessageLite, T>) {
+        T::Helpers_::InternalSwap(*a, b);
+      } else {
+        a->InternalSwap(b);
+      }
     }
 
     static Arena* PROTOBUF_NULLABLE GetArena(T* PROTOBUF_NONNULL p) {

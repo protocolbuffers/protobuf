@@ -25,7 +25,6 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 namespace {
 PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
     file_reflection_data[] = {
@@ -33,7 +32,6 @@ PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
         {&::_pbi::kDescriptorMethods, &::descriptor_table_google_2fprotobuf_2fany_2eproto, /* tracker*/ nullptr,},
 };
 }  // namespace
-#endif
 #if defined(__llvm__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wuninitialized"
@@ -45,9 +43,18 @@ class Any::_Internal {
   using HasBits = decltype(::std::declval<Any>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_);
+
+  static constexpr Any::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
-constexpr Any::ParseTableT_ Any::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr Any::ParseTableT_ Any::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(Any, _impl_._has_bits_),
@@ -62,9 +69,6 @@ constexpr Any::ParseTableT_ Any::InternalGenerateParseTable_(const ::_pbi::Class
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::Any>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // bytes value = 2;
       {::_pbi::TcParser::FastBS1,
@@ -103,8 +107,9 @@ inline constexpr Any::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-constexpr Any::Any(::_pbi::ConstantInitialized,
-                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Any::Any(
+    ::_pbi::ConstantInitialized,
+    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -112,87 +117,48 @@ constexpr Any::Any(::_pbi::ConstantInitialized,
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL Any::PlacementNew_(
+inline void* PROTOBUF_NONNULL Any::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Any(arena);
 }
-constexpr auto Any::InternalNewImpl_() {
+constexpr auto Any::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Any), alignof(Any));
 }
-constexpr auto Any::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-          &_table_.header,
-#else
-          tc_table,
-#endif
-          nullptr,  // IsInitialized
-          &Any::MergeImpl,
-          Super_::GetNewImpl<Any>(),
+constexpr auto Any::_Internal::GenerateClassData() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &Any::MergeImpl,
+      Super_::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Any::SharedDtor,
-          &Any::Clear, &Any::ByteSizeLong, &Any::_InternalSerialize,
+      &Any::Helpers_::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
-          false,
-      },
-#ifdef PROTOBUF_MESSAGE_GLOBALS
+      PROTOBUF_FIELD_OFFSET(Any, _impl_._cached_size_),
       &file_reflection_data[0],
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-      &::_pbi::kDescriptorMethods,
-      &descriptor_table_google_2fprotobuf_2fany_2eproto,
-      nullptr,  // tracker
-#endif  // PROTOBUF_MESSAGE_GLOBALS
   };
 }
 struct AnyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr AnyGlobalsTypeInternal()
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        _default(::_pbi::ConstantInitialized{},
-                 Any_class_data_.base())
-#else   // !PROTOBUF_MESSAGE_GLOBALS
-        MessageGlobalsBase(Any::InternalGenerateClassData_(
-            _default, &Any_globals_._table.header)),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<Any>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Any>(
-            GetClassData()))
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  {
-  }
+            GetClassData())) {}
   ~AnyGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Any _default;
   };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   decltype(::_pbi::PrivateAccess::GenerateParseTable<Any>(
       ::std::declval<const ::_pbi::ClassData*>())) _table;
-#endif
 };
-#ifdef PROTOBUF_MESSAGE_GLOBALS
 static_assert(PROTOBUF_FIELD_OFFSET(AnyGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
-    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 PROTOBUF_MESSAGE_GLOBALS_CONST AnyGlobalsTypeInternal Any_globals_
+    PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const AnyGlobalsTypeInternal Any_globals_
         PROTOBUF_MESSAGE_GLOBALS_SECTION(.data.rel.ro);
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-namespace {
-const ::_pbi::ClassData* Any_get_class_data() {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-  return Any_globals_.GetClassData();
-#else
-  return Any_class_data_.base();
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-}
-}  // namespace
-#endif  // PROTOBUF_CUSTOM_VTABLE
 }  // namespace protobuf
 }  // namespace google
 static constexpr const ::_pb::EnumDescriptor* PROTOBUF_NONNULL* PROTOBUF_NULLABLE
@@ -262,11 +228,11 @@ namespace protobuf {
 }
 Any::Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Any_get_class_data()) {
+    : Super_(arena, &Any_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SharedCtor(arena);
+  Helpers_::SharedCtor(*this, arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
@@ -281,7 +247,7 @@ Any::Any(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Any& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Any_get_class_data()) {
+    : Super_(arena, &Any_globals_.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -300,14 +266,16 @@ PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
       : type_url_(arena),
         value_(arena) {}
 
-inline void Any::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  new (&_impl_) Impl_(internal_visibility(), arena);
+inline void Any::Helpers_::SharedCtor(
+    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  Any& this_ = static_cast<Any&>(self);
+  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
 }
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
-  SharedDtor(*this);
+  Helpers_::SharedDtor(*this);
 }
-inline void Any::SharedDtor(MessageLite& self) {
+inline void Any::Helpers_::SharedDtor(MessageLite& self) {
   Any& this_ = static_cast<Any&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -319,34 +287,15 @@ inline void Any::SharedDtor(MessageLite& self) {
   this_._impl_.~Impl_();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const
-    ::google::protobuf::internal::ClassDataFull Any_class_data_ =
-        Any::InternalGenerateClassData_(Any_globals_._default);
-
-PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-Any::GetClassData() const {
-  ::google::protobuf::internal::PrefetchToLocalCache(&Any_class_data_);
-  ::google::protobuf::internal::PrefetchToLocalCache(Any_class_data_.tc_table);
-  return Any_class_data_.base();
-}
-#else
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 Any::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Any_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Any_globals_));
-  return Any_globals_.GetClassData();
+  return &Any_globals_.class_data;
 }
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_CONSTINIT
-PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Any::ParseTableT_
-    Any::_table_ =
-        Any::InternalGenerateParseTable_(Any_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Any::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Any::Helpers_::Clear(MessageLite& base) {
   Any& this_ = static_cast<Any&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Any::Clear() {
@@ -371,7 +320,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Any::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Any::Helpers_::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Any& this_ = static_cast<const Any&>(base);
@@ -417,7 +366,7 @@ PROTOBUF_NOINLINE void Any::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Any::ByteSizeLong(const MessageLite& base) {
+::size_t Any::Helpers_::ByteSizeLong(const MessageLite& base) {
   const Any& this_ = static_cast<const Any&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Any::ByteSizeLong() const {
@@ -496,18 +445,23 @@ void Any::CopyFrom(const Any& from) {
 }
 
 
-void Any::InternalSwap(Any* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Any::Helpers_::InternalSwap(
+    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
+    Any* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  auto* arena = GetArena();
+  Any& this_ = static_cast<Any&>(self);
+  auto* arena = this_.GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, &other->_impl_.type_url_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
+  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.type_url_, &other->_impl_.type_url_,
+                                       arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.value_, &other->_impl_.value_,
+                                       arena);
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(Any_globals_.class_data);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

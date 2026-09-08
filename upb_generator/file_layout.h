@@ -65,7 +65,7 @@ class DefPoolPair {
   }
 
   upb::FileDefPtr GetFile(absl::string_view name) const {
-    return pool64_.FindFileByName(name.data());
+    return pool64_.FindFileByName(name);
   }
 
   const upb_MiniTable* GetMiniTable32(upb::MessageDefPtr m) const {

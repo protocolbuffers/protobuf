@@ -46,6 +46,12 @@ $PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
     src/google/protobuf/wrappers.proto \
     src/google/protobuf/compiler/plugin.proto
 
+# JSON options
+$PROTOC -Isrc --csharp_out=csharp/src/Google.Protobuf \
+    --csharp_opt=file_extension=.pb.cs \
+    src/google/protobuf/json_options.proto \
+    src/google/protobuf/json_enumvalue_options.proto
+
 # C# features
 $PROTOC -Icsharp -Isrc --csharp_out=csharp/src/Google.Protobuf \
     --csharp_opt=base_namespace=Google.Protobuf \
@@ -88,7 +94,8 @@ $PROTOC -Isrc -I. -Ijava/core/src/main/resources/ \
     src/google/protobuf/unittest_features.proto \
     src/google/protobuf/unittest_legacy_features.proto \
     src/google/protobuf/unittest_proto3_optional.proto \
-    src/google/protobuf/unittest_retention.proto
+    src/google/protobuf/unittest_retention.proto \
+    src/google/protobuf/json/json_enumval_custom_string.proto
 
 # We can safely ignore the unused import warning as the
 # purpose of the test is to work with the dependencies

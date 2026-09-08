@@ -85,6 +85,33 @@ cc_library(
 )
 
 cc_library(
+    name = "encode_extension",
+    srcs = ["encode_extension.c"],
+    hdrs = ["encode_extension.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = [
+        "//video/youtube/utils/elements/client/component_type:__pkg__",
+        # TODO: b/548146484 - Remove visibility once the `UpbUnknowns` class is gone.
+        "//video/youtube/utils/elements/upb/crosslang:__pkg__",
+        "//video/youtube/utils/elements/client/component_type/subscription_processors:__pkg__",
+        "//python:__pkg__",
+        "//upb:__pkg__",
+        "//upb/message:__subpackages__",
+        "//pkg:__pkg__",
+    ],
+    deps = [
+        ":back_alloc",
+        ":encoder",
+        "//upb/base",
+        "//upb/mem:internal",
+        "//upb/message:internal",
+        "//upb/mini_table",
+        "//upb/port",
+    ],
+)
+
+cc_library(
     name = "wire",
     srcs = [
         "decode.c",

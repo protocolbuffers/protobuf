@@ -37,9 +37,7 @@ namespace java {
 class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
  public:
   explicit ImmutableMessageFieldGenerator(const FieldDescriptor* descriptor,
-                                          int messageBitIndex,
-                                          int builderBitIndex,
-                                          Context* context);
+                                          int bit_index, Context* context);
   ImmutableMessageFieldGenerator(const ImmutableMessageFieldGenerator&) =
       delete;
   ImmutableMessageFieldGenerator& operator=(
@@ -48,7 +46,7 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
 
   // implements ImmutableFieldGenerator
   // ---------------------------------------
-  int GetNumBitsForMessage() const override;
+
   void GenerateInterfaceMembers(io::Printer* printer) const override;
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
@@ -85,6 +83,7 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
   void GenerateHasMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
@@ -102,8 +101,7 @@ class ImmutableMessageOneofFieldGenerator
     : public ImmutableMessageFieldGenerator {
  public:
   ImmutableMessageOneofFieldGenerator(const FieldDescriptor* descriptor,
-                                      int messageBitIndex, int builderBitIndex,
-                                      Context* context);
+                                      int bit_index, Context* context);
   ImmutableMessageOneofFieldGenerator(
       const ImmutableMessageOneofFieldGenerator&) = delete;
   ImmutableMessageOneofFieldGenerator& operator=(
@@ -123,6 +121,7 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateHasMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
@@ -139,8 +138,7 @@ class RepeatedImmutableMessageFieldGenerator
     : public ImmutableMessageFieldGenerator {
  public:
   explicit RepeatedImmutableMessageFieldGenerator(
-      const FieldDescriptor* descriptor, int messageBitIndex,
-      int builderBitIndex, Context* context);
+      const FieldDescriptor* descriptor, int bit_index, Context* context);
   RepeatedImmutableMessageFieldGenerator(
       const RepeatedImmutableMessageFieldGenerator&) = delete;
   RepeatedImmutableMessageFieldGenerator& operator=(
@@ -148,7 +146,6 @@ class RepeatedImmutableMessageFieldGenerator
   ~RepeatedImmutableMessageFieldGenerator() override;
 
   // implements ImmutableFieldGenerator ---------------------------------------
-  int GetNumBitsForMessage() const override;
   void GenerateInterfaceMembers(io::Printer* printer) const override;
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
@@ -178,6 +175,7 @@ class RepeatedImmutableMessageFieldGenerator
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderListMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateEnsureIsMutableMethod(io::Printer* printer) const;
   void GenerateBuilderGetListMethod(io::Printer* printer) const;

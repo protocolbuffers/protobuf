@@ -431,6 +431,10 @@ public class RepeatedFieldBuilder<
    * @return an immutable list of messages
    */
   public List<MType> build() {
+    return buildProtobufList();
+  }
+
+  public Internal.ProtobufList<MType> buildProtobufList() {
     // Now that build has been called, we are required to dispatch
     // invalidations.
     isClean = true;

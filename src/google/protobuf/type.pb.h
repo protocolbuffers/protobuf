@@ -57,44 +57,19 @@ enum Syntax : int;
 PROTOBUF_EXPORT extern const uint32_t Syntax_internal_data_[];
 class Enum;
 struct EnumGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern EnumGlobalsTypeInternal Enum_globals_;
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Enum_class_data_;
-#else
 PROTOBUF_EXPORT extern const EnumGlobalsTypeInternal Enum_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class EnumValue;
 struct EnumValueGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern EnumValueGlobalsTypeInternal EnumValue_globals_;
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull EnumValue_class_data_;
-#else
 PROTOBUF_EXPORT extern const EnumValueGlobalsTypeInternal EnumValue_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Field;
 struct FieldGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern FieldGlobalsTypeInternal Field_globals_;
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Field_class_data_;
-#else
 PROTOBUF_EXPORT extern const FieldGlobalsTypeInternal Field_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Option;
 struct OptionGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern OptionGlobalsTypeInternal Option_globals_;
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Option_class_data_;
-#else
 PROTOBUF_EXPORT extern const OptionGlobalsTypeInternal Option_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 class Type;
 struct TypeGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern TypeGlobalsTypeInternal Type_globals_;
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Type_class_data_;
-#else
 PROTOBUF_EXPORT extern const TypeGlobalsTypeInternal Type_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 template <>
 internal::EnumTraitsT<::google::protobuf::Field_Cardinality_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::Field_Cardinality>;
@@ -266,8 +241,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   ~Option() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Option* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      Option* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Option));
   }
 #endif
@@ -277,16 +253,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Option(const Option& from) : Option(nullptr, from) {}
-  inline Option(Option&& from) noexcept : Option(nullptr, ::std::move(from)) {}
-  inline Option& operator=(const Option& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Option(const Option& from)
+      : Option(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Option(Option&& from) noexcept
+      : Option(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Option& operator=(const Option& from) {
     CopyFrom(from);
     return *this;
   }
   inline Option& operator=(Option&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -302,7 +280,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -320,7 +301,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   inline void Swap(Option* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -328,43 +309,44 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   void UnsafeArenaSwap(Option* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Option* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Option* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Option>(arena);
   }
   using Super_::CopyFrom;
   void CopyFrom(const Option& from);
   using Super_::MergeFrom;
-  void MergeFrom(const Option& from) { Option::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const Option& from) {
+    Option::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static void Clear(::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-
-  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-    return _InternalSerialize(*this, target, stream);
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void
+  Clear() {
+    Helpers_::Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return Helpers_::ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
+    return Helpers_::_InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
@@ -373,14 +355,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
-  private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(Option* PROTOBUF_NONNULL other);
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Option"; }
 
@@ -392,15 +371,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype,
-      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -443,16 +415,26 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   // @@protoc_insertion_point(class_scope:google.protobuf.Option)
  private:
   class _Internal;
+  struct Helpers_ {
+    PROTOBUF_NODEBUG Helpers_();
+
+    static void SharedCtor(MessageLite& self,
+                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    static void SharedDtor(MessageLite& self);
+    static void InternalSwap(MessageLite& self, Option* PROTOBUF_NONNULL other);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    static void Clear(::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+        const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+        ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<1, 2,
                           1, 35,
                           2>;
-  static constexpr ParseTableT_ InternalGenerateParseTable_(
-      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
-  friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -491,8 +473,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   ~Field() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Field* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      Field* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Field));
   }
 #endif
@@ -502,16 +485,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Field(const Field& from) : Field(nullptr, from) {}
-  inline Field(Field&& from) noexcept : Field(nullptr, ::std::move(from)) {}
-  inline Field& operator=(const Field& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Field(const Field& from)
+      : Field(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Field(Field&& from) noexcept
+      : Field(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Field& operator=(const Field& from) {
     CopyFrom(from);
     return *this;
   }
   inline Field& operator=(Field&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -527,7 +512,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -545,7 +533,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   inline void Swap(Field* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -553,43 +541,44 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   void UnsafeArenaSwap(Field* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Field* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Field* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Field>(arena);
   }
   using Super_::CopyFrom;
   void CopyFrom(const Field& from);
   using Super_::MergeFrom;
-  void MergeFrom(const Field& from) { Field::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const Field& from) {
+    Field::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static void Clear(::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-
-  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-    return _InternalSerialize(*this, target, stream);
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void
+  Clear() {
+    Helpers_::Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return Helpers_::ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
+    return Helpers_::_InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
@@ -598,14 +587,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
-  private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(Field* PROTOBUF_NONNULL other);
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Field"; }
 
@@ -617,15 +603,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype,
-      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -835,16 +814,26 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   // @@protoc_insertion_point(class_scope:google.protobuf.Field)
  private:
   class _Internal;
+  struct Helpers_ {
+    PROTOBUF_NODEBUG Helpers_();
+
+    static void SharedCtor(MessageLite& self,
+                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    static void SharedDtor(MessageLite& self);
+    static void InternalSwap(MessageLite& self, Field* PROTOBUF_NONNULL other);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    static void Clear(::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+        const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+        ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<4, 10,
                           1, 72,
                           2>;
-  static constexpr ParseTableT_ InternalGenerateParseTable_(
-      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
-  friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -891,8 +880,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   ~EnumValue() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(EnumValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      EnumValue* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(EnumValue));
   }
 #endif
@@ -902,16 +892,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline EnumValue(const EnumValue& from) : EnumValue(nullptr, from) {}
-  inline EnumValue(EnumValue&& from) noexcept : EnumValue(nullptr, ::std::move(from)) {}
-  inline EnumValue& operator=(const EnumValue& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue(const EnumValue& from)
+      : EnumValue(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue(EnumValue&& from) noexcept
+      : EnumValue(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue& operator=(const EnumValue& from) {
     CopyFrom(from);
     return *this;
   }
   inline EnumValue& operator=(EnumValue&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -927,7 +919,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -945,7 +940,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   inline void Swap(EnumValue* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -953,43 +948,44 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   void UnsafeArenaSwap(EnumValue* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] EnumValue* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG EnumValue* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<EnumValue>(arena);
   }
   using Super_::CopyFrom;
   void CopyFrom(const EnumValue& from);
   using Super_::MergeFrom;
-  void MergeFrom(const EnumValue& from) { EnumValue::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const EnumValue& from) {
+    EnumValue::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static void Clear(::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-
-  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-    return _InternalSerialize(*this, target, stream);
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void
+  Clear() {
+    Helpers_::Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return Helpers_::ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
+    return Helpers_::_InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
@@ -998,14 +994,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
-  private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(EnumValue* PROTOBUF_NONNULL other);
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValue"; }
 
@@ -1017,15 +1010,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype,
-      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1084,16 +1070,26 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValue)
  private:
   class _Internal;
+  struct Helpers_ {
+    PROTOBUF_NODEBUG Helpers_();
+
+    static void SharedCtor(MessageLite& self,
+                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    static void SharedDtor(MessageLite& self);
+    static void InternalSwap(MessageLite& self, EnumValue* PROTOBUF_NONNULL other);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    static void Clear(::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+        const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+        ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<2, 3,
                           1, 38,
                           2>;
-  static constexpr ParseTableT_ InternalGenerateParseTable_(
-      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
-  friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1133,8 +1129,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   ~Type() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Type* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      Type* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Type));
   }
 #endif
@@ -1144,16 +1141,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Type(const Type& from) : Type(nullptr, from) {}
-  inline Type(Type&& from) noexcept : Type(nullptr, ::std::move(from)) {}
-  inline Type& operator=(const Type& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Type(const Type& from)
+      : Type(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Type(Type&& from) noexcept
+      : Type(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Type& operator=(const Type& from) {
     CopyFrom(from);
     return *this;
   }
   inline Type& operator=(Type&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -1169,7 +1168,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -1187,7 +1189,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   inline void Swap(Type* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -1195,43 +1197,44 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   void UnsafeArenaSwap(Type* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Type* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Type* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Type>(arena);
   }
   using Super_::CopyFrom;
   void CopyFrom(const Type& from);
   using Super_::MergeFrom;
-  void MergeFrom(const Type& from) { Type::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const Type& from) {
+    Type::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static void Clear(::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-
-  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-    return _InternalSerialize(*this, target, stream);
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void
+  Clear() {
+    Helpers_::Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return Helpers_::ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
+    return Helpers_::_InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
@@ -1240,14 +1243,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
-  private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(Type* PROTOBUF_NONNULL other);
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Type"; }
 
@@ -1259,15 +1259,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype,
-      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1406,16 +1399,26 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   // @@protoc_insertion_point(class_scope:google.protobuf.Type)
  private:
   class _Internal;
+  struct Helpers_ {
+    PROTOBUF_NODEBUG Helpers_();
+
+    static void SharedCtor(MessageLite& self,
+                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    static void SharedDtor(MessageLite& self);
+    static void InternalSwap(MessageLite& self, Type* PROTOBUF_NONNULL other);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    static void Clear(::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+        const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+        ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 7,
                           3, 46,
                           2>;
-  static constexpr ParseTableT_ InternalGenerateParseTable_(
-      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
-  friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1459,8 +1462,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   ~Enum() PROTOBUF_FINAL;
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void operator delete(Enum* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    SharedDtor(*msg);
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
+      Enum* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
+    Helpers_::SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Enum));
   }
 #endif
@@ -1470,16 +1474,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Enum(const Enum& from) : Enum(nullptr, from) {}
-  inline Enum(Enum&& from) noexcept : Enum(nullptr, ::std::move(from)) {}
-  inline Enum& operator=(const Enum& from) {
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Enum(const Enum& from)
+      : Enum(nullptr, from) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Enum(Enum&& from) noexcept
+      : Enum(nullptr, ::std::move(from)) {}
+  PROTOBUF_ALWAYS_INLINE_NODEBUG Enum& operator=(const Enum& from) {
     CopyFrom(from);
     return *this;
   }
   inline Enum& operator=(Enum&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      InternalSwap(&from);
+      Helpers_::InternalSwap(*this, &from);
     } else {
       CopyFrom(from);
     }
@@ -1495,7 +1501,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]]
+      PROTOBUF_ALWAYS_INLINE_NODEBUG static const ::google::protobuf::Descriptor*
+          PROTOBUF_NONNULL
+          descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -1513,7 +1522,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   inline void Swap(Enum* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      InternalSwap(other);
+      Helpers_::InternalSwap(*this, other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -1521,43 +1530,44 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   void UnsafeArenaSwap(Enum* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
+    Helpers_::InternalSwap(*this, other);
   }
 
   // implements Message ----------------------------------------------
 
-  [[nodiscard]] Enum* PROTOBUF_NONNULL
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG Enum* PROTOBUF_NONNULL
   New(::google::protobuf::Arena* PROTOBUF_NULLABLE arena = nullptr) const {
     return Super_::DefaultConstruct<Enum>(arena);
   }
   using Super_::CopyFrom;
   void CopyFrom(const Enum& from);
   using Super_::MergeFrom;
-  void MergeFrom(const Enum& from) { Enum::MergeImpl(*this, from); }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG void MergeFrom(const Enum& from) {
+    Enum::MergeImpl(*this, from);
+  }
 
   private:
   static void MergeImpl(::google::protobuf::MessageLite& to_msg,
                         const ::google::protobuf::MessageLite& from_msg);
 
   public:
-  [[nodiscard]] bool IsInitialized() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG bool IsInitialized()
+      const {
     return true;
   }
   #if defined(PROTOBUF_CUSTOM_VTABLE)
-  private:
-  static void Clear(::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
-  [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-
-  public:
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() { Clear(*this); }
-  [[nodiscard]] ::size_t ByteSizeLong() const { return ByteSizeLong(*this); }
-  [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
-      ::uint8_t* PROTOBUF_NONNULL target,
-      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-    return _InternalSerialize(*this, target, stream);
+  ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE_NODEBUG void
+  Clear() {
+    Helpers_::Clear(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::size_t ByteSizeLong() const {
+    return Helpers_::ByteSizeLong(*this);
+  }
+  PROTOBUF_ALWAYS_INLINE_NODEBUG [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL
+  _InternalSerialize(::uint8_t* PROTOBUF_NONNULL target,
+                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
+                         stream) const {
+    return Helpers_::_InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
@@ -1566,14 +1576,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
       ::uint8_t* PROTOBUF_NONNULL target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
   #endif  // PROTOBUF_CUSTOM_VTABLE
-  [[nodiscard]] int GetCachedSize() const {
+  [[nodiscard]] PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+      const {
     return _impl_._cached_size_.Get();
   }
 
-  private:
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
-  void InternalSwap(Enum* PROTOBUF_NONNULL other);
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Enum"; }
 
@@ -1585,15 +1592,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype,
-      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1705,16 +1705,26 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   // @@protoc_insertion_point(class_scope:google.protobuf.Enum)
  private:
   class _Internal;
+  struct Helpers_ {
+    PROTOBUF_NODEBUG Helpers_();
+
+    static void SharedCtor(MessageLite& self,
+                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+    static void SharedDtor(MessageLite& self);
+    static void InternalSwap(MessageLite& self, Enum* PROTOBUF_NONNULL other);
+
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+    static void Clear(::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
+    [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
+        const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
+        ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  };
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 6,
                           3, 40,
                           2>;
-  static constexpr ParseTableT_ InternalGenerateParseTable_(
-      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
-  friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;
@@ -1828,7 +1838,8 @@ inline void Type::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 }
 
 // repeated .google.protobuf.Field fields = 2;
-inline int Type::_internal_fields_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Type::_internal_fields_size() const {
   return _internal_fields().size();
 }
 inline int Type::fields_size() const {
@@ -1883,7 +1894,8 @@ Type::_internal_mutable_fields() {
 }
 
 // repeated string oneofs = 3;
-inline int Type::_internal_oneofs_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Type::_internal_oneofs_size() const {
   return _internal_oneofs().size();
 }
 inline int Type::oneofs_size() const {
@@ -1955,7 +1967,8 @@ Type::_internal_mutable_oneofs() {
 }
 
 // repeated .google.protobuf.Option options = 4;
-inline int Type::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Type::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Type::options_size() const {
@@ -2443,7 +2456,8 @@ inline void Field::_internal_set_packed(bool value) {
 }
 
 // repeated .google.protobuf.Option options = 9;
-inline int Field::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Field::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Field::options_size() const {
@@ -2694,7 +2708,8 @@ inline void Enum::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
 }
 
 // repeated .google.protobuf.EnumValue enumvalue = 2;
-inline int Enum::_internal_enumvalue_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Enum::_internal_enumvalue_size() const {
   return _internal_enumvalue().size();
 }
 inline int Enum::enumvalue_size() const {
@@ -2749,7 +2764,8 @@ Enum::_internal_mutable_enumvalue() {
 }
 
 // repeated .google.protobuf.Option options = 3;
-inline int Enum::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+Enum::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int Enum::options_size() const {
@@ -3077,7 +3093,8 @@ inline void EnumValue::_internal_set_number(::int32_t value) {
 }
 
 // repeated .google.protobuf.Option options = 3;
-inline int EnumValue::_internal_options_size() const {
+PROTOBUF_ALWAYS_INLINE_NODEBUG int
+EnumValue::_internal_options_size() const {
   return _internal_options().size();
 }
 inline int EnumValue::options_size() const {

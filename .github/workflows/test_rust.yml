@@ -24,7 +24,7 @@ jobs:
 
         include:
           - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
-          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.0.0-9dca0d9417f43f5f1e97e59969fb0f3e6ae3bd9c"
+          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
           - bazel_cmd: "test"
 
           # Override cases with custom images
@@ -39,11 +39,11 @@ jobs:
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -59,18 +59,21 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
+      - name: Windows startup flags
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
       - name: Install Rust
         shell: bash
         # We need Rust 1.90 so that we can use the new workspace publishing
         # feature.
         run: rustup default 1.90
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@v6
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: run //rust/release_crates:cargo_test
           bazel-cache: windows-cargo
-          version: 9.0.0
+          version: 9.2.0

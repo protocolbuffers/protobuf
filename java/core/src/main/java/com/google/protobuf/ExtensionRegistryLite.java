@@ -60,6 +60,12 @@ public class ExtensionRegistryLite {
 
   private static volatile LazyExtensionMode lazyExtensionMode = LazyExtensionMode.EAGER;
 
+  // Override for the lazy extension mode for this specific registry.
+  // -1 means fallback to the static lazyExtensionMode
+  // 0 means eager
+  // 1 means LAZY_VERIFY_ON_ACCESS
+  private byte lazyExtensionModeOverride = -1;
+
   static void setLazyExtensionMode(LazyExtensionMode mode) {
     lazyExtensionMode = mode;
   }
@@ -68,8 +74,26 @@ public class ExtensionRegistryLite {
     return lazyExtensionMode;
   }
 
-  static boolean lazyExtensionEnabled() {
+  boolean lazyExtensionEnabled() {
+    if (lazyExtensionModeOverride == 1) {
+      return true;
+    } else if (lazyExtensionModeOverride == 0) {
+      return false;
+    }
     return lazyExtensionMode == LazyExtensionMode.LAZY_VERIFY_ON_ACCESS;
+  }
+
+  /**
+   * Returns a new {@link ExtensionRegistryLite} with the same contents as this registry but with
+   * the lazy extension mode overridden.
+   *
+   * @param lazy whether to enable lazy extensions
+   * @return a new {@link ExtensionRegistryLite} with the lazy extension mode overridden
+   */
+  ExtensionRegistryLite withLazyExtensionsOverride(boolean lazy) {
+    ExtensionRegistryLite ret = getUnmodifiable();
+    ret.lazyExtensionModeOverride = (byte) (lazy ? 1 : 0);
+    return ret;
   }
 
   // Visible for testing.
@@ -192,6 +216,7 @@ public class ExtensionRegistryLite {
     } else {
       this.extensionsByNumber = Collections.unmodifiableMap(other.extensionsByNumber);
     }
+    this.lazyExtensionModeOverride = other.lazyExtensionModeOverride;
   }
 
   private final Map<ObjectIntPair, GeneratedMessageLite.GeneratedExtension<?, ?>>

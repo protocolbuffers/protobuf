@@ -20,6 +20,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
@@ -32,7 +34,10 @@
 #include "upb/message/message.h"
 #include "upb/message/unknown_fields.h"
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.hpp"
+#include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/link.h"
+#include "upb/mini_table/enum.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
@@ -483,10 +488,12 @@ TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
   EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-  EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+  upb_MessageUnknown data;
+  ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+  ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+            payload);
+  EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 }
 
 TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
@@ -514,12 +521,14 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
     // We expect them to be merged.
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     // Assert that consecutive unknown fields optimization took effect, decoding
@@ -556,11 +565,13 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithAlias) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     EXPECT_EQ(absl::string_view(trace_buf),
@@ -632,9 +643,9 @@ TEST(DecodeTest, DecodeNonCanonicalExtensionAsUnknown) {
                                    upb_StringView_FromString("World"));
 
   // 3. msg has a non-canonical extension A
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
+      arena.ptr()));
 
   // Verify extension count is 0 before encoding/decoding.
   EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
@@ -695,9 +706,9 @@ TEST(DecodeTest, DecodeExtensionAsUnknownWithPreexistingUnknown) {
 
   // 3. Attach to tmp_msg as a non-canonical extension so we can serialize it to
   // get the bytes
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(tmp_msg), upb_test_ModelExtension1_model_ext_ext, &extension1,
-      arena.ptr());
+      arena.ptr()));
 
   // 5. Obtain encoded extension A by serializing tmp_msg
   char* buf;
@@ -782,10 +793,12 @@ TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
   EXPECT_TRUE(upb_Message_HasUnknown(parent_msg));
 
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView data;
-  ASSERT_TRUE(upb_Message_NextUnknown(parent_msg, &data, &iter));
-  EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-  EXPECT_FALSE(upb_Message_NextUnknown(parent_msg, &data, &iter));
+  upb_MessageUnknown data;
+  ASSERT_TRUE(upb_Message_NextUnknown2(parent_msg, &data, &iter));
+  ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+            payload);
+  EXPECT_FALSE(upb_Message_NextUnknown2(parent_msg, &data, &iter));
 }
 
 TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
@@ -815,12 +828,14 @@ TEST(DecodeTest, ConsecutiveUnknownFieldsWithGroup) {
     EXPECT_TRUE(upb_Message_HasUnknown(msg));
 
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
+    upb_MessageUnknown data;
 
     // We expect them to be merged.
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(absl::string_view(data.data, data.size), payload);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(absl::string_view(data.value.bytes.data, data.value.bytes.size),
+              payload);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 
 #ifndef NDEBUG
     const char* expected = "M";
@@ -923,6 +938,213 @@ TEST(DecodeTest, FieldZeroRejected) {
                      options, msg_arena.ptr());
       EXPECT_EQ(result, kUpb_DecodeStatus_Malformed);
     }
+  }
+}
+
+TEST(DecodeTest, UnlinkedSubMessageFastTableSlotCollision) {
+  Arena mt_arena;
+
+  // Build a message where:
+  // - Field 16 is an unlinked submessage (slot 16)
+  // - Field 32 is a bool field that collides on the same fasttable slot (slot
+  // 16)
+  upb::MtDataEncoder e;
+  e.StartMessage(0);
+  e.PutField(kUpb_FieldType_Message, 16, 0);
+  e.PutField(kUpb_FieldType_Bool, 32, 0);
+
+  upb_Status status;
+  upb_Status_Clear(&status);
+  const upb_MiniTable* mt = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), mt_arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  const upb_MiniTableField* bool_field =
+      upb_MiniTable_FindFieldByNumber(mt, 32);
+  ASSERT_NE(bool_field, nullptr);
+
+  // Field 32 (tag 256, varint: 0x80, 0x02), value = 1 (true)
+  std::string payload("\x80\x02\x01");
+  for (int options : GetDecodeOptionsToTest()) {
+    Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    upb_DecodeStatus result = upb_Decode(payload.data(), payload.size(), msg,
+                                         mt, nullptr, options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+    EXPECT_TRUE(upb_Message_GetBool(msg, bool_field, false));
+    EXPECT_FALSE(upb_Message_HasUnknown(msg));
+  }
+}
+
+TEST(DecodeTest, SetSubMessageMapValidation) {
+  Arena arena;
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  // 1. Parent message table with repeated field (valid for map), scalar field,
+  // and oneof field.
+  upb::MtDataEncoder parent_enc;
+  parent_enc.StartMessage(kUpb_MessageModifier_IsExtendable);
+  parent_enc.PutField(kUpb_FieldType_Message, 1, kUpb_FieldModifier_IsRepeated);
+  parent_enc.PutField(kUpb_FieldType_Message, 2, 0);  // scalar message
+  parent_enc.PutField(kUpb_FieldType_Message, 3, 0);  // oneof message
+  parent_enc.PutField(kUpb_FieldType_Group, 4, 0);    // group field
+  parent_enc.StartOneof();
+  parent_enc.PutOneofField(3);
+  upb_MiniTable* parent_mt = upb_MiniTable_Build(
+      parent_enc.data().data(), parent_enc.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+  upb_MiniTableField* repeated_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(parent_mt, 0));
+  upb_MiniTableField* scalar_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(parent_mt, 1));
+  upb_MiniTableField* oneof_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(parent_mt, 2));
+  upb_MiniTableField* group_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(parent_mt, 3));
+
+  // 2. Valid map entry table
+  upb::MtDataEncoder map_enc;
+  map_enc.EncodeMap(kUpb_FieldType_Int32, kUpb_FieldType_Message, 0, 0);
+  upb_MiniTable* map_entry = upb_MiniTable_Build(
+      map_enc.data().data(), map_enc.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  // 3. Submessage for value field
+  auto [sub_mt, sub_field] =
+      MiniTable::MakeSingleFieldTable<field_types::Int32>(
+          1, kUpb_DecodeFast_Scalar, arena.ptr());
+
+  // Valid linking: parent repeated field -> map_entry
+  EXPECT_TRUE(
+      upb_MiniTable_SetSubMessage(parent_mt, repeated_field, map_entry));
+  EXPECT_TRUE(upb_MiniTableField_IsMap(repeated_field));
+
+  // Valid repeated linking (idempotent call, e.g. from JS bridge):
+  EXPECT_TRUE(
+      upb_MiniTable_SetSubMessage(parent_mt, repeated_field, map_entry));
+  EXPECT_TRUE(upb_MiniTableField_IsMap(repeated_field));
+
+  // Valid linking: map_entry field 2 (value) -> sub_mt
+  upb_MiniTableField* val_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(map_entry, 1));
+  EXPECT_TRUE(upb_MiniTable_SetSubMessage(map_entry, val_field, sub_mt));
+
+  // Invalid: linking map_entry to a scalar (non-repeated) field
+  EXPECT_FALSE(upb_MiniTable_SetSubMessage(parent_mt, scalar_field, map_entry));
+
+  // Invalid: linking map_entry to a oneof field
+  EXPECT_FALSE(upb_MiniTable_SetSubMessage(parent_mt, oneof_field, map_entry));
+
+  // Invalid: linking map_entry to a group field
+  EXPECT_FALSE(upb_MiniTable_SetSubMessage(parent_mt, group_field, map_entry));
+
+  // Invalid: map_entry field 1 (key) -> sub_mt (key cannot have submessage)
+  upb_MiniTableField* key_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(map_entry, 0));
+  EXPECT_FALSE(upb_MiniTable_SetSubMessage(map_entry, key_field, sub_mt));
+
+  // Invalid: linking map_entry to an extension field
+  upb::MtDataEncoder ext_enc;
+  ext_enc.EncodeExtension(kUpb_FieldType_Message, 100,
+                          kUpb_FieldModifier_IsRepeated);
+  upb_MiniTableExtension* ext =
+      upb_MiniTableExtension_Build(ext_enc.data().data(), ext_enc.data().size(),
+                                   parent_mt, arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+  EXPECT_FALSE(upb_MiniTableExtension_SetSubMessage(ext, map_entry));
+
+  // Invalid: table_is_map && sub_is_map (nested map entry)
+  EXPECT_FALSE(upb_MiniTable_SetSubMessage(map_entry, val_field, map_entry));
+}
+
+TEST(DecodeTest, SetSubEnumMapValidation) {
+  Arena arena;
+  upb_Status status;
+  upb_Status_Clear(&status);
+
+  upb::MtDataEncoder map_enum_enc;
+  map_enum_enc.EncodeMap(kUpb_FieldType_Int32, kUpb_FieldType_Enum, 0,
+                         kUpb_FieldModifier_IsClosedEnum);
+  upb_MiniTable* map_enum_entry =
+      upb_MiniTable_Build(map_enum_enc.data().data(),
+                          map_enum_enc.data().size(), arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  upb_MiniTableField* key_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(map_enum_entry, 0));
+  upb_MiniTableField* val_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_GetFieldByIndex(map_enum_entry, 1));
+
+  // Enum with 0
+  upb::MtDataEncoder enum_with_0_enc;
+  enum_with_0_enc.StartEnum();
+  enum_with_0_enc.PutEnumValue(0);
+  enum_with_0_enc.PutEnumValue(1);
+  enum_with_0_enc.EndEnum();
+  upb_MiniTableEnum* enum_with_0 = upb_MiniTableEnum_Build(
+      enum_with_0_enc.data().data(), enum_with_0_enc.data().size(), arena.ptr(),
+      &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  // Enum without 0
+  upb::MtDataEncoder enum_without_0_enc;
+  enum_without_0_enc.StartEnum();
+  enum_without_0_enc.PutEnumValue(1);
+  enum_without_0_enc.PutEnumValue(2);
+  enum_without_0_enc.EndEnum();
+  upb_MiniTableEnum* enum_without_0 = upb_MiniTableEnum_Build(
+      enum_without_0_enc.data().data(), enum_without_0_enc.data().size(),
+      arena.ptr(), &status);
+  ASSERT_TRUE(upb_Status_IsOk(&status)) << upb_Status_ErrorMessage(&status);
+
+  // Invalid: linking subenum to field 1 (key) of map entry
+  EXPECT_FALSE(
+      upb_MiniTable_SetSubEnum(map_enum_entry, key_field, enum_with_0));
+
+  // Invalid: linking subenum lacking 0 to field 2 (value) of map entry
+  EXPECT_FALSE(
+      upb_MiniTable_SetSubEnum(map_enum_entry, val_field, enum_without_0));
+
+  // Valid: linking subenum with 0 to field 2 (value) of map entry
+  EXPECT_TRUE(upb_MiniTable_SetSubEnum(map_enum_entry, val_field, enum_with_0));
+}
+
+TEST(DecodeTest, BuildMalformedMapDescriptorValidation) {
+  Arena arena;
+
+  // Invalid: map mini-descriptor with 1 field (field_count != 2)
+  {
+    upb_Status status;
+    upb_Status_Clear(&status);
+    upb_MiniTable* bad_mt =
+        upb_MiniTable_Build("M\x01", 2, arena.ptr(), &status);
+    EXPECT_FALSE(upb_Status_IsOk(&status));
+    EXPECT_EQ(bad_mt, nullptr);
+  }
+
+  // Invalid: map mini-descriptor with float key
+  {
+    upb_Status status;
+    upb_Status_Clear(&status);
+    upb::MtDataEncoder bad_enc;
+    bad_enc.EncodeMap(kUpb_FieldType_Float, kUpb_FieldType_Int32, 0, 0);
+    upb_MiniTable* bad_mt = upb_MiniTable_Build(
+        bad_enc.data().data(), bad_enc.data().size(), arena.ptr(), &status);
+    EXPECT_FALSE(upb_Status_IsOk(&status));
+    EXPECT_EQ(bad_mt, nullptr);
+  }
+
+  // Invalid: map mini-descriptor with group value
+  {
+    upb_Status status;
+    upb_Status_Clear(&status);
+    upb::MtDataEncoder bad_enc;
+    bad_enc.EncodeMap(kUpb_FieldType_Int32, kUpb_FieldType_Group, 0, 0);
+    upb_MiniTable* bad_mt = upb_MiniTable_Build(
+        bad_enc.data().data(), bad_enc.data().size(), arena.ptr(), &status);
+    EXPECT_FALSE(upb_Status_IsOk(&status));
+    EXPECT_EQ(bad_mt, nullptr);
   }
 }
 

@@ -238,10 +238,17 @@ if (protobuf_BUILD_SHARED_LIBS)
 else (protobuf_BUILD_SHARED_LIBS)
   set(protobuf_SHARED_OR_STATIC "STATIC")
   set(ABSL_MSVC_STATIC_RUNTIME ${protobuf_MSVC_STATIC_RUNTIME})
-  if (protobuf_MSVC_STATIC_RUNTIME)
-      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
-  else()
-      set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
+  # Only choose an MSVC runtime library if the enclosing project has not already
+  # set one. When protobuf is consumed via add_subdirectory/FetchContent, the
+  # parent may set CMAKE_MSVC_RUNTIME_LIBRARY explicitly (for example to force
+  # /MD in every configuration); overriding it here causes runtime-library
+  # mismatches such as LNK2038 (MDd_DynamicDebug vs MD_DynamicRelease).
+  if (NOT DEFINED CMAKE_MSVC_RUNTIME_LIBRARY)
+    if (protobuf_MSVC_STATIC_RUNTIME)
+        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>)
+    else()
+        set(CMAKE_MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
+    endif()
   endif()
 endif (protobuf_BUILD_SHARED_LIBS)
 

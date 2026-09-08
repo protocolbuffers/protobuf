@@ -498,14 +498,22 @@ void GenerateMessageFunctionsInHeader(Context& c, upb::MessageDefPtr message) {
         UPB_INLINE char* $msg_type$_serialize(const $msg_type$* msg,
                                               upb_Arena* arena, size_t* len) {
           char* ptr;
-          (void)upb_Encode(UPB_UPCAST(msg), $mini_table$, 0, arena, &ptr, len);
+          upb_EncodeStatus status =
+              upb_Encode(UPB_UPCAST(msg), $mini_table$, 0, arena, &ptr, len);
+          if (status != kUpb_EncodeStatus_Ok) {
+            return NULL;
+          }
           return ptr;
         }
         UPB_INLINE char* $msg_type$_serialize_ex(const $msg_type$* msg,
                                                  int options, upb_Arena* arena,
                                                  size_t* len) {
           char* ptr;
-          (void)upb_Encode(UPB_UPCAST(msg), $mini_table$, options, arena, &ptr, len);
+          upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), $mini_table$,
+                                               options, arena, &ptr, len);
+          if (status != kUpb_EncodeStatus_Ok) {
+            return NULL;
+          }
           return ptr;
         }
       )cc");
@@ -786,6 +794,7 @@ void GenerateMapSetters(Context& c, upb::FieldDefPtr field,
           const upb_MiniTableField field = $field_init$;
           upb_Map* map = _upb_Message_GetOrCreateMutableMap(
               UPB_UPCAST(msg), &field, $key_size$, $val_size$, a);
+          if (!map) return false;
           return _upb_Map_Insert(map, &key, $key_size$, &val, $val_size$, a) !=
                  kUpb_MapInsertStatus_OutOfMemory;
         }

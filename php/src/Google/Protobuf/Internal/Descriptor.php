@@ -160,7 +160,7 @@ class Descriptor
         return $this->options;
     }
 
-    public static function buildFromProto($proto, $file_proto, $containing)
+    public static function buildFromProto($proto, $file_proto, $containing, $custom_json_names = [])
     {
         $desc = new Descriptor();
 
@@ -191,13 +191,13 @@ class Descriptor
         // Handle nested types.
         foreach ($proto->getNestedType() as $nested_proto) {
             $desc->addNestedType(Descriptor::buildFromProto(
-              $nested_proto, $file_proto, $message_name_without_package));
+              $nested_proto, $file_proto, $message_name_without_package, $custom_json_names));
         }
 
         // Handle nested enum.
         foreach ($proto->getEnumType() as $enum_proto) {
             $desc->addEnumType(EnumDescriptor::buildFromProto(
-              $enum_proto, $file_proto, $message_name_without_package));
+              $enum_proto, $file_proto, $message_name_without_package, $custom_json_names));
         }
 
         // Handle oneof fields.

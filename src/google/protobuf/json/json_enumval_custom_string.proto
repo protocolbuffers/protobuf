@@ -29,4 +29,6 @@ enum Armor {
 
 message Knight {
   Armor armor = 1;
+  repeated Armor armors = 2;
+  map<string, Armor> armor_map = 3;
 }

@@ -382,3 +382,59 @@ TEST(JsonTest, AllocationFailureAny) {
   TestJsonAllocationFailure(
       R"({"any_val": {"@type": "type.googleapis.com/google.protobuf.Value", "value": "foo"}})");
 }
+
+TEST(JsonTest, Utf8ValidationLevels) {
+  upb::Arena arena;
+  upb::DefPool defpool;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_TRUE(m != nullptr);
+
+  // Invalid UTF-8 sequence inside JSON string
+  std::string invalid_json = "{\"name\": \"\xff\xff\"}";
+
+  // 1. Default (options = 0): Defaults to WARN (prints warning to stderr but
+  // succeeds)
+  {
+    upb_test_Box* box = upb_test_Box_new(arena.ptr());
+    upb::Status status;
+    bool ok = upb_JsonDecode(invalid_json.data(), invalid_json.size(),
+                             UPB_UPCAST(box), m, defpool.ptr(), 0, arena.ptr(),
+                             status.ptr());
+    EXPECT_TRUE(ok) << status.error_message();
+  }
+
+  // 2. Explicit DISABLE: Should not fail on UTF-8 (decoding succeeds without
+  // check)
+  {
+    upb_test_Box* box = upb_test_Box_new(arena.ptr());
+    upb::Status status;
+    bool ok = upb_JsonDecode(invalid_json.data(), invalid_json.size(),
+                             UPB_UPCAST(box), m, defpool.ptr(),
+                             upb_JsonDecode_ValidateUtf8_Disable, arena.ptr(),
+                             status.ptr());
+    EXPECT_TRUE(ok) << status.error_message();
+  }
+
+  // 3. Explicit ENFORCE: Should fail to parse
+  {
+    upb_test_Box* box = upb_test_Box_new(arena.ptr());
+    upb::Status status;
+    bool ok = upb_JsonDecode(invalid_json.data(), invalid_json.size(),
+                             UPB_UPCAST(box), m, defpool.ptr(),
+                             upb_JsonDecode_ValidateUtf8_Enforce, arena.ptr(),
+                             status.ptr());
+    EXPECT_FALSE(ok);
+    EXPECT_STREQ(status.error_message(), "Invalid UTF-8 in JSON input");
+  }
+
+  // Valid UTF-8 should succeed with ENFORCE
+  {
+    std::string valid_json = "{\"name\": \"hello world\"}";
+    upb_test_Box* box = upb_test_Box_new(arena.ptr());
+    upb::Status status;
+    bool ok = upb_JsonDecode(
+        valid_json.data(), valid_json.size(), UPB_UPCAST(box), m, defpool.ptr(),
+        upb_JsonDecode_ValidateUtf8_Enforce, arena.ptr(), status.ptr());
+    EXPECT_TRUE(ok) << status.error_message();
+  }
+}

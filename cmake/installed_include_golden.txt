@@ -35,6 +35,7 @@ google/protobuf/compiler/php/names.h
 google/protobuf/compiler/plugin.h
 google/protobuf/compiler/plugin.pb.h
 google/protobuf/compiler/plugin.proto
+google/protobuf/compiler/python/names.h
 google/protobuf/compiler/retention.h
 google/protobuf/compiler/scc.h
 google/protobuf/compiler/subprocess.h
@@ -213,6 +214,7 @@ upb/mini_table/message.h
 upb/mini_table/sub.h
 upb/port/atomic.h
 upb/port/def.inc
+upb/port/overflow.h
 upb/port/sanitizers.h
 upb/port/undef.inc
 upb/port/vsnprintf_compat.h
@@ -245,6 +247,7 @@ upb/wire/decode_fast/combinations.h
 upb/wire/decode_fast/data.h
 upb/wire/decode_fast/select.h
 upb/wire/encode.h
+upb/wire/encode_extension.h
 upb/wire/eps_copy_input_stream.h
 upb/wire/reader.h
 upb/wire/types.h

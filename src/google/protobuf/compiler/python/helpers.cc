@@ -14,11 +14,12 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
-#include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/python/names.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 
@@ -26,18 +27,6 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace python {
-
-// Returns the Python module name expected for a given .proto filename.
-std::string ModuleName(absl::string_view filename) {
-  std::string basename = StripProto(filename);
-  absl::StrReplaceAll({{"-", "_"}, {"/", "."}}, &basename);
-  return absl::StrCat(basename, "_pb2");
-}
-
-std::string StrippedModuleName(absl::string_view filename) {
-  std::string module_name = ModuleName(filename);
-  return module_name;
-}
 
 // Keywords reserved by the Python language.
 const char* const kKeywords[] = {
@@ -74,7 +63,7 @@ std::string ResolveKeyword(absl::string_view name) {
 
 std::string GetFileName(const FileDescriptor* file_des,
                         absl::string_view suffix) {
-  std::string module_name = ModuleName(file_des->name());
+  std::string module_name = ModuleName(file_des);
   std::string filename = module_name;
   absl::StrReplaceAll({{".", "/"}}, &filename);
   absl::StrAppend(&filename, suffix);

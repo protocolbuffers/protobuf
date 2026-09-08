@@ -73,9 +73,11 @@ TEST(RepeatedVarint, Int32) {
 }
 
 TEST(RepeatedVarint, Int32Overflow) {
+#if defined(__aarch64__)
+  GTEST_SKIP() << "Skipping test on aarch64 (unvectorized loop times out)";
+#endif
   if (sizeof(size_t) < 8) {
     GTEST_SKIP() << "Skipping test on 32-bit platform";
-    return;
   }
 
   RepeatedField<int32_t> v;

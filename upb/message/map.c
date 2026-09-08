@@ -75,7 +75,7 @@ upb_MapInsertStatus upb_Map_Insert(upb_Map* map, upb_MessageValue key,
 bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
   upb_value v;
   const bool removed = _upb_Map_Delete(map, &key, map->key_size, &v);
-  if (val) _upb_map_fromvalue(v, val, map->val_size);
+  if (removed && val) _upb_map_fromvalue(v, val, map->val_size);
   return removed;
 }
 

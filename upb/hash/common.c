@@ -22,6 +22,7 @@
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -52,7 +53,7 @@ UPB_INLINE int _upb_popcnt32(uint32_t i) {
 
 #undef UPB_FAST_POPCOUNT32
 
-UPB_INLINE uint8_t _upb_log2_table_size(upb_table* t) {
+UPB_INLINE uint8_t _upb_log2_table_size(const upb_table* t) {
   return _upb_popcnt32(t->mask);
 }
 
@@ -112,10 +113,10 @@ static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
   t->count = 0;
   uint32_t size = 1U << size_lg2;
   t->mask = size - 1;  // 0 mask if size_lg2 is 0
-  if (upb_table_size(t) > (SIZE_MAX / sizeof(upb_tabent))) {
+  size_t bytes;
+  if (upb_MulOverflow(upb_table_size(t), sizeof(upb_tabent), &bytes)) {
     return false;
   }
-  size_t bytes = upb_table_size(t) * sizeof(upb_tabent);
   if (bytes > 0) {
     t->entries = upb_Arena_Malloc(a, bytes);
     if (!t->entries) return false;
@@ -589,6 +590,44 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
   return true;
 }
 
+bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
+                       upb_Arena* a) {
+  if (src->t.count == 0) {
+    return upb_strtable_init(dest, 0, a);
+  }
+  dest->t.count = src->t.count;
+  dest->t.mask = src->t.mask;
+  dest->t.entries =
+      upb_Arena_Malloc(a, upb_table_size(&src->t) * sizeof(upb_tabent));
+  if (!dest->t.entries) return false;
+  upb_tabent* restrict dest_entries = dest->t.entries;
+  const upb_tabent* restrict src_entries = src->t.entries;
+  size_t table_size = upb_table_size(&src->t);
+  for (size_t i = 0; i < table_size; i++) {
+    upb_tabent* dest_ent = &dest_entries[i];
+    const upb_tabent* src_ent = &src_entries[i];
+    if (!upb_tabent_isempty(src_ent)) {
+      upb_StringView sv = upb_key_strview(src_ent->key);
+      upb_SizePrefixString* size_prefix_string =
+          upb_SizePrefixString_Copy(sv, a);
+      if (!size_prefix_string) return false;
+      dest_ent->key.str = size_prefix_string;
+      // The caller is responsible for cloning values if they are not
+      // primitives.
+      dest_ent->val = src_ent->val;
+      if (UPB_UNPREDICTABLE(upb_tabent_hasnext(src_ent))) {
+        size_t offset = upb_tabent_next(src_ent) - src_entries;
+        upb_tabent_setnext(dest_ent, dest_entries + offset);
+      } else {
+        upb_tabent_clearnext(dest_ent);
+      }
+    } else {
+      *dest_ent = (upb_tabent){};
+    }
+  }
+  return true;
+}
+
 bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
                          upb_value v, upb_Arena* a) {
   if (isfull(&t->t)) {
@@ -810,6 +849,41 @@ static bool upb_inttable_sizedinit(upb_inttable* t, int hsize_lg2,
 
 bool upb_inttable_init(upb_inttable* t, upb_Arena* a) {
   return upb_inttable_sizedinit(t, 3, a);
+}
+
+bool upb_inttable_copy(upb_inttable* dest, const upb_inttable* src,
+                       upb_Arena* a) {
+  if (src->t.count == 0) {
+    return upb_inttable_sizedinit(dest, 0, a);
+  }
+
+  if (!upb_inttable_sizedinit(
+          dest, src->t.mask ? _upb_log2_table_size(&src->t) : 0, a)) {
+    return false;
+  }
+  dest->t.count = src->t.count;
+
+  upb_tabent* restrict dest_entries = dest->t.entries;
+  const upb_tabent* restrict src_entries = src->t.entries;
+  size_t table_size = upb_table_size(&src->t);
+  for (size_t i = 0; i < table_size; i++) {
+    upb_tabent* dest_ent = &dest_entries[i];
+    const upb_tabent* src_ent = &src_entries[i];
+    if (!upb_tabent_isempty(src_ent)) {
+      // The caller is responsible for cloning these if they are not primitives.
+      dest_ent->key = src_ent->key;
+      dest_ent->val = src_ent->val;
+      if (UPB_UNPREDICTABLE(upb_tabent_hasnext(src_ent))) {
+        size_t offset = upb_tabent_next(src_ent) - src_entries;
+        upb_tabent_setnext(dest_ent, dest_entries + offset);
+      } else {
+        upb_tabent_clearnext(dest_ent);
+      }
+    } else {
+      *dest_ent = (upb_tabent){};
+    }
+  }
+  return true;
 }
 
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,

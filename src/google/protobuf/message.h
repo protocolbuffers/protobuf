@@ -434,7 +434,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
-  static Metadata GetMetadataImpl(const internal::ClassDataFull& data);
+  static Metadata GetMetadataImpl(const internal::ClassData& data);
 
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
@@ -1345,7 +1345,8 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename Type>
   const Type& DefaultRaw(const FieldDescriptor* field) const;
 
-  const Message* GetDefaultMessageInstance(const FieldDescriptor* field) const;
+  const internal::ClassData* GetMessageClassData(
+      const FieldDescriptor* field) const;
 
   const uint32_t* GetHasBits(const Message& message) const;
   inline uint32_t* MutableHasBits(Message* message) const;

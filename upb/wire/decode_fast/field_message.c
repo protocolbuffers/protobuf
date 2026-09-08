@@ -80,7 +80,14 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   if (subtablep == NULL) {
     // Unlinked messages are treated as unknown fields. Go straight to unknown
-    // decoder.
+    // decoder if the tag matches.
+    uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
+    uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
+    if (UPB_UNLIKELY(!upb_DecodeFast_TagMatches(expected, actual, tagsize))) {
+      UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackMismatchedSlot, ret);
+      return;
+    }
+
 #ifndef NDEBUG
     uint16_t case_offset = upb_DecodeFastData_GetCaseOffset(*data);
     if (case_offset != 0) {

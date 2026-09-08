@@ -327,6 +327,29 @@ where
     }
 }
 
+/// Message equality definition for checking partial equality of two messages. Fields that are not
+/// set in the expected message are ignored when comparing against the actual message.
+///
+/// This should only be used for testing purposes.
+pub fn message_partially_eq<T>(actual: &T, expected: &T) -> bool
+where
+    T: AsView + Debug,
+    <T as AsView>::Proxied: AssociatedMiniTable,
+    for<'a> View<'a, <T as AsView>::Proxied>: UpbGetMessagePtr,
+{
+    const UPB_COMPARE_OPTION_PARTIAL: i32 = 1 << 1;
+
+    // Safety: we provide valid pointers and the C code does not retain them.
+    unsafe {
+        upb_Message_IsEqual(
+            actual.as_view().get_ptr(Private).raw(),
+            expected.as_view().get_ptr(Private).raw(),
+            <T as AsView>::Proxied::mini_table(),
+            UPB_COMPARE_OPTION_PARTIAL,
+        )
+    }
+}
+
 impl<T> MatcherEq for T
 where
     Self: AsView + Debug,
@@ -335,6 +358,10 @@ where
 {
     fn matches(&self, o: &Self) -> bool {
         message_eq(self, o)
+    }
+
+    fn matches_partially(&self, expected: &Self) -> bool {
+        message_partially_eq(self, expected)
     }
 }
 

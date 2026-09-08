@@ -525,8 +525,8 @@ TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
 }
 
 TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
-  if (sizeof(void*) != 8) {
-    GTEST_SKIP() << "This test is only correct on 64-bit systems.";
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
   }
   Arena arena;
   auto* message = Arena::Create<unittest::TestAllExtensions>(&arena);

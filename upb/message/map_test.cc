@@ -31,3 +31,15 @@ TEST(MapTest, DeleteRegression) {
   EXPECT_TRUE(
       upb_StringView_IsEqual(insert_value.str_val, delete_value.str_val));
 }
+
+TEST(MapTest, DeleteMissingKeyStringValue) {
+  upb::Arena arena;
+  upb_Map* map = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_String);
+
+  upb_MessageValue key;
+  key.int32_val = 42;
+
+  upb_MessageValue delete_value;
+  bool removed = upb_Map_Delete(map, key, &delete_value);
+  EXPECT_FALSE(removed);
+}

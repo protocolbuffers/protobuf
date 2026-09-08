@@ -73,6 +73,9 @@ static upb_Arena* jsonenc_arena(jsonenc* e) {
   /* Create lazily, since it's only needed for Any */
   if (!e->arena) {
     e->arena = upb_Arena_New();
+    if (!e->arena) {
+      jsonenc_err(e, "Out of memory");
+    }
   }
   return e->arena;
 }
@@ -262,43 +265,47 @@ static void jsonenc_bytes(jsonenc* e, upb_StringView str) {
   jsonenc_putstr(e, "\"");
 }
 
+static void jsonenc_put_escaped_char(jsonenc* e, char ch) {
+  switch (ch) {
+    case '\n':
+      jsonenc_putstr(e, "\\n");
+      break;
+    case '\r':
+      jsonenc_putstr(e, "\\r");
+      break;
+    case '\t':
+      jsonenc_putstr(e, "\\t");
+      break;
+    case '\"':
+      jsonenc_putstr(e, "\\\"");
+      break;
+    case '\f':
+      jsonenc_putstr(e, "\\f");
+      break;
+    case '\b':
+      jsonenc_putstr(e, "\\b");
+      break;
+    case '\\':
+      jsonenc_putstr(e, "\\\\");
+      break;
+    default:
+      if ((uint8_t)ch < 0x20) {
+        jsonenc_printf(e, "\\u%04x", (int)(uint8_t)ch);
+      } else {
+        /* This could be a non-ASCII byte.  We rely on the string being valid
+         * UTF-8. */
+        jsonenc_putbytes(e, &ch, 1);
+      }
+      break;
+  }
+}
+
 static void jsonenc_stringbody(jsonenc* e, upb_StringView str) {
   const char* ptr = str.data;
   const char* end = UPB_PTRADD(ptr, str.size);
 
   while (ptr < end) {
-    switch (*ptr) {
-      case '\n':
-        jsonenc_putstr(e, "\\n");
-        break;
-      case '\r':
-        jsonenc_putstr(e, "\\r");
-        break;
-      case '\t':
-        jsonenc_putstr(e, "\\t");
-        break;
-      case '\"':
-        jsonenc_putstr(e, "\\\"");
-        break;
-      case '\f':
-        jsonenc_putstr(e, "\\f");
-        break;
-      case '\b':
-        jsonenc_putstr(e, "\\b");
-        break;
-      case '\\':
-        jsonenc_putstr(e, "\\\\");
-        break;
-      default:
-        if ((uint8_t)*ptr < 0x20) {
-          jsonenc_printf(e, "\\u%04x", (int)(uint8_t)*ptr);
-        } else {
-          /* This could be a non-ASCII byte.  We rely on the string being valid
-           * UTF-8. */
-          jsonenc_putbytes(e, ptr, 1);
-        }
-        break;
-    }
+    jsonenc_put_escaped_char(e, *ptr);
     ptr++;
   }
 }
@@ -390,6 +397,10 @@ static void jsonenc_any(jsonenc* e, const upb_Message* msg,
   const upb_MiniTable* any_layout = upb_MessageDef_MiniTable(any_m);
   upb_Arena* arena = jsonenc_arena(e);
   upb_Message* any = upb_Message_New(any_layout, arena);
+  if (!any) {
+    jsonenc_err(e, "Out of memory");
+    return;
+  }
 
   if (upb_Decode(value.data, value.size, any, any_layout, NULL, 0, arena) !=
       kUpb_DecodeStatus_Ok) {
@@ -442,7 +453,7 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
       ch = *++ptr - 32;
     }
 
-    jsonenc_putbytes(e, &ch, 1);
+    jsonenc_put_escaped_char(e, ch);
     ptr++;
   }
 }

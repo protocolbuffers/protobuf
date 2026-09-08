@@ -27,6 +27,7 @@ _RUNTIME_SOURCES = [
     "src/Google/Protobuf/Internal/DescriptorPool.php",
     "src/Google/Protobuf/Internal/EnumBuilderContext.php",
     "src/Google/Protobuf/Internal/EnumDescriptor.php",
+    "src/Google/Protobuf/Internal/EnumValueDescriptor.php",
     "src/Google/Protobuf/Internal/FieldDescriptor.php",
     "src/Google/Protobuf/Internal/FileDescriptor.php",
     "src/Google/Protobuf/Internal/GetPublicDescriptorTrait.php",
@@ -156,7 +157,7 @@ staleness_test(
 
 # Make sure we error if new files start showing up, since that may go unnoticed.
 _CHECK_GENCODE = """
-for f in $$(find $(@D) -name "*.php"); do
+for f in $$(find $(@D) -not -path "*.runfiles*" -name "*.php"); do
     local=$$(echo $$f | sed "s:bazel-out.*.bin.php.::g");
     if [[ "$(OUTS)" != *$$local* ]]; then
         echo "Extra generated file $$local!  Please update the lists in php/internal_generated_files.bzl" && exit 1;

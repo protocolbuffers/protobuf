@@ -17,6 +17,12 @@ import java.lang.annotation.Target;
  * on a server you should not use these types, and you should avoid using the Lite gencode which
  * uses these types.
  *
+ * <p>Note: in a previous effort, this was experimentally evaluated as the future direction for
+ * standard "full" JavaProto (targeted for JVM use), but that path has since been rejected. This is
+ * exclusively used for "Lite" use going forward. It is included as part of the standard runtime
+ * only on the basis that the standard runtime is the complete superset of class to support both
+ * standard and lite gencode.
+ *
  * <p>The Lite runtime is designed specifically for mobile clients (especially Android) and makes
  * different trade-offs compared to the Full runtime.
  *

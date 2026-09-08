@@ -74,9 +74,6 @@ template <typename Key, typename T>
 class MapFieldLite;
 class MapFieldBase;
 
-template <typename Derived, typename Key, typename T>
-class MapField;
-
 struct MapTestPeer;
 struct MapBenchmarkPeer;
 

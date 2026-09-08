@@ -150,14 +150,14 @@ Deprecated. Alias for <code>denylisted_protos</code>. Will be removed in a futur
             executable = True,
         ),
         "_protocopt": attr.label(
-            default = "//bazel/flags:protocopt",
+            default = Label("//bazel/flags:protocopt"),
         ),
     } | ({} if proto_common.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION else {
         "_proto_compiler": attr.label(
             cfg = "exec",
             executable = True,
             allow_files = True,
-            default = "//bazel/flags:proto_compiler",
+            default = Label("//bazel/flags:proto_compiler"),
         ),
     }),
     provides = [ProtoLangToolchainInfo],

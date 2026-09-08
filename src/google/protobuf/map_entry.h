@@ -94,23 +94,23 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapEntry : public Message {
                   "");
 
     if (GetArena() != nullptr) return;
-    SharedDtor(*this);
+    Helpers_::SharedDtor(*this);
   }
 
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  struct _Internal;
-
  protected:
   friend class google::protobuf::Arena;
 
-  static void SharedDtor(MessageLite& msg) {
-    auto& this_ = static_cast<MapEntry&>(msg);
-    this_._internal_metadata_.template Delete<UnknownFieldSet>();
-    KeyTypeHandler::DeleteNoArena(this_._impl_.key_);
-    ValueTypeHandler::DeleteNoArena(this_._impl_.value_);
-  }
+  struct Helpers_ {
+    static void SharedDtor(MessageLite& msg) {
+      auto& this_ = static_cast<MapEntry&>(msg);
+      this_._internal_metadata_.template Delete<UnknownFieldSet>();
+      KeyTypeHandler::DeleteNoArena(this_._impl_.key_);
+      ValueTypeHandler::DeleteNoArena(this_._impl_.value_);
+    }
+  };
 
   // Field naming follows the convention of generated messages to make code
   // sharing easier.
@@ -121,13 +121,6 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapEntry : public Message {
     KeyOnMemory key_{KeyTypeHandler::Constinit()};
     ValueOnMemory value_{ValueTypeHandler::Constinit()};
   } _impl_;
-};
-
-template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-struct MapEntry<Key, Value, kKeyFieldType, kValueFieldType>::_Internal {
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(MapEntry, _impl_._has_bits_);
 };
 
 }  // namespace internal

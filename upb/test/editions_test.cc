@@ -15,6 +15,7 @@
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/port/def.inc"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/descriptor_bootstrap.h"
@@ -73,13 +74,14 @@ TEST(EditionsTest, ImportOptionUnlinked) {
   upb::MessageDefPtr md(upb_test_2023_EditionsMessage_getmsgdef(defpool.ptr()));
   const google_protobuf_MessageOptions* options = md.options();
 
-  upb_StringView data;
+  upb_MessageUnknown data;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  ASSERT_TRUE(upb_Message_NextUnknown(UPB_UPCAST(options), &data, &iter));
-  EXPECT_EQ(std::string(data.data, data.size),
+  ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(options), &data, &iter));
+  ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(std::string(data.value.bytes.data, data.value.bytes.size),
             // 7739037: 9
             "\xE8\xE9\xC2\x1D\011");
-  EXPECT_FALSE(upb_Message_NextUnknown(UPB_UPCAST(options), &data, &iter));
+  EXPECT_FALSE(upb_Message_NextUnknown2(UPB_UPCAST(options), &data, &iter));
 }
 
 TEST(EditionsTest, ImportOptionLinked) {

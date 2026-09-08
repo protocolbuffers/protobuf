@@ -223,16 +223,12 @@ TailCallTableInfo::FastFieldInfo::Field MakeFastFieldEntry(
       }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
-      picked =
-          (HasLazyRep(field, options) ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
-           : options.use_direct_tcparser_table
-               ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMt)
-               : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMd));
+      picked = HasLazyRep(field, options)
+                   ? PROTOBUF_PICK_SINGLE_FUNCTION(kFastMl)
+                   : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastMc);
       break;
     case FieldDescriptor::TYPE_GROUP:
-      picked = (options.use_direct_tcparser_table
-                    ? PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGt)
-                    : PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGd));
+      picked = PROTOBUF_PICK_REPEATABLE_FUNCTION(kFastGc);
       break;
   }
 
@@ -621,10 +617,8 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
       type_card |= 0 | fl::kMessage | fl::kRepGroup;
       if (options.is_implicitly_weak) {
         type_card |= fl::kTvWeakPtr;
-      } else if (options.use_direct_tcparser_table) {
-        type_card |= fl::kTvTable;
       } else {
-        type_card |= fl::kTvDefault;
+        type_card |= fl::kTvClassData;
       }
       break;
     case FieldDescriptor::TYPE_MESSAGE:
@@ -639,10 +633,8 @@ uint16_t MakeTypeCardForField(const FieldDescriptor* field, bool has_hasbit,
         } else {
           if (options.is_implicitly_weak) {
             type_card |= fl::kTvWeakPtr;
-          } else if (options.use_direct_tcparser_table) {
-            type_card |= fl::kTvTable;
           } else {
-            type_card |= fl::kTvDefault;
+            type_card |= fl::kTvClassData;
           }
         }
       }
@@ -755,7 +747,7 @@ TailCallTableInfo::BuildFieldEntries(
   // clustering all non-cold entries).
   const auto is_non_cold_subtable = [&](const FieldOptions& options) {
     auto* field = options.field;
-    // In the following code where we assign kSubTable to aux entries, only
+    // In the following code where we assign kClassData to aux entries, only
     // the following typed fields are supported.
     PROTOBUF_IGNORE_DEPRECATION_START
     const bool field_is_weak = field->options().weak();
@@ -763,8 +755,7 @@ TailCallTableInfo::BuildFieldEntries(
     return (field->type() == FieldDescriptor::TYPE_MESSAGE ||
             field->type() == FieldDescriptor::TYPE_GROUP) &&
            !field->is_map() && !field_is_weak && !HasLazyRep(field, options) &&
-           !options.is_implicitly_weak && options.use_direct_tcparser_table &&
-           is_non_cold(options);
+           !options.is_implicitly_weak && is_non_cold(options);
   };
   for (const FieldOptions& options : ordered_fields) {
     if (is_non_cold_subtable(options)) {
@@ -796,7 +787,7 @@ TailCallTableInfo::BuildFieldEntries(
           // If we don't use codegen we can't add these.
           auto* map_value = field->message_type()->map_value();
           if (map_value->message_type() != nullptr) {
-            aux_entries.push_back({kSubTable, {map_value}});
+            aux_entries.push_back({kClassData, {map_value}});
           } else if (map_value->type() == FieldDescriptor::TYPE_ENUM &&
                      !cpp::HasPreservingUnknownEnumSemantics(map_value)) {
             aux_entries.push_back({kEnumValidator, {map_value}});
@@ -810,7 +801,7 @@ TailCallTableInfo::BuildFieldEntries(
       } else if (HasLazyRep(field, options)) {
         if (message_options.uses_codegen) {
           entry.aux_idx = aux_entries.size();
-          aux_entries.push_back({kSubMessageGlobals, {field}});
+          aux_entries.push_back({kClassData, {field}});
           if (options.lazy_opt == field_layout::kTvEager) {
             aux_entries.push_back({kMessageVerifyFunc, {field}});
           } else {
@@ -820,10 +811,8 @@ TailCallTableInfo::BuildFieldEntries(
           entry.aux_idx = TcParseTableBase::FieldEntry::kNoAuxIdx;
         }
       } else {
-        AuxType type = options.is_implicitly_weak ? kSubMessageGlobalsWeak
-                       : options.use_direct_tcparser_table ? kSubTable
-                                                           : kSubMessageGlobals;
-        if (type == kSubTable && is_non_cold(options)) {
+        AuxType type = options.is_implicitly_weak ? kClassDataWeak : kClassData;
+        if (type == kClassData && is_non_cold(options)) {
           aux_entries[subtable_aux_idx] = {type, {field}};
           entry.aux_idx = subtable_aux_idx;
           ++subtable_aux_idx;

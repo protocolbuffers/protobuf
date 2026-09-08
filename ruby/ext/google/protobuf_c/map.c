@@ -434,8 +434,13 @@ static VALUE Map_index(VALUE _self, VALUE key) {
 static VALUE Map_index_set(VALUE _self, VALUE key, VALUE val) {
   Map* self = ruby_to_Map(_self);
   upb_Arena* arena = Arena_get(self->arena);
+  // The key must be copied into the arena, not aliased. Converting the value
+  // below can allocate a Ruby object and therefore trigger GC, which may free
+  // or move the String the key would otherwise point into. Passing NULL here is
+  // only safe when the key is consumed before any allocation, as in the lookup
+  // paths (Map_index, Map_has_key, Map_delete).
   upb_MessageValue key_upb =
-      Convert_RubyToUpb(key, "", Map_keyinfo(self), NULL);
+      Convert_RubyToUpb(key, "", Map_keyinfo(self), arena);
   upb_MessageValue val_upb =
       Convert_RubyToUpb(val, "", self->value_type_info, arena);
 

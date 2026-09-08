@@ -30,8 +30,8 @@ jobs:
         config:
           - { name: "Fastbuild" }
           - { name: "Optimized", flags: "-c opt", continuous-only: true }
-          - { name: "GCC Optimized", flags: "-c opt --force_pic --java_runtime_version=remotejdk_11 --copt=\"-Wno-error=maybe-uninitialized\"", image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-12.2-12e21b8dda91028bc14212a3ab582c7c4d149fac" }
-          - { name: "GCC Static", flags: "-c opt --dynamic_mode=off --java_runtime_version=remotejdk_11 --copt=\"-Wno-error=maybe-uninitialized\"", image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.0.1-12.2-12e21b8dda91028bc14212a3ab582c7c4d149fac", continuous-only: true }
+          - { name: "GCC Optimized", flags: "-c opt --force_pic --java_runtime_version=remotejdk_11 --copt=\"-Wno-error=maybe-uninitialized\" --copt=\"-Wno-error=deprecated-declarations\" --copt=\"-Wno-error=array-bounds\"", image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-12.5-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 " }
+          - { name: "GCC Static", flags: "-c opt --dynamic_mode=off --java_runtime_version=remotejdk_11 --copt=\"-Wno-error=maybe-uninitialized\" --copt=\"-Wno-error=deprecated-declarations\" --copt=\"-Wno-error=array-bounds\"", image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/gcc:8.7.0-12.5-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ", continuous-only: true }
           - { name: "ASAN", flags: "--config=asan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/...", runner: ubuntu-22-4core }
           - { name: "UBSAN", flags: "--config=ubsan -c dbg", exclude-targets: "-//benchmarks:benchmark -//python/... -//lua/...", continuous-only: true }
           - { name: "32-bit", flags: "--copt=-m32 --linkopt=-m32", exclude-targets: "-//benchmarks:benchmark -//python/..." }
@@ -44,14 +44,14 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Run tests
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
-          image: ${{ matrix.config.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.0.1-a6ca8ba8e77d63471b4ad05f8643e1fc58b30e12' }}
+          image: ${{ matrix.config.image || 'us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.7.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ' }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: upb-bazel
           bazel: test //benchmarks/... //lua/... //python/... //upb/... //upb_generator/... ${{ matrix.config.flags }}
@@ -64,17 +64,20 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
+      - name: Windows startup flags
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@v6
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-windows"
           # TODO: Enable python tests here once rules_python supports Windows better.
           bazel: test //upb/... //upb_generator/...
-          version: 9.0.0
+          version: 9.2.0
           exclude-targets: -//python:conformance_test -//upb/reflection:def_builder_test
 
   macos:
@@ -88,7 +91,7 @@ jobs:
     runs-on: macos-14
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Setup Python
@@ -98,12 +101,12 @@ jobs:
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@v6
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "upb-bazel-macos"
           bazel: ${{ matrix.config.bazel-command }} ${{ matrix.config.flags }} //benchmarks/... //lua/... //python/... //upb/... //upb_generator/...
-          version: 9.0.0
+          version: 9.2.0
 
   build_wheels:
     name: Build Wheels
@@ -111,11 +114,11 @@ jobs:
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Build Wheels
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
           image: us-docker.pkg.dev/protobuf-build/release-containers/linux/apple:9.0.0-9fc33a0c378b5affd3c85d3f5ae4f330993048f7
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -290,7 +293,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Download Wheels

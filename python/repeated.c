@@ -24,6 +24,7 @@
 #include "upb/message/array.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/def.h"
 
 // Must be last.
@@ -447,8 +448,9 @@ static bool PyUpb_ExtendSizeCb(Py_ssize_t size, void* vctx) {
   PyUpb_ExtendCtx* ctx = (PyUpb_ExtendCtx*)vctx;
   ctx->size_hint = size;
   size_t old_size = upb_Array_Size(ctx->arr);
-  if (size > 0 && ((size_t)size <= SIZE_MAX - old_size)) {
-    if (!upb_Array_Reserve(ctx->arr, old_size + size, ctx->arena)) {
+  size_t new_size;
+  if (size > 0 && !upb_AddOverflow(old_size, (size_t)size, &new_size)) {
+    if (!upb_Array_Reserve(ctx->arr, new_size, ctx->arena)) {
       PyErr_SetNone(PyExc_MemoryError);
       return false;
     }
@@ -551,7 +553,8 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   PyUpb_ExtendCtx ctx = {arr, arena};
   if (!PyUpb_IterInput(value, f, arena, PyUpb_ExtendSizeCb, PyUpb_ExtendElemCb,
                        PyUpb_ExtendBulkCb, &ctx)) {
-    (void)upb_Array_Resize(arr, old_size, NULL);
+    bool ok = upb_Array_Resize(arr, old_size, NULL);
+    UPB_ASSERT(ok);
     return NULL;
   }
   Py_RETURN_NONE;
@@ -765,7 +768,9 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
     if (count < ctx->count) {
       upb_Array_Move(ctx->arr, ctx->index + count, ctx->index + ctx->count,
                      tail);
-      (void)upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+      bool ok =
+          upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+      UPB_UNUSED(ok);
     }
     return true;
   }
@@ -806,7 +811,8 @@ static bool PyUpb_SetSubscriptBulkCb(const void* data, Py_ssize_t count,
     }
   }
 
-  (void)upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+  bool ok = upb_Array_Resize(ctx->arr, ctx->index + count + tail, ctx->arena);
+  UPB_UNUSED(ok);
   return true;
 }
 
@@ -878,7 +884,8 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_Array* arr,
   size_t new_size = dst + tail;
   assert(new_size == upb_Array_Size(arr) - count);
   upb_Array_Move(arr, dst, src, tail);
-  (void)upb_Array_Resize(arr, new_size, NULL);
+  bool ok = upb_Array_Resize(arr, new_size, NULL);
+  UPB_UNUSED(ok);
   return 0;
 }
 

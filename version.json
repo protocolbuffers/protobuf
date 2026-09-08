@@ -12,7 +12,8 @@
             "php": "5.37-dev",
             "python": "7.37-dev",
             "ruby": "4.37-dev",
-            "rust": "4.37-dev"
+            "rust": "0.37-dev",
+            "legacy_rust": "4.37-dev"
         }
     }
 }

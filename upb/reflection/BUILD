@@ -94,6 +94,7 @@ bootstrap_cc_library(
         "//upb/mini_table",
         "//upb/port",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -197,6 +198,7 @@ bootstrap_cc_library(
         "//upb/mini_table",
         "//upb/port",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -237,6 +239,7 @@ cc_test(
         "//upb/mini_descriptor",
         "//upb/mini_table",
         "//upb/port",
+        "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

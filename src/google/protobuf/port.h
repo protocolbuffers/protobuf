@@ -320,6 +320,14 @@ constexpr bool HasAnySanitizer() {
 #endif
 }
 
+constexpr bool RunLargeMemoryTests() {
+  // For tests that need a lot of memory, we check that we have a 64-bit
+  // platform.
+  // And we also check we are not using sanitizers. They increase memory
+  // requirements and can be too slow for those tests.
+  return sizeof(void*) == 8 && !HasAnySanitizer();
+}
+
 constexpr bool PerformDebugChecks() {
   if (HasAnySanitizer()) return true;
 #if defined(NDEBUG)
@@ -911,11 +919,11 @@ using GlobalEmptyString = std::conditional_t<
 
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
-PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
-HandleAddOverflow(absl::int128 a, absl::int128 b);
+[[noreturn]] PROTOBUF_EXPORT PROTOBUF_NOINLINE void HandleAddOverflow(
+    absl::int128 a, absl::int128 b);
 
 template <typename T, typename U>
-ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
+[[noreturn]] PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
   HandleAddOverflow(absl::int128(a), absl::int128(b));
 }
 

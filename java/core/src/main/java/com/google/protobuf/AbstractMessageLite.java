@@ -52,7 +52,11 @@ public abstract class AbstractMessageLite<
   @Override
   public byte[] toByteArray() {
     try {
-      final byte[] result = new byte[getSerializedSize()];
+      final int size = getSerializedSize();
+      if (size == 0) {
+        return Internal.EMPTY_BYTE_ARRAY;
+      }
+      final byte[] result = new byte[size];
       final CodedOutputStream output = CodedOutputStream.newInstance(result);
       writeTo(output);
       output.checkNoSpaceLeft();

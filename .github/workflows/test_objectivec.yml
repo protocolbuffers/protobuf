@@ -50,27 +50,27 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Setup ccache
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/ccache@v5
+        uses: protocolbuffers/protobuf-ci/ccache@v6
         with:
           cache-prefix: objectivec_${{ matrix.platform }}_${{ matrix.xc_config }}
           support-modules: true
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bash@v5
+        uses: protocolbuffers/protobuf-ci/bash@v6
         env:
           CC: ${{ github.workspace }}/ci/clang_wrapper
           CXX: ${{ github.workspace }}/ci/clang_wrapper++
           CODE_SIGN_IDENTITY: "-"
         with:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-version: 9.0.0
+          bazel-version: 9.2.0
           command: |
             xcodebuild \
                 -project "objectivec/${{ matrix.xc_project }}" \
@@ -103,7 +103,7 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: Xcode version
@@ -111,9 +111,9 @@ jobs:
         run: sudo xcode-select -switch /Applications/Xcode_${{ matrix.XCODE }}.app
       - name: Pod lib lint
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@v6
         with:
-          version: 9.0.0 # Bazel version
+          version: 9.2.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cocoapods/${{ matrix.XCODE }}
           bash: |
@@ -154,14 +154,14 @@ jobs:
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v6
         with:
           ref: ${{ inputs.safe-checkout }}
       - name: bazel ${{ matrix.config.bazel_action }}
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
-        uses: protocolbuffers/protobuf-ci/bazel@v5
+        uses: protocolbuffers/protobuf-ci/bazel@v6
         with:
-          version: 9.0.0 # Bazel version
+          version: 9.2.0 # Bazel version
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel: ${{ matrix.config.bazel_action }} ${{ matrix.config.flags }} ${{ matrix.bazel_targets }}
           bazel-cache: objc_${{ matrix.platform }}_${{ matrix.config.name }}

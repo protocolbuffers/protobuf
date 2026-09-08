@@ -550,7 +550,6 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
   return tagged_ptr_.Get();
 }
 
-
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

@@ -456,6 +456,7 @@ cc_library(
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:prefetch",
+        "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/numeric:int128",
@@ -1046,6 +1047,7 @@ cc_library(
     deps = [
         ":port",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 
@@ -2670,6 +2672,7 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         ":protobuf_lite",
         ":test_util",

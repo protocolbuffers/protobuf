@@ -929,6 +929,15 @@ public final class Descriptors {
       return parent;
     }
 
+    /**
+     * Checks whether this message type is defined in {@code descriptor.proto}.
+     *
+     * <p>For example, it returns true for {@code MessageOptions}, {@code FieldOptions}, etc.
+     */
+    boolean isDescriptorProtoType() {
+      return getFile() == DescriptorProtos.getDescriptor();
+    }
+
     public boolean isPlaceholder() {
       return placeholder;
     }

@@ -33,13 +33,13 @@ class DescriptorPool
         return self::$pool;
     }
 
-    public function internalAddGeneratedFile($data, $use_nested = false)
+    public function internalAddGeneratedFile($data, $use_nested = false, $custom_json_names = [])
     {
         $files = new FileDescriptorSet();
         $files->mergeFromString($data);
 
         foreach($files->getFile() as $file_proto) {
-            $file = FileDescriptor::buildFromProto($file_proto);
+            $file = FileDescriptor::buildFromProto($file_proto, $custom_json_names);
 
             foreach ($file->getMessageType() as $desc) {
                 $this->addDescriptor($desc);

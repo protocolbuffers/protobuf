@@ -228,7 +228,8 @@ bool ClassNameResolver::HasConflictingClassName(const FileDescriptor* file,
 std::string ClassNameResolver::GetDescriptorClassName(
     const FileDescriptor* file) {
   if (google::protobuf::internal::IsOss()) {
-    return GetFileImmutableClassName(file);
+    return absl::StrCat(GetFileImmutableClassName(file),
+                        ".InternalDescriptors");
   } else {
     return absl::StrCat(GetFileImmutableClassName(file), "InternalDescriptors");
   }

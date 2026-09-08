@@ -45,7 +45,11 @@ class InlinedStringField::ScopedCheckInvariants {
 
 std::string* InlinedStringField::Mutable(Arena* arena) {
   ScopedCheckInvariants invariants(this);
-  if (arena == nullptr || !IsDonated()) {
+  if (arena == nullptr) {
+    return UnsafeMutablePointer();
+  }
+  if (!IsDonated()) {
+    MaybeRegisterForDestruction(arena, get_mutable());
     return UnsafeMutablePointer();
   }
   return MutableSlow(arena);
@@ -104,14 +108,23 @@ void InlinedStringField::DestroyArenaString(void* p) {
 }
 
 std::string* InlinedStringField::MutableSlow(::google::protobuf::Arena* arena) {
+  if (arena != nullptr) {
+    RegisterForDestruction(arena, get_mutable());
+  }
   return UnsafeMutablePointer();
 }
 
 void InlinedStringField::SetAllocated(std::string* value, Arena* arena) {
+  if (arena != nullptr && value != nullptr) {
+    MaybeRegisterForDestruction(arena, get_mutable());
+  }
   SetAllocatedNoArena(value);
 }
 
 void InlinedStringField::Set(std::string&& value, Arena* arena) {
+  if (arena != nullptr) {
+    MaybeRegisterForDestruction(arena, get_mutable());
+  }
   SetNoArena(std::move(value));
 }
 
@@ -132,7 +145,9 @@ std::string* InlinedStringField::Release(Arena* arena) {
 
 void InlinedStringField::ClearToDefault(const LazyString& default_value,
                                         Arena* arena, bool) {
-  (void)arena;
+  if (arena != nullptr) {
+    MaybeRegisterForDestruction(arena, get_mutable());
+  }
   get_mutable()->assign(default_value.get());
 }
 

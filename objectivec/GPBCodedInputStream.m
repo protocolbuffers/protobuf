@@ -389,6 +389,29 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state, int32_t
   return self;
 }
 
+- (instancetype)initWithData:(NSData *)data parentRecursionDepth:(NSUInteger)parentDepth {
+  if ((self = [self initWithData:data])) {
+    // The parent stream had already entered `parentDepth` nested parses; we
+    // are about to begin one more level in this child stream, so seed the
+    // depth accordingly and verify the limit before parsing starts. This
+    // matches the convention used by the C++ ParseContext spawn helper,
+    // which increments and checks the depth before recursing into a payload
+    // that has been read into a fresh buffer.
+    state_.recursionDepth = parentDepth + 1;
+    @try {
+      CheckRecursionLimit(&state_);
+    } @catch (NSException *exception) {
+      // If CheckRecursionLimit raises an exception (when recursion depth exceeds
+      // kDefaultRecursionLimit), `self` will not be returned to the caller.
+      // Explicitly release `self` here to avoid a memory leak before re-throwing.
+      [self release];
+      self = nil;
+      @throw;
+    }
+  }
+  return self;
+}
+
 - (void)dealloc {
   [buffer_ release];
   [super dealloc];

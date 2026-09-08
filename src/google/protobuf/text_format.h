@@ -15,7 +15,6 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
-#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -26,7 +25,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"

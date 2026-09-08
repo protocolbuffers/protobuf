@@ -46,20 +46,21 @@ class FileDescriptor
         $this->enum_type[]= $desc;
     }
 
-    public static function buildFromProto($proto)
+    public static function buildFromProto($proto, $custom_json_names = [])
     {
         $file = new FileDescriptor();
         $file->setPackage($proto->getPackage());
         foreach ($proto->getMessageType() as $message_proto) {
             $file->addMessageType(Descriptor::buildFromProto(
-                $message_proto, $proto, ""));
+                $message_proto, $proto, "", $custom_json_names));
         }
         foreach ($proto->getEnumType() as $enum_proto) {
             $file->addEnumType(
                 EnumDescriptor::buildFromProto(
                     $enum_proto,
                     $proto,
-                    ""));
+                    "",
+                    $custom_json_names));
         }
         return $file;
     }

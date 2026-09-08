@@ -130,7 +130,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
     p->Emit(R"cc(
       //~ A `using std::swap;` is already present in this function.
-      swap($field_$, other->$field_$);
+      swap(this_.$field_$, other->$field_$);
     )cc");
   }
 
@@ -334,7 +334,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      $field_$.InternalSwap(&other->$field_$);
+      this_.$field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 

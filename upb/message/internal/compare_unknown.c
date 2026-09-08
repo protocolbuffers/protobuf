@@ -21,6 +21,7 @@
 #include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/back_alloc.h"
@@ -80,10 +81,17 @@ static void upb_UnknownFields_Grow(upb_UnknownField_Context* ctx,
                                    upb_UnknownField** ptr,
                                    upb_UnknownField** end) {
   size_t old = (*ptr - *base);
-  size_t new = UPB_MAX(4, old * 2);
+  size_t new;
+  if (upb_MulOverflow((uint32_t)2, old, &new)) {
+    upb_UnknownFields_OutOfMemory(ctx);
+  }
+  new = UPB_MAX(4, new);
+  size_t new_bytes;
+  if (upb_MulOverflow(new, sizeof(**base), &new_bytes)) {
+    upb_UnknownFields_OutOfMemory(ctx);
+  }
 
-  *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base),
-                            new * sizeof(**base));
+  *base = upb_Arena_Realloc(ctx->arena, *base, old * sizeof(**base), new_bytes);
   if (!*base) upb_UnknownFields_OutOfMemory(ctx);
 
   *ptr = *base + old;
@@ -131,11 +139,25 @@ static void upb_UnknownFields_SortRecursive(upb_UnknownField* arr, size_t start,
 static void upb_UnknownFields_Sort(upb_UnknownField_Context* ctx,
                                    upb_UnknownFields* fields) {
   if (ctx->tmp_size < fields->size) {
-    const int oldsize = ctx->tmp_size * sizeof(*ctx->tmp);
+    size_t oldsize;
+    if (upb_MulOverflow(sizeof(*ctx->tmp), ctx->tmp_size, &oldsize)) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
     ctx->tmp_size = UPB_MAX(8, ctx->tmp_size);
-    while (ctx->tmp_size < fields->size) ctx->tmp_size *= 2;
-    const int newsize = ctx->tmp_size * sizeof(*ctx->tmp);
-    ctx->tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    while (ctx->tmp_size < fields->size) {
+      if (upb_MulOverflow((uint32_t)2, ctx->tmp_size, &ctx->tmp_size)) {
+        upb_UnknownFields_OutOfMemory(ctx);
+      }
+    }
+    size_t newsize;
+    if (upb_MulOverflow(ctx->tmp_size, sizeof(*ctx->tmp), &newsize)) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    upb_UnknownField* tmp = upb_grealloc(ctx->tmp, oldsize, newsize);
+    if (!tmp) {
+      upb_UnknownFields_OutOfMemory(ctx);
+    }
+    ctx->tmp = tmp;
   }
   upb_UnknownFields_SortRecursive(fields->fields, 0, fields->size, ctx->tmp);
 }
@@ -379,7 +401,7 @@ static upb_UnknownCompareResult upb_UnknownField_Compare(
   return ret;
 }
 
-upb_UnknownCompareResult UPB_PRIVATE(_upb_Message_UnknownFieldsAreEqual)(
+upb_UnknownCompareResult _upb_Message_UnknownFieldsAreEqual(
     const upb_Message* msg1, const upb_Message* msg2, int max_depth) {
   bool msg1_empty = !upb_Message_HasUnknown(msg1);
   bool msg2_empty = !upb_Message_HasUnknown(msg2);

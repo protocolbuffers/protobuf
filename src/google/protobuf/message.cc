@@ -74,7 +74,7 @@ void RegisterFileLevelMetadata(const DescriptorTable* descriptor_table);
 
 namespace {
 
-Metadata GetMetadataImpl(const internal::ClassDataFull& data) {
+Metadata GetMetadataImpl(const internal::ClassData& data) {
   auto* table = data.descriptor_table();
   // Only codegen types provide a table. DynamicMessage does not provide a table
   // and instead eagerly initializes the descriptor/reflection members.
@@ -91,7 +91,7 @@ Metadata GetMetadataImpl(const internal::ClassDataFull& data) {
 
 // Helper function to get type name - logic from Message::GetTypeNameImpl
 absl::string_view GetTypeNameImpl(const ClassData* data) {
-  return GetMetadataImpl(data->full()).descriptor->full_name();
+  return GetMetadataImpl(*data).descriptor->full_name();
 }
 
 // Helper function for InitializationErrorString - logic from existing static
@@ -104,7 +104,7 @@ std::string InitializationErrorStringImpl(const MessageLite& msg) {
 
 struct DescriptorMethodsFriend {
   static const TcParseTableBase* GetTcParseTable(const ClassData* data) {
-    return GetMetadataImpl(data->full()).reflection->GetTcParseTable();
+    return GetMetadataImpl(*data).reflection->GetTcParseTable();
   }
 };
 
@@ -431,10 +431,10 @@ void Message::DiscardUnknownFields() {
 }
 
 Metadata Message::GetMetadata() const {
-  return GetMetadataImpl(GetClassData()->full());
+  return GetMetadataImpl(*GetClassData());
 }
 
-Metadata Message::GetMetadataImpl(const internal::ClassDataFull& data) {
+Metadata Message::GetMetadataImpl(const internal::ClassData& data) {
   return internal::GetMetadataImpl(data);
 }
 
@@ -470,7 +470,7 @@ size_t Message::MaybeComputeUnknownFieldsSize(
 }
 
 size_t Message::SpaceUsedLong() const {
-  return GetClassData()->full().descriptor_methods()->space_used_long(*this);
+  return GetClassData()->descriptor_methods()->space_used_long(*this);
 }
 
 namespace internal {

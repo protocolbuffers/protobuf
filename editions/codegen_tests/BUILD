@@ -1,4 +1,3 @@
-load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 
 package(
@@ -93,19 +92,9 @@ proto_library(
     srcs = ["proto2_utf8_disabled.proto"],
 )
 
-cc_proto_library(
-    name = "proto2_utf8_disabled_cc_proto",
-    deps = [":proto2_utf8_disabled_proto"],
-)
-
 proto_library(
     name = "proto2_utf8_lite_proto",
     srcs = ["proto2_utf8_lite.proto"],
-)
-
-cc_proto_library(
-    name = "proto2_utf8_lite_cc_proto",
-    deps = [":proto2_utf8_lite_proto"],
 )
 
 proto_library(
@@ -123,9 +112,4 @@ proto_library(
     name = "proto3_import_proto",
     srcs = ["proto3_import.proto"],
     deps = [":proto3_implicit_proto"],
-)
-
-cc_proto_library(
-    name = "proto3_import_cc_proto",
-    deps = [":proto3_import_proto"],
 )

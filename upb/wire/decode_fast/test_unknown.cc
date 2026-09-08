@@ -10,9 +10,11 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <tuple>
 
 #include <gtest/gtest.h>
+#include "absl/strings/escaping.h"
 #include "absl/strings/match.h"  // IWYU pragma: keep
 #include "absl/strings/string_view.h"
 #include "upb/base/descriptor_constants.h"
@@ -21,6 +23,7 @@
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/message.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.hpp"
 #include "upb/mini_descriptor/link.h"
@@ -88,10 +91,12 @@ TEST_P(UnknownFieldTest, UnknownFieldFastPath) {
 
   // Verify the contents of the unknown field.
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView unknown_data;
+  upb_MessageUnknown unknown_data;
   std::string captured_unknown;
-  while (upb_Message_NextUnknown(msg, &unknown_data, &iter)) {
-    captured_unknown.append(unknown_data.data, unknown_data.size);
+  while (upb_Message_NextUnknown2(msg, &unknown_data, &iter)) {
+    ASSERT_EQ(unknown_data.type, kUpb_MessageUnknownType_StringView);
+    captured_unknown.append(unknown_data.value.bytes.data,
+                            unknown_data.value.bytes.size);
   }
   EXPECT_EQ(captured_unknown, payload);
 
@@ -206,9 +211,11 @@ TEST(UnknownFieldSpecialTest, UnknownVarintFollowedByEndGroupInGroup) {
   // Verify contents.
   std::string captured_unknown;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  upb_StringView unknown_data;
-  while (upb_Message_NextUnknown(child_msg, &unknown_data, &iter)) {
-    captured_unknown.append(unknown_data.data, unknown_data.size);
+  upb_MessageUnknown unknown_data;
+  while (upb_Message_NextUnknown2(child_msg, &unknown_data, &iter)) {
+    ASSERT_EQ(unknown_data.type, kUpb_MessageUnknownType_StringView);
+    captured_unknown.append(unknown_data.value.bytes.data,
+                            unknown_data.value.bytes.size);
   }
 
   // The captured unknown should be just the varint part.
@@ -237,6 +244,89 @@ TEST(UnknownFieldSpecialTest, LargeTagUnknownGroupField) {
                           msg_arena.ptr(), trace_buf, sizeof(trace_buf));
 
   EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+}
+
+TEST(UnknownFieldSpecialTest, MalformedTagFieldZero) {
+  using std::string_view_literals::operator""sv;
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  ASSERT_NE(msg, nullptr);
+
+  constexpr absl::string_view test_cases[] = {
+      // 1-byte tag: varint wire type (0), field number 0.
+      "\x00"sv,
+      // 1-byte tag: 64-bit wire type (1), field number 0.
+      "\x01"sv,
+      // 1-byte tag: delimited wire type (2), field number 0.
+      "\x02"sv,
+      // 1-byte tag: 32-bit wire type (5), field number 0.
+      "\x05"sv,
+      // 2-byte tag: varint wire type (0), field number 0.
+      "\x80\x00"sv,
+      // 2-byte tag: 32-bit wire type (5), field number 0.
+      "\x85\x00"sv,
+      // 2-byte tag: invalid wire type (7), field number 0.
+      "\x87\x00"sv,
+      // 3-byte tag: varint wire type (0), field number 0 (long tag).
+      "\x80\x80\x00"sv,
+      // Truncated multi-byte tag with MSB set and wire type 5 (32-bit).
+      "\x85"sv,
+      // Truncated multi-byte tag with MSB set and wire type 7 (invalid).
+      "\x87"sv,
+  };
+
+  for (const auto& payload : test_cases) {
+    upb_DecodeStatus result =
+        upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                            msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+    EXPECT_EQ(result, kUpb_DecodeStatus_Malformed)
+        << "Expected malformed for payload: 0x"
+        << absl::BytesToHexString(payload);
+  }
+}
+
+TEST(UnknownFieldSpecialTest, ExtensibleMalformedTagFieldZero) {
+  using std::string_view_literals::operator""sv;
+  char trace_buf[64];
+  upb::Arena msg_arena;
+  upb::Arena mt_arena;
+
+  auto [mt, field] =
+      MiniTable::MakeExtensibleSingleFieldTable<field_types::Int32>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  ASSERT_NE(msg, nullptr);
+
+  constexpr absl::string_view test_cases[] = {
+      // 1-byte tag: varint wire type (0), field number 0.
+      "\x00"sv,
+      // 1-byte tag: 32-bit wire type (5), field number 0.
+      "\x05"sv,
+      // 2-byte tag: varint wire type (0), field number 0.
+      "\x80\x00"sv,
+      // 2-byte tag: 32-bit wire type (5), field number 0.
+      "\x85\x00"sv,
+      // 3-byte tag: varint wire type (0), field number 0 (long tag).
+      "\x80\x80\x00"sv,
+      // Truncated multi-byte tag with MSB set and wire type 5 (32-bit).
+      "\x85"sv,
+      // Truncated multi-byte tag with MSB set and wire type 7 (invalid).
+      "\x87"sv,
+  };
+
+  for (const auto& payload : test_cases) {
+    upb_DecodeStatus result =
+        upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                            msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+    EXPECT_EQ(result, kUpb_DecodeStatus_Malformed)
+        << "Expected malformed for payload: 0x"
+        << absl::BytesToHexString(payload);
+  }
 }
 
 }  // namespace

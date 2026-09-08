@@ -15,6 +15,7 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
@@ -570,20 +571,24 @@ class DefPool {
 
   // Finds an entry in the symbol table with this exact name.  If not found,
   // returns NULL.
-  MessageDefPtr FindMessageByName(const char* sym) const {
-    return MessageDefPtr(upb_DefPool_FindMessageByName(ptr_.get(), sym));
+  MessageDefPtr FindMessageByName(absl::string_view sym) const {
+    return MessageDefPtr(upb_DefPool_FindMessageByNameWithSize(
+        ptr_.get(), sym.data(), sym.size()));
   }
 
-  EnumDefPtr FindEnumByName(const char* sym) const {
-    return EnumDefPtr(upb_DefPool_FindEnumByName(ptr_.get(), sym));
+  EnumDefPtr FindEnumByName(absl::string_view sym) const {
+    return EnumDefPtr(
+        upb_DefPool_FindEnumByNameWithSize(ptr_.get(), sym.data(), sym.size()));
   }
 
-  FileDefPtr FindFileByName(const char* name) const {
-    return FileDefPtr(upb_DefPool_FindFileByName(ptr_.get(), name));
+  FileDefPtr FindFileByName(absl::string_view name) const {
+    return FileDefPtr(upb_DefPool_FindFileByNameWithSize(
+        ptr_.get(), name.data(), name.size()));
   }
 
-  FieldDefPtr FindExtensionByName(const char* name) const {
-    return FieldDefPtr(upb_DefPool_FindExtensionByName(ptr_.get(), name));
+  FieldDefPtr FindExtensionByName(absl::string_view name) const {
+    return FieldDefPtr(upb_DefPool_FindExtensionByNameWithSize(
+        ptr_.get(), name.data(), name.size()));
   }
 
   void _SetPlatform(upb_MiniTablePlatform platform) {

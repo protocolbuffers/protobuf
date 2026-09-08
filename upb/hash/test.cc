@@ -491,10 +491,10 @@ TEST(Table, MaxValueWithLargeArray) {
 TEST(IntTableTest, RemoveIter) {
   upb::Arena arena;
   upb_inttable t;
-  upb_inttable_init(&t, arena.ptr());
-  upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr());
-  upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr());
-  upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr());
+  EXPECT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 0, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 2, upb_value_bool(true), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&t, 4, upb_value_bool(true), arena.ptr()));
 
   intptr_t iter = UPB_INTTABLE_BEGIN;
   uintptr_t key;

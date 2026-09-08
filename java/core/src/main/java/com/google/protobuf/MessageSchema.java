@@ -65,7 +65,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Schema used for standard messages.
+ * Table-driven support for Lite (Android / Mobile) messages.
+ *
+ * <p>Note: in a previous effort, this was experimentally evaluated as the future direction for
+ * standard "full" JavaProto (targeted for JVM use), but that path has since been rejected. This is
+ * exclusively used for "Lite" use going forward. It is included as part of the standard runtime
+ * only on the basis that the standard runtime is the complete superset of class to support both
+ * standard and lite gencode.
  *
  * <p>This class is for Lite runtime use only. For details on what this means regarding performance
  * and security characteristics, see {@link ForLiteOnly}.
