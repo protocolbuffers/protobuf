@@ -10,7 +10,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-
 // clang-format off
 #include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 7037000
@@ -36,6 +35,15 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+namespace pb::enumvalue {
+class JsonEnumValueOptions; struct JsonEnumValueOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern const JsonEnumValueOptionsGlobalsTypeInternal
+    JsonEnumValueOptions_globals_;
+}  // namespace pb::enumvalue
+namespace google::protobuf {
+namespace _p7ihTgU = ::pb::enumvalue;
+}  // namespace google::protobuf
+
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fjson_5fenumvalue_5foptions_2eproto PROTOBUF_EXPORT
 
 // Internal implementation detail -- do not use these members.
@@ -45,17 +53,6 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fjson_5fenumvalue_5foption
 extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fjson_5fenumvalue_5foptions_2eproto;
 }  // extern "C"
-namespace pb {
-namespace enumvalue {
-class JsonEnumValueOptions;
-struct JsonEnumValueOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern const JsonEnumValueOptionsGlobalsTypeInternal JsonEnumValueOptions_globals_;
-}  // namespace enumvalue
-}  // namespace pb
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google
 
 namespace pb {
 namespace enumvalue {

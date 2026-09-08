@@ -10,7 +10,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-
 // clang-format off
 #include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 7037000
@@ -38,6 +37,50 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+namespace pb {
+enum JavaFeatures_NestInFileClassFeature_NestInFileClass : int;
+PROTOC_EXPORT extern const uint32_t
+    JavaFeatures_NestInFileClassFeature_NestInFileClass_internal_data_[];
+enum JavaFeatures_Utf8Validation : int;
+PROTOC_EXPORT extern const uint32_t
+    JavaFeatures_Utf8Validation_internal_data_[];
+class JavaFeatures; struct JavaFeaturesGlobalsTypeInternal;
+PROTOC_EXPORT extern const JavaFeaturesGlobalsTypeInternal
+    JavaFeatures_globals_;
+class JavaFeatures_NestInFileClassFeature;
+struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal;
+PROTOC_EXPORT extern const
+    JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal
+    JavaFeatures_NestInFileClassFeature_globals_;
+}  // namespace pb
+namespace google::protobuf {
+namespace internal {
+template <>
+EnumTraitsT<
+  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass_internal_data_
+> EnumTraitsImpl::value<
+  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass>;
+template <> EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
+    EnumTraitsImpl::value<::pb::JavaFeatures_Utf8Validation>;
+}  // namespace internal
+namespace internal {
+template <class T>
+[[nodiscard]] inline ::absl::string_view GetFeatureSetDefaultsData();
+
+template <>
+inline ::absl::string_view
+GetFeatureSetDefaultsData<::pb::JavaFeatures>() {
+  static constexpr char kDefaults[] =
+      "CikYhAciA8o+ACofCAEQAhgCIAMoATACOAJAAUgByj4KCAEQARgAIAEoAwopGOcH"
+"IgPKPgAqHwgCEAEYASACKAEwATgCQAFIAco+CggAEAEYACABKAMKKRjoByITCAEQ"
+"ARgBIAIoATAByj4ECAAQASoPOAJAAUgByj4GGAAgASgDCikY6QciGwgBEAEYASAC"
+"KAEwATgBQALKPggIABABGAAoASoHSAHKPgIgAAopGOoHIh0IARABGAEgAigBMAE4"
+"A0AESALKPggIABABGAAoASoFyj4CIAAg5gco6gc=";
+  return kDefaults;
+}
+}  // namespace internal
+}  // namespace google::protobuf
+
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto PROTOC_EXPORT
 
 // Internal implementation detail -- do not use these members.
@@ -47,35 +90,6 @@ struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffe
 extern "C" {
 PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 }  // extern "C"
-namespace pb {
-enum JavaFeatures_NestInFileClassFeature_NestInFileClass : int;
-PROTOC_EXPORT extern const uint32_t JavaFeatures_NestInFileClassFeature_NestInFileClass_internal_data_[];
-enum JavaFeatures_Utf8Validation : int;
-PROTOC_EXPORT extern const uint32_t JavaFeatures_Utf8Validation_internal_data_[];
-class JavaFeatures;
-struct JavaFeaturesGlobalsTypeInternal;
-PROTOC_EXPORT extern const JavaFeaturesGlobalsTypeInternal JavaFeatures_globals_;
-class JavaFeatures_NestInFileClassFeature;
-struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal;
-PROTOC_EXPORT extern const JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal JavaFeatures_NestInFileClassFeature_globals_;
-}  // namespace pb
-namespace google {
-namespace protobuf {
-template <>
-internal::EnumTraitsT<::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass_internal_data_>
-    internal::EnumTraitsImpl::value<::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass>;
-template <>
-internal::EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
-    internal::EnumTraitsImpl::value<::pb::JavaFeatures_Utf8Validation>;
-namespace internal {
-template <>
-inline ::absl::string_view GetFeatureSetDefaultsData<::pb::JavaFeatures>() {
-  static constexpr char kDefaults[] = "CikYhAciA8o+ACofCAEQAhgCIAMoATACOAJAAUgByj4KCAEQARgAIAEoAwopGOcHIgPKPgAqHwgCEAEYASACKAEwATgCQAFIAco+CggAEAEYACABKAMKKRjoByITCAEQARgBIAIoATAByj4ECAAQASoPOAJAAUgByj4GGAAgASgDCikY6QciGwgBEAEYASACKAEwATgBQALKPggIABABGAAoASoHSAHKPgIgAAopGOoHIh0IARABGAEgAigBMAE4A0AESALKPggIABABGAAoASoFyj4CIAAg5gco6gc=";
-  return kDefaults;
-}
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
 
 namespace pb {
 enum JavaFeatures_NestInFileClassFeature_NestInFileClass : int {

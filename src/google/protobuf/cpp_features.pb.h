@@ -10,7 +10,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-
 // clang-format off
 #include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 7037000
@@ -37,6 +36,41 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+namespace pb {
+enum CppFeatures_RepeatedType : int;
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_RepeatedType_internal_data_[];
+enum CppFeatures_StringType : int;
+PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
+class CppFeatures; struct CppFeaturesGlobalsTypeInternal;
+PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal
+    CppFeatures_globals_;
+}  // namespace pb
+namespace google::protobuf {
+namespace internal {
+template <> EnumTraitsT<::pb::CppFeatures_RepeatedType_internal_data_>
+    EnumTraitsImpl::value<::pb::CppFeatures_RepeatedType>;
+template <> EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
+    EnumTraitsImpl::value<::pb::CppFeatures_StringType>;
+}  // namespace internal
+namespace internal {
+template <class T>
+[[nodiscard]] inline ::absl::string_view GetFeatureSetDefaultsData();
+
+template <>
+inline ::absl::string_view
+GetFeatureSetDefaultsData<::pb::CppFeatures>() {
+  static constexpr char kDefaults[] =
+      "CicYhAciA8I+ACodCAEQAhgCIAMoATACOAJAAUgBwj4ICAEQAxgAIAEKJxjnByID"
+"wj4AKh0IAhABGAEgAigBMAE4AkABSAHCPggIABADGAAgAQonGOgHIhMIARABGAEg"
+"AigBMAHCPgQIABADKg04AkABSAHCPgQYACABCicY6QciGQgBEAEYASACKAEwATgB"
+"QALCPgYIABABGAEqB0gBwj4CIAEKJxjqByIbCAEQARgBIAIoATABOANABEgCwj4G"
+"CAAQARgBKgXCPgIgAQonGI9OIh0IARABGAEgAigBMAE4A0AESALCPggIABABGAEg"
+"ASoDwj4AIOYHKOoH";
+  return kDefaults;
+}
+}  // namespace internal
+}  // namespace google::protobuf
+
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcpp_5ffeatures_2eproto PROTOBUF_EXPORT
 
 // Internal implementation detail -- do not use these members.
@@ -46,32 +80,6 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fcpp_5ffeatures_2eproto {
 extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcpp_5ffeatures_2eproto;
 }  // extern "C"
-namespace pb {
-enum CppFeatures_RepeatedType : int;
-PROTOBUF_EXPORT extern const uint32_t CppFeatures_RepeatedType_internal_data_[];
-enum CppFeatures_StringType : int;
-PROTOBUF_EXPORT extern const uint32_t CppFeatures_StringType_internal_data_[];
-class CppFeatures;
-struct CppFeaturesGlobalsTypeInternal;
-PROTOBUF_EXPORT extern const CppFeaturesGlobalsTypeInternal CppFeatures_globals_;
-}  // namespace pb
-namespace google {
-namespace protobuf {
-template <>
-internal::EnumTraitsT<::pb::CppFeatures_RepeatedType_internal_data_>
-    internal::EnumTraitsImpl::value<::pb::CppFeatures_RepeatedType>;
-template <>
-internal::EnumTraitsT<::pb::CppFeatures_StringType_internal_data_>
-    internal::EnumTraitsImpl::value<::pb::CppFeatures_StringType>;
-namespace internal {
-template <>
-inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CppFeatures>() {
-  static constexpr char kDefaults[] = "CicYhAciA8I+ACodCAEQAhgCIAMoATACOAJAAUgBwj4ICAEQAxgAIAEKJxjnByIDwj4AKh0IAhABGAEgAigBMAE4AkABSAHCPggIABADGAAgAQonGOgHIhMIARABGAEgAigBMAHCPgQIABADKg04AkABSAHCPgQYACABCicY6QciGQgBEAEYASACKAEwATgBQALCPgYIABABGAEqB0gBwj4CIAEKJxjqByIbCAEQARgBIAIoATABOANABEgCwj4GCAAQARgBKgXCPgIgAQonGI9OIh0IARABGAEgAigBMAE4A0AESALCPggIABABGAEgASoDwj4AIOYHKOoH";
-  return kDefaults;
-}
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
 
 namespace pb {
 enum CppFeatures_StringType : int {
