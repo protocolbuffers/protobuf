@@ -182,7 +182,14 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
           $values$,
           $open_enum_sentinels$,
         };
+      )cc");
 
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_START\n");
+  }
+
+  p->Emit(
+      R"cc(
         $dllexport_decl $extern const uint32_t $Msg_Enum$_internal_data_[];
         inline constexpr $Msg_Enum$ $Msg_Enum_Enum_MIN$ =
             static_cast<$Msg_Enum$>($kMin$);
@@ -281,10 +288,18 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
           ::absl::string_view name, $Msg_Enum$* $nonnull$ value);
     )cc");
   }
+
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_STOP\n");
+  }
 }
 
 void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_START\n");
+  }
 
   p->Emit(R"cc(
     template <>
@@ -307,11 +322,19 @@ void EnumGenerator::GenerateGetEnumDescriptorSpecializations(io::Printer* p) {
       };
     )cc");
   }
+
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_STOP\n");
+  }
 }
 
 
 void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_START\n");
+  }
 
   p->Emit({Sub("Enum_", p->LookupVar("Enum_")).AnnotatedAs(enum_)}, R"cc(
     using $Enum_$ = $Msg_Enum$;
@@ -384,6 +407,10 @@ void EnumGenerator::GenerateSymbolImports(io::Printer* p) const {
       return $Msg_Enum$_Parse(name, value);
     }
   )cc");
+
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_STOP\n");
+  }
 }
 
 void EnumGenerator::GenerateIsValid(io::Printer* p) const {
@@ -430,6 +457,10 @@ void EnumGenerator::GenerateIsValid(io::Printer* p) const {
 
 void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
   auto v = p->WithVars(EnumVars(enum_, options_, limits_.min, limits_.max));
+
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_START\n");
+  }
 
   if (has_reflection_) {
     p->Emit({{"idx", idx}}, R"cc(
@@ -609,6 +640,10 @@ void EnumGenerator::GenerateMethods(int idx, io::Printer* p) {
         }
       )cc");
     }
+  }
+
+  if (enum_->options().deprecated()) {
+    p->Emit("PROTOBUF_IGNORE_DEPRECATION_STOP\n");
   }
 }
 }  // namespace cpp

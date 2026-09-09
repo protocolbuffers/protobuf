@@ -369,6 +369,11 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 #include "google/protobuf/repeated_ptr_field.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
+
+          // Must be included last.
+#include "google/protobuf/port_def.inc"
+
+              PROTOBUF_IGNORE_DEPRECATION_START
         )cc");
   }
 
@@ -426,6 +431,14 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
       GenerateThunksCc(thunks_ctx, extension);
     }
+  }
+
+  if (ctx.is_cpp()) {
+    thunks_printer->Emit(R"cc(
+      PROTOBUF_IGNORE_DEPRECATION_STOP
+
+#include "google/protobuf/port_undef.inc"
+    )cc");
   }
 
   return true;

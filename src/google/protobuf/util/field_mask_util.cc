@@ -522,7 +522,7 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
         COPY_VALUE(UINT64, UInt64)
         COPY_VALUE(FLOAT, Float)
         COPY_VALUE(DOUBLE, Double)
-        COPY_VALUE(ENUM, Enum)
+        COPY_VALUE(ENUM, EnumValue)
         COPY_VALUE(STRING, String)
 #undef COPY_VALUE
         case FieldDescriptor::CPPTYPE_MESSAGE: {
@@ -558,7 +558,7 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
         COPY_REPEATED_VALUE(UINT64, UInt64)
         COPY_REPEATED_VALUE(FLOAT, Float)
         COPY_REPEATED_VALUE(DOUBLE, Double)
-        COPY_REPEATED_VALUE(ENUM, Enum)
+        COPY_REPEATED_VALUE(ENUM, EnumValue)
         COPY_REPEATED_VALUE(STRING, String)
 #undef COPY_REPEATED_VALUE
         case FieldDescriptor::CPPTYPE_MESSAGE: {
