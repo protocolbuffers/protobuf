@@ -733,7 +733,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                     {Sub("name_size", absl::StrCat(name, "_size"))
                          .AnnotatedAs(field)},
                     R"cc(
-                      [[nodiscard]] $DEPRECATED $int $name_size$() $const_impl$;
+                      [[nodiscard]] $DEPRECATED $PROTOBUF_PURE int $name_size$()
+                          $const_impl$;
                     )cc");
 
                 p->Emit({Sub("_internal_name_size",
@@ -741,7 +742,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                              .AnnotatedAs(field)},
                         R"cc(
                           private:
-                          int $_internal_name_size$() const;
+                          PROTOBUF_PURE int $_internal_name_size$() const;
 
                           public:
                         )cc");
@@ -753,7 +754,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                     {Sub("has_name", absl::StrCat("has_", name))
                          .AnnotatedAs(field)},
                     R"cc(
-                      [[nodiscard]] $DEPRECATED $bool $has_name$() $const_impl$;
+                      [[nodiscard]] $DEPRECATED $PROTOBUF_PURE bool $has_name$()
+                          $const_impl$;
                     )cc");
               }},
              {"internal_hazzer",
@@ -766,7 +768,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                              .AnnotatedAs(field)},
                         R"cc(
                           private:
-                          bool $_internal_has_name$() const;
+                          PROTOBUF_PURE bool $_internal_has_name$() const;
 
                           public:
                         )cc");
@@ -1082,7 +1084,7 @@ void MessageGenerator::GenerateSingularFieldHasBits(
              }}
              .WithSuffix(";")},
         R"cc(
-          inline bool $Msg$::has_$name$() const {
+          inline PROTOBUF_PURE bool $Msg$::has_$name$() const {
             $WeakDescriptorSelfPin$;
             $annotate_has$;
             bool value = CheckHasBit($has_bits$[$has_array_index$], $has_mask$);
@@ -1102,7 +1104,7 @@ void MessageGenerator::GenerateOneofHasBits(io::Printer* p) {
             {"cap_oneof_name", absl::AsciiStrToUpper(oneof->name())},
         },
         R"cc(
-          inline bool $Msg$::has_$oneof_name$() const {
+          inline PROTOBUF_PURE bool $Msg$::has_$oneof_name$() const {
             return $oneof_name$_case() != $cap_oneof_name$_NOT_SET;
           }
           inline void $Msg$::clear_has_$oneof_name$() {
@@ -1346,11 +1348,11 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
     if (field->is_repeated()) {
       p->Emit(R"cc(
-        PROTOBUF_ALWAYS_INLINE_NODEBUG int
+        PROTOBUF_ALWAYS_INLINE_NODEBUG PROTOBUF_PURE int
         $Msg$::_internal_$name_internal$_size() const {
           return _internal_$name_internal$().size();
         }
-        inline int $Msg$::$name$_size() const {
+        inline PROTOBUF_PURE int $Msg$::$name$_size() const {
           $WeakDescriptorSelfPin$;
           $annotate_size$;
           return _internal_$name_internal$_size();

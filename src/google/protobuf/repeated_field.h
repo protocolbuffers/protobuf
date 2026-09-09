@@ -197,11 +197,13 @@ class SooRep {
   explicit constexpr SooRep(InternalMetadataOffset offset)
       : resolver_(offset) {}
 
-  bool is_soo() const { return (resolver_.Tag() & kNotSooBit) == 0; }
+  PROTOBUF_PURE bool is_soo() const {
+    return (resolver_.Tag() & kNotSooBit) == 0;
+  }
   Arena* arena() const {
     return ResolveTaggedArena<&SooRep::resolver_, kResolverTaggedBits>(this);
   }
-  int size() const {
+  PROTOBUF_PURE int size() const {
     int res = size_;
     PROTOBUF_ASSUME(res >= 0);
     return res;
@@ -210,7 +212,7 @@ class SooRep {
     ABSL_DCHECK(!is_soo() || size <= kSooCapacityBytes);
     size_ = size;
   }
-  int capacity() const {
+  PROTOBUF_PURE int capacity() const {
     ABSL_DCHECK(!this->is_soo());
     return heap_rep_->capacity();
   }
@@ -226,7 +228,7 @@ class SooRep {
   }
 
   template <typename Element>
-  const Element* elements(bool is_soo) const {
+  PROTOBUF_PURE const Element* elements(bool is_soo) const {
     ABSL_DCHECK_EQ(is_soo, this->is_soo());
     if (is_soo) {
       return reinterpret_cast<const Element*>(soo_data_);
@@ -361,8 +363,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
 
   ~RepeatedField();
 
-  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
-  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD PROTOBUF_PURE bool empty() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD PROTOBUF_PURE int size() const;
 
   PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -434,7 +436,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void Truncate(int new_size);
 
   void AddAlreadyReserved(Element value);
-  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD PROTOBUF_PURE int Capacity() const;
 
   // Adds `n` elements to this instance asserting there is enough capacity.
   // The added elements are uninitialized if `Element` is trivial.
@@ -706,7 +708,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
     ABSL_DCHECK_GT(Capacity(is_soo), 0);
     return unsafe_elements(is_soo);
   }
-  const Element* elements(bool is_soo) const {
+  PROTOBUF_PURE const Element* elements(bool is_soo) const {
     ABSL_DCHECK_GT(Capacity(is_soo), 0);
     return unsafe_elements(is_soo);
   }
@@ -717,7 +719,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   Element* unsafe_elements(bool is_soo) {
     return soo_rep_.elements<Element>(is_soo);
   }
-  const Element* unsafe_elements(bool is_soo) const {
+  PROTOBUF_PURE const Element* unsafe_elements(bool is_soo) const {
     return soo_rep_.elements<Element>(is_soo);
   }
 
