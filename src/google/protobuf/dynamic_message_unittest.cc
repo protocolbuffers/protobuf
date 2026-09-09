@@ -429,11 +429,13 @@ TEST_P(DynamicMessageTest, Oneof) {
                     *message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
                     *message, descriptor->FindFieldByName("foo_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       use_editions_proto() ? +edition_unittest::TestOneof2::UNKNOWN
                            : +unittest::TestOneof2::FOO,
       reflection->GetEnum(*message, descriptor->FindFieldByName("foo_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   const Descriptor* nested_descriptor;
   const Message* nested_prototype;
   nested_descriptor = oneof_descriptor_->FindNestedTypeByName("NestedMessage");
@@ -462,11 +464,12 @@ TEST_P(DynamicMessageTest, Oneof) {
                 *message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
                          *message, descriptor->FindFieldByName("bar_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::BAR,
       reflection->GetEnum(*message, descriptor->FindFieldByName("bar_enum"))
           ->number());
-
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   // Check set functions.
   TestUtil::ReflectionTester reflection_tester(oneof_descriptor_);
   reflection_tester.SetOneofViaReflection(message);

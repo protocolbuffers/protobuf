@@ -85,7 +85,7 @@ build:ubsan --copt=-fno-sanitize=nonnull-attribute
 build:clang --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 build:clang --cxxopt="-Woverloaded-virtual"
 build:clang --copt="-Wpointer-arith"
-build:clang --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"
+build:clang --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion"
 
 # Suppress all compiler warnings in external dependencies
 build:clang --per_file_copt=external/.*@-w

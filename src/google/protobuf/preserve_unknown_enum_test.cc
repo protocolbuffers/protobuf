@@ -13,6 +13,9 @@
 #include "google/protobuf/unittest_preserve_unknown_enum.pb.h"
 #include "google/protobuf/unittest_preserve_unknown_enum2.pb.h"
 
+// Must come last:
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace {
@@ -167,18 +170,24 @@ TEST(PreserveUnknownEnumTest, DynamicEnumValueDescriptors) {
   const Descriptor* d = message.GetDescriptor();
   const FieldDescriptor* field = d->FindFieldByName("e");
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   // This should dynamically create an EnumValueDescriptor.
   const EnumValueDescriptor* enum_value = r->GetEnum(message, field);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(enum_value->number(),
             static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA));
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   // Fetching value for a second time should return the same pointer.
   const EnumValueDescriptor* enum_value_second = r->GetEnum(message, field);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(enum_value, enum_value_second);
 
   // Check the repeated case too.
   const FieldDescriptor* repeated_field = d->FindFieldByName("repeated_e");
+  PROTOBUF_IGNORE_DEPRECATION_START
   enum_value = r->GetRepeatedEnum(message, repeated_field, 0);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(enum_value->number(),
             static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA));
   // Should reuse the same EnumValueDescriptor, even for a different field.
@@ -188,7 +197,9 @@ TEST(PreserveUnknownEnumTest, DynamicEnumValueDescriptors) {
   // another message.
   Message* m = message.New();
   r->SetEnum(m, field, enum_value);
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(enum_value, r->GetEnum(*m, field));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   delete m;
 }
 
@@ -208,7 +219,9 @@ TEST(PreserveUnknownEnumTest, IntegerEnumReflectionAPI) {
   EXPECT_EQ(42, r->GetRepeatedEnumValue(message, repeated_field, 0));
   r->SetRepeatedEnumValue(&message, repeated_field, 1, 84);
   EXPECT_EQ(84, r->GetRepeatedEnumValue(message, repeated_field, 1));
+  PROTOBUF_IGNORE_DEPRECATION_START
   const EnumValueDescriptor* enum_value = r->GetEnum(message, singular_field);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(42, enum_value->number());
 }
 
@@ -231,12 +244,16 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   // Enum-field integer-based setters treat as unknown integer values as
   // unknown fields.
   r->SetEnumValue(&message, singular_field, 4242);
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(r->GetEnum(message, singular_field)->number(),
             proto2_unittest::TestAllTypes::FOO);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   r->SetRepeatedEnumValue(&message, repeated_field, 0, 4242);
   // repeated_nested_enum was set to bar above, this should not have changed.
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(r->GetRepeatedEnum(message, repeated_field, 0)->number(),
             proto2_unittest::TestAllTypes::BAR);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   r->AddEnumValue(&message, repeated_field, 4242);
   // No element should be added
   EXPECT_EQ(message.repeated_nested_enum_size(), 1);
@@ -256,3 +273,5 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
 
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

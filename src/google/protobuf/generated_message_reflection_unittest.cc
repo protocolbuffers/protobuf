@@ -1119,10 +1119,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                     message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
                     message, descriptor->FindFieldByName("foo_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::FOO,
       reflection->GetEnum(message, descriptor->FindFieldByName("foo_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(&unittest::TestOneof2::NestedMessage::default_instance(),
             &reflection->GetMessage(
                 message, descriptor->FindFieldByName("foo_message")));
@@ -1145,10 +1147,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                 message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
                          message, descriptor->FindFieldByName("bar_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::BAR,
       reflection->GetEnum(message, descriptor->FindFieldByName("bar_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Check Set functions.
   reflection->SetInt32(&message, descriptor->FindFieldByName("foo_int"), 123);

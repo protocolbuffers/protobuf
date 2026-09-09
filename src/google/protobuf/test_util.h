@@ -536,14 +536,14 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection1(
       &reflection->GetMessage(message, F("optional_unverified_lazy_message"));
   EXPECT_EQ(128,
             sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
-
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(nested_baz_,
             reflection->GetEnum(message, F("optional_nested_enum")));
   EXPECT_EQ(foreign_baz_,
             reflection->GetEnum(message, F("optional_foreign_enum")));
   EXPECT_EQ(import_baz_,
             reflection->GetEnum(message, F("optional_import_enum")));
-
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ("124", reflection->GetString(message, F("optional_string_piece")));
   EXPECT_EQ("124", reflection->GetStringReference(
                        message, F("optional_string_piece"), &scratch));
@@ -664,14 +664,14 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
       &reflection->GetRepeatedMessage(message, F("repeated_lazy_message"), 0);
   EXPECT_EQ(227,
             sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
-
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(nested_bar_,
             reflection->GetRepeatedEnum(message, F("repeated_nested_enum"), 0));
   EXPECT_EQ(foreign_bar_, reflection->GetRepeatedEnum(
                               message, F("repeated_foreign_enum"), 0));
   EXPECT_EQ(import_bar_,
             reflection->GetRepeatedEnum(message, F("repeated_import_enum"), 0));
-
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ("224", reflection->GetRepeatedString(
                        message, F("repeated_string_piece"), 0));
   EXPECT_EQ("224", reflection->GetRepeatedStringReference(
@@ -733,14 +733,14 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
       &reflection->GetRepeatedMessage(message, F("repeated_lazy_message"), 1);
   EXPECT_EQ(327,
             sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
-
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(nested_baz_,
             reflection->GetRepeatedEnum(message, F("repeated_nested_enum"), 1));
   EXPECT_EQ(foreign_baz_, reflection->GetRepeatedEnum(
                               message, F("repeated_foreign_enum"), 1));
   EXPECT_EQ(import_baz_,
             reflection->GetRepeatedEnum(message, F("repeated_import_enum"), 1));
-
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ("324", reflection->GetRepeatedString(
                        message, F("repeated_string_piece"), 1));
   EXPECT_EQ("324", reflection->GetRepeatedStringReference(
@@ -803,12 +803,14 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection3(
   EXPECT_EQ("416", reflection->GetStringReference(message, F("default_bytes"),
                                                   &scratch));
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(nested_foo_,
             reflection->GetEnum(message, F("default_nested_enum")));
   EXPECT_EQ(foreign_foo_,
             reflection->GetEnum(message, F("default_foreign_enum")));
   EXPECT_EQ(import_foo_,
             reflection->GetEnum(message, F("default_import_enum")));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   EXPECT_EQ("424", reflection->GetString(message, F("default_string_piece")));
   EXPECT_EQ("424", reflection->GetStringReference(
@@ -855,8 +857,10 @@ inline void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
   EXPECT_EQ(611, reflection->GetRepeatedFloat(message, F("packed_float"), 0));
   EXPECT_EQ(612, reflection->GetRepeatedDouble(message, F("packed_double"), 0));
   EXPECT_TRUE(reflection->GetRepeatedBool(message, F("packed_bool"), 0));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(foreign_bar_,
             reflection->GetRepeatedEnum(message, F("packed_enum"), 0));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   EXPECT_EQ(701, reflection->GetRepeatedInt32(message, F("packed_int32"), 1));
   EXPECT_EQ(702, reflection->GetRepeatedInt64(message, F("packed_int64"), 1));
@@ -875,8 +879,10 @@ inline void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
   EXPECT_EQ(711, reflection->GetRepeatedFloat(message, F("packed_float"), 1));
   EXPECT_EQ(712, reflection->GetRepeatedDouble(message, F("packed_double"), 1));
   EXPECT_FALSE(reflection->GetRepeatedBool(message, F("packed_bool"), 1));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(foreign_baz_,
             reflection->GetRepeatedEnum(message, F("packed_enum"), 1));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 // -------------------------------------------------------------------
@@ -971,6 +977,7 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_FALSE(sub_message->GetReflection()->HasField(*sub_message, nested_b_));
   EXPECT_EQ(0, sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   // Enums without defaults are set to the first value in the enum.
   EXPECT_EQ(nested_foo_,
             reflection->GetEnum(message, F("optional_nested_enum")));
@@ -978,7 +985,7 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
             reflection->GetEnum(message, F("optional_foreign_enum")));
   EXPECT_EQ(import_foo_,
             reflection->GetEnum(message, F("optional_import_enum")));
-
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ("", reflection->GetString(message, F("optional_string_piece")));
   EXPECT_EQ("", reflection->GetStringReference(
                     message, F("optional_string_piece"), &scratch));
@@ -1067,12 +1074,14 @@ inline void TestUtil::ReflectionTester::ExpectClearViaReflection(
   EXPECT_EQ("world", reflection->GetStringReference(message, F("default_bytes"),
                                                     &scratch));
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(nested_bar_,
             reflection->GetEnum(message, F("default_nested_enum")));
   EXPECT_EQ(foreign_bar_,
             reflection->GetEnum(message, F("default_foreign_enum")));
   EXPECT_EQ(import_bar_,
             reflection->GetEnum(message, F("default_import_enum")));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   EXPECT_EQ("abc", reflection->GetString(message, F("default_string_piece")));
   EXPECT_EQ("abc", reflection->GetStringReference(
