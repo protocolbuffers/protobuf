@@ -10,10 +10,12 @@ macro_rules! assert_linked {
     }
 }
 
+#[allow(dead_code)]
 pub struct TestArena {
     raw: RawArena,
 }
 
+#[allow(dead_code)]
 impl TestArena {
     pub fn new() -> Self {
         TestArena { raw: unsafe { upb_Arena_New() }.unwrap() }
