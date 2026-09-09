@@ -1542,6 +1542,15 @@ TEST(LiteTest, DownCastMessageLiteToFullFails) {
                      absl::StrCat("Cannot downcast ", test_type_1.GetTypeName(),
                                   " to Message"));
 }
+
+#ifndef NDEBUG
+TEST(LiteTest, ParseFromArrayNegativeSizeDeath) {
+  unittest::TestAllTypesLite msg;
+  char buf[1] = {0};
+  ASSERT_DEATH((void)msg.ParseFromArray(buf, -1), "Check failed");
+  ASSERT_DEATH((void)msg.ParsePartialFromArray(buf, -1), "Check failed");
+}
+#endif  // !NDEBUG
 #endif  // GTEST_HAS_DEATH_TEST
 
 TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
