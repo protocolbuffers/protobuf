@@ -2591,6 +2591,7 @@ cc_test(
     srcs = ["preserve_unknown_enum_test.cc"],
     deps = [
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         "@abseil-cpp//absl/log:absl_check",
         "@googletest//:gtest",
@@ -2706,6 +2707,7 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/stubs",

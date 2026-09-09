@@ -1372,12 +1372,22 @@ class FileGenerator::ForwardDeclarations {
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({{"enum", QualifiedClassName(e.second, options)}},
-              R"cc(
-                template <>
-                internal::EnumTraitsT<$enum$_internal_data_>
-                    internal::EnumTraitsImpl::value<$enum$>;
-              )cc");
+      const bool deprecated = e.second->options().deprecated();
+      p->Emit(
+          {
+              {"enum", QualifiedClassName(e.second, options)},
+              {"IGNORE_DEPRECATION_START",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_START" : ""},
+              {"IGNORE_DEPRECATION_STOP",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_STOP" : ""},
+          },
+          R"cc(
+            $IGNORE_DEPRECATION_START$
+            template <>
+            internal::EnumTraitsT<$enum$_internal_data_>
+                internal::EnumTraitsImpl::value<$enum$>;
+            $IGNORE_DEPRECATION_STOP$
+          )cc");
     }
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {

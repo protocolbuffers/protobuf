@@ -172,7 +172,9 @@ def build_targets(name):
         srcs = ["google/protobuf/pyext/testing/map_test_helper.cc"],
         deps = [
             ":proto_api",
+            "@abseil-cpp//absl/status:statusor",
             "//src/google/protobuf",
+            "//src/google/protobuf:port",
             "@rules_python//python/cc:current_py_cc_headers",
         ],
         linkshared = 1,
