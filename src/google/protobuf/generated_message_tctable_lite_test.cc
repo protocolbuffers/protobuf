@@ -52,6 +52,27 @@ using ::testing::Eq;
 using ::testing::Not;
 using ::testing::Optional;
 
+TEST(ParseContextSlopRegion, FragmentedZeroCopyInputMatchesFlatParse) {
+  FileDescriptorProto source;
+  auto* location = source.mutable_source_code_info()->add_location();
+  for (int i = 0; i < 32; ++i) {
+    location->add_path(i * 3);
+    location->add_span(i * 5);
+  }
+  const std::string serialized = source.SerializeAsString();
+  ASSERT_GT(serialized.size(), 32u);
+
+  for (int block_size = 1; block_size <= 32; ++block_size) {
+    io::ArrayInputStream input(serialized.data(),
+                               static_cast<int>(serialized.size()), block_size);
+    FileDescriptorProto parsed;
+    ASSERT_TRUE(parsed.ParseFromZeroCopyStream(&input))
+        << "block_size=" << block_size;
+    EXPECT_EQ(parsed.SerializeAsString(), serialized)
+        << "block_size=" << block_size;
+  }
+}
+
 // The fast parser's dispatch table Xors two bytes of incoming data with
 // the data in TcFieldData, so we reproduce that here:
 TcFieldData Xor2SerializedBytes(TcFieldData tfd, const char* ptr) {
