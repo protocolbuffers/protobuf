@@ -16,12 +16,26 @@ package(
 
 exports_files([
     "test_messages_edition2023.proto",
+    "test_messages_edition2026.proto",
     "test_messages_edition_unstable.proto",
 ])
 
 internal_csharp_proto_library(
     name = "test_messages_edition2023_csharp_proto",
     srcs = ["test_messages_edition2023.proto"],
+)
+
+internal_csharp_proto_library(
+    name = "test_messages_edition2026_csharp_proto",
+    srcs = ["test_messages_edition2026.proto"],
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = [
+        "//:json_enumvalue_options_proto_srcs",
+        "//:well_known_protos",
+    ],
 )
 
 internal_csharp_proto_library(
@@ -61,6 +75,13 @@ proto_library(
 )
 
 proto_library(
+    name = "test_messages_edition2026_proto",
+    srcs = ["test_messages_edition2026.proto"],
+    visibility = ["//visibility:public"],
+    deps = ["//:json_enumvalue_options_proto"],
+)
+
+proto_library(
     name = "test_messages_edition_unstable_proto",
     srcs = ["test_messages_edition_unstable.proto"],
     visibility = ["//visibility:public"],
@@ -69,6 +90,11 @@ proto_library(
 java_lite_proto_library(
     name = "test_messages_edition2023_java_proto_lite",
     deps = [":test_messages_edition2023_proto"],
+)
+
+java_lite_proto_library(
+    name = "test_messages_edition2026_java_proto_lite",
+    deps = [":test_messages_edition2026_proto"],
 )
 
 java_lite_proto_library(
@@ -82,6 +108,11 @@ java_proto_library(
 )
 
 java_proto_library(
+    name = "test_messages_edition2026_java_proto",
+    deps = [":test_messages_edition2026_proto"],
+)
+
+java_proto_library(
     name = "test_messages_edition_unstable_java_proto",
     deps = [":test_messages_edition_unstable_proto"],
 )
@@ -89,6 +120,11 @@ java_proto_library(
 cc_proto_library(
     name = "test_messages_edition2023_cc_proto",
     deps = [":test_messages_edition2023_proto"],
+)
+
+cc_proto_library(
+    name = "test_messages_edition2026_cc_proto",
+    deps = [":test_messages_edition2026_proto"],
 )
 
 cc_proto_library(
@@ -103,6 +139,13 @@ internal_py_proto_library(
 )
 
 internal_py_proto_library(
+    name = "test_messages_edition2026_py_pb2",
+    srcs = [":test_messages_edition2026.proto"],
+    srcs_version = "PY2AND3",
+    deps = ["//python:well_known_types_py_pb2"],
+)
+
+internal_py_proto_library(
     name = "test_messages_edition_unstable_py_pb2",
     srcs = [":test_messages_edition_unstable.proto"],
     srcs_version = "PY2AND3",
@@ -111,6 +154,19 @@ internal_py_proto_library(
 internal_objc_proto_library(
     name = "test_messages_edition2023_objc_proto",
     srcs = [":test_messages_edition2023.proto"],
+)
+
+internal_objc_proto_library(
+    name = "test_messages_edition2026_objc_proto",
+    srcs = [":test_messages_edition2026.proto"],
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = [
+        "//:json_enumvalue_options_proto_srcs",
+        "//:well_known_protos",
+    ],
 )
 
 internal_objc_proto_library(
