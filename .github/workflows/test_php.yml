@@ -32,7 +32,7 @@ jobs:
           - name: 8.2 Optimized
             version: "8.2.2"
             version-short: "8.2"
-            command: composer test && composer test_c
+            command: composer test && composer test_c && composer test_pie
           - name: 8.2 Debug
             version: 8.2.2-dbg
             version-short: "8.2"
@@ -51,7 +51,7 @@ jobs:
           - name: 8.5 Optimized
             version: "8.5.2"
             version-short: "8.5"
-            command: composer test && composer test_c
+            command: composer test && composer test_c && composer test_pie
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name}}
     runs-on: ubuntu-22-4core
