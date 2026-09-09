@@ -21,12 +21,14 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/any_invocable.h"
+#include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
@@ -175,10 +177,9 @@ void PrintPresenceCheckCondition(const FieldDescriptor* field,
           R"cc($condition$)cc");
 }
 
-struct FieldOrderingByNumber {
-  bool operator()(const FieldDescriptor* a, const FieldDescriptor* b) const {
-    return a->number() < b->number();
-  }
+constexpr auto kCompareFieldsByNumber = [](const FieldDescriptor* a,
+                                           const FieldDescriptor* b) {
+  return a->number() < b->number();
 };
 
 // Sort the fields of the given Descriptor by number into a new[]'d array
@@ -189,17 +190,22 @@ std::vector<const FieldDescriptor*> SortFieldsByNumber(
   for (int i = 0; i < descriptor->field_count(); ++i) {
     fields[i] = descriptor->field(i);
   }
-  std::sort(fields.begin(), fields.end(), FieldOrderingByNumber());
+  absl::c_sort(fields, kCompareFieldsByNumber);
   return fields;
 }
 
-// Functor for sorting extension ranges by their "start" field number.
-struct ExtensionRangeSorter {
-  bool operator()(const Descriptor::ExtensionRange* left,
-                  const Descriptor::ExtensionRange* right) const {
-    return left->start_number() < right->start_number();
+std::vector<const Descriptor::ExtensionRange*> SortExtensionRanges(
+    const Descriptor* descriptor) {
+  std::vector<const Descriptor::ExtensionRange*> ranges(
+      descriptor->extension_range_count());
+  for (int i = 0; i < descriptor->extension_range_count(); ++i) {
+    ranges[i] = descriptor->extension_range(i);
   }
-};
+  absl::c_sort(ranges, [](auto* left, auto* right) {
+    return left->start_number() < right->start_number();
+  });
+  return ranges;
+}
 
 bool IsPOD(const FieldDescriptor* field) {
   if (field->is_repeated() || field->is_extension()) return false;
@@ -4540,73 +4546,119 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
       )cc");
 }
 
+namespace {
+
+struct ExtensionRangeChunk {
+  int start;
+  int end;
+};
+
+struct OneofChunk {
+  std::vector<const FieldDescriptor*> fields;
+};
+
+using SerializeChunk =
+    std::variant<FieldChunk, OneofChunk, ExtensionRangeChunk>;
+
+constexpr auto kTryAppend = absl::Overload{
+    [](FieldChunk& chunk, const FieldDescriptor* field,
+       const Options& options) {
+      if (chunk.should_split != ShouldSplit(field, options)) return false;
+      chunk.fields.push_back(field);
+      return true;
+    },
+    [](OneofChunk& chunk, const FieldDescriptor* field, const Options&) {
+      if (chunk.fields.front()->containing_oneof() !=
+          field->containing_oneof()) {
+        return false;
+      }
+      chunk.fields.push_back(field);
+      return true;
+    },
+    [](ExtensionRangeChunk& chunk, const Descriptor::ExtensionRange* range,
+       const Options&) {
+      chunk.start = std::min(chunk.start, range->start_number());
+      chunk.end = std::max(chunk.end, range->end_number());
+      return true;
+    },
+    [](auto&, const auto*, const Options&) { return false; },
+};
+
+template <typename Container, typename Item>
+bool TryAppendToBack(Container& chunks, const Item* item,
+                     const Options& options) {
+  return !chunks.empty() &&
+         std::visit(
+             [&](auto& chunk) { return kTryAppend(chunk, item, options); },
+             chunks.back());
+}
+
+std::vector<SerializeChunk> CollectSerializeChunks(const Descriptor* descriptor,
+                                                   const Options& options) {
+  std::vector<const FieldDescriptor*> ordered_fields =
+      SortFieldsByNumber(descriptor);
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions =
+      SortExtensionRanges(descriptor);
+
+  std::vector<SerializeChunk> chunks;
+
+  auto add_field = [&](const FieldDescriptor* field) {
+    if (field->real_containing_oneof() != nullptr && field->has_presence()) {
+      // If there are multiple fields in a row from the same oneof then we
+      // coalesce them and emit a switch statement.  This is more efficient
+      // because it lets the C++ compiler know this is a "at most one can
+      // happen" situation. If we emitted "if (has_x()) ...; if (has_y()) ..."
+      // the C++ compiler's emitted code might check has_y() even when has_x()
+      // is true.
+      if (!TryAppendToBack(chunks, field, options)) {
+        chunks.push_back(OneofChunk{{field}});
+      }
+    } else {
+      if (!TryAppendToBack(chunks, field, options)) {
+        FieldChunk chunk(HasHasbit(field, options),
+                         IsRarelyPresent(field, options),
+                         ShouldSplit(field, options));
+        chunk.fields.push_back(field);
+        chunks.push_back(std::move(chunk));
+      }
+    }
+  };
+
+  auto add_extension = [&](const Descriptor::ExtensionRange* range) {
+    if (!TryAppendToBack(chunks, range, options)) {
+      chunks.push_back(
+          ExtensionRangeChunk{range->start_number(), range->end_number()});
+    }
+  };
+
+  auto field_it = ordered_fields.begin();
+  auto ext_it = sorted_extensions.begin();
+  while (field_it != ordered_fields.end() ||
+         ext_it != sorted_extensions.end()) {
+    if (ext_it == sorted_extensions.end() ||
+        (field_it != ordered_fields.end() &&
+         (*field_it)->number() < (*ext_it)->start_number())) {
+      add_field(*field_it++);
+    } else {
+      add_extension(*ext_it++);
+    }
+  }
+
+  return chunks;
+}
+}  // namespace
+
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
-  // If there are multiple fields in a row from the same oneof then we
-  // coalesce them and emit a switch statement.  This is more efficient
-  // because it lets the C++ compiler know this is a "at most one can happen"
-  // situation. If we emitted "if (has_x()) ...; if (has_y()) ..." the C++
-  // compiler's emitted code might check has_y() even when has_x() is true.
-  class LazySerializerEmitter {
+  class SerializeEmitter {
    public:
-    LazySerializerEmitter(MessageGenerator* mg, io::Printer* p,
-                          const Options& options)
-        : mg_(mg), p_(p), options_(options), cached_has_bit_index_(kNoHasbit) {}
+    SerializeEmitter(MessageGenerator* mg, io::Printer* p,
+                     bool is_single_extension_range)
+        : mg_(mg),
+          p_(p),
+          is_single_extension_range_(is_single_extension_range) {}
 
-    ~LazySerializerEmitter() { Flush(); }
+    ~SerializeEmitter() { CloseSplit(); }
 
-    // If conditions allow, try to accumulate a run of fields from the same
-    // oneof, and handle them at the next Flush().
-    void Emit(const FieldDescriptor* field) {
-      if (!field->has_presence() || MustFlush(field)) {
-        Flush();
-      }
-      if (field->real_containing_oneof()) {
-        v_.push_back(field);
-      } else {
-        if (ShouldSplit(field, options_)) {
-          OpenSplit();
-        } else {
-          CloseSplit();
-        }
-
-        // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field, options_)) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
-          int has_word_index =
-              mg_->field_layout_.GetHasWordIndex(field).value();
-          if (cached_has_bit_index_ != has_word_index) {
-            // Reload.
-            int new_index = has_word_index;
-            p_->Emit({{"index", new_index}},
-                     R"cc(
-                       cached_has_bits = this_._impl_._has_bits_[$index$];
-                     )cc");
-            cached_has_bit_index_ = new_index;
-          }
-        }
-
-        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
-      }
-    }
-
-    void EmitIfNotNull(const FieldDescriptor* field) {
-      if (field != nullptr) {
-        Emit(field);
-      }
-    }
-
-    void Flush() {
-      CloseSplit();
-      if (!v_.empty()) {
-        mg_->GenerateSerializeOneofFields(p_, v_);
-        v_.clear();
-      }
-    }
-
-   private:
     void OpenSplit() {
       if (is_split_open_) return;
       is_split_open_ = true;
@@ -4615,6 +4667,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       )cc");
       p_->Indent();
     }
+
     void CloseSplit() {
       if (!is_split_open_) return;
       is_split_open_ = false;
@@ -4624,78 +4677,72 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       )cc");
       // The split block is conditional so we might or might not have changed
       // the index. Just forget it.
-      cached_has_bit_index_ = -1;
+      cached_has_bit_index_ = kNoHasbit;
     }
 
-    // If we have multiple fields in v_ then they all must be from the same
-    // oneof.  Would adding field to v_ break that invariant?
-    bool MustFlush(const FieldDescriptor* field) {
-      return !v_.empty() &&
-             v_[0]->containing_oneof() != field->containing_oneof();
-    }
-
-    MessageGenerator* mg_;
-    io::Printer* p_;
-    bool is_split_open_ = false;
-    const Options& options_;
-    std::vector<const FieldDescriptor*> v_;
-
-    // cached_has_bit_index_ maintains that:
-    //   cached_has_bits = from._has_bits_[cached_has_bit_index_]
-    // for cached_has_bit_index_ >= 0
-    int cached_has_bit_index_;
-  };
-
-  class LazyExtensionRangeEmitter {
-   public:
-    LazyExtensionRangeEmitter(MessageGenerator* mg, io::Printer* p)
-        : mg_(mg), p_(p) {}
-
-    void AddToRange(const Descriptor::ExtensionRange* range) {
-      if (!has_current_range_) {
-        min_start_ = range->start_number();
-        max_end_ = range->end_number();
-        has_current_range_ = true;
+    void operator()(const FieldChunk& fields_chunk) {
+      if (fields_chunk.should_split) {
+        OpenSplit();
       } else {
-        min_start_ = std::min(min_start_, range->start_number());
-        max_end_ = std::max(max_end_, range->end_number());
+        CloseSplit();
+      }
+      for (const auto* field : fields_chunk.fields) {
+        // TODO: Defer non-oneof fields similarly to oneof fields.
+        if (HasHasbit(field, mg_->options_)) {
+          // We speculatively load the entire _has_bits_[index] contents, even
+          // if it is for only one field.  Deferring non-oneof emitting would
+          // allow us to determine whether this is going to be useful.
+          int has_word_index =
+              mg_->field_layout_.GetHasWordIndex(field).value();
+          if (cached_has_bit_index_ != has_word_index) {
+            // Reload.
+            cached_has_bit_index_ = has_word_index;
+            p_->Emit({{"index", cached_has_bit_index_}},
+                     R"cc(
+                       cached_has_bits = this_._impl_._has_bits_[$index$];
+                     )cc");
+          }
+        }
+        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
       }
     }
 
-    void Flush(bool is_last_range) {
-      if (!has_current_range_) {
-        return;
-      }
-      has_current_range_ = false;
-      ++range_count_;
-      if (is_last_range && range_count_ == 1) {
+    void operator()(const OneofChunk& oneof_chunk) {
+      CloseSplit();
+      mg_->GenerateSerializeOneofFields(p_, oneof_chunk.fields);
+    }
+
+    void operator()(const ExtensionRangeChunk& ext_chunk) {
+      CloseSplit();
+      if (is_single_extension_range_) {
         mg_->GenerateSerializeAllExtensions(p_);
       } else {
-        mg_->GenerateSerializeOneExtensionRange(p_, min_start_, max_end_);
+        mg_->GenerateSerializeOneExtensionRange(p_, ext_chunk.start,
+                                                ext_chunk.end);
       }
     }
 
    private:
     MessageGenerator* mg_;
     io::Printer* p_;
-    int range_count_ = 0;
-    bool has_current_range_ = false;
-    int min_start_ = 0;
-    int max_end_ = 0;
+    bool is_single_extension_range_;
+    bool is_split_open_ = false;
+
+    // cached_has_bit_index_ maintains that:
+    //   cached_has_bits = this_._impl_._has_bits_[cached_has_bit_index_]
+    // for cached_has_bit_index_ >= 0
+    int cached_has_bit_index_ = kNoHasbit;
   };
 
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
 
+  std::vector<SerializeChunk> chunks =
+      CollectSerializeChunks(descriptor_, options_);
 
-  std::vector<const FieldDescriptor*> ordered_fields =
-      SortFieldsByNumber(descriptor_);
+  int num_ext_chunks = absl::c_count_if(chunks, [](const auto& chunk) {
+    return std::holds_alternative<ExtensionRangeChunk>(chunk);
+  });
 
-  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-  sorted_extensions.reserve(descriptor_->extension_range_count());
-  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
-    sorted_extensions.push_back(descriptor_->extension_range(i));
-  }
-  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-            ExtensionRangeSorter());
   p->Emit(
       {
           {"serialize_split_var",
@@ -4708,27 +4755,10 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
            }},
           {"handle_lazy_fields",
            [&] {
-             // Merge fields and extension ranges, sorted by field number.
-             LazySerializerEmitter e(this, p, options_);
-             LazyExtensionRangeEmitter re(this, p);
-
-             size_t i, j;
-             for (i = 0, j = 0;
-                  i < ordered_fields.size() || j < sorted_extensions.size();) {
-               bool no_more_extensions = j == sorted_extensions.size();
-               if (no_more_extensions ||
-                   (i < static_cast<size_t>(descriptor_->field_count()) &&
-                    ordered_fields[i]->number() <
-                        sorted_extensions[j]->start_number())) {
-                 const FieldDescriptor* field = ordered_fields[i++];
-                 re.Flush(no_more_extensions);
-                 e.Emit(field);
-               } else {
-                 e.Flush();
-                 re.AddToRange(sorted_extensions[j++]);
-               }
+             SerializeEmitter emitter(this, p, num_ext_chunks == 1);
+             for (const auto& chunk : chunks) {
+               std::visit(emitter, chunk);
              }
-             re.Flush(/*is_last_range=*/true);
            }},
           {"handle_unknown_fields",
            [&] {
@@ -4763,14 +4793,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
     io::Printer* p) {
   std::vector<const FieldDescriptor*> ordered_fields =
       SortFieldsByNumber(descriptor_);
-
-  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-  sorted_extensions.reserve(descriptor_->extension_range_count());
-  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
-    sorted_extensions.push_back(descriptor_->extension_range(i));
-  }
-  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-            ExtensionRangeSorter());
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions =
+      SortExtensionRanges(descriptor_);
 
   int num_fields = ordered_fields.size() + sorted_extensions.size();
   constexpr int kLargePrime = 1000003;
