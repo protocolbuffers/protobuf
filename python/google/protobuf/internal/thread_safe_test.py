@@ -32,6 +32,37 @@ class ThreadSafeTest(unittest.TestCase):
   def setUp(self):
     self.success = 0
 
+  def testConcurrentMessageObjectIdentity(self):
+    msg = unittest_pb2.TestAllTypes()
+    sub_objs = [None, None]
+
+    def GetSub(idx):
+      sub_objs[idx] = msg.optional_nested_message
+
+    t1 = threading.Thread(target=GetSub, args=(0,))
+    t2 = threading.Thread(target=GetSub, args=(1,))
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+    self.assertIs(sub_objs[0], sub_objs[1])
+
+  def testConcurrentDescriptorObjectIdentity(self):
+    desc_objs = [None, None]
+
+    def GetDesc(idx):
+      desc_objs[idx] = unittest_pb2.TestAllTypes.DESCRIPTOR
+
+    t1 = threading.Thread(target=GetDesc, args=(0,))
+    t2 = threading.Thread(target=GetDesc, args=(1,))
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+    self.assertIs(desc_objs[0], desc_objs[1])
+
   def testFieldDecodersDataRace(self):
     msg = unittest_pb2.TestAllTypes(optional_int32=1)
     serialized_data = msg.SerializeToString()
@@ -63,11 +94,6 @@ class ThreadSafeTest(unittest.TestCase):
 
     self.assertEqual(count * 2, self.success)
 
-  # This caused a Dealloc()/Dealloc() race.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testGetType(self):
 
     def GetType():
@@ -91,11 +117,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  # This caused a race between constructing and using the type.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testInitType(self):
 
     def InitType():
@@ -119,10 +140,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSubMessageAccess(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
@@ -143,10 +160,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -163,10 +176,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedPrimitiveAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
     variable.repeated_float.append(1.0)
@@ -184,10 +193,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSingularFieldAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -205,10 +210,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess2(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         repeated_nested_message=[
@@ -278,10 +279,6 @@ class FreeThreadingTest(unittest.TestCase):
     self.RunThreads(thread_size, CreatePool)
     self.assertEqual(thread_size, self.success_count)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetFieldValueRace(self):
     """Reproduces a data race in GetFieldValue due to lazy initialization."""
 
@@ -307,10 +304,6 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetOptionsRace(self):
     """Reproduces a data race in GetOptions."""
 
@@ -330,10 +323,6 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetAndRegisterMessageClassDataRace(self):
     """Reproduces the data race in GetMessageClass/RegisterMessageClass."""
     pool = descriptor_pool.DescriptorPool()
@@ -377,10 +366,6 @@ class FreeThreadingTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""
     pool = descriptor_pool.DescriptorPool()
@@ -414,10 +399,6 @@ class FreeThreadingTest(unittest.TestCase):
       t.join()
     self.assertEqual([], errors)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSubmessageDeallocRace(self):
     """Tests child submessage wrapper interning under concurrent deallocation."""
     msg = unittest_proto3_pb2.TestAllTypes()
@@ -448,10 +429,6 @@ class FreeThreadingTest(unittest.TestCase):
       t.join()
     self.assertEqual([], errors)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentCompositeFieldDeallocRace(self):
     """Tests composite field wrapper interning under concurrent deallocation."""
     msg = unittest_proto3_pb2.TestAllTypes()
@@ -491,6 +468,29 @@ class FreeThreadingTest(unittest.TestCase):
       t.join()
     self.assertEqual([], errors)
 
+  def testConcurrentClearAndSubObjectDeletionRace(self):
+    """Reproduces a dangling pointer dereference race between Clear() and sub-object deallocation."""
+
+    def ClearMsg(msg, barrier):
+      barrier.wait()
+      msg.Clear()
+
+    def DeleteSub(container, barrier):
+      barrier.wait()
+      container.clear()
+
+    for _ in range(500):
+      msg = unittest_proto3_pb2.TestAllTypes()
+      container = [msg.optional_nested_message]
+      barrier = threading.Barrier(2)
+
+      thread1 = threading.Thread(target=ClearMsg, args=(msg, barrier))
+      thread2 = threading.Thread(target=DeleteSub, args=(container, barrier))
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
+
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):
     """Benchmarks concurrent GetOptions calls."""
@@ -512,10 +512,6 @@ class FreeThreadingTest(unittest.TestCase):
     else:
       print('Skipping benchmark in non-benchmark mode.')
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentLazyUnpackAndRead(self):
     # 1. Create a template proto containing a lazy sub-message
     template = test_proto2_pb2.ReproMessageForLazy()
@@ -622,6 +618,188 @@ class FreeThreadingTest(unittest.TestCase):
         reserialized
     )
     self.assertEqual(reparsed.lazy_field.map_items['key'].value, 'updated')
+
+  def testConcurrentMapSubscriptReadAndSerialization(self):
+    msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+    msg.map_items['k1'].value = 'v1'
+    msg.map_items['k2'].value = 'v2'
+    msg.scalar_map['s1'] = 'val1'
+    msg.scalar_map['s2'] = 'val2'
+    serialized = msg.SerializeToString()
+
+    def RunRace():
+      shared_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+          serialized
+      )
+      barrier = threading.Barrier(3)
+      errors = []
+
+      def Thread1():
+        try:
+          barrier.wait()
+          self.assertEqual(shared_msg.map_items['k1'].value, 'v1')
+          self.assertEqual(shared_msg.map_items.get('k1').value, 'v1')
+          self.assertIsNone(shared_msg.map_items.get('missing'))
+          self.assertEqual(shared_msg.scalar_map['s1'], 'val1')
+          self.assertEqual(shared_msg.scalar_map.get('s1'), 'val1')
+          self.assertIsNone(shared_msg.scalar_map.get('missing'))
+        except Exception as e:
+          errors.append(e)
+
+      def Thread2():
+        try:
+          barrier.wait()
+          self.assertEqual(shared_msg.map_items['k2'].value, 'v2')
+          self.assertEqual(shared_msg.map_items.get('k2').value, 'v2')
+          self.assertIsNone(shared_msg.map_items.get('missing2'))
+          self.assertEqual(shared_msg.scalar_map['s2'], 'val2')
+          self.assertEqual(shared_msg.scalar_map.get('s2'), 'val2')
+          self.assertIsNone(shared_msg.scalar_map.get('missing2'))
+        except Exception as e:
+          errors.append(e)
+
+      def Thread3():
+        try:
+          barrier.wait()
+          parsed_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+              shared_msg.SerializeToString()
+          )
+          self.assertEqual(parsed_msg, msg)
+        except Exception as e:
+          errors.append(e)
+
+      threads = [
+          threading.Thread(target=Thread1),
+          threading.Thread(target=Thread2),
+          threading.Thread(target=Thread3),
+      ]
+      for t in threads:
+        t.start()
+      for t in threads:
+        t.join()
+      for err in errors:
+        raise err
+
+    for _ in range(200):
+      RunRace()
+
+  def testConcurrentMapIterationAndSerialization(self):
+    msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+    msg.map_items['k1'].value = 'v1'
+    msg.map_items['k2'].value = 'v2'
+    msg.scalar_map['s1'] = 'val1'
+    msg.scalar_map['s2'] = 'val2'
+    serialized = msg.SerializeToString()
+
+    def RunRace():
+      shared_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+          serialized
+      )
+      barrier = threading.Barrier(3)
+      errors = []
+
+      def Thread1():
+        try:
+          barrier.wait()
+          items = dict(shared_msg.map_items.items())
+          self.assertEqual(items['k1'].value, 'v1')
+          self.assertEqual(items['k2'].value, 'v2')
+          scalar_items = dict(shared_msg.scalar_map.items())
+          self.assertEqual(scalar_items['s1'], 'val1')
+          self.assertEqual(scalar_items['s2'], 'val2')
+        except Exception as e:
+          errors.append(e)
+
+      def Thread2():
+        try:
+          barrier.wait()
+          keys = list(shared_msg.map_items)
+          self.assertCountEqual(keys, ['k1', 'k2'])
+          scalar_keys = list(shared_msg.scalar_map)
+          self.assertCountEqual(scalar_keys, ['s1', 's2'])
+        except Exception as e:
+          errors.append(e)
+
+      def Thread3():
+        try:
+          barrier.wait()
+          parsed_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+              shared_msg.SerializeToString()
+          )
+          self.assertEqual(parsed_msg, msg)
+        except Exception as e:
+          errors.append(e)
+
+      threads = [
+          threading.Thread(target=Thread1),
+          threading.Thread(target=Thread2),
+          threading.Thread(target=Thread3),
+      ]
+      for t in threads:
+        t.start()
+      for t in threads:
+        t.join()
+      for err in errors:
+        raise err
+
+    for _ in range(200):
+      RunRace()
+
+  def testConcurrentMapMultiWorkerContention(self):
+    """Verifies thread-safety under sustained multi-worker contention."""
+    msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+    for i in range(10):
+      msg.map_items[f'key_{i}'].value = f'val_{i}'
+      msg.scalar_map[f'key_{i}'] = f'val_{i}'
+
+    errors = []
+
+    def ReaderWorker():
+      try:
+        for _ in range(50):
+          for i in range(10):
+            val = msg.map_items[f'key_{i}'].value
+            if val != f'val_{i}':
+              errors.append(f'Unexpected map_items value: {val}')
+            val_get = msg.map_items.get(f'key_{i}').value
+            if val_get != f'val_{i}':
+              errors.append(f'Unexpected map_items get value: {val_get}')
+            sval = msg.scalar_map[f'key_{i}']
+            if sval != f'val_{i}':
+              errors.append(f'Unexpected scalar_map value: {sval}')
+            sval_get = msg.scalar_map.get(f'key_{i}')
+            if sval_get != f'val_{i}':
+              errors.append(f'Unexpected scalar_map get value: {sval_get}')
+          for k, v in msg.map_items.items():
+            _ = k, v.value
+          for k, v in msg.scalar_map.items():
+            _ = k, v
+      except Exception as e:
+        errors.append(str(e))
+
+    def SerializerWorker():
+      try:
+        for _ in range(50):
+          data = msg.SerializeToString()
+          parsed = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(data)
+          if parsed != msg:
+            errors.append(
+                'Serialized message mismatch during concurrent map read'
+            )
+      except Exception as e:
+        errors.append(str(e))
+
+    threads = []
+    for _ in range(8):
+      threads.append(threading.Thread(target=ReaderWorker))
+      threads.append(threading.Thread(target=SerializerWorker))
+
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+
+    self.assertEqual(errors, [])
 
 
 if __name__ == '__main__':
