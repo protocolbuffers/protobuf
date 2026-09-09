@@ -194,6 +194,7 @@ module Google
       end
 
       def each
+        return enum_for(:each) unless block_given?
         self.values.each { |x| yield(x.to_ruby) }
       end
 

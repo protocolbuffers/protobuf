@@ -113,6 +113,14 @@ class TestWellKnownTypes < Test::Unit::TestCase
     assert_equal should_equal, struct.to_h
     assert_equal should_equal["sublist"].length, struct["sublist"].length
 
+    # Test ListValue#each with and without a block
+    elements = []
+    struct["sublist"].each { |x| elements << x }
+    assert_equal should_equal["sublist"], elements
+    enum = struct["sublist"].each
+    assert_instance_of Enumerator, enum
+    assert_equal should_equal["sublist"], enum.to_a
+
     assert_raises Google::Protobuf::UnexpectedStructType do
       struct[123] = 5
     end
