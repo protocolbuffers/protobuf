@@ -679,6 +679,7 @@ def Parse(
     descriptor_pool=None,
     allow_unknown_field=False,
     max_recursion_depth=None,
+    end_token=None,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -726,6 +727,10 @@ def Parse(
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
         untrusted Text Format inputs, setting a limit of 100 is recommended.
+    end_token: if present, will stop parsing if this string is found. Only
+      matches the full word and where the parsed message is well formed. I.e. it
+      will not match it inside a nested field, inside a literal string or in
+      place of a field value.
 
   Returns:
     Message: The same message passed as argument.
@@ -741,6 +746,7 @@ def Parse(
       descriptor_pool=descriptor_pool,
       allow_unknown_field=allow_unknown_field,
       max_recursion_depth=max_recursion_depth,
+      end_token=end_token,
   )
 
 
@@ -752,6 +758,7 @@ def Merge(
     descriptor_pool=None,
     allow_unknown_field=False,
     max_recursion_depth=None,
+    end_token=None,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -778,6 +785,10 @@ def Merge(
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
         untrusted Text Format inputs, setting a limit of 100 is recommended.
+    end_token: if present, will stop parsing if this string is found. Only
+      matches the full word and where the parsed message is well formed. I.e. it
+      will not match it inside a nested field, inside a literal string or in
+      place of a field value.
 
   Returns:
     Message: The same message passed as argument.
@@ -793,6 +804,7 @@ def Merge(
       descriptor_pool=descriptor_pool,
       allow_unknown_field=allow_unknown_field,
       max_recursion_depth=max_recursion_depth,
+      end_token=end_token,
   )
 
 
@@ -804,6 +816,7 @@ def ParseLines(
     descriptor_pool=None,
     allow_unknown_field=False,
     max_recursion_depth=None,
+    end_token=None,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -828,6 +841,10 @@ def ParseLines(
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
         untrusted Text Format inputs, setting a limit of 100 is recommended.
+    end_token: if present, will stop parsing if this string is found. Only
+      matches the full word and where the parsed message is well formed. I.e. it
+      will not match it inside a nested field, inside a literal string or in
+      place of a field value.
 
   Returns:
     The same message passed as argument.
@@ -842,7 +859,7 @@ def ParseLines(
       allow_unknown_field=allow_unknown_field,
       max_recursion_depth=max_recursion_depth,
   )
-  return parser.ParseLines(lines, message)
+  return parser.ParseLines(lines, message, end_token=end_token)
 
 
 def MergeLines(
@@ -853,6 +870,7 @@ def MergeLines(
     descriptor_pool=None,
     allow_unknown_field=False,
     max_recursion_depth=None,
+    end_token=None,
 ):
   """Parses a text representation of a protocol message into a message.
 
@@ -877,6 +895,10 @@ def MergeLines(
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
         untrusted Text Format inputs, setting a limit of 100 is recommended.
+    end_token: if present, will stop parsing if this string is found. Only
+      matches the full word and where the parsed message is well formed. I.e. it
+      will not match it inside a nested field, inside a literal string or in
+      place of a field value.
 
   Returns:
     The same message passed as argument.
@@ -891,7 +913,7 @@ def MergeLines(
       allow_unknown_field=allow_unknown_field,
       max_recursion_depth=max_recursion_depth,
   )
-  return parser.MergeLines(lines, message)
+  return parser.MergeLines(lines, message, end_token=end_token)
 
 
 class _Parser(object):
@@ -912,24 +934,25 @@ class _Parser(object):
     self.max_recursion_depth = max_recursion_depth
     self.recursion_depth = 0
 
-  def ParseLines(self, lines, message):
+  def ParseLines(self, lines, message, end_token=None):
     """Parses a text representation of a protocol message into a message."""
     self._allow_multiple_scalars = False
-    self._ParseOrMerge(lines, message)
+    self._ParseOrMerge(lines, message, end_token=end_token)
     return message
 
-  def MergeLines(self, lines, message):
+  def MergeLines(self, lines, message, end_token=None):
     """Merges a text representation of a protocol message into a message."""
     self._allow_multiple_scalars = True
-    self._ParseOrMerge(lines, message)
+    self._ParseOrMerge(lines, message, end_token=end_token)
     return message
 
-  def _ParseOrMerge(self, lines, message):
+  def _ParseOrMerge(self, lines, message, end_token=None):
     """Converts a text representation of a protocol message into a message.
 
     Args:
       lines: Lines of a message's text representation.
       message: A protocol buffer message to merge into.
+      end_token: Optional token string to stop parsing at.
 
     Raises:
       ParseError: On text parsing problems.
@@ -955,7 +978,9 @@ class _Parser(object):
               self.max_recursion_depth
           )
       )
-    while not tokenizer.AtEnd():
+    while not tokenizer.AtEnd() and not (
+        end_token and tokenizer.TryConsume(end_token)
+    ):
       self._MergeField(tokenizer, message)
     self.recursion_depth -= 1
 
