@@ -84,6 +84,13 @@ class TestMessageExtension(unittest.TestCase):
     test_slice(11, 3, -2)
     test_slice(11, 3, -3)
     test_slice(10, 25, 4)
+    # Empty extended slices must be no-ops (regression: these used to make
+    # PyUpb_RepeatedContainer_DeleteSubscript underflow size_t and memmove
+    # out of bounds).
+    test_slice(5, 5, 2)
+    test_slice(0, 0, 2)
+    test_slice(2, 2, 2)
+    test_slice(20, 20, 2)
 
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()

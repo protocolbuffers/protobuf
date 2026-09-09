@@ -853,6 +853,12 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_Array* arr,
                                                    Py_ssize_t idx,
                                                    Py_ssize_t count,
                                                    Py_ssize_t step) {
+  // An empty slice deletes nothing.  Without this, the step>1 branch below
+  // sets src = start + 1, which can exceed the array size and make
+  // `tail = upb_Array_Size(arr) - src` underflow size_t, turning the
+  // subsequent upb_Array_Move() into an out-of-bounds memmove.
+  if (count == 0) return 0;
+
   // Normalize direction: deletion is order-independent.
   Py_ssize_t start = idx;
   if (step < 0) {
