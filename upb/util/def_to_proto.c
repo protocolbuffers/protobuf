@@ -355,7 +355,7 @@ static google_protobuf_EnumDescriptorProto* enumdef_toproto(upb_ToProto_Context*
   upb_StringView* res_names =
       google_protobuf_EnumDescriptorProto_resize_reserved_name(proto, n, ctx->arena);
   for (int i = 0; i < n; i++) {
-    res_names[i] = upb_EnumDef_ReservedName(e, i);
+    res_names[i] = strviewdup2(ctx, upb_EnumDef_ReservedName(e, i));
   }
 
   if (upb_EnumDef_HasOptions(e)) {
@@ -460,7 +460,7 @@ static google_protobuf_DescriptorProto* msgdef_toproto(upb_ToProto_Context* ctx,
   upb_StringView* res_names =
       google_protobuf_DescriptorProto_resize_reserved_name(proto, n, ctx->arena);
   for (int i = 0; i < n; i++) {
-    res_names[i] = upb_MessageDef_ReservedName(m, i);
+    res_names[i] = strviewdup2(ctx, upb_MessageDef_ReservedName(m, i));
   }
 
   if (upb_MessageDef_HasOptions(m)) {
