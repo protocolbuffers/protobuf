@@ -166,6 +166,18 @@ def build_targets(name):
         ],
     )
 
+    py_extension(
+        name = "google/protobuf/pyext/_map_test_helper",
+        testonly = True,
+        srcs = ["google/protobuf/pyext/testing/map_test_helper.cc"],
+        deps = [
+            ":google/protobuf/pyext/_message",
+        ],
+        linkshared = 1,
+        linkstatic = 1,
+        visibility = ["//python:__subpackages__"],
+    )
+
     aarch64_test(
         name = "aarch64_test",
         bazel_binaries = [
@@ -411,6 +423,9 @@ def build_targets(name):
         name = "message_test",
         srcs = ["google/protobuf/internal/message_test.py"],
         data = ["//src/google/protobuf:testdata"],
+        deps = [
+            ":google/protobuf/pyext/_map_test_helper",
+        ],
     )
 
     internal_py_test(
