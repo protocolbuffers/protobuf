@@ -39,6 +39,7 @@
 
 #define DECODE_NOGROUP (uint32_t)-1
 #define kUpb_Decoder_EncodeVarint32MaxSize 5
+#define kUpb_Decoder_EncodeVarint64MaxSize 10
 
 typedef union {
   bool bool_val;
@@ -263,6 +264,16 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
 }
 
 UPB_INLINE char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
+  do {
+    uint8_t byte = val & 0x7fU;
+    val >>= 7;
+    if (val) byte |= 0x80U;
+    *(ptr++) = byte;
+  } while (val);
+  return ptr;
+}
+
+UPB_INLINE char* upb_Decoder_EncodeVarint64(uint64_t val, char* ptr) {
   do {
     uint8_t byte = val & 0x7fU;
     val >>= 7;
