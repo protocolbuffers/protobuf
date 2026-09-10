@@ -1,0 +1,18 @@
+python/pyi_test/typing_test.py
+  python/pyi_test/typing_test.py:28:13 - information: Type of "step.ok" is "bool"
+  python/pyi_test/typing_test.py:29:13 - information: Type of "step.detail" is "str"
+  python/pyi_test/typing_test.py:30:13 - information: Type of "step.payload" is "bytes"
+  python/pyi_test/typing_test.py:31:13 - information: Type of "step.imported.value" is "str"
+  python/pyi_test/typing_test.py:32:13 - information: Type of "step.state" is "State"
+  python/pyi_test/typing_test.py:34:13 - information: Type of "nested.started" is "str"
+  python/pyi_test/typing_test.py:40:13 - information: Type of "self_fields.something" is "int"
+  python/pyi_test/typing_test.py:41:13 - information: Type of "self_fields.self" is "str"
+  python/pyi_test/typing_test.py:42:13 - information: Type of "self_fields.self_" is "str"
+  python/pyi_test/typing_test.py:44:26 - error: Argument of type "Literal['not bytes']" cannot be assigned to parameter "payload" of type "bytes | None" in function "__init__"
+    Type "Literal['not bytes']" is not assignable to type "bytes | None"
+      "Literal['not bytes']" is not assignable to "bytes"
+      "Literal['not bytes']" is not assignable to "None" (reportArgumentType)
+  python/pyi_test/typing_test.py:45:16 - error: Cannot assign to attribute "payload" for class "Step"
+    "Literal['not bytes']" is not assignable to "bytes" (reportAttributeAccessIssue)
+  python/pyi_test/typing_test.py:46:18 - error: No parameter named "not_a_field" (reportCallIssue)
+3 errors, 0 warnings, 9 informations
