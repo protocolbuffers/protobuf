@@ -700,9 +700,11 @@ void Reflection::InternalMoveOneofField(const FieldDescriptor* field,
     case FieldDescriptor::CPPTYPE_BOOL:
       to->SetBool(from->GetBool());
       break;
+      PROTOBUF_IGNORE_DEPRECATION_START
     case FieldDescriptor::CPPTYPE_ENUM:
       to->SetEnum(from->GetEnum());
       break;
+      PROTOBUF_IGNORE_DEPRECATION_STOP
     case FieldDescriptor::CPPTYPE_MESSAGE:
       if (!unsafe_shallow_swap) {
         to->SetMessage(from->GetMessage());
