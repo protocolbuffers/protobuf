@@ -26,6 +26,7 @@ STALENESS_TESTS=(
   "upb/reflection:descriptor_upb_proto_staleness_test"
   "upb/reflection:json_enumvalue_options_upb_proto_staleness_test"
   "upb_generator:plugin_upb_proto_staleness_test"
+  "python/pyi_test:golden_test"
 )
 
 # Run and fix all staleness tests.
