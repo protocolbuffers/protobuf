@@ -451,6 +451,11 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
                     "https://github.com/protocolbuffers/protobuf/issues/25786");
       }
       ch = *++ptr - 32;
+    } else if (!((ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') ||
+                 ch == '.')) {
+      jsonenc_err(e,
+                  "FieldMask path may only contain lowercase letters, digits, "
+                  "underscores and periods");
     }
 
     jsonenc_put_escaped_char(e, ch);
@@ -730,7 +735,10 @@ static void jsonenc_fieldval(jsonenc* e, const upb_FieldDef* f,
     } else {
       name = upb_FieldDef_JsonName(f);
     }
-    jsonenc_printf(e, "\"%s\":", name);
+    // json_name comes from the descriptor unvalidated, so it has to be escaped
+    // like any other string.
+    jsonenc_string(e, upb_StringView_FromString(name));
+    jsonenc_putstr(e, ":");
   }
 
   if (upb_FieldDef_IsMap(f)) {
