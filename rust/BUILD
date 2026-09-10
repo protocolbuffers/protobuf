@@ -386,7 +386,7 @@ config_setting(
     flag_values = {
         ":rust_proto_library_kernel": "upb",
     },
-    visibility = ["//:__subpackages__"],
+    visibility = ["//visibility:public"],
 )
 
 pkg_files(
