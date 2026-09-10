@@ -303,11 +303,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_NODEREF
 #endif
 
-#if UPB_HAS_C_ATTRIBUTE(nodiscard)
+// Will be defined properly once call sites are updated
+#if false && UPB_HAS_C_ATTRIBUTE(nodiscard)
 #define UPB_NODISCARD [[nodiscard]]
-#elif UPB_HAS_ATTRIBUTE(warn_unused_result)
+#elif false && UPB_HAS_ATTRIBUTE(warn_unused_result)
 #define UPB_NODISCARD __attribute__((warn_unused_result))
-#elif UPB_HAS_CPP_ATTRIBUTE(nodiscard)
+#elif false && UPB_HAS_CPP_ATTRIBUTE(nodiscard)
 #define UPB_NODISCARD [[nodiscard]]
 #else
 #define UPB_NODISCARD
