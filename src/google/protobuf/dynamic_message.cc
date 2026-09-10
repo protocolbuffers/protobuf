@@ -414,10 +414,33 @@ struct DynamicMessageFactory::TypeInfo {
     // Deleting globals means deleting class_data. Access class_data beforehand.
     delete class_data.reflection();
     auto* type = class_data.descriptor();
+    // Cache allocation_size before scribbling message_creator below.
+    auto alloc_size = class_data.message_creator.allocation_size();
+
+    // Scribble the ClassData function pointers. The scribble below covers
+    // offsets[] and has_bits_indices[], but GetClassData() returns a pointer
+    // into this TypeInfo's ClassData, and IsInitialized(), MergeFrom(),
+    // New(), and SerializeToString() call through these function pointers.
+    // Nulling them ensures an immediate crash instead of a call to a stale
+    // address. Must happen before SizedDelete, which frees globals (and
+    // class_data within it) in PROTOBUF_MESSAGE_GLOBALS builds.
+    {
+      auto* cd = const_cast<internal::ClassData*>(&class_data);
+      cd->is_initialized = nullptr;
+      cd->merge_to_from = nullptr;
+      cd->message_creator = internal::MessageCreator();
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+      cd->destroy_message = nullptr;
+      cd->clear = nullptr;
+      cd->byte_size_long = nullptr;
+      cd->serialize = nullptr;
+#endif
+    }
+
     internal::SizedDelete(
         const_cast<MessageGlobalsBase*>(
             MessageGlobalsBase::FromDefaultInstance(GetPrototype())),
-        MsgSizeToGlobalsSize(class_data.message_creator.allocation_size()));
+        MsgSizeToGlobalsSize(alloc_size));
 
     // Scribble the payload to prevent unsanitized opt builds from silently
     // allowing use-after-free bugs where the factory is destroyed but the
