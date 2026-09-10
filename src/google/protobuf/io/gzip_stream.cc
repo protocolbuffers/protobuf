@@ -22,13 +22,12 @@
 
 namespace google {
 namespace protobuf {
+namespace io {
 namespace internal {
 struct StreamContext {
   z_stream context;
 };
 }  // namespace internal
-
-namespace io {
 
 static const int kDefaultBufferSize = 65536;
 
@@ -57,7 +56,7 @@ GzipInputStream::GzipInputStream(ZeroCopyInputStream* sub_stream, Format format,
   output_position_ = output_buffer_;
 }
 GzipInputStream::~GzipInputStream() {
-  internal::SizedDelete(output_buffer_, output_buffer_length_);
+  google::protobuf::internal::SizedDelete(output_buffer_, output_buffer_length_);
   zerror_ = inflateEnd(&zcontext_->context);
   delete zcontext_;
 }
@@ -239,7 +238,7 @@ void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
 GzipOutputStream::~GzipOutputStream() {
   // TODO: Remove this suppression.
   (void)Close();
-  internal::SizedDelete(input_buffer_, input_buffer_length_);
+  google::protobuf::internal::SizedDelete(input_buffer_, input_buffer_length_);
   delete zcontext_;
 }
 

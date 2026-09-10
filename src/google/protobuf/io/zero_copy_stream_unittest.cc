@@ -845,7 +845,7 @@ TEST(CordInputStreamTest, SkipToEnd) {
 }
 
 TEST(CordInputStreamTest, HugeCordNodes) {
-  if (!internal::RunLargeMemoryTests()) {
+  if (!google::protobuf::internal::RunLargeMemoryTests()) {
     GTEST_SKIP() << "Not enough memory for this test.";
   }
 
