@@ -32,16 +32,16 @@ jobs:
           - name: 8.2 Optimized
             version: "8.2.2"
             version-short: "8.2"
-            command: composer test && composer test_c
+            command: composer test; composer test_c
           - name: 8.2 Debug
             version: 8.2.2-dbg
             version-short: "8.2"
-            command: composer test && composer test_c
+            command: composer test; composer test_c
           - name: 8.2 Memory Leak
             version: 8.2.2-dbg
             version-short: "8.2"
             # Run specialized memory leak & multirequest tests.
-            command: composer test_c && tests/multirequest.sh && tests/memory_leak_test.sh
+            command: composer test_c; tests/multirequest.sh; tests/memory_leak_test.sh
             continuous-only: true
           - name: 8.2 Valgrind
             version: 8.2.2-dbg
@@ -51,7 +51,7 @@ jobs:
           - name: 8.5 Optimized
             version: "8.5.2"
             version-short: "8.5"
-            command: composer test && composer test_c
+            command: composer test; composer test_c
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.name}}
     runs-on: ubuntu-22-4core
@@ -75,7 +75,7 @@ jobs:
             ./regenerate_stale_files.sh $BAZEL_FLAGS
             pushd /workspace/php
             composer update
-            ${{ matrix.command }}
+            (${{ matrix.command }})
             popd
             bazel test //php:conformance_test //php:conformance_test_c --action_env=PATH --test_env=PATH $BAZEL_FLAGS
 
@@ -130,7 +130,7 @@ jobs:
           command: >-
             /bin/bash -cex '
             PATH="/usr/local/php-${{ matrix.version }}${{matrix.suffix}}/bin:$PATH";
-            cd php && php -v && php -m;
+            cd php; php -v; php -m;
             composer update;
             composer ${{ matrix.test }}'
 
