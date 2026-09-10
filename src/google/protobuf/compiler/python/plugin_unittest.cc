@@ -22,6 +22,7 @@
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/python/generator.h"
+#include "google/protobuf/compiler/python/pyi_generator.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream.h"
@@ -152,6 +153,42 @@ TEST_P(PythonGeneratorTest, PythonWithCppFeatures) {
       google::protobuf::DescriptorProto::descriptor()->file()->name()));
 
   ExpectNoErrors();
+}
+
+TEST_P(PythonGeneratorTest, PyiMessageFieldsUseFullyTypedMappingInitType) {
+  RegisterGenerator("--pyi_out", std::make_unique<PyiGenerator>(),
+                    "Python pyi test generator");
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+
+    package foo;
+
+    message X {
+      string s = 1;
+    }
+
+    message M {
+      X x = 1;
+      repeated X xs = 2;
+    })schema");
+
+  RunProtoc("protocol_compiler --proto_path=$tmpdir --pyi_out=$tmpdir "
+            "foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "foo_pb2.pyi",
+      "from typing import Any as _Any, ClassVar as _ClassVar, "
+      "Optional as _Optional, Union as _Union");
+  ExpectFileContentContainsSubstring(
+      "foo_pb2.pyi",
+      "def __init__(self, s: _Optional[str] = ...) -> None: ...");
+  ExpectFileContentContainsSubstring(
+      "foo_pb2.pyi",
+      "def __init__(self, x: _Optional[_Union[X, _Mapping[_Any, _Any]]] = ..., "
+      "xs: _Optional[_Iterable[_Union[X, _Mapping[_Any, _Any]]]] = ...)"
+      " -> None: ...");
 }
 
 INSTANTIATE_TEST_SUITE_P(PythonGeneratorTest, PythonGeneratorTest,
