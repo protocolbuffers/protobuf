@@ -196,3 +196,31 @@ fn test_required_field_not_enforced() {
     msg.clear_and_parse_dont_enforce_required(&[]).unwrap();
     expect_that!(msg.has_a(), eq(false));
 }
+
+#[gtest]
+fn test_clear_and_parse_clears_on_error() {
+    let mut msg = TestAllTypes::new();
+    msg.set_optional_int32(42);
+    // Malformed wire format (tag 1 with incomplete varint).
+    let malformed_data = [0x08, 0x80];
+    expect_that!(msg.clear_and_parse(&malformed_data), err(anything()));
+    expect_that!(msg.has_optional_int32(), eq(false));
+    expect_that!(msg.optional_int32(), eq(0));
+}
+
+#[gtest]
+fn test_clear_and_parse_clears_on_error_oneof_partial() {
+    let mut msg = TestAllTypesProto3::new();
+    msg.set_oneof_uint32(7);
+
+    // Payload containing a valid oneof_bytes followed by an invalid UTF-8 oneof_string.
+    // field 114 (oneof_bytes):
+    //   tag = (114 << 3) | 2 = 914 = [0x92, 0x07], len = 4, data = [1, 2, 3, 4]
+    // field 113 (oneof_string):
+    //   tag = (113 << 3) | 2 = 906 = [0x8a, 0x07], len = 1, data = [0x80] (invalid UTF-8)
+    let payload = [0x92, 0x07, 0x04, 0x01, 0x02, 0x03, 0x04, 0x8a, 0x07, 0x01, 0x80];
+    expect_that!(msg.clear_and_parse(&payload), err(anything()));
+    expect_that!(msg.oneof_uint32_opt(), eq(None));
+    expect_that!(msg.oneof_bytes_opt(), eq(None));
+    expect_that!(msg.oneof_string_opt(), eq(None));
+}
