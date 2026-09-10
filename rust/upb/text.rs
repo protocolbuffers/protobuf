@@ -32,5 +32,5 @@ pub unsafe fn debug_string<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> String
     // - `buf` is legally writable for 'buf_len' bytes
     let written_len = unsafe { upb_DebugString(msg, mt, 0, buf.as_mut_ptr(), buf.len()) };
     assert_eq!(len, written_len);
-    String::from_utf8_lossy(buf.as_slice()).to_string()
+    String::from_utf8_lossy(&buf[..len]).into_owned()
 }
