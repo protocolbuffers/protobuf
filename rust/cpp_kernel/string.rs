@@ -232,9 +232,12 @@ pub fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
     val.into().as_bytes().into()
 }
 
-// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
-// call.
-pub fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
+/// Converts a `PtrAndLen` into a `&'msg ProtoStr`.
+///
+/// # Safety
+/// - `val` must be legal to read for duration of `'msg`, with no mutable aliasing.
+pub unsafe fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
+    // SAFETY: The caller guarantees `val` points to valid data.
     ProtoStr::from_utf8_unchecked(unsafe { val.as_ref() })
 }
 
@@ -246,9 +249,12 @@ pub fn protobytes_into_cppstdstring(val: ProtoBytes) -> CppStdString {
     val.into_inner(Private).into_raw()
 }
 
-// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
-// call.
-pub fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
+/// Converts a `PtrAndLen` into a `&'msg [u8]`.
+///
+/// # Safety
+/// - `val` must be legal to read for duration of `'msg`, with no mutable aliasing.
+pub unsafe fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
+    // SAFETY: The caller guarantees `val` points to valid initialized bytes valid for `'msg`.
     unsafe { val.as_ref() }
 }
 

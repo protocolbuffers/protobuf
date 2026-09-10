@@ -104,7 +104,9 @@ impl CppTypeConversions for ProtoString {
     type ElemType = PtrAndLen;
 
     fn elem_to_view<'msg>(v: PtrAndLen) -> View<'msg, ProtoString> {
-        ptrlen_to_str(v)
+        // SAFETY:
+        // - Caller guarantees `v` is valid for `'msg` and not modified.
+        unsafe { ptrlen_to_str(v) }
     }
 
     fn into_insertelem(v: Self) -> CppStdString {
@@ -117,7 +119,9 @@ impl CppTypeConversions for ProtoBytes {
     type ElemType = PtrAndLen;
 
     fn elem_to_view<'msg>(v: Self::ElemType) -> View<'msg, Self> {
-        ptrlen_to_bytes(v)
+        // SAFETY:
+        // - Caller guarantees `v` is valid for `'msg` and not modified.
+        unsafe { ptrlen_to_bytes(v) }
     }
 
     fn into_insertelem(v: Self) -> CppStdString {
