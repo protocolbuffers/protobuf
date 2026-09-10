@@ -293,6 +293,168 @@ TEST_F(IoTest, ArrayIo) {
   }
 }
 
+// -------------------------------------------------------------------
+// ArrayInputStream
+
+TEST(ArrayInputStreamTest, EmptyBuffer) {
+  {
+    ArrayInputStream input(nullptr, 0);
+    EXPECT_EQ(input.ByteCount(), 0);
+
+    const void* data = nullptr;
+    int size = -1;
+    EXPECT_FALSE(input.Next(&data, &size));
+    EXPECT_EQ(input.ByteCount(), 0);
+    EXPECT_TRUE(input.Skip(0));
+    EXPECT_EQ(input.ByteCount(), 0);
+    EXPECT_FALSE(input.Skip(1));
+    EXPECT_EQ(input.ByteCount(), 0);
+  }
+  {
+    char c = 'x';
+    ArrayInputStream input(&c, 0);
+    EXPECT_EQ(input.ByteCount(), 0);
+
+    const void* data = nullptr;
+    int size = -1;
+    EXPECT_FALSE(input.Next(&data, &size));
+    EXPECT_EQ(input.ByteCount(), 0);
+  }
+}
+
+TEST(ArrayInputStreamTest, NextReturnsWholeBuffer) {
+  constexpr absl::string_view data = "Hello, world!";
+  ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+  EXPECT_EQ(input.ByteCount(), 0);
+
+  const void* out_data = nullptr;
+  int out_size = 0;
+  ASSERT_TRUE(input.Next(&out_data, &out_size));
+  EXPECT_EQ(out_data, data.data());
+  EXPECT_EQ(out_size, static_cast<int>(data.size()));
+  EXPECT_EQ(input.ByteCount(), static_cast<int>(data.size()));
+
+  EXPECT_FALSE(input.Next(&out_data, &out_size));
+  EXPECT_EQ(input.ByteCount(), static_cast<int>(data.size()));
+}
+
+TEST(ArrayInputStreamTest, BackUp) {
+  constexpr absl::string_view data = "0123456789";
+  {
+    // Partial backup.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    const void* out_data = nullptr;
+    int out_size = 0;
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    EXPECT_EQ(out_size, 10);
+    EXPECT_EQ(input.ByteCount(), 10);
+
+    input.BackUp(4);
+    EXPECT_EQ(input.ByteCount(), 6);
+
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    EXPECT_EQ(out_size, 4);
+    EXPECT_EQ(out_data, data.data() + 6);
+    EXPECT_EQ(input.ByteCount(), 10);
+
+    EXPECT_FALSE(input.Next(&out_data, &out_size));
+  }
+  {
+    // Full backup.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    const void* out_data = nullptr;
+    int out_size = 0;
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    EXPECT_EQ(out_size, 10);
+
+    input.BackUp(10);
+    EXPECT_EQ(input.ByteCount(), 0);
+
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    EXPECT_EQ(out_size, 10);
+    EXPECT_EQ(out_data, data.data());
+    EXPECT_EQ(input.ByteCount(), 10);
+  }
+  {
+    // Zero-byte backup.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    const void* out_data = nullptr;
+    int out_size = 0;
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    input.BackUp(0);
+    EXPECT_EQ(input.ByteCount(), 10);
+    EXPECT_FALSE(input.Next(&out_data, &out_size));
+  }
+}
+
+TEST(ArrayInputStreamTest, Skip) {
+  constexpr absl::string_view data = "0123456789";
+  {
+    // Skip 0 bytes.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    EXPECT_TRUE(input.Skip(0));
+    EXPECT_EQ(input.ByteCount(), 0);
+
+    const void* out_data = nullptr;
+    int out_size = 0;
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    EXPECT_EQ(out_size, 10);
+    EXPECT_EQ(out_data, data.data());
+  }
+  {
+    // Skip partial.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    EXPECT_TRUE(input.Skip(4));
+    EXPECT_EQ(input.ByteCount(), 4);
+
+    const void* out_data = nullptr;
+    int out_size = 0;
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    EXPECT_EQ(out_size, 6);
+    EXPECT_EQ(out_data, data.data() + 4);
+    EXPECT_EQ(input.ByteCount(), 10);
+    EXPECT_FALSE(input.Next(&out_data, &out_size));
+  }
+  {
+    // Skip to exact end.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    EXPECT_TRUE(input.Skip(10));
+    EXPECT_EQ(input.ByteCount(), 10);
+
+    const void* out_data = nullptr;
+    int out_size = 0;
+    EXPECT_FALSE(input.Next(&out_data, &out_size));
+  }
+  {
+    // Skip past end.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    EXPECT_FALSE(input.Skip(15));
+    EXPECT_EQ(input.ByteCount(), 10);
+
+    const void* out_data = nullptr;
+    int out_size = 0;
+    EXPECT_FALSE(input.Next(&out_data, &out_size));
+  }
+  {
+    // Skip after Next and BackUp.
+    ArrayInputStream input(data.data(), static_cast<int>(data.size()));
+    const void* out_data = nullptr;
+    int out_size = 0;
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    input.BackUp(6);
+    EXPECT_EQ(input.ByteCount(), 4);
+
+    EXPECT_TRUE(input.Skip(2));
+    EXPECT_EQ(input.ByteCount(), 6);
+
+    ASSERT_TRUE(input.Next(&out_data, &out_size));
+    EXPECT_EQ(out_size, 4);
+    EXPECT_EQ(out_data, data.data() + 6);
+    EXPECT_EQ(input.ByteCount(), 10);
+  }
+}
+
+
 TEST_F(IoTest, TwoSessionWrite) {
   // Test that two concatenated write sessions read correctly
 
