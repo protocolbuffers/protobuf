@@ -37,6 +37,12 @@ bazel_dep(name = "rules_kotlin", version = "2.3.20")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "2.3.0")
+git_override(
+    module_name = "rules_python",
+    commit = "84874d514e343a32ce1c611165b1f26952dedd79",
+    remote = "https://github.com/rsartor-cmd/rules_python.git",
+)
+
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
@@ -174,12 +180,25 @@ local_runtime_toolchains_repo(
     name = "local_toolchains",
     dev_dependency = True,
     runtimes = ["local_python3"],
+    target_settings = {
+        "local_python3": ["@//python:is_system_python"],
+    },
 )
 
 register_toolchains(
     "@local_toolchains//:all",
     dev_dependency = True,
 )
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
+
+[
+    python.toolchain(
+        is_default = (python_version == "3.10"),
+        python_version = python_version,
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
 

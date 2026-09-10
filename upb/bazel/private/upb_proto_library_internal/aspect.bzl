@@ -180,6 +180,7 @@ def _compile_upb_protos(ctx, files, generator, dep_ccinfos, cc_provider, proto_i
         includes = [output_dir(ctx, proto_info)],
         copts = ctx.attr._copts[UpbProtoLibraryCoptsInfo].copts,
         dep_ccinfos = dep_ccinfos,
+        alwayslink = True,
     )
 
     return cc_provider(
