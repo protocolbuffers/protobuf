@@ -636,3 +636,22 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/abseil_head
           bazel: test //src/... --override_module=abseil-cpp=abseil-cpp-head
+
+  linux-bazel-last-green:
+    name: ${{ inputs.continuous-prefix }} Linux Bazel last_green
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v6
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/bazel_last_green
+          bash: USE_BAZEL_VERSION=last_green bazelisk test //src/... //third_party/utf8_range/... --cxxopt=-Wno-self-assign-overloaded
+
