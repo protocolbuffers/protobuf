@@ -17,6 +17,9 @@
 
 #include "google/protobuf/descriptor_database.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace python {
@@ -25,7 +28,7 @@ class PyDescriptorDatabase : public DescriptorDatabase {
  public:
   explicit PyDescriptorDatabase(PyObject* py_database);
   ~PyDescriptorDatabase() override;
-
+  PROTOBUF_IGNORE_DEPRECATION_START
   // Implement the abstract interface. All these functions fill the output
   // with a copy of FileDescriptorProto.
 
@@ -51,6 +54,7 @@ class PyDescriptorDatabase : public DescriptorDatabase {
   // Python objects are not required to implement this method.
   bool FindAllExtensionNumbers(StringViewArg containing_type,
                                std::vector<int>* output) override;
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
  private:
   // The python object that implements the database. The reference is owned.
@@ -60,5 +64,7 @@ class PyDescriptorDatabase : public DescriptorDatabase {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
 
 #endif  // GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_DATABASE_H__
