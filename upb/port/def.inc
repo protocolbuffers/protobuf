@@ -836,3 +836,18 @@ Error, UINTPTR_MAX is undefined
   strong_alias_not_supported_on_this_platform
 
 #endif
+
+// Future versions of upb will include breaking changes to some APIs.
+// This macro can be set to enable these API changes ahead of time, so that
+// user code can be updated before upgrading versions of protobuf.
+#ifdef UPB_FUTURE_BREAKING_CHANGES
+
+// Use 32-bit size and capacity in upb_Array.
+// Owner: clm@
+#define UPB_FUTURE_32BIT_ARRAY 1
+
+#else
+
+#define UPB_FUTURE_32BIT_ARRAY 0
+
+#endif
