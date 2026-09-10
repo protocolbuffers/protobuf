@@ -1092,8 +1092,9 @@ class TextFormat::Parser::ParserImpl {
             return true;
           }
         }
-
+        PROTOBUF_IGNORE_DEPRECATION_START
         SET_FIELD(Enum, enum, enum_value);
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         break;
       }
 
