@@ -59,11 +59,13 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_util2.h"
 
+
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
 #endif
 
 #include "google/protobuf/test_util.h"
+
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -687,6 +689,150 @@ TEST_F(IoTest, GzipInputByteCountAfterClosedConcatenatedStreams) {
       EXPECT_LE(gz_input.ByteCount(), total_size);
     }
     EXPECT_EQ(total_size, gz_input.ByteCount());
+  }
+}
+
+TEST_F(IoTest, GzipInputBackUp) {
+  std::string golden = "abcdefghijklmnopqrstuvwxyz";
+  std::string compressed = Compress(golden, GzipOutputStream::Options());
+
+  ArrayInputStream arr_input(compressed.data(), compressed.size());
+  GzipInputStream gz_input(&arr_input);
+
+  // Calling BackUp before Next() should abort.
+  EXPECT_DEATH(gz_input.BackUp(1),
+               "count must be within bounds of output buffer");
+
+  const void* buffer;
+  int size = 0;
+  ASSERT_TRUE(gz_input.Next(&buffer, &size));
+  ASSERT_GT(size, 5);
+
+  // BackUp negative count should abort.
+  EXPECT_DEATH(gz_input.BackUp(-1), "count must not be negative");
+
+  // BackUp more than available buffer should abort.
+  EXPECT_DEATH(gz_input.BackUp(size + 1),
+               "count must be within bounds of output buffer");
+
+  // Valid backup of 5 bytes.
+  gz_input.BackUp(5);
+  EXPECT_EQ(gz_input.ByteCount(), size - 5);
+
+  // Re-read backed up bytes.
+  const void* buffer2;
+  int size2 = 0;
+  ASSERT_TRUE(gz_input.Next(&buffer2, &size2));
+  EXPECT_EQ(5, size2);
+  EXPECT_EQ(golden.substr(size - 5, 5),
+            absl::string_view(static_cast<const char*>(buffer2), size2));
+
+  // Valid backup of the 5 bytes just read.
+  gz_input.BackUp(size2);
+  EXPECT_EQ(gz_input.ByteCount(), size - 5);
+
+  // Verify backing up the entire first buffer to output_buffer_ aborts if
+  // exceeded.
+  {
+    ArrayInputStream arr_input2(compressed.data(), compressed.size());
+    GzipInputStream gz_input2(&arr_input2);
+    const void* b;
+    int s = 0;
+    ASSERT_TRUE(gz_input2.Next(&b, &s));
+    // Back up all bytes returned by this Next().
+    gz_input2.BackUp(s);
+    EXPECT_EQ(gz_input2.ByteCount(), 0);
+
+    // Backing up further past output_buffer_ should abort.
+    EXPECT_DEATH(gz_input2.BackUp(1),
+                 "count must be within bounds of output buffer");
+  }
+}
+
+TEST_F(IoTest, GzipInputByteCountBackUpSkip) {
+  std::string golden = "abcdefghijklmnopqrstuvwxyz";
+  std::string compressed = Compress(golden, GzipOutputStream::Options());
+
+  {
+    ArrayInputStream arr_input(compressed.data(), compressed.size());
+    GzipInputStream gz_input(&arr_input);
+
+    EXPECT_EQ(gz_input.ByteCount(), 0);
+
+    // Read all bytes.
+    const void* buffer;
+    int size = 0;
+    ASSERT_TRUE(gz_input.Next(&buffer, &size));
+    EXPECT_EQ(size, golden.size());
+    EXPECT_EQ(gz_input.ByteCount(), golden.size());
+
+    // BackUp 10 bytes (valid since 10 <= 26). ByteCount should decrease by 10.
+    gz_input.BackUp(10);
+    EXPECT_EQ(gz_input.ByteCount(), 16);
+
+    // Skip 5 of the backed-up bytes. ByteCount should increase by 5.
+    EXPECT_TRUE(gz_input.Skip(5));
+    EXPECT_EQ(gz_input.ByteCount(), 21);
+
+    // Re-read remaining 5 bytes.
+    const void* buffer2;
+    int size2 = 0;
+    ASSERT_TRUE(gz_input.Next(&buffer2, &size2));
+    EXPECT_EQ(size2, 5);
+    EXPECT_EQ(absl::string_view(static_cast<const char*>(buffer2), size2),
+              "vwxyz");
+    EXPECT_EQ(gz_input.ByteCount(), golden.size());
+
+    // BackUp 3 bytes (valid since 3 <= 5). ByteCount should decrease by 3.
+    gz_input.BackUp(3);
+    EXPECT_EQ(gz_input.ByteCount(), 23);
+
+    // Skip 2 of the backed-up bytes. ByteCount should increase by 2.
+    EXPECT_TRUE(gz_input.Skip(2));
+    EXPECT_EQ(gz_input.ByteCount(), 25);
+
+    // Read the last 1 byte.
+    const void* buffer3;
+    int size3 = 0;
+    ASSERT_TRUE(gz_input.Next(&buffer3, &size3));
+    EXPECT_EQ(size3, 1);
+    EXPECT_EQ(absl::string_view(static_cast<const char*>(buffer3), size3), "z");
+    EXPECT_EQ(gz_input.ByteCount(), golden.size());
+  }
+
+  // Test Skip and BackUp starting from the beginning of the stream.
+  {
+    ArrayInputStream arr_input(compressed.data(), compressed.size());
+    GzipInputStream gz_input(&arr_input);
+
+    EXPECT_EQ(gz_input.ByteCount(), 0);
+
+    // Skip 10 bytes from beginning.
+    EXPECT_TRUE(gz_input.Skip(10));
+    EXPECT_EQ(gz_input.ByteCount(), 10);
+
+    // Read remaining 16 bytes.
+    const void* buffer;
+    int size = 0;
+    ASSERT_TRUE(gz_input.Next(&buffer, &size));
+    EXPECT_EQ(size, 16);
+    EXPECT_EQ(absl::string_view(static_cast<const char*>(buffer), size),
+              golden.substr(10));
+    EXPECT_EQ(gz_input.ByteCount(), golden.size());
+
+    // Back up 6 bytes (valid since 6 <= 16).
+    gz_input.BackUp(6);
+    EXPECT_EQ(gz_input.ByteCount(), 20);
+
+    // Skip 6 bytes to reach end.
+    EXPECT_TRUE(gz_input.Skip(6));
+    EXPECT_EQ(gz_input.ByteCount(), golden.size());
+
+    // Next at EOF.
+    const void* eof_buffer;
+    int eof_size = 0;
+    EXPECT_FALSE(gz_input.Next(&eof_buffer, &eof_size));
+    EXPECT_EQ(gz_input.ByteCount(), golden.size());
   }
 }
 #endif

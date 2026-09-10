@@ -14,6 +14,8 @@
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
 
+#include <cstddef>
+
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/port.h"
@@ -161,8 +163,12 @@ bool GzipInputStream::Next(const void** data, int* size) {
   return true;
 }
 void GzipInputStream::BackUp(int count) {
-  output_position_ = reinterpret_cast<void*>(
-      reinterpret_cast<uintptr_t>(output_position_) - count);
+  ptrdiff_t max_backup =
+      static_cast<char*>(output_position_) - static_cast<char*>(output_buffer_);
+  ABSL_CHECK_GE(count, 0) << "count must not be negative";
+  ABSL_CHECK_LE(count, max_backup)
+      << "count must be within bounds of output buffer";
+  output_position_ = static_cast<char*>(output_position_) - count;
 }
 bool GzipInputStream::Skip(int count) {
   const void* data;
@@ -180,7 +186,7 @@ bool GzipInputStream::Skip(int count) {
 int64_t GzipInputStream::ByteCount() const {
   int64_t ret = byte_count_ + zcontext_->context.total_out;
   if (zcontext_->context.next_out != nullptr && output_position_ != nullptr) {
-    ret += reinterpret_cast<uintptr_t>(zcontext_->context.next_out) -
+    ret -= reinterpret_cast<uintptr_t>(zcontext_->context.next_out) -
            reinterpret_cast<uintptr_t>(output_position_);
   }
   return ret;
