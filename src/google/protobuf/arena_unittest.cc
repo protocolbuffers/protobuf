@@ -40,6 +40,7 @@
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
 #include "absl/utility/utility.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"

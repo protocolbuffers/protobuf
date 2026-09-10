@@ -123,6 +123,7 @@ class alignas(8) HeapRep {
   ~HeapRep() = delete;
 
   uint32_t capacity() const { return capacity_; }
+  void set_capacity(uint32_t capacity) { capacity_ = capacity; }
 
   template <typename Element>
   const Element* elements() const {
@@ -570,6 +571,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
                 const RepeatedField& rhs);
   RepeatedField(internal::InternalMetadataOffset offset, Arena* arena,
                 RepeatedField&& rhs);
+
+  class Adder;
+  Adder MakeAdder(internal::SerialArena* arena) { return Adder(*this, arena); }
 
   template <typename Init>
   void ResizeImpl(int new_size, Init init);
@@ -1577,6 +1581,8 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
                   sizeof(Element)) {
       // We need to manually align the allocation.
       bytes = internal::ArenaAlignDefault::Ceil(bytes);
+      new_size =
+          static_cast<int>((bytes - kHeapRepHeaderSize) / sizeof(Element));
     }
     new_rep =
         new (arena->AllocateAligned<internal::AllocationClient::kArray>(bytes))
@@ -1629,6 +1635,86 @@ inline void RepeatedField<Element>::Truncate(int new_size) {
 template <>
 PROTOBUF_EXPORT size_t
 RepeatedField<absl::Cord>::SpaceUsedExcludingSelfLong() const;
+
+template <typename Element>
+class RepeatedField<Element>::Adder {
+ public:
+  Adder(RepeatedField& self, internal::SerialArena* arena)
+      : self_(self), arena_(arena) {
+    out_ = self_.mutable_data() + self_.size();
+    end_ = self_.mutable_data() + self_.Capacity();
+    // Disable annotations. We enable them again on destruction.
+    self_.AnnotateForRelease();
+  }
+
+  ~Adder() {
+    // We need to flush the size, fix the sanitizer annotations and return
+    // memory to the arena if possible.
+    const int actual_size = out_ - self_.data();
+    self_.ExchangeCurrentSize(actual_size);
+    self_.AnnotateSize(0, actual_size);
+
+    if (CanBeArenaTail()) {
+      Element* desired_end = internal::ArenaAlignDefault::Ceil(out_);
+      int desired_capacity = actual_size + (desired_end - out_);
+      if (arena_->TryShrinkToFit(end_, desired_end)) {
+        self_.heap_rep()->set_capacity(desired_capacity);
+      }
+    }
+  }
+
+  Adder(const Adder&) = delete;
+  Adder& operator=(const Adder&) = delete;
+
+  PROTOBUF_ALWAYS_INLINE void Add(Element element) {
+    *Add() = std::move(element);
+  }
+
+  PROTOBUF_ALWAYS_INLINE Element* Add() {
+    if (ABSL_PREDICT_FALSE(out_ == end_)) {
+      GrowArray();
+    }
+
+    return ::new (out_++) Element;
+  }
+
+  auto* arena() const { return arena_; }
+
+ private:
+  bool CanBeArenaTail() const { return arena_ != nullptr && !self_.is_soo(); }
+
+  PROTOBUF_ALWAYS_INLINE void GrowArray() {
+    const int old_size = out_ - self_.data();
+    if (CanBeArenaTail()) {
+      // If we can realloc in place, just do that first.
+      internal::HeapRep* old_rep = self_.soo_rep_.heap_rep();
+      ABSL_DCHECK_EQ(old_size, old_rep->capacity());
+      const size_t alloc_size = kHeapRepHeaderSize + old_size * sizeof(Element);
+      auto new_byte_size =
+          arena_->TryGrowAlloc(old_rep, alloc_size, sizeof(Element));
+      if (new_byte_size.has_value()) {
+        size_t new_capacity =
+            (*new_byte_size - kHeapRepHeaderSize) / sizeof(Element);
+        ABSL_DCHECK_GT(new_capacity, old_size);
+        old_rep->set_capacity(new_capacity);
+        // Same out_, only update end_
+        end_ = out_ + (new_capacity - old_size);
+        return;
+      }
+    }
+
+    self_.GrowNoAnnotate(arena_, self_.is_soo(), old_size,
+                         internal::CheckedAdd(old_size, 1));
+    // We changed Rep, so update both.
+    out_ = self_.unsafe_elements(false) + old_size;
+    end_ = self_.unsafe_elements(false) + self_.Capacity(false);
+  }
+
+  RepeatedField& self_;
+  internal::SerialArena* arena_;
+  Element* out_;
+  Element* end_;
+};
 
 // -------------------------------------------------------------------
 

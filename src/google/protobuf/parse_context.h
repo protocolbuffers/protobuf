@@ -288,7 +288,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename Convert, typename T>
   static const char* ReadPackedVarintArrayWithField(const char* ptr,
                                                     const char* end,
-                                                    Arena* arena, Convert conv,
+                                                    SerialArena* arena,
+                                                    Convert conv,
                                                     RepeatedField<T>& out);
   template <typename Add>
   [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add) {
@@ -300,7 +301,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // Same as above, but pass the field directly , so we can preallocate.
   template <typename Convert, typename T>
   [[nodiscard]] const char* ReadPackedVarintWithField(const char* ptr,
-                                                      Arena* arena,
+                                                      SerialArena* arena,
                                                       Convert conv,
                                                       RepeatedField<T>& out);
 
@@ -1575,9 +1576,9 @@ const char* EpsCopyInputStream::ReadPackedVarintArray(const char* ptr,
 
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
-    const char* ptr, const char* end, Arena* arena, Convert conv,
+    const char* ptr, const char* end, SerialArena* arena, Convert conv,
     RepeatedField<T>& out) {
-  ABSL_DCHECK_EQ(arena, out.GetArena());
+  ABSL_DCHECK_EQ(arena, GetSerialArena(out.GetArena()));
 
   // If we have enough bytes, we will spend more cpu cycles growing repeated
   // field, than parsing, so count the number of ints first and preallocate.
@@ -1636,7 +1637,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
 
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintWithField(
-    const char* ptr, Arena* arena, Convert conv, RepeatedField<T>& out) {
+    const char* ptr, SerialArena* arena, Convert conv, RepeatedField<T>& out) {
   int size = ReadSize(&ptr);
 
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);

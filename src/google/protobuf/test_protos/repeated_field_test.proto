@@ -1,0 +1,36 @@
+syntax = "proto2";
+
+package proto2_unittest;
+
+message TestAllRepeatedFields {
+  enum TestEnum {
+    TEST_ENUM_FOO = 0;
+    TEST_ENUM_BAR = 1;
+    TEST_ENUM_BAZ = 2;
+  }
+
+  enum TestLargeEnum {
+    TEST_LARGE_ENUM_FOO = 0;
+    TEST_LARGE_ENUM_BAR = 1;
+    TEST_LARGE_ENUM_BAZ = 200;
+  }
+
+  repeated int32 repeated_int32 = 1;
+  repeated int64 repeated_int64 = 2;
+  repeated fixed32 repeated_fixed32 = 3;
+  repeated fixed64 repeated_fixed64 = 4;
+  repeated TestEnum repeated_enum = 5;
+  repeated TestLargeEnum repeated_large_enum = 6;
+  repeated string repeated_cord = 7 [ctype = CORD];
+
+  repeated int32 packed_int32 = 8 [packed = true];
+  repeated int64 packed_int64 = 9 [packed = true];
+  repeated fixed32 packed_fixed32 = 10 [packed = true];
+  repeated fixed64 packed_fixed64 = 11 [packed = true];
+  repeated TestEnum packed_enum = 12 [packed = true];
+  repeated TestLargeEnum packed_large_enum = 13 [packed = true];
+
+  repeated int32 miniparse_int32 = 1000;
+  repeated fixed32 miniparse_fixed32 = 1001;
+  repeated int32 miniparse_packed = 1002 [packed = true];
+}
