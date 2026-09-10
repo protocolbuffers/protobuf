@@ -181,7 +181,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<int> ForInt32(uint tag, int defaultValue)
         {
-            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadInt32(), (ref WriteContext output, int value) => output.WriteInt32(value), CodedOutputStream.ComputeInt32Size, tag, defaultValue);
+            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadInt32(), (ref WriteContext output, int value) => output.WriteInt32(value), CodedOutputStream.ComputeInt32Size, tag, defaultValue, PackedInt32SizeCalculator);
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<int> ForSInt32(uint tag, int defaultValue)
         {
-            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadSInt32(), (ref WriteContext output, int value) => output.WriteSInt32(value), CodedOutputStream.ComputeSInt32Size, tag, defaultValue);
+            return new FieldCodec<int>((ref ParseContext ctx) => ctx.ReadSInt32(), (ref WriteContext output, int value) => output.WriteSInt32(value), CodedOutputStream.ComputeSInt32Size, tag, defaultValue, PackedSInt32SizeCalculator);
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<uint> ForUInt32(uint tag, uint defaultValue)
         {
-            return new FieldCodec<uint>((ref ParseContext ctx) => ctx.ReadUInt32(), (ref WriteContext output, uint value) => output.WriteUInt32(value), CodedOutputStream.ComputeUInt32Size, tag, defaultValue);
+            return new FieldCodec<uint>((ref ParseContext ctx) => ctx.ReadUInt32(), (ref WriteContext output, uint value) => output.WriteUInt32(value), CodedOutputStream.ComputeUInt32Size, tag, defaultValue, PackedUInt32SizeCalculator);
         }
 
         /// <summary>
@@ -236,7 +236,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<long> ForInt64(uint tag, long defaultValue)
         {
-            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadInt64(), (ref WriteContext output, long value) => output.WriteInt64(value), CodedOutputStream.ComputeInt64Size, tag, defaultValue);
+            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadInt64(), (ref WriteContext output, long value) => output.WriteInt64(value), CodedOutputStream.ComputeInt64Size, tag, defaultValue, PackedInt64SizeCalculator);
         }
 
         /// <summary>
@@ -247,7 +247,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<long> ForSInt64(uint tag, long defaultValue)
         {
-            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadSInt64(), (ref WriteContext output, long value) => output.WriteSInt64(value), CodedOutputStream.ComputeSInt64Size, tag, defaultValue);
+            return new FieldCodec<long>((ref ParseContext ctx) => ctx.ReadSInt64(), (ref WriteContext output, long value) => output.WriteSInt64(value), CodedOutputStream.ComputeSInt64Size, tag, defaultValue, PackedSInt64SizeCalculator);
         }
 
         /// <summary>
@@ -280,7 +280,7 @@ namespace Google.Protobuf
         /// <returns>A codec for the given tag.</returns>
         public static FieldCodec<ulong> ForUInt64(uint tag, ulong defaultValue)
         {
-            return new FieldCodec<ulong>((ref ParseContext ctx) => ctx.ReadUInt64(), (ref WriteContext output, ulong value) => output.WriteUInt64(value), CodedOutputStream.ComputeUInt64Size, tag, defaultValue);
+            return new FieldCodec<ulong>((ref ParseContext ctx) => ctx.ReadUInt64(), (ref WriteContext output, ulong value) => output.WriteUInt64(value), CodedOutputStream.ComputeUInt64Size, tag, defaultValue, PackedUInt64SizeCalculator);
         }
 
         /// <summary>
@@ -444,6 +444,80 @@ namespace Google.Protobuf
                 value => value == null ? 0 : WrapperCodecs.CalculateSize<T>(value.Value, nestedCodec),
                 tag, 0,
                 null); // Default value for the wrapper
+        }
+
+        // Bulk size calculators for packed varint fields. Sizing a packed field walks
+        // every element, and calling ValueSizeCalculator per element costs a delegate
+        // invocation per step that cannot be inlined; a calculator for the whole run
+        // lets the size computation inline into the loop instead. Held in static fields
+        // rather than converted from a method group at each call, so a codec per
+        // generated field does not mean a delegate per generated field.
+
+        private static readonly Func<int[], int, int> PackedInt32SizeCalculator = CalculatePackedInt32Size;
+        private static readonly Func<int[], int, int> PackedSInt32SizeCalculator = CalculatePackedSInt32Size;
+        private static readonly Func<uint[], int, int> PackedUInt32SizeCalculator = CalculatePackedUInt32Size;
+        private static readonly Func<long[], int, int> PackedInt64SizeCalculator = CalculatePackedInt64Size;
+        private static readonly Func<long[], int, int> PackedSInt64SizeCalculator = CalculatePackedSInt64Size;
+        private static readonly Func<ulong[], int, int> PackedUInt64SizeCalculator = CalculatePackedUInt64Size;
+
+        private static int CalculatePackedInt32Size(int[] values, int count)
+        {
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += CodedOutputStream.ComputeInt32Size(values[i]);
+            }
+            return size;
+        }
+
+        private static int CalculatePackedSInt32Size(int[] values, int count)
+        {
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += CodedOutputStream.ComputeSInt32Size(values[i]);
+            }
+            return size;
+        }
+
+        private static int CalculatePackedUInt32Size(uint[] values, int count)
+        {
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += CodedOutputStream.ComputeUInt32Size(values[i]);
+            }
+            return size;
+        }
+
+        private static int CalculatePackedInt64Size(long[] values, int count)
+        {
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += CodedOutputStream.ComputeInt64Size(values[i]);
+            }
+            return size;
+        }
+
+        private static int CalculatePackedSInt64Size(long[] values, int count)
+        {
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += CodedOutputStream.ComputeSInt64Size(values[i]);
+            }
+            return size;
+        }
+
+        private static int CalculatePackedUInt64Size(ulong[] values, int count)
+        {
+            int size = 0;
+            for (int i = 0; i < count; i++)
+            {
+                size += CodedOutputStream.ComputeUInt64Size(values[i]);
+            }
+            return size;
         }
 
         /// <summary>
@@ -643,6 +717,17 @@ namespace Google.Protobuf
         internal int FixedSize { get; }
 
         /// <summary>
+        /// Returns a size calculator for a whole packed run, or null if this codec has none.
+        /// </summary>
+        /// <remarks>
+        /// Only the varint codecs supply one, and the factory methods have to, because such a
+        /// codec cannot be recognised from outside: <see cref="FixedSize"/> is 0 for every
+        /// varint codec, and the element type does not identify the encoding either, since
+        /// fixed32 and uint32 are both <c>FieldCodec&lt;uint&gt;</c>.
+        /// </remarks>
+        internal Func<T[], int, int> PackedSizeCalculator { get; }
+
+        /// <summary>
         /// Gets the tag of the codec.
         /// </summary>
         /// <value>
@@ -685,7 +770,8 @@ namespace Google.Protobuf
             ValueWriter<T> writer,
             Func<T, int> sizeCalculator,
             uint tag,
-            T defaultValue) : this(reader, writer, (ref ParseContext ctx, ref T v) => v = reader(ref ctx), (ref T v, T v2) => { v = v2; return true; }, sizeCalculator, tag, 0, defaultValue)
+            T defaultValue,
+            Func<T[], int, int> packedSizeCalculator = null) : this(reader, writer, (ref ParseContext ctx, ref T v) => v = reader(ref ctx), (ref T v, T v2) => { v = v2; return true; }, sizeCalculator, tag, 0, defaultValue, packedSizeCalculator)
         {
         }
 
@@ -708,13 +794,15 @@ namespace Google.Protobuf
             Func<T, int> sizeCalculator,
             uint tag,
             uint endTag,
-            T defaultValue)
+            T defaultValue,
+            Func<T[], int, int> packedSizeCalculator = null)
         {
             ValueReader = reader;
             ValueWriter = writer;
             ValueMerger = inputMerger;
             FieldMerger = valuesMerger;
             ValueSizeCalculator = sizeCalculator;
+            PackedSizeCalculator = packedSizeCalculator;
             FixedSize = 0;
             Tag = tag;
             EndTag = endTag;
