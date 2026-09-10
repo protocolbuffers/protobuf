@@ -111,9 +111,8 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
   void GenerateBuilderClearCode(io::Printer* printer) const override;
-
-  void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuildingCode(io::Printer* printer) const override;
+  void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
@@ -133,7 +132,6 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateBuilderGetBuilderMethod(io::Printer* printer) const;
   void GenerateBuilderGetOrBuilderMethod(io::Printer* printer) const;
   void GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const;
-  void GenerateBuilderParseMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutableMessageFieldGenerator

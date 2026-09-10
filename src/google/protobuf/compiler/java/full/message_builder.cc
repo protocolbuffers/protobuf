@@ -568,6 +568,10 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
     }
   }
 
+  if (!oneof_generators_.empty()) {
+    printer->Print("buildPartialOneofs(result);\n");
+  }
+
   printer->Outdent();
   printer->Print(
       "  onBuilt();\n"
@@ -580,6 +584,19 @@ void MessageBuilderGenerator::GenerateBuildPartial(io::Printer* printer) {
   for (int i = 0; i < totalInts; i++) {
     GenerateBuildPartialShard(printer, i);
   }
+
+  // Build Oneofs
+  if (!oneof_generators_.empty()) {
+    printer->Print("private void buildPartialOneofs($classname$ result) {\n",
+                   "classname",
+                   name_resolver_->GetImmutableClassName(descriptor_));
+    printer->Indent();
+    for (const auto& kv : oneof_generators_) {
+      kv.second->GenerateBuildingCode(printer, field_generators_);
+    }
+    printer->Outdent();
+    printer->Print("}\n\n");
+  }
 }
 
 void MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
@@ -591,23 +608,19 @@ void MessageBuilderGenerator::GenerateBuildPartialShard(io::Printer* printer,
       "classname", name_resolver_->GetImmutableClassName(descriptor_), "shard",
       absl::StrCat(shard), "bit_field_name", GetBitFieldName(shard));
   printer->Indent();
-
   int i = shard * 32;
   int shard_end = std::min(i + 32, static_cast<int>(field_generators_.size()));
   for (; i < shard_end; ++i) {
     const ImmutableFieldGenerator& field =
         field_generators_.getInInsertOrder(i);
 
+    // Currently oneofs are not built in shards.
+    if (field.IsRealOneof()) {
+      continue;
+    }
     // Copy the field from the builder to the message
     field.GenerateBuildingCode(printer);
   }
-
-  for (const auto& kv : oneof_generators_) {
-    if (kv.second->HasScalarFields(shard)) {
-      kv.second->GenerateBuildingCode(printer, shard);
-    }
-  }
-
   printer->Outdent();
 
   // Copy the bit field results to the generated message

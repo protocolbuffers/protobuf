@@ -654,15 +654,7 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderSetMethod(
                  "$deprecation$public Builder ${$set$capitalized_name$$}$(\n"
                  "    java.lang.String value) {\n"
                  "  $null_check$\n"
-                 "  switch ($oneof_name$Case_) {\n"
-                 "  default:\n"
-                 "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
-                 "  case 0:\n"
-                 "    $set_oneof_case_message$;\n"
-                 "    $set_has_field_bit$ // fallthrough\n"
-                 "  case $number$:\n"
-                 "    break;\n"
-                 "  }\n"
+                 "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value;\n"
                  "  $on_changed$\n"
                  "  return this;\n"
@@ -680,7 +672,6 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderClearMethod(
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  if ($has_oneof_case_message$) {\n"
       "    $clear_oneof_case_message$;\n"
-      "    $clear_has_field_bit$\n"
       "    $oneof_name$_ = null;\n"
       "    $on_changed$\n"
       "  }\n"
@@ -704,15 +695,7 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderSetBytesMethod(
     printer->Print(variables_, "  checkByteStringIsUtf8(value);\n");
   }
   printer->Print(variables_,
-                 "  switch ($oneof_name$Case_) {\n"
-                 "  default:\n"
-                 "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
-                 "  case 0:\n"
-                 "    $set_oneof_case_message$;\n"
-                 "    $set_has_field_bit$ // fallthrough\n"
-                 "  case $number$:\n"
-                 "    break;\n"
-                 "  }\n"
+                 "  $set_oneof_case_message$;\n"
                  "  $oneof_name$_ = value;\n"
                  "  $on_changed$\n"
                  "  return this;\n"
@@ -727,7 +710,6 @@ void ImmutableStringOneofFieldGenerator::GenerateBuilderMembers(
   GenerateBuilderSetMethod(printer);
   GenerateBuilderClearMethod(printer);
   GenerateBuilderSetBytesMethod(printer);
-  GenerateBuilderParseMethod(printer);
 }
 
 void ImmutableStringOneofFieldGenerator::GenerateBuilderClearCode(
@@ -740,15 +722,7 @@ void ImmutableStringOneofFieldGenerator::GenerateMergingCode(
   // Allow a slight breach of abstraction here in order to avoid forcing
   // all string fields to Strings when copying fields from a Message.
   printer->Print(variables_,
-                 "switch ($oneof_name$Case_) {\n"
-                 "default:\n"
-                 "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
-                 "case 0:\n"
-                 "  $set_oneof_case_message$;\n"
-                 "  $set_has_field_bit$ // fallthrough\n"
-                 "case $number$:\n"
-                 "  break;\n"
-                 "}\n"
+                 "$set_oneof_case_message$;\n"
                  "$oneof_name$_ = other.$oneof_name$_;\n"
                  "$on_changed$\n");
 }
@@ -758,48 +732,20 @@ void ImmutableStringOneofFieldGenerator::GenerateBuildingCode(
   // No-Op: Handled by single block statement in GenerateBuildPartialShard.
 }
 
-void ImmutableStringOneofFieldGenerator::GenerateBuilderParseMethod(
+void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
     io::Printer* printer) const {
-  printer->Print(variables_,
-                 "private void parse$capitalized_name$(\n"
-                 "    com.google.protobuf.CodedInputStream input)\n"
-                 "    throws java.io.IOException {\n");
-  printer->Indent();
   if (CheckUtf8(descriptor_)) {
     printer->Print(variables_,
-                   "switch ($oneof_name$Case_) {\n"
-                   "default:\n"
-                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
-                   "case 0:\n"
-                   "  $set_oneof_case_message$;\n"
-                   "  $set_has_field_bit$ // fallthrough\n"
-                   "case $number$:\n"
-                   "  break;\n"
-                   "}\n"
+                   "$set_oneof_case_message$;\n"
                    "$oneof_name$_ = "
                    "input.readStringRequireUtf8();\n"
     );
   } else {
     printer->Print(variables_,
                    "com.google.protobuf.ByteString bs = input.readBytes();\n"
-                   "switch ($oneof_name$Case_) {\n"
-                   "default:\n"
-                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
-                   "case 0:\n"
-                   "  $set_oneof_case_message$;\n"
-                   "  $set_has_field_bit$ // fallthrough\n"
-                   "case $number$:\n"
-                   "  break;\n"
-                   "}\n"
+                   "$set_oneof_case_message$;\n"
                    "$oneof_name$_ = bs;\n");
   }
-  printer->Outdent();
-  printer->Print("}\n");
-}
-
-void ImmutableStringOneofFieldGenerator::GenerateBuilderParsingCode(
-    io::Printer* printer) const {
-  printer->Print(variables_, "parse$capitalized_name$(input);\n");
 }
 
 void ImmutableStringOneofFieldGenerator::GenerateSerializationCode(
