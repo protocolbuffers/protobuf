@@ -8,13 +8,17 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <string>
+
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/api.pb.h"
@@ -68,15 +72,14 @@ using TestAllTypesProto2Editions =
 using TestAllTypesProto3Editions =
     ::protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 
-absl::Status ReadFd(int fd, char* buf, size_t len) {
+absl::Status ReadFile(FILE* file, char* buf, size_t len) {
   while (len > 0) {
-    ssize_t bytes_read = read(fd, buf, len);
+    size_t bytes_read = fread(buf, 1, len, file);
 
     if (bytes_read == 0) {
-      return absl::DataLossError("unexpected EOF");
-    }
-
-    if (bytes_read < 0) {
+      if (feof(file)) {
+        return absl::DataLossError("unexpected EOF");
+      }
       return absl::ErrnoToStatus(errno, "error reading from test runner");
     }
 
@@ -86,9 +89,9 @@ absl::Status ReadFd(int fd, char* buf, size_t len) {
   return absl::OkStatus();
 }
 
-absl::Status WriteFd(int fd, const void* buf, size_t len) {
-  if (static_cast<size_t>(write(fd, buf, len)) != len) {
-    return absl::ErrnoToStatus(errno, "error reading to test runner");
+absl::Status WriteFile(FILE* file, const void* buf, size_t len) {
+  if (fwrite(buf, 1, len, file) != len) {
+    return absl::ErrnoToStatus(errno, "error writing to test runner");
   }
   return absl::OkStatus();
 }
@@ -224,7 +227,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
 
 absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   uint32_t in_len;
-  if (!ReadFd(STDIN_FILENO, reinterpret_cast<char*>(&in_len), sizeof(in_len))
+  if (!ReadFile(stdin, reinterpret_cast<char*>(&in_len), sizeof(in_len))
            .ok()) {
     // EOF means we're done.
     return true;
@@ -233,7 +236,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
 
   std::string serialized_input;
   serialized_input.resize(in_len);
-  RETURN_IF_ERROR(ReadFd(STDIN_FILENO, &serialized_input[0], in_len));
+  RETURN_IF_ERROR(ReadFile(stdin, &serialized_input[0], in_len));
 
   ConformanceRequest request;
   ABSL_CHECK(request.ParseFromString(serialized_input));
@@ -248,9 +251,12 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   uint32_t out_len = internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_output.size()));
 
-  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, &out_len, sizeof(out_len)));
-  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, serialized_output.data(),
-                          serialized_output.size()));
+  RETURN_IF_ERROR(WriteFile(stdout, &out_len, sizeof(out_len)));
+  RETURN_IF_ERROR(WriteFile(stdout, serialized_output.data(),
+                            serialized_output.size()));
+  if (fflush(stdout) != 0) {
+    return absl::ErrnoToStatus(errno, "error flushing to test runner");
+  }
 
   if (verbose_) {
     ABSL_LOG(INFO) << "conformance-cpp: request="
@@ -264,6 +270,10 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
 }  // namespace google
 
 int main() {
+#ifdef _WIN32
+  _setmode(_fileno(stdin), _O_BINARY);
+  _setmode(_fileno(stdout), _O_BINARY);
+#endif
   google::protobuf::Harness harness;
   int total_runs = 0;
   while (true) {
