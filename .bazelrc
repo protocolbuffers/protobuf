@@ -56,6 +56,8 @@ build:san-common --config=dbg --strip=never --copt=-O1 --copt=-fno-omit-frame-po
 build:san-common --dynamic_mode=off
 
 build:asan --config=san-common --copt=-fsanitize=address --linkopt=-fsanitize=address
+# LLVM 15+ ASAN prohibits static linkage (-static) on Linux (__asan::AsanDoesNotSupportStaticLinkage).
+build:asan --features=-fully_static_link
 
 build:msan --config=san-common --copt=-fsanitize=memory --linkopt=-fsanitize=memory
 build:msan --copt=-fsanitize-memory-track-origins
