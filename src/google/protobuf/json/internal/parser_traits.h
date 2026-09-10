@@ -11,6 +11,7 @@
 #include <cfloat>
 #include <cmath>
 #include <cstdint>
+#include <cstddef>
 #include <limits>
 #include <memory>
 #include <string>
@@ -46,6 +47,15 @@ enum class SeenState {
 };
 
 using ::google::protobuf::internal::WireFormatLite;
+
+inline absl::Status CheckSupportedJsonStringSize(size_t size) {
+  if (size > static_cast<size_t>(std::numeric_limits<int>::max())) {
+    return absl::InvalidArgumentError(
+        "protobuf does not support serializing JSON string/bytes values "
+        "larger than INT32_MAX");
+  }
+  return absl::OkStatus();
+}
 
 // See the comment in json_util2_parser.cc for more information.
 //
@@ -197,12 +207,14 @@ struct ParseProto2Descriptor : Proto2Descriptor {
     }
   }
 
-  static void SetString(Field f, Msg& msg, absl::string_view x) {
+  static absl::Status SetString(Field f, Msg& msg, absl::string_view x) {
+    RETURN_IF_ERROR(CheckSupportedJsonStringSize(x.size()));
     if (f->is_repeated()) {
       msg.msg_->GetReflection()->AddString(msg.msg_, f, std::string(x));
     } else {
       msg.msg_->GetReflection()->SetString(msg.msg_, f, std::string(x));
     }
+    return absl::OkStatus();
   }
 
   static void SetEnum(Field f, Msg& msg, int32_t x) {
@@ -283,7 +295,7 @@ struct ParseProto3Type : Proto3Type {
           new_msg.stream_.Trim();  // Should probably be called "Flush()".
           absl::string_view written(
               out.data(), static_cast<size_t>(new_msg.stream_.ByteCount()));
-          SetString(f, msg, written);
+          RETURN_IF_ERROR(SetString(f, msg, written));
           return absl::OkStatus();
         });
   }
@@ -330,11 +342,13 @@ struct ParseProto3Type : Proto3Type {
     msg.stream_.WriteRaw(&b, 1);
   }
 
-  static void SetString(Field f, Msg& msg, absl::string_view x) {
+  static absl::Status SetString(Field f, Msg& msg, absl::string_view x) {
+    RETURN_IF_ERROR(CheckSupportedJsonStringSize(x.size()));
     msg.stream_.WriteTag(f->proto().number() << 3 |
                          WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
     msg.stream_.WriteVarint64(static_cast<uint64_t>(x.size()));
-    msg.stream_.WriteRaw(x.data(), x.size());
+    msg.stream_.WriteRaw(x.data(), static_cast<int>(x.size()));
+    return absl::OkStatus();
   }
 
   static void SetEnum(Field f, Msg& msg, int32_t x) {
