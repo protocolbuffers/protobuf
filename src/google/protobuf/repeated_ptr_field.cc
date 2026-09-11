@@ -47,8 +47,13 @@ std::string* CloneSlow(Arena* arena, const std::string& value) {
 }
 
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
+  return InternalExtend(extend_amount, GetSerialArena(arena));
+}
+
+void** RepeatedPtrFieldBase::InternalExtend(int extend_amount,
+                                            SerialArena* arena) {
   ABSL_DCHECK(extend_amount > 0);
-  ABSL_DCHECK_EQ(arena, GetArena());
+  ABSL_DCHECK_EQ(arena, GetSerialArena(GetArena()));
   constexpr size_t kPtrSize = sizeof(rep()->elements[0]);
   constexpr size_t kMaxSize = std::numeric_limits<size_t>::max();
   constexpr size_t kMaxCapacity = (kMaxSize - kRepHeaderSize) / kPtrSize;
@@ -60,13 +65,29 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   {
     ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
         << "New capacity is too large to fit into internal representation";
-    const size_t new_size = kRepHeaderSize + kPtrSize * new_capacity;
+    size_t bytes = kRepHeaderSize + kPtrSize * new_capacity;
     if (arena == nullptr) {
-      const internal::SizedPtr alloc = internal::AllocateAtLeast(new_size);
+      const internal::SizedPtr alloc = internal::AllocateAtLeast(bytes);
       new_capacity = static_cast<int>((alloc.n - kRepHeaderSize) / kPtrSize);
       new_rep = reinterpret_cast<Rep*>(alloc.p);
     } else {
-      auto* alloc = Arena::CreateArray<char>(arena, new_size);
+      if constexpr (internal::ArenaAlignDefault::Ceil(kPtrSize) != kPtrSize) {
+        // We need to manually align the allocation.
+        bytes = internal::ArenaAlignDefault::Ceil(bytes);
+        new_capacity = (bytes - kRepHeaderSize) / kPtrSize;
+      }
+
+      // Try grow in place if the arena allows it.
+      if (!using_sso()) {
+        auto* r = rep();
+        const size_t old_bytes = kRepHeaderSize + kPtrSize * old_capacity;
+        if (arena->TryGrowTail(r->elements + old_capacity, bytes - old_bytes)) {
+          r->capacity = new_capacity;
+          return r->elements + current_size_;
+        }
+      }
+      auto* alloc =
+          arena->AllocateAligned<internal::AllocationClient::kArray>(bytes);
       new_rep = reinterpret_cast<Rep*>(alloc);
     }
   }

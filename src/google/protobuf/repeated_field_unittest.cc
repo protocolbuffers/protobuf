@@ -361,24 +361,79 @@ TEST(RepeatedField, ArenaAllocationSizesMatchExpectedValues) {
   EXPECT_NO_FATAL_FAILURE(CheckAllocationSizes<RepeatedField<absl::Cord>>());
 }
 
-TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {
+TEST(RepeatedField, NaturalGrowthOnArenasGrowsTheTail) {
   Arena arena;
   std::vector<RepeatedField<int>*> values;
 
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
+  size_t total_pointers_seen = 0;
+
   for (int i = 0; i < kNumFields; ++i) {
     values.push_back(Arena::Create<RepeatedField<int>>(&arena));
+    absl::flat_hash_set<const void*> pointers_seen;
+    absl::flat_hash_set<size_t> capacities_seen;
     auto& field = *values.back();
     for (int j = 0; j < kNumElems; ++j) {
       field.Add(j);
+      capacities_seen.insert(field.Capacity());
+      pointers_seen.insert(field.data());
     }
+
+    total_pointers_seen += pointers_seen.size();
+    // Remove the SOO pointer.
+    if (internal::SooCapacityElements<int>() != 0) {
+      --total_pointers_seen;
+    }
+
+    // We should still see the capacities grow naturally. The in-place
+    // growth is an implementation detail.
+    ASSERT_THAT(capacities_seen.size(), AllOf(Ge(8), Le(11)));
+  }
+
+  // We should have seen close to 1 pointer per container on average.
+  // Sometimes we get more because we can't grow in place in the remaining space
+  // in the block.
+  EXPECT_THAT(static_cast<double>(total_pointers_seen) / kNumFields,
+              AllOf(Ge(1.0), Le(1.5)));
+
+  size_t expected = values.size() * values[0]->Capacity() * sizeof(int);
+  // Verify that we used the expected, plus some overhead.
+  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.1 * expected)));
+}
+
+TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocksIfItCantGrowTheTail) {
+  Arena arena;
+  std::vector<RepeatedField<int>*> values;
+
+  static constexpr int kNumFields = 100;
+  static constexpr int kNumElems = 1000;
+  size_t dummy_alloc = 0;
+  for (int i = 0; i < kNumFields; ++i) {
+    values.push_back(Arena::Create<RepeatedField<int>>(&arena));
+    absl::flat_hash_set<const void*> pointers_seen;
+    auto& field = *values.back();
+    for (int j = 0; j < kNumElems; ++j) {
+      field.Add(j);
+      pointers_seen.insert(field.data());
+
+      // We need to force dummy allocations to exist between Add calls so that
+      // we disable the fastpath that grows the array in place.
+      (void)Arena::Create<int64_t>(&arena);
+      dummy_alloc += 8;
+    }
+
+    // We should have seen more or less log2(kNumElems) different pointers while
+    // growing.
+    ASSERT_THAT(pointers_seen.size(), AllOf(Ge(8), Le(11)));
   }
 
   size_t expected = values.size() * values[0]->Capacity() * sizeof(int);
-  // Use a 2% slack for other overhead. If we were not reusing the blocks, the
-  // actual value would be ~2x the expected.
-  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
+  // Verify that we used the expected, plus some overhead.
+  // If we were not reusing the blocks, the actual value would be ~2x the
+  // expected.
+  EXPECT_THAT(arena.SpaceUsed() - dummy_alloc,
+              AllOf(Ge(expected), Le(1.1 * expected)));
 }
 
 // Test swapping between various types of RepeatedFields.
