@@ -762,6 +762,33 @@ TEST(DecodeTest, DecodeExtensionAsUnknownWithPreexistingUnknown) {
                                          &ext_iter));
 }
 
+TEST(DecodeTest, MismatchedMessageSlotDoesNotConsumeDepth) {
+  upb::Arena mt_arena;
+
+  auto [mt, field] =
+      test::MiniTable::MakeSingleFieldTable<test::field_types::Message>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  const upb_MiniTable* subs[1] = {mt};
+  ASSERT_TRUE(
+      upb_MiniTable_Link(const_cast<upb_MiniTable*>(mt), subs, 1, nullptr, 0));
+
+  // The outer field is a message. Inside it, field 1 has the varint wire type,
+  // so it is preserved as unknown instead of recursing into another message.
+  const std::string payload("\x0a\x02\x08\x01", 4);
+  const int depth_one = upb_Decode_LimitDepth(0, 1);
+
+  for (int extra_options : GetDecodeOptionsToTest()) {
+    upb::Arena msg_arena;
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    ASSERT_NE(msg, nullptr);
+
+    const upb_DecodeStatus result =
+        upb_Decode(payload.data(), payload.size(), msg, mt, nullptr,
+                   depth_one | extra_options, msg_arena.ptr());
+    EXPECT_EQ(result, kUpb_DecodeStatus_Ok) << upb_DecodeStatus_String(result);
+  }
+}
+
 TEST(DecodeTest, DecodeGroupFieldFromDelimitedWireFormatAsUnknown) {
   upb::Arena mt_arena;
   upb::Arena msg_arena;
