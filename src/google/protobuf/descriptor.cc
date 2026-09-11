@@ -9145,6 +9145,16 @@ bool IsLazilyInitializedFile(absl::string_view filename) {
 }
 
 bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
+  // Synthetic map-entry key/value string fields always use MapEntry's
+  // std::string (ArenaStringPtr) storage, regardless of the file/field-level
+  // string_type feature (CORD, VIEW, ...). Keep cpp_string_type() consistent
+  // with the physical storage.
+  if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+      field.containing_type() != nullptr &&
+      field.containing_type()->options().map_entry()) {
+    return true;
+  }
+
   // In open-source, protobuf CORD is only supported for singular bytes
   // fields.
   if (field.cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
@@ -9152,8 +9162,7 @@ bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
               .GetExtension(pb::cpp)
               .string_type() == pb::CppFeatures::CORD &&
       (field.type() != FieldDescriptor::TYPE_BYTES || field.is_repeated() ||
-       field.is_extension())
-  ) {
+       field.is_extension())) {
     return true;
   }
 
