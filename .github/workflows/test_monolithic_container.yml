@@ -1,0 +1,78 @@
+name: Monolithic Container Validation
+
+on:
+  push:
+    branches:
+      - 'test/ci-monolithic-*'
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  monolithic-test-matrix:
+    name: Monolithic Container Validation (${{ matrix.suite }})
+    runs-on: ubuntu-latest
+    container:
+      image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
+      credentials:
+        username: _json_key
+        password: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [cpp, java, python, ruby, rust, csharp, php, bazel-all]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Environment Sanity Check
+        run: |
+          echo "=== Monolithic Container Toolchain Sanity Check ==="
+          echo "Bazel:  $(bazel --version 2>&1)"
+          echo "GCC:    $(gcc --version | head -n 1)"
+          echo "Clang:  $(clang --version | head -n 1)"
+          echo "Java:   $(java -version 2>&1 | head -n 1)"
+          echo "Python: $(python3 --version 2>&1)"
+          echo "Ruby:   $(ruby --version 2>&1)"
+          echo "PHP:    $(php --version | head -n 1)"
+          echo ".NET:   $(dotnet --version 2>&1)"
+          echo "Rust:   $(rustc --version 2>&1)"
+          echo "Cargo:  $(cargo --version 2>&1)"
+          echo "=================================================="
+
+      - name: Run ${{ matrix.suite }} Test Suite
+        run: |
+          case "${{ matrix.suite }}" in
+            cpp)
+              bazel test //src/google/protobuf/...
+              ;;
+            java)
+              bazel test //java/...
+              ;;
+            python)
+              bazel test //python/...
+              ;;
+            ruby)
+              bazel test //ruby/...
+              ;;
+            rust)
+              bazel test //rust/...
+              ;;
+            csharp)
+              bazel test //csharp/...
+              ;;
+            php)
+              bazel test //php/...
+              ;;
+            bazel-all)
+              bazel test --test_tag_filters=-manual,-requires-network //...
+              ;;
+            *)
+              echo "Unknown suite: ${{ matrix.suite }}"
+              exit 1
+              ;;
+          esac

@@ -32,15 +32,16 @@ TESTEE=
 FAILURE_LIST=
 TEXT_FORMAT_FAILURE_LIST=
 MAXIMUM_EDITION=
+PERFORMANCE=
 
-while [[ -n "$@" ]]; do
+while [[ $# -gt 0 ]]; do
   arg="$1"; shift
-  val="$1"; shift
   case "$arg" in
-    "--testee") TESTEE="$val" ;;
-    "--failure_list") FAILURE_LIST="$val" ;;
-    "--text_format_failure_list") TEXT_FORMAT_FAILURE_LIST="$val" ;;
-    "--maximum_edition") MAXIMUM_EDITION="$val" ;;
+    "--testee") TESTEE="$1"; shift ;;
+    "--failure_list") FAILURE_LIST="$1"; shift ;;
+    "--text_format_failure_list") TEXT_FORMAT_FAILURE_LIST="$1"; shift ;;
+    "--maximum_edition") MAXIMUM_EDITION="$1"; shift ;;
+    "--performance") PERFORMANCE=1 ;;
     *) echo "Flag $arg is not recognized." && exit 1 ;;
   esac
 done
@@ -61,6 +62,10 @@ fi
 
 if [ -n "$MAXIMUM_EDITION" ]; then
   args+=(--maximum_edition $MAXIMUM_EDITION)
+fi
+
+if [ -n "$PERFORMANCE" ]; then
+  args+=(--performance)
 fi
 
 $conformance_test_runner "${args[@]}" $conformance_testee
