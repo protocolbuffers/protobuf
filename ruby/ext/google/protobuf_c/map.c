@@ -112,7 +112,7 @@ static upb_Map* Map_GetMutable(VALUE _self) {
 }
 
 VALUE Map_CreateHash(const upb_Map* map, upb_CType key_type,
-                     TypeInfo val_info) {
+                     TypeInfo val_info, bool emit_defaults) {
   VALUE hash = rb_hash_new();
   TypeInfo key_info = TypeInfo_from_type(key_type);
 
@@ -122,7 +122,7 @@ VALUE Map_CreateHash(const upb_Map* map, upb_CType key_type,
   upb_MessageValue key, val;
   while (upb_Map_Next(map, &key, &val, &iter)) {
     VALUE key_val = Convert_UpbToRuby(key, key_info, Qnil);
-    VALUE val_val = Scalar_CreateHash(val, val_info);
+    VALUE val_val = Scalar_CreateHash(val, val_info, emit_defaults);
     rb_hash_aset(hash, key_val, val_val);
   }
 
@@ -719,7 +719,8 @@ VALUE Map_hash(VALUE _self) {
  */
 VALUE Map_to_h(VALUE _self) {
   Map* self = ruby_to_Map(_self);
-  return Map_CreateHash(self->map, self->key_type, self->value_type_info);
+  return Map_CreateHash(self->map, self->key_type, self->value_type_info,
+                        false);
 }
 
 /*

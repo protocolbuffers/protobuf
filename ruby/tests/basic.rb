@@ -507,6 +507,97 @@ module BasicTest
       assert_equal m.to_hash, m.to_h
     end
 
+    def test_to_h_emit_defaults
+      m = TestMessage.new
+      expected_result = {
+        :repeated_int32 => [],
+        :repeated_int64 => [],
+        :repeated_uint32 => [],
+        :repeated_uint64 => [],
+        :repeated_bool => [],
+        :repeated_float => [],
+        :repeated_double => [],
+        :repeated_string => [],
+        :repeated_bytes => [],
+        :repeated_msg => [],
+        :repeated_enum => [],
+      }
+      assert_equal expected_result, m.to_h(emit_defaults: true)
+
+      m = TestMessage.new(
+        :optional_bool => true,
+        :optional_string => 'foo',
+        :repeated_string => ['bar1', 'bar2'],
+      )
+      expected_result = {
+        :optional_bool => true,
+        :optional_string => 'foo',
+        :repeated_int32 => [],
+        :repeated_int64 => [],
+        :repeated_uint32 => [],
+        :repeated_uint64 => [],
+        :repeated_bool => [],
+        :repeated_float => [],
+        :repeated_double => [],
+        :repeated_string => ['bar1', 'bar2'],
+        :repeated_bytes => [],
+        :repeated_msg => [],
+        :repeated_enum => [],
+      }
+      assert_equal expected_result, m.to_h(emit_defaults: true)
+
+      m = TestSingularFields.new
+      expected_result = {
+        :singular_int32 => 0,
+        :singular_int64 => 0,
+        :singular_uint32 => 0,
+        :singular_uint64 => 0,
+        :singular_bool => false,
+        :singular_float => 0.0,
+        :singular_double => 0.0,
+        :singular_string => "",
+        :singular_bytes => "",
+        :singular_enum => :Default,
+      }
+      assert_equal expected_result, m.to_h(emit_defaults: true)
+
+      m = Enumer.new(:repeated_enum => [:A, :C])
+      expected_result = {
+        :optional_enum => :Default,
+        :repeated_enum => [:A, :C],
+        :a_const => "",
+      }
+      assert_equal expected_result, m.to_h(emit_defaults: true)
+
+      m = MapMessage.new
+      expected_result = {
+        :map_string_int32 => {},
+        :map_string_msg => {},
+        :map_string_enum => {},
+      }
+      assert_equal expected_result, m.to_h(emit_defaults: true)
+
+      m = TestMessage.new(:optional_msg => TestMessage2.new)
+      assert_equal({:optional_msg => {}}.merge(
+        TestMessage.new.to_h(emit_defaults: true)), m.to_h(emit_defaults: true))
+    end
+
+    def test_to_h_emit_defaults_reaches_map_values
+      m = MapOfSingularFields.new(
+        :map_string_singular => {"k" => TestSingularFields.new})
+
+      value = m.to_h(emit_defaults: true)[:map_string_singular]["k"]
+      assert_equal TestSingularFields.new.to_h(emit_defaults: true), value
+      assert !value.empty?, "map value should carry the restored defaults"
+
+      assert_equal({}, m.to_h[:map_string_singular]["k"])
+
+      assert_equal 0, m.map_string_singular.method(:to_h).arity
+      assert_raise(ArgumentError) do
+        m.map_string_singular.to_h(emit_defaults: true)
+      end
+    end
+
     def test_json_maps
       m = MapMessage.new(:map_string_int32 => {"a" => 1})
       expected = {mapStringInt32: {a: 1}, mapStringMsg: {}, mapStringEnum: {}}
