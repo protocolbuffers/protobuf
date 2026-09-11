@@ -15,8 +15,10 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -415,6 +417,8 @@ public final class DynamicMessage extends AbstractMessage {
         }
       }
 
+      normalizeMapFields();
+
       DynamicMessage result =
           new DynamicMessage(
               type,
@@ -422,6 +426,56 @@ public final class DynamicMessage extends AbstractMessage {
               Arrays.copyOf(oneofCases, oneofCases.length),
               unknownFields);
       return result;
+    }
+
+
+    /**
+     * Collapses duplicate keys within map fields, keeping the last value seen.
+     *
+     * <p>The language guide requires that when a map is parsed from the wire and the same key
+     * appears more than once, the last value wins. Generated messages get this for free because
+     * they store map fields in a {@code MapField}, but {@code DynamicMessage} keeps them in a
+     * {@code FieldSet} as a plain list of {@code MapEntry} messages that is appended to
+     * unconditionally, so duplicate keys survived a parse. That made {@code DynamicMessage} and a
+     * generated message produce different results, and different serializations, for identical and
+     * well-formed wire input.
+     *
+     * <p>Normalizing once here rather than on every {@code addRepeatedField} keeps parsing linear;
+     * de-duplicating at insertion time would make parsing an n-entry map O(n^2).
+     */
+    private void normalizeMapFields() {
+      int numFields = type.getFieldCount();
+      for (int i = 0; i < numFields; i++) {
+        FieldDescriptor field = type.getField(i);
+        if (!field.isMapField()) {
+          continue;
+        }
+        // Map fields are repeated, so hasField() does not apply; getField() returns null when the
+        // field was never populated.
+        Object fieldValue = fields.getField(field);
+        if (!(fieldValue instanceof List)) {
+          continue;
+        }
+        List<?> entries = (List<?>) fieldValue;
+        if (entries.size() < 2) {
+          continue;
+        }
+        FieldDescriptor keyField = field.getMessageType().findFieldByNumber(1);
+        if (keyField == null) {
+          continue;
+        }
+        Map<Object, Object> lastValueByKey = new LinkedHashMap<>();
+        for (Object entry : entries) {
+          if (!(entry instanceof Message)) {
+            // A builder can be present while a caller is still mutating the field; leave it alone.
+            return;
+          }
+          lastValueByKey.put(((Message) entry).getField(keyField), entry);
+        }
+        if (lastValueByKey.size() != entries.size()) {
+          fields.setField(field, new ArrayList<Object>(lastValueByKey.values()));
+        }
+      }
     }
 
     @Override
