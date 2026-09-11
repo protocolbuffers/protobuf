@@ -24,14 +24,12 @@ jobs:
 
         include:
           - targets: "//rust/... //src/google/protobuf/compiler/rust/..."
-          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
+          - image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199"
           - bazel_cmd: "test"
 
           # Override cases with custom images
           - config: { name: Cargo }
-            # We need Rust 1.90 so that we can use the new workspace publishing
-            # feature.
-            image: "us-docker.pkg.dev/protobuf-build/containers/release/linux/rust:9.0.0-1.90.0-98863a45066747115144a8a8fb4818189d1e0761"
+            image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199"
             bazel_cmd: "run"
             targets: "//rust/release_crates:cargo_test"
 
@@ -48,8 +46,8 @@ jobs:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: rust_linux
-          bazel: >-
-            ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite --@rules_rust//rust/settings:experimental_use_cc_common_link=True
+          bash: >-
+            bazel ${{ matrix.bazel_cmd }} --crosstool_top=//toolchain:clang_suite --@rules_rust//rust/settings:experimental_use_cc_common_link=True
             ${{ matrix.targets }} ${{ matrix.config.flags }}
 
   windows:

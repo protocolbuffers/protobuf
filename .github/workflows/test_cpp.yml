@@ -33,11 +33,11 @@ jobs:
           - { name: ASAN, flags: --config=asan, runner: ubuntu-22-4core }
           - { name: MSAN, flags: --config=docker-msan, runner: ubuntu-22-4core, continuous-only: true }
           - { name: TSAN, flags: --config=tsan, runner: ubuntu-22-4core, continuous-only: true }
-          - { name: UBSAN, flags: --config=ubsan, runner: ubuntu-22-4core, continuous-only: true,}
+          - { name: UBSAN, flags: --config=ubsan, runner: ubuntu-22-4core, continuous-only: true }
           - { name: No-RTTI, flags: --cxxopt=-fno-rtti, continuous-only: true }
         include:
           # Set defaults
-          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/sanitize:8.7.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          - image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
           - targets: //pkg/... //src/... //third_party/utf8_range/... //conformance:conformance_framework_tests
           # Override cases with custom images
           - config: { name: "Bazel8", flags: --cxxopt="-Wno-self-assign-overloaded" }
@@ -56,6 +56,7 @@ jobs:
             cache_key: aarch64-bazel8
             targets: "//src/... //src/google/protobuf/compiler:protoc_aarch64_test //third_party/utf8_range/..."
             image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/emulation:8.7.0-aarch64-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 "
+
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Linux ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.runner || 'ubuntu-latest' }}
     steps:
@@ -71,7 +72,7 @@ jobs:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/${{ matrix.cache_key }}
-          bazel: fetch ${{ matrix.targets }} ${{ matrix.config.flags }}
+          bash: bazel fetch ${{ matrix.targets }} ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.exclude-targets }}
       - name: Run tests
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}
@@ -80,7 +81,7 @@ jobs:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/${{ matrix.cache_key }}
-          bazel: test ${{ matrix.targets }} ${{ matrix.config.flags }}
+          bash: bazel test ${{ matrix.targets }} ${{ matrix.config.flags }}
           exclude-targets: ${{ matrix.exclude-targets }}
 
   linux-gcc:
