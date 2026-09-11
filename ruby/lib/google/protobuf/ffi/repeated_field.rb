@@ -138,6 +138,9 @@ module Google
         count = length
         index += count if index < 0
         return nil if index < 0
+
+        converted = convert_ruby_to_upb(value, arena, type, descriptor)
+
         if index >= count
           resize(index+1)
           empty_message_value = Google::Protobuf::FFI::MessageValue.new # Implicitly clear
@@ -145,7 +148,7 @@ module Google
             Google::Protobuf::FFI.array_set(array, i, empty_message_value)
           end
         end
-        Google::Protobuf::FFI.array_set(array, index, convert_ruby_to_upb(value, arena, type, descriptor))
+        Google::Protobuf::FFI.array_set(array, index, converted)
         nil
       end
 
