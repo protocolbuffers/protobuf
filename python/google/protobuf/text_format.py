@@ -1248,8 +1248,12 @@ class _Parser(object):
     if is_map_entry:
       value_cpptype = field.message_type.fields_by_name['value'].cpp_type
       if value_cpptype == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
-        value = getattr(message, field.name)[sub_message.key]
-        value.CopyFrom(sub_message.value)
+        map_field = getattr(message, field.name)
+        set_item = getattr(map_field, '_SetItem', None)
+        if set_item is None:
+          map_field[sub_message.key].CopyFrom(sub_message.value)
+        else:
+          set_item(sub_message.key, sub_message.value)
       else:
         getattr(message, field.name)[sub_message.key] = sub_message.value
 
