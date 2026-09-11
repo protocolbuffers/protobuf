@@ -2276,6 +2276,33 @@ class TestRecursiveGroup(unittest.TestCase):
       test_msg.ParseFromString(data)
       decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
+  def testRecursionLimitNotResetByUnknownFields(self):
+    # Regression test: nesting known messages to near the recursion limit and
+    # then hiding further nested *unknown* groups beneath them must not reset
+    # the depth counter.  The pure-Python decoder previously dropped
+    # current_depth when handling unknown fields, so the unknown groups were
+    # counted from zero again -- a bypass of the recursion limit enforced by
+    # the fix for GHSA-8qvm-5x2c-j2w7.
+    if api_implementation.Type() != 'python':
+      return
+    start_group = encoder.TagBytes(4, wire_format.WIRETYPE_START_GROUP)
+    end_group = encoder.TagBytes(4, wire_format.WIRETYPE_END_GROUP)
+    sub_tag = encoder.TagBytes(1, wire_format.WIRETYPE_LENGTH_DELIMITED)
+    decoder.SetRecursionLimit(20)
+    try:
+      # 15 levels of known SelfRecursive.sub nesting wrapping 10 nested unknown
+      # groups: 15 + 10 = 25 total levels exceeds the limit of 20, but the 10
+      # unknown groups on their own stay under it.  Without the counter being
+      # propagated into the unknown-field decoder this payload parses cleanly.
+      payload = start_group * 10 + end_group * 10
+      for _ in range(15):
+        payload = sub_tag + encoder._VarintBytes(len(payload)) + payload
+      with self.assertRaises(message.DecodeError) as context:
+        self_recursive_pb2.SelfRecursive().ParseFromString(payload)
+      self.assertIn('too many levels of nesting', str(context.exception))
+    finally:
+      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
+
 
 # Class to test proto2-only features (required, extensions, etc.)
 @testing_refleaks.TestCase
