@@ -530,6 +530,35 @@ TEST(EncodedDescriptorDatabaseExtraTest,
   EXPECT_THAT(files, ElementsAre("app.proto"));
 }
 
+TEST(EncodedDescriptorDatabaseExtraTest,
+     RejectedDuplicateExtensionDoesNotShadowOriginal) {
+  FileDescriptorProto file;
+  file.set_name("good.proto");
+  file.set_package("app");
+  auto* extension = file.add_extension();
+  extension->set_name("good_ext");
+  extension->set_extendee(".app.Target");
+  extension->set_number(123);
+  std::string data_good = file.SerializeAsString();
+
+  EncodedDescriptorDatabase db;
+  EXPECT_TRUE(db.Add(data_good.data(), data_good.size()));
+
+  FileDescriptorProto found_good;
+  EXPECT_TRUE(db.FindFileContainingExtension("app.Target", 123, &found_good));
+  EXPECT_EQ(found_good.name(), "good.proto");
+
+  file.set_name("evil.proto");
+  extension->set_name("evil_ext");
+  std::string data_evil = file.SerializeAsString();
+
+  EXPECT_FALSE(db.Add(data_evil.data(), data_evil.size()));
+
+  FileDescriptorProto found_final;
+  EXPECT_TRUE(db.FindFileContainingExtension("app.Target", 123, &found_final));
+  EXPECT_EQ(found_final.name(), "good.proto");
+}
+
 TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
   FileDescriptorProto f;
   f.set_name("foo.proto");
