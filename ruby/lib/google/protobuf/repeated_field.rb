@@ -115,24 +115,16 @@ module Google
         def define_array_wrapper_with_result_method(method_name)
           define_method(method_name) do |*args, &block|
             # result can be an Enumerator, Array, or nil
-            # Enumerator can sometimes be returned if a block is an optional argument and it is not passed in
+            # Enumerator is returned if a block is an optional argument and it is not passed in
             # nil usually specifies that no change was made
             result = self.to_a.send(method_name, *args, &block)
+            return enum_for(method_name, *args) { self.size } if result.is_a?(Enumerator)
             if result
-              new_arr = result.to_a
-              self.replace(new_arr)
-              if result.is_a?(Enumerator)
-                # generate a fresh enum; rewinding the exiting one, in Ruby 2.2, will
-                # reset the enum with the same length, but all the #next calls will
-                # return nil
-                result = new_arr.to_enum
-                # generate a wrapper enum so any changes which occur by a chained
-                # enum can be captured
-                ie = ProxyingEnumerator.new(self, result)
-                result = ie.to_enum
-              end
+              self.replace(result)
+              self
+            else
+              nil
             end
-            result
           end
         end
         private :define_array_wrapper_with_result_method
@@ -144,32 +136,11 @@ module Google
       end
 
 
-      %w(collect! compact! delete_if each_index fill flatten! insert reverse!
-        rotate! select! shuffle! sort! sort_by! uniq!).each do |method_name|
+      %w(collect! compact! delete_if each_index fill flatten! insert keep_if
+        reject! reverse! rotate! select! shuffle! sort! sort_by! uniq!).each do |method_name|
         define_array_wrapper_with_result_method(method_name)
       end
-      alias_method :keep_if, :select!
       alias_method :map!, :collect!
-      alias_method :reject!, :delete_if
-
-
-      # propagates changes made by user of enumerator back to the original repeated field.
-      # This only applies in cases where the calling function which created the enumerator,
-      # such as #sort!, modifies itself rather than a new array, such as #sort
-      class ProxyingEnumerator < Struct.new(:repeated_field, :external_enumerator)
-        def each(*args, &block)
-          results = []
-          external_enumerator.each_with_index do |val, i|
-            result = yield(val)
-            results << result
-            #nil means no change occurred from yield; usually occurs when #to_a is called
-            if result
-              repeated_field[i] = result if result != val
-            end
-          end
-          results
-        end
-      end
 
 
     end

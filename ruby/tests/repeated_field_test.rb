@@ -577,6 +577,92 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal m.repeated_string, result
   end
 
+  def test_blockless_mutators
+    m = TestMessage.new
+    m.repeated_int32 += [1, 2, 3, 4, 5]
+
+    # delete_if without block returns Enumerator; executing each deletes matching elements
+    enum = m.repeated_int32.delete_if
+    assert_instance_of Enumerator, enum
+    assert_equal 5, enum.size
+    assert_equal [1, 2, 3, 4, 5], m.repeated_int32.to_a
+    result = enum.each { |v| v.even? }
+    assert_equal [1, 3, 5], m.repeated_int32.to_a
+    assert_same m.repeated_int32, result
+
+    # select! without block returns Enumerator; returns self when modified, nil when unchanged
+    m.repeated_int32.clear
+    m.repeated_int32 += [1, 2, 3, 4]
+    enum = m.repeated_int32.select!
+    assert_instance_of Enumerator, enum
+    assert_equal 4, enum.size
+    result = enum.each { |v| v > 2 }
+    assert_equal [3, 4], m.repeated_int32.to_a
+    assert_same m.repeated_int32, result
+
+    # select! without changes returns nil
+    enum = m.repeated_int32.select!
+    result = enum.each { |v| v > 0 }
+    assert_equal [3, 4], m.repeated_int32.to_a
+    assert_nil result
+
+    # reject! without block returns Enumerator; returns self when modified, nil when unchanged
+    m.repeated_int32.clear
+    m.repeated_int32 += [1, 2, 3, 4]
+    enum = m.repeated_int32.reject!
+    assert_instance_of Enumerator, enum
+    assert_equal 4, enum.size
+    result = enum.each { |v| v.even? }
+    assert_equal [1, 3], m.repeated_int32.to_a
+    assert_same m.repeated_int32, result
+
+    enum = m.repeated_int32.reject!
+    result = enum.each { |v| v.even? }
+    assert_equal [1, 3], m.repeated_int32.to_a
+    assert_nil result
+
+    # keep_if without block returns Enumerator; always returns self
+    m.repeated_int32.clear
+    m.repeated_int32 += [1, 2, 3, 4]
+    enum = m.repeated_int32.keep_if
+    assert_instance_of Enumerator, enum
+    assert_equal 4, enum.size
+    result = enum.each { |v| v.odd? }
+    assert_equal [1, 3], m.repeated_int32.to_a
+    assert_same m.repeated_int32, result
+
+    # collect! / map! without block returns Enumerator
+    m.repeated_int32.clear
+    m.repeated_int32 += [1, 2, 3]
+    enum = m.repeated_int32.collect!
+    assert_instance_of Enumerator, enum
+    assert_equal 3, enum.size
+    result = enum.each { |v| v * 10 }
+    assert_equal [10, 20, 30], m.repeated_int32.to_a
+    assert_same m.repeated_int32, result
+
+    # sort_by! without block returns Enumerator
+    m.repeated_int32.clear
+    m.repeated_int32 += [1, 2, 3]
+    enum = m.repeated_int32.sort_by!
+    assert_instance_of Enumerator, enum
+    assert_equal 3, enum.size
+    result = enum.each { |v| -v }
+    assert_equal [3, 2, 1], m.repeated_int32.to_a
+    assert_same m.repeated_int32, result
+
+    # each_index without block returns Enumerator
+    m.repeated_int32.clear
+    m.repeated_int32 += [10, 20, 30]
+    enum = m.repeated_int32.each_index
+    assert_instance_of Enumerator, enum
+    assert_equal 3, enum.size
+    indices = []
+    result = enum.each { |i| indices << i }
+    assert_equal [0, 1, 2], indices
+    assert_same m.repeated_int32, result
+  end
+
   def test_subarray_len_exceeds_size
   # Regression: RepeatedField#[beg, len] with len > size used to read past
   # the end of the underlying upb_Array buffer, returning adjacent arena
