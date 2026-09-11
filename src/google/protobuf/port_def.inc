@@ -633,6 +633,7 @@
 #pragma clang diagnostic ignored "-Wextra-semi"
 // Ensure we don't regress nullability annotations (related: b/383569842)
 #pragma clang diagnostic error "-Wnullability-completeness"
+#pragma clang diagnostic ignored "-Wnullability-extension"
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
