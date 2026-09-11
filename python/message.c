@@ -1504,7 +1504,21 @@ static bool PyUpb_AsReadBuffer(PyObject* arg, const char** buf,
     PyBuffer_Release(&buffer);
   }
 #else
+
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4996)
+#endif
   int err = PyObject_AsReadBuffer(arg, (const void**)buf, size);
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+
 #endif
   if (err != 0) {
     PyErr_Clear();

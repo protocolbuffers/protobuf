@@ -22,6 +22,9 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace {
@@ -78,6 +81,7 @@ TEST(REFLECTION_TEST, RegularFields) {
   const RepeatedPtrField<Message>& rpf_message =
       refl->GetRepeatedPtrField<Message>(message, fd_repeated_foreign_message);
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   // Get mutable RepeatedPtrField objects for all fields of interest.
   RepeatedPtrField<std::string>* mrpf_string =
       refl->MutableRepeatedPtrField<std::string>(&message, fd_repeated_string);
@@ -87,6 +91,7 @@ TEST(REFLECTION_TEST, RegularFields) {
   RepeatedPtrField<Message>* mrpf_message =
       refl->MutableRepeatedPtrField<Message>(&message,
                                              fd_repeated_foreign_message);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Make sure we can do gets and sets through the Repeated[Ptr]Field objects.
   for (int i = 0; i < 10; ++i) {
@@ -707,3 +712,5 @@ TEST(REFLECTION_TEST, RepeatedFieldRefAddRejectsUnrelatedMessageType) {
 }  // namespace
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
