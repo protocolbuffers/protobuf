@@ -17,8 +17,7 @@
 #include <stdint.h>
 
 #include "python/descriptor.h"
-#include "python/python_api.h"
-#include "upb/hash/int_table.h"
+#include "python/free_threading/weak_map.h"
 #include "upb/mem/arena.h"
 #include "upb/reflection/def.h"
 
@@ -29,9 +28,6 @@
 
 #define PYUPB_DESCRIPTOR_MODULE "google.protobuf.descriptor_pb2"
 #define PYUPB_RETURN_OOM return PyErr_SetNone(PyExc_MemoryError), NULL
-
-struct PyUpb_WeakMap;
-typedef struct PyUpb_WeakMap PyUpb_WeakMap;
 
 // -----------------------------------------------------------------------------
 // ModuleState
@@ -53,10 +49,9 @@ typedef struct {
 
   // From descriptor_pool.c
   PyObject* default_pool;
-
-  // From descriptor_pool.c
   PyTypeObject* descriptor_pool_type;
   upb_DefPool* c_descriptor_symtab;
+  PyUpb_WeakMap* obj_cache;
 
   // From extension_dict.c
   PyTypeObject* extension_dict_type;
@@ -82,7 +77,6 @@ typedef struct {
   bool allow_oversize_protos;
   PyObject* wkt_bases;
   PyTypeObject* arena_type;
-  PyUpb_WeakMap* obj_cache;
 
   // From repeated.c
   PyTypeObject* repeated_composite_container_type;
@@ -110,71 +104,19 @@ PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void);
 PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state);
 
 // -----------------------------------------------------------------------------
-// WeakMap
-// -----------------------------------------------------------------------------
-
-// A WeakMap maps C pointers to the corresponding Python wrapper object. We
-// want a consistent Python wrapper object for each C object, both to save
-// memory and to provide object stability (ie. x is x).
-//
-// Each wrapped object should add itself to the map when it is constructed and
-// remove itself from the map when it is destroyed. The map is weak so it does
-// not take references to the cached objects.
-
-PyUpb_WeakMap* PyUpb_WeakMap_New(void);
-void PyUpb_WeakMap_Free(PyUpb_WeakMap* map);
-
-// Adds the given object to the map, indexed by the given key.
-bool PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject* py_obj);
-
-// Removes the given key from the cache. It must exist in the cache currently.
-void PyUpb_WeakMap_Delete(PyUpb_WeakMap* map, const void* key);
-void PyUpb_WeakMap_TryDelete(PyUpb_WeakMap* map, const void* key);
-
-// Returns a new reference to an object if it exists, otherwise returns NULL.
-PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
-
-#define PYUPB_WEAKMAP_BEGIN UPB_INTTABLE_BEGIN
-
-// Iteration over the weak map, eg.
-//
-// intptr_t it = PYUPB_WEAKMAP_BEGIN;
-// while (PyUpb_WeakMap_Next(map, &key, &obj, &it)) {
-//   // ...
-// }
-//
-// Note that the callee does not own a ref on the returned `obj`.
-//
-// WARNING: The iterator will hold a lock on the weak map until the iteration
-// is complete. The caller must complete the iteration, otherwise the lock will
-// never be released. The only function that can be called on the weak map
-// during iteration is PyUpb_WeakMap_DeleteIter(), which will delete the
-// current item but not change the iterator.
-bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
-                        intptr_t* iter);
-void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
-
-// -----------------------------------------------------------------------------
-// ObjCache
-// -----------------------------------------------------------------------------
-
-// The object cache is a global WeakMap for mapping upb objects to the
-// corresponding wrapper.
-bool PyUpb_ObjCache_Add(const void* key, PyObject* py_obj);
-bool PyUpb_KnownObjCache_Add(PyUpb_WeakMap* cache, const void* key,
-                             PyObject* py_obj);
-void PyUpb_ObjCache_Delete(const void* key);
-PyObject* PyUpb_ObjCache_Get(const void* key);  // returns NULL if not present.
-PyUpb_WeakMap* PyUpb_ObjCache_Instance(void);
-
-// -----------------------------------------------------------------------------
 // Arena
 // -----------------------------------------------------------------------------
 
-PyObject* PyUpb_Arena_New(void);
+PyObject* PyUpb_Arena_New(PyObject* pool);
+PyObject* PyUpb_Arena_GetPool(PyObject* arena);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
 bool PyUpb_Arena_IsFrozen(PyObject* arena);
 void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen);
+
+bool PyUpb_Arena_CacheAdd(PyObject* arena, const void* key, PyObject** py_obj);
+PyObject* PyUpb_Arena_CacheGet(PyObject* arena, const void* key);
+bool PyUpb_Arena_CacheEraseIfEqual(PyObject* arena, const void* key,
+                                   PyObject* obj);
 
 // -----------------------------------------------------------------------------
 // Utilities
