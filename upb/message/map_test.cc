@@ -43,3 +43,37 @@ TEST(MapTest, DeleteMissingKeyStringValue) {
   bool removed = upb_Map_Delete(map, key, &delete_value);
   EXPECT_FALSE(removed);
 }
+
+TEST(MapTest, InsertMessage) {
+  upb::Arena arena;
+  upb_Map* map = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_Message);
+
+  upb_MessageValue key;
+  key.int32_val = 1;
+
+  upb_Message* dummy_msg = reinterpret_cast<upb_Message*>(0x1234);
+  upb_MessageValue insert_value;
+  insert_value.msg_val = dummy_msg;
+
+  upb_MapInsertStatus st = upb_Map_Insert(map, key, insert_value, arena.ptr());
+  EXPECT_EQ(kUpb_MapInsertStatus_Inserted, st);
+
+  upb_MessageValue lookup_value;
+  EXPECT_TRUE(upb_Map_Get(map, key, &lookup_value));
+  EXPECT_EQ(dummy_msg, lookup_value.msg_val);
+}
+
+#if !defined(NDEBUG) && defined(GTEST_HAS_DEATH_TEST)
+TEST(MapDeathTest, InsertNullMessageFails) {
+  upb::Arena arena;
+  upb_Map* map = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_Message);
+
+  upb_MessageValue key;
+  key.int32_val = 1;
+
+  upb_MessageValue insert_value;
+  insert_value.msg_val = nullptr;
+
+  EXPECT_DEATH({ upb_Map_Insert(map, key, insert_value, arena.ptr()); }, "");
+}
+#endif
