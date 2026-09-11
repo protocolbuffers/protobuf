@@ -93,6 +93,12 @@ module Google
         self.size == 0
       end
 
+      alias_method :raw_each, :each
+      def each(&block)
+        return enum_for(:each) { size } unless block_given?
+        raw_each(&block)
+      end
+
       # array aliases into enumerable
       alias_method :slice, :[]
       alias_method :values_at, :select
