@@ -275,10 +275,7 @@ cc_library(
         "convert.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = [
-        "//upb:__pkg__",
-        "//upb:friends",
-    ],
+    visibility = ["//upb:friends"],
     deps = [
         ":compare",
         ":internal",
