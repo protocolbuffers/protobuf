@@ -1,5 +1,8 @@
 """Internal rule implementation for upb_*_proto_library() rules."""
 
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+
 def _filter_none(elems):
     out = []
     for elem in elems:
@@ -26,12 +29,37 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     srcs = dep[srcs_provider].srcs
     cc_info = dep[cc_info_provider].cc_info
 
-    lib = cc_info.linking_context.linker_inputs.to_list()[0].libraries[0]
+    # Direct library extraction for DefaultInfo
+    direct_input = cc_info.linking_context.linker_inputs.to_list()[0]
+    lib = direct_input.libraries[0]
     files = _filter_none([
         lib.static_library,
         lib.pic_static_library,
         lib.dynamic_library,
     ])
+
+    # Re-wrap only the direct input with owner = ctx.label
+    new_direct_input = cc_common.create_linker_input(
+        owner = ctx.label,
+        libraries = depset(direct_input.libraries),
+        user_link_flags = depset(direct_input.user_link_flags),
+        additional_inputs = depset(direct_input.additional_inputs),
+    )
+
+    # Preserve the rest of the transitive depset lazily without flattening
+    linking_context = cc_common.create_linking_context(
+        linker_inputs = depset(
+            direct = [new_direct_input],
+            transitive = [cc_info.linking_context.linker_inputs],
+            order = "topological",
+        ),
+    )
+
+    cc_info = CcInfo(
+        compilation_context = cc_info.compilation_context,
+        linking_context = linking_context,
+    )
+
     return [
         DefaultInfo(files = depset(files + srcs.hdrs + srcs.srcs)),
         srcs,
