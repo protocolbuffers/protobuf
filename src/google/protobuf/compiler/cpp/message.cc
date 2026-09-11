@@ -4614,6 +4614,79 @@ std::vector<SerializeChunk> CollectSerializeChunks(
 
   return chunks;
 }
+
+double BatchCost(size_t size, double p_none) {
+  static constexpr double kMispredictPenalty = 130;  // Tunable parameter.
+  if (size <= 1) return 1.0;
+
+  double p_any = 1.0 - p_none;
+  double batch_check_variance = p_any * p_none;
+  double penalty = kMispredictPenalty * batch_check_variance;
+  double expected_number_of_branches_taken = 1.0 + size * p_any;
+
+  return expected_number_of_branches_taken + penalty;
+}
+
+double GetAbsenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
+}
+
+std::vector<SerializeFieldChunk> PartitionSameHasbitFields(
+    const SerializeFieldChunk& chunk, const Options& options) {
+  std::vector<SerializeFieldChunk> result;
+  if (chunk.fields.empty()) return result;
+
+  SerializeFieldChunk current_chunk{
+      chunk.should_split,
+      chunk.hasword_index,
+      {chunk.fields.front()},
+  };
+  double p_none = GetAbsenceProbability(chunk.fields.front(), options);
+
+  for (size_t i = 1; i < chunk.fields.size(); ++i) {
+    const auto* field = chunk.fields[i];
+    double current_cost = BatchCost(current_chunk.fields.size(), p_none);
+    double p_field_absent = GetAbsenceProbability(field, options);
+    double new_absent = p_none * p_field_absent;
+    double extended_cost =
+        BatchCost(current_chunk.fields.size() + 1, new_absent);
+
+    if (extended_cost > current_cost + 1.0) {
+      result.push_back(std::move(current_chunk));
+      current_chunk = SerializeFieldChunk{
+          chunk.should_split,
+          chunk.hasword_index,
+          {field},
+      };
+      p_none = p_field_absent;
+    } else {
+      current_chunk.fields.push_back(field);
+      p_none = new_absent;
+    }
+  }
+  result.push_back(std::move(current_chunk));
+  return result;
+}
+
+std::vector<SerializeChunk> SplitFieldChunks(std::vector<SerializeChunk> chunks,
+                                             const Options& options) {
+  std::vector<SerializeChunk> result;
+
+  for (auto& chunk : chunks) {
+    const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
+    if (field_chunk == nullptr || !field_chunk->hasword_index.has_value() ||
+        field_chunk->fields.size() <= 1) {
+      result.push_back(std::move(chunk));
+      continue;
+    }
+
+    absl::c_move(PartitionSameHasbitFields(*field_chunk, options),
+                 std::back_inserter(result));
+  }
+
+  return result;
+}
 }  // namespace
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
@@ -4654,24 +4727,43 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       } else {
         CloseSplit();
       }
-      for (const auto* field : fields_chunk.fields) {
-        // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field, mg_->options_)) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
-          int has_word_index =
-              mg_->field_layout_.GetHasWordIndex(field).value();
-          if (cached_has_bit_index_ != has_word_index) {
-            // Reload.
-            cached_has_bit_index_ = has_word_index;
-            p_->Emit({{"index", cached_has_bit_index_}},
-                     R"cc(
-                       cached_has_bits = this_._impl_._has_bits_[$index$];
-                     )cc");
-          }
+      if (fields_chunk.fields.empty()) return;
+
+      absl::optional<int> hasword_index = fields_chunk.hasword_index;
+      // We speculatively load the entire _has_bits_[index] contents, even
+      // if it is for only one field.
+      if (hasword_index.has_value() &&
+          cached_has_bit_index_ != *hasword_index) {
+        cached_has_bit_index_ = *hasword_index;
+        p_->Emit({{"index", cached_has_bit_index_}},
+                 R"cc(
+                   cached_has_bits = this_._impl_._has_bits_[$index$];
+                 )cc");
+      }
+
+      auto generate_serialize_fields = [&] {
+        for (const auto* field : fields_chunk.fields) {
+          mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
         }
-        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
+      };
+
+      if (fields_chunk.fields.size() > 1 && hasword_index.has_value()) {
+        uint32_t chunk_mask =
+            GenChunkMask(fields_chunk.fields, mg_->field_layout_);
+        std::string cond = GenerateConditionMaybeWithProbabilityForGroup(
+            chunk_mask, fields_chunk.fields, mg_->options_);
+        p_->Emit(
+            {
+                {"cond", cond},
+                {"body", generate_serialize_fields},
+            },
+            R"cc(
+              if ($cond$) {
+                $body$;
+              }
+            )cc");
+      } else {
+        generate_serialize_fields();
       }
     }
 
@@ -4706,6 +4798,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
 
   std::vector<SerializeChunk> chunks =
       CollectSerializeChunks(descriptor_, field_layout_, options_);
+  chunks = SplitFieldChunks(std::move(chunks), options_);
 
   int num_ext_chunks = absl::c_count_if(chunks, [](const auto& chunk) {
     return std::holds_alternative<ExtensionRangeChunk>(chunk);
