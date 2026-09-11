@@ -1543,14 +1543,38 @@ TEST(LiteTest, DownCastMessageLiteToFullFails) {
                                   " to Message"));
 }
 
-#ifndef NDEBUG
 TEST(LiteTest, ParseFromArrayNegativeSizeDeath) {
+  if (internal::GetBoundsCheckMode() != internal::BoundsCheckMode::kAbort) {
+    GTEST_SKIP() << "Preemptive abort is not enabled.";
+  }
   unittest::TestAllTypesLite msg;
   char buf[1] = {0};
-  ASSERT_DEATH((void)msg.ParseFromArray(buf, -1), "Check failed");
-  ASSERT_DEATH((void)msg.ParsePartialFromArray(buf, -1), "Check failed");
+  EXPECT_DEATH(
+      (void)msg.ParseFromArray(buf, -1),
+      testing::HasSubstr(
+          "Value (-1) must be greater than or equal to limit (0)"));
+  EXPECT_DEATH(
+      (void)msg.ParsePartialFromArray(buf, -1),
+      testing::HasSubstr(
+          "Value (-1) must be greater than or equal to limit (0)"));
 }
-#endif  // !NDEBUG
+
+TEST(LiteTest, ParseFromBoundedZeroCopyStreamNegativeSizeDeath) {
+  if (internal::GetBoundsCheckMode() != internal::BoundsCheckMode::kAbort) {
+    GTEST_SKIP() << "Preemptive abort is not enabled.";
+  }
+  unittest::TestAllTypesLite msg;
+  char buf[1] = {0};
+  io::ArrayInputStream input(buf, 1);
+  EXPECT_DEATH(
+      (void)msg.ParseFromBoundedZeroCopyStream(&input, -1),
+      testing::HasSubstr(
+          "Value (-1) must be greater than or equal to limit (0)"));
+  EXPECT_DEATH(
+      (void)msg.ParsePartialFromBoundedZeroCopyStream(&input, -1),
+      testing::HasSubstr(
+          "Value (-1) must be greater than or equal to limit (0)"));
+}
 #endif  // GTEST_HAS_DEATH_TEST
 
 TEST(LiteTest, FileWithOnlyAnEnumGeneratesProperValidationHooks) {
