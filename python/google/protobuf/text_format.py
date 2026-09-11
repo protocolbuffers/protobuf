@@ -46,6 +46,7 @@ from google.protobuf import unknown_fields
 
 # pylint: disable=g-import-not-at-top
 __all__ = [
+    'DEFAULT_RECURSION_LIMIT',
     'MessageToString',
     'Parse',
     'PrintMessage',
@@ -71,6 +72,20 @@ _ANY_FULL_TYPE_NAME = 'google.protobuf.Any'
 _DEBUG_STRING_SILENT_MARKER = '\t '
 
 _as_utf8_default = True
+
+# Recommended parser recursion depth for Text Format inputs from sources the
+# caller does not fully trust. The Python Text Format parser leaves
+# ``max_recursion_depth`` set to ``None`` (unbounded) by default to preserve
+# historical behavior on trusted configuration inputs, but callers that need a
+# defensive cap can opt in by passing
+# ``max_recursion_depth=text_format.DEFAULT_RECURSION_LIMIT`` to
+# :func:`Parse` / :func:`Merge` / :func:`ParseLines` / :func:`MergeLines`.
+# The value matches the default recursion limit used by the Java Text Format
+# parser (``TextFormat.Parser.Builder#setRecursionLimit`` initializes to 100)
+# and the binary wire-format parsers across language ports, so a message that
+# can round-trip through those parsers will also round-trip through Python
+# Text Format with this limit applied.
+DEFAULT_RECURSION_LIMIT = 100
 
 
 class Error(Exception):
@@ -725,7 +740,10 @@ def Parse(
         compatibility, the default of ``None`` (unbounded) is intentional. For
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+        untrusted Text Format inputs, passing
+        ``max_recursion_depth=text_format.DEFAULT_RECURSION_LIMIT`` is the
+        recommended opt-in (the constant resolves to 100, matching the Java
+        Text Format parser and the wire-format parsers across language ports).
 
   Returns:
     Message: The same message passed as argument.
@@ -777,7 +795,10 @@ def Merge(
         compatibility, the default of ``None`` (unbounded) is intentional. For
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+        untrusted Text Format inputs, passing
+        ``max_recursion_depth=text_format.DEFAULT_RECURSION_LIMIT`` is the
+        recommended opt-in (the constant resolves to 100, matching the Java
+        Text Format parser and the wire-format parsers across language ports).
 
   Returns:
     Message: The same message passed as argument.
@@ -827,7 +848,10 @@ def ParseLines(
         compatibility, the default of ``None`` (unbounded) is intentional. For
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+        untrusted Text Format inputs, passing
+        ``max_recursion_depth=text_format.DEFAULT_RECURSION_LIMIT`` is the
+        recommended opt-in (the constant resolves to 100, matching the Java
+        Text Format parser and the wire-format parsers across language ports).
 
   Returns:
     The same message passed as argument.
@@ -876,7 +900,10 @@ def MergeLines(
         compatibility, the default of ``None`` (unbounded) is intentional. For
         better consistency with what messages will successfully round trip
         through binary wire format, or for the discouraged case of processing
-        untrusted Text Format inputs, setting a limit of 100 is recommended.
+        untrusted Text Format inputs, passing
+        ``max_recursion_depth=text_format.DEFAULT_RECURSION_LIMIT`` is the
+        recommended opt-in (the constant resolves to 100, matching the Java
+        Text Format parser and the wire-format parsers across language ports).
 
   Returns:
     The same message passed as argument.
