@@ -172,6 +172,7 @@ std::string InitializationErrorMessage(absl::string_view action,
 }
 
 inline absl::string_view as_string_view(const void* data, int size) {
+  internal::RuntimeAssertInBoundsGE(size, 0);
   return absl::string_view(static_cast<const char*>(data), size);
 }
 
@@ -411,11 +412,13 @@ bool MessageLite::MergeFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
 
 bool MessageLite::ParseFromBoundedZeroCopyStream(io::ZeroCopyInputStream* input,
                                                  int size) {
+  internal::RuntimeAssertInBoundsGE(size, 0);
   return ParseFrom<kParse>(internal::BoundedZCIS{input, size});
 }
 
 bool MessageLite::ParsePartialFromBoundedZeroCopyStream(
     io::ZeroCopyInputStream* input, int size) {
+  internal::RuntimeAssertInBoundsGE(size, 0);
   return ParseFrom<kParsePartial>(internal::BoundedZCIS{input, size});
 }
 
