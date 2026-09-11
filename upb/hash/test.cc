@@ -636,3 +636,27 @@ TEST(IntTableTest, RemoveIterHeadOfChainDemonstratesBug) {
   EXPECT_EQ(upb_inttable_count(&t), 1);
   EXPECT_TRUE(upb_inttable_lookup(&t, 9, &val));
 }
+
+TEST(IntTableTest, InPlaceGrow) {
+  char initial_buf[65536];
+  upb_Arena* arena = upb_Arena_Init(initial_buf, sizeof(initial_buf), nullptr);
+  upb_inttable t;
+  ASSERT_TRUE(upb_inttable_init(&t, arena));
+
+  const void* initial_entries = t.t.entries;
+  for (uintptr_t i = 1; i <= 100; i++) {
+    ASSERT_TRUE(upb_inttable_insert(&t, i, upb_value_uint64(i * 10), arena));
+  }
+  // Verify that in-place growth actually occurred (entries pointer unchanged).
+  EXPECT_EQ(t.t.entries, initial_entries);
+  EXPECT_EQ(upb_inttable_count(&t), 100);
+
+  for (uintptr_t i = 1; i <= 100; i++) {
+    upb_value val;
+    ASSERT_TRUE(upb_inttable_lookup(&t, i, &val))
+        << "Failed lookup for key " << i;
+    EXPECT_EQ(upb_value_getuint64(val), i * 10);
+  }
+
+  upb_Arena_Free(arena);
+}
