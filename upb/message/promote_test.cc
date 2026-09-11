@@ -142,6 +142,26 @@ TEST(GeneratedCode, PromoteFromMultiple) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, DoesNotPromoteExtensionWithWrongWireType) {
+  upb::Arena arena;
+  const char serialized[] = {
+      static_cast<char>(0xd8), 0x60, 0x02, 0x08, 0x2a,
+  };
+  upb_test_EmptyMessageWithExtensions* msg =
+      upb_test_EmptyMessageWithExtensions_parse(serialized, sizeof(serialized),
+                                                arena.ptr());
+  ASSERT_NE(msg, nullptr);
+
+  upb_MessageValue value;
+  upb_GetExtension_Status status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, 0, arena.ptr(),
+      &value);
+
+  EXPECT_EQ(kUpb_GetExtension_NotPresent, status);
+  EXPECT_EQ(0, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
+  EXPECT_EQ(sizeof(serialized), GetUnknownLength(UPB_UPCAST(msg)));
+}
+
 TEST(GeneratedCode, Extensions) {
   upb_Arena* arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
