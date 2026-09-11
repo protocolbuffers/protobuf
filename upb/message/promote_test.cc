@@ -708,4 +708,89 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
+// Regression test for a wire-type confusion bug in extension promotion.
+//
+// `upb_Message_FindUnknown2` matches unknown fields on field number alone and
+// does not constrain the wire type, but `upb_MiniTable_ParseUnknownMessage`
+// treats the bytes that follow the tag as a length prefix. A varint field at a
+// message-typed extension's field number therefore turns its own payload into
+// `message_len`, leaving `data` at the end of the field and `size` under
+// attacker control; `upb_Decode` then reads out of bounds.
+//
+// Field 1547 (`model_ext`) encoded with wire type 0 (varint) instead of wire
+// type 2 (length-delimited):
+//   d8 60        -> tag: field 1547, wire type 0
+//   <varint>     -> payload; promotion misreads this as `message_len`
+TEST(GeneratedCode, PromoteExtensionRejectsNonDelimitedWireType) {
+  // Payload 0: once the payload is misread as a length prefix, `size` is 0
+  // and the promotion silently succeeds with an empty message unless the wire
+  // type is checked. A bare bounds check cannot catch this, since 0 <= 0.
+  const char kZeroLength[] = {'\xd8', '\x60', '\x00'};
+  upb::Arena arena;
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  EXPECT_EQ(kUpb_DecodeStatus_Ok,
+            upb_Decode(kZeroLength, sizeof(kZeroLength), UPB_UPCAST(msg),
+                       &upb_0test__ModelWithExtensions_msg_init, nullptr, 0,
+                       arena.ptr()));
+  // The field reached unknowns (the host does not know field 1547).
+  EXPECT_EQ(kUpb_FindUnknown_Ok,
+            upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0).status);
+
+  upb_MessageValue val;
+  EXPECT_EQ(kUpb_GetExtension_ParseError,
+            upb_Message_GetOrPromoteExtension(
+                UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, 0,
+                arena.ptr(), &val));
+  EXPECT_EQ(0, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
+
+  // Payload 0xFFFFFFFF: the misread length makes `upb_Decode` read far past
+  // the end of the unknown field. This must be rejected, not read.
+  const char kHugeLength[] = {'\xd8', '\x60', '\xff', '\xff',
+                              '\xff', '\xff', '\x0f'};
+  upb::Arena arena2;
+  upb_test_ModelWithExtensions* msg2 =
+      upb_test_ModelWithExtensions_new(arena2.ptr());
+  EXPECT_EQ(kUpb_DecodeStatus_Ok,
+            upb_Decode(kHugeLength, sizeof(kHugeLength), UPB_UPCAST(msg2),
+                       &upb_0test__ModelWithExtensions_msg_init, nullptr, 0,
+                       arena2.ptr()));
+  EXPECT_EQ(kUpb_GetExtension_ParseError,
+            upb_Message_GetOrPromoteExtension(
+                UPB_UPCAST(msg2), upb_test_ModelExtension1_model_ext_ext, 0,
+                arena2.ptr(), &val));
+}
+
+// Control case: a well-formed length-delimited unknown at the extension's
+// field number still promotes, confirming the check above rejects only
+// genuinely malformed input.
+TEST(GeneratedCode, PromoteExtensionStillAcceptsValidDelimitedUnknown) {
+  upb::Arena arena;
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+
+  // Field 1547, wire type 2, length 5; body is field 25 (str) = "Hi":
+  //   ca 01  -> tag: field 25, wire type 2
+  //   02     -> length 2
+  //   48 69  -> "Hi"
+  const char kBody[] = {'\xca', '\x01', '\x02', '\x48', '\x69'};
+  const char kWireBytes[] = {'\xda',   '\x60',   sizeof(kBody), kBody[0],
+                             kBody[1], kBody[2], kBody[3],      kBody[4]};
+
+  EXPECT_EQ(kUpb_DecodeStatus_Ok,
+            upb_Decode(kWireBytes, sizeof(kWireBytes), UPB_UPCAST(msg),
+                       &upb_0test__ModelWithExtensions_msg_init, nullptr, 0,
+                       arena.ptr()));
+
+  upb_MessageValue val;
+  ASSERT_EQ(kUpb_GetExtension_Ok,
+            upb_Message_GetOrPromoteExtension(
+                UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext, 0,
+                arena.ptr(), &val));
+  upb_StringView str =
+      upb_test_ModelExtension1_str((upb_test_ModelExtension1*)val.msg_val);
+  EXPECT_EQ(absl::string_view(str.data, str.size), "Hi");
+  EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
+}
+
 }  // namespace
