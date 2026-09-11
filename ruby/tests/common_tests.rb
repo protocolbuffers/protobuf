@@ -498,6 +498,55 @@ module CommonTests
     assert_nil m_msg.delete("a")
   end
 
+  def test_map_merge
+    m = Google::Protobuf::Map.new(:string, :int32)
+    m["asdf"] = 1
+    m["jkl;"] = 42
+
+    # Merging with a Hash
+    merged = m.merge({ "asdf" => 10, "new" => 100 })
+    assert_equal({ "asdf" => 1, "jkl;" => 42 }, m.to_h)
+    assert_equal({ "asdf" => 10, "jkl;" => 42, "new" => 100 }, merged.to_h)
+
+    # Merging with a compatible Map
+    m2 = Google::Protobuf::Map.new(:string, :int32)
+    m2["asdf"] = 20
+    m2["other"] = 200
+    merged2 = m.merge(m2)
+    assert_equal({ "asdf" => 1, "jkl;" => 42 }, m.to_h)
+    assert_equal({ "asdf" => 20, "other" => 200 }, m2.to_h)
+    assert_equal({ "asdf" => 20, "jkl;" => 42, "other" => 200 }, merged2.to_h)
+
+    # Merging compatible Map with message value type
+    msg1 = proto_module::TestMessage.new(:optional_int32 => 1)
+    msg2 = proto_module::TestMessage.new(:optional_int32 => 2)
+    m_msg1 = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage, { "a" => msg1 })
+    m_msg2 = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage, { "b" => msg2 })
+    merged_msg = m_msg1.merge(m_msg2)
+    assert_equal 1, m_msg1.length
+    assert_equal 1, m_msg2.length
+    assert_equal 2, merged_msg.length
+    assert_equal msg1, merged_msg["a"]
+    assert_equal msg2, merged_msg["b"]
+
+    # Merging with a mismatched Map raises ArgumentError
+    m_mismatch = Google::Protobuf::Map.new(:string, :string)
+    assert_raises ArgumentError do
+      m.merge(m_mismatch)
+    end
+
+    # Merging with mismatched message descriptor raises ArgumentError
+    m_msg_mismatch = Google::Protobuf::Map.new(:string, :message, proto_module::TestMessage2)
+    assert_raises ArgumentError do
+      m_msg1.merge(m_msg_mismatch)
+    end
+
+    # Merging with an invalid type raises ArgumentError
+    assert_raises ArgumentError do
+      m.merge(42)
+    end
+  end
+
   # This is a regression test for a bug in Map.hash. It used to return an
   # inconsistent result when there was a collision in the map (two keys mapping
   # to the same hash table entry).

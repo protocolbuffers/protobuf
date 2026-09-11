@@ -337,7 +337,7 @@ module Google
             Google::Protobuf::FFI.map_set(@map_ptr, key_message_value, value_message_value, arena)
           end
         when Google::Protobuf::Map
-          unless key_type == other.send(:key_type) and value_type == other.send(:value_type) and descriptor == other.descriptor
+          unless key_type == other.send(:key_type) and value_type == other.send(:value_type) and descriptor == other.send(:descriptor)
             raise ArgumentError.new "Attempt to merge Map with mismatching types" #TODO Improve error message by adding type information
           end
           arena.fuse(other.send(:arena))
@@ -353,7 +353,7 @@ module Google
       end
 
       def internal_merge(other)
-        internal_dup.internal_merge_into_self(other)
+        internal_dup.send(:internal_merge_into_self, other)
       end
 
       def initialize(key_type, value_type, value_type_class: nil, initial_values: nil, arena: nil, map: nil, descriptor: nil, name: nil)
