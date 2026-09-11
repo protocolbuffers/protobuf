@@ -1,7 +1,9 @@
 Gem::Specification.new do |s|
   s.name        = "google-protobuf"
   s.version     = "4.37.0"
-  git_tag       = "v#{s.version.to_s.sub('.rc.', '-rc')}" # Converts X.Y.Z.rc.N to vX.Y.Z-rcN, used for the git tag
+  # Ruby gem versions carry a "4." major prefix (e.g. 4.37.0) while repository tags
+  # follow protoc versions (e.g. v37.0 or v37.0-rc1).
+  git_tag       = "v#{s.version.to_s.sub(/^4\./, '').sub('.rc.', '-rc')}" # Converts 4.X.Y.rc.N to vX.Y-rcN, used for the git tag
   s.licenses    = ["BSD-3-Clause"]
   s.summary     = "Protocol Buffers"
   s.description = "Protocol Buffers are Google's data interchange format."
