@@ -1260,7 +1260,7 @@ PHP_METHOD(google_protobuf_Any, unpack) {
                  upb_MessageDef_MiniTable(desc->msgdef), NULL, 0,
                  Arena_Get(&msg->arena)) != kUpb_DecodeStatus_Ok) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
-    zval_dtor(&ret);
+    zval_ptr_dtor_nogc(&ret);
     return;
   }
 
@@ -1365,8 +1365,8 @@ PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
       return;
     }
 
-    zval_dtor(&retval);
-    zval_dtor(&function_name);
+    zval_ptr_dtor_nogc(&retval);
+    zval_ptr_dtor_nogc(&function_name);
   }
 
   upb_MessageValue timestamp_nanos;
@@ -1393,9 +1393,9 @@ PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
 
     timestamp_nanos.int32_val *= 1000;
 
-    zval_dtor(&retval);
-    zval_dtor(&function_name);
-    zval_dtor(&format_string);
+    zval_ptr_dtor_nogc(&retval);
+    zval_ptr_dtor_nogc(&function_name);
+    zval_ptr_dtor_nogc(&format_string);
   }
 
   Message_setval(intern, "seconds", timestamp_seconds);
@@ -1435,9 +1435,9 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
     return;
   }
 
-  zval_dtor(&function_name);
-  zval_dtor(&format_string);
-  zval_dtor(&formatted_time_php);
+  zval_ptr_dtor_nogc(&function_name);
+  zval_ptr_dtor_nogc(&format_string);
+  zval_ptr_dtor_nogc(&formatted_time_php);
 
   ZVAL_OBJ(return_value, Z_OBJ(datetime));
 }
