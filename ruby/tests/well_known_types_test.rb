@@ -116,10 +116,14 @@ class TestWellKnownTypes < Test::Unit::TestCase
     # Test ListValue#each with and without a block
     elements = []
     struct["sublist"].each { |x| elements << x }
-    assert_equal should_equal["sublist"], elements
+    assert_equal struct["sublist"].length, elements.length
+    assert_equal "abc", elements[0]
+    assert_equal 123, elements[1]
+    assert_equal({"deepkey" => "deepval"}, elements[2].to_h)
+    assert_nil elements[3]
     enum = struct["sublist"].each
     assert_instance_of Enumerator, enum
-    assert_equal should_equal["sublist"], enum.to_a
+    assert_equal elements, enum.to_a
 
     assert_raises Google::Protobuf::UnexpectedStructType do
       struct[123] = 5
