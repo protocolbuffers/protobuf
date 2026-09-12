@@ -182,7 +182,7 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
   // creator of the Arena retains ownership of the block after the Arena is
-  // destroyed.
+  // destroyed. Must be aligned to at least 8 bytes.
   char* PROTOBUF_NULLABLE initial_block = nullptr;
 
   // The size of the initial block, if provided.
@@ -192,7 +192,8 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // requested. By default, it contains a ptr to the malloc function.
   //
   // NOTE: block_alloc and dealloc functions are expected to behave like
-  // malloc and free, including Asan poisoning.
+  // malloc and free, including Asan poisoning. Returned blocks must be aligned
+  // to at least 8 bytes.
   void* PROTOBUF_NONNULL (*PROTOBUF_NULLABLE block_alloc)(size_t) = nullptr;
   // A function pointer to a dealloc method that takes ownership of the blocks
   // from the arena. By default, it contains a ptr to a wrapper function that

@@ -23,7 +23,7 @@ namespace internal {
 // custom allocation and deallocation functions. `AllocationPolicy` is for
 // protocol buffer internal use only, and typically created from a user facing
 // public configuration class such as `ArenaOptions`.
-struct AllocationPolicy {
+struct alignas(8) AllocationPolicy {
   static constexpr size_t kDefaultStartBlockSize = 256;
   static constexpr size_t kCurrentDefaultMaxBlockSize = 32 << 10;
 
@@ -79,13 +79,20 @@ class TaggedAllocationPolicyPtr {
 
   uintptr_t get_raw() const { return policy_; }
 
+  uintptr_t get_tags() const { return get_mask<kTagsMask>(); }
+  bool has_policy() const { return get() != nullptr; }
+
  private:
   enum : uintptr_t {
     kUserOwnedInitialBlock = 1,
   };
 
-  static constexpr uintptr_t kTagsMask = 7;
+  // OR in each new flag, so the assert below catches one bit too many.
+  static constexpr uintptr_t kTagsMask = kUserOwnedInitialBlock;
   static constexpr uintptr_t kPtrMask = ~kTagsMask;
+
+  static_assert(kTagsMask < alignof(AllocationPolicy),
+                "Not enough alignment bits to tag AllocationPolicy*");
 
   template <uintptr_t kMask>
   uintptr_t get_mask() const {
