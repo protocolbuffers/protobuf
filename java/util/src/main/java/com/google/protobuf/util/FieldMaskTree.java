@@ -185,30 +185,40 @@ final class FieldMaskTree {
   private static void getFieldPaths(Node node, String path, List<String> paths) {
     class PathStackElement {
       final Node node;
-      final String path;
+      final String segment;
+      final int prefixLength;
 
-      PathStackElement(Node node, String path) {
+      PathStackElement(Node node, String segment, int prefixLength) {
         this.node = node;
-        this.path = path;
+        this.segment = segment;
+        this.prefixLength = prefixLength;
       }
     }
 
+    StringBuilder currentPath = new StringBuilder(path);
     Deque<PathStackElement> stack = new ArrayDeque<>();
-    stack.push(new PathStackElement(node, path));
+    stack.push(new PathStackElement(node, null, 0));
 
     while (!stack.isEmpty()) {
       PathStackElement element = stack.pop();
+      if (element.segment != null) {
+        // Backtrack to the parent path length and append this segment.
+        currentPath.setLength(element.prefixLength);
+        if (element.prefixLength > 0) {
+          currentPath.append('.');
+        }
+        currentPath.append(element.segment);
+      }
       if (element.node.children.isEmpty()) {
-        paths.add(element.path);
+        paths.add(currentPath.toString());
         continue;
       }
       // Pushing the children in reverse order so that they are processed in ascending order
       // will maintain the behavior that the paths are alphabetically sorted in the final
       // FieldMask.
+      int currentLength = currentPath.length();
       for (Entry<String, Node> entry : element.node.children.descendingMap().entrySet()) {
-        String childPath =
-            element.path.isEmpty() ? entry.getKey() : element.path + "." + entry.getKey();
-        stack.push(new PathStackElement(entry.getValue(), childPath));
+        stack.push(new PathStackElement(entry.getValue(), entry.getKey(), currentLength));
       }
     }
   }
