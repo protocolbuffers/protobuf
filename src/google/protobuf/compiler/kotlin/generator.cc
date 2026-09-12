@@ -87,6 +87,12 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
 
   if (!file_generator) return false;
 
+  // Reject malicious java_package values (e.g. containing newline +
+  // top-level Kotlin declarations) that would break out of the emitted
+  // `package $package$;` line. Mirrors the long-standing check in
+  // java::FileGenerator::Validate() — see java/file.cc.
+  if (!file_generator->Validate(error)) return false;
+
   auto open_file = [context](const std::string& filename) {
     return std::unique_ptr<io::ZeroCopyOutputStream>(context->Open(filename));
   };

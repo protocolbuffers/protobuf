@@ -51,6 +51,12 @@ class FileGenerator {
   FileGenerator& operator=(const FileGenerator&) = delete;
   ~FileGenerator() = default;
 
+  // Returns false (and appends to ``error``) if the java_package option
+  // contains characters that would let a malicious .proto break out of
+  // the emitted Kotlin `package $package$;` declaration. Mirrors the
+  // same guard that java::FileGenerator applies for the Java sibling.
+  bool Validate(std::string* error);
+
   std::string GetKotlinClassname();
   void Generate(io::Printer* printer);
   void GenerateSiblings(const std::string& package_dir,
