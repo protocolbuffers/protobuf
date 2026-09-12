@@ -394,7 +394,10 @@ where
         )
     }
     .map(|_| ())
-    .map_err(|_| ParseError)
+    .map_err(|_| {
+        Clear::clear(msg);
+        ParseError
+    })
 }
 
 impl<T> ClearAndParse for T
