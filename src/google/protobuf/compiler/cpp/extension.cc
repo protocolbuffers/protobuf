@@ -119,6 +119,9 @@ void ExtensionGenerator::GenerateFeatureDefaults(io::Printer* p) const {
            {"function_name", "GetFeatureSetDefaultsData"}},
           R"cc(
             namespace internal {
+            template <class T>
+            [[nodiscard]] inline ::absl::string_view $function_name$();
+
             template <>
             inline ::absl::string_view $function_name$<$extension_type$>() {
               static constexpr char kDefaults[] = "$defaults$";
