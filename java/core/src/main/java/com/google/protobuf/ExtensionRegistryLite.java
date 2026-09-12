@@ -58,7 +58,8 @@ public class ExtensionRegistryLite {
     LAZY_VERIFY_ON_ACCESS;
   }
 
-  private static volatile LazyExtensionMode lazyExtensionMode = LazyExtensionMode.EAGER;
+  private static volatile LazyExtensionMode lazyExtensionMode =
+      LazyExtensionMode.LAZY_VERIFY_ON_ACCESS;
 
   // Override for the lazy extension mode for this specific registry.
   // -1 means fallback to the static lazyExtensionMode
