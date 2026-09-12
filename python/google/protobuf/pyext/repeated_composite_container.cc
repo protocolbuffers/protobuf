@@ -23,6 +23,9 @@
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
+// Must include last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace python {
@@ -651,11 +654,15 @@ Message* PromoteConstRepeatedMessage(Message* parent_message,
   // objects in the parent's container. We mark the repeated field dirty, but
   // we don't need mark the individual message dirty.
   // -----------------------------------------------------------------------
-  (void)parent_message->GetReflection()->MutableRepeatedPtrField<Message>(
+  PROTOBUF_IGNORE_DEPRECATION_START(void)
+  parent_message->GetReflection()->MutableRepeatedPtrField<Message>(
       parent_message, field);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   return const_cast<Message*>(message);
 }
 
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
