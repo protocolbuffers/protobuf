@@ -250,6 +250,23 @@ class PROTOBUF_EXPORT SerialArena {
 
   std::vector<void*> PeekCleanupListForTesting();
 
+  // Attempts to grow the most recent allocation in place by `desired_growth`
+  // bytes. Succeeds only if `alloc_end` matches the current tail pointer and
+  // the current arena block has enough remaining space. Returns true if the
+  // allocation was grown in place, false otherwise.
+  bool TryGrowTail(void* alloc_end, size_t desired_growth) {
+    char* tail = ptr();
+    if (static_cast<char*>(alloc_end) != tail) {
+      return false;
+    }
+    if (static_cast<size_t>(limit_ - tail) < desired_growth) {
+      return false;
+    }
+    internal::UnpoisonMemoryRegion(tail, desired_growth);
+    set_ptr(tail + desired_growth);
+    return true;
+  }
+
  private:
   friend class ThreadSafeArena;
   friend class cleanup::ChunkList;

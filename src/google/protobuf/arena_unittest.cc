@@ -1977,6 +1977,82 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
   }
 }
 
+TEST(ArenaTest, TryGrowTailSuccess) {
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+  ASSERT_NE(serial, nullptr);
+
+  // Allocate an initial aligned buffer.
+  constexpr size_t kInitialSize = 32;
+  char* p = Arena::CreateArray<char>(&arena, kInitialSize);
+  ASSERT_NE(p, nullptr);
+
+  const uint64_t initial_space_used = arena.SpaceUsed();
+
+  // Grow tail once.
+  constexpr size_t kGrowth1 = 64;
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize, kGrowth1));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used + kGrowth1);
+
+  // Grow tail again.
+  constexpr size_t kGrowth2 = 128;
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize + kGrowth1, kGrowth2));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used + kGrowth1 + kGrowth2);
+
+  // Growth by 0 bytes at the tail should succeed and not change space used.
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize + kGrowth1 + kGrowth2, 0));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used + kGrowth1 + kGrowth2);
+
+  // The next allocation from the arena must be contiguous with the grown
+  // buffer.
+  char* next = Arena::CreateArray<char>(&arena, 16);
+  EXPECT_EQ(next, p + kInitialSize + kGrowth1 + kGrowth2);
+}
+
+TEST(ArenaTest, TryGrowTailFailsWhenNotAtTail) {
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+  ASSERT_NE(serial, nullptr);
+
+  char* p1 = Arena::CreateArray<char>(&arena, 32);
+  ASSERT_NE(p1, nullptr);
+
+  // Random or misaligned pointers should fail.
+  EXPECT_FALSE(serial->TryGrowTail(nullptr, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 16, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 31, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 33, 16));
+
+  // A second allocation moves the tail pointer.
+  char* p2 = Arena::CreateArray<char>(&arena, 32);
+  ASSERT_NE(p2, nullptr);
+
+  // p1 is no longer at the tail, so TryGrowTail must fail.
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 32, 16));
+
+  // But p2 is at the tail, so growing p2 should succeed.
+  EXPECT_TRUE(serial->TryGrowTail(p2 + 32, 16));
+}
+
+TEST(ArenaTest, TryGrowTailFailsWhenInsufficientSpace) {
+  alignas(8) char buf[256];
+  Arena arena(buf, sizeof(buf));
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+  ASSERT_NE(serial, nullptr);
+
+  constexpr size_t kInitialSize = 32;
+  char* p = Arena::CreateArray<char>(&arena, kInitialSize);
+  ASSERT_NE(p, nullptr);
+
+  // Request growth that exceeds the remaining block space.
+  EXPECT_FALSE(serial->TryGrowTail(p + kInitialSize, sizeof(buf)));
+
+  // Verify that the failed attempt did not mutate the tail pointer:
+  // a smaller growth that fits within the buffer should still succeed.
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize, 16));
+}
+
 class ArenaUniquePtrTest : public testing::TestWithParam<bool> {
  protected:
   Arena* GetArena() {
