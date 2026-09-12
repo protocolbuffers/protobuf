@@ -467,15 +467,17 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
       case FieldDescriptor::CppRepeatedType::kRepeated:
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedField<$Type$>& $name$()
-              const;
-          $DEPRECATED$ $pb$::RepeatedField<$Type$>* $nonnull$ $mutable_name$();
+              const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+          $DEPRECATED$ $pb$::RepeatedField<$Type$>* $nonnull$ $mutable_name$()
+              ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
       case FieldDescriptor::CppRepeatedType::kProxy:
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Type$>
-          $name$() const;
-          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Type$> $mutable_name$();
+          $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Type$>
+          $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
     }

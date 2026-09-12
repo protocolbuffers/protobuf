@@ -207,8 +207,10 @@ void Map::GenerateAccessorDeclarations(io::Printer* p) const {
   auto v2 = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
-    [[nodiscard]] $DEPRECATED$ const $Map$& $name$() const;
-    [[nodiscard]] $DEPRECATED$ $Map$* $nonnull$ $mutable_name$();
+    [[nodiscard]] $DEPRECATED$ const $Map$& $name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
+    [[nodiscard]] $DEPRECATED$ $Map$* $nonnull$ $mutable_name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
 
     private:
     const $Map$& $_internal_name$() const;
