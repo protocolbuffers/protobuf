@@ -1,7 +1,7 @@
 # LINT.IfChange(bazelci_presubmit)
 matrix:
   platform: ["debian12", "macos_arm64", "ubuntu2404", "windows"]
-  bazel: [8.x, 9.x]
+  bazel: [8.x, 9.x, last_green]
 
 tasks:
   verify_targets:
