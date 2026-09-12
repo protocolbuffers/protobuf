@@ -25,6 +25,7 @@ static VALUE get_oneofdef_obj(VALUE descriptor_pool, const upb_OneofDef* def);
 static VALUE get_servicedef_obj(VALUE descriptor_pool,
                                 const upb_ServiceDef* def);
 static VALUE get_methoddef_obj(VALUE descriptor_pool, const upb_MethodDef* def);
+static VALUE Descriptor_msgclass(VALUE _self);
 
 // A distinct object that is not accessible from Ruby.  We use this as a
 // constructor argument to enforce that certain objects cannot be created from
@@ -288,9 +289,8 @@ static VALUE decode_options(VALUE self, const char* option_type, int size,
   }
 
   VALUE desc_rb = get_msgdef_obj(descriptor_pool, msgdef);
-  const Descriptor* desc = ruby_to_Descriptor(desc_rb);
-
-  options_rb = Message_decode_bytes(size, bytes, 0, desc->klass, false);
+  options_rb =
+      Message_decode_bytes(size, bytes, 0, Descriptor_msgclass(desc_rb), false);
 
   // Strip features from the options proto to keep it internal.
   const upb_MessageDef* decoded_desc = NULL;
@@ -2115,8 +2115,7 @@ VALUE Descriptor_DefToClass(const upb_MessageDef* m) {
   VALUE pool = ObjectCache_Get(symtab);
   PBRUBY_ASSERT(pool != Qnil);
   VALUE desc_rb = get_msgdef_obj(pool, m);
-  const Descriptor* desc = ruby_to_Descriptor(desc_rb);
-  return desc->klass;
+  return Descriptor_msgclass(desc_rb);
 }
 
 const upb_MessageDef* Descriptor_GetMsgDef(VALUE desc_rb) {

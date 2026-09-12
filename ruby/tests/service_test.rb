@@ -41,6 +41,20 @@ class ServiceTest < Test::Unit::TestCase
     assert_equal 8325, extension_field.get(@test_service.options).int_option_value
   end
 
+  def test_service_options_extensions_in_rebuilt_pool
+    omit "JRuby and FFI do not support service options extensions" if defined?(JRUBY_VERSION) || Google::Protobuf::IMPLEMENTATION != :NATIVE
+    pool = Google::Protobuf::DescriptorPool.new
+    descriptor_proto_bytes = Google::Protobuf::FileDescriptorProto.descriptor.file_descriptor.to_proto.to_proto
+    pool.add_serialized_file(descriptor_proto_bytes)
+
+    service_proto_bytes = @test_service.file_descriptor.to_proto.to_proto
+    pool.add_serialized_file(service_proto_bytes)
+
+    service_desc = pool.lookup(@test_service.name)
+    extension_field = pool.lookup('service_test_protos.test_options')
+    assert_equal 8325, extension_field.get(service_desc.options).int_option_value
+  end
+
   def test_service_to_proto
     assert_instance_of Google::Protobuf::ServiceDescriptorProto, @test_service.to_proto
   end
