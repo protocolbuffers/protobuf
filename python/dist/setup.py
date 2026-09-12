@@ -13,6 +13,7 @@ import os
 import sys
 
 from setuptools import Extension, find_namespace_packages, setup
+from setuptools.command.build_ext import build_ext
 
 
 def GetVersion():
@@ -31,13 +32,21 @@ def GetVersion():
     return file_globals['__version__']
 
 
+class _BuildExt(build_ext):
+
+  def build_extensions(self):
+    if self.compiler.compiler_type == 'mingw32':
+      for extension in self.extensions:
+        extension.extra_link_args = (
+            extension.extra_link_args or []
+        ) + ['-static']
+    super().build_extensions()
+
+
 current_dir = os.path.dirname(os.path.abspath(__file__))
-extra_link_args = []
 extra_compile_args = []
 
-if sys.platform.startswith('win'):
-  extra_link_args = ['-static']
-else:
+if not sys.platform.startswith('win'):
   extra_compile_args = ['-fvisibility=hidden']
 
 # If at some point the fasttable decoder is ready for prime time, we could
@@ -82,13 +91,13 @@ setup(
     ],
     packages=find_namespace_packages(include=['google*']),
     install_requires=[],
+    cmdclass={'build_ext': _BuildExt},
     ext_modules=[
         Extension(
             'google._upb._message',
             srcs,
             include_dirs=[current_dir, os.path.join(current_dir, 'utf8_range')],
             language='c',
-            extra_link_args=extra_link_args,
             extra_compile_args=extra_compile_args,
         )
     ],

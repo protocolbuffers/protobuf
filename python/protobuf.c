@@ -42,6 +42,8 @@
 typedef struct {
 #ifdef ENABLE_MUTEX
   pthread_mutex_t mutex;
+#else
+  char unused;
 #endif
 } FreeThreadingMutex;
 

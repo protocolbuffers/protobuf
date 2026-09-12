@@ -1,0 +1,108 @@
+name: Build Windows ARM64 Python Wheels
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-sdist:
+    name: Build Python source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8  # v6.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Bazel
+        uses: bazel-contrib/setup-bazel@c5acdfb288317d0b5c0bbd7a396a3dc868bb0f86  # v0.19.0
+        with:
+          bazelisk-cache: true
+          repository-cache: true
+
+      - name: Build source distribution
+        run: |
+          bazel build //python/dist:source_wheel
+          mkdir dist
+          cp bazel-bin/python/dist/protobuf-*.tar.gz dist/
+
+      - name: Upload source distribution
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
+        with:
+          name: protobuf-sdist
+          path: dist/protobuf-*.tar.gz
+          if-no-files-found: error
+
+  build-wheels:
+    name: Build Windows ARM64 wheels
+    needs: build-sdist
+    runs-on: windows-11-arm
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        with:
+          python-version: "3.12"
+          architecture: arm64
+
+      - name: Download source distribution
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131  # v7.0.0
+        with:
+          name: protobuf-sdist
+          path: sdist
+
+      - name: Extract source distribution
+        run: |
+          $sdists = @(Get-ChildItem sdist -Filter protobuf-*.tar.gz -File)
+          if ($sdists.Count -ne 1) {
+            throw "Expected one source distribution, found $($sdists.Count)"
+          }
+
+          tar -xzf $sdists[0].FullName -C sdist
+          $sources = @(Get-ChildItem sdist -Filter protobuf-* -Directory)
+          if ($sources.Count -ne 1) {
+            throw "Expected one extracted source directory, found $($sources.Count)"
+          }
+
+          "PACKAGE_DIR=$($sources[0].FullName)" >> $env:GITHUB_ENV
+
+      - name: Install cibuildwheel
+        run: python -m pip install "cibuildwheel==4.1.0"
+
+      - name: Build and test wheels
+        env:
+          CIBW_ARCHS_WINDOWS: ARM64
+          CIBW_BUILD: "cp311-* cp312-* cp313-* cp314-*"
+          CIBW_BUILD_VERBOSITY: "1"
+          CIBW_TEST_COMMAND: >-
+            python -c "import platform;
+            from google._upb import _message;
+            assert platform.machine() == 'ARM64';
+            assert _message.__file__.endswith('.pyd')"
+        run: python -m cibuildwheel $env:PACKAGE_DIR --output-dir wheelhouse
+
+      - name: Validate wheel artifacts
+        run: |
+          $wheels = @(Get-ChildItem wheelhouse -Filter *.whl -File)
+          if ($wheels.Count -ne 4) {
+            throw "Expected four wheels, found $($wheels.Count)"
+          }
+
+          $invalidWheels = @($wheels | Where-Object Name -NotMatch '-win_arm64\.whl$')
+          if ($invalidWheels.Count -ne 0) {
+            throw "Unexpected wheel platform tags: $($invalidWheels.Name -join ', ')"
+          }
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6.0.0
+        with:
+          name: protobuf-windows-arm64-wheels
+          path: wheelhouse/*.whl
+          if-no-files-found: error
