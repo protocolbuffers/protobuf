@@ -589,7 +589,7 @@
 #endif
 #if defined(__GNUC__) && defined(__clang__) && !defined(__APPLE__) && \
     !defined(_MSC_VER) && !defined(_WIN32) && !defined(__wasm__) &&   \
-    !defined(__EMSCRIPTEN__)
+    !defined(__EMSCRIPTEN__) && !defined(__FILC__)
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 
