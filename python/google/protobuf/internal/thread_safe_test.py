@@ -32,6 +32,37 @@ class ThreadSafeTest(unittest.TestCase):
   def setUp(self):
     self.success = 0
 
+  def testConcurrentMessageObjectIdentity(self):
+    msg = unittest_pb2.TestAllTypes()
+    sub_objs = [None, None]
+
+    def GetSub(idx):
+      sub_objs[idx] = msg.optional_nested_message
+
+    t1 = threading.Thread(target=GetSub, args=(0,))
+    t2 = threading.Thread(target=GetSub, args=(1,))
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+    self.assertIs(sub_objs[0], sub_objs[1])
+
+  def testConcurrentDescriptorObjectIdentity(self):
+    desc_objs = [None, None]
+
+    def GetDesc(idx):
+      desc_objs[idx] = unittest_pb2.TestAllTypes.DESCRIPTOR
+
+    t1 = threading.Thread(target=GetDesc, args=(0,))
+    t2 = threading.Thread(target=GetDesc, args=(1,))
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+
+    self.assertIs(desc_objs[0], desc_objs[1])
+
   def testFieldDecodersDataRace(self):
     msg = unittest_pb2.TestAllTypes(optional_int32=1)
     serialized_data = msg.SerializeToString()
@@ -63,11 +94,6 @@ class ThreadSafeTest(unittest.TestCase):
 
     self.assertEqual(count * 2, self.success)
 
-  # This caused a Dealloc()/Dealloc() race.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testGetType(self):
 
     def GetType():
@@ -91,11 +117,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  # This caused a race between constructing and using the type.
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testInitType(self):
 
     def InitType():
@@ -119,10 +140,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSubMessageAccess(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
@@ -143,10 +160,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -163,10 +176,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedPrimitiveAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
     variable.repeated_float.append(1.0)
@@ -184,10 +193,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSingularFieldAccess(self):
     variable = unittest_proto3_pb2.TestAllTypes()
 
@@ -205,10 +210,6 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedMessageAccess2(self):
     msg = unittest_proto3_pb2.TestAllTypes(
         repeated_nested_message=[
@@ -278,10 +279,6 @@ class FreeThreadingTest(unittest.TestCase):
     self.RunThreads(thread_size, CreatePool)
     self.assertEqual(thread_size, self.success_count)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetFieldValueRace(self):
     """Reproduces a data race in GetFieldValue due to lazy initialization."""
 
@@ -307,10 +304,6 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetOptionsRace(self):
     """Reproduces a data race in GetOptions."""
 
@@ -330,10 +323,6 @@ class FreeThreadingTest(unittest.TestCase):
       for thread in threads:
         thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentGetAndRegisterMessageClassDataRace(self):
     """Reproduces the data race in GetMessageClass/RegisterMessageClass."""
     pool = descriptor_pool.DescriptorPool()
@@ -377,10 +366,6 @@ class FreeThreadingTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""
     pool = descriptor_pool.DescriptorPool()
@@ -414,10 +399,6 @@ class FreeThreadingTest(unittest.TestCase):
       t.join()
     self.assertEqual([], errors)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentSubmessageDeallocRace(self):
     """Tests child submessage wrapper interning under concurrent deallocation."""
     msg = unittest_proto3_pb2.TestAllTypes()
@@ -448,10 +429,6 @@ class FreeThreadingTest(unittest.TestCase):
       t.join()
     self.assertEqual([], errors)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentCompositeFieldDeallocRace(self):
     """Tests composite field wrapper interning under concurrent deallocation."""
     msg = unittest_proto3_pb2.TestAllTypes()
@@ -491,6 +468,29 @@ class FreeThreadingTest(unittest.TestCase):
       t.join()
     self.assertEqual([], errors)
 
+  def testConcurrentClearAndSubObjectDeletionRace(self):
+    """Reproduces a dangling pointer dereference race between Clear() and sub-object deallocation."""
+
+    def ClearMsg(msg, barrier):
+      barrier.wait()
+      msg.Clear()
+
+    def DeleteSub(container, barrier):
+      barrier.wait()
+      container.clear()
+
+    for _ in range(500):
+      msg = unittest_proto3_pb2.TestAllTypes()
+      container = [msg.optional_nested_message]
+      barrier = threading.Barrier(2)
+
+      thread1 = threading.Thread(target=ClearMsg, args=(msg, barrier))
+      thread2 = threading.Thread(target=DeleteSub, args=(container, barrier))
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
+
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):
     """Benchmarks concurrent GetOptions calls."""
@@ -512,10 +512,6 @@ class FreeThreadingTest(unittest.TestCase):
     else:
       print('Skipping benchmark in non-benchmark mode.')
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentLazyUnpackAndRead(self):
     # 1. Create a template proto containing a lazy sub-message
     template = test_proto2_pb2.ReproMessageForLazy()
