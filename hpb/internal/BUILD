@@ -78,6 +78,7 @@ cc_library(
         "//upb/message:promote",
         "//upb/mini_table",
         "//upb/wire",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:check",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings:string_view",
