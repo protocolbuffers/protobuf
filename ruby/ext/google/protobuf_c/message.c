@@ -801,13 +801,14 @@ static VALUE Message_inspect(VALUE _self) {
 // Support functions for Message_to_h //////////////////////////////////////////
 
 static VALUE RepeatedField_CreateArray(const upb_Array* arr,
-                                       TypeInfo type_info) {
+                                       TypeInfo type_info,
+                                       bool emit_defaults) {
   int size = arr ? upb_Array_Size(arr) : 0;
   VALUE ary = rb_ary_new2(size);
 
   for (int i = 0; i < size; i++) {
     upb_MessageValue msgval = upb_Array_Get(arr, i);
-    VALUE val = Scalar_CreateHash(msgval, type_info);
+    VALUE val = Scalar_CreateHash(msgval, type_info, emit_defaults);
     rb_ary_push(ary, val);
   }
 
@@ -815,10 +816,50 @@ static VALUE RepeatedField_CreateArray(const upb_Array* arr,
 }
 
 static VALUE Message_CreateHash(const upb_Message* msg,
-                                const upb_MessageDef* m) {
+                                const upb_MessageDef* m,
+                                bool emit_defaults) {
   if (!msg) return Qnil;
 
   VALUE hash = rb_hash_new();
+
+  if (emit_defaults) {
+    int n = upb_MessageDef_FieldCount(m);
+
+    for (int i = 0; i < n; i++) {
+      const upb_FieldDef* field = upb_MessageDef_Field(m, i);
+
+      if (upb_FieldDef_HasPresence(field) &&
+          !upb_Message_HasFieldByDef(msg, field)) {
+        continue;
+      }
+
+      TypeInfo type_info = TypeInfo_get(field);
+      upb_MessageValue val = upb_Message_GetFieldByDef(msg, field);
+      VALUE msg_value;
+
+      if (upb_FieldDef_IsMap(field)) {
+        const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(field);
+        const upb_FieldDef* key_f =
+            upb_MessageDef_FindFieldByNumber(entry_m, 1);
+        const upb_FieldDef* val_f =
+            upb_MessageDef_FindFieldByNumber(entry_m, 2);
+        upb_CType key_type = upb_FieldDef_CType(key_f);
+        msg_value = Map_CreateHash(val.map_val, key_type,
+                                   TypeInfo_get(val_f), emit_defaults);
+      } else if (upb_FieldDef_IsRepeated(field)) {
+        msg_value =
+            RepeatedField_CreateArray(val.array_val, type_info, emit_defaults);
+      } else {
+        msg_value = Scalar_CreateHash(val, type_info, emit_defaults);
+      }
+
+      VALUE msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
+      rb_hash_aset(hash, msg_key, msg_value);
+    }
+
+    return hash;
+  }
+
   size_t iter = kUpb_Message_Begin;
   const upb_DefPool* pool = upb_FileDef_Pool(upb_MessageDef_File(m));
   const upb_FieldDef* field;
@@ -839,11 +880,13 @@ static VALUE Message_CreateHash(const upb_Message* msg,
       const upb_FieldDef* key_f = upb_MessageDef_FindFieldByNumber(entry_m, 1);
       const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(entry_m, 2);
       upb_CType key_type = upb_FieldDef_CType(key_f);
-      msg_value = Map_CreateHash(val.map_val, key_type, TypeInfo_get(val_f));
+      msg_value = Map_CreateHash(val.map_val, key_type, TypeInfo_get(val_f),
+                                 emit_defaults);
     } else if (upb_FieldDef_IsRepeated(field)) {
-      msg_value = RepeatedField_CreateArray(val.array_val, type_info);
+      msg_value =
+          RepeatedField_CreateArray(val.array_val, type_info, emit_defaults);
     } else {
-      msg_value = Scalar_CreateHash(val, type_info);
+      msg_value = Scalar_CreateHash(val, type_info, emit_defaults);
     }
 
     VALUE msg_key = ID2SYM(rb_intern(upb_FieldDef_Name(field)));
@@ -853,9 +896,11 @@ static VALUE Message_CreateHash(const upb_Message* msg,
   return hash;
 }
 
-VALUE Scalar_CreateHash(upb_MessageValue msgval, TypeInfo type_info) {
+VALUE Scalar_CreateHash(upb_MessageValue msgval, TypeInfo type_info,
+                        bool emit_defaults) {
   if (type_info.type == kUpb_CType_Message) {
-    return Message_CreateHash(msgval.msg_val, type_info.def.msgdef);
+    return Message_CreateHash(msgval.msg_val, type_info.def.msgdef,
+                              emit_defaults);
   } else {
     return Convert_UpbToRuby(msgval, type_info, Qnil);
   }
@@ -866,11 +911,37 @@ VALUE Scalar_CreateHash(upb_MessageValue msgval, TypeInfo type_info) {
  *
  * Returns the message as a Ruby Hash object, with keys as symbols.
  *
+ * When +emit_defaults+ is true, fields that have no presence (implicit
+ * presence scalars and enums, and empty repeated fields / maps) are also
+ * emitted. Fields that do have presence are still emitted only when they are
+ * actually set.
+ *
+ * This matches the field selection used by #inspect and by .encode_json with
+ * the +emit_defaults+ option.
+ *
+ * @param kwargs [Hash]
+ * @option emit_defaults [Boolean] set true to also emit fields without
+ * presence (default is to omit them)
  * @return [Hash]
  */
-static VALUE Message_to_h(VALUE _self) {
+static VALUE Message_to_h(int argc, VALUE* argv, VALUE _self) {
   Message* self = ruby_to_Message(_self);
-  return Message_CreateHash(self->msg, self->msgdef);
+  VALUE kwargs = Qnil;
+  bool emit_defaults = false;
+
+  rb_scan_args_kw(RB_SCAN_ARGS_PASS_CALLED_KEYWORDS, argc, argv, ":", &kwargs);
+
+  if (!NIL_P(kwargs)) {
+    ID keyword_ids[1];
+    VALUE values[1];
+    keyword_ids[0] = rb_intern("emit_defaults");
+    rb_get_kwargs(kwargs, keyword_ids, 0, 1, values);
+    if (values[0] != Qundef) {
+      emit_defaults = RTEST(values[0]);
+    }
+  }
+
+  return Message_CreateHash(self->msg, self->msgdef, emit_defaults);
 }
 
 /*
@@ -1521,7 +1592,7 @@ static void Message_define_class(VALUE klass) {
   rb_define_method(klass, "freeze", Message_freeze, 0);
   rb_define_method(klass, "frozen?", Message_frozen, 0);
   rb_define_method(klass, "hash", Message_hash, 0);
-  rb_define_method(klass, "to_h", Message_to_h, 0);
+  rb_define_method(klass, "to_h", Message_to_h, -1);
   rb_define_method(klass, "inspect", Message_inspect, 0);
   rb_define_method(klass, "to_s", Message_inspect, 0);
   rb_define_method(klass, "[]", Message_index, 1);
