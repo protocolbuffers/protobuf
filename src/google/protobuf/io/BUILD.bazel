@@ -191,6 +191,7 @@ cc_test(
         "coded_stream_unittest.cc",
         "printer_death_test.cc",
         "printer_unittest.cc",
+        "strtod_unittest.cc",
         "tokenizer_unittest.cc",
         "zero_copy_stream_unittest.cc",
     ],
