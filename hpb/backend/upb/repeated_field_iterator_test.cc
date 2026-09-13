@@ -9,7 +9,9 @@
 
 #include <algorithm>
 #include <array>
+#include <cstring>
 #include <numeric>
+#include <string>
 #include <tuple>
 #include <type_traits>
 #include <utility>
