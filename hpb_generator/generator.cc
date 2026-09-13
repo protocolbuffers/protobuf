@@ -24,6 +24,7 @@
 #include "hpb_generator/gen_utils.h"
 #include "hpb_generator/names.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/io/printer.h"
 #include "upb_generator/c/names.h"
 #include "upb_generator/minitable/names.h"
 
