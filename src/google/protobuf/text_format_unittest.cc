@@ -3093,6 +3093,22 @@ TEST(TextFormatUnknownFieldTest, TestUnknownField) {
   EXPECT_TRUE(parser.ParseFromString("unknown_field: [{a:1}, <b:2>]", &proto));
 }
 
+TEST(TextFormatUnknownFieldTest, TestUnknownEnum) {
+  proto2_unittest::TestAllTypes proto;
+  TextFormat::Parser parser;
+  std::string message_with_bad_enum =
+      "repeated_nested_enum: BAR_BAD\n"
+      "repeated_nested_enum: BAR\n";
+
+  // Unknown enums are not permitted by default.
+  EXPECT_FALSE(parser.ParseFromString(message_with_bad_enum, &proto));
+
+  parser.AllowUnknownEnum(true);
+  EXPECT_TRUE(parser.ParseFromString(message_with_bad_enum, &proto));
+  ASSERT_EQ(proto.repeated_nested_enum_size(), 1);
+  EXPECT_EQ(proto.repeated_nested_enum(0), proto2_unittest::TestAllTypes::BAR);
+}
+
 TEST(TextFormatUnknownFieldTest, TestAnyInUnknownField) {
   proto2_unittest::TestAllTypes proto;
   TextFormat::Parser parser;
