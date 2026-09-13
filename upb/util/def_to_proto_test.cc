@@ -7,7 +7,6 @@
 
 #include "upb/util/def_to_proto.h"
 
-#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -154,6 +153,64 @@ TEST(DefToProto, TestRuntimeReflection) {
   upb::FileDefPtr file = defpool.FindFileByName(
       upb_util_def_to_proto_test_proto_upbdefinit.filename);
   CheckFile(file, file_desc);
+}
+
+TEST(DefToProto, ReservedNamesAreCopied) {
+  constexpr absl::string_view kMessageReservedName = "message_reserved_name";
+  constexpr absl::string_view kEnumReservedName = "enum_reserved_name";
+  google::protobuf::FileDescriptorProto file;
+  file.set_name("reserved_name.proto");
+  file.set_package("pkg");
+  file.add_message_type()->set_name("Message");
+  file.mutable_message_type(0)->add_reserved_name(kMessageReservedName);
+  google::protobuf::EnumDescriptorProto* enum_proto = file.add_enum_type();
+  enum_proto->set_name("Enum");
+  enum_proto->add_value()->set_name("VALUE");
+  enum_proto->mutable_value(0)->set_number(0);
+  enum_proto->add_reserved_name(kEnumReservedName);
+
+  upb::Arena source_arena;
+  upb::Arena destination_arena;
+  upb::Status status;
+  std::string serialized;
+  ASSERT_TRUE(file.SerializeToString(&serialized));
+  const google_protobuf_FileDescriptorProto* parsed =
+      google_protobuf_FileDescriptorProto_parse(
+          serialized.data(), serialized.size(), source_arena.ptr());
+  ASSERT_NE(parsed, nullptr);
+
+  upb::DefPool source_pool;
+  ASSERT_TRUE(source_pool.AddFile(parsed, &status));
+  ASSERT_TRUE(status.ok()) << status.error_message();
+  upb::MessageDefPtr message = source_pool.FindMessageByName("pkg.Message");
+  upb::EnumDefPtr enum_def = source_pool.FindEnumByName("pkg.Enum");
+  ASSERT_TRUE(message);
+  ASSERT_TRUE(enum_def);
+
+  google_protobuf_DescriptorProto* message_proto =
+      upb_MessageDef_ToProto(message.ptr(), destination_arena.ptr());
+  google_protobuf_EnumDescriptorProto* enum_proto_copy =
+      upb_EnumDef_ToProto(enum_def.ptr(), destination_arena.ptr());
+  ASSERT_NE(message_proto, nullptr);
+  ASSERT_NE(enum_proto_copy, nullptr);
+
+  size_t count;
+  const upb_StringView* message_names =
+      google_protobuf_DescriptorProto_reserved_name(message_proto, &count);
+  ASSERT_EQ(count, 1);
+  upb_StringView source_message_name =
+      upb_MessageDef_ReservedName(message.ptr(), 0);
+  EXPECT_EQ(absl::string_view(message_names[0].data, message_names[0].size),
+            kMessageReservedName);
+  EXPECT_NE(message_names[0].data, source_message_name.data);
+
+  const upb_StringView* enum_names =
+      google_protobuf_EnumDescriptorProto_reserved_name(enum_proto_copy, &count);
+  ASSERT_EQ(count, 1);
+  upb_StringView source_enum_name = upb_EnumDef_ReservedName(enum_def.ptr(), 0);
+  EXPECT_EQ(absl::string_view(enum_names[0].data, enum_names[0].size),
+            kEnumReservedName);
+  EXPECT_NE(enum_names[0].data, source_enum_name.data);
 }
 
 // Fuzz test regressions.
