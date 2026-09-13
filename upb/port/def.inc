@@ -316,6 +316,16 @@ Error, UINTPTR_MAX is undefined
 #define UPB_NODEREF
 #endif
 
+// Bounds-safety end-pointer companion (Apple/Clang -fbounds-safety). No-op when
+// unsupported so default builds are unchanged.
+#if UPB_HAS_ATTRIBUTE(__ended_by__)
+#define UPB_ENDED_BY(end) __attribute__((__ended_by__(end)))
+#elif UPB_HAS_ATTRIBUTE(ended_by)
+#define UPB_ENDED_BY(end) __attribute__((ended_by(end)))
+#else
+#define UPB_ENDED_BY(end)
+#endif
+
 #if UPB_HAS_C_ATTRIBUTE(nodiscard)
 #define UPB_NODISCARD [[nodiscard]]
 #elif UPB_HAS_ATTRIBUTE(warn_unused_result)
