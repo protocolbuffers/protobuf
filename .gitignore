@@ -197,7 +197,6 @@ _build/
 .vs
 
 # Visual Studio Code
-/.vscode/
 
 # IntelliJ
 .idea
@@ -220,3 +219,5 @@ compile_commands.json
 
 # Ignore Bzlmod lock file until it is more stable
 MODULE.bazel.lock
+config.bat
+node_modules
