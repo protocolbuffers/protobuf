@@ -55,6 +55,28 @@ using ::testing::Le;
 using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 
+TEST(MapTest, HashRotationCountWithIntMinKeyNoUB) {
+  // Regression: map keys whose low 32 bits are 0x80000000 previously reached
+  // absl::rotr(int) with INT_MIN via Hash(uint64_t) — signed-overflow UB in
+  // RotateRight's (-s). The fix masks the rotation count at the call site.
+  Map<int32_t, int32_t> m;
+  m[-2147483648] = 1;
+  EXPECT_EQ(m.at(-2147483648), 1);
+
+  // int64/uint64 keys: 2^32 values share the trigger residue class.
+  Map<int64_t, int32_t> m64;
+  m64[int64_t{0x80000000}] = 2;
+  m64[int64_t{0x180000000}] = 3;
+  EXPECT_EQ(m64.at(int64_t{0x80000000}), 2);
+  EXPECT_EQ(m64.at(int64_t{0x180000000}), 3);
+
+  Map<uint64_t, int32_t> mu;
+  mu[uint64_t{0x80000000}] = 4;
+  mu[uint64_t{0x180000000}] = 5;
+  EXPECT_EQ(mu.at(uint64_t{0x80000000}), 4);
+  EXPECT_EQ(mu.at(uint64_t{0x180000000}), 5);
+}
+
 TEST(MapTest, CopyConstructIntegers) {
   using MapType = Map<int32_t, int32_t>;
   MapType original;
