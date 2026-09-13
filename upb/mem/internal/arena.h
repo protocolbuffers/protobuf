@@ -36,7 +36,8 @@
 // LINT.IfChange(upb_Arena)
 
 struct upb_Arena {
-  char* UPB_ONLYBITS(ptr);
+  // ptr bumps toward exclusive end (true end-pointer pair).
+  char* UPB_ENDED_BY(UPB_ONLYBITS(end)) UPB_ONLYBITS(ptr);
   const UPB_NODEREF char* UPB_ONLYBITS(end);
   UPB_XSAN_MEMBER
 };
