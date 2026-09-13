@@ -13,12 +13,17 @@
 #include <vector>
 
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/testing/file.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
+#include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/compiler/command_line_interface.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/compiler/cpp/generator.h"
 #include "google/protobuf/compiler/python/generator.h"
