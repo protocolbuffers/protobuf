@@ -51,6 +51,9 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
    * <b>BOTH</b>     BOTH       BOTH         MAP               LIST
    * </pre>
    *
+   * <p>Note: When empty, getList() in MAP mode and getMap() in LIST mode do not transition to BOTH,
+   * but instead directly return an empty collection.
+   *
    * <p>As the map field changes its mode, the list/map reference returned in a previous method call
    * may be invalidated.
    */
@@ -159,8 +162,16 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
     return new MutabilityAwareMap<K, V>(this, mapData);
   }
 
+  /** Returns whether this MapField is empty. */
+  public boolean isEmpty() {
+    return (mode == StorageMode.LIST) ? listData.isEmpty() : mapData.isEmpty();
+  }
+
   /** Returns the content of this MapField as a read-only Map. */
   public Map<K, V> getMap() {
+    if (isEmpty()) {
+      return Collections.emptyMap();
+    }
     if (mode == StorageMode.LIST) {
       synchronized (this) {
         if (mode == StorageMode.LIST) {
@@ -217,6 +228,9 @@ public class MapField<K, V> extends MapFieldReflectionAccessor implements Mutabi
   /** Gets the content of this MapField as a read-only List. */
   @Override
   List<Message> getList() {
+    if (isEmpty()) {
+      return Collections.emptyList();
+    }
     if (mode == StorageMode.MAP) {
       synchronized (this) {
         if (mode == StorageMode.MAP) {
