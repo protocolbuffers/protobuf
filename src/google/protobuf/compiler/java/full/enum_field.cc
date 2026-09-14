@@ -501,14 +501,23 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderSetValueMethod(
     WriteFieldEnumValueAccessorDocComment(printer, descriptor_, SETTER,
                                           context_->options(),
                                           /* builder */ true);
-    printer->Print(variables_,
-                   "$deprecation$public Builder "
-                   "${$set$capitalized_name$Value$}$(int value) {\n"
-                   "  $set_oneof_case_message$;\n"
-                   "  $oneof_name$_ = value;\n"
-                   "  onChanged();\n"
-                   "  return this;\n"
-                   "}\n");
+    printer->Print(
+        variables_,
+        "$deprecation$public Builder "
+        "${$set$capitalized_name$Value$}$(int value) {\n"
+        "  switch ($oneof_name$Case_) {\n"
+        "  default:\n"
+        "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+        "  case 0:\n"
+        "    $set_oneof_case_message$;\n"
+        "    $set_has_field_bit$ // fallthrough\n"
+        "  case $number$:\n"
+        "    break;\n"
+        "  }\n"
+        "  $oneof_name$_ = value;\n"
+        "  onChanged();\n"
+        "  return this;\n"
+        "}\n");
     printer->Annotate("{", "}", descriptor_, Semantic::kSet);
   }
 }
@@ -539,7 +548,15 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderSetMethod(
                  "$deprecation$public Builder "
                  "${$set$capitalized_name$$}$($type$ value) {\n"
                  "  $null_check$\n"
-                 "  $set_oneof_case_message$;\n"
+                 "  switch ($oneof_name$Case_) {\n"
+                 "  default:\n"
+                 "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                 "  case 0:\n"
+                 "    $set_oneof_case_message$;\n"
+                 "    $set_has_field_bit$ // fallthrough\n"
+                 "  case $number$:\n"
+                 "    break;\n"
+                 "  }\n"
                  "  $oneof_name$_ = value.getNumber();\n"
                  "  onChanged();\n"
                  "  return this;\n"
@@ -557,6 +574,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderClearMethod(
       "$deprecation$public Builder ${$clear$capitalized_name$$}$() {\n"
       "  if ($has_oneof_case_message$) {\n"
       "    $clear_oneof_case_message$;\n"
+      "    $clear_has_field_bit$\n"
       "    $oneof_name$_ = null;\n"
       "    onChanged();\n"
       "  }\n"
@@ -573,6 +591,7 @@ void ImmutableEnumOneofFieldGenerator::GenerateBuilderMembers(
   GenerateBuilderGetMethod(printer);
   GenerateBuilderSetMethod(printer);
   GenerateBuilderClearMethod(printer);
+  GenerateBuilderParseMethod(printer);
 }
 
 void ImmutableEnumOneofFieldGenerator::GenerateBuilderClearCode(
@@ -597,25 +616,54 @@ void ImmutableEnumOneofFieldGenerator::GenerateMergingCode(
   }
 }
 
-void ImmutableEnumOneofFieldGenerator::GenerateBuilderParsingCode(
+void ImmutableEnumOneofFieldGenerator::GenerateBuilderParseMethod(
     io::Printer* printer) const {
+  printer->Print(variables_,
+                 "private void parse$capitalized_name$(\n"
+                 "    com.google.protobuf.CodedInputStream input)\n"
+                 "    throws java.io.IOException {\n");
+  printer->Indent();
   if (SupportUnknownEnumValue(descriptor_)) {
     printer->Print(variables_,
                    "int rawValue = input.readEnum();\n"
-                   "$set_oneof_case_message$;\n"
+                   "switch ($oneof_name$Case_) {\n"
+                   "default:\n"
+                   "  clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+                   "case 0:\n"
+                   "  $set_oneof_case_message$;\n"
+                   "  $set_has_field_bit$ // fallthrough\n"
+                   "case $number$:\n"
+                   "  break;\n"
+                   "}\n"
                    "$oneof_name$_ = rawValue;\n");
   } else {
-    printer->Print(variables_,
-                   "int rawValue = input.readEnum();\n"
-                   "$type$ value =\n"
-                   "    $type$.forNumber(rawValue);\n"
-                   "if (value == null) {\n"
-                   "  mergeUnknownVarintField($number$, rawValue);\n"
-                   "} else {\n"
-                   "  $set_oneof_case_message$;\n"
-                   "  $oneof_name$_ = rawValue;\n"
-                   "}\n");
+    printer->Print(
+        variables_,
+        "int rawValue = input.readEnum();\n"
+        "$type$ value =\n"
+        "    $type$.forNumber(rawValue);\n"
+        "if (value == null) {\n"
+        "  mergeUnknownVarintField($number$, rawValue);\n"
+        "} else {\n"
+        "  switch ($oneof_name$Case_) {\n"
+        "  default:\n"
+        "    clear$oneof_capitalized_name$HasBits(); // fallthrough\n"
+        "  case 0:\n"
+        "    $set_oneof_case_message$;\n"
+        "    $set_has_field_bit$ // fallthrough\n"
+        "  case $number$:\n"
+        "    break;\n"
+        "  }\n"
+        "  $oneof_name$_ = rawValue;\n"
+        "}\n");
   }
+  printer->Outdent();
+  printer->Print("}\n");
+}
+
+void ImmutableEnumOneofFieldGenerator::GenerateBuilderParsingCode(
+    io::Printer* printer) const {
+  printer->Print(variables_, "parse$capitalized_name$(input);\n");
 }
 
 void ImmutableEnumOneofFieldGenerator::GenerateSerializationCode(

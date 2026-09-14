@@ -1114,9 +1114,9 @@ UPB_INLINE void upb_gfree(void* ptr) { upb_free(&upb_alloc_global, ptr); }
 
 // Returns whether thread-local allocation count/ OOM-simulation features
 // are supported.
-UPB_API UPB_NODISCARD bool upb_AllocationCount_IsAvailable(void);
+UPB_NODISCARD UPB_API bool upb_AllocationCount_IsAvailable(void);
 // Returns the thread-local allocation count since the last reset.
-UPB_API UPB_NODISCARD size_t upb_AllocationCount_Get(void);
+UPB_NODISCARD UPB_API size_t upb_AllocationCount_Get(void);
 // Resets the thread-local allocation count and failure threshold.
 UPB_API void upb_AllocationCount_Reset(void);
 // Artificially triggers memory allocation failure in the thread on the n-th

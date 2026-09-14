@@ -51,6 +51,7 @@
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/io_win32.h"
+#include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/message.h"
@@ -278,6 +279,49 @@ TEST(MESSAGE_TEST_NAME, ParseHelpers) {
     UNITTEST::TestCord cord_message;
     EXPECT_TRUE(cord_message.ParseFromString(data));
     EXPECT_EQ("bytes_cord", cord_message.optional_bytes_cord());
+  }
+}
+
+TEST(MESSAGE_TEST_NAME, BoundedStreamDoesNotCallBadBackUp) {
+  const std::vector<std::string> wire = {
+      std::string(1, '\0'), std::string(1, '\0'), std::string(1, '\0')};
+  {
+    io::internal::TestZeroCopyInputStream stream(wire);
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.ParseFromBoundedZeroCopyStream(&stream, 3));
+  }
+  {
+    io::internal::TestZeroCopyInputStream stream(wire);
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.ParsePartialFromBoundedZeroCopyStream(&stream, 3));
+  }
+  {
+    io::internal::TestZeroCopyInputStream stream(wire);
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.MergeFromBoundedZeroCopyStream(&stream, 3));
+  }
+  {
+    io::internal::TestZeroCopyInputStream stream(wire);
+    UNITTEST::TestAllTypes message;
+    EXPECT_FALSE(message.MergePartialFromBoundedZeroCopyStream(&stream, 3));
+  }
+
+  // Valid message followed by extra data: BackUp is called with a valid count.
+  {
+    UNITTEST::TestAllTypes original;
+    original.set_optional_int32(123);
+    std::string serialized = original.SerializeAsString();
+    io::internal::TestZeroCopyInputStream stream({serialized, "extra"});
+    UNITTEST::TestAllTypes message;
+    EXPECT_TRUE(
+        message.ParseFromBoundedZeroCopyStream(&stream, serialized.size()));
+    EXPECT_EQ(message.optional_int32(), 123);
+    EXPECT_EQ(stream.ByteCount(), serialized.size());
+    const void* next_data;
+    int next_size;
+    EXPECT_TRUE(stream.Next(&next_data, &next_size));
+    EXPECT_EQ(absl::string_view(static_cast<const char*>(next_data), next_size),
+              "extra");
   }
 }
 

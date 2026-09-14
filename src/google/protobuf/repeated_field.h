@@ -123,6 +123,7 @@ class alignas(8) HeapRep {
   ~HeapRep() = delete;
 
   uint32_t capacity() const { return capacity_; }
+  void set_capacity(uint32_t c) { capacity_ = c; }
 
   template <typename Element>
   const Element* elements() const {

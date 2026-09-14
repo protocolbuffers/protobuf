@@ -4772,25 +4772,114 @@ bool upb_inttable_copy(upb_inttable* dest, const upb_inttable* src,
   return true;
 }
 
+// Attempts to grow the inttable in-place. If a table has primitive keys and
+// values, insertions generally don't allocate anything in between the table's
+// allocations; in that case, growing the table in place uses half the total
+// memory compared to allocating new chunks and copying over.
+static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
+                                 upb_Arena* a) {
+  if (size_lg2 >= 32) {
+    return false;
+  }
+  size_t old_size = upb_table_size(&t->t);
+  size_t old_bytes = old_size * sizeof(upb_tabent);
+  size_t new_size = (size_t)1 << size_lg2;
+  size_t new_bytes = new_size * sizeof(upb_tabent);
+  if (new_bytes <= old_bytes || !t->t.entries) {
+    return false;
+  }
+
+  if (!upb_Arena_TryExtend(a, t->t.entries, old_bytes, new_bytes)) {
+    return false;
+  }
+
+  // Zero out the newly extended region of the table buffer.
+  memset(t->t.entries + old_size, 0,
+         (new_size - old_size) * sizeof(upb_tabent));
+
+  // This one-past-the-end pointer is guaranteed to be distinct from NULL and
+  // any valid internal collision chain pointer in the entire table.
+  upb_tabent* unhashed_marker = t->t.entries + new_size;
+
+  // Mark all existing occupied entries as UNHASHED using the distinct
+  // marker. Because e->next != NULL, these pending slots are fully protected
+  // from being claimed by emptyent() during collision chain formation.
+  for (size_t i = 0; i < old_size; i++) {
+    upb_tabent* e = &t->t.entries[i];
+    if (!upb_tabent_isempty(e)) {
+      upb_tabent_setnext(e, unhashed_marker);
+    }
+  }
+
+  const uint32_t mask = new_size - 1;
+  t->t.mask = mask;
+  t->t.count = 0;  // Reset count as insert will increment it back up
+
+  // Trace and resolve all destinations.
+  for (size_t i = 0; i < old_size; i++) {
+    upb_tabent* current = &t->t.entries[i];
+    if (!upb_tabent_hasnext(current) ||
+        upb_tabent_next(current) != unhashed_marker) {
+      continue;  // Slot is already hashed or empty.
+    }
+
+    // Pop the leading unhashed entry to begin our trace cycle.
+    upb_key tabkey = current->key;
+    upb_value val = current->val;
+    upb_tabent_clear(current);
+
+    // This inner loop clears at least one unhashed slot per iteration, for
+    // total O(n) time across the whole rehash.
+    while (true) {
+      uint32_t hash = inthash(tabkey, val);
+      upb_tabent* target_bucket = &t->t.entries[hash & mask];
+
+      if (upb_tabent_hasnext(target_bucket) &&
+          upb_tabent_next(target_bucket) == unhashed_marker) {
+        // Primary bucket contains a pending unhashed entry. Extract it, clear
+        // the bucket, place our entry, and trace the evicted one.
+        upb_key next_tabkey = target_bucket->key;
+        upb_value next_val = target_bucket->val;
+
+        upb_tabent_clear(target_bucket);
+
+        insert(&t->t, intkey(tabkey.num), tabkey, val, hash, &inthash, &inteql);
+
+        tabkey = next_tabkey;
+        val = next_val;
+      } else {
+        // Primary bucket is either empty or holds an already-hashed chain.
+        // The standard insert() function perfectly resolves both cases.
+        insert(&t->t, intkey(tabkey.num), tabkey, val, hash, &inthash, &inteql);
+        break;
+      }
+    }
+  }
+  return true;
+}
+
+UPB_NOINLINE static bool upb_inttable_grow(upb_inttable* t, upb_Arena* a) {
+  size_t new_size = _upb_log2_table_size(&t->t) + 1;
+  if (upb_inttable_trygrow(t, new_size, a)) return true;
+
+  upb_table new_table;
+  if (!init(&new_table, new_size, a)) return false;
+
+  for (size_t i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
+    const upb_tabent* e = &t->t.entries[i];
+    insert(&new_table, intkey(e->key.num), e->key, e->val,
+           inthash(e->key, e->val), &inthash, &inteql);
+  }
+
+  UPB_ASSERT(t->t.count == new_table.count);
+  t->t = new_table;
+  return true;
+}
+
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
                          upb_Arena* a) {
-  if (isfull(&t->t)) {
-    upb_table new_table;
-
-    if (!init(&new_table, _upb_log2_table_size(&t->t) + 1, a)) {
-      return false;
-    }
-
-    for (size_t i = begin(&t->t); i < upb_table_size(&t->t);
-         i = next(&t->t, i)) {
-      const upb_tabent* e = &t->t.entries[i];
-      insert(&new_table, intkey(e->key.num), e->key, e->val,
-             inthash(e->key, e->val), &inthash, &inteql);
-    }
-
-    UPB_ASSERT(t->t.count == new_table.count);
-
-    t->t = new_table;
+  if (UPB_UNLIKELY(isfull(&t->t))) {
+    if (!upb_inttable_grow(t, a)) return false;
   }
   upb_key tabkey = {.num = key};
   insert(&t->t, intkey(key), tabkey, val, upb_inthash(key), &inthash, &inteql);
@@ -19387,21 +19476,23 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
   return ptr;
 }
 
-static char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
-                             const upb_MiniTable* layout,
-                             const upb_MapEntry* ent) {
-  const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
-  const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
+UPB_FORCEINLINE
+char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
+                      const upb_MiniTableField* key_field,
+                      const upb_MiniTableField* val_field,
+                      const upb_MapEntry* ent) {
   size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
-  size_t size;
+  UPB_ASSUME(upb_MiniTableField_Number(val_field) == 2);
   ptr = encode_scalar(ptr, e, &ent->v, val_field);
+  UPB_ASSUME(upb_MiniTableField_Number(key_field) == 1);
   ptr = encode_scalar(ptr, e, &ent->k, key_field);
-  size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
+  size_t size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
   ptr = encode_length(ptr, e, size);
   ptr = encode_tag(ptr, e, number, kUpb_WireType_Delimited);
   return ptr;
 }
 
+UPB_NOINLINE
 static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
                         const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
@@ -19410,17 +19501,20 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
   if (!map || !upb_Map_Size(map)) return ptr;
 
+  uint32_t number = upb_MiniTableField_Number(f);
+  uint32_t key_size = map->key_size;
+  uint32_t val_size = map->val_size;
+  const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
+  const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
     if (!_upb_mapsorter_pushmap(
-            &e->sorter,
-            layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype), map,
-            &sorted)) {
+            &e->sorter, key_field->UPB_PRIVATE(descriptortype), map, &sorted)) {
       encode_err(e, kUpb_EncodeStatus_OutOfMemory);
     }
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
-      ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+      ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
@@ -19430,20 +19524,19 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
       upb_StringView strkey;
       while (upb_strtable_next2(&map->t.strtable, &strkey, &val, &iter)) {
         upb_MapEntry ent;
-        _upb_map_fromkey(strkey, &ent.k, map->key_size);
-        _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        _upb_map_fromkey(strkey, &ent.k, key_size);
+        _upb_map_fromvalue(val, &ent.v, val_size);
+        ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
       }
     } else {
       intptr_t iter = UPB_INTTABLE_BEGIN;
       uintptr_t intkey = 0;
       while (upb_inttable_next(&map->t.inttable, &intkey, &val, &iter)) {
         upb_MapEntry ent;
-        memcpy(&ent.k, &intkey, map->key_size);
-        _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        UPB_ASSUME(key_size != UPB_MAPTYPE_STRING);
+        memcpy(&ent.k, &intkey, key_size);
+        _upb_map_fromvalue(val, &ent.v, val_size);
+        ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
       }
     }
   }
@@ -19458,13 +19551,13 @@ static bool encode_shouldencode(const upb_Message* msg,
 static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
                           const upb_MiniTableField* field) {
   switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
+    case kUpb_FieldMode_Scalar:
+      return encode_scalar(
+          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     case kUpb_FieldMode_Array:
       return encode_array(ptr, e, msg, field);
     case kUpb_FieldMode_Map:
       return encode_map(ptr, e, msg, field);
-    case kUpb_FieldMode_Scalar:
-      return encode_scalar(
-          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     default:
       UPB_UNREACHABLE();
   }

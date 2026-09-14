@@ -116,7 +116,8 @@ ImmutableMessageGenerator::ImmutableMessageGenerator(
       const OneofDescriptor* oneof = descriptor_->field(i)->containing_oneof();
       auto& generator = oneof_generators_[oneof->index()];
       if (generator == nullptr) {
-        generator = std::make_unique<OneofGenerator>(oneof, context_);
+        generator = std::make_unique<OneofGenerator>(oneof, context_,
+                                                     field_generators_);
       }
     }
   }
