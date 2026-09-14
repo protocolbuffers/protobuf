@@ -90,6 +90,10 @@ pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
 /// types.
 ///
 /// On a view proxy this will behave as a reborrow into a shorter lifetime.
+#[diagnostic::on_unimplemented(
+    message = "the trait `AsView` is not implemented for `{Self}`",
+    note = "consider calling `.as_view()` if `{Self}` is a protobuf message, view, or mut proxy (or a reference to one)"
+)]
 pub trait AsView: SealedInternal {
     type Proxied: Proxied;
 
@@ -136,6 +140,10 @@ impl<T: Proxied> AsView for &mut T {
 ///
 /// On a view proxy this will behave as a reborrow into a shorter lifetime
 /// (semantically matching a `&'a T` into a `&'b T` where `'a: 'b`).
+#[diagnostic::on_unimplemented(
+    message = "the trait `IntoView` is not implemented for `{Self}` (consider calling `.as_view()` or borrowing)",
+    note = "if `{Self}` is an owned protobuf message or a reference to a proxy, consider calling `.as_view()` or `.into_view()`"
+)]
 pub trait IntoView<'msg>: SealedInternal + AsView {
     /// Converts into a `View` with a potentially shorter lifetime.
     ///
@@ -189,6 +197,10 @@ impl<'msg, T: Proxied> IntoView<'msg> for &'msg mut T {
 /// implemented on both owned `Proxied` types as well as mut proxy types.
 ///
 /// On a mut proxy this will behave as a reborrow into a shorter lifetime.
+#[diagnostic::on_unimplemented(
+    message = "the trait `AsMut` is not implemented for `{Self}`",
+    note = "consider calling `.as_mut()` or passing `&mut msg` if `{Self}` is a mutable protobuf message or mut proxy"
+)]
 pub trait AsMut: SealedInternal + AsView<Proxied = Self::MutProxied> {
     type MutProxied: MutProxied;
 
@@ -207,6 +219,10 @@ impl<T: MutProxied> AsMut for &mut T {
 ///
 /// On a mut proxy this will behave as a reborrow into a shorter lifetime
 /// (semantically matching a `&mut 'a T` into a `&mut 'b T` where `'a: 'b`).
+#[diagnostic::on_unimplemented(
+    message = "the trait `IntoMut` is not implemented for `{Self}` (consider calling `.as_mut()` or mutably borrowing)",
+    note = "if `{Self}` is an owned protobuf message or mut proxy, consider calling `.as_mut()` or `.into_mut()`"
+)]
 pub trait IntoMut<'msg>: SealedInternal + AsMut {
     /// Converts into a `Mut` with a potentially shorter lifetime.
     ///
@@ -253,6 +269,10 @@ impl<'msg, T: MutProxied> IntoMut<'msg> for &'msg mut T {
 /// This trait must not be implemented on types outside the Protobuf codegen and
 /// runtime. We expect it to change in backwards incompatible ways in the
 /// future.
+#[diagnostic::on_unimplemented(
+    message = "the trait `IntoProxied<{T}>` is not implemented for `{Self}`",
+    note = "if `{Self}` is a reference to a protobuf message, repeated field, or map, consider calling `.as_view()` to copy from a view instead of moving"
+)]
 pub trait IntoProxied<T: Proxied> {
     #[doc(hidden)]
     fn into_proxied(self, _private: Private) -> T;
@@ -335,6 +355,12 @@ mod tests {
             'msg: 'shorter,
         {
             self
+        }
+    }
+
+    impl<'msg> IntoProxied<MyProxied> for MyProxiedView<'msg> {
+        fn into_proxied(self, _private: Private) -> MyProxied {
+            MyProxied { val: self.my_proxied_ref.val.clone() }
         }
     }
 
@@ -511,5 +537,34 @@ mod tests {
             // lifetime.
             reborrow_generic_mut_into_mut::<MyProxied>(my_mut, other_mut);
         }
+    }
+
+    #[gtest]
+    fn test_diagnostic_attributes_and_suggested_conversions() {
+        fn req_as_view(_: impl AsView<Proxied = MyProxied>) {}
+        fn req_into_view<'a>(_: impl IntoView<'a, Proxied = MyProxied>) {}
+        fn req_as_mut(_: impl AsMut<MutProxied = MyProxied>) {}
+        fn req_into_mut<'a>(_: impl IntoMut<'a, MutProxied = MyProxied>) {}
+        fn req_into_proxied(_: impl IntoProxied<MyProxied>) {}
+
+        // Verify that applying the conversions suggested by `#[diagnostic::on_unimplemented]`
+        // (`.as_view()`, `.into_view()`, `.as_mut()`, `.into_mut()`) satisfies the proxy bounds:
+        let msg = MyProxied::default();
+        let view = msg.as_view();
+        // `&view` fails `AsView` / `IntoView`, while `view.as_view()` / `view.into_view()` works:
+        req_as_view(view.as_view());
+        req_into_view(msg.as_view());
+        req_into_view(view.into_view());
+
+        let mut msg2 = MyProxied::default();
+        let mut mut_proxy = msg2.as_mut();
+        // `&mut mut_proxy` fails `AsMut` / `IntoMut`, while `mut_proxy.as_mut()` / `mut_proxy.into_mut()` works:
+        req_as_mut(mut_proxy.as_mut());
+        req_into_mut(mut_proxy.into_mut());
+        req_into_mut(msg2.as_mut());
+
+        let msg3 = MyProxied::default();
+        // `&msg3` fails `IntoProxied`, while `msg3.as_view()` copies from a view:
+        req_into_proxied(msg3.as_view());
     }
 }
