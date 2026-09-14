@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "storage/datapol/annotations/proto/semantic_annotations.proto";
+
 option java_package = "com.google.protobuf";
 option java_outer_classname = "FieldMaskProto";
 option java_multiple_files = true;
@@ -239,5 +241,6 @@ option cc_enable_arenas = true;
 // `INVALID_ARGUMENT` error if any path is unmappable.
 message FieldMask {
   // The set of field mask paths.
-  repeated string paths = 1;
+  repeated string paths = 1
+      [(datapol.semantic_type) = ST_STRUCTURED_REQUEST_PARAMETER];
 }
