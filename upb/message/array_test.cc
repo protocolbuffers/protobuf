@@ -115,3 +115,73 @@ TEST(ArrayTest, AppendAll) {
   EXPECT_EQ(upb_Array_Size(empty_dst), 3);
   EXPECT_EQ(upb_Array_Get(empty_dst, 0).int32_val, 10);
 }
+
+TEST(ArrayTest, Insert) {
+  upb::Arena arena;
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  for (int i = 0; i < 4; i++) {
+    upb_MessageValue mv;
+    mv.int32_val = i;
+    ASSERT_TRUE(upb_Array_Append(arr, mv, arena.ptr()));
+  }
+  // arr = [0, 1, 2, 3]
+
+  // Insert 2 elements at index 1
+  ASSERT_TRUE(upb_Array_Insert(arr, 1, 2, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(arr), 6);
+  // Elements shifted: arr[0] is 0, arr[3] is 1, arr[4] is 2, arr[5] is 3
+  EXPECT_EQ(upb_Array_Get(arr, 0).int32_val, 0);
+  EXPECT_EQ(upb_Array_Get(arr, 3).int32_val, 1);
+  EXPECT_EQ(upb_Array_Get(arr, 4).int32_val, 2);
+  EXPECT_EQ(upb_Array_Get(arr, 5).int32_val, 3);
+
+  // Set inserted values
+  upb_MessageValue v1, v2;
+  v1.int32_val = 10;
+  v2.int32_val = 20;
+  upb_Array_Set(arr, 1, v1);
+  upb_Array_Set(arr, 2, v2);
+  EXPECT_EQ(upb_Array_Get(arr, 1).int32_val, 10);
+  EXPECT_EQ(upb_Array_Get(arr, 2).int32_val, 20);
+
+  // Insert at end (i == size)
+  ASSERT_TRUE(upb_Array_Insert(arr, 6, 1, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(arr), 7);
+  upb_MessageValue v3;
+  v3.int32_val = 30;
+  upb_Array_Set(arr, 6, v3);
+  EXPECT_EQ(upb_Array_Get(arr, 6).int32_val, 30);
+
+  // Overflow check
+  EXPECT_FALSE(upb_Array_Insert(arr, 0, SIZE_MAX, arena.ptr()));
+}
+
+TEST(ArrayTest, Delete) {
+  upb::Arena arena;
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  for (int i = 0; i < 6; i++) {
+    upb_MessageValue mv;
+    mv.int32_val = i;
+    ASSERT_TRUE(upb_Array_Append(arr, mv, arena.ptr()));
+  }
+  // arr = [0, 1, 2, 3, 4, 5]
+
+  // Delete 2 elements from index 2
+  upb_Array_Delete(arr, 2, 2);
+  EXPECT_EQ(upb_Array_Size(arr), 4);
+  EXPECT_EQ(upb_Array_Get(arr, 0).int32_val, 0);
+  EXPECT_EQ(upb_Array_Get(arr, 1).int32_val, 1);
+  EXPECT_EQ(upb_Array_Get(arr, 2).int32_val, 4);
+  EXPECT_EQ(upb_Array_Get(arr, 3).int32_val, 5);
+
+  // Delete from start
+  upb_Array_Delete(arr, 0, 1);
+  EXPECT_EQ(upb_Array_Size(arr), 3);
+  EXPECT_EQ(upb_Array_Get(arr, 0).int32_val, 1);
+  EXPECT_EQ(upb_Array_Get(arr, 1).int32_val, 4);
+  EXPECT_EQ(upb_Array_Get(arr, 2).int32_val, 5);
+
+  // Delete remaining
+  upb_Array_Delete(arr, 0, 3);
+  EXPECT_EQ(upb_Array_Size(arr), 0);
+}

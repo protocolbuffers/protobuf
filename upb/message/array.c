@@ -11,7 +11,6 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
-#include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
@@ -58,8 +57,7 @@ void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
 bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
   UPB_ASSERT(arena);
-  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
-          arr, arr->UPB_PRIVATE(size) + 1, arena)) {
+  if (!UPB_PRIVATE(_upb_Array_GrowUninitialized)(arr, 1, arena)) {
     return false;
   }
   upb_Array_Set(arr, arr->UPB_PRIVATE(size) - 1, val);
@@ -92,9 +90,7 @@ bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
   size_t src_len = upb_Array_Size(src);
   if (src_len == 0) return true;
   size_t dst_len = upb_Array_Size(dst);
-  size_t len;
-  if (UPB_UNLIKELY(upb_AddOverflow(dst_len, src_len, &len))) return false;
-  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
+  if (!UPB_PRIVATE(_upb_Array_GrowUninitialized)(dst, src_len, arena)) {
     return false;
   }
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(dst);
@@ -119,11 +115,8 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
   UPB_ASSERT(arena);
   UPB_ASSERT(i <= arr->UPB_PRIVATE(size));
-  size_t new_size;
-  const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
-  UPB_ASSERT(ok);
   const size_t oldsize = arr->UPB_PRIVATE(size);
-  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
+  if (!UPB_PRIVATE(_upb_Array_GrowUninitialized)(arr, count, arena)) {
     return false;
   }
   upb_Array_Move(arr, i + count, i, oldsize - i);
@@ -162,27 +155,47 @@ bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
 
 bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
                                      upb_Arena* arena) {
+#if UPB_FUTURE_32BIT_ARRAY
+  if (min_capacity > UINT32_MAX) return false;
+#endif
+
   size_t new_capacity = UPB_MAX(array->UPB_PRIVATE(capacity), 4);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);
-  size_t old_bytes = array->UPB_PRIVATE(capacity) << lg2;
+  size_t old_bytes = (size_t)array->UPB_PRIVATE(capacity) << lg2;
   void* ptr = upb_Array_MutableDataPtr(array);
 
   // Log2 ceiling of size.
   while (new_capacity < min_capacity) {
-    if (upb_ShlOverflow(&new_capacity, 1)) {
+    if (upb_ShlOverflow(new_capacity, 1, &new_capacity)) {
       new_capacity = SIZE_MAX;
       break;
     }
   }
 
+#if UPB_FUTURE_32BIT_ARRAY
+  // Cap at UINT32_MAX on 64-bit to prevent overflow when assigning to 32-bit
+  // capacity field.
+  if (new_capacity > UINT32_MAX) {
+    new_capacity = UINT32_MAX;
+  }
+#else
   // If capacity doubling overflowed to SIZE_MAX, fail. No valid array can hold
   // SIZE_MAX elements, and downstream size calculations would overflow.
   if (new_capacity == SIZE_MAX) return false;
+#endif
 
-  size_t new_bytes = new_capacity;
-  if (upb_ShlOverflow(&new_bytes, lg2)) {
+  size_t new_bytes;
+  if (upb_ShlOverflow(new_capacity, lg2, &new_bytes)) {
     return false;
   }
+
+  const size_t guard_size = UPB_PRIVATE(kUpb_Asan_GuardSize);
+  const size_t max_bytes =
+      ((SIZE_MAX - guard_size) / UPB_MALLOC_ALIGN) * UPB_MALLOC_ALIGN;
+  if (new_bytes > max_bytes) {
+    return false;
+  }
+
   ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
   if (!ptr) return false;
 
