@@ -267,6 +267,27 @@ class PROTOBUF_EXPORT SerialArena {
     return true;
   }
 
+  // Attempts to trim the most recent allocation in place down to `desired_end`.
+  // Succeeds only if `alloc_end` matches the current tail pointer. Returns true
+  // if the allocation was trimmed in place, false otherwise.
+  // REQUIRES: desired_end <= alloc_end
+  // REQUIRES: desired_end is an aligned pointer within a previous allocation.
+  bool TryTrimTail(void* alloc_end, void* desired_end) {
+    ABSL_DCHECK_LE(desired_end, alloc_end);
+    ABSL_DCHECK(ArenaAlignDefault::IsAligned(desired_end));
+
+    char* tail = ptr();
+    if (static_cast<char*>(alloc_end) != tail) {
+      return false;
+    }
+
+    ABSL_DCHECK_LE(static_cast<void*>(head()), desired_end);
+    char* desired = static_cast<char*>(desired_end);
+    internal::PoisonMemoryRegion(desired, tail - desired);
+    set_ptr(desired);
+    return true;
+  }
+
  private:
   friend class ThreadSafeArena;
   friend class cleanup::ChunkList;
