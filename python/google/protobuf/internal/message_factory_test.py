@@ -410,6 +410,24 @@ class MessageFactoryTest(unittest.TestCase):
     msg.scalar_value = Nameless()
     self.assertEqual(msg.scalar_value, 42)
 
+  def testConvertNumpyDetectionInvalidTypeName(self):
+    if api_implementation.Type() != 'upb':
+      self.skipTest('only the upb implementation uses NumPy detection')
+
+    class InvalidNameMeta(type):
+      def __getattribute__(cls, name):
+        if name == '__name__':
+          return '\ud800'
+        return super().__getattribute__(name)
+
+    class InvalidName(metaclass=InvalidNameMeta):
+      def __float__(self):
+        return 1.0
+
+    msg = factory_test2_pb2.Factory2Message()
+    with self.assertRaises(UnicodeEncodeError):
+      msg.double_with_default = InvalidName()
+
 
 if __name__ == '__main__':
   unittest.main()

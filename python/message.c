@@ -2206,7 +2206,12 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
 
   PyObject* py_key =
       PyBytes_FromFormat("%s.%s", upb_MessageDef_FullName(msgdef), name_buf);
+  if (!py_key) return NULL;
   const char* key = PyUpb_GetStrData(py_key);
+  if (!key) {
+    Py_DECREF(py_key);
+    return NULL;
+  }
   PyObject* ret = NULL;
   const upb_MessageDef* nested = upb_DefPool_FindMessageByName(symtab, key);
   const upb_EnumDef* enumdef;
