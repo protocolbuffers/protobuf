@@ -9,6 +9,7 @@
 
 __author__ = 'robinson@google.com (Will Robinson)'
 
+import gc
 import unittest
 import warnings
 
@@ -16,6 +17,7 @@ from google.protobuf import descriptor
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message
+from google.protobuf import message_factory
 from google.protobuf import symbol_database
 from google.protobuf import text_format
 from google.protobuf.internal import api_implementation
@@ -27,6 +29,7 @@ from absl.testing import parameterized
 from google.protobuf import unittest_custom_options_pb2
 from google.protobuf import unittest_features_pb2
 from google.protobuf import unittest_import_pb2
+from google.protobuf import unittest_import_public_pb2
 from google.protobuf import unittest_legacy_features_pb2
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_extensions_pb2
@@ -104,6 +107,28 @@ class DescriptorTest(unittest.TestCase):
 
   def GetDescriptorPool(self):
     return symbol_database.Default().pool
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'upb',
+      'This test relies on the _obj_cache_count attribute, which is not '
+      'available in non-upb implementations.'
+  )
+  def testWeakMapCleanupOnObjectDestruction(self):
+    pool = descriptor_pool.DescriptorPool()
+    pool.AddSerializedFile(unittest_import_public_pb2.DESCRIPTOR.serialized_pb)
+    pool.AddSerializedFile(unittest_import_pb2.DESCRIPTOR.serialized_pb)
+    pool.AddSerializedFile(unittest_pb2.DESCRIPTOR.serialized_pb)
+    desc = pool.FindMessageTypeByName('proto2_unittest.TestAllTypes')
+    msg_cls = message_factory.GetMessageClass(desc)
+
+    self.assertIsNotNone(desc._concrete_class)
+    self.assertIs(desc._concrete_class, msg_cls)
+
+    del desc
+    del msg_cls
+    gc.collect()
+
+    self.assertEqual(0, pool._obj_cache_count)
 
   def testMissingPackage(self):
     file_proto = descriptor_pb2.FileDescriptorProto(
