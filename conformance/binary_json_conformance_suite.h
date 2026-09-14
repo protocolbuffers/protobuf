@@ -176,6 +176,10 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestValidDataForRepeatedScalarMessage();
   void TestValidDataForMapType(google::protobuf::FieldDescriptor::Type,
                                google::protobuf::FieldDescriptor::Type);
+  void TestMapEntryWireTypeMismatch(google::protobuf::FieldDescriptor::Type,
+                                    google::protobuf::FieldDescriptor::Type);
+  void RunMapEntryWireTypeMismatchTest(const std::string& test_name,
+                                       const std::string& proto);
   void TestValidDataForOneofType(google::protobuf::FieldDescriptor::Type);
   void TestMergeOneofMessage();
   void TestOverwriteMessageValueMap();
