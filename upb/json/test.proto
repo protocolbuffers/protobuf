@@ -34,3 +34,9 @@ message Box {
   optional google.protobuf.Any any_val = 12;
   optional google.protobuf.FieldMask mask_val = 13;
 }
+
+// json_name is not validated when a descriptor is built, so it can carry
+// characters that are not legal inside a JSON string.
+message UnescapedJsonName {
+  optional int32 a = 1 [json_name = "a\":1,\"b"];
+}
