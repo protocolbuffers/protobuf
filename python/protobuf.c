@@ -30,6 +30,7 @@
 
 static void PyUpb_ModuleDealloc(void* module) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(module);
+  if (!state) return;
   if (state->obj_cache) {
     PyUpb_WeakMap_Free(state->obj_cache);
     state->obj_cache = NULL;
@@ -117,16 +118,30 @@ PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
 }
 
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
+  if (!module) {
+    PyErr_SetString(PyExc_RuntimeError, "protobuf module is unavailable");
+    return NULL;
+  }
   PyUpb_ModuleState* state = PyModule_GetState(module);
-  assert(state);
-  assert(PyModule_GetDef(module) == &module_def);
+  if (!state) return NULL;
+  PyModuleDef* def = PyModule_GetDef(module);
+  if (!def) return NULL;
+  if (def != &module_def) {
+    PyErr_SetString(PyExc_RuntimeError, "unexpected protobuf module definition");
+    return NULL;
+  }
   return state;
 }
 
 PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
   PyObject* module = PyState_FindModule(&module_def);
-  assert(module);
-  return PyUpb_ModuleState_GetFromModule(module);
+  if (!module) {
+    PyErr_SetString(PyExc_RuntimeError, "protobuf module state is unavailable");
+    return NULL;
+  }
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(module);
+  if (!state) return NULL;
+  return state;
 }
 
 PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
@@ -300,6 +315,7 @@ static PyType_Spec PyUpb_Arena_Spec = {
 
 static bool PyUpb_InitArena(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  if (!state) return false;
   state->arena_type = PyUpb_AddClass(m, &PyUpb_Arena_Spec);
   return state->arena_type;
 }
@@ -462,6 +478,10 @@ PyMODINIT_FUNC PyInit__message(void) {
   if (!m) return NULL;
 
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  if (!state) {
+    Py_DECREF(m);
+    return NULL;
+  }
 
   state->allow_oversize_protos = false;
   state->wkt_bases = NULL;
