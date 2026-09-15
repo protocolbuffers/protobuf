@@ -150,7 +150,6 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
 [
     pip.parse(
         hub_name = "protobuf_pip_deps",
-        python_interpreter_target = "@system_python//:interpreter",
         python_version = python_version,
         requirements_lock = "//python:requirements.txt",
     )
