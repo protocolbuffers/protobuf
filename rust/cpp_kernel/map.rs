@@ -338,6 +338,8 @@ impl CppMapTypeConversions for ProtoString {
 
     unsafe fn from_map_value<'a>(value: FfiMapValue) -> &'a ProtoStr {
         debug_assert_eq!(value.tag, FfiMapValueTag::String);
+        // SAFETY:
+        // - Caller guarantees `value` is valid for `'a` and not modified.
         unsafe { ptrlen_to_str(proto2_rust_cpp_string_to_view(value.val.s.unwrap())) }
     }
 }
@@ -391,7 +393,9 @@ macro_rules! generate_map_key_impl {
 
             #[inline]
             fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self> {
-                $from_ffi(key)
+                // SAFETY:
+                // - Caller guarantees `key` is valid for `'a` and not modified.
+                unsafe { $from_ffi(key) }
             }
 
             #[inline]
