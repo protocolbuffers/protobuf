@@ -1142,6 +1142,75 @@ UPB_API void upb_AllocationCount_FailOn(size_t n);
 #include <string.h>
 
 
+#ifndef UPB_BASE_INTERNAL_LOG2_H_
+#define UPB_BASE_INTERNAL_LOG2_H_
+
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+
+// Must be last.
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Returns the number of leading 0-bits in x.
+// x must be non-zero.
+UPB_INLINE int UPB_PRIVATE(_upb_ClzSize)(size_t x) {
+  UPB_ASSERT(x > 0);
+#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
+  return __builtin_clzll(x);
+#elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
+  return __builtin_clzl(x);
+#elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
+  return __builtin_clz(x);
+#else
+  int count = 0;
+  for (int i = (int)(sizeof(size_t) * CHAR_BIT) - 1; i >= 0; --i) {
+    if ((x >> i) & 1) break;
+    count++;
+  }
+  return count;
+#endif
+}
+
+UPB_INLINE int upb_Log2Ceiling(size_t x) {
+  if (x <= 1) return 0;
+  return (sizeof(size_t) * CHAR_BIT) - UPB_PRIVATE(_upb_ClzSize)(x - 1);
+}
+
+UPB_INLINE int upb_Log2Floor(size_t x) {
+  if (x <= 1) return 0;
+  return (sizeof(size_t) * CHAR_BIT) - 1 - UPB_PRIVATE(_upb_ClzSize)(x);
+}
+
+// Returns the smallest power of two that is greater than or equal to x. Returns
+// SIZE_MAX if the computation would overflow.
+UPB_INLINE size_t upb_RoundUpToPowerOfTwo(size_t x) {
+  int lg2 = upb_Log2Ceiling(x);
+  UPB_ASSERT(lg2 >= 0 && lg2 <= (int)sizeof(size_t) * CHAR_BIT);
+  if (lg2 == sizeof(size_t) * CHAR_BIT) {
+    return SIZE_MAX;
+  }
+  return ((size_t)1) << lg2;
+}
+
+UPB_INLINE bool upb_ShlOverflow(size_t* a, unsigned int b) {
+  if (*a > (SIZE_MAX >> b)) {
+    return true;
+  }
+  *a <<= b;
+  return false;
+}
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+
+#endif /* UPB_BASE_INTERNAL_LOG2_H_ */
+
 #ifndef UPB_PORT_SANITIZERS_H_
 #define UPB_PORT_SANITIZERS_H_
 
@@ -1336,20 +1405,32 @@ UPB_INLINE void UPB_PRIVATE(upb_Xsan_AccessReadWrite)(upb_Xsan *xsan) {
 // We need this because the decoder inlines a upb_Arena for performance but
 // the full struct is not visible outside of arena.c. Yes, I know, it's awful.
 #ifndef NDEBUG
-#define UPB_ARENA_BASE_SIZE_HACK 10
+#define UPB_ARENA_BASE_SIZE_HACK 11
 #else
-#define UPB_ARENA_BASE_SIZE_HACK 9
+#define UPB_ARENA_BASE_SIZE_HACK 10
 #endif
 
 #define UPB_ARENA_SIZE_HACK                                                   \
   (sizeof(void*) * (UPB_ARENA_BASE_SIZE_HACK + (UPB_XSAN_STRUCT_SIZE * 2))) + \
       (sizeof(uint32_t) * 2)
 
+typedef struct UPB_PRIVATE(_upb_ArenaFreeBlock) {
+  struct UPB_PRIVATE(_upb_ArenaFreeBlock) * UPB_PRIVATE(next);
+} UPB_PRIVATE(_upb_ArenaFreeBlock);
+
+typedef struct UPB_PRIVATE(_upb_ArenaPool) {
+  size_t UPB_PRIVATE(num_bins);
+  UPB_PRIVATE(_upb_ArenaFreeBlock) * UPB_PRIVATE(bins)[];
+} UPB_PRIVATE(_upb_ArenaPool);
+
+extern const UPB_PRIVATE(_upb_ArenaPool) UPB_PRIVATE(_upb_Arena_EmptyPool);
+
 // LINT.IfChange(upb_Arena)
 
 struct upb_Arena {
   char* UPB_ONLYBITS(ptr);
   const UPB_NODEREF char* UPB_ONLYBITS(end);
+  UPB_PRIVATE(_upb_ArenaPool) * UPB_ONLYBITS(pool);
   UPB_XSAN_MEMBER
 };
 
@@ -1393,7 +1474,7 @@ UPB_NODISCARD UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
 
   if (UPB_UNLIKELY(UPB_PRIVATE(_upb_ArenaHas)(a) < span)) {
-    void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t size);
+    void* UPB_PRIVATE(_upb_Arena_SlowMalloc)(struct upb_Arena * a, size_t span);
     return UPB_PRIVATE(_upb_Arena_SlowMalloc)(a, span);
   }
 
@@ -1485,6 +1566,108 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(struct upb_Arena* a,
     return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), ret, size);
   }
   return ret;
+}
+
+// The minimum power-of-2 size class managed by the arena free pool.
+// A pooled block must be at least large enough to store an initial
+// _upb_ArenaPool struct with at least 1 bin (sizeof(size_t) + sizeof(void*)).
+#define _UPB_ARENA_MIN_POOL_BLOCK_SIZE (sizeof(void*) * 2)
+
+#define _UPB_ARENA_MIN_POOL_BIN_LG2 \
+  (_UPB_ARENA_MIN_POOL_BLOCK_SIZE == 16 ? (size_t)4 : (size_t)3)
+
+#if defined(_MSC_VER) && !defined(_CRT_USE_BUILTIN_OFFSETOF)
+// Note: We cannot use UPB_SIZEOF_FLEX here because on MSVC, offsetof() is not
+// considered an Integer Constant Expression by default.
+UPB_STATIC_ASSERT(_UPB_ARENA_MIN_POOL_BLOCK_SIZE >=
+                      sizeof(UPB_PRIVATE(_upb_ArenaPool)) +
+                          sizeof(UPB_PRIVATE(_upb_ArenaFreeBlock) *),
+                  "Minimum pool block size must be large enough to host an "
+                  "initial pool struct");
+#else
+UPB_STATIC_ASSERT(_UPB_ARENA_MIN_POOL_BLOCK_SIZE >=
+                      UPB_SIZEOF_FLEX(UPB_PRIVATE(_upb_ArenaPool),
+                                      UPB_PRIVATE(bins), 1),
+                  "Minimum pool block size must be large enough to host an "
+                  "initial pool struct");
+#endif
+
+UPB_STATIC_ASSERT(_UPB_ARENA_MIN_POOL_BLOCK_SIZE >=
+                      sizeof(UPB_PRIVATE(_upb_ArenaFreeBlock)),
+                  "Minimum pool block size must be large enough to host a "
+                  "free block struct");
+
+UPB_STATIC_ASSERT(((size_t)1 << _UPB_ARENA_MIN_POOL_BIN_LG2) ==
+                      _UPB_ARENA_MIN_POOL_BLOCK_SIZE,
+                  "_UPB_ARENA_MIN_POOL_BIN_LG2 must match "
+                  "_UPB_ARENA_MIN_POOL_BLOCK_SIZE");
+
+UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(size_t size) {
+  return size != 0 &&
+         (size & ((size - 1) | (_UPB_ARENA_MIN_POOL_BLOCK_SIZE - 1))) == 0;
+}
+
+// Note that values below the minimum poolable block size will underflow, so
+// only a single branch comparing to the current bin count is necessary to check
+// bounds.
+UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_PoolBinIndex)(size_t pool_size) {
+  return (size_t)upb_Log2Ceiling(pool_size) - _UPB_ARENA_MIN_POOL_BIN_LG2;
+}
+
+void UPB_PRIVATE(_upb_Arena_GrowPool)(struct upb_Arena* a, void* ptr,
+                                      size_t size);
+
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_TryAllocPool(struct upb_Arena* a,
+                                                          size_t pool_size) {
+  UPB_ASSERT(a);
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(pool_size));
+
+  size_t bin = UPB_PRIVATE(_upb_Arena_PoolBinIndex)(pool_size);
+  UPB_PRIVATE(_upb_ArenaPool)* pool = a->UPB_ONLYBITS(pool);
+  if (UPB_LIKELY(bin < pool->UPB_PRIVATE(num_bins))) {
+    UPB_PRIVATE(_upb_ArenaFreeBlock)* block = pool->UPB_PRIVATE(bins)[bin];
+    if (UPB_LIKELY(block != NULL)) {
+      pool->UPB_PRIVATE(bins)[bin] = block->UPB_PRIVATE(next);
+      return UPB_PRIVATE(upb_Xsan_NewUnpoisonedRegion)(UPB_XSAN(a), block,
+                                                       pool_size);
+    }
+  }
+
+  return NULL;
+}
+
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_AllocPool(struct upb_Arena* a,
+                                                       size_t pool_size) {
+  if (!upb_AllocationCount_IncrementAndCheck()) {
+    return NULL;
+  }
+  void* ptr = upb_Arena_TryAllocPool(a, pool_size);
+  if (ptr) return ptr;
+  return _upb_Arena_Malloc_Unchecked(a, pool_size);
+}
+
+UPB_API_INLINE void upb_Arena_FreePool(struct upb_Arena* a, void* ptr,
+                                       size_t pool_size) {
+  UPB_ASSERT(a);
+  UPB_ASSERT(ptr);
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(pool_size));
+
+  size_t bin = UPB_PRIVATE(_upb_Arena_PoolBinIndex)(pool_size);
+  UPB_PRIVATE(_upb_ArenaPool)* pool = a->UPB_ONLYBITS(pool);
+
+  if (UPB_UNLIKELY(bin >= pool->UPB_PRIVATE(num_bins))) {
+    UPB_PRIVATE(_upb_Arena_GrowPool)(a, ptr, pool_size);
+    return;
+  }
+
+  UPB_ASSERT(UPB_PRIVATE(_upb_Arena_IsAligned)(ptr));
+  UPB_PRIVATE(upb_Xsan_PoisonRegion)(ptr, pool_size);
+  UPB_PRIVATE(_upb_ArenaFreeBlock)* block =
+      (UPB_PRIVATE(_upb_ArenaFreeBlock)*)UPB_PRIVATE(
+          upb_Xsan_NewUnpoisonedRegion)(
+          UPB_XSAN(a), ptr, sizeof(UPB_PRIVATE(_upb_ArenaFreeBlock)));
+  block->UPB_PRIVATE(next) = pool->UPB_PRIVATE(bins)[bin];
+  pool->UPB_PRIVATE(bins)[bin] = block;
 }
 
 // Returns the next block size to allocate for the arena based on exponential
@@ -1659,6 +1842,26 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a,
 UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr,
                                                      size_t oldsize,
                                                      size_t size);
+
+// Attempts to allocate memory from the arena's power-of-2 free pool.
+// Returns a recycled block of `size` bytes if available in the pool,
+// or NULL if the pool has no available block of that size.
+// `size` must be a power of 2 and >= UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize).
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_TryAllocPool(upb_Arena* a,
+                                                          size_t size);
+
+// Allocates memory of `size` bytes, attempting to reuse a recycled block from
+// the arena's power-of-2 free pool first, and falling back to arena allocation
+// if no pooled block is available.
+// `size` must be a power of 2 and >= UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize).
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_AllocPool(upb_Arena* a,
+                                                       size_t size);
+
+// Returns a block of memory to the arena's free pool.
+UPB_API_INLINE void upb_Arena_FreePool(upb_Arena* a, void* ptr, size_t size);
+
+static const size_t UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize) =
+    _UPB_ARENA_MIN_POOL_BLOCK_SIZE;
 
 static const size_t UPB_PRIVATE(kUpbDefaultMaxBlockSize) =
     UPB_DEFAULT_MAX_BLOCK_SIZE;
@@ -1861,6 +2064,7 @@ UPB_API_INLINE bool upb_Array_IsFrozen(const struct upb_Array* arr) {
 
 UPB_INLINE void UPB_PRIVATE(_upb_Array_SetTaggedPtr)(struct upb_Array* array,
                                                      void* data, size_t lg2) {
+  UPB_ASSERT(data);
   UPB_ASSERT(lg2 != 1);
   UPB_ASSERT(lg2 <= 4);
   const size_t bits = lg2 - (lg2 != 0);
@@ -1883,14 +2087,42 @@ UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
   return (void*)upb_Array_DataPtr(array);
 }
 
+// LINT.ThenChange(GoogleInternalName0)
+
 UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
     _upb_Array_NewMaybeAllowSlow)(upb_Arena* arena, size_t init_capacity,
                                   int elem_size_lg2, bool allow_slow) {
   UPB_ASSERT(elem_size_lg2 != 1);
   UPB_ASSERT(elem_size_lg2 <= 4);
+
+  const size_t elem_bytes = init_capacity << elem_size_lg2;
+
+  // Try to obtain a recycled backing buffer from the arena pool first.
+  if (init_capacity > 0) {
+    const size_t pool_bytes = upb_RoundUpToPowerOfTwo(
+        UPB_MAX(elem_bytes, UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize)));
+    if (pool_bytes != SIZE_MAX) {
+      void* data = upb_Arena_TryAllocPool(arena, pool_bytes);
+      if (data) {
+        struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(
+            arena, sizeof(struct upb_Array));
+        if (!array) {
+          upb_Arena_FreePool(arena, data, pool_bytes);
+          return NULL;
+        }
+        UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, data,
+                                             (size_t)elem_size_lg2);
+        array->UPB_ONLYBITS(size) = 0;
+        array->UPB_PRIVATE(capacity) = pool_bytes >> elem_size_lg2;
+        return array;
+      }
+    }
+  }
+
+  // Pool miss: perform contiguous single allocation for header + initial data.
   const size_t array_size =
       UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-  const size_t bytes = array_size + (init_capacity << elem_size_lg2);
+  const size_t bytes = array_size + elem_bytes;
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
   if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
   struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
@@ -1970,8 +2202,6 @@ UPB_API_INLINE size_t upb_Array_Size(const struct upb_Array* arr) {
 UPB_API_INLINE size_t upb_Array_Capacity(const struct upb_Array* arr) {
   return arr->UPB_PRIVATE(capacity);
 }
-
-// LINT.ThenChange(GoogleInternalName0)
 
 #ifdef __cplusplus
 } /* extern "C" */
@@ -16235,61 +16465,6 @@ UPB_INLINE const upb_MessageDef *pb_enumvalue_JsonEnumValueOptions_getmsgdef(upb
 
 
 #endif  /* GOOGLE_PROTOBUF_JSON_ENUMVALUE_OPTIONS_PROTO_UPB_H__UPBDEFS_H_ */
-
-#ifndef UPB_BASE_INTERNAL_LOG2_H_
-#define UPB_BASE_INTERNAL_LOG2_H_
-
-#include <limits.h>
-#include <stddef.h>
-#include <stdint.h>
-
-// Must be last.
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-UPB_INLINE int upb_Log2Ceiling(size_t x) {
-  if (x <= 1) return 0;
-#if SIZE_MAX == ULLONG_MAX && UPB_HAS_BUILTIN(__builtin_clzll)
-  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzll(x - 1);
-#elif SIZE_MAX == ULONG_MAX && UPB_HAS_BUILTIN(__builtin_clzl)
-  return (sizeof(size_t) * CHAR_BIT) - __builtin_clzl(x - 1);
-#elif SIZE_MAX == UINT_MAX && UPB_HAS_BUILTIN(__builtin_clz)
-  return (sizeof(size_t) * CHAR_BIT) - __builtin_clz(x - 1);
-#else
-  if (x > SIZE_MAX / 2) return sizeof(size_t) * CHAR_BIT;
-  int lg2 = 0;
-  while (((size_t)1 << lg2) < x) lg2++;
-  return lg2;
-#endif
-}
-
-// Returns the smallest power of two that is greater than or equal to x. Returns
-// SIZE_MAX if the computation would overflow.
-UPB_INLINE size_t upb_RoundUpToPowerOfTwo(size_t x) {
-  int lg2 = upb_Log2Ceiling(x);
-  UPB_ASSERT(lg2 >= 0 && lg2 <= (int)sizeof(size_t) * CHAR_BIT);
-  if (lg2 == sizeof(size_t) * CHAR_BIT) {
-    return SIZE_MAX;
-  }
-  return ((size_t)1) << lg2;
-}
-
-UPB_INLINE bool upb_ShlOverflow(size_t* a, unsigned int b) {
-  if (*a > (SIZE_MAX >> b)) {
-    return true;
-  }
-  *a <<= b;
-  return false;
-}
-
-#ifdef __cplusplus
-} /* extern "C" */
-#endif
-
-
-#endif /* UPB_BASE_INTERNAL_LOG2_H_ */
 
 #ifndef UPB_HASH_EXT_TABLE_H_
 #define UPB_HASH_EXT_TABLE_H_
