@@ -2703,6 +2703,7 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         ":test_util",
         "//src/google/protobuf/stubs",
