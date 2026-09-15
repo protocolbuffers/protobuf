@@ -621,6 +621,188 @@ class FreeThreadingTest(unittest.TestCase):
     )
     self.assertEqual(reparsed.lazy_field.map_items['key'].value, 'updated')
 
+  def testConcurrentMapSubscriptReadAndSerialization(self):
+    msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+    msg.map_items['k1'].value = 'v1'
+    msg.map_items['k2'].value = 'v2'
+    msg.scalar_map['s1'] = 'val1'
+    msg.scalar_map['s2'] = 'val2'
+    serialized = msg.SerializeToString()
+
+    def RunRace():
+      shared_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+          serialized
+      )
+      barrier = threading.Barrier(3)
+      errors = []
+
+      def Thread1():
+        try:
+          barrier.wait()
+          self.assertEqual(shared_msg.map_items['k1'].value, 'v1')
+          self.assertEqual(shared_msg.map_items.get('k1').value, 'v1')
+          self.assertIsNone(shared_msg.map_items.get('missing'))
+          self.assertEqual(shared_msg.scalar_map['s1'], 'val1')
+          self.assertEqual(shared_msg.scalar_map.get('s1'), 'val1')
+          self.assertIsNone(shared_msg.scalar_map.get('missing'))
+        except Exception as e:
+          errors.append(e)
+
+      def Thread2():
+        try:
+          barrier.wait()
+          self.assertEqual(shared_msg.map_items['k2'].value, 'v2')
+          self.assertEqual(shared_msg.map_items.get('k2').value, 'v2')
+          self.assertIsNone(shared_msg.map_items.get('missing2'))
+          self.assertEqual(shared_msg.scalar_map['s2'], 'val2')
+          self.assertEqual(shared_msg.scalar_map.get('s2'), 'val2')
+          self.assertIsNone(shared_msg.scalar_map.get('missing2'))
+        except Exception as e:
+          errors.append(e)
+
+      def Thread3():
+        try:
+          barrier.wait()
+          parsed_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+              shared_msg.SerializeToString()
+          )
+          self.assertEqual(parsed_msg, msg)
+        except Exception as e:
+          errors.append(e)
+
+      threads = [
+          threading.Thread(target=Thread1),
+          threading.Thread(target=Thread2),
+          threading.Thread(target=Thread3),
+      ]
+      for t in threads:
+        t.start()
+      for t in threads:
+        t.join()
+      for err in errors:
+        raise err
+
+    for _ in range(200):
+      RunRace()
+
+  def testConcurrentMapIterationAndSerialization(self):
+    msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+    msg.map_items['k1'].value = 'v1'
+    msg.map_items['k2'].value = 'v2'
+    msg.scalar_map['s1'] = 'val1'
+    msg.scalar_map['s2'] = 'val2'
+    serialized = msg.SerializeToString()
+
+    def RunRace():
+      shared_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+          serialized
+      )
+      barrier = threading.Barrier(3)
+      errors = []
+
+      def Thread1():
+        try:
+          barrier.wait()
+          items = dict(shared_msg.map_items.items())
+          self.assertEqual(items['k1'].value, 'v1')
+          self.assertEqual(items['k2'].value, 'v2')
+          scalar_items = dict(shared_msg.scalar_map.items())
+          self.assertEqual(scalar_items['s1'], 'val1')
+          self.assertEqual(scalar_items['s2'], 'val2')
+        except Exception as e:
+          errors.append(e)
+
+      def Thread2():
+        try:
+          barrier.wait()
+          keys = list(shared_msg.map_items)
+          self.assertCountEqual(keys, ['k1', 'k2'])
+          scalar_keys = list(shared_msg.scalar_map)
+          self.assertCountEqual(scalar_keys, ['s1', 's2'])
+        except Exception as e:
+          errors.append(e)
+
+      def Thread3():
+        try:
+          barrier.wait()
+          parsed_msg = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(
+              shared_msg.SerializeToString()
+          )
+          self.assertEqual(parsed_msg, msg)
+        except Exception as e:
+          errors.append(e)
+
+      threads = [
+          threading.Thread(target=Thread1),
+          threading.Thread(target=Thread2),
+          threading.Thread(target=Thread3),
+      ]
+      for t in threads:
+        t.start()
+      for t in threads:
+        t.join()
+      for err in errors:
+        raise err
+
+    for _ in range(200):
+      RunRace()
+
+  def testConcurrentMapMultiWorkerContention(self):
+    """Verifies thread-safety under sustained multi-worker contention."""
+    msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+    for i in range(10):
+      msg.map_items[f'key_{i}'].value = f'val_{i}'
+      msg.scalar_map[f'key_{i}'] = f'val_{i}'
+
+    errors = []
+
+    def ReaderWorker():
+      try:
+        for _ in range(50):
+          for i in range(10):
+            val = msg.map_items[f'key_{i}'].value
+            if val != f'val_{i}':
+              errors.append(f'Unexpected map_items value: {val}')
+            val_get = msg.map_items.get(f'key_{i}').value
+            if val_get != f'val_{i}':
+              errors.append(f'Unexpected map_items get value: {val_get}')
+            sval = msg.scalar_map[f'key_{i}']
+            if sval != f'val_{i}':
+              errors.append(f'Unexpected scalar_map value: {sval}')
+            sval_get = msg.scalar_map.get(f'key_{i}')
+            if sval_get != f'val_{i}':
+              errors.append(f'Unexpected scalar_map get value: {sval_get}')
+          for k, v in msg.map_items.items():
+            _ = k, v.value
+          for k, v in msg.scalar_map.items():
+            _ = k, v
+      except Exception as e:
+        errors.append(str(e))
+
+    def SerializerWorker():
+      try:
+        for _ in range(50):
+          data = msg.SerializeToString()
+          parsed = test_proto2_pb2.MessageWithRepeatedAndMap.FromString(data)
+          if parsed != msg:
+            errors.append(
+                'Serialized message mismatch during concurrent map read'
+            )
+      except Exception as e:
+        errors.append(str(e))
+
+    threads = []
+    for _ in range(8):
+      threads.append(threading.Thread(target=ReaderWorker))
+      threads.append(threading.Thread(target=SerializerWorker))
+
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+
+    self.assertEqual(errors, [])
+
 
 if __name__ == '__main__':
   unittest.main()
