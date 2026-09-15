@@ -1621,6 +1621,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   const RepeatedPtrField<Message>& mf_int32_foreign_message =
       refl->GetRepeatedPtrField<Message>(message, fd_map_int32_foreign_message);
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   // Get mutable RepeatedPtrField objects for all fields of interest.
   RepeatedPtrField<Message>* mmf_int32_int32 =
       refl->MutableRepeatedPtrField<Message>(&message, fd_map_int32_int32);
@@ -1631,6 +1632,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   RepeatedPtrField<Message>* mmf_int32_foreign_message =
       refl->MutableRepeatedPtrField<Message>(&message,
                                              fd_map_int32_foreign_message);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Make sure we can do gets through the RepeatedPtrField objects.
   for (int i = 0; i < 10; ++i) {
@@ -4188,8 +4190,10 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   const Reflection* reflection = source.GetReflection();
   const FieldDescriptor* field_desc =
       source.GetDescriptor()->FindFieldByName("map_int32_int32");
+  PROTOBUF_IGNORE_DEPRECATION_START
   RepeatedPtrField<Message>* map_field =
       reflection->MutableRepeatedPtrField<Message>(&source, field_desc);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   RepeatedPtrField<Message>::iterator iter = map_field->begin();
 
   // Serialize message to text format, which will invalidate the previous

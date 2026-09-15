@@ -82,12 +82,12 @@ TEST(GeneratedCode, FindUnknown) {
       upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
                                                 arena);
 
-  upb_FindUnknownRet result = upb_Message_FindUnknown(
+  upb_FindUnknownRet2 result = upb_Message_FindUnknown2(
       UPB_UPCAST(base_msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_Ok, result.status);
 
-  result = upb_Message_FindUnknown(
+  result = upb_Message_FindUnknown2(
       UPB_UPCAST(base_msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
@@ -134,7 +134,7 @@ TEST(GeneratedCode, PromoteFromMultiple) {
   upb_StringView field = upb_test_ModelExtension1_str(parsed_ex);
   EXPECT_EQ(absl::string_view(field.data, field.size), "Everyone");
 
-  upb_FindUnknownRet found = upb_Message_FindUnknown(
+  upb_FindUnknownRet2 found = upb_Message_FindUnknown2(
       UPB_UPCAST(parsed),
       upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
@@ -372,7 +372,7 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
   int32_t val = upb_Message_GetInt32(
       msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
   EXPECT_EQ(val, 11);
-  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 5, 0);
+  upb_FindUnknownRet2 unknown = upb_Message_FindUnknown2(msg, 5, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
@@ -421,7 +421,7 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have repeated field data in an unknown.
-  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 6, 0);
+  upb_FindUnknownRet2 unknown = upb_Message_FindUnknown2(msg, 6, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -481,7 +481,7 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have map data in an unknown.
-  upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 3, 0);
+  upb_FindUnknownRet2 unknown = upb_Message_FindUnknown2(msg, 3, 0);
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -580,7 +580,8 @@ TEST(GeneratedCode, PromoteNonCanonicalExtension) {
 
   // 8. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
-  upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  upb_FindUnknownRet2 found =
+      upb_Message_FindUnknown2(UPB_UPCAST(msg), 1547, 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 
@@ -614,7 +615,8 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithSameMinitable) {
                                         &ext_iter));
   EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
                                          &ext_iter));
-  upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  upb_FindUnknownRet2 found =
+      upb_Message_FindUnknown2(UPB_UPCAST(msg), 1547, 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 
@@ -705,7 +707,8 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
 
   // 11. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
-  upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  upb_FindUnknownRet2 found =
+      upb_Message_FindUnknown2(UPB_UPCAST(msg), 1547, 0);
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 }  // namespace
