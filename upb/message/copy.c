@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
@@ -366,12 +367,21 @@ bool upb_Message_ShallowCopy(upb_Message* dst, const upb_Message* src,
   const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(src);
   if (!in) return true;
 
-  size_t size = UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size);
-  upb_Message_Internal* dst_in = upb_Arena_Malloc(arena, size);
-  if (!dst_in) return false;
+  size_t needed_bytes =
+      UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size);
+  size_t block_bytes = _upb_Message_InternalBlockSize(in->size);
+  upb_Message_Internal* dst_in = NULL;
+  if (block_bytes != SIZE_MAX) {
+    dst_in = (upb_Message_Internal*)upb_Arena_TryAllocPool(arena, block_bytes);
+  }
+  if (!dst_in) {
+    block_bytes = needed_bytes;
+    dst_in = upb_Arena_Malloc(arena, block_bytes);
+    if (!dst_in) return false;
+  }
 
   dst_in->size = 0;
-  dst_in->capacity = in->size;
+  dst_in->capacity = _upb_Message_InternalCapacity(block_bytes);
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
