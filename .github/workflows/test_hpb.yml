@@ -22,7 +22,7 @@ jobs:
 
         include:
           - targets: "//hpb/... //hpb_generator/..."
-          - image: "us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8"
+          - image: "us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199"
           - bazel_cmd: "test"
 
     name: Linux ${{ matrix.config.name }}
@@ -38,6 +38,6 @@ jobs:
           image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: hpb_linux
-          bazel: >-
-            ${{ matrix.bazel_cmd }}
+          bash: >-
+            bazel ${{ matrix.bazel_cmd }}
             ${{ matrix.targets }} ${{ matrix.config.flags }}
