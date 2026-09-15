@@ -52,6 +52,7 @@ class MapReflectionFriend {
   static Message* PromoteConstMapValueMessage(Message* parent_message,
                                               const FieldDescriptor* field,
                                               const Message* message);
+  static void MakeMapFieldDirty(Message* message, const FieldDescriptor* field);
 };
 
 struct MapIterator {
@@ -752,8 +753,13 @@ Message* MapReflectionFriend::PromoteConstMapValueMessage(
   // the parent's container. We mark the map dirty, but we don't need to mark
   // the individual message dirty.
   // -----------------------------------------------------------------------
-  (void)parent_message->GetReflection()->MutableMapData(parent_message, field);
+  MakeMapFieldDirty(parent_message, field);
   return const_cast<Message*>(message);
+}
+
+void MapReflectionFriend::MakeMapFieldDirty(Message* message,
+                                            const FieldDescriptor* field) {
+  (void)message->GetReflection()->MutableMapData(message, field)->MutableMap();
 }
 
 static PyObject* MessageMapSetdefault(PyObject* self, PyObject* args) {
@@ -1014,6 +1020,10 @@ Message* PromoteConstMapValueMessage(Message* parent_message,
                                      const Message* message) {
   return MapReflectionFriend::PromoteConstMapValueMessage(parent_message, field,
                                                           message);
+}
+
+void MakeMapFieldDirty(Message* message, const FieldDescriptor* field) {
+  return MapReflectionFriend::MakeMapFieldDirty(message, field);
 }
 
 }  // namespace python
