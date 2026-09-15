@@ -60,9 +60,34 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                                   const std::string& test_name,
                                   ConformanceLevel level);
 
+  template <typename MessageType>
+  void RunValidJsonTest(const std::string& test_name, ConformanceLevel level,
+                        const std::string& input_json,
+                        const std::string& equivalent_text_format);
+
+  void RunValidJsonTestWithMessage(const std::string& test_name,
+                                   ConformanceLevel level,
+                                   const std::string& input_json,
+                                   const std::string& equivalent_text_format,
+                                   const Message& prototype);
+
+  template <typename MessageType>
+  void ExpectParseFailureForJson(const std::string& test_name,
+                                 ConformanceLevel level,
+                                 const std::string& input_json);
+
+  typedef std::function<bool(const Json::Value&)> Validator;
+  template <typename MessageType>
+  void RunValidJsonTestWithValidator(const std::string& test_name,
+                                     ConformanceLevel level,
+                                     const std::string& input_json,
+                                     const Validator& validator);
+
   void RunDelimitedFieldTests();
 
   void RunUnstableTests();
+
+  void RunEdition2026Tests();
 
   void RunUtf8ValidationTests();
 
