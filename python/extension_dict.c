@@ -27,6 +27,7 @@ PyObject* PyUpb_ExtensionDict_New(PyObject* msg) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_ExtensionDict* ext_dict =
       (void*)PyType_GenericAlloc(state->extension_dict_type, 0);
+  if (!ext_dict) return NULL;
   ext_dict->msg = msg;
   Py_INCREF(ext_dict->msg);
   return &ext_dict->ob_base;
