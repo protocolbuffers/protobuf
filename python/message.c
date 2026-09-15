@@ -2192,6 +2192,7 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   if (!wkt_bases) return NULL;
   PyObject* wkt_base =
       PyDict_GetItemString(wkt_bases, upb_MessageDef_FullName(msgdef));
+  if (!wkt_base && PyErr_Occurred()) return NULL;
   PyObject* args;
   if (wkt_base == NULL) {
     args = Py_BuildValue("s(OO)O", name, state->cmessage_type,
