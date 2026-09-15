@@ -603,7 +603,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadArrayFallback(const char* ptr, absl::Span<char> out);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
-  static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
+  bool ParseEndsInSlopRegion(int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
     if (res) overall_limit_ -= size_;
