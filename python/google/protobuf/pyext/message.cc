@@ -842,6 +842,19 @@ void FixupMessageAfterMerge(CMessage* self) {
 // ---------------------------------------------------------------------
 // Making a message writable
 
+static void MarkAncestorMapsAsDirty(CMessage* self) {
+  if (self == nullptr || !self->has_mutable_map_ancestor) return;
+
+  if (self->parent_field_descriptor->is_map()) {
+    auto* parent = AssureWritable(self->parent);
+    if (parent == nullptr) return;
+
+    MakeMapFieldDirty(AssureWritable(self->parent),
+                      self->parent_field_descriptor);
+  }
+  MarkAncestorMapsAsDirty(self->parent);
+}
+
 Message* AssureWritable(CMessage* self) {
   if (self == nullptr) {
     return nullptr;
@@ -849,6 +862,9 @@ Message* AssureWritable(CMessage* self) {
 
   switch (self->state) {
     case MESSAGE_MUTABLE:
+      if (self->has_mutable_map_ancestor) {
+        MarkAncestorMapsAsDirty(self);
+      }
       return const_cast<Message*>(self->message);
     case MESSAGE_FROZEN:
       if (CheckFrozen(self, "Message is immutable.") < 0) {
@@ -878,6 +894,7 @@ Message* AssureWritable(CMessage* self) {
   if (self->parent_field_descriptor->is_map()) {
     mutable_message = PromoteConstMapValueMessage(
         parent_message, self->parent_field_descriptor, self->message);
+    self->has_mutable_map_ancestor = true;
   } else if (self->parent_field_descriptor->is_repeated()) {
     mutable_message = PromoteConstRepeatedMessage(
         parent_message, self->parent_field_descriptor, self->message);
@@ -886,6 +903,8 @@ Message* AssureWritable(CMessage* self) {
         parent_message, self->parent_field_descriptor,
         GetFactoryForMessage(self->parent)->message_factory);
   }
+
+  self->has_mutable_map_ancestor |= self->parent->has_mutable_map_ancestor;
 
   if (mutable_message == nullptr) {
     return nullptr;
@@ -1341,6 +1360,7 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->parent = nullptr;
   self->parent_field_descriptor = nullptr;
   self->state = MESSAGE_MUTABLE;
+  self->has_mutable_map_ancestor = false;
 
   // Construct the lazy unique pointers using placement new.
   new (&self->composite_fields) LazyUniquePtr<CMessage::CompositeFieldsMap>();
@@ -2937,6 +2957,10 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   cmsg->parent_field_descriptor = field_descriptor;
   cmsg->state = this->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : state;
   cmessage::SetSubmessage(this, cmsg);
+  if (state == MESSAGE_MUTABLE) {
+    cmsg->has_mutable_map_ancestor =
+        this->has_mutable_map_ancestor || field_descriptor->is_map();
+  }
   return cmsg;
 }
 
