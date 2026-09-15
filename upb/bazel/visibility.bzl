@@ -6,4 +6,4 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 visibility("public")
-upb_clients = ["//..."]
+upb_clients = ["public"]
