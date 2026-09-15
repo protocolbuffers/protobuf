@@ -237,10 +237,7 @@ static VALUE free_ext_array(VALUE arg) {
  */
 static VALUE DescriptorPool_find_file_by_name(VALUE _self, VALUE name) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
-  if (SYMBOL_P(name)) {
-    name = rb_sym2str(name);
-  }
-  const char* name_str = StringValueCStr(name);
+  const char* name_str = get_str(name);
   const upb_FileDef* filedef = upb_DefPool_FindFileByName(self->symtab, name_str);
   if (filedef) {
     return get_filedef_obj(_self, filedef);
