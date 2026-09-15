@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "storage/datapol/annotations/proto/semantic_annotations.proto";
+
 option go_package = "google.golang.org/protobuf/types/known/anypb";
 option java_package = "com.google.protobuf";
 option java_outer_classname = "AnyProto";
@@ -99,8 +101,12 @@ message Any {
   // resolution service at these type URLs was considered but Protobuf never
   // implemented one and considers contacting these URLs to be problematic and
   // a potential security issue. Do not attempt to contact type URLs.
-  string type_url = 1;
+  string type_url = 1 [
+    ctype = STRING_PIECE,
+    (datapol.semantic_type) = ST_GOOGLE_OPERATIONAL_DATA
+  ];
 
   // Holds a Protobuf serialization of the type described by type_url.
-  bytes value = 2;
+  bytes value = 2
+      [ctype = CORD, (datapol.semantic_type) = ST_CONTENT_DEPENDENT];
 }
