@@ -224,8 +224,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 #endif
   }
 
-  bool empty() const { return current_size_ == 0; }
-  int size() const {
+  PROTOBUF_PURE bool empty() const { return current_size_ == 0; }
+  PROTOBUF_PURE int size() const {
     int res = current_size_;
     PROTOBUF_ASSUME(res >= 0);
     return res;
@@ -236,7 +236,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   //   * prefer `SizeAtCapacity()` to `size() == Capacity()`;
   //   * prefer `AllocatedSizeAtCapacity()` to `allocated_size() == Capacity()`.
-  int Capacity() const {
+  PROTOBUF_PURE int Capacity() const {
     int res = using_sso() ? kSSOCapacity : rep()->capacity;
     PROTOBUF_ASSUME(res >= 0);
     return res;
@@ -1278,8 +1278,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   ~RepeatedPtrField();
 
-  PROTOBUF_FUTURE_ADD_NODISCARD bool empty() const;
-  PROTOBUF_FUTURE_ADD_NODISCARD int size() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD PROTOBUF_PURE bool empty() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD PROTOBUF_PURE int size() const;
 
   PROTOBUF_FUTURE_ADD_NODISCARD const_reference
   Get(int index) const ABSL_ATTRIBUTE_LIFETIME_BOUND;
@@ -1365,7 +1365,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   // array is grown, it will always be at least doubled in size.
   void Reserve(int new_size);
 
-  PROTOBUF_FUTURE_ADD_NODISCARD int Capacity() const;
+  PROTOBUF_FUTURE_ADD_NODISCARD PROTOBUF_PURE int Capacity() const;
 
   // Gets the underlying array.  This pointer is possibly invalidated by
   // any add or remove operation.
