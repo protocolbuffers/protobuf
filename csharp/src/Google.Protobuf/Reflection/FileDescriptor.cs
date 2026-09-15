@@ -68,7 +68,7 @@ namespace Google.Protobuf.Reflection
 
         private readonly Lazy<Dictionary<IDescriptor, DescriptorDeclaration>> declarations;
 
-        private static readonly Dictionary<string, List<Extension>> allDependedExtensionsCache = new();
+        private List<Extension> allDependedExtensionsCache;
         private static bool extensionCachingEnabled = true;
 
         /// <summary>
@@ -528,9 +528,13 @@ namespace Google.Protobuf.Reflection
 
         private static IEnumerable<Extension> GetAllDependedExtensions(FileDescriptor descriptor)
         {
-            if (extensionCachingEnabled && allDependedExtensionsCache.TryGetValue(descriptor.Name, out List<Extension> cachedExtensions))
+            if (extensionCachingEnabled)
             {
-                return cachedExtensions;
+                var cachedExtensions = Volatile.Read(ref descriptor.allDependedExtensionsCache);
+                if (cachedExtensions != null)
+                {
+                    return cachedExtensions;
+                }
             }
 
 #if WITH_BENCHMARKING
@@ -544,7 +548,9 @@ namespace Google.Protobuf.Reflection
 
             if (extensionCachingEnabled)
             {
-                allDependedExtensionsCache[descriptor.Name] = extensions;
+                // Publish only a complete list, which is never modified afterwards.
+                // Concurrent callers may compute the same list; reuse the first published result.
+                return Interlocked.CompareExchange(ref descriptor.allDependedExtensionsCache, extensions, null) ?? extensions;
             }
 
             return extensions;

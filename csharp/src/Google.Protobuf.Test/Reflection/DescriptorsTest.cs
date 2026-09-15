@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using UnitTest.Issues.TestProtos;
 using static Google.Protobuf.Reflection.FeatureSet.Types;
 using proto2 = Google.Protobuf.TestProtos.Proto2;
@@ -28,6 +29,104 @@ namespace Google.Protobuf.Reflection
     /// </summary>
     public class DescriptorsTest
     {
+        [Test]
+        [NonParallelizable]
+        public void FileDescriptor_ConcurrentExtensionCaching()
+        {
+            var cachingEnabled = typeof(FileDescriptor).GetField(
+                "extensionCachingEnabled",
+                BindingFlags.NonPublic | BindingFlags.Static
+            );
+            var originalCachingEnabled = cachingEnabled.GetValue(null);
+            try
+            {
+                // The performance test disables this process-wide cache.
+                cachingEnabled.SetValue(null, true);
+                var prefix = Guid.NewGuid().ToString("N");
+                var generatedInfo = new GeneratedClrTypeInfo(null, null, null);
+                var extensionDescriptor = UnittestCustomOptionsProto3Reflection.Descriptor;
+                var dependencies = Enumerable
+                    .Range(0, 4096)
+                    .Select(i =>
+                        FileDescriptor.FromGeneratedCode(
+                            new FileDescriptorProto
+                            {
+                                Name = $"{prefix}_{i}.proto",
+                                Dependency = { extensionDescriptor.Name },
+                            }.ToByteArray(),
+                            new[] { extensionDescriptor },
+                            generatedInfo
+                        )
+                    )
+                    .ToArray();
+
+                Parallel.For(
+                    0,
+                    dependencies.Length,
+                    i =>
+                    {
+                        // Exercise both distinct cache misses and concurrent access to shared dependencies.
+                        var fileDependencies = new[] { dependencies[i], dependencies[i / 2] }
+                            .Distinct()
+                            .ToArray();
+                        var proto = new FileDescriptorProto
+                        {
+                            Name = $"{prefix}_dependent_{i}.proto",
+                            Dependency = { fileDependencies.Select(dependency => dependency.Name) },
+                            Options = new FileOptions(),
+                        };
+                        proto.Options.SetExtension(
+                            UnittestCustomOptionsProto3Extensions.FileOpt1,
+                            (ulong)i + 1
+                        );
+                        var descriptor = FileDescriptor.FromGeneratedCode(
+                            proto.ToByteArray(),
+                            fileDependencies,
+                            generatedInfo
+                        );
+                        CollectionAssert.AreEqual(fileDependencies, descriptor.Dependencies);
+                        Assert.AreEqual(
+                            (ulong)i + 1,
+                            descriptor
+                                .GetOptions()
+                                .GetExtension(UnittestCustomOptionsProto3Extensions.FileOpt1)
+                        );
+                    }
+                );
+
+                // A different descriptor with the same name must not inherit cached extensions.
+                var unrelatedDependency = FileDescriptor.FromGeneratedCode(
+                    new FileDescriptorProto { Name = dependencies[0].Name }.ToByteArray(),
+                    Array.Empty<FileDescriptor>(),
+                    generatedInfo
+                );
+                var unrelatedProto = new FileDescriptorProto
+                {
+                    Name = $"{prefix}_unrelated.proto",
+                    Dependency = { unrelatedDependency.Name },
+                    Options = new FileOptions(),
+                };
+                unrelatedProto.Options.SetExtension(
+                    UnittestCustomOptionsProto3Extensions.FileOpt1,
+                    1UL
+                );
+                var unrelatedDescriptor = FileDescriptor.FromGeneratedCode(
+                    unrelatedProto.ToByteArray(),
+                    new[] { unrelatedDependency },
+                    generatedInfo
+                );
+                Assert.IsFalse(
+                    unrelatedDescriptor
+                        .GetOptions()
+                        .HasExtension(UnittestCustomOptionsProto3Extensions.FileOpt1)
+                );
+            }
+            finally
+            {
+                cachingEnabled.SetValue(null, originalCachingEnabled);
+            }
+        }
+
         [Test]
         public void FileDescriptor_GeneratedCode()
         {
