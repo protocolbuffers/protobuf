@@ -161,7 +161,9 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
 #endif
 
   sys = PyImport_ImportModule("sys");
+  if (!sys) goto err;
   hex_version = PyObject_GetAttrString(sys, "hexversion");
+  if (!hex_version) goto err;
   ret = true;
 
 err:
@@ -2282,30 +2284,27 @@ static void PyUpb_MessageMeta_Dealloc(PyObject* self) {
   Py_DECREF(tp);
 }
 
-void PyUpb_MessageMeta_AddFieldNumber(PyObject* self, const upb_FieldDef* f) {
+static bool PyUpb_MessageMeta_AddFieldNumber(PyObject* self,
+                                             const upb_FieldDef* f) {
   PyObject* name =
       PyUnicode_FromFormat("%s_FIELD_NUMBER", upb_FieldDef_Name(f));
-  if (!name) {
-    PyErr_Clear();
-    return;
-  }
+  if (!name) return false;
   PyObject* upper = PyObject_CallMethod(name, "upper", NULL);
   if (!upper) {
-    PyErr_Clear();
     Py_DECREF(name);
-    return;
+    return false;
   }
   PyObject* val = PyLong_FromLong(upb_FieldDef_Number(f));
-  if (val) {
-    if (PyObject_SetAttr(self, upper, val) < 0) {
-      PyErr_Clear();
-    }
-    Py_DECREF(val);
-  } else {
-    PyErr_Clear();
+  if (!val) {
+    Py_DECREF(name);
+    Py_DECREF(upper);
+    return false;
   }
+  int status = PyObject_SetAttr(self, upper, val);
+  Py_DECREF(val);
   Py_DECREF(name);
   Py_DECREF(upper);
+  return status == 0;
 }
 
 static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
@@ -2318,7 +2317,12 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
 
   PyObject* py_key =
       PyBytes_FromFormat("%s.%s", upb_MessageDef_FullName(msgdef), name_buf);
+  if (!py_key) return NULL;
   const char* key = PyUpb_GetStrData(py_key);
+  if (!key) {
+    Py_DECREF(py_key);
+    return NULL;
+  }
   PyObject* ret = NULL;
   const upb_MessageDef* nested = upb_DefPool_FindMessageByName(symtab, key);
   const upb_EnumDef* enumdef;
@@ -2350,12 +2354,17 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
     // So we just add all field numbers.
     int n = upb_MessageDef_FieldCount(msgdef);
     for (int i = 0; i < n; i++) {
-      PyUpb_MessageMeta_AddFieldNumber(self, upb_MessageDef_Field(msgdef, i));
+      if (!PyUpb_MessageMeta_AddFieldNumber(self,
+                                            upb_MessageDef_Field(msgdef, i))) {
+        return NULL;
+      }
     }
     n = upb_MessageDef_NestedExtensionCount(msgdef);
     for (int i = 0; i < n; i++) {
-      PyUpb_MessageMeta_AddFieldNumber(
-          self, upb_MessageDef_NestedExtension(msgdef, i));
+      if (!PyUpb_MessageMeta_AddFieldNumber(
+              self, upb_MessageDef_NestedExtension(msgdef, i))) {
+        return NULL;
+      }
     }
     ret = PyObject_GenericGetAttr(self, name);
   }
