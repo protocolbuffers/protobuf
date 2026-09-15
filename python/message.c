@@ -1378,9 +1378,14 @@ static PyObject* PyUpb_Message_IsInitialized(PyObject* _self, PyObject* args) {
 
 static PyObject* PyUpb_Message_ListFieldsItemKey(PyObject* self,
                                                  PyObject* val) {
-  assert(PyTuple_Check(val));
-  PyObject* field = PyTuple_GetItem(val, 0);
+  if (!PyTuple_Check(val) || PyTuple_GET_SIZE(val) == 0) {
+    PyErr_SetString(PyExc_TypeError,
+                    "ListFields item must be a non-empty tuple");
+    return NULL;
+  }
+  PyObject* field = PyTuple_GET_ITEM(val, 0);
   const upb_FieldDef* f = PyUpb_FieldDescriptor_GetDef(field);
+  if (!f) return NULL;
   return PyLong_FromLong(upb_FieldDef_Number(f));
 }
 
