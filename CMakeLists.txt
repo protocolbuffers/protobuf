@@ -217,6 +217,9 @@ if (protobuf_WITH_ZLIB)
   endif (ZLIB_FOUND)
 endif (protobuf_WITH_ZLIB)
 
+include(CheckSymbolExists)
+check_symbol_exists(getexecpath "unistd.h" HAVE_GETEXECPATH)
+
 # We need to link with libatomic on systems that do not have builtin atomics, or
 # don't have builtin support for 8 byte atomics (e.g. 32-bit powerpc).
 set(protobuf_LINK_LIBATOMIC false)
