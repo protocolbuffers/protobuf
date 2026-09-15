@@ -368,6 +368,30 @@ class FreeThreadingTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  def testConcurrentDescriptorFileAccessDataRace(self):
+    """Reproduces the data race in PyFileDescriptor_FromDescriptorWithSerializedPb."""
+    pool = descriptor_pool.DescriptorPool()
+    num_messages = 500
+    descriptors = []
+    for i in range(num_messages):
+      f_proto = descriptor_pb2.FileDescriptorProto(name=f'race_{i}.proto')
+      f_proto.message_type.add(name=f'Message_{i}')
+      pool.Add(f_proto)
+      descriptors.append(pool.FindMessageTypeByName(f'Message_{i}'))
+
+    barrier = threading.Barrier(10)
+
+    def Worker():
+      barrier.wait()
+      for desc in descriptors:
+        _ = getattr(getattr(desc, 'file', None), 'name', '')
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""
     pool = descriptor_pool.DescriptorPool()
