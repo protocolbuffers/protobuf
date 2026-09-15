@@ -1,6 +1,5 @@
-# Disable CODEOWNERS assignment for csharp
-# /csharp/ @protocolbuffers/protobuf-csharp
-# /src/google/protobuf/compiler/csharp/ @protocolbuffers/protobuf-csharp
+/csharp/ @protocolbuffers/protobuf-csharp
+/src/google/protobuf/compiler/csharp/ @protocolbuffers/protobuf-csharp
 
 /docs/ @protocolbuffers/protobuf-docs
 /examples/ @protocolbuffers/protobuf-docs
