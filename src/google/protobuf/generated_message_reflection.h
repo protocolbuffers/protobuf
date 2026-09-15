@@ -19,10 +19,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <utility>
 
 #include "absl/base/call_once.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/types/span.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_enum_reflection.h"
 #include "google/protobuf/has_bits.h"
@@ -354,6 +357,64 @@ const std::string& NameOfDenseEnum(int v) {
     }
   }
   return NameOfDenseEnumSlow(v, &deci);
+}
+
+struct ChunkInfo {
+  int min_val;
+  int max_val;
+  uint32_t offset;  // The size of all preceding chunks
+};
+
+struct FastEnumCacheInfo {
+  absl::once_flag loaded;
+  std::atomic<const std::string**> flat_cache{nullptr};
+  const EnumDescriptor* (*descriptor_fn)();
+  absl::Span<const ChunkInfo> chunks;
+};
+
+PROTOBUF_EXPORT const std::string** InitializeFastEnumCache(
+    FastEnumCacheInfo* info);
+
+template <const auto& chunks, std::size_t... Is>
+inline const std::string& NameOfChunkyEnum(int v, FastEnumCacheInfo& info,
+                                           std::index_sequence<Is...>) {
+  const std::string* result = nullptr;
+
+  const auto check_chunk = [&](const ChunkInfo& chunk) -> bool {
+    if (v >= chunk.min_val && v <= chunk.max_val) {
+      const std::string** cache =
+          info.flat_cache.load(std::memory_order_acquire);
+      if (ABSL_PREDICT_FALSE(cache == nullptr)) {
+        cache = InitializeFastEnumCache(&info);
+      }
+      result = cache[chunk.offset + static_cast<size_t>(v - chunk.min_val)];
+      return true;
+    }
+    return false;
+  };
+
+  if ((check_chunk(chunks[Is]) || ...)) {
+    return *result;
+  }
+
+  // Prevent the compiler from pre-loading the empty string address.
+  // Otherwise, it adds an instruction to every in-bounds-call (adding ~5%
+  // to cpu).
+  // We expect to see many more in-bounds calls than out-of-bounds calls, so
+  // this is a net win.
+  ABSL_BLOCK_TAIL_CALL_OPTIMIZATION();
+  return GetEmptyStringAlreadyInited();
+}
+
+template <const EnumDescriptor* (*descriptor_fn)(), const auto& chunks>
+inline const std::string& NameOfChunkyEnum(int v) {
+  static FastEnumCacheInfo info = {/* once_flag */ {},
+                                   /* atomic ptr */ {}, descriptor_fn, chunks};
+  // Theoretically, we could further optimize this by tailoring the
+  // index sequence to favor the most common values or biggest chunks,
+  // but that's a lot of code for a small potential gain.
+  return NameOfChunkyEnum<chunks>(v, info,
+                                  std::make_index_sequence<chunks.size()>{});
 }
 
 // Returns whether this type of field is stored in the split struct as a raw
