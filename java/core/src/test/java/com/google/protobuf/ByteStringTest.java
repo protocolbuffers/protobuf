@@ -9,6 +9,7 @@ package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.common.truth.Truth.assertWithMessage;
+import static org.junit.Assert.assertThrows;
 
 import com.google.protobuf.ByteString.Output;
 import java.io.ByteArrayInputStream;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -343,6 +345,74 @@ public class ByteStringTest {
       assertWithMessage("Should throw").fail();
     } catch (IndexOutOfBoundsException expected) {
     }
+  }
+
+  // A read-only ByteBuffer only protects its contents, not its position. ByteBuffer.wrap(array,
+  // offset, length) keeps the offset in the position (arrayOffset() stays 0, capacity stays the
+  // full array), so position(0) rewinds to the start of the array rather than to the start of the
+  // window, and the limit does not move to compensate.
+  //
+  // This is the buffer that ByteString.asReadOnlyByteBuffer() returns for a ByteString that is a
+  // window onto a larger array, which is what CodedInputStream.enableAliasing produces (for
+  // example, while parsing a lazily parsed extension). Callers must not reposition it.
+  @Test
+  public void testReadOnlyWrappedBuffer_positionZeroEscapesTheWindow() {
+    // A 16 byte window (two doubles) starting at offset 5 of a 24 byte array.
+    ByteBuffer buffer = ByteBuffer.wrap(new byte[24], 5, 16).asReadOnlyBuffer();
+    assertThat(buffer.remaining()).isEqualTo(16);
+
+    buffer.position(0);
+
+    // The window grew by the offset and is no longer a whole number of doubles.
+    assertThat(buffer.remaining()).isEqualTo(21);
+    double unusedFirst = buffer.getDouble();
+    double unusedSecond = buffer.getDouble();
+    assertThrows(BufferUnderflowException.class, buffer::getDouble);
+  }
+
+  // slice() moves the offset into arrayOffset(), where position() cannot reach it, and caps the
+  // capacity at the window length. position(0) is then a no-op.
+  @Test
+  public void testReadOnlySlicedBuffer_positionZeroStaysInTheWindow() {
+    // The same window, sliced.
+    ByteBuffer buffer = ByteBuffer.wrap(new byte[24], 5, 16).slice().asReadOnlyBuffer();
+    assertThat(buffer.remaining()).isEqualTo(16);
+
+    buffer.position(0);
+
+    assertThat(buffer.remaining()).isEqualTo(16);
+    double unusedFirst = buffer.getDouble();
+    double unusedSecond = buffer.getDouble();
+    assertThat(buffer.hasRemaining()).isFalse();
+  }
+
+  // A substring is a window onto a larger array, but asReadOnlyByteBuffer() must still hand back a
+  // buffer bounded to the substring, like every other ByteString implementation does.
+  @Test
+  public void testAsReadOnlyByteBuffer_substringIsBoundedToTheSubstring() {
+    ByteString substring = ByteString.copyFrom(getTestBytes(24)).substring(5, 21);
+
+    ByteBuffer buffer = substring.asReadOnlyByteBuffer();
+
+    assertThat(buffer.position()).isEqualTo(0);
+    assertThat(buffer.limit()).isEqualTo(16);
+    assertThat(buffer.capacity()).isEqualTo(16);
+    // Absolute reads are indexed from the start of the substring, not of the backing array.
+    assertThat(buffer.get(0)).isEqualTo(substring.byteAt(0));
+  }
+
+  // Because the buffer is bounded, rewinding it cannot expose the bytes preceding the substring.
+  @Test
+  public void testAsReadOnlyByteBuffer_substringSurvivesRepositioning() {
+    ByteString substring = ByteString.copyFrom(getTestBytes(24)).substring(5, 21);
+
+    ByteBuffer buffer = substring.asReadOnlyByteBuffer();
+    buffer.position(0);
+
+    assertThat(buffer.remaining()).isEqualTo(16);
+    byte[] roundTripBytes = new byte[16];
+    buffer.get(roundTripBytes);
+    assertThat(roundTripBytes).isEqualTo(substring.toByteArray());
   }
 
   @Test
