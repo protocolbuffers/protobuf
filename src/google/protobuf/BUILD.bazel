@@ -1687,11 +1687,6 @@ exports_files(
         "test_messages_proto3.proto",
         "json_options.proto",
         "json_enumvalue_options.proto",
-        "unittest_features.proto",
-        "unittest_legacy_features.proto",
-        "unittest_proto3_optional.proto",
-        "unittest_retention.proto",
-        "unittest_well_known_types.proto",
     ],
     visibility = [
         "//:__pkg__",
@@ -1699,6 +1694,19 @@ exports_files(
         "//python:__pkg__",
         "//ruby:__pkg__",
         "//upb:__subpackages__",
+    ],
+)
+
+exports_files(
+    [
+        "unittest_features.proto",
+        "unittest_legacy_features.proto",
+        "unittest_proto3_optional.proto",
+        "unittest_retention.proto",
+        "unittest_well_known_types.proto",
+    ],
+    visibility = [
+        "//csharp:__pkg__",
     ],
 )
 
