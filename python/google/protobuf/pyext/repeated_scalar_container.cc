@@ -31,6 +31,9 @@
 #include "google/protobuf/pyext/safe_numerics.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
+// Must include last.
+#include "google/protobuf/port_def.inc"
+
 #define PyString_AsString(ob) \
   (PyUnicode_Check(ob) ? PyUnicode_AsUTF8(ob) : PyBytes_AsString(ob))
 
@@ -1199,8 +1202,10 @@ PyObject* CreateArrayFromView(PyObject* pself, PyObject* np_module) {
   switch (field_descriptor->cpp_type()) {
 #define HANDLE_TYPE(TYPE, type)                                         \
   case FieldDescriptor::CPPTYPE_##TYPE: {                               \
+    PROTOBUF_IGNORE_DEPRECATION_START                                   \
     const auto& rf =                                                    \
         reflection->GetRepeatedField<type>(*message, field_descriptor); \
+    PROTOBUF_IGNORE_DEPRECATION_STOP                                    \
     out_ptr = reinterpret_cast<const void*>(rf.data());                 \
     out_buffer_size_bytes = static_cast<Py_ssize_t>(sizeof(type)) *     \
                             static_cast<Py_ssize_t>(rf.size());         \
@@ -1559,3 +1564,5 @@ PyTypeObject RepeatedScalarContainer_Type = {
 }  // namespace python
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
