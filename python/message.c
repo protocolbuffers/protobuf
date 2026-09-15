@@ -2189,8 +2189,10 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   //    (Message, Message)            # for regular messages
   //    (Message, Message, WktBase)   # For well-known types
   PyObject* wkt_bases = PyUpb_GetWktBases(state);
+  if (!wkt_bases) return NULL;
   PyObject* wkt_base =
       PyDict_GetItemString(wkt_bases, upb_MessageDef_FullName(msgdef));
+  if (!wkt_base && PyErr_Occurred()) return NULL;
   PyObject* args;
   if (wkt_base == NULL) {
     args = Py_BuildValue("s(OO)O", name, state->cmessage_type,
@@ -2199,6 +2201,7 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
     args = Py_BuildValue("s(OOO)O", name, state->cmessage_type,
                          state->message_class, wkt_base, dict);
   }
+  if (!args) return NULL;
 
   PyObject* ret = cpython_bits.type_new(state->message_meta_type, args, NULL);
   Py_DECREF(args);
