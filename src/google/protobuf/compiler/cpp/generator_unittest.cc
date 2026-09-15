@@ -360,6 +360,23 @@ TEST_F(CppGeneratorTest, InvalidFullyQualifiedNamespace) {
   ExpectErrorSubstring("Namespace ::foo::test can not start with `::`.");
 }
 
+TEST_F(CppGeneratorTest, EmptyPackageWithCcNamespace) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "UNSTABLE";
+    import option "google/protobuf/cpp_file_options.proto";
+    option (pb.file.cpp).namespace = "foo::test";
+    message Foo {
+      int32 bar = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir  "
+      "--experimental_editions foo.proto");
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring("foo.pb.h", "::foo::test::Foo");
+  ExpectFileContentContainsSubstring("foo.pb.cc", "::foo::test::Foo");
+}
+
 
 TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
   CreateTempFile("foo.proto",
