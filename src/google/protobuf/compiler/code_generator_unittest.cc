@@ -202,6 +202,38 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesRoot) {
   EXPECT_EQ(ext.field_feature(), pb::EnumFeature::VALUE1);
 }
 
+TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesEdition2026) {
+  TestGenerator generator;
+  generator.set_feature_extensions({GetExtensionReflection(pb::test)});
+  ASSERT_OK(pool_.SetFeatureSetDefaults(*generator.BuildFeatureSetDefaults()));
+
+  ASSERT_THAT(BuildFile(DescriptorProto::descriptor()->file()), NotNull());
+  ASSERT_THAT(BuildFile(pb::TestMessage::descriptor()->file()), NotNull());
+  auto file = BuildFile(R"schema(
+    edition = "2026";
+    package proto2_unittest;
+
+    import "google/protobuf/unittest_features.proto";
+
+    option features.field_presence = EXPLICIT;
+    option features.enum_type = CLOSED;
+    option features.(pb.test).file_feature = VALUE6;
+    option features.(pb.test).source_feature = VALUE5;
+  )schema");
+  ASSERT_THAT(file, NotNull());
+
+  const FeatureSet& features = TestGenerator::GetResolvedSourceFeatures(*file);
+  const pb::TestFeatures& ext = features.GetExtension(pb::test);
+
+  EXPECT_TRUE(features.has_repeated_field_encoding());
+  EXPECT_EQ(features.field_presence(), FeatureSet::EXPLICIT);
+  EXPECT_EQ(features.enum_type(), FeatureSet::CLOSED);
+
+  EXPECT_EQ(ext.file_feature(), pb::EnumFeature::VALUE6);
+  EXPECT_EQ(ext.source_feature(), pb::EnumFeature::VALUE5);
+  EXPECT_EQ(ext.field_feature(), pb::EnumFeature::VALUE1);
+}
+
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeaturesInherited) {
   TestGenerator generator;
   generator.set_feature_extensions({GetExtensionReflection(pb::test)});
@@ -324,7 +356,7 @@ TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtensionCustom) {
 TEST_F(CodeGeneratorTest, GetResolvedSourceFeatureExtensionEditedDefaults) {
   FeatureSetDefaults defaults = ParseTextOrDie(R"pb(
     minimum_edition: EDITION_PROTO2
-    maximum_edition: EDITION_2024
+    maximum_edition: EDITION_2026
     defaults {
       edition: EDITION_LEGACY
       overridable_features {}
