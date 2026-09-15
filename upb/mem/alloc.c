@@ -13,14 +13,33 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+#ifdef __STDC_VERSION_STDLIB_H__
+#if __STDC_VERSION_STDLIB_H_ >= 202311L
+#define UPB_FREE_SIZED(ptr, size) free_sized(ptr, size)
+#else
+#endif
+#endif
+
+#if !defined(UPB_FREE_SIZED) && UPB_HAS_ATTRIBUTE(weak) && defined(__ELF__)
+extern void free_sized(void* ptr, size_t size) __attribute__((weak));
+#define UPB_FREE_SIZED(ptr, size) \
+  ((free_sized != NULL) ? free_sized(ptr, size) : free(ptr))
+#else
+#define UPB_FREE_SIZED(ptr, size) free(ptr);
+#endif
+
 static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                   size_t size, size_t* actual_size) {
   UPB_UNUSED(alloc);
-  UPB_UNUSED(oldsize);
-  UPB_UNUSED(actual_size);
   if (size == 0) {
-    free(ptr);
+    if (oldsize != 0) {
+      UPB_FREE_SIZED(ptr, oldsize);
+    } else {
+      free(ptr);
+    }
     return NULL;
+  } else if (oldsize == 0) {
+    return malloc(size);
   } else {
     return realloc(ptr, size);
   }
