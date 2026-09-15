@@ -522,7 +522,9 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
         COPY_VALUE(UINT64, UInt64)
         COPY_VALUE(FLOAT, Float)
         COPY_VALUE(DOUBLE, Double)
+        PROTOBUF_IGNORE_DEPRECATION_START
         COPY_VALUE(ENUM, Enum)
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         COPY_VALUE(STRING, String)
 #undef COPY_VALUE
         case FieldDescriptor::CPPTYPE_MESSAGE: {

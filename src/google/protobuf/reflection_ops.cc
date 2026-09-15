@@ -135,7 +135,9 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
         HANDLE_TYPE(DOUBLE, Double);
         HANDLE_TYPE(BOOL, Bool);
         HANDLE_TYPE(STRING, String);
+        PROTOBUF_IGNORE_DEPRECATION_START
         HANDLE_TYPE(ENUM, Enum);
+        PROTOBUF_IGNORE_DEPRECATION_STOP
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
