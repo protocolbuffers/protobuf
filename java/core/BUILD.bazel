@@ -211,6 +211,7 @@ filegroup(
     name = "java_features_proto_srcs",
     srcs = ["src/main/resources/google/protobuf/java_features.proto"],
     visibility = [
+        "//csharp:__pkg__",
         "//python:__pkg__",
         "//src/google/protobuf:__pkg__",
     ],

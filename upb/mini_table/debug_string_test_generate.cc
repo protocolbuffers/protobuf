@@ -7,10 +7,18 @@
 
 #include <cstdio>
 
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
+
 #include "upb/mini_table/debug_string.h"
 #include "upb/mini_table/debug_string_test.upb_minitable.h"
 
 int main(int argc, char** argv) {
+#ifdef _WIN32
+  _setmode(_fileno(stdout), _O_BINARY);
+#endif
   char buf[65536];
   upb_MiniTable_DebugString(&upb_0test__DebugStringTestMessage_msg_init, buf,
                             sizeof(buf));
