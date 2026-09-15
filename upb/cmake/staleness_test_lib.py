@@ -189,6 +189,11 @@ def FixFiles(config, print_diffs=False):
   if print_diffs:
     for error in _GetDiffErrors(missing_files, stale_files, is_fixing=True):
       print(error)
+  else:
+    for pair in missing_files:
+      print("Creating missing file %s" % pair.target)
+    for pair in stale_files:
+      print("Updating stale file %s" % pair.target)
 
   _CopyFiles(stale_files + missing_files)
 
