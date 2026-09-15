@@ -44,7 +44,7 @@ module CommonTests
     assert_equal "hello", m.optional_string
     m.optional_string = :hello
     assert_equal "hello", m.optional_string
-    m.optional_bytes = "world".encode!('ASCII-8BIT')
+    m.optional_bytes = "world".encode('ASCII-8BIT')
     assert_equal "world", m.optional_bytes
     m.optional_msg = proto_module::TestMessage2.new(:foo => 42)
     assert_equal proto_module::TestMessage2.new(:foo => 42), m.optional_msg
@@ -188,13 +188,13 @@ module CommonTests
 
     # Assigning a normal (ASCII or UTF8) string to a bytes field, or
     # ASCII-8BIT to a string field will convert to the proper encoding.
-    m.optional_bytes = "Test string ASCII".encode!('ASCII')
+    m.optional_bytes = "Test string ASCII".encode('ASCII')
     assert m.optional_bytes.frozen?
     assert_equal Encoding::ASCII_8BIT, m.optional_bytes.encoding
     assert_equal "Test string ASCII", m.optional_bytes
 
     assert_raises Encoding::UndefinedConversionError do
-      m.optional_bytes = "Test string UTF-8 \u0100".encode!('UTF-8')
+      m.optional_bytes = "Test string UTF-8 \u0100".encode('UTF-8')
     end
 
     assert_raises Encoding::UndefinedConversionError do
@@ -206,7 +206,7 @@ module CommonTests
     m.optional_string = "\u0100"
 
     # strings are immutable so we can't do this, but serialize should catch it.
-    m.optional_string = "asdf".encode!('UTF-8')
+    m.optional_string = "asdf".encode('UTF-8')
     assert_raises(FrozenError) { m.optional_string.encode!('ASCII-8BIT') }
   end
 
