@@ -21,7 +21,7 @@ licenses(["notice"])
 
 py_dist_module(
     name = "message_mod",
-    extension = "//python:_message_binary",
+    extension = "//python:google/_upb/_message",
     module_name = "google._upb._message",
 )
 
@@ -312,10 +312,6 @@ pkg_tar(
     package_dir = "protobuf",
     package_file_name = "protobuf.tar.gz",
     strip_prefix = ".",
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
 )
 
 sh_binary(
@@ -335,10 +331,6 @@ genrule(
         $(location :setup_wrapper) sdist
         mv protobuf/dist/*.tar.gz $@
     """,
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     tools = [":setup_wrapper"],
 )
 
@@ -391,10 +383,6 @@ py_wheel(
         "python/",
         "src/",
     ],
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":language_neutral_protos_py_pb2",
@@ -431,10 +419,6 @@ py_wheel(
         "python/",
         "src/",
     ],
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":language_neutral_protos_py_pb2",
@@ -457,10 +441,6 @@ py_wheel(
         "python/",
         "src/",
     ],
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         "//:python_common_test_protos",
