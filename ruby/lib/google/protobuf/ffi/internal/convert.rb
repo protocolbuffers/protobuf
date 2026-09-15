@@ -190,9 +190,31 @@ module Google
           end
         end
 
-        def to_h_internal(msg, message_descriptor)
+        def to_h_internal(msg, message_descriptor, emit_defaults = false)
           return nil if msg.nil? or msg.null?
           hash = {}
+
+          if emit_defaults
+            message_descriptor.each do |field_descriptor|
+              next if field_descriptor.has_presence? &&
+                      !Google::Protobuf::FFI.get_message_has(msg, field_descriptor)
+
+              message_value = Google::Protobuf::FFI.get_message_value(msg, field_descriptor)
+
+              if field_descriptor.map?
+                hash_entry = map_create_hash(message_value[:map_val], field_descriptor, emit_defaults)
+              elsif field_descriptor.repeated?
+                hash_entry = repeated_field_create_array(message_value[:array_val], field_descriptor, field_descriptor.type, emit_defaults)
+              else
+                hash_entry = scalar_create_hash(message_value, field_descriptor.type, field_descriptor: field_descriptor, emit_defaults: emit_defaults)
+              end
+
+              hash[field_descriptor.name.to_sym] = hash_entry
+            end
+
+            return hash
+          end
+
           iter = ::FFI::MemoryPointer.new(:size_t, 1)
           iter.write(:size_t, Google::Protobuf::FFI::Upb_Message_Begin)
           message_value = Google::Protobuf::FFI::MessageValue.new
@@ -202,11 +224,11 @@ module Google
             field_descriptor = FieldDescriptor.from_native field_def_ptr.get_pointer(0)
 
             if field_descriptor.map?
-              hash_entry = map_create_hash(message_value[:map_val], field_descriptor)
+              hash_entry = map_create_hash(message_value[:map_val], field_descriptor, emit_defaults)
             elsif field_descriptor.repeated?
-              hash_entry = repeated_field_create_array(message_value[:array_val], field_descriptor, field_descriptor.type)
+              hash_entry = repeated_field_create_array(message_value[:array_val], field_descriptor, field_descriptor.type, emit_defaults)
             else
-              hash_entry = scalar_create_hash(message_value, field_descriptor.type, field_descriptor: field_descriptor)
+              hash_entry = scalar_create_hash(message_value, field_descriptor.type, field_descriptor: field_descriptor, emit_defaults: emit_defaults)
             end
 
             hash[field_descriptor.name.to_sym] = hash_entry
@@ -215,7 +237,7 @@ module Google
           hash
         end
 
-        def map_create_hash(map_ptr, field_descriptor)
+        def map_create_hash(map_ptr, field_descriptor, emit_defaults = false)
           return {} if map_ptr.nil? or map_ptr.null?
           return_value = {}
 
@@ -233,24 +255,24 @@ module Google
             key_message_value = Google::Protobuf::FFI.map_key(map_ptr, iter_size_t)
             value_message_value = Google::Protobuf::FFI.map_value(map_ptr, iter_size_t)
             hash_key = convert_upb_to_ruby(key_message_value, key_field_type)
-            hash_value = scalar_create_hash(value_message_value, value_field_type, msg_or_enum_descriptor: value_field_def.subtype)
+            hash_value = scalar_create_hash(value_message_value, value_field_type, msg_or_enum_descriptor: value_field_def.subtype, emit_defaults: emit_defaults)
             return_value[hash_key] = hash_value
           end
           return_value
         end
 
-        def repeated_field_create_array(array, field_descriptor, type)
+        def repeated_field_create_array(array, field_descriptor, type, emit_defaults = false)
           return_value = []
           n = (array.nil? || array.null?) ? 0 : Google::Protobuf::FFI.array_size(array)
           0.upto(n - 1) do |i|
             message_value = Google::Protobuf::FFI.get_msgval_at(array, i)
-            return_value << scalar_create_hash(message_value, type, field_descriptor: field_descriptor)
+            return_value << scalar_create_hash(message_value, type, field_descriptor: field_descriptor, emit_defaults: emit_defaults)
           end
           return_value
         end
 
         # @param field_descriptor [FieldDescriptor] Descriptor of the field to convert to a hash.
-        def scalar_create_hash(message_value, type, field_descriptor: nil, msg_or_enum_descriptor: nil)
+        def scalar_create_hash(message_value, type, field_descriptor: nil, msg_or_enum_descriptor: nil, emit_defaults: false)
           if [:message, :enum].include? type
             if field_descriptor.nil?
               if msg_or_enum_descriptor.nil?
@@ -260,7 +282,7 @@ module Google
               msg_or_enum_descriptor = field_descriptor.subtype
             end
             if type == :message
-              to_h_internal(message_value[:msg_val], msg_or_enum_descriptor)
+              to_h_internal(message_value[:msg_val], msg_or_enum_descriptor, emit_defaults)
             elsif type == :enum
               convert_upb_to_ruby message_value, type, msg_or_enum_descriptor
             end

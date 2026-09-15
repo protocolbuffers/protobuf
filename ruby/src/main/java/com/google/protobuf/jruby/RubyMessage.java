@@ -47,12 +47,15 @@ import com.google.protobuf.util.JsonFormat;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jruby.*;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ThreadContext;
@@ -782,13 +785,67 @@ public class RubyMessage extends RubyObject {
     return ret;
   }
 
-  @JRubyMethod(name = "to_h")
-  public IRubyObject toHash(ThreadContext context) {
+  @JRubyMethod(name = "to_h", optional = 1)
+  public IRubyObject toHash(ThreadContext context, IRubyObject[] args) {
+    boolean emitDefaults = false;
+
+    if (args.length > 0 && !args[0].isNil()) {
+      RubyHash opts = args[0].convertToHash();
+      IRubyObject value = opts.fastARef(context.runtime.newSymbol("emit_defaults"));
+      emitDefaults = value != null && value.isTrue();
+    }
+
+    return toHashInternal(context, emitDefaults);
+  }
+
+  static IRubyObject invokeToHash(ThreadContext context, IRubyObject receiver, IRubyObject[] args) {
+    if (args.length == 0 || !toHashAcceptsOptions(context, receiver)) {
+      return Helpers.invoke(context, receiver, "to_h");
+    }
+
+    context.callInfo = ThreadContext.CALL_KEYWORD;
+    try {
+      return Helpers.invoke(context, receiver, "to_h", args);
+    } finally {
+      context.callInfo = 0;
+    }
+  }
+
+  // A user-supplied `to_h` override may take no arguments at all; passing it
+  // the options would raise ArgumentError. Fall back to a plain `to_h` call for
+  // those, so that overriding `to_h` keeps working. The subtree it returns then
+  // carries no defaults, which is also what the CRuby and FFI backends produce.
+  private static boolean toHashAcceptsOptions(ThreadContext context, IRubyObject receiver) {
+    DynamicMethod method = receiver.getMetaClass().searchMethod("to_h");
+    return method != null && !method.isUndefined() && !method.getSignature().isNoArguments();
+  }
+
+  private IRubyObject toHashInternal(ThreadContext context, boolean emitDefaults) {
     Ruby runtime = context.runtime;
     RubyHash ret = RubyHash.newHash(runtime);
     build(context, 0, SINK_MAXIMUM_NESTING); // Sync Ruby data to the Builder object.
-    for (Map.Entry<FieldDescriptor, Object> field : builder.getAllFields().entrySet()) {
-      FieldDescriptor fdef = field.getKey();
+    IRubyObject[] toHArgs =
+        emitDefaults
+            ? new IRubyObject[] {
+              RubyHash.newKwargs(runtime, "emit_defaults", runtime.getTrue())
+            }
+            : IRubyObject.NULL_ARRAY;
+
+    Collection<FieldDescriptor> fieldsToEmit;
+    if (emitDefaults) {
+      List<FieldDescriptor> present = new ArrayList<FieldDescriptor>();
+      for (FieldDescriptor fdef : descriptor.getFields()) {
+        if (fdef.hasPresence() && !builder.hasField(fdef)) {
+          continue;
+        }
+        present.add(fdef);
+      }
+      fieldsToEmit = present;
+    } else {
+      fieldsToEmit = builder.getAllFields().keySet();
+    }
+
+    for (FieldDescriptor fdef : fieldsToEmit) {
       IRubyObject value = getFieldInternal(context, fdef, !fdef.hasPresence());
 
       if (fdef.isRepeated() && !fdef.isMapField()) {
@@ -797,14 +854,20 @@ public class RubyMessage extends RubyObject {
         } else {
           RubyArray ary = value.convertToArray();
           for (int i = 0; i < ary.size(); i++) {
-            IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
+            IRubyObject submsg =
+                invokeToHash(context, ary.eltInternal(i), toHArgs);
             ary.eltInternalSet(i, submsg);
           }
 
           value = ary.to_ary();
         }
+      } else if (emitDefaults && value instanceof RubyMap) {
+        // Map#to_h takes no options, so recurse into it directly rather than
+        // dispatching -- otherwise the messages stored as map values would be
+        // converted without the option.
+        value = ((RubyMap) value).toHashInternal(context, true);
       } else if (value.respondsTo("to_h")) {
-        value = Helpers.invoke(context, value, "to_h");
+        value = invokeToHash(context, value, toHArgs);
       } else if (value.respondsTo("to_a")) {
         value = Helpers.invoke(context, value, "to_a");
       }

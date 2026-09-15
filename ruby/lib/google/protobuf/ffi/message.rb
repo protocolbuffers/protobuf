@@ -137,8 +137,8 @@ module Google
             encoding.read(:pointer).read_string(size_ptr.read(:size_t)).hash
           end
 
-          def to_h
-            to_h_internal @msg, self.class.descriptor
+          def to_h(emit_defaults: false)
+            to_h_internal @msg, self.class.descriptor, emit_defaults
           end
 
           ##
