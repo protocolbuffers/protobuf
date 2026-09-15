@@ -1034,6 +1034,8 @@ typedef struct upb_alloc upb_alloc;
 typedef void* upb_alloc_func(upb_alloc* alloc, void* ptr, size_t oldsize,
                              size_t size, size_t* actual_size);
 
+typedef void upb_AllocCleanupFunc(upb_alloc* alloc);
+
 /* A upb_alloc is a possibly-stateful allocator object.
  *
  * It could either be an arena allocator (which doesn't require individual
@@ -1042,6 +1044,8 @@ typedef void* upb_alloc_func(upb_alloc* alloc, void* ptr, size_t oldsize,
  * allocator. */
 struct upb_alloc {
   upb_alloc_func* func;
+  // If provided, called when an arena that used this upb_alloc has been freed.
+  upb_AllocCleanupFunc* cleanup;
 };
 
 UPB_NODISCARD UPB_INLINE void* upb_malloc(upb_alloc* alloc, size_t size) {
@@ -1546,8 +1550,6 @@ void* UPB_PRIVATE(_upb_Arena_Steal)(struct upb_Arena* a, size_t* size);
 
 typedef struct upb_Arena upb_Arena;
 
-typedef void upb_AllocCleanupFunc(upb_alloc* alloc);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1564,11 +1566,6 @@ UPB_NODISCARD UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n,
                                                 upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
-// Sets the cleanup function for the upb_alloc used by the arena. Only one
-// cleanup function can be set, which will be called after all blocks are
-// freed.
-UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
-                                       upb_AllocCleanupFunc* func);
 
 // Fuses the lifetime of two arenas, such that no arenas that have been
 // transitively fused together will be freed until all of them have reached a
