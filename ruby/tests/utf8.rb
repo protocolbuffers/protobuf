@@ -83,7 +83,7 @@ if !defined? JRUBY_VERSION
     end
 
     def bad_utf8_string
-      str = " "
+      str = +" "
       assert_true str.valid_encoding?
       str[0] = "\x80"
       str
@@ -103,7 +103,7 @@ class MarkedNonUtf8Test < Test::Unit::TestCase
   end
 
   def bad_utf8_string
-    str = "\x80".force_encoding(Encoding::ASCII_8BIT)
+    str = "\x80".b
     assert_true str.valid_encoding?
     str
   end
@@ -121,7 +121,7 @@ class MarkedNonUtf8Test < Test::Unit::TestCase
   end
 
   def bad_utf8_string
-    str = "\x80".force_encoding(Encoding::ASCII)
+    str = "\x80".dup.force_encoding(Encoding::ASCII)
     assert_false str.valid_encoding?
     str
   end

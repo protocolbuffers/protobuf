@@ -53,7 +53,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal( -1.01,  m.repeated_float.first.round(2) )
     assert_equal( -1.0000000000001, m.repeated_double.first )
     assert_equal 'foo', m.repeated_string.first
-    assert_equal "bar".encode!('ASCII-8BIT'), m.repeated_bytes.first
+    assert_equal "bar".encode('ASCII-8BIT'), m.repeated_bytes.first
     assert_equal TestMessage2.new(:foo => 1), m.repeated_msg.first
     assert_equal :A, m.repeated_enum.first
 
@@ -82,7 +82,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal( -1.02, m.repeated_float.last.round(2) )
     assert_equal( -1.0000000000002, m.repeated_double.last )
     assert_equal 'bar', m.repeated_string.last
-    assert_equal "foo".encode!('ASCII-8BIT'), m.repeated_bytes.last
+    assert_equal "foo".encode('ASCII-8BIT'), m.repeated_bytes.last
     assert_equal TestMessage2.new(:foo => 2), m.repeated_msg.last
     assert_equal :B, m.repeated_enum.last
 
@@ -120,8 +120,8 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal( -1.0000000000001, m.repeated_double.pop )
     assert_equal 'bar', m.repeated_string.pop
     assert_equal 'foo', m.repeated_string.pop
-    assert_equal "foo".encode!('ASCII-8BIT'), m.repeated_bytes.pop
-    assert_equal "bar".encode!('ASCII-8BIT'), m.repeated_bytes.pop
+    assert_equal "foo".encode('ASCII-8BIT'), m.repeated_bytes.pop
+    assert_equal "bar".encode('ASCII-8BIT'), m.repeated_bytes.pop
     assert_equal TestMessage2.new(:foo => 2), m.repeated_msg.pop
     assert_equal TestMessage2.new(:foo => 1), m.repeated_msg.pop
     assert_equal :B, m.repeated_enum.pop
@@ -271,8 +271,8 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal [0,0,0,10.1], m.repeated_double
     m.repeated_bool[3] = true
     assert_equal [false, false, false, true], m.repeated_bool
-    m.repeated_bytes[3] = "bar".encode!('ASCII-8BIT')
-    assert_equal ['', '', '', "bar".encode!('ASCII-8BIT')], m.repeated_bytes
+    m.repeated_bytes[3] = "bar".encode('ASCII-8BIT')
+    assert_equal ['', '', '', "bar".encode('ASCII-8BIT')], m.repeated_bytes
     m.repeated_msg[3] = TestMessage2.new(:foo => 1)
     assert_equal [nil, nil, nil, TestMessage2.new(:foo => 1)], m.repeated_msg
     m.repeated_enum[3] = :A
@@ -707,7 +707,7 @@ end
     test_msg.repeated_float  += [-1.01, -1.02]
     test_msg.repeated_double += [-1.0000000000001, -1.0000000000002]
     test_msg.repeated_string += %w(foo bar)
-    test_msg.repeated_bytes  += ["bar".encode!('ASCII-8BIT'), "foo".encode!('ASCII-8BIT')]
+    test_msg.repeated_bytes  += ["bar".encode('ASCII-8BIT'), "foo".encode('ASCII-8BIT')]
     test_msg.repeated_msg    << TestMessage2.new(:foo => 1)
     test_msg.repeated_msg    << TestMessage2.new(:foo => 2)
     test_msg.repeated_enum   << :A
