@@ -204,30 +204,6 @@ static VALUE DescriptorPool_lookup(VALUE _self, VALUE name) {
   return Qnil;
 }
 
-/*
- * ruby-doc: DescriptorPool.generated_pool
- *
- * Class method that returns the global {DescriptorPool}. This is a singleton
- * into which generated-code message and enum types are registered. The user may
- * also register types in this pool for convenience so that they do not have to
- * hold a reference to a private pool instance.
- *
- * @return [DescriptorPool]
- */
-static VALUE DescriptorPool_find_file_by_name(VALUE _self, VALUE name) {
-  DescriptorPool* self = ruby_to_DescriptorPool(_self);
-  if (SYMBOL_P(name)) {
-    name = rb_sym2str(name);
-  }
-  const char* name_str = StringValueCStr(name);
-  const upb_FileDef* filedef = upb_DefPool_FindFileByName(self->symtab, name_str);
-  if (filedef) {
-    return get_filedef_obj(_self, filedef);
-  }
-  return Qnil;
-}
-
-
 struct ext_ensure_args {
   VALUE pool_self;
   const upb_FieldDef** exts;
@@ -250,6 +226,37 @@ static VALUE free_ext_array(VALUE arg) {
   return Qnil;
 }
 
+/*
+ * ruby-doc: DescriptorPool#find_file_by_name
+ *
+ * Finds a {FileDescriptor} by name and returns it, or nil if none exists
+ * with the given name.
+ *
+ * @param name [String]
+ * @return [FileDescriptor, nil]
+ */
+static VALUE DescriptorPool_find_file_by_name(VALUE _self, VALUE name) {
+  DescriptorPool* self = ruby_to_DescriptorPool(_self);
+  if (SYMBOL_P(name)) {
+    name = rb_sym2str(name);
+  }
+  const char* name_str = StringValueCStr(name);
+  const upb_FileDef* filedef = upb_DefPool_FindFileByName(self->symtab, name_str);
+  if (filedef) {
+    return get_filedef_obj(_self, filedef);
+  }
+  return Qnil;
+}
+
+/*
+ * ruby-doc: DescriptorPool#find_all_extensions
+ *
+ * Finds all extensions of the given message descriptor and returns them
+ * as an array of {FieldDescriptor}.
+ *
+ * @param extendee [Descriptor]
+ * @return [Array<FieldDescriptor>]
+ */
 static VALUE DescriptorPool_find_all_extensions(VALUE _self, VALUE extendee) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const upb_MessageDef* msgdef = Descriptor_GetMsgDef(extendee);
@@ -265,6 +272,16 @@ static VALUE DescriptorPool_find_all_extensions(VALUE _self, VALUE extendee) {
   return ary;
 }
 
+/*
+ * ruby-doc: DescriptorPool#find_extension_by_number
+ *
+ * Finds an extension by its extendee (message descriptor) and number.
+ * Returns the {FieldDescriptor} or nil if none exists.
+ *
+ * @param extendee [Descriptor]
+ * @param number [Integer]
+ * @return [FieldDescriptor, nil]
+ */
 static VALUE DescriptorPool_find_extension_by_number(VALUE _self, VALUE extendee, VALUE number) {
   DescriptorPool* self = ruby_to_DescriptorPool(_self);
   const upb_MessageDef* msgdef = Descriptor_GetMsgDef(extendee);
@@ -279,6 +296,16 @@ static VALUE DescriptorPool_find_extension_by_number(VALUE _self, VALUE extendee
   return Qnil;
 }
 
+/*
+ * ruby-doc: DescriptorPool.generated_pool
+ *
+ * Class method that returns the global {DescriptorPool}. This is a singleton
+ * into which generated-code message and enum types are registered. The user may
+ * also register types in this pool for convenience so that they do not have to
+ * hold a reference to a private pool instance.
+ *
+ * @return [DescriptorPool]
+ */
 static VALUE DescriptorPool_generated_pool(VALUE _self) {
   return generated_pool;
 }

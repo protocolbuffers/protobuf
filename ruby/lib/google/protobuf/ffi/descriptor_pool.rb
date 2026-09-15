@@ -73,10 +73,19 @@ module Google
           Google::Protobuf::FFI.lookup_file(@descriptor_pool, name)
       end
 
+      # Finds FileDescriptor by name and returns it, or nil if none exist
+      #
+      # @param name [String]
+      # @return [FileDescriptor, nil]
       def find_file_by_name(name)
         Google::Protobuf::FFI.lookup_file(@descriptor_pool, name)
       end
 
+      # Finds all extensions of the given message descriptor and returns them
+      # as an array of FieldDescriptor.
+      #
+      # @param message_descriptor [Descriptor]
+      # @return [Array<FieldDescriptor>]
       def find_all_extensions(message_descriptor)
         count_ptr = ::FFI::MemoryPointer.new(:size_t, 1)
         exts_ptr = Google::Protobuf::FFI.find_all_extensions_ffi(@descriptor_pool, message_descriptor, count_ptr)
@@ -91,6 +100,12 @@ module Google
         end
       end
 
+      # Finds an extension by its extendee (message descriptor) and number.
+      # Returns the FieldDescriptor or nil if none exists.
+      #
+      # @param message_descriptor [Descriptor]
+      # @param number [Integer]
+      # @return [FieldDescriptor, nil]
       def find_extension_by_number(message_descriptor, number)
         Google::Protobuf::FFI.find_extension_by_number_ffi(@descriptor_pool, message_descriptor, number)
       end

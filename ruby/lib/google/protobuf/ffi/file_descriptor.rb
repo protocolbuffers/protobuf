@@ -83,6 +83,9 @@ module Google
         end
       end
 
+      # Returns an array of FileDescriptors that this file depends on.
+      #
+      # @return [Array<FileDescriptor>]
       def dependencies
         @dependencies ||= begin
           count = Google::Protobuf::FFI.file_def_dependency_count(@file_def)
