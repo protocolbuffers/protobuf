@@ -1578,7 +1578,21 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
                   sizeof(Element)) {
       // We need to manually align the allocation.
       bytes = internal::ArenaAlignDefault::Ceil(bytes);
+      new_size = (bytes - kHeapRepHeaderSize) / sizeof(Element);
     }
+
+    // Try grow in place if the arena allows it.
+    if (!was_soo) {
+      internal::HeapRep* rep = soo_rep_.heap_rep();
+      const size_t old_bytes =
+          kHeapRepHeaderSize + sizeof(Element) * old_capacity;
+      if (arena->TryGrowTail(rep->elements<Element>() + old_capacity,
+                             bytes - old_bytes)) {
+        rep->set_capacity(new_size);
+        return;
+      }
+    }
+
     new_rep =
         new (arena->AllocateAligned<internal::AllocationClient::kArray>(bytes))
             internal::HeapRep(new_size);
