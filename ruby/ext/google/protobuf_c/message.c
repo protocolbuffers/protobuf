@@ -911,17 +911,29 @@ VALUE Scalar_CreateHash(upb_MessageValue msgval, TypeInfo type_info,
  *
  * Returns the message as a Ruby Hash object, with keys as symbols.
  *
- * When +emit_defaults+ is true, fields that have no presence (implicit
- * presence scalars and enums, and empty repeated fields / maps) are also
- * emitted. Fields that do have presence are still emitted only when they are
- * actually set.
+ * By default, only fields that are present are included. A field without
+ * presence (an implicit presence scalar or enum, or a repeated or map field)
+ * counts as present only when it holds a non-default value or is non-empty.
  *
- * This matches the field selection used by #inspect and by .encode_json with
- * the +emit_defaults+ option.
+ * +emit_defaults+ does not emit a default value for every field. It only
+ * additionally includes the fields that have no presence, using their default
+ * values (for example 0, "" or false, and empty arrays and hashes for repeated
+ * and map fields). This is the ProtoJSON "always emit fields without presence"
+ * option, called +always_print_fields_with_no_presence+ in C++ and Python.
+ *
+ * Fields that have presence are never added by +emit_defaults+ and are
+ * included only when they are set: singular message fields, fields in a
+ * oneof, and fields with explicit presence such as proto3 +optional+ fields
+ * and proto2 singular fields. To include one of these, set it explicitly.
+ *
+ * The option applies recursively, including to messages in repeated fields
+ * and map values. It selects the same fields as #inspect and as .encode_json
+ * with +emit_defaults+.
  *
  * @param kwargs [Hash]
- * @option emit_defaults [Boolean] set true to also emit fields without
- * presence (default is to omit them)
+ * @option emit_defaults [Boolean] set true to also include fields that have
+ * no presence, with their default values (default is false). Fields that have
+ * presence are not affected.
  * @return [Hash]
  */
 static VALUE Message_to_h(int argc, VALUE* argv, VALUE _self) {
@@ -1259,8 +1271,10 @@ static VALUE Message_encode(int argc, VALUE* argv, VALUE klass) {
  * @param options [Hash]
  * @option preserve_proto_fieldnames [Boolean] set true to use original
  * fieldnames (default is to camelCase)
- * @option emit_defaults [Boolean] set true to emit 0/false values (default is
- * to omit them)
+ * @option emit_defaults [Boolean] set true to also emit fields that have no
+ * presence, with their default values (default is to omit them). Fields that
+ * have presence, such as message fields, oneof fields and +optional+ fields,
+ * are emitted only when set. See #to_h.
  * @return [String]
  */
 static VALUE Message_encode_json(int argc, VALUE* argv, VALUE klass) {

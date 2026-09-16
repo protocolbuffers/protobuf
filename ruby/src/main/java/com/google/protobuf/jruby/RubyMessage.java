@@ -678,7 +678,8 @@ public class RubyMessage extends RubyObject {
    * Encodes the given message object into its serialized JSON representation.
    * @param options [Hash] options for the decoder
    *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
-   *  emit_defaults: set true to emit 0/false values (default is to omit them)
+   *  emit_defaults: set true to also emit fields that have no presence, with their default values
+   *  (default is to omit them). Fields that have presence are emitted only when set.
    *  format_enums_as_integers: set true to emit enum values as integer (default is string)
    */
   @JRubyMethod(name = "encode_json", required = 1, optional = 1, meta = true)
@@ -785,6 +786,15 @@ public class RubyMessage extends RubyObject {
     return ret;
   }
 
+  /*
+   * call-seq:
+   *     Message.to_h(emit_defaults: false) => hash
+   *
+   * Returns the message as a Ruby Hash object, with keys as symbols. With
+   * emit_defaults: true, fields that have no presence are also included with their
+   * default values. Fields that have presence (message fields, oneof fields and
+   * fields with explicit presence) are included only when set.
+   */
   @JRubyMethod(name = "to_h", optional = 1)
   public IRubyObject toHash(ThreadContext context, IRubyObject[] args) {
     boolean emitDefaults = false;
