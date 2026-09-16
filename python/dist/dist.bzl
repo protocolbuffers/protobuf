@@ -3,7 +3,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
 def _get_toolchain_python_version(ctx):
-    py_toolchain = ctx.toolchains.["@rules_python//python:toolchain_type"]
+    py_toolchain = ctx.toolchains["@rules_python//python:toolchain_type"]
     if py_toolchain != None and hasattr(py_toolchain, "py3_runtime"):
         py_runtime = py_toolchain.py3_runtime
         ivi = py_runtime.interpreter_version_info
