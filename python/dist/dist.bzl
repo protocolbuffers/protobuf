@@ -6,7 +6,7 @@ def _get_toolchain_python_version(ctx):
     py_toolchain = ctx.toolchains["@rules_python//python:toolchain_type"]
     py_runtime = py_toolchain.py3_runtime
     ivi = py_runtime.interpreter_version_info
-    python_version = f'{ivi.major}{ivi.minor}'
+    python_version = '{}{}'.format(ivi.major, ivi.minor)
     return python_version
 
 def _get_os_name(ctx):
