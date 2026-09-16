@@ -3963,9 +3963,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
             $Msg$::GetClassData() const {
               $pin_weak_descriptor$;
-              $pbi$::PrefetchToLocalCache(&$globals$);
-              $pbi$::PrefetchToLocalCache(
-                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
               return &$globals$.class_data;
             }
           )cc");
@@ -3978,9 +3975,6 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
             PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
             $Msg$::GetClassData() const {
               $pin_weak_descriptor$;
-              $pbi$::PrefetchToLocalCache(&$globals$);
-              $pbi$::PrefetchToLocalCache(
-                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
               return &$globals$.class_data;
             }
           )cc");
