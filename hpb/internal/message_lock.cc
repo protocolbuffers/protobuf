@@ -11,7 +11,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "absl/log/check.h"
+#include "absl/log/absl_check.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "hpb/status.h"
@@ -24,6 +25,7 @@
 #include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 
 namespace hpb::internal {
@@ -72,6 +74,37 @@ bool GetOrPromoteExtension(const upb_Message* msg,
   upb_GetExtension_Status ext_status =
       upb_Message_GetOrPromoteExtension(mutable_msg, eid, 0, arena, value);
   return ext_status == kUpb_GetExtension_Ok;
+}
+
+absl::Status GetOrPromoteOrCreateExtension(upb_Message* msg,
+                                           const upb_MiniTableExtension* eid,
+                                           const upb_MiniTable* default_table,
+                                           upb_Arena* arena,
+                                           upb_MessageValue* value) {
+  MessageLock msg_lock(msg);
+  upb_GetExtension_Status ext_status =
+      upb_Message_GetOrPromoteExtension(msg, eid, 0, arena, value);
+  if (ext_status == kUpb_GetExtension_Ok) {
+    return absl::OkStatus();
+  }
+  if (ext_status == kUpb_GetExtension_OutOfMemory) {
+    return MessageAllocationError();
+  }
+  if (ext_status == kUpb_GetExtension_ParseError) {
+    return MessageDecodeError(kUpb_DecodeStatus_Malformed);
+  }
+  const upb_MiniTable* mini_table =
+      default_table != nullptr ? default_table
+                               : upb_MiniTableExtension_GetSubMessage(eid);
+  upb_Message* extension_msg = upb_Message_New(mini_table, arena);
+  if (!extension_msg) {
+    return MessageAllocationError();
+  }
+  if (!upb_Message_SetExtensionMessage(msg, eid, extension_msg, arena)) {
+    return MessageAllocationError();
+  }
+  value->msg_val = extension_msg;
+  return absl::OkStatus();
 }
 
 absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
