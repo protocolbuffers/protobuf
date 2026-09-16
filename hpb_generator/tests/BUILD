@@ -195,7 +195,6 @@ cc_test(
     srcs = ["extension_test.cc"],
     deps = [
         ":test_model_hpb_proto",
-        ":test_model_upb_proto",
         "//hpb",
         "//hpb:arena",
         "//hpb:extension",
