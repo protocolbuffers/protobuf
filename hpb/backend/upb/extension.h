@@ -147,6 +147,20 @@ struct UpbExtensionTrait<T> {
   }
 
   template <typename Msg, typename Id>
+  static absl::StatusOr<Ptr<T>> GetOrCreate(Msg message, const Id& id) {
+    upb_MessageValue value;
+    upb_Message* msg = interop::upb::GetMessage(message);
+    upb_Arena* arena = interop::upb::GetArena(message);
+    absl::Status status = internal::GetOrPromoteOrCreateExtension(
+        msg, id.mini_table_ext(), T::minitable(), arena, &value);
+    if (!status.ok()) {
+      return status;
+    }
+    return Ptr<T>(interop::upb::MakeHandle<T>(
+        const_cast<upb_Message*>(value.msg_val), arena));
+  }
+
+  template <typename Msg, typename Id>
   static absl::Status Set(Msg message, const Id& id, const T& value) {
     return Set(message, id, &value);
   }

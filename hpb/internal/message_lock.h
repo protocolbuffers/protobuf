@@ -10,6 +10,7 @@
 
 #include <atomic>
 
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "upb/message/message.h"
@@ -40,6 +41,12 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
 bool GetOrPromoteExtension(const upb_Message* msg,
                            const upb_MiniTableExtension* eid, upb_Arena* arena,
                            upb_MessageValue* value);
+
+absl::Status GetOrPromoteOrCreateExtension(upb_Message* msg,
+                                           const upb_MiniTableExtension* eid,
+                                           const upb_MiniTable* default_table,
+                                           upb_Arena* arena,
+                                           upb_MessageValue* value);
 
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena);
