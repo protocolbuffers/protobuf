@@ -373,7 +373,12 @@ py_wheel(
     # LINT.IfChange(python_tag)
     python_tag = selects.with_or({
         "//python:limited_api_3.10": "cp310",
-        "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
+        "@rules_python//python/config_settings:is_python_3.10": "cp310",
+        "@rules_python//python/config_settings:is_python_3.11": "cp311",
+        "@rules_python//python/config_settings:is_python_3.12": "cp312",
+        "@rules_python//python/config_settings:is_python_3.13": "cp313",
+        "@rules_python//python/config_settings:is_python_3.14": "cp314",
+        "//conditions:default": "cp310",
     }),
     # LINT.ThenChange(
     #    :limited_api_wheels,
