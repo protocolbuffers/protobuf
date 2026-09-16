@@ -2,19 +2,19 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files", "strip_prefix
 load("//rust/release_crates:substitute_rust_release_version.bzl", "substitute_rust_release_version")
 
 pkg_filegroup(
-    name = "protobuf_macros_crate",
+    name = "google_protobuf_example_crate",
     srcs = [
-        ":crate_root_files",
+        ":google_protobuf_example_files",
         "//rust/release_crates:license",
     ],
-    prefix = "protobuf_macros",
+    prefix = "google_protobuf_example",
     visibility = ["//rust:__subpackages__"],
 )
 
 pkg_files(
-    name = "crate_root_files",
+    name = "google_protobuf_example_files",
     srcs = [":srcs"],
-    strip_prefix = strip_prefix.from_root("rust/release_crates/protobuf_macros"),
+    strip_prefix = strip_prefix.from_root("rust/release_crates/google_protobuf_example"),
 )
 
 substitute_rust_release_version(
@@ -27,6 +27,12 @@ filegroup(
     srcs = [
         "Cargo.toml",
         "README.md",
-    ] + glob(["src/**/*"]),
+        "build.rs",
+    ] + glob(
+        [
+            "proto/**/*",
+            "src/**/*",
+        ],
+    ),
     visibility = ["//visibility:private"],
 )
