@@ -3,11 +3,13 @@
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
 def _get_toolchain_python_version(ctx):
-    py_toolchain = ctx.toolchains["@rules_python//python:toolchain_type"]
-    py_runtime = py_toolchain.py3_runtime
-    ivi = py_runtime.interpreter_version_info
-    python_version = '{}{}'.format(ivi.major, ivi.minor)
-    return python_version
+    py_toolchain = ctx.toolchains.get("@rules_python//python:toolchain_type")
+    if py_toolchain != None and hasattr(py_toolchain, "py3_runtime"):
+        py_runtime = py_toolchain.py3_runtime
+        ivi = py_runtime.interpreter_version_info
+        python_version = '{}{}'.format(ivi.major, ivi.minor)
+        return python_version
+    return '310'
 
 def _get_os_name(ctx):
     for name, label in ctx.attr._os_constraints.items():
@@ -175,6 +177,12 @@ py_dist_module = rule(
             },
         ),
     },
+    toolchains = [
+        config_common.toolchain_type(
+            "@rules_python//python:toolchain_type",
+            mandatory = False,  # <-- Doesn't fail if toolchain is missing
+        ),
+    ],
 )
 
 # --------------------------------------------------------------------------------------------------
