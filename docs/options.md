@@ -603,3 +603,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/flyteorg/flyte
     *   Extensions: 1364-1373
+
+1.  firestore-proto-codec
+
+    *   Website: https://github.com/willbinge/firestore-proto-codec
+    *   Extensions: 1376-1380
