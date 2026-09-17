@@ -29,7 +29,9 @@
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/container/inlined_vector.h"
 #include "absl/log/absl_check.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"  // FieldDescriptor
 #include "google/protobuf/message.h"     // Message
 #include "google/protobuf/text_format.h"
@@ -762,18 +764,20 @@ class PROTOBUF_EXPORT MessageDifferencer {
   static bool FieldBefore(const FieldDescriptor* field1,
                           const FieldDescriptor* field2);
 
+  using FieldDescriptorArray = absl::InlinedVector<const FieldDescriptor*, 4>;
+
   // Retrieve all the set fields, including extensions.
-  std::vector<const FieldDescriptor*> RetrieveFields(const Message& message,
-                                                     bool base_message);
+  FieldDescriptorArray RetrieveFields(const Message& message,
+                                      bool base_message);
 
   // Combine the two lists of fields into the combined_fields output vector.
   // All fields present in both lists will always be included in the combined
   // list.  Fields only present in one of the lists will only appear in the
   // combined list if the corresponding fields_scope option is set to FULL.
-  std::vector<const FieldDescriptor*> CombineFields(
-      const Message& message1,
-      const std::vector<const FieldDescriptor*>& fields1, Scope fields1_scope,
-      const std::vector<const FieldDescriptor*>& fields2, Scope fields2_scope);
+  FieldDescriptorArray CombineFields(
+      const Message& message1, absl::Span<const FieldDescriptor* const> fields1,
+      Scope fields1_scope, absl::Span<const FieldDescriptor* const> fields2,
+      Scope fields2_scope);
 
   // Internal version of the Compare method which performs the actual
   // comparison. The parent_fields vector is a vector containing field
@@ -793,15 +797,15 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // CompareWithFieldsInternal.
   bool CompareRequestedFieldsUsingSettings(
       const Message& message1, const Message& message2, int unpacked_any,
-      const std::vector<const FieldDescriptor*>& message1_fields,
-      const std::vector<const FieldDescriptor*>& message2_fields,
+      absl::Span<const FieldDescriptor* const> message1_fields,
+      absl::Span<const FieldDescriptor* const> message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the specified messages with the specified field lists.
   bool CompareWithFieldsInternal(
       const Message& message1, const Message& message2, int unpacked_any,
-      const std::vector<const FieldDescriptor*>& message1_fields,
-      const std::vector<const FieldDescriptor*>& message2_fields,
+      absl::Span<const FieldDescriptor* const> message1_fields,
+      absl::Span<const FieldDescriptor* const> message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the repeated fields, and report the error.
@@ -861,8 +865,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool IsMatch(const FieldDescriptor* repeated_field,
                const MapKeyComparator* key_comparator, const Message* message1,
                const Message* message2, int unpacked_any,
-               const std::vector<SpecificField>& parent_fields,
-               Reporter* reporter, int index1, int index2);
+               std::vector<SpecificField>* parent_fields, Reporter* reporter,
+               int index1, int index2);
 
   // Returns true when this repeated field has been configured to be treated
   // as a Set / SmartSet / SmartList.
@@ -907,12 +911,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // This method returns false if the match failed. However, it doesn't mean
   // that the comparison succeeds when this method returns true (you need to
   // double-check in this case).
-  bool MatchRepeatedFieldIndices(
-      const Message& message1, const Message& message2, int unpacked_any,
-      const FieldDescriptor* repeated_field,
-      const MapKeyComparator* key_comparator,
-      const std::vector<SpecificField>& parent_fields,
-      std::vector<int>* match_list1, std::vector<int>* match_list2);
+  bool MatchRepeatedFieldIndices(const Message& message1,
+                                 const Message& message2, int unpacked_any,
+                                 const FieldDescriptor* repeated_field,
+                                 const MapKeyComparator* key_comparator,
+                                 std::vector<SpecificField>* parent_fields,
+                                 std::vector<int>* match_list1,
+                                 std::vector<int>* match_list2);
 
   // Checks if index is equal to new_index in all the specific fields.
   static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
