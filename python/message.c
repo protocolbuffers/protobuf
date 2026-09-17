@@ -1146,6 +1146,7 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
     const upb_MessageDef* msgdef = upb_FieldDef_MessageSubDef(field);
     if (upb_MessageDef_WellKnownType(msgdef) != kUpb_WellKnown_Unspecified) {
       PyObject* sub_message = PyUpb_Message_GetFieldValue(_self, field);
+      if (!sub_message) return -1;
       if (PyObject_HasAttrString(sub_message, "_internal_assign")) {
         PyObject* ok =
             PyObject_CallMethod(sub_message, "_internal_assign", "O", value);
@@ -1317,8 +1318,10 @@ static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
       PyUpb_Message* self = (void*)_self;
       if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
       PyObject* items = PyObject_CallMethod(_self, "items", NULL);
+      if (!items) return NULL;
       int ret = PySequence_Contains(items, arg);
       Py_DECREF(items);
+      if (ret < 0) return NULL;
       return PyBool_FromLong(ret);
     }
     default:
