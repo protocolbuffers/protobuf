@@ -234,7 +234,8 @@ void SingularStringView::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"set_"}, AnnotationCollector::kSet));
 
   p->Emit(R"cc(
-    [[nodiscard]] $DEPRECATED$ ::absl::string_view $name$() const;
+    [[nodiscard]] $DEPRECATED$ ::absl::string_view $name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
     template <typename Arg_ = ::std::string&&>
     $DEPRECATED$ void $set_name$(Arg_&& arg);
 
@@ -669,27 +670,28 @@ void RepeatedStringView::GenerateAccessorDeclarations(io::Printer* p) const {
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$ const
               $pb$::RepeatedPtrField<::std::string>&
-              $name$() const;
+              $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<::std::string>*
               $nonnull$
-              $mutable_name$();
+              $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
       case FieldDescriptor::CppRepeatedType::kProxy:
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$
               $pb$::RepeatedFieldProxy<const ::absl::string_view>
-              $name$() const;
+              $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
           [[nodiscard]] $DEPRECATED$
               $pb$::RepeatedFieldProxy<::absl::string_view>
-              $mutable_name$();
+              $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
     }
   };
 
   p->Emit({{"decl_field_accessors", decl_field_accessors}}, R"cc(
-    [[nodiscard]] $DEPRECATED$ ::absl::string_view $name$(int index) const;
+    [[nodiscard]] $DEPRECATED$ ::absl::string_view $name$(int index) const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
     template <typename Arg_ = ::std::string&&>
     $DEPRECATED$ void set_$name$(int index, Arg_&& value);
     template <typename Arg_ = ::std::string&&>
