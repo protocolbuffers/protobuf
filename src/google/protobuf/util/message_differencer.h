@@ -204,7 +204,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
     // Was this field added to the diffing because set_force_compare_no_presence
     // was called on the MessageDifferencer object.
-    bool forced_compare_no_presence_ = false;
+    bool forced_compare_no_presence_ = false;  // NOLINT
   };
 
   // Abstract base class from which all MessageDifferencer
@@ -770,10 +770,12 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // All fields present in both lists will always be included in the combined
   // list.  Fields only present in one of the lists will only appear in the
   // combined list if the corresponding fields_scope option is set to FULL.
-  std::vector<const FieldDescriptor*> CombineFields(
-      const Message& message1,
-      const std::vector<const FieldDescriptor*>& fields1, Scope fields1_scope,
-      const std::vector<const FieldDescriptor*>& fields2, Scope fields2_scope);
+  using FieldDescriptorArray = std::vector<const FieldDescriptor*>;
+  FieldDescriptorArray CombineFields(const Message& message1,
+                                     const FieldDescriptorArray& fields1,
+                                     Scope fields1_scope,
+                                     const FieldDescriptorArray& fields2,
+                                     Scope fields2_scope);
 
   // Internal version of the Compare method which performs the actual
   // comparison. The parent_fields vector is a vector containing field
@@ -793,16 +795,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // CompareWithFieldsInternal.
   bool CompareRequestedFieldsUsingSettings(
       const Message& message1, const Message& message2, int unpacked_any,
-      const std::vector<const FieldDescriptor*>& message1_fields,
-      const std::vector<const FieldDescriptor*>& message2_fields,
+      const FieldDescriptorArray& message1_fields,
+      const FieldDescriptorArray& message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the specified messages with the specified field lists.
-  bool CompareWithFieldsInternal(
-      const Message& message1, const Message& message2, int unpacked_any,
-      const std::vector<const FieldDescriptor*>& message1_fields,
-      const std::vector<const FieldDescriptor*>& message2_fields,
-      std::vector<SpecificField>* parent_fields);
+  bool CompareWithFieldsInternal(const Message& message1,
+                                 const Message& message2, int unpacked_any,
+                                 const FieldDescriptorArray& message1_fields,
+                                 const FieldDescriptorArray& message2_fields,
+                                 std::vector<SpecificField>* parent_fields);
 
   // Compares the repeated fields, and report the error.
   bool CompareRepeatedField(const Message& message1, const Message& message2,
@@ -915,7 +917,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
       std::vector<int>* match_list1, std::vector<int>* match_list2);
 
   // Checks if index is equal to new_index in all the specific fields.
-  static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
+  static bool CheckPathChanged(const std::vector<SpecificField>& field_path);
 
   // ABSL_CHECKs that the given repeated field can be compared according to
   // new_comparison.
@@ -975,6 +977,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
       match_indices_for_smart_list_callback_;
 
   MessageDifferencer::UnpackAnyField unpack_any_field_;
+  mutable FieldDescriptorArray tmp_message_fields_;  // NOLINT
 };
 
 // This class provides extra information to the FieldComparator::Compare
