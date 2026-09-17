@@ -47,6 +47,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -455,7 +456,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Similar to `AddAllocated` but faster.
   //
   // Pre-condition: PrepareForParse() is true.
-  void AddAllocatedForParse(void* value, Arena* arena) {
+  void AddAllocatedForParse(void* value, SerialArena* arena) {
     ABSL_DCHECK(PrepareForParse());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
       *InternalExtend(1, arena) = value;
@@ -469,6 +470,22 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       }
     }
     ExchangeCurrentSize(current_size_ + 1);
+  }
+
+  // Trim the array if possible.
+  void TryShrinkToFit(internal::SerialArena* arena) {
+    if (using_sso() || arena == nullptr) return;
+    auto* r = rep();
+    size_t desired_capacity = size();
+    if constexpr (ArenaAlignDefault::Ceil(sizeof(void*)) != sizeof(void*)) {
+      desired_capacity =
+          ArenaAlignDefault::Ceil(desired_capacity * sizeof(void*)) /
+          sizeof(void*);
+    }
+    if (arena->TryTrimTail(r->elements + r->capacity,
+                           r->elements + desired_capacity)) {
+      r->capacity = desired_capacity;
+    }
   }
 
  protected:
@@ -1627,7 +1644,7 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
   void ExtractSubrangeWithArena(Arena* arena, int start, int num,
                                 Element** elements);
 
-  void AddAllocatedForParse(Element* p, Arena* arena) {
+  void AddAllocatedForParse(Element* p, internal::SerialArena* arena) {
     return RepeatedPtrFieldBase::AddAllocatedForParse(p, arena);
   }
 };

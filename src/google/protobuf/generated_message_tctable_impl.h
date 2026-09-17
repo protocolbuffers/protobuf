@@ -997,9 +997,20 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename TagType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* RepeatedCord(PROTOBUF_TC_PARAM_DECL);
 
-  static inline const char* ParseRepeatedStringOnce(
-      const char* ptr, Arena* arena, SerialArena* serial_arena,
-      ParseContext* ctx, RepeatedPtrField<std::string>& field);
+  // For certain repeated fields we want to keep going as long as we continue
+  // seeing the same tag. This reduces dispatching and increases the efficiency
+  // of container shrinking.
+  // We use this function as a way to annotate intention on the call sites.
+  static bool DataAvailableForRepeatedField(const char*& ptr,
+                                            ParseContext* ctx);
+
+  // Parses a single std::string input. The tag has been removed from `ptr`.
+  // Returns the newly created string. On error, returns nullptr.
+  // REQUIRES: serial_arena != nullptr
+  // REQUIRES: field.PrepareForParse() returned true.
+  static inline std::string* ParseRepeatedStringOnce(
+      const char*& ptr, SerialArena* serial_arena, ParseContext* ctx,
+      RepeatedPtrField<std::string>& field);
 
   PROTOBUF_NOINLINE
   static void AddUnknownEnum(MessageLite* msg, const TcParseTableBase* table,

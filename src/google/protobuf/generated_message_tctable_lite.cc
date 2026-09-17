@@ -17,6 +17,7 @@
 
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -26,6 +27,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
@@ -1847,13 +1849,12 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   auto& field = RefAt<FieldType>(msg, data.offset());
   ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
 
-  const auto validate_last_string = [expected_tag, table, &field] {
+  const auto validate_string = [expected_tag, table](const auto& str) {
     switch (utf8) {
       case kNoUtf8:
         return true;
       case kUtf8:
-        if (ABSL_PREDICT_TRUE(
-                utf8_range::IsStructurallyValid(field[field.size() - 1]))) {
+        if (ABSL_PREDICT_TRUE(utf8_range::IsStructurallyValid(str))) {
           return true;
         }
         ReportFastUtf8Error(FastDecodeTag(expected_tag), table);
@@ -1861,34 +1862,42 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     }
   };
 
-  auto* arena = field.GetArena();
-  SerialArena* serial_arena;
-  if (ABSL_PREDICT_TRUE(arena != nullptr &&
-                        arena->impl_.GetSerialArenaFast(&serial_arena) &&
-                        field.PrepareForParse())) {
-    do {
-      ptr += sizeof(TagType);
-      ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
+  {
+    auto* arena = msg->GetArena();
+    SerialArena* serial_arena = GetSerialArena(arena);
+    absl::Cleanup trim = [&] { field.TryShrinkToFit(serial_arena); };
+    if (ABSL_PREDICT_TRUE(arena != nullptr && field.PrepareForParse())) {
+      do {
+        ptr += sizeof(TagType);
+        std::string* str =
+            ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
 
-      if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
-        PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-      }
-      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
-  } else {
-    do {
-      ptr += sizeof(TagType);
-      std::string* str = field.AddWithArena(arena);
-      ptr = InlineGreedyStringParser(str, ptr, ctx);
-      if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
-        PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-      }
-      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+        if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_string(*str))) {
+          goto error;
+        }
+        if (ABSL_PREDICT_FALSE(!DataAvailableForRepeatedField(ptr, ctx))) {
+          goto parse_loop;
+        }
+      } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+    } else {
+      do {
+        ptr += sizeof(TagType);
+        std::string* str = field.AddWithArena(arena);
+        ptr = InlineGreedyStringParser(str, ptr, ctx);
+        if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_string(*str))) {
+          goto error;
+        }
+        if (ABSL_PREDICT_FALSE(!DataAvailableForRepeatedField(ptr, ctx))) {
+          goto parse_loop;
+        }
+      } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+    }
   }
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 parse_loop:
   PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+error:
+  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastBR1(PROTOBUF_TC_PARAM_DECL) {
@@ -2599,17 +2608,38 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
-    const char* ptr, Arena* arena, SerialArena* serial_arena, ParseContext* ctx,
+PROTOBUF_ALWAYS_INLINE bool TcParser::DataAvailableForRepeatedField(
+    const char*& ptr, ParseContext* ctx) {
+  return !ctx->Done(&ptr);
+}
+
+PROTOBUF_ALWAYS_INLINE std::string* TcParser::ParseRepeatedStringOnce(
+    const char*& ptr, SerialArena* serial_arena, ParseContext* ctx,
     RepeatedPtrField<std::string>& field) {
+  std::string* str;
+  // For simplicity we allocate and add the object now, even though it is not
+  // yet initialized.
+  // We make sure below to not have early exits that leave it uninitialized.
+  void* mem = serial_arena->AllocateFromStringBlock();
+  field.AddAllocatedForParse(reinterpret_cast<std::string*>(mem), serial_arena);
+
   int size = ReadSize(&ptr);
-  if (ABSL_PREDICT_FALSE(!ptr)) return {};
-  auto* str = new (serial_arena->AllocateFromStringBlock()) std::string();
-  ptr = ctx->ReadString(ptr, size, str);
-  field.AddAllocatedForParse(str, arena);
-  if (ABSL_PREDICT_FALSE(!ptr)) return {};
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    // Initialize anyway.
+    ::new (mem) std::string();
+    return nullptr;
+  }
+
+  if (size <= ctx->MaximumReadSize(ptr)) {
+    str = ::new (mem) std::string(ptr, static_cast<size_t>(size));
+    ptr += size;
+  } else {
+    str = ::new (mem) std::string();
+    ptr = ctx->ReadString(ptr, size, str);
+    if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
+  }
   PROTOBUF_ASSUME(ptr != nullptr);
-  return ptr;
+  return str;
 }
 
 template <bool is_split>
@@ -2634,22 +2664,24 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
     case field_layout::kRepSString: {
       auto& field = MaybeCreateRepeatedPtrFieldRefAt<std::string, is_split>(
           base, entry.offset, msg);
+      SerialArena* serial_arena = GetSerialArena(arena);
+      absl::Cleanup trim = [&] { field.TryShrinkToFit(serial_arena); };
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      SerialArena* serial_arena;
-      if (ABSL_PREDICT_TRUE(arena != nullptr &&
-                            arena->impl_.GetSerialArenaFast(&serial_arena) &&
-                            field.PrepareForParse())) {
+      if (ABSL_PREDICT_TRUE(arena != nullptr && field.PrepareForParse())) {
         do {
           ptr = ptr2;
-          ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
-          if (ABSL_PREDICT_FALSE(ptr == nullptr ||
-                                 !MpVerifyUtf8(field[field.size() - 1], table,
-                                               entry, xform_val))) {
-            PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+          std::string* str =
+              ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
+          if (ABSL_PREDICT_FALSE(
+                  ptr == nullptr ||
+                  !MpVerifyUtf8(*str, table, entry, xform_val))) {
+            goto error;
           }
-          if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+          if (ABSL_PREDICT_FALSE(!DataAvailableForRepeatedField(ptr, ctx))) {
+            goto parse_loop;
+          }
           ptr2 = ReadTag(ptr, &next_tag);
         } while (next_tag == decoded_tag);
       } else {
@@ -2660,9 +2692,11 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
           if (ABSL_PREDICT_FALSE(
                   ptr == nullptr ||
                   !MpVerifyUtf8(*str, table, entry, xform_val))) {
-            PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+            goto error;
           }
-          if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+          if (ABSL_PREDICT_FALSE(!DataAvailableForRepeatedField(ptr, ctx))) {
+            goto parse_loop;
+          }
           ptr2 = ReadTag(ptr, &next_tag);
         } while (next_tag == decoded_tag);
       }
@@ -2680,6 +2714,8 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 parse_loop:
   PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+error:
+  PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 
