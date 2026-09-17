@@ -94,10 +94,10 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v6
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests"
-          bazel: test //bazel/...
+          bash: bazel test //bazel/...
 
   bazel-tests-windows-macos:
     strategy:
