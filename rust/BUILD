@@ -43,12 +43,19 @@ rust_library(
         "//conditions:default": ["--cfg=cpp_kernel"],
     }),
     visibility = ["//visibility:public"],
-    deps = [":protobuf_lite"],
+    deps = select({
+        ":use_upb_kernel": [":protobuf_upb"],
+        "//conditions:default": [":protobuf_cpp"],
+    }),
 )
 
 rust_library(
     name = "protobuf_lite",
     srcs = ["protobuf_lite.rs"],
+    aliases = select({
+        ":use_upb_kernel": {},
+        "//conditions:default": {"//rust:protobuf_cpp_lite": "protobuf_cpp"},
+    }),
     edition = "2024",
     rustc_flags = select({
         ":use_upb_kernel": ["--cfg=upb_kernel"],
@@ -57,7 +64,7 @@ rust_library(
     visibility = ["//visibility:public"],
     deps = select({
         ":use_upb_kernel": [":protobuf_upb"],
-        "//conditions:default": [":protobuf_cpp"],
+        "//conditions:default": [":protobuf_cpp_lite"],
     }),
 )
 
@@ -177,11 +184,42 @@ rust_library(
     name = "protobuf_upb_export",
     testonly = True,
     srcs = ["protobuf.rs"],
-    aliases = {"//rust:protobuf_upb_lite_export": "protobuf_lite"},
     edition = "2024",
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [":protobuf_internal"],
-    deps = [":protobuf_upb_lite_export"],
+    deps = [":protobuf_upb"],
+)
+
+# The Rust Protobuf runtime using the cpp kernel, built against the lite C++
+# runtime. `cpp_kernel/reflection.rs` is absent from `srcs`: under
+# `--cfg=lite_runtime` the module is not declared at all.
+rust_library(
+    name = "protobuf_cpp_lite",
+    srcs = PROTOBUF_SHARED + [
+        "cpp_kernel/extension.rs",
+        "cpp_kernel/interop.rs",
+        "cpp_kernel/map.rs",
+        "cpp_kernel/message.rs",
+        "cpp_kernel/mod.rs",
+        "cpp_kernel/raw.rs",
+        "cpp_kernel/repeated.rs",
+        "cpp_kernel/string.rs",
+    ],
+    crate_root = "shared.rs",
+    edition = "2024",
+    proc_macro_deps = [
+        "//rust/protobuf_macros",
+        "@crate_index//:paste",
+    ],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+        "--cfg=lite_runtime",
+        "--cfg=bzl",
+    ],
+    visibility = [":protobuf_internal"],
+    deps = [
+        ":cpp_api_lite",
+    ],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.
@@ -198,6 +236,7 @@ rust_library(
         "cpp_kernel/message.rs",
         "cpp_kernel/mod.rs",
         "cpp_kernel/raw.rs",
+        "cpp_kernel/reflection.rs",
         "cpp_kernel/repeated.rs",
         "cpp_kernel/string.rs",
     ],
@@ -236,21 +275,24 @@ rust_library(
     name = "protobuf_cpp_lite_export",
     testonly = True,
     srcs = ["protobuf_lite.rs"],
+    aliases = {"//rust:protobuf_cpp_lite": "protobuf_cpp"},
     edition = "2024",
-    rustc_flags = ["--cfg=cpp_kernel"],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+        "--cfg=lite_runtime",
+    ],
     visibility = [":protobuf_internal"],
-    deps = [":protobuf_cpp"],
+    deps = [":protobuf_cpp_lite"],
 )
 
 rust_library(
     name = "protobuf_cpp_export",
     testonly = True,
     srcs = ["protobuf.rs"],
-    aliases = {"//rust:protobuf_cpp_lite_export": "protobuf_lite"},
     edition = "2024",
     rustc_flags = ["--cfg=cpp_kernel"],
     visibility = [":protobuf_internal"],
-    deps = [":protobuf_cpp_lite_export"],
+    deps = [":protobuf_cpp"],
 )
 
 cc_library(
@@ -261,6 +303,7 @@ cc_library(
         "cpp_kernel/extension.cc",
         "cpp_kernel/map.cc",
         "cpp_kernel/message.cc",
+        "cpp_kernel/reflection.cc",
         "cpp_kernel/repeated.cc",
         "cpp_kernel/strings.cc",
     ],
@@ -281,6 +324,44 @@ cc_library(
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/functional:overload",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+# The same sources as `cpp_api`, but compiled against the lite C++ runtime.
+# `cpp_kernel/reflection.cc` is deliberately absent: it is the one translation
+# unit that requires reflection.
+cc_library(
+    name = "cpp_api_lite",
+    srcs = [
+        "cpp_kernel/compare.cc",
+        "cpp_kernel/debug.cc",
+        "cpp_kernel/extension.cc",
+        "cpp_kernel/map.cc",
+        "cpp_kernel/message.cc",
+        "cpp_kernel/repeated.cc",
+        "cpp_kernel/strings.cc",
+    ],
+    hdrs = [
+        "cpp_kernel/compare.h",
+        "cpp_kernel/debug.h",
+        "cpp_kernel/rust_alloc_for_cpp_api.h",
+        "cpp_kernel/serialized_data.h",
+        "cpp_kernel/strings.h",
+    ],
+    copts = ["-DPROTOBUF_RUST_LITE_RUNTIME=1"],
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":rust_alloc_for_cpp_api",  # buildcleaner: keep
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/io",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",

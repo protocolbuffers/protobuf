@@ -7,7 +7,19 @@
 
 //! Rust Protobuf Full Runtime
 //!
-//! This crate re-exports the `protobuf` lite runtime and (in the future) adds reflection
-//! traits and heavy APIs (like text formatting) that are banned in `lite` mode.
+//! This crate re-exports the `protobuf` lite runtime and adds reflection traits
+//! and heavy APIs (like text formatting) that are banned in `lite` mode.
 
-pub use protobuf_lite::*;
+#[cfg(cpp_kernel)]
+use protobuf_cpp as kernel;
+
+#[cfg(upb_kernel)]
+use protobuf_upb as kernel;
+
+/// Blocks `__internal` from being re-exported by the `pub use` below, the same
+/// way `protobuf_lite.rs` does. Application code must never reach it.
+#[doc(hidden)]
+#[allow(non_upper_case_globals)]
+pub const __internal: () = ();
+
+pub use kernel::*;

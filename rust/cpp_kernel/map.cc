@@ -10,7 +10,9 @@
 #include "absl/functional/overload.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
+#ifndef PROTOBUF_RUST_LITE_RUNTIME
 #include "google/protobuf/message.h"
+#endif
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/strings.h"
 
@@ -57,25 +59,20 @@ T AsViewType(T t) {
 
 absl::string_view AsViewType(PtrAndLen key) { return key.AsStringView(); }
 
-constexpr bool kHasFullRuntime = true;
-
 void InitializeMessageValue(void* raw_ptr,
                             std::unique_ptr<MessageLite> prototype) {
   MessageLite* new_msg =
       internal::RustMapHelper::PlacementNew(prototype.get(), raw_ptr);
+#ifndef PROTOBUF_RUST_LITE_RUNTIME
   // If we are working with a full (non-lite) proto, we reflectively swap the
   // value into place. Otherwise, we have to perform a copy.
-  if constexpr (kHasFullRuntime) {
-    auto* full_msg = DynamicCastMessage<Message>(new_msg);
-    if (full_msg != nullptr) {
-      full_msg->GetReflection()->Swap(
-          full_msg, DynamicCastMessage<Message>(prototype.get()));
-    } else {
-      new_msg->CheckTypeAndMergeFrom(*prototype);
-    }
-  } else {
-    new_msg->CheckTypeAndMergeFrom(*prototype);
+  if (auto* full_msg = DynamicCastMessage<Message>(new_msg)) {
+    full_msg->GetReflection()->Swap(
+        full_msg, DynamicCastMessage<Message>(prototype.get()));
+    return;
   }
+#endif
+  new_msg->CheckTypeAndMergeFrom(*prototype);
 }
 
 template <typename Key>

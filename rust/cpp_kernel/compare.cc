@@ -3,10 +3,13 @@
 #include <string>
 
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
-#include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
+#ifndef PROTOBUF_RUST_LITE_RUNTIME
+#include "google/protobuf/message.h"
 #include "google/protobuf/util/message_differencer.h"
+#endif
 
 static std::string SerializeDeterministically(const google::protobuf::MessageLite& m) {
   std::string serialized;
@@ -27,8 +30,12 @@ bool proto2_rust_messagelite_equals(const google::protobuf::MessageLite* msg1,
   return SerializeDeterministically(*msg1) == SerializeDeterministically(*msg2);
 }
 
+// A PARTIAL comparison is inherently reflective, so this has no lite
+// implementation. The symbol must still exist, because `MatcherEq` declares
+// `matches_partially` unconditionally.
 bool proto2_rust_messagelite_partially_equals(
     const google::protobuf::MessageLite* actual, const google::protobuf::MessageLite* expected) {
+#ifndef PROTOBUF_RUST_LITE_RUNTIME
   const google::protobuf::Message* actual_message =
       google::protobuf::DynamicCastMessage<google::protobuf::Message>(actual);
   const google::protobuf::Message* expected_message =
@@ -39,6 +46,9 @@ bool proto2_rust_messagelite_partially_equals(
   google::protobuf::util::MessageDifferencer differencer;
   differencer.set_scope(google::protobuf::util::MessageDifferencer::PARTIAL);
   return differencer.Compare(*expected_message, *actual_message);
+#else
+  ABSL_LOG(FATAL) << "proto_partially_eq() requires the full runtime.";
+#endif
 }
 
 }  // extern "C"
