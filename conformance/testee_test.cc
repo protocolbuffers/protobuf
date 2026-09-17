@@ -7,6 +7,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "binary_wireformat.h"
+#include "conformance/conformance.pb.h"
 #include "test_runner.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
