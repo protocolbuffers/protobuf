@@ -4,7 +4,9 @@
 #include <string>
 #include <utility>
 
+#ifndef PROTOBUF_RUST_LITE_RUNTIME
 #include "google/protobuf/message.h"
+#endif
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
