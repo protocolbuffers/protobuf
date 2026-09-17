@@ -160,9 +160,10 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       AnnotatedAccessors(field_, {"mutable_"}, AnnotationCollector::kAlias));
 
   p->Emit(R"cc(
-    $DEPRECATED$ [[nodiscard]] const $Submsg$& $name$() const;
+    $DEPRECATED$ [[nodiscard]] const $Submsg$& $name$() const
+        ABSL_ATTRIBUTE_LIFETIME_BOUND;
     $DEPRECATED$ [[nodiscard]] $Submsg$* $nullable$ $release_name$();
-    $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$();
+    $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
     $DEPRECATED$ void $set_allocated_name$($Submsg$* $nullable$ value);
     $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* $nullable$ value);
     $DEPRECATED$ $Submsg$* $nullable$ $unsafe_arena_release_name$();
@@ -763,16 +764,17 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
       case FieldDescriptor::CppRepeatedType::kRepeated:
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$ const $pb$::RepeatedPtrField<$Submsg$>&
-          $name$() const;
+          $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedPtrField<$Submsg$>* $nonnull$
-          $mutable_name$();
+          $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
       case FieldDescriptor::CppRepeatedType::kProxy:
         p->Emit(R"cc(
           [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<const $Submsg$>
-          $name$() const;
-          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Submsg$> $mutable_name$();
+          $name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND;
+          [[nodiscard]] $DEPRECATED$ $pb$::RepeatedFieldProxy<$Submsg$>
+          $mutable_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
         )cc");
         break;
     }
@@ -790,9 +792,11 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
   p->Emit({{"decl_field_accessors", decl_field_accessors},
            {"maybe_weak_internal_accessors", maybe_weak_internal_accessors}},
           R"cc(
-            [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
-            [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
-            $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
+            [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const
+                ABSL_ATTRIBUTE_LIFETIME_BOUND;
+            [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$
+            $mutable_name$(int index) ABSL_ATTRIBUTE_LIFETIME_BOUND;
+            $DEPRECATED$ $Submsg$* $nonnull$ $add_name$() ABSL_ATTRIBUTE_LIFETIME_BOUND;
             $decl_field_accessors$;
 
             private:
