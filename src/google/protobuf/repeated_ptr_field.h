@@ -435,7 +435,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // For LITE objects we use the generic MergeFrom to save on binary size.
       return MergeFrom<MessageLite>(from, arena);
     }
-    MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>);
+    MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>,
+                             MessageTraits<T>::class_data());
   }
 
   void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -539,7 +540,13 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   }
 
   template <typename TypeHandler>
-  PROTOBUF_NOINLINE size_t SpaceUsedExcludingSelfLong() const {
+  size_t SpaceUsedExcludingSelfLong() const {
+    if (ABSL_PREDICT_TRUE(tagged_rep_or_elem_ == nullptr)) return 0;
+    return SpaceUsedExcludingSelfLongSlow<TypeHandler>();
+  }
+
+  template <typename TypeHandler>
+  PROTOBUF_NOINLINE size_t SpaceUsedExcludingSelfLongSlow() const {
     size_t allocated_bytes =
         using_sso()
             ? 0
@@ -547,6 +554,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     const int n = allocated_size();
     void* const* elems = elements();
     for (int i = 0; i < n; ++i) {
+      if (i + 4 < n) {
+        absl::PrefetchToLocalCache(elems[i + 4]);
+      }
       allocated_bytes +=
           TypeHandler::SpaceUsedLong(*cast<TypeHandler>(elems[i]));
     }
@@ -848,6 +858,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ABSL_DCHECK_GT(n, 0);
     // do/while loop to avoid initial test because we know n > 0
     do {
+      if (i + 4 < n) {
+        absl::PrefetchToLocalCacheForWrite(elems[i + 4]);
+      }
       TypeHandler::Clear(cast<TypeHandler>(elems[i++]));
     } while (i < n);
     ExchangeCurrentSize(0);
@@ -860,12 +873,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // This function is out of line as it should be the slow path: this scenario
   // only happens when a caller constructs and fills a repeated field, then
   // shrinks it, and then merges additional messages into it.
-  int MergeIntoClearedMessages(const RepeatedPtrFieldBase& from);
+  int MergeIntoClearedMessages(const RepeatedPtrFieldBase& from,
+                               const ClassData* class_data = nullptr);
 
   // Appends all messages from `from` to this instance, using the
   // provided `copy_fn` copy function to copy existing messages.
   void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from, Arena* arena,
-                                CopyFn copy_fn);
+                                CopyFn copy_fn,
+                                const ClassData* class_data = nullptr);
 
   // Extends capacity by at least |extend_amount|. Returns a pointer to the
   // next available element slot.
@@ -887,7 +902,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // Common implementation used by various Add* methods. `factory` is an object
   // used to construct a new element unless there are spare cleared elements
   // ready for reuse. Returns pointer to the new element.
-  void* AddInternal(Arena* arena, absl::FunctionRef<ElementNewFn> factory);
+  template <typename Factory>
+  void* AddInternal(Arena* arena, Factory&& factory);
 
   // A few notes on internal representation:
   //
@@ -923,15 +939,15 @@ PROTOBUF_EXPORT void RepeatedPtrFieldBase::MergeFrom<std::string>(
     const RepeatedPtrFieldBase& from, Arena* arena);
 
 
+template <typename Factory>
 inline void* RepeatedPtrFieldBase::AddInternal(
-    Arena* arena, absl::FunctionRef<ElementNewFn> factory) {
+    Arena* arena, Factory&& factory) {
   ABSL_DCHECK_EQ(arena, GetArena());
   if (tagged_rep_or_elem_ == nullptr) {
     ExchangeCurrentSize(1);
     factory(arena, tagged_rep_or_elem_);
     return tagged_rep_or_elem_;
   }
-  absl::PrefetchToLocalCache(tagged_rep_or_elem_);
   if (using_sso()) {
     if (current_size_ == 0) {
       ExchangeCurrentSize(1);
@@ -945,13 +961,12 @@ inline void* RepeatedPtrFieldBase::AddInternal(
     return result;
   }
   Rep* r = rep();
-  if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
+  if (current_size_ < r->allocated_size) {
+    return r->elements[ExchangeCurrentSize(current_size_ + 1)];
+  }
+  if (ABSL_PREDICT_FALSE(current_size_ == r->capacity)) {
     InternalExtend(1, arena);
     r = rep();
-  } else {
-    if (ClearedCount() > 0) {
-      return r->elements[ExchangeCurrentSize(current_size_ + 1)];
-    }
   }
   ++r->allocated_size;
   void*& result = r->elements[ExchangeCurrentSize(current_size_ + 1)];
