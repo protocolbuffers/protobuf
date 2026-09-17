@@ -355,13 +355,23 @@ public class RubyMap extends RubyObject {
 
   @JRubyMethod(name = "to_h")
   public RubyHash toHash(ThreadContext context) {
+    return toHashInternal(context, false);
+  }
+
+  RubyHash toHashInternal(ThreadContext context, boolean emitDefaults) {
     Map<IRubyObject, IRubyObject> mapForHash = new HashMap();
+    IRubyObject[] toHArgs =
+        emitDefaults
+            ? new IRubyObject[] {
+              RubyHash.newKwargs(context.runtime, "emit_defaults", context.runtime.getTrue())
+            }
+            : IRubyObject.NULL_ARRAY;
 
     table.forEach(
         (key, value) -> {
           if (!value.isNil()) {
             if (value.respondsTo("to_h")) {
-              value = Helpers.invoke(context, value, "to_h");
+              value = RubyMessage.invokeToHash(context, value, toHArgs);
             } else if (value.respondsTo("to_a")) {
               value = Helpers.invoke(context, value, "to_a");
             }
