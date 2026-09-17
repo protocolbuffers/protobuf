@@ -83,12 +83,12 @@ class PROTOBUF_EXPORT MicroString {
 
     void SetExternalBuffer(absl::string_view buffer) {
       payload = const_cast<char*>(buffer.data());
-      size = buffer.size();
+      size = static_cast<uint32_t>(buffer.size());
     }
 
-    void SetInitialSize(size_t size) {
-      PoisonMemoryRegion(owned_head() + size, capacity - size);
-      this->size = size;
+    void SetInitialSize(size_t new_size) {
+      PoisonMemoryRegion(owned_head() + new_size, capacity - new_size);
+      this->size = static_cast<uint32_t>(new_size);
     }
 
     void Unpoison() { UnpoisonMemoryRegion(owned_head(), capacity); }
@@ -96,7 +96,7 @@ class PROTOBUF_EXPORT MicroString {
     void ChangeSize(size_t new_size) {
       PoisonMemoryRegion(owned_head() + new_size, capacity - new_size);
       UnpoisonMemoryRegion(owned_head(), new_size);
-      size = new_size;
+      size = static_cast<uint32_t>(new_size);
     }
   };
 
@@ -108,9 +108,9 @@ class PROTOBUF_EXPORT MicroString {
     const char* data() const { return reinterpret_cast<const char*>(this + 1); }
     absl::string_view view() const { return {data(), size}; }
 
-    void SetInitialSize(uint8_t size) {
-      PoisonMemoryRegion(data() + size, capacity - size);
-      this->size = size;
+    void SetInitialSize(uint8_t new_size) {
+      PoisonMemoryRegion(data() + new_size, capacity - new_size);
+      this->size = new_size;
     }
 
     void Unpoison() { UnpoisonMemoryRegion(data(), capacity); }
