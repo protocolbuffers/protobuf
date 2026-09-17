@@ -153,13 +153,13 @@ GPB_INLINE void CheckRuntimeSupported(const int32_t *runtimeSupport) {
   GPBFieldFlags unknownFieldFlags = (GPBFieldFlags)(~(
       GPBFieldRequired | GPBFieldRepeated | GPBFieldPacked | GPBFieldHasDefaultValue |
       GPBFieldClearHasIvarOnZero | GPBFieldTextFormatNameCustom | GPBFieldMapKeyMask));
-#if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 40310
-#error "Time to remove these methods"
-#else
+  #if GOOGLE_PROTOBUF_OBJC_MIN_SUPPORTED_VERSION > 40310
+  #error "Time to remove these methods"
+  #else
   if (runtimeSupport == &GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_40310) {
     unknownFieldFlags &= ~GPBFieldOptional;  // Allow 40310 to still have GPBFieldOptional.
   }
-#endif
+  #endif
   NSAssert((mergedFieldFlags & unknownFieldFlags) == 0, @"Internal error: unknown field flags set");
 #pragma clang diagnostic pop
 #endif  // defined(DEBUG) && DEBUG
@@ -225,8 +225,8 @@ GPB_INLINE void CheckRuntimeSupported(const int32_t *runtimeSupport) {
       if (enumDescriptor.isClosed) {
         NSAssert((coreDesc->flags & GPBFieldClosedEnum) != 0,
                  @"Field must have GPBFieldClosedEnum set");
-        // Clear the flag, no longer used.
-        coreDesc->flags &= ~GPBFieldClosedEnum;
+      // Clear the flag, no longer used.
+      coreDesc->flags &= ~GPBFieldClosedEnum;
       } else {
         NSAssert((coreDesc->flags & GPBFieldClosedEnum) == 0,
                  @"Field must not have GPBFieldClosedEnum set");

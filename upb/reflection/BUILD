@@ -5,6 +5,11 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load(
+    "//upb/cmake:build_defs.bzl",
+    "staleness_test",
+)
+
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load(
@@ -13,10 +18,6 @@ load(
     "embed_edition_defaults",
 )
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
-load(
-    "//upb/cmake:build_defs.bzl",
-    "staleness_test",
-)
 load(
     "//upb_generator:bootstrap_compiler.bzl",
     "bootstrap_cc_library",
@@ -294,8 +295,8 @@ staleness_test(
     name = "bootstrap_upb_defaults_staleness_test",
     outs = ["internal/upb_edition_defaults.h"],
     generated_pattern = "generated/%s",
-    tags = ["manual"],
     target_files = ["internal/upb_edition_defaults.h"],
+    tags = ["manual"],
 )
 
 filegroup(
@@ -306,13 +307,10 @@ filegroup(
             "**/*.h",
             "**/*.hpp",
         ],
-        exclude = [
-            "stage0/**",
-            "cmake/**",
-        ],
+        exclude = ["stage0/**", "cmake/**"],
     ),
     visibility = [
-        "//python/dist:__pkg__",
         "//upb/cmake:__pkg__",
-    ],
+        "//python/dist:__pkg__",
+    ]
 )

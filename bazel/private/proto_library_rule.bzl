@@ -16,13 +16,13 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 DIRECT_DEPS_FLAG_TEMPLATE = (
-    "--direct_dependencies_violation_msg=" +
-    "%%s is imported, but %s doesn't have direct `deps` on a proto_library that 'srcs' it."
+   "--direct_dependencies_violation_msg=" +
+   "%%s is imported, but %s doesn't have direct `deps` on a proto_library that 'srcs' it."
 )
 
 OPTION_DEPS_FLAG_TEMPLATE = (
-    "--option_dependencies_violation_msg=" +
-    "%%s is option imported, but %s doesn't have direct `option_deps` on a proto_library that 'srcs' it."
+   "--option_dependencies_violation_msg=" +
+   "%%s is option imported, but %s doesn't have direct `option_deps` on a proto_library that 'srcs' it."
 )
 
 def _check_srcs_package(target_package, srcs):
@@ -63,6 +63,7 @@ def _get_strip_import_prefix(ctx):
     return strip_import_prefix.removesuffix("/")
 
 def _proto_library_impl(ctx):
+
     # Verifies attributes.
     _check_srcs_package(ctx.label.package, ctx.attr.srcs)
     srcs = ctx.files.srcs

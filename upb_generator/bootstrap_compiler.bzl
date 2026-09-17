@@ -7,13 +7,14 @@ load(
     "UPB_DEFAULT_COPTS",
 )
 load(
-    "//upb/bazel:upb_minitable_proto_library.bzl",
-    "upb_minitable_proto_library",
-)
-load(
     "//upb/bazel:upb_proto_library.bzl",
     "upb_proto_library",
 )
+load(
+    "//upb/bazel:upb_minitable_proto_library.bzl",
+    "upb_minitable_proto_library",
+)
+
 load(
     "//upb/cmake:build_defs.bzl",
     "staleness_test",
@@ -40,7 +41,7 @@ _bootstrap_visibility = [
     "//upb/test:__pkg__",
     "//upb:__pkg__",  # For the amalgamations.
     "//python/dist:__pkg__",  # For the Python source package.
-    "//:__pkg__",  # For protoc
+    "//:__pkg__"  # For protoc
 ]
 
 def _stage_visibility(stage, visibility):
@@ -169,7 +170,6 @@ def _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs):
         deps = proto_lib_deps,
         **kwargs
     )
-
     # Copy the final gencode for staleness comparison
     files = _generated_hdrs_and_srcs(src_files, "cmake", "upb") + \
             _generated_hdrs_and_srcs(src_files, "cmake", "upb_minitable")
@@ -187,7 +187,7 @@ def _cmake_staleness_test(name, src_files, proto_lib_deps, **kwargs):
                         cp -f $$src $(@D) || echo 'copy failed!'
                     fi
                 done
-            """ % src[src.rfind("/"):],
+            """ % src[src.rfind('/'):],
         )
 
     # Keep bazel gencode in sync with our checked-in sources needed for cmake builds.

@@ -1,11 +1,13 @@
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
-load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load(":bazel_proto_library_tests.bzl", "bazel_proto_library_test_suite")
+
+load(":cc_toolchain_tests.bzl", "cc_toolchain_test_suite")
+load(":cc_proto_library_tests.bzl", "cc_proto_library_test_suite")
+load(":proto_bzl_test_suite_tests.bzl", "proto_bzl_test_suite_tests")
 load("//bazel:proto_descriptor_set.bzl", "proto_descriptor_set")
 load("//bazel:proto_library.bzl", "proto_library")
-load(":bazel_proto_library_tests.bzl", "bazel_proto_library_test_suite")
-load(":cc_proto_library_tests.bzl", "cc_proto_library_test_suite")
-load(":cc_toolchain_tests.bzl", "cc_toolchain_test_suite")
-load(":proto_bzl_test_suite_tests.bzl", "proto_bzl_test_suite_tests")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+
 load(":proto_common_check_collocated_tests.bzl", "proto_common_check_collocated_test_suite")
 load(":proto_common_compile_tests.bzl", "proto_common_compile_test_suite")
 load(":proto_common_declare_generated_files_tests.bzl", "proto_common_declare_generated_files_test_suite")

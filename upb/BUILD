@@ -117,9 +117,9 @@ cc_library(
         "//upb/port:inc",
     ],
     visibility = [
-        "//pkg:__pkg__",
         "//upb/reflection:__pkg__",
         "//upb_generator:__subpackages__",
+        "//pkg:__pkg__",
     ],
     deps = [
         "//upb/base",
@@ -338,16 +338,16 @@ filegroup(
     srcs = glob(
         [
             "**/*.h",
-        ],
+       ],
         exclude = [
             "**/conformance_upb.c",
             "reflection/stage0/**/*",
         ],
     ),
     visibility = [
-        "//python/dist:__pkg__",
         "//upb/cmake:__pkg__",
-    ],
+        "//python/dist:__pkg__",
+    ]
 )
 
 filegroup(
@@ -386,14 +386,14 @@ filegroup(
 
 cc_library(
     name = "test_util",
-    testonly = True,
-    visibility = ["//pkg:__pkg__"],
     deps = [
-        "//upb/test:fuzz_util",
         "//upb/test:parse_text_proto",
+        "//upb/test:fuzz_util",
         "//upb/util:def_to_proto_test_lib",
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
         "//upb/wire/test_util:wire_message",
     ],
+    testonly = True,
+    visibility = ["//pkg:__pkg__"],
 )

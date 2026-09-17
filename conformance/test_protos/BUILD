@@ -1,24 +1,20 @@
-load(
-    "//:protobuf.bzl",
-    "internal_csharp_proto_library",
-    "internal_objc_proto_library",
-    "internal_py_proto_library",
-)
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load(
+    "//:protobuf.bzl",
+    "internal_objc_proto_library",
+    "internal_py_proto_library",
+    "internal_csharp_proto_library"
+)
 
 package(
     default_testonly = True,
     default_visibility = ["//conformance:__subpackages__"],
 )
 
-exports_files([
-    "test_messages_edition2023.proto",
-    "test_messages_edition_unstable.proto",
-])
-
+exports_files(["test_messages_edition2023.proto", "test_messages_edition_unstable.proto"])
 internal_csharp_proto_library(
     name = "test_messages_edition2023_csharp_proto",
     srcs = ["test_messages_edition2023.proto"],

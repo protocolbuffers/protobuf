@@ -53,7 +53,6 @@ cc_library(
     name = "def_to_proto_test_lib",
     testonly = 1,
     hdrs = ["def_to_proto_test.h"],
-    visibility = ["//upb:__pkg__"],
     deps = [
         ":def_to_proto",
         "//src/google/protobuf",
@@ -66,6 +65,7 @@ cc_library(
         "//upb/reflection:reflection_cc",
         "@googletest//:gtest",
     ],
+     visibility = ["//upb:__pkg__"],
 )
 
 cc_test(
@@ -180,7 +180,7 @@ filegroup(
         [
             "**/*test.cc",
         ],
-        exclude = ["def_to_proto_fuzz_test.cc"],
+        exclude=["def_to_proto_fuzz_test.cc"],
     ),
     visibility = ["//upb:__pkg__"],
 )

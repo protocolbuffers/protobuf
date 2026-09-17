@@ -75,9 +75,9 @@ filegroup(
         ],
     ),
     visibility = [
-        "//python/dist:__pkg__",
         "//upb/cmake:__pkg__",
-    ],
+        "//python/dist:__pkg__",
+    ]
 )
 
 filegroup(

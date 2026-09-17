@@ -68,22 +68,22 @@ cc_library(
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = [
-        "//hpb/internal:__pkg__",
         "//multiplatform/elements/engine/imports/eml_operators:__pkg__",
-        "//pkg:__pkg__",
-        "//python:__pkg__",
         "//third_party/cel/c/internal:__pkg__",
-        "//third_party/upb/wasm_abi/upb:__pkg__",
-        "//upb:__pkg__",
         "//upb/test:__pkg__",
-        "//upb/text:__pkg__",
-        "//upb/wire:__pkg__",
         "//upb/wire/decode_fast:__pkg__",
+        "//upb:__pkg__",
+        "//upb/text:__pkg__",
+        "//hpb/internal:__pkg__",
+        "//python:__pkg__",
+        "//upb/wire:__pkg__",
+        "//third_party/upb/wasm_abi/upb:__pkg__",
         "//video/youtube/utils/elements/client/component_type:__pkg__",
         "//video/youtube/utils/elements/client/component_type/subscription_processors:__pkg__",
         "//video/youtube/utils/elements/data_layer:__pkg__",
         "//video/youtube/utils/elements/javascript/client/proto/upb/native:__pkg__",
         "//video/youtube/utils/elements/upb/crosslang:__pkg__",
+        "//pkg:__pkg__",
     ],
     deps = [
         ":internal",
@@ -669,9 +669,9 @@ filegroup(
         ],
     ),
     visibility = [
-        "//python/dist:__pkg__",
         "//upb/cmake:__pkg__",
-    ],
+        "//python/dist:__pkg__",
+    ]
 )
 
 filegroup(
@@ -680,11 +680,7 @@ filegroup(
         [
             "**/*test.cc",
         ],
-        exclude = [
-            "promote_test.cc",
-            "convert_fuzz_test.cc",
-            "compare_fuzz_test.cc",
-        ],
+        exclude = ["promote_test.cc", "convert_fuzz_test.cc", "compare_fuzz_test.cc"],
     ),
     visibility = ["//upb:__pkg__"],
 )

@@ -10,6 +10,7 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
@@ -27,8 +28,8 @@ cc_library(
     name = "names",
     srcs = ["names.cc"],
     hdrs = ["names.h"],
-    copts = COPTS,
     strip_include_prefix = "/src",
+    copts = COPTS,
     visibility = [
         "//visibility:public",
     ],
@@ -42,17 +43,17 @@ cc_library(
 
 cc_library(
     name = "php_generator",
+    copts = COPTS,
     srcs = [
         "php_generator.cc",
     ],
     hdrs = [
         "php_generator.h",
     ],
-    copts = COPTS,
     strip_include_prefix = "/src",
     visibility = [
-        "//pkg:__pkg__",
         "//src/google/protobuf/compiler:__pkg__",
+        "//pkg:__pkg__",
     ],
     deps = [
         ":names",
@@ -75,11 +76,11 @@ cc_test(
     srcs = ["generator_unittest.cc"],
     deps = [
         ":php_generator",
-        "//:protobuf",
-        "//src/google/protobuf/compiler:command_line_interface_tester",
-        "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+        "@abseil-cpp//absl/strings",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "//:protobuf",
     ],
 )
 

@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
+
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_CPPOPTS", "UPB_DEFAULT_FEATURES")
 load(
@@ -98,11 +99,11 @@ bootstrap_cc_binary(
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = [
-        "//editions/codegen_tests:__pkg__",
         "//net/proto2/contrib/protoc_explorer:__pkg__",
+        "//editions/codegen_tests:__pkg__",
+        "//third_party/prototiller/transformer:__pkg__",
         "//pkg:__pkg__",
         "//rust:__subpackages__",
-        "//third_party/prototiller/transformer:__pkg__",
     ],
     deps = [
         ":names",

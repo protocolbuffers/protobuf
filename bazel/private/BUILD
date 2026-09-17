@@ -178,9 +178,9 @@ filegroup(
     testonly = True,
     srcs = [
         "BUILD",
-        ":compat_flag_bzl",
-        ":java_proto_library_bzl",
         ":toolchain_helpers_bzl",
+        ":java_proto_library_bzl",
+        ":compat_flag_bzl",
         "//bazel:for_bazel_tests",
         "//bazel/private/oss/toolchains:for_bazel_tests",
     ],

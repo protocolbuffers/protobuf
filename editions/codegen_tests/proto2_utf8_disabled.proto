@@ -9,7 +9,6 @@ syntax = "proto2";
 
 package protobuf_editions_test.proto2;
 
-
 message Proto2Utf8Disabled {
   optional string string_field = 1;
   map<string, string> map_field = 2;

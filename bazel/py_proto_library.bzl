@@ -7,6 +7,9 @@
 
 """Definition of the py_proto_library rule."""
 
+load("//bazel/private/google:py_proto_library_hasservices.bzl", _py_proto_library_hasservices = "py_proto_library")
+load("//bazel/private/google:py_proto_library_noservices.bzl", _py_proto_library_noservices = "py_proto_library")
+
 load("//bazel/private/oss:py_proto_library.bzl", _py_proto_library = "py_proto_library")
 
 py_proto_library = _py_proto_library

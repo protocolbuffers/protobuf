@@ -105,9 +105,9 @@ cc_library(
     copts = FASTTABLE_COPTS,
     features = UPB_DEFAULT_FEATURES,
     visibility = [
-        "//pkg:__pkg__",
-        "//upb/mini_descriptor:__pkg__",
         "//upb_generator/minitable:__pkg__",
+        "//upb/mini_descriptor:__pkg__",
+        "//pkg:__pkg__",
     ],
     deps = [
         ":combinations",
