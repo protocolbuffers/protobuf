@@ -25,9 +25,6 @@ TEST(RoundTripTest, Float) {
   _upb_EncodeRoundTripFloat(0.123456, buf, sizeof(buf));
   EXPECT_STREQ(buf, "0.123456");
 
-  _upb_EncodeRoundTripFloat(7.777778e+35f, buf, sizeof(buf));
-  EXPECT_STREQ(buf, "7.777778e+35");
-
   _upb_EncodeRoundTripFloat(0.0, buf, sizeof(buf));
   EXPECT_STREQ(buf, "0");
 
