@@ -19,6 +19,7 @@ Simple usage example:
 __author__ = 'jieluo@google.com (Jie Luo)'
 
 import base64
+import binascii
 from collections import OrderedDict
 import json
 import math
@@ -1060,9 +1061,18 @@ def _ConvertScalarFieldValue(
           encoded = value.encode('utf-8')
         else:
           encoded = value
-        # Add extra padding '='
-        padded_value = encoded + b'=' * (4 - len(encoded) % 4)
-        return base64.urlsafe_b64decode(padded_value)
+        # Add extra padding '=' only when the input is not already aligned.
+        # The previous expression added a further four '=' on top of an aligned
+        # input, which only decoded because the decoder ignored them.
+        padded_value = encoded + b'=' * (-len(encoded) % 4)
+        try:
+          # validate=True rejects characters outside the base64 alphabet and a
+          # final quantum whose unused bits are not zero (RFC 4648 section 3.5).
+          # Without it a non-canonical string decodes to the same bytes as its
+          # canonical form, so two distinct documents describe one value.
+          return base64.b64decode(padded_value, altchars=b'-_', validate=True)
+        except binascii.Error as e:
+          raise ParseError('Failed to parse bytes field: {0}'.format(e)) from e
       else:
         # Checking for unpaired surrogates appears to be unreliable,
         # depending on the specific Python version, so we check manually.
