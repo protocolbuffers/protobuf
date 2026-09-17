@@ -1527,6 +1527,14 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
+    // Guard against signed integer overflow: a RepeatedField can hold at most
+    // std::numeric_limits<int>::max() elements, so if the running total would
+    // exceed that we treat the input as malformed rather than wrapping to a
+    // negative size (which would bypass the reallocation check in
+    // ReserveWithArena and lead to an out-of-bounds write below).
+    if (ABSL_PREDICT_FALSE(num > std::numeric_limits<int>::max() - old_entries)) {
+      return nullptr;
+    }
     out->ReserveWithArena(arena, old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
@@ -1547,6 +1555,10 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
+  // See the overflow rationale in the loop above.
+  if (ABSL_PREDICT_FALSE(num > std::numeric_limits<int>::max() - old_entries)) {
+    return nullptr;
+  }
   out->ReserveWithArena(arena, old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
