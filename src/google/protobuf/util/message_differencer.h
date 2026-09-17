@@ -29,7 +29,9 @@
 #include "absl/container/fixed_array.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/container/inlined_vector.h"
 #include "absl/log/absl_check.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"  // FieldDescriptor
 #include "google/protobuf/message.h"     // Message
 #include "google/protobuf/text_format.h"
@@ -229,6 +231,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // 2. foo.bar.mooo or foo.bar.baz
   // 2. foo.bar
   // 3. foo
+  using SpecificFieldVector = absl::InlinedVector<SpecificField, 16>;
+  using FieldDescriptorArray = absl::InlinedVector<const FieldDescriptor*, 8>;
+
   class PROTOBUF_EXPORT Reporter {
    public:
     Reporter();
@@ -763,17 +768,17 @@ class PROTOBUF_EXPORT MessageDifferencer {
                           const FieldDescriptor* field2);
 
   // Retrieve all the set fields, including extensions.
-  std::vector<const FieldDescriptor*> RetrieveFields(const Message& message,
-                                                     bool base_message);
+  FieldDescriptorArray RetrieveFields(const Message& message,
+                                      bool base_message);
 
   // Combine the two lists of fields into the combined_fields output vector.
   // All fields present in both lists will always be included in the combined
   // list.  Fields only present in one of the lists will only appear in the
   // combined list if the corresponding fields_scope option is set to FULL.
-  std::vector<const FieldDescriptor*> CombineFields(
-      const Message& message1,
-      const std::vector<const FieldDescriptor*>& fields1, Scope fields1_scope,
-      const std::vector<const FieldDescriptor*>& fields2, Scope fields2_scope);
+  FieldDescriptorArray CombineFields(
+      const Message& message1, absl::Span<const FieldDescriptor* const> fields1,
+      Scope fields1_scope, absl::Span<const FieldDescriptor* const> fields2,
+      Scope fields2_scope);
 
   // Internal version of the Compare method which performs the actual
   // comparison. The parent_fields vector is a vector containing field
@@ -793,15 +798,15 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // CompareWithFieldsInternal.
   bool CompareRequestedFieldsUsingSettings(
       const Message& message1, const Message& message2, int unpacked_any,
-      const std::vector<const FieldDescriptor*>& message1_fields,
-      const std::vector<const FieldDescriptor*>& message2_fields,
+      absl::Span<const FieldDescriptor* const> message1_fields,
+      absl::Span<const FieldDescriptor* const> message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the specified messages with the specified field lists.
   bool CompareWithFieldsInternal(
       const Message& message1, const Message& message2, int unpacked_any,
-      const std::vector<const FieldDescriptor*>& message1_fields,
-      const std::vector<const FieldDescriptor*>& message2_fields,
+      absl::Span<const FieldDescriptor* const> message1_fields,
+      absl::Span<const FieldDescriptor* const> message2_fields,
       std::vector<SpecificField>* parent_fields);
 
   // Compares the repeated fields, and report the error.
@@ -912,7 +917,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
       const FieldDescriptor* repeated_field,
       const MapKeyComparator* key_comparator,
       const std::vector<SpecificField>& parent_fields,
-      std::vector<int>* match_list1, std::vector<int>* match_list2);
+      absl::InlinedVector<int, 64>* match_list1,
+      absl::InlinedVector<int, 64>* match_list2);
 
   // Checks if index is equal to new_index in all the specific fields.
   static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
@@ -975,6 +981,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
       match_indices_for_smart_list_callback_;
 
   MessageDifferencer::UnpackAnyField unpack_any_field_;
+  std::vector<const FieldDescriptor*> tmp_message_fields_;
 };
 
 // This class provides extra information to the FieldComparator::Compare

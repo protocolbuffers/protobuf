@@ -156,18 +156,19 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
       const std::vector<const FieldDescriptor*>& key_field_path,
       int path_index) const {
     const FieldDescriptor* field = key_field_path[path_index];
-    std::vector<SpecificField> current_parent_fields(parent_fields);
+    auto* mutable_parent_fields =
+        const_cast<std::vector<SpecificField>*>(&parent_fields);
     if (path_index == static_cast<int64_t>(key_field_path.size() - 1)) {
       if (field->is_map()) {
         return message_differencer_->CompareMapField(
-            message1, message2, unpacked_any, field, &current_parent_fields);
+            message1, message2, unpacked_any, field, mutable_parent_fields);
       } else if (field->is_repeated()) {
         return message_differencer_->CompareRepeatedField(
-            message1, message2, unpacked_any, field, &current_parent_fields);
+            message1, message2, unpacked_any, field, mutable_parent_fields);
       } else {
         return message_differencer_->CompareFieldValueUsingParentFields(
             message1, message2, unpacked_any, field, -1, -1,
-            &current_parent_fields);
+            mutable_parent_fields);
       }
     } else {
       const Reflection* reflection1 = message1.GetReflection();
@@ -185,11 +186,13 @@ class MessageDifferencer::MultipleFieldsMapKeyComparator
       specific_field.message2 = &message2;
       specific_field.unpacked_any = unpacked_any;
       specific_field.field = field;
-      current_parent_fields.push_back(specific_field);
-      return IsMatchInternal(reflection1->GetMessage(message1, field),
-                             reflection2->GetMessage(message2, field),
-                             false /*key is never Any*/, current_parent_fields,
-                             key_field_path, path_index + 1);
+      mutable_parent_fields->push_back(specific_field);
+      const bool result = IsMatchInternal(
+          reflection1->GetMessage(message1, field),
+          reflection2->GetMessage(message2, field), false /*key is never Any*/,
+          *mutable_parent_fields, key_field_path, path_index + 1);
+      mutable_parent_fields->pop_back();
+      return result;
     }
   }
   MessageDifferencer* message_differencer_;
@@ -256,13 +259,14 @@ bool MessageDifferencer::MapEntryKeyComparator::IsMatch(
        !message1.GetReflection()->HasField(message1, key)) ||
       message_differencer_->IsIgnored(message1, message2, key, parent_fields);
 
-  std::vector<SpecificField> current_parent_fields(parent_fields);
+  auto* mutable_parent_fields =
+      const_cast<std::vector<SpecificField>*>(&parent_fields);
   if (treat_as_set) {
     return message_differencer_->Compare(message1, message2, unpacked_any,
-                                         &current_parent_fields);
+                                         mutable_parent_fields);
   }
   return message_differencer_->CompareFieldValueUsingParentFields(
-      message1, message2, unpacked_any, key, -1, -1, &current_parent_fields);
+      message1, message2, unpacked_any, key, -1, -1, mutable_parent_fields);
 }
 
 bool MessageDifferencer::Equals(const Message& message1,
@@ -536,8 +540,13 @@ bool MessageDifferencer::Compare(const Message& message1,
   }
 
   std::vector<SpecificField> parent_fields;
-  force_compare_no_presence_fields_.clear();
-  force_compare_failure_triggering_fields_.clear();
+  parent_fields.reserve(32);
+  if (!force_compare_no_presence_fields_.empty()) {
+    force_compare_no_presence_fields_.clear();
+  }
+  if (!force_compare_failure_triggering_fields_.empty()) {
+    force_compare_failure_triggering_fields_.clear();
+  }
 
   bool result = false;
   // Setup the internal reporter if need be.
@@ -565,15 +574,18 @@ bool MessageDifferencer::CompareWithFields(
   }
 
   std::vector<SpecificField> parent_fields;
-  force_compare_no_presence_fields_.clear();
-  force_compare_failure_triggering_fields_.clear();
+  parent_fields.reserve(32);
+  if (!force_compare_no_presence_fields_.empty()) {
+    force_compare_no_presence_fields_.clear();
+  }
+  if (!force_compare_failure_triggering_fields_.empty()) {
+    force_compare_failure_triggering_fields_.clear();
+  }
 
   bool result = false;
 
-  std::vector<const FieldDescriptor*> message1_fields(
-      message1_fields_arg.size() + 1);
-  std::vector<const FieldDescriptor*> message2_fields(
-      message2_fields_arg.size() + 1);
+  FieldDescriptorArray message1_fields(message1_fields_arg.size() + 1);
+  FieldDescriptorArray message2_fields(message2_fields_arg.size() + 1);
 
   std::copy(message1_fields_arg.cbegin(), message1_fields_arg.cend(),
             message1_fields.begin());
@@ -609,7 +621,8 @@ bool MessageDifferencer::Compare(const Message& message1,
                                  const Message& message2, int unpacked_any,
                                  std::vector<SpecificField>* parent_fields) {
   // Expand google.protobuf.Any payload if possible.
-  if (message1.GetDescriptor()->full_name() == internal::kAnyFullTypeName) {
+  if (message1.GetDescriptor()->well_known_type() ==
+      Descriptor::WELLKNOWNTYPE_ANY) {
     std::unique_ptr<Message> data1;
     std::unique_ptr<Message> data2;
     if (unpack_any_field_.UnpackAny(message1, &data1) &&
@@ -631,7 +644,8 @@ bool MessageDifferencer::Compare(const Message& message1,
         reflection1->GetUnknownFields(message1);
     const UnknownFieldSet& unknown_field_set2 =
         reflection2->GetUnknownFields(message2);
-    if (!CompareUnknownFields(message1, message2, unknown_field_set1,
+    if ((!unknown_field_set1.empty() || !unknown_field_set2.empty()) &&
+        !CompareUnknownFields(message1, message2, unknown_field_set1,
                               unknown_field_set2, parent_fields)) {
       if (reporter_ == nullptr) {
         return false;
@@ -640,10 +654,8 @@ bool MessageDifferencer::Compare(const Message& message1,
     }
   }
 
-  std::vector<const FieldDescriptor*> message1_fields =
-      RetrieveFields(message1, true);
-  std::vector<const FieldDescriptor*> message2_fields =
-      RetrieveFields(message2, false);
+  FieldDescriptorArray message1_fields = RetrieveFields(message1, true);
+  FieldDescriptorArray message2_fields = RetrieveFields(message2, false);
 
   return CompareRequestedFieldsUsingSettings(message1, message2, unpacked_any,
                                              message1_fields, message2_fields,
@@ -651,17 +663,19 @@ bool MessageDifferencer::Compare(const Message& message1,
          unknown_compare_result;
 }
 
-std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
+MessageDifferencer::FieldDescriptorArray MessageDifferencer::RetrieveFields(
     const Message& message, bool base_message) {
   const Descriptor* descriptor = message.GetDescriptor();
 
-  std::vector<const FieldDescriptor*> message_fields;
-  message_fields.reserve(descriptor->field_count() + 1);
+  FieldDescriptorArray message_fields;
 
   const Reflection* reflection = message.GetReflection();
   if (descriptor->options().map_entry()) {
     if (this->scope_ == PARTIAL && base_message) {
-      reflection->ListFields(message, &message_fields);
+      std::vector<const FieldDescriptor*> tmp_message_fields;
+      reflection->ListFields(message, &tmp_message_fields);
+      message_fields.assign(tmp_message_fields.begin(),
+                            tmp_message_fields.end());
     } else {
       // Map entry fields are always considered present.
       for (int i = 0; i < descriptor->field_count(); i++) {
@@ -669,7 +683,9 @@ std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
       }
     }
   } else {
-    reflection->ListFields(message, &message_fields);
+    std::vector<const FieldDescriptor*> tmp_message_fields;
+    reflection->ListFields(message, &tmp_message_fields);
+    message_fields.assign(tmp_message_fields.begin(), tmp_message_fields.end());
   }
   // Add sentinel values to deal with the
   // case where the number of the fields in
@@ -681,15 +697,15 @@ std::vector<const FieldDescriptor*> MessageDifferencer::RetrieveFields(
 
 bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
     const Message& message1, const Message& message2, int unpacked_any,
-    const std::vector<const FieldDescriptor*>& message1_fields,
-    const std::vector<const FieldDescriptor*>& message2_fields,
+    absl::Span<const FieldDescriptor* const> message1_fields,
+    absl::Span<const FieldDescriptor* const> message2_fields,
     std::vector<SpecificField>* parent_fields) {
   if (scope_ == FULL) {
     if (message_field_comparison_ == EQUIVALENT) {
       // We need to merge the field lists of both messages (i.e.
       // we are merely checking for a difference in field values,
       // rather than the addition or deletion of fields).
-      std::vector<const FieldDescriptor*> fields_union =
+      FieldDescriptorArray fields_union =
           CombineFields(message1, message1_fields, FULL, message2_fields, FULL);
       return CompareWithFieldsInternal(message1, message2, unpacked_any,
                                        fields_union, fields_union,
@@ -713,7 +729,7 @@ bool MessageDifferencer::CompareRequestedFieldsUsingSettings(
       // but only the intersection for message2.  This way, any fields
       // only present in message2 will be ignored, but any fields only
       // present in message1 will be marked as a difference.
-      std::vector<const FieldDescriptor*> fields_intersection = CombineFields(
+      FieldDescriptorArray fields_intersection = CombineFields(
           message1, message1_fields, PARTIAL, message2_fields, PARTIAL);
       return CompareWithFieldsInternal(message1, message2, unpacked_any,
                                        message1_fields, fields_intersection,
@@ -759,15 +775,15 @@ bool MessageDifferencer::ShouldCompareNoPresence(
   return compare_no_presence_by_address;
 }
 
-std::vector<const FieldDescriptor*> MessageDifferencer::CombineFields(
-    const Message& message1, const std::vector<const FieldDescriptor*>& fields1,
-    Scope fields1_scope, const std::vector<const FieldDescriptor*>& fields2,
+MessageDifferencer::FieldDescriptorArray MessageDifferencer::CombineFields(
+    const Message& message1, absl::Span<const FieldDescriptor* const> fields1,
+    Scope fields1_scope, absl::Span<const FieldDescriptor* const> fields2,
     Scope fields2_scope) {
   const Reflection* reflection1 = message1.GetReflection();
   size_t index1 = 0;
   size_t index2 = 0;
 
-  std::vector<const FieldDescriptor*> combined_fields;
+  FieldDescriptorArray combined_fields;
   combined_fields.reserve(1 + std::max(fields1.size(), fields2.size()));
 
   while (index1 < fields1.size() && index2 < fields2.size()) {
@@ -823,8 +839,8 @@ void MessageDifferencer::ForceCompareField(const FieldDescriptor* field) {
 
 bool MessageDifferencer::CompareWithFieldsInternal(
     const Message& message1, const Message& message2, int unpacked_any,
-    const std::vector<const FieldDescriptor*>& message1_fields,
-    const std::vector<const FieldDescriptor*>& message2_fields,
+    absl::Span<const FieldDescriptor* const> message1_fields,
+    absl::Span<const FieldDescriptor* const> message2_fields,
     std::vector<SpecificField>* parent_fields) {
   bool isDifferent = false;
   int field_index1 = 0;
@@ -1026,11 +1042,13 @@ bool MessageDifferencer::IsMatch(
     const Message* message2, int unpacked_any,
     const std::vector<SpecificField>& parent_fields, Reporter* reporter,
     int index1, int index2) {
-  std::vector<SpecificField> current_parent_fields(parent_fields);
+  auto* mutable_parent_fields =
+      const_cast<std::vector<SpecificField>*>(&parent_fields);
   if (repeated_field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return CompareFieldValueUsingParentFields(
-        *message1, *message2, unpacked_any, repeated_field, index1, index2,
-        &current_parent_fields);
+    FieldContext field_context(mutable_parent_fields);
+    return GetFieldComparisonResult(*message1, *message2, repeated_field,
+                                    index1, index2,
+                                    &field_context) == FieldComparator::SAME;
   }
   // Back up the Reporter and output_string_.  They will be reset in the
   // following code.
@@ -1043,7 +1061,7 @@ bool MessageDifferencer::IsMatch(
   if (key_comparator == nullptr) {
     match = CompareFieldValueUsingParentFields(
         *message1, *message2, unpacked_any, repeated_field, index1, index2,
-        &current_parent_fields);
+        mutable_parent_fields);
   } else {
     const Reflection* reflection1 = message1->GetReflection();
     const Reflection* reflection2 = message2->GetReflection();
@@ -1062,8 +1080,9 @@ bool MessageDifferencer::IsMatch(
     }
     specific_field.index = index1;
     specific_field.new_index = index2;
-    current_parent_fields.push_back(specific_field);
-    match = key_comparator->IsMatch(m1, m2, false, current_parent_fields);
+    mutable_parent_fields->push_back(specific_field);
+    match = key_comparator->IsMatch(m1, m2, false, *mutable_parent_fields);
+    mutable_parent_fields->pop_back();
   }
 
   reporter_ = backup_reporter;
@@ -1184,19 +1203,23 @@ bool MessageDifferencer::CompareMapField(
     const FieldDescriptor* key_des = repeated_field->message_type()->map_key();
     const FieldDescriptor* val_des =
         repeated_field->message_type()->map_value();
-    std::vector<SpecificField> current_parent_fields(*parent_fields);
     SpecificField specific_field;
     specific_field.message1 = &message1;
     specific_field.message2 = &message2;
     specific_field.unpacked_any = unpacked_any;
     specific_field.field = repeated_field;
-    current_parent_fields.push_back(specific_field);
-    if (!IsIgnored(message1, message2, key_des, current_parent_fields) &&
-        !IsIgnored(message1, message2, val_des, current_parent_fields)) {
-      return CompareMapFieldByMapReflection(
-          message1, message2, unpacked_any, repeated_field,
-          &current_parent_fields, field_comparator_.default_impl);
+    parent_fields->push_back(specific_field);
+    const bool not_ignored =
+        !IsIgnored(message1, message2, key_des, *parent_fields) &&
+        !IsIgnored(message1, message2, val_des, *parent_fields);
+    if (not_ignored) {
+      const bool result = CompareMapFieldByMapReflection(
+          message1, message2, unpacked_any, repeated_field, parent_fields,
+          field_comparator_.default_impl);
+      parent_fields->pop_back();
+      return result;
     }
+    parent_fields->pop_back();
   }
 
   return CompareRepeatedRep(message1, message2, unpacked_any, repeated_field,
@@ -1238,8 +1261,8 @@ bool MessageDifferencer::CompareRepeatedRep(
 
   // These two list are used for store the index of the correspondent
   // element in peer repeated field.
-  std::vector<int> match_list1;
-  std::vector<int> match_list2;
+  absl::InlinedVector<int, 64> match_list1;
+  absl::InlinedVector<int, 64> match_list2;
 
   const MapKeyComparator* key_comparator = GetMapKeyComparator(repeated_field);
   bool smart_list = IsTreatedAsSmartList(repeated_field);
@@ -1258,17 +1281,30 @@ bool MessageDifferencer::CompareRepeatedRep(
         reporter_ == nullptr) {
       return false;
     }
+    if (reporter_ == nullptr && !smart_list && key_comparator == nullptr &&
+        !(count1 == 1 && count2 == 1) &&
+        (IsTreatedAsSet(repeated_field) ||
+         IsTreatedAsSmartSet(repeated_field))) {
+      return true;
+    }
   }
 
   bool fieldDifferent = false;
   SpecificField specific_field;
-  specific_field.message1 = &message1;
-  specific_field.message2 = &message2;
-  specific_field.unpacked_any = unpacked_any;
-  specific_field.field = repeated_field;
+  if (reporter_ != nullptr) {
+    specific_field.message1 = &message1;
+    specific_field.message2 = &message2;
+    specific_field.unpacked_any = unpacked_any;
+    specific_field.field = repeated_field;
+  }
 
   // At this point, we have already matched pairs of fields (with the reporting
   // to be done later). Now to check if the paired elements are different.
+  const bool already_matched_by_set =
+      reporter_ == nullptr && !simple_list && !(count1 == 1 && count2 == 1) &&
+      key_comparator == nullptr &&
+      (IsTreatedAsSet(repeated_field) || IsTreatedAsSmartList(repeated_field) ||
+       IsTreatedAsSmartSet(repeated_field));
   int next_unmatched_index = 0;
   for (int i = 0; i < count1; i++) {
     if (simple_list && i >= count2) {
@@ -1287,6 +1323,10 @@ bool MessageDifferencer::CompareRepeatedRep(
       }
       continue;
     }
+    if (already_matched_by_set && !smart_list && match_list1[i] == i &&
+        !report_matches_) {
+      continue;
+    }
     if (smart_list) {
       for (int j = next_unmatched_index; j < match_list1[i]; ++j) {
         ABSL_CHECK_LE(0, j);
@@ -1301,18 +1341,20 @@ bool MessageDifferencer::CompareRepeatedRep(
         match_list2[j] = -2;
       }
     }
-    AddSpecificIndex(&specific_field, message1, repeated_field, i);
-    if (simple_list) {
-      AddSpecificNewIndex(&specific_field, message2, repeated_field, i);
-    } else {
-      AddSpecificNewIndex(&specific_field, message2, repeated_field,
-                          match_list1[i]);
-      next_unmatched_index = match_list1[i] + 1;
+    const int new_index = simple_list ? i : match_list1[i];
+    if (!simple_list) {
+      next_unmatched_index = new_index + 1;
+    }
+    if (reporter_ != nullptr) {
+      AddSpecificIndex(&specific_field, message1, repeated_field, i);
+      AddSpecificNewIndex(&specific_field, message2, repeated_field, new_index);
     }
 
-    const bool result = CompareFieldValueUsingParentFields(
-        message1, message2, unpacked_any, repeated_field, i,
-        specific_field.new_index, parent_fields);
+    const bool result = already_matched_by_set
+                            ? true
+                            : CompareFieldValueUsingParentFields(
+                                  message1, message2, unpacked_any,
+                                  repeated_field, i, new_index, parent_fields);
 
     // If we have found differences, either report them or terminate if
     // no reporter is present. Note that ReportModified, ReportMoved, and
@@ -1432,8 +1474,11 @@ bool MessageDifferencer::CheckPathChanged(
 
 bool MessageDifferencer::IsTreatedAsSet(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
-  if (repeated_field_comparisons_.contains(field)) {
-    return repeated_field_comparisons_[field] == AS_SET;
+  if (!repeated_field_comparisons_.empty()) {
+    auto it = repeated_field_comparisons_.find(field);
+    if (it != repeated_field_comparisons_.end()) {
+      return it->second == AS_SET;
+    }
   }
   return GetMapKeyComparator(field) == nullptr &&
          repeated_field_comparison_ == AS_SET;
@@ -1441,8 +1486,11 @@ bool MessageDifferencer::IsTreatedAsSet(const FieldDescriptor* field) {
 
 bool MessageDifferencer::IsTreatedAsSmartSet(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
-  if (repeated_field_comparisons_.contains(field)) {
-    return repeated_field_comparisons_[field] == AS_SMART_SET;
+  if (!repeated_field_comparisons_.empty()) {
+    auto it = repeated_field_comparisons_.find(field);
+    if (it != repeated_field_comparisons_.end()) {
+      return it->second == AS_SMART_SET;
+    }
   }
   return GetMapKeyComparator(field) == nullptr &&
          repeated_field_comparison_ == AS_SMART_SET;
@@ -1450,8 +1498,11 @@ bool MessageDifferencer::IsTreatedAsSmartSet(const FieldDescriptor* field) {
 
 bool MessageDifferencer::IsTreatedAsSmartList(const FieldDescriptor* field) {
   if (!field->is_repeated()) return false;
-  if (repeated_field_comparisons_.contains(field)) {
-    return repeated_field_comparisons_[field] == AS_SMART_LIST;
+  if (!repeated_field_comparisons_.empty()) {
+    auto it = repeated_field_comparisons_.find(field);
+    if (it != repeated_field_comparisons_.end()) {
+      return it->second == AS_SMART_LIST;
+    }
   }
   return GetMapKeyComparator(field) == nullptr &&
          repeated_field_comparison_ == AS_SMART_LIST;
@@ -1466,7 +1517,10 @@ bool MessageDifferencer::IsIgnored(
     const Message& message1, const Message& message2,
     const FieldDescriptor* field,
     const std::vector<SpecificField>& parent_fields) {
-  if (ignored_fields_.contains(field)) {
+  if (ignored_fields_.empty() && ignore_criteria_.empty()) {
+    return false;
+  }
+  if (!ignored_fields_.empty() && ignored_fields_.contains(field)) {
     return true;
   }
   for (const auto& criteria : ignore_criteria_) {
@@ -1481,6 +1535,9 @@ bool MessageDifferencer::IsUnknownFieldIgnored(
     const Message& message1, const Message& message2,
     const SpecificField& field,
     const std::vector<SpecificField>& parent_fields) {
+  if (ignore_criteria_.empty()) {
+    return false;
+  }
   for (const auto& criteria : ignore_criteria_) {
     if (criteria->IsUnknownFieldIgnored(message1, message2, field,
                                         parent_fields)) {
@@ -1493,9 +1550,11 @@ bool MessageDifferencer::IsUnknownFieldIgnored(
 const MessageDifferencer::MapKeyComparator*
 MessageDifferencer ::GetMapKeyComparator(const FieldDescriptor* field) const {
   if (!field->is_repeated()) return nullptr;
-  auto it = map_field_key_comparator_.find(field);
-  if (it != map_field_key_comparator_.end()) {
-    return it->second;
+  if (!map_field_key_comparator_.empty()) {
+    auto it = map_field_key_comparator_.find(field);
+    if (it != map_field_key_comparator_.end()) {
+      return it->second;
+    }
   }
   if (field->is_map()) {
     // field cannot already be treated as list or set since TreatAsList() and
@@ -1785,7 +1844,8 @@ class MaximumMatcher {
   // the x-th node on the right side is matched to y-th node on the left side.
   // match_list1[i] == -1 means the node is not matched. Same with match_list2.
   MaximumMatcher(int count1, int count2, NodeMatchCallback callback,
-                 std::vector<int>* match_list1, std::vector<int>* match_list2);
+                 absl::InlinedVector<int, 64>* match_list1,
+                 absl::InlinedVector<int, 64>* match_list2);
   MaximumMatcher(const MaximumMatcher&) = delete;
   MaximumMatcher& operator=(const MaximumMatcher&) = delete;
   // Find a maximum match and return the number of matched node pairs.
@@ -1806,14 +1866,14 @@ class MaximumMatcher {
   int count2_;
   NodeMatchCallback match_callback_;
   absl::flat_hash_map<std::pair<int, int>, bool> cached_match_results_;
-  std::vector<int>* match_list1_;
-  std::vector<int>* match_list2_;
+  absl::InlinedVector<int, 64>* match_list1_;
+  absl::InlinedVector<int, 64>* match_list2_;
 };
 
 MaximumMatcher::MaximumMatcher(int count1, int count2,
                                NodeMatchCallback callback,
-                               std::vector<int>* match_list1,
-                               std::vector<int>* match_list2)
+                               absl::InlinedVector<int, 64>* match_list1,
+                               absl::InlinedVector<int, 64>* match_list2)
     : count1_(count1),
       count2_(count2),
       match_callback_(std::move(callback)),
@@ -1890,15 +1950,14 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
     const FieldDescriptor* repeated_field,
     const MapKeyComparator* key_comparator,
     const std::vector<SpecificField>& parent_fields,
-    std::vector<int>* match_list1, std::vector<int>* match_list2) {
+    absl::InlinedVector<int, 64>* match_list1,
+    absl::InlinedVector<int, 64>* match_list2) {
   const int count1 =
       message1.GetReflection()->FieldSize(message1, repeated_field);
   const int count2 =
       message2.GetReflection()->FieldSize(message2, repeated_field);
-  const bool is_treated_as_smart_set = IsTreatedAsSmartSet(repeated_field);
-
-  match_list1->assign(count1, -1);
-  match_list2->assign(count2, -1);
+  const bool is_treated_as_smart_set =
+      IsTreatedAsSmartSet(repeated_field) && reporter_ != nullptr;
 
   // In the special case where both repeated fields have exactly one element,
   // return without calling the comparator.  This optimization prevents the
@@ -1917,8 +1976,8 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
   // which (hopefully) do not contain further repeated fields.
   if (count1 == 1 && count2 == 1 && reporter_ == nullptr &&
       key_comparator == nullptr) {
-    match_list1->at(0) = 0;
-    match_list2->at(0) = 0;
+    match_list1->assign(1, 0);
+    match_list2->assign(1, 0);
     return true;
   }
 
@@ -1954,32 +2013,50 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
     if (match_count != count1 && early_return) return false;
     success = success && (match_count == count1);
   } else {
+    match_list1->assign(count1, -1);
+    match_list2->assign(count2, -1);
     int start_offset = 0;
+    const bool is_smart_list = IsTreatedAsSmartList(repeated_field);
+    const bool has_diagonal_pass = IsTreatedAsSet(repeated_field) ||
+                                   is_treated_as_smart_set || is_smart_list;
     // If the two repeated fields are treated as sets, optimize for the case
     // where both start with same items stored in the same order.
-    if (IsTreatedAsSet(repeated_field) || is_treated_as_smart_set ||
-        IsTreatedAsSmartList(repeated_field)) {
+    if (has_diagonal_pass) {
       start_offset = std::min(count1, count2);
       for (int i = 0; i < count1 && i < count2; i++) {
         if (IsMatch(repeated_field, key_comparator, &message1, &message2,
                     unpacked_any, parent_fields, nullptr, i, i)) {
-          match_list1->at(i) = i;
-          match_list2->at(i) = i;
+          (*match_list1)[i] = i;
+          (*match_list2)[i] = i;
+          if (is_treated_as_smart_set) {
+            num_diffs_list1[i] = 0;
+          }
         } else {
-          start_offset = i;
-          break;
+          if (start_offset > i) {
+            start_offset = i;
+          }
+          if (is_smart_list) {
+            break;
+          }
         }
       }
     }
     for (int i = start_offset; i < count1; ++i) {
+      if ((*match_list1)[i] != -1) {
+        continue;
+      }
       // Indicates any matched elements for this repeated field.
       bool match = false;
       int matched_j = -1;
 
       for (int j = start_offset; j < count2; j++) {
-        if (match_list2->at(j) != -1) {
+        if (has_diagonal_pass && !is_smart_list && !is_treated_as_smart_set &&
+            i == j) {
+          continue;
+        }
+        if ((*match_list2)[j] != -1) {
           if (!is_treated_as_smart_set || num_diffs_list1[i] == 0 ||
-              num_diffs_list1[match_list2->at(j)] == 0) {
+              num_diffs_list1[(*match_list2)[j]] == 0) {
             continue;
           }
         }
@@ -2004,8 +2081,8 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
             if (num_diffs < num_diffs_list1[i]) {
               // If j has been already matched to some element, ensure the
               // current num_diffs is smaller.
-              if (match_list2->at(j) == -1 ||
-                  num_diffs < num_diffs_list1[match_list2->at(j)]) {
+              if ((*match_list2)[j] == -1 ||
+                  num_diffs < num_diffs_list1[(*match_list2)[j]]) {
                 num_diffs_list1[i] = num_diffs;
                 match = true;
               }
@@ -2023,13 +2100,13 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
 
       match = (matched_j != -1);
       if (match) {
-        if (is_treated_as_smart_set && match_list2->at(matched_j) != -1) {
+        if (is_treated_as_smart_set && (*match_list2)[matched_j] != -1) {
           // This is to revert the previously matched index in list2.
-          match_list1->at(match_list2->at(matched_j)) = -1;
+          (*match_list1)[(*match_list2)[matched_j]] = -1;
           match = false;
         }
-        match_list1->at(i) = matched_j;
-        match_list2->at(matched_j) = i;
+        (*match_list1)[i] = matched_j;
+        (*match_list2)[matched_j] = i;
       }
       if (!match && reporter == nullptr) return false;
       success = success && match;
@@ -2037,7 +2114,11 @@ bool MessageDifferencer::MatchRepeatedFieldIndices(
   }
 
   if (IsTreatedAsSmartList(repeated_field)) {
-    match_indices_for_smart_list_callback_(match_list1, match_list2);
+    std::vector<int> vec1(match_list1->begin(), match_list1->end());
+    std::vector<int> vec2(match_list2->begin(), match_list2->end());
+    match_indices_for_smart_list_callback_(&vec1, &vec2);
+    match_list1->assign(vec1.begin(), vec1.end());
+    match_list2->assign(vec2.begin(), vec2.end());
   }
 
   reporter_ = reporter;
