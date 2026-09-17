@@ -121,7 +121,7 @@ def _GetMissingAndStaleFiles(file_pairs):
       missing_files.append(pair)
       continue
 
-    with open(pair.generated) as g, open(pair.target) as t:
+    with open(pair.generated, "rb") as g, open(pair.target, "rb") as t:
       if g.read() != t.read():
         stale_files.append(pair)
 
@@ -161,17 +161,23 @@ def _GetDiffErrors(missing_files, stale_files, is_fixing=False):
       diff_errors.append("File %s does not exist:\n%s" % (pair.target, diff))
 
   for pair in stale_files:
-    with open(pair.generated) as g, open(pair.target) as t:
-      diff = "".join(
-          difflib.unified_diff(
-              g.read().splitlines(keepends=True),
-              t.read().splitlines(keepends=True),
-          )
-      )
+    try:
+      with open(pair.generated) as g, open(pair.target) as t:
+        diff = "".join(
+            difflib.unified_diff(
+                g.read().splitlines(keepends=True),
+                t.read().splitlines(keepends=True),
+            )
+        )
+        if is_fixing:
+          diff_errors.append("Updating stale file %s:\n%s" % (pair.target, diff))
+        else:
+          diff_errors.append("File %s is out of date:\n%s" % (pair.target, diff))
+    except (UnicodeDecodeError, ValueError):
       if is_fixing:
-        diff_errors.append("Updating stale file %s:\n%s" % (pair.target, diff))
+        diff_errors.append("Updating stale binary file %s:\n%s" % (pair.target, diff))
       else:
-        diff_errors.append("File %s is out of date:\n%s" % (pair.target, diff))
+        diff_errors.append("File %s is out of date: (binary files differ)" % pair.target)
   return diff_errors
 
 

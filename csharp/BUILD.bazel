@@ -148,3 +148,67 @@ staleness_test(
     tags = ["manual"],
     target_files = ["src/Google.Protobuf/Reflection/FeatureSetDescriptor.g.cs"],
 )
+
+_TEST_PROTOS = [
+    "//conformance/test_protos:test_messages_edition2023.proto",
+    "//conformance/test_protos:test_messages_edition_unstable.proto",
+    "protos/map_unittest_proto3.proto",
+    "protos/nrt.proto",
+    "protos/unittest_issues.proto",
+    "protos/unittest_custom_options_proto3.proto",
+    "protos/unittest_proto3.proto",
+    "protos/unittest_import_proto3.proto",
+    "protos/unittest_import_public_proto3.proto",
+    "protos/unittest.proto",
+    "protos/unittest_import.proto",
+    "protos/unittest_import_public.proto",
+    "protos/unittest_issue6936_a.proto",
+    "protos/unittest_issue6936_b.proto",
+    "protos/unittest_issue6936_c.proto",
+    "protos/unittest_selfreferential_options.proto",
+    "//editions:golden/test_messages_proto3_editions.proto",
+    "//editions:golden/test_messages_proto2_editions.proto",
+    "//src/google/protobuf:unittest_well_known_types.proto",
+    "//src/google/protobuf:test_messages_proto3.proto",
+    "//src/google/protobuf:test_messages_proto2.proto",
+    "//src/google/protobuf:unittest_features.proto",
+    "//src/google/protobuf:unittest_legacy_features.proto",
+    "//src/google/protobuf:unittest_proto3_optional.proto",
+    "//src/google/protobuf:unittest_retention.proto",
+    "//src/google/protobuf/json:json_enumval_custom_string_proto_srcs",
+]
+
+_IMPORTED_PROTOS = [
+    ":c_sharp_features_proto_srcs",
+    "//java/core:java_features_proto_srcs",
+    "//src/google/protobuf:descriptor_proto_srcs",
+    "//src/google/protobuf:json_enumvalue_options.proto",
+    "//src/google/protobuf:json_options.proto",
+    "//src/google/protobuf:well_known_type_protos",
+]
+
+genrule(
+    name = "gen_testprotos_pb",
+    testonly = True,
+    srcs = _TEST_PROTOS + _IMPORTED_PROTOS,
+    outs = ["generated/src/Google.Protobuf.Test/testprotos.pb"],
+    cmd = """
+        $(execpath //:protoc) \
+            -Isrc -I. -Ijava/core/src/main/resources/ \
+            --experimental_allow_proto3_optional \
+            --experimental_editions \
+            --descriptor_set_out=$@ \
+            --include_source_info \
+            --include_imports \
+            %s
+    """ % " ".join(["$(location %s)" % p for p in _TEST_PROTOS]),
+    tools = ["//:protoc"],
+)
+
+staleness_test(
+    name = "testprotos_pb_staleness_test",
+    outs = ["src/Google.Protobuf.Test/testprotos.pb"],
+    generated_pattern = "generated/%s",
+    tags = ["manual"],
+)
+

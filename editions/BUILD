@@ -383,6 +383,7 @@ exports_files(
         "golden/test_messages_proto3_editions.proto",
     ],
     visibility = [
+        "//csharp:__pkg__",
         "//ruby:__pkg__",
         "//src/google/protobuf/csharp:__pkg__",
     ],

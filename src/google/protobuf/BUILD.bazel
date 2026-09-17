@@ -1690,9 +1690,23 @@ exports_files(
     ],
     visibility = [
         "//:__pkg__",
+        "//csharp:__pkg__",
         "//python:__pkg__",
         "//ruby:__pkg__",
         "//upb:__subpackages__",
+    ],
+)
+
+exports_files(
+    [
+        "unittest_features.proto",
+        "unittest_legacy_features.proto",
+        "unittest_proto3_optional.proto",
+        "unittest_retention.proto",
+        "unittest_well_known_types.proto",
+    ],
+    visibility = [
+        "//csharp:__pkg__",
     ],
 )
 
