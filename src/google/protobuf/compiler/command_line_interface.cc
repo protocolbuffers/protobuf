@@ -235,6 +235,13 @@ bool GetProtocAbsolutePath(std::string* path) {
   if (sysctl(mib, 4, &buffer, &len, nullptr, 0) != 0) {
     len = 0;
   }
+#elif defined(__OpenBSD__) && defined(HAVE_GETEXECPATH)
+  char buffer[PATH_MAX];
+  size_t len = 0;
+
+  if (getexecpath(buffer, sizeof(buffer)) == 0) {
+    len = strlen(buffer);
+  }
 #else
   char buffer[PATH_MAX];
   int len = readlink("/proc/self/exe", buffer, PATH_MAX);
