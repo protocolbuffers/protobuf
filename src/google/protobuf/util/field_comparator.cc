@@ -87,8 +87,10 @@ FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
       COMPARE_FIELD(Bool);
     case FieldDescriptor::CPPTYPE_DOUBLE:
       COMPARE_FIELD(Double);
+      PROTOBUF_IGNORE_DEPRECATION_START
     case FieldDescriptor::CPPTYPE_ENUM:
       COMPARE_FIELD(Enum);
+      PROTOBUF_IGNORE_DEPRECATION_STOP
     case FieldDescriptor::CPPTYPE_FLOAT:
       COMPARE_FIELD(Float);
     case FieldDescriptor::CPPTYPE_INT32:
