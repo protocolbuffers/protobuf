@@ -603,3 +603,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/flyteorg/flyte
     *   Extensions: 1364-1373
+
+1.  durable
+
+    *   Website: https://github.com/dangra/durable
+    *   Extensions: 1374-1375
