@@ -282,6 +282,33 @@ TEST(WireFormatLiteTest, ReadPackedPrimitiveInvalidInputAllocatesHuge) {
   coded_input.PopLimit(limit);
 }
 
+TEST(WireFormatLiteTest, ReadPackedFixedSizePrimitiveIntegerOverflow) {
+  uint8_t buffer[16];
+  uint8_t* target = buffer;
+  target = google::protobuf::io::CodedOutputStream::WriteVarint32ToArray(
+      sizeof(uint32_t), target);
+  *reinterpret_cast<uint32_t*>(target) = 0x12345678;
+  target += sizeof(uint32_t);
+  int encoded_len = target - buffer;
+
+  google::protobuf::io::ArrayInputStream array_input(buffer, encoded_len);
+  google::protobuf::io::CodedInputStream coded_input(&array_input);
+
+  RepeatedField<uint32_t> values;
+  values.Reserve(10);
+  auto& base = reinterpret_cast<RepeatedFieldBase&>(values);
+  struct Robber : RepeatedFieldBase {
+    using RepeatedFieldBase::soo_rep_;
+  };
+  auto& soo_rep = (base.*&Robber::soo_rep_);
+  soo_rep.set_size(std::numeric_limits<int>::max());
+
+  EXPECT_FALSE((WireFormatLite::ReadPackedPrimitive<
+                uint32_t, WireFormatLite::TYPE_FIXED32>(&coded_input, &values)));
+
+  soo_rep.set_size(0);
+}
+
 TEST(WireFormatTest, ParseMessageSetItemInvalidInputAllocatesHuge) {
   uint8_t buffer[20];
   uint8_t* target = buffer;
