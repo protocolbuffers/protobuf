@@ -10,7 +10,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-
 // clang-format off
 #include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 7037000
@@ -37,6 +36,242 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+namespace google::protobuf {
+enum Edition : int;
+PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
+enum ExtensionRangeOptions_VerificationState : int;
+PROTOBUF_EXPORT extern const uint32_t
+    ExtensionRangeOptions_VerificationState_internal_data_[];
+enum FeatureSet_EnforceNamingStyle : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FeatureSet_EnforceNamingStyle_internal_data_[];
+enum FeatureSet_EnumType : int;
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
+enum FeatureSet_FieldPresence : int;
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
+enum FeatureSet_JsonFormat : int;
+PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
+enum FeatureSet_MessageEncoding : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FeatureSet_MessageEncoding_internal_data_[];
+enum FeatureSet_ProtoLimitsFeature_EnforceProtoLimits : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_[];
+enum FeatureSet_RepeatedFieldEncoding : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FeatureSet_RepeatedFieldEncoding_internal_data_[];
+enum FeatureSet_Utf8Validation : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FeatureSet_Utf8Validation_internal_data_[];
+enum FeatureSet_VisibilityFeature_DefaultSymbolVisibility : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_[];
+enum FieldDescriptorProto_Label : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FieldDescriptorProto_Label_internal_data_[];
+enum FieldDescriptorProto_Type : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FieldDescriptorProto_Type_internal_data_[];
+enum FieldOptions_CType : int;
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
+enum FieldOptions_JSType : int;
+PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
+enum FieldOptions_OptionRetention : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FieldOptions_OptionRetention_internal_data_[];
+enum FieldOptions_OptionTargetType : int;
+PROTOBUF_EXPORT extern const uint32_t
+    FieldOptions_OptionTargetType_internal_data_[];
+enum FileOptions_OptimizeMode : int;
+PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
+enum GeneratedCodeInfo_Annotation_Semantic : int;
+PROTOBUF_EXPORT extern const uint32_t
+    GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
+enum MethodOptions_IdempotencyLevel : int;
+PROTOBUF_EXPORT extern const uint32_t
+    MethodOptions_IdempotencyLevel_internal_data_[];
+enum SymbolVisibility : int;
+PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
+class DescriptorProto; struct DescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal
+    DescriptorProto_globals_;
+class DescriptorProto_ExtensionRange;
+struct DescriptorProto_ExtensionRangeGlobalsTypeInternal;
+PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal
+    DescriptorProto_ExtensionRange_globals_;
+class DescriptorProto_ReservedRange;
+struct DescriptorProto_ReservedRangeGlobalsTypeInternal;
+PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal
+    DescriptorProto_ReservedRange_globals_;
+class EnumDescriptorProto; struct EnumDescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal
+    EnumDescriptorProto_globals_;
+class EnumDescriptorProto_EnumReservedRange;
+struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal
+    EnumDescriptorProto_EnumReservedRange_globals_;
+class EnumOptions; struct EnumOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal EnumOptions_globals_;
+class EnumValueDescriptorProto;
+struct EnumValueDescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal
+    EnumValueDescriptorProto_globals_;
+class EnumValueOptions; struct EnumValueOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal
+    EnumValueOptions_globals_;
+class ExtensionRangeOptions; struct ExtensionRangeOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal
+    ExtensionRangeOptions_globals_;
+class ExtensionRangeOptions_Declaration;
+struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal;
+PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal
+    ExtensionRangeOptions_Declaration_globals_;
+class FeatureSet; struct FeatureSetGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal FeatureSet_globals_;
+class FeatureSetDefaults; struct FeatureSetDefaultsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal
+    FeatureSetDefaults_globals_;
+class FeatureSetDefaults_FeatureSetEditionDefault;
+struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal;
+PROTOBUF_EXPORT extern
+    FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal
+    FeatureSetDefaults_FeatureSetEditionDefault_globals_;
+class FeatureSet_ProtoLimitsFeature;
+struct FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal
+    FeatureSet_ProtoLimitsFeature_globals_;
+class FeatureSet_VisibilityFeature;
+struct FeatureSet_VisibilityFeatureGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal
+    FeatureSet_VisibilityFeature_globals_;
+class FieldDescriptorProto; struct FieldDescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal
+    FieldDescriptorProto_globals_;
+class FieldOptions; struct FieldOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal FieldOptions_globals_;
+class FieldOptions_EditionDefault;
+struct FieldOptions_EditionDefaultGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal
+    FieldOptions_EditionDefault_globals_;
+class FieldOptions_FeatureSupport;
+struct FieldOptions_FeatureSupportGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal
+    FieldOptions_FeatureSupport_globals_;
+class FileDescriptorProto; struct FileDescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal
+    FileDescriptorProto_globals_;
+class FileDescriptorSet; struct FileDescriptorSetGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal
+    FileDescriptorSet_globals_;
+class FileOptions; struct FileOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal FileOptions_globals_;
+class GeneratedCodeInfo; struct GeneratedCodeInfoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal
+    GeneratedCodeInfo_globals_;
+class GeneratedCodeInfo_Annotation;
+struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal;
+PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal
+    GeneratedCodeInfo_Annotation_globals_;
+class MessageOptions; struct MessageOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal
+    MessageOptions_globals_;
+class MethodDescriptorProto; struct MethodDescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal
+    MethodDescriptorProto_globals_;
+class MethodOptions; struct MethodOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal MethodOptions_globals_;
+class OneofDescriptorProto; struct OneofDescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal
+    OneofDescriptorProto_globals_;
+class OneofOptions; struct OneofOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal OneofOptions_globals_;
+class ServiceDescriptorProto; struct ServiceDescriptorProtoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal
+    ServiceDescriptorProto_globals_;
+class ServiceOptions; struct ServiceOptionsGlobalsTypeInternal;
+PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal
+    ServiceOptions_globals_;
+class SourceCodeInfo; struct SourceCodeInfoGlobalsTypeInternal;
+PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal
+    SourceCodeInfo_globals_;
+class SourceCodeInfo_Location;
+struct SourceCodeInfo_LocationGlobalsTypeInternal;
+PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal
+    SourceCodeInfo_Location_globals_;
+class UninterpretedOption; struct UninterpretedOptionGlobalsTypeInternal;
+PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal
+    UninterpretedOption_globals_;
+class UninterpretedOption_NamePart;
+struct UninterpretedOption_NamePartGlobalsTypeInternal;
+PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal
+    UninterpretedOption_NamePart_globals_;
+}  // namespace google::protobuf
+namespace google::protobuf {
+namespace _pBW97vn = ::google::protobuf;
+namespace internal {
+template <> EnumTraitsT<_pBW97vn::Edition_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::Edition>;
+template <>
+EnumTraitsT<_pBW97vn::ExtensionRangeOptions_VerificationState_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::ExtensionRangeOptions_VerificationState>;
+template <> EnumTraitsT<_pBW97vn::FeatureSet_EnforceNamingStyle_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FeatureSet_EnforceNamingStyle>;
+template <> EnumTraitsT<_pBW97vn::FeatureSet_EnumType_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FeatureSet_EnumType>;
+template <> EnumTraitsT<_pBW97vn::FeatureSet_FieldPresence_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FeatureSet_FieldPresence>;
+template <> EnumTraitsT<_pBW97vn::FeatureSet_JsonFormat_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FeatureSet_JsonFormat>;
+template <> EnumTraitsT<_pBW97vn::FeatureSet_MessageEncoding_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FeatureSet_MessageEncoding>;
+template <>
+EnumTraitsT<
+  _pBW97vn::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_
+> EnumTraitsImpl::value<
+  _pBW97vn::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>;
+template <>
+EnumTraitsT<_pBW97vn::FeatureSet_RepeatedFieldEncoding_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FeatureSet_RepeatedFieldEncoding>;
+template <> EnumTraitsT<_pBW97vn::FeatureSet_Utf8Validation_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FeatureSet_Utf8Validation>;
+template <>
+EnumTraitsT<
+  _pBW97vn::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_
+> EnumTraitsImpl::value<
+  _pBW97vn::FeatureSet_VisibilityFeature_DefaultSymbolVisibility>;
+template <> EnumTraitsT<_pBW97vn::FieldDescriptorProto_Label_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FieldDescriptorProto_Label>;
+template <> EnumTraitsT<_pBW97vn::FieldDescriptorProto_Type_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FieldDescriptorProto_Type>;
+template <> EnumTraitsT<_pBW97vn::FieldOptions_CType_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FieldOptions_CType>;
+template <> EnumTraitsT<_pBW97vn::FieldOptions_JSType_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FieldOptions_JSType>;
+template <> EnumTraitsT<_pBW97vn::FieldOptions_OptionRetention_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FieldOptions_OptionRetention>;
+template <> EnumTraitsT<_pBW97vn::FieldOptions_OptionTargetType_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FieldOptions_OptionTargetType>;
+template <> EnumTraitsT<_pBW97vn::FileOptions_OptimizeMode_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::FileOptions_OptimizeMode>;
+template <>
+EnumTraitsT<_pBW97vn::GeneratedCodeInfo_Annotation_Semantic_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::GeneratedCodeInfo_Annotation_Semantic>;
+template <> EnumTraitsT<_pBW97vn::MethodOptions_IdempotencyLevel_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::MethodOptions_IdempotencyLevel>;
+template <> EnumTraitsT<_pBW97vn::SymbolVisibility_internal_data_>
+    EnumTraitsImpl::value<_pBW97vn::SymbolVisibility>;
+}  // namespace internal
+namespace internal {
+#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+#ifdef PROTOBUF_EXPORT
+PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+#else
+void InitializeFileDescriptorDefaultInstancesSlow();
+#endif
+#endif
+}  // namespace internal
+}  // namespace google::protobuf
+
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fdescriptor_2eproto PROTOBUF_EXPORT
 
 // Internal implementation detail -- do not use these members.
@@ -46,225 +281,6 @@ struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
 extern "C" {
 PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
 }  // extern "C"
-namespace google {
-namespace protobuf {
-enum Edition : int;
-PROTOBUF_EXPORT extern const uint32_t Edition_internal_data_[];
-enum ExtensionRangeOptions_VerificationState : int;
-PROTOBUF_EXPORT extern const uint32_t ExtensionRangeOptions_VerificationState_internal_data_[];
-enum FeatureSet_EnforceNamingStyle : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnforceNamingStyle_internal_data_[];
-enum FeatureSet_EnumType : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_EnumType_internal_data_[];
-enum FeatureSet_FieldPresence : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_FieldPresence_internal_data_[];
-enum FeatureSet_JsonFormat : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_JsonFormat_internal_data_[];
-enum FeatureSet_MessageEncoding : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_MessageEncoding_internal_data_[];
-enum FeatureSet_ProtoLimitsFeature_EnforceProtoLimits : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_[];
-enum FeatureSet_RepeatedFieldEncoding : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_RepeatedFieldEncoding_internal_data_[];
-enum FeatureSet_Utf8Validation : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_Utf8Validation_internal_data_[];
-enum FeatureSet_VisibilityFeature_DefaultSymbolVisibility : int;
-PROTOBUF_EXPORT extern const uint32_t FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_[];
-enum FieldDescriptorProto_Label : int;
-PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Label_internal_data_[];
-enum FieldDescriptorProto_Type : int;
-PROTOBUF_EXPORT extern const uint32_t FieldDescriptorProto_Type_internal_data_[];
-enum FieldOptions_CType : int;
-PROTOBUF_EXPORT extern const uint32_t FieldOptions_CType_internal_data_[];
-enum FieldOptions_JSType : int;
-PROTOBUF_EXPORT extern const uint32_t FieldOptions_JSType_internal_data_[];
-enum FieldOptions_OptionRetention : int;
-PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionRetention_internal_data_[];
-enum FieldOptions_OptionTargetType : int;
-PROTOBUF_EXPORT extern const uint32_t FieldOptions_OptionTargetType_internal_data_[];
-enum FileOptions_OptimizeMode : int;
-PROTOBUF_EXPORT extern const uint32_t FileOptions_OptimizeMode_internal_data_[];
-enum GeneratedCodeInfo_Annotation_Semantic : int;
-PROTOBUF_EXPORT extern const uint32_t GeneratedCodeInfo_Annotation_Semantic_internal_data_[];
-enum MethodOptions_IdempotencyLevel : int;
-PROTOBUF_EXPORT extern const uint32_t MethodOptions_IdempotencyLevel_internal_data_[];
-enum SymbolVisibility : int;
-PROTOBUF_EXPORT extern const uint32_t SymbolVisibility_internal_data_[];
-class DescriptorProto;
-struct DescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProtoGlobalsTypeInternal DescriptorProto_globals_;
-class DescriptorProto_ExtensionRange;
-struct DescriptorProto_ExtensionRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProto_ExtensionRangeGlobalsTypeInternal DescriptorProto_ExtensionRange_globals_;
-class DescriptorProto_ReservedRange;
-struct DescriptorProto_ReservedRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern DescriptorProto_ReservedRangeGlobalsTypeInternal DescriptorProto_ReservedRange_globals_;
-class EnumDescriptorProto;
-struct EnumDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumDescriptorProtoGlobalsTypeInternal EnumDescriptorProto_globals_;
-class EnumDescriptorProto_EnumReservedRange;
-struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal EnumDescriptorProto_EnumReservedRange_globals_;
-class EnumOptions;
-struct EnumOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumOptionsGlobalsTypeInternal EnumOptions_globals_;
-class EnumValueDescriptorProto;
-struct EnumValueDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumValueDescriptorProtoGlobalsTypeInternal EnumValueDescriptorProto_globals_;
-class EnumValueOptions;
-struct EnumValueOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern EnumValueOptionsGlobalsTypeInternal EnumValueOptions_globals_;
-class ExtensionRangeOptions;
-struct ExtensionRangeOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ExtensionRangeOptionsGlobalsTypeInternal ExtensionRangeOptions_globals_;
-class ExtensionRangeOptions_Declaration;
-struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ExtensionRangeOptions_DeclarationGlobalsTypeInternal ExtensionRangeOptions_Declaration_globals_;
-class FeatureSet;
-struct FeatureSetGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetGlobalsTypeInternal FeatureSet_globals_;
-class FeatureSetDefaults;
-struct FeatureSetDefaultsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetDefaultsGlobalsTypeInternal FeatureSetDefaults_globals_;
-class FeatureSetDefaults_FeatureSetEditionDefault;
-struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal FeatureSetDefaults_FeatureSetEditionDefault_globals_;
-class FeatureSet_ProtoLimitsFeature;
-struct FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal FeatureSet_ProtoLimitsFeature_globals_;
-class FeatureSet_VisibilityFeature;
-struct FeatureSet_VisibilityFeatureGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FeatureSet_VisibilityFeatureGlobalsTypeInternal FeatureSet_VisibilityFeature_globals_;
-class FieldDescriptorProto;
-struct FieldDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldDescriptorProtoGlobalsTypeInternal FieldDescriptorProto_globals_;
-class FieldOptions;
-struct FieldOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptionsGlobalsTypeInternal FieldOptions_globals_;
-class FieldOptions_EditionDefault;
-struct FieldOptions_EditionDefaultGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptions_EditionDefaultGlobalsTypeInternal FieldOptions_EditionDefault_globals_;
-class FieldOptions_FeatureSupport;
-struct FieldOptions_FeatureSupportGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FieldOptions_FeatureSupportGlobalsTypeInternal FieldOptions_FeatureSupport_globals_;
-class FileDescriptorProto;
-struct FileDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileDescriptorProtoGlobalsTypeInternal FileDescriptorProto_globals_;
-class FileDescriptorSet;
-struct FileDescriptorSetGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileDescriptorSetGlobalsTypeInternal FileDescriptorSet_globals_;
-class FileOptions;
-struct FileOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern FileOptionsGlobalsTypeInternal FileOptions_globals_;
-class GeneratedCodeInfo;
-struct GeneratedCodeInfoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern GeneratedCodeInfoGlobalsTypeInternal GeneratedCodeInfo_globals_;
-class GeneratedCodeInfo_Annotation;
-struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern GeneratedCodeInfo_AnnotationGlobalsTypeInternal GeneratedCodeInfo_Annotation_globals_;
-class MessageOptions;
-struct MessageOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MessageOptionsGlobalsTypeInternal MessageOptions_globals_;
-class MethodDescriptorProto;
-struct MethodDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MethodDescriptorProtoGlobalsTypeInternal MethodDescriptorProto_globals_;
-class MethodOptions;
-struct MethodOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern MethodOptionsGlobalsTypeInternal MethodOptions_globals_;
-class OneofDescriptorProto;
-struct OneofDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern OneofDescriptorProtoGlobalsTypeInternal OneofDescriptorProto_globals_;
-class OneofOptions;
-struct OneofOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern OneofOptionsGlobalsTypeInternal OneofOptions_globals_;
-class ServiceDescriptorProto;
-struct ServiceDescriptorProtoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ServiceDescriptorProtoGlobalsTypeInternal ServiceDescriptorProto_globals_;
-class ServiceOptions;
-struct ServiceOptionsGlobalsTypeInternal;
-PROTOBUF_EXPORT extern ServiceOptionsGlobalsTypeInternal ServiceOptions_globals_;
-class SourceCodeInfo;
-struct SourceCodeInfoGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceCodeInfoGlobalsTypeInternal SourceCodeInfo_globals_;
-class SourceCodeInfo_Location;
-struct SourceCodeInfo_LocationGlobalsTypeInternal;
-PROTOBUF_EXPORT extern SourceCodeInfo_LocationGlobalsTypeInternal SourceCodeInfo_Location_globals_;
-class UninterpretedOption;
-struct UninterpretedOptionGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UninterpretedOptionGlobalsTypeInternal UninterpretedOption_globals_;
-class UninterpretedOption_NamePart;
-struct UninterpretedOption_NamePartGlobalsTypeInternal;
-PROTOBUF_EXPORT extern UninterpretedOption_NamePartGlobalsTypeInternal UninterpretedOption_NamePart_globals_;
-template <>
-internal::EnumTraitsT<::google::protobuf::Edition_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::Edition>;
-template <>
-internal::EnumTraitsT<::google::protobuf::ExtensionRangeOptions_VerificationState_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::ExtensionRangeOptions_VerificationState>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_EnforceNamingStyle_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnforceNamingStyle>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_EnumType_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_EnumType>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_FieldPresence_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_FieldPresence>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_JsonFormat_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_JsonFormat>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_MessageEncoding_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_MessageEncoding>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_RepeatedFieldEncoding_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_RepeatedFieldEncoding>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_Utf8Validation_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_Utf8Validation>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FieldDescriptorProto_Label_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FieldDescriptorProto_Label>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FieldDescriptorProto_Type_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FieldDescriptorProto_Type>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FieldOptions_CType_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_CType>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FieldOptions_JSType_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_JSType>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FieldOptions_OptionRetention_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_OptionRetention>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FieldOptions_OptionTargetType_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FieldOptions_OptionTargetType>;
-template <>
-internal::EnumTraitsT<::google::protobuf::FileOptions_OptimizeMode_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::FileOptions_OptimizeMode>;
-template <>
-internal::EnumTraitsT<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::GeneratedCodeInfo_Annotation_Semantic>;
-template <>
-internal::EnumTraitsT<::google::protobuf::MethodOptions_IdempotencyLevel_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::MethodOptions_IdempotencyLevel>;
-template <>
-internal::EnumTraitsT<::google::protobuf::SymbolVisibility_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::SymbolVisibility>;
-namespace internal {
-#if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
-#endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-}  // namespace internal
-}  // namespace protobuf
-}  // namespace google
 
 namespace google {
 namespace protobuf {

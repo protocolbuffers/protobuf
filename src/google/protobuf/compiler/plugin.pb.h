@@ -10,7 +10,6 @@
 #include <string>
 #include <type_traits>
 #include <utility>
-
 // clang-format off
 #include "google/protobuf/runtime_version.h"
 #if PROTOBUF_VERSION != 7037000
@@ -37,6 +36,31 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+namespace google::protobuf::compiler {
+enum CodeGeneratorResponse_Feature : int;
+PROTOC_EXPORT extern const uint32_t
+    CodeGeneratorResponse_Feature_internal_data_[];
+class CodeGeneratorRequest; struct CodeGeneratorRequestGlobalsTypeInternal;
+PROTOC_EXPORT extern const CodeGeneratorRequestGlobalsTypeInternal
+    CodeGeneratorRequest_globals_;
+class CodeGeneratorResponse; struct CodeGeneratorResponseGlobalsTypeInternal;
+PROTOC_EXPORT extern const CodeGeneratorResponseGlobalsTypeInternal
+    CodeGeneratorResponse_globals_;
+class CodeGeneratorResponse_File;
+struct CodeGeneratorResponse_FileGlobalsTypeInternal;
+PROTOC_EXPORT extern const CodeGeneratorResponse_FileGlobalsTypeInternal
+    CodeGeneratorResponse_File_globals_;
+class Version; struct VersionGlobalsTypeInternal;
+PROTOC_EXPORT extern const VersionGlobalsTypeInternal Version_globals_;
+}  // namespace google::protobuf::compiler
+namespace google::protobuf {
+namespace _paFlOES = ::google::protobuf::compiler;
+namespace internal {
+template <> EnumTraitsT<_paFlOES::CodeGeneratorResponse_Feature_internal_data_>
+    EnumTraitsImpl::value<_paFlOES::CodeGeneratorResponse_Feature>;
+}  // namespace internal
+}  // namespace google::protobuf
+
 #define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fcompiler_2fplugin_2eproto PROTOC_EXPORT
 #ifdef major
 #undef major
@@ -52,29 +76,6 @@ struct PROTOC_EXPORT TableStruct_google_2fprotobuf_2fcompiler_2fplugin_2eproto {
 extern "C" {
 PROTOC_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fcompiler_2fplugin_2eproto;
 }  // extern "C"
-namespace google {
-namespace protobuf {
-namespace compiler {
-enum CodeGeneratorResponse_Feature : int;
-PROTOC_EXPORT extern const uint32_t CodeGeneratorResponse_Feature_internal_data_[];
-class CodeGeneratorRequest;
-struct CodeGeneratorRequestGlobalsTypeInternal;
-PROTOC_EXPORT extern const CodeGeneratorRequestGlobalsTypeInternal CodeGeneratorRequest_globals_;
-class CodeGeneratorResponse;
-struct CodeGeneratorResponseGlobalsTypeInternal;
-PROTOC_EXPORT extern const CodeGeneratorResponseGlobalsTypeInternal CodeGeneratorResponse_globals_;
-class CodeGeneratorResponse_File;
-struct CodeGeneratorResponse_FileGlobalsTypeInternal;
-PROTOC_EXPORT extern const CodeGeneratorResponse_FileGlobalsTypeInternal CodeGeneratorResponse_File_globals_;
-class Version;
-struct VersionGlobalsTypeInternal;
-PROTOC_EXPORT extern const VersionGlobalsTypeInternal Version_globals_;
-}  // namespace compiler
-template <>
-internal::EnumTraitsT<::google::protobuf::compiler::CodeGeneratorResponse_Feature_internal_data_>
-    internal::EnumTraitsImpl::value<::google::protobuf::compiler::CodeGeneratorResponse_Feature>;
-}  // namespace protobuf
-}  // namespace google
 
 namespace google {
 namespace protobuf {
