@@ -152,6 +152,11 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
         hub_name = "protobuf_pip_deps",
         python_version = python_version,
         requirements_lock = "//python:requirements.txt",
+        target_platforms = [
+            "linux_x86_64",
+            "linux_aarch64",
+        ],
+        experimental_index_url = "https://pypi.org/simple",
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
