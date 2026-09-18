@@ -5,6 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -20,6 +21,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -51,6 +53,42 @@ using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Not;
 using ::testing::Optional;
+
+TEST(PackedVarintPreScan, CountVarintsStaysWithinSpan) {
+  std::array<char, 24> bytes{};
+  for (size_t i = 0; i < bytes.size(); ++i) {
+    bytes[i] = static_cast<char>((i % 3 == 0) ? 0x80 : 0x01);
+  }
+
+  for (size_t length = 8; length <= bytes.size(); ++length) {
+    const absl::Span<const char> data(bytes.data(), length);
+    int expected = 0;
+    for (char byte : data) {
+      if ((static_cast<uint8_t>(byte) & 0x80) == 0) ++expected;
+    }
+    EXPECT_EQ(CountVarintsAssumingLargeArray(data), expected)
+        << "length=" << length;
+  }
+}
+
+TEST(PackedVarintPreScan, VerifyBoolsStaysWithinSpan) {
+  std::array<char, 24> bytes{};
+  for (size_t i = 0; i < bytes.size(); ++i) {
+    bytes[i] = static_cast<char>(i & 1);
+  }
+
+  for (size_t length = 8; length <= bytes.size(); ++length) {
+    const absl::Span<const char> data(bytes.data(), length);
+    EXPECT_TRUE(VerifyBoolsAssumingLargeArray(data)) << "length=" << length;
+
+    const size_t bad_index = length - 1;
+    const char saved = bytes[bad_index];
+    bytes[bad_index] = 2;
+    EXPECT_FALSE(VerifyBoolsAssumingLargeArray(data))
+        << "length=" << length << " bad_index=" << bad_index;
+    bytes[bad_index] = saved;
+  }
+}
 
 // The fast parser's dispatch table Xors two bytes of incoming data with
 // the data in TcFieldData, so we reproduce that here:
