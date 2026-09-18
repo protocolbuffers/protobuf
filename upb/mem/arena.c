@@ -425,13 +425,7 @@ void UPB_PRIVATE(_upb_Arena_UseBlock)(upb_Arena* a, void* ptr, size_t size) {
     char* curr = (char*)a->UPB_ONLYBITS(ptr);
     char* end = (char*)a->UPB_ONLYBITS(end);
     if (end > curr) {
-      size_t remaining = end - curr;
-      while (remaining >= UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize)) {
-        size_t harvest_size = (size_t)1 << upb_Log2Floor(remaining);
-        upb_Arena_FreePool(a, curr, harvest_size);
-        curr += harvest_size;
-        remaining -= harvest_size;
-      }
+      UPB_PRIVATE(_upb_Arena_Harvest)(a, curr, end - curr);
     }
   }
 

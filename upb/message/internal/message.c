@@ -101,9 +101,7 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
       memcpy(new_in, in,
              UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size));
       new_in->capacity = _upb_Message_InternalCapacity(new_bytes);
-      if (UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(old_bytes)) {
-        upb_Arena_FreePool(a, in, old_bytes);
-      }
+      UPB_PRIVATE(_upb_Arena_Harvest)(a, in, old_bytes);
       in = new_in;
       UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
     }
