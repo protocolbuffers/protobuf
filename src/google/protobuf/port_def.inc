@@ -607,6 +607,36 @@
 
 #include "google/protobuf/os_macros_undef.inc"
 
+// Macros for the -Wunsafe-buffer-usage migration (Clang 16+).
+//
+// PROTOBUF_UNSAFE_BUFFER_USAGE: Function attribute marking a function whose
+// callers should prefer a safe (e.g. Span-based) alternative.  Callers that
+// compile with -Wunsafe-buffer-usage will get a warning.
+//
+// PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN / _END: Wrap intentionally-unsafe code
+// that has been audited for correctness and cannot yet be expressed with safe
+// abstractions.  The block is invisible to -Wunsafe-buffer-usage.
+#ifdef PROTOBUF_UNSAFE_BUFFER_USAGE
+#error PROTOBUF_UNSAFE_BUFFER_USAGE was previously defined
+#endif
+#ifdef PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
+#error PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN was previously defined
+#endif
+#ifdef PROTOBUF_UNSAFE_BUFFER_USAGE_END
+#error PROTOBUF_UNSAFE_BUFFER_USAGE_END was previously defined
+#endif
+#if PROTOBUF_CLANG_MIN(16, 0)
+#define PROTOBUF_UNSAFE_BUFFER_USAGE [[clang::unsafe_buffer_usage]]
+#define PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN \
+  _Pragma("clang unsafe_buffer_usage begin")
+#define PROTOBUF_UNSAFE_BUFFER_USAGE_END \
+  _Pragma("clang unsafe_buffer_usage end")
+#else
+#define PROTOBUF_UNSAFE_BUFFER_USAGE
+#define PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
+#define PROTOBUF_UNSAFE_BUFFER_USAGE_END
+#endif
+
 // Protobuf does not support building with a number of warnings that are noisy
 // (and of variable quality across compiler versions) or impossible to implement
 // effectively but which people turn on anyways.
