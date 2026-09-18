@@ -546,7 +546,10 @@ std::pair<const char*, uint32_t> ReadTagFallback(const char* p, uint32_t res) {
 }
 
 std::pair<const char*, int32_t> ReadSizeFallback(const char* p, uint32_t res) {
-  for (std::uint32_t i = 1; i < 4; i++) {
+  ABSL_DCHECK(p[0] & 0x80);
+  ABSL_DCHECK(p[1] & 0x80);
+  res += (static_cast<uint8_t>(p[1]) - 1) << 7;
+  for (std::uint32_t i = 2; i < 4; i++) {
     uint32_t byte = static_cast<uint8_t>(p[i]);
     res += (byte - 1) << (7 * i);
     if (ABSL_PREDICT_TRUE(byte < 128)) {
