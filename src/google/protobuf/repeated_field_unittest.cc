@@ -278,6 +278,42 @@ TEST_F(RepeatedFieldIsFullTest, ParsedPackedOverflow) {
       HasSubstr("Integer overflow in CheckedAdd: "));
 }
 
+TEST_F(RepeatedFieldIsFullTest, ParsedPackedFixedOverflow) {
+  // Exercises the packed *fixed-size* parsing path (ReadPackedFixed) rather
+  // than the varint path covered by ParsedPackedOverflow above. We fake a full
+  // RepeatedField instead of allocating INT_MAX elements, so this needs no
+  // large memory: the CheckedAdd(old_entries, num) overflow fires before any
+  // element is reserved or written, so the fake (undersized) buffer is never
+  // touched.
+  proto2_unittest::TestPackedTypes payload32;
+  for (int i = 0; i < 4; ++i) payload32.add_packed_fixed32(i);
+  const std::string fixed32_bytes = payload32.SerializeAsString();
+
+  EXPECT_DEATH(
+      {
+        proto2_unittest::TestPackedTypes msg;
+        SetFakeCapacityAndSize(*msg.mutable_packed_fixed32(),
+                               std::numeric_limits<int>::max(),
+                               std::numeric_limits<int>::max());
+        (void)msg.MergeFromString(fixed32_bytes);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
+
+  proto2_unittest::TestPackedTypes payload64;
+  for (int i = 0; i < 4; ++i) payload64.add_packed_fixed64(i);
+  const std::string fixed64_bytes = payload64.SerializeAsString();
+
+  EXPECT_DEATH(
+      {
+        proto2_unittest::TestPackedTypes msg;
+        SetFakeCapacityAndSize(*msg.mutable_packed_fixed64(),
+                               std::numeric_limits<int>::max(),
+                               std::numeric_limits<int>::max());
+        (void)msg.MergeFromString(fixed64_bytes);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: "));
+}
+
 TEST_F(RepeatedFieldIsFullTest, RepeatedVarintOverflow) {
   if (!internal::RunLargeMemoryTests()) {
     GTEST_SKIP() << "Not enough memory for this test.";
