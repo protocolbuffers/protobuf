@@ -73,16 +73,21 @@ namespace Google.Protobuf
         /// Creates a new <see cref="CodedInputStream"/> that reads from the given byte array slice.
         /// </summary>
         public CodedInputStream(byte[] buffer, int offset, int length)
-            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, offset + length, true)
-        {            
+            : this(null, ProtoPreconditions.CheckNotNull(buffer, "buffer"), offset, CalculateBufferSize(buffer, offset, length), true)
+        {
+        }
+
+        private static int CalculateBufferSize(byte[] buffer, int offset, int length)
+        {
             if (offset < 0 || offset > buffer.Length)
             {
                 throw new ArgumentOutOfRangeException("offset", "Offset must be within the buffer");
             }
-            if (length < 0 || offset + length > buffer.Length)
+            if (length < 0 || length > buffer.Length - offset)
             {
                 throw new ArgumentOutOfRangeException("length", "Length must be non-negative and within the buffer");
             }
+            return offset + length;
         }
 
         /// <summary>
