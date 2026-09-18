@@ -237,8 +237,9 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
 }
 
 template <>
-void RepeatedPtrFieldBase::MergeFrom<std::string>(
-    const RepeatedPtrFieldBase& from, Arena* arena) {
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void
+RepeatedPtrFieldBase::MergeFrom<std::string>(const RepeatedPtrFieldBase& from,
+                                             Arena* arena) {
   MergeFromInternal<std::string>(
       from, arena, [](Arena* arena, std::string* dst, const std::string& src) {
         dst->assign(src);
@@ -293,8 +294,9 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
 }
 
 template <>
-void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
-    const RepeatedPtrFieldBase& from, Arena* arena) {
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void
+RepeatedPtrFieldBase::MergeFrom<MessageLite>(const RepeatedPtrFieldBase& from,
+                                             Arena* arena) {
   ABSL_DCHECK(from.current_size_ > 0);
   const ClassData* class_data =
       GetClassData(*reinterpret_cast<const MessageLite*>(from.element_at(0)));
