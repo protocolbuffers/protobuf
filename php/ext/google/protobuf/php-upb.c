@@ -7950,13 +7950,7 @@ void UPB_PRIVATE(_upb_Arena_UseBlock)(upb_Arena* a, void* ptr, size_t size) {
     char* curr = (char*)a->UPB_ONLYBITS(ptr);
     char* end = (char*)a->UPB_ONLYBITS(end);
     if (end > curr) {
-      size_t remaining = end - curr;
-      while (remaining >= UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize)) {
-        size_t harvest_size = (size_t)1 << upb_Log2Floor(remaining);
-        upb_Arena_FreePool(a, curr, harvest_size);
-        curr += harvest_size;
-        remaining -= harvest_size;
-      }
+      UPB_PRIVATE(_upb_Arena_Harvest)(a, curr, end - curr);
     }
   }
 
@@ -8848,8 +8842,8 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
     const size_t array_size =
         UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
     bool is_contiguous = (ptr == UPB_PTR_AT(array, array_size, void));
-    if (!is_contiguous && UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(old_bytes)) {
-      upb_Arena_FreePool(arena, ptr, old_bytes);
+    if (!is_contiguous) {
+      UPB_PRIVATE(_upb_Arena_Harvest)(arena, ptr, old_bytes);
     }
 
     ptr = new_ptr;
@@ -10842,9 +10836,7 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
       memcpy(new_in, in,
              UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size));
       new_in->capacity = _upb_Message_InternalCapacity(new_bytes);
-      if (UPB_PRIVATE(_upb_Arena_IsValidPoolSize)(old_bytes)) {
-        upb_Arena_FreePool(a, in, old_bytes);
-      }
+      UPB_PRIVATE(_upb_Arena_Harvest)(a, in, old_bytes);
       in = new_in;
       UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
     }

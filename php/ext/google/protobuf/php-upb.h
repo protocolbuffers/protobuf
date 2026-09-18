@@ -1677,6 +1677,22 @@ UPB_API_INLINE void upb_Arena_FreePool(struct upb_Arena* a, void* ptr,
   pool->UPB_PRIVATE(bins)[bin] = block;
 }
 
+// Harvests power-of-2 sized blocks from the given memory region into the arena
+// pool. The region must be aligned to UPB_MALLOC_ALIGN. To limit fragmentation,
+// we harvest the largest blocks first. This uses a single CLZ instruction per
+// block, making it nearly as fast as checking contiguous bounds when
+// harvesting a single perfectly sized power-of-2 block.
+UPB_INLINE void UPB_PRIVATE(_upb_Arena_Harvest)(struct upb_Arena* a, void* ptr,
+                                                size_t size) {
+  size_t remaining = size & ~((size_t)_UPB_ARENA_MIN_POOL_BLOCK_SIZE - 1);
+  while (remaining != 0) {
+    size_t harvest_size = (size_t)1 << upb_Log2Floor(remaining);
+    upb_Arena_FreePool(a, ptr, harvest_size);
+    ptr = (char*)ptr + harvest_size;
+    remaining ^= harvest_size;
+  }
+}
+
 // Returns the next block size to allocate for the arena based on exponential
 // growth and size hint.
 size_t UPB_PRIVATE(_upb_Arena_NextBlockSize)(struct upb_Arena* a, size_t span,
