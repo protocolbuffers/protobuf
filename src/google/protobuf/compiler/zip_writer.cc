@@ -13,6 +13,7 @@
 #include "google/protobuf/compiler/zip_writer.h"
 
 #include <cstdint>
+#include <string>
 
 #include "google/protobuf/io/coded_stream.h"
 
