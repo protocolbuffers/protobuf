@@ -91,12 +91,6 @@ class MessageReflectionFriend {
       const std::vector<const FieldDescriptor*>& fields) {
     lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
   }
-  static bool ContainsMapKey(const Reflection* reflection,
-                             const Message& message,
-                             const FieldDescriptor* field,
-                             const MapKey& map_key) {
-    return reflection->ContainsMapKey(message, field, map_key);
-  }
 
   static void SetString(absl::string_view value, Message* message,
                         const FieldDescriptor* descriptor,
@@ -2623,8 +2617,8 @@ PyObject* Contains(CMessage* self, PyObject* arg) {
       }
       map_key.SetStringValue(*key_string);
 
-      return PyBool_FromLong(MessageReflectionFriend::ContainsMapKey(
-          reflection, *message, map_field, map_key));
+      return PyBool_FromLong(
+          reflection->GetMap(*message, map_field).contains(map_key));
     }
     case Descriptor::WELLKNOWNTYPE_LISTVALUE: {
       // For WKT ListValue, check if the key is in the items.

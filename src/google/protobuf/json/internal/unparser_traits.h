@@ -297,10 +297,8 @@ struct UnparseProto2Descriptor : Proto2Descriptor {
   static absl::Status ForEachMapEntry(Field f, const Msg& msg, Func func) {
     ABSL_DCHECK(MapFieldUseMapReflection(f, msg));
     const auto& type = *f->message_type();
-    for (auto it = msg.GetReflection()->ConstMapBegin(&msg, f),
-              end = msg.GetReflection()->ConstMapEnd(&msg, f);
-         it != end; ++it) {
-      RETURN_IF_ERROR(func(it, type));
+    for (auto entry : msg.GetReflection()->GetMap(msg, f)) {
+      RETURN_IF_ERROR(func(entry, type));
     }
     return absl::OkStatus();
   }

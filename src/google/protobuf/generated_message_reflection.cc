@@ -1525,7 +1525,7 @@ int Reflection::FieldSize(const Message& message,
           } else {
             // No need to materialize the repeated field if it is out of sync:
             // its size will be the same as the map's size.
-            return map.size();
+            return map.GetMap().size();
           }
         } else {
           return GetRaw<RepeatedPtrFieldBase>(message, field).size();
@@ -2569,6 +2569,8 @@ void Reflection::AddEnumValueInternal(Message* message,
 
 const internal::ClassData* Reflection::GetMessageClassData(
     const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(descriptor_, field->containing_type())
+      << field->full_name() << " " << descriptor_->full_name();
   // If we are using the generated factory, we cache the prototype in the field
   // descriptor for faster access.
   // The default instances of generated messages are not cross-linked, which
@@ -2950,7 +2952,7 @@ bool Reflection::IsRepeatedOrMapFieldEmpty(const Message& message,
           } else {
             // No need to materialize the repeated field if it is out of sync:
             // its size will be the same as the map's size.
-            return map.size() == 0;
+            return map.GetMap().empty();
           }
         } else {
           return GetRaw<RepeatedPtrFieldBase>(message, field).empty();
@@ -3036,77 +3038,83 @@ const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
 bool Reflection::ContainsMapKey(const Message& message,
                                 const FieldDescriptor* field,
                                 const MapKey& key) const {
-  USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
-              "Field is not a map field.");
-  return GetRaw<MapFieldBase>(message, field).ContainsMapKey(key);
+  return GetMap(message, field).contains(key);
 }
 
 bool Reflection::InsertOrLookupMapValue(Message* message,
                                         const FieldDescriptor* field,
                                         const MapKey& key,
                                         MapValueRef* val) const {
-  USAGE_CHECK(IsMapFieldInApi(field), InsertOrLookupMapValue,
-              "Field is not a map field.");
-  val->SetType(field->message_type()->map_value()->cpp_type());
-  SetHasBit(message, field);
-  return MutableRaw<MapFieldBase>(message, field)
-      ->InsertOrLookupMapValue(key, val);
+  auto res = MutableMap(message, field).try_emplace(key);
+  if (val != nullptr) *val = res.first->value();
+  return res.second;
 }
 
 bool Reflection::LookupMapValue(const Message& message,
                                 const FieldDescriptor* field, const MapKey& key,
                                 MapValueConstRef* val) const {
-  USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
-              "Field is not a map field.");
-  val->SetType(field->message_type()->map_value()->cpp_type());
-  return GetRaw<MapFieldBase>(message, field).LookupMapValue(key, val);
+  auto map = GetMap(message, field);
+  auto it = map.find(key);
+  if (it != map.end()) {
+    if (val != nullptr) *val = it->value();
+    return true;
+  }
+  return false;
 }
 
 bool Reflection::DeleteMapValue(Message* message, const FieldDescriptor* field,
                                 const MapKey& key) const {
-  USAGE_CHECK(IsMapFieldInApi(field), DeleteMapValue,
-              "Field is not a map field.");
-  return MutableRaw<MapFieldBase>(message, field)
-      ->DeleteMapValue(message->GetArena(), key);
-}
-
-MapIterator Reflection::MapBegin(Message* message,
-                                 const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), MapBegin, "Field is not a map field.");
-  MapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).MapBegin(&iter);
-  return iter;
-}
-
-MapIterator Reflection::MapEnd(Message* message,
-                               const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), MapEnd, "Field is not a map field.");
-  MapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).MapEnd(&iter);
-  return iter;
+  return MutableMap(message, field).erase(key) != 0;
 }
 
 ConstMapIterator Reflection::ConstMapBegin(const Message* message,
                                            const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), ConstMapBegin,
-              "Field is not a map field.");
-  ConstMapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).ConstMapBegin(&iter);
-  return iter;
+  return GetMap(*message, field).begin();
 }
 
 ConstMapIterator Reflection::ConstMapEnd(const Message* message,
                                          const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), ConstMapEnd, "Field is not a map field.");
-  ConstMapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).ConstMapEnd(&iter);
-  return iter;
+  return GetMap(*message, field).end();
+}
+
+GenericMapRef Reflection::MutableMap(Message* message,
+                                     const FieldDescriptor* field) const {
+  USAGE_CHECK(IsMapFieldInApi(field), ConstMapBegin,
+              "Field is not a map field.");
+  GenericMapRef ref;
+  ref.key_type_ = field->message_type()->map_key()->cpp_type();
+  ref.value_type_ = field->message_type()->map_value()->cpp_type();
+  ref.map_ = MutableMapData(message, field)->MutableMap();
+  if (field->message_type()->map_value()->message_type()) {
+    const Message* prototype;
+    // If the map has elements, use it to get the prototype.
+    // Otherwise, fall back to the factory which is slower.
+    if (ref.map_->empty()) {
+      prototype = message_factory_->GetPrototype(
+          field->message_type()->map_value()->message_type());
+    } else {
+      prototype = DownCastMessage<Message>(
+          ref.map_->GetValue<MessageLite>(ref.map_->begin().node_));
+    }
+    ref.value_class_data_ = internal::GetClassData(*prototype);
+  }
+  return ref;
+}
+
+GenericConstMapRef Reflection::GetMap(const Message& message,
+                                      const FieldDescriptor* field) const {
+  USAGE_CHECK(IsMapFieldInApi(field), ConstMapBegin,
+              "Field is not a map field.");
+  GenericConstMapRef ref;
+  ref.key_type_ = field->message_type()->map_key()->cpp_type();
+  ref.value_type_ = field->message_type()->map_value()->cpp_type();
+  ref.map_ = &GetMapData(message, field)->GetMap();
+  return ref;
 }
 
 int Reflection::MapSize(const Message& message,
                         const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), MapSize, "Field is not a map field.");
-  return GetRaw<MapFieldBase>(message, field).size();
+  return GetMap(message, field).size();
 }
 
 // -----------------------------------------------------------------------------
@@ -4142,10 +4150,8 @@ bool IsDescendant(const Message& root, const Message& message) {
 
       const auto& map = reflection->GetRaw<MapFieldBase>(root, field);
       if (map.IsMapValid()) {
-        const auto end = reflection->ConstMapEnd(&root, field);
-        for (auto iter = reflection->ConstMapBegin(&root, field); iter != end;
-             ++iter) {
-          const Message& sub_message = iter.GetValueRef().GetMessageValue();
+        for (auto entry : reflection->GetMap(root, field)) {
+          const Message& sub_message = entry.value().GetMessageValue();
           if (&sub_message == &message || IsDescendant(sub_message, message)) {
             return true;
           }

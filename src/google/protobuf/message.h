@@ -143,7 +143,8 @@ class GeneratedMessageReflectionTestHelper;
 class MapKey;
 class MapValueConstRef;
 class MapValueRef;
-class MapIterator;
+class GenericMapRef;
+class GenericConstMapRef;
 class MapReflectionTester;
 class TextFormat;
 
@@ -213,7 +214,6 @@ class ReflectionAccessor;      // message.cc
 class ReflectionOps;           // reflection_ops.h
 class MapKeySorter;            // wire_format.cc
 class WireFormat;              // wire_format.h
-class MapFieldReflectionTest;  // map_test.cc
 }  // namespace internal
 
 template <typename T>
@@ -972,6 +972,83 @@ class PROTOBUF_EXPORT Reflection final {
   MutableRepeatedFieldRef<T> GetMutableRepeatedFieldRef(
       Message* message, const FieldDescriptor* field) const;
 
+  // Get a map field as a generic read-only handle.
+  // The generic key and value types give the relevant type information needed
+  // ot access them.
+  //
+  // Class synopsis:
+  //
+  // class GenericConstMapRef {
+  //  public:
+  //   using iterator = ...;
+  //   using const_iterator = ...;
+  //   using value_type = ...;
+  //   using key_type = MapKey;
+  //   using mapped_type = MapValueConstRef;
+  //
+  //   iterator begin() const;
+  //   iterator end() const;
+  //   size_t size() const;
+  //   bool empty() const;
+  //   bool contains(const MapKey& key) const;
+  //   iterator find(const MapKey& key) const;
+  //    mapped_type at(const MapKey& key) const;
+  // };
+  //
+  // The `value_type` differs from standard map types in that the key and value
+  // are accessed as `elem.key()` and `elem.value()` instead of `elem.first` and
+  // `elem.second`. The accessors return `MapKey` and `MapValueConstRef`.
+  //
+  // Example usage:
+  //
+  // for (auto entry : reflection->GetMap(message, field)) {
+  //   MapKey key = entry.key();
+  //   MapValueConstRef value = entry.value();
+  //   ...
+  // }
+  [[nodiscard]] GenericConstMapRef GetMap(const Message& message,
+                                          const FieldDescriptor* field) const;
+
+  // Get a map field as a generic mutable handle.
+  // `GenericMapRef` is similar to `GenericConstMapRef` but adds the following
+  // mutating operations:
+  //
+  //    void clear() const;
+  //    bool erase(const MapKey& key) const;
+  //    bool erase(iterator it) const;
+  //    std::pair<iterator, bool> try_emplace(const MapKey& key) const;
+  //    mapped_type operator[](const MapKey& key) const;
+  //
+  //    // Deep container operations
+  //    void assign(const GenericMapRef& other) const;
+  //    void merge(const GenericMapRef& other) const;
+  //    void swap(const GenericMapRef& other) const;
+  //
+  //    // Shallow handle operations
+  //    void shallow_assign(const GenericMapRef& other);
+  //    void shallow_swap(GenericMapRef&);
+  //
+  // `try_emplace` behaves like a standard one, except that does not allow
+  // passing an initial value. The `mapped_type` will always be default
+  // initialized if the operation results in an insertion, just like it works
+  // for `operator[]`.
+  //
+  // In addition, the `value()` you get from the iterator returns a
+  // `MapValueRef`, which allows for mutable access to the value.
+  //
+  // Example usage:
+  //
+  // // Increase value for the key
+  // MapKey key = ...;
+  // auto map = reflection->MutableMap(message, field);
+  // auto it = map.find(key);
+  // if (it != map.end()) {
+  //   it->value()->SetInt64Value(it->value()->GetInt64Value() + 1);
+  // }
+  //
+  [[nodiscard]] GenericMapRef MutableMap(Message* message,
+                                         const FieldDescriptor* field) const;
+
   // DEPRECATED. Please use Get(Mutable)RepeatedFieldRef() for repeated field
   // access. The following repeated field accessors will be removed in the
   // future.
@@ -1237,7 +1314,6 @@ class PROTOBUF_EXPORT Reflection final {
   friend class util::MessageDifferencer;
 #define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
   friend class expr::CelMapReflectionFriend;
-  friend class internal::MapFieldReflectionTest;
   friend class internal::MapKeySorter;
   friend class internal::MessageUtil;
   friend class internal::WireFormat;
@@ -1266,59 +1342,30 @@ class PROTOBUF_EXPORT Reflection final {
 
   friend class MapReflectionTester;
 
-  // Returns true if key is in map. Returns false if key is not in map field.
+  // TODO: We keep these legacy functions temporarily.
+  // We have friend projects that are using the internal API.
+  // Once they are updated to use the public API we can clean this up.
+  [[deprecated("Legacy internal function. Use GetMap instead.")]]
   bool ContainsMapKey(const Message& message, const FieldDescriptor* field,
                       const MapKey& key) const;
-
-  // If key is in map field: Saves the value pointer to val and returns
-  // false. If key in not in map field: Insert the key into map, saves
-  // value pointer to val and returns true. Users are able to modify the
-  // map value by MapValueRef.
+  [[deprecated("Legacy internal function. Use MutableMap instead.")]]
   bool InsertOrLookupMapValue(Message* message, const FieldDescriptor* field,
                               const MapKey& key, MapValueRef* val) const;
-
-  // If key is in map field: Saves the value pointer to val and returns true.
-  // Returns false if key is not in map field. Users are NOT able to modify
-  // the value by MapValueConstRef.
+  [[deprecated("Legacy internal function. Use GetMap instead.")]]
   bool LookupMapValue(const Message& message, const FieldDescriptor* field,
                       const MapKey& key, MapValueConstRef* val) const;
-  bool LookupMapValue(const Message&, const FieldDescriptor*, const MapKey&,
-                      MapValueRef*) const = delete;
-
-  // Delete and returns true if key is in the map field. Returns false
-  // otherwise.
+  [[deprecated("Legacy internal function. Use MutableMap instead.")]]
   bool DeleteMapValue(Message* message, const FieldDescriptor* field,
                       const MapKey& key) const;
-
-  // Returns a MapIterator referring to the first element in the map field.
-  // If the map field is empty, this function returns the same as
-  // reflection::MapEnd. Mutation to the field may invalidate the iterator.
-  MapIterator MapBegin(Message* message, const FieldDescriptor* field) const;
-
-  // Returns a MapIterator referring to the theoretical element that would
-  // follow the last element in the map field. It does not point to any
-  // real element. Mutation to the field may invalidate the iterator.
-  MapIterator MapEnd(Message* message, const FieldDescriptor* field) const;
-
-  // Returns a ConstMapIterator referring to the first element in the map field.
-  // If the map field is empty, this function returns the same as
-  // reflection::ConstMapEnd. Mutation to the field may invalidate the iterator.
+  [[deprecated("Legacy internal function. Use GetMap instead.")]]
   ConstMapIterator ConstMapBegin(const Message* message,
                                  const FieldDescriptor* field) const;
-
-  // Returns a ConstMapIterator referring to the theoretical element that would
-  // follow the last element in the map field. It does not point to any
-  // real element. Mutation to the field may invalidate the iterator.
+  [[deprecated("Legacy internal function. Use GetMap instead.")]]
   ConstMapIterator ConstMapEnd(const Message* message,
                                const FieldDescriptor* field) const;
-
-  // Get the number of <key, value> pair of a map field. The result may be
-  // different from FieldSize which can have duplicate keys.
+  [[deprecated("Legacy internal function. Use GetMap instead.")]]
   int MapSize(const Message& message, const FieldDescriptor* field) const;
 
-  // Help method for MapIterator.
-  template <bool>
-  friend class MapIteratorBase;
   friend class WireFormatForMapFieldTest;
   internal::MapFieldBase* MutableMapData(Message* message,
                                          const FieldDescriptor* field) const;
