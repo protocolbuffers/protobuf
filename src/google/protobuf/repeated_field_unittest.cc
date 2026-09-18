@@ -50,6 +50,7 @@
 // TODO: Remove.
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -292,6 +293,50 @@ TEST_F(RepeatedFieldIsFullTest, RepeatedVarintOverflow) {
         (void)msg.MergeFromString(str10);
       },
       HasSubstr("Integer overflow in CheckedAdd: "));
+}
+
+TEST_F(RepeatedFieldIsFullTest, ReadPackedFixedSizePrimitiveOverflow) {
+  uint8_t buffer[16];
+  uint8_t* target = buffer;
+  target =
+      io::CodedOutputStream::WriteVarint32ToArray(sizeof(uint32_t), target);
+  *reinterpret_cast<uint32_t*>(target) = 0x12345678;
+  target += sizeof(uint32_t);
+  int encoded_len = target - buffer;
+
+  io::ArrayInputStream array_input(buffer, encoded_len);
+  io::CodedInputStream coded_input(&array_input);
+
+  RepeatedField<uint32_t> values;
+  SetFakeCapacityAndSize(values, 10, std::numeric_limits<int>::max());
+
+  EXPECT_FALSE((internal::WireFormatLite::ReadPackedPrimitive<
+                uint32_t, internal::WireFormatLite::TYPE_FIXED32>(
+      &coded_input, &values)));
+
+  SetFakeCapacityAndSize(values, 10, 0);
+
+  // Also verify when old_entries is INT_MAX - 1 and new_entries is 2.
+  uint8_t buffer2[16];
+  target = buffer2;
+  target = io::CodedOutputStream::WriteVarint32ToArray(sizeof(uint32_t) * 2,
+                                                       target);
+  *reinterpret_cast<uint32_t*>(target) = 0x12345678;
+  target += sizeof(uint32_t);
+  *reinterpret_cast<uint32_t*>(target) = 0x9abcdef0;
+  target += sizeof(uint32_t);
+  int encoded_len2 = target - buffer2;
+
+  io::ArrayInputStream array_input2(buffer2, encoded_len2);
+  io::CodedInputStream coded_input2(&array_input2);
+
+  SetFakeCapacityAndSize(values, 10, std::numeric_limits<int>::max() - 1);
+
+  EXPECT_FALSE((internal::WireFormatLite::ReadPackedPrimitive<
+                uint32_t, internal::WireFormatLite::TYPE_FIXED32>(
+      &coded_input2, &values)));
+
+  SetFakeCapacityAndSize(values, 10, 0);
 }
 
 // Test operations on a RepeatedField which is large enough to allocate a
