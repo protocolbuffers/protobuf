@@ -1121,6 +1121,7 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   const int new_entries = length / static_cast<int>(sizeof(CType));
   const int new_bytes = new_entries * static_cast<int>(sizeof(CType));
   if (new_bytes != length) return false;
+  if (new_entries > std::numeric_limits<int>::max() - old_entries) return false;
   // We would *like* to pre-allocate the buffer to write into (for
   // speed), but *must* avoid performing a very large allocation due
   // to a malicious user-supplied "length" above.  So we have a fast
