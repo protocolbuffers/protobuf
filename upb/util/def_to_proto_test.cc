@@ -345,4 +345,36 @@ TEST(FuzzTest, OptionDependency) {
       )pb"));
 }
 
+TEST(FuzzTest, RoundTripFloatAndDoubleDefaultValues) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "float_default.proto"
+             message_type {
+               name: "M"
+               field {
+                 name: "f1"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_FLOAT
+                 default_value: "777777777777777777777777777777777772"
+               }
+               field {
+                 name: "f2"
+                 number: 2
+                 label: LABEL_OPTIONAL
+                 type: TYPE_FLOAT
+                 default_value: "36.666668"
+               }
+               field {
+                 name: "d1"
+                 number: 3
+                 label: LABEL_OPTIONAL
+                 type: TYPE_DOUBLE
+                 default_value: "0.1"
+               }
+             }
+           }
+      )pb"));
+}
+
 }  // namespace upb_test
