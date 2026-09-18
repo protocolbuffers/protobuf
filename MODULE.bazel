@@ -155,6 +155,9 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
         target_platforms = [
             "linux_x86_64",
             "linux_aarch64",
+            "osx_aarch64",
+            "osx_x86_64",
+            "windows_x86_64",
         ],
         experimental_index_url = "https://pypi.org/simple",
     )
