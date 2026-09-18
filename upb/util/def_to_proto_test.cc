@@ -345,4 +345,22 @@ TEST(FuzzTest, OptionDependency) {
       )pb"));
 }
 
+TEST(FuzzTest, FloatDefaultRoundTripPrecision) {
+  RoundTripDescriptor(ParseTextProtoOrDie(
+      R"pb(file {
+             name: "f"
+             message_type {
+               name: "M"
+               field {
+                 name: "O"
+                 number: 1
+                 label: LABEL_OPTIONAL
+                 type: TYPE_FLOAT
+                 default_value: "777777777777777777777777777777777772"
+               }
+             }
+           }
+      )pb"));
+}
+
 }  // namespace upb_test
