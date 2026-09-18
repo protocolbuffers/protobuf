@@ -546,8 +546,9 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
     generated_file = self->underlay->FindFileByName(file_proto.name());
   }
   if (generated_file != nullptr) {
-    return PyFileDescriptor_FromDescriptorWithSerializedPb(generated_file,
-                                                           serialized_pb);
+    // Don't pin serialized_pb: the generated pool already holds this file and
+    // file_descriptor::GetSerializedPb reconstructs the bytes on demand.
+    return PyFileDescriptor_FromDescriptor(generated_file);
   }
 
   BuildFileErrorCollector error_collector;
