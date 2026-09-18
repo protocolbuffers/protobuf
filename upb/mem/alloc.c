@@ -13,14 +13,48 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+#ifdef __STDC_VERSION_STDLIB_H__
+#if __STDC_VERSION_STDLIB_H_ >= 202311L
+#define UPB_FREE_SIZED(ptr, size) free_sized(ptr, size)
+#else
+#endif
+#endif
+
+#if !defined(UPB_FREE_SIZED) && defined(__ANDROID_NDK__)
+#include <android/ndk-version.h>
+#if __NDK_MAJOR__ >= 30
+#if __ANDROID_MIN_SDK_VERSION__ >= 37
+#define UPB_FREE_SIZED(ptr, size) free_sized(ptr, size)
+#elif defined(__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__)
+static void upb_available_free_sized(void* ptr, size_t size) {
+  if (__builtin_available(android 37, *)) {
+    free_sized(ptr, size);
+  } else {
+    free(ptr);
+  }
+}
+#define UPB_FREE_SIZED(ptr, size) upb_available_free_sized(ptr, size)
+#endif
+#endif
+#endif
+
+#if !defined(UPB_FREE_SIZED)
+#define UPB_FREE_SIZED(ptr, size) free(ptr);
+#endif
+
 static void* upb_global_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
                                   size_t size, size_t* actual_size) {
   UPB_UNUSED(alloc);
-  UPB_UNUSED(oldsize);
   UPB_UNUSED(actual_size);
   if (size == 0) {
-    free(ptr);
+    if (oldsize != 0) {
+      UPB_FREE_SIZED(ptr, oldsize);
+    } else {
+      free(ptr);
+    }
     return NULL;
+  } else if (oldsize == 0) {
+    return malloc(size);
   } else {
     return realloc(ptr, size);
   }
