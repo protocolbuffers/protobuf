@@ -10,6 +10,7 @@
 __author__ = 'matthewtoia@google.com (Matt Toia)'
 
 import copy
+import sys
 import timeit
 import unittest
 import warnings
@@ -87,6 +88,18 @@ class DescriptorPoolTestBase(object):
           number=n_trials,
       )
       print(f'FindExtensionByName: {duration / n_trials * 1000}ms')
+
+      # AddSerializedFile
+      file_proto = descriptor_pb2.FileDescriptorProto()
+      file_proto.name = 'google/protobuf/wrappers.proto'
+      file_proto.package = 'google.protobuf'
+      raw_bytes = bytes(file_proto.SerializeToString())
+      duration = timeit.timeit(
+          lambda: self.pool.AddSerializedFile(raw_bytes),
+          number=n_trials,
+      )
+      print(f'AddSerializedFile: {duration / n_trials * 1000}ms')
+
     else:
       print('Skipping benchmark in non-benchmark mode.')
 
@@ -874,6 +887,19 @@ class DefaultDescriptorPoolTest(DescriptorPoolTestBase, unittest.TestCase):
         self.pool.FindServiceByName('proto2_unittest.TestService'),
         unittest_pb2.DESCRIPTOR.services_by_name['TestService'],
     )
+
+  def testAddSerializedFileDoesNotRetainSerializedPb(self):
+    if api_implementation.Type() != 'cpp':
+      return
+    file_proto = descriptor_pb2.FileDescriptorProto()
+    file_proto.name = 'google/protobuf/wrappers.proto'
+    file_proto.package = 'google.protobuf'
+    raw_bytes = bytes(file_proto.SerializeToString())
+    refcount_before = sys.getrefcount(raw_bytes)
+    desc = self.pool.AddSerializedFile(raw_bytes)
+    self.assertEqual(desc.name, 'google/protobuf/wrappers.proto')
+    self.assertEqual(sys.getrefcount(raw_bytes), refcount_before)
+    self.assertIsNot(desc.serialized_pb, raw_bytes)
 
 
 @testing_refleaks.TestCase
