@@ -1390,6 +1390,11 @@ inline uint32_t ReadSize(const char** pp) {
     *pp = p + 1;
     return res;
   }
+  uint32_t b1 = static_cast<uint8_t>(p[1]);
+  if (ABSL_PREDICT_TRUE(b1 < 128)) {
+    *pp = p + 2;
+    return (res & 0x7F) | (b1 << 7);
+  }
   auto x = ReadSizeFallback(p, res);
   *pp = x.first;
   return x.second;
