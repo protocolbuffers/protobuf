@@ -108,8 +108,6 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   PyObject* bases = NULL;
   PyTypeObject* type = NULL;
   PyObject* size = NULL;
-  PyObject* sys = NULL;
-  PyObject* hex_version = NULL;
   bool ret = false;
 
   // PyType_GetSlot() only works on heap types, so we cannot use it on
@@ -160,16 +158,12 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   assert(bits->type_clear == PyType_Type.tp_clear);
 #endif
 
-  sys = PyImport_ImportModule("sys");
-  hex_version = PyObject_GetAttrString(sys, "hexversion");
   ret = true;
 
 err:
   Py_XDECREF(bases);
   Py_XDECREF(type);
   Py_XDECREF(size);
-  Py_XDECREF(sys);
-  Py_XDECREF(hex_version);
   return ret;
 }
 
@@ -1334,7 +1328,9 @@ static PyObject* PyUpb_Message_IsInitializedAppendErrors(PyObject* _self,
                                                          PyObject* errors) {
   PyObject* list = PyUpb_Message_FindInitializationErrors(_self, NULL);
   if (!list) return NULL;
-  bool ok = PyList_Size(list) == 0;
+  Py_ssize_t size = PyList_Size(list);
+  if (size < 0) goto done;
+  bool ok = size == 0;
   PyObject* ret = NULL;
   PyObject* extend_result = NULL;
   if (!ok) {
@@ -1482,6 +1478,7 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
   }
   // OPT: exit if src is empty.
   PyObject* subargs = PyTuple_New(0);
+  if (!subargs) return NULL;
   PyObject* serialized =
       PyUpb_Message_SerializePartialToString(arg, subargs, NULL);
   Py_DECREF(subargs);
@@ -1632,12 +1629,14 @@ static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
   // moment upb does not have a "byte size" function, so we just serialize to
   // string and get the size of the string.
   PyObject* subargs = PyTuple_New(0);
+  if (!subargs) return NULL;
   PyObject* serialized = PyUpb_Message_SerializeToString(self, subargs, NULL);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
-  size_t size = PyBytes_Size(serialized);
+  Py_ssize_t size = PyBytes_Size(serialized);
   Py_DECREF(serialized);
-  return PyLong_FromSize_t(size);
+  if (size < 0) return NULL;
+  return PyLong_FromSize_t((size_t)size);
 }
 
 static PyObject* PyUpb_Message_Clear(PyUpb_Message* self) {
@@ -1935,10 +1934,17 @@ PyObject* PyUpb_Message_SerializeInternal(PyObject* _self, PyObject* args,
     } else {
       PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
       PyObject* errors = PyUpb_Message_FindInitializationErrors(_self, NULL);
-      if (PyList_Size(errors) != 0) {
+      if (!errors) goto done;
+      Py_ssize_t error_count = PyList_Size(errors);
+      if (error_count < 0) {
+        Py_DECREF(errors);
+        goto done;
+      }
+      if (error_count != 0) {
         PyUpb_Message_ReportInitializationErrors(msgdef, errors,
                                                  state->encode_error_class);
       } else {
+        Py_DECREF(errors);
         PyErr_Format(state->encode_error_class, "Failed to serialize proto");
       }
     }
