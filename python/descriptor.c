@@ -29,6 +29,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/atomic.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/message.h"
 #include "upb/util/def_to_proto.h"
