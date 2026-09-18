@@ -128,6 +128,14 @@ Error, UINTPTR_MAX is undefined
   (((SIZE_MAX - offsetof(type, member[0])) /                \
     (offsetof(type, member[1]) - offsetof(type, member[0]))) < (size_t)count)
 
+// Inverse of UPB_SIZEOF_FLEX; given the size in memory, how many elements can
+// the flexible array member store?
+#define UPB_FLEX_CAPACITY(type, member, size)   \
+  ((size) < sizeof(type)                        \
+       ? (size_t)0                              \
+       : ((size) - offsetof(type, member[0])) / \
+             (offsetof(type, member[1]) - offsetof(type, member[0])))
+
 #define UPB_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #define UPB_MAPTYPE_STRING 0
@@ -4534,6 +4542,10 @@ typedef struct upb_Message_Internal {
   // Tagged pointers to upb_StringView or upb_Extension
   upb_TaggedAuxPtr aux_data[];
 } upb_Message_Internal;
+
+bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
+                                            const struct upb_Message* src,
+                                            upb_Arena* arena);
 
 #ifdef UPB_TRACING_ENABLED
 UPB_API void upb_Message_LogNewMessage(const upb_MiniTable* m,
@@ -20223,6 +20235,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_SIZE
 #undef UPB_PTR_AT
 #undef UPB_SIZEOF_FLEX
+#undef UPB_FLEX_CAPACITY
 #undef UPB_SIZEOF_FLEX_WOULD_OVERFLOW
 #undef UPB_MAPTYPE_STRING
 #undef UPB_EXPORT
