@@ -243,10 +243,12 @@ When using `DynamicMessage` with a descriptor sourced from an untrusted source,
 you may need to validate and sanitize them as you would user provided SQL.
 
 Caution: Usage of `DynamicMessage` with malicious descriptors reaching an RCE or
-information leak would still be treated as a high priority issue. However, there
-are inherently reachable cases of where malicious descriptors used with
-`DynamicMessage` can reach behavior which may otherwise be considered a Denial
-of Service risk under our primary threat model. For example, it will be
+information leak would still be treated as a high priority issue, and any RCE or
+information leak concerns on this surface should be reported via a
+[draft GitHub Security Advisory](https://github.com/protocolbuffers/protobuf/security/advisories/new).
+However, there are inherently reachable cases of where malicious descriptors
+used with `DynamicMessage` can reach behavior which may otherwise be considered
+a Denial of Service risk under our primary threat model. For example, it will be
 reachable to hit memory use which is O(N*M) where N is "# of messages observed
 on the wire" and M is "size of the message definition". Since untrusted
 descriptors gives an affordance for arbitrarily large message definitions, using

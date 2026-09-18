@@ -599,7 +599,8 @@ void ImmutableMapFieldGenerator::GenerateMapGetters(
   printer->Print(
       variables_,
       "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
-      "  return internalGet$capitalized_name$().getMap().size();\n"
+      "  if ($name$_ == null) { return 0; }\n"
+      "  return $name$_.getMap().size();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
@@ -962,7 +963,8 @@ void ImmutableMapFieldGenerator::GenerateMessageMapGetters(
   printer->Print(
       variables_,
       "$deprecation$public int ${$get$capitalized_name$Count$}$() {\n"
-      "  return internalGet$capitalized_name$().ensureBuilderMap().size();\n"
+      "  if ($name$_ == null) { return 0; }\n"
+      "  return $name$_.ensureBuilderMap().size();\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
 
@@ -1050,9 +1052,11 @@ void ImmutableMapFieldGenerator::GenerateBuilderClearCode(
 void ImmutableMapFieldGenerator::GenerateMergingCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "internalGetMutable$capitalized_name$().mergeFrom(\n"
-                 "    other.internalGet$capitalized_name$());\n"
-                 "$set_has_field_bit$\n");
+                 "if (other.get$capitalized_name$Count() > 0) {\n"
+                 "  internalGetMutable$capitalized_name$().mergeFrom(\n"
+                 "      other.internalGet$capitalized_name$());\n"
+                 "  $set_has_field_bit$\n"
+                 "}\n");
 }
 
 void ImmutableMapFieldGenerator::GenerateBuildingCode(
@@ -1114,27 +1118,31 @@ void ImmutableMapFieldGenerator::GenerateBuilderParsingCode(
 void ImmutableMapFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   printer->Print(variables_,
-                 "com.google.protobuf.GeneratedMessage\n"
-                 "  .serialize$short_key_type$MapTo(\n"
-                 "    output,\n"
-                 "    internalGet$capitalized_name$(),\n"
-                 "    $default_entry$,\n"
-                 "    $number$);\n");
+                 "if (get$capitalized_name$Count() > 0) {\n"
+                 "  com.google.protobuf.GeneratedMessage\n"
+                 "    .serialize$short_key_type$MapTo(\n"
+                 "      output,\n"
+                 "      internalGet$capitalized_name$(),\n"
+                 "      $default_entry$,\n"
+                 "      $number$);\n"
+                 "}\n");
 }
 
 void ImmutableMapFieldGenerator::GenerateSerializedSizeCode(
     io::Printer* printer) const {
   printer->Print(
       variables_,
-      "for (java.util.Map.Entry<$type_parameters$> entry\n"
-      "     : internalGet$capitalized_name$().getMap().entrySet()) {\n"
-      "  com.google.protobuf.MapEntry<$type_parameters$>\n"
-      "  $name$__ = $default_entry$.newBuilderForType()\n"
-      "      .setKey(entry.getKey())\n"
-      "      .setValue(entry.getValue())\n"
-      "      .buildPartial();\n"
-      "  size += com.google.protobuf.CodedOutputStream\n"
-      "      .computeMessageSize($number$, $name$__);\n"
+      "if (get$capitalized_name$Count() > 0) {\n"
+      "  for (java.util.Map.Entry<$type_parameters$> entry\n"
+      "       : internalGet$capitalized_name$().getMap().entrySet()) {\n"
+      "    com.google.protobuf.MapEntry<$type_parameters$>\n"
+      "    $name$__ = $default_entry$.newBuilderForType()\n"
+      "        .setKey(entry.getKey())\n"
+      "        .setValue(entry.getValue())\n"
+      "        .buildPartial();\n"
+      "    size += com.google.protobuf.CodedOutputStream\n"
+      "        .computeMessageSize($number$, $name$__);\n"
+      "  }\n"
       "}\n");
 }
 
@@ -1148,7 +1156,7 @@ void ImmutableMapFieldGenerator::GenerateEqualsCode(
 void ImmutableMapFieldGenerator::GenerateHashCode(io::Printer* printer) const {
   printer->Print(
       variables_,
-      "if (!internalGet$capitalized_name$().getMap().isEmpty()) {\n"
+      "if (get$capitalized_name$Count() > 0) {\n"
       "  hash = (37 * hash) + $constant_name$;\n"
       "  hash = (53 * hash) + internalGet$capitalized_name$().hashCode();\n"
       "}\n");

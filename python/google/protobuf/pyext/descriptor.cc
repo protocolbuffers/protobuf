@@ -417,16 +417,11 @@ namespace descriptor {
 // Creates or retrieve a Python descriptor of the specified type.
 // Objects are interned: the same descriptor will return the same object if it
 // was kept alive.
-// 'was_created' is an optional pointer to a bool, and is set to true if a new
-// object was allocated.
 // Always return a new reference.
-template <class DescriptorClass>
+template <class DescriptorClass, class InitFunc>
 PyObject* NewInternedDescriptor(PyTypeObject* type,
                                 const DescriptorClass* descriptor,
-                                bool* was_created) {
-  if (was_created) {
-    *was_created = false;
-  }
+                                InitFunc init_func) {
   if (descriptor == nullptr) {
     PyErr_BadInternalCall();
     return nullptr;
@@ -447,20 +442,24 @@ PyObject* NewInternedDescriptor(PyTypeObject* type,
             GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
         if (pool == nullptr) {
           // Don't DECREF, the object is not fully initialized.
-          PyObject_Del(py_descriptor);
+          PyObject_GC_Del(py_descriptor);
           return nullptr;
         }
         Py_INCREF(pool);
         py_descriptor->pool = pool;
 
-        PyObject_GC_Track(py_descriptor);
+        init_func(reinterpret_cast<PyObject*>(py_descriptor));
 
-        if (was_created) {
-          *was_created = true;
-        }
+        PyObject_GC_Track(py_descriptor);
 
         return reinterpret_cast<PyObject*>(py_descriptor);
       });
+}
+
+template <class DescriptorClass>
+PyObject* NewInternedDescriptor(PyTypeObject* type,
+                                const DescriptorClass* descriptor) {
+  return NewInternedDescriptor(type, descriptor, [](PyObject*) {});
 }
 
 static void Dealloc(PyObject* pself) {
@@ -807,7 +806,7 @@ PyTypeObject PyMessageDescriptor_Type = {
 PyObject* PyMessageDescriptor_FromDescriptor(
     const Descriptor* message_descriptor) {
   return descriptor::NewInternedDescriptor(&PyMessageDescriptor_Type,
-                                           message_descriptor, nullptr);
+                                           message_descriptor);
 }
 
 const Descriptor* PyMessageDescriptor_AsDescriptor(PyObject* obj) {
@@ -1147,7 +1146,7 @@ PyTypeObject PyFieldDescriptor_Type = {
 PyObject* PyFieldDescriptor_FromDescriptor(
     const FieldDescriptor* field_descriptor) {
   return descriptor::NewInternedDescriptor(&PyFieldDescriptor_Type,
-                                           field_descriptor, nullptr);
+                                           field_descriptor);
 }
 
 const FieldDescriptor* PyFieldDescriptor_AsDescriptor(PyObject* obj) {
@@ -1314,7 +1313,7 @@ PyTypeObject PyEnumDescriptor_Type = {
 PyObject* PyEnumDescriptor_FromDescriptor(
     const EnumDescriptor* enum_descriptor) {
   return descriptor::NewInternedDescriptor(&PyEnumDescriptor_Type,
-                                           enum_descriptor, nullptr);
+                                           enum_descriptor);
 }
 
 const EnumDescriptor* PyEnumDescriptor_AsDescriptor(PyObject* obj) {
@@ -1442,7 +1441,7 @@ PyTypeObject PyEnumValueDescriptor_Type = {
 PyObject* PyEnumValueDescriptor_FromDescriptor(
     const EnumValueDescriptor* enumvalue_descriptor) {
   return descriptor::NewInternedDescriptor(&PyEnumValueDescriptor_Type,
-                                           enumvalue_descriptor, nullptr);
+                                           enumvalue_descriptor);
 }
 
 namespace file_descriptor {
@@ -1638,17 +1637,15 @@ PyObject* PyFileDescriptor_FromDescriptor(
 
 PyObject* PyFileDescriptor_FromDescriptorWithSerializedPb(
     const FileDescriptor* file_descriptor, PyObject* serialized_pb) {
-  bool was_created;
   PyObject* py_descriptor = descriptor::NewInternedDescriptor(
-      &PyFileDescriptor_Type, file_descriptor, &was_created);
+      &PyFileDescriptor_Type, file_descriptor, [serialized_pb](PyObject* obj) {
+        PyFileDescriptor* cfile_descriptor =
+            reinterpret_cast<PyFileDescriptor*>(obj);
+        Py_XINCREF(serialized_pb);
+        cfile_descriptor->serialized_pb = serialized_pb;
+      });
   if (py_descriptor == nullptr) {
     return nullptr;
-  }
-  if (was_created) {
-    PyFileDescriptor* cfile_descriptor =
-        reinterpret_cast<PyFileDescriptor*>(py_descriptor);
-    Py_XINCREF(serialized_pb);
-    cfile_descriptor->serialized_pb = serialized_pb;
   }
   // TODO: In the case of a cached object, check that serialized_pb
   // is the same as before.
@@ -1792,7 +1789,7 @@ PyTypeObject PyOneofDescriptor_Type = {
 PyObject* PyOneofDescriptor_FromDescriptor(
     const OneofDescriptor* oneof_descriptor) {
   return descriptor::NewInternedDescriptor(&PyOneofDescriptor_Type,
-                                           oneof_descriptor, nullptr);
+                                           oneof_descriptor);
 }
 
 namespace service_descriptor {
@@ -1929,7 +1926,7 @@ PyTypeObject PyServiceDescriptor_Type = {
 PyObject* PyServiceDescriptor_FromDescriptor(
     const ServiceDescriptor* service_descriptor) {
   return descriptor::NewInternedDescriptor(&PyServiceDescriptor_Type,
-                                           service_descriptor, nullptr);
+                                           service_descriptor);
 }
 
 const ServiceDescriptor* PyServiceDescriptor_AsDescriptor(PyObject* obj) {
@@ -2070,7 +2067,7 @@ PyTypeObject PyMethodDescriptor_Type = {
 PyObject* PyMethodDescriptor_FromDescriptor(
     const MethodDescriptor* method_descriptor) {
   return descriptor::NewInternedDescriptor(&PyMethodDescriptor_Type,
-                                           method_descriptor, nullptr);
+                                           method_descriptor);
 }
 
 // Add a enum values to a type dictionary.

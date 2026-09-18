@@ -190,30 +190,30 @@ void Map::InExternC(Context& ctx, const FieldDescriptor& field) const {
 void Map::InThunkCc(Context& ctx, const FieldDescriptor& field) const {
   ABSL_CHECK(ctx.is_cpp());
 
-  ctx.Emit(
-      {{"field", cpp::FieldName(&field)},
-       {"Key", MapElementTypeName(*field.message_type()->map_key())},
-       {"Value", MapElementTypeName(*field.message_type()->map_value())},
-       {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
-       {"getter_thunk", ThunkName(ctx, field, "get")},
-       {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
-       {"move_setter_thunk", ThunkName(ctx, field, "set")},
-       {"impls",
-        [&] {
-          ctx.Emit(
-              R"cc(
-                const void* $getter_thunk$(const $QualifiedMsg$* msg) {
-                  return &msg->$field$();
-                }
-                void* $getter_mut_thunk$($QualifiedMsg$* msg) { return msg->mutable_$field$(); }
-                void $move_setter_thunk$($QualifiedMsg$* msg,
-                                         google::protobuf::Map<$Key$, $Value$>* value) {
-                  *msg->mutable_$field$() = std::move(*value);
-                  delete value;
-                }
-              )cc");
-        }}},
-      "$impls$");
+  ctx.Emit({{"field", cpp::FieldName(&field)},
+            {"Key", MapElementTypeName(*field.message_type()->map_key())},
+            {"Value", MapElementTypeName(*field.message_type()->map_value())},
+            {"QualifiedMsg", cpp::QualifiedClassName(field.containing_type())},
+            {"getter_thunk", ThunkName(ctx, field, "get")},
+            {"getter_mut_thunk", ThunkName(ctx, field, "get_mut")},
+            {"move_setter_thunk", ThunkName(ctx, field, "set")},
+            {"impls",
+             [&] {
+               ctx.Emit(
+                   R"cc(
+                     const void* $getter_thunk$(const $QualifiedMsg$* msg) {
+                       return &msg->$field$();
+                     }
+                     void* $getter_mut_thunk$($QualifiedMsg$* msg) { return msg->mutable_$field$(); }
+                     void $move_setter_thunk$(
+                         $QualifiedMsg$* msg,
+                         ::google::protobuf::internal::UntypedMapBase* value) {
+                       ::google::protobuf::internal::RustMapHelper::DestructiveMove(
+                           msg->mutable_$field$(), value);
+                     }
+                   )cc");
+             }}},
+           "$impls$");
 }
 
 }  // namespace rust

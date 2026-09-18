@@ -872,6 +872,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   // Pre-condition: |extend_amount| must be > 0.
   void** InternalExtend(int extend_amount, Arena* arena);
+  void** InternalExtend(int extend_amount, SerialArena* arena);
 
   // Ensures that capacity is at least `n` elements.
   // Returns a pointer to the element directly beyond the last element.
