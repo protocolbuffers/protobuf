@@ -71,8 +71,8 @@ jobs:
           bazel: >-
             test ${{ matrix.targets }} ${{ matrix.flags }}
             ${{ matrix.nobzlmod && '--noenable_bzlmod' || '' }}
-            ${{ matrix.version != 'aarch64' && '--//python:use_hermetic_python=true' || '' }}
-            ${{ matrix.version != 'aarch64' && format('--@rules_python//python/config_settings:python_version={0}', matrix.version) || '' }}
+            --//python:use_hermetic_python=true
+            ${{ format('--@rules_python//python/config_settings:python_version={0}', (matrix.version != 'aarch64' && matrix.version || '3.10')) }}
             --test_env=KOKORO_PYTHON_VERSION=${{ matrix.version != 'aarch64' && matrix.version || matrix.kokoro_python_version }}
 
 
