@@ -973,7 +973,7 @@ inline void Value::set_has_number_value() {
 inline void Value::clear_number_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kNumberValue) {
-    _impl_.kind_.number_value_ = 0;
+    _impl_.kind_.number_value_ = 0.;
     clear_has_kind();
   }
 }
@@ -993,7 +993,7 @@ inline double Value::_internal_number_value() const {
   if (kind_case() == kNumberValue) {
     return _impl_.kind_.number_value_;
   }
-  return 0;
+  return 0.;
 }
 
 // string string_value = 3;
