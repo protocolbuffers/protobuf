@@ -420,7 +420,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodedInputStream {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD std::pair<CodedInputStream::Limit, int>
   IncrementRecursionDepthAndPushLimit(int byte_limit);
 
-  // Shorthand for PushLimit(ReadVarint32(&length) ? length : 0).
+  // Shorthand for PushLimit(ReadVarintSizeAsInt(&length) ? length : 0).
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD Limit ReadLengthAndPushLimit();
 
   // Helper that is equivalent to: {
