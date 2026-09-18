@@ -7,17 +7,21 @@
 
 #include "upb/util/def_to_proto.h"
 
+#include <float.h>
 #include <inttypes.h>
 #include <math.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "google/protobuf/descriptor.upb.h"
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/lex/round_trip.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/port/vsnprintf_compat.h"
@@ -179,10 +183,22 @@ static upb_StringView default_string(upb_ToProto_Context* ctx,
       return printf_dup(ctx, "%" PRId32, d.int32_val);
     case kUpb_CType_UInt32:
       return printf_dup(ctx, "%" PRIu32, d.uint32_val);
-    case kUpb_CType_Float:
-      return printf_dup(ctx, "%.9g", d.float_val);
-    case kUpb_CType_Double:
-      return printf_dup(ctx, "%.17g", d.double_val);
+    case kUpb_CType_Float: {
+      char buf[kUpb_RoundTripBufferSize];
+      for (int prec = FLT_DIG; prec <= FLT_DIG + 3; prec++) {
+        snprintf(buf, sizeof(buf), "%.*g", prec, d.float_val);
+        if (strtof(buf, NULL) == d.float_val) break;
+      }
+      for (char* p = buf; *p; p++) {
+        if (*p == ',') *p = '.';
+      }
+      return strviewdup(ctx, buf);
+    }
+    case kUpb_CType_Double: {
+      char buf[kUpb_RoundTripBufferSize];
+      _upb_EncodeRoundTripDouble(d.double_val, buf, sizeof(buf));
+      return strviewdup(ctx, buf);
+    }
     case kUpb_CType_String:
       return strviewdup2(ctx, d.str_val);
     case kUpb_CType_Bytes:
