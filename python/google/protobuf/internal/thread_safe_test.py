@@ -392,6 +392,38 @@ class FreeThreadingTest(unittest.TestCase):
     for t in threads:
       t.join()
 
+  def testConcurrentFieldDescriptorLabelAccessDataRace(self):
+    """Reproduces the data race in WarnDeprecatedLabel under free-threading."""
+    pool = descriptor_pool.DescriptorPool()
+    f_proto = descriptor_pb2.FileDescriptorProto(name='race_label.proto')
+    msg = f_proto.message_type.add(name='TestMessage')
+    field = msg.field.add(
+        name='opt_field',
+        number=1,
+        type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+    )
+    field.label = descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL
+    pool.Add(f_proto)
+
+    desc = pool.FindMessageTypeByName('TestMessage')
+    field_desc = desc.fields_by_name['opt_field']
+
+    barrier = threading.Barrier(10)
+
+    def Worker():
+      barrier.wait()
+      for _ in range(50):
+        _ = field_desc.label
+
+    threads = [threading.Thread(target=Worker) for _ in range(10)]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual(
+        field_desc.label, descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL
+    )
+
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""
     pool = descriptor_pool.DescriptorPool()
