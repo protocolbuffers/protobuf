@@ -614,8 +614,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // two vectors of FieldDescriptors.
   bool CompareWithFields(
       const Message& message1, const Message& message2,
-      const std::vector<const FieldDescriptor*>& message1_fields,
-      const std::vector<const FieldDescriptor*>& message2_fields);
+      const std::vector<const FieldDescriptor*>& message1_fields_arg,
+      const std::vector<const FieldDescriptor*>& message2_fields_arg);
 
   // Automatically creates a reporter that will output the differences
   // found (if any) to the specified output string pointer. Note that this
@@ -785,8 +785,9 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
   // Compares all the unknown fields in two messages.
   bool CompareUnknownFields(const Message& message1, const Message& message2,
-                            const UnknownFieldSet&, const UnknownFieldSet&,
-                            std::vector<SpecificField>* parent_fields);
+                            const UnknownFieldSet& unknown_field_set1,
+                            const UnknownFieldSet& unknown_field_set2,
+                            std::vector<SpecificField>* parent_field);
 
   // Compares the specified messages for the requested field lists. The field
   // lists are modified depending on comparison settings, and then passed to
@@ -806,26 +807,28 @@ class PROTOBUF_EXPORT MessageDifferencer {
 
   // Compares the repeated fields, and report the error.
   bool CompareRepeatedField(const Message& message1, const Message& message2,
-                            int unpacked_any, const FieldDescriptor* field,
+                            int unpacked_any,
+                            const FieldDescriptor* repeated_field,
                             std::vector<SpecificField>* parent_fields);
 
   // Compares map fields, and report the error.
   bool CompareMapField(const Message& message1, const Message& message2,
-                       int unpacked_any, const FieldDescriptor* field,
+                       int unpacked_any, const FieldDescriptor* repeated_field,
                        std::vector<SpecificField>* parent_fields);
 
   // Helper for CompareRepeatedField and CompareMapField: compares and reports
   // differences element-wise. This is the implementation for non-map fields,
   // and can also compare map fields by using the underlying representation.
   bool CompareRepeatedRep(const Message& message1, const Message& message2,
-                          int unpacked_any, const FieldDescriptor* field,
+                          int unpacked_any,
+                          const FieldDescriptor* repeated_field,
                           std::vector<SpecificField>* parent_fields);
 
   // Helper for CompareMapField: compare the map fields using map reflection
   // instead of sync to repeated.
   bool CompareMapFieldByMapReflection(const Message& message1,
                                       const Message& message2, int unpacked_any,
-                                      const FieldDescriptor* field,
+                                      const FieldDescriptor* map_field,
                                       std::vector<SpecificField>* parent_fields,
                                       DefaultFieldComparator* comparator);
 
@@ -915,7 +918,7 @@ class PROTOBUF_EXPORT MessageDifferencer {
       std::vector<int>* match_list1, std::vector<int>* match_list2);
 
   // Checks if index is equal to new_index in all the specific fields.
-  static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
+  static bool CheckPathChanged(const std::vector<SpecificField>& field_path);
 
   // ABSL_CHECKs that the given repeated field can be compared according to
   // new_comparison.
