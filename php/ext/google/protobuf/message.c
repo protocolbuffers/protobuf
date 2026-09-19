@@ -222,6 +222,15 @@ bool ValueEq(upb_MessageValue val1, upb_MessageValue val2, TypeInfo type) {
  *   $m1 == $m2
  */
 static int Message_compare_objects(zval* m1, zval* m2) {
+  // The engine invokes this handler whenever *either* operand is a Message, and
+  // passes the other operand through unchecked. Do not reinterpret a non-object
+  // (e.g. an integer or string) or a non-Message object as a Message*.
+  if (Z_TYPE_P(m1) != IS_OBJECT || Z_TYPE_P(m2) != IS_OBJECT ||
+      !instanceof_function(Z_OBJCE_P(m1), message_ce) ||
+      !instanceof_function(Z_OBJCE_P(m2), message_ce)) {
+    return ZEND_UNCOMPARABLE;
+  }
+
   Message* intern1 = (Message*)Z_OBJ_P(m1);
   Message* intern2 = (Message*)Z_OBJ_P(m2);
   const upb_MessageDef* m = intern1->desc->msgdef;
