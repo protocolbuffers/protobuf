@@ -2444,6 +2444,10 @@ bool PyUpb_InitMessage(PyObject* m) {
   PyObject* message_meta_type = PyUpb_MessageMeta_CreateType();
 
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  if (!state) {
+    Py_XDECREF(message_meta_type);
+    return false;
+  }
   state->cmessage_type = PyUpb_AddClass(m, &PyUpb_Message_Spec);
   state->message_meta_type = (PyTypeObject*)message_meta_type;
 

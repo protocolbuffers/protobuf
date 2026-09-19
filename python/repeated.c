@@ -1568,6 +1568,7 @@ static bool PyUpb_Repeated_RegisterAsSequence(PyUpb_ModuleState* state) {
 
 bool PyUpb_Repeated_Init(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  if (!state) return false;
 
   state->repeated_composite_container_type =
       PyUpb_AddClass(m, &PyUpb_RepeatedCompositeContainer_Spec);
