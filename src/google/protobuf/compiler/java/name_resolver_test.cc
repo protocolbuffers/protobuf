@@ -141,6 +141,104 @@ TEST_F(NameResolverTest, FileImmutableClassNameEdition2023) {
             "ConflictingFileClassNameOuterClass");
 }
 
+TEST_F(NameResolverTest, PublicImportShimClassNameEdition2024) {
+  BuildFileAndPopulatePool("new/codes.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest;
+
+      enum Code { OK = 0; }
+                )schema");
+  BuildFileAndPopulatePool("old/codes.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest;
+
+      import public "new/codes.proto";
+                )schema");
+
+  ClassNameResolver resolver;
+  auto target = pool_.FindFileByName("new/codes.proto");
+  auto shim = pool_.FindFileByName("old/codes.proto");
+  // The moved file keeps its name; only the shim is renamed.
+  EXPECT_EQ(resolver.GetFileImmutableClassName(target), "CodesProto");
+  EXPECT_EQ(resolver.GetFileDefaultImmutableClassName(shim), "CodesProto");
+  EXPECT_EQ(resolver.GetFileImmutableClassName(shim), "CodesShimProto");
+  // Derived names follow the disambiguated name.
+  EXPECT_EQ(resolver.GetFileClassName(shim, /*immutable=*/true,
+                                      /*kotlin=*/true),
+            "CodesShimProtoKt");
+  EXPECT_EQ(resolver.GetClassName(shim, /*immutable=*/true),
+            PACKAGE_PREFIX "proto2_unittest.CodesShimProto");
+}
+
+TEST_F(NameResolverTest, PublicImportShimClassNameEdition2023) {
+  BuildFileAndPopulatePool("new/codes.proto",
+                           R"schema(
+      edition = "2023";
+
+      package proto2_unittest;
+
+      enum Code { OK = 0; }
+                )schema");
+  BuildFileAndPopulatePool("old/codes.proto",
+                           R"schema(
+      edition = "2023";
+
+      package proto2_unittest;
+
+      import public "new/codes.proto";
+                )schema");
+
+  ClassNameResolver resolver;
+  auto target = pool_.FindFileByName("new/codes.proto");
+  auto shim = pool_.FindFileByName("old/codes.proto");
+  EXPECT_EQ(resolver.GetFileImmutableClassName(target), "Codes");
+  EXPECT_EQ(resolver.GetFileImmutableClassName(shim), "CodesShim");
+  EXPECT_EQ(resolver.GetFileClassName(shim, /*immutable=*/true,
+                                      /*kotlin=*/true),
+            "CodesShimKt");
+}
+
+TEST_F(NameResolverTest, PublicImportShimClassNameNoCollision) {
+  BuildFileAndPopulatePool("new/codes.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest;
+
+      enum Code { OK = 0; }
+                )schema");
+  // Same basename, different Java package.
+  BuildFileAndPopulatePool("old/codes.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest.legacy;
+
+      import public "new/codes.proto";
+                )schema");
+  // Same Java package, different basename.
+  BuildFileAndPopulatePool("old/error_codes.proto",
+                           R"schema(
+      edition = "2024";
+
+      package proto2_unittest;
+
+      import public "new/codes.proto";
+                )schema");
+
+  ClassNameResolver resolver;
+  EXPECT_EQ(resolver.GetFileImmutableClassName(
+                pool_.FindFileByName("old/codes.proto")),
+            "CodesProto");
+  EXPECT_EQ(resolver.GetFileImmutableClassName(
+                pool_.FindFileByName("old/error_codes.proto")),
+            "ErrorCodesProto");
+}
+
 TEST_F(NameResolverTest, MultipleFilesServiceEdition2023) {
   BuildFileAndPopulatePool("foo.proto",
                            R"schema(

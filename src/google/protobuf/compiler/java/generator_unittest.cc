@@ -529,6 +529,173 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
                                          "foo.FooProto.fileOpt);")));
 }
 
+// A moved file whose old path is kept as an `import public` shim with the same
+// basename: the shim must not generate the same outer class as the target.
+TEST_F(JavaGeneratorTest, PublicImportShimOuterClassNameIsDisambiguated) {
+  CreateTempFile("new/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      enum Code { OK = 0; }
+      )schema");
+  CreateTempFile("old/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "new/codes.proto";
+      )schema");
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "old/codes.proto new/codes.proto");
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/CodesProto.java"));
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/CodesShimProto.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/CodesProto.java",
+                                    "new/codes.proto"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/CodesShimProto.java",
+                                    "old/codes.proto"));
+}
+
+TEST_F(JavaGeneratorTest,
+       PublicImportShimOuterClassNameIsDisambiguatedWithOldNamingScheme) {
+  CreateTempFile("new/codes.proto", R"schema(
+      syntax = "proto2";
+      package foo;
+      enum Code { OK = 0; }
+      )schema");
+  CreateTempFile("old/codes.proto", R"schema(
+      syntax = "proto2";
+      package foo;
+      import public "new/codes.proto";
+      )schema");
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir -I$tmpdir "
+      "old/codes.proto new/codes.proto");
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/Codes.java"));
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/CodesShim.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/Codes.java",
+                                    "new/codes.proto"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/CodesShim.java",
+                                    "old/codes.proto"));
+}
+
+// The collision is detected against the target's *resolved* outer class name,
+// and through chains of shims (each shim gets its own unique name).
+TEST_F(JavaGeneratorTest, PublicImportShimChainOuterClassNamesAreUnique) {
+  CreateTempFile("new/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      option java_outer_classname = "CodesShimProto";
+      enum Code { OK = 0; }
+      )schema");
+  CreateTempFile("mid/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "new/codes.proto";
+      )schema");
+  CreateTempFile("old/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "mid/codes.proto";
+      )schema");
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "old/codes.proto mid/codes.proto new/codes.proto");
+  ExpectNoErrors();
+  // The target keeps its explicit name; "mid" takes the default name since it
+  // is free; "old" collides with the target and must skip past it.
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/CodesShimProto.java",
+                                    "new/codes.proto"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/CodesProto.java",
+                                    "mid/codes.proto"));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "foo/CodesShimShimProto.java", "old/codes.proto"));
+}
+
+// Negative cases: no renaming happens when there is no collision.
+TEST_F(JavaGeneratorTest, PublicImportShimKeepsDefaultNameWithoutCollision) {
+  CreateTempFile("new/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      enum Code { OK = 0; }
+      )schema");
+  // Different basename: no collision.
+  CreateTempFile("old/status_codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "new/codes.proto";
+      )schema");
+  // Same basename but a different Java package: no collision.
+  CreateTempFile("old/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      option java_package = "com.example.old";
+      import public "new/codes.proto";
+      )schema");
+  // Same basename but only a regular (non-public) import: not a shim.
+  CreateTempFile("other/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      option java_package = "com.example.other";
+      import "new/codes.proto";
+      message Wrapper { Code code = 1; }
+      )schema");
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "old/codes.proto old/status_codes.proto other/codes.proto "
+      "new/codes.proto");
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/CodesProto.java"));
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/StatusCodesProto.java"));
+  EXPECT_TRUE(FileGenerated("com/example/old/CodesProto.java"));
+  EXPECT_TRUE(FileGenerated("com/example/other/CodesProto.java"));
+  EXPECT_FALSE(FileGenerated(PACKAGE_PREFIX "foo/CodesShimProto.java"));
+}
+
+// An explicit java_outer_classname on the shim is always honored.
+TEST_F(JavaGeneratorTest, PublicImportShimExplicitOuterClassNameIsHonored) {
+  CreateTempFile("new/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      enum Code { OK = 0; }
+      )schema");
+  CreateTempFile("old/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      option java_outer_classname = "LegacyCodes";
+      import public "new/codes.proto";
+      )schema");
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "old/codes.proto new/codes.proto");
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/CodesProto.java"));
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "foo/LegacyCodes.java"));
+  EXPECT_FALSE(FileGenerated(PACKAGE_PREFIX "foo/CodesShimProto.java"));
+}
+
+// A file that declares its own types is not a shim, even if it publicly
+// imports a same-named file; it keeps the (colliding) default name as before.
+TEST_F(JavaGeneratorTest, PublicImportWithOwnTypesIsNotRenamed) {
+  CreateTempFile("new/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      enum Code { OK = 0; }
+      )schema");
+  CreateTempFile("old/codes.proto", R"schema(
+      edition = "2024";
+      package foo;
+      import public "new/codes.proto";
+      message Extra {}
+      )schema");
+  RunProtoc(
+      "protocol_compiler --java_out=$tmpdir --experimental_editions -I$tmpdir "
+      "old/codes.proto");
+  ExpectNoErrors();
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "foo/CodesProto.java",
+                                    "old/codes.proto"));
+  EXPECT_FALSE(FileGenerated(PACKAGE_PREFIX "foo/CodesShimProto.java"));
+}
+
 
 TEST_F(JavaGeneratorTest, OneofHasBitsBuildPartial) {
   CreateTempFile("oneof_has_bits.proto",
