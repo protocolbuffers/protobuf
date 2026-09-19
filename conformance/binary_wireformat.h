@@ -85,12 +85,13 @@ class Wire {
 
 // Expose our internal wire types for conformance tests.
 enum class WireType : uint8_t {
-  kVarint = internal::WireFormatLite::WIRETYPE_VARINT,
-  kFixed32 = internal::WireFormatLite::WIRETYPE_FIXED32,
-  kFixed64 = internal::WireFormatLite::WIRETYPE_FIXED64,
-  kLengthPrefixed = internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
-  kStartGroup = internal::WireFormatLite::WIRETYPE_START_GROUP,
-  kEndGroup = internal::WireFormatLite::WIRETYPE_END_GROUP,
+  kVarint = ::google::protobuf::internal::WireFormatLite::WIRETYPE_VARINT,
+  kFixed32 = ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED32,
+  kFixed64 = ::google::protobuf::internal::WireFormatLite::WIRETYPE_FIXED64,
+  kLengthPrefixed =
+      ::google::protobuf::internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+  kStartGroup = ::google::protobuf::internal::WireFormatLite::WIRETYPE_START_GROUP,
+  kEndGroup = ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP,
   kInvalid = 6
 };
 
