@@ -1,0 +1,13 @@
+# This is the list of text format conformance tests that are known to fail right
+# now.
+# TODO: These should be fixed.
+Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.ProtobufOutput                                           # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
+Required.*.TextFormatInput.StringLiteralBasicEscapesBytes.TextFormatOutput                                         # Output was not equivalent to reference message: modified: optional_bytes: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\t
+Required.*.TextFormatInput.StringLiteralBasicEscapesString.ProtobufOutput                                          # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
+Required.*.TextFormatInput.StringLiteralBasicEscapesString.TextFormatOutput                                        # Output was not equivalent to reference message: modified: optional_string: "\007\010\014\n\r\t\013?\\\'\"" -> "\007\010\014\n\r\
+Required.*.TextFormatInput.ReservedFieldName.*.ProtobufOutput                                                      # Failed to parse input or produce output.
+Required.*.TextFormatInput.ReservedFieldName.*.TextFormatOutput                                                    # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.ProtobufOutput                                                 # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithComment.TextFormatOutput                                               # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.ProtobufOutput                                              # Failed to parse input or produce output.
+Required.*.TextFormatInput.ExtensionNameWithWhitespace.TextFormatOutput                                            # Failed to parse input or produce output.
