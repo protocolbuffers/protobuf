@@ -6,12 +6,11 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 // Defines the global --testee_binary, --testee_args, --failure_list,
-// --enforcement_level, --maximum_edition, --performance, --fix and
-// --fix_output_file flags.  Being process-global ABSL_FLAGs with short, generic
-// names, they must only be linked into binaries with a test_environment_main-
-// style main (see test_environment_flags.h), never into
-// conformance_test_runner, whose legacy command line parses flags of the same
-// names itself.
+// --enforcement_level, --maximum_edition, --fix and --fix_output_file flags.
+// Being process-global ABSL_FLAGs with short, generic names, they must only be
+// linked into binaries with a test_environment_main-style main (see
+// test_environment_flags.h), never into conformance_test_runner, whose legacy
+// command line parses flags of the same names itself.
 
 #include "conformance/test_environment_flags.h"
 
@@ -42,20 +41,19 @@ ABSL_FLAG(google::protobuf::conformance::TestPriority, enforcement_level,
 ABSL_FLAG(google::protobuf::Edition, maximum_edition, google::protobuf::EDITION_PROTO3,
           "Only run conformance tests up to and including this edition, e.g. "
           "EDITION_2023.  Defaults to proto2 and proto3 only.");
-// TODO: Transitional.  Goes away with the in-binary
-// performance mode, see ConformanceEnvironmentOptions::performance.
-ABSL_FLAG(bool, performance, false,
-          "Run only the performance tests instead of the regular tests.  A "
-          "performance run needs its own failure list.");
 ABSL_FLAG(bool, fix, false,
           "Rewrite the failure list at the end of the run to match the "
           "observed results.  See --fix_output_file.  Refused when only some "
-          "of the tests run (--gtest_filter, sharding).");
+          "of the tests run (--gtest_filter, sharding).  Use it via `bazel run "
+          "<target> -- --fix`: under `bazel test` the file is written inside "
+          "the test sandbox and discarded.");
 ABSL_FLAG(std::string, fix_output_file, "",
           "Where --fix writes the updated failure list.  Required when more "
           "than one --failure_list is given; otherwise defaults to the "
-          "failure list itself under $BUILD_WORKSPACE_DIRECTORY, so that "
-          "`bazel run ... -- --fix` updates the file in your workspace.");
+          "failure list itself.  A relative path (this flag's or the failure "
+          "list's) is resolved under $BUILD_WORKSPACE_DIRECTORY when that is "
+          "set, so that `bazel run ... -- --fix` creates or updates the file "
+          "in your workspace.");
 
 namespace google {
 namespace protobuf {
@@ -73,7 +71,6 @@ ConformanceEnvironmentOptions OptionsFromFlags(
   options.failure_list_files = absl::GetFlag(FLAGS_failure_list);
   options.enforcement_level = absl::GetFlag(FLAGS_enforcement_level);
   options.maximum_edition = absl::GetFlag(FLAGS_maximum_edition);
-  options.performance = absl::GetFlag(FLAGS_performance);
   options.fix = absl::GetFlag(FLAGS_fix);
   options.fix_output_file = absl::GetFlag(FLAGS_fix_output_file);
   return options;

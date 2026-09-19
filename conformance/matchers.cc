@@ -26,6 +26,7 @@
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
+#include "conformance/filtering_test_runner.h"
 #include "conformance/global_test_environment.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
@@ -43,6 +44,7 @@ namespace {
 using ::conformance::ConformanceResponse;
 using ::conformance::WireFormat;
 using ::google::protobuf::conformance::internal::ReportFailure;
+using ::google::protobuf::conformance::internal::ReportNotSelected;
 using ::google::protobuf::conformance::internal::ReportSkip;
 using ::google::protobuf::conformance::internal::ReportSuccess;
 using ::google::protobuf::conformance::internal::TestResult;
@@ -520,6 +522,16 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
   absl::Status Evaluate(const TestResult& result) const {
     const std::string name(result.name());
     const ConformanceResponse& response = result.response();
+
+    // A test the runner filtered out with --test never ran: it is neither a
+    // testee skip nor, if listed, a "listed but skipped" failure.  It is
+    // reported all the same, so that its failure list entry isn't reported as
+    // matching no test.
+    if (response.result_case() == ConformanceResponse::kSkipped &&
+        response.skipped() == FilteringTestRunner::kNotSelectedSkipReason) {
+      ReportNotSelected(name);
+      return absl::OkStatus();
+    }
 
     // A skip is decided by the failure list alone; the inner matcher never
     // sees it.  A listed test the testee skipped fails (see

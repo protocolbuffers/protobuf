@@ -43,6 +43,10 @@ absl::Status ReportFailure(absl::string_view test_name, TestPriority priority,
                            absl::string_view failure_message);
 absl::Status ReportSkip(absl::string_view test_name,
                         absl::string_view skip_reason);
+// A test the runner filtered out with --test never ran; it is only marked as
+// existing (see ResultLedger::ReportNotSelected()).
+// TODO: Remove with conformance_test_runner.
+void ReportNotSelected(absl::string_view test_name);
 
 }  // namespace internal
 }  // namespace conformance

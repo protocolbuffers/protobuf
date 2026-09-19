@@ -67,7 +67,6 @@ TEST(OptionsFromFlagsTest, Defaults) {
   EXPECT_THAT(options.failure_list_files, IsEmpty());
   EXPECT_EQ(options.enforcement_level, kLowestPriority);
   EXPECT_EQ(options.maximum_edition, EDITION_PROTO3);
-  EXPECT_FALSE(options.performance);
   EXPECT_FALSE(options.fix);
   EXPECT_THAT(options.fix_output_file, IsEmpty());
   EXPECT_TRUE(options.check_unseen_expected_failures);
@@ -80,7 +79,6 @@ TEST(OptionsFromFlagsTest, ForwardsEveryFlag) {
   absl::SetFlag(&FLAGS_failure_list, {"x.txt", "y.txt"});
   absl::SetFlag(&FLAGS_enforcement_level, kP0);
   absl::SetFlag(&FLAGS_maximum_edition, EDITION_2023);
-  absl::SetFlag(&FLAGS_performance, true);
   absl::SetFlag(&FLAGS_fix, true);
   absl::SetFlag(&FLAGS_fix_output_file, "out.txt");
 
@@ -91,7 +89,6 @@ TEST(OptionsFromFlagsTest, ForwardsEveryFlag) {
   EXPECT_THAT(options.failure_list_files, ElementsAre("x.txt", "y.txt"));
   EXPECT_EQ(options.enforcement_level, kP0);
   EXPECT_EQ(options.maximum_edition, EDITION_2023);
-  EXPECT_TRUE(options.performance);
   EXPECT_TRUE(options.fix);
   EXPECT_EQ(options.fix_output_file, "out.txt");
   // Not flags: the main sets the runner, the environment the rest.
@@ -171,20 +168,17 @@ TEST(CommandLineTest, ParsesTheMacroCommandLine) {
                           "cpp_binary.txt"));
   EXPECT_EQ(options.maximum_edition, EDITION_2023);
   EXPECT_EQ(options.enforcement_level, kLowestPriority);
-  EXPECT_FALSE(options.performance);
   EXPECT_FALSE(options.fix);
 }
 
-TEST(CommandLineTest, ParsesThePerformanceAndFixFlags) {
+TEST(CommandLineTest, ParsesTheFixFlags) {
   absl::FlagSaver saver;
-  std::vector<std::string> args = {"--performance", "--fix",
-                                   "--fix_output_file=new.txt",
+  std::vector<std::string> args = {"--fix", "--fix_output_file=new.txt",
                                    "--enforcement_level=0"};
   std::vector<char*> positional_args = ParseCommandLine(args);
 
   ConformanceEnvironmentOptions options = OptionsFromFlags(positional_args);
 
-  EXPECT_TRUE(options.performance);
   EXPECT_TRUE(options.fix);
   EXPECT_EQ(options.fix_output_file, "new.txt");
   EXPECT_EQ(options.enforcement_level, kP0);

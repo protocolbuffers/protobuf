@@ -7,10 +7,11 @@
 
 // The command-line flags of a conformance test binary and their translation
 // into ConformanceEnvironmentOptions.  test_environment_main.cc is the usual
-// consumer.  A binary with its own main, for example one hosting an
-// in-process testee, can link this library instead to get the same flags.  It
-// then calls OptionsFromFlags() and sets `runner` or `owned_runner` before
-// installing the environment.
+// consumer.  An in-process testee needs no main of its own: it defines
+// MakeTesteeRunner() (see testee_runner.h).  A binary with its own main can
+// link this library instead to get the same flags.  It then calls
+// OptionsFromFlags() and sets `owned_runner` before installing the
+// environment.
 
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TEST_ENVIRONMENT_FLAGS_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TEST_ENVIRONMENT_FLAGS_H__
@@ -35,9 +36,10 @@ namespace internal {
 //
 //   ConformanceEnvironment::Install(OptionsFromFlags());
 //
-// This doesn't insist on --testee_binary.  A main hosting an in-process testee
-// leaves it unset and fills in `runner` or `owned_runner` instead.
-// test_environment_main.cc checks it.
+// This doesn't insist on --testee_binary.  Whether it is required (forked
+// testee) or must be absent (in-process testee) is up to the linked
+// MakeTesteeRunner() (see testee_runner.h), which test_environment_main.cc
+// hands the options to.
 ConformanceEnvironmentOptions OptionsFromFlags(
     absl::Span<char* const> positional_args = {});
 
@@ -51,7 +53,6 @@ ABSL_DECLARE_FLAG(std::vector<std::string>, testee_args);
 ABSL_DECLARE_FLAG(std::vector<std::string>, failure_list);
 ABSL_DECLARE_FLAG(google::protobuf::conformance::TestPriority, enforcement_level);
 ABSL_DECLARE_FLAG(google::protobuf::Edition, maximum_edition);
-ABSL_DECLARE_FLAG(bool, performance);  // TODO: Transitional.
 ABSL_DECLARE_FLAG(bool, fix);
 ABSL_DECLARE_FLAG(std::string, fix_output_file);
 

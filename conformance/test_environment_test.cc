@@ -405,6 +405,16 @@ TEST_F(ConformanceEnvironmentTest, YieldsReportsToTheEnvironmentsLedger) {
   env->TearDown();
 }
 
+TEST_F(ConformanceEnvironmentTest, ReportNotSelectedReachesTheLedger) {
+  internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
+  env->SetUp();
+
+  internal::ReportNotSelected(kFooTestName);
+  EXPECT_TRUE(env->ledger().WasReported(kFooTestName));
+  EXPECT_EQ(env->ledger().expected_successes(), 0);
+  env->TearDown();
+}
+
 // The environment's ResultListener reports the statistics when a gtest test
 // or test suite ends (result_listener_test.cc drives it by hand), so this only
 // shows through an environment that outlives the test body, like the one a
@@ -782,6 +792,58 @@ TEST_F(ConformanceEnvironmentTest,
       env->TearDown(),
       "--fix needs either --fix_output_file or $BUILD_WORKSPACE_DIRECTORY");
   EXPECT_EQ(ReadFile(TmpPath("runfiles/failures.txt")), "");
+}
+
+TEST_F(ConformanceEnvironmentTest,
+       FixResolvesRelativeOutputFileUnderBuildWorkspaceDirectory) {
+  // conformance_test() passes a relative --fix_output_file (and no
+  // --failure_list) when the failure list doesn't exist yet; --fix must then
+  // create it in the source tree, not in the runfiles.
+  std::string runfiles = CreateTmpDir("runfiles");
+  std::string workspace = CreateTmpDir("workspace");
+  ScopedWorkingDirectory cwd(runfiles);
+  ScopedEnvironmentVariable build_workspace_directory(
+      "BUILD_WORKSPACE_DIRECTORY", workspace);
+
+  ConformanceEnvironmentOptions options;
+  options.runner = &fake_runner_;
+  options.fix = true;
+  options.fix_output_file = "failures.txt";
+  internal::ScopedGlobalConformanceEnvironment env(std::move(options));
+  env->SetUp();
+
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(RunP0("Bar"), Yields(IsParseError())),
+                          "Should have failed to parse, but didn't.");
+  internal::ScopedPartialRunOverride full_run(false);
+  env->TearDown();
+
+  EXPECT_THAT(ReadFile(TmpPath("workspace/failures.txt")),
+              HasSubstr(kBarTestName));
+  EXPECT_FALSE(
+      File::Exists(TmpPath("runfiles/failures.txt")));
+}
+
+TEST_F(ConformanceEnvironmentTest,
+       FixWithRelativeOutputFileWritesToTheWorkingDirectoryOutsideBlazeRun) {
+  std::string runfiles = CreateTmpDir("runfiles");
+  ScopedWorkingDirectory cwd(runfiles);
+  ScopedEnvironmentVariable build_workspace_directory(
+      "BUILD_WORKSPACE_DIRECTORY", absl::nullopt);
+
+  ConformanceEnvironmentOptions options;
+  options.runner = &fake_runner_;
+  options.fix = true;
+  options.fix_output_file = "failures.txt";
+  internal::ScopedGlobalConformanceEnvironment env(std::move(options));
+  env->SetUp();
+
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(RunP0("Bar"), Yields(IsParseError())),
+                          "Should have failed to parse, but didn't.");
+  internal::ScopedPartialRunOverride full_run(false);
+  env->TearDown();
+
+  EXPECT_THAT(ReadFile(TmpPath("runfiles/failures.txt")),
+              HasSubstr(kBarTestName));
 }
 
 TEST_F(ConformanceEnvironmentTest, FixWithMultipleListsNeedsOutputFile) {

@@ -53,18 +53,10 @@ std::string CurrentTestName() {
 }  // namespace
 
 void ConformanceTest::SetUp() {
-  ConformanceEnvironment& environment = ConformanceEnvironment::Get();
-  // TODO: Transitional.  Goes away with the in-binary
-  // performance mode, see ConformanceEnvironmentOptions::performance.
-  if (IsPerformanceTest() && !environment.options().performance) {
-    GTEST_SKIP() << "Performance tests only run with --performance.";
-  }
-  if (!IsPerformanceTest() && environment.options().performance) {
-    GTEST_SKIP() << "Only performance tests run with --performance.";
-  }
   if (const Descriptor* message = MessageUnderTest();
       message != nullptr &&
-      !IsSupported(*message, environment.options().maximum_edition)) {
+      !IsSupported(*message,
+                   ConformanceEnvironment::Get().options().maximum_edition)) {
     GTEST_SKIP() << "Skipping " << message->full_name()
                  << " because its edition is newer than --maximum_edition.";
   }

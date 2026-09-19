@@ -70,6 +70,11 @@ absl::Status ReportSkip(absl::string_view test_name,
   return global_ledger->ReportSkip(test_name, skip_reason);
 }
 
+void ReportNotSelected(absl::string_view test_name) {
+  ABSL_CHECK(global_ledger != nullptr);
+  global_ledger->ReportNotSelected(test_name);
+}
+
 }  // namespace internal
 
 namespace {
@@ -1394,6 +1399,36 @@ TEST_F(YieldsTest, UnlistedSkipPasses) {
                                         /*unexpected_failures=*/0,
                                         /*skipped=*/1}));
   EXPECT_THAT(ledger_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, NotSelectedByRunnerPassesSilently) {
+  // A filtering runner answers tests that weren't selected with this exact
+  // skip reason; that isn't a testee skip and must not be logged or counted.
+  AddToFailureList(kP0Foo, "");
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log, Log(_, _, HasSubstr(kP0Foo))).Times(0);
+  log.StartCapturingLogs();
+
+  bool inner_called = false;
+  auto matcher = Yields(Truly([&](const YieldedResult&) {
+    inner_called = true;
+    return false;
+  }));
+  const std::string response = R"pb(skipped: "Not selected by --test.")pb";
+  TestResult result = Run(response);
+
+  EXPECT_THAT(Explain(matcher, result), Accepts(IsEmpty()));
+  EXPECT_FALSE(inner_called);
+  EXPECT_EQ(GetCounts(ledger_), Counts{});
+  // Even a listed test is simply unseen, not "listed but skipped".  Its entry
+  // does count as matched, though: the test exists, it just didn't run.
+  EXPECT_THAT(ledger_.Finalize().message(),
+              HasSubstr(absl::StrCat("were not seen: ", kP0Foo)));
+  EXPECT_THAT(ledger_.UnmatchedExpectedFailures(), IsEmpty());
+
+  // An unlisted one likewise.
+  EXPECT_THAT(Run(response, TestPriority::kP0, "other"), matcher);
+  EXPECT_EQ(GetCounts(ledger_), Counts{});
 }
 
 TEST_F(YieldsTest, ListedSkipFailsOnce) {
