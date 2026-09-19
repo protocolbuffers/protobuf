@@ -34,6 +34,18 @@ void WriteDocCommentBodyImpl(io::Printer* printer, SourceLocation location) {
   if (comments.empty()) {
     return;
   }
+  // A .proto line comment ends only at '\n' (Tokenizer::ConsumeLineComment),
+  // so CR, NEL, LS and PS survive in the comment text. C# treats all four as
+  // line terminators (ECMA-334 6.3.2), and this text is emitted below as a
+  // '///' single-line comment, which ends at any of them (ECMA-334 6.3.3).
+  // Left alone they would end the generated comment and whatever followed on
+  // the same line would be compiled as code. Normalize them to '\n' so the
+  // split below emits each piece as its own comment line.
+  comments = absl::StrReplaceAll(comments, {{"\r\n", "\n"},
+                                            {"\r", "\n"},
+                                            {"\xc2\x85", "\n"},
+                                            {"\xe2\x80\xa8", "\n"},
+                                            {"\xe2\x80\xa9", "\n"}});
   // XML escaping... no need for apostrophes etc as the whole text is going to
   // be a child node of a summary element, not part of an attribute.
   comments = absl::StrReplaceAll(comments, {{"&", "&amp;"}, {"<", "&lt;"}});
