@@ -17,6 +17,16 @@ namespace google {
 namespace protobuf {
 namespace conformance {
 
+// The `skipped` reason a filtering runner answers with for every test that
+// was not selected to run.  The merged runner's FilteringTestRunner does so
+// under --test.  Such a response is not a testee skip.  The conformance
+// matchers (see matchers.h) pass it silently, without logging or counting it,
+// and only tell the TestManager that the test exists (see
+// TestManager::ReportNotSelected()).  The value is therefore reserved.  A
+// testee must never answer with it, or its skip would go unnoticed.
+inline constexpr absl::string_view kTestNotSelectedSkipReason =
+    "Not selected by --test.";
+
 // Interface for the underlying test runner that runs a single conformance test.
 class ConformanceTestRunner {
  public:
