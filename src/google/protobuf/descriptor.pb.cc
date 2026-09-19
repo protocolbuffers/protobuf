@@ -1688,7 +1688,7 @@ inline constexpr UninterpretedOption::Impl_::Impl_(
             ::_pbi::ConstantInitialized()),
         positive_int_value_{::uint64_t{0u}},
         negative_int_value_{::int64_t{0}},
-        double_value_{0.} {}
+        double_value_{0} {}
 
 template <typename>
 PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr UninterpretedOption::UninterpretedOption(
