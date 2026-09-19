@@ -1,0 +1,3 @@
+# Hex literals with the high bit set are parsed as negative numbers instead of
+# being rejected.  (The same entries are in text_format_failure_list_cpp.txt
+# for the legacy runner.)
