@@ -198,9 +198,12 @@ size_t proto2_rust_map_size(google::protobuf::internal::UntypedMapBase* m) {
   return m->size();
 }
 
-google::protobuf::internal::UntypedMapIterator proto2_rust_map_iter(
-    google::protobuf::internal::UntypedMapBase* m) {
-  return m->begin();
+// Uses an out-param rather than returning by value. An `sret` return from Rust
+// leaves `__msan_param_tls` stale, which MSAN misreports inside `begin()`. See
+// b/563626875.
+void proto2_rust_map_iter(google::protobuf::internal::UntypedMapBase* m,
+                          google::protobuf::internal::UntypedMapIterator* iter) {
+  *iter = m->begin();
 }
 
 void proto2_rust_map_free(google::protobuf::internal::UntypedMapBase* m) {
