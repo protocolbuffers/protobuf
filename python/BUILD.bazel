@@ -92,11 +92,11 @@ config_setting(
     },
 )
 
-_message_target_compatible_with = {
-    "@system_python//:none": ["@platforms//:incompatible"],
-    "@system_python//:unsupported": ["@platforms//:incompatible"],
-    "//conditions:default": [],
-}
+#_message_target_compatible_with = {
+#    "@system_python//:none": ["@platforms//:incompatible"],
+#    "@system_python//:unsupported": ["@platforms//:incompatible"],
+#    "//conditions:default": [],
+#}
 
 filegroup(
     name = "message_srcs",
@@ -138,7 +138,7 @@ py_extension(
     copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT),
     features = UPB_DEFAULT_FEATURES,
     py_limited_api = "3.10",
-    target_compatible_with = select(_message_target_compatible_with),
+    #target_compatible_with = select(_message_target_compatible_with),
     visibility = [
         ":__subpackages__",
         "//conformance:__pkg__",
