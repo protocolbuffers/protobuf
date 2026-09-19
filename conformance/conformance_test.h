@@ -14,14 +14,20 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_CONFORMANCE_TEST_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_CONFORMANCE_TEST_H__
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/base/nullability.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/status/statusor.h"
+#include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/failure_list_trie_node.h"
 #include "conformance/test_runner.h"
@@ -43,8 +49,165 @@ namespace protobuf {
 
 class ConformanceTestSuite;
 
+// Runs `suites` with the conformance_test_runner command line (see
+// PrintConformanceRunnerUsage()) and returns the process exit code.  This is
+// the legacy entry point; it is equivalent to ParseConformanceRunnerArgs()
+// followed by RunConformanceSuites().
 int RunConformanceTests(int argc, char* argv[],
                         const std::vector<ConformanceTestSuite*>& suites);
+
+// The options accepted on the conformance_test_runner command line.
+//
+// Transitional API for the gtest migration; will be removed once all suites
+// are migrated.
+struct ConformanceRunnerOptions {
+  // The first non-flag argument and everything after it.
+  std::string testee;
+  std::vector<std::string> testee_args;
+
+  // Every failure list flag given, as (flag name, file) pairs in command line
+  // order, e.g. ("--failure_list", "failure_list_cpp.txt").  A suite loads the
+  // files given for its GetFailureListFlagName().
+  std::vector<std::pair<std::string, std::string>> failure_list_files;
+
+  bool performance = false;
+  bool debug = false;
+  bool verbose = false;
+  bool enforce_recommended = false;
+  // EDITION_UNKNOWN (the default) runs the proto2 and proto3 tests only.
+  Edition maximum_edition = EDITION_UNKNOWN;
+  std::string output_dir;
+  // Where --record_requests should write, if given.
+  std::string record_requests_file;
+  // The tests named with --test, and whether to run only those (set by
+  // ParseConformanceRunnerArgs() when --test was given).  They are separate so
+  // that a caller that has already run some of the names elsewhere can hand
+  // over the remainder, even if none is left.
+  absl::flat_hash_set<std::string> names_to_test;
+  bool isolated = false;
+
+  // Arguments starting with --gtest_ or --gunit_ that appeared before the
+  // testee, in order and as given.  The legacy runner rejects them like any
+  // other unknown option; the merged runner (conformance_test_main.cc) passes
+  // them on to gtest, after RewriteGtestFlagPrefix().
+  std::vector<std::string> gtest_args;
+
+  // Returns the files given for `failure_list_flag`, in command line order.
+  // A member rather than a free function because it is a pure query over
+  // `failure_list_files` and reads best at its call sites as
+  // options.FailureListFilesFor(...).
+  std::vector<std::string> FailureListFilesFor(
+      absl::string_view failure_list_flag) const;
+};
+
+// Parses the conformance_test_runner command line.  `suites` only supplies
+// the accepted failure list flags (each suite's GetFailureListFlagName()).
+// On error, returns InvalidArgumentError with the message the runner prints
+// before its usage text; see PrintConformanceRunnerUsage().
+//
+// Transitional API for the gtest migration; will be removed once all suites
+// are migrated.
+absl::StatusOr<ConformanceRunnerOptions> ParseConformanceRunnerArgs(
+    int argc, char* argv[], absl::Span<ConformanceTestSuite* const> suites);
+
+// Returns `arg` with a leading "--gtest_" replaced by "--" + `flag_prefix`;
+// any other argument, including one already spelled with `flag_prefix`, is
+// returned unchanged.  The merged runner (conformance_test_main.cc) applies
+// this to ConformanceRunnerOptions::gtest_args with the prefix its gtest was
+// built with (GTEST_FLAG_PREFIX_ from gtest-port.h: "gtest_" in open source,
+// "gunit_" in google3, whose gtest rejects the --gtest_ spelling), so that the
+// documented --gtest_ spelling works everywhere.  GTEST_FLAG_PREFIX_ is one of
+// gtest's internal macros, but it is what gtest itself parses its flags by,
+// and merged_runner_test.sh checks end to end that a --gtest_ flag reaches
+// gtest.
+//
+// Transitional API for the gtest migration; will be removed once all suites
+// are migrated.
+std::string RewriteGtestFlagPrefix(absl::string_view arg,
+                                   absl::string_view flag_prefix);
+
+// Returns whether the gtest test suite (fixture) named `test_suite_name`
+// belongs to the performance conformance suite, i.e. whether its fixture is
+// named `*PerformanceTest` (the naming rule in test_environment.h).  gtest
+// names an instantiated fixture `<instantiation>/<fixture>` (value
+// parameterized), `<fixture>/<index or type name>` (typed) or
+// `<instantiation>/<fixture>/<index or type name>` (type parameterized), so
+// every '/'-separated component is checked.
+//
+// Transitional API for the gtest migration; will be removed once all suites
+// are migrated.
+bool IsPerformanceFixture(absl::string_view test_suite_name);
+
+// Returns the gtest filter (`positive patterns[-negative patterns]`, each
+// list ':'-separated, see gtest's --gtest_filter) that narrows `filter` to the
+// test suites of the kind `performance` selects: with `performance`, the
+// performance fixtures among `test_suite_names` (the names of every registered
+// gtest test suite, see IsPerformanceFixture()), otherwise all the others.
+// The suites of the other kind are appended to the negative patterns as
+// `<test suite name>.*`, so `filter` (typically an explicit --gtest_filter, or
+// "*") still applies within the selected kind.  This is how the merged runner
+// (conformance_test_main.cc) implements --performance for the gtest suites.
+//
+// Transitional API for the gtest migration; will be removed once all suites
+// are migrated.
+std::string PerformanceGtestFilter(
+    absl::string_view filter, bool performance,
+    absl::Span<const std::string> test_suite_names);
+
+// Prints `error_message` (if non-empty) followed by the usage text to stderr.
+//
+// Transitional API for the gtest migration; will be removed once all suites
+// are migrated.
+void PrintConformanceRunnerUsage(absl::string_view error_message);
+
+// Runs `suites` as conformance_test_runner does: each suite runs against its
+// own ForkPipeRunner for `options.testee`, its report is written to stderr,
+// and finally the tests requested with --test that no suite ran are listed.
+//
+// `record_requests`, if non-null, receives one line per request sent to the
+// testee (see RecordingTestRunner).  `unmatched_candidates`, if non-null, is
+// passed to ConformanceTestSuite::SetUnmatchedCandidates() on every suite.
+//
+// Returns true if every suite passed.  Exits the process if a failure list
+// cannot be read.
+//
+// Transitional API for the gtest migration; will be removed once all suites
+// are migrated.
+bool RunConformanceSuites(
+    const ConformanceRunnerOptions& options,
+    absl::Span<ConformanceTestSuite* const> suites,
+    std::ostream* absl_nullable record_requests,
+    const absl::flat_hash_set<std::string>* absl_nullable unmatched_candidates);
+
+// One entry of a report written by ReportTestStatusSet().
+struct ReportedTestStatus {
+  // The full name of the test.
+  std::string test_name;
+  // The failure message shown next to the test: the test's own for a failure,
+  // the failure list entry's for an unexpected success.
+  std::string failure_message;
+  // The failure list entry (possibly a wildcard) the test matched, when the
+  // report is about removing that entry from the list.  Empty when it is about
+  // adding `test_name` to the list.
+  std::string matched_name;
+};
+
+// Reports one category of test statuses the way every legacy suite does at the
+// end of its run.  Does nothing and returns true if `statuses` is empty.
+// Otherwise appends `message` followed by one "  <test name> # <failure
+// message>" line per status to `output` and returns false; if `file_name` is
+// non-empty, it also writes one "<name> # <failure message>" line per status to
+// the file `output_dir` + `file_name`, in the form update_failure_list expects:
+// <name> is the status's matched_name if set (an entry to remove from the
+// failure list) and its test name otherwise (an entry to add).  A file that
+// cannot be opened is reported in `output` too.
+//
+// Transitional API for the gtest migration: the merged runner
+// (conformance_test_main.cc) uses it to report the gtest suites' results in
+// the same format; will be removed once all suites are migrated.
+bool ReportTestStatusSet(absl::Span<const ReportedTestStatus> statuses,
+                         absl::string_view file_name, absl::string_view message,
+                         absl::string_view output_dir, std::string* output);
 
 // Class representing the test suite itself.  To run it, implement your own
 // class derived from ConformanceTestRunner, class derived from
@@ -123,6 +286,18 @@ class ConformanceTestSuite {
     return names_to_test_;
   }
 
+  // Restricts which failure list entries the next RunSuite() may report as
+  // unmatched (i.e. matching no test name in this suite): when set, such an
+  // entry is only reported if it is also in `candidates`.  The merged runner
+  // (conformance_test_main.cc) passes the entries that the gtest-based suites
+  // running in the same process did not match either, so that an entry is only
+  // flagged if neither side has a test for it.  Like the failure list, the
+  // candidates are per run: RunSuite() consumes them, and a run without them
+  // reports every unmatched entry (the default).
+  void SetUnmatchedCandidates(absl::flat_hash_set<std::string> candidates) {
+    unmatched_candidates_ = std::move(candidates);
+  }
+
   // Run all the conformance tests against the given test runner.
   // Test output will be stored in "output".
   //
@@ -133,7 +308,7 @@ class ConformanceTestSuite {
 
   bool RunSuite(ConformanceTestRunner* runner, std::string* output,
                 const std::string& filename,
-                conformance::FailureSet* failure_list);
+                ::conformance::FailureSet* failure_list);
 
  protected:
   // Test cases are classified into a few categories:
@@ -156,9 +331,9 @@ class ConformanceTestSuite {
   class ConformanceRequestSetting {
    public:
     ConformanceRequestSetting(ConformanceLevel level,
-                              conformance::WireFormat input_format,
-                              conformance::WireFormat output_format,
-                              conformance::TestCategory test_category,
+                              ::conformance::WireFormat input_format,
+                              ::conformance::WireFormat output_format,
+                              ::conformance::TestCategory test_category,
                               const Message& prototype_message,
                               const std::string& test_name,
                               const std::string& input);
@@ -170,7 +345,7 @@ class ConformanceTestSuite {
 
     std::string GetTestName() const;
 
-    const conformance::ConformanceRequest& GetRequest() const {
+    const ::conformance::ConformanceRequest& GetRequest() const {
       return request_;
     }
 
@@ -187,10 +362,11 @@ class ConformanceTestSuite {
     }
 
    protected:
-    virtual std::string InputFormatString(conformance::WireFormat format) const;
+    virtual std::string InputFormatString(
+        ::conformance::WireFormat format) const;
     virtual std::string OutputFormatString(
-        conformance::WireFormat format) const;
-    conformance::ConformanceRequest request_;
+        ::conformance::WireFormat format) const;
+    ::conformance::ConformanceRequest request_;
 
    private:
     ConformanceLevel level_;
@@ -201,32 +377,32 @@ class ConformanceTestSuite {
     std::string test_name_;
   };
 
-  std::string WireFormatToString(conformance::WireFormat wire_format);
+  std::string WireFormatToString(::conformance::WireFormat wire_format);
 
   // Parse payload in the response to the given message. Returns true on
   // success.
-  virtual bool ParseResponse(const conformance::ConformanceResponse& response,
+  virtual bool ParseResponse(const ::conformance::ConformanceResponse& response,
                              const ConformanceRequestSetting& setting,
                              Message* test_message) = 0;
 
   void VerifyResponse(const ConformanceRequestSetting& setting,
                       const std::string& equivalent_wire_format,
-                      const conformance::ConformanceResponse& response,
+                      const ::conformance::ConformanceResponse& response,
                       bool need_report_success, bool require_same_wire_format);
 
   void TruncateDebugPayload(std::string* payload);
-  conformance::ConformanceRequest TruncateRequest(
-      const conformance::ConformanceRequest& request);
-  conformance::ConformanceResponse TruncateResponse(
-      const conformance::ConformanceResponse& response);
+  ::conformance::ConformanceRequest TruncateRequest(
+      const ::conformance::ConformanceRequest& request);
+  ::conformance::ConformanceResponse TruncateResponse(
+      const ::conformance::ConformanceResponse& response);
 
-  void ReportSuccess(const conformance::TestStatus& test);
-  void ReportFailure(conformance::TestStatus& test, ConformanceLevel level,
-                     const conformance::ConformanceRequest& request,
-                     const conformance::ConformanceResponse& response);
-  void ReportSkip(const conformance::TestStatus& test,
-                  const conformance::ConformanceRequest& request,
-                  const conformance::ConformanceResponse& response);
+  void ReportSuccess(const ::conformance::TestStatus& test);
+  void ReportFailure(::conformance::TestStatus& test, ConformanceLevel level,
+                     const ::conformance::ConformanceRequest& request,
+                     const ::conformance::ConformanceResponse& response);
+  void ReportSkip(const ::conformance::TestStatus& test,
+                  const ::conformance::ConformanceRequest& request,
+                  const ::conformance::ConformanceResponse& response);
 
   void RunValidInputTest(const ConformanceRequestSetting& setting,
                          const std::string& equivalent_text_format);
@@ -236,13 +412,13 @@ class ConformanceTestSuite {
 
   // Returns true if our runner_ ran the test and false if it did not.
   bool RunTest(const std::string& test_name,
-               const conformance::ConformanceRequest& request,
-               conformance::ConformanceResponse* response);
+               const ::conformance::ConformanceRequest& request,
+               ::conformance::ConformanceResponse* response);
 
   // Will return false if an entry from the failure list was either a
   // duplicate of an already added one to the trie or it contained invalid
   // wildcards; otherwise, returns true.
-  bool AddExpectedFailedTest(const conformance::TestStatus& failure);
+  bool AddExpectedFailedTest(const ::conformance::TestStatus& failure);
 
   virtual void RunSuiteImpl() = 0;
 
@@ -267,12 +443,12 @@ class ConformanceTestSuite {
 
   // The set of test names (expanded from wildcard(s) and non-expanded) that are
   // expected to fail in this run, but haven't failed yet.
-  absl::btree_map<std::string, conformance::TestStatus> expected_to_fail_;
+  absl::btree_map<std::string, ::conformance::TestStatus> expected_to_fail_;
 
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // removed from our failure lists.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       expected_failure_messages_;
 
   // The set of test names that have been run.  Used to ensure that there are no
@@ -281,33 +457,37 @@ class ConformanceTestSuite {
 
   // The set of tests that failed, but weren't expected to: They weren't
   // present in our failure lists.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       unexpected_failing_tests_;
 
   // The set of tests that succeeded, but weren't expected to: They were present
   // in our failure lists, but managed to succeed.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       unexpected_succeeding_tests_;
 
   // The set of tests that failed because their failure message did not match
   // the actual failure message. These are failure messages that may need to be
   // added to our failure lists.
-  absl::btree_map<std::string, conformance::TestStatus>
+  absl::btree_map<std::string, ::conformance::TestStatus>
       unexpected_failure_messages_;
 
   // The set of test names (wildcarded or not) from the failure list that did
   // not match any actual test name.
-  absl::btree_map<std::string, conformance::TestStatus> unmatched_;
+  absl::btree_map<std::string, ::conformance::TestStatus> unmatched_;
+
+  // If set, only entries of unmatched_ that are also in here are reported.
+  // Taken (and cleared) by RunSuite(); see SetUnmatchedCandidates().
+  absl::optional<absl::flat_hash_set<std::string>> unmatched_candidates_;
 
   // The set of tests that the testee opted out of;
-  absl::btree_map<std::string, conformance::TestStatus> skipped_;
+  absl::btree_map<std::string, ::conformance::TestStatus> skipped_;
 
   // Allows us to remove from unmatched_.
   absl::btree_map<std::string, std::string> saved_failure_messages_;
 
   // If a failure list entry served as a match for more than 'max_matches_',
   // those will be added here for removal.
-  absl::btree_map<std::string, conformance::TestStatus> exceeded_max_matches_;
+  absl::btree_map<std::string, ::conformance::TestStatus> exceeded_max_matches_;
 
   // Keeps track of how many tests matched to each failure list entry.
   absl::btree_map<std::string, int> number_of_matches_;

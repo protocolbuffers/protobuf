@@ -16,6 +16,7 @@
 
 #include "absl/strings/string_view.h"
 #include "json/json.h"
+#include "conformance/binary_test_util.h"
 #include "conformance/conformance_test.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/util/type_resolver.h"
@@ -29,9 +30,9 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
  private:
   void RunSuiteImpl() override;
-  bool ParseJsonResponse(const conformance::ConformanceResponse& response,
+  bool ParseJsonResponse(const ::conformance::ConformanceResponse& response,
                          Message* test_message);
-  bool ParseResponse(const conformance::ConformanceResponse& response,
+  bool ParseResponse(const ::conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
   void SetTypeUrl(absl::string_view type_url) {
@@ -39,36 +40,24 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
   }
 
   template <typename MessageType>
-  void RunValidBinaryProtobufTest(const std::string& test_name,
-                                  ConformanceLevel level,
-                                  const std::string& input_protobuf,
-                                  const std::string& equivalent_text_format);
-
-  template <typename MessageType>
-  void RunValidRoundtripProtobufTest(const std::string& test_name,
-                                     ConformanceLevel level,
-                                     const std::string& input_protobuf);
-
-  template <typename MessageType>
   void RunValidProtobufTest(const std::string& test_name,
                             ConformanceLevel level,
                             const std::string& input_protobuf,
                             const std::string& equivalent_text_format);
 
+  // Runs only the binary-input -> JSON-output leg of a valid-data test.  The
+  // binary-output leg of these tests has moved to the gtest suites (see
+  // binary_*_test.cc); the JSON leg stays here until JSON matching is
+  // available there (b/410122158).
   template <typename MessageType>
-  void ExpectParseFailureForProto(const std::string& proto,
-                                  const std::string& test_name,
-                                  ConformanceLevel level);
+  void RunValidProtobufToJsonTest(const std::string& test_name,
+                                  ConformanceLevel level,
+                                  const std::string& input_protobuf,
+                                  const std::string& equivalent_text_format);
 
   void RunDelimitedFieldTests();
 
   void RunUnstableTests();
-
-  void RunUtf8ValidationTests();
-
-  void RunMessageSetTests();
-
-  void RunRecursionLimitTests();
 
   template <typename MessageType>
   friend class BinaryAndJsonConformanceSuiteImpl;
@@ -92,13 +81,9 @@ class BinaryAndJsonConformanceSuiteImpl {
 
   void RunAllTests();
 
-  void RunBinaryPerformanceTests();
   void RunJsonTests();
-  void RunJsonTestsForStoresDefaultPrimitive();
-  void RunJsonTestsForFieldNameConvention();
   void RunJsonTestsForNonRepeatedTypes();
   void RunJsonTestsForRepeatedTypes();
-  void RunJsonTestsForNullTypes();
   void RunJsonTestsForWrapperTypes();
   void RunJsonTestsForFieldMask();
   void RunJsonTestsForStruct();
@@ -127,15 +112,16 @@ class BinaryAndJsonConformanceSuiteImpl {
                             const std::string& equivalent_text_format);
   void RunValidBinaryProtobufTest(const std::string& test_name,
                                   ConformanceLevel level,
-                                  const std::string& input_protobuf);
-  void RunValidBinaryProtobufTest(const std::string& test_name,
-                                  ConformanceLevel level,
                                   const std::string& input_protobuf,
                                   const std::string& expected_protobuf);
-  void RunBinaryPerformanceMergeMessageWithField(
-      const std::string& test_name, const std::string& field_proto);
 
-  void RunValidProtobufTestWithMessage(
+  // The binary-input -> JSON-output legs only; see
+  // BinaryAndJsonConformanceSuite::RunValidProtobufToJsonTest().
+  void RunValidProtobufToJsonTest(const std::string& test_name,
+                                  ConformanceLevel level,
+                                  const std::string& input_protobuf,
+                                  const std::string& equivalent_text_format);
+  void RunValidProtobufToJsonTestWithMessage(
       const std::string& test_name, ConformanceLevel level,
       const Message* input, const std::string& equivalent_text_format);
 
@@ -153,23 +139,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   void ExpectSerializeFailureForJson(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& text_format);
-  void ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                                  const std::string& test_name,
-                                                  ConformanceLevel level);
-  void ExpectParseFailureForProto(const std::string& proto,
-                                  const std::string& test_name,
-                                  ConformanceLevel level);
-  void ExpectHardParseFailureForProto(const std::string& proto,
-                                      const std::string& test_name,
-                                      ConformanceLevel level);
-  void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
-  void TestIllegalTags();
-  void TestUnmatchedGroup();
-  void TestUnknownWireType();
-  void TestInvalidUtf8String();
   void TestOneofMessage();
-  void TestUnknownMessage();
-  void TestUnknownOrdering();
   void TestValidDataForType(
       google::protobuf::FieldDescriptor::Type,
       std::vector<std::pair<std::string, std::string>> values);
@@ -183,17 +153,11 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestValidDataForOneofType(google::protobuf::FieldDescriptor::Type);
   void TestMergeOneofMessage();
   void TestOverwriteMessageValueMap();
-  void TestBinaryPerformanceForAlternatingUnknownFields();
-  void TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      google::protobuf::FieldDescriptor::Type);
-  void TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      google::protobuf::FieldDescriptor::Type);
 
-  enum class Packed {
-    kUnspecified = 0,
-    kTrue = 1,
-    kFalse = 2,
-  };
+  // TODO: b/410122158 - The field lookups live in binary_test_util.h now;
+  // these wrappers (and the alias) go away once their remaining callers
+  // migrate.
+  using Packed = ::google::protobuf::conformance::Packedness;
   const FieldDescriptor* GetFieldForType(
       FieldDescriptor::Type type, bool repeated,
       Packed packed = Packed::kUnspecified) const;

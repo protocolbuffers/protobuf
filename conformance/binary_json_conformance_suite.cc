@@ -7,7 +7,6 @@
 
 #include "conformance/binary_json_conformance_suite.h"
 
-#include <cassert>
 #include <cctype>
 #include <cstddef>
 #include <cstdint>
@@ -23,12 +22,12 @@
 #include "absl/log/die_if_null.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "json/config.h"
 #include "json/reader.h"
 #include "json/value.h"
+#include "conformance/binary_test_util.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance_test.h"
@@ -40,7 +39,6 @@
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
-#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -65,10 +63,6 @@ using TestAllTypesProto3Editions =
 namespace {
 
 constexpr absl::string_view kTypeUrlPrefix = "type.googleapis.com";
-
-// The number of repetitions to use for performance tests.
-// Corresponds approx to 500KB wireformat bytes.
-const size_t kPerformanceRepeatCount = 50000;
 
 std::string GetTypeUrl(const Descriptor* message) {
   return absl::StrCat(kTypeUrlPrefix, "/", message->full_name());
@@ -129,75 +123,15 @@ std::string len(uint32_t fieldnum, std::string content) {
       .str();
 }
 
+// The value encoders live in binary_test_util.h now; these wrappers keep the
+// remaining callers' std::string plumbing unchanged.
 std::string GetDefaultValue(FieldDescriptor::Type type) {
-  switch (type) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_ENUM:
-    case FieldDescriptor::TYPE_BOOL:
-      return varint(0);
-    case FieldDescriptor::TYPE_SINT32:
-      return zz32(0);
-    case FieldDescriptor::TYPE_SINT64:
-      return zz64(0);
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_SFIXED32:
-      return u32(0);
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED64:
-      return u64(0);
-    case FieldDescriptor::TYPE_FLOAT:
-      return flt(0);
-    case FieldDescriptor::TYPE_DOUBLE:
-      return dbl(0);
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
-    case FieldDescriptor::TYPE_MESSAGE:
-      return delim("");
-    default:
-      return "";
-  }
-  return "";
+  return google::protobuf::conformance::GetDefaultValue(type).str();
 }
 
 std::string GetNonDefaultValue(FieldDescriptor::Type type) {
-  switch (type) {
-    case FieldDescriptor::TYPE_INT32:
-    case FieldDescriptor::TYPE_INT64:
-    case FieldDescriptor::TYPE_UINT32:
-    case FieldDescriptor::TYPE_UINT64:
-    case FieldDescriptor::TYPE_ENUM:
-    case FieldDescriptor::TYPE_BOOL:
-      return varint(1);
-    case FieldDescriptor::TYPE_SINT32:
-      return zz32(1);
-    case FieldDescriptor::TYPE_SINT64:
-      return zz64(1);
-    case FieldDescriptor::TYPE_FIXED32:
-    case FieldDescriptor::TYPE_SFIXED32:
-      return u32(1);
-    case FieldDescriptor::TYPE_FIXED64:
-    case FieldDescriptor::TYPE_SFIXED64:
-      return u64(1);
-    case FieldDescriptor::TYPE_FLOAT:
-      return flt(1);
-    case FieldDescriptor::TYPE_DOUBLE:
-      return dbl(1);
-    case FieldDescriptor::TYPE_STRING:
-    case FieldDescriptor::TYPE_BYTES:
-      return delim("a");
-    case FieldDescriptor::TYPE_MESSAGE:
-      return delim(
-          absl::StrCat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234)));
-    default:
-      return "";
-  }
-  return "";
+  return google::protobuf::conformance::GetNonDefaultValue(type).str();
 }
-
-#define UNKNOWN_FIELD 666
 
 std::string UpperCase(std::string str) {
   for (size_t i = 0; i < str.size(); i++) {
@@ -330,11 +264,8 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
       this, /*run_proto3_tests=*/true);
   BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto2>(
       this, /*run_proto3_tests=*/false);
-  if (!this->performance_) {
-    RunMessageSetTests();
-  } else {
-    RunRecursionLimitTests();
-  }
+  // The message set and recursion limit tests live in the
+  // binary_conformance_tests library (see BUILD).
   if (maximum_edition_ >= Edition::EDITION_2023) {
     BinaryAndJsonConformanceSuiteImpl<TestAllTypesProto3Editions>(
         this, /*run_proto3_tests=*/true);
@@ -343,7 +274,6 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     if (!this->performance_) {
       RunDelimitedFieldTests();
       RunUnstableTests();
-      RunUtf8ValidationTests();
     }
   }
 }
@@ -351,24 +281,27 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
 void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
   SetTypeUrl(GetTypeUrl(TestAllTypesEdition2023::GetDescriptor()));
 
-  RunValidProtobufTest<TestAllTypesEdition2023>(
+  // Only the binary->JSON legs remain here; the binary->binary legs live in
+  // binary_delimited_field_test.cc (see BUILD).
+
+  RunValidProtobufToJsonTest<TestAllTypesEdition2023>(
       absl::StrCat("ValidNonMessage"), REQUIRED,
       field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
       R"pb(optional_int32: 99)pb");
 
-  RunValidProtobufTest<TestAllTypesEdition2023>(
+  RunValidProtobufToJsonTest<TestAllTypesEdition2023>(
       absl::StrCat("ValidLengthPrefixedField"), REQUIRED,
       len(18, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb(optional_nested_message { a: 99 })pb");
 
-  RunValidProtobufTest<TestAllTypesEdition2023>(
+  RunValidProtobufToJsonTest<TestAllTypesEdition2023>(
       absl::StrCat("ValidMap.Integer"), REQUIRED,
       len(56,
           absl::StrCat(field(1, WireFormatLite::WIRETYPE_VARINT, varint(99)),
                        field(2, WireFormatLite::WIRETYPE_VARINT, varint(87)))),
       R"pb(map_int32_int32 { key: 99 value: 87 })pb");
 
-  RunValidProtobufTest<TestAllTypesEdition2023>(
+  RunValidProtobufToJsonTest<TestAllTypesEdition2023>(
       absl::StrCat("ValidMap.LengthPrefixed"), REQUIRED,
       len(71, absl::StrCat(len(1, "a"),
                            len(2, field(1, WireFormatLite::WIRETYPE_VARINT,
@@ -378,309 +311,34 @@ void BinaryAndJsonConformanceSuite::RunDelimitedFieldTests() {
              value: { a: 87 }
            })pb");
 
-  RunValidProtobufTest<TestAllTypesEdition2023>(
+  RunValidProtobufToJsonTest<TestAllTypesEdition2023>(
       absl::StrCat("ValidDelimitedField.GroupLike"), REQUIRED,
       group(201, field(202, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb(groupliketype { group_int32: 99 })pb");
 
-  RunValidProtobufTest<TestAllTypesEdition2023>(
+  RunValidProtobufToJsonTest<TestAllTypesEdition2023>(
       absl::StrCat("ValidDelimitedField.NotGroupLike"), REQUIRED,
       group(202, field(202, WireFormatLite::WIRETYPE_VARINT, varint(99))),
       R"pb(delimited_field { group_int32: 99 })pb");
 
-  // Note: extensions don't work with TypeResolver, which is used by
-  // binary->JSON tests.
-  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
-      absl::StrCat("ValidDelimitedExtension.GroupLike"), REQUIRED,
-      group(121, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
-      R"pb([protobuf_test_messages.editions.groupliketype] { c: 99 })pb");
-
-  RunValidBinaryProtobufTest<TestAllTypesEdition2023>(
-      absl::StrCat("ValidDelimitedExtension.NotGroupLike"), REQUIRED,
-      group(122, field(1, WireFormatLite::WIRETYPE_VARINT, varint(99))),
-      R"pb([protobuf_test_messages.editions.delimited_ext] { c: 99 })pb");
+  // The ValidDelimitedExtension tests live in the binary_conformance_tests
+  // library (see BUILD).
 }
 
 void BinaryAndJsonConformanceSuite::RunUnstableTests() {
   SetTypeUrl(GetTypeUrl(TestAllTypesEditionUnstable::GetDescriptor()));
 
-  RunValidProtobufTest<TestAllTypesEditionUnstable>(
+  // Only the binary->JSON legs remain here; the binary->binary legs live in
+  // binary_unstable_edition_test.cc (see BUILD).
+
+  RunValidProtobufToJsonTest<TestAllTypesEditionUnstable>(
       absl::StrCat("ValidBytes"), REQUIRED, len(13, "foo"),
       R"pb(optional_bytes: "foo")pb");
 
-  RunValidProtobufTest<TestAllTypesEditionUnstable>(
+  RunValidProtobufToJsonTest<TestAllTypesEditionUnstable>(
       absl::StrCat("ValidMap.Bytes"), REQUIRED,
       len(15, absl::StrCat(len(1, "foo"), len(2, "barbaz"))),
       R"pb(map_string_bytes { key: "foo" value: "barbaz" })pb");
-}
-
-void BinaryAndJsonConformanceSuite::RunUtf8ValidationTests() {
-  ExpectParseFailureForProto<TestAllTypesEdition2023>(
-      len(133, "\xA0\xB0\xC0\xD0"), "RejectInvalidUtf8.String.Extension",
-      RECOMMENDED);
-  RunValidBinaryProtobufTest<
-      TestAllTypesEdition2023>(absl::StrCat(
-                                   "AcceptInvalidUtf8.Bytes.Extension"),
-                               REQUIRED, len(134, "\xA0\xB0\xC0\xD0"),
-                               R"pb([protobuf_test_messages.editions
-                                         .extension_bytes]: "\xA0\xB0\xC0\xD0")pb");
-}
-
-void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
-  RunValidBinaryProtobufTest<TestAllTypesProto2>(
-      absl::StrCat("ValidMessageSetEncoding"), REQUIRED,
-      len(500,
-          group(1, absl::StrCat(field(2, WireFormatLite::WIRETYPE_VARINT,
-                                      varint(4135312)),
-                                len(3, field(9, WireFormatLite::WIRETYPE_VARINT,
-                                             varint(99)))))),
-      // clang-format off
-      R"pb(message_set_correct: {
-             [protobuf_test_messages.proto2
-                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
-           })pb"
-      // clang-format on
-  );
-  RunValidBinaryProtobufTest<TestAllTypesProto2>(
-      absl::StrCat("ValidMessageSetEncoding.OutOfOrderGroupsEntries"), REQUIRED,
-      len(500,
-          group(1, absl::StrCat(len(3, field(9, WireFormatLite::WIRETYPE_VARINT,
-                                             varint(99))),
-                                field(2, WireFormatLite::WIRETYPE_VARINT,
-                                      varint(4135312))))),
-      // clang-format off
-      R"pb(message_set_correct: {
-             [protobuf_test_messages.proto2
-                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
-           })pb"
-      // clang-format on
-  );
-
-  // Test that an unknown message set extension always goes to unknown fields.
-  // This is done by poisoning the extension payload with an entry for field 0.
-  RunValidRoundtripProtobufTest<TestAllTypesProto2>(
-      "MessageSetEncoding.UnknownExtension", REQUIRED,
-      len(500,
-          group(1, absl::StrCat(field(2, WireFormatLite::WIRETYPE_VARINT,
-                                      varint(4135300)),
-                                len(3, field(0, WireFormatLite::WIRETYPE_VARINT,
-                                             varint(99)))))));
-
-  // If an encoder is unaware of the message_set_wire_format option it will be
-  // encoded like any other extension submessage. Decoders should be able to
-  // tolerate this format as well.
-  RunValidBinaryProtobufTest<TestAllTypesProto2>(
-      absl::StrCat("ValidMessageSetEncoding.SubmessageEncoding"), RECOMMENDED,
-      len(500,
-          len(4135312, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99)))),
-      // clang-format off
-      R"pb(message_set_correct: {
-             [protobuf_test_messages.proto2
-                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
-           })pb"
-      // clang-format on
-  );
-
-  // Test again, but this time we'll try to detect if the implementation put the
-  // submessage encoded entry into the unknown field set. We'll do this by using
-  // conflicting oneof entries where order matters when the messages are merged.
-  //
-  // In a non-compliant implementation submessage encoded messageset entry will
-  // be moved to unknown fields and then tacked onto the end of the payload.
-  // Thus we'll see field b set first, and then field a.
-  //
-  // In a compliant implementation we expect the submessage encoded messageset
-  // to be read first with field a set, and then the normal message set entry
-  // will be read with field b will be set -- thus field b will win.
-  RunValidBinaryProtobufTest<TestAllTypesProto2>(
-      absl::StrCat("ValidMessageSetEncoding.SubmessageEncoding.NotUnknown"),
-      RECOMMENDED,
-      len(500, absl::StrCat(
-                   len(123456789,
-                       field(1, WireFormatLite::WIRETYPE_VARINT, varint(42))),
-                   group(1, absl::StrCat(
-                                field(2, WireFormatLite::WIRETYPE_VARINT,
-                                      varint(123456789)),
-                                len(3, field(2, WireFormatLite::WIRETYPE_VARINT,
-                                             varint(99))))))),
-      // clang-format off
-      R"pb(message_set_correct: {
-             [protobuf_test_messages.proto2
-                  .TestAllTypesProto2.ExtensionWithOneof]: { b: 99 }
-           })pb"
-      // clang-format on
-  );
-
-  // [type_id, value, type_id (different)] -> first type_id and value honored.
-  RunValidBinaryProtobufTest<TestAllTypesProto2>(
-      absl::StrCat("ValidMessageSetEncoding.DuplicateDifferentTypeId"),
-      RECOMMENDED,
-      len(500,
-          group(
-              1,
-              absl::StrCat(
-                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
-                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
-                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(1547769))))),
-      // clang-format off
-      R"pb(message_set_correct: {
-             [protobuf_test_messages.proto2
-                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
-            })pb"
-      // clang-format on
-  );
-
-  // [type_id, value, value] -> first value honored, no merge.
-  RunValidBinaryProtobufTest<TestAllTypesProto2>(
-      absl::StrCat("ValidMessageSetEncoding.DuplicateValue"), RECOMMENDED,
-      len(500,
-          group(
-              1,
-              absl::StrCat(
-                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
-                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
-                  len(3,
-                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
-      // clang-format off
-      R"pb(message_set_correct: {
-             [protobuf_test_messages.proto2
-                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
-            })pb"
-      // clang-format on
-  );
-
-  // [value, type_id, value] -> first value honored, no merge.
-  RunValidBinaryProtobufTest<TestAllTypesProto2>(
-      absl::StrCat("ValidMessageSetEncoding.DuplicateValueOutOfOrder"),
-      RECOMMENDED,
-      len(500,
-          group(
-              1,
-              absl::StrCat(
-                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
-                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
-                  len(3,
-                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
-      // clang-format off
-      R"pb(message_set_correct: {
-             [protobuf_test_messages.proto2
-                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
-            })pb"
-      // clang-format on
-  );
-}
-
-void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
-  {
-    TestAllTypesEdition2023 message;
-    TestAllTypesEdition2023* sub = &message;
-    // The default recursion limit is 100 for most languages. 10,000 for
-    // golang. We use a larger number here for test.
-    for (int i = 0; i < 20000; i++) {
-      sub = &(*sub->mutable_map_recursive())[0];
-      sub->set_optional_int32(123);
-    }
-    ExpectParseFailureForProto<TestAllTypesEdition2023>(
-        message.SerializeAsString(), "EnforceDepthLimit.Map", RECOMMENDED);
-  }
-
-  {
-    TestAllTypesEdition2023 message;
-    TestAllTypesEdition2023* sub = &message;
-    for (int i = 0; i < 10000; i++) {
-      sub =
-          (*sub->mutable_map_string_nested_message())[""].mutable_corecursive();
-      sub->set_optional_int32(123);
-    }
-    ExpectParseFailureForProto<TestAllTypesEdition2023>(
-        message.SerializeAsString(), "EnforceDepthLimit.MapStringKey",
-        RECOMMENDED);
-  }
-
-  {
-    TestAllTypesProto2 proto2_msg;
-    auto sub = proto2_msg.mutable_message_set_correct();
-    // The default recursion limit is 100 for most languages. 10,000 for
-    // golang. We use a larger number here for test.
-    for (int i = 0; i < 20000; i++) {
-      sub = sub->MutableExtension(
-                   TestAllTypesProto2::MessageSetCorrectExtension2::
-                       message_set_extension)
-                ->mutable_sub_msg();
-    }
-    sub->MutableExtension(TestAllTypesProto2::MessageSetCorrectExtension2::
-                              message_set_extension)
-        ->set_i(123);
-    ExpectParseFailureForProto<TestAllTypesProto2>(
-        proto2_msg.SerializeAsString(), "EnforceDepthLimit.MessageSetExtension",
-        RECOMMENDED);
-  }
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuite::ExpectParseFailureForProto(
-    const std::string& proto, const std::string& test_name,
-    ConformanceLevel level) {
-  MessageType prototype;
-  // We don't expect output, but if the program erroneously accepts the protobuf
-  // we let it send its response as this.  We must not leave it unspecified.
-  ConformanceRequestSetting setting(
-      level, ::conformance::PROTOBUF, ::conformance::PROTOBUF,
-      ::conformance::BINARY_TEST, prototype, test_name, proto);
-
-  const ConformanceRequest& request = setting.GetRequest();
-  ConformanceResponse response;
-  std::string effective_test_name =
-      absl::StrCat(setting.ConformanceLevelToString(level), ".",
-                   setting.GetSyntaxIdentifier(), ".ProtobufInput.", test_name);
-
-  if (!RunTest(effective_test_name, request, &response)) {
-    return;
-  }
-
-  TestStatus test;
-  test.set_name(effective_test_name);
-  if (response.result_case() == ConformanceResponse::kParseError) {
-    ReportSuccess(test);
-  } else if (response.result_case() == ConformanceResponse::kSkipped) {
-    ReportSkip(test, request, response);
-  } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
-    test.set_failure_message(
-        "Should have failed to parse, but raised an error instead.");
-    ReportFailure(test, level, request, response);
-  } else {
-    test.set_failure_message("Should have failed to parse, but didn't.");
-    ReportFailure(test, level, request, response);
-  }
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                               const std::string& test_name,
-                                               ConformanceLevel level) {
-  suite_.ExpectParseFailureForProto<MessageType>(proto, test_name, level);
-}
-
-// Expect that this precise protobuf will cause a parse error.
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForProto(
-    const std::string& proto, const std::string& test_name,
-    ConformanceLevel level) {
-  ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level);
-}
-
-// Expect that this protobuf will cause a parse error, even if it is followed
-// by valid protobuf data.  We can try running this twice: once with this
-// data verbatim and once with this data followed by some valid data.
-//
-// TODO: implement the second of these.
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::ExpectHardParseFailureForProto(const std::string& proto,
-                                                 const std::string& test_name,
-                                                 ConformanceLevel level) {
-  return ExpectParseFailureForProto(proto, test_name, level);
 }
 
 template <typename MessageType>
@@ -735,31 +393,6 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuite::RunValidBinaryProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf,
-    const std::string& equivalent_text_format) {
-  MessageType prototype;
-
-  ConformanceRequestSetting binary_to_binary(
-      level, ::conformance::PROTOBUF, ::conformance::PROTOBUF,
-      ::conformance::BINARY_TEST, prototype, test_name, input_protobuf);
-  RunValidInputTest(binary_to_binary, equivalent_text_format);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuite::RunValidRoundtripProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf) {
-  MessageType prototype;
-
-  ConformanceRequestSetting binary_to_binary(
-      level, ::conformance::PROTOBUF, ::conformance::PROTOBUF,
-      ::conformance::BINARY_TEST, prototype, test_name, input_protobuf);
-  RunValidBinaryInputTest(binary_to_binary, input_protobuf);
-}
-
-template <typename MessageType>
 void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input_protobuf,
@@ -778,19 +411,24 @@ void BinaryAndJsonConformanceSuite::RunValidProtobufTest(
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuite::RunValidProtobufToJsonTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_protobuf,
+    const std::string& equivalent_text_format) {
+  MessageType prototype;
+  ConformanceRequestSetting binary_to_json(
+      level, ::conformance::PROTOBUF, ::conformance::JSON,
+      ::conformance::BINARY_TEST, prototype, test_name, input_protobuf);
+  RunValidInputTest(binary_to_json, equivalent_text_format);
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufTest(
     const std::string& test_name, ConformanceLevel level,
     const std::string& input_protobuf,
     const std::string& equivalent_text_format) {
   suite_.RunValidProtobufTest<MessageType>(test_name, level, input_protobuf,
                                            equivalent_text_format);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidBinaryProtobufTest(
-    const std::string& test_name, ConformanceLevel level,
-    const std::string& input_protobuf) {
-  RunValidBinaryProtobufTest(test_name, level, input_protobuf, input_protobuf);
 }
 
 template <typename MessageType>
@@ -805,35 +443,21 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidBinaryProtobufTest(
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    RunBinaryPerformanceMergeMessageWithField(const std::string& test_name,
-                                              const std::string& field_proto) {
-  std::string message_tag = tag(27, WireFormatLite::WIRETYPE_LENGTH_DELIMITED);
-  std::string message_proto = absl::StrCat(message_tag, delim(field_proto));
-
-  std::string proto;
-  for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    proto.append(message_proto);
-  }
-
-  std::string multiple_repeated_field_proto;
-  for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    multiple_repeated_field_proto.append(field_proto);
-  }
-  std::string expected_proto =
-      absl::StrCat(message_tag, delim(multiple_repeated_field_proto));
-
-  RunValidBinaryProtobufTest(test_name, RECOMMENDED, proto, expected_proto);
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunValidProtobufToJsonTest(
+    const std::string& test_name, ConformanceLevel level,
+    const std::string& input_protobuf,
+    const std::string& equivalent_text_format) {
+  suite_.RunValidProtobufToJsonTest<MessageType>(
+      test_name, level, input_protobuf, equivalent_text_format);
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    RunValidProtobufTestWithMessage(const std::string& test_name,
-                                    ConformanceLevel level,
-                                    const Message* input,
-                                    const std::string& equivalent_text_format) {
-  RunValidProtobufTest(test_name, level, input->SerializeAsString(),
-                       equivalent_text_format);
+    RunValidProtobufToJsonTestWithMessage(
+        const std::string& test_name, ConformanceLevel level,
+        const Message* input, const std::string& equivalent_text_format) {
+  RunValidProtobufToJsonTest(test_name, level, input->SerializeAsString(),
+                             equivalent_text_format);
 }
 
 // According to proto JSON specification, JSON serializers follow more strict
@@ -1020,104 +644,6 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 }
 
 template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestPrematureEOFForType(
-    FieldDescriptor::Type type) {
-  // Incomplete values for each wire type.
-  static constexpr absl::string_view incompletes[6] = {
-      "\x80",     // VARINT
-      "abcdefg",  // 64BIT
-      "\x80",     // DELIMITED (partial length)
-      "",         // START_GROUP (no value required)
-      "",         // END_GROUP (no value required)
-      "abc"       // 32BIT
-  };
-
-  const FieldDescriptor* field = GetFieldForType(type, false);
-  const FieldDescriptor* rep_field = GetFieldForType(type, true);
-  WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
-      static_cast<WireFormatLite::FieldType>(type));
-  absl::string_view incomplete = incompletes[wire_type];
-  const std::string type_name =
-      UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
-
-  ExpectParseFailureForProto(
-      tag(field->number(), wire_type),
-      absl::StrCat("PrematureEofBeforeKnownNonRepeatedValue", type_name),
-      REQUIRED);
-
-  ExpectParseFailureForProto(
-      tag(rep_field->number(), wire_type),
-      absl::StrCat("PrematureEofBeforeKnownRepeatedValue", type_name),
-      REQUIRED);
-
-  ExpectParseFailureForProto(
-      tag(UNKNOWN_FIELD, wire_type),
-      absl::StrCat("PrematureEofBeforeUnknownValue", type_name), REQUIRED);
-
-  ExpectParseFailureForProto(
-      absl::StrCat(tag(field->number(), wire_type), incomplete),
-      absl::StrCat("PrematureEofInsideKnownNonRepeatedValue", type_name),
-      REQUIRED);
-
-  ExpectParseFailureForProto(
-      absl::StrCat(tag(rep_field->number(), wire_type), incomplete),
-      absl::StrCat("PrematureEofInsideKnownRepeatedValue", type_name),
-      REQUIRED);
-
-  ExpectParseFailureForProto(
-      absl::StrCat(tag(UNKNOWN_FIELD, wire_type), incomplete),
-      absl::StrCat("PrematureEofInsideUnknownValue", type_name), REQUIRED);
-
-  if (wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-    ExpectParseFailureForProto(
-        absl::StrCat(tag(field->number(), wire_type), varint(1)),
-        absl::StrCat("PrematureEofInDelimitedDataForKnownNonRepeatedValue",
-                     type_name),
-        REQUIRED);
-
-    ExpectParseFailureForProto(
-        absl::StrCat(tag(rep_field->number(), wire_type), varint(1)),
-        absl::StrCat("PrematureEofInDelimitedDataForKnownRepeatedValue",
-                     type_name),
-        REQUIRED);
-
-    // EOF in the middle of delimited data for unknown value.
-    ExpectParseFailureForProto(
-        absl::StrCat(tag(UNKNOWN_FIELD, wire_type), varint(1)),
-        absl::StrCat("PrematureEofInDelimitedDataForUnknownValue", type_name),
-        REQUIRED);
-
-    if (type == FieldDescriptor::TYPE_MESSAGE) {
-      // Submessage ends in the middle of a value.
-      std::string incomplete_submsg = absl::StrCat(
-          tag(WireFormatLite::TYPE_INT32, WireFormatLite::WIRETYPE_VARINT),
-          incompletes[WireFormatLite::WIRETYPE_VARINT]);
-      ExpectHardParseFailureForProto(
-          absl::StrCat(
-              tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-              varint(incomplete_submsg.size()), incomplete_submsg),
-          absl::StrCat("PrematureEofInSubmessageValue", type_name), REQUIRED);
-    }
-  } else if (type != FieldDescriptor::TYPE_GROUP) {
-    // Non-delimited, non-group: eligible for packing.
-
-    // Packed region ends in the middle of a value.
-    ExpectHardParseFailureForProto(
-        absl::StrCat(
-            tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-            varint(incomplete.size()), incomplete),
-        absl::StrCat("PrematureEofInPackedFieldValue", type_name), REQUIRED);
-
-    // EOF in the middle of packed region.
-    ExpectParseFailureForProto(
-        absl::StrCat(
-            tag(rep_field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-            varint(1)),
-        absl::StrCat("PrematureEofInPackedField", type_name), REQUIRED);
-  }
-}
-
-template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
     FieldDescriptor::Type type,
     std::vector<std::pair<std::string, std::string>> values) {
@@ -1172,9 +698,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
   // Test repeated fields.
   if (FieldDescriptor::IsTypePackable(type)) {
     const FieldDescriptor* packed_field =
-        GetFieldForType(type, true, Packed::kTrue);
+        GetFieldForType(type, true, Packed::kPacked);
     const FieldDescriptor* unpacked_field =
-        GetFieldForType(type, true, Packed::kFalse);
+        GetFieldForType(type, true, Packed::kUnpacked);
 
     std::string default_proto_packed;
     std::string default_proto_unpacked;
@@ -1287,21 +813,8 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForType(
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<
     MessageType>::TestValidDataForRepeatedScalarMessage() {
-  std::vector<std::string> values = {
-      delim(absl::StrCat(
-          tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-          delim(absl::StrCat(
-              tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1234),
-              tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1234),
-              tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1234))))),
-      delim(absl::StrCat(
-          tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-          delim(absl::StrCat(
-              tag(1, WireFormatLite::WIRETYPE_VARINT), varint(4321),
-              tag(3, WireFormatLite::WIRETYPE_VARINT), varint(4321),
-              tag(31, WireFormatLite::WIRETYPE_VARINT), varint(4321))))),
-  };
-
+  // Only the binary->JSON leg remains here; the binary->binary leg lives in
+  // binary_merge_test.cc (see BUILD), which shares the input.
   const std::string expected =
       R"({
         corecursive: {
@@ -1312,17 +825,14 @@ void BinaryAndJsonConformanceSuiteImpl<
   }
       })";
 
-  std::string proto;
   const FieldDescriptor* field =
       GetFieldForType(FieldDescriptor::TYPE_MESSAGE, false);
-  for (size_t i = 0; i < values.size(); i++) {
-    absl::StrAppend(
-        &proto, tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-        values[i]);
-  }
-
-  RunValidProtobufTest("RepeatedScalarMessageMerge", REQUIRED, proto,
-                       absl::StrCat(field->name(), ": ", expected));
+  RunValidProtobufToJsonTest(
+      "RepeatedScalarMessageMerge", REQUIRED,
+      ::google::protobuf::conformance::RepeatedScalarMessageMergeInput(
+          *MessageType::GetDescriptor())
+          .str(),
+      absl::StrCat(field->name(), ": ", expected));
 }
 
 template <typename MessageType>
@@ -1544,41 +1054,17 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<
     MessageType>::TestOverwriteMessageValueMap() {
-  std::string key_data = absl::StrCat(
-      tag(1, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), delim(""));
-  std::string field1_data =
-      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  std::string field2_data =
-      absl::StrCat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  std::string field31_data =
-      absl::StrCat(tag(31, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  std::string submsg1_data = delim(absl::StrCat(field1_data, field31_data));
-  std::string submsg2_data = delim(absl::StrCat(field2_data, field31_data));
-  std::string value1_data = absl::StrCat(
-      tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(absl::StrCat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                         submsg1_data)));
-  std::string value2_data = absl::StrCat(
-      tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(absl::StrCat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                         submsg2_data)));
-
-  const FieldDescriptor* field = GetFieldForMapType(
-      FieldDescriptor::TYPE_STRING, FieldDescriptor::TYPE_MESSAGE);
-
-  std::string proto1 = absl::StrCat(
-      tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(absl::StrCat(key_data, value1_data)));
-  std::string proto2 = absl::StrCat(
-      tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(absl::StrCat(key_data, value2_data)));
-  std::string proto = absl::StrCat(proto1, proto2);
+  // Only the binary->JSON leg remains here; the binary->binary leg lives in
+  // binary_merge_test.cc (see BUILD), which shares the input.
+  ::google::protobuf::conformance::MergeTestData data =
+      ::google::protobuf::conformance::MapMessageValueMergeData(
+          *MessageType::GetDescriptor());
   MessageType test_message;
-  ABSL_CHECK(test_message.MergeFromString(proto2));
+  ABSL_CHECK(test_message.MergeFromString(data.expected.data()));
   std::string text;
   ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
-  RunValidProtobufTest("ValidDataMap.STRING.MESSAGE.MergeValue", REQUIRED,
-                       proto, text);
+  RunValidProtobufToJsonTest("ValidDataMap.STRING.MESSAGE.MergeValue", REQUIRED,
+                             std::move(data.input).str(), text);
 }
 
 template <typename MessageType>
@@ -1673,332 +1159,58 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForOneofType(
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestMergeOneofMessage() {
-  std::string field1_data =
-      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  std::string field2a_data =
-      absl::StrCat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  std::string field2b_data =
-      absl::StrCat(tag(2, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  std::string field89_data =
-      absl::StrCat(tag(89, WireFormatLite::WIRETYPE_VARINT), varint(1));
-  std::string submsg1_data = absl::StrCat(
-      tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(absl::StrCat(field1_data, field2a_data, field89_data)));
-  std::string submsg2_data =
-      absl::StrCat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                   delim(absl::StrCat(field2b_data, field89_data)));
-  std::string merged_data =
-      absl::StrCat(tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-                   delim(absl::StrCat(field1_data, field2b_data, field89_data,
-                                      field89_data)));
-
-  const FieldDescriptor* field =
-      GetFieldForOneofType(FieldDescriptor::TYPE_MESSAGE);
-
-  std::string proto1 = absl::StrCat(
-      tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(submsg1_data));
-  std::string proto2 = absl::StrCat(
-      tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(submsg2_data));
-  std::string proto = absl::StrCat(proto1, proto2);
-  std::string expected_proto = absl::StrCat(
-      tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
-      delim(merged_data));
-
+  // Only the binary->JSON leg remains here; the binary->binary leg and the
+  // byte-exact ValidDataOneofBinary.MESSAGE.Merge live in binary_merge_test.cc
+  // (see BUILD), which shares the input.
+  ::google::protobuf::conformance::MergeTestData data =
+      ::google::protobuf::conformance::OneofMessageMergeData(
+          *MessageType::GetDescriptor());
   MessageType test_message;
-  ABSL_CHECK(test_message.MergeFromString(expected_proto));
+  ABSL_CHECK(test_message.MergeFromString(data.expected.data()));
   std::string text;
   ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
-  RunValidProtobufTest("ValidDataOneof.MESSAGE.Merge", REQUIRED, proto, text);
-  RunValidBinaryProtobufTest("ValidDataOneofBinary.MESSAGE.Merge", RECOMMENDED,
-                             proto, expected_proto);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
-  // field num 0 is illegal
-  std::string nullfield[] = {"\1DEADBEEF", "\2\1\1", "\3\4", "\5DEAD"};
-  for (int i = 0; i < 4; i++) {
-    std::string name = "IllegalZeroFieldNum_Case_0";
-    name.back() += i;
-    ExpectParseFailureForProto(nullfield[i], name, REQUIRED);
-  }
-
-  // Reused for a few cases: this is a single byte tag for a field number 1
-  // varint but where the byte has the continuation bit set, so that we can
-  // easily construct longer tags.
-  std::string tag_with_continuation_bit =
-      tag(1, WireFormatLite::WIRETYPE_VARINT);
-  assert(tag_with_continuation_bit.size() == 1);
-  tag_with_continuation_bit[0] |= 0b10000000;
-
-  // A varint where field number is far out of range of
-  // maximum legal field number. The lower 5 bytes of the varint do look like a
-  // well-formed tag for field number 1.
-  ExpectParseFailureForProto(
-      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x80\x80\x0F",
-                   varint(1234)),
-      "BadTag_FieldNumberTooHigh", REQUIRED);
-
-  // A 5-byte tag varint where the value is above UINT32_MAX (bit 35 is set)
-  ExpectParseFailureForProto(
-      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x40", varint(1234)),
-      "BadTag_FieldNumberSlightlyTooHigh", REQUIRED);
-
-  // A tag where the varint is more than 5 bytes but only because it is an
-  // overlong varint, so the decoded value is still below UINT32_MAX.
-  ExpectParseFailureForProto(
-      absl::StrCat(tag_with_continuation_bit, "\x80\x80\x80\x80\x80\x80\x80",
-                   std::string("\0", 1), varint(1234)),
-      "BadTag_OverlongVarint", REQUIRED);
-
-  // An overlong varint that is even more than 10 bytes.
-  ExpectParseFailureForProto(
-      absl::StrCat(tag_with_continuation_bit,
-                   "\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80",
-                   std::string("\0", 1), varint(1234)),
-      "BadTag_VarintMoreThanTenBytes", REQUIRED);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedGroup() {
-  ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_END_GROUP),
-                             "UnmatchedEndGroup", REQUIRED);
-  ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_END_GROUP),
-                             "UnmatchedEndGroupUnknown", REQUIRED);
-  ExpectParseFailureForProto(tag(1, WireFormatLite::WIRETYPE_END_GROUP),
-                             "UnmatchedEndGroupWrongType", REQUIRED);
-  ExpectParseFailureForProto(
-      len(18, tag(1234, WireFormatLite::WIRETYPE_END_GROUP)),
-      "UnmatchedEndGroupNestedLen", REQUIRED);
-  ExpectParseFailureForProto(
-      group(201, tag(202, WireFormatLite::WIRETYPE_END_GROUP)),
-      "UnmatchedEndGroupNested", REQUIRED);
-  ExpectParseFailureForProto(
-      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_END_GROUP),
-                   len(2, "hello world")),
-      "UnmatchedEndGroupWithData", REQUIRED);
-
-  ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
-                             "UnmatchedStartGroup", REQUIRED);
-  ExpectParseFailureForProto(tag(1234, WireFormatLite::WIRETYPE_START_GROUP),
-                             "UnmatchedStartGroupUnknown", REQUIRED);
-  ExpectParseFailureForProto(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
-                             "UnmatchedStartGroupWrongType", REQUIRED);
-  ExpectParseFailureForProto(
-      len(18, tag(1234, WireFormatLite::WIRETYPE_START_GROUP)),
-      "UnmatchedStartGroupNestedLen", REQUIRED);
-  ExpectParseFailureForProto(
-      group(201, tag(202, WireFormatLite::WIRETYPE_START_GROUP)),
-      "UnmatchedStartGroupNested", REQUIRED);
-  ExpectParseFailureForProto(
-      absl::StrCat(tag(1, WireFormatLite::WIRETYPE_START_GROUP),
-                   len(2, "hello world")),
-      "UnmatchedStartGroupWithData", REQUIRED);
-
-  ExpectParseFailureForProto(
-      absl::StrCat(tag(201, WireFormatLite::WIRETYPE_START_GROUP),
-                   len(2, "hello world"),
-                   tag(202, WireFormatLite::WIRETYPE_END_GROUP)),
-      "MismatchedGroupTags", REQUIRED);
-  ExpectParseFailureForProto(
-      group(201, absl::StrCat(tag(202, WireFormatLite::WIRETYPE_START_GROUP),
-                              len(2, "hello world"),
-                              tag(203, WireFormatLite::WIRETYPE_END_GROUP))),
-      "MismatchedNestedGroupTags", REQUIRED);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownWireType() {
-  for (uint8_t type : {0x6, 0x7}) {
-    for (uint8_t field = 0; field < 4; ++field) {
-      for (uint8_t value = 0; value < 4; ++value) {
-        std::string name = absl::StrFormat(
-            "UnknownWireType%d_Field%d_Version%d", type, field, value);
-
-        char data[2];
-        data[0] = (field << 3) | type;  // unknown wire type.
-        data[1] = value;
-        std::string proto = {data, 2};
-        ExpectParseFailureForProto(proto, name, REQUIRED);
-      }
-    }
-  }
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestInvalidUtf8String() {
-  if (run_proto3_tests_) {
-    ExpectParseFailureForProto(len(14, "\xA0\xB0\xC0\xD0"),
-                               "RejectInvalidUtf8.String.Singular",
-                               RECOMMENDED);
-    ExpectParseFailureForProto(len(44, "\xA0\xB0\xC0\xD0"),
-                               "RejectInvalidUtf8.String.Repeated",
-                               RECOMMENDED);
-    ExpectParseFailureForProto(len(113, "\xA0\xB0\xC0\xD0"),
-                               "RejectInvalidUtf8.String.Oneof", RECOMMENDED);
-    ExpectParseFailureForProto(
-        len(69, absl::StrCat(len(1, "\xA0\xB0\xC0\xD0"), len(2, "foo"))),
-        "RejectInvalidUtf8.String.MapKey", RECOMMENDED);
-    ExpectParseFailureForProto(
-        len(69, absl::StrCat(len(1, "foo"), len(2, "\xA0\xB0\xC0\xD0"))),
-        "RejectInvalidUtf8.String.MapValue", RECOMMENDED);
-  } else {
-    // TODO - Once conformance tests can express failures that are
-    // not expected to be fixed, add proto2 coverage here.
-  }
+  RunValidProtobufToJsonTest("ValidDataOneof.MESSAGE.Merge", REQUIRED,
+                             std::move(data.input).str(), text);
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestOneofMessage() {
+  // Only the binary->JSON legs remain here; the binary->binary legs live in
+  // binary_oneof_zero_test.cc (see BUILD).
   MessageType message;
   message.set_oneof_uint32(0);
-  RunValidProtobufTestWithMessage("OneofZeroUint32", RECOMMENDED, &message,
-                                  "oneof_uint32: 0");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroUint32", RECOMMENDED,
+                                        &message, "oneof_uint32: 0");
   message.mutable_oneof_nested_message()->set_a(0);
-  RunValidProtobufTestWithMessage("OneofZeroMessage", RECOMMENDED, &message,
-                                  run_proto3_tests_
-                                      ? "oneof_nested_message: {}"
-                                      : "oneof_nested_message: {a: 0}");
+  RunValidProtobufToJsonTestWithMessage(
+      "OneofZeroMessage", RECOMMENDED, &message,
+      run_proto3_tests_ ? "oneof_nested_message: {}"
+                        : "oneof_nested_message: {a: 0}");
   message.mutable_oneof_nested_message()->set_a(1);
-  RunValidProtobufTestWithMessage("OneofZeroMessageSetTwice", RECOMMENDED,
-                                  &message, "oneof_nested_message: {a: 1}");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroMessageSetTwice", RECOMMENDED,
+                                        &message,
+                                        "oneof_nested_message: {a: 1}");
   message.set_oneof_string("");
-  RunValidProtobufTestWithMessage("OneofZeroString", RECOMMENDED, &message,
-                                  "oneof_string: \"\"");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroString", RECOMMENDED,
+                                        &message, "oneof_string: \"\"");
   message.set_oneof_bytes("");
-  RunValidProtobufTestWithMessage("OneofZeroBytes", RECOMMENDED, &message,
-                                  "oneof_bytes: \"\"");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroBytes", RECOMMENDED, &message,
+                                        "oneof_bytes: \"\"");
   message.set_oneof_bool(false);
-  RunValidProtobufTestWithMessage("OneofZeroBool", RECOMMENDED, &message,
-                                  "oneof_bool: false");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroBool", RECOMMENDED, &message,
+                                        "oneof_bool: false");
   message.set_oneof_uint64(0);
-  RunValidProtobufTestWithMessage("OneofZeroUint64", RECOMMENDED, &message,
-                                  "oneof_uint64: 0");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroUint64", RECOMMENDED,
+                                        &message, "oneof_uint64: 0");
   message.set_oneof_float(0.0f);
-  RunValidProtobufTestWithMessage("OneofZeroFloat", RECOMMENDED, &message,
-                                  "oneof_float: 0");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroFloat", RECOMMENDED, &message,
+                                        "oneof_float: 0");
   message.set_oneof_double(0.0);
-  RunValidProtobufTestWithMessage("OneofZeroDouble", RECOMMENDED, &message,
-                                  "oneof_double: 0");
+  RunValidProtobufToJsonTestWithMessage("OneofZeroDouble", RECOMMENDED,
+                                        &message, "oneof_double: 0");
   message.set_oneof_enum(MessageType::FOO);
-  RunValidProtobufTestWithMessage("OneofZeroEnum", RECOMMENDED, &message,
-                                  "oneof_enum: FOO");
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownMessage() {
-  MessageType message;
-  ABSL_CHECK(message.ParseFromString("\xA8\x1F\x01"));
-  RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
-                             message.SerializeAsString());
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnknownOrdering() {
-  // Implementations must preserve the ordering of different unknown fields for
-  // the same field number.  This is because some field types will accept
-  // multiple wire types for the same field.  For example, repeated primitive
-  // fields will accept both length-prefixed (packed) and
-  // varint/fixed32/fixed64 (unpacked) wire types, and reordering these could
-  // reorder the elements of the repeated field.
-  MessageType message;
-  MessageType prototype;
-  message.mutable_unknown_fields()->AddLengthDelimited(UNKNOWN_FIELD, "abc");
-  message.mutable_unknown_fields()->AddVarint(UNKNOWN_FIELD, 123);
-  message.mutable_unknown_fields()->AddLengthDelimited(UNKNOWN_FIELD, "def");
-  message.mutable_unknown_fields()->AddVarint(UNKNOWN_FIELD, 456);
-  std::string serialized = message.SerializeAsString();
-
-  ConformanceRequestSetting setting(
-      REQUIRED, ::conformance::PROTOBUF, ::conformance::PROTOBUF,
-      ::conformance::BINARY_TEST, prototype, "UnknownOrdering", serialized);
-  const ConformanceRequest& request = setting.GetRequest();
-  ConformanceResponse response;
-  if (!suite_.RunTest(setting.GetTestName(), request, &response)) {
-    return;
-  }
-
-  MessageType response_message;
-  TestStatus test;
-  test.set_name(setting.GetTestName());
-  if (response.result_case() == ConformanceResponse::kSkipped) {
-    suite_.ReportSkip(test, request, response);
-    return;
-  }
-
-  suite_.ParseResponse(response, setting, &response_message);
-
-  const UnknownFieldSet& ufs = response_message.unknown_fields();
-  if (ufs.field_count() != 4 || ufs.field(0).number() != UNKNOWN_FIELD ||
-      ufs.field(1).number() != UNKNOWN_FIELD ||
-      ufs.field(2).number() != UNKNOWN_FIELD ||
-      ufs.field(3).number() != UNKNOWN_FIELD ||
-      ufs.field(0).type() != UnknownField::Type::TYPE_LENGTH_DELIMITED ||
-      ufs.field(1).type() != UnknownField::Type::TYPE_VARINT ||
-      ufs.field(2).type() != UnknownField::Type::TYPE_LENGTH_DELIMITED ||
-      ufs.field(3).type() != UnknownField::Type::TYPE_VARINT ||
-      ufs.field(0).length_delimited() != "abc" ||
-      ufs.field(1).varint() != 123 ||
-      ufs.field(2).length_delimited() != "def" ||
-      ufs.field(3).varint() != 456) {
-    test.set_failure_message("Unknown field mismatch");
-    suite_.ReportFailure(test, setting.GetLevel(), request, response);
-  } else {
-    suite_.ReportSuccess(test);
-  }
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::TestBinaryPerformanceForAlternatingUnknownFields() {
-  std::string unknown_field_1 = absl::StrCat(
-      tag(UNKNOWN_FIELD, WireFormatLite::WIRETYPE_VARINT), varint(1234));
-  std::string unknown_field_2 = absl::StrCat(
-      tag(UNKNOWN_FIELD + 1, WireFormatLite::WIRETYPE_VARINT), varint(5678));
-  std::string proto;
-  for (size_t i = 0; i < kPerformanceRepeatCount; i++) {
-    proto.append(unknown_field_1);
-    proto.append(unknown_field_2);
-  }
-
-  RunValidBinaryProtobufTest("TestBinaryPerformanceForAlternatingUnknownFields",
-                             RECOMMENDED, proto);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-        FieldDescriptor::Type type) {
-  const std::string type_name =
-      UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
-  int field_number = GetFieldForType(type, true, Packed::kFalse)->number();
-  std::string rep_field_proto = absl::StrCat(
-      tag(field_number, WireFormatLite::WireTypeForFieldType(
-                            static_cast<WireFormatLite::FieldType>(type))),
-      GetNonDefaultValue(type));
-
-  RunBinaryPerformanceMergeMessageWithField(
-      absl::StrCat("TestBinaryPerformanceMergeMessageWithRepeatedFieldForType",
-                   type_name),
-      rep_field_proto);
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<MessageType>::
-    TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-        FieldDescriptor::Type type) {
-  const std::string type_name =
-      UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(type)));
-  std::string unknown_field_proto = absl::StrCat(
-      tag(UNKNOWN_FIELD, WireFormatLite::WireTypeForFieldType(
-                             static_cast<WireFormatLite::FieldType>(type))),
-      GetNonDefaultValue(type));
-  RunBinaryPerformanceMergeMessageWithField(
-      absl::StrCat("TestBinaryPerformanceMergeMessageWithUnknownFieldForType",
-                   type_name),
-      unknown_field_proto);
+  RunValidProtobufToJsonTestWithMessage("OneofZeroEnum", RECOMMENDED, &message,
+                                        "oneof_enum: FOO");
 }
 
 template <typename MessageType>
@@ -2012,17 +1224,11 @@ BinaryAndJsonConformanceSuiteImpl<MessageType>::
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
+  // Only the groups not yet migrated to gtest run from here; the migrated
+  // ones live in the binary_conformance_tests library, and every performance
+  // test in performance_conformance_tests (see BUILD), so under --performance
+  // nothing runs from here.
   if (!suite_.performance_) {
-    for (int i = 1; i <= FieldDescriptor::MAX_TYPE; i++) {
-      if (i == FieldDescriptor::TYPE_GROUP) continue;
-      TestPrematureEOFForType(static_cast<FieldDescriptor::Type>(i));
-    }
-
-    TestIllegalTags();
-    TestUnmatchedGroup();
-    TestUnknownWireType();
-    TestInvalidUtf8String();
-
     int64_t kInt64Min = -9223372036854775808ULL;
     int64_t kInt64Max = 9223372036854775807ULL;
     uint64_t kUint64Max = 18446744073709551615ULL;
@@ -2244,69 +1450,23 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     // TODO:
     // TestValidDataForType(FieldDescriptor::TYPE_GROUP
 
-    // Unknown fields.
-    // TODO: update this behavior when unknown field's behavior
-    // changed in open source. Also delete
-    // Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
-    // from failure list of python_cpp python java
-    TestUnknownMessage();
-    TestUnknownOrdering();
+    // The unknown field tests (UnknownVarint, UnknownOrdering) live in the
+    // binary_conformance_tests library (see BUILD).
     TestOneofMessage();
 
     RunJsonTests();
   }
-  // Flag control performance tests to keep them internal and opt-in only
-  if (suite_.performance_) {
-    RunBinaryPerformanceTests();
-  }
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::RunBinaryPerformanceTests() {
-  TestBinaryPerformanceForAlternatingUnknownFields();
-
-  TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_BOOL);
-  TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_DOUBLE);
-  TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_FLOAT);
-  TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_UINT32);
-  TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_UINT64);
-  TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_STRING);
-  TestBinaryPerformanceMergeMessageWithRepeatedFieldForType(
-      FieldDescriptor::TYPE_BYTES);
-
-  TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      FieldDescriptor::TYPE_BOOL);
-  TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      FieldDescriptor::TYPE_DOUBLE);
-  TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      FieldDescriptor::TYPE_FLOAT);
-  TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      FieldDescriptor::TYPE_UINT32);
-  TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      FieldDescriptor::TYPE_UINT64);
-  TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      FieldDescriptor::TYPE_STRING);
-  TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
-      FieldDescriptor::TYPE_BYTES);
 }
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTests() {
-  RunValidJsonTest("HelloWorld", REQUIRED,
-                   "{\"optionalString\":\"Hello, World!\"}",
-                   "optional_string: 'Hello, World!'");
-
-  RunJsonTestsForFieldNameConvention();
+  // HelloWorld, IgnoreUnknownJson* and RejectTopLevelNull live in
+  // json_hello_world_test.cc, the field name convention and
+  // StoresDefaultPrimitive tests in json_field_name_test.cc, the integer
+  // field tests in json_integer_test.cc, and the null tests in
+  // json_null_test.cc (the gtest-based suite; see BUILD).
   RunJsonTestsForNonRepeatedTypes();
   RunJsonTestsForRepeatedTypes();
-  RunJsonTestsForNullTypes();
 
   if (run_proto3_tests_) {
     RunJsonTestsForWrapperTypes();
@@ -2314,50 +1474,9 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunJsonTests() {
     RunJsonTestsForStruct();
     RunJsonTestsForValue();
     RunJsonTestsForAny();
-  } else {
-    // Currently Proto2 only, but should also be run on Proto3-optional.
-    RunJsonTestsForStoresDefaultPrimitive();
   }
 
   RunJsonTestsForUnknownEnumStringValues();
-
-  RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNumber", REQUIRED,
-                                R"({"unknown": 1})", "");
-  RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonString", REQUIRED,
-                                R"({"unknown": "a"})", "");
-  RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonTrue", REQUIRED,
-                                R"({"unknown": true})", "");
-  RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonFalse", REQUIRED,
-                                R"({"unknown": false})", "");
-  RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonNull", REQUIRED,
-                                R"({"unknown": null})", "");
-  RunValidJsonIgnoreUnknownTest("IgnoreUnknownJsonObject", REQUIRED,
-                                R"({"unknown": {"a": 1}})", "");
-
-  ExpectParseFailureForJson("RejectTopLevelNull", REQUIRED, "null");
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::RunJsonTestsForStoresDefaultPrimitive() {
-  RunValidJsonTestWithValidator(
-      "StoresDefaultPrimitive", REQUIRED,
-      R"({
-          "FieldName13": 0
-        })",
-      [](const Json::Value& value) { return value.isMember("FieldName13"); });
-  std::vector<const FieldDescriptor*> extensions;
-  MessageType::GetDescriptor()->file()->pool()->FindAllExtensions(
-      MessageType::GetDescriptor(), &extensions);
-  RunValidJsonTestWithValidator("FieldNameExtension", RECOMMENDED,
-                                absl::Substitute(R"({
-          "[$0]": 1
-        })",
-                                                 extensions[0]->full_name()),
-                                [&](const Json::Value& value) {
-                                  return value.isMember(absl::StrCat(
-                                      "[", extensions[0]->full_name(), "]"));
-                                });
 }
 
 template <typename MessageType>
@@ -2449,409 +1568,9 @@ void BinaryAndJsonConformanceSuiteImpl<
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::RunJsonTestsForFieldNameConvention() {
-  RunValidJsonTest("FieldNameInSnakeCase", REQUIRED,
-                   R"({
-        "fieldname1": 1,
-        "fieldName2": 2,
-        "FieldName3": 3,
-        "fieldName4": 4
-      })",
-                   R"(
-        fieldname1: 1
-        field_name2: 2
-        _field_name3: 3
-        field__name4_: 4
-      )");
-  RunValidJsonTest("FieldNameWithNumbers", REQUIRED,
-                   R"({
-        "field0name5": 5,
-        "field0Name6": 6
-      })",
-                   R"(
-        field0name5: 5
-        field_0_name6: 6
-      )");
-  RunValidJsonTest("FieldNameWithMixedCases", REQUIRED,
-                   R"({
-        "fieldName7": 7,
-        "FieldName8": 8,
-        "fieldName9": 9,
-        "FieldName10": 10,
-        "FIELDNAME11": 11,
-        "FIELDName12": 12
-      })",
-                   R"(
-        fieldName7: 7
-        FieldName8: 8
-        field_Name9: 9
-        Field_Name10: 10
-        FIELD_NAME11: 11
-        FIELD_name12: 12
-      )");
-  RunValidJsonTest("FieldNameWithDoubleUnderscores", RECOMMENDED,
-                   R"({
-        "FieldName13": 13,
-        "FieldName14": 14,
-        "fieldName15": 15,
-        "fieldName16": 16,
-        "fieldName17": 17,
-        "FieldName18": 18
-      })",
-                   R"(
-        __field_name13: 13
-        __Field_name14: 14
-        field__name15: 15
-        field__Name16: 16
-        field_name17__: 17
-        Field_name18__: 18
-      )");
-  // Using the original proto field name in JSON is also allowed.
-  RunValidJsonTest("OriginalProtoFieldName", REQUIRED,
-                   R"({
-        "fieldname1": 1,
-        "field_name2": 2,
-        "_field_name3": 3,
-        "field__name4_": 4,
-        "field0name5": 5,
-        "field_0_name6": 6,
-        "fieldName7": 7,
-        "FieldName8": 8,
-        "field_Name9": 9,
-        "Field_Name10": 10,
-        "FIELD_NAME11": 11,
-        "FIELD_name12": 12,
-        "__field_name13": 13,
-        "__Field_name14": 14,
-        "field__name15": 15,
-        "field__Name16": 16,
-        "field_name17__": 17,
-        "Field_name18__": 18
-      })",
-                   R"(
-        fieldname1: 1
-        field_name2: 2
-        _field_name3: 3
-        field__name4_: 4
-        field0name5: 5
-        field_0_name6: 6
-        fieldName7: 7
-        FieldName8: 8
-        field_Name9: 9
-        Field_Name10: 10
-        FIELD_NAME11: 11
-        FIELD_name12: 12
-        __field_name13: 13
-        __Field_name14: 14
-        field__name15: 15
-        field__Name16: 16
-        field_name17__: 17
-        Field_name18__: 18
-      )");
-  // Field names can be escaped.
-  RunValidJsonTest("FieldNameEscaped", REQUIRED, R"({"fieldn\u0061me1": 1})",
-                   "fieldname1: 1");
-  // String ends with escape character.
-  ExpectParseFailureForJson("StringEndsWithEscapeChar", RECOMMENDED,
-                            "{\"optionalString\": \"abc\\");
-  // Field names must be quoted (or it's not valid JSON).
-  ExpectParseFailureForJson("FieldNameNotQuoted", RECOMMENDED,
-                            "{fieldname1: 1}");
-  // Trailing comma is not allowed (not valid JSON).
-  ExpectParseFailureForJson("TrailingCommaInAnObject", RECOMMENDED,
-                            R"({"fieldname1":1,})");
-  ExpectParseFailureForJson("TrailingCommaInAnObjectWithSpace", RECOMMENDED,
-                            R"({"fieldname1":1 ,})");
-  ExpectParseFailureForJson("TrailingCommaInAnObjectWithSpaceCommaSpace",
-                            RECOMMENDED, R"({"fieldname1":1 , })");
-  ExpectParseFailureForJson("TrailingCommaInAnObjectWithNewlines", RECOMMENDED,
-                            R"({
-        "fieldname1":1,
-      })");
-  // JSON doesn't support comments.
-  ExpectParseFailureForJson("JsonWithComments", RECOMMENDED,
-                            R"({
-        // This is a comment.
-        "fieldname1": 1
-      })");
-  // JSON spec says whitespace doesn't matter, so try a few spacings to be sure.
-  RunValidJsonTest("OneLineNoSpaces", RECOMMENDED,
-                   "{\"optionalInt32\":1,\"optionalInt64\":2}",
-                   R"(
-        optional_int32: 1
-        optional_int64: 2
-      )");
-  RunValidJsonTest("OneLineWithSpaces", RECOMMENDED,
-                   "{ \"optionalInt32\" : 1 , \"optionalInt64\" : 2 }",
-                   R"(
-        optional_int32: 1
-        optional_int64: 2
-      )");
-  RunValidJsonTest("MultilineNoSpaces", RECOMMENDED,
-                   "{\n\"optionalInt32\"\n:\n1\n,\n\"optionalInt64\"\n:\n2\n}",
-                   R"(
-        optional_int32: 1
-        optional_int64: 2
-      )");
-  RunValidJsonTest(
-      "MultilineWithSpaces", RECOMMENDED,
-      "{\n  \"optionalInt32\"  :  1\n  ,\n  \"optionalInt64\"  :  2\n}\n",
-      R"(
-        optional_int32: 1
-        optional_int64: 2
-      )");
-  // Missing comma between key/value pairs.
-  ExpectParseFailureForJson("MissingCommaOneLine", RECOMMENDED,
-                            "{ \"optionalInt32\": 1 \"optionalInt64\": 2 }");
-  ExpectParseFailureForJson(
-      "MissingCommaMultiline", RECOMMENDED,
-      "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
-  // Duplicated field names have either last-wins or parse failure.
-  RunValidJsonTestOrParseFailure("FieldNameDuplicate", RECOMMENDED,
-                                 R"({
-                                   "optionalNestedMessage": {"a": 1},
-                                   "optionalNestedMessage": {}
-                                 })",
-                                 "optional_nested_message: {}");
-  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing1",
-                                 RECOMMENDED,
-                                 R"({
-                                   "optional_nested_message": {"a": 1},
-                                   "optionalNestedMessage": {}
-                                 })",
-                                 "optional_nested_message: {}");
-  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing2",
-                                 RECOMMENDED,
-                                 R"({
-                                   "optionalNestedMessage": {"a": 1},
-                                   "optional_nested_message": {}
-                                 })",
-                                 "optional_nested_message: {}");
-  // Serializers should use lowerCamelCase by default.
-  RunValidJsonTestWithValidator("FieldNameInLowerCamelCase", REQUIRED,
-                                R"({
-        "fieldname1": 1,
-        "fieldName2": 2,
-        "FieldName3": 3,
-        "fieldName4": 4
-      })",
-                                [](const Json::Value& value) {
-                                  return value.isMember("fieldname1") &&
-                                         value.isMember("fieldName2") &&
-                                         value.isMember("FieldName3") &&
-                                         value.isMember("fieldName4");
-                                });
-  RunValidJsonTestWithValidator("FieldNameWithNumbersValidator", REQUIRED,
-                                R"({
-        "field0name5": 5,
-        "field0Name6": 6
-      })",
-                                [](const Json::Value& value) {
-                                  return value.isMember("field0name5") &&
-                                         value.isMember("field0Name6");
-                                });
-  RunValidJsonTestWithValidator(
-      "FieldNameWithMixedCasesValidator", REQUIRED,
-      R"({
-        "fieldName7": 7,
-        "FieldName8": 8,
-        "fieldName9": 9,
-        "FieldName10": 10,
-        "FIELDNAME11": 11,
-        "FIELDName12": 12
-      })",
-      [](const Json::Value& value) {
-        return value.isMember("fieldName7") && value.isMember("FieldName8") &&
-               value.isMember("fieldName9") && value.isMember("FieldName10") &&
-               value.isMember("FIELDNAME11") && value.isMember("FIELDName12");
-      });
-  RunValidJsonTestWithValidator(
-      "FieldNameWithDoubleUnderscoresValidator", RECOMMENDED,
-      R"({
-        "FieldName13": 13,
-        "FieldName14": 14,
-        "fieldName15": 15,
-        "fieldName16": 16,
-        "fieldName17": 17,
-        "FieldName18": 18
-      })",
-      [](const Json::Value& value) {
-        return value.isMember("FieldName13") && value.isMember("FieldName14") &&
-               value.isMember("fieldName15") && value.isMember("fieldName16") &&
-               value.isMember("fieldName17") && value.isMember("FieldName18");
-      });
-
-  if (run_proto3_tests_) {
-    RunValidJsonTestWithValidator("SkipsDefaultPrimitive", REQUIRED,
-                                  R"({"FieldName13": 0})",
-                                  [](const Json::Value& value) {
-                                    return !value.isMember("FieldName13");
-                                  });
-  }
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<
     MessageType>::RunJsonTestsForNonRepeatedTypes() {
-  // Integer fields.
-  RunValidJsonTest("Int32FieldMaxValue", REQUIRED,
-                   R"({"optionalInt32": 2147483647})",
-                   "optional_int32: 2147483647");
-  RunValidJsonTest("Int32FieldMinValue", REQUIRED,
-                   R"({"optionalInt32": -2147483648})",
-                   "optional_int32: -2147483648");
-  RunValidJsonTest("Uint32FieldMaxValue", REQUIRED,
-                   R"({"optionalUint32": 4294967295})",
-                   "optional_uint32: 4294967295");
-  RunValidJsonTest("Int64FieldMaxValue", REQUIRED,
-                   R"({"optionalInt64": "9223372036854775807"})",
-                   "optional_int64: 9223372036854775807");
-  RunValidJsonTest("Int64FieldMinValue", REQUIRED,
-                   R"({"optionalInt64": "-9223372036854775808"})",
-                   "optional_int64: -9223372036854775808");
-  RunValidJsonTest("Uint64FieldMaxValue", REQUIRED,
-                   R"({"optionalUint64": "18446744073709551615"})",
-                   "optional_uint64: 18446744073709551615");
-  // While not the largest Int64, this is the largest
-  // Int64 which can be exactly represented within an
-  // IEEE-754 64-bit float, which is the expected level
-  // of interoperability guarantee. Larger values may
-  // work in some implementations, but should not be
-  // relied upon.
-  RunValidJsonTest("Int64FieldMaxValueNotQuoted", REQUIRED,
-                   R"({"optionalInt64": 9223372036854774784})",
-                   "optional_int64: 9223372036854774784");
-  RunValidJsonTest("Int64FieldMinValueNotQuoted", REQUIRED,
-                   R"({"optionalInt64": -9223372036854775808})",
-                   "optional_int64: -9223372036854775808");
-  // Largest interoperable Uint64; see comment above
-  // for Int64FieldMaxValueNotQuoted.
-  RunValidJsonTest("Uint64FieldMaxValueNotQuoted", REQUIRED,
-                   R"({"optionalUint64": 18446744073709549568})",
-                   "optional_uint64: 18446744073709549568");
-  // Values can be represented as JSON strings.
-  RunValidJsonTest("Int32FieldStringValue", REQUIRED,
-                   R"({"optionalInt32": "2147483647"})",
-                   "optional_int32: 2147483647");
-  RunValidJsonTest("Int32FieldStringValueEscaped", REQUIRED,
-                   R"({"optionalInt32": "2\u003147483647"})",
-                   "optional_int32: 2147483647");
-  RunValidJsonTest("Int32FieldStringValueZero", REQUIRED,
-                   R"({"optionalInt32": "0"})", "optional_int32: 0");
-  RunValidJsonTest("Int32FieldQuotedExponentialValue", REQUIRED,
-                   R"({"optionalInt32": "1e5"})", "optional_int32: 100000");
-
-  // Parsers reject out-of-bound integer values.
-  ExpectParseFailureForJson("Int32FieldTooLarge", REQUIRED,
-                            R"({"optionalInt32": 2147483648})");
-  ExpectParseFailureForJson("Int32FieldTooSmall", REQUIRED,
-                            R"({"optionalInt32": -2147483649})");
-  ExpectParseFailureForJson("Uint32FieldTooLarge", REQUIRED,
-                            R"({"optionalUint32": 4294967296})");
-  ExpectParseFailureForJson("Int64FieldTooLarge", REQUIRED,
-                            R"({"optionalInt64": "9223372036854775808"})");
-  ExpectParseFailureForJson("Int64FieldTooSmall", REQUIRED,
-                            R"({"optionalInt64": "-9223372036854775809"})");
-  ExpectParseFailureForJson("Uint64FieldTooLarge", REQUIRED,
-                            R"({"optionalUint64": "18446744073709551616"})");
-  ExpectParseFailureForJson("Uint64QuotedExponentFieldTooLarge", REQUIRED,
-                            R"({"optionalUint64": "1e536870000"})");
-
-  // Parser reject non-integer numeric values.
-  ExpectParseFailureForJson("Int32FieldNotInteger", REQUIRED,
-                            R"({"optionalInt32": 0.5})");
-  ExpectParseFailureForJson("Uint32FieldNotInteger", REQUIRED,
-                            R"({"optionalUint32": 0.5})");
-  ExpectParseFailureForJson("Int64FieldNotInteger", REQUIRED,
-                            R"({"optionalInt64": "0.5"})");
-  ExpectParseFailureForJson("Uint64FieldNotInteger", REQUIRED,
-                            R"({"optionalUint64": "0.5"})");
-
-  // Parser reject boolean values for integer fields.
-  ExpectParseFailureForJson("Int32FieldTrueValue", REQUIRED,
-                            R"({"optionalInt32": true})");
-  ExpectParseFailureForJson("Int32FieldFalseValue", REQUIRED,
-                            R"({"optionalInt32": false})");
-
-  // Parser reject non-numeric string values.
-  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumeric", REQUIRED,
-                            R"({"optionalInt32": "12abc"})");
-  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericSpace",
-                            REQUIRED, R"({"optionalInt32": "12 34"})");
-  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericComma",
-                            REQUIRED, R"({"optionalInt32": "12,34"})");
-  // Not a raw string literal: the payload holds the UTF-8 bytes of U+8C37
-  // U+6B4C between the digits.
-  ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericUnicode",
-                            REQUIRED,
-                            "{\"optionalInt32\": \"12\xE8\xB0\xB7\xE6\xAD\x8C"
-                            "34\"}");
-  ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
-                            R"({"optionalInt32": "abc"})");
-
-  // Parser reject empty string values.
-  ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
-                            R"({"optionalInt32": ""})");
-  ExpectParseFailureForJson("Uint32FieldEmptyString", REQUIRED,
-                            R"({"optionalUint32": ""})");
-  ExpectParseFailureForJson("Int64FieldEmptyString", REQUIRED,
-                            R"({"optionalInt64": ""})");
-  ExpectParseFailureForJson("Uint64FieldEmptyString", REQUIRED,
-                            R"({"optionalUint64": ""})");
-
-  // Integers but represented as float values are accepted.
-  RunValidJsonTest("Int32FieldFloatTrailingZero", REQUIRED,
-                   R"({"optionalInt32": 100000.000})",
-                   "optional_int32: 100000");
-  RunValidJsonTest("Int32FieldExponentialFormat", REQUIRED,
-                   R"({"optionalInt32": 1e5})", "optional_int32: 100000");
-  RunValidJsonTest("Int32FieldMaxFloatValue", REQUIRED,
-                   R"({"optionalInt32": 2.147483647e9})",
-                   "optional_int32: 2147483647");
-  RunValidJsonTest("Int32FieldMinFloatValue", REQUIRED,
-                   R"({"optionalInt32": -2.147483648e9})",
-                   "optional_int32: -2147483648");
-  RunValidJsonTest("Uint32FieldMaxFloatValue", REQUIRED,
-                   R"({"optionalUint32": 4.294967295e9})",
-                   "optional_uint32: 4294967295");
-
-  // Parser reject non-numeric values.
-  ExpectParseFailureForJson("Int32FieldNotNumber", REQUIRED,
-                            R"({"optionalInt32": "3x3"})");
-  ExpectParseFailureForJson("Uint32FieldNotNumber", REQUIRED,
-                            R"({"optionalUint32": "3x3"})");
-  ExpectParseFailureForJson("Int64FieldNotNumber", REQUIRED,
-                            R"({"optionalInt64": "3x3"})");
-  ExpectParseFailureForJson("Uint64FieldNotNumber", REQUIRED,
-                            R"({"optionalUint64": "3x3"})");
-  // JSON does not allow "+" on numeric values.
-  ExpectParseFailureForJson("Int32FieldPlusSign", REQUIRED,
-                            R"({"optionalInt32": +1})");
-  // JSON doesn't allow leading 0s.
-  ExpectParseFailureForJson("Int32FieldLeadingZero", REQUIRED,
-                            R"({"optionalInt32": 01})");
-  ExpectParseFailureForJson("Int32FieldNegativeWithLeadingZero", REQUIRED,
-                            R"({"optionalInt32": -01})");
-  // String values must follow the same syntax rule. Specifically leading
-  // or trailing spaces are not allowed.
-  ExpectParseFailureForJson("Int32FieldLeadingSpace", REQUIRED,
-                            R"({"optionalInt32": " 1"})");
-  ExpectParseFailureForJson("Int32FieldTrailingSpace", REQUIRED,
-                            R"({"optionalInt32": "1 "})");
-
-  // 64-bit values are serialized as strings.
-  RunValidJsonTestWithValidator(
-      "Int64FieldBeString", RECOMMENDED, R"({"optionalInt64": 1})",
-      [](const Json::Value& value) {
-        return value["optionalInt64"].type() == Json::stringValue &&
-               value["optionalInt64"].asString() == "1";
-      });
-  RunValidJsonTestWithValidator(
-      "Uint64FieldBeString", RECOMMENDED, R"({"optionalUint64": 1})",
-      [](const Json::Value& value) {
-        return value["optionalUint64"].type() == Json::stringValue &&
-               value["optionalUint64"].asString() == "1";
-      });
+  // The integer field tests live in json_integer_test.cc (the gtest-based
+  // suite; see BUILD).
 
   // Bool fields.
   RunValidJsonTest("BoolFieldTrue", REQUIRED, R"({"optionalBool":true})",
@@ -3301,66 +2020,6 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "RepeatedFieldTrailingCommaWithNewlines", RECOMMENDED,
       "{\"repeatedInt32\": [\n  1,\n  2,\n  3,\n  4,\n]}");
-}
-
-template <typename MessageType>
-void BinaryAndJsonConformanceSuiteImpl<
-    MessageType>::RunJsonTestsForNullTypes() {
-  // "null" is accepted for all fields types.
-  RunValidJsonTest("AllFieldAcceptNull", REQUIRED,
-                   R"({
-        "optionalInt32": null,
-        "optionalInt64": null,
-        "optionalUint32": null,
-        "optionalUint64": null,
-        "optionalSint32": null,
-        "optionalSint64": null,
-        "optionalFixed32": null,
-        "optionalFixed64": null,
-        "optionalSfixed32": null,
-        "optionalSfixed64": null,
-        "optionalFloat": null,
-        "optionalDouble": null,
-        "optionalBool": null,
-        "optionalString": null,
-        "optionalBytes": null,
-        "optionalNestedEnum": null,
-        "optionalNestedMessage": null,
-        "repeatedInt32": null,
-        "repeatedInt64": null,
-        "repeatedUint32": null,
-        "repeatedUint64": null,
-        "repeatedSint32": null,
-        "repeatedSint64": null,
-        "repeatedFixed32": null,
-        "repeatedFixed64": null,
-        "repeatedSfixed32": null,
-        "repeatedSfixed64": null,
-        "repeatedFloat": null,
-        "repeatedDouble": null,
-        "repeatedBool": null,
-        "repeatedString": null,
-        "repeatedBytes": null,
-        "repeatedNestedEnum": null,
-        "repeatedNestedMessage": null,
-        "mapInt32Int32": null,
-        "mapBoolBool": null,
-        "mapStringNestedMessage": null
-      })",
-                   "");
-
-  // Repeated field elements cannot be null.
-  ExpectParseFailureForJson("RepeatedFieldPrimitiveElementIsNull", RECOMMENDED,
-                            R"({"repeatedInt32": [1, null, 2]})");
-  ExpectParseFailureForJson(
-      "RepeatedFieldMessageElementIsNull", RECOMMENDED,
-      R"({"repeatedNestedMessage": [{"a":1}, null, {"a":2}]})");
-  // Map field keys cannot be null.
-  ExpectParseFailureForJson("MapFieldKeyIsNull", RECOMMENDED,
-                            R"({"mapInt32Int32": {null: 1}})");
-  // Map field values cannot be null.
-  ExpectParseFailureForJson("MapFieldValueIsNull", RECOMMENDED,
-                            R"({"mapInt32Int32": {"0": null}})");
 }
 
 template <typename MessageType>
@@ -4215,73 +2874,24 @@ template <typename MessageType>
 const FieldDescriptor*
 BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForType(
     FieldDescriptor::Type type, bool repeated, Packed packed) const {
-  const Descriptor* d = MessageType::GetDescriptor();
-  for (int i = 0; i < d->field_count(); i++) {
-    const FieldDescriptor* f = d->field(i);
-    if (f->type() == type && f->is_repeated() == repeated) {
-      if ((packed == Packed::kTrue && !f->is_packed()) ||
-          (packed == Packed::kFalse && f->is_packed())) {
-        continue;
-      }
-      return f;
-    }
-  }
-
-  absl::string_view packed_string = "";
-  const absl::string_view repeated_string =
-      repeated ? "Repeated " : "Singular ";
-  if (packed == Packed::kTrue) {
-    packed_string = "Packed ";
-  }
-  if (packed == Packed::kFalse) {
-    packed_string = "Unpacked ";
-  }
-  ABSL_LOG(FATAL) << "Couldn't find field with type: " << repeated_string
-                  << packed_string << FieldDescriptor::TypeName(type) << " for "
-                  << d->full_name();
-  return nullptr;
+  return ::google::protobuf::conformance::GetFieldForType(*MessageType::GetDescriptor(),
+                                                type, repeated, packed);
 }
 
 template <typename MessageType>
 const FieldDescriptor*
 BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForMapType(
     FieldDescriptor::Type key_type, FieldDescriptor::Type value_type) const {
-  const Descriptor* d = MessageType::GetDescriptor();
-  for (int i = 0; i < d->field_count(); i++) {
-    const FieldDescriptor* f = d->field(i);
-    if (f->is_map()) {
-      const Descriptor* map_entry = f->message_type();
-      const FieldDescriptor* key = map_entry->field(0);
-      const FieldDescriptor* value = map_entry->field(1);
-      if (key->type() == key_type && value->type() == value_type) {
-        return f;
-      }
-    }
-  }
-
-  ABSL_LOG(FATAL) << "Couldn't find map field with type: "
-                  << FieldDescriptor::TypeName(key_type) << " and "
-                  << FieldDescriptor::TypeName(key_type) << " for "
-                  << d->full_name();
-  return nullptr;
+  return ::google::protobuf::conformance::GetFieldForMapType(
+      *MessageType::GetDescriptor(), key_type, value_type);
 }
 
 template <typename MessageType>
 const FieldDescriptor*
 BinaryAndJsonConformanceSuiteImpl<MessageType>::GetFieldForOneofType(
     FieldDescriptor::Type type, bool exclusive) const {
-  const Descriptor* d = MessageType::GetDescriptor();
-  for (int i = 0; i < d->field_count(); i++) {
-    const FieldDescriptor* f = d->field(i);
-    if (f->containing_oneof() && ((f->type() == type) ^ exclusive)) {
-      return f;
-    }
-  }
-
-  ABSL_LOG(FATAL) << "Couldn't find oneof field with type: "
-                  << FieldDescriptor::TypeName(type) << " for "
-                  << d->full_name();
-  return nullptr;
+  return ::google::protobuf::conformance::GetFieldForOneofType(
+      *MessageType::GetDescriptor(), type, exclusive);
 }
 
 template <typename MessageType>
