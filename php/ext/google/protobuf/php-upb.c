@@ -17771,7 +17771,8 @@ static const char* _upb_Decoder_DecodeEnumPacked(
           field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension
               ? d->original_msg
               : msg;
-      if (!_upb_Encoder_AddEnumValueToUnknown(unknown_msg, field,
+      if (!_upb_Encoder_AddEnumValueToUnknown(unknown_msg,
+                                              field->UPB_PRIVATE(number),
                                               elem.uint64_val, &d->arena)) {
         upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
       }
