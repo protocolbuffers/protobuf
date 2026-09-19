@@ -608,3 +608,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/dangra/durable
     *   Extensions: 1374-1375
+
+1.  firestore-proto-codec
+
+    *   Website: https://github.com/willbinge/firestore-proto-codec
+    *   Extensions: 1376-1380
