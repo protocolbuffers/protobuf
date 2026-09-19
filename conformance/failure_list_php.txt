@@ -1,59 +1,92 @@
-Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput
-Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput
-Recommended.*.FieldMaskTooManyUnderscore.JsonOutput
-Recommended.*.JsonInput.BytesFieldBase64Url.JsonOutput
-Recommended.*.JsonInput.BytesFieldBase64Url.ProtobufOutput
+Recommended.*.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput
+Recommended.*.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput
+Recommended.*.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput
+Recommended.Editions_Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
+Recommended.Editions_Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
+Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
 Recommended.*.JsonInput.FieldMaskInvalidCharacter
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                           # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                           # Should have failed to parse or matched expected output but did not.
-Recommended.*.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput
-Recommended.*.ValueRejectInfNumberValue.JsonOutput                                                                 # Should have failed to serialize, but didn't.
-Recommended.*.ValueRejectNanNumberValue.JsonOutput                                                                 # Should have failed to serialize, but didn't.
-Required.*.JsonInput.DoubleFieldTooSmall
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                             # Should have failed to parse, but didn't., and Output was not equivalent to reference message:
+Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                                      # Should have failed to parse, but didn't., and Output was not equivalent to reference message:
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                             # Should have failed to parse, but didn't., and Output was not equivalent to reference message:
+Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                                      # Should have failed to parse, but didn't., and Output was not equivalent to reference message:
+Recommended.Editions_Proto3.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput
+Recommended.Proto3.ProtobufInput.ValidDataOneofBinary.MESSAGE.Merge.ProtobufOutput
+Recommended.*.ProtobufInput.ValueRejectInfNumberValue.JsonOutput                                                   # Should have failed to serialize, but didn't.
+Recommended.*.ProtobufInput.ValueRejectNanNumberValue.JsonOutput                                                   # Should have failed to serialize, but didn't.
+Required.Editions_Proto3.JsonInput.DoubleFieldTooSmall
+Required.Proto3.JsonInput.DoubleFieldTooSmall
 Required.*.JsonInput.DurationNegativeNanos.JsonOutput
 Required.*.JsonInput.DurationNegativeNanos.ProtobufOutput
-Required.*.JsonInput.FloatFieldTooLarge
-Required.*.JsonInput.FloatFieldTooSmall
-Required.*.JsonInput.Int32FieldNotInteger
-Required.*.JsonInput.Int64FieldNotInteger
-Required.*.JsonInput.OneofFieldNullSecond.JsonOutput
-Required.*.JsonInput.OneofFieldNullSecond.ProtobufOutput
-Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
+Required.Editions_Proto3.JsonInput.FloatFieldTooLarge
+Required.Proto3.JsonInput.FloatFieldTooLarge
+Required.Editions_Proto3.JsonInput.FloatFieldTooSmall
+Required.Proto3.JsonInput.FloatFieldTooSmall
+Required.Editions_Proto3.JsonInput.Int32FieldNotInteger
+Required.Proto3.JsonInput.Int32FieldNotInteger
+Required.Editions_Proto3.JsonInput.Int64FieldNotInteger
+Required.Proto3.JsonInput.Int64FieldNotInteger
+Required.Editions_Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
+Required.Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
+Required.Editions_Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput
+Required.Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput
+Required.Editions_Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
+Required.Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
 Required.*.JsonInput.RepeatedListValue.JsonOutput
 Required.*.JsonInput.RepeatedListValue.ProtobufOutput
-Required.*.JsonInput.StringFieldNotAString
-Required.*.JsonInput.Uint32FieldNotInteger
-Required.*.JsonInput.Uint64FieldNotInteger
+Required.Editions_Proto3.JsonInput.StringFieldNotAString
+Required.Proto3.JsonInput.StringFieldNotAString
+Required.Editions_Proto3.JsonInput.Uint32FieldNotInteger
+Required.Proto3.JsonInput.Uint32FieldNotInteger
+Required.Editions_Proto3.JsonInput.Uint64FieldNotInteger
+Required.Proto3.JsonInput.Uint64FieldNotInteger
 Recommended.*.JsonInput.ListValueDeepNesting200                                                                      # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.StructDeepNesting200                                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.ValueDeepNesting200                                                                          # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.RepeatedScalarMessageMerge.JsonOutput
-Required.*.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
-Required.*.ProtobufInput.ValidDataOneof.MESSAGE.Merge.JsonOutput
-Required.*.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
-Required.*.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
-Required.*.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
-Required.*.ProtobufInput.ValidDataScalar.FLOAT[2].JsonOutput
-Required.*.JsonInput.Int32FieldQuotedExponentialValue.*                                                            # Failed to parse input or produce output.
+Required.Editions_Proto3.ProtobufInput.RepeatedScalarMessageMerge.JsonOutput
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.JsonOutput
+Required.Editions_Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
+Required.Proto3.ProtobufInput.RepeatedScalarMessageMerge.ProtobufOutput
+Required.Editions_Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.JsonOutput
+Required.Editions_Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
+Required.Proto3.ProtobufInput.ValidDataOneof.MESSAGE.Merge.ProtobufOutput
+Required.Editions_Proto3.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.PackedInput.JsonOutput
+Required.Editions_Proto3.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
+Required.Proto3.ProtobufInput.ValidDataRepeated.FLOAT.UnpackedInput.JsonOutput
+Required.Editions_Proto3.ProtobufInput.ValidDataScalar.FLOAT[2].JsonOutput
+Required.Proto3.ProtobufInput.ValidDataScalar.FLOAT[2].JsonOutput
+Required.Editions_Proto3.JsonInput.Int32FieldQuotedExponentialValue.*                                              # Failed to parse input or produce output.
+Required.Proto3.JsonInput.Int32FieldQuotedExponentialValue.*                                                       # Failed to parse input or produce output.
 Required.*.JsonInput.AnyWithNoType.*
 Required.*.JsonInput.TimestampWithMissingColonInOffset                                                             # Should have failed to parse, but didn't.
 Required.Editions_Proto3.JsonInput.DoubleFieldTooLarge                                                             # Should have failed to parse, but didn't.
 Required.Proto3.JsonInput.DoubleFieldTooLarge                                                                      # Should have failed to parse, but didn't.
-Required.*.DurationProtoNanosTooLarge.JsonOutput # Should have failed to serialize, but didn't.
-Required.*.DurationProtoNanosTooSmall.JsonOutput # Should have failed to serialize, but didn't.
-Required.*.DurationProtoNanosWrongSign.JsonOutput # Should have failed to serialize, but didn't.
-Required.*.DurationProtoNanosWrongSignNegativeSecs.JsonOutput # Should have failed to serialize, but didn't.
-Required.*.TimestampProtoNanoTooLarge.JsonOutput # Should have failed to serialize, but didn't.
-Required.*.TimestampProtoNegativeNanos.JsonOutput # Should have failed to serialize, but didn't.
-Required.*.JsonInput.SingleValueForRepeatedFieldInt32 # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_VarintMoreThanTenBytes                                                             # Should have failed to parse, but didn't.
-Required.*.JsonInput.DoubleFieldFalseValue                                                                         # Should have failed to parse, but didn't.
-Required.*.JsonInput.DoubleFieldTrueValue                                                                          # Should have failed to parse, but didn't.
-Required.*.JsonInput.FloatFieldFalseValue                                                                          # Should have failed to parse, but didn't.
-Required.*.JsonInput.FloatFieldTrueValue                                                                           # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.DurationProtoNanosTooLarge.JsonOutput # Should have failed to serialize, but didn't.
+Required.*.ProtobufInput.DurationProtoNanosTooSmall.JsonOutput # Should have failed to serialize, but didn't.
+Required.*.ProtobufInput.DurationProtoNanosWrongSign.JsonOutput # Should have failed to serialize, but didn't.
+Required.*.ProtobufInput.DurationProtoNanosWrongSignNegativeSecs.JsonOutput # Should have failed to serialize, but didn't.
+Required.*.ProtobufInput.TimestampProtoNanoTooLarge.JsonOutput # Should have failed to serialize, but didn't.
+Required.*.ProtobufInput.TimestampProtoNegativeNanos.JsonOutput # Should have failed to serialize, but didn't.
+Required.Editions_Proto3.JsonInput.SingleValueForRepeatedFieldInt32 # Should have failed to parse, but didn't.
+Required.Proto3.JsonInput.SingleValueForRepeatedFieldInt32 # Should have failed to parse, but didn't.
+Required.Editions_Proto3.ProtobufInput.BadTag_FieldNumberTooHigh                                                   # Should have failed to parse, but didn't.
+Required.Proto3.ProtobufInput.BadTag_FieldNumberTooHigh                                                            # Should have failed to parse, but didn't.
+Required.Editions_Proto3.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                           # Should have failed to parse, but didn't.
+Required.Proto3.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                    # Should have failed to parse, but didn't.
+Required.Editions_Proto3.ProtobufInput.BadTag_OverlongVarint                                                       # Should have failed to parse, but didn't.
+Required.Proto3.ProtobufInput.BadTag_OverlongVarint                                                                # Should have failed to parse, but didn't.
+Required.Editions_Proto3.ProtobufInput.BadTag_VarintMoreThanTenBytes                                               # Should have failed to parse, but didn't.
+Required.Proto3.ProtobufInput.BadTag_VarintMoreThanTenBytes                                                        # Should have failed to parse, but didn't.
+Required.Editions_Proto3.JsonInput.DoubleFieldFalseValue                                                           # Should have failed to parse, but didn't.
+Required.Proto3.JsonInput.DoubleFieldFalseValue                                                                    # Should have failed to parse, but didn't.
+Required.Editions_Proto3.JsonInput.DoubleFieldTrueValue                                                            # Should have failed to parse, but didn't.
+Required.Proto3.JsonInput.DoubleFieldTrueValue                                                                     # Should have failed to parse, but didn't.
+Required.Editions_Proto3.JsonInput.FloatFieldFalseValue                                                            # Should have failed to parse, but didn't.
+Required.Proto3.JsonInput.FloatFieldFalseValue                                                                     # Should have failed to parse, but didn't.
+Required.Editions_Proto3.JsonInput.FloatFieldTrueValue                                                             # Should have failed to parse, but didn't.
+Required.Proto3.JsonInput.FloatFieldTrueValue                                                                      # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                    # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputDayTooShort                                                    # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputDayZero                                                        # Should have failed to parse, but didn't.
