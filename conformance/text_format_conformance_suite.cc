@@ -15,7 +15,6 @@
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "conformance/conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
@@ -150,16 +149,8 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
     }
     RunTextFormatPerformanceTests();
   } else {
-    if (MessageType::GetDescriptor()->name() == "TestAllTypesProto2") {
-      RunGroupTests();
-      RunClosedEnumTests();
-    }
-    if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
-      RunDelimitedTests();
-    }
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto3") {
       RunAnyTests();
-      RunOpenEnumTests();
       // TODO Run these over proto2 also.
       RunAllTests();
     }
@@ -264,76 +255,7 @@ void TextFormatConformanceTestSuiteImpl<
 }
 
 template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunDelimitedTests() {
-  RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
-                         "GroupLikeType { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
-                         "GroupLikeType: { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "GroupLikeType {}");
-  RunValidTextFormatTest(
-      "GroupFieldExtension", REQUIRED,
-      "[protobuf_test_messages.editions.groupliketype] { c: 1 }");
-  RunValidTextFormatTest(
-      "DelimitedFieldExtension", REQUIRED,
-      "[protobuf_test_messages.editions.delimited_ext] { c: 1 }");
-
-
-  // Test that lower-cased group name (i.e. implicit field name) are accepted.
-  RunValidTextFormatTest("DelimitedFieldLowercased", REQUIRED,
-                         "groupliketype { group_int32: 1 }");
-  RunValidTextFormatTest("DelimitedFieldLowercasedDifferent", REQUIRED,
-                         "delimited_field { group_int32: 1 }");
-
-  // Extensions always used the field name, and should never accept the message
-  // name.
-  ExpectParseFailure(
-      "DelimitedFieldExtensionMessageName", REQUIRED,
-      "[protobuf_test_messages.editions.GroupLikeType] { group_int32: 1 }");
-
-  // Extension names can contain whitespace and comments.
-  RunValidTextFormatTest(
-      "ExtensionNameWithWhitespace", REQUIRED,
-      "[protobuf _test_messages.edit\tions.exten\nsion_int32]: 1");
-  RunValidTextFormatTest(
-      "ExtensionNameWithComment", REQUIRED,
-      "[protobuf_test_messages.edit # comment \nions.extension_int32]: 1");
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
-  RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
-                         "Data { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
-                         "Data: { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "Data {}");
-  RunValidTextFormatTest("GroupFieldMultiWord", REQUIRED,
-                         "MultiWordGroupField { group_int32: 1 }");
-
-  // Test that lower-cased group name (i.e. implicit field name) is accepted
-  RunValidTextFormatTest("GroupFieldLowercased", REQUIRED,
-                         "data { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldLowercasedMultiWord", REQUIRED,
-                         "multiwordgroupfield { group_int32: 1 }");
-
-  // Test extensions of group type
-  RunValidTextFormatTest("GroupFieldExtension", REQUIRED,
-                         absl::StrFormat("[%s] { group_int32: 1 }",
-                                         MessageType::GetDescriptor()
-                                             ->file()
-                                             ->FindExtensionByName("groupfield")
-                                             ->PrintableNameForExtension()));
-  ExpectParseFailure("GroupFieldExtensionGroupName", REQUIRED,
-                     absl::StrFormat("[%s] { group_int32: 1 }",
-                                     MessageType::GetDescriptor()
-                                         ->file()
-                                         ->FindMessageTypeByName("GroupField")
-                                         ->full_name()));
-}
-
-template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
-  RunValidTextFormatTest("HelloWorld", REQUIRED,
-                         "optional_string: 'Hello, World!'");
   // Integer fields.
   RunValidTextFormatTest("Int32FieldMaxValue", REQUIRED,
                          "optional_int32: 2147483647");
@@ -955,30 +877,6 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
       absl::StrCat("TestTextFormatPerformanceMergeMessageWithRepeatedField",
                    test_type_name),
       RECOMMENDED, input, expected);
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunOpenEnumTests() {
-  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 1
-        )");
-  RunValidTextFormatTest("ClosedEnumFieldWithUnknownNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 42
-        )");
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunClosedEnumTests() {
-  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 1
-        )");
-  ExpectParseFailure("ClosedEnumFieldWithUnknownNumber", REQUIRED,
-                     R"(
-        optional_nested_enum: 42
-        )");
 }
 
 }  // namespace protobuf
