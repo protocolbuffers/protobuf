@@ -1,0 +1,14 @@
+{
+  "typeCheckingMode": "strict",
+  "pythonVersion": "3.10",
+  "reportMissingModuleSource": "none",
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        "../..",
+        ".."
+      ]
+    }
+  ]
+}
