@@ -401,3 +401,31 @@ security topic if arbitrary bad behavior may be reachable if `upb` APIs are
 directly misused (including that `upb's` APIs accept MiniDescriptors/MiniTables
 which are considered trusted types, and so will have arbitrary behavior if those
 types do not meet the intended invariants).
+
+## Dependency Pinning
+
+### In Builds of Protobuf
+
+Due to the diversity of build systems used across the language bindings
+supported by Protobuf, there is not a singular policy on how narrowly
+dependencies are described. In many cases, Protobuf's dependencies' versions are
+allowed to float within the range of versions that also fit within our
+[Support Matrix](https://protobuf.dev/support/version-support/). In no cases do
+we require that dependencies of Protobuf are pinned to a specific commit. Users
+building directly from source are strongly advised to review what versions are
+downloaded and installed by the dependency management tools used by their local
+build system.
+
+### In Build Infrastructure
+
+Protobuf's build infrastructure may treat other Google-controlled open source
+projects as inherently trusted. For these trusted resources we allowing version
+pinning using release tags rather than SHAs. For example lines similar to:
+
+`uses: protocolbuffers/protobuf-ci/checkout@v6`
+
+can be found in our GitHub Actions configuration files. Resources that are not
+Google-controlled should be pinned with SHAs of the commit to prevent supply
+attacks, followed with a comment documenting the version:
+
+`uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2`
