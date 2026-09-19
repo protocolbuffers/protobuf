@@ -1,0 +1,36 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2026";
+
+package protobuf_test_messages.edition2026;
+
+import "google/protobuf/json_enumvalue_options.proto";
+
+option java_package = "com.google.protobuf_test_messages.edition2026";
+option objc_class_prefix = "Edition2026";
+
+export message TestAllTypesEdition2026 {
+  int32 optional_int32 = 1;
+
+  ForeignEnumEdition2026 optional_foreign_enum = 2;
+
+  repeated ForeignEnumEdition2026 repeated_foreign_enum = 3;
+
+  map<string, ForeignEnumEdition2026> map_string_foreign_enum = 4;
+
+  map<int32, int32> map_int32_int32 = 5;
+}
+
+export enum ForeignEnumEdition2026 {
+  FOREIGN_FOO = 0;
+
+  // Values with a custom JSON name, for testing the (pb.enumvalue.json)
+  // option in JSON serialization.
+  FOREIGN_BAR = 1 [(pb.enumvalue.json).string = "customBar"];
+  FOREIGN_BAZ = 2 [(pb.enumvalue.json).string = "customBaz"];
+}
