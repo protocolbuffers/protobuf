@@ -122,6 +122,7 @@ test_suite(
         "binary_test_util_test",
         "binary_wireformat_test",
         "failure_list_trie_node_test",
+        "matchers_test",
         "naming_test",
         "test_manager_test",
         "testee_test",
@@ -245,13 +246,13 @@ cc_library(
 
 cc_library(
     name = "test_manager",
-    testonly = True,
+    testonly = 1,
     srcs = ["test_manager.cc"],
     hdrs = ["test_manager.h"],
     deps = [
         ":conformance_cc_proto",
         ":failure_list_trie_node",
-        "//src/google/protobuf/stubs",
+        "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
@@ -260,6 +261,7 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -293,7 +295,7 @@ cc_test(
 
 cc_library(
     name = "testee",
-    testonly = True,
+    testonly = 1,
     srcs = ["testee.cc"],
     hdrs = ["testee.h"],
     deps = [
@@ -302,11 +304,15 @@ cc_library(
         ":naming",
         ":test_runner",
         "//src/google/protobuf",
+        "@abseil-cpp//absl/base:no_destructor",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
     ],
 )
 
@@ -315,6 +321,7 @@ cc_test(
     srcs = ["testee_test.cc"],
     deps = [
         ":binary_wireformat",
+        ":conformance_cc_proto",
         ":test_runner",
         ":testee",
         "//:test_messages_proto2_cc_proto",
@@ -323,6 +330,7 @@ cc_test(
         "//src/google/protobuf:test_textproto",
         "//src/google/protobuf/util:differencer",
         "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
@@ -340,6 +348,69 @@ cc_test(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:status_matchers",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "global_test_environment",
+    testonly = 1,
+    hdrs = ["global_test_environment.h"],
+    deps = [":test_manager"],
+)
+
+# gMock matchers for conformance TestResults.
+#
+# NOTE: Consumers must link a definition of GetGlobalTestManager(), declared in
+# global_test_environment.h.  The conformance test environment provides it in
+# the real test binary; matchers_test provides an in-memory stand-in.
+cc_library(
+    name = "matchers",
+    testonly = 1,
+    srcs = ["matchers.cc"],
+    hdrs = ["matchers.h"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":global_test_environment",
+        ":test_manager",
+        ":test_runner",
+        ":testee",
+        "//src/google/protobuf",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "matchers_test",
+    srcs = ["matchers_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":global_test_environment",
+        ":matchers",
+        ":test_manager",
+        ":test_runner",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
