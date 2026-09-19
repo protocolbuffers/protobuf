@@ -42,6 +42,13 @@ common --incompatible_check_testonly_for_output_files
 try-import-if-bazel-version >=9.0.0 %workspace%/bazel9.bazelrc
 
 # ==============================================================================
+# CI CONFIG (concise output to minimize logspam)
+# ==============================================================================
+build:ci --ui_event_filters=-info
+build:ci --noshow_progress
+test:ci --test_output=errors
+
+# ==============================================================================
 # COMPILATION MODES & SANITIZERS
 # ==============================================================================
 build:dbg --compilation_mode=dbg
