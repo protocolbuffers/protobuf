@@ -48,6 +48,6 @@ def conformance_test(
         deps = [
             Label("@bazel_tools//tools/bash/runfiles"),
         ],
-        tags = ["conformance"],
+        tags = kwargs.pop("tags", []) + ["conformance"] + (["benchmark"] if performance else []),
         **kwargs
     )
