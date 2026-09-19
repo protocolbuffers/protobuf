@@ -4,6 +4,7 @@ load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_python//python:py_library.bzl", "py_library")
 
+# TODO: Remove this file once _message has successfully switched to OSS rules_python's py_extension.
 def py_extension(name, srcs, copts, deps = [], **kwargs):
     """Creates a C++ library to extend python
 
