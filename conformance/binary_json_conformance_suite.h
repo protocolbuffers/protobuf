@@ -16,6 +16,7 @@
 
 #include "absl/strings/string_view.h"
 #include "json/json.h"
+#include "conformance/binary_test_util.h"
 #include "conformance/conformance_test.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/util/type_resolver.h"
@@ -179,21 +180,6 @@ class BinaryAndJsonConformanceSuiteImpl {
   void ExpectSerializeFailureForJson(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& text_format);
-  void ExpectParseFailureForProtoWithProtoVersion(const std::string& proto,
-                                                  const std::string& test_name,
-                                                  ConformanceLevel level);
-  void ExpectParseFailureForProto(const std::string& proto,
-                                  const std::string& test_name,
-                                  ConformanceLevel level);
-  void ExpectHardParseFailureForProto(const std::string& proto,
-                                      const std::string& test_name,
-                                      ConformanceLevel level);
-  void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
-  void TestIllegalTags();
-  void TestIllegalLengths();
-  void TestUnmatchedGroup();
-  void TestUnknownWireType();
-  void TestInvalidUtf8String();
   void TestOneofMessage();
   void TestUnknownMessage();
   void TestUnknownOrdering();
@@ -216,11 +202,9 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestBinaryPerformanceMergeMessageWithUnknownFieldForType(
       google::protobuf::FieldDescriptor::Type);
 
-  enum class Packed {
-    kUnspecified = 0,
-    kTrue = 1,
-    kFalse = 2,
-  };
+  // TODO: b/410122237 - GetFieldForType() lives in binary_test_util.h now;
+  // this wrapper (and the alias) go away once its remaining callers migrate.
+  using Packed = ::google::protobuf::conformance::Packedness;
   const FieldDescriptor* GetFieldForType(
       FieldDescriptor::Type type, bool repeated,
       Packed packed = Packed::kUnspecified) const;
