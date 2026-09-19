@@ -51,12 +51,22 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
   size_t size;
   if (unknown->type == kUpb_MessageUnknownType_StringView) {
     const char* ptr = unknown->value.bytes.data;
+    const char* const end = ptr + unknown->value.bytes.size;
     uint32_t tag;
     uint64_t message_len = 0;
     // This assumes that the unknown field is a message type, so it is
     // a delimited wire type.
     ptr = upb_WireReader_ReadTag(ptr, &tag, NULL);
     ptr = upb_WireReader_ReadVarint(ptr, &message_len, NULL);
+    // The captured field must be length-delimited with a payload that fits in
+    // the remaining bytes. A field stored with a different wire type, or a
+    // length that runs past the buffer, would otherwise hand upb_Decode a range
+    // that reads well beyond the captured bytes.
+    if (upb_WireReader_GetWireType(tag) != kUpb_WireType_Delimited ||
+        ptr > end || message_len > (uint64_t)(end - ptr)) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
     data = ptr;
     size = message_len;
   } else {
@@ -287,15 +297,18 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
       case kUpb_FindUnknown_Ok: {
         ret = upb_MiniTable_ParseUnknownMessage(
             &unknown.unknown, sub_mini_table, message, decode_options, arena);
-        if (ret.status == kUpb_UnknownToMessage_Ok) {
-          message = ret.message;
-          upb_Message_DeleteUnknownStatus del_status =
-              upb_Message_DeleteUnknown2(msg, &unknown.unknown, &(unknown.iter),
-                                         arena);
-          if (del_status == kUpb_DeleteUnknown_AllocFail) {
-            ret.status = kUpb_UnknownToMessage_OutOfMemory;
-            return ret;
-          }
+        if (ret.status != kUpb_UnknownToMessage_Ok) {
+          // A parse failure would otherwise leave the unknown field in place and
+          // the loop would keep re-finding it.
+          return ret;
+        }
+        message = ret.message;
+        upb_Message_DeleteUnknownStatus del_status =
+            upb_Message_DeleteUnknown2(msg, &unknown.unknown, &(unknown.iter),
+                                       arena);
+        if (del_status == kUpb_DeleteUnknown_AllocFail) {
+          ret.status = kUpb_UnknownToMessage_OutOfMemory;
+          return ret;
         }
       } break;
       case kUpb_FindUnknown_ParseError:
