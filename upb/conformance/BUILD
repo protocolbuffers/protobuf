@@ -6,6 +6,8 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_shell//shell:sh_test.bzl", "sh_test")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 load(
@@ -51,12 +53,14 @@ upb_proto_reflection_library(
     deps = ["//src/google/protobuf:test_messages_proto3_proto"],
 )
 
-cc_binary(
-    name = "conformance_upb",
+# The request handling of the upb testee, shared by the two conformance_upb
+# binaries below (the stdin/stdout protocol around it) and usable in-process.
+cc_library(
+    name = "conformance_upb_harness",
     testonly = 1,
-    srcs = ["conformance_upb.c"],
+    srcs = ["conformance_upb_harness.c"],
+    hdrs = ["conformance_upb_harness.h"],
     copts = UPB_DEFAULT_COPTS,
-    data = ["conformance_upb_failures.txt"],
     features = UPB_DEFAULT_FEATURES,
     target_compatible_with = select({
         "@platforms//os:windows": ["@platforms//:incompatible"],
@@ -71,10 +75,47 @@ cc_binary(
         "//editions:test_messages_proto3_editions_upbdefs",
         "//upb/base",
         "//upb/json",
+        "//upb/mem",
+        "//upb/message",
         "//upb/port",
         "//upb/reflection",
         "//upb/text",
         "//upb/wire",
+    ],
+)
+
+cc_test(
+    name = "conformance_upb_harness_test",
+    srcs = ["conformance_upb_harness_test.cc"],
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        ":conformance_upb_harness",
+        ":conformance_upb_proto",
+        "//upb/base",
+        "//upb/mem",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_binary(
+    name = "conformance_upb",
+    testonly = 1,
+    srcs = ["conformance_upb.c"],
+    copts = UPB_DEFAULT_COPTS,
+    data = ["conformance_upb_failures.txt"],
+    features = UPB_DEFAULT_FEATURES,
+    target_compatible_with = select({
+        "@platforms//os:windows": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
+    deps = [
+        ":conformance_upb_harness",
+        "//upb/base",
+        "//upb/mem",
     ],
 )
 
@@ -104,6 +145,8 @@ sh_test(
     deps = ["@bazel_tools//tools/bash/runfiles"],
 )
 
+# The same testee, with its mini tables rebuilt at runtime from the
+# descriptors instead of the generated ones.
 cc_binary(
     name = "conformance_upb_dynamic_minitable",
     testonly = 1,
@@ -118,18 +161,9 @@ cc_binary(
         "//conditions:default": [],
     }),
     deps = [
-        ":conformance_upb_proto",
-        ":conformance_upb_proto_reflection",
-        ":test_messages_proto2_upbdefs",
-        ":test_messages_proto3_upbdefs",
-        "//editions:test_messages_proto2_editions_upbdefs",
-        "//editions:test_messages_proto3_editions_upbdefs",
+        ":conformance_upb_harness",
         "//upb/base",
-        "//upb/json",
-        "//upb/port",
-        "//upb/reflection",
-        "//upb/text",
-        "//upb/wire",
+        "//upb/mem",
     ],
 )
 
