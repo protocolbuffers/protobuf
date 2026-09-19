@@ -47,12 +47,13 @@ struct UnexpectedResult {
 inline constexpr int kMaximumWildcardExpansions = 20;
 
 // The ledger of a conformance run: tallies the results of its tests against
-// its failure list.  The failure list is loaded once (see LoadFailureList())
-// into a FailureList, which decides each result; the Report*() methods apply
-// its verdicts and count the outcomes.  The conformance matchers (see
-// matchers.h) report the outcome of every test here.  The test environment
-// reads the counters back as test properties and, under --fix, writes the new
-// failure list from the ledger (see SaveFailureList()).
+// its failure list.  It knows nothing of gtest.  The failure list is loaded
+// once (see LoadFailureList()) into a FailureList, which decides each result;
+// the Report*() methods apply its verdicts and count the outcomes, each test
+// once.  The conformance matchers (see matchers.h) report the outcome of every
+// test here.  The test environment reads the counters back as test properties
+// and, under --fix, writes the new failure list from the ledger (see
+// SaveFailureList()).
 class ResultLedger {
  public:
   ResultLedger() = default;
@@ -75,7 +76,7 @@ class ResultLedger {
   absl::Status LoadFailureList(absl::string_view filename);
 
   // The failure list as loaded so far, which decides each result.  Yields()
-  // reads the global environment's through GetGlobalResultLedger().
+  // reads the global environment's through GetGlobalFailureList().
   const FailureList& failure_list() const { return failure_list_; }
 
   // Saves an updated failure list to disk based on the reported results.
@@ -113,7 +114,6 @@ class ResultLedger {
   void ReportNotSelected(absl::string_view test_name);
 
   // Whether any of the Report*() methods has been called for `test_name`.
-  // Yields() checks this to reject a second check of the same test.
   bool WasReported(absl::string_view test_name) const {
     return seen_tests_.contains(test_name);
   }

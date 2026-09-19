@@ -535,6 +535,15 @@ TEST_F(ResultLedgerTest, UnexpectedFailuresIgnoreDuplicateReports) {
               ElementsAre(FieldsAre("foo", "first", absl::nullopt)));
   EXPECT_EQ(ledger.unexpected_failures(), 1);
   EXPECT_THAT(ledger.Finalize(), IsOk());
+
+  // Including for what --fix writes.
+  ASSERT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, "foo # first\n");
 }
 
 TEST_F(ResultLedgerTest, UnexpectedSuccesses) {
