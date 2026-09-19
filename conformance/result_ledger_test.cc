@@ -35,6 +35,7 @@ using ::absl_testing::IsOk;
 using ::absl_testing::StatusIs;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::Eq;
 using ::testing::FieldsAre;
 using ::testing::HasSubstr;
 using ::testing::IsEmpty;
@@ -405,9 +406,11 @@ TEST_F(ResultLedgerTest, ReportFailureRejectsExpectedMessageSuffix) {
               StatusIs(absl::StatusCode::kFailedPrecondition,
                        HasSubstr("Unexpected failure message")));
 
-  // Like any other message mismatch, the stale entry is still reported as
-  // unseen so that --fix replaces it.
-  EXPECT_THAT(ledger.Finalize(), Not(IsOk()));
+  // The mismatch is an unexpected failure (which --fix fixes); the entry
+  // itself was seen, so Finalize() has nothing to add.
+  EXPECT_THAT(ledger.UnexpectedFailures(),
+              ElementsAre(FieldsAre("foo", "abc", absl::nullopt)));
+  EXPECT_THAT(ledger.Finalize(), IsOk());
   EXPECT_EQ(ledger.expected_failures(), 0);
   EXPECT_EQ(ledger.unexpected_failures(), 1);
 }
@@ -460,11 +463,10 @@ TEST_F(ResultLedgerTest, UnmatchedExpectedFailures) {
   ASSERT_THAT(ledger.ReportSkip("zzz", "reason"), IsOk());
 
   EXPECT_THAT(ledger.UnmatchedExpectedFailures(), ElementsAre("aaa"));
-  // Message mismatches are still unseen, though.
+  // A message mismatch is a verdict on the entry too: seen, not unseen.
   EXPECT_THAT(ledger.Finalize(),
               StatusIs(absl::StatusCode::kFailedPrecondition,
-                       "The following expected failures were not seen: aaa, "
-                       "eee"));
+                       "The following expected failures were not seen: aaa"));
 }
 
 TEST_F(ResultLedgerTest, UnmatchedExpectedFailuresEmpty) {
@@ -535,6 +537,15 @@ TEST_F(ResultLedgerTest, UnexpectedFailuresIgnoreDuplicateReports) {
               ElementsAre(FieldsAre("foo", "first", absl::nullopt)));
   EXPECT_EQ(ledger.unexpected_failures(), 1);
   EXPECT_THAT(ledger.Finalize(), IsOk());
+
+  // Including for what --fix writes.
+  ASSERT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, "foo # first\n");
 }
 
 TEST_F(ResultLedgerTest, UnexpectedSuccesses) {
@@ -718,6 +729,20 @@ TEST_F(ResultLedgerTest, LoadSecondFailureList) {
   EXPECT_EQ(ledger.expected_failures(), 2);
 }
 
+TEST_F(ResultLedgerTest, ExpectedMessagesAreNormalized) {
+  CreateFailureList({{"foo", "  abc  "}, {"bar.*.baz", "xyz"}, {"qux"}});
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+
+  // Like reported messages (see ReportFailure()), so that SaveFailureList()
+  // compares like with like.
+  const FailureList& failure_list = ledger.failure_list();
+  EXPECT_THAT(failure_list.ExpectedMessage("foo"), Optional(Eq("abc")));
+  EXPECT_THAT(failure_list.ExpectedMessage("bar.*.baz"), Optional(Eq("xyz")));
+  EXPECT_THAT(failure_list.ExpectedMessage("qux"), Optional(Eq("")));
+  EXPECT_THAT(ledger.Finalize(), Not(IsOk()));
+}
+
 TEST_F(ResultLedgerTest, SaveFailureListNoop) {
   CreateFailureList(R"(
 foo # abc
@@ -757,6 +782,29 @@ foo.*.bar # abc
               IsOk());
   EXPECT_EQ(content, R"(
 foo.*.bar # abc
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListKeepsEntryWithInternalWhitespace) {
+  // LoadFailureList() ignores whitespace anywhere in the name, so the entry
+  // matches "foo.bar"; SaveFailureList() must find it under the same key.
+  CreateFailureList(R"(
+foo .bar # abc
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("foo.bar", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+foo .bar # abc
 )");
 }
 
@@ -802,16 +850,97 @@ foo # abc
 )");
 }
 
-TEST_F(ResultLedgerTest, SaveFailureListRemovePartialPassingWildcard) {
-  // This is a weird case where the wildcard no longer fully matches the
-  // failure.  Users would have to updated the failure list twice to get the
-  // failure list to be correct.
+TEST_F(ResultLedgerTest, SaveFailureListDropsUnseenEntry) {
   CreateFailureList(R"(
+foo # abc
+bar # def
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("bar", kP0, "def"), IsOk());
+  ASSERT_THAT(ledger.Finalize(),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       "The following expected failures were not seen: foo"));
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+bar # def
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListExpandsWildcardWhenOneMatchPasses) {
+  // The wildcard no longer describes the failures: the test that passed must
+  // go, but the ones that still fail must stay listed, so the wildcard is
+  // expanded into them, in its place.
+  CreateFailureList(R"(
+# Header kept above the expansion.
+foo.*.bar # abc
+zzz # zzz
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("foo.c.bar", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportSuccess("foo.b.bar"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("foo.a.bar", kP0, "abc: details"), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("zzz", kP0, "zzz"), IsOk());
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+# Header kept above the expansion.
+foo.a.bar # abc
+foo.c.bar # abc
+zzz       # zzz
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListDropsWildcardWhenEveryMatchPasses) {
+  CreateFailureList(R"(
+# Header left behind.
 foo.*.bar # abc
 )");
   ResultLedger ledger;
   ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
   ASSERT_THAT(ledger.ReportSuccess("foo.a.bar"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportSuccess("foo.b.bar"), Not(IsOk()));
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+# Header left behind.
+)");
+}
+
+TEST_F(ResultLedgerTest,
+       SaveFailureListExpandsWildcardWhenOneMatchChangesMessage) {
+  // One match fails with a different message while another still fails with
+  // the listed one: the wildcard is expanded so that each test gets its own
+  // message, and the result loads again (it used to contain the wildcard
+  // twice).
+  CreateFailureList(R"(
+foo.*.bar # abc
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("foo.a.bar", kP0, "xyz"), Not(IsOk()));
   ASSERT_THAT(ledger.ReportFailure("foo.b.bar", kP0, "abc"), IsOk());
   ASSERT_THAT(ledger.Finalize(), IsOk());
 
@@ -823,6 +952,249 @@ foo.*.bar # abc
                                 true),
               IsOk());
   EXPECT_EQ(content, R"(
+foo.a.bar # xyz
+foo.b.bar # abc
+)");
+  ResultLedger reloaded;
+  EXPECT_THAT(reloaded.LoadFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+  EXPECT_THAT(reloaded.failure_list().ExpectedMessage("foo.a.bar"),
+              Optional(std::string("xyz")));
+  EXPECT_THAT(reloaded.failure_list().ExpectedMessage("foo.b.bar"),
+              Optional(std::string("abc")));
+  ASSERT_THAT(reloaded.Finalize(), Not(IsOk()));
+}
+
+TEST_F(ResultLedgerTest,
+       SaveFailureListExpandsWildcardWhenMatchesChangeToDifferentMessages) {
+  CreateFailureList(R"(
+foo.*.bar # abc
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("foo.a.bar", kP0, "xyz"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("foo.b.bar", kP0, "uvw"), Not(IsOk()));
+  EXPECT_THAT(ledger.UnexpectedFailures(),
+              ElementsAre(FieldsAre("foo.a.bar", "xyz", absl::nullopt),
+                          FieldsAre("foo.b.bar", "uvw", absl::nullopt)));
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+foo.a.bar # xyz
+foo.b.bar # uvw
+)");
+}
+
+TEST_F(ResultLedgerTest,
+       SaveFailureListKeepsWildcardWhenEveryMatchChangesToTheSameMessage) {
+  // The wildcard still describes the failures, only the message moved on, so
+  // the author's wildcard is kept with the new message.
+  CreateFailureList(R"(
+foo.*.bar # abc
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("foo.a.bar", kP0, "xyz"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("foo.b.bar", kP0, "xyz"), Not(IsOk()));
+  EXPECT_THAT(ledger.UnexpectedFailures(),
+              ElementsAre(FieldsAre("foo.a.bar", "xyz", absl::nullopt),
+                          FieldsAre("foo.b.bar", "xyz", absl::nullopt)));
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+foo.*.bar # xyz
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListExpandedWildcardKeepsSkippedMatch) {
+  // A skipped test says nothing about its entry, so when the wildcard is
+  // expanded (here because another match passed) the skipped test keeps a line
+  // with the wildcard's message; dropping it is up to the user.
+  CreateFailureList(R"(
+foo.*.bar # abc
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportSkip("foo.a.bar", "reason"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportSuccess("foo.b.bar"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("foo.c.bar", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+foo.a.bar # abc
+foo.c.bar # abc
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListKeepsWildcardWithTooManyMatches) {
+  // Exceeding the wildcard expansion cap is reported separately (see
+  // OverexpandedWildcards()); the tests do still fail with the listed
+  // message, so the entry is kept.
+  CreateFailureList(R"(
+foo.*.bar # abc
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  for (int i = 0; i <= kMaximumWildcardExpansions; ++i) {
+    ASSERT_THAT(
+        ledger.ReportFailure(absl::StrCat("foo.", i, ".bar"), kP0, "abc"),
+        IsOk());
+  }
+  ASSERT_THAT(ledger.OverexpandedWildcards(), ElementsAre("foo.*.bar"));
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+foo.*.bar # abc
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListExpansionInterleavesNewFailures) {
+  // New failures are inserted by name among the expanded lines too, and the
+  // alignment accounts for the expanded names.
+  CreateFailureList(R"(
+# Block one.
+f.*.x # abc
+
+# Block two.
+zz # zzz
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("f.aaaa.x", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportSuccess("f.b.x"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("f.cc.x", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("f.bb.y", kP0, "new"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("zz", kP0, "zzz"), IsOk());
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+# Block one.
+f.aaaa.x # abc
+f.bb.y   # new
+f.cc.x   # abc
+
+# Block two.
+zz       # zzz
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListChangedMessageStaysInPlace) {
+  // An exact entry whose message changed is rewritten where it is, so that it
+  // stays under its comment block.
+  CreateFailureList(R"(
+# About bbb.
+bbb # abc
+
+# About aaa.
+aaa # aaa
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("bbb", kP0, "xyz"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("aaa", kP0, "aaa"), IsOk());
+  EXPECT_THAT(ledger.UnexpectedFailures(),
+              ElementsAre(FieldsAre("bbb", "xyz", absl::nullopt)));
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+# About bbb.
+bbb # xyz
+
+# About aaa.
+aaa # aaa
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListKeepsMessagelessWildcardVerbatim) {
+  CreateFailureList(R"(
+foo.*.bar
+zzz # zzz
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  // An empty expected message matches any failure.
+  ASSERT_THAT(ledger.ReportFailure("foo.a.bar", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("foo.b.bar", kP0, "xyz"), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("zzz", kP0, "zzz"), IsOk());
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+foo.*.bar
+zzz       # zzz
+)");
+}
+
+TEST_F(ResultLedgerTest, SaveFailureListExpandsMessagelessWildcard) {
+  // The expanded lines have no message either: no `#` and no trailing space.
+  CreateFailureList(R"(
+foo.*.bar
+)");
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ASSERT_THAT(ledger.ReportFailure("foo.a.bar", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportSuccess("foo.b.bar"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("foo.c.bar", kP0, ""), IsOk());
+  ASSERT_THAT(ledger.Finalize(), IsOk());
+
+  EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, R"(
+foo.a.bar
+foo.c.bar
 )");
 }
 
@@ -893,7 +1265,9 @@ foo # abc
   ResultLedger ledger;
   ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
   ASSERT_THAT(ledger.ReportFailure("foo", kP0, "zyx"), Not(IsOk()));
-  ASSERT_THAT(ledger.Finalize(), Not(IsOk()));
+  EXPECT_THAT(ledger.UnexpectedFailures(),
+              ElementsAre(FieldsAre("foo", "zyx", absl::nullopt)));
+  ASSERT_THAT(ledger.Finalize(), IsOk());
 
   EXPECT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
               IsOk());

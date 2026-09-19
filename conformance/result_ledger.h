@@ -47,12 +47,13 @@ struct UnexpectedResult {
 inline constexpr int kMaximumWildcardExpansions = 20;
 
 // The ledger of a conformance run: tallies the results of its tests against
-// its failure list.  The failure list is loaded once (see LoadFailureList())
-// into a FailureList, which decides each result; the Report*() methods apply
-// its verdicts and count the outcomes.  The conformance matchers (see
-// matchers.h) report the outcome of every test here.  The test environment
-// reads the counters back as test properties and, under --fix, writes the new
-// failure list from the ledger (see SaveFailureList()).
+// its failure list.  It knows nothing of gtest.  The failure list is loaded
+// once (see LoadFailureList()) into a FailureList, which decides each result;
+// the Report*() methods apply its verdicts and count the outcomes, each test
+// once.  The conformance matchers (see matchers.h) report the outcome of every
+// test here.  The test environment reads the counters back as test properties
+// and, under --fix, writes the new failure list from the ledger (see
+// SaveFailureList()).
 class ResultLedger {
  public:
   ResultLedger() = default;
@@ -75,10 +76,29 @@ class ResultLedger {
   absl::Status LoadFailureList(absl::string_view filename);
 
   // The failure list as loaded so far, which decides each result.  Yields()
-  // reads the global environment's through GetGlobalResultLedger().
+  // reads the global environment's through GetGlobalFailureList().
   const FailureList& failure_list() const { return failure_list_; }
 
   // Saves an updated failure list to disk based on the reported results.
+  // Comment and blank lines stay where they are.  Entries are updated as
+  // follows:
+  //
+  //   - An entry that no test matched with a verdict is dropped.  These are
+  //     the entries Finalize() reports as unseen.
+  //   - An entry whose matched tests all still fail with its message, or were
+  //     skipped (see ReportSkip()), is kept verbatim, wildcards included.
+  //   - An entry whose matched tests all failed with the same different
+  //     message is kept with that message instead, wildcards included.
+  //   - Any other entry is rewritten in place, one line per matched test in
+  //     name order.  A test that succeeded is left out.  A test that failed
+  //     with a different message gets that message.  A test that still fails
+  //     with the entry's message, or was skipped, keeps it.  An exact entry
+  //     therefore goes when its test succeeded.  A wildcard entry is expanded
+  //     into the tests it matched, so that the tests that still fail stay
+  //     listed.
+  //   - Tests that failed but matched no entry are inserted in name order
+  //     with their messages.
+  //
   // Returns an error if `filename` can't be opened for writing or the write
   // fails.
   absl::Status SaveFailureList(absl::string_view filename) const;
@@ -113,7 +133,6 @@ class ResultLedger {
   void ReportNotSelected(absl::string_view test_name);
 
   // Whether any of the Report*() methods has been called for `test_name`.
-  // Yields() checks this to reject a second check of the same test.
   bool WasReported(absl::string_view test_name) const {
     return seen_tests_.contains(test_name);
   }
@@ -143,7 +162,7 @@ class ResultLedger {
   // name.  These are the tests unexpected_failures() counts.  Each result's
   // `failure_message` is the message as SaveFailureList() would write it, and
   // its `matched_entry` is unset.  This includes tests that were expected to
-  // fail, but with a different message.  SaveFailureList() replaces their
+  // fail, but with a different message.  SaveFailureList() rewrites their
   // entry, so adding these lines to the failure list would duplicate it.
   // TODO: Remove with conformance_test_runner.
   std::vector<UnexpectedResult> UnexpectedFailures() const;
@@ -160,8 +179,9 @@ class ResultLedger {
   // Each pair is the test name and the failure list entry it matched.  Such a
   // test fails the gtest run: the matchers fail it with the error
   // ReportSkip() returns.  It is not an unexpected failure or success.  Its
-  // entry is kept as is, also by SaveFailureList() under --fix, so removing
-  // the entry is up to the user.
+  // entry is kept, also by SaveFailureList() under --fix, so removing the
+  // entry is up to the user.  It is kept as is, or as the test's own line
+  // when a wildcard entry is expanded.
   // TODO: Remove with conformance_test_runner.
   std::vector<std::pair<std::string, std::string>> ListedSkips() const;
 
@@ -206,12 +226,36 @@ class ResultLedger {
   // UnmatchedExpectedFailures()) and returns it.
   absl::optional<std::string> MarkMatched(absl::string_view test_name);
 
+  // The verdict on a test that matched a failure list entry, as far as
+  // SaveFailureList() is concerned.
+  struct MatchOutcome {
+    enum Kind {
+      kExpectedFailure,  // Failed with the entry's message.
+      kOtherFailure,     // Failed with a different message (see `message`).
+      kSuccess,          // Succeeded (see ReportSuccess()).
+      kSkip,             // Was skipped by the testee (see ReportSkip()).
+    };
+    Kind kind;
+    // The formatted failure message, for kOtherFailure.
+    std::string message;
+  };
+
+  // Appends to `lines` what SaveFailureList() writes for `line`, a line of the
+  // failure list as loaded.  That is the line itself, nothing, or the entry's
+  // rewritten lines, possibly expanded.  See SaveFailureList().
+  void AppendSavedLines(absl::string_view line,
+                        std::vector<std::string>& lines) const;
+
   FailureList failure_list_;
 
   absl::flat_hash_set<std::string> unseen_expected_failures_;
   // Entries never matched by name by any Report*() call.
   absl::flat_hash_set<std::string> unmatched_expected_failures_;
-  absl::flat_hash_set<std::string> seen_unexpected_successes_;
+  // The tests that matched each entry with a verdict, by test name, and how
+  // they came out.  Entries are as listed, wildcards included.
+  // ReportNotSelected() is not a verdict and doesn't record anything here.
+  absl::flat_hash_map<std::string, absl::btree_map<std::string, MatchOutcome>>
+      entry_matches_;
   // How many tests matched each entry as an expected failure or an unexpected
   // success.  See OverexpandedWildcards().
   absl::flat_hash_map<std::string, int> number_of_matches_;
@@ -229,6 +273,7 @@ class ResultLedger {
   absl::btree_map<std::string, std::string> listed_skip_matches_;
 
   std::vector<std::string> failure_list_lines_;
+  // The tests that failed but matched no entry, with their formatted messages.
   absl::btree_map<std::string, std::string> new_failures_;
 
   int skipped_ = 0;
