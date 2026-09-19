@@ -73,7 +73,7 @@ void FailureListTrieNode::InsertImpl(absl::string_view test_name) {
 }
 
 absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
-    absl::string_view test_name) {
+    absl::string_view test_name) const {
   absl::string_view section = test_name.substr(0, test_name.find('.'));
   // test_name cannot be overwritten
   absl::string_view to_match;
@@ -81,7 +81,7 @@ absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
     to_match = test_name.substr(section.length() + 1);
   }
 
-  for (auto& child : children_) {
+  for (const auto& child : children_) {
     if (child->data_ == section || child->data_ == "*" || section == "*") {
       absl::string_view appended = child->data_;
       // Extracted last section -> no more '.' -> test_name will be
