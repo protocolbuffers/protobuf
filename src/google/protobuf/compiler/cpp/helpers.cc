@@ -1010,9 +1010,6 @@ std::string UniqueName(absl::string_view name, absl::string_view filename,
 std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
                                      absl::string_view name,
                                      const Options& options) {
-  if (file->package().empty()) {
-    return absl::StrCat("::", name);
-  }
   return absl::StrCat(Namespace(file), "::", name);
 }
 
