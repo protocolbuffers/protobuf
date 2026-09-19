@@ -11,7 +11,6 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "conformance/test_environment.h"
@@ -25,30 +24,25 @@ namespace conformance {
 namespace {
 
 using ::google::protobuf::conformance::internal::ConformanceEnvironment;
-using ::google::protobuf::conformance::internal::Statistics;
 
 // Whether tests for `descriptor`'s message type run under `maximum_edition`:
 // the file's edition must not be newer than it.
 bool IsSupported(const Descriptor& descriptor, Edition maximum_edition) {
   Edition edition = FileDescriptorLegacy(descriptor.file()).edition();
   if (edition == EDITION_UNSTABLE) {
-    // `maximum_edition` is the maximum *stable* edition.  Like the legacy
-    // runner, run the unstable tests alongside any editions tests.
-    // TODO: this runs the (newer-than-anything) unstable tests
-    // at --maximum_edition=2023 while a stable 2024 message would be skipped;
-    // gate EDITION_UNSTABLE on its own flag once legacy parity no longer
-    // matters.
+    // `maximum_edition` is the maximum *stable* edition; EDITION_UNSTABLE is
+    // newer than any of them, so it is gated on the editions tier instead: the
+    // unstable tests run whenever the 2023 tests do, as in the original suites
+    // and the open-source runner.  Every test message the suites use is 2023
+    // or older, so nothing is skipped that the unstable tests would leapfrog.
+    // TODO: once a test message of a newer stable edition
+    // exists, give EDITION_UNSTABLE its own opt-in (an `unstable_edition`
+    // option / flag / conformance_test() attribute) so that
+    // --maximum_edition=2023 keeps skipping the newer stable message while
+    // still running these.
     return maximum_edition >= EDITION_2023;
   }
   return edition <= maximum_edition;
-}
-
-// Statistics accumulated by ConformanceTest::TearDown() for each test suite,
-// keyed by suite name, until TearDownTestSuite() reports them.
-absl::flat_hash_map<std::string, Statistics>& SuiteStatistics() {
-  static auto* suite_statistics =
-      new absl::flat_hash_map<std::string, Statistics>();
-  return *suite_statistics;
 }
 
 std::string CurrentTestName() {
@@ -60,54 +54,16 @@ std::string CurrentTestName() {
   return test_info->name();
 }
 
-std::string CurrentTestSuiteName() {
-  const testing::TestSuite* test_suite =
-      testing::UnitTest::GetInstance()->current_test_suite();
-  ABSL_CHECK(test_suite != nullptr)
-      << "ConformanceTest's TearDown hooks must run inside a test suite.";
-  return test_suite->name();
-}
-
 }  // namespace
 
 void ConformanceTest::SetUp() {
-  ConformanceEnvironment& environment = ConformanceEnvironment::Get();
-  initial_statistics_ = Statistics::From(environment.test_manager());
-  // TODO: Transitional.  Goes away with the in-binary
-  // performance mode, see ConformanceEnvironmentOptions::performance.
-  if (IsPerformanceTest() && !environment.options().performance) {
-    GTEST_SKIP() << "Performance tests only run with --performance.";
-  }
-  if (!IsPerformanceTest() && environment.options().performance) {
-    GTEST_SKIP() << "Only performance tests run with --performance.";
-  }
   if (const Descriptor* message = MessageUnderTest();
       message != nullptr &&
-      !IsSupported(*message, environment.options().maximum_edition)) {
+      !IsSupported(*message,
+                   ConformanceEnvironment::Get().options().maximum_edition)) {
     GTEST_SKIP() << "Skipping " << message->full_name()
                  << " because its edition is newer than --maximum_edition.";
   }
-}
-
-void ConformanceTest::TearDown() {
-  Statistics delta =
-      Statistics::From(ConformanceEnvironment::Get().test_manager()) -
-      initial_statistics_;
-  delta.RecordProperties();
-  SuiteStatistics()[CurrentTestSuiteName()] += delta;
-}
-
-void ConformanceTest::TearDownTestSuite() {
-  auto node = SuiteStatistics().extract(CurrentTestSuiteName());
-  if (!node) {
-    // gtest only runs TearDownTestSuite() for suites with at least one test to
-    // run, and TearDown() runs even for tests skipped in SetUp(), so this only
-    // happens when a fatal failure in a SetUpTestSuite() skipped every test
-    // outright (which is already reported), or when a subclass's TearDown()
-    // doesn't call ConformanceTest::TearDown().
-    return;
-  }
-  node.mapped().RecordProperties();
 }
 
 internal::Test ConformanceTest::Testee() { return Testee(CurrentTestName()); }

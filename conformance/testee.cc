@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "conformance/testee.h"
 
 #include <string>
@@ -5,6 +12,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
@@ -36,16 +44,21 @@ using ::conformance::ConformanceResponse;
   return ::conformance::UNSPECIFIED;
 }
 
+// Builds the full test name according to `name_style` (see NameStyle):
+// "<Level>.<Edition>.<InputFormat>Input.<name>", followed by
+// ".<OutputFormat>Output" unless the style omits it.
 std::string GetTestName(absl::string_view test_name, TestPriority priority,
                         const ::conformance::ConformanceRequest& request,
-                        const Descriptor& message) {
-  absl::string_view level = PriorityLevelName(priority);
-  std::string syntax_identifier = GetEditionIdentifier(message);
-
-  return absl::StrCat(
-      level, ".", syntax_identifier, ".",
-      GetFormatIdentifier(GetInputFormat(request)), "Input.", test_name, ".",
-      GetFormatIdentifier(request.requested_output_format()), "Output");
+                        const Descriptor& message, NameStyle name_style) {
+  std::string full_name = absl::StrCat(
+      PriorityLevelName(priority), ".", GetEditionIdentifier(message), ".",
+      GetFormatIdentifier(GetInputFormat(request)), "Input.", test_name);
+  if (name_style == NameStyle::kWithOutputFormat) {
+    absl::StrAppend(&full_name, ".",
+                    GetFormatIdentifier(request.requested_output_format()),
+                    "Output");
+  }
+  return full_name;
 }
 
 }  // namespace
@@ -54,6 +67,7 @@ std::string GetTestName(absl::string_view test_name, TestPriority priority,
     absl::string_view test_name, const ConformanceRequest& request) {
   ABSL_CHECK(test_names_ran_.emplace(test_name).second)
       << "Duplicated test name: " << test_name;
+  tests_run_.emplace_back(test_name);
 
   std::string serialized_request;
   // TODO: Remove this suppression.
@@ -101,7 +115,7 @@ InMemoryMessage Test::ParseJson(const Descriptor* type, absl::string_view input,
 }
 
 TestResult InMemoryMessage::SerializeBinary() && {
-  return SerializeImpl(::conformance::PROTOBUF);
+  return Finish(::conformance::PROTOBUF, NameStyle::kWithOutputFormat);
 }
 
 TestResult InMemoryMessage::SerializeText(TextSerializationOptions options) && {
@@ -109,23 +123,45 @@ TestResult InMemoryMessage::SerializeText(TextSerializationOptions options) && {
     request_.set_print_unknown_fields(true);
   }
 
-  return SerializeImpl(::conformance::TEXT_FORMAT);
+  return Finish(::conformance::TEXT_FORMAT, NameStyle::kWithOutputFormat);
 }
 
 TestResult InMemoryMessage::SerializeJson() && {
-  return SerializeImpl(::conformance::JSON);
+  return Finish(::conformance::JSON, NameStyle::kWithOutputFormat);
 }
 
-TestResult InMemoryMessage::SerializeImpl(
-    const ::conformance::WireFormat format) {
-  request_.set_requested_output_format(format);
+TestResult InMemoryMessage::ParseOnly(ParseOnlyOptions options) && {
+  // We don't expect output, but if the testee erroneously accepts the input we
+  // let it send its response in the input's format (unless the test says
+  // otherwise).  We must not leave it unspecified.  This is exactly what the
+  // legacy runner did.
+  return Finish(options.output_format.value_or(GetInputFormat(request_)),
+                NameStyle::kWithoutOutputFormat);
+}
 
-  std::string full_name = GetTestName(name_, priority_, request_, *type_);
+InMemoryMessage&& InMemoryMessage::OverrideTestCategory(
+    ::conformance::TestCategory category) && {
+  ABSL_DCHECK_EQ(category, ::conformance::TEXT_FORMAT_TEST)
+      << "OverrideTestCategory() only relabels the text-format suite's "
+         "binary-input tests as TEXT_FORMAT_TEST";
+  ABSL_DCHECK(request_.has_protobuf_payload())
+      << "OverrideTestCategory() is for PROTOBUF-input tests";
+  request_.set_test_category(category);
+  return std::move(*this);
+}
+
+TestResult InMemoryMessage::Finish(
+    const ::conformance::WireFormat output_format, const NameStyle name_style) {
+  request_.set_requested_output_format(output_format);
+
+  std::string full_name =
+      GetTestName(name_, priority_, request_, *type_, name_style);
 
   ::conformance::ConformanceResponse response =
       testee_->Run(full_name, request_);
 
-  return TestResult(full_name, priority_, type_, format, std::move(response));
+  return TestResult(full_name, priority_, type_, output_format,
+                    std::move(response));
 }
 
 }  // namespace internal
@@ -138,6 +174,23 @@ absl::string_view PriorityName(TestPriority priority) {
       return "P1";
   }
   return "Unknown";
+}
+
+bool AbslParseFlag(absl::string_view text, TestPriority* priority,
+                   std::string* error) {
+  int number;
+  if (!absl::SimpleAtoi(text, &number) || number < 0 ||
+      number > static_cast<int>(kLowestPriority)) {
+    *error = absl::StrCat("expected a priority number from 0 to ",
+                          static_cast<int>(kLowestPriority));
+    return false;
+  }
+  *priority = static_cast<TestPriority>(number);
+  return true;
+}
+
+std::string AbslUnparseFlag(TestPriority priority) {
+  return absl::StrCat(static_cast<int>(priority));
 }
 
 absl::string_view PriorityLevelName(TestPriority priority) {

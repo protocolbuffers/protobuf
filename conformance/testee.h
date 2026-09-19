@@ -1,11 +1,21 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/test_runner.h"
@@ -25,7 +35,7 @@
 //                   .SerializeBinary(),
 //               Yields(WhenParsed(EqualsBinaryProto(input))));
 
-// TODO Possible future APIs to expand conformance coverage:
+// TODO: Possible future APIs to expand conformance coverage:
 // - Add ClearUnknownFields() to InMemoryMessage
 // - Add MergeFrom() method to InMemoryMessage to merge raw binary
 // - Remove && qualifiers on Parse* and add InMemoryMessage::Merge that merges
@@ -56,13 +66,19 @@ enum class TestPriority { kP0 = 0, kP1 = 1 };
 inline constexpr TestPriority kP0 = TestPriority::kP0;
 inline constexpr TestPriority kP1 = TestPriority::kP1;
 
-// The lowest priority there is.  An enforcement level (see TestManager in
-// test_manager.h) is the lowest priority whose unlisted failures fail the run;
+// The lowest priority there is.  An enforcement level (see ResultLedger in
+// result_ledger.h) is the lowest priority whose unlisted failures fail the run;
 // kLowestPriority, the default, enforces every priority.
 inline constexpr TestPriority kLowestPriority = kP1;
 
 // The name of a priority: "P0" or "P1".
 absl::string_view PriorityName(TestPriority priority);
+
+// Flag support for TestPriority, as the priority's number: "0" is kP0, "1" is
+// kP1.
+bool AbslParseFlag(absl::string_view text, TestPriority* priority,
+                   std::string* error);
+std::string AbslUnparseFlag(TestPriority priority);
 
 // The level a priority is named with in test names, until the rename (see
 // TestPriority): "Required" for kP0, "Recommended" for kP1.
@@ -70,8 +86,14 @@ absl::string_view PriorityLevelName(TestPriority priority);
 
 namespace internal {
 
-// The final result of a conformance test, to be processed by a matcher.
-class TestResult {
+// The final result of a conformance test: the testee's response and what the
+// test asked of it.  Hand it to exactly one EXPECT_THAT(..., Yields(...)),
+// which records the outcome against the failure list (see matchers.h).
+// Dropping a result does not compile, and neither does a leaf matcher applied
+// to one without Yields() (see YieldedResult in matchers.h).  The test
+// environment fails a gtest test that runs a conformance test but never
+// checks its result in any other way (see Testee::tests_run()).
+class [[nodiscard]] TestResult {
  public:
   // The name of the test that was run, useful for failure matching and
   // reporting.
@@ -117,6 +139,21 @@ struct TextSerializationOptions {
   bool print_unknown_fields = false;
 };
 
+// Options for InMemoryMessage::ParseOnly().
+struct ParseOnlyOptions {
+  // The output format to request from the testee.  Defaults to the input's
+  // format.
+  absl::optional<::conformance::WireFormat> output_format;
+};
+
+// How a test's full name is derived from the name it was created with:
+//   kWithOutputFormat     <S>.<E>.<Input>Input.<name>.<Output>Output
+//   kWithoutOutputFormat  <S>.<E>.<Input>Input.<name>   (ParseOnly())
+enum class NameStyle {
+  kWithOutputFormat,
+  kWithoutOutputFormat,
+};
+
 // This class represents a message held in memory by the testee that can be
 // manipulated in various ways.
 class InMemoryMessage {
@@ -129,6 +166,51 @@ class InMemoryMessage {
   TestResult SerializeText(TextSerializationOptions options = {}) &&;
   TestResult SerializeJson() &&;
 
+  // Finishes a test whose outcome depends only on parsing, for example one
+  // that expects a parse error:
+  //
+  //   EXPECT_THAT(Testee().ParseBinary(type, input).ParseOnly(),
+  //               Yields(IsParseError()));
+  //
+  // There is no parse-only request, so the testee is still asked to
+  // serialize, by default in the input's format.  The test name carries no
+  // output-format suffix, for example "Required.Proto3.ProtobufInput.<name>".
+  //
+  // `options.output_format` requests a different output format without
+  // changing the name.  It exists for the JSON tests that need PROTOBUF
+  // output from JSON input while still being named
+  // "<S>.<E>.JsonInput.<name>", for example in
+  // RunValidJsonTestOrParseFailure.  See ParseOnlyOptions.
+  //
+  // Like the Serialize*() methods, this consumes the message and must remain
+  // the terminal call of a test.  Once further operations on an
+  // InMemoryMessage exist, such as Merge or reflection accessors (see the
+  // TODO at the top of this file), they have to come before it, not after.
+  TestResult ParseOnly(ParseOnlyOptions options = {}) &&;
+
+  // Relabels a PROTOBUF-input request as TEXT_FORMAT_TEST.  That is the only
+  // category accepted.  Anything else is a DCHECK failure.
+  //
+  //   Testee().ParseBinary(type, input)
+  //       .OverrideTestCategory(::conformance::TEXT_FORMAT_TEST)
+  //       .SerializeText()
+  //
+  // ParseBinary() categorizes its request as BINARY_TEST, but the text-format
+  // suite's binary-input tests (text_unknown_field_test.cc) have to stay
+  // TEXT_FORMAT_TEST.  No testee tells BINARY_TEST and JSON_TEST apart on a
+  // binary payload.  The OSS Ruby testee, however, skips every
+  // TEXT_FORMAT_TEST request and cannot produce text-format output.
+  // Relabeling those tests would turn its skips into failures that no failure
+  // list covers.  The JSON suite's binary-input tests are plain BINARY_TEST
+  // requests.
+  //
+  // Returns *this as an rvalue.  Must be chained in the same expression.
+  // A reference bound to the result would outlive the temporary it refers to.
+  // TODO: drop once the Ruby testee skips text-format tests by
+  // payload and requested output format rather than by category.
+  InMemoryMessage&& OverrideTestCategory(
+      ::conformance::TestCategory category) &&;
+
  private:
   InMemoryMessage(class Testee* testee, absl::string_view name,
                   TestPriority priority, const Descriptor* type,
@@ -140,7 +222,11 @@ class InMemoryMessage {
         request_(std::move(request)) {}
   friend class Test;
 
-  TestResult SerializeImpl(::conformance::WireFormat format);
+  // Finishes the test: requests `output_format` from the testee and runs it
+  // under the name built according to `name_style`.  All public terminal
+  // methods funnel into this.
+  TestResult Finish(::conformance::WireFormat output_format,
+                    NameStyle name_style);
 
   class Testee* testee_;
   std::string name_;
@@ -187,6 +273,13 @@ class Testee {
     return Test(this, name, priority);
   }
 
+  // The full names of the tests run so far, in the order they ran.  Each of
+  // them must be checked with Yields() (see matchers.h).
+  // ConformanceEnvironment (test_environment.h) compares this with the tests
+  // the ResultLedger has heard about and fails a gtest test that ran a
+  // conformance test but never checked its result.
+  absl::Span<const std::string> tests_run() const { return tests_run_; }
+
  private:
   ::conformance::ConformanceResponse Run(
       absl::string_view test_name,
@@ -195,6 +288,8 @@ class Testee {
 
   ConformanceTestRunner* runner_;
 
+  // The tests run so far, in order, and as a set for Run()'s duplicate check.
+  std::vector<std::string> tests_run_;
   absl::flat_hash_set<std::string> test_names_ran_;
 };
 

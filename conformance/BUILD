@@ -7,6 +7,7 @@
 
 # Protobuf conformance tests.
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "objc_library")
 load("@rules_java//java:defs.bzl", "java_binary")
@@ -23,6 +24,7 @@ load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
+load("//conformance:conformance.bzl", "conformance_suite", "conformance_test", "failure_lists")
 
 exports_files([
     "bazel_conformance_test_runner.sh",
@@ -49,45 +51,78 @@ exports_files([
     "text_format_failure_list_python.txt",
 ])
 
+# The command line and the report format of conformance_test_runner; see
+# conformance_test_runner.h.
 cc_library(
-    name = "conformance_test_lib",
+    name = "conformance_test_runner_lib",
     testonly = 1,
-    srcs = [
-        "conformance_test.cc",
-        "conformance_test_runner.cc",
-    ],
-    hdrs = [
-        "conformance_test.h",
-    ],
+    srcs = ["conformance_test_runner.cc"],
+    hdrs = ["conformance_test_runner.h"],
     deps = [
-        ":conformance_cc_proto",
-        ":failure_list_trie_node",
-        ":fork_pipe_runner",
-        ":recording_test_runner",
-        ":test_runner",
         "//src/google/protobuf",
-        "//src/google/protobuf:descriptor_legacy",
-        "//src/google/protobuf:endian",
-        "//src/google/protobuf/util:differencer",
-        "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_set",
-        "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
-        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
+# The main of conformance_test_runner: runs the gtest-based conformance suites
+# linked into the same binary behind the conformance_test_runner command line;
+# see conformance_test_main.cc.
 cc_library(
     name = "conformance_test_main",
     testonly = 1,
     srcs = ["conformance_test_main.cc"],
     deps = [
-        ":binary_json_conformance_suite",
-        ":conformance_test_lib",
-        ":text_format_conformance_suite",
+        # The gtest-based conformance suites, linked in as they are migrated.
+        # The performance suite is linked from the start, so that the runner's
+        # --performance selects its tests (see PerformanceGtestFilter()) as
+        # soon as there are any.
+        ":binary_conformance_tests",  # buildcleaner: keep
+        ":json_conformance_tests",  # buildcleaner: keep
+        ":performance_conformance_tests",  # buildcleaner: keep
+        ":conformance_test_runner_lib",
+        ":filtering_test_runner",
+        ":fork_pipe_runner",
+        ":recording_test_runner",
+        ":test_environment",
+        ":result_ledger",
+        ":test_runner",
+        ":testee",
+        ":text_conformance_tests",  # buildcleaner: keep
+        "//src/google/protobuf",
+        "@googletest//:gtest",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "conformance_test_runner_test",
+    srcs = ["conformance_test_runner_test.cc"],
+    deps = [
+        ":conformance_test_runner_lib",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -123,58 +158,57 @@ test_suite(
     tests = [
         "binary_test_util_test",
         "binary_wireformat_test",
+        "conformance_cpp_harness_test",
+        "conformance_test_runner_test",
+        "cpp_in_process_test_runner_test",
+        "cpp_in_process_testee_test",
         "failure_list_trie_node_test",
+        "filtering_test_runner_test",
+        "fork_pipe_runner_test",
+        "forked_testee_test",
+        "in_process_test_runner_test",
+        "in_process_testee_test",
+        "json_test_util_test",
         "matchers_test",
+        "message_type_fixtures_test",
         "naming_test",
         "recording_test_runner_test",
+        "recursion_limit_payloads_test",
+        "result_ledger_test",
+        "result_listener_test",
+        "result_record_test",
+        "sample_conformance_test",
+        "test_environment_flags_test",
+        "test_environment_integration_test",
         "test_environment_test",
         "test_fixture_test",
-        "test_manager_test",
         "testee_test",
+        "//conformance/bzl_tests:conformance_bzl_test",
     ],
 )
 
-cc_library(
-    name = "binary_json_conformance_suite",
-    testonly = 1,
-    srcs = ["binary_json_conformance_suite.cc"],
-    hdrs = ["binary_json_conformance_suite.h"],
-    deps = [
-        ":binary_wireformat",
-        ":conformance_cc_proto",
-        ":conformance_test_lib",
-        "//:test_messages_proto2_cc_proto",
-        "//:test_messages_proto3_cc_proto",
-        "//conformance/test_protos:test_messages_edition2023_cc_proto",
-        "//conformance/test_protos:test_messages_edition2026_cc_proto",
-        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
-        "//editions:test_messages_proto2_editions_cc_proto",
-        "//editions:test_messages_proto3_editions_cc_proto",
-        "//src/google/protobuf",
-        "//src/google/protobuf:protobuf_lite",
-        "//src/google/protobuf/json",
-        "//src/google/protobuf/util:differencer",
-        "//src/google/protobuf/util:type_resolver",
-        "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
-        "@abseil-cpp//absl/log:die_if_null",
-        "@abseil-cpp//absl/status",
-        "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/strings:str_format",
-        "@abseil-cpp//absl/strings:string_view",
-        "@jsoncpp",
-    ],
-)
-
-# Helpers shared by the gtest-based binary conformance tests (the field-type
-# tables the tests are parameterized over).
+# Helpers shared by the gtest-based binary conformance tests (field lookups,
+# wire types, test-message parameter sets).
 cc_library(
     name = "binary_test_util",
     testonly = 1,
     srcs = ["binary_test_util.cc"],
     hdrs = ["binary_test_util.h"],
     deps = [
+        ":binary_wireformat",
+        ":naming",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//editions:test_messages_proto2_editions_cc_proto",
+        "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -184,38 +218,286 @@ cc_test(
     srcs = ["binary_test_util_test.cc"],
     deps = [
         ":binary_test_util",
+        ":binary_wireformat",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
+        "//editions:test_messages_proto2_editions_cc_proto",
+        "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
 )
 
 cc_library(
-    name = "text_format_conformance_suite",
+    name = "recursion_limit_payloads",
     testonly = 1,
-    srcs = ["text_format_conformance_suite.cc"],
-    hdrs = ["text_format_conformance_suite.h"],
+    srcs = ["recursion_limit_payloads.cc"],
+    hdrs = ["recursion_limit_payloads.h"],
     deps = [
-        ":conformance_test_lib",
+        ":binary_wireformat",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "recursion_limit_payloads_test",
+    srcs = ["recursion_limit_payloads_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":recursion_limit_payloads",
+        "//:test_messages_proto2_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "message_type_fixtures",
+    testonly = 1,
+    srcs = ["message_type_fixtures.cc"],
+    hdrs = ["message_type_fixtures.h"],
+    deps = [
+        ":binary_test_util",
+        ":test_fixture",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "message_type_fixtures_test",
+    srcs = ["message_type_fixtures_test.cc"],
+    deps = [
+        ":binary_test_util",
+        ":message_type_fixtures",
+        ":mock_test_runner",
+        ":test_environment",
+        ":test_environment_testing",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
-        "//conformance/test_protos:test_messages_edition2023_cc_proto",
-        "//conformance/test_protos:test_messages_edition2026_cc_proto",
-        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
-        "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
-        "@abseil-cpp//absl/log:absl_log",
-        "@abseil-cpp//absl/log:die_if_null",
         "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# The packages using conformance_test() (conformance.bzl), which links the
+# suite libraries below, :test_environment_main and :forked_testee into each
+# test.  Add a package here when it moves its conformance test to the macro
+# (google3-only packages are marked to be stripped from the open-source
+# export; upb's is exported along with its tests).
+package_group(
+    name = "conformance_test_users",
+    packages = [
+        "//conformance/...",
+        "//upb/conformance",
+    ],
+)
+
+# The gtest-based binary conformance suite (:binary_conformance_tests), one
+# file per migrated group.  A single alwayslink library so that linking it into
+# conformance_test_runner (or any binary using test_environment_main) registers
+# every test; each newly migrated group just adds its file here.
+conformance_suite(
+    name = "binary",
+    srcs = [
+        "binary_delimited_field_test.cc",
+        "binary_illegal_lengths_test.cc",
+        "binary_illegal_tags_test.cc",
+        "binary_merge_test.cc",
+        "binary_message_set_test.cc",
+        "binary_oneof_test.cc",
+        "binary_oneof_zero_test.cc",
+        "binary_premature_eof_test.cc",
+        "binary_unknown_fields_test.cc",
+        "binary_unknown_wire_type_test.cc",
+        "binary_unmatched_group_test.cc",
+        "binary_unstable_edition_test.cc",
+        "binary_utf8_test.cc",
+        "binary_valid_data_map_test.cc",
+        "binary_valid_data_repeated_test.cc",
+        "binary_valid_data_scalar_test.cc",
+    ],
+    # conformance_test() links :binary_conformance_tests into every test it
+    # creates, so it must be visible wherever that macro is used (see
+    # :conformance_test_users; a package moving its conformance test to the
+    # macro is added there).
+    visibility = [":conformance_test_users"],
+    deps = [
+        ":binary_test_util",
+        ":binary_wireformat",
+        ":matchers",
+        ":message_type_fixtures",
+        ":test_fixture",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+# The gtest-based performance conformance suite
+# (:performance_conformance_tests): the tests that stress the testee with
+# deeply nested and very large payloads, for every wire format that has them.
+# Every fixture in it must be named `*PerformanceTest`; see conformance.bzl.
+conformance_suite(
+    name = "performance",
+    srcs = [
+        "binary_performance_test.cc",
+        "binary_recursion_limit_test.cc",
+        "text_performance_test.cc",
+    ],
+    visibility = [":conformance_test_users"],
+    deps = [
+        ":binary_test_util",
+        ":binary_wireformat",
+        ":matchers",
+        ":message_type_fixtures",
+        ":recursion_limit_payloads",
+        ":test_fixture",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+# The gtest-based text-format conformance suite (:text_conformance_tests); see
+# the binary suite above.
+conformance_suite(
+    name = "text",
+    srcs = [
+        "text_any_test.cc",
+        "text_enum_test.cc",
+        "text_float_test.cc",
+        "text_group_test.cc",
+        "text_hello_world_test.cc",
+        "text_integer_test.cc",
+        "text_map_test.cc",
+        "text_reserved_field_test.cc",
+        "text_string_test.cc",
+        "text_syntax_test.cc",
+        "text_unknown_field_test.cc",
+    ],
+    # conformance_test() links :text_conformance_tests into every test it
+    # creates, so it must be visible wherever that macro is used (see the
+    # binary suite above).
+    visibility = [":conformance_test_users"],
+    deps = [
+        ":binary_test_util",
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":matchers",
+        ":message_type_fixtures",
+        ":test_fixture",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+# Matchers and pure values shared by the JSON conformance tests; see
+# :binary_test_util.
+cc_library(
+    name = "json_test_util",
+    testonly = 1,
+    hdrs = ["json_test_util.h"],
+    deps = [
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@jsoncpp",
+    ],
+)
+
+cc_test(
+    name = "json_test_util_test",
+    srcs = ["json_test_util_test.cc"],
+    deps = [
+        ":json_test_util",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+        "@jsoncpp",
+    ],
+)
+
+# The gtest-based JSON conformance suite (:json_conformance_tests); see the
+# binary suite above.
+conformance_suite(
+    name = "json",
+    srcs = [
+        "json_any_test.cc",
+        "json_bool_test.cc",
+        "json_duration_test.cc",
+        "json_enum_test.cc",
+        "json_field_mask_test.cc",
+        "json_field_name_test.cc",
+        "json_float_test.cc",
+        "json_hello_world_test.cc",
+        "json_integer_test.cc",
+        "json_map_test.cc",
+        "json_message_test.cc",
+        "json_null_test.cc",
+        "json_oneof_test.cc",
+        "json_repeated_test.cc",
+        "json_string_test.cc",
+        "json_struct_test.cc",
+        "json_timestamp_test.cc",
+        "json_unknown_enum_test.cc",
+        "json_value_test.cc",
+        "json_wrapper_test.cc",
+    ],
+    # conformance_test() links :json_conformance_tests into every test it
+    # creates, so it must be visible wherever that macro is used (see the
+    # binary suite above).
+    visibility = [":conformance_test_users"],
+    deps = [
+        ":binary_test_util",
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":json_test_util",
+        ":matchers",
+        ":message_type_fixtures",
+        ":test_fixture",
+        ":testee",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
     ],
 )
 
 cc_library(
     name = "test_runner",
     hdrs = ["test_runner.h"],
-    visibility = ["//src/google/protobuf:__pkg__"],
+    # An in-process testee library (testee_runner.h) subclasses
+    # ConformanceTestRunner, so packages that define one need this directly.
+    visibility = [":conformance_test_users"],
     deps = ["@abseil-cpp//absl/strings:string_view"],
 )
 
@@ -303,6 +585,153 @@ cc_test(
 )
 
 cc_library(
+    name = "filtering_test_runner",
+    srcs = ["filtering_test_runner.cc"],
+    hdrs = ["filtering_test_runner.h"],
+    deps = [
+        ":conformance_cc_proto",
+        ":test_runner",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "filtering_test_runner_test",
+    srcs = ["filtering_test_runner_test.cc"],
+    deps = [
+        ":conformance_cc_proto",
+        ":filtering_test_runner",
+        ":mock_test_runner",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "in_process_test_runner",
+    testonly = 1,
+    srcs = ["in_process_test_runner.cc"],
+    hdrs = ["in_process_test_runner.h"],
+    deps = [
+        ":conformance_cc_proto",
+        ":test_runner",
+        "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "in_process_test_runner_test",
+    srcs = ["in_process_test_runner_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":in_process_test_runner",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# The request-handling logic of the C++ conformance testee, shared by the
+# conformance_cpp binary and by in-process conformance tests.
+cc_library(
+    name = "conformance_cpp_harness",
+    testonly = 1,
+    srcs = ["conformance_cpp_harness.cc"],
+    hdrs = ["conformance_cpp_harness.h"],
+    deps = [
+        ":conformance_cc_proto",
+        "//:any_cc_proto",
+        "//:api_cc_proto",
+        "//:duration_cc_proto",
+        "//:empty_cc_proto",
+        "//:field_mask_cc_proto",
+        "//:struct_cc_proto",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//:timestamp_cc_proto",
+        "//:type_cc_proto",
+        "//:wrappers_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
+        "//editions:test_messages_proto2_editions_cc_proto",
+        "//editions:test_messages_proto3_editions_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf/json",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "conformance_cpp_harness_test",
+    srcs = ["conformance_cpp_harness_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":conformance_cpp_harness",
+        "//:test_messages_proto3_cc_proto",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Glue between the C++ testee (conformance_cpp_harness) and the tester side
+# (in_process_test_runner).  Kept separate so conformance_cpp links no runner
+# code.
+cc_library(
+    name = "cpp_in_process_test_runner",
+    testonly = 1,
+    srcs = ["cpp_in_process_test_runner.cc"],
+    hdrs = ["cpp_in_process_test_runner.h"],
+    deps = [
+        ":conformance_cc_proto",
+        ":conformance_cpp_harness",
+        ":in_process_test_runner",
+        ":test_runner",
+    ],
+)
+
+cc_test(
+    name = "cpp_in_process_test_runner_test",
+    srcs = ["cpp_in_process_test_runner_test.cc"],
+    deps = [
+        ":conformance_cc_proto",
+        ":conformance_cpp_harness",
+        ":cpp_in_process_test_runner",
+        ":test_runner",
+        "//:test_messages_proto3_cc_proto",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "binary_wireformat",
     testonly = 1,
     srcs = ["binary_wireformat.cc"],
@@ -316,13 +745,62 @@ cc_library(
 )
 
 cc_library(
-    name = "test_manager",
+    name = "failure_list",
     testonly = True,
-    srcs = ["test_manager.cc"],
-    hdrs = ["test_manager.h"],
+    srcs = ["failure_list.cc"],
+    hdrs = ["failure_list.h"],
     deps = [
-        ":conformance_cc_proto",
         ":failure_list_trie_node",
+        ":testee",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "result_record",
+    testonly = True,
+    srcs = ["result_record.cc"],
+    hdrs = ["result_record.h"],
+    deps = [
+        ":testee",
+        "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_test(
+    name = "result_record_test",
+    srcs = ["result_record_test.cc"],
+    deps = [
+        ":result_record",
+        ":testee",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "result_ledger",
+    testonly = True,
+    srcs = ["result_ledger.cc"],
+    hdrs = ["result_ledger.h"],
+    deps = [
+        ":failure_list",
+        ":result_record",
         ":testee",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/container:btree",
@@ -334,6 +812,21 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_library(
+    name = "result_listener",
+    testonly = True,
+    srcs = ["result_listener.cc"],
+    hdrs = ["result_listener.h"],
+    deps = [
+        ":result_ledger",
+        ":result_record",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@googletest//:gtest",
     ],
 )
 
@@ -382,6 +875,8 @@ cc_library(
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
     ],
 )
 
@@ -406,10 +901,12 @@ cc_test(
 )
 
 cc_test(
-    name = "test_manager_test",
-    srcs = ["test_manager_test.cc"],
+    name = "result_ledger_test",
+    srcs = ["result_ledger_test.cc"],
     deps = [
-        ":test_manager",
+        ":failure_list",
+        ":result_ledger",
+        ":result_record",
         ":testee",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
@@ -423,16 +920,31 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "result_listener_test",
+    srcs = ["result_listener_test.cc"],
+    deps = [
+        ":result_ledger",
+        ":result_listener",
+        ":result_record",
+        ":testee",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "global_test_environment",
     testonly = 1,
     hdrs = ["global_test_environment.h"],
-    deps = [":test_manager"],
+    deps = [":failure_list"],
 )
 
 # gMock matchers for conformance TestResults.
 #
-# NOTE: Consumers must link a definition of GetGlobalTestManager(), declared in
+# NOTE: Consumers must link a definition of GetGlobalFailureList(), declared in
 # global_test_environment.h.  The conformance test environment provides it in
 # the real test binary; matchers_test provides an in-memory stand-in.
 cc_library(
@@ -443,22 +955,43 @@ cc_library(
     deps = [
         ":binary_wireformat",
         ":conformance_cc_proto",
+        ":failure_list",
+        ":filtering_test_runner",
         ":global_test_environment",
-        ":test_manager",
+        ":result_record",
         ":testee",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf/json",
         "//src/google/protobuf/util:differencer",
-        "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:nullability",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/strings:string_view",
-        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@jsoncpp",
+    ],
+)
+
+# Helpers for unit tests of code that checks results with Yields().
+cc_library(
+    name = "matchers_testing",
+    testonly = 1,
+    srcs = ["matchers_testing.cc"],
+    hdrs = ["matchers_testing.h"],
+    deps = [
+        ":result_record",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
     ],
@@ -470,13 +1003,18 @@ cc_test(
     deps = [
         ":binary_wireformat",
         ":conformance_cc_proto",
+        ":failure_list",
         ":global_test_environment",
+        ":json_test_util",
         ":matchers",
+        ":matchers_testing",
         ":mock_test_runner",
-        ":test_manager",
+        ":result_ledger",
+        ":result_record",
         ":testee",
         "//:test_messages_proto2_cc_proto",
         "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
         "@abseil-cpp//absl/base:log_severity",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:scoped_mock_log",
@@ -486,6 +1024,7 @@ cc_test(
         "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+        "@jsoncpp",
     ],
 )
 
@@ -507,9 +1046,11 @@ cc_library(
     srcs = ["test_environment.cc"],
     hdrs = ["test_environment.h"],
     deps = [
+        ":failure_list",
         ":fork_pipe_runner",
         ":global_test_environment",
-        ":test_manager",
+        ":result_ledger",
+        ":result_listener",
         ":test_runner",
         ":testee",
         "//src/google/protobuf",
@@ -520,6 +1061,7 @@ cc_library(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
         "@googletest//:gtest",
     ],
 )
@@ -544,10 +1086,13 @@ cc_test(
         ":conformance_cc_proto",
         ":global_test_environment",
         ":matchers",
+        ":matchers_testing",
         ":mock_test_runner",
+        ":result_ledger",
+        ":result_listener",
+        ":result_record",
         ":test_environment",
         ":test_environment_testing",
-        ":test_manager",
         ":testee",
         "//:test_messages_proto3_cc_proto",
         "//src/google/protobuf",
@@ -574,7 +1119,6 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
         "@abseil-cpp//absl/base:nullability",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
@@ -601,6 +1145,246 @@ cc_test(
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Defines the global --testee_binary, --failure_list, --fix, ... flags of a
+# conformance test binary.  Only link it into binaries with a
+# test_environment_main-style main (never into conformance_test_runner, whose
+# command line parses flags of the same names itself).
+cc_library(
+    name = "test_environment_flags",
+    testonly = 1,
+    srcs = ["test_environment_flags.cc"],
+    hdrs = ["test_environment_flags.h"],
+    deps = [
+        ":test_environment",
+        ":testee",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "test_environment_flags_test",
+    srcs = ["test_environment_flags_test.cc"],
+    deps = [
+        ":test_environment",
+        ":test_environment_flags",
+        ":testee",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:parse",
+        "@abseil-cpp//absl/flags:reflection",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# The main() for gtest-based conformance suites.  Depend on this instead of a
+# generic gtest main, together with exactly one library defining
+# MakeTesteeRunner() (see :testee_runner): :forked_testee, or an in-process
+# testee.  conformance_test() (conformance.bzl) adds them as implicit deps, so
+# they must be visible wherever that macro is used (see
+# :conformance_test_users).
+cc_library(
+    name = "test_environment_main",
+    testonly = 1,
+    srcs = ["test_environment_main.cc"],
+    visibility = [":conformance_test_users"],
+    deps = [
+        ":test_environment",
+        ":test_environment_flags",
+        ":testee_runner",
+        "@abseil-cpp//absl/flags:parse",  # buildcleaner: keep
+        "@abseil-cpp//absl/log:initialize",  # buildcleaner: keep
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+    ],
+    alwayslink = 1,
+)
+
+# The link-time seam through which test_environment_main gets its testee: the
+# declaration of MakeTesteeRunner(), which an in-process testee library defines.
+cc_library(
+    name = "testee_runner",
+    testonly = 1,
+    hdrs = ["testee_runner.h"],
+    visibility = [":conformance_test_users"],
+    deps = [
+        ":test_runner",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+# The default testee: --testee_binary, spawned as a child process.  Like every
+# library defining MakeTesteeRunner() it is alwayslink, so that the definition
+# is linked in wherever the library appears on the link line.
+cc_library(
+    name = "forked_testee",
+    testonly = 1,
+    srcs = ["forked_testee.cc"],
+    visibility = [":conformance_test_users"],
+    deps = [
+        ":fork_pipe_runner",
+        ":test_runner",
+        ":testee_runner",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+    ],
+    alwayslink = 1,
+)
+
+# The C++ runtime's in-process testee: defines MakeTesteeRunner() on top of
+# cpp_in_process_test_runner.  conformance_test(in_process = True) links it in
+# place of :forked_testee; see conformance.bzl for the one-per-test rule.
+cc_library(
+    name = "cpp_in_process_testee",
+    testonly = 1,
+    srcs = ["cpp_in_process_testee.cc"],
+    deps = [
+        ":cpp_in_process_test_runner",
+        ":test_runner",
+        ":testee_runner",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+    ],
+    alwayslink = 1,
+)
+
+cc_test(
+    name = "cpp_in_process_testee_test",
+    srcs = ["cpp_in_process_testee_test.cc"],
+    deps = [
+        ":conformance_cc_proto",
+        ":cpp_in_process_testee",
+        ":test_runner",
+        ":testee_runner",
+        "//:test_messages_proto3_cc_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "forked_testee_test",
+    srcs = ["forked_testee_test.cc"],
+    deps = [
+        ":forked_testee",
+        ":test_runner",
+        ":testee_runner",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# A conformance test binary whose testee is linked in (the test file defines
+# MakeTesteeRunner() itself), run without --testee_binary: checks that
+# test_environment_main hosts an in-process testee end to end.
+cc_test(
+    name = "in_process_testee_test",
+    srcs = ["in_process_testee_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":matchers",
+        ":test_environment_main",
+        ":test_fixture",
+        ":test_runner",
+        ":testee_runner",
+        "//:test_messages_proto3_cc_proto",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+    ],
+)
+
+bzl_library(
+    name = "conformance_bzl",
+    srcs = ["conformance.bzl"],
+    visibility = ["//conformance/bzl_tests:__pkg__"],
+    deps = [
+        "@rules_cc//cc:core_rules",
+    ],
+)
+
+# The expected-failure lists of the conformance_test()s below, one file per
+# test and suite (e.g. failure_lists/cpp_binary.txt).  Update them with
+# `blaze run :<test>_<suite>_test -- --fix`; see conformance.bzl.
+failure_lists(name = "failure_lists")
+
+# The gtest-based conformance tests of the C++ testee: cpp_binary_test,
+# cpp_json_test, cpp_performance_test and cpp_text_test, grouped under the :cpp
+# test_suite.  They host the testee in-process (:cpp_in_process_testee) rather
+# than forking :conformance_cpp, so a testee crash or log shows up in the test
+# itself.
+conformance_test(
+    name = "cpp",
+    failure_lists = ":failure_lists",
+    in_process = True,
+    maximum_edition = "2023",
+    testee = ":cpp_in_process_testee",
+)
+
+# A tiny conformance suite exercising the framework end to end.  It
+# deliberately contains failing tests, which the accompanying failure lists
+# account for.
+cc_test(
+    name = "sample_conformance_test",
+    srcs = ["sample_conformance_test.cc"],
+    args = [
+        "--testee_binary=$(rootpath :conformance_cpp)",
+        "--failure_list=$(rootpath sample_failure_list_ok.txt)",
+    ],
+    data = [
+        "sample_failure_list_ok.txt",
+        ":conformance_cpp",
+    ],
+    deps = [
+        ":binary_wireformat",
+        ":forked_testee",
+        ":matchers",
+        ":test_environment_main",
+        ":test_fixture",
+        ":testee",
+        "//:test_messages_proto3_cc_proto",
+        "@googletest//:gtest",
+    ],
+)
+
+# Runs sample_conformance_test as a subprocess.  Only what needs a real test
+# process is checked here; see test_environment_test for the rest.
+cc_test(
+    name = "test_environment_integration_test",
+    srcs = ["test_environment_integration_test.cc"],
+    data = [
+        "sample_failure_list_empty.txt",
+        "sample_failure_list_ok.txt",
+        "sample_failure_list_unseen.txt",
+        ":conformance_cpp",
+        ":sample_conformance_test",
+    ],
+    env = {
+        "SAMPLE_TEST": "$(rlocationpath :sample_conformance_test)",
+        "TESTEE": "$(rlocationpath :conformance_cpp)",
+    },
+    deps = [
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+        "@bazel_tools//tools/cpp/runfiles",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -712,35 +1496,15 @@ cc_binary(
     ],
     deps = [
         ":conformance_cc_proto",
-        "//:any_cc_proto",
-        "//:api_cc_proto",
-        "//:duration_cc_proto",
-        "//:empty_cc_proto",
-        "//:field_mask_cc_proto",
+        ":conformance_cpp_harness",
         "//:protobuf",
-        "//:struct_cc_proto",
-        "//:test_messages_proto2_cc_proto",
-        "//:test_messages_proto3_cc_proto",
-        "//:timestamp_cc_proto",
-        "//:type_cc_proto",
-        "//:wrappers_cc_proto",
-        "//conformance/test_protos:test_messages_edition2023_cc_proto",
-        "//conformance/test_protos:test_messages_edition2026_cc_proto",
-        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
-        "//editions:test_messages_proto2_editions_cc_proto",
-        "//editions:test_messages_proto3_editions_cc_proto",
         "//src/google/protobuf",
-        "//src/google/protobuf:port",
-        "//src/google/protobuf:protobuf_lite",
-        "//src/google/protobuf/json",
+        "//src/google/protobuf:endian",
         "//src/google/protobuf/stubs",
-        "//src/google/protobuf/util:json_util",
-        "//src/google/protobuf/util:type_resolver",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
-        "@abseil-cpp//absl/strings",
     ],
 )
 

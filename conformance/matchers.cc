@@ -16,27 +16,32 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/nullability.h"
-#include "absl/base/thread_annotations.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
-#include "absl/synchronization/mutex.h"
 #include "absl/types/optional.h"
+#include "json/reader.h"
+#include "json/value.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
+#include "conformance/failure_list.h"
+#include "conformance/filtering_test_runner.h"
 #include "conformance/global_test_environment.h"
-#include "conformance/test_manager.h"
+#include "conformance/result_record.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/json/json.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer.h"
 
@@ -47,9 +52,15 @@ namespace {
 
 using ::conformance::ConformanceResponse;
 using ::conformance::WireFormat;
-using ::google::protobuf::conformance::internal::GetGlobalTestManager;
-using ::google::protobuf::conformance::internal::TestManager;
+using ::google::protobuf::conformance::internal::CurrentGtestResult;
+using ::google::protobuf::conformance::internal::FailureList;
+using ::google::protobuf::conformance::internal::GetGlobalFailureList;
+using ::google::protobuf::conformance::internal::ParseResultRecordMessage;
+using ::google::protobuf::conformance::internal::RecordedResult;
+using ::google::protobuf::conformance::internal::ResultRecord;
+using ::google::protobuf::conformance::internal::ResultRecordMessage;
 using ::google::protobuf::conformance::internal::TestResult;
+using ::google::protobuf::conformance::internal::YieldedResult;
 
 // Implements EqualsTextProto() and EqualsBinaryProto(): matches a message
 // equivalent to the one obtained by decoding `expected` (in `format`) as the
@@ -127,8 +138,9 @@ class FailureMatcher {
         failure_message_(failure_message),
         runtime_error_failure_message_(runtime_error_failure_message) {}
 
-  bool MatchAndExplain(const TestResult& result,
+  bool MatchAndExplain(const YieldedResult& yielded,
                        testing::MatchResultListener* listener) const {
+    const TestResult& result = yielded.result();
     ConformanceResponse::ResultCase actual = result.response().result_case();
     if (actual == expected_result_) {
       return true;
@@ -299,20 +311,32 @@ std::unique_ptr<Message> ParsePayload(const TestResult& result,
       }
       return message;
     }
-    case ::conformance::JSON:
+    case ::conformance::JSON: {
+      // Decoded with the default json::ParseOptions, which is effectively what
+      // the legacy runner did.
+      // TODO: Set allow_legacy_nonconformant_behavior = false
+      // once the failures that surfaces have been triaged across languages.
+      absl::Status status = json::JsonStringToMessage(
+          result.response().json_payload(), message.get());
+      if (!status.ok()) {
+        ABSL_LOG(INFO) << "JSON output of " << result.name()
+                       << " is unparseable: " << status;
+        failure_message = UnparseableMessage(result.format());
+        return nullptr;
+      }
+      return message;
+    }
     case ::conformance::JSPB:
     case ::conformance::UNSPECIFIED:
     default:
-      // TODO: b/410122158 - Support JSON once the JSON suite is migrated.
-      failure_message = absl::StrCat(
-          "WhenParsed is not supported for ", WireFormat_Name(result.format()),
-          " output; use RawPayload() to match the raw JSON text until JSON "
-          "matching is migrated to gtest (b/410122158).");
-      return nullptr;
+      // PayloadMatcher only calls ParsePayload() once the response carries
+      // the payload the test asked for, and tests can only ask for PROTOBUF,
+      // TEXT_FORMAT or JSON output.
+      google::protobuf::internal::Unreachable();
   }
 }
 
-// Formats binary data the same way the legacy runner does in failure messages.
+// Formats binary data the same way the legacy runner did in failure messages.
 std::string ToOctString(absl::string_view binary_string) {
   std::string oct_string;
   for (char ch : binary_string) {
@@ -331,7 +355,7 @@ class PayloadMatcher {
 
   virtual ~PayloadMatcher() = default;
 
-  bool MatchAndExplain(const TestResult& result,
+  bool MatchAndExplain(const YieldedResult& yielded,
                        testing::MatchResultListener* listener) const;
   void DescribeTo(std::ostream* os) const {
     DescribeInnerTo(os, /*negation=*/false);
@@ -357,7 +381,9 @@ class PayloadMatcher {
 };
 
 bool PayloadMatcher::MatchAndExplain(
-    const TestResult& result, testing::MatchResultListener* listener) const {
+    const YieldedResult& yielded,
+    testing::MatchResultListener* listener) const {
+  const TestResult& result = yielded.result();
   const ConformanceResponse& response = result.response();
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -461,8 +487,8 @@ class RawPayloadMatcher : public PayloadMatcher {
 
 bool RawPayloadMatcher::MatchPayload(
     const TestResult& result, testing::MatchResultListener* listener) const {
-  // Like the legacy runner's `require_same_wire_format`, binary output must at
-  // least be parseable as the test's message type.
+  // Like the legacy runner's byte-exact mode, binary output must at least be
+  // parseable as the test's message type.
   if (result.format() == ::conformance::PROTOBUF &&
       !NewMessage(result.type())
            ->ParseFromString(result.response().protobuf_payload())) {
@@ -481,51 +507,160 @@ bool RawPayloadMatcher::MatchPayload(
   return false;
 }
 
-// Implements Yields().  This is the single matcher that talks to the global
-// TestManager; see matchers.h for the policy it applies.
+// Implements JsonPayload().
+class JsonPayloadMatcher : public PayloadMatcher {
+ public:
+  explicit JsonPayloadMatcher(testing::Matcher<const Json::Value&> matcher)
+      : matcher_(std::move(matcher)) {}
+
+ private:
+  bool MatchPayload(const TestResult& result,
+                    testing::MatchResultListener* listener) const override;
+  void DescribeInnerTo(std::ostream* os, bool negation) const override;
+
+  testing::Matcher<const Json::Value&> matcher_;
+};
+
+bool JsonPayloadMatcher::MatchPayload(
+    const TestResult& result, testing::MatchResultListener* listener) const {
+  // PayloadMatcher only checked that the payload is in the requested format;
+  // a test that asked for anything but JSON can't be matched this way.  This
+  // is an authoring bug, so it is deliberately checked only after the base
+  // class has reported the "real" conformance failures (errors, skips, wrong
+  // payload kind) that also apply to correctly written tests.
+  if (result.format() != ::conformance::JSON) {
+    *listener << "JsonPayload() needs JSON output, but the test asked for "
+              << WireFormat_Name(result.format()) << " output.";
+    return false;
+  }
+
+  // Parsed with jsoncpp's defaults, like the legacy runner's validators.
+  const std::string& payload = result.response().json_payload();
+  Json::CharReaderBuilder builder;
+  const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
+  Json::Value value;
+  std::string error;
+  if (!reader->parse(payload.data(), payload.data() + payload.size(), &value,
+                     &error)) {
+    *listener << "JSON payload cannot be parsed as valid JSON: " << error;
+    return false;
+  }
+
+  testing::StringMatchResultListener inner_listener;
+  if (matcher_.MatchAndExplain(value, &inner_listener)) {
+    *listener << inner_listener.str();
+    return true;
+  }
+  if (inner_listener.str().empty()) {
+    // JSON is readable, so it is quoted and escaped rather than shown in octal.
+    *listener << "Expect: JSON payload "
+              << testing::DescribeMatcher<const Json::Value&>(matcher_)
+              << ", but got: \"" << absl::CEscape(payload) << "\"";
+  } else {
+    *listener << inner_listener.str();
+  }
+  return false;
+}
+
+void JsonPayloadMatcher::DescribeInnerTo(std::ostream* os,
+                                         bool negation) const {
+  *os << "JSON payload "
+      << testing::DescribeMatcher<const Json::Value&>(matcher_, negation);
+}
+
+// What an earlier check of the conformance test `name` recorded in the gtest
+// result Yields() records to, if anything (see ResultRecordMessage()), as
+// ResultRecord::ToString().
+absl::optional<std::string> RecordedValue(absl::string_view name) {
+  const testing::TestResult& gtest_result = CurrentGtestResult();
+  for (int i = 0; i < gtest_result.total_part_count(); ++i) {
+    const testing::TestPartResult& part = gtest_result.GetTestPartResult(i);
+    if (part.type() != testing::TestPartResult::kSuccess) continue;
+    absl::StatusOr<RecordedResult> recorded =
+        ParseResultRecordMessage(part.message());
+    if (recorded.ok() && recorded->test_name == name) {
+      return recorded->record.ToString();
+    }
+  }
+  return absl::nullopt;
+}
+
+// The status to record for a result that is a failure: kCrash for a testee
+// that raised an error or timed out, kFail otherwise (including a response
+// with no result at all).
+ResultRecord::Status FailureStatus(const ConformanceResponse& response) {
+  switch (response.result_case()) {
+    case ConformanceResponse::kRuntimeError:
+    case ConformanceResponse::kTimeoutError:
+      return ResultRecord::Status::kCrash;
+    default:
+      return ResultRecord::Status::kFail;
+  }
+}
+
+// Logs what became of a result the first time it is checked, as the legacy
+// runner did: a testee skip at INFO, and a failure that doesn't fail the test
+// at INFO if it is listed (an expected failure) or as a WARNING if it isn't (a
+// tolerated one).
+void LogOutcome(const TestResult& result, const ResultRecord& record,
+                const absl::Status& verdict) {
+  absl::string_view message =
+      absl::StripTrailingAsciiWhitespace(record.message);
+  switch (record.status) {
+    case ResultRecord::Status::kSkip:
+      ABSL_LOG(INFO) << "Skipping test " << result.name() << ": " << message;
+      break;
+    case ResultRecord::Status::kFail:
+    case ResultRecord::Status::kCrash:
+      if (!verdict.ok()) break;
+      if (GetGlobalFailureList().MatchingEntry(result.name()).has_value()) {
+        ABSL_LOG(INFO) << "Ignoring expected failure for test " << result.name()
+                       << ": " << message;
+      } else {
+        ABSL_LOG(WARNING) << "WARNING, test=" << result.name() << ": "
+                          << message;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+// Implements Yields().  This is the single matcher that reads the global
+// failure list; see matchers.h for the policy it applies.
 //
-// The TestManager must only hear about each test once.  It remembers the
-// names it was told (TestManager::WasReported()), and a result it already
-// knows is not evaluated again.  gtest evaluates a failing matcher a second
-// time, through the same matcher object, to explain the failure.  The matcher
-// keeps its last failed verdict for that rerun.  Anything else that checks a
-// reported result is a test bug and fails.
-//
-// Matchers are nominally immutable.  The cache only affects how a failure
-// that has already been decided is explained, never a verdict, and copies of
-// a Matcher share one impl, so the matcher behaves the same through every
-// copy.
+// The matcher changes nothing in the process but the gtest result it runs
+// in: what it learns about a result goes into a gtest success whose message
+// carries a ResultRecord (see ResultRecordMessage()), which the test
+// environment tallies as gtest reports it.  The success also tells the
+// matcher whether the test was checked before.  gtest evaluates a failing
+// matcher a second time to explain the failure; that evaluation finds its own
+// record and only repeats the verdict.  A check that reaches a different
+// outcome than the recorded one is a test bug and fails.
 class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
  public:
-  explicit YieldsMatcherImpl(testing::Matcher<const TestResult&> inner)
+  explicit YieldsMatcherImpl(testing::Matcher<const YieldedResult&> inner)
       : inner_(std::move(inner)) {}
 
   bool MatchAndExplain(const TestResult& result,
                        testing::MatchResultListener* listener) const override {
-    {
-      absl::MutexLock lock(&mutex_);
-      if (last_failure_.has_value() && last_failure_->result == &result &&
-          last_failure_->name == result.name()) {
-        *listener << last_failure_->explanation;
-        return false;
-      }
-    }
-    if (GetGlobalTestManager().WasReported(result.name())) {
+    ResultRecord record;
+    absl::Status verdict = Evaluate(result, record);
+    const std::string value = record.ToString();
+    absl::optional<std::string> recorded = RecordedValue(result.name());
+    if (!recorded.has_value()) {
+      SUCCEED() << ResultRecordMessage(result.name(), record);
+      LogOutcome(result, record, verdict);
+    } else if (*recorded != value) {
       *listener << "TestResult for " << result.name()
-                << " was already checked; each result may be checked exactly "
-                   "once";
+                << " was already checked, with a different outcome: the first "
+                   "check recorded \""
+                << *recorded << "\", this one would record \"" << value
+                << "\"; each result may be checked once";
       return false;
     }
-    absl::Status status = Evaluate(result);
-    *listener << status.message();
-    absl::MutexLock lock(&mutex_);
-    if (status.ok()) {
-      last_failure_.reset();
-    } else {
-      last_failure_ = LastFailure{&result, std::string(result.name()),
-                                  std::string(status.message())};
-    }
-    return status.ok();
+    *listener << verdict.message();
+    return verdict.ok();
   }
 
   void DescribeTo(std::ostream* os) const override {
@@ -541,60 +676,135 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
   }
 
  private:
-  // Reports `result` to the global TestManager and returns the gtest verdict:
-  // OK if the test passes, otherwise an error whose message explains why not.
-  absl::Status Evaluate(const TestResult& result) const {
-    TestManager& manager = GetGlobalTestManager();
+  // Decides `result`: fills in `record` with what to record about it and
+  // returns the gtest verdict, OK if the test passes, otherwise an error whose
+  // message explains why not.  Reads the global failure list and changes
+  // nothing.
+  absl::Status Evaluate(const TestResult& result, ResultRecord& record) const {
+    const FailureList& failure_list = GetGlobalFailureList();
     const std::string name(result.name());
     const ConformanceResponse& response = result.response();
+    record.priority = result.priority();
 
-    // A skip is decided here; the inner matcher never sees it.  The manager
-    // marks a listed entry as seen and returns an error for it, so this is the
-    // only place that reports a listed test the testee skipped.
+    // A test the runner filtered out with --test never ran: it is neither a
+    // testee skip nor, if listed, a "listed but skipped" failure.  The record
+    // only says that the test exists, so that its failure list entry isn't
+    // reported as matching no test.
+    if (response.result_case() == ConformanceResponse::kSkipped &&
+        response.skipped() == FilteringTestRunner::kNotSelectedSkipReason) {
+      record.status = ResultRecord::Status::kNotSelected;
+      return absl::OkStatus();
+    }
+
+    // A skip is decided here; the inner matcher never sees it.  A listed test
+    // the testee skipped fails (see FailureList::VerdictOnSkip()).
     if (response.result_case() == ConformanceResponse::kSkipped) {
-      absl::Status status = manager.ReportSkip(name, response.skipped());
-      ABSL_LOG(INFO) << "Skipping test " << name << ": " << response.skipped();
-      return status;
+      record.status = ResultRecord::Status::kSkip;
+      record.message = response.skipped();
+      return failure_list.VerdictOnSkip(name, response.skipped());
     }
 
     testing::StringMatchResultListener inner_listener;
-    bool matched = inner_.MatchAndExplain(result, &inner_listener);
+    bool matched =
+        inner_.MatchAndExplain(YieldedResult(result), &inner_listener);
     std::string message = inner_listener.str();
 
     if (matched) {
-      return manager.ReportSuccess(name);
+      record.status = ResultRecord::Status::kPass;
+      return failure_list.VerdictOnSuccess(name);
     }
 
     if (message.empty()) {
       message = absl::StrCat(
           "which doesn't match (",
-          testing::DescribeMatcher<const TestResult&>(inner_), ")");
+          testing::DescribeMatcher<const YieldedResult&>(inner_), ")");
     }
+    record.status = FailureStatus(response);
+    record.message = message;
 
-    // The manager decides whether the failure is expected (listed), tolerated
-    // (above the enforcement level) or unexpected, and logs the first two.
-    absl::Status status =
-        manager.ReportFailure(name, result.priority(), message);
-    if (status.ok()) {
-      return status;
+    // The failure list decides whether the failure is expected (listed),
+    // tolerated (above the enforcement level) or unexpected.
+    absl::Status verdict =
+        failure_list.VerdictOnFailure(name, result.priority(), message);
+    if (verdict.ok()) {
+      return verdict;
     }
-    return absl::Status(status.code(),
-                        absl::StrCat(message, "\n", status.message()));
+    return absl::Status(verdict.code(),
+                        absl::StrCat(message, "\n", verdict.message()));
   }
 
-  // The failure this matcher explained last, identified by the result's
-  // address and name, so that gtest's rerun gets the same explanation.  A
-  // destroyed result's address may be reused, but not its name: Testee::Run()
-  // rejects duplicate test names.
-  struct LastFailure {
-    const TestResult* result;
-    std::string name;
-    std::string explanation;
-  };
+  testing::Matcher<const YieldedResult&> inner_;
+};
 
-  testing::Matcher<const TestResult&> inner_;
-  mutable absl::Mutex mutex_;
-  mutable absl::optional<LastFailure> last_failure_ ABSL_GUARDED_BY(mutex_);
+// Formats `fields` for descriptions, e.g. `[666: "abc", 666: 123]`.
+std::string DescribeUnknownFields(const UnknownFieldSet& fields) {
+  std::string out = "[";
+  for (int i = 0; i < fields.field_count(); ++i) {
+    const UnknownField& field = fields.field(i);
+    if (i > 0) absl::StrAppend(&out, ", ");
+    absl::StrAppend(&out, field.number(), ": ");
+    switch (field.type()) {
+      case UnknownField::TYPE_VARINT:
+        absl::StrAppend(&out, field.varint());
+        break;
+      case UnknownField::TYPE_FIXED32:
+        absl::StrAppend(&out, "fixed32(", field.fixed32(), ")");
+        break;
+      case UnknownField::TYPE_FIXED64:
+        absl::StrAppend(&out, "fixed64(", field.fixed64(), ")");
+        break;
+      case UnknownField::TYPE_LENGTH_DELIMITED:
+        absl::StrAppend(&out, "\"", absl::CEscape(field.length_delimited()),
+                        "\"");
+        break;
+      case UnknownField::TYPE_GROUP:
+        absl::StrAppend(&out, DescribeUnknownFields(field.group()));
+        break;
+    }
+  }
+  return absl::StrCat(out, "]");
+}
+
+// Implements HasUnknownFieldsInOrder(): matches a message whose unknown field
+// set holds exactly the fields of `expected`, in the same order.
+//
+// UnknownFieldSet serializes its fields in order with a canonical encoding for
+// each, so two sets hold equal fields in the same order exactly when their
+// serializations are equal.  Comparing those also sidesteps copying the
+// expected set, which UnknownFieldSet doesn't support.
+class UnknownFieldsInOrderMatcher {
+ public:
+  using is_gtest_matcher = void;
+
+  explicit UnknownFieldsInOrderMatcher(const UnknownFieldSet& expected)
+      : description_(DescribeUnknownFields(expected)) {
+    ABSL_CHECK(expected.SerializeToString(&expected_))
+        << "Failed to serialize the expected unknown fields " << description_;
+  }
+
+  bool MatchAndExplain(const Message& actual,
+                       testing::MatchResultListener* listener) const {
+    std::string serialized;
+    if (actual.GetReflection()->GetUnknownFields(actual).SerializeToString(
+            &serialized) &&
+        serialized == expected_) {
+      return true;
+    }
+    *listener << "Unknown field mismatch";
+    return false;
+  }
+  void DescribeTo(std::ostream* os) const {
+    *os << "has exactly the unknown fields " << description_
+        << ", in that order";
+  }
+  void DescribeNegationTo(std::ostream* os) const {
+    *os << "doesn't have exactly the unknown fields " << description_
+        << " in that order";
+  }
+
+ private:
+  std::string description_;  // `expected`, formatted for descriptions
+  std::string expected_;     // `expected`'s serialization
 };
 
 }  // namespace
@@ -617,20 +827,36 @@ void PrintTo(const TestResult& result, std::ostream* absl_nonnull os) {
   }
 }
 
-testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
+testing::Matcher<const YieldedResult&> MakeWhenParsedMatcher(
     testing::Matcher<const Message&> m,
     const Descriptor* absl_nullable type_override) {
   return WhenParsedMatcher(std::move(m), type_override);
 }
 
+testing::Matcher<const YieldedResult&> MakeJsonPayloadMatcher(
+    testing::Matcher<const Json::Value&> m) {
+  return JsonPayloadMatcher(std::move(m));
+}
+
 testing::Matcher<const TestResult&> MakeYieldsMatcher(
-    testing::Matcher<const TestResult&> inner) {
+    testing::Matcher<const YieldedResult&> inner) {
   return testing::MakeMatcher(new YieldsMatcherImpl(std::move(inner)));
+}
+
+const testing::TestResult& CurrentGtestResult() {
+  const testing::UnitTest& unit_test = *testing::UnitTest::GetInstance();
+  if (const testing::TestInfo* test_info = unit_test.current_test_info()) {
+    return *test_info->result();
+  }
+  if (const testing::TestSuite* suite = unit_test.current_test_suite()) {
+    return suite->ad_hoc_test_result();
+  }
+  return unit_test.ad_hoc_test_result();
 }
 
 }  // namespace internal
 
-testing::Matcher<const internal::TestResult&> RawPayload(Wire bytes) {
+testing::Matcher<const internal::YieldedResult&> RawPayload(Wire bytes) {
   return RawPayloadMatcher(std::move(bytes).str());
 }
 
@@ -644,14 +870,19 @@ testing::Matcher<const Message&> EqualsBinaryProto(Wire bytes) {
                                   std::move(bytes).str());
 }
 
-testing::Matcher<const internal::TestResult&> IsParseError() {
+testing::Matcher<const Message&> HasUnknownFieldsInOrder(
+    const UnknownFieldSet& expected) {
+  return UnknownFieldsInOrderMatcher(expected);
+}
+
+testing::Matcher<const internal::YieldedResult&> IsParseError() {
   return FailureMatcher(
       "parse error", ConformanceResponse::kParseError,
       "Should have failed to parse, but didn't.",
       "Should have failed to parse, but raised an error instead.");
 }
 
-testing::Matcher<const internal::TestResult&> IsSerializeError() {
+testing::Matcher<const internal::YieldedResult&> IsSerializeError() {
   return FailureMatcher(
       "serialize error", ConformanceResponse::kSerializeError,
       "Should have failed to serialize, but didn't.",

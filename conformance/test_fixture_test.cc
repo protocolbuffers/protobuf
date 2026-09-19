@@ -105,12 +105,11 @@ TEST_F(FixtureTest, InfersTestNameFromCurrentTest) {
       Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
 }
 
-// A ConformanceTest whose SetUp() and TearDown() leave the global environment
-// alone, so that Testee() can be called without one.
+// A ConformanceTest whose SetUp() leaves the global environment alone, so
+// that Testee() can be called without one.
 class TesteeDeathTest : public ConformanceTest {
  protected:
   void SetUp() override {}
-  void TearDown() override {}
 };
 
 TEST_F(TesteeDeathTest, WithoutInstall) { EXPECT_DEATH(Testee(), "Install"); }
@@ -206,17 +205,6 @@ class Edition2023MessageTest : public FixtureTest {
 };
 
 TEST_F(Edition2023MessageTest, IsSkippedInSetUpUnderDefaultMaximumEdition) {
-  FAIL() << "SetUp() should have skipped this test.";
-}
-
-// TODO: Transitional.  Goes away with the in-binary
-// performance mode, see ConformanceEnvironmentOptions::performance.
-class PerformanceFixtureTest : public FixtureTest {
- protected:
-  bool IsPerformanceTest() const override { return true; }
-};
-
-TEST_F(PerformanceFixtureTest, IsSkippedWithoutPerformanceMode) {
   FAIL() << "SetUp() should have skipped this test.";
 }
 

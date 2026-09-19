@@ -1,7 +1,7 @@
-Recommended.*.ProtobufInput.GroupUnknownFields_Drop.TextFormatOutput                                               # TEXT_FORMAT output we received from test was unparseable.
-Recommended.*.ProtobufInput.MessageUnknownFields_Drop.TextFormatOutput                                             # TEXT_FORMAT output we received from test was unparseable.
-Recommended.*.ProtobufInput.RepeatedUnknownFields_Drop.TextFormatOutput                                            # TEXT_FORMAT output we received from test was unparseable.
-Recommended.*.ProtobufInput.ScalarUnknownFields_Drop.TextFormatOutput                                              # TEXT_FORMAT output we received from test was unparseable.
+Recommended.*.ProtobufInput.GroupUnknownFields_Drop.TextFormatOutput                                               # Output was not equivalent to reference message: added: optionalgroup: { a: 321 }
+Recommended.*.ProtobufInput.MessageUnknownFields_Drop.TextFormatOutput                                             # Output was not equivalent to reference message: added: nested_message: { c: 111 }
+Recommended.*.ProtobufInput.RepeatedUnknownFields_Drop.TextFormatOutput                                            # Output was not equivalent to reference message: added: optionalgroup: { a: 321 }added: repeated_int32[0]: 1added: repeated_int32
+Recommended.*.ProtobufInput.ScalarUnknownFields_Drop.TextFormatOutput                                              # Output was not equivalent to reference message: added: optional_int32: 123added: optional_string: "hello"added: optional_bool: t
 Required.*.TextFormatInput.AnyField.ProtobufOutput                                                                 # Failed to parse input or produce output.
 Required.*.TextFormatInput.AnyField.TextFormatOutput                                                               # Failed to parse input or produce output.
 Required.*.TextFormatInput.FloatFieldNoNegativeOctal                                                               # Should have failed to parse, but didn't.
