@@ -53,7 +53,7 @@ class FailureListTrieNode {
 
   // Returns what it matched to if it matched anything, otherwise returns
   // absl::nullopt
-  absl::optional<std::string> WalkDownMatch(absl::string_view test_name);
+  absl::optional<std::string> WalkDownMatch(absl::string_view test_name) const;
 
  private:
   std::string data_;
