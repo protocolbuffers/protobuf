@@ -8,9 +8,8 @@
 // The gtest fixture for conformance test suites.
 //
 // ConformanceTest is the fixture every conformance test should use.  It
-// handles edition gating, per-test statistics and, for now, performance-test
-// filtering.  A suite overrides DefaultPriority() (see TestPriority in
-// testee.h) to say how important its tests are.
+// handles edition gating.  A suite overrides DefaultPriority() (see
+// TestPriority in testee.h) to say how important its tests are.
 //
 // Its Testee() builds a test against the global testee, at the suite's
 // priority or at the one it is given.
@@ -52,7 +51,6 @@
 #include <gtest/gtest.h>
 #include "absl/base/nullability.h"
 #include "absl/strings/string_view.h"
-#include "conformance/test_environment.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
 
@@ -60,9 +58,8 @@ namespace google {
 namespace protobuf {
 namespace conformance {
 
-// The fixture for all conformance tests.  Tests that aren't performance tests
-// derive from this directly.  Performance tests derive from the transitional
-// PerformanceConformanceTest.  A suite overrides the defaults below as needed:
+// The fixture for all conformance tests.  A suite subclasses it and overrides
+// the defaults below as needed:
 //
 //   class FooTest : public ConformanceTest {
 //    private:
@@ -74,12 +71,19 @@ namespace conformance {
 //                 Yields(WhenParsed(EqualsBinaryProto(input))));
 //   }
 //
-// Subclasses that override SetUp(), TearDown() or TearDownTestSuite() must
-// call the base implementation, first thing in SetUp() and last thing in
-// TearDown() and TearDownTestSuite(), so that the statistics recorded there
-// cover the whole test.  The base SetUp() may skip the test.  gtest only skips
-// the test body on GTEST_SKIP(), so an overriding SetUp() must bail out itself
-// afterwards:
+// Naming rule: a fixture that belongs to the performance conformance suite
+// (conformance_suite(name = "performance") in the BUILD file) must be named
+// `*PerformanceTest`, and no fixture in any other suite may be.  The
+// performance suite's own test binaries need no such rule.
+// conformance_test_runner, however, links every suite into one binary and
+// selects the performance tests for its --performance flag by that suffix
+// (see PerformanceGtestFilter() in conformance_test.h).  Nothing checks the
+// rule mechanically.  A misnamed fixture silently runs with the wrong flag.
+// TODO: the rule goes away with conformance_test_runner.
+//
+// Subclasses that override SetUp() must call the base implementation first
+// thing.  It may skip the test.  gtest only skips the test body on
+// GTEST_SKIP(), so an overriding SetUp() must bail out itself afterwards:
 //
 //   void SetUp() override {
 //     ConformanceTest::SetUp();
@@ -96,24 +100,9 @@ class ConformanceTest : public testing::Test {
   // A single test can say otherwise with Testee(priority).
   virtual TestPriority DefaultPriority() const { return kP0; }
 
-  // Skips the test if it isn't the kind (performance or regular) selected by
-  // the environment or if MessageUnderTest() isn't supported under
-  // --maximum_edition, and snapshots statistics for TearDown().
+  // Skips the test if MessageUnderTest() isn't supported under
+  // --maximum_edition.
   void SetUp() override;
-
-  // Records this test's statistics as test properties and accumulates them for
-  // the suite.
-  void TearDown() override;
-
-  // Records the suite's accumulated statistics as suite properties.
-  static void TearDownTestSuite();
-
-  // Whether this is a performance test.  Performance tests only run when the
-  // environment was configured with `performance = true`, and regular tests
-  // only run when it wasn't.
-  // TODO: Transitional.  Goes away with the in-binary
-  // performance mode, see ConformanceEnvironmentOptions::performance.
-  virtual bool IsPerformanceTest() const { return false; }
 
   // The message type this test exercises, if the fixture knows it.  When
   // non-null, SetUp() skips the test unless the message is supported under
@@ -144,17 +133,6 @@ class ConformanceTest : public testing::Test {
   internal::Test Testee(absl::string_view name);
   internal::Test Testee(TestPriority priority);
   internal::Test Testee(TestPriority priority, absl::string_view name);
-
- private:
-  internal::Statistics initial_statistics_;
-};
-
-// The fixture for performance conformance tests.
-// TODO: Transitional.  Goes away with the in-binary
-// performance mode, see ConformanceEnvironmentOptions::performance.
-class PerformanceConformanceTest : public ConformanceTest {
- protected:
-  bool IsPerformanceTest() const override { return true; }
 };
 
 }  // namespace conformance
