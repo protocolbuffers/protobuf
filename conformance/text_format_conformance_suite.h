@@ -23,10 +23,10 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
  private:
   void RunSuiteImpl() override;
 
-  bool ParseTextFormatResponse(const conformance::ConformanceResponse& response,
-                               const ConformanceRequestSetting& setting,
-                               Message* test_message);
-  bool ParseResponse(const conformance::ConformanceResponse& response,
+  bool ParseTextFormatResponse(
+      const ::conformance::ConformanceResponse& response,
+      const ConformanceRequestSetting& setting, Message* test_message);
+  bool ParseResponse(const ::conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
 

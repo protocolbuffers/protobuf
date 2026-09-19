@@ -6,17 +6,20 @@
 #include <fstream>
 #include <ios>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
-#include "google/protobuf/stubs/status_macros.h"
+#include "absl/types/optional.h"
 
 namespace google {
 namespace protobuf {
@@ -24,6 +27,10 @@ namespace conformance {
 namespace internal {
 namespace {
 
+// How many failures one wildcard entry may cover.  As in the legacy runner the
+// check precedes the count of the current match, so the limit is reached one
+// failure later than the number says: the (kMaximumWildcardExpansions + 2)th
+// is the first one reported.
 constexpr int kMaximumWildcardExpansions = 20;
 constexpr int kFailureMessageLengthLimit = 128;
 
@@ -115,17 +122,42 @@ absl::Status TestManager::LoadFailureList(absl::string_view filename) {
         // failure message and the test will still pass.
         message = std::string(absl::StripAsciiWhitespace(message));
       }
-      RETURN_IF_ERROR(expected_failure_list_.Insert(test_name));
-      ABSL_CHECK(expected_failure_messages_.emplace(test_name, message).second);
-      ABSL_CHECK(unseen_expected_failures_.emplace(test_name).second);
+      if (absl::Status status = AddExpectedFailure(test_name, message);
+          !status.ok()) {
+        return status;
+      }
     }
   }
 
   return absl::OkStatus();
 }
 
+absl::Status TestManager::AddExpectedFailure(
+    absl::string_view test_name, absl::string_view failure_message) {
+  if (absl::Status status = expected_failure_list_.Insert(test_name);
+      !status.ok()) {
+    return status;
+  }
+  // Normalize the message the same way reported failures are normalized so
+  // that the two compare equal in ReportFailure.
+  ABSL_CHECK(expected_failure_messages_
+                 .emplace(test_name, FormatFailureMessage(failure_message))
+                 .second);
+  ABSL_CHECK(unseen_expected_failures_.emplace(test_name).second);
+  ABSL_CHECK(unmatched_expected_failures_.emplace(test_name).second);
+  return absl::OkStatus();
+}
+
+bool TestManager::IsExpectedToFail(absl::string_view test_name) const {
+  return expected_failure_list_.WalkDownMatch(test_name).has_value();
+}
+
 absl::Status TestManager::SaveFailureList(absl::string_view filename) const {
   std::ofstream outfile(std::string{filename}, std::ios::binary);
+  if (!outfile.is_open()) {
+    return absl::InternalError(absl::StrCat(
+        "Couldn't open failure list file for writing: ", filename));
+  }
 
   // Calculate alignment.
   size_t alignment = 0;
@@ -165,21 +197,31 @@ absl::Status TestManager::SaveFailureList(absl::string_view filename) const {
     ++to_add;
   }
 
+  outfile.close();
+  if (!outfile.good()) {
+    return absl::InternalError(
+        absl::StrCat("Failed to write failure list file: ", filename));
+  }
   return absl::OkStatus();
 }
 
 absl::Status TestManager::ReportSuccess(absl::string_view test_name) {
   bool unique = InsertUniqueTest(seen_tests_, test_name);
-  auto failure_match = expected_failure_list_.WalkDownMatch(test_name);
+  absl::optional<std::string> failure_match = MarkMatched(test_name);
 
   if (failure_match.has_value()) {
     // This was expected to fail, but it succeeded.
     IncrementIfUnique(unique, number_of_matches_[*failure_match]);
     IncrementIfUnique(unique, unexpected_successes_);
+    if (unique) {
+      unexpected_success_matches_[test_name] = *failure_match;
+    }
     unseen_expected_failures_.erase(*failure_match);
     seen_unexpected_successes_.insert(*failure_match);
-    return absl::FailedPreconditionError(
-        absl::StrCat("Unexpected success for test: ", test_name));
+    return absl::FailedPreconditionError(absl::StrCat(
+        "test ", test_name, " (matched to ", *failure_match,
+        ") is in the failure list, but test succeeded.  Remove its match from "
+        "the failure list."));
   }
 
   // This wasn't expected to fail.
@@ -190,31 +232,47 @@ absl::Status TestManager::ReportSuccess(absl::string_view test_name) {
 absl::Status TestManager::ReportFailure(absl::string_view test_name,
                                         absl::string_view failure_message) {
   bool unique = InsertUniqueTest(seen_tests_, test_name);
-  auto failure_match = expected_failure_list_.WalkDownMatch(test_name);
+  absl::optional<std::string> failure_match = MarkMatched(test_name);
 
   std::string formatted_failure_message = FormatFailureMessage(failure_message);
+  // Counts the failure as unexpected and records it for UnexpectedFailures().
+  auto record_unexpected_failure = [&] {
+    IncrementIfUnique(unique, unexpected_failures_);
+    if (unique) {
+      unexpected_failure_messages_[test_name] = formatted_failure_message;
+    }
+  };
 
   if (!failure_match.has_value()) {
     // This was not expected to fail.
-    IncrementIfUnique(unique, unexpected_failures_);
+    record_unexpected_failure();
     new_failures_[test_name] = formatted_failure_message;
     return absl::FailedPreconditionError(
         absl::StrCat("Unexpected failure for test: ", test_name));
   }
 
-  if (expected_failure_messages_[*failure_match] != formatted_failure_message) {
-    IncrementIfUnique(unique, unexpected_failures_);
+  // Mirror the legacy runner, which only requires the actual failure message to
+  // start with the expected one.
+  const std::string& expected_failure_message =
+      expected_failure_messages_.at(*failure_match);
+  if (!absl::StartsWith(formatted_failure_message, expected_failure_message)) {
+    record_unexpected_failure();
+    // TODO: b/563659620 - Keying the replacement by the (possibly wildcard)
+    // entry duplicates the line if another test later matches the entry with
+    // the expected message: with `foo.*.bar # abc` listed,
+    // ReportFailure("foo.a.bar", "xyz") + ReportFailure("foo.b.bar", "abc")
+    // makes SaveFailureList() keep the original line and add a second
+    // `foo.*.bar` line, which LoadFailureList() then rejects.
     new_failures_[*failure_match] = formatted_failure_message;
-    return absl::FailedPreconditionError(
-        absl::StrCat("Unexpected failure message for test: ", test_name,
-                     " expected: ", expected_failure_messages_[*failure_match],
-                     " actual: ", formatted_failure_message));
+    return absl::FailedPreconditionError(absl::StrCat(
+        "Unexpected failure message for test: ", test_name, " expected: ",
+        expected_failure_message, " actual: ", formatted_failure_message));
   }
 
   unseen_expected_failures_.erase(*failure_match);
 
   if (number_of_matches_[*failure_match] > kMaximumWildcardExpansions) {
-    IncrementIfUnique(unique, unexpected_failures_);
+    record_unexpected_failure();
     return absl::FailedPreconditionError(
         absl::StrCat("The wildcard ", *failure_match,
                      " served as matches to too many test "
@@ -228,18 +286,107 @@ absl::Status TestManager::ReportFailure(absl::string_view test_name,
   return absl::OkStatus();
 }
 
-absl::Status TestManager::ReportSkip(absl::string_view test_name) {
+void TestManager::ReportRecommendedFailure(absl::string_view test_name) {
+  ABSL_DCHECK(!IsExpectedToFail(test_name))
+      << "Recommended test " << test_name
+      << " is in the failure list and must be reported with ReportFailure()";
+  bool unique = InsertUniqueTest(seen_tests_, test_name);
+  IncrementIfUnique(unique, tolerated_recommended_failures_);
+}
+
+absl::Status TestManager::ReportSkip(absl::string_view test_name,
+                                     absl::string_view skip_reason) {
   bool unique = InsertUniqueTest(seen_tests_, test_name);
   IncrementIfUnique(unique, skipped_);
-  return absl::OkStatus();
+  absl::optional<std::string> failure_match = MarkMatched(test_name);
+  if (!failure_match.has_value()) {
+    return absl::OkStatus();
+  }
+
+  // A skip says nothing about whether the entry is still needed, so it is
+  // neither reported as unseen by Finalize() nor dropped by SaveFailureList().
+  // Nor does it count toward the entry's wildcard expansion cap
+  // (number_of_matches_), unlike in the legacy runner, which counted every
+  // test a wildcard matched: the cap is about real outcomes hidden by a
+  // wildcard, and a skip isn't one.
+  unseen_expected_failures_.erase(*failure_match);
+  IncrementIfUnique(unique, listed_skips_);
+  if (unique) {
+    listed_skip_matches_[test_name] = *failure_match;
+  }
+  return absl::FailedPreconditionError(absl::StrCat(
+      "test ", test_name, " (matched to ", *failure_match,
+      ") is in the failure list but was skipped by the testee: ", skip_reason,
+      ".  Remove its match from the failure list."));
+}
+
+void TestManager::ReportNotSelected(absl::string_view test_name) {
+  MarkMatched(test_name);
+}
+
+absl::optional<std::string> TestManager::MarkMatched(
+    absl::string_view test_name) {
+  absl::optional<std::string> failure_match =
+      expected_failure_list_.WalkDownMatch(test_name);
+  if (failure_match.has_value()) {
+    unmatched_expected_failures_.erase(*failure_match);
+  }
+  return failure_match;
+}
+
+std::vector<std::string> TestManager::UnseenExpectedFailures() const {
+  std::vector<std::string> unseen(unseen_expected_failures_.begin(),
+                                  unseen_expected_failures_.end());
+  absl::c_sort(unseen);
+  return unseen;
+}
+
+std::vector<std::string> TestManager::UnmatchedExpectedFailures() const {
+  std::vector<std::string> unmatched(unmatched_expected_failures_.begin(),
+                                     unmatched_expected_failures_.end());
+  absl::c_sort(unmatched);
+  return unmatched;
+}
+
+std::vector<UnexpectedResult> TestManager::UnexpectedFailures() const {
+  std::vector<UnexpectedResult> failures;
+  failures.reserve(unexpected_failure_messages_.size());
+  // The map is ordered by test name.
+  for (const auto& [test_name, failure_message] :
+       unexpected_failure_messages_) {
+    failures.push_back(
+        {/*test_name=*/test_name, /*failure_message=*/failure_message});
+  }
+  return failures;
+}
+
+std::vector<UnexpectedResult> TestManager::UnexpectedSuccesses() const {
+  std::vector<UnexpectedResult> successes;
+  successes.reserve(unexpected_success_matches_.size());
+  // The map is ordered by test name.
+  for (const auto& [test_name, matched_entry] : unexpected_success_matches_) {
+    successes.push_back(
+        {/*test_name=*/test_name,
+         /*failure_message=*/expected_failure_messages_.at(matched_entry),
+         /*matched_entry=*/matched_entry});
+  }
+  return successes;
+}
+
+std::vector<std::pair<std::string, std::string>> TestManager::ListedSkips()
+    const {
+  // The map is ordered by test name.
+  return std::vector<std::pair<std::string, std::string>>(
+      listed_skip_matches_.begin(), listed_skip_matches_.end());
 }
 
 absl::Status TestManager::Finalize() {
   finalized_ = true;
-  if (!unseen_expected_failures_.empty()) {
+  std::vector<std::string> unseen = UnseenExpectedFailures();
+  if (!unseen.empty()) {
     return absl::FailedPreconditionError(
         absl::StrCat("The following expected failures were not seen: ",
-                     absl::StrJoin(unseen_expected_failures_, ", ")));
+                     absl::StrJoin(unseen, ", ")));
   }
   return absl::OkStatus();
 }
