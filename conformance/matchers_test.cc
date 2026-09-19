@@ -12,6 +12,7 @@
 #include <iterator>
 #include <ostream>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 #include <gmock/gmock.h>
@@ -26,8 +27,10 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "json/value.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
+#include "conformance/failure_list.h"
 #include "conformance/global_test_environment.h"
 #include "conformance/mock_test_runner.h"
 #include "conformance/result_ledger.h"
@@ -35,7 +38,9 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/text_format.h"
+#include "google/protobuf/unknown_field_set.h"
 
 namespace google {
 namespace protobuf {
@@ -50,9 +55,26 @@ ResultLedger* global_ledger = nullptr;
 
 }  // namespace
 
-ResultLedger& GetGlobalResultLedger() {
+const FailureList& GetGlobalFailureList() {
   ABSL_CHECK(global_ledger != nullptr);
-  return *global_ledger;
+  return global_ledger->failure_list();
+}
+
+void ReportSuccess(absl::string_view test_name) {
+  ABSL_CHECK(global_ledger != nullptr);
+  global_ledger->ReportSuccess(test_name).IgnoreError();
+}
+
+void ReportFailure(absl::string_view test_name, TestPriority priority,
+                   absl::string_view failure_message) {
+  ABSL_CHECK(global_ledger != nullptr);
+  global_ledger->ReportFailure(test_name, priority, failure_message)
+      .IgnoreError();
+}
+
+void ReportSkip(absl::string_view test_name, absl::string_view skip_reason) {
+  ABSL_CHECK(global_ledger != nullptr);
+  global_ledger->ReportSkip(test_name, skip_reason).IgnoreError();
 }
 
 }  // namespace internal
@@ -65,6 +87,7 @@ using ::conformance::WireFormat;
 using ::google::protobuf::conformance::TestPriority;
 using ::google::protobuf::conformance::internal::ResultLedger;
 using ::google::protobuf::conformance::internal::TestResult;
+using ::google::protobuf::conformance::internal::YieldedResult;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using ::testing::_;
@@ -82,10 +105,10 @@ using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::PrintToString;
 using ::testing::Return;
-using ::testing::TestParamInfo;
+using ::testing::SizeIs;
+using ::testing::StartsWith;
 using ::testing::Truly;
 using ::testing::Value;
-using ::testing::Values;
 
 // Creates a result for the leaf matcher tests by running a kP0 test with the
 // given input format and requested output format (and, for text output,
@@ -93,9 +116,9 @@ using ::testing::Values;
 // `response`.  The matchers never look at the input payload itself, only at
 // its format, so the input is empty.
 //
-// The leaf matchers never touch the ResultLedger; the tests make sure of it by
-// not installing one at all while they run.  Only YieldsTest below installs
-// one.
+// The leaf matchers never touch the failure list; the tests make sure of it
+// by not installing one at all while they run.  Only YieldsTest below
+// installs one.
 TestResult CreateResult(absl::string_view test_name, WireFormat input_format,
                         WireFormat output_format,
                         ConformanceResponse response) {
@@ -149,14 +172,14 @@ ConformanceResponse ResponseFromText(absl::string_view textproto) {
   return response;
 }
 
-template <class M>
-std::string Describe(const M& m) {
-  return testing::DescribeMatcher<const TestResult&>(m, /*negation=*/false);
+template <class T>
+std::string Describe(const testing::Matcher<T>& m) {
+  return testing::DescribeMatcher<T>(m, /*negation=*/false);
 }
 
-template <class M>
-std::string DescribeNegation(const M& m) {
-  return testing::DescribeMatcher<const TestResult&>(m, /*negation=*/true);
+template <class T>
+std::string DescribeNegation(const testing::Matcher<T>& m) {
+  return testing::DescribeMatcher<T>(m, /*negation=*/true);
 }
 
 // Runs `m` on `arg` once.  The returned AssertionResult succeeds iff `m`
@@ -168,6 +191,13 @@ testing::AssertionResult Explain(const M& m, const T& arg) {
   const bool matched = testing::ExplainMatchResult(m, arg, &listener);
   return (matched ? testing::AssertionSuccess() : testing::AssertionFailure())
          << listener.str();
+}
+
+// The leaf matchers match a YieldedResult; this overload wraps `result` in
+// one, so that their tests can pass the TestResult.
+testing::AssertionResult Explain(
+    const testing::Matcher<const YieldedResult&>& m, const TestResult& result) {
+  return Explain(m, YieldedResult(result));
 }
 
 // Matches an Explain() result whose matcher accepted the value and whose
@@ -255,9 +285,9 @@ TEST(PrintTestResultTest, UnparseableProtobufPayload) {
           R"( with response {protobuf_payload: "\001"} (unparseable))"));
 }
 
-TEST(PrintTestResultTest, TruncatedProtobufPayloadIsDecodedInFull) {
-  // The raw bytes are cut after 200 bytes, but the message they decode to is
-  // printed whole.
+TEST(PrintTestResultTest, DecodedProtobufPayloadIsTruncatedToo) {
+  // The raw bytes and the text of the message they decode to are both cut
+  // after 200 bytes.
   TestAllTypesProto2 message;
   message.set_optional_string(std::string(300, 'a'));
   const std::string payload = message.SerializeAsString();
@@ -268,7 +298,8 @@ TEST(PrintTestResultTest, TruncatedProtobufPayloadIsDecodedInFull) {
       absl::StrCat(kPrintedRequiredTest, " with response {protobuf_payload: \"",
                    absl::CEscape(payload.substr(0, 200)),
                    "...(truncated)\"} (decoded: {optional_string: \"",
-                   std::string(300, 'a'), "\"})"));
+                   // 200 minus the 18 bytes of `optional_string: "`.
+                   std::string(182, 'a'), "...(truncated)})"));
 }
 
 TEST(PrintTestResultTest, LargePayloadsAreTruncated) {
@@ -280,6 +311,15 @@ TEST(PrintTestResultTest, LargePayloadsAreTruncated) {
       absl::StrCat(kPrintedRequiredTest, " with response {text_payload: \"",
                    std::string(200, 'a'), "...(truncated)\"}"));
 }
+
+// ---------------------------------------------------------------------------
+// YieldedResult
+// ---------------------------------------------------------------------------
+
+// What makes a forgotten Yields() a compile error: the leaf matchers match a
+// YieldedResult, and a TestResult does not convert to one.
+static_assert(!std::is_convertible_v<const TestResult&, YieldedResult>);
+static_assert(!std::is_constructible_v<YieldedResult, TestResult>);
 
 // ---------------------------------------------------------------------------
 // Descriptions
@@ -328,6 +368,36 @@ TEST(MatcherDescriptionTest, EqualsBinaryProto) {
             "doesn't equal binary proto \"\\010\\t\"");
 }
 
+TEST(MatcherDescriptionTest, HasUnknownFieldsInOrder) {
+  UnknownFieldSet expected;
+  expected.AddLengthDelimited(666, "abc");
+  expected.AddVarint(666, 123);
+  EXPECT_EQ(testing::DescribeMatcher<const Message&>(
+                HasUnknownFieldsInOrder(expected)),
+            "has exactly the unknown fields [666: \"abc\", 666: 123], in that "
+            "order");
+  EXPECT_EQ(testing::DescribeMatcher<const Message&>(
+                HasUnknownFieldsInOrder(expected), /*negation=*/true),
+            "doesn't have exactly the unknown fields [666: \"abc\", 666: 123] "
+            "in that order");
+}
+
+TEST(MatcherDescriptionTest, HasUnknownFieldsInOrderCoversEveryFieldKind) {
+  UnknownFieldSet expected;
+  expected.AddVarint(1, 2);
+  expected.AddFixed32(3, 4);
+  expected.AddFixed64(5, 6);
+  expected.AddLengthDelimited(7, "\001\n");
+  expected.AddGroup(8)->AddVarint(9, 10);
+  EXPECT_EQ(testing::DescribeMatcher<const Message&>(
+                HasUnknownFieldsInOrder(expected)),
+            "has exactly the unknown fields [1: 2, 3: fixed32(4), 5: "
+            "fixed64(6), 7: \"\\001\\n\", 8: [9: 10]], in that order");
+  EXPECT_EQ(testing::DescribeMatcher<const Message&>(
+                HasUnknownFieldsInOrder(UnknownFieldSet())),
+            "has exactly the unknown fields [], in that order");
+}
+
 TEST(MatcherDescriptionTest, FailureMatchers) {
   EXPECT_EQ(Describe(IsParseError()), "is a parse error");
   EXPECT_EQ(DescribeNegation(IsParseError()), "is not a parse error");
@@ -364,39 +434,29 @@ TEST(PayloadMatcherTest, EmptyResponse) {
               Rejects("Response didn't have any field in the Response."));
 }
 
-struct ErrorResponseCase {
-  absl::string_view name;
-  absl::string_view response;
+class PayloadMatcherErrorResponseTest : public testing::Test {
+ protected:
+  const absl::string_view response_ = PB_TEST_CHOOSE_VALUE(
+      (R"pb(parse_error: "foo")pb", R"pb(serialize_error: "foo")pb",
+       R"pb(runtime_error: "foo")pb", R"pb(timeout_error: "foo")pb"),
+      {"ParseError", "SerializeError", "RuntimeError", "TimeoutError"});
 };
 
-class PayloadMatcherErrorResponseTest
-    : public testing::TestWithParam<ErrorResponseCase> {};
-
-TEST_P(PayloadMatcherErrorResponseTest, IsAFailureForWhenParsed) {
-  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
-                                   ResponseFromText(GetParam().response));
+PB_TEST_F(PayloadMatcherErrorResponseTest, IsAFailureForWhenParsed) {
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF, ResponseFromText(response_));
 
   EXPECT_THAT(Explain(WhenParsed(_), result),
               Rejects("Failed to parse input or produce output."));
 }
 
-TEST_P(PayloadMatcherErrorResponseTest, IsAFailureForPayload) {
-  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
-                                   ResponseFromText(GetParam().response));
+PB_TEST_F(PayloadMatcherErrorResponseTest, IsAFailureForPayload) {
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF, ResponseFromText(response_));
 
   EXPECT_THAT(Explain(RawPayload(Wire()), result),
               Rejects("Failed to parse input or produce output."));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    ErrorResponses, PayloadMatcherErrorResponseTest,
-    Values(ErrorResponseCase{"ParseError", R"pb(parse_error: "foo")pb"},
-           ErrorResponseCase{"SerializeError", R"pb(serialize_error: "foo")pb"},
-           ErrorResponseCase{"RuntimeError", R"pb(runtime_error: "foo")pb"},
-           ErrorResponseCase{"TimeoutError", R"pb(timeout_error: "foo")pb"}),
-    [](const TestParamInfo<ErrorResponseCase>& info) {
-      return std::string(info.param.name);
-    });
 
 TEST(PayloadMatcherTest, Skipped) {
   TestResult result =
@@ -484,16 +544,47 @@ TEST(WhenParsedTest, UnparseablePayloadFailsEvenForAnything) {
       Rejects("Protobuf output we received from test was unparseable."));
 }
 
-TEST(WhenParsedTest, JsonOutputIsNotSupported) {
-  TestResult result =
-      CreateResult("foo", ::conformance::JSON,
-                   ResponseFromText(R"pb(json_payload: "{}")pb"));
+TEST(WhenParsedTest, JsonOutput) {
+  TestResult result = CreateResult(
+      "foo", ::conformance::JSON,
+      ResponseFromText(R"pb(json_payload: "{\"optionalInt32\": 9}")pb"));
 
   EXPECT_THAT(
-      Explain(WhenParsed(_), result),
-      Rejects("WhenParsed is not supported for JSON output; use "
-              "RawPayload() to match the raw JSON text until JSON matching is "
-              "migrated to gtest (b/410122158)."));
+      Explain(WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb")), result),
+      Accepts(IsEmpty()));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsBinaryProto(VarintField(1, 9)))));
+  EXPECT_THAT(
+      Explain(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")), result),
+      Rejects("Output was not equivalent to reference message: "
+              "modified: optional_int32: 1 -> 9\n"));
+}
+
+TEST(WhenParsedTest, UnparseableJsonPayload) {
+  TestResult result = CreateResult(
+      "foo", ::conformance::JSON,
+      ResponseFromText(R"pb(json_payload: "{\"nonsense\": 1}")pb"));
+
+  EXPECT_THAT(Explain(WhenParsed(_), result),
+              Rejects("JSON output we received from test was unparseable."));
+  EXPECT_THAT(
+      Explain(WhenParsed(_),
+              CreateResult("bar", ::conformance::JSON,
+                           ResponseFromText(R"pb(json_payload: "{")pb"))),
+      Rejects("JSON output we received from test was unparseable."));
+}
+
+TEST(WhenParsedTest, JsonOutputIsDecodedWithLegacyLeniency) {
+  // The legacy runner decoded JSON output with the default ParseOptions,
+  // which tolerate some non-conformant output; so does WhenParsed() until
+  // b/563658359 tightens it.  Single-quoted strings are one such case; this
+  // test documents the current behaviour rather than endorsing it.
+  TestResult result = CreateResult(
+      "foo", ::conformance::JSON,
+      ResponseFromText(R"pb(json_payload: "{'optionalInt32': 9}")pb"));
+
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
 }
 
 TEST(WhenParsedTest, TextOutput) {
@@ -501,8 +592,8 @@ TEST(WhenParsedTest, TextOutput) {
       "foo", ::conformance::TEXT_FORMAT,
       ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
 
-  EXPECT_TRUE(
-      Value(result, WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
 }
 
 TEST(WhenParsedTest, TextOutputFieldNumbersAccepted) {
@@ -512,8 +603,8 @@ TEST(WhenParsedTest, TextOutputFieldNumbersAccepted) {
       CreateResult("foo", ::conformance::TEXT_FORMAT,
                    ResponseFromText(R"pb(text_payload: "1: 9")pb"));
 
-  EXPECT_TRUE(
-      Value(result, WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
 }
 
 TEST(WhenParsedTest, EqualsTextProtoMismatch) {
@@ -534,7 +625,7 @@ TEST(WhenParsedTest, EqualsTextProtoMatchesNan) {
       CreateResult("foo", ::conformance::PROTOBUF,
                    ProtobufPayload(Wire(message.SerializeAsString())));
 
-  EXPECT_TRUE(Value(result, WhenParsed(EqualsTextProto(R"pb(
+  EXPECT_TRUE(Value(YieldedResult(result), WhenParsed(EqualsTextProto(R"pb(
                       optional_float: nan
                       optional_double: nan
                     )pb"))));
@@ -554,8 +645,8 @@ TEST(WhenParsedTest, EqualsBinaryProto) {
                                    ProtobufPayload(VarintField(1, 2)));
 
   // Equivalent, but not byte-identical (over-long varint encoding).
-  EXPECT_TRUE(
-      Value(result, WhenParsed(EqualsBinaryProto(LongVarintField(1, 2, 1)))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsBinaryProto(LongVarintField(1, 2, 1)))));
 }
 
 TEST(WhenParsedTest, EqualsBinaryProtoWithTextOutput) {
@@ -563,7 +654,8 @@ TEST(WhenParsedTest, EqualsBinaryProtoWithTextOutput) {
       "foo", ::conformance::TEXT_FORMAT,
       ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
 
-  EXPECT_TRUE(Value(result, WhenParsed(EqualsBinaryProto(VarintField(1, 9)))));
+  EXPECT_TRUE(Value(YieldedResult(result),
+                    WhenParsed(EqualsBinaryProto(VarintField(1, 9)))));
 }
 
 TEST(WhenParsedTest, EqualsBinaryProtoMismatch) {
@@ -588,9 +680,9 @@ TEST(WhenParsedTest, AcceptsAnyMessageMatcher) {
   TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
                                    ProtobufPayload(VarintField(1, 2)));
 
-  EXPECT_TRUE(Value(result, WhenParsed(_)));
+  EXPECT_TRUE(Value(YieldedResult(result), WhenParsed(_)));
   EXPECT_TRUE(Value(
-      result,
+      YieldedResult(result),
       WhenParsed(AllOf(EqualsTextProto(R"pb(optional_int32: 2)pb"),
                        Not(EqualsTextProto(R"pb(optional_int32: 3)pb"))))));
 }
@@ -612,11 +704,12 @@ TEST(WhenParsedTest, ComposesWithGMock) {
   TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
                                    ProtobufPayload(VarintField(1, 2)));
 
-  EXPECT_TRUE(Value(result, Not(WhenParsed(EqualsTextProto("")))));
+  YieldedResult yielded(result);
+  EXPECT_TRUE(Value(yielded, Not(WhenParsed(EqualsTextProto("")))));
   EXPECT_TRUE(Value(
-      result, AnyOf(IsParseError(),
-                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")))));
-  EXPECT_TRUE(Value(result, AllOf(Not(IsParseError()), WhenParsed(_))));
+      yielded, AnyOf(IsParseError(),
+                     WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")))));
+  EXPECT_TRUE(Value(yielded, AllOf(Not(IsParseError()), WhenParsed(_))));
 }
 
 // ---------------------------------------------------------------------------
@@ -719,7 +812,7 @@ TEST(RawPayloadTest, MatchesBytes) {
   TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
                                    ProtobufPayload(VarintField(1, 2)));
 
-  EXPECT_TRUE(Value(result, RawPayload(VarintField(1, 2))));
+  EXPECT_TRUE(Value(YieldedResult(result), RawPayload(VarintField(1, 2))));
   EXPECT_THAT(Explain(RawPayload(VarintField(1, 2)), result),
               Accepts(IsEmpty()));
 }
@@ -751,12 +844,13 @@ TEST(RawPayloadTest, TextOutput) {
       "foo", ::conformance::TEXT_FORMAT,
       ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
 
-  EXPECT_TRUE(Value(result, RawPayload(Wire("optional_int32: 9"))));
+  EXPECT_TRUE(
+      Value(YieldedResult(result), RawPayload(Wire("optional_int32: 9"))));
   // Text output isn't required to be parseable.
-  EXPECT_TRUE(Value(
+  TestResult nonsense =
       CreateResult("bar", ::conformance::TEXT_FORMAT,
-                   ResponseFromText(R"pb(text_payload: "nonsense: 1")pb")),
-      RawPayload(Wire("nonsense: 1"))));
+                   ResponseFromText(R"pb(text_payload: "nonsense: 1")pb"));
+  EXPECT_TRUE(Value(YieldedResult(nonsense), RawPayload(Wire("nonsense: 1"))));
 }
 
 TEST(RawPayloadTest, JsonOutput) {
@@ -765,7 +859,7 @@ TEST(RawPayloadTest, JsonOutput) {
       CreateResult("foo", ::conformance::JSON,
                    ResponseFromText(R"pb(json_payload: "{}")pb"));
 
-  EXPECT_TRUE(Value(result, RawPayload(Wire("{}"))));
+  EXPECT_TRUE(Value(YieldedResult(result), RawPayload(Wire("{}"))));
 }
 
 // ---------------------------------------------------------------------------
@@ -832,6 +926,172 @@ TEST(EqualsBinaryProtoDeathTest, ParseFailure) {
 }
 
 // ---------------------------------------------------------------------------
+// HasUnknownFieldsInOrder()
+// ---------------------------------------------------------------------------
+
+// Field 666 is defined by none of the test messages, so it always stays
+// unknown.
+
+TEST(HasUnknownFieldsInOrderTest, SameFieldsInSameOrder) {
+  UnknownFieldSet expected;
+  expected.AddLengthDelimited(666, "abc");
+  expected.AddVarint(666, 123);
+  TestAllTypesProto2 message;
+  message.mutable_unknown_fields()->AddLengthDelimited(666, "abc");
+  message.mutable_unknown_fields()->AddVarint(666, 123);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), message),
+              Accepts(IsEmpty()));
+}
+
+TEST(HasUnknownFieldsInOrderTest, DifferentOrder) {
+  UnknownFieldSet expected;
+  expected.AddLengthDelimited(666, "abc");
+  expected.AddVarint(666, 123);
+  TestAllTypesProto2 message;
+  message.mutable_unknown_fields()->AddVarint(666, 123);
+  message.mutable_unknown_fields()->AddLengthDelimited(666, "abc");
+
+  auto matcher = HasUnknownFieldsInOrder(expected);
+  EXPECT_THAT(Explain(matcher, message), Rejects("Unknown field mismatch"));
+  EXPECT_THAT(message, Not(matcher));
+}
+
+TEST(HasUnknownFieldsInOrderTest, MissingField) {
+  UnknownFieldSet expected;
+  expected.AddLengthDelimited(666, "abc");
+  expected.AddVarint(666, 123);
+  TestAllTypesProto2 message;
+  message.mutable_unknown_fields()->AddLengthDelimited(666, "abc");
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), message),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(HasUnknownFieldsInOrderTest, ExtraField) {
+  UnknownFieldSet expected;
+  expected.AddLengthDelimited(666, "abc");
+  TestAllTypesProto2 message;
+  message.mutable_unknown_fields()->AddLengthDelimited(666, "abc");
+  message.mutable_unknown_fields()->AddVarint(666, 123);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), message),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(HasUnknownFieldsInOrderTest, DifferentValue) {
+  UnknownFieldSet expected;
+  expected.AddVarint(666, 123);
+  TestAllTypesProto2 message;
+  message.mutable_unknown_fields()->AddVarint(666, 124);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), message),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(HasUnknownFieldsInOrderTest, DifferentFieldNumber) {
+  UnknownFieldSet expected;
+  expected.AddVarint(666, 123);
+  TestAllTypesProto2 message;
+  message.mutable_unknown_fields()->AddVarint(667, 123);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), message),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(HasUnknownFieldsInOrderTest, DifferentWireType) {
+  UnknownFieldSet expected;
+  expected.AddVarint(666, 1);
+  TestAllTypesProto2 message;
+  message.mutable_unknown_fields()->AddFixed32(666, 1);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), message),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(HasUnknownFieldsInOrderTest, GroupsAreComparedByContent) {
+  UnknownFieldSet expected;
+  expected.AddGroup(666)->AddVarint(1, 2);
+  TestAllTypesProto2 same;
+  same.mutable_unknown_fields()->AddGroup(666)->AddVarint(1, 2);
+  TestAllTypesProto2 different;
+  different.mutable_unknown_fields()->AddGroup(666)->AddVarint(1, 3);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), same),
+              Accepts(IsEmpty()));
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), different),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(HasUnknownFieldsInOrderTest, EmptyExpectedMatchesOnlyNoUnknownFields) {
+  TestAllTypesProto2 without;
+  TestAllTypesProto2 with;
+  with.mutable_unknown_fields()->AddVarint(666, 1);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(UnknownFieldSet()), without),
+              Accepts(IsEmpty()));
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(UnknownFieldSet()), with),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(HasUnknownFieldsInOrderTest, IgnoresKnownFields) {
+  UnknownFieldSet expected;
+  expected.AddVarint(666, 123);
+  TestAllTypesProto2 message;
+  message.set_optional_int32(9);
+  message.set_optional_string("known");
+  message.mutable_unknown_fields()->AddVarint(666, 123);
+
+  EXPECT_THAT(Explain(HasUnknownFieldsInOrder(expected), message),
+              Accepts(IsEmpty()));
+}
+
+// The end-to-end case: the mismatch text is what ends up in failure lists.
+TEST(WhenParsedTest, HasUnknownFieldsInOrderKeepsTheLegacyMessage) {
+  UnknownFieldSet expected;
+  expected.AddLengthDelimited(666, "abc");
+  expected.AddVarint(666, 123);
+  TestResult in_order =
+      CreateResult("foo", ::conformance::PROTOBUF,
+                   ProtobufPayload(Wire(LengthPrefixedField(666, "abc"),
+                                        VarintField(666, 123))));
+  TestResult reordered =
+      CreateResult("foo", ::conformance::PROTOBUF,
+                   ProtobufPayload(Wire(VarintField(666, 123),
+                                        LengthPrefixedField(666, "abc"))));
+
+  EXPECT_THAT(Explain(WhenParsed(HasUnknownFieldsInOrder(expected)), in_order),
+              Accepts(IsEmpty()));
+  EXPECT_THAT(Explain(WhenParsed(HasUnknownFieldsInOrder(expected)), reordered),
+              Rejects("Unknown field mismatch"));
+}
+
+TEST(WhenParsedAsTest, HasUnknownFieldsInOrderSeesTheGivenTypesUnknowns) {
+  // Field 1001 is unknown to the test's type (TestAllTypesProto2) but is
+  // optional_int32 of the shadow type UnknownToTestAllTypes; 666 is unknown
+  // to both.
+  TestResult result = CreateResult(
+      "foo", ::conformance::PROTOBUF,
+      ProtobufPayload(Wire(VarintField(1001, 7), VarintField(666, 1))));
+  UnknownFieldSet both;
+  both.AddVarint(1001, 7);
+  both.AddVarint(666, 1);
+  UnknownFieldSet only_666;
+  only_666.AddVarint(666, 1);
+
+  EXPECT_THAT(Explain(WhenParsed(HasUnknownFieldsInOrder(both)), result),
+              Accepts(IsEmpty()));
+  EXPECT_THAT(Explain(WhenParsedAs<UnknownToTestAllTypes>(
+                          HasUnknownFieldsInOrder(only_666)),
+                      result),
+              Accepts(IsEmpty()));
+  EXPECT_THAT(Explain(WhenParsedAs<UnknownToTestAllTypes>(
+                          HasUnknownFieldsInOrder(both)),
+                      result),
+              Rejects("Unknown field mismatch"));
+}
+
+// ---------------------------------------------------------------------------
 // Failure matchers
 // ---------------------------------------------------------------------------
 
@@ -841,7 +1101,7 @@ TEST(FailureMatcherTest, ParseErrorMatches) {
                    ResponseFromText(R"pb(parse_error: "failed to parse")pb"));
 
   EXPECT_THAT(Explain(IsParseError(), result), Accepts(IsEmpty()));
-  EXPECT_FALSE(Value(result, IsSerializeError()));
+  EXPECT_FALSE(Value(YieldedResult(result), IsSerializeError()));
 }
 
 TEST(FailureMatcherTest, ParseErrorWithPayload) {
@@ -895,7 +1155,7 @@ TEST(FailureMatcherTest, SerializeErrorMatches) {
                    ResponseFromText(R"pb(serialize_error: "failed")pb"));
 
   EXPECT_THAT(Explain(IsSerializeError(), result), Accepts(IsEmpty()));
-  EXPECT_FALSE(Value(result, IsParseError()));
+  EXPECT_FALSE(Value(YieldedResult(result), IsParseError()));
 }
 
 TEST(FailureMatcherTest, SerializeErrorWithPayload) {
@@ -921,9 +1181,11 @@ TEST(FailureMatcherTest, ComposesWithGMock) {
       CreateResult("foo", ::conformance::PROTOBUF,
                    ResponseFromText(R"pb(parse_error: "failed to parse")pb"));
 
-  EXPECT_TRUE(Value(result, Not(IsSerializeError())));
-  EXPECT_TRUE(Value(result, AnyOf(IsSerializeError(), IsParseError())));
-  EXPECT_FALSE(Value(result, AllOf(IsSerializeError(), IsParseError())));
+  EXPECT_TRUE(Value(YieldedResult(result), Not(IsSerializeError())));
+  EXPECT_TRUE(
+      Value(YieldedResult(result), AnyOf(IsSerializeError(), IsParseError())));
+  EXPECT_FALSE(
+      Value(YieldedResult(result), AllOf(IsSerializeError(), IsParseError())));
 }
 
 // ---------------------------------------------------------------------------
@@ -1074,6 +1336,18 @@ TEST_F(YieldsTest, UnlistedSuccessPasses) {
   EXPECT_THAT(ledger_.Finalize(), IsOk());
 }
 
+TEST_F(YieldsTest, InnerMatcherSeesTheResultAsAYieldedResult) {
+  const TestResult* seen = nullptr;
+  auto matcher = Yields(Truly([&](const YieldedResult& yielded) {
+    seen = &yielded.result();
+    return true;
+  }));
+  TestResult result = Run(kPayload2);
+
+  EXPECT_THAT(Explain(matcher, result), Accepts(IsEmpty()));
+  EXPECT_EQ(seen, &result);
+}
+
 TEST_F(YieldsTest, UnlistedFailureFails) {
   auto matcher =
       Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")));
@@ -1106,26 +1380,6 @@ TEST_F(YieldsTest, UnlistedFailureIsCountedOnceDespiteGtestRetrying) {
                                         /*unexpected_failures=*/1}));
   EXPECT_THAT(ledger_.UnexpectedFailures(),
               ElementsAre(FieldsAre(kP0Foo, kNotAParseError, absl::nullopt)));
-}
-
-TEST_F(YieldsTest, StaleVerdictIsNeverReplayedForAnotherResult) {
-  // A long-lived matcher that checked a result which has since been destroyed
-  // must not replay that verdict for a different result, even one that reuses
-  // the same address: the replay is keyed to the result's name as well.
-  auto first_matcher = Yields(IsParseError());
-  {
-    TestResult first = Run(kPayload2, TestPriority::kP0, "first");
-    EXPECT_NONFATAL_FAILURE(EXPECT_THAT(first, first_matcher),
-                            "Should have failed to parse, but didn't.");
-  }
-  TestResult second = Run(kParseError, TestPriority::kP0, "second");
-  EXPECT_THAT(second, Yields(IsParseError()));
-
-  EXPECT_THAT(Explain(first_matcher, second),
-              Rejects(HasSubstr("was already checked")));
-  EXPECT_EQ(GetCounts(ledger_),
-            (Counts{/*expected_successes=*/1, /*expected_failures=*/0,
-                    /*unexpected_successes=*/0, /*unexpected_failures=*/1}));
 }
 
 TEST_F(YieldsTest, PayloadBytesMismatchRecordsTheLegacyOctalMessage) {
@@ -1363,7 +1617,7 @@ TEST_F(YieldsTest, UnlistedSkipPasses) {
 
   // The inner matcher never gets to see a skipped result.
   bool inner_called = false;
-  auto matcher = Yields(Truly([&](const TestResult&) {
+  auto matcher = Yields(Truly([&](const YieldedResult&) {
     inner_called = true;
     return false;
   }));
@@ -1419,6 +1673,10 @@ TEST_F(YieldsTest, RuntimeErrorKeepsTheInnerMatchersFailureMessage) {
   EXPECT_NONFATAL_FAILURE(
       EXPECT_THAT(Run(kRuntimeError), Yields(IsParseError())),
       "Should have failed to parse, but raised an error instead.");
+  EXPECT_EQ(GetCounts(ledger_), (Counts{/*expected_successes=*/0,
+                                        /*expected_failures=*/0,
+                                        /*unexpected_successes=*/0,
+                                        /*unexpected_failures=*/1}));
   EXPECT_THAT(
       ledger_.UnexpectedFailures(),
       ElementsAre(FieldsAre(
@@ -1483,28 +1741,26 @@ TEST_F(YieldsTest, NotComposes) {
                     /*unexpected_successes=*/0, /*unexpected_failures=*/1}));
 }
 
-TEST_F(YieldsTest, CheckingAPassedResultAgainFails) {
+TEST_F(YieldsTest, CheckingAPassedResultAgainIsJudgedButNotCounted) {
   // Whatever the second matcher is, including the very same object.
   auto matcher = Yields(IsParseError());
   TestResult result = Run(kParseError);
   EXPECT_THAT(result, matcher);
 
-  EXPECT_NONFATAL_FAILURE(
-      EXPECT_THAT(result, matcher),
-      "TestResult for Required.Proto2.ProtobufInput.foo.ProtobufOutput was "
-      "already checked; each result may be checked exactly once");
-  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, Yields(IsParseError())),
-                          "was already checked");
+  EXPECT_THAT(result, matcher);
+  EXPECT_THAT(result, Yields(IsParseError()));
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, Yields(Not(IsParseError()))),
-                          "was already checked");
+                          "which doesn't match (is not a parse error)");
+  // The first check is the one that counts.
   EXPECT_EQ(GetCounts(ledger_), (Counts{/*expected_successes=*/1}));
+  EXPECT_THAT(ledger_.UnexpectedFailures(), IsEmpty());
 }
 
-TEST_F(YieldsTest, CheckingAFailedResultAgainReplaysTheFailure) {
+TEST_F(YieldsTest, CheckingAFailedResultAgainRepeatsTheFailure) {
   // gtest re-evaluates a failing matcher, through the same matcher object, to
-  // explain the failure.  The matcher replays its own failed verdict, so the
-  // ledger hears about the test only once.  Any other matcher finds the
-  // result already checked.
+  // explain the failure.  That evaluation reaches the same verdict, and the
+  // ledger hears about the test once.  So does any other matcher: a second
+  // check is judged on its own but never counted.
   auto matcher = Yields(IsParseError());
   TestResult result = Run(kPayload2);
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher),
@@ -1514,9 +1770,9 @@ TEST_F(YieldsTest, CheckingAFailedResultAgainReplaysTheFailure) {
               Rejects(absl::StrCat(kNotAParseError,
                                    "\nUnexpected failure for test: ", kP0Foo)));
   EXPECT_THAT(Explain(Yields(IsParseError()), result),
-              Rejects(HasSubstr("was already checked")));
-  EXPECT_THAT(Explain(Yields(WhenParsed(_)), result),
-              Rejects(HasSubstr("was already checked")));
+              Rejects(absl::StrCat(kNotAParseError,
+                                   "\nUnexpected failure for test: ", kP0Foo)));
+  EXPECT_THAT(Explain(Yields(WhenParsed(_)), result), Accepts(IsEmpty()));
   EXPECT_EQ(GetCounts(ledger_), (Counts{/*expected_successes=*/0,
                                         /*expected_failures=*/0,
                                         /*unexpected_successes=*/0,
@@ -1525,16 +1781,18 @@ TEST_F(YieldsTest, CheckingAFailedResultAgainReplaysTheFailure) {
               ElementsAre(FieldsAre(kP0Foo, kNotAParseError, absl::nullopt)));
 }
 
-TEST_F(YieldsTest, ACopyOfACheckedResultIsAlreadyChecked) {
+TEST_F(YieldsTest, ACopyOfACheckedResultIsNotCountedAgain) {
   TestResult original = Run(kPayload2);
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(original, Yields(IsParseError())),
                           "Should have failed to parse, but didn't.");
 
-  // The ledger knows the test by name, so a copy of the result is checked
-  // too and the ledger hears nothing more.
+  // The ledger knows the test by name, so a copy of the result counts as
+  // checked too: a check of it is judged on its own and the ledger hears
+  // nothing more.
   TestResult copy = original;
   EXPECT_THAT(Explain(Yields(IsParseError()), copy),
-              Rejects(HasSubstr("was already checked")));
+              Rejects(HasSubstr("Unexpected failure for test")));
+  EXPECT_THAT(Explain(Yields(WhenParsed(_)), copy), Accepts(IsEmpty()));
   EXPECT_EQ(GetCounts(ledger_), (Counts{/*expected_successes=*/0,
                                         /*expected_failures=*/0,
                                         /*unexpected_successes=*/0,
@@ -1551,6 +1809,228 @@ TEST_F(YieldsTest, SameMatcherCanCheckSeveralResults) {
   EXPECT_EQ(GetCounts(ledger_),
             (Counts{/*expected_successes=*/2, /*expected_failures=*/0,
                     /*unexpected_successes=*/0, /*unexpected_failures=*/1}));
+}
+
+// ---------------------------------------------------------------------------
+// JsonPayload()
+// ---------------------------------------------------------------------------
+
+// A typical validator: the JSON object has a member called `name`.  Like most
+// hand-written matchers it has a description but no explanation of its own.
+MATCHER_P(HasJsonMember, name,
+          absl::StrCat(negation ? "doesn't have" : "has", " member \"", name,
+                       "\"")) {
+  return arg.isMember(name);
+}
+
+// A JSON-input, JSON-output result carrying the given JSON payload.
+TestResult JsonResult(absl::string_view json) {
+  ConformanceResponse response;
+  response.set_json_payload(json);
+  return CreateResult("foo", /*input_format=*/::conformance::JSON,
+                      /*output_format=*/::conformance::JSON,
+                      std::move(response));
+}
+
+constexpr absl::string_view kJsonInt32 = R"json({"optionalInt32": 9})json";
+
+TEST(JsonPayloadTest, Description) {
+  EXPECT_EQ(Describe(JsonPayload(HasJsonMember("optionalInt32"))),
+            R"(JSON payload has member "optionalInt32")");
+  EXPECT_EQ(DescribeNegation(JsonPayload(HasJsonMember("optionalInt32"))),
+            R"(JSON payload doesn't have member "optionalInt32")");
+  EXPECT_EQ(Describe(JsonPayload(_)), "JSON payload is anything");
+}
+
+TEST(JsonPayloadTest, Matches) {
+  TestResult result = JsonResult(kJsonInt32);
+
+  EXPECT_THAT(Explain(JsonPayload(HasJsonMember("optionalInt32")), result),
+              Accepts(IsEmpty()));
+  YieldedResult yielded(result);
+  EXPECT_TRUE(Value(yielded, JsonPayload(_)));
+  EXPECT_TRUE(Value(yielded, JsonPayload(Truly([](const Json::Value& value) {
+                      return value["optionalInt32"].asInt() == 9;
+                    }))));
+  EXPECT_TRUE(Value(yielded, JsonPayload(SizeIs(1))));
+}
+
+TEST(JsonPayloadTest, InnerMatcherWithoutExplanation) {
+  // The description and the actual JSON text, quoted and escaped like
+  // RawPayload() does, are reported instead.
+  TestResult result = JsonResult(kJsonInt32);
+
+  EXPECT_THAT(Explain(JsonPayload(HasJsonMember("optionalInt64")), result),
+              Rejects("Expect: JSON payload has member \"optionalInt64\", "
+                      "but got: \"{\\\"optionalInt32\\\": 9}\""));
+}
+
+TEST(JsonPayloadTest, InnerMatcherExplanationIsUsed) {
+  TestResult result = JsonResult(kJsonInt32);
+
+  EXPECT_THAT(Explain(JsonPayload(SizeIs(2)), result),
+              Rejects("whose size 1 doesn't match"));
+  // Truly() explains itself, tersely; this is what a lambda validator ported
+  // from the legacy suite records in the failure list.  Only the gist is
+  // pinned, since the exact wording belongs to gMock.
+  EXPECT_THAT(Explain(JsonPayload(Truly([](const Json::Value& value) {
+                        return value.isNull();
+                      })),
+                      result),
+              Rejects(HasSubstr("didn't satisfy")));
+}
+
+TEST(JsonPayloadTest, InvalidJson) {
+  // The legacy validator's message, followed by jsoncpp's own diagnostic.
+  // The payload has to be valid JSON before any inner matcher gets a say.
+  TestResult result = JsonResult("{");
+
+  EXPECT_THAT(
+      Explain(JsonPayload(_), result),
+      Rejects(StartsWith("JSON payload cannot be parsed as valid JSON: ")));
+  EXPECT_THAT(
+      Explain(JsonPayload(_), JsonResult("")),
+      Rejects(StartsWith("JSON payload cannot be parsed as valid JSON: ")));
+  EXPECT_THAT(
+      Explain(JsonPayload(_), JsonResult("nonsense")),
+      Rejects(StartsWith("JSON payload cannot be parsed as valid JSON: ")));
+  // jsoncpp's defaults would accept these; the matcher parses strictly.
+  EXPECT_THAT(
+      Explain(JsonPayload(_), JsonResult("{\"optionalInt32\": 1,}")),
+      Rejects(StartsWith("JSON payload cannot be parsed as valid JSON: ")));
+  EXPECT_THAT(
+      Explain(JsonPayload(_), JsonResult("{} trailing")),
+      Rejects(StartsWith("JSON payload cannot be parsed as valid JSON: ")));
+}
+
+TEST(JsonPayloadTest, ParsesArraysAsWellAsObjects) {
+  // A testee's answer is a message, so the root is normally an object, but
+  // jsoncpp's strict mode also takes an array; whether it is acceptable is up
+  // to the inner matcher.  A scalar root is rejected like other non-documents.
+  TestResult array_result = JsonResult("[1, 2]");
+  EXPECT_TRUE(Value(YieldedResult(array_result), JsonPayload(SizeIs(2))));
+  EXPECT_THAT(
+      Explain(JsonPayload(_), JsonResult("null")),
+      Rejects(StartsWith("JSON payload cannot be parsed as valid JSON: ")));
+}
+
+TEST(JsonPayloadTest, EmptyResponse) {
+  TestResult result =
+      CreateResult("foo", ::conformance::JSON, ConformanceResponse());
+
+  EXPECT_THAT(Explain(JsonPayload(_), result),
+              Rejects("Response didn't have any field in the Response."));
+}
+
+PB_TEST_F(PayloadMatcherErrorResponseTest, IsAFailureForJsonPayload) {
+  TestResult result =
+      CreateResult("foo", ::conformance::JSON, ResponseFromText(response_));
+
+  EXPECT_THAT(Explain(JsonPayload(_), result),
+              Rejects("Failed to parse input or produce output."));
+}
+
+TEST(JsonPayloadTest, Skipped) {
+  TestResult result =
+      CreateResult("foo", ::conformance::JSON,
+                   ResponseFromText(R"pb(skipped: "skipped message")pb"));
+
+  EXPECT_THAT(Explain(JsonPayload(_), result),
+              Rejects("the testee skipped the test: skipped message"));
+}
+
+TEST(JsonPayloadTest, WrongOutputFormat) {
+  // Same handling as the other payload matchers.
+  TestResult result = CreateResult("foo", ::conformance::JSON,
+                                   ProtobufPayload(VarintField(1, 9)));
+
+  EXPECT_THAT(
+      Explain(JsonPayload(_), result),
+      Rejects("Test was asked for JSON output but provided PROTOBUF instead."));
+  EXPECT_THAT(
+      Explain(JsonPayload(_),
+              CreateResult("bar", ::conformance::JSON,
+                           ResponseFromText(R"pb(text_payload: "")pb"))),
+      Rejects(
+          "Test was asked for JSON output but provided TEXT_FORMAT instead."));
+}
+
+TEST(JsonPayloadTest, RequiresATestThatAskedForJsonOutput) {
+  // A test that asked for (and got) some other format can't be matched by
+  // JsonPayload() at all; that is a bug in the test.
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 9)));
+
+  EXPECT_THAT(Explain(JsonPayload(_), result),
+              Rejects("JsonPayload() needs JSON output, but the test asked "
+                      "for PROTOBUF output."));
+}
+
+TEST(JsonPayloadTest, ComposesWithGMock) {
+  TestResult result = JsonResult(kJsonInt32);
+
+  YieldedResult yielded(result);
+  EXPECT_TRUE(Value(yielded, Not(JsonPayload(HasJsonMember("optionalInt64")))));
+  EXPECT_TRUE(Value(
+      yielded,
+      AnyOf(IsParseError(), JsonPayload(HasJsonMember("optionalInt32")))));
+  EXPECT_TRUE(Value(
+      yielded, AllOf(JsonPayload(HasJsonMember("optionalInt32")),
+                     WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb")))));
+}
+
+TEST_F(YieldsTest, JsonOutput) {
+  // JSON-input, JSON-output tests through the whole stack: the legacy
+  // messages are what gets recorded for the failure list.
+  auto run_json = [&](absl::string_view response, absl::string_view name) {
+    RespondWith(response);
+    return testee_.CreateTest(name, TestPriority::kP0)
+        .ParseJson(TestAllTypesProto2::descriptor(), "{}")
+        .SerializeJson();
+  };
+  constexpr absl::string_view kJsonResponse =
+      R"pb(json_payload: "{\"optionalInt32\": 9}")pb";
+  // Kept out of the EXPECT_NONFATAL_FAILURE() arguments below: MSVC's
+  // traditional preprocessor mis-scans raw string literals containing \" or
+  // an odd number of quotes when they appear inside macro arguments.
+  constexpr absl::string_view kUnparseableJsonResponse =
+      R"pb(json_payload: "{\"nonsense\": 1}")pb";
+  constexpr absl::string_view kInvalidJsonResponse = R"pb(json_payload: "{")pb";
+
+  EXPECT_THAT(run_json(kJsonResponse, "parsed"),
+              Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
+  EXPECT_THAT(run_json(kJsonResponse, "validated"),
+              Yields(JsonPayload(HasJsonMember("optionalInt32"))));
+  EXPECT_EQ(GetCounts(ledger_), (Counts{/*expected_successes=*/2}));
+
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(run_json(kUnparseableJsonResponse, "unparseable"),
+                  Yields(WhenParsed(_))),
+      "JSON output we received from test was unparseable.");
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(run_json(kInvalidJsonResponse, "invalid"),
+                                      Yields(JsonPayload(_))),
+                          "JSON payload cannot be parsed as valid JSON: ");
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(run_json(kJsonResponse, "mismatch"),
+                  Yields(JsonPayload(HasJsonMember("optionalInt64")))),
+      "Expect: JSON payload has member \"optionalInt64\", but got: "
+      "\"{\\\"optionalInt32\\\": 9}\"");
+  EXPECT_EQ(GetCounts(ledger_),
+            (Counts{/*expected_successes=*/2, /*expected_failures=*/0,
+                    /*unexpected_successes=*/0, /*unexpected_failures=*/3}));
+  EXPECT_THAT(
+      ledger_.UnexpectedFailures(),
+      ElementsAre(
+          FieldsAre("Required.Proto2.JsonInput.invalid.JsonOutput",
+                    StartsWith("JSON payload cannot be parsed as valid JSON: "),
+                    absl::nullopt),
+          FieldsAre("Required.Proto2.JsonInput.mismatch.JsonOutput",
+                    "Expect: JSON payload has member \"optionalInt64\", but "
+                    "got: \"{\\\"optionalInt32\\\": 9}\"",
+                    absl::nullopt),
+          FieldsAre("Required.Proto2.JsonInput.unparseable.JsonOutput",
+                    "JSON output we received from test was unparseable.",
+                    absl::nullopt)));
 }
 
 }  // namespace
