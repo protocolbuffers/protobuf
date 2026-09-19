@@ -45,7 +45,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <future>  // NOLINT(build/c++11)
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -57,11 +56,28 @@
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define CHECK_SYSCALL(call)                            \
-  if (call < 0) {                                      \
-    perror(#call " " __FILE__ ":" TOSTRING(__LINE__)); \
-    exit(1);                                           \
-  }
+#define CHECK_SYSCALL(call)                              \
+  do {                                                   \
+    if (call < 0) {                                      \
+      perror(#call " " __FILE__ ":" TOSTRING(__LINE__)); \
+      exit(1);                                           \
+    }                                                    \
+  } while (0)
+// For use between fork() and execv() in the child of a multi-threaded process,
+// where only async-signal-safe calls are allowed: no perror() (it uses stdio
+// and may take locks held by another thread in the parent) and no exit() (it
+// runs atexit handlers and flushes stdio), just a fixed message and _exit().
+#define CHECK_SYSCALL_IN_CHILD(call)                                          \
+  do {                                                                        \
+    if (call < 0) {                                                           \
+      static constexpr char kMessage[] =                                      \
+          #call " failed in child " __FILE__ ":" TOSTRING(__LINE__) "\n";     \
+      /* Best effort; there is nothing left to do if this fails too. */       \
+      ssize_t written = write(STDERR_FILENO, kMessage, sizeof(kMessage) - 1); \
+      (void)written;                                                          \
+      _exit(1);                                                               \
+    }                                                                         \
+  } while (0)
 
 namespace google {
 namespace protobuf {
@@ -144,6 +160,17 @@ void ForkPipeRunner::SpawnTestProgram() {
     exit(1);
   }
 
+  // Build argv and log it *before* fork(): this process is multi-threaded, so
+  // the child must only make async-signal-safe calls (no logging) until execv.
+  std::vector<const char*> argv;
+  argv.push_back(executable_.c_str());
+  ABSL_LOG(INFO) << argv[0];
+  for (size_t i = 0; i < executable_args_.size(); ++i) {
+    argv.push_back(executable_args_[i].c_str());
+    ABSL_LOG(INFO) << executable_args_[i];
+  }
+  argv.push_back(nullptr);
+
   pid_t pid = fork();
   if (pid < 0) {
     perror("fork");
@@ -159,30 +186,19 @@ void ForkPipeRunner::SpawnTestProgram() {
     child_pid_ = pid;
   } else {
     // Child.
-    CHECK_SYSCALL(close(STDIN_FILENO));
-    CHECK_SYSCALL(close(STDOUT_FILENO));
-    CHECK_SYSCALL(dup2(toproc_pipe_fd[0], STDIN_FILENO));
-    CHECK_SYSCALL(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
+    CHECK_SYSCALL_IN_CHILD(close(STDIN_FILENO));
+    CHECK_SYSCALL_IN_CHILD(close(STDOUT_FILENO));
+    CHECK_SYSCALL_IN_CHILD(dup2(toproc_pipe_fd[0], STDIN_FILENO));
+    CHECK_SYSCALL_IN_CHILD(dup2(fromproc_pipe_fd[1], STDOUT_FILENO));
 
-    CHECK_SYSCALL(close(toproc_pipe_fd[0]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
-    CHECK_SYSCALL(close(toproc_pipe_fd[1]));
-    CHECK_SYSCALL(close(fromproc_pipe_fd[0]));
+    CHECK_SYSCALL_IN_CHILD(close(toproc_pipe_fd[0]));
+    CHECK_SYSCALL_IN_CHILD(close(fromproc_pipe_fd[1]));
+    CHECK_SYSCALL_IN_CHILD(close(toproc_pipe_fd[1]));
+    CHECK_SYSCALL_IN_CHILD(close(fromproc_pipe_fd[0]));
 
-    std::unique_ptr<char[]> executable(new char[executable_.size() + 1]);
-    memcpy(executable.get(), executable_.c_str(), executable_.size());
-    executable[executable_.size()] = '\0';
-
-    std::vector<const char *> argv;
-    argv.push_back(executable.get());
-    ABSL_LOG(INFO) << argv[0];
-    for (size_t i = 0; i < executable_args_.size(); ++i) {
-      argv.push_back(executable_args_[i].c_str());
-      ABSL_LOG(INFO) << executable_args_[i];
-    }
-    argv.push_back(nullptr);
     // Never returns.
-    CHECK_SYSCALL(execv(executable.get(), const_cast<char **>(argv.data())));
+    CHECK_SYSCALL_IN_CHILD(
+        execv(executable_.c_str(), const_cast<char**>(argv.data())));
   }
 }
 
