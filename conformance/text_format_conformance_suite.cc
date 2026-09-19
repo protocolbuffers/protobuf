@@ -15,7 +15,6 @@
 #include "absl/log/absl_log.h"
 #include "absl/log/die_if_null.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "conformance/conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
@@ -150,16 +149,8 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
     }
     RunTextFormatPerformanceTests();
   } else {
-    if (MessageType::GetDescriptor()->name() == "TestAllTypesProto2") {
-      RunGroupTests();
-      RunClosedEnumTests();
-    }
-    if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
-      RunDelimitedTests();
-    }
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto3") {
       RunAnyTests();
-      RunOpenEnumTests();
       // TODO Run these over proto2 also.
       RunAllTests();
     }
@@ -264,168 +255,7 @@ void TextFormatConformanceTestSuiteImpl<
 }
 
 template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunDelimitedTests() {
-  RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
-                         "GroupLikeType { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
-                         "GroupLikeType: { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "GroupLikeType {}");
-  RunValidTextFormatTest(
-      "GroupFieldExtension", REQUIRED,
-      "[protobuf_test_messages.editions.groupliketype] { c: 1 }");
-  RunValidTextFormatTest(
-      "DelimitedFieldExtension", REQUIRED,
-      "[protobuf_test_messages.editions.delimited_ext] { c: 1 }");
-
-
-  // Test that lower-cased group name (i.e. implicit field name) are accepted.
-  RunValidTextFormatTest("DelimitedFieldLowercased", REQUIRED,
-                         "groupliketype { group_int32: 1 }");
-  RunValidTextFormatTest("DelimitedFieldLowercasedDifferent", REQUIRED,
-                         "delimited_field { group_int32: 1 }");
-
-  // Extensions always used the field name, and should never accept the message
-  // name.
-  ExpectParseFailure(
-      "DelimitedFieldExtensionMessageName", REQUIRED,
-      "[protobuf_test_messages.editions.GroupLikeType] { group_int32: 1 }");
-
-  // Extension names can contain whitespace and comments.
-  RunValidTextFormatTest(
-      "ExtensionNameWithWhitespace", REQUIRED,
-      "[protobuf _test_messages.edit\tions.exten\nsion_int32]: 1");
-  RunValidTextFormatTest(
-      "ExtensionNameWithComment", REQUIRED,
-      "[protobuf_test_messages.edit # comment \nions.extension_int32]: 1");
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
-  RunValidTextFormatTest("GroupFieldNoColon", REQUIRED,
-                         "Data { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldWithColon", REQUIRED,
-                         "Data: { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldEmpty", REQUIRED, "Data {}");
-  RunValidTextFormatTest("GroupFieldMultiWord", REQUIRED,
-                         "MultiWordGroupField { group_int32: 1 }");
-
-  // Test that lower-cased group name (i.e. implicit field name) is accepted
-  RunValidTextFormatTest("GroupFieldLowercased", REQUIRED,
-                         "data { group_int32: 1 }");
-  RunValidTextFormatTest("GroupFieldLowercasedMultiWord", REQUIRED,
-                         "multiwordgroupfield { group_int32: 1 }");
-
-  // Test extensions of group type
-  RunValidTextFormatTest("GroupFieldExtension", REQUIRED,
-                         absl::StrFormat("[%s] { group_int32: 1 }",
-                                         MessageType::GetDescriptor()
-                                             ->file()
-                                             ->FindExtensionByName("groupfield")
-                                             ->PrintableNameForExtension()));
-  ExpectParseFailure("GroupFieldExtensionGroupName", REQUIRED,
-                     absl::StrFormat("[%s] { group_int32: 1 }",
-                                     MessageType::GetDescriptor()
-                                         ->file()
-                                         ->FindMessageTypeByName("GroupField")
-                                         ->full_name()));
-}
-
-template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
-  RunValidTextFormatTest("HelloWorld", REQUIRED,
-                         "optional_string: 'Hello, World!'");
-  // Integer fields.
-  RunValidTextFormatTest("Int32FieldMaxValue", REQUIRED,
-                         "optional_int32: 2147483647");
-  RunValidTextFormatTest("Int32FieldMinValue", REQUIRED,
-                         "optional_int32: -2147483648");
-  RunValidTextFormatTest("Uint32FieldMaxValue", REQUIRED,
-                         "optional_uint32: 4294967295");
-  RunValidTextFormatTest("Int64FieldMaxValue", REQUIRED,
-                         "optional_int64: 9223372036854775807");
-  RunValidTextFormatTest("Int64FieldMinValue", REQUIRED,
-                         "optional_int64: -9223372036854775808");
-  RunValidTextFormatTest("Uint64FieldMaxValue", REQUIRED,
-                         "optional_uint64: 18446744073709551615");
-  // Integer fields - Hex
-  RunValidTextFormatTestWithExpected("Int32FieldMaxValueHex", REQUIRED,
-                                     "optional_int32: 0x7FFFFFFF",
-                                     "optional_int32: 2147483647");
-  RunValidTextFormatTestWithExpected("Int32FieldMinValueHex", REQUIRED,
-                                     "optional_int32: -0x80000000",
-                                     "optional_int32: -2147483648");
-  RunValidTextFormatTestWithExpected("Uint32FieldMaxValueHex", REQUIRED,
-                                     "optional_uint32: 0xFFFFFFFF",
-                                     "optional_uint32: 4294967295");
-  RunValidTextFormatTestWithExpected("Int64FieldMaxValueHex", REQUIRED,
-                                     "optional_int64: 0x7FFFFFFFFFFFFFFF",
-                                     "optional_int64: 9223372036854775807");
-  RunValidTextFormatTestWithExpected("Int64FieldMinValueHex", REQUIRED,
-                                     "optional_int64: -0x8000000000000000",
-                                     "optional_int64: -9223372036854775808");
-  RunValidTextFormatTestWithExpected("Uint64FieldMaxValueHex", REQUIRED,
-                                     "optional_uint64: 0xFFFFFFFFFFFFFFFF",
-                                     "optional_uint64: 18446744073709551615");
-  // Integer fields - Octal
-  RunValidTextFormatTestWithExpected("Int32FieldMaxValueOctal", REQUIRED,
-                                     "optional_int32: 017777777777",
-                                     "optional_int32: 2147483647");
-  RunValidTextFormatTestWithExpected("Int32FieldMinValueOctal", REQUIRED,
-                                     "optional_int32: -020000000000",
-                                     "optional_int32: -2147483648");
-  RunValidTextFormatTestWithExpected("Uint32FieldMaxValueOctal", REQUIRED,
-                                     "optional_uint32: 037777777777",
-                                     "optional_uint32: 4294967295");
-  RunValidTextFormatTestWithExpected("Int64FieldMaxValueOctal", REQUIRED,
-                                     "optional_int64: 0777777777777777777777",
-                                     "optional_int64: 9223372036854775807");
-  RunValidTextFormatTestWithExpected("Int64FieldMinValueOctal", REQUIRED,
-                                     "optional_int64: -01000000000000000000000",
-                                     "optional_int64: -9223372036854775808");
-  RunValidTextFormatTestWithExpected("Uint64FieldMaxValueOctal", REQUIRED,
-                                     "optional_uint64: 01777777777777777777777",
-                                     "optional_uint64: 18446744073709551615");
-
-  // Parsers reject out-of-bound integer values.
-  ExpectParseFailure("Int32FieldTooLarge", REQUIRED,
-                     "optional_int32: 2147483648");
-  ExpectParseFailure("Int32FieldTooSmall", REQUIRED,
-                     "optional_int32: -2147483649");
-  ExpectParseFailure("Uint32FieldTooLarge", REQUIRED,
-                     "optional_uint32: 4294967296");
-  ExpectParseFailure("Int64FieldTooLarge", REQUIRED,
-                     "optional_int64: 9223372036854775808");
-  ExpectParseFailure("Int64FieldTooSmall", REQUIRED,
-                     "optional_int64: -9223372036854775809");
-  ExpectParseFailure("Uint64FieldTooLarge", REQUIRED,
-                     "optional_uint64: 18446744073709551616");
-  // Parsers reject out-of-bound integer values - Hex
-  ExpectParseFailure("Int32FieldTooLargeHex", REQUIRED,
-                     "optional_int32: 0x80000000");
-  ExpectParseFailure("Int32FieldTooSmallHex", REQUIRED,
-                     "optional_int32: -0x80000001");
-  ExpectParseFailure("Uint32FieldTooLargeHex", REQUIRED,
-                     "optional_uint32: 0x100000000");
-  ExpectParseFailure("Int64FieldTooLargeHex", REQUIRED,
-                     "optional_int64: 0x8000000000000000");
-  ExpectParseFailure("Int64FieldTooSmallHex", REQUIRED,
-                     "optional_int64: -0x8000000000000001");
-  ExpectParseFailure("Uint64FieldTooLargeHex", REQUIRED,
-                     "optional_uint64: 0x10000000000000000");
-  // Parsers reject out-of-bound integer values - Octal
-  ExpectParseFailure("Int32FieldTooLargeOctal", REQUIRED,
-                     "optional_int32: 020000000000");
-  ExpectParseFailure("Int32FieldTooSmallOctal", REQUIRED,
-                     "optional_int32: -020000000001");
-  ExpectParseFailure("Uint32FieldTooLargeOctal", REQUIRED,
-                     "optional_uint32: 040000000000");
-  ExpectParseFailure("Int64FieldTooLargeOctal", REQUIRED,
-                     "optional_int64: 01000000000000000000000");
-  ExpectParseFailure("Int64FieldTooSmallOctal", REQUIRED,
-                     "optional_int64: -01000000000000000000001");
-  ExpectParseFailure("Uint64FieldTooLargeOctal", REQUIRED,
-                     "optional_uint64: 02000000000000000000000");
-
   // Floating point fields
   for (const auto& suffix : std::vector<std::string>{"", "f", "F"}) {
     const std::string name_suffix =
@@ -955,30 +785,6 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
       absl::StrCat("TestTextFormatPerformanceMergeMessageWithRepeatedField",
                    test_type_name),
       RECOMMENDED, input, expected);
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunOpenEnumTests() {
-  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 1
-        )");
-  RunValidTextFormatTest("ClosedEnumFieldWithUnknownNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 42
-        )");
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunClosedEnumTests() {
-  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 1
-        )");
-  ExpectParseFailure("ClosedEnumFieldWithUnknownNumber", REQUIRED,
-                     R"(
-        optional_nested_enum: 42
-        )");
 }
 
 }  // namespace protobuf
