@@ -920,6 +920,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
     suite_.ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
     suite_.ReportSkip(test, request, response);
+  } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
+    test.set_failure_message(
+        "Should have failed to parse, but raised an error instead.");
+    suite_.ReportFailure(test, level, request, response);
   } else {
     test.set_failure_message("Should have failed to parse, but didn't.");
     suite_.ReportFailure(test, level, request, response);
@@ -1014,6 +1018,10 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
     suite_.ReportSuccess(test);
   } else if (response.result_case() == ConformanceResponse::kSkipped) {
     suite_.ReportSkip(test, request, response);
+  } else if (response.result_case() == ConformanceResponse::kRuntimeError) {
+    test.set_failure_message(
+        "Should have failed to serialize, but raised an error instead.");
+    suite_.ReportFailure(test, level, request, response);
   } else {
     test.set_failure_message("Should have failed to serialize, but didn't.");
     suite_.ReportFailure(test, level, request, response);
