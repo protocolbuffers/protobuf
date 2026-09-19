@@ -130,10 +130,18 @@ target_include_directories(
 target_include_directories(conformance_test_runner PRIVATE ${ABSL_ROOT_DIR})
 target_include_directories(conformance_cpp PRIVATE ${ABSL_ROOT_DIR})
 
+# The runner hosts gtest-based conformance suites alongside the legacy ones (see
+# conformance/conformance_test_main.cc), so it needs googletest even when
+# protobuf_BUILD_TESTS is off.  gtest.cmake is a no-op if GTest::gmock already
+# exists, and otherwise finds or fetches googletest the same way the unit tests
+# do.
+include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)
+
 target_link_libraries(conformance_test_runner
   libconformance_common
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
+  GTest::gmock
 )
 target_link_libraries(conformance_cpp
   libconformance_common
