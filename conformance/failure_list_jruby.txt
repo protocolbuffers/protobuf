@@ -1,180 +1,180 @@
-Recommended.Proto3.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput
-Recommended.Proto3.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput
-Recommended.Proto3.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput
-Recommended.Proto2.JsonInput.BoolFieldAllCapitalFalse
-Recommended.Proto2.JsonInput.BoolFieldAllCapitalTrue
-Recommended.Proto2.JsonInput.BoolFieldCamelCaseFalse
-Recommended.Proto2.JsonInput.BoolFieldCamelCaseTrue
-Recommended.Proto2.JsonInput.BoolFieldDoubleQuotedFalse
-Recommended.Proto2.JsonInput.BoolFieldDoubleQuotedTrue
-Recommended.Proto2.JsonInput.BoolMapFieldKeyNotQuoted
-Recommended.Proto2.JsonInput.DoubleFieldInfinityNotQuoted
-Recommended.Proto2.JsonInput.DoubleFieldNanNotQuoted
-Recommended.Proto2.JsonInput.DoubleFieldNegativeInfinityNotQuoted
-Recommended.Proto2.JsonInput.FieldNameExtension.JsonOutput
-Recommended.Proto2.JsonInput.FieldNameNotQuoted
-Recommended.Proto2.JsonInput.FloatFieldInfinityNotQuoted
-Recommended.Proto2.JsonInput.FloatFieldNanNotQuoted
-Recommended.Proto2.JsonInput.FloatFieldNegativeInfinityNotQuoted
-Recommended.Proto2.JsonInput.Int32MapFieldKeyNotQuoted
-Recommended.Proto2.JsonInput.Int64MapFieldKeyNotQuoted
-Recommended.Proto2.JsonInput.JsonWithComments
-Recommended.Proto2.JsonInput.StringFieldSingleQuoteBoth
-Recommended.Proto2.JsonInput.StringFieldSingleQuoteKey
-Recommended.Proto2.JsonInput.StringFieldSingleQuoteValue
-Recommended.Proto2.JsonInput.StringFieldSurrogateInWrongOrder
-Recommended.Proto2.JsonInput.StringFieldUnpairedHighSurrogate
-Recommended.Proto2.JsonInput.StringFieldUnpairedLowSurrogate
-Recommended.Proto2.JsonInput.Uint32MapFieldKeyNotQuoted
-Recommended.Proto2.JsonInput.Uint64MapFieldKeyNotQuoted
-Recommended.Proto3.JsonInput.BoolFieldAllCapitalFalse
-Recommended.Proto3.JsonInput.BoolFieldAllCapitalTrue
-Recommended.Proto3.JsonInput.BoolFieldCamelCaseFalse
-Recommended.Proto3.JsonInput.BoolFieldCamelCaseTrue
-Recommended.Proto3.JsonInput.BoolFieldDoubleQuotedFalse
-Recommended.Proto3.JsonInput.BoolFieldDoubleQuotedTrue
-Recommended.Proto3.JsonInput.BoolMapFieldKeyNotQuoted
-Recommended.Proto3.JsonInput.DoubleFieldInfinityNotQuoted
-Recommended.Proto3.JsonInput.DoubleFieldNanNotQuoted
-Recommended.Proto3.JsonInput.DoubleFieldNegativeInfinityNotQuoted
-Recommended.Proto3.JsonInput.FieldMaskInvalidCharacter
-Recommended.Proto3.JsonInput.FieldNameNotQuoted
-Recommended.Proto3.JsonInput.FloatFieldInfinityNotQuoted
-Recommended.Proto3.JsonInput.FloatFieldNanNotQuoted
-Recommended.Proto3.JsonInput.FloatFieldNegativeInfinityNotQuoted
-Recommended.Proto3.JsonInput.Int32MapFieldKeyNotQuoted
-Recommended.Proto3.JsonInput.Int64MapFieldKeyNotQuoted
-Recommended.Proto3.JsonInput.JsonWithComments
-Recommended.Proto3.JsonInput.StringFieldSingleQuoteBoth
-Recommended.Proto3.JsonInput.StringFieldSingleQuoteKey
-Recommended.Proto3.JsonInput.StringFieldSingleQuoteValue
-Recommended.Proto3.JsonInput.StringFieldSurrogateInWrongOrder
-Recommended.Proto3.JsonInput.StringFieldUnpairedHighSurrogate
-Recommended.Proto3.JsonInput.StringFieldUnpairedLowSurrogate
-Recommended.Proto3.JsonInput.Uint32MapFieldKeyNotQuoted
-Recommended.Proto3.JsonInput.Uint64MapFieldKeyNotQuoted
-Required.Proto2.JsonInput.EnumFieldNotQuoted
-Required.Proto2.JsonInput.EnumFieldSingleElementArrayEnumName
-Required.Proto2.JsonInput.EnumFieldSingleElementArrayNumericValue
-Required.Proto2.JsonInput.Int32FieldLeadingZero
-Required.Proto2.JsonInput.Int32FieldNegativeWithLeadingZero
-Required.Proto2.JsonInput.Int32FieldPlusSign
-Required.Proto2.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool
-Required.Proto2.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
-Required.Proto2.JsonInput.StringFieldNotAString
-Required.Proto3.JsonInput.EnumFieldNotQuoted
-Required.Proto3.JsonInput.EnumFieldSingleElementArrayEnumName
-Required.Proto3.JsonInput.EnumFieldSingleElementArrayNumericValue
-Required.Proto3.JsonInput.Int32FieldLeadingZero
-Required.Proto3.JsonInput.Int32FieldNegativeWithLeadingZero
-Required.Proto3.JsonInput.Int32FieldPlusSign
-Required.Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool
-Required.Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
-Required.Proto3.JsonInput.StringFieldNotAString
-Recommended.Editions_Proto3.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput
-Recommended.Editions_Proto3.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput
-Recommended.Editions_Proto3.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput
-Recommended.Editions_Proto2.JsonInput.BoolFieldAllCapitalFalse
-Recommended.Editions_Proto2.JsonInput.BoolFieldAllCapitalTrue
-Recommended.Editions_Proto2.JsonInput.BoolFieldCamelCaseFalse
-Recommended.Editions_Proto2.JsonInput.BoolFieldCamelCaseTrue
-Recommended.Editions_Proto2.JsonInput.BoolFieldDoubleQuotedFalse
-Recommended.Editions_Proto2.JsonInput.BoolFieldDoubleQuotedTrue
-Recommended.Editions_Proto2.JsonInput.BoolMapFieldKeyNotQuoted
-Recommended.Editions_Proto2.JsonInput.DoubleFieldInfinityNotQuoted
-Recommended.Editions_Proto2.JsonInput.DoubleFieldNanNotQuoted
-Recommended.Editions_Proto2.JsonInput.DoubleFieldNegativeInfinityNotQuoted
-Recommended.Editions_Proto2.JsonInput.FieldNameExtension.JsonOutput
-Recommended.Editions_Proto2.JsonInput.FieldNameNotQuoted
-Recommended.Editions_Proto2.JsonInput.FloatFieldInfinityNotQuoted
-Recommended.Editions_Proto2.JsonInput.FloatFieldNanNotQuoted
-Recommended.Editions_Proto2.JsonInput.FloatFieldNegativeInfinityNotQuoted
-Recommended.Editions_Proto2.JsonInput.Int32MapFieldKeyNotQuoted
-Recommended.Editions_Proto2.JsonInput.Int64MapFieldKeyNotQuoted
-Recommended.Editions_Proto2.JsonInput.JsonWithComments
-Recommended.Editions_Proto2.JsonInput.StringFieldSingleQuoteBoth
-Recommended.Editions_Proto2.JsonInput.StringFieldSingleQuoteKey
-Recommended.Editions_Proto2.JsonInput.StringFieldSingleQuoteValue
-Recommended.Editions_Proto2.JsonInput.StringFieldSurrogateInWrongOrder
-Recommended.Editions_Proto2.JsonInput.StringFieldUnpairedHighSurrogate
-Recommended.Editions_Proto2.JsonInput.StringFieldUnpairedLowSurrogate
-Recommended.Editions_Proto2.JsonInput.Uint32MapFieldKeyNotQuoted
-Recommended.Editions_Proto2.JsonInput.Uint64MapFieldKeyNotQuoted
-Recommended.Editions_Proto3.JsonInput.BoolFieldAllCapitalFalse
-Recommended.Editions_Proto3.JsonInput.BoolFieldAllCapitalTrue
-Recommended.Editions_Proto3.JsonInput.BoolFieldCamelCaseFalse
-Recommended.Editions_Proto3.JsonInput.BoolFieldCamelCaseTrue
-Recommended.Editions_Proto3.JsonInput.BoolFieldDoubleQuotedFalse
-Recommended.Editions_Proto3.JsonInput.BoolFieldDoubleQuotedTrue
-Recommended.Editions_Proto3.JsonInput.BoolMapFieldKeyNotQuoted
-Recommended.Editions_Proto3.JsonInput.DoubleFieldInfinityNotQuoted
-Recommended.Editions_Proto3.JsonInput.DoubleFieldNanNotQuoted
-Recommended.Editions_Proto3.JsonInput.DoubleFieldNegativeInfinityNotQuoted
-Recommended.Editions_Proto3.JsonInput.FieldMaskInvalidCharacter
-Recommended.Editions_Proto3.JsonInput.FieldNameNotQuoted
-Recommended.Editions_Proto3.JsonInput.FloatFieldInfinityNotQuoted
-Recommended.Editions_Proto3.JsonInput.FloatFieldNanNotQuoted
-Recommended.Editions_Proto3.JsonInput.FloatFieldNegativeInfinityNotQuoted
-Recommended.Editions_Proto3.JsonInput.Int32MapFieldKeyNotQuoted
-Recommended.Editions_Proto3.JsonInput.Int64MapFieldKeyNotQuoted
-Recommended.Editions_Proto3.JsonInput.JsonWithComments
-Recommended.Editions_Proto3.JsonInput.StringFieldSingleQuoteBoth
-Recommended.Editions_Proto3.JsonInput.StringFieldSingleQuoteKey
-Recommended.Editions_Proto3.JsonInput.StringFieldSingleQuoteValue
-Recommended.Editions_Proto3.JsonInput.StringFieldSurrogateInWrongOrder
-Recommended.Editions_Proto3.JsonInput.StringFieldUnpairedHighSurrogate
-Recommended.Editions_Proto3.JsonInput.StringFieldUnpairedLowSurrogate
-Recommended.Editions_Proto3.JsonInput.Uint32MapFieldKeyNotQuoted
-Recommended.Editions_Proto3.JsonInput.Uint64MapFieldKeyNotQuoted
-Required.Editions_Proto2.JsonInput.EnumFieldNotQuoted
-Required.Editions_Proto2.JsonInput.EnumFieldSingleElementArrayEnumName
-Required.Editions_Proto2.JsonInput.EnumFieldSingleElementArrayNumericValue
-Required.Editions_Proto2.JsonInput.Int32FieldLeadingZero
-Required.Editions_Proto2.JsonInput.Int32FieldNegativeWithLeadingZero
-Required.Editions_Proto2.JsonInput.Int32FieldPlusSign
-Required.Editions_Proto2.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool
-Required.Editions_Proto2.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
-Required.Editions_Proto2.JsonInput.StringFieldNotAString
-Required.Editions_Proto3.JsonInput.EnumFieldNotQuoted
-Required.Editions_Proto3.JsonInput.EnumFieldSingleElementArrayEnumName
-Required.Editions_Proto3.JsonInput.EnumFieldSingleElementArrayNumericValue
-Required.Editions_Proto3.JsonInput.Int32FieldLeadingZero
-Required.Editions_Proto3.JsonInput.Int32FieldNegativeWithLeadingZero
-Required.Editions_Proto3.JsonInput.Int32FieldPlusSign
-Required.Editions_Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool
-Required.Editions_Proto3.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt
-Required.Editions_Proto3.JsonInput.StringFieldNotAString
-Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
-Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
-Required.Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
-Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
-Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskNumbersDontRoundTrip/Proto3.ProtobufInput.JsonOutput
+Recommended.JsonFieldMaskTest.FieldMaskPathsDontRoundTrip/Proto3.ProtobufInput.JsonOutput
+Recommended.JsonFieldMaskTest.FieldMaskTooManyUnderscore/Proto3.ProtobufInput.JsonOutput
+Recommended.JsonBoolTest.BoolFieldAllCapitalFalse/Proto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldAllCapitalTrue/Proto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseFalse/Proto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseTrue/Proto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/Proto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/Proto2.JsonInput
+Recommended.JsonMapTest.BoolMapFieldKeyNotQuoted/Proto2.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldInfinityNotQuoted/Proto2.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNanNotQuoted/Proto2.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNegativeInfinityNotQuoted/Proto2.JsonInput
+Recommended.JsonStoresDefaultTest.FieldNameExtension/Proto2.JsonInput.JsonOutput
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/Proto2.JsonInput
+Recommended.JsonFloatTest.FloatFieldInfinityNotQuoted/Proto2.JsonInput
+Recommended.JsonFloatTest.FloatFieldNanNotQuoted/Proto2.JsonInput
+Recommended.JsonFloatTest.FloatFieldNegativeInfinityNotQuoted/Proto2.JsonInput
+Recommended.JsonMapTest.Int32MapFieldKeyNotQuoted/Proto2.JsonInput
+Recommended.JsonMapTest.Int64MapFieldKeyNotQuoted/Proto2.JsonInput
+Recommended.JsonObjectSyntaxTest.JsonWithComments/Proto2.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/Proto2.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/Proto2.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/Proto2.JsonInput
+Recommended.JsonStringTest.StringFieldSurrogateInWrongOrder/Proto2.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedHighSurrogate/Proto2.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedLowSurrogate/Proto2.JsonInput
+Recommended.JsonMapTest.Uint32MapFieldKeyNotQuoted/Proto2.JsonInput
+Recommended.JsonMapTest.Uint64MapFieldKeyNotQuoted/Proto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldAllCapitalFalse/Proto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldAllCapitalTrue/Proto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseFalse/Proto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseTrue/Proto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/Proto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/Proto3.JsonInput
+Recommended.JsonMapTest.BoolMapFieldKeyNotQuoted/Proto3.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldInfinityNotQuoted/Proto3.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNanNotQuoted/Proto3.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNegativeInfinityNotQuoted/Proto3.JsonInput
+Recommended.JsonFieldMaskTest.FieldMaskInvalidCharacter/Proto3.JsonInput
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/Proto3.JsonInput
+Recommended.JsonFloatTest.FloatFieldInfinityNotQuoted/Proto3.JsonInput
+Recommended.JsonFloatTest.FloatFieldNanNotQuoted/Proto3.JsonInput
+Recommended.JsonFloatTest.FloatFieldNegativeInfinityNotQuoted/Proto3.JsonInput
+Recommended.JsonMapTest.Int32MapFieldKeyNotQuoted/Proto3.JsonInput
+Recommended.JsonMapTest.Int64MapFieldKeyNotQuoted/Proto3.JsonInput
+Recommended.JsonObjectSyntaxTest.JsonWithComments/Proto3.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/Proto3.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/Proto3.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/Proto3.JsonInput
+Recommended.JsonStringTest.StringFieldSurrogateInWrongOrder/Proto3.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedHighSurrogate/Proto3.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedLowSurrogate/Proto3.JsonInput
+Recommended.JsonMapTest.Uint32MapFieldKeyNotQuoted/Proto3.JsonInput
+Recommended.JsonMapTest.Uint64MapFieldKeyNotQuoted/Proto3.JsonInput
+Required.JsonEnumTest.EnumFieldNotQuoted/Proto2.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayEnumName/Proto2.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayNumericValue/Proto2.JsonInput
+Required.JsonIntegerTest.Int32FieldLeadingZero/Proto2.JsonInput
+Required.JsonIntegerTest.Int32FieldNegativeWithLeadingZero/Proto2.JsonInput
+Required.JsonIntegerTest.Int32FieldPlusSign/Proto2.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotBool/Proto2.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotInt/Proto2.JsonInput
+Required.JsonStringTest.StringFieldNotAString/Proto2.JsonInput
+Required.JsonEnumTest.EnumFieldNotQuoted/Proto3.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayEnumName/Proto3.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayNumericValue/Proto3.JsonInput
+Required.JsonIntegerTest.Int32FieldLeadingZero/Proto3.JsonInput
+Required.JsonIntegerTest.Int32FieldNegativeWithLeadingZero/Proto3.JsonInput
+Required.JsonIntegerTest.Int32FieldPlusSign/Proto3.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotBool/Proto3.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotInt/Proto3.JsonInput
+Required.JsonStringTest.StringFieldNotAString/Proto3.JsonInput
+Recommended.JsonFieldMaskTest.FieldMaskNumbersDontRoundTrip/EditionsProto3.ProtobufInput.JsonOutput
+Recommended.JsonFieldMaskTest.FieldMaskPathsDontRoundTrip/EditionsProto3.ProtobufInput.JsonOutput
+Recommended.JsonFieldMaskTest.FieldMaskTooManyUnderscore/EditionsProto3.ProtobufInput.JsonOutput
+Recommended.JsonBoolTest.BoolFieldAllCapitalFalse/EditionsProto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldAllCapitalTrue/EditionsProto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseFalse/EditionsProto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseTrue/EditionsProto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/EditionsProto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/EditionsProto2.JsonInput
+Recommended.JsonMapTest.BoolMapFieldKeyNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldInfinityNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNanNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNegativeInfinityNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonStoresDefaultTest.FieldNameExtension/EditionsProto2.JsonInput.JsonOutput
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonFloatTest.FloatFieldInfinityNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonFloatTest.FloatFieldNanNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonFloatTest.FloatFieldNegativeInfinityNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonMapTest.Int32MapFieldKeyNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonMapTest.Int64MapFieldKeyNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonObjectSyntaxTest.JsonWithComments/EditionsProto2.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/EditionsProto2.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/EditionsProto2.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/EditionsProto2.JsonInput
+Recommended.JsonStringTest.StringFieldSurrogateInWrongOrder/EditionsProto2.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedHighSurrogate/EditionsProto2.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedLowSurrogate/EditionsProto2.JsonInput
+Recommended.JsonMapTest.Uint32MapFieldKeyNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonMapTest.Uint64MapFieldKeyNotQuoted/EditionsProto2.JsonInput
+Recommended.JsonBoolTest.BoolFieldAllCapitalFalse/EditionsProto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldAllCapitalTrue/EditionsProto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseFalse/EditionsProto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldCamelCaseTrue/EditionsProto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/EditionsProto3.JsonInput
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/EditionsProto3.JsonInput
+Recommended.JsonMapTest.BoolMapFieldKeyNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldInfinityNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNanNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonDoubleTest.DoubleFieldNegativeInfinityNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonFieldMaskTest.FieldMaskInvalidCharacter/EditionsProto3.JsonInput
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonFloatTest.FloatFieldInfinityNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonFloatTest.FloatFieldNanNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonFloatTest.FloatFieldNegativeInfinityNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonMapTest.Int32MapFieldKeyNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonMapTest.Int64MapFieldKeyNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonObjectSyntaxTest.JsonWithComments/EditionsProto3.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/EditionsProto3.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/EditionsProto3.JsonInput
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/EditionsProto3.JsonInput
+Recommended.JsonStringTest.StringFieldSurrogateInWrongOrder/EditionsProto3.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedHighSurrogate/EditionsProto3.JsonInput
+Recommended.JsonStringTest.StringFieldUnpairedLowSurrogate/EditionsProto3.JsonInput
+Recommended.JsonMapTest.Uint32MapFieldKeyNotQuoted/EditionsProto3.JsonInput
+Recommended.JsonMapTest.Uint64MapFieldKeyNotQuoted/EditionsProto3.JsonInput
+Required.JsonEnumTest.EnumFieldNotQuoted/EditionsProto2.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayEnumName/EditionsProto2.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayNumericValue/EditionsProto2.JsonInput
+Required.JsonIntegerTest.Int32FieldLeadingZero/EditionsProto2.JsonInput
+Required.JsonIntegerTest.Int32FieldNegativeWithLeadingZero/EditionsProto2.JsonInput
+Required.JsonIntegerTest.Int32FieldPlusSign/EditionsProto2.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotBool/EditionsProto2.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotInt/EditionsProto2.JsonInput
+Required.JsonStringTest.StringFieldNotAString/EditionsProto2.JsonInput
+Required.JsonEnumTest.EnumFieldNotQuoted/EditionsProto3.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayEnumName/EditionsProto3.JsonInput
+Required.JsonEnumTest.EnumFieldSingleElementArrayNumericValue/EditionsProto3.JsonInput
+Required.JsonIntegerTest.Int32FieldLeadingZero/EditionsProto3.JsonInput
+Required.JsonIntegerTest.Int32FieldNegativeWithLeadingZero/EditionsProto3.JsonInput
+Required.JsonIntegerTest.Int32FieldPlusSign/EditionsProto3.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotBool/EditionsProto3.JsonInput
+Required.JsonRepeatedTest.RepeatedFieldWrongElementTypeExpectingStringsGotInt/EditionsProto3.JsonInput
+Required.JsonStringTest.StringFieldNotAString/EditionsProto3.JsonInput
+Required.UnknownFieldsTest.UnknownOrdering/EditionsProto2.ProtobufInput.ProtobufOutput
+Required.UnknownFieldsTest.UnknownOrdering/EditionsProto3.ProtobufInput.ProtobufOutput
+Required.UnknownFieldsTest.UnknownOrdering/Proto2.ProtobufInput.ProtobufOutput
+Required.UnknownFieldsTest.UnknownOrdering/Proto3.ProtobufInput.ProtobufOutput
+Required.IllegalTagsTest.BadTagFieldNumberTooHigh/*.ProtobufInput                                       # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/*.ProtobufInput                               # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagOverlongVarint/*.ProtobufInput                                           # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                           # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                        # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                        # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                                    # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                                 # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                                 # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Oneof/EditionsProto2.ProtobufInput    # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Repeated/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Singular/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Oneof/Proto2.ProtobufInput            # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Repeated/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Singular/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
 
-Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                    # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputDayTooShort                                                    # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputDayZero                                                        # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputHourTooLarge                                                   # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputHourTooLarge25                                                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputInvalidNanos                                                   # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                              # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                            # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMinuteTooLarge                                                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMonthTooLarge                                                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMonthTooShort                                                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMonthZero                                                      # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                                                   # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputYearTooLong                                                    # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputYearTooShort                                                   # Should have failed to parse, but didn't.
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateDifferentTypeId.ProtobufOutput                      # Output was not equivalent to reference message
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValue.ProtobufOutput                                # Output was not equivalent to reference message
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValueOutOfOrder.ProtobufOutput                      # Output was not equivalent to reference message
+Required.JsonTimestampTest.TimestampJsonInputDayTooLarge/*.JsonInput                                    # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayTooShort/*.JsonInput                                    # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayZero/*.JsonInput                                        # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge/*.JsonInput                                   # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge25/*.JsonInput                                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidNanos/*.JsonInput                                   # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/*.JsonInput                              # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/*.JsonInput                            # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMinuteTooLarge/*.JsonInput                                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooLarge/*.JsonInput                                  # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooShort/*.JsonInput                                  # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthZero/*.JsonInput                                      # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputNonLeapFeb29/*.JsonInput                                   # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputSecondTooLarge/*.JsonInput                                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputYearTooLong/*.JsonInput                                    # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputYearTooShort/*.JsonInput                                   # Should have failed to parse, but didn't.
+Recommended.MessageSetTest.DuplicateDifferentTypeId.ProtobufInput.ProtobufOutput                        # Output was not equivalent to reference message
+Recommended.MessageSetTest.DuplicateValue.ProtobufInput.ProtobufOutput                                  # Output was not equivalent to reference message
+Recommended.MessageSetTest.DuplicateValueOutOfOrder.ProtobufInput.ProtobufOutput                        # Output was not equivalent to reference message

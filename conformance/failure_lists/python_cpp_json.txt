@@ -1,0 +1,21 @@
+# This is the list of conformance tests that are known to fail for the
+# Python/C++ implementation right now.  These should be fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+#
+# TODO: insert links to corresponding bugs tracking the issue.
+# Should we use GitHub issues or the Google-internal bug tracker?
+
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Required.JsonDoubleTest.DoubleFieldFalseValue/*.JsonInput                             # Should have failed to parse, but didn't.
+Required.JsonDoubleTest.DoubleFieldTrueValue/*.JsonInput                              # Should have failed to parse, but didn't.
+Required.JsonEnumTest.EnumFieldFalseValue/*.JsonInput                                 # Should have failed to parse, but didn't.
+Required.JsonEnumTest.EnumFieldTrueValue/*.JsonInput                                  # Should have failed to parse, but didn't.
+Required.JsonFloatTest.FloatFieldFalseValue/*.JsonInput                               # Should have failed to parse, but didn't.
+Required.JsonFloatTest.FloatFieldTrueValue/*.JsonInput                                # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayTooShort/*.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/*.JsonInput            # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/*.JsonInput          # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooShort/*.JsonInput                # Should have failed to parse, but didn't.

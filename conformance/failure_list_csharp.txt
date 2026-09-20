@@ -1,40 +1,40 @@
-Recommended.Proto2.JsonInput.FieldNameExtension.JsonOutput
-Recommended.Proto2.JsonInput.BytesFieldBase64Url.JsonOutput
-Recommended.Proto2.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Recommended.Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
-Recommended.Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Required.Proto2.JsonInput.OneofFieldNullFirst.JsonOutput
-Required.Proto2.JsonInput.OneofFieldNullFirst.ProtobufOutput
-Required.Proto2.JsonInput.OneofFieldNullSecond.JsonOutput
-Required.Proto2.JsonInput.OneofFieldNullSecond.ProtobufOutput
-Required.Proto3.JsonInput.OneofFieldNullFirst.JsonOutput
-Required.Proto3.JsonInput.OneofFieldNullFirst.ProtobufOutput
-Required.Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
-Required.Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput
-Recommended.Proto3.ProtobufInput.ValueRejectInfNumberValue.JsonOutput
-Recommended.Proto3.ProtobufInput.ValueRejectNanNumberValue.JsonOutput
-Required.Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
-Required.Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
+Recommended.JsonStoresDefaultTest.FieldNameExtension/Proto2.JsonInput.JsonOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/Proto2.JsonInput.JsonOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/Proto2.JsonInput.ProtobufOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/Proto3.JsonInput.JsonOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/Proto3.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullFirst/Proto2.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullFirst/Proto2.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullSecond/Proto2.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullSecond/Proto2.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullFirst/Proto3.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullFirst/Proto3.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullSecond/Proto3.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullSecond/Proto3.JsonInput.ProtobufOutput
+Recommended.JsonValueTest.ValueRejectInfNumberValue/Proto3.ProtobufInput.JsonOutput
+Recommended.JsonValueTest.ValueRejectNanNumberValue/Proto3.ProtobufInput.JsonOutput
+Required.UnknownFieldsTest.UnknownOrdering/Proto2.ProtobufInput.ProtobufOutput
+Required.UnknownFieldsTest.UnknownOrdering/Proto3.ProtobufInput.ProtobufOutput
 
-Recommended.Editions_Proto2.JsonInput.FieldNameExtension.JsonOutput
-Recommended.Editions_Proto2.JsonInput.BytesFieldBase64Url.JsonOutput
-Recommended.Editions_Proto2.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Recommended.Editions_Proto3.JsonInput.BytesFieldBase64Url.JsonOutput
-Recommended.Editions_Proto3.JsonInput.BytesFieldBase64Url.ProtobufOutput
-Required.Editions_Proto2.JsonInput.OneofFieldNullFirst.JsonOutput
-Required.Editions_Proto2.JsonInput.OneofFieldNullFirst.ProtobufOutput
-Required.Editions_Proto2.JsonInput.OneofFieldNullSecond.JsonOutput
-Required.Editions_Proto2.JsonInput.OneofFieldNullSecond.ProtobufOutput
-Required.Editions_Proto3.JsonInput.OneofFieldNullFirst.JsonOutput
-Required.Editions_Proto3.JsonInput.OneofFieldNullFirst.ProtobufOutput
-Required.Editions_Proto3.JsonInput.OneofFieldNullSecond.JsonOutput
-Required.Editions_Proto3.JsonInput.OneofFieldNullSecond.ProtobufOutput
-Recommended.Editions_Proto3.ProtobufInput.ValueRejectInfNumberValue.JsonOutput
-Recommended.Editions_Proto3.ProtobufInput.ValueRejectNanNumberValue.JsonOutput
-Required.Editions_Proto2.ProtobufInput.UnknownOrdering.ProtobufOutput
-Required.Editions_Proto3.ProtobufInput.UnknownOrdering.ProtobufOutput
-Recommended.Editions.ProtobufInput.RejectInvalidUtf8.String.Extension                                              # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
-Required.*.JsonInput.AnyEmpty.*
+Recommended.JsonStoresDefaultTest.FieldNameExtension/EditionsProto2.JsonInput.JsonOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/EditionsProto2.JsonInput.JsonOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/EditionsProto2.JsonInput.ProtobufOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/EditionsProto3.JsonInput.JsonOutput
+Recommended.JsonBytesTest.BytesFieldBase64Url/EditionsProto3.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullFirst/EditionsProto2.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullFirst/EditionsProto2.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullSecond/EditionsProto2.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullSecond/EditionsProto2.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullFirst/EditionsProto3.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullFirst/EditionsProto3.JsonInput.ProtobufOutput
+Required.JsonOneofTest.OneofFieldNullSecond/EditionsProto3.JsonInput.JsonOutput
+Required.JsonOneofTest.OneofFieldNullSecond/EditionsProto3.JsonInput.ProtobufOutput
+Recommended.JsonValueTest.ValueRejectInfNumberValue/EditionsProto3.ProtobufInput.JsonOutput
+Recommended.JsonValueTest.ValueRejectNanNumberValue/EditionsProto3.ProtobufInput.JsonOutput
+Required.UnknownFieldsTest.UnknownOrdering/EditionsProto2.ProtobufInput.ProtobufOutput
+Required.UnknownFieldsTest.UnknownOrdering/EditionsProto3.ProtobufInput.ProtobufOutput
+Recommended.Utf8ExtensionTest.String.ProtobufInput                                          # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberTooHigh/*.ProtobufInput                           # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/*.ProtobufInput                   # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagOverlongVarint/*.ProtobufInput                               # Should have failed to parse, but didn't.
+Required.JsonAnyTest.AnyEmpty/*.JsonInput.*
