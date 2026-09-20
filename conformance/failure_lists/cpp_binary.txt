@@ -1,0 +1,4 @@
+Required.Editions_Proto2.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh # Should have failed to parse, but didn't.
+Required.Editions_Proto3.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh # Should have failed to parse, but didn't.
+Required.Proto2.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh          # Should have failed to parse, but didn't.
+Required.Proto3.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh          # Should have failed to parse, but didn't.
