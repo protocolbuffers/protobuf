@@ -4,6 +4,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+use conformance_rust_proto::conformance_request::MergePayloadCase;
 use conformance_rust_proto::{ConformanceRequest, ConformanceResponse, WireFormat};
 
 use protobuf::prelude::*;
@@ -55,6 +56,16 @@ fn write_response_to_stdout(resp: &ConformanceResponse) {
 fn do_test(req: &ConformanceRequest) -> ConformanceResponse {
     let mut resp = ConformanceResponse::new();
     let message_type = req.message_type();
+
+    // Optional request features this testee does not implement yet.
+    if req.discard_unknown_fields() {
+        resp.set_skipped("discard_unknown_fields is not supported");
+        return resp;
+    }
+    if req.merge_payload_case() != MergePayloadCase::not_set {
+        resp.set_skipped("merge_payload is not supported");
+        return resp;
+    }
 
     if req.requested_output_format() != WireFormat::Protobuf {
         resp.set_skipped("only wire format output implemented");
