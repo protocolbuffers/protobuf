@@ -1,0 +1,1 @@
+P1.RecursionLimitPerformanceTest.MessageSetExtension.ProtobufInput # Should have failed to parse, but didn't.
