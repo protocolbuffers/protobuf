@@ -236,6 +236,20 @@ class ConformanceJavaLite {
   private Conformance.ConformanceResponse doTest(Conformance.ConformanceRequest request) {
     com.google.protobuf.MessageLite testMessage;
     String messageType = request.getMessageType();
+
+    // Optional request features this testee does not implement yet.
+    if (request.getDiscardUnknownFields()) {
+      return Conformance.ConformanceResponse.newBuilder()
+          .setSkipped("discard_unknown_fields is not supported")
+          .build();
+    }
+    if (request.getMergePayloadCase()
+        != Conformance.ConformanceRequest.MergePayloadCase.MERGEPAYLOAD_NOT_SET) {
+      return Conformance.ConformanceResponse.newBuilder()
+          .setSkipped("merge_payload is not supported")
+          .build();
+    }
+
     switch (request.getPayloadCase()) {
       case PROTOBUF_PAYLOAD:
         {
