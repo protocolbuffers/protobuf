@@ -1,0 +1,12 @@
+P0.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/*.ProtobufInput # Should have failed to parse, but didn't.
+# TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
+# P3.Utf8StringTest.MapKey/EditionsProto2.ProtobufInput   # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapValue/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Oneof/EditionsProto2.ProtobufInput    # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Repeated/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Singular/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapKey/Proto2.ProtobufInput           # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapValue/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Oneof/Proto2.ProtobufInput            # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Repeated/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Singular/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
