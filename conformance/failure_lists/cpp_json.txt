@@ -1,0 +1,122 @@
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/EditionsProto2.JsonInput                         # Should have failed to parse, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/EditionsProto2.JsonInput                          # Should have failed to parse, but didn't.
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/EditionsProto2.JsonInput                   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/EditionsProto2.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/EditionsProto2.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/EditionsProto2.JsonInput                            # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.MapFieldValueIsNull/EditionsProto2.JsonInput                                # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldMessageElementIsNull/EditionsProto2.JsonInput                  # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldPrimitiveElementIsNull/EditionsProto2.JsonInput                # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingComma/EditionsProto2.JsonInput                     # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithNewlines/EditionsProto2.JsonInput         # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpace/EditionsProto2.JsonInput            # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpaceCommaSpace/EditionsProto2.JsonInput  # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/EditionsProto2.JsonInput                       # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/EditionsProto2.JsonInput                        # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/EditionsProto2.JsonInput                      # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldUppercaseEscapeLetter/EditionsProto2.JsonInput                 # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObject/EditionsProto2.JsonInput                    # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithNewlines/EditionsProto2.JsonInput        # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpace/EditionsProto2.JsonInput           # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpaceCommaSpace/EditionsProto2.JsonInput # Should have failed to parse, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskNumbersDontRoundTrip/EditionsProto3.ProtobufInput.JsonOutput  # Should have failed to serialize, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskPathsDontRoundTrip/EditionsProto3.ProtobufInput.JsonOutput    # Should have failed to serialize, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskTooManyUnderscore/EditionsProto3.ProtobufInput.JsonOutput     # Should have failed to serialize, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/EditionsProto3.JsonInput                         # Should have failed to parse, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/EditionsProto3.JsonInput                          # Should have failed to parse, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskInvalidCharacter/EditionsProto3.JsonInput                     # Should have failed to parse, but didn't.
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/EditionsProto3.JsonInput                   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/EditionsProto3.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/EditionsProto3.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/EditionsProto3.JsonInput                            # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.MapFieldValueIsNull/EditionsProto3.JsonInput                                # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldMessageElementIsNull/EditionsProto3.JsonInput                  # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldPrimitiveElementIsNull/EditionsProto3.JsonInput                # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingComma/EditionsProto3.JsonInput                     # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithNewlines/EditionsProto3.JsonInput         # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpace/EditionsProto3.JsonInput            # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpaceCommaSpace/EditionsProto3.JsonInput  # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/EditionsProto3.JsonInput                       # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/EditionsProto3.JsonInput                        # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/EditionsProto3.JsonInput                      # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldUppercaseEscapeLetter/EditionsProto3.JsonInput                 # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObject/EditionsProto3.JsonInput                    # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithNewlines/EditionsProto3.JsonInput        # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpace/EditionsProto3.JsonInput           # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpaceCommaSpace/EditionsProto3.JsonInput # Should have failed to parse, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/Proto2.JsonInput                                 # Should have failed to parse, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/Proto2.JsonInput                                  # Should have failed to parse, but didn't.
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/Proto2.JsonInput                           # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/Proto2.JsonInput           # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/Proto2.JsonInput           # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/Proto2.JsonInput                                    # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.MapFieldValueIsNull/Proto2.JsonInput                                        # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldMessageElementIsNull/Proto2.JsonInput                          # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldPrimitiveElementIsNull/Proto2.JsonInput                        # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingComma/Proto2.JsonInput                             # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithNewlines/Proto2.JsonInput                 # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpace/Proto2.JsonInput                    # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpaceCommaSpace/Proto2.JsonInput          # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/Proto2.JsonInput                               # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/Proto2.JsonInput                                # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/Proto2.JsonInput                              # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldUppercaseEscapeLetter/Proto2.JsonInput                         # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObject/Proto2.JsonInput                            # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithNewlines/Proto2.JsonInput                # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpace/Proto2.JsonInput                   # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpaceCommaSpace/Proto2.JsonInput         # Should have failed to parse, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskNumbersDontRoundTrip/Proto3.ProtobufInput.JsonOutput          # Should have failed to serialize, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskPathsDontRoundTrip/Proto3.ProtobufInput.JsonOutput            # Should have failed to serialize, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskTooManyUnderscore/Proto3.ProtobufInput.JsonOutput             # Should have failed to serialize, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/Proto3.JsonInput                                 # Should have failed to parse, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/Proto3.JsonInput                                  # Should have failed to parse, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskInvalidCharacter/Proto3.JsonInput                             # Should have failed to parse, but didn't.
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/Proto3.JsonInput                           # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/Proto3.JsonInput           # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/Proto3.JsonInput           # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/Proto3.JsonInput                                    # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.MapFieldValueIsNull/Proto3.JsonInput                                        # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldMessageElementIsNull/Proto3.JsonInput                          # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldPrimitiveElementIsNull/Proto3.JsonInput                        # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingComma/Proto3.JsonInput                             # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithNewlines/Proto3.JsonInput                 # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpace/Proto3.JsonInput                    # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpaceCommaSpace/Proto3.JsonInput          # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/Proto3.JsonInput                               # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/Proto3.JsonInput                                # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/Proto3.JsonInput                              # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldUppercaseEscapeLetter/Proto3.JsonInput                         # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObject/Proto3.JsonInput                            # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithNewlines/Proto3.JsonInput                # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpace/Proto3.JsonInput                   # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpaceCommaSpace/Proto3.JsonInput         # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldInt32/EditionsProto2.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldMessage/EditionsProto2.JsonInput                # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldInt32/EditionsProto3.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldMessage/EditionsProto3.JsonInput                # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayTooLarge/EditionsProto3.JsonInput                    # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge/EditionsProto3.JsonInput                   # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge25/EditionsProto3.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/EditionsProto3.JsonInput              # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/EditionsProto3.JsonInput            # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMinuteTooLarge/EditionsProto3.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooLarge/EditionsProto3.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputNonLeapFeb29/EditionsProto3.JsonInput                   # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputOffsetBoundaryOverflow/EditionsProto3.JsonInput         # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputOffsetBoundaryUnderflow/EditionsProto3.JsonInput        # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputSecondTooLarge/EditionsProto3.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldInt32/Proto2.JsonInput                          # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldMessage/Proto2.JsonInput                        # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldInt32/Proto3.JsonInput                          # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldMessage/Proto3.JsonInput                        # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayTooLarge/Proto3.JsonInput                            # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge/Proto3.JsonInput                           # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge25/Proto3.JsonInput                         # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/Proto3.JsonInput                      # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/Proto3.JsonInput                    # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMinuteTooLarge/Proto3.JsonInput                         # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooLarge/Proto3.JsonInput                          # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputNonLeapFeb29/Proto3.JsonInput                           # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputOffsetBoundaryOverflow/Proto3.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputOffsetBoundaryUnderflow/Proto3.JsonInput                # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputSecondTooLarge/Proto3.JsonInput                         # Should have failed to parse, but didn't.

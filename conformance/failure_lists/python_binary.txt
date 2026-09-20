@@ -1,0 +1,25 @@
+Required.IllegalTagsTest.BadTagFieldNumberTooHigh/*.ProtobufInput         # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/*.ProtobufInput # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagOverlongVarint/*.ProtobufInput             # Should have failed to parse, but didn't.
+Recommended.Utf8ExtensionTest.String.ProtobufInput                        # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.MapKey/EditionsProto3.ProtobufInput            # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.MapValue/EditionsProto3.ProtobufInput          # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.Oneof/EditionsProto3.ProtobufInput             # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.Repeated/EditionsProto3.ProtobufInput          # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.Singular/EditionsProto3.ProtobufInput          # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.MapKey/Proto3.ProtobufInput                    # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.MapValue/Proto3.ProtobufInput                  # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.Oneof/Proto3.ProtobufInput                     # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.Repeated/Proto3.ProtobufInput                  # Should have failed to parse, but raised an error instead.
+Recommended.Utf8StringTest.Singular/Proto3.ProtobufInput                  # Should have failed to parse, but raised an error instead.
+# TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
+# Recommended.Utf8StringTest.MapKey/EditionsProto2.ProtobufInput   # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.MapValue/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Oneof/EditionsProto2.ProtobufInput    # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Repeated/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Singular/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.MapKey/Proto2.ProtobufInput           # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.MapValue/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Oneof/Proto2.ProtobufInput            # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Repeated/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Singular/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
