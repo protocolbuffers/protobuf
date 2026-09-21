@@ -1,7 +1,5 @@
 package com.google.protobuf;
 
-import java.util.Optional;
-
 /**
  * ProtobufToStringOutput controls the output format of {@link Message#toString()}. Specifically,
  * for the Runnable object passed to `callWithDebugFormat` and `callWithTextFormat`,
@@ -31,7 +29,7 @@ public final class ProtobufToStringOutput {
     try {
       impl.run();
     } finally {
-      OutputMode unused = setOutputMode(oldMode);
+      var _ = setOutputMode(oldMode);
     }
   }
 
