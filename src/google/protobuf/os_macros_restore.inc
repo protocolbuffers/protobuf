@@ -29,6 +29,7 @@
 
 #ifdef PROTOBUF_DID_UNDEF_LINUX
 #pragma pop_macro("linux")
+#undef PROTOBUF_DID_UNDEF_LINUX
 #endif
 
 #ifdef PROTOBUF_DID_UNDEF_NO_DATA

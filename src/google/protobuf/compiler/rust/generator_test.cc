@@ -639,6 +639,27 @@ TEST_F(RustGeneratorTest, KeepsReexportForCrateWithFeaturesButNoCollision) {
   EXPECT_THAT(entry_point, HasSubstr("pub use b_proto::*;"));
 }
 
+TEST_F(RustGeneratorTest, EmitsPortDefAndUndefInCppThunks) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Config {
+      optional int32 linux = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string thunks = FileContents("foo.pb.thunks.cc");
+  EXPECT_THAT(thunks,
+              HasSubstr("#include \"google/protobuf/port_def.inc\""));
+  EXPECT_THAT(thunks,
+              HasSubstr("#include \"google/protobuf/port_undef.inc\""));
+}
+
 }  // namespace
 }  // namespace rust
 }  // namespace compiler

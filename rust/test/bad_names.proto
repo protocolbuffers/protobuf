@@ -26,6 +26,7 @@ message Self {
   repeated int32 match = 5;
   optional bool clear = 6;
   optional bool new = 7;
+  optional bool linux = 8;
 }
 
 message Pub {
