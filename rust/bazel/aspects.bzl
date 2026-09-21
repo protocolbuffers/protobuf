@@ -39,6 +39,9 @@ CrateMappingInfo = provider(
                         "file of the current proto_library.",
     },
 )
+RustCcProtoAspectInfo = provider(
+    doc = "Tag provider indicating rust_cc_proto_library_aspect has run on this target.",
+)
 RustProtoInfo = provider(
     doc = "Rust protobuf provider info",
     fields = {
@@ -384,7 +387,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             dep_variant_infos = dep_variant_infos,
             exports_dep_variant_infos = dep_exports_dep_variant_infos,
             crate_mapping = depset(transitive = transitive_crate_mappings),
-        )]
+        )] + ([] if is_upb else [RustCcProtoAspectInfo()])
 
     # Add the infos from dependencies' exports, as they are needed to compile the
     # generated code of this target.
@@ -498,7 +501,7 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
             )],
             transitive = transitive_crate_mappings,
         ),
-    )]
+    )] + ([] if is_upb else [RustCcProtoAspectInfo()])
 
 def _make_proto_library_aspect(is_upb):
     return aspect(
@@ -506,6 +509,7 @@ def _make_proto_library_aspect(is_upb):
         attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
         required_providers = [ProtoInfo],
+        provides = ([] if is_upb else [RustCcProtoAspectInfo]),
         attrs = {
             "_cpp_thunks_deps": attr.label_list(
                 default = [
