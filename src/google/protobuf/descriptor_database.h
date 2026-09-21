@@ -57,7 +57,7 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   using StringViewArg ABSL_DEPRECATE_AND_INLINE() = absl::string_view;
 
  public:
-  inline DescriptorDatabase() {}
+  inline DescriptorDatabase() = default;
   DescriptorDatabase(const DescriptorDatabase&) = delete;
   DescriptorDatabase& operator=(const DescriptorDatabase&) = delete;
   virtual ~DescriptorDatabase();
@@ -129,8 +129,8 @@ class PROTOBUF_EXPORT DescriptorDatabase {
       std::vector<std::string>* PROTOBUF_NONNULL output);
 
  private:
-  static_assert(std::is_same<absl::string_view, absl::string_view>::value ||
-                    std::is_same<absl::string_view, const std::string&>::value,
+  static_assert(std::is_same_v<absl::string_view, absl::string_view> ||
+                    std::is_same_v<absl::string_view, const std::string&>,
                 "StringViewArg must be either "
                 "absl::string_view or const std::string&");
 };

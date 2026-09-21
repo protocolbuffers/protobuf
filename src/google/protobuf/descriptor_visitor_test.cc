@@ -96,7 +96,7 @@ TEST(VisitDescriptorsTest, AllTypesDeduceSelective) {
       // Only select on descriptors with a full_name method.
       [&](const auto& descriptor)
           -> std::enable_if_t<
-              !std::is_void<decltype(descriptor.full_name())>::value> {
+              !std::is_void_v<decltype(descriptor.full_name())>> {
         descriptors.push_back(descriptor.full_name());
       });
   // FileDescriptor doesn't have a full_name method.
