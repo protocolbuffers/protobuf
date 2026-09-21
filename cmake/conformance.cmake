@@ -37,16 +37,20 @@ add_custom_command(
   OUTPUT
     ${protobuf_BINARY_DIR}/conformance/conformance.pb.h
     ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
+    ${protobuf_BINARY_DIR}/conformance/conformance_result.pb.h
+    ${protobuf_BINARY_DIR}/conformance/conformance_result.pb.cc
     ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.h
     ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.cc
     ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition_unstable.pb.h
     ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition_unstable.pb.cc
   DEPENDS ${protobuf_PROTOC_EXE}
     ${protobuf_SOURCE_DIR}/conformance/conformance.proto
+    ${protobuf_SOURCE_DIR}/conformance/conformance_result.proto
     ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition2023.proto
     ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition_unstable.proto
   COMMAND ${protobuf_PROTOC_EXE}
       ${protobuf_SOURCE_DIR}/conformance/conformance.proto
+      ${protobuf_SOURCE_DIR}/conformance/conformance_result.proto
       ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition2023.proto
       ${protobuf_SOURCE_DIR}/conformance/test_protos/test_messages_edition_unstable.proto
       --proto_path=${protobuf_SOURCE_DIR}
@@ -92,6 +96,8 @@ add_custom_command(
 add_library(libconformance_common STATIC
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.h
   ${protobuf_BINARY_DIR}/conformance/conformance.pb.cc
+  ${protobuf_BINARY_DIR}/conformance/conformance_result.pb.h
+  ${protobuf_BINARY_DIR}/conformance/conformance_result.pb.cc
   ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.h
   ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition2023.pb.cc
   ${protobuf_BINARY_DIR}/conformance/test_protos/test_messages_edition_unstable.pb.h
@@ -125,7 +131,7 @@ protobuf_configure_target(conformance_cpp)
 
 target_include_directories(
   conformance_test_runner
-  PUBLIC ${protobuf_SOURCE_DIR} ${protobuf_SOURCE_DIR}/conformance)
+  PUBLIC ${protobuf_SOURCE_DIR})
 
 target_include_directories(
   conformance_cpp
@@ -134,25 +140,69 @@ target_include_directories(
 target_include_directories(conformance_test_runner PRIVATE ${ABSL_ROOT_DIR})
 target_include_directories(conformance_cpp PRIVATE ${ABSL_ROOT_DIR})
 
+# The runner hosts the gtest-based conformance suites (see
+# conformance/conformance_test_main.cc), so it needs googletest even when
+# protobuf_BUILD_TESTS is off.  gtest.cmake is a no-op if GTest::gmock already
+# exists, and otherwise finds or fetches googletest the same way the unit tests
+# do.
+include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)
+
 target_link_libraries(conformance_test_runner
   libconformance_common
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
+  GTest::gmock
 )
+# The runner reads and sets gtest's flags (GTEST_FLAG_GET/GTEST_FLAG_SET), which
+# are exported data symbols of the gtest library.  When googletest is built as
+# a shared library, consumers must compile with GTEST_LINKED_AS_SHARED_LIBRARY
+# so that those symbols are declared dllimport on Windows; googletest only
+# attaches that definition to its installed (find_package) targets, not to the
+# ones FetchContent builds in-tree, so set it here for either case.
+if(TARGET GTest::gtest)
+  get_target_property(_gtest_target_type GTest::gtest TYPE)
+  if(_gtest_target_type STREQUAL "SHARED_LIBRARY")
+    target_compile_definitions(conformance_test_runner
+      PRIVATE GTEST_LINKED_AS_SHARED_LIBRARY=1)
+  endif()
+endif()
+
 target_link_libraries(conformance_cpp
   libconformance_common
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
 )
 
+# The C++ testee implements conformance protocol version 2
+# (CppConformanceHarness::kProtocolVersion), so the runner is pinned to it
+# rather than left to detect it: a regression to version 1 then fails the run
+# instead of silently skipping every version 2 test.
 add_test(NAME conformance_cpp_test
   COMMAND $<TARGET_FILE:conformance_test_runner>
     --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp.txt
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}
     --maximum_edition 2023
-    $<TARGET_FILE:conformance_cpp>
-  DEPENDS conformance_test_runner conformance_cpp)
+    --protocol_version 2
+    $<TARGET_FILE:conformance_cpp>)
+
+# The same suites against DynamicMessage: conformance_cpp --dynamic serves the
+# requests with messages from a DynamicMessageFactory over descriptors built at
+# runtime instead of the generated classes.  Both implementations share the
+# reflection-based parsers and serializers, so the failure lists differ only
+# where DynamicMessage itself does.  The run gets an --output_dir of its own so
+# that its failing_tests.txt and the like don't clobber conformance_cpp_test's
+# under `ctest -j`; the runner appends the file names to the directory as
+# given, so it must exist and end in a slash.
+file(MAKE_DIRECTORY ${protobuf_BINARY_DIR}/conformance_dynamic)
+add_test(NAME conformance_cpp_dynamic_test
+  COMMAND $<TARGET_FILE:conformance_test_runner>
+    --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp_dynamic.txt
+    --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
+    --output_dir ${protobuf_BINARY_DIR}/conformance_dynamic/
+    --maximum_edition 2023
+    --protocol_version 2
+    $<TARGET_FILE:conformance_cpp> --dynamic)
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
 

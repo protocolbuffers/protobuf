@@ -19,10 +19,11 @@ option objc_class_prefix = "Conformance";
 //
 // You can either run the tests in two different ways:
 //
-//   1. in-process (using the interface in conformance_test.h).
+//   1. in-process (a C++ library that implements MakeTesteeRunner(), see
+//      testee_runner.h, linked into the test binary).
 //
 //   2. as a sub-process communicating over a pipe.  Information about how to
-//      do this is in conformance_test_runner.cc.
+//      do this is in README.md and conformance_test_runner.h.
 //
 // Pros/cons of the two approaches:
 //
@@ -76,12 +77,43 @@ message FailureSet {
   reserved 1;
 }
 
-// Represents a single test case's input.  The testee should:
+// Represents a single test case's input.
 //
-//   1. parse this proto (which should always succeed)
-//   2. parse the protobuf or JSON payload in "payload" (which may fail)
-//   3. if the parse succeeded, serialize the message in the requested format.
+// The request exists in two shapes, selected by `protocol_version`:
+//
+//   - Protocol version 1 (the default, `protocol_version` unset): the flat
+//     request made of the fields below `protocol_version`.  The testee
+//     should:
+//
+//       1. parse this proto (which should always succeed)
+//       2. parse the protobuf, JSON or text payload in "payload" (which may
+//          fail)
+//       3. if the parse succeeded and "merge_payload" is set, merge it into
+//          the message (which may fail)
+//       4. if "discard_unknown_fields" is set, discard the message's unknown
+//          fields
+//       5. serialize the message in the requested format.
+//
+//     Steps 3 and 4 are optional features; a testee that does not support one
+//     of them must respond with "skipped" when a request asks for it.
+//
+//   - Protocol version 2 and later: a list of `actions` (parse, create, merge,
+//     discard unknown fields, serialize) over message handles, which the
+//     testee runs in order; see ConformanceAction.  The version 1 fields are
+//     left unset.
+//
+// A testee that speaks version 1 gets the flat request whenever the test fits
+// it; otherwise the runner sends the lowest version, 2 or later, that can
+// carry the test, and never a version the testee doesn't implement.  It
+// learns the testee's version from the testee itself, in a discovery
+// handshake that precedes the first test: see `protocol_version` below and
+// ConformanceResponse.protocol_version.
 message ConformanceRequest {
+  // -------------------------------------------------------------------------
+  // Protocol version 1: the flat request.  Unset in requests of any later
+  // version.
+  // -------------------------------------------------------------------------
+
   // The payload (whether protobuf of JSON) is always for a
   // protobuf_test_messages.proto3.TestAllTypes proto (as defined in
   // src/google/protobuf/proto3_test_messages.proto).
@@ -116,6 +148,236 @@ message ConformanceRequest {
   // This can be used in json and text format. If true, testee should print
   // unknown fields instead of ignore. This feature is optional.
   bool print_unknown_fields = 9;
+
+  // If true, the testee discards the unknown fields of the message
+  // (recursively, like C++'s DiscardUnknownFields()) after parsing `payload`
+  // and merging `merge_payload`, and before serializing.  This is optional: a
+  // testee that does not support it must respond with `skipped` rather than
+  // ignore it, since a round trip that silently keeps the unknown fields is
+  // indistinguishable from a passing result.
+  bool discard_unknown_fields = 10;
+
+  // A second payload for the same message type, which the testee merges into
+  // the message parsed from `payload` (as with MergeFrom) after that parse
+  // succeeded and before `discard_unknown_fields` and serialization.  Its
+  // format is independent of `payload`'s; `merge_json_payload` is parsed with
+  // the same `test_category`-derived options as `json_payload` (so unknown
+  // JSON fields are only ignored under JSON_IGNORE_UNKNOWN_PARSING_TEST).  A
+  // failure to parse it is a `parse_error`.  Whether a default value written
+  // explicitly in the merge payload for a field without presence overwrites
+  // the existing value is unspecified (it depends on whether the format's
+  // parser can tell it apart from an absent field), so tests must not rely on
+  // it.  Like `discard_unknown_fields` this is optional and a testee that does
+  // not support it must respond with `skipped`.
+  oneof merge_payload {
+    bytes merge_protobuf_payload = 11;
+    string merge_json_payload = 12;
+    string merge_text_payload = 13;
+  }
+
+  // -------------------------------------------------------------------------
+  // Protocol version 2 and later.
+  // -------------------------------------------------------------------------
+
+  // The protocol version this request requires.  Unset (0) means 1, the flat
+  // request above.
+  //
+  // Versions are capability levels: a testee that implements version N
+  // implements every action, and every field of an action, of versions 2..N.
+  // Each later action kind or action field is introduced by the next version,
+  // documented next to it.  A testee answers a request whose version it does
+  // not implement with the runtime_error
+  //
+  //   "unsupported protocol version N (testee supports M)"
+  //
+  // where N is the requested and M the highest implemented version.  The
+  // runner never sends such a request on purpose: it learns the testee's
+  // version in the discovery handshake below and skips the tests that need a
+  // newer one on its side.
+  //
+  // The discovery handshake.  Before the first test, the runner sends one
+  // probe request that is at the same time a valid version 1 request and a
+  // valid version 2 request, so that every testee can answer it.  Its
+  // version 1 fields are exactly the request the runner sends for an empty
+  // binary round trip of TestAllTypesProto3 (BINARY_TEST, like every binary
+  // input):
+  //
+  //   message_type: "protobuf_test_messages.proto3.TestAllTypesProto3"
+  //   protobuf_payload: ""
+  //   requested_output_format: PROTOBUF
+  //   test_category: BINARY_TEST
+  //   protocol_version: 2
+  //   actions {
+  //     parse {
+  //       type: "protobuf_test_messages.proto3.TestAllTypesProto3"
+  //       id: 0
+  //       binary { data: "" }
+  //     }
+  //   }
+  //   actions { serialize { id: 0 binary {} } }
+  //
+  // A version 1 testee only sees the version 1 fields (the empty message,
+  // parsed and serialized back) and answers as it would any other request; it
+  // never sets ConformanceResponse.protocol_version, which is how the runner
+  // recognizes it.  A testee implementing version 2 or later sets
+  // ConformanceResponse.protocol_version to its highest version on every
+  // response, this one included.  The runner reads the version off the probe's
+  // response whatever else the response says (an error or a skip are answers
+  // too); only a testee that doesn't answer at all fails the run.  The probe
+  // is not a test: it has no test name, is never reported and never appears
+  // in a failure list.  Its version 1 shape is frozen forever, since it is all
+  // a version 1 testee ever sees of the handshake; the version 2 shape is the
+  // one exception to "the version 1 fields are unset in a version 2 request".
+  //
+  // The runner can also be pinned to a version (conformance_test(
+  // protocol_version = N) in conformance.bzl): it still probes, fails the run
+  // if the testee answers with a lower version, and otherwise speaks N.
+  int32 protocol_version = 20;
+
+  // The actions to run, in order.  Only set when `protocol_version` is 2 or
+  // later, in which case the version 1 fields above are unset and ignored.
+  //
+  // Actions operate on message handles: small non-negative integers chosen by
+  // the runner.  A ParseAction or NewAction creates the message it names;
+  // every other action refers to messages created by an earlier action.
+  // Creating a handle that already exists, or referring to one that does not,
+  // is a runtime_error.  The runner numbers handles from 0 in order of
+  // creation, but a testee must not rely on that.
+  //
+  // The testee runs the actions in order and stops at the first one that
+  // fails, answering with that action's error (parse_error for a ParseAction,
+  // serialize_error for a SerializeAction, runtime_error for anything else)
+  // and its index in ConformanceResponse.failed_action.  If every action
+  // succeeds, the answer is a ConformanceResults with one SerializeResult per
+  // SerializeAction, in the order of the actions.  A request without any
+  // SerializeAction is answered with an empty ConformanceResults.
+  //
+  // The error strings (parse_error, serialize_error, runtime_error,
+  // timeout_error, skipped) mean the same in every protocol version; a
+  // testee that does not support an action it does implement the version of
+  // (e.g. it has no text format) still answers `skipped`.  There is no JSPB
+  // in version 2: only version 1 requests ever carry it.
+  repeated ConformanceAction actions = 21;
+}
+
+// A binary (wire format) payload.  Protocol version 2.
+message BinaryPayload {
+  bytes data = 1;
+}
+
+// A JSON payload.  Protocol version 2.
+message JsonPayload {
+  string data = 1;
+  // Whether the parser should ignore unknown fields instead of failing on
+  // them, the equivalent of JSON_IGNORE_UNKNOWN_PARSING_TEST in protocol
+  // version 1.  Optional: a testee that can't answers `skipped`.
+  bool ignore_unknown_fields = 2;
+}
+
+// A text format payload.  Protocol version 2.
+message TextPayload {
+  string data = 1;
+}
+
+// Parses `payload` into a new message of type `type`, held as handle `id`.  A
+// failure to parse is a parse_error.  Protocol version 2.
+message ParseAction {
+  // The full name of the message type, e.g.
+  // "protobuf_test_messages.proto3.TestAllTypesProto3"; the same names as
+  // ConformanceRequest.message_type.
+  string type = 1;
+  // The handle of the new message.  Must not exist yet.
+  int32 id = 2;
+  oneof payload {
+    BinaryPayload binary = 3;
+    JsonPayload json = 4;
+    TextPayload text = 5;
+  }
+}
+
+// Creates an empty (default) message of type `type`, held as handle `id`.
+// Protocol version 2.
+message NewAction {
+  // The full name of the message type; see ParseAction.type.
+  string type = 1;
+  // The handle of the new message.  Must not exist yet.
+  int32 id = 2;
+}
+
+// Merges message `from` into message `to`, as `to.MergeFrom(from)` would; both
+// must exist and be of the same type.  `from` is left unchanged and stays
+// available.  `from` and `to` must be different messages: merging a message
+// into itself is a runtime_error, not something the testee is expected to
+// support.  Whether an explicitly set default value in `from` overwrites the
+// value of a field without presence in `to` is unspecified (see
+// ConformanceRequest.merge_payload), so tests must not rely on it.  Protocol
+// version 2.
+message MergeAction {
+  int32 from = 1;
+  int32 to = 2;
+}
+
+// Discards the unknown fields of message `id`, recursively, as C++'s
+// Message::DiscardUnknownFields() does.  Optional: a testee that can't answers
+// `skipped` (see ConformanceRequest.discard_unknown_fields for why it must not
+// ignore the action instead).  Protocol version 2.
+message DiscardUnknownFieldsAction {
+  int32 id = 1;
+}
+
+// The formats a SerializeAction can ask for.  Protocol version 2.
+message BinarySerialize {}
+
+message JsonSerialize {}
+
+message TextSerialize {
+  // Whether to print unknown fields (by field number) instead of dropping
+  // them; the equivalent of ConformanceRequest.print_unknown_fields.  Optional.
+  bool print_unknown_fields = 1;
+}
+
+// Serializes message `id` in the given format, producing one SerializeResult.
+// A failure to serialize is a serialize_error.  The message stays available
+// afterwards.  Protocol version 2.
+message SerializeAction {
+  int32 id = 1;
+  oneof format {
+    BinarySerialize binary = 2;
+    JsonSerialize json = 3;
+    TextSerialize text = 4;
+  }
+}
+
+// One step of a protocol version 2 request; see ConformanceRequest.actions.
+// Each member is introduced by the protocol version documented on its type;
+// a testee that receives an action it doesn't know (the oneof is not set from
+// its point of view) answers with a runtime_error.
+message ConformanceAction {
+  oneof action {
+    ParseAction parse = 1;
+    // Named `new_message` rather than `new`, which is a keyword or a reserved
+    // method name in several of the languages the testees are written in.
+    NewAction new_message = 2;
+    MergeAction merge = 3;
+    DiscardUnknownFieldsAction discard_unknown_fields = 4;
+    SerializeAction serialize = 5;
+  }
+}
+
+// The output of one SerializeAction, in the format the action asked for.
+// Protocol version 2.
+message SerializeResult {
+  oneof payload {
+    bytes binary = 1;
+    string json = 2;
+    string text = 3;
+  }
+}
+
+// The successful result of a protocol version 2 request: one SerializeResult
+// per SerializeAction of the request, in the same order.
+message ConformanceResults {
+  repeated SerializeResult serialized = 1;
 }
 
 // Represents a single test case's output.
@@ -163,7 +425,27 @@ message ConformanceResponse {
     // If the input was successfully parsed and the requested output was
     // TEXT_FORMAT, serialize to TEXT_FORMAT and set it in this field.
     string text_payload = 8;
+
+    // The outputs of a protocol version 2 (or later) request whose actions
+    // all succeeded: one SerializeResult per SerializeAction, in order.  Never
+    // set in answer to a version 1 request, whose outputs go in the payload
+    // fields above.
+    ConformanceResults results = 20;
   }
+
+  // For a protocol version 2 (or later) request that failed: the index into
+  // ConformanceRequest.actions of the action the error above comes from.  The
+  // testee stops at that action.  Unset when every action succeeded, for a
+  // version 1 request, and for errors that aren't about one action (e.g.
+  // "unsupported protocol version", or a request that couldn't be parsed).
+  optional int32 failed_action = 21;
+
+  // The highest protocol version the testee implements.  Testees implementing
+  // version 2 or later set it on every response; a version 1 testee never sets
+  // it, so an absent value means 1.  The runner reads it off the response to
+  // the discovery handshake (see ConformanceRequest.protocol_version) to learn
+  // which requests it may send.
+  int32 protocol_version = 22;
 }
 
 // Encoding options for jspb format.
