@@ -99,6 +99,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
@@ -711,6 +712,14 @@ class PROTOBUF_EXPORT Reflection final {
     std::unique_ptr<std::string> buffer_;
   };
 
+  using StringOrCordView = std::variant<absl::string_view, const absl::Cord*>;
+
+  // Returns a zero-copy view or Cord pointer into the contents of a string or
+  // bytes field without copying bytes or bumping reference counts.
+  // The lifetime of the returned view or pointer is tied to `message`.
+  [[nodiscard]] StringOrCordView GetStringOrCordView(
+      const Message& message, const FieldDescriptor* field) const;
+
   // Returns a view into the contents of a string field. "scratch" is used to
   // flatten bytes if it is non-contiguous. The lifetime of absl::string_view is
   // either tied to "message" (contiguous) or "scratch" (otherwise).
@@ -848,6 +857,10 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] const std::string& GetRepeatedStringReference(
       const Message& message, const FieldDescriptor* field, int index,
       std::string* scratch) const;
+
+  // See GetStringOrCordView(), above.
+  [[nodiscard]] StringOrCordView GetRepeatedStringOrCordView(
+      const Message& message, const FieldDescriptor* field, int index) const;
 
   // See GetStringView(), above.
   [[nodiscard]] absl::string_view GetRepeatedStringView(
