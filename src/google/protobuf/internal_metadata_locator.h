@@ -202,7 +202,7 @@ class TaggedInternalMetadataResolver {
   // the `this` pointer to the field contained by that type.
   template <typename T,
             TaggedInternalMetadataResolver<kTaggedBits> T::* Resolver>
-  static inline Arena* FindArena(const T* object) {
+  static Arena* FindArena(const T* object) {
     auto& resolver = object->*Resolver;
     if (resolver.Offset() == 0) {
       return nullptr;
@@ -212,8 +212,7 @@ class TaggedInternalMetadataResolver {
 
   // Finds the `InternalMetadata` by adding the offset to the address of the
   // start of the field.
-  inline const InternalMetadata& FindInternalMetadata(
-      const void* object) const {
+  const InternalMetadata& FindInternalMetadata(const void* object) const {
     ABSL_DCHECK_NE(Offset(), 0);
     return *reinterpret_cast<const InternalMetadata*>(
         reinterpret_cast<const char*>(object) + Offset());

@@ -2151,12 +2151,12 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
             {delim(""), delim("")},
             {delim("Hello world!"), delim("Hello world!")},
             {delim("\'\"\?\\\a\b\f\n\r\t\v"),
-             delim("\'\"\?\\\a\b\f\n\r\t\v")},       // escape
-            {delim("谷歌"), delim("谷歌")},          // Google in Chinese
-            {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
-            {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
-            {delim("\xF0\x9F\x98\x81"),
-             delim("\xF0\x9F\x98\x81")},  // emoji: 😁
+             delim("\'\"\?\\\a\b\f\n\r\t\v")},  // escape
+            // U+8C37 U+6B4C ("Google" in Chinese), as UTF-8.
+            {delim("\xE8\xB0\xB7\xE6\xAD\x8C"),
+             delim("\xE8\xB0\xB7\xE6\xAD\x8C")},
+            // U+1F601 (grinning face with smiling eyes), as UTF-8.
+            {delim("\xF0\x9F\x98\x81"), delim("\xF0\x9F\x98\x81")},
         });
     TestValidDataForType(FieldDescriptor::TYPE_BYTES,
                          {
@@ -2784,8 +2784,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             REQUIRED, R"({"optionalInt32": "12 34"})");
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericComma",
                             REQUIRED, R"({"optionalInt32": "12,34"})");
+  // Not a raw string literal: the payload holds the UTF-8 bytes of U+8C37
+  // U+6B4C between the digits.
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericUnicode",
-                            REQUIRED, R"({"optionalInt32": "12谷歌34"})");
+                            REQUIRED,
+                            "{\"optionalInt32\": \"12\xE8\xB0\xB7\xE6\xAD\x8C"
+                            "34\"}");
   ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalInt32": "abc"})");
 
@@ -2945,8 +2949,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             REQUIRED, R"({"optionalFloat": "12 34"})");
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericComma",
                             REQUIRED, R"({"optionalFloat": "12,34"})");
+  // Not a raw string literal: the payload holds the UTF-8 bytes of U+8C37
+  // U+6B4C between the digits.
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
-                            REQUIRED, R"({"optionalFloat": "12谷歌34"})");
+                            REQUIRED,
+                            "{\"optionalFloat\": \"12\xE8\xB0\xB7\xE6\xAD\x8C"
+                            "34\"}");
 
   // Parser reject boolean values for float fields.
   ExpectParseFailureForJson("FloatFieldTrueValue", REQUIRED,
@@ -3079,24 +3087,24 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("StringField", REQUIRED,
                    R"({"optionalString": "Hello world!"})",
                    R"(optional_string: "Hello world!")");
+  // Non-ASCII characters in the JSON text itself, as opposed to the \uXXXX
+  // escapes tested below. Note that this is deliberately not a raw string
+  // literal: the compiler resolves the \x escapes, so the payload holds the
+  // UTF-8 bytes of U+8C37 U+6B4C ("Google" in Chinese). In the raw string
+  // literals below, the \u escapes reach the testee's JSON parser verbatim.
   RunValidJsonTest("StringFieldUnicode", REQUIRED,
-                   // Google in Chinese.
-                   R"({"optionalString": "谷歌"})",
-                   R"(optional_string: "谷歌")");
+                   "{\"optionalString\": \"\xE8\xB0\xB7\xE6\xAD\x8C\"}",
+                   R"(optional_string: "\xE8\xB0\xB7\xE6\xAD\x8C")");
   RunValidJsonTest("StringFieldEscape", REQUIRED,
                    R"({"optionalString": "\"\\\/\b\f\n\r\t"})",
                    R"(optional_string: "\"\\/\b\f\n\r\t")");
   RunValidJsonTest("StringFieldUnicodeEscape", REQUIRED,
                    R"({"optionalString": "\u8C37\u6B4C"})",
-                   R"(optional_string: "谷歌")");
-  RunValidJsonTest("StringFieldUnicodeEscapeWithLowercaseHexLetters", REQUIRED,
-                   R"({"optionalString": "\u8c37\u6b4c"})",
-                   R"(optional_string: "谷歌")");
-  RunValidJsonTest(
-      "StringFieldSurrogatePair", REQUIRED,
-      // The character is an emoji: grinning face with smiling eyes. 😁
-      R"({"optionalString": "\uD83D\uDE01"})",
-      R"(optional_string: "\xF0\x9F\x98\x81")");
+                   R"(optional_string: "\xE8\xB0\xB7\xE6\xAD\x8C")");
+  RunValidJsonTest("StringFieldSurrogatePair", REQUIRED,
+                   // U+1F601 (grinning face with smiling eyes).
+                   R"({"optionalString": "\uD83D\uDE01"})",
+                   R"(optional_string: "\xF0\x9F\x98\x81")");
   RunValidJsonTest("StringFieldEmbeddedNull", REQUIRED,
                    R"({"optionalString": "Hello\u0000world!"})",
                    R"(optional_string: "Hello\000world!")");

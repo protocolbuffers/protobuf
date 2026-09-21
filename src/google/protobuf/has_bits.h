@@ -77,8 +77,7 @@ class HasBits {
   // arguments for an std::array<> or any type of array constructor. Below is a
   // handrolled constexpr 'Copy' function that we use to make a constexpr
   // constructor that accepts a `std::initializer` list.
-  static inline constexpr void Copy(uint32_t* dst, const uint32_t* src,
-                                    size_t n) {
+  static constexpr void Copy(uint32_t* dst, const uint32_t* src, size_t n) {
     assert(n <= doublewords);
     for (size_t ix = 0; ix < n; ++ix) {
       dst[ix] = src[ix];
