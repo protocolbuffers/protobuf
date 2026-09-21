@@ -112,7 +112,7 @@ class Message;            // message.h
 // its exact type at compile time (analogous to Reflection).
 class PROTOBUF_EXPORT Service {
  public:
-  Service() {}
+  Service() = default;
   Service(const Service&) = delete;
   Service& operator=(const Service&) = delete;
   virtual ~Service();
@@ -186,7 +186,7 @@ class PROTOBUF_EXPORT Service {
 // advanced features (e.g. deadline propagation).
 class PROTOBUF_EXPORT RpcController {
  public:
-  RpcController() {}
+  RpcController() = default;
   RpcController(const RpcController&) = delete;
   RpcController& operator=(const RpcController&) = delete;
   virtual ~RpcController();
@@ -252,7 +252,7 @@ class PROTOBUF_EXPORT RpcController {
 //   service->MyMethod(request, &response, callback);
 class PROTOBUF_EXPORT RpcChannel {
  public:
-  RpcChannel() {}
+  RpcChannel() = default;
   RpcChannel(const RpcChannel&) = delete;
   RpcChannel& operator=(const RpcChannel&) = delete;
   virtual ~RpcChannel();
