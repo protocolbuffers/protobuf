@@ -21,6 +21,8 @@ fn test_reserved_keyword_in_accessors() {
     assert_that!(res, eq(0));
     msg.set_new(true);
     assert_that!(msg.new_(), eq(true));
+    msg.set_linux(true);
+    assert_that!(msg.linux(), eq(true));
 }
 
 #[gtest]
