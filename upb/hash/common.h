@@ -27,6 +27,7 @@
 #ifndef UPB_HASH_COMMON_H_
 #define UPB_HASH_COMMON_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -183,6 +184,14 @@ UPB_INLINE void upb_tabent_setnext(upb_tabent* e, upb_tabent* next) {
 #undef kUpb_NoNextTabent
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
+
+/** Calculates the number of entries required to hold an expected number of
+ * values, within the table's load factor (0.875). */
+UPB_INLINE size_t _upb_entries_needed_for(size_t expected_size) {
+  size_t need_entries = expected_size + 1 + expected_size / 7;
+  UPB_ASSERT(need_entries - (need_entries >> 3) >= expected_size);
+  return need_entries;
+}
 
 #ifdef __cplusplus
 } /* extern "C" */

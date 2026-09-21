@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/hash/int_table.h"
@@ -81,6 +82,7 @@ bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
 
 bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
                   upb_MessageValue* val, size_t* iter) {
+  if (_upb_Map_Size(map) == 0) return false;
   upb_value v;
   bool ret;
   if (map->UPB_PRIVATE(is_strtable)) {
@@ -164,7 +166,7 @@ void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m) {
   if (upb_Map_IsFrozen(map)) return;
   UPB_PRIVATE(_upb_Map_ShallowFreeze)(map);
 
-  if (m) {
+  if (m && _upb_Map_Size(map) > 0) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
 
@@ -180,11 +182,10 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
+  memset(&map->t, 0, sizeof(map->t));
   if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING) {
-    if (!upb_inttable_init(&map->t.inttable, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = false;
   } else {
-    if (!upb_strtable_init(&map->t.strtable, 4, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = true;
   }
   map->key_size = key_size;
@@ -192,4 +193,27 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   map->UPB_PRIVATE(is_frozen) = false;
 
   return map;
+}
+
+bool _upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
+  if (size == 0) return true;
+
+  size_t target = _upb_entries_needed_for(size);
+  if (target < 8) target = 8;
+  int size_lg2 = upb_Log2Ceiling(target);
+
+  if (_upb_Map_Capacity(map) >= ((size_t)1 << size_lg2)) {
+    return true;
+  }
+
+  if (map->UPB_PRIVATE(is_strtable)) {
+    return upb_strtable_resize(&map->t.strtable, size_lg2, arena);
+  } else {
+    return upb_inttable_resize(&map->t.inttable, size_lg2, arena);
+  }
+}
+
+bool upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+  return _upb_Map_Reserve(map, size, arena);
 }
