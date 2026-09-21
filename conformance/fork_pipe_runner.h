@@ -9,7 +9,7 @@
 #define GOOGLE_PROTOBUF_CONFORMANCE_FORK_PIPE_RUNNER_H__
 
 #include <cstddef>
-#include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -26,32 +26,37 @@ namespace protobuf {
 class ForkPipeRunner : public ConformanceTestRunner {
  public:
   ForkPipeRunner(absl::string_view executable,
-                 absl::Span<const std::string> executable_args)
-      : child_pid_(-1),
-        executable_(executable),
-        executable_args_(executable_args.begin(), executable_args.end()) {}
+                 absl::Span<const std::string> executable_args);
 
-  explicit ForkPipeRunner(const std::string& executable)
-      : child_pid_(-1), executable_(executable) {}
+  explicit ForkPipeRunner(absl::string_view executable);
 
-  ~ForkPipeRunner() override = default;
+  ~ForkPipeRunner() override;
+
+  ForkPipeRunner(const ForkPipeRunner&) = delete;
+  ForkPipeRunner& operator=(const ForkPipeRunner&) = delete;
 
   std::string RunTest(absl::string_view test_name,
                       absl::string_view request) override;
 
  private:
+  // The process and pipe handles of the test program, defined by the
+  // platform's implementation file (fork_pipe_runner_posix.cc or
+  // fork_pipe_runner_win32.cc) along with the methods below.
+  struct State;
+
   void SpawnTestProgram();
 
-  void CheckedWrite(int fd, const void* buf, size_t len);
-  bool TryRead(int fd, void* buf, size_t len);
-  void CheckedRead(int fd, void* buf, size_t len);
+  bool IsTestProgramRunning() const;
+  void CloseTestProgram();
+  std::string GetTestProgramFailure(bool timed_out);
+  void CheckedWrite(const void* buf, size_t len);
+  bool TryRead(void* buf, size_t len, bool* timed_out);
+  void CheckedRead(void* buf, size_t len);
 
-  int write_fd_;
-  int read_fd_;
-  pid_t child_pid_;
   std::string executable_;
   const std::vector<std::string> executable_args_;
   std::string current_test_name_;
+  std::unique_ptr<State> state_;
 };
 
 }  // namespace protobuf

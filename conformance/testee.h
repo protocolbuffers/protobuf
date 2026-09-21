@@ -24,7 +24,7 @@
 //
 // EXPECT_THAT(RequiredTest()
 //                .ParseBinary(Wire(LengthPrefixedField(1, "foo"))
-//                .SerializeText({.print_unknown_fields = true}),
+//                .SerializeText({/*print_unknown_fields=*/true}),
 //             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
 
 // TODO Possible future APIs to expand conformance coverage:
