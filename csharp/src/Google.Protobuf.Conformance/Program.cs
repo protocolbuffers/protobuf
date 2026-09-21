@@ -64,6 +64,16 @@ namespace Google.Protobuf.Conformance
 
         private static ConformanceResponse PerformRequest(ConformanceRequest request, TypeRegistry typeRegistry)
         {
+            // Optional request features this testee does not implement yet.
+            if (request.DiscardUnknownFields)
+            {
+                return new ConformanceResponse { Skipped = "discard_unknown_fields is not supported" };
+            }
+            if (request.MergePayloadCase != ConformanceRequest.MergePayloadOneofCase.None)
+            {
+                return new ConformanceResponse { Skipped = "merge_payload is not supported" };
+            }
+
             ExtensionRegistry proto2ExtensionRegistry = new ExtensionRegistry
             {
                 ProtobufTestMessages.Proto2.TestMessagesProto2Extensions.ExtensionInt32,

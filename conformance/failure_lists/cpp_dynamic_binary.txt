@@ -1,0 +1,18 @@
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/EditionsProto3.ProtobufInput # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/Proto3.ProtobufInput         # Should have failed to parse, but didn't.
+
+# b/564240804: DynamicMessage does not collapse duplicate map keys at parse
+# time the way generated classes do, so a map field parsed from the wire with
+# the same key more than once (two entries in one payload, as MergeTest and
+# ValidDataMapTest send) is printed to JSON with duplicate keys ({"1":0,"1":1})
+# instead of the last value.  The binary legs of the same tests are affected
+# too, but pass because the expected-output matcher reparses the bytes with the
+# generated class, which collapses the duplicates.  Fixing this is a behavior
+# change for DynamicMessage users, so it is not planned soon (see b/477413000).
+Required.MergeTest.MapMessageValueJson/*.ProtobufInput.JsonOutput                     # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/EditionsProto2_*.ProtobufInput.JsonOutput  # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/EditionsProto3_*.ProtobufInput.JsonOutput  # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/Proto2_*.ProtobufInput.JsonOutput          # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/Proto3_*.ProtobufInput.JsonOutput          # JSON output we received from test was unparseable.
