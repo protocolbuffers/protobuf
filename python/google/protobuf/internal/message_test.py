@@ -2454,6 +2454,23 @@ class Proto2Test(unittest.TestCase):
     # This is still an incomplete proto - so serializing should fail
     self.assertRaises(message.EncodeError, unpickled_message.SerializeToString)
 
+  def testByteSizeMissingRequiredFields(self):
+    msg = unittest_pb2.TestRequired()
+    self.assertEqual(0, msg.ByteSize())
+    self.assertEqual(len(msg.SerializePartialToString()), msg.ByteSize())
+
+    msg.a = 1
+    self.assertEqual(2, msg.ByteSize())
+    self.assertEqual(len(msg.SerializePartialToString()), msg.ByteSize())
+
+    parent = unittest_pb2.TestRequiredForeign()
+    self.assertEqual(0, parent.optional_message.ByteSize())
+    self.assertEqual(b'', parent.optional_message.SerializePartialToString())
+
+    parent.optional_message.a = 1
+    self.assertEqual(2, parent.optional_message.ByteSize())
+    self.assertEqual(len(parent.SerializePartialToString()), parent.ByteSize())
+
   # TODO: this isn't really a proto2-specific test except that this
   # message has a required field in it.  Should probably be factored out so
   # that we can test the other parts with proto3.
