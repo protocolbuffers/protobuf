@@ -7,7 +7,6 @@
 
 #include <cstddef>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "google/protobuf/testing/file.h"
