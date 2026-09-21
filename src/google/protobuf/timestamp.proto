@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "storage/datapol/annotations/proto/semantic_annotations.proto";
+
 option cc_enable_arenas = true;
 option go_package = "google.golang.org/protobuf/types/known/timestamppb";
 option java_package = "com.google.protobuf";
@@ -134,12 +136,12 @@ message Timestamp {
   // Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z. Must
   // be between -62135596800 and 253402300799 inclusive (which corresponds to
   // 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z).
-  int64 seconds = 1;
+  int64 seconds = 1 [(datapol.semantic_type) = ST_TIMESTAMP];
 
   // Non-negative fractions of a second at nanosecond resolution. This field is
   // the nanosecond portion of the duration, not an alternative to seconds.
   // Negative second values with fractions must still have non-negative nanos
   // values that count forward in time. Must be between 0 and 999,999,999
   // inclusive.
-  int32 nanos = 2;
+  int32 nanos = 2 [(datapol.semantic_type) = ST_DURATION];
 }
