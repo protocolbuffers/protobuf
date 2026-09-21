@@ -2002,7 +2002,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
 // double value = 1;
 inline void DoubleValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.value_ = 0;
+  _impl_.value_ = 0.;
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline double DoubleValue::value() const {
@@ -2030,7 +2030,7 @@ inline void DoubleValue::_internal_set_value(double value) {
 // float value = 1;
 inline void FloatValue::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.value_ = 0;
+  _impl_.value_ = 0.f;
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
 }
 inline float FloatValue::value() const {

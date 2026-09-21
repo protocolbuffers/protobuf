@@ -32,6 +32,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -1252,6 +1253,166 @@ public class CodedInputStreamTest {
   }
 
   @Test
+  public void testResetSizeCounter_withDataRemainingInBuffer() throws Exception {
+    byte[] data = new byte[256];
+    for (int i = 0; i < data.length; i++) {
+      data[i] = (byte) i;
+    }
+    CodedInputStream input = CodedInputStream.newInstance(new ByteArrayInputStream(data), 64);
+    input.setSizeLimit(Integer.MAX_VALUE);
+
+    byte[] first = input.readRawBytes(10);
+    assertThat(first).hasLength(10);
+    assertThat(input.getTotalBytesRead()).isEqualTo(10);
+
+    input.resetSizeCounter();
+    assertThat(input.getTotalBytesRead()).isEqualTo(0);
+
+    byte[] second = input.readRawBytes(100);
+    assertThat(second).hasLength(100);
+    assertThat(input.getTotalBytesRead()).isEqualTo(100);
+
+    for (int i = 0; i < 10; i++) {
+      assertThat(first[i]).isEqualTo((byte) i);
+    }
+    for (int i = 0; i < 100; i++) {
+      assertThat(second[i]).isEqualTo((byte) (10 + i));
+    }
+
+    // Repeated resetSizeCounter() calls without reading should be idempotent
+    input.resetSizeCounter();
+    assertThat(input.getTotalBytesRead()).isEqualTo(0);
+    input.resetSizeCounter();
+    assertThat(input.getTotalBytesRead()).isEqualTo(0);
+
+    // skipRawBytes within the compacted buffer
+    input.skipRawBytes(20);
+    assertThat(input.getTotalBytesRead()).isEqualTo(20);
+
+    byte[] third = input.readRawBytes(50);
+    assertThat(third).hasLength(50);
+    assertThat(input.getTotalBytesRead()).isEqualTo(70);
+    for (int i = 0; i < 50; i++) {
+      assertThat(third[i]).isEqualTo((byte) (10 + 100 + 20 + i));
+    }
+  }
+
+  @Test
+  public void testResetSizeCounter_streamOver2GiB() throws Exception {
+    final long totalBytesToStream = 3L * 1024 * 1024 * 1024; // 3 GiB
+    final int messageSize = 1024 * 1024; // 1 MiB per message
+    final int messageCount = (int) (totalBytesToStream / messageSize);
+
+    InputStream virtualStream =
+        new InputStream() {
+          private long remaining = totalBytesToStream;
+
+          @Override
+          public int read() {
+            if (remaining <= 0) {
+              return -1;
+            }
+            remaining--;
+            return 0;
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) {
+            if (remaining <= 0) {
+              return -1;
+            }
+            int toRead = (int) Math.min(len, remaining);
+            Arrays.fill(b, off, off + toRead, (byte) 0);
+            remaining -= toRead;
+            return toRead;
+          }
+
+          @Override
+          public long skip(long n) {
+            long toSkip = Math.min(n, remaining);
+            remaining -= toSkip;
+            return toSkip;
+          }
+        };
+
+    CodedInputStream input = CodedInputStream.newInstance(virtualStream, 4096);
+
+    for (int m = 0; m < messageCount; m++) {
+      byte[] msg = input.readRawBytes(messageSize);
+      assertThat(msg).hasLength(messageSize);
+      assertThat(input.getTotalBytesRead()).isEqualTo(messageSize);
+      input.resetSizeCounter();
+      assertThat(input.getTotalBytesRead()).isEqualTo(0);
+    }
+
+    assertThat(input.isAtEnd()).isTrue();
+  }
+
+  @Test
+  public void testStreamOver2GiB_withoutReset_failsWithSizeLimitExceeded() throws Exception {
+    final long totalBytesToStream = 3L * 1024 * 1024 * 1024; // 3 GiB
+    final int messageSize = 1024 * 1024; // 1 MiB per message
+    final int messageCount = (int) (totalBytesToStream / messageSize);
+
+    InputStream virtualStream =
+        new InputStream() {
+          private long remaining = totalBytesToStream;
+
+          @Override
+          public int read() {
+            if (remaining <= 0) {
+              return -1;
+            }
+            remaining--;
+            return 0;
+          }
+
+          @Override
+          public int read(byte[] b, int off, int len) {
+            if (remaining <= 0) {
+              return -1;
+            }
+            int toRead = (int) Math.min(len, remaining);
+            Arrays.fill(b, off, off + toRead, (byte) 0);
+            remaining -= toRead;
+            return toRead;
+          }
+
+          @Override
+          public long skip(long n) {
+            long toSkip = Math.min(n, remaining);
+            remaining -= toSkip;
+            return toSkip;
+          }
+        };
+
+    CodedInputStream input = CodedInputStream.newInstance(virtualStream, 4096);
+
+    AtomicInteger messagesRead = new AtomicInteger(0);
+    InvalidProtocolBufferException thrown =
+        assertThrows(
+            InvalidProtocolBufferException.class,
+            () -> {
+              for (int m = 0; m < messageCount; m++) {
+                input.readRawBytes(messageSize);
+                messagesRead.incrementAndGet();
+              }
+            });
+
+    assertThat(thrown)
+        .hasMessageThat()
+        .isEqualTo(InvalidProtocolBufferException.sizeLimitExceeded().getMessage());
+    assertThat(thrown)
+        .hasMessageThat()
+        .contains("Protocol message was too large.  May be malicious.");
+    assertThat(thrown)
+        .hasMessageThat()
+        .contains("Use CodedInputStream.setSizeLimit() to increase the size limit.");
+    // Exactly 2047 1 MiB messages can be read before reaching Integer.MAX_VALUE
+    assertThat(messagesRead.get()).isEqualTo(2047);
+  }
+
+  @Test
   public void testRefillBufferWithCorrectSize() throws Exception {
     // NOTE: refillBuffer only applies to the stream-backed CIS.
     byte[] bytes = "123456789".getBytes("UTF-8");
@@ -2095,7 +2256,7 @@ public class CodedInputStreamTest {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       CodedOutputStream cos = CodedOutputStream.newInstance(baos);
       cos.writeTag(1, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-      cos.writeRawVarint32(n);
+      cos.writeUInt32NoTag(n);
       cos.flush();
       stringTagAndLength = baos.toByteArray();
     }
@@ -2103,7 +2264,7 @@ public class CodedInputStreamTest {
     ByteArrayOutputStream unknownFieldBaos = new ByteArrayOutputStream();
     CodedOutputStream unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
     unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    unknownCos.writeRawVarint32(n);
+    unknownCos.writeUInt32NoTag(n);
     unknownCos.flush();
     int prefixLen = unknownFieldBaos.toByteArray().length;
     int padLength = n - stringTagAndLength.length - prefixLen;
@@ -2111,7 +2272,7 @@ public class CodedInputStreamTest {
     unknownFieldBaos.reset();
     unknownCos = CodedOutputStream.newInstance(unknownFieldBaos);
     unknownCos.writeTag(2, WireFormat.WIRETYPE_LENGTH_DELIMITED);
-    unknownCos.writeRawVarint32(padLength);
+    unknownCos.writeUInt32NoTag(padLength);
     unknownCos.writeRawBytes(new byte[padLength]);
     unknownCos.writeRawBytes(stringTagAndLength);
     unknownCos.flush();

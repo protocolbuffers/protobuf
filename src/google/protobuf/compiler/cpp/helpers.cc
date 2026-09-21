@@ -936,7 +936,12 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "::std::numeric_limits<double>::quiet_NaN()";
       } else {
-        return io::SimpleDtoa(value);
+        std::string double_value = io::SimpleDtoa(value);
+        // Make sure it is a double literal.
+        if (double_value.find_first_of(".eE") == std::string::npos) {
+          double_value.push_back('.');
+        }
+        return double_value;
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -949,12 +954,11 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
         return "::std::numeric_limits<float>::quiet_NaN()";
       } else {
         std::string float_value = io::SimpleFtoa(value);
-        // If floating point value contains a period (.) or an exponent
-        // (either E or e), then append suffix 'f' to make it a float
-        // literal.
-        if (float_value.find_first_of(".eE") != std::string::npos) {
-          float_value.push_back('f');
+        // Make sure it is a float literal.
+        if (float_value.find_first_of(".eE") == std::string::npos) {
+          float_value.push_back('.');
         }
+        float_value.push_back('f');
         return float_value;
       }
     }

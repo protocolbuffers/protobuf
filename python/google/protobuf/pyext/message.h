@@ -49,7 +49,7 @@ struct CMessageClass;
 // don't store any data, and always refer to their parent message.
 
 // Defines the mutability and promotion state of a CMessage.
-enum MessageMutabilityState {
+enum MessageMutabilityState : uint8_t {
   // Backed by a fully allocated, mutable C++ Message object whose parent
   // hierarchy is already mutable / marked dirty. Mutations on this message
   // do not require promoting the parent hierarchy.
@@ -112,6 +112,9 @@ typedef struct CMessage : public ContainerBase {
 
   // Indicates the mutability state of this CMessage wrapper.
   MessageMutabilityState state;
+
+  // Whether there is a map ancestor anywhere in the hierarchy.
+  bool has_mutable_map_ancestor;
 
   // A mapping indexed by field, containing weak references to contained objects
   // which need to implement the "Release" mechanism:

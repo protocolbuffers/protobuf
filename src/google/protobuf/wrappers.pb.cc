@@ -642,7 +642,7 @@ constexpr FloatValue::ParseTableT_ FloatValue::_Internal::GenerateParseTable(con
 inline constexpr FloatValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : value_{0} {}
+      : value_{0.f} {}
 
 template <typename>
 PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FloatValue::FloatValue(
@@ -749,7 +749,7 @@ constexpr DoubleValue::ParseTableT_ DoubleValue::_Internal::GenerateParseTable(c
 inline constexpr DoubleValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
-      : value_{0} {}
+      : value_{0.} {}
 
 template <typename>
 PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DoubleValue::DoubleValue(
@@ -1200,7 +1200,7 @@ PROTOBUF_NOINLINE void DoubleValue::Clear() {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  this_._impl_.value_ = 0;
+  this_._impl_.value_ = 0.;
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -1377,7 +1377,7 @@ PROTOBUF_NOINLINE void FloatValue::Clear() {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  this_._impl_.value_ = 0;
+  this_._impl_.value_ = 0.f;
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }

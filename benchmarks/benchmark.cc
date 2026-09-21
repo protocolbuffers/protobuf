@@ -65,7 +65,7 @@ void CollectFileDescriptors(
 static void BM_ArenaOneAlloc(benchmark::State& state) {
   for (auto _ : state) {
     upb_Arena* arena = upb_Arena_New();
-    upb_Arena_Malloc(arena, 1);
+    benchmark::DoNotOptimize(upb_Arena_Malloc(arena, 1));
     upb_Arena_Free(arena);
   }
 }
@@ -74,7 +74,7 @@ BENCHMARK(BM_ArenaOneAlloc);
 static void BM_ArenaInitialBlockOneAlloc(benchmark::State& state) {
   for (auto _ : state) {
     upb_Arena* arena = upb_Arena_Init(buf, sizeof(buf), nullptr);
-    upb_Arena_Malloc(arena, 1);
+    benchmark::DoNotOptimize(upb_Arena_Malloc(arena, 1));
     upb_Arena_Free(arena);
   }
 }

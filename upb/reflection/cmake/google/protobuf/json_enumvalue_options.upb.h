@@ -55,14 +55,22 @@ UPB_INLINE pb_enumvalue_JsonEnumValueOptions* pb_enumvalue_JsonEnumValueOptions_
 UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize(const pb_enumvalue_JsonEnumValueOptions* msg,
                                       upb_Arena* arena, size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &pb__enumvalue__JsonEnumValueOptions_msg_init, 0, arena, &ptr, len);
+  upb_EncodeStatus status =
+      upb_Encode(UPB_UPCAST(msg), &pb__enumvalue__JsonEnumValueOptions_msg_init, 0, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE char* pb_enumvalue_JsonEnumValueOptions_serialize_ex(const pb_enumvalue_JsonEnumValueOptions* msg,
                                          int options, upb_Arena* arena,
                                          size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &pb__enumvalue__JsonEnumValueOptions_msg_init, options, arena, &ptr, len);
+  upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), &pb__enumvalue__JsonEnumValueOptions_msg_init,
+                                       options, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE void pb_enumvalue_JsonEnumValueOptions_clear_string(pb_enumvalue_JsonEnumValueOptions* msg) {

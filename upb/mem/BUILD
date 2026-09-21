@@ -27,6 +27,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":internal",
+        "//upb/base:internal",
         "//upb/port",
     ],
 )
@@ -41,6 +42,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
+        "//upb/base:internal",
         "//upb/port",
     ],
 )

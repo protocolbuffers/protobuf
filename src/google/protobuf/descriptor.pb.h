@@ -21835,7 +21835,7 @@ inline bool UninterpretedOption::has_double_value() const {
 }
 inline void UninterpretedOption::clear_double_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.double_value_ = 0;
+  _impl_.double_value_ = 0.;
   ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
 }
 inline double UninterpretedOption::double_value() const {

@@ -919,11 +919,11 @@ using GlobalEmptyString = std::conditional_t<
 
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
-PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
-HandleAddOverflow(absl::int128 a, absl::int128 b);
+[[noreturn]] PROTOBUF_EXPORT PROTOBUF_NOINLINE void HandleAddOverflow(
+    absl::int128 a, absl::int128 b);
 
 template <typename T, typename U>
-ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
+[[noreturn]] PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
   HandleAddOverflow(absl::int128(a), absl::int128(b));
 }
 

@@ -119,7 +119,7 @@ TEST(TesteeTest, TextPrintUnknownFields) {
   TestResult result =
       testee.CreateTest("foo", TestStrictness::kRequired)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
-          .SerializeText({.print_unknown_fields = true});
+          .SerializeText({/*print_unknown_fields=*/true});
 
   EXPECT_EQ(result.name(),
             "Required.Proto2.ProtobufInput.foo.TextFormatOutput");
@@ -169,7 +169,7 @@ TEST(TesteeTest, JsonIgnoreUnknownParsing) {
 
   TestResult result = testee.CreateTest("foo", TestStrictness::kRequired)
                           .ParseJson(TestAllTypesProto2::descriptor(), "json",
-                                     {.ignore_unknown_fields = true})
+                                     {/*ignore_unknown_fields=*/true})
                           .SerializeBinary();
 
   EXPECT_EQ(result.name(), "Required.Proto2.JsonInput.foo.ProtobufOutput");

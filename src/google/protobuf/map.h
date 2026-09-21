@@ -1103,6 +1103,15 @@ class RustMapHelper {
                                            void* mem) {
     return prototype->GetClassData()->PlacementNew(mem, /* arena = */ nullptr);
   }
+
+  template <typename Map>
+  static void DestructiveMove(Map* dest, UntypedMapBase* src) {
+    dest->clear();
+    ABSL_DCHECK_EQ(src->arena(), nullptr);
+    dest->UntypedSwap(dest->arena(), *src, nullptr);
+    src->ClearTable(nullptr, /*reset=*/false);
+    delete src;
+  }
 };
 
 }  // namespace internal

@@ -11,6 +11,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import com.google.protobuf.testing.Proto2Testing.Proto2Message;
 import com.google.protobuf.testing.Proto3Testing.Proto3Message;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,6 +52,41 @@ public final class CodedAdapterTest {
     // Read back in the bytes and verify that it matches the original message.
     Proto2Message actual = Proto2Message.parseFrom(actualBytes);
     assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void emptyPackedFixedFieldFollowedByOtherFields() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    CodedOutputStream output = CodedOutputStream.newInstance(baos);
+    // Zero-length packed fixed32 field (tag 41, length-delimited, length 0)
+    output.writeTag(41, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeUInt32NoTag(0);
+    // Followed by two ordinary fields
+    output.writeInt32(5, 42);
+    output.writeString(9, "hello");
+    output.flush();
+
+    Proto3Message message = fromByteArray(baos.toByteArray(), Proto3Message.class);
+
+    assertThat(message.getFieldFixed32ListPacked41List()).isEmpty();
+    assertThat(message.getFieldInt325()).isEqualTo(42);
+    assertThat(message.getFieldString9()).isEqualTo("hello");
+  }
+
+  @Test
+  public void emptyPackedVarintField() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    CodedOutputStream output = CodedOutputStream.newInstance(baos);
+    // Zero-length packed int32 field (tag 39, length-delimited, length 0)
+    output.writeTag(39, WireFormat.WIRETYPE_LENGTH_DELIMITED);
+    output.writeUInt32NoTag(0);
+    output.writeInt32(5, 42);
+    output.flush();
+
+    Proto3Message message = fromByteArray(baos.toByteArray(), Proto3Message.class);
+
+    assertThat(message.getFieldInt32ListPacked39List()).isEmpty();
+    assertThat(message.getFieldInt325()).isEqualTo(42);
   }
 
   public static <T extends GeneratedMessageLite<?, ?>> byte[] toByteArray(T msg, int size) throws Exception {

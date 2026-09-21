@@ -90,6 +90,11 @@ pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
 /// types.
 ///
 /// On a view proxy this will behave as a reborrow into a shorter lifetime.
+#[diagnostic::on_unimplemented(
+    message = "the trait `AsView` is not implemented for `{Self}`",
+    note = "consider calling `.as_view()`, or changing the fn to accept \
+            `impl AsView<Proxied = T>`"
+)]
 pub trait AsView: SealedInternal {
     type Proxied: Proxied;
 
@@ -136,6 +141,11 @@ impl<T: Proxied> AsView for &mut T {
 ///
 /// On a view proxy this will behave as a reborrow into a shorter lifetime
 /// (semantically matching a `&'a T` into a `&'b T` where `'a: 'b`).
+#[diagnostic::on_unimplemented(
+    message = "the trait `IntoView` is not implemented for `{Self}` (consider calling `.as_view()` \
+               or borrowing)",
+    note = "consider calling `.as_view()` or `.into_view()`"
+)]
 pub trait IntoView<'msg>: SealedInternal + AsView {
     /// Converts into a `View` with a potentially shorter lifetime.
     ///
@@ -189,6 +199,11 @@ impl<'msg, T: Proxied> IntoView<'msg> for &'msg mut T {
 /// implemented on both owned `Proxied` types as well as mut proxy types.
 ///
 /// On a mut proxy this will behave as a reborrow into a shorter lifetime.
+#[diagnostic::on_unimplemented(
+    message = "the trait `AsMut` is not implemented for `{Self}`",
+    note = "consider calling `.as_mut()`, or changing the fn to accept \
+            `impl AsMut<MutProxied = T>`"
+)]
 pub trait AsMut: SealedInternal + AsView<Proxied = Self::MutProxied> {
     type MutProxied: MutProxied;
 
@@ -207,6 +222,11 @@ impl<T: MutProxied> AsMut for &mut T {
 ///
 /// On a mut proxy this will behave as a reborrow into a shorter lifetime
 /// (semantically matching a `&mut 'a T` into a `&mut 'b T` where `'a: 'b`).
+#[diagnostic::on_unimplemented(
+    message = "the trait `IntoMut` is not implemented for `{Self}` (consider calling `.as_mut()` \
+               or mutably borrowing)",
+    note = "consider calling `.as_mut()` or `.into_mut()`"
+)]
 pub trait IntoMut<'msg>: SealedInternal + AsMut {
     /// Converts into a `Mut` with a potentially shorter lifetime.
     ///
@@ -511,5 +531,38 @@ mod tests {
             // lifetime.
             reborrow_generic_mut_into_mut::<MyProxied>(my_mut, other_mut);
         }
+    }
+
+    // Functions written the way the `#[diagnostic::on_unimplemented]` notes suggest: accepting a
+    // generic proxy bound rather than a concrete view or mut proxy.
+    fn accepts_as_view(_: impl AsView<Proxied = MyProxied>) {}
+    fn accepts_as_mut(_: impl AsMut<MutProxied = MyProxied>) {}
+    fn accepts_into_view<'a>(_: impl IntoView<'a, Proxied = MyProxied>) {}
+    fn accepts_into_mut<'a>(_: impl IntoMut<'a, MutProxied = MyProxied>) {}
+
+    #[gtest]
+    fn test_suggested_conversions_satisfy_proxy_bounds() {
+        let mut my_proxied = MyProxied { val: "Hello".to_string() };
+
+        // Callers of an `impl AsView` / `impl AsMut` function don't need to write `.as_view()` or
+        // `.as_mut()` at all; a plain borrow suffices.
+        accepts_as_view(&my_proxied);
+        accepts_as_mut(&mut my_proxied);
+
+        // Explicitly converting, as the notes suggest at the call site, also satisfies the bounds.
+        accepts_as_view(my_proxied.as_view());
+        accepts_as_mut(my_proxied.as_mut());
+
+        // A view is not itself `AsMut`, but reborrowing a mut proxy is.
+        let mut my_mut = my_proxied.as_mut();
+        accepts_as_view(my_mut.as_view());
+        accepts_as_mut(my_mut.as_mut());
+
+        // The `IntoView` / `IntoMut` bounds additionally accept a borrow directly, which is what
+        // rustc suggests when an owned message is passed to them.
+        accepts_into_view(&my_proxied);
+        accepts_into_mut(&mut my_proxied);
+        accepts_into_view(my_proxied.as_view());
+        accepts_into_mut(my_proxied.as_mut());
     }
 }

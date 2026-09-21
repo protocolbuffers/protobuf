@@ -287,7 +287,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   //    would.
   //  - `Ptr` has no `reset()`. It can be assigned from another `Ptr`.
   template <typename T>
-  class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Ptr;
+  class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Ptr;
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
@@ -1064,7 +1064,7 @@ class
 };
 
 template <typename T>
-class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
+class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
     : internal::ArenaPtrCmpBase {
  public:
   using pointer = T*;

@@ -1557,10 +1557,9 @@ public abstract class CodedInputStream {
     private int lastTag;
 
     /**
-     * The total number of bytes read before the current buffer. The total bytes read up to the
-     * current position can be computed as {@code totalBytesRetired + pos}. This value may be
-     * negative if reading started in the middle of the current buffer (e.g. if the constructor that
-     * takes a byte array and an offset was used).
+     * The total number of bytes read before the current buffer since the last call to {@link
+     * #resetSizeCounter()}. The total bytes read up to the current position can be computed as
+     * {@code totalBytesRetired + pos}. This value is always non-negative.
      */
     private int totalBytesRetired;
 
@@ -2178,7 +2177,15 @@ public abstract class CodedInputStream {
 
     @Override
     public void resetSizeCounter() {
-      totalBytesRetired = -pos;
+      if (pos > 0) {
+        int remaining = bufferSize - pos;
+        if (remaining > 0) {
+          System.arraycopy(buffer, pos, buffer, 0, remaining);
+        }
+        bufferSize = remaining;
+        pos = 0;
+      }
+      totalBytesRetired = 0;
     }
 
     @Override
@@ -2264,8 +2271,8 @@ public abstract class CodedInputStream {
     private void refillBuffer(int n) throws IOException {
       if (!tryRefillBuffer(n)) {
         // We have to distinguish the exception between sizeLimitExceeded and truncatedMessage. So
-        // we just throw an sizeLimitExceeded exception here if it exceeds the sizeLimit
-        if (n > sizeLimit - totalBytesRetired - pos) {
+        // we just throw a sizeLimitExceeded exception here if it exceeds the sizeLimit
+        if (isBeyondLimit(totalBytesRetired + pos, n, sizeLimit)) {
           throw InvalidProtocolBufferException.sizeLimitExceeded();
         } else {
           throw InvalidProtocolBufferException.truncatedMessage();
@@ -2313,16 +2320,13 @@ public abstract class CodedInputStream {
 
       // Here we should refill the buffer as many bytes as possible.
       while (bufferSize < n) {
-        int bytesRead =
-            read(
-                input,
-                buffer,
-                bufferSize,
-                Math.min(
-                    //  the size of allocated but unused bytes in the buffer
-                    buffer.length - bufferSize,
-                    //  do not exceed the total bytes limit
-                    sizeLimit - totalBytesRetired - bufferSize));
+        int remainingUnderSizeLimit = sizeLimit - totalBytesRetired - bufferSize;
+        if (remainingUnderSizeLimit <= 0) {
+          return false;
+        }
+        int bytesToRead = Math.min(buffer.length - bufferSize, remainingUnderSizeLimit);
+
+        int bytesRead = read(input, buffer, bufferSize, bytesToRead);
         if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
           throw new IllegalStateException(
               input.getClass()
@@ -2375,10 +2379,12 @@ public abstract class CodedInputStream {
       }
 
       // Read into the caller-provided buffer
-      int bytesToRead = Math.min(length, currentLimit - totalBytesRetired - pos);
-      if (bytesToRead <= 0) {
+      int rawPos = totalBytesRetired + pos;
+      int maxAvailable = Math.min(currentLimit, sizeLimit) - rawPos;
+      if (maxAvailable <= 0) {
         return -1;
       }
+      int bytesToRead = Math.min(length, maxAvailable);
       int bytesRead = read(input, bytes, offset, bytesToRead);
       if (bytesRead != -1) {
         totalBytesRetired += bytesRead;

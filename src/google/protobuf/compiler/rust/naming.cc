@@ -300,6 +300,13 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
   absl::string_view name = field.name();
   const Descriptor& msg = *field.containing_type();
 
+  // `as_mut` and `as_view` are inherent methods on every generated message, so
+  // a field named `as` (which generates `<field>_mut`) or `as_mut` / `as_view`
+  // would collide with those inherent methods.
+  if (name == "as" || name == "as_mut" || name == "as_view") {
+    return absl::StrCat(name, "_", field.number());
+  }
+
   for (absl::string_view prefix : kAccessorPrefixes) {
     if (absl::StartsWith(name, prefix)) {
       absl::string_view without_prefix = name;
@@ -389,6 +396,10 @@ std::string EnumRsName(const EnumDescriptor& desc) {
     absl::StrAppend(&name, "_");
   }
   return name;
+}
+
+std::string ExtensionRsName(const FieldDescriptor& extension) {
+  return absl::AsciiStrToUpper(extension.name());
 }
 
 std::string EnumValueRsName(const EnumValueDescriptor& value) {

@@ -14,6 +14,8 @@
 #if HAVE_ZLIB
 #include "google/protobuf/io/gzip_stream.h"
 
+#include <cstddef>
+
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/port.h"
@@ -22,13 +24,12 @@
 
 namespace google {
 namespace protobuf {
+namespace io {
 namespace internal {
 struct StreamContext {
   z_stream context;
 };
 }  // namespace internal
-
-namespace io {
 
 static const int kDefaultBufferSize = 65536;
 
@@ -57,7 +58,7 @@ GzipInputStream::GzipInputStream(ZeroCopyInputStream* sub_stream, Format format,
   output_position_ = output_buffer_;
 }
 GzipInputStream::~GzipInputStream() {
-  internal::SizedDelete(output_buffer_, output_buffer_length_);
+  google::protobuf::internal::SizedDelete(output_buffer_, output_buffer_length_);
   zerror_ = inflateEnd(&zcontext_->context);
   delete zcontext_;
 }
@@ -162,8 +163,12 @@ bool GzipInputStream::Next(const void** data, int* size) {
   return true;
 }
 void GzipInputStream::BackUp(int count) {
-  output_position_ = reinterpret_cast<void*>(
-      reinterpret_cast<uintptr_t>(output_position_) - count);
+  ptrdiff_t max_backup =
+      static_cast<char*>(output_position_) - static_cast<char*>(output_buffer_);
+  ABSL_CHECK_GE(count, 0) << "count must not be negative";
+  ABSL_CHECK_LE(count, max_backup)
+      << "count must be within bounds of output buffer";
+  output_position_ = static_cast<char*>(output_position_) - count;
 }
 bool GzipInputStream::Skip(int count) {
   const void* data;
@@ -181,7 +186,7 @@ bool GzipInputStream::Skip(int count) {
 int64_t GzipInputStream::ByteCount() const {
   int64_t ret = byte_count_ + zcontext_->context.total_out;
   if (zcontext_->context.next_out != nullptr && output_position_ != nullptr) {
-    ret += reinterpret_cast<uintptr_t>(zcontext_->context.next_out) -
+    ret -= reinterpret_cast<uintptr_t>(zcontext_->context.next_out) -
            reinterpret_cast<uintptr_t>(output_position_);
   }
   return ret;
@@ -239,7 +244,7 @@ void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
 GzipOutputStream::~GzipOutputStream() {
   // TODO: Remove this suppression.
   (void)Close();
-  internal::SizedDelete(input_buffer_, input_buffer_length_);
+  google::protobuf::internal::SizedDelete(input_buffer_, input_buffer_length_);
   delete zcontext_;
 }
 
