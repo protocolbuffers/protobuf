@@ -152,6 +152,7 @@ rust_test(
     name = "protobuf_upb_test",
     crate = ":protobuf_upb",
     edition = "2024",
+    harness = "libtest",
     rustc_flags = [
         "--cfg=upb_kernel",
         "--cfg=bzl",
@@ -221,6 +222,7 @@ rust_test(
     name = "protobuf_cpp_test",
     crate = ":protobuf_cpp",
     edition = "2024",
+    harness = "libtest",
     rustc_flags = [
         "--cfg=cpp_kernel",
         "--cfg=bzl",
@@ -235,9 +237,14 @@ rust_test(
 rust_library(
     name = "protobuf_cpp_lite_export",
     testonly = True,
-    srcs = ["protobuf_lite.rs"],
+    srcs = [
+        "protobuf_lite.rs",
+    ],
+    crate_root = "protobuf_lite.rs",
     edition = "2024",
-    rustc_flags = ["--cfg=cpp_kernel"],
+    rustc_flags = [
+        "--cfg=cpp_kernel",
+    ],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_cpp"],
 )
