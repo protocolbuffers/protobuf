@@ -1,0 +1,487 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// JSON conformance tests for integer fields: the value ranges of the 32- and
+// 64-bit types, integers as JSON strings and as float literals, rejected
+// out-of-range, non-integer, boolean, non-numeric and malformed values, and
+// the 64-bit types being serialized as strings.  This replaces the "Integer
+// fields" block of the legacy BinaryAndJsonConformanceSuiteImpl<M>::
+// RunJsonTestsForNonRepeatedTypes(); the requests sent to the testee are
+// identical to the legacy ones.
+//
+// Like the legacy RunValidJsonTest(), each valid input is sent twice: once to
+// be serialized as binary ("<name>.ProtobufOutput") and once as JSON
+// ("<name>.JsonOutput").  ExpectParseFailureForJson() asked for JSON output
+// under a name without an output suffix, and the legacy "validators"
+// (RunValidJsonTestWithValidator()) looked at the serialized JSON text itself.
+
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
+#include "conformance/binary_test_util.h"
+#include "conformance/json_test_util.h"
+#include "conformance/matchers.h"
+#include "conformance/message_type_fixtures.h"
+#include "conformance/test_environment.h"
+#include "conformance/testee.h"
+
+namespace google {
+namespace protobuf {
+namespace conformance {
+namespace {
+
+using ::testing::ValuesIn;
+
+using JsonIntegerTest = MessageTypeConformanceTest;
+
+// ---------------------------------------------------------------------------
+// Value ranges.  64-bit values are quoted in JSON.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldMaxValue) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": 2147483647})";
+  constexpr absl::string_view kExpected = "optional_int32: 2147483647";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldMinValue) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": -2147483648})";
+  constexpr absl::string_view kExpected = "optional_int32: -2147483648";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Uint32FieldMaxValue) {
+  constexpr absl::string_view kInput = R"({"optionalUint32": 4294967295})";
+  constexpr absl::string_view kExpected = "optional_uint32: 4294967295";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldMaxValue) {
+  constexpr absl::string_view kInput =
+      R"({"optionalInt64": "9223372036854775807"})";
+  constexpr absl::string_view kExpected = "optional_int64: 9223372036854775807";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldMinValue) {
+  constexpr absl::string_view kInput =
+      R"({"optionalInt64": "-9223372036854775808"})";
+  constexpr absl::string_view kExpected =
+      "optional_int64: -9223372036854775808";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Uint64FieldMaxValue) {
+  constexpr absl::string_view kInput =
+      R"({"optionalUint64": "18446744073709551615"})";
+  constexpr absl::string_view kExpected =
+      "optional_uint64: 18446744073709551615";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+// While not the largest Int64, this is the largest Int64 which can be exactly
+// represented within an IEEE-754 64-bit float, which is the expected level of
+// interoperability guarantee.  Larger values may work in some implementations,
+// but should not be relied upon.
+TEST_P(JsonIntegerTest, Int64FieldMaxValueNotQuoted) {
+  constexpr absl::string_view kInput =
+      R"({"optionalInt64": 9223372036854774784})";
+  constexpr absl::string_view kExpected = "optional_int64: 9223372036854774784";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldMinValueNotQuoted) {
+  constexpr absl::string_view kInput =
+      R"({"optionalInt64": -9223372036854775808})";
+  constexpr absl::string_view kExpected =
+      "optional_int64: -9223372036854775808";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+// Largest interoperable Uint64; see the comment above for
+// Int64FieldMaxValueNotQuoted.
+TEST_P(JsonIntegerTest, Uint64FieldMaxValueNotQuoted) {
+  constexpr absl::string_view kInput =
+      R"({"optionalUint64": 18446744073709549568})";
+  constexpr absl::string_view kExpected =
+      "optional_uint64: 18446744073709549568";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+// Values can be represented as JSON strings.
+TEST_P(JsonIntegerTest, Int32FieldStringValue) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": "2147483647"})";
+  constexpr absl::string_view kExpected = "optional_int32: 2147483647";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldStringValueEscaped) {
+  constexpr absl::string_view kInput =
+      R"({"optionalInt32": "2\u003147483647"})";
+  constexpr absl::string_view kExpected = "optional_int32: 2147483647";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldStringValueZero) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": "0"})";
+  constexpr absl::string_view kExpected = "optional_int32: 0";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldQuotedExponentialValue) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": "1e5"})";
+  constexpr absl::string_view kExpected = "optional_int32: 100000";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+// ---------------------------------------------------------------------------
+// Parsers reject out-of-bound integer values.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldTooLarge) {
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(), R"({"optionalInt32": 2147483648})")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldTooSmall) {
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(), R"({"optionalInt32": -2147483649})")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint32FieldTooLarge) {
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(), R"({"optionalUint32": 4294967296})")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldTooLarge) {
+  EXPECT_THAT(
+      Testee()
+          .ParseJson(message(), R"({"optionalInt64": "9223372036854775808"})")
+          .ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldTooSmall) {
+  EXPECT_THAT(
+      Testee()
+          .ParseJson(message(), R"({"optionalInt64": "-9223372036854775809"})")
+          .ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint64FieldTooLarge) {
+  EXPECT_THAT(
+      Testee()
+          .ParseJson(message(), R"({"optionalUint64": "18446744073709551616"})")
+          .ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint64QuotedExponentFieldTooLarge) {
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(), R"({"optionalUint64": "1e536870000"})")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+// ---------------------------------------------------------------------------
+// Parsers reject non-integer numeric values.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldNotInteger) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": 0.5})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint32FieldNotInteger) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalUint32": 0.5})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldNotInteger) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt64": "0.5"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint64FieldNotInteger) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalUint64": "0.5"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// ---------------------------------------------------------------------------
+// Parsers reject boolean values for integer fields.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldTrueValue) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": true})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldFalseValue) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": false})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// ---------------------------------------------------------------------------
+// Parsers reject non-numeric string values.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldStringValuePartiallyNumeric) {
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(), R"({"optionalInt32": "12abc"})")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldStringValuePartiallyNumericSpace) {
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(), R"({"optionalInt32": "12 34"})")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldStringValuePartiallyNumericComma) {
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(), R"({"optionalInt32": "12,34"})")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldStringValuePartiallyNumericUnicode) {
+  // Not a raw string literal: the payload holds the UTF-8 bytes of U+8C37
+  // U+6B4C between the digits.
+  EXPECT_THAT(Testee()
+                  .ParseJson(message(),
+                             "{\"optionalInt32\": \"12\xE8\xB0\xB7\xE6\xAD\x8C"
+                             "34\"}")
+                  .ParseOnly(),
+              Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldStringValueNonNumeric) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": "abc"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// ---------------------------------------------------------------------------
+// Parsers reject empty string values.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldEmptyString) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": ""})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint32FieldEmptyString) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalUint32": ""})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldEmptyString) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt64": ""})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint64FieldEmptyString) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalUint64": ""})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// ---------------------------------------------------------------------------
+// Integers represented as float values are accepted.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldFloatTrailingZero) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": 100000.000})";
+  constexpr absl::string_view kExpected = "optional_int32: 100000";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldExponentialFormat) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": 1e5})";
+  constexpr absl::string_view kExpected = "optional_int32: 100000";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldMaxFloatValue) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": 2.147483647e9})";
+  constexpr absl::string_view kExpected = "optional_int32: 2147483647";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldMinFloatValue) {
+  constexpr absl::string_view kInput = R"({"optionalInt32": -2.147483648e9})";
+  constexpr absl::string_view kExpected = "optional_int32: -2147483648";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+TEST_P(JsonIntegerTest, Uint32FieldMaxFloatValue) {
+  constexpr absl::string_view kInput = R"({"optionalUint32": 4.294967295e9})";
+  constexpr absl::string_view kExpected = "optional_uint32: 4294967295";
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeBinary(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+  EXPECT_THAT(Testee().ParseJson(message(), kInput).SerializeJson(),
+              Yields(ParsedPayload(EqualsTextProto(kExpected))));
+}
+
+// ---------------------------------------------------------------------------
+// Parsers reject non-numeric and malformed numeric values.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int32FieldNotNumber) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": "3x3"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint32FieldNotNumber) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalUint32": "3x3"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int64FieldNotNumber) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt64": "3x3"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Uint64FieldNotNumber) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalUint64": "3x3"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// JSON does not allow "+" on numeric values.
+TEST_P(JsonIntegerTest, Int32FieldPlusSign) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": +1})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// JSON doesn't allow leading 0s.
+TEST_P(JsonIntegerTest, Int32FieldLeadingZero) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": 01})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldNegativeWithLeadingZero) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": -01})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// String values must follow the same syntax rule.  Specifically leading or
+// trailing spaces are not allowed.
+TEST_P(JsonIntegerTest, Int32FieldLeadingSpace) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": " 1"})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+TEST_P(JsonIntegerTest, Int32FieldTrailingSpace) {
+  EXPECT_THAT(
+      Testee().ParseJson(message(), R"({"optionalInt32": "1 "})").ParseOnly(),
+      Yields(IsParseError()));
+}
+
+// ---------------------------------------------------------------------------
+// 64-bit values are serialized as strings.
+// ---------------------------------------------------------------------------
+
+TEST_P(JsonIntegerTest, Int64FieldBeString) {
+  EXPECT_THAT(Testee(kP3)
+                  .ParseJson(message(), R"({"optionalInt64": 1})")
+                  .SerializeJson(),
+              Yields(JsonPayload(
+                  HasJsonMemberThat("optionalInt64", IsJsonString("1")))));
+}
+
+TEST_P(JsonIntegerTest, Uint64FieldBeString) {
+  EXPECT_THAT(Testee(kP3)
+                  .ParseJson(message(), R"({"optionalUint64": 1})")
+                  .SerializeJson(),
+              Yields(JsonPayload(
+                  HasJsonMemberThat("optionalUint64", IsJsonString("1")))));
+}
+
+INSTANTIATE_TEST_SUITE_P(All, JsonIntegerTest, ValuesIn(AllTestMessageTypes()),
+                         MessageTypeParamName);
+
+}  // namespace
+}  // namespace conformance
+}  // namespace protobuf
+}  // namespace google
