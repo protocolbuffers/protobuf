@@ -1612,11 +1612,12 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
       // We have exactly one element per byte, so avoid the costly varint
       // parsing.
       out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
-      T* x = out.AddNAlreadyReserved(count);
-      for (; ptr != end; ++ptr) {
-        *x = conv(static_cast<uint8_t>(*ptr));
-        ++x;
-      }
+      [&](T* PROTOBUF_RESTRICT x, const uint8_t* PROTOBUF_RESTRICT uptr) {
+        for (int i = 0; i < count; ++i) {
+          x[i] = conv(uptr[i]);
+        }
+      }(out.AddNAlreadyReserved(count), reinterpret_cast<const uint8_t*>(ptr));
+      return end;
     } else {
       // We can overread, so if the last byte has a continuation bit set,
       // we need to account for that.
