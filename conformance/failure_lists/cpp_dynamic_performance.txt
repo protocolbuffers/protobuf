@@ -1,0 +1,16 @@
+# This is the list of conformance performance tests that are known to
+# fail for the C++ DynamicMessage testee (conformance_cpp --dynamic) right now.
+
+# Expected: Non-repeated field "recursive_message" is specified multiple times.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldBool/*.TextFormatInput.ProtobufOutput     # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldBool/*.TextFormatInput.TextFormatOutput   # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldBytes/*.TextFormatInput.ProtobufOutput    # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldBytes/*.TextFormatInput.TextFormatOutput  # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldDouble/*.TextFormatInput.ProtobufOutput   # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldDouble/*.TextFormatInput.TextFormatOutput # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldInt32/*.TextFormatInput.ProtobufOutput    # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldInt32/*.TextFormatInput.TextFormatOutput  # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldInt64/*.TextFormatInput.ProtobufOutput    # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldInt64/*.TextFormatInput.TextFormatOutput  # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldString/*.TextFormatInput.ProtobufOutput   # Failed to parse input or produce output.
+Recommended.TextPerformanceTest.MergeMessageWithRepeatedFieldString/*.TextFormatInput.TextFormatOutput # Failed to parse input or produce output.

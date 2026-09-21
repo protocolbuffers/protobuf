@@ -1,0 +1,74 @@
+# This is the list of conformance tests that are known to fail for the C++
+# DynamicMessage testee (conformance_cpp --dynamic) right now.  These should be
+# fixed.
+#
+# By listing them here we can keep tabs on which ones are failing and be sure
+# that we don't introduce regressions in other tests.
+#
+# TODO: insert links to corresponding bugs tracking the issue.
+# Should we use GitHub issues or the Google-internal bug tracker?
+
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedFalse/*.JsonInput                         # Should have failed to parse, but didn't.
+Recommended.JsonBoolTest.BoolFieldDoubleQuotedTrue/*.JsonInput                          # Should have failed to parse, but didn't.
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/*.JsonInput                   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/*.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/*.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonFieldNameTest.FieldNameNotQuoted/*.JsonInput                            # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.MapFieldValueIsNull/*.JsonInput                                # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldMessageElementIsNull/*.JsonInput                  # Should have failed to parse, but didn't.
+Recommended.JsonNullTest.RepeatedFieldPrimitiveElementIsNull/*.JsonInput                # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingComma/*.JsonInput                     # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithNewlines/*.JsonInput         # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpace/*.JsonInput            # Should have failed to parse, but didn't.
+Recommended.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpaceCommaSpace/*.JsonInput  # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteBoth/*.JsonInput                       # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteKey/*.JsonInput                        # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldSingleQuoteValue/*.JsonInput                      # Should have failed to parse, but didn't.
+Recommended.JsonStringTest.StringFieldUppercaseEscapeLetter/*.JsonInput                 # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObject/*.JsonInput                    # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithNewlines/*.JsonInput        # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpace/*.JsonInput           # Should have failed to parse, but didn't.
+Recommended.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpaceCommaSpace/*.JsonInput # Should have failed to parse, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskNumbersDontRoundTrip/*.ProtobufInput.JsonOutput  # Should have failed to serialize, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskPathsDontRoundTrip/*.ProtobufInput.JsonOutput    # Should have failed to serialize, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskTooManyUnderscore/*.ProtobufInput.JsonOutput     # Should have failed to serialize, but didn't.
+Recommended.JsonFieldMaskTest.FieldMaskInvalidCharacter/*.JsonInput                     # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldInt32/*.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonRepeatedTest.SingleValueForRepeatedFieldMessage/*.JsonInput                # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayTooLarge/*.JsonInput                    # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge/*.JsonInput                   # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge25/*.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/*.JsonInput              # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/*.JsonInput            # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMinuteTooLarge/*.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooLarge/*.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputNonLeapFeb29/*.JsonInput                   # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputOffsetBoundaryOverflow/*.JsonInput         # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputOffsetBoundaryUnderflow/*.JsonInput        # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputSecondTooLarge/*.JsonInput                 # Should have failed to parse, but didn't.
+Required.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/*.ProtobufInput               # Should have failed to parse, but didn't.
+# TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
+# Recommended.Utf8StringTest.MapKey/EditionsProto2.ProtobufInput   # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.MapValue/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Oneof/EditionsProto2.ProtobufInput    # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Repeated/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Singular/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.MapKey/Proto2.ProtobufInput           # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.MapValue/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Oneof/Proto2.ProtobufInput            # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Repeated/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# Recommended.Utf8StringTest.Singular/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+
+# b/564240804: DynamicMessage does not collapse duplicate map keys at parse
+# time the way generated classes do, so a map field parsed from the wire with
+# the same key more than once (two entries in one payload, as MergeTest and
+# ValidDataMapTest send) is printed to JSON with duplicate keys ({"1":0,"1":1})
+# instead of the last value.  The binary legs of the same tests are affected
+# too, but pass because the expected-output matcher reparses the bytes with the
+# generated class, which collapses the duplicates.  Fixing this is a behavior
+# change for DynamicMessage users, so it is not planned soon (see b/477413000).
+Required.MergeTest.MapMessageValueJson/*.ProtobufInput.JsonOutput                     # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/EditionsProto2_*.ProtobufInput.JsonOutput  # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/EditionsProto3_*.ProtobufInput.JsonOutput  # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/Proto2_*.ProtobufInput.JsonOutput          # JSON output we received from test was unparseable.
+Required.ValidDataMapTest.DuplicateKeyJson/Proto3_*.ProtobufInput.JsonOutput          # JSON output we received from test was unparseable.
