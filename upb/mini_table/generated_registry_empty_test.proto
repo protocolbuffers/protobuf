@@ -1,4 +1,4 @@
-edition = "2024";
+edition = "2026";
 
 package upb_test_empty_registry;
 

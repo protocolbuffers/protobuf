@@ -1032,6 +1032,13 @@ void OptionInterpreter::CollectAggregateFieldLocations(
     const Message& message, const TextFormat::ParseInfoTree& tree,
     const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path) {
   const Reflection* reflection = message.GetReflection();
+  if (MaybeCollectAnyFieldInAggregateOption(message, tree, uninterpreted_path,
+                                            dest_path)) {
+    // If the message is an Any message, we have already collected the source
+    // locations for the type_url and value fields.
+    return;
+  }
+
   std::vector<const FieldDescriptor*> fields;
   reflection->ListFields(message, &fields);
 
@@ -1104,6 +1111,74 @@ void OptionInterpreter::CollectAggregateFieldLocations(
       }
     }
   }
+}
+
+bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
+    const Message& message, const TextFormat::ParseInfoTree& tree,
+    const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path) {
+  const Reflection* reflection = message.GetReflection();
+  const FieldDescriptor* any_type_url_field = nullptr;
+  const FieldDescriptor* any_value_field = nullptr;
+  if (!internal::GetAnyFieldDescriptors(message, &any_type_url_field,
+                                        &any_value_field) ||
+      any_type_url_field == nullptr || any_value_field == nullptr) {
+    // The message is not an Any message.
+    return false;
+  }
+  absl::StatusOr<TextFormat::FieldLocation> location =
+      tree.GetFieldLocation(any_type_url_field);
+  if (location.ok()) {
+    dest_path.push_back(any_type_url_field->number());
+    AggregateFieldLocation afl;
+    afl.uninterpreted_path = uninterpreted_path;
+    afl.field_dest_path = dest_path;
+    afl.value_marker = UninterpretedOption::kStringValueFieldNumber;
+    afl.val_range = location->name;
+    aggregate_field_locations_.push_back(std::move(afl));
+    dest_path.pop_back();
+  } else {
+    // TODO: Switch to CHECK instead of LOG to ensure that this
+    // never happens in practice.
+    ABSL_LOG(WARNING) << "Error finding location of Any type_url <"
+                      << any_type_url_field->name()
+                      << "> in option. Error: " << location.status()
+                      << ". This should never happen in practice";
+  }
+
+  std::string type_url = reflection->GetString(message, any_type_url_field);
+  std::string url_prefix, full_type_name;
+  if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
+    // The type_url is not a valid Any type URL.
+    // Return true to indicate that Any message was still handled.
+    return true;
+  }
+  DescriptorBuilder::assert_mutex_held(builder_->pool_);
+  const Descriptor* sub_desc =
+      builder_->FindSymbol(full_type_name).descriptor();
+  if (sub_desc == nullptr) {
+    // The type URL does not correspond to a known message type.
+    // Return true to indicate that Any message was still handled.
+    return true;
+  }
+  // During TextFormat parsing of Any messages, the unpacked message is parsed
+  // and serialized back to a binary string stored in `Any.value`. We need to
+  // reparse it here to inspect its fields with reflection and recursively
+  // collect source locations.
+  std::unique_ptr<Message> sub_message(
+      dynamic_factory_.GetPrototype(sub_desc)->New());
+  if (sub_message == nullptr ||
+      !sub_message->ParseFromString(
+          reflection->GetString(message, any_value_field))) {
+    // Return true to indicate that Any message was still handled.
+    return true;
+  }
+  dest_path.push_back(any_value_field->number());
+  dest_path.push_back(-UninterpretedOption::kAggregateValueFieldNumber);
+  CollectAggregateFieldLocations(*sub_message, tree, uninterpreted_path,
+                                 dest_path);
+  dest_path.pop_back();
+  dest_path.pop_back();
+  return true;
 }
 
 int OptionInterpreter::GetValueMarker(const FieldDescriptor* field,

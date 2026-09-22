@@ -79,7 +79,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
       Mixin* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    Helpers_::SharedDtor(*msg);
+    SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Mixin));
   }
 #endif
@@ -100,7 +100,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   inline Mixin& operator=(Mixin&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      Helpers_::InternalSwap(*this, &from);
+      InternalSwap(&from);
     } else {
       CopyFrom(from);
     }
@@ -137,7 +137,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   inline void Swap(Mixin* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      Helpers_::InternalSwap(*this, other);
+      InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -145,7 +145,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   void UnsafeArenaSwap(Mixin* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    Helpers_::InternalSwap(*this, other);
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -195,6 +195,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
       const {
     return _impl_._cached_size_.Get();
   }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(Mixin* PROTOBUF_NONNULL other);
 
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Mixin"; }
@@ -251,22 +256,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   // @@protoc_insertion_point(class_scope:google.protobuf.Mixin)
  private:
   class _Internal;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   struct Helpers_ {
     PROTOBUF_NODEBUG Helpers_();
 
-    static void SharedCtor(MessageLite& self,
-                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-    static void SharedDtor(MessageLite& self);
-    static void InternalSwap(MessageLite& self, Mixin* PROTOBUF_NONNULL other);
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
     static void Clear(::google::protobuf::MessageLite& msg);
     [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
     [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
         const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
         ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-#endif  // PROTOBUF_CUSTOM_VTABLE
   };
+#endif  // PROTOBUF_CUSTOM_VTABLE
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<1, 2,
                           0, 38,
@@ -311,7 +311,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
       Method* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    Helpers_::SharedDtor(*msg);
+    SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Method));
   }
 #endif
@@ -332,7 +332,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   inline Method& operator=(Method&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      Helpers_::InternalSwap(*this, &from);
+      InternalSwap(&from);
     } else {
       CopyFrom(from);
     }
@@ -369,7 +369,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   inline void Swap(Method* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      Helpers_::InternalSwap(*this, other);
+      InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -377,7 +377,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   void UnsafeArenaSwap(Method* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    Helpers_::InternalSwap(*this, other);
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -427,6 +427,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
       const {
     return _impl_._cached_size_.Get();
   }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(Method* PROTOBUF_NONNULL other);
 
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Method"; }
@@ -569,22 +574,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   // @@protoc_insertion_point(class_scope:google.protobuf.Method)
  private:
   class _Internal;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   struct Helpers_ {
     PROTOBUF_NODEBUG Helpers_();
 
-    static void SharedCtor(MessageLite& self,
-                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-    static void SharedDtor(MessageLite& self);
-    static void InternalSwap(MessageLite& self, Method* PROTOBUF_NONNULL other);
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
     static void Clear(::google::protobuf::MessageLite& msg);
     [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
     [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
         const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
         ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-#endif  // PROTOBUF_CUSTOM_VTABLE
   };
+#endif  // PROTOBUF_CUSTOM_VTABLE
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 8,
                           1, 83,
@@ -635,7 +635,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
       Api* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
-    Helpers_::SharedDtor(*msg);
+    SharedDtor(*msg);
     ::google::protobuf::internal::SizedDelete(msg, sizeof(Api));
   }
 #endif
@@ -656,7 +656,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   inline Api& operator=(Api&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-      Helpers_::InternalSwap(*this, &from);
+      InternalSwap(&from);
     } else {
       CopyFrom(from);
     }
@@ -693,7 +693,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   inline void Swap(Api* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
-      Helpers_::InternalSwap(*this, other);
+      InternalSwap(other);
     } else {
       ::google::protobuf::internal::GenericSwap(this, other);
     }
@@ -701,7 +701,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   void UnsafeArenaSwap(Api* PROTOBUF_NONNULL other) {
     if (other == this) return;
     ABSL_DCHECK(GetArena() == other->GetArena());
-    Helpers_::InternalSwap(*this, other);
+    InternalSwap(other);
   }
 
   // implements Message ----------------------------------------------
@@ -751,6 +751,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
       const {
     return _impl_._cached_size_.Get();
   }
+
+  private:
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static void SharedDtor(MessageLite& self);
+  void InternalSwap(Api* PROTOBUF_NONNULL other);
 
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Api"; }
@@ -913,22 +918,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   // @@protoc_insertion_point(class_scope:google.protobuf.Api)
  private:
   class _Internal;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   struct Helpers_ {
     PROTOBUF_NODEBUG Helpers_();
 
-    static void SharedCtor(MessageLite& self,
-                           ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-    static void SharedDtor(MessageLite& self);
-    static void InternalSwap(MessageLite& self, Api* PROTOBUF_NONNULL other);
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
     static void Clear(::google::protobuf::MessageLite& msg);
     [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
     [[nodiscard]] static ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
         const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NONNULL target,
         ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-#endif  // PROTOBUF_CUSTOM_VTABLE
   };
+#endif  // PROTOBUF_CUSTOM_VTABLE
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 8,
                           4, 54,

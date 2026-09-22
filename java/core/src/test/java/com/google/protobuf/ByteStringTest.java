@@ -345,6 +345,35 @@ public class ByteStringTest {
     }
   }
 
+  // A substring is a window onto a larger array, but asReadOnlyByteBuffer() must still hand back a
+  // buffer bounded to the substring, like every other ByteString implementation does.
+  @Test
+  public void testAsReadOnlyByteBuffer_substringIsBoundedToTheSubstring() {
+    ByteString substring = ByteString.copyFrom(getTestBytes(24)).substring(5, 21);
+
+    ByteBuffer buffer = substring.asReadOnlyByteBuffer();
+
+    assertThat(buffer.position()).isEqualTo(0);
+    assertThat(buffer.limit()).isEqualTo(16);
+    assertThat(buffer.capacity()).isEqualTo(16);
+    // Absolute reads are indexed from the start of the substring, not of the backing array.
+    assertThat(buffer.get(0)).isEqualTo(substring.byteAt(0));
+  }
+
+  // Because the buffer is bounded, rewinding it cannot expose the bytes preceding the substring.
+  @Test
+  public void testAsReadOnlyByteBuffer_substringSurvivesRepositioning() {
+    ByteString substring = ByteString.copyFrom(getTestBytes(24)).substring(5, 21);
+
+    ByteBuffer buffer = substring.asReadOnlyByteBuffer();
+    buffer.position(0);
+
+    assertThat(buffer.remaining()).isEqualTo(16);
+    byte[] roundTripBytes = new byte[16];
+    buffer.get(roundTripBytes);
+    assertThat(roundTripBytes).isEqualTo(substring.toByteArray());
+  }
+
   @Test
   public void testCopyTo_targetOffset() {
     byte[] bytes = getTestBytes();

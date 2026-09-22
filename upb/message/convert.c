@@ -142,7 +142,8 @@ static void upb_Array_DeepConvert(
         dst_val.int32_val = src_val.int32_val;
         upb_Array_Set(dst, dst_i++, dst_val);
       } else if (!_upb_Encoder_AddEnumValueToUnknown(
-                     dst_msg, dst_f, src_val.int32_val, c->arena)) {
+                     dst_msg, dst_f->UPB_PRIVATE(number), src_val.int32_val,
+                     c->arena)) {
         upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
       }
     } else if (dst_sub_mt) {
@@ -455,7 +456,8 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
       memcpy(&val, UPB_PRIVATE(_upb_Message_DataPtr)(src, src_f), 4);
       const upb_MiniTableEnum* dst_e = upb_MiniTable_GetSubEnumTable(dst_f);
       if (!upb_MiniTableEnum_CheckValue(dst_e, val)) {
-        if (!_upb_Encoder_AddEnumValueToUnknown(dst, dst_f, val, c->arena)) {
+        if (!_upb_Encoder_AddEnumValueToUnknown(dst, dst_f->UPB_PRIVATE(number),
+                                                val, c->arena)) {
           upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
         }
         return;
@@ -591,8 +593,8 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
             dst_ext ? upb_MiniTableExtension_GetSubEnum(dst_ext)
                     : upb_MiniTable_GetSubEnumTable(dst_f);
         if (!upb_MiniTableEnum_CheckValue(dst_e, val.int32_val)) {
-          if (!_upb_Encoder_AddEnumValueToUnknown(dst, dst_f, val.int32_val,
-                                                  c->arena)) {
+          if (!_upb_Encoder_AddEnumValueToUnknown(
+                  dst, dst_f->UPB_PRIVATE(number), val.int32_val, c->arena)) {
             upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
           }
           return;

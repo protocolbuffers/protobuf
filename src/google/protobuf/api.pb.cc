@@ -132,7 +132,7 @@ constexpr auto Mixin::_Internal::GenerateClassData() {
       &Mixin::MergeImpl,
       Super_::GetNewImpl<Mixin>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Mixin::Helpers_::SharedDtor,
+      &Mixin::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -308,7 +308,7 @@ constexpr auto Method::_Internal::GenerateClassData() {
       &Method::MergeImpl,
       Super_::GetNewImpl<Method>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Method::Helpers_::SharedDtor,
+      &Method::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -492,7 +492,7 @@ constexpr auto Api::_Internal::GenerateClassData() {
       &Api::MergeImpl,
       Super_::GetNewImpl<Api>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Api::Helpers_::SharedDtor,
+      &Api::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -653,7 +653,7 @@ Api::Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Api)
 }
 PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
@@ -730,11 +730,9 @@ PROTOBUF_NDEBUG_INLINE Api::Impl_::Impl_(
         version_(arena),
         edition_(arena) {}
 
-inline void Api::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Api& this_ = static_cast<Api&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void Api::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, source_context_),
            0,
            offsetof(Impl_, syntax_) -
@@ -743,9 +741,9 @@ inline void Api::Helpers_::SharedCtor(
 }
 Api::~Api() {
   // @@protoc_insertion_point(destructor:google.protobuf.Api)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Api::Helpers_::SharedDtor(MessageLite& self) {
+inline void Api::SharedDtor(MessageLite& self) {
   Api& this_ = static_cast<Api&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1076,29 +1074,24 @@ void Api::CopyFrom(const Api& from) {
 }
 
 
-void Api::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Api* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Api::InternalSwap(Api* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Api& this_ = static_cast<Api&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.methods_.InternalSwap(&other->_impl_.methods_);
-  this_._impl_.options_.InternalSwap(&other->_impl_.options_);
-  this_._impl_.mixins_.InternalSwap(&other->_impl_.mixins_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.version_, &other->_impl_.version_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.edition_, &other->_impl_.edition_,
-                                       arena);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_) +
-                 sizeof(Api::_impl_.syntax_) -
-                 PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_)>(
-      reinterpret_cast<char*>(&this_._impl_.source_context_),
-      reinterpret_cast<char*>(&other->_impl_.source_context_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.methods_.InternalSwap(&other->_impl_.methods_);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  _impl_.mixins_.InternalSwap(&other->_impl_.mixins_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.version_, &other->_impl_.version_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, &other->_impl_.edition_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_)
+      + sizeof(Api::_impl_.syntax_)
+      - PROTOBUF_FIELD_OFFSET(Api, _impl_.source_context_)>(
+          reinterpret_cast<char*>(&_impl_.source_context_),
+          reinterpret_cast<char*>(&other->_impl_.source_context_));
 }
 
 ::google::protobuf::Metadata Api::GetMetadata() const {
@@ -1117,7 +1110,7 @@ Method::Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Method)
 }
 PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
@@ -1174,11 +1167,9 @@ PROTOBUF_NDEBUG_INLINE Method::Impl_::Impl_(
         response_type_url_(arena),
         edition_(arena) {}
 
-inline void Method::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Method& this_ = static_cast<Method&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void Method::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, request_streaming_),
            0,
            offsetof(Impl_, syntax_) -
@@ -1187,9 +1178,9 @@ inline void Method::Helpers_::SharedCtor(
 }
 Method::~Method() {
   // @@protoc_insertion_point(destructor:google.protobuf.Method)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Method::Helpers_::SharedDtor(MessageLite& self) {
+inline void Method::SharedDtor(MessageLite& self) {
   Method& this_ = static_cast<Method&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1517,29 +1508,23 @@ void Method::CopyFrom(const Method& from) {
 }
 
 
-void Method::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Method* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Method::InternalSwap(Method* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Method& this_ = static_cast<Method&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.request_type_url_, &other->_impl_.request_type_url_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.response_type_url_, &other->_impl_.response_type_url_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.edition_, &other->_impl_.edition_,
-                                       arena);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_) +
-                 sizeof(Method::_impl_.syntax_) -
-                 PROTOBUF_FIELD_OFFSET(Method, _impl_.request_streaming_)>(
-      reinterpret_cast<char*>(&this_._impl_.request_streaming_),
-      reinterpret_cast<char*>(&other->_impl_.request_streaming_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.request_type_url_, &other->_impl_.request_type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.response_type_url_, &other->_impl_.response_type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, &other->_impl_.edition_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_)
+      + sizeof(Method::_impl_.syntax_)
+      - PROTOBUF_FIELD_OFFSET(Method, _impl_.request_streaming_)>(
+          reinterpret_cast<char*>(&_impl_.request_streaming_),
+          reinterpret_cast<char*>(&other->_impl_.request_streaming_));
 }
 
 ::google::protobuf::Metadata Method::GetMetadata() const {
@@ -1553,7 +1538,7 @@ Mixin::Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Mixin)
 }
 PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
@@ -1587,16 +1572,14 @@ PROTOBUF_NDEBUG_INLINE Mixin::Impl_::Impl_(
       : name_(arena),
         root_(arena) {}
 
-inline void Mixin::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Mixin& this_ = static_cast<Mixin&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void Mixin::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 Mixin::~Mixin() {
   // @@protoc_insertion_point(destructor:google.protobuf.Mixin)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Mixin::Helpers_::SharedDtor(MessageLite& self) {
+inline void Mixin::SharedDtor(MessageLite& self) {
   Mixin& this_ = static_cast<Mixin&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1768,19 +1751,14 @@ void Mixin::CopyFrom(const Mixin& from) {
 }
 
 
-void Mixin::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Mixin* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Mixin& this_ = static_cast<Mixin&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.root_, &other->_impl_.root_,
-                                       arena);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.root_, &other->_impl_.root_, arena);
 }
 
 ::google::protobuf::Metadata Mixin::GetMetadata() const {

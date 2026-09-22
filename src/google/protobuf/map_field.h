@@ -319,6 +319,17 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   ~MapFieldBase();
 
  public:
+  // Same as the base class, but without the dynamic dispatch.
+  const UntypedMapBase& GetMap() const {
+    SyncMapWithRepeatedField();
+    return GetMapRaw();
+  }
+  UntypedMapBase* MutableMap() {
+    SyncMapWithRepeatedField();
+    SetMapDirty();
+    return &GetMapRaw();
+  }
+
   // Returns reference to internal repeated field. Data written using
   // Map's api prior to calling this function is guarantted to be
   // included in repeated field.

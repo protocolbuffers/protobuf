@@ -25,6 +25,7 @@
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/encoder.h"
 #include "upb/wire/reader.h"
 
 // Must be last.
@@ -44,17 +45,7 @@ static UPB_PRESERVE_MOST void _upb_FastDecoder_AddEnumValueToUnknown(
   uint32_t field_num = (tagsize == kUpb_DecodeFast_Tag1Byte)
                            ? ((uint8_t)tag >> 3)
                            : _upb_DecodeFast_Tag2FieldNumber(tag);
-  // Original tag may have been packed, but we're storing single values as
-  // unpacked.
-  uint32_t varint_tag = (field_num << 3) | kUpb_WireType_Varint;
-
-  char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
-  char* end = buf;
-  end = upb_Decoder_EncodeVarint32(varint_tag, end);
-  end = upb_Decoder_EncodeVarint32(val, end);
-
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(msg, buf, end - buf, &d->arena,
-                                            kUpb_AddUnknown_Copy)) {
+  if (!_upb_Encoder_AddEnumValueToUnknown(msg, field_num, val, &d->arena)) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
 }

@@ -32,6 +32,10 @@ pub trait MessageType {}
 impl<T> MessageType for T where T: EntityType + MessageTypeHelper<T::Tag> {}
 
 /// A trait that all generated owned message types implement.
+#[diagnostic::on_unimplemented(
+    message = "the trait `Message` is not implemented for `{Self}`",
+    note = "if `{Self}` is a view or a mut, consider calling `.to_owned()` to get an owned message"
+)]
 pub trait Message: SealedInternal
   + EntityType<Tag = entity_tag::MessageTag>
   + MessageType
@@ -64,6 +68,11 @@ pub trait Message: SealedInternal
 }
 
 /// A trait that all generated message views implement.
+#[diagnostic::on_unimplemented(
+    message = "the trait `MessageView` is not implemented for `{Self}`",
+    note = "if `{Self}` is an owned message or a mut, consider calling `.as_view()`, or changing \
+            the fn to accept `impl AsView<Proxied = T>`"
+)]
 pub trait MessageView<'msg>: SealedInternal
     + AsView<Proxied = Self::Message>
     + IntoView<'msg, Proxied = Self::Message>
@@ -83,6 +92,11 @@ pub trait MessageView<'msg>: SealedInternal
 }
 
 /// A trait that all generated message muts implement.
+#[diagnostic::on_unimplemented(
+    message = "the trait `MessageMut` is not implemented for `{Self}`",
+    note = "if `{Self}` is an owned message, consider calling `.as_mut()`, or changing the fn to \
+            accept `impl AsMut<MutProxied = T>`"
+)]
 pub trait MessageMut<'msg>: SealedInternal
     + AsView<Proxied = Self::Message>
     + IntoView<'msg, Proxied = Self::Message>

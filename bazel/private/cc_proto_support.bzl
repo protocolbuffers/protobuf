@@ -27,7 +27,14 @@ def get_feature_configuration(ctx, has_sources, extra_requested_features = []):
 
     # TODO: Remove LAYERING_CHECK once we have verified that there are direct
     # dependencies for all generated #includes.
-    unsupported_features = ctx.disabled_features + ["parse_headers", "layering_check"]
+    unsupported_features = ctx.disabled_features + [
+        "parse_headers",
+        "layering_check",
+        # Generated proto libraries should not be instrumented for coverage.
+        # There is no need for unit tests to exercise the generated code, so
+        # there is no benefit to instrumenting it.
+        "coverage_instrumented",
+    ]
     if has_sources:
         requested_features.append("header_modules")
     else:
@@ -99,13 +106,9 @@ def cc_proto_compile_and_link(ctx, deps, sources, headers, disallow_dynamic_libr
         public_hdrs = headers,
         compilation_contexts = [dep[CcInfo].compilation_context for dep in deps if CcInfo in dep],
         name = ctx.label.name,
-        # Don't instrument the generated C++ files even when --collect_code_coverage is set.
-        # If we actually start generating coverage instrumentation for .proto files based on coverage
-        # data from the generated C++ files, this will have to be removed. Currently, the work done
-        # to instrument those files and execute the instrumentation is all for nothing, and it can
-        # be quite a bit of extra computation even when that's not made worse by performance bugs,
-        # as in b/64963386.
-        # code_coverage_enabled = False (cc_common.compile disables code_coverage by default)
+        # The generated C++ files are not instrumented for coverage: get_feature_configuration
+        # marks the "coverage_instrumented" feature unsupported. The deprecated
+        # code_coverage_enabled argument is left unset (it defaults to False).
         **kwargs
     )
 

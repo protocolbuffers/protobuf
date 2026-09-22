@@ -120,7 +120,7 @@ constexpr auto FieldMask::_Internal::GenerateClassData() {
       &FieldMask::MergeImpl,
       Super_::GetNewImpl<FieldMask>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &FieldMask::Helpers_::SharedDtor,
+      &FieldMask::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -208,7 +208,7 @@ FieldMask::FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FieldMask)
 }
 PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
@@ -250,16 +250,14 @@ PROTOBUF_NDEBUG_INLINE FieldMask::Impl_::Impl_(
          }
      {}
 
-inline void FieldMask::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  FieldMask& this_ = static_cast<FieldMask&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void FieldMask::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void FieldMask::Helpers_::SharedDtor(MessageLite& self) {
+inline void FieldMask::SharedDtor(MessageLite& self) {
   FieldMask& this_ = static_cast<FieldMask&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -395,14 +393,11 @@ void FieldMask::CopyFrom(const FieldMask& from) {
 }
 
 
-void FieldMask::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    FieldMask* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  FieldMask& this_ = static_cast<FieldMask&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.paths_.InternalSwap(&other->_impl_.paths_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.paths_.InternalSwap(&other->_impl_.paths_);
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {

@@ -73,6 +73,7 @@ cc_library(
         "//upb/port",
         "//upb/wire",
         "//upb/wire:decoder",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
