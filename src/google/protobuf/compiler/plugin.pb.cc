@@ -143,7 +143,7 @@ constexpr auto Version::_Internal::GenerateClassData() {
       &Version::MergeImpl,
       Super_::GetNewImpl<Version>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Version::Helpers_::SharedDtor,
+      &Version::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -279,7 +279,7 @@ constexpr auto CodeGeneratorResponse_File::_Internal::GenerateClassData() {
       &CodeGeneratorResponse_File::MergeImpl,
       Super_::GetNewImpl<CodeGeneratorResponse_File>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &CodeGeneratorResponse_File::Helpers_::SharedDtor,
+      &CodeGeneratorResponse_File::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -425,7 +425,7 @@ constexpr auto CodeGeneratorResponse::_Internal::GenerateClassData() {
       &CodeGeneratorResponse::MergeImpl,
       Super_::GetNewImpl<CodeGeneratorResponse>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &CodeGeneratorResponse::Helpers_::SharedDtor,
+      &CodeGeneratorResponse::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -578,7 +578,7 @@ constexpr auto CodeGeneratorRequest::_Internal::GenerateClassData() {
       &CodeGeneratorRequest::MergeImpl,
       Super_::GetNewImpl<CodeGeneratorRequest>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &CodeGeneratorRequest::Helpers_::SharedDtor,
+      &CodeGeneratorRequest::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -746,7 +746,7 @@ Version::Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.Version)
 }
 PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
@@ -785,11 +785,9 @@ PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : suffix_(arena) {}
 
-inline void Version::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Version& this_ = static_cast<Version&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void Version::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, major_),
            0,
            offsetof(Impl_, patch_) -
@@ -798,9 +796,9 @@ inline void Version::Helpers_::SharedCtor(
 }
 Version::~Version() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.Version)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Version::Helpers_::SharedDtor(MessageLite& self) {
+inline void Version::SharedDtor(MessageLite& self) {
   Version& this_ = static_cast<Version&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -980,22 +978,19 @@ void Version::CopyFrom(const Version& from) {
 }
 
 
-void Version::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Version& this_ = static_cast<Version&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.suffix_, &other->_impl_.suffix_,
-                                       arena);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_) +
-                 sizeof(Version::_impl_.patch_) -
-                 PROTOBUF_FIELD_OFFSET(Version, _impl_.major_)>(
-      reinterpret_cast<char*>(&this_._impl_.major_),
-      reinterpret_cast<char*>(&other->_impl_.major_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.suffix_, &other->_impl_.suffix_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Version, _impl_.patch_)
+      + sizeof(Version::_impl_.patch_)
+      - PROTOBUF_FIELD_OFFSET(Version, _impl_.major_)>(
+          reinterpret_cast<char*>(&_impl_.major_),
+          reinterpret_cast<char*>(&other->_impl_.major_));
 }
 
 ::google::protobuf::Metadata Version::GetMetadata() const {
@@ -1019,7 +1014,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_N
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
@@ -1091,17 +1086,15 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
          }
      {}
 
-inline void CodeGeneratorRequest::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.compiler_version_ = {};
+inline void CodeGeneratorRequest::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.compiler_version_ = {};
 }
 CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void CodeGeneratorRequest::Helpers_::SharedDtor(MessageLite& self) {
+inline void CodeGeneratorRequest::SharedDtor(MessageLite& self) {
   CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1345,21 +1338,17 @@ PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitializedImpl(
   return true;
 }
 
-void CodeGeneratorRequest::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    CodeGeneratorRequest* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
-  this_._impl_.proto_file_.InternalSwap(&other->_impl_.proto_file_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.parameter_, &other->_impl_.parameter_,
-                                       arena);
-  swap(this_._impl_.compiler_version_, other->_impl_.compiler_version_);
-  this_._impl_.source_file_descriptors_.InternalSwap(&other->_impl_.source_file_descriptors_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.file_to_generate_.InternalSwap(&other->_impl_.file_to_generate_);
+  _impl_.proto_file_.InternalSwap(&other->_impl_.proto_file_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.parameter_, &other->_impl_.parameter_, arena);
+  swap(_impl_.compiler_version_, other->_impl_.compiler_version_);
+  _impl_.source_file_descriptors_.InternalSwap(&other->_impl_.source_file_descriptors_);
 }
 
 ::google::protobuf::Metadata CodeGeneratorRequest::GetMetadata() const {
@@ -1378,7 +1367,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
@@ -1418,17 +1407,15 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
         insertion_point_(arena),
         content_(arena) {}
 
-inline void CodeGeneratorResponse_File::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.generated_code_info_ = {};
+inline void CodeGeneratorResponse_File::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.generated_code_info_ = {};
 }
 CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse.File)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void CodeGeneratorResponse_File::Helpers_::SharedDtor(MessageLite& self) {
+inline void CodeGeneratorResponse_File::SharedDtor(MessageLite& self) {
   CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1620,22 +1607,16 @@ void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from
 }
 
 
-void CodeGeneratorResponse_File::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    CodeGeneratorResponse_File* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.insertion_point_, &other->_impl_.insertion_point_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.content_, &other->_impl_.content_,
-                                       arena);
-  swap(this_._impl_.generated_code_info_, other->_impl_.generated_code_info_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.insertion_point_, &other->_impl_.insertion_point_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.content_, &other->_impl_.content_, arena);
+  swap(_impl_.generated_code_info_, other->_impl_.generated_code_info_);
 }
 
 ::google::protobuf::Metadata CodeGeneratorResponse_File::GetMetadata() const {
@@ -1649,7 +1630,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.compiler.CodeGeneratorResponse)
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
@@ -1700,11 +1681,9 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
         ,
         error_(arena) {}
 
-inline void CodeGeneratorResponse::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void CodeGeneratorResponse::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, supported_features_),
            0,
            offsetof(Impl_, maximum_edition_) -
@@ -1713,9 +1692,9 @@ inline void CodeGeneratorResponse::Helpers_::SharedCtor(
 }
 CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void CodeGeneratorResponse::Helpers_::SharedDtor(MessageLite& self) {
+inline void CodeGeneratorResponse::SharedDtor(MessageLite& self) {
   CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1925,23 +1904,20 @@ void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
 }
 
 
-void CodeGeneratorResponse::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    CodeGeneratorResponse* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.file_.InternalSwap(&other->_impl_.file_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.error_, &other->_impl_.error_,
-                                       arena);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_) +
-                 sizeof(CodeGeneratorResponse::_impl_.maximum_edition_) -
-                 PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_)>(
-      reinterpret_cast<char*>(&this_._impl_.supported_features_),
-      reinterpret_cast<char*>(&other->_impl_.supported_features_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.file_.InternalSwap(&other->_impl_.file_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.error_, &other->_impl_.error_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.maximum_edition_)
+      + sizeof(CodeGeneratorResponse::_impl_.maximum_edition_)
+      - PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse, _impl_.supported_features_)>(
+          reinterpret_cast<char*>(&_impl_.supported_features_),
+          reinterpret_cast<char*>(&other->_impl_.supported_features_));
 }
 
 ::google::protobuf::Metadata CodeGeneratorResponse::GetMetadata() const {
