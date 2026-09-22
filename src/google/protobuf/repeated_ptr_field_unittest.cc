@@ -864,6 +864,176 @@ TEST_F(RepeatedPtrFieldTest, MergeFromMessage) {
   EXPECT_EQ(5, destination.Get(2).bb());
 }
 
+TEST_F(RepeatedPtrFieldTest, MergeFromPartialClearedReuse) {
+  RepeatedPtrField<TestAllTypes::NestedMessage> source, destination;
+  destination.Add()->set_bb(1);
+  destination.Add()->set_bb(2);
+  destination.Add()->set_bb(3);
+
+  // Remove the last element so that ClearedCount() == 1.
+  destination.RemoveLast();
+  ASSERT_EQ(destination.size(), 2);
+  ASSERT_EQ(ClearedCount(destination), 1);
+
+  // Source has 3 elements, which is > ClearedCount() (1).
+  // This exercises the partial reuse branch where cleared > 0 but from_size >
+  // cleared.
+  source.Add()->set_bb(10);
+  source.Add()->set_bb(20);
+  source.Add()->set_bb(30);
+
+  destination.MergeFrom(source);
+
+  ASSERT_EQ(destination.size(), 5);
+  EXPECT_EQ(destination.Get(0).bb(), 1);
+  EXPECT_EQ(destination.Get(1).bb(), 2);
+  EXPECT_EQ(destination.Get(2).bb(), 10);
+  EXPECT_EQ(destination.Get(3).bb(), 20);
+  EXPECT_EQ(destination.Get(4).bb(), 30);
+}
+
+TEST_F(RepeatedPtrFieldTest, MergeFromSingleElementClearedReuse) {
+  RepeatedPtrField<TestAllTypes::NestedMessage> source, destination;
+  destination.Add()->set_bb(1);
+  destination.RemoveLast();
+  ASSERT_EQ(destination.size(), 0);
+  ASSERT_EQ(ClearedCount(destination), 1);
+
+  source.Add()->set_bb(42);
+  // from_size == 1 <= cleared == 1 (fast path with exactly 1 element)
+  destination.MergeFrom(source);
+  ASSERT_EQ(destination.size(), 1);
+  EXPECT_EQ(destination.Get(0).bb(), 42);
+}
+
+TEST_F(RepeatedPtrFieldTest, MergeFromPartialClearedReuseWithArena) {
+  using Field = RepeatedPtrField<TestAllTypes::NestedMessage>;
+  Arena arena;
+  Field* destination = Arena::Create<Field>(&arena);
+  Field* source = Arena::Create<Field>(&arena);
+
+  destination->Add()->set_bb(1);
+  destination->Add()->set_bb(2);
+  destination->Add()->set_bb(3);
+  destination->RemoveLast();
+  ASSERT_EQ(destination->size(), 2);
+  ASSERT_EQ(ClearedCount(*destination), 1);
+
+  source->Add()->set_bb(10);
+  source->Add()->set_bb(20);
+  source->Add()->set_bb(30);
+
+  destination->MergeFrom(*source);
+  ASSERT_EQ(destination->size(), 5);
+  EXPECT_EQ(destination->Get(0).bb(), 1);
+  EXPECT_EQ(destination->Get(1).bb(), 2);
+  EXPECT_EQ(destination->Get(2).bb(), 10);
+  EXPECT_EQ(destination->Get(3).bb(), 20);
+  EXPECT_EQ(destination->Get(4).bb(), 30);
+}
+
+TEST_F(RepeatedPtrFieldTest, MergeFromClearedReuseWithRemaining) {
+  RepeatedPtrField<TestAllTypes::NestedMessage> source, destination;
+  for (int i = 0; i < 5; ++i) {
+    destination.Add()->set_bb(i + 1);
+  }
+  // Clear 3 elements: size becomes 2, cleared becomes 3
+  destination.RemoveLast();
+  destination.RemoveLast();
+  destination.RemoveLast();
+  ASSERT_EQ(destination.size(), 2);
+  ASSERT_EQ(ClearedCount(destination), 3);
+
+  // Source has 2 elements: from_size (2) < cleared (3)
+  source.Add()->set_bb(10);
+  source.Add()->set_bb(20);
+
+  destination.MergeFrom(source);
+  ASSERT_EQ(destination.size(), 4);
+  EXPECT_EQ(destination.Get(0).bb(), 1);
+  EXPECT_EQ(destination.Get(1).bb(), 2);
+  EXPECT_EQ(destination.Get(2).bb(), 10);
+  EXPECT_EQ(destination.Get(3).bb(), 20);
+  // Remaining cleared element must still be available for subsequent use
+  EXPECT_EQ(ClearedCount(destination), 1);
+
+  // Subsequent Add should reuse the remaining cleared element without
+  // allocating
+  destination.Add()->set_bb(30);
+  ASSERT_EQ(destination.size(), 5);
+  EXPECT_EQ(destination.Get(4).bb(), 30);
+  EXPECT_EQ(ClearedCount(destination), 0);
+}
+
+TEST_F(RepeatedPtrFieldTest, PrefetchLoopBoundaries) {
+  // Test sizes across prefetch thresholds (kPrefetch = 4 for Clear/SpaceUsed, 1
+  // for Merge)
+  for (int size : {0, 1, 2, 3, 4, 5, 8, 9, 16}) {
+    RepeatedPtrField<TestAllTypes::NestedMessage> field;
+    for (int i = 0; i < size; ++i) {
+      field.Add()->set_bb(i * 10);
+    }
+    ASSERT_EQ(field.size(), size);
+    if (size > 0) {
+      EXPECT_GT(field.SpaceUsedExcludingSelfLong(), 0u);
+    }
+    field.Clear();
+    EXPECT_EQ(field.size(), 0);
+    EXPECT_EQ(ClearedCount(field), size);
+  }
+}
+
+class CustomMessageForTraitsTest : public Message {
+ public:
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
+  CustomMessageForTraitsTest()
+      : Message(static_cast<ClassData*>(nullptr)), val_(0) {}
+  explicit CustomMessageForTraitsTest(Arena* arena)
+      : Message(static_cast<ClassData*>(nullptr)), val_(0) {}
+  CustomMessageForTraitsTest(Arena* arena,
+                             const CustomMessageForTraitsTest& from)
+      : Message(static_cast<ClassData*>(nullptr)), val_(from.val_) {}
+
+  static void MergeToFrom(MessageLite& to, const MessageLite& from) {
+    static_cast<CustomMessageForTraitsTest&>(to).val_ =
+        static_cast<const CustomMessageForTraitsTest&>(from).val_;
+  }
+  static MessageLite* MessageCreator(Arena* arena) {
+    return Arena::Create<CustomMessageForTraitsTest>(arena);
+  }
+
+  static const ClassData kClassData;
+  const ClassData* GetClassData() const PROTOBUF_FINAL { return &kClassData; }
+  void Clear() PROTOBUF_FINAL { val_ = 0; }
+
+  int val_ = 0;
+};
+
+const ClassData CustomMessageForTraitsTest::kClassData(
+    /*is_initialized=*/[](const MessageLite&) { return true; },
+    /*merge_to_from=*/&CustomMessageForTraitsTest::MergeToFrom,
+    /*message_creator=*/internal::MessageCreator(),
+    /*cached_size_offset=*/0,
+    /*reflection_or_name=*/"CustomMessageForTraitsTest");
+
+TEST_F(RepeatedPtrFieldTest,
+       CustomMessageWithoutTraitsCompilesAndMergesCleared) {
+  RepeatedPtrField<CustomMessageForTraitsTest> field1, field2;
+  field1.Add()->val_ = 100;
+  field1.RemoveLast();
+  ASSERT_EQ(field1.size(), 0);
+  ASSERT_EQ(ClearedCount(field1), 1);
+
+  field2.Add()->val_ = 42;
+  // Merging into cleared element when T has no specialized MessageTraits
+  // must safely dispatch through runtime ClassData via virtual
+  // GetClassData(*src[0]).
+  field1.MergeFrom(field2);
+  ASSERT_EQ(field1.size(), 1);
+  EXPECT_EQ(field1.Get(0).val_, 42);
+}
+
 TEST_F(RepeatedPtrFieldTest, MergeFromStringWithArena) {
   using Field = RepeatedPtrField<std::string>;
   Arena arena;

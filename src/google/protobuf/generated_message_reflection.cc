@@ -588,74 +588,64 @@ size_t Reflection::SpaceUsedLong(const Message& message) const {
           break;
       }
     } else {
-      if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+      const auto cpp_type = field->cpp_type();
+      if (cpp_type != FieldDescriptor::CPPTYPE_MESSAGE &&
+          cpp_type != FieldDescriptor::CPPTYPE_STRING) {
+        continue;
+      }
+      const bool in_real_oneof = schema_.InRealOneof(field);
+      if (in_real_oneof && !HasOneofField(message, field)) {
         continue;
       }
 
-      switch (field->cpp_type()) {
-        case FieldDescriptor::CPPTYPE_INT32:
-        case FieldDescriptor::CPPTYPE_INT64:
-        case FieldDescriptor::CPPTYPE_UINT32:
-        case FieldDescriptor::CPPTYPE_UINT64:
-        case FieldDescriptor::CPPTYPE_DOUBLE:
-        case FieldDescriptor::CPPTYPE_FLOAT:
-        case FieldDescriptor::CPPTYPE_BOOL:
-        case FieldDescriptor::CPPTYPE_ENUM:
-          // Field is inline, so we've already counted it.
-          break;
+      if (cpp_type == FieldDescriptor::CPPTYPE_STRING) {
+        switch (field->cpp_string_type()) {
+          case FieldDescriptor::CppStringType::kCord:
+            if (in_real_oneof) {
+              total_size +=
+                  GetField<absl::Cord*>(message, field)->EstimatedMemoryUsage();
 
-        case FieldDescriptor::CPPTYPE_STRING: {
-          switch (field->cpp_string_type()) {
-            case FieldDescriptor::CppStringType::kCord:
-              if (schema_.InRealOneof(field)) {
-                total_size += GetField<absl::Cord*>(message, field)
-                                  ->EstimatedMemoryUsage();
-
-              } else {
-                // sizeof(absl::Cord) is included to self.
-                total_size += GetField<absl::Cord>(message, field)
-                                  .EstimatedMemoryUsage() -
-                              sizeof(absl::Cord);
-              }
-              break;
-            case FieldDescriptor::CppStringType::kView:
-            case FieldDescriptor::CppStringType::kString:
-              if (IsInlined(field)) {
-                total_size += GetField<InlinedStringField>(message, field)
-                                  .SpaceUsedExcludingSelfLong();
-              } else if (IsMicroString(field)) {
-                total_size += GetField<MicroString>(message, field)
-                                  .SpaceUsedExcludingSelfLong();
-              } else {
-                // Initially, the string points to the default value stored
-                // in the prototype. Only count the string if it has been
-                // changed from the default value.
-                // Except oneof fields, those never point to a default instance,
-                // and there is no default instance to point to.
-                const auto& str = GetField<ArenaStringPtr>(message, field);
-                if (!str.IsDefault() || schema_.InRealOneof(field)) {
-                  // string fields are represented by just a pointer, so also
-                  // include sizeof(string) as well.
-                  total_size += sizeof(std::string) +
-                                StringSpaceUsedExcludingSelfLong(str.Get());
-                }
-              }
-              break;
-          }
-          break;
-        }
-
-        case FieldDescriptor::CPPTYPE_MESSAGE:
-          if (schema_.IsDefaultInstance(message)) {
-            // For singular fields, the prototype just stores a pointer to the
-            // external type's prototype, so there is no extra memory usage.
-          } else {
-            const Message* sub_message = GetRaw<const Message*>(message, field);
-            if (sub_message != nullptr) {
-              total_size += sub_message->SpaceUsedLong();
+            } else {
+              // sizeof(absl::Cord) is included to self.
+              total_size +=
+                  GetField<absl::Cord>(message, field).EstimatedMemoryUsage() -
+                  sizeof(absl::Cord);
             }
+            break;
+          case FieldDescriptor::CppStringType::kView:
+          case FieldDescriptor::CppStringType::kString:
+            if (IsInlined(field)) {
+              total_size += GetField<InlinedStringField>(message, field)
+                                .SpaceUsedExcludingSelfLong();
+            } else if (IsMicroString(field)) {
+              total_size += GetField<MicroString>(message, field)
+                                .SpaceUsedExcludingSelfLong();
+            } else {
+              // Initially, the string points to the default value stored
+              // in the prototype. Only count the string if it has been
+              // changed from the default value.
+              // Except oneof fields, those never point to a default instance,
+              // and there is no default instance to point to.
+              const auto& str = GetField<ArenaStringPtr>(message, field);
+              if (!str.IsDefault() || in_real_oneof) {
+                // string fields are represented by just a pointer, so also
+                // include sizeof(string) as well.
+                total_size += sizeof(std::string) +
+                              StringSpaceUsedExcludingSelfLong(str.Get());
+              }
+            }
+            break;
+        }
+      } else {
+        if (schema_.IsDefaultInstance(message)) {
+          // For singular fields, the prototype just stores a pointer to the
+          // external type's prototype, so there is no extra memory usage.
+        } else {
+          const Message* sub_message = GetRaw<const Message*>(message, field);
+          if (sub_message != nullptr) {
+            total_size += sub_message->SpaceUsedLong();
           }
-          break;
+        }
       }
     }
   }

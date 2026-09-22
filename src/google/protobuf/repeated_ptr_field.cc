@@ -204,20 +204,32 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
+  const int from_size = from.current_size_;
+  int new_size = internal::CheckedAdd(current_size_, from_size);
   auto dst = reinterpret_cast<T**>(InternalReserve(new_size, arena));
   auto src = reinterpret_cast<T* const*>(from.elements());
-  auto end = src + from.current_size_;
-  auto end_assign = src + std::min(ClearedCount(), from.current_size_);
+  auto end = src + from_size;
+  auto end_assign = src + std::min(ClearedCount(), from_size);
   for (; src < end_assign; ++dst, ++src) {
     copy_fn(arena, *dst, **src);
+  }
+  constexpr ptrdiff_t kPrefetchstride = 1;
+  if (end - src >= kPrefetchstride) {
+    auto prefetch_end = end - kPrefetchstride;
+    for (; src < prefetch_end; ++dst, ++src) {
+      absl::PrefetchToLocalCache(src[1]);
+      *dst = create_and_merge_fn(arena, **src);
+    }
   }
   for (; src < end; ++dst, ++src) {
     *dst = create_and_merge_fn(arena, **src);
   }
   ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
+  if (!using_sso()) {
+    Rep* r = rep();
+    if (new_size > r->allocated_size) {
+      r->allocated_size = new_size;
+    }
   }
 }
 
@@ -247,13 +259,24 @@ void RepeatedPtrFieldBase::MergeFrom<std::string>(
 
 
 int RepeatedPtrFieldBase::MergeIntoClearedMessages(
-    const RepeatedPtrFieldBase& from) {
-  Prefetch5LinesFrom1Line(&from);
+    const RepeatedPtrFieldBase& from, const ClassData* class_data) {
+  int count = std::min(ClearedCount(), from.current_size_);
+  if (count == 0) return 0;
   auto dst = reinterpret_cast<MessageLite**>(elements() + current_size_);
   auto src = reinterpret_cast<MessageLite* const*>(from.elements());
-  int count = std::min(ClearedCount(), from.current_size_);
-  const ClassData* class_data = GetClassData(*src[0]);
-  for (int i = 0; i < count; ++i) {
+  if (class_data == nullptr) {
+    class_data = GetClassData(*src[0]);
+  }
+  constexpr int kPrefetch = 1;
+  int i = 0;
+  const int prefetch_limit = count - kPrefetch;
+  for (; i < prefetch_limit; ++i) {
+    absl::PrefetchToLocalCache(src[i + kPrefetch]);
+    absl::PrefetchToLocalCacheForWrite(dst[i + kPrefetch]);
+    ABSL_DCHECK(src[i] != nullptr);
+    class_data->MergeToFrom(*dst[i], *src[i]);
+  }
+  for (; i < count; ++i) {
     ABSL_DCHECK(src[i] != nullptr);
     class_data->MergeToFrom(*dst[i], *src[i]);
   }
@@ -261,25 +284,31 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
 }
 
 void RepeatedPtrFieldBase::MergeFromConcreteMessage(
-    const RepeatedPtrFieldBase& from, Arena* arena, CopyFn copy_fn) {
-  Prefetch5LinesFrom1Line(&from);
+    const RepeatedPtrFieldBase& from, Arena* arena, CopyFn copy_fn,
+    const ClassData* class_data) {
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
-  int new_size = internal::CheckedAdd(current_size_, from.current_size_);
+  const int from_size = from.current_size_;
+  const int cleared = ClearedCount();
+  if (from_size <= cleared) {
+    MergeIntoClearedMessages(from, class_data);
+    ExchangeCurrentSize(current_size_ + from_size);
+    return;
+  }
+  int new_size = internal::CheckedAdd(current_size_, from_size);
   void** dst = InternalReserve(new_size, arena);
   const void* const* src = from.elements();
-  auto end = src + from.current_size_;
-  constexpr ptrdiff_t kPrefetchstride = 1;
-  if (ABSL_PREDICT_FALSE(ClearedCount() > 0)) {
-    int recycled = MergeIntoClearedMessages(from);
+  auto end = src + from_size;
+  if (cleared > 0) {
+    int recycled = MergeIntoClearedMessages(from, class_data);
     dst += recycled;
     src += recycled;
   }
-  if (from.current_size_ >= kPrefetchstride) {
+  constexpr ptrdiff_t kPrefetchstride = 1;
+  if (end - src >= kPrefetchstride) {
     auto prefetch_end = end - kPrefetchstride;
     for (; src < prefetch_end; ++src, ++dst) {
-      auto next = src + kPrefetchstride;
-      absl::PrefetchToLocalCache(*next);
+      absl::PrefetchToLocalCache(src[1]);
       *dst = copy_fn(arena, *src);
     }
   }
@@ -287,8 +316,11 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     *dst = copy_fn(arena, *src);
   }
   ExchangeCurrentSize(new_size);
-  if (new_size > allocated_size()) {
-    rep()->allocated_size = new_size;
+  if (!using_sso()) {
+    Rep* r = rep();
+    if (new_size > r->allocated_size) {
+      r->allocated_size = new_size;
+    }
   }
 }
 

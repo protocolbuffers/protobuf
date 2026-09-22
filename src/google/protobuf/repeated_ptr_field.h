@@ -435,7 +435,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // For LITE objects we use the generic MergeFrom to save on binary size.
       return MergeFrom<MessageLite>(from, arena);
     }
-    MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>);
+    const ClassData* class_data = nullptr;
+    if (ClearedCount() > 0) {
+      if constexpr (!std::is_same_v<MessageTraits<T>,
+                                    FallbackMessageTraits<T>>) {
+        class_data = MessageTraits<T>::class_data();
+      }
+    }
+    MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>, class_data);
   }
 
   void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -546,7 +553,15 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
             : static_cast<size_t>(Capacity()) * sizeof(void*) + kRepHeaderSize;
     const int n = allocated_size();
     void* const* elems = elements();
-    for (int i = 0; i < n; ++i) {
+    constexpr int kPrefetch = 4;
+    int i = 0;
+    const int prefetch_limit = n - kPrefetch;
+    for (; i < prefetch_limit; ++i) {
+      absl::PrefetchToLocalCache(elems[i + kPrefetch]);
+      allocated_bytes +=
+          TypeHandler::SpaceUsedLong(*cast<TypeHandler>(elems[i]));
+    }
+    for (; i < n; ++i) {
       allocated_bytes +=
           TypeHandler::SpaceUsedLong(*cast<TypeHandler>(elems[i]));
     }
@@ -844,12 +859,16 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   PROTOBUF_NOINLINE void ClearNonEmpty() {
     const int n = current_size_;
     void* const* elems = elements();
+    constexpr int kPrefetch = 4;
     int i = 0;
-    ABSL_DCHECK_GT(n, 0);
-    // do/while loop to avoid initial test because we know n > 0
-    do {
-      TypeHandler::Clear(cast<TypeHandler>(elems[i++]));
-    } while (i < n);
+    const int prefetch_limit = n - kPrefetch;
+    for (; i < prefetch_limit; ++i) {
+      absl::PrefetchToLocalCacheForWrite(elems[i + kPrefetch]);
+      TypeHandler::Clear(cast<TypeHandler>(elems[i]));
+    }
+    for (; i < n; ++i) {
+      TypeHandler::Clear(cast<TypeHandler>(elems[i]));
+    }
     ExchangeCurrentSize(0);
   }
 
@@ -860,12 +879,14 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // This function is out of line as it should be the slow path: this scenario
   // only happens when a caller constructs and fills a repeated field, then
   // shrinks it, and then merges additional messages into it.
-  int MergeIntoClearedMessages(const RepeatedPtrFieldBase& from);
+  int MergeIntoClearedMessages(const RepeatedPtrFieldBase& from,
+                               const ClassData* class_data = nullptr);
 
   // Appends all messages from `from` to this instance, using the
   // provided `copy_fn` copy function to copy existing messages.
   void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from, Arena* arena,
-                                CopyFn copy_fn);
+                                CopyFn copy_fn,
+                                const ClassData* class_data = nullptr);
 
   // Extends capacity by at least |extend_amount|. Returns a pointer to the
   // next available element slot.
