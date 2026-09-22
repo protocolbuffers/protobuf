@@ -633,6 +633,15 @@
 #pragma clang diagnostic ignored "-Wextra-semi"
 // Ensure we don't regress nullability annotations (related: b/383569842)
 #pragma clang diagnostic error "-Wnullability-completeness"
+// Generated inline accessors annotate definitions with
+// ABSL_ATTRIBUTE_LIFETIME_BOUND without annotating the earlier in-class
+// declarations.
+#if defined(__has_warning)
+#if __has_warning("-Wlifetime-safety-intra-tu-misplaced-lifetimebound")
+#pragma clang diagnostic ignored \
+    "-Wlifetime-safety-intra-tu-misplaced-lifetimebound"
+#endif
+#endif
 #endif
 #ifdef __GNUC__
 #pragma GCC diagnostic push
