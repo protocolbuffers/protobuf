@@ -1382,6 +1382,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_mset_wire_format.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_no_field_presence.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_no_generic_services.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_no_package.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_optimize_for.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_preserve_unknown_enum.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_preserve_unknown_enum2.proto
