@@ -487,6 +487,56 @@ class ArrayTest extends TestBase
     }
 
     #########################################################
+    # Test append method.
+    #########################################################
+
+    public function testAppendMethodMatchesArraySyntax()
+    {
+        $method = new RepeatedField(GPBType::INT32);
+        $arraySyntax = new RepeatedField(GPBType::INT32);
+
+        foreach ([23.75, -4.25] as $value) {
+            $this->assertNull($method->append(newval: $value));
+            $arraySyntax[] = $value;
+        }
+
+        $this->assertSame([23, -4], iterator_to_array($method));
+        $this->assertSame(
+            iterator_to_array($arraySyntax),
+            iterator_to_array($method)
+        );
+    }
+
+    public function testAppendMethodDoesNotMutateAfterConversionFailure()
+    {
+        $arr = new RepeatedField(GPBType::INT32);
+        $arr->append(7);
+
+        try {
+            $arr->append('not-an-integer');
+        } catch (Exception $e) {
+            $this->assertSame([7], iterator_to_array($arr));
+            return;
+        }
+
+        $this->fail('Appending an invalid integer should throw an exception.');
+    }
+
+    public function testAppendMethodRejectsNullMessage()
+    {
+        $arr = new RepeatedField(GPBType::MESSAGE, TestMessage::class);
+
+        try {
+            $arr->append(null);
+        } catch (TypeError $e) {
+            $this->assertCount(0, $arr);
+            return;
+        }
+
+        $this->fail('Appending null to a message field should throw a TypeError.');
+    }
+
+    #########################################################
     # Test offset type
     #########################################################
 
