@@ -129,7 +129,7 @@ constexpr auto UInt64Value::_Internal::GenerateClassData() {
       &UInt64Value::MergeImpl,
       Super_::GetNewImpl<UInt64Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &UInt64Value::Helpers_::SharedDtor,
+      &UInt64Value::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -236,7 +236,7 @@ constexpr auto UInt32Value::_Internal::GenerateClassData() {
       &UInt32Value::MergeImpl,
       Super_::GetNewImpl<UInt32Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &UInt32Value::Helpers_::SharedDtor,
+      &UInt32Value::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -348,7 +348,7 @@ constexpr auto StringValue::_Internal::GenerateClassData() {
       &StringValue::MergeImpl,
       Super_::GetNewImpl<StringValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &StringValue::Helpers_::SharedDtor,
+      &StringValue::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -455,7 +455,7 @@ constexpr auto Int64Value::_Internal::GenerateClassData() {
       &Int64Value::MergeImpl,
       Super_::GetNewImpl<Int64Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Int64Value::Helpers_::SharedDtor,
+      &Int64Value::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -562,7 +562,7 @@ constexpr auto Int32Value::_Internal::GenerateClassData() {
       &Int32Value::MergeImpl,
       Super_::GetNewImpl<Int32Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Int32Value::Helpers_::SharedDtor,
+      &Int32Value::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -669,7 +669,7 @@ constexpr auto FloatValue::_Internal::GenerateClassData() {
       &FloatValue::MergeImpl,
       Super_::GetNewImpl<FloatValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &FloatValue::Helpers_::SharedDtor,
+      &FloatValue::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -776,7 +776,7 @@ constexpr auto DoubleValue::_Internal::GenerateClassData() {
       &DoubleValue::MergeImpl,
       Super_::GetNewImpl<DoubleValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &DoubleValue::Helpers_::SharedDtor,
+      &DoubleValue::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -885,7 +885,7 @@ constexpr auto BytesValue::_Internal::GenerateClassData() {
       &BytesValue::MergeImpl,
       Super_::GetNewImpl<BytesValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &BytesValue::Helpers_::SharedDtor,
+      &BytesValue::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -992,7 +992,7 @@ constexpr auto BoolValue::_Internal::GenerateClassData() {
       &BoolValue::MergeImpl,
       Super_::GetNewImpl<BoolValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &BoolValue::Helpers_::SharedDtor,
+      &BoolValue::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1142,7 +1142,7 @@ DoubleValue::DoubleValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DoubleValue)
 }
 DoubleValue::DoubleValue(
@@ -1161,17 +1161,15 @@ PROTOBUF_NDEBUG_INLINE DoubleValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void DoubleValue::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  DoubleValue& this_ = static_cast<DoubleValue&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void DoubleValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 DoubleValue::~DoubleValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.DoubleValue)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void DoubleValue::Helpers_::SharedDtor(MessageLite& self) {
+inline void DoubleValue::SharedDtor(MessageLite& self) {
   DoubleValue& this_ = static_cast<DoubleValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1298,14 +1296,11 @@ void DoubleValue::CopyFrom(const DoubleValue& from) {
 }
 
 
-void DoubleValue::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    DoubleValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void DoubleValue::InternalSwap(DoubleValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  DoubleValue& this_ = static_cast<DoubleValue&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata DoubleValue::GetMetadata() const {
@@ -1319,7 +1314,7 @@ FloatValue::FloatValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FloatValue)
 }
 FloatValue::FloatValue(
@@ -1338,17 +1333,15 @@ PROTOBUF_NDEBUG_INLINE FloatValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void FloatValue::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  FloatValue& this_ = static_cast<FloatValue&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void FloatValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 FloatValue::~FloatValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.FloatValue)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void FloatValue::Helpers_::SharedDtor(MessageLite& self) {
+inline void FloatValue::SharedDtor(MessageLite& self) {
   FloatValue& this_ = static_cast<FloatValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1475,14 +1468,11 @@ void FloatValue::CopyFrom(const FloatValue& from) {
 }
 
 
-void FloatValue::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    FloatValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void FloatValue::InternalSwap(FloatValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  FloatValue& this_ = static_cast<FloatValue&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata FloatValue::GetMetadata() const {
@@ -1496,7 +1486,7 @@ Int64Value::Int64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int64Value)
 }
 Int64Value::Int64Value(
@@ -1515,17 +1505,15 @@ PROTOBUF_NDEBUG_INLINE Int64Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void Int64Value::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Int64Value& this_ = static_cast<Int64Value&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void Int64Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 Int64Value::~Int64Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Int64Value)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Int64Value::Helpers_::SharedDtor(MessageLite& self) {
+inline void Int64Value::SharedDtor(MessageLite& self) {
   Int64Value& this_ = static_cast<Int64Value&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1653,14 +1641,11 @@ void Int64Value::CopyFrom(const Int64Value& from) {
 }
 
 
-void Int64Value::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Int64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Int64Value::InternalSwap(Int64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Int64Value& this_ = static_cast<Int64Value&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata Int64Value::GetMetadata() const {
@@ -1674,7 +1659,7 @@ UInt64Value::UInt64Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt64Value)
 }
 UInt64Value::UInt64Value(
@@ -1693,17 +1678,15 @@ PROTOBUF_NDEBUG_INLINE UInt64Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void UInt64Value::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  UInt64Value& this_ = static_cast<UInt64Value&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void UInt64Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 UInt64Value::~UInt64Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.UInt64Value)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void UInt64Value::Helpers_::SharedDtor(MessageLite& self) {
+inline void UInt64Value::SharedDtor(MessageLite& self) {
   UInt64Value& this_ = static_cast<UInt64Value&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1831,14 +1814,11 @@ void UInt64Value::CopyFrom(const UInt64Value& from) {
 }
 
 
-void UInt64Value::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    UInt64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void UInt64Value::InternalSwap(UInt64Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  UInt64Value& this_ = static_cast<UInt64Value&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata UInt64Value::GetMetadata() const {
@@ -1852,7 +1832,7 @@ Int32Value::Int32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Int32Value)
 }
 Int32Value::Int32Value(
@@ -1871,17 +1851,15 @@ PROTOBUF_NDEBUG_INLINE Int32Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void Int32Value::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Int32Value& this_ = static_cast<Int32Value&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void Int32Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 Int32Value::~Int32Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Int32Value)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Int32Value::Helpers_::SharedDtor(MessageLite& self) {
+inline void Int32Value::SharedDtor(MessageLite& self) {
   Int32Value& this_ = static_cast<Int32Value&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2009,14 +1987,11 @@ void Int32Value::CopyFrom(const Int32Value& from) {
 }
 
 
-void Int32Value::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Int32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Int32Value::InternalSwap(Int32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Int32Value& this_ = static_cast<Int32Value&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata Int32Value::GetMetadata() const {
@@ -2030,7 +2005,7 @@ UInt32Value::UInt32Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.UInt32Value)
 }
 UInt32Value::UInt32Value(
@@ -2049,17 +2024,15 @@ PROTOBUF_NDEBUG_INLINE UInt32Value::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void UInt32Value::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  UInt32Value& this_ = static_cast<UInt32Value&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void UInt32Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 UInt32Value::~UInt32Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.UInt32Value)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void UInt32Value::Helpers_::SharedDtor(MessageLite& self) {
+inline void UInt32Value::SharedDtor(MessageLite& self) {
   UInt32Value& this_ = static_cast<UInt32Value&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2187,14 +2160,11 @@ void UInt32Value::CopyFrom(const UInt32Value& from) {
 }
 
 
-void UInt32Value::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    UInt32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void UInt32Value::InternalSwap(UInt32Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  UInt32Value& this_ = static_cast<UInt32Value&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata UInt32Value::GetMetadata() const {
@@ -2208,7 +2178,7 @@ BoolValue::BoolValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BoolValue)
 }
 BoolValue::BoolValue(
@@ -2227,17 +2197,15 @@ PROTOBUF_NDEBUG_INLINE BoolValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void BoolValue::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  BoolValue& this_ = static_cast<BoolValue&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void BoolValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 BoolValue::~BoolValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.BoolValue)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void BoolValue::Helpers_::SharedDtor(MessageLite& self) {
+inline void BoolValue::SharedDtor(MessageLite& self) {
   BoolValue& this_ = static_cast<BoolValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2364,14 +2332,11 @@ void BoolValue::CopyFrom(const BoolValue& from) {
 }
 
 
-void BoolValue::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    BoolValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void BoolValue::InternalSwap(BoolValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  BoolValue& this_ = static_cast<BoolValue&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata BoolValue::GetMetadata() const {
@@ -2385,7 +2350,7 @@ StringValue::StringValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.StringValue)
 }
 PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
@@ -2417,16 +2382,14 @@ PROTOBUF_NDEBUG_INLINE StringValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : value_(arena) {}
 
-inline void StringValue::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  StringValue& this_ = static_cast<StringValue&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void StringValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 StringValue::~StringValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.StringValue)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void StringValue::Helpers_::SharedDtor(MessageLite& self) {
+inline void StringValue::SharedDtor(MessageLite& self) {
   StringValue& this_ = static_cast<StringValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2563,17 +2526,13 @@ void StringValue::CopyFrom(const StringValue& from) {
 }
 
 
-void StringValue::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    StringValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void StringValue::InternalSwap(StringValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  StringValue& this_ = static_cast<StringValue&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.value_, &other->_impl_.value_,
-                                       arena);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
 
 ::google::protobuf::Metadata StringValue::GetMetadata() const {
@@ -2587,7 +2546,7 @@ BytesValue::BytesValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.BytesValue)
 }
 PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
@@ -2619,16 +2578,14 @@ PROTOBUF_NDEBUG_INLINE BytesValue::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : value_(arena) {}
 
-inline void BytesValue::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  BytesValue& this_ = static_cast<BytesValue&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void BytesValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 BytesValue::~BytesValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.BytesValue)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void BytesValue::Helpers_::SharedDtor(MessageLite& self) {
+inline void BytesValue::SharedDtor(MessageLite& self) {
   BytesValue& this_ = static_cast<BytesValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2763,17 +2720,13 @@ void BytesValue::CopyFrom(const BytesValue& from) {
 }
 
 
-void BytesValue::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    BytesValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void BytesValue::InternalSwap(BytesValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  BytesValue& this_ = static_cast<BytesValue&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.value_, &other->_impl_.value_,
-                                       arena);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
 
 ::google::protobuf::Metadata BytesValue::GetMetadata() const {

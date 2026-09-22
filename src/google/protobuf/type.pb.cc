@@ -135,7 +135,7 @@ constexpr auto Option::_Internal::GenerateClassData() {
       &Option::MergeImpl,
       Super_::GetNewImpl<Option>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Option::Helpers_::SharedDtor,
+      &Option::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -331,7 +331,7 @@ constexpr auto Field::_Internal::GenerateClassData() {
       &Field::MergeImpl,
       Super_::GetNewImpl<Field>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Field::Helpers_::SharedDtor,
+      &Field::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -464,7 +464,7 @@ constexpr auto EnumValue::_Internal::GenerateClassData() {
       &EnumValue::MergeImpl,
       Super_::GetNewImpl<EnumValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &EnumValue::Helpers_::SharedDtor,
+      &EnumValue::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -639,7 +639,7 @@ constexpr auto Type::_Internal::GenerateClassData() {
       &Type::MergeImpl,
       Super_::GetNewImpl<Type>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Type::Helpers_::SharedDtor,
+      &Type::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -803,7 +803,7 @@ constexpr auto Enum::_Internal::GenerateClassData() {
       &Enum::MergeImpl,
       Super_::GetNewImpl<Enum>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Enum::Helpers_::SharedDtor,
+      &Enum::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1032,7 +1032,7 @@ Type::Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Type)
 }
 PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
@@ -1107,11 +1107,9 @@ PROTOBUF_NDEBUG_INLINE Type::Impl_::Impl_(
         name_(arena),
         edition_(arena) {}
 
-inline void Type::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Type& this_ = static_cast<Type&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void Type::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, source_context_),
            0,
            offsetof(Impl_, syntax_) -
@@ -1120,9 +1118,9 @@ inline void Type::Helpers_::SharedCtor(
 }
 Type::~Type() {
   // @@protoc_insertion_point(destructor:google.protobuf.Type)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Type::Helpers_::SharedDtor(MessageLite& self) {
+inline void Type::SharedDtor(MessageLite& self) {
   Type& this_ = static_cast<Type&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1423,27 +1421,23 @@ void Type::CopyFrom(const Type& from) {
 }
 
 
-void Type::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Type* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Type::InternalSwap(Type* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Type& this_ = static_cast<Type&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.fields_.InternalSwap(&other->_impl_.fields_);
-  this_._impl_.oneofs_.InternalSwap(&other->_impl_.oneofs_);
-  this_._impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.edition_, &other->_impl_.edition_,
-                                       arena);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(Type, _impl_.syntax_) +
-                 sizeof(Type::_impl_.syntax_) -
-                 PROTOBUF_FIELD_OFFSET(Type, _impl_.source_context_)>(
-      reinterpret_cast<char*>(&this_._impl_.source_context_),
-      reinterpret_cast<char*>(&other->_impl_.source_context_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.fields_.InternalSwap(&other->_impl_.fields_);
+  _impl_.oneofs_.InternalSwap(&other->_impl_.oneofs_);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, &other->_impl_.edition_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Type, _impl_.syntax_)
+      + sizeof(Type::_impl_.syntax_)
+      - PROTOBUF_FIELD_OFFSET(Type, _impl_.source_context_)>(
+          reinterpret_cast<char*>(&_impl_.source_context_),
+          reinterpret_cast<char*>(&other->_impl_.source_context_));
 }
 
 ::google::protobuf::Metadata Type::GetMetadata() const {
@@ -1457,7 +1451,7 @@ Field::Field(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Field)
 }
 PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
@@ -1514,11 +1508,9 @@ PROTOBUF_NDEBUG_INLINE Field::Impl_::Impl_(
         json_name_(arena),
         default_value_(arena) {}
 
-inline void Field::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Field& this_ = static_cast<Field&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void Field::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, kind_),
            0,
            offsetof(Impl_, packed_) -
@@ -1527,9 +1519,9 @@ inline void Field::Helpers_::SharedCtor(
 }
 Field::~Field() {
   // @@protoc_insertion_point(destructor:google.protobuf.Field)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Field::Helpers_::SharedDtor(MessageLite& self) {
+inline void Field::SharedDtor(MessageLite& self) {
   Field& this_ = static_cast<Field&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1911,29 +1903,23 @@ void Field::CopyFrom(const Field& from) {
 }
 
 
-void Field::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Field* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Field::InternalSwap(Field* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Field& this_ = static_cast<Field&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.type_url_, &other->_impl_.type_url_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.json_name_, &other->_impl_.json_name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.default_value_, &other->_impl_.default_value_,
-                                       arena);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(Field, _impl_.packed_) +
-                 sizeof(Field::_impl_.packed_) -
-                 PROTOBUF_FIELD_OFFSET(Field, _impl_.kind_)>(
-      reinterpret_cast<char*>(&this_._impl_.kind_),
-      reinterpret_cast<char*>(&other->_impl_.kind_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, &other->_impl_.type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.json_name_, &other->_impl_.json_name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.default_value_, &other->_impl_.default_value_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Field, _impl_.packed_)
+      + sizeof(Field::_impl_.packed_)
+      - PROTOBUF_FIELD_OFFSET(Field, _impl_.kind_)>(
+          reinterpret_cast<char*>(&_impl_.kind_),
+          reinterpret_cast<char*>(&other->_impl_.kind_));
 }
 
 ::google::protobuf::Metadata Field::GetMetadata() const {
@@ -1952,7 +1938,7 @@ Enum::Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Enum)
 }
 PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
@@ -2015,11 +2001,9 @@ PROTOBUF_NDEBUG_INLINE Enum::Impl_::Impl_(
         name_(arena),
         edition_(arena) {}
 
-inline void Enum::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Enum& this_ = static_cast<Enum&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void Enum::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, source_context_),
            0,
            offsetof(Impl_, syntax_) -
@@ -2028,9 +2012,9 @@ inline void Enum::Helpers_::SharedCtor(
 }
 Enum::~Enum() {
   // @@protoc_insertion_point(destructor:google.protobuf.Enum)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Enum::Helpers_::SharedDtor(MessageLite& self) {
+inline void Enum::SharedDtor(MessageLite& self) {
   Enum& this_ = static_cast<Enum&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2304,26 +2288,22 @@ void Enum::CopyFrom(const Enum& from) {
 }
 
 
-void Enum::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Enum* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Enum::InternalSwap(Enum* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Enum& this_ = static_cast<Enum&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.enumvalue_.InternalSwap(&other->_impl_.enumvalue_);
-  this_._impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.edition_, &other->_impl_.edition_,
-                                       arena);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(Enum, _impl_.syntax_) +
-                 sizeof(Enum::_impl_.syntax_) -
-                 PROTOBUF_FIELD_OFFSET(Enum, _impl_.source_context_)>(
-      reinterpret_cast<char*>(&this_._impl_.source_context_),
-      reinterpret_cast<char*>(&other->_impl_.source_context_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.enumvalue_.InternalSwap(&other->_impl_.enumvalue_);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.edition_, &other->_impl_.edition_, arena);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Enum, _impl_.syntax_)
+      + sizeof(Enum::_impl_.syntax_)
+      - PROTOBUF_FIELD_OFFSET(Enum, _impl_.source_context_)>(
+          reinterpret_cast<char*>(&_impl_.source_context_),
+          reinterpret_cast<char*>(&other->_impl_.source_context_));
 }
 
 ::google::protobuf::Metadata Enum::GetMetadata() const {
@@ -2337,7 +2317,7 @@ EnumValue::EnumValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumValue)
 }
 PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
@@ -2382,17 +2362,15 @@ PROTOBUF_NDEBUG_INLINE EnumValue::Impl_::Impl_(
         ,
         name_(arena) {}
 
-inline void EnumValue::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  EnumValue& this_ = static_cast<EnumValue&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.number_ = {};
+inline void EnumValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.number_ = {};
 }
 EnumValue::~EnumValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValue)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void EnumValue::Helpers_::SharedDtor(MessageLite& self) {
+inline void EnumValue::SharedDtor(MessageLite& self) {
   EnumValue& this_ = static_cast<EnumValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2584,19 +2562,15 @@ void EnumValue::CopyFrom(const EnumValue& from) {
 }
 
 
-void EnumValue::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    EnumValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  EnumValue& this_ = static_cast<EnumValue&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.options_.InternalSwap(&other->_impl_.options_);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  swap(this_._impl_.number_, other->_impl_.number_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.options_.InternalSwap(&other->_impl_.options_);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  swap(_impl_.number_, other->_impl_.number_);
 }
 
 ::google::protobuf::Metadata EnumValue::GetMetadata() const {
@@ -2615,7 +2589,7 @@ Option::Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Option)
 }
 PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
@@ -2651,17 +2625,15 @@ PROTOBUF_NDEBUG_INLINE Option::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : name_(arena) {}
 
-inline void Option::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Option& this_ = static_cast<Option&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  this_._impl_.value_ = {};
+inline void Option::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  _impl_.value_ = {};
 }
 Option::~Option() {
   // @@protoc_insertion_point(destructor:google.protobuf.Option)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Option::Helpers_::SharedDtor(MessageLite& self) {
+inline void Option::SharedDtor(MessageLite& self) {
   Option& this_ = static_cast<Option&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2829,18 +2801,14 @@ void Option::CopyFrom(const Option& from) {
 }
 
 
-void Option::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Option* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Option::InternalSwap(Option* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Option& this_ = static_cast<Option&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.name_, &other->_impl_.name_,
-                                       arena);
-  swap(this_._impl_.value_, other->_impl_.value_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
+  swap(_impl_.value_, other->_impl_.value_);
 }
 
 ::google::protobuf::Metadata Option::GetMetadata() const {
