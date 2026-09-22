@@ -113,8 +113,7 @@ constexpr auto CSharpFeatures::_Internal::GenerateClassData() {
       Super_::GetNewImpl<CSharpFeatures>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
       &CSharpFeatures::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &ClearImpl, &ByteSizeLongImpl, &_InternalSerializeImpl,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_._cached_size_),
       &file_reflection_data[0],
@@ -249,7 +248,7 @@ CSharpFeatures::GetClassData() const {
   return &CSharpFeatures_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void CSharpFeatures::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void CSharpFeatures::ClearImpl(MessageLite& base) {
   CSharpFeatures& this_ = static_cast<CSharpFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
@@ -266,7 +265,7 @@ PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CSharpFeatures::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL CSharpFeatures::_InternalSerializeImpl(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CSharpFeatures& this_ = static_cast<const CSharpFeatures&>(base);
@@ -301,7 +300,7 @@ PROTOBUF_NOINLINE void CSharpFeatures::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t CSharpFeatures::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t CSharpFeatures::ByteSizeLongImpl(const MessageLite& base) {
   const CSharpFeatures& this_ = static_cast<const CSharpFeatures&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t CSharpFeatures::ByteSizeLong() const {
