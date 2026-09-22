@@ -46,6 +46,17 @@ static ConformanceResponse *DoTest(ConformanceRequest *request) {
   ConformanceResponse *response = [ConformanceResponse message];
   GPBMessage *testMessage = nil;
 
+  // Optional request features this testee does not implement yet.
+  if (request.discardUnknownFields) {
+    response.skipped = @"discard_unknown_fields is not supported";
+    return response;
+  }
+  if (request.mergePayloadOneOfCase !=
+      ConformanceRequest_MergePayload_OneOfCase_GPBUnsetOneOfCase) {
+    response.skipped = @"merge_payload is not supported";
+    return response;
+  }
+
   switch (request.payloadOneOfCase) {
     case ConformanceRequest_Payload_OneOfCase_GPBUnsetOneOfCase:
       response.runtimeError =
