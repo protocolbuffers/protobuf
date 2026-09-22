@@ -151,7 +151,7 @@ jobs:
         - { version: "4.0", ffi: FFI }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
