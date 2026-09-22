@@ -261,6 +261,39 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   return count;
 }
 
+PROTOBUF_NOINLINE
+void* RepeatedPtrFieldBase::AddWithCreator(Arena* arena,
+                                           CreateElementFn create_fn) {
+  ABSL_DCHECK_EQ(arena, GetArena());
+  if (tagged_rep_or_elem_ == nullptr) {
+    void* elem = create_fn(arena);
+    tagged_rep_or_elem_ = elem;
+    ExchangeCurrentSize(1);
+    return elem;
+  }
+  if (using_sso()) {
+    if (current_size_ == 0) {
+      ExchangeCurrentSize(1);
+      return tagged_rep_or_elem_;
+    }
+    void** slot = InternalExtend(1, arena);
+    void* elem = create_fn(arena);
+    *slot = elem;
+    Rep* r = rep();
+    r->allocated_size = 2;
+    ExchangeCurrentSize(2);
+    return elem;
+  }
+  if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
+    InternalExtend(1, arena);
+  }
+  void* elem = create_fn(arena);
+  Rep* r = rep();
+  r->elements[ExchangeCurrentSize(current_size_ + 1)] = elem;
+  ++r->allocated_size;
+  return elem;
+}
+
 void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     const RepeatedPtrFieldBase& from, Arena* arena, CopyFn copy_fn) {
   Prefetch5LinesFrom1Line(&from);
