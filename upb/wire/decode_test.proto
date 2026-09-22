@@ -15,3 +15,16 @@ message SubMessage {
 extend TestMessageSet {
   optional SubMessage ext_message_set = 2000;
 }
+
+// The three members share one 16-byte slot in the upb message layout, so a
+// decoder that commits the oneof case before storing the value can leave the
+// message claiming a member whose slot still holds another member's bits --
+// e.g. case = `str` over the bits of `f64`, yielding a upb_StringView whose
+// data pointer is attacker-controlled.
+message OneofTypeConfusion {
+  oneof o {
+    fixed64 f64 = 1;
+    string str = 2;
+    SubMessage sub = 3;
+  }
+}

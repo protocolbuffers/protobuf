@@ -545,37 +545,52 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   int type = field->UPB_PRIVATE(descriptortype);
 
   // Set presence if necessary.
+  //
+  // For a oneof we must not commit the case until the value has actually been
+  // stored.  Every op below can fail and longjmp() out of the decoder, and the
+  // caller can observe the partially parsed message afterwards (for example a
+  // merge-parse that reserializes it).
+  //
+  // A stale value under a *hasbit* is harmless by comparison: it is the
+  // previous value of the same field, so it is correctly typed, and leaving it
+  // set matches the documented "partially populated message" contract.
+  uint32_t* oneof_case = NULL;
   if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(field)) {
     UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
   } else if (upb_MiniTableField_IsInOneof(field)) {
-    // Oneof case
-    uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
-    if (op == kUpb_DecodeOp_SubMessage &&
-        *oneof_case != field->UPB_PRIVATE(number)) {
-      memset(mem, 0, sizeof(void*));
-    }
-    *oneof_case = field->UPB_PRIVATE(number);
+    oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
   }
 
   // Store into message.
   switch (op) {
     case kUpb_DecodeOp_SubMessage: {
       upb_Message** submsgp = mem;
-      upb_Message* submsg = *submsgp;
-      if (!submsg) submsg = _upb_Decoder_NewSubMessage(d, field, submsgp);
-      if (UPB_UNLIKELY(type == kUpb_FieldType_Group)) {
-        ptr = _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
-      } else {
-        ptr = _upb_Decoder_DecodeSubMessage(d, ptr, submsg, field, val->size);
+      upb_Message* submsg = NULL;
+      // We must reuse the existing submessage if the oneof case already
+      // selects this field. If a different arm of the oneof is selected we
+      // must not reuse it.
+      if (!oneof_case || *oneof_case == field->UPB_PRIVATE(number)) {
+        submsg = *submsgp;
       }
-      break;
+      if (!submsg) submsg = _upb_Decoder_NewSubMessage(d, field, submsgp);
+      // Commit the oneof_case now that the slot holds a valid pointer of
+      // associated type.
+      if (oneof_case) *oneof_case = field->UPB_PRIVATE(number);
+      if (UPB_UNLIKELY(type == kUpb_FieldType_Group)) {
+        return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
+      } else {
+        return _upb_Decoder_DecodeSubMessage(d, ptr, submsg, field, val->size);
+      }
     }
     case kUpb_DecodeOp_String:
-      return _upb_Decoder_ReadString2(d, ptr, val->size, mem,
-                                      /*validate_utf8=*/true);
+      // _upb_Decoder_ReadString2() writes `mem` only on success.
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     /*validate_utf8=*/true);
+      break;
     case kUpb_DecodeOp_Bytes:
-      return _upb_Decoder_ReadString2(d, ptr, val->size, mem,
-                                      /*validate_utf8=*/false);
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     /*validate_utf8=*/false);
+      break;
     case kUpb_DecodeOp_Scalar8Byte:
       memcpy(mem, val, 8);
       break;
@@ -588,6 +603,8 @@ static const char* _upb_Decoder_DecodeToSubMessage(
     default:
       UPB_UNREACHABLE();
   }
+
+  if (oneof_case) *oneof_case = field->UPB_PRIVATE(number);
 
   return ptr;
 }

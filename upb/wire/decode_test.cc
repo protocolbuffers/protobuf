@@ -1148,6 +1148,148 @@ TEST(DecodeTest, BuildMalformedMapDescriptorValidation) {
   }
 }
 
+// `OneofTypeConfusion` from decode_test.proto:
+//
+//   oneof o { fixed64 f64 = 1; string str = 2; SubMessage sub = 3; }
+//
+// All three members share a single 16-byte slot in the message layout, so a
+// decoder that commits the oneof case before it has stored the value can leave
+// the message claiming a member whose slot still holds another member's bits.
+//
+// The tests below hold for the mini-table decoder.  They are EXPECTED TO FAIL
+// when built with `--//third_party/upb:fasttable_enabled=true`, because the
+// fast path (upb/wire/decode_fast/cardinality.h) still writes the oneof case
+// before running the value parser.  That failure is the point: fasttable is
+// experimental and off by default, and these tests are what says it is not yet
+// production-ready for oneofs.  Do not weaken them to make that build green --
+// fix the fast path, and then delete this paragraph.
+const upb_MiniTable* OneofMiniTable() {
+  return &upb_0decode_0test__OneofTypeConfusion_msg_init;
+}
+
+// Field 1 (fixed64) set to 0x4141414141414141.
+const std::string& Fixed64Payload() {
+  static const std::string* kPayload =
+      new std::string(absl::StrCat("\x09", std::string(8, 'A')));
+  return *kPayload;
+}
+
+// Field 2 (string) with a length prefix of 100 but only 5 bytes of data.
+const std::string& TruncatedStringPayload() {
+  static const std::string* kPayload =
+      new std::string(absl::StrCat("\x12\x64", "short"));
+  return *kPayload;
+}
+
+TEST(DecodeTest, FailedStringParseDoesNotCommitOneofCaseOverScalar) {
+  const upb_MiniTable* mt = OneofMiniTable();
+  const upb_MiniTableField* fixed64_field =
+      upb_MiniTable_FindFieldByNumber(mt, 1);
+  ASSERT_NE(fixed64_field, nullptr);
+
+  // `str` first, so that the high half of the slot (where a upb_StringView
+  // keeps its size) holds 11; then `f64`, which overwrites only the low half
+  // (where the data pointer lives).
+  const std::string setup =
+      absl::StrCat("\x12\x0b", "hello world", Fixed64Payload());
+
+  for (int options : GetDecodeOptionsToTest()) {
+    upb::Arena arena;
+    upb_Message* msg = upb_Message_New(mt, arena.ptr());
+    ASSERT_EQ(upb_Decode(setup.data(), setup.size(), msg, mt, nullptr, options,
+                         arena.ptr()),
+              kUpb_DecodeStatus_Ok);
+    ASSERT_EQ(upb_Message_WhichOneofFieldNumber(msg, fixed64_field), 1u);
+
+    // Merge-parse a truncated `b` on top.  This fails, and must not move the
+    // case to `b`: reading `b` back would then yield
+    // upb_StringView{data = 0x4141414141414141, size = 11}.
+    EXPECT_NE(upb_Decode(TruncatedStringPayload().data(),
+                         TruncatedStringPayload().size(), msg, mt, nullptr,
+                         options, arena.ptr()),
+              kUpb_DecodeStatus_Ok);
+    ASSERT_EQ(upb_Message_WhichOneofFieldNumber(msg, fixed64_field), 1u);
+    EXPECT_EQ(upb_Message_GetUInt64(msg, fixed64_field, 0),
+              uint64_t{0x4141414141414141});
+
+    // The failed parse must leave a message that is still safe to serialize.
+    char* buf;
+    size_t size;
+    ASSERT_EQ(upb_Encode(msg, mt, 0, arena.ptr(), &buf, &size),
+              kUpb_EncodeStatus_Ok);
+    EXPECT_EQ(absl::string_view(buf, size), Fixed64Payload());
+  }
+}
+
+TEST(DecodeTest, FailedStringParseDoesNotCommitOneofCaseOverSubMessage) {
+  const upb_MiniTable* mt = OneofMiniTable();
+  const upb_MiniTableField* message_field =
+      upb_MiniTable_FindFieldByNumber(mt, 3);
+  ASSERT_NE(message_field, nullptr);
+
+  const std::string setup(absl::string_view("\x1a\x00", 2));  // sub = {}
+
+  for (int options : GetDecodeOptionsToTest()) {
+    upb::Arena arena;
+    upb_Message* msg = upb_Message_New(mt, arena.ptr());
+    ASSERT_EQ(upb_Decode(setup.data(), setup.size(), msg, mt, nullptr, options,
+                         arena.ptr()),
+              kUpb_DecodeStatus_Ok);
+    ASSERT_EQ(upb_Message_WhichOneofFieldNumber(msg, message_field), 3u);
+
+    // If this committed the `str` case, `str`'s data pointer would be the
+    // submessage pointer and its size would be whatever followed it.
+    EXPECT_NE(upb_Decode(TruncatedStringPayload().data(),
+                         TruncatedStringPayload().size(), msg, mt, nullptr,
+                         options, arena.ptr()),
+              kUpb_DecodeStatus_Ok);
+    ASSERT_EQ(upb_Message_WhichOneofFieldNumber(msg, message_field), 3u);
+    EXPECT_NE(upb_Message_GetMessage(msg, message_field), nullptr);
+
+    char* buf;
+    size_t size;
+    ASSERT_EQ(upb_Encode(msg, mt, 0, arena.ptr(), &buf, &size),
+              kUpb_EncodeStatus_Ok);
+    EXPECT_EQ(absl::string_view(buf, size), setup);
+  }
+}
+
+TEST(DecodeTest, FailedSubMessageParseLeavesOneofConsistent) {
+  const upb_MiniTable* mt = OneofMiniTable();
+  const upb_MiniTableField* message_field =
+      upb_MiniTable_FindFieldByNumber(mt, 3);
+  ASSERT_NE(message_field, nullptr);
+
+  // Field 3 (message) with a length prefix of 100 but only 5 bytes of data.
+  const std::string truncated_submessage = absl::StrCat("\x1a\x64", "short");
+
+  for (int options : GetDecodeOptionsToTest()) {
+    upb::Arena arena;
+    upb_Message* msg = upb_Message_New(mt, arena.ptr());
+    ASSERT_EQ(upb_Decode(Fixed64Payload().data(), Fixed64Payload().size(), msg,
+                         mt, nullptr, options, arena.ptr()),
+              kUpb_DecodeStatus_Ok);
+
+    EXPECT_NE(
+        upb_Decode(truncated_submessage.data(), truncated_submessage.size(),
+                   msg, mt, nullptr, options, arena.ptr()),
+        kUpb_DecodeStatus_Ok);
+
+    // Unlike strings, the submessage case is committed (together with the
+    // submessage pointer) before we recurse, so that a partially parsed
+    // submessage stays reachable.  What matters is that the case and the slot
+    // agree: a `sub` case must never be backed by `f64`'s integer bits.
+    ASSERT_EQ(upb_Message_WhichOneofFieldNumber(msg, message_field), 3u);
+    EXPECT_NE(upb_Message_GetMessage(msg, message_field), nullptr);
+
+    char* buf;
+    size_t size;
+    ASSERT_EQ(upb_Encode(msg, mt, 0, arena.ptr(), &buf, &size),
+              kUpb_EncodeStatus_Ok);
+    EXPECT_EQ(absl::string_view(buf, size), absl::string_view("\x1a\x00", 2));
+  }
+}
+
 }  // namespace
 
 }  // namespace test
