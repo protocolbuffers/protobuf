@@ -1,4 +1,4 @@
-#include "naming.h"
+#include "conformance/naming.h"
 
 #include <gtest/gtest.h>
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
@@ -33,6 +33,21 @@ TEST(NamingTest, GetEditionIdentifier) {
             "Editions_Proto2");
   EXPECT_EQ(GetEditionIdentifier(*TestAllTypesProto3Editions::descriptor()),
             "Editions_Proto3");
+}
+
+// The gtest parameter token of a message type is its edition identifier minus
+// the underscore, and never contains a character gtest rejects.
+TEST(NamingTest, GetEditionParamName) {
+  EXPECT_EQ(GetEditionParamName(*TestAllTypesProto2::descriptor()), "Proto2");
+  EXPECT_EQ(GetEditionParamName(*TestAllTypesProto3::descriptor()), "Proto3");
+  EXPECT_EQ(GetEditionParamName(*TestAllTypesEdition2023::descriptor()),
+            "Editions");
+  EXPECT_EQ(GetEditionParamName(*TestAllTypesEditionUnstable::descriptor()),
+            "EditionUnstable");
+  EXPECT_EQ(GetEditionParamName(*TestAllTypesProto2Editions::descriptor()),
+            "EditionsProto2");
+  EXPECT_EQ(GetEditionParamName(*TestAllTypesProto3Editions::descriptor()),
+            "EditionsProto3");
 }
 
 TEST(NamingTest, GetFormatIdentifier) {
