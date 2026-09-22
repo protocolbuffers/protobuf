@@ -5,15 +5,21 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+#include <cstdint>
 #include <iterator>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/strings/string_view.h"
 #include "hpb_generator/tests/child_model.hpb.h"
 #include "hpb_generator/tests/test_extension.hpb.h"
 #include "hpb_generator/tests/test_model.hpb.h"
 #include "hpb/arena.h"
 #include "hpb/ptr.h"
+#include "hpb/repeated_field.h"
 #include "hpb/requires.h"
 
 namespace {

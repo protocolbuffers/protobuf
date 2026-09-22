@@ -10,6 +10,7 @@
 
 #include "google/protobuf/testing/file.h"
 #include "google/protobuf/testing/file.h"
+#include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/container/flat_hash_map.h"
