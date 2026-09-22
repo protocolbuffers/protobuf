@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/proto_api.h"
