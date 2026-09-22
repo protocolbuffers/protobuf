@@ -44,6 +44,16 @@ function doTest($request)
 {
     $response = new ConformanceResponse();
 
+    // Optional request features this testee does not implement yet.
+    if ($request->getDiscardUnknownFields()) {
+        $response->setSkipped('discard_unknown_fields is not supported');
+        return $response;
+    }
+    if ($request->getMergePayload() !== '') {
+        $response->setSkipped('merge_payload is not supported');
+        return $response;
+    }
+
     switch ($request->getPayload()) {
         case 'protobuf_payload':
             switch ($request->getMessageType()) {
