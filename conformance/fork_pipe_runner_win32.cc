@@ -7,7 +7,7 @@
 
 // The whole implementation is #ifdef'd out on other platforms, which makes
 // this look unused to include checkers there.
-#include "fork_pipe_runner.h"  // IWYU pragma: keep
+#include "conformance/fork_pipe_runner.h"  // IWYU pragma: keep
 
 #ifdef _WIN32
 

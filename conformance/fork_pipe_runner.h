@@ -16,7 +16,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "conformance/conformance.pb.h"
-#include "test_runner.h"
+#include "conformance/test_runner.h"
 
 namespace google {
 namespace protobuf {

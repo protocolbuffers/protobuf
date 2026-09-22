@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "binary_json_conformance_suite.h"
+#include "conformance/binary_json_conformance_suite.h"
 
 #include <cassert>
 #include <cctype>
@@ -29,9 +29,9 @@
 #include "json/config.h"
 #include "json/reader.h"
 #include "json/value.h"
-#include "binary_wireformat.h"
+#include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"

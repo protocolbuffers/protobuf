@@ -125,7 +125,7 @@ protobuf_configure_target(conformance_cpp)
 
 target_include_directories(
   conformance_test_runner
-  PUBLIC ${protobuf_SOURCE_DIR} ${protobuf_SOURCE_DIR}/conformance)
+  PUBLIC ${protobuf_SOURCE_DIR})
 
 target_include_directories(
   conformance_cpp

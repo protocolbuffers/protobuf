@@ -45,8 +45,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
-#include "conformance_test.h"
-#include "fork_pipe_runner.h"
+#include "conformance/conformance_test.h"
+#include "conformance/fork_pipe_runner.h"
 
 using google::protobuf::ConformanceTestSuite;
 
