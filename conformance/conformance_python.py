@@ -54,6 +54,14 @@ def _create_test_message(type):
 def do_test(request):
   response = conformance_pb2.ConformanceResponse()
 
+  # Optional request features this testee does not implement yet.
+  if request.discard_unknown_fields:
+    response.skipped = "discard_unknown_fields is not supported"
+    return response
+  if request.WhichOneof("merge_payload") is not None:
+    response.skipped = "merge_payload is not supported"
+    return response
+
   is_json = request.WhichOneof("payload") == "json_payload"
   test_message = _create_test_message(request.message_type)
 

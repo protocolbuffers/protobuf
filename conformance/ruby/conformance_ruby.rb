@@ -39,6 +39,16 @@ def do_test(request)
     return response
   end
 
+  # Optional request features this testee does not implement yet.
+  if request.discard_unknown_fields
+    response.skipped = "discard_unknown_fields is not supported"
+    return response
+  end
+  unless request.merge_payload.nil?
+    response.skipped = "merge_payload is not supported"
+    return response
+  end
+
   begin
     case request.payload
     when :protobuf_payload
