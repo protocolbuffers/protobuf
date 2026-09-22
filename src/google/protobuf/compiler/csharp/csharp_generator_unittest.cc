@@ -9,6 +9,8 @@
 
 #include <memory>
 
+#include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/any.pb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/compiler/command_line_interface.h"
@@ -138,6 +140,67 @@ TEST_F(CSharpGeneratorCliTest, CSharpNamespaceBracesRejected) {
       "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
 
   ExpectErrorSubstring("Invalid character");
+}
+
+// A .proto comment ends only at '\n', but C# also ends a '///' comment at CR,
+// NEL, LS and PS. Comment text containing one of those must not be able to
+// escape the generated comment and land at code position.
+class CSharpDocCommentLineTerminatorTest : public CSharpGeneratorCliTest {
+ protected:
+  void RunWithCommentTerminator(absl::string_view terminator) {
+    CreateTempFile(
+        "foo.proto",
+        absl::StrCat("syntax = \"proto3\";\n"
+                     "message Foo {\n"
+                     "  // Doc comment.",
+                     terminator,
+                     "NotCode();\n"
+                     "  int32 bar = 1;\n"
+                     "}\n"));
+
+    RunProtoc(
+        "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
+
+    ExpectNoErrors();
+    // The text after the terminator stays inside a comment...
+    ExpectFileContentContainsSubstring("Foo.cs", "///NotCode();");
+    // ...and the terminator itself is not written to the generated file.
+    ExpectFileContentNotContainsSubstring("Foo.cs", terminator);
+  }
+};
+
+TEST_F(CSharpDocCommentLineTerminatorTest, CarriageReturn) {
+  RunWithCommentTerminator("\r");
+}
+
+TEST_F(CSharpDocCommentLineTerminatorTest, NextLine) {
+  RunWithCommentTerminator("\xc2\x85");  // U+0085
+}
+
+TEST_F(CSharpDocCommentLineTerminatorTest, LineSeparator) {
+  RunWithCommentTerminator("\xe2\x80\xa8");  // U+2028
+}
+
+TEST_F(CSharpDocCommentLineTerminatorTest, ParagraphSeparator) {
+  RunWithCommentTerminator("\xe2\x80\xa9");  // U+2029
+}
+
+TEST_F(CSharpGeneratorCliTest, MultiLineCommentsAreStillSplitPerLine) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto3";
+    message Foo {
+      // First line.
+      // Second line.
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --csharp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring("Foo.cs", "/// First line.");
+  ExpectFileContentContainsSubstring("Foo.cs", "/// Second line.");
 }
 
 }  // namespace
