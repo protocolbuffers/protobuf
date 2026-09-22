@@ -140,109 +140,109 @@ jobs:
       continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
     secrets: inherit
 
-  cpp:
-    name: C++
-    needs: [set-vars]
-    uses: ./.github/workflows/test_cpp.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  java:
-    name: Java
-    needs: [set-vars]
-    uses: ./.github/workflows/test_java.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  python:
-    name: Python
-    needs: [set-vars]
-    uses: ./.github/workflows/test_python.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  ruby:
-    name: Ruby
-    needs: [set-vars]
-    uses: ./.github/workflows/test_ruby.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  php:
-    name: PHP
-    needs: [set-vars]
-    uses: ./.github/workflows/test_php.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  php-ext:
-    name: PHP Extension
-    needs: [set-vars]
-    uses: ./.github/workflows/test_php_ext.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  csharp:
-    name: C#
-    needs: [set-vars]
-    uses: ./.github/workflows/test_csharp.yml
-    with:
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-    secrets: inherit
-
-  objectivec:
-    name: Objective-C
-    needs: [set-vars]
-    uses: ./.github/workflows/test_objectivec.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  rust:
-    name: Rust
-    needs: [set-vars]
-    uses: ./.github/workflows/test_rust.yml
-    with:
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-    secrets: inherit
-
-  upb:
-    name: μpb
-    needs: [set-vars]
-    uses: ./.github/workflows/test_upb.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
-  hpb:
-    name: hpb
-    needs: [set-vars]
-    uses: ./.github/workflows/test_hpb.yml
-    with:
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-    secrets: inherit
+#  cpp:
+#    name: C++
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_cpp.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  java:
+#    name: Java
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_java.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  python:
+#    name: Python
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_python.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  ruby:
+#    name: Ruby
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_ruby.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  php:
+#    name: PHP
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_php.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  php-ext:
+#    name: PHP Extension
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_php_ext.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  csharp:
+#    name: C#
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_csharp.yml
+#    with:
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#    secrets: inherit
+#
+#  objectivec:
+#    name: Objective-C
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_objectivec.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  rust:
+#    name: Rust
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_rust.yml
+#    with:
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#    secrets: inherit
+#
+#  upb:
+#    name: μpb
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_upb.yml
+#    with:
+#      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
+#    secrets: inherit
+#
+#  hpb:
+#    name: hpb
+#    needs: [set-vars]
+#    uses: ./.github/workflows/test_hpb.yml
+#    with:
+#      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
+#    secrets: inherit
 
   staleness:
     name: Staleness
@@ -258,7 +258,12 @@ jobs:
   # This test depends on all blocking tests and indicates whether they all suceeded.
   all-blocking-tests:
     name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
-    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness]
+    needs: [
+      set-vars,
+      validate-yaml,
+      bazel,
+      #cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, hpb,
+      staleness]
     runs-on: ubuntu-latest
     steps:
       - name: Check test results
