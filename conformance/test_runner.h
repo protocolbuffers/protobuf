@@ -16,6 +16,25 @@
 namespace google {
 namespace protobuf {
 
+// The `skipped` reason a filtering runner (e.g. the merged runner's
+// FilteringTestRunner under --test) answers with for every test that was not
+// selected to run.  Such a response is not a testee skip: the reporting side
+// (the conformance matchers, matchers.h) passes it silently, without logging
+// or counting it, and only tells the TestManager that the test exists
+// (TestManager::ReportNotSelected()).  The value is therefore reserved: a
+// testee must never answer with it, or its skip would go unnoticed.
+inline constexpr absl::string_view kTestNotSelectedSkipReason =
+    "Not selected by --test.";
+
+// The name the discovery handshake's probe (see Testee::DetectProtocolVersion()
+// in testee.h and ConformanceRequest.protocol_version in conformance.proto) is
+// sent under.  Not a test name: it isn't registered with the Testee, never
+// appears in a failure list, and its spaces keep it from ever colliding with
+// one.  A filtering runner must forward it to its delegate whatever it was
+// told to select, or a filtered run would discover a different protocol
+// version than a full one.
+inline constexpr absl::string_view kProbeName = "protocol discovery handshake";
+
 // Interface for the underlying test runner that runs a single conformance test.
 class ConformanceTestRunner {
  public:
