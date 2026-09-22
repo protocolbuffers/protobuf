@@ -87,8 +87,10 @@ FieldComparator::ComparisonResult SimpleFieldComparator::SimpleCompare(
       COMPARE_FIELD(Bool);
     case FieldDescriptor::CPPTYPE_DOUBLE:
       COMPARE_FIELD(Double);
+      PROTOBUF_IGNORE_DEPRECATION_START
     case FieldDescriptor::CPPTYPE_ENUM:
-      COMPARE_FIELD(Enum);
+      COMPARE_FIELD(EnumValue);
+      PROTOBUF_IGNORE_DEPRECATION_STOP
     case FieldDescriptor::CPPTYPE_FLOAT:
       COMPARE_FIELD(Float);
     case FieldDescriptor::CPPTYPE_INT32:
@@ -171,10 +173,9 @@ bool SimpleFieldComparator::CompareDouble(const FieldDescriptor& field,
   return CompareDoubleOrFloat(field, value_1, value_2);
 }
 
-bool SimpleFieldComparator::CompareEnum(const FieldDescriptor& /*field*/,
-                                        const EnumValueDescriptor* value_1,
-                                        const EnumValueDescriptor* value_2) {
-  return value_1->number() == value_2->number();
+bool SimpleFieldComparator::CompareEnumValue(const FieldDescriptor& /*field*/,
+                                             int value_1, int value_2) {
+  return value_1 == value_2;
 }
 
 bool SimpleFieldComparator::CompareFloat(const FieldDescriptor& field,

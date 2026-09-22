@@ -102,7 +102,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
           HANDLE_TYPE(DOUBLE, Double);
           HANDLE_TYPE(BOOL, Bool);
           HANDLE_TYPE(STRING, String);
-          HANDLE_TYPE(ENUM, Enum);
+          HANDLE_TYPE(ENUM, EnumValue);
 #undef HANDLE_TYPE
 
           case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -135,7 +135,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
         HANDLE_TYPE(DOUBLE, Double);
         HANDLE_TYPE(BOOL, Bool);
         HANDLE_TYPE(STRING, String);
-        HANDLE_TYPE(ENUM, Enum);
+        HANDLE_TYPE(ENUM, EnumValue);
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
