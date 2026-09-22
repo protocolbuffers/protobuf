@@ -30,14 +30,12 @@
 //   3. testee sends 4-byte length M (little endian)
 //   4. testee sends M bytes representing a ConformanceResponse proto
 
-#include "fork_pipe_runner.h"
+#include "conformance/fork_pipe_runner.h"
 
 #include <cstdint>
 #include <string>
 
-#include "absl/log/absl_log.h"
 #include "absl/strings/string_view.h"
-#include "conformance/conformance.pb.h"
 #include "google/protobuf/endian.h"
 
 namespace google {
@@ -52,30 +50,26 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
 
   uint32_t len =
       internal::little_endian::FromHost(static_cast<uint32_t>(request.size()));
-
-  CheckedWrite(&len, sizeof(uint32_t));
-  CheckedWrite(request.data(), request.size());
-
-  std::string response;
-  bool timed_out = false;
-  if (!TryRead(&len, sizeof(uint32_t), &timed_out)) {
-    conformance::ConformanceResponse response_obj;
-    std::string error_msg = GetTestProgramFailure(timed_out);
-    ABSL_LOG(INFO) << error_msg;
-    if (timed_out) {
-      response_obj.set_timeout_error(error_msg);
-    } else {
-      response_obj.set_runtime_error(error_msg);
-    }
-    // TODO: Remove this suppression.
-    (void)response_obj.SerializeToString(&response);
-    return response;
+  if (!TryWrite(&len, sizeof(uint32_t)) ||
+      !TryWrite(request.data(), request.size())) {
+    return ReportFailure(/*timed_out=*/false, "error writing to child");
   }
 
+  ReadResult read_result = TryRead(&len, sizeof(uint32_t));
+  if (read_result != ReadResult::kOk) return ReportReadFailure(read_result);
+
   len = internal::little_endian::ToHost(len);
-  response.resize(len);
-  CheckedRead((void*)response.c_str(), len);
+  std::string response(len, '\0');
+  read_result = TryRead(&response[0], len);
+  if (read_result != ReadResult::kOk) return ReportReadFailure(read_result);
   return response;
+}
+
+std::string ForkPipeRunner::ReportReadFailure(ReadResult read_result) {
+  return ReportFailure(read_result == ReadResult::kTimeout,
+                       read_result == ReadResult::kEof
+                           ? "child closed its output without responding"
+                           : "error reading from child");
 }
 
 }  // namespace protobuf

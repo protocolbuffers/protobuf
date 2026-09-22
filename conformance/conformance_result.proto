@@ -1,0 +1,94 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+edition = "2023";
+
+package conformance;
+
+option features.field_presence = IMPLICIT;
+option java_package = "com.google.protobuf.conformance";
+
+// The recorded outcome of a single conformance test, as written by the
+// conformance test runner (see --output_result_file) and consumed by
+// report_generator.py.
+message ConformanceTestCaseResult {
+  enum Status {
+    STATUS_UNSPECIFIED = 0;
+    PASS_CANONICAL = 1;
+    PASS_ALTERNATE = 2;  // For Informational tests: matched allowed alternate
+    PASS_OTHER = 3;      // For Informational tests: unmodeled legal variation
+    FAILURE = 4;
+    SKIPPED = 5;
+    CRASH = 6;
+  }
+
+  // A test's identity is four parts, each with a number and a name.  The two
+  // compose into parallel identifiers of the same shape:
+  //
+  //   coordinate  "01.01.001.31"
+  //   test_name   "wire.varint.eof_before_unknown_value_double_parsefails.ed_proto2_pb2pb"
+
+  // Composed human readable name:
+  // "<domain>.<section>.<test_case>.<variant>"
+  string test_name = 1;
+
+  // Preexisting legacy name for failure list matching:
+  // e.g. "Required.PrematureEofTest.BeforeKnownNonRepeatedValue/Proto3_INT32.ProtobufInput"
+  string legacy_test_name = 2;
+
+  // Composed numeric coordinate:
+  // "<section_coordinate>.<test_number>.<variant_number>"
+  string coordinate = 3;
+
+  // Parts 1 and 2, from the section enum: "01.01" / "wire" / "varint".
+  string domain = 4;
+  string section = 5;
+  // Prefixes test_case.  Not a coordinate component: a section's test numbers
+  // run across all of its subsections.
+  string subsection = 6;
+  string section_coordinate = 13;
+
+  // Part 3: the logical test, shared by all of its variants.
+  uint32 test_number = 14;
+  string test_case = 15;
+
+  // Part 4: the variant.  variant_number is two digits, the first identifying
+  // the syntax and the second the payload transform.
+  uint32 variant_number = 16;
+  string variant = 17;
+  string syntax = 18;    // "ed_proto2"
+  string payloads = 19;  // "pb2pb"
+
+  // Human-readable description:
+  string description = 7;
+
+  // Whether this is an informational / behavioral variation test:
+  bool is_informational = 8;
+
+  Status status = 9;
+
+  // Behavioral choice identifier for informational tests (e.g. "in_tag_order",
+  // "last_wins"):
+  string matched_behavior_id = 10;
+
+  string error_message = 11;
+  int64 execution_time_us = 12;
+
+  // The priority of the test: "P0" .. "P3" (see TestPriority in testee.h).
+  string priority = 20;
+}
+
+message ConformanceRunResult {
+  string implementation_name = 1;
+  int64 timestamp_epoch_sec = 2;
+  int32 total_tests = 3;
+  int32 passed_tests = 4;
+  int32 failed_tests = 5;
+  int32 skipped_tests = 6;
+  int32 crashed_tests = 7;
+  repeated ConformanceTestCaseResult results = 8;
+}

@@ -6,6 +6,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -38,6 +39,14 @@ inline std::string GetEditionIdentifier(const Descriptor& message) {
       return id;
     }
   }
+}
+
+// Returns the gtest parameter name of `message`'s edition: the edition
+// identifier without the underscore gtest doesn't allow in parameter names,
+// e.g. "EditionsProto2".  This is the token ParamName(const Descriptor*)
+// (binary_test_util.h) contributes to a parameterized test's name.
+inline std::string GetEditionParamName(const Descriptor& message) {
+  return absl::StrReplaceAll(GetEditionIdentifier(message), {{"_", ""}});
 }
 
 // Returns the format identifier for the given wire format.  This is used to
