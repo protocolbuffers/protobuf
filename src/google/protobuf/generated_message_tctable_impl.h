@@ -997,9 +997,9 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename TagType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* RepeatedCord(PROTOBUF_TC_PARAM_DECL);
 
-  static inline std::string* ParseRepeatedStringOnce(
-      const char*& ptr, SerialArena* serial_arena, ParseContext* ctx,
-      RepeatedPtrField<std::string>& field);
+  static inline const char* ParseRepeatedStringOnce(
+      const char* ptr, Arena* arena, SerialArena* serial_arena,
+      ParseContext* ctx, RepeatedPtrField<std::string>& field);
 
   PROTOBUF_NOINLINE
   static void AddUnknownEnum(MessageLite* msg, const TcParseTableBase* table,

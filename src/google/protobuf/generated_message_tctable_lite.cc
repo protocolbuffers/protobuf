@@ -26,7 +26,6 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
@@ -1848,12 +1847,13 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   auto& field = RefAt<FieldType>(msg, data.offset());
   ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
 
-  const auto validate_string = [expected_tag, table](const auto& str) {
+  const auto validate_last_string = [expected_tag, table, &field] {
     switch (utf8) {
       case kNoUtf8:
         return true;
       case kUtf8:
-        if (ABSL_PREDICT_TRUE(utf8_range::IsStructurallyValid(str))) {
+        if (ABSL_PREDICT_TRUE(
+                utf8_range::IsStructurallyValid(field[field.size() - 1]))) {
           return true;
         }
         ReportFastUtf8Error(FastDecodeTag(expected_tag), table);
@@ -1861,16 +1861,31 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     }
   };
 
-  SerialArena* serial_arena = GetSerialArena(msg);
-  do {
-    ptr += sizeof(TagType);
-    std::string* str = ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
+  auto* arena = field.GetArena();
+  SerialArena* serial_arena;
+  if (ABSL_PREDICT_TRUE(arena != nullptr &&
+                        arena->impl_.GetSerialArenaFast(&serial_arena) &&
+                        field.PrepareForParse())) {
+    do {
+      ptr += sizeof(TagType);
+      ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
 
-    if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_string(*str))) {
-      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-    }
-    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+      if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
+        PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+      }
+      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  } else {
+    do {
+      ptr += sizeof(TagType);
+      std::string* str = field.AddWithArena(arena);
+      ptr = InlineGreedyStringParser(str, ptr, ctx);
+      if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
+        PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+      }
+      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
+  }
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 parse_loop:
   PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2584,39 +2599,17 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-PROTOBUF_ALWAYS_INLINE std::string* TcParser::ParseRepeatedStringOnce(
-    const char*& ptr, SerialArena* serial_arena, ParseContext* ctx,
+PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
+    const char* ptr, Arena* arena, SerialArena* serial_arena, ParseContext* ctx,
     RepeatedPtrField<std::string>& field) {
-  if (std::string* str =
-          field.AddFromCleared<GenericTypeHandler<std::string>>();
-      ABSL_PREDICT_FALSE(str != nullptr)) {
-    ptr = InlineGreedyStringParser(str, ptr, ctx);
-    return str;
-  }
-
-  // For simplicity we allocate and add the object now, even though it is not
-  // yet initialized.
-  // We make sure below to not have early exits that leave it uninitialized.
-  auto* mem = serial_arena != nullptr ? serial_arena->AllocateFromStringBlock()
-                                      : ::operator new(sizeof(std::string));
-  field.AddAllocatedForParse(mem, serial_arena);
   int size = ReadSize(&ptr);
-  if (ABSL_PREDICT_FALSE(!ptr)) {
-    ::new (mem) std::string();
-    return nullptr;
-  }
-
-  // If the input is contiguous, construct the string directly with it.
-  if (size <= ctx->MaximumReadSize(ptr)) {
-    std::string* str = ::new (mem) std::string(ptr, static_cast<size_t>(size));
-    ptr += size;
-    PROTOBUF_ASSUME(ptr != nullptr);
-    return str;
-  } else {
-    std::string* str = new (mem) std::string();
-    ptr = ctx->ReadString(ptr, size, str);
-    return str;
-  }
+  if (ABSL_PREDICT_FALSE(!ptr)) return {};
+  auto* str = new (serial_arena->AllocateFromStringBlock()) std::string();
+  ptr = ctx->ReadString(ptr, size, str);
+  field.AddAllocatedForParse(str, arena);
+  if (ABSL_PREDICT_FALSE(!ptr)) return {};
+  PROTOBUF_ASSUME(ptr != nullptr);
+  return ptr;
 }
 
 template <bool is_split>
@@ -2644,18 +2637,36 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      SerialArena* serial_arena = GetSerialArena(arena);
-      do {
-        ptr = ptr2;
-        std::string* str =
-            ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
-        if (ABSL_PREDICT_FALSE(ptr == nullptr ||
-                               !MpVerifyUtf8(*str, table, entry, xform_val))) {
-          PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-        }
-        if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-        ptr2 = ReadTag(ptr, &next_tag);
-      } while (next_tag == decoded_tag);
+      SerialArena* serial_arena;
+      if (ABSL_PREDICT_TRUE(arena != nullptr &&
+                            arena->impl_.GetSerialArenaFast(&serial_arena) &&
+                            field.PrepareForParse())) {
+        do {
+          ptr = ptr2;
+          ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
+          if (ABSL_PREDICT_FALSE(ptr == nullptr ||
+                                 !MpVerifyUtf8(field[field.size() - 1], table,
+                                               entry, xform_val))) {
+            PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+          }
+          if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+          ptr2 = ReadTag(ptr, &next_tag);
+        } while (next_tag == decoded_tag);
+      } else {
+        do {
+          ptr = ptr2;
+          std::string* str = field.AddWithArena(arena);
+          ptr = InlineGreedyStringParser(str, ptr, ctx);
+          if (ABSL_PREDICT_FALSE(
+                  ptr == nullptr ||
+                  !MpVerifyUtf8(*str, table, entry, xform_val))) {
+            PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+          }
+          if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+          ptr2 = ReadTag(ptr, &next_tag);
+        } while (next_tag == decoded_tag);
+      }
+
       break;
     }
 
