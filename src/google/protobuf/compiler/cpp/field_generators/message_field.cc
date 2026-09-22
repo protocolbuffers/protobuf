@@ -364,7 +364,9 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
-  p->Emit("swap($field_$, other->$field_$);\n");
+  p->Emit(R"cc(
+    swap(this_.$field_$, other->$field_$);
+  )cc");
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
@@ -985,7 +987,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   ABSL_CHECK(!should_split());
   p->Emit(R"cc(
-    $field_$.InternalSwap(&other->$field_$);
+    this_.$field_$.InternalSwap(&other->$field_$);
   )cc");
 }
 

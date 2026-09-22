@@ -43,10 +43,16 @@ class PROTOBUF_EXPORT ZeroFieldsBase : public Message {
   using Message::Message;
   ~ZeroFieldsBase() PROTOBUF_OVERRIDE;
 
-  static void SharedDtor(MessageLite& msg);
+  struct Helpers_ {
+    // Defined out of line to enable constructor homing.
+    Helpers_();
+
+    static void SharedDtor(MessageLite& msg);
+    static void InternalSwap(MessageLite& self, ZeroFieldsBase* other);
+  };
+
   static void MergeImpl(MessageLite& to, const MessageLite& from);
   static void CopyImpl(Message& to, const Message& from);
-  void InternalSwap(ZeroFieldsBase* other);
   static void Clear(MessageLite& msg);
   static size_t ByteSizeLong(const MessageLite& base);
   static ::uint8_t* _InternalSerialize(const MessageLite& msg,
