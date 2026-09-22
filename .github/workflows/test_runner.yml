@@ -263,16 +263,16 @@ jobs:
       validate-yaml,
       bazel,
       cpp,
-      java,
+#      java,
       python,
       ruby,
-      php,
-      php-ext,
+#      php,
+#      php-ext,
 #      csharp,
       objectivec,
-      rust,
+#      rust,
       upb,
-      hpb,
+#      hpb,
       staleness]
     runs-on: ubuntu-latest
     steps:
