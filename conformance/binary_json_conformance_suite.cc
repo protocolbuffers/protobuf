@@ -2805,6 +2805,83 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalInt32": "abc"})");
 
+  // Quoted numeric fields accept only the ASCII digits U+0030..U+0039.  The
+  // JSON mapping gives the string form of a number the same grammar as the
+  // unquoted form, so a Unicode decimal digit from another script is not a
+  // number here even though it carries a decimal value.  Implementations that
+  // convert the string with a Unicode-aware routine accept these instead.
+  // See https://github.com/protocolbuffers/protobuf/issues/29893.
+  //
+  // Except where noted below, these are not raw string literals: each payload
+  // holds the UTF-8 bytes of the digits.  The mixed cases split their literal
+  // because a C++ hex escape would otherwise swallow the ASCII digit that
+  // follows it.
+  //
+  // U+0661 U+0662 U+0663, Arabic-Indic.
+  ExpectParseFailureForJson(
+      "Int64FieldArabicIndicDigits", REQUIRED,
+      "{\"optionalInt64\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  // U+06F1 U+06F2 U+06F3, Extended Arabic-Indic.
+  ExpectParseFailureForJson(
+      "Int64FieldExtendedArabicIndicDigits", REQUIRED,
+      "{\"optionalInt64\": \"\xDB\xB1\xDB\xB2\xDB\xB3\"}");
+  // U+0967 U+0968 U+0969, Devanagari.
+  ExpectParseFailureForJson(
+      "Int64FieldDevanagariDigits", REQUIRED,
+      "{\"optionalInt64\": \"\xE0\xA5\xA7\xE0\xA5\xA8\xE0\xA5\xA9\"}");
+  // U+0E51 U+0E52 U+0E53, Thai.
+  ExpectParseFailureForJson(
+      "Int64FieldThaiDigits", REQUIRED,
+      "{\"optionalInt64\": \"\xE0\xB9\x91\xE0\xB9\x92\xE0\xB9\x93\"}");
+  // U+07C1 U+07C2 U+07C3, N'Ko.
+  ExpectParseFailureForJson(
+      "Int64FieldNkoDigits", REQUIRED,
+      "{\"optionalInt64\": \"\xDF\x81\xDF\x82\xDF\x83\"}");
+  // U+FF11 U+FF12 U+FF13, fullwidth.
+  ExpectParseFailureForJson(
+      "Int64FieldFullwidthDigits", REQUIRED,
+      "{\"optionalInt64\": \"\xEF\xBC\x91\xEF\xBC\x92\xEF\xBC\x93\"}");
+  // The same digits written as JSON \u escapes, so this payload is pure
+  // ASCII.  Kept alongside the raw-UTF-8 case above because the two
+  // separate the possible causes: if only this one is accepted the
+  // leniency is in the numeric conversion, not in UTF-8 decoding.  A raw
+  // string literal is deliberate -- universal character names are not
+  // processed inside one, so the six characters \u0661 reach the parser
+  // intact.
+  ExpectParseFailureForJson("Int64FieldArabicIndicDigitsEscaped", REQUIRED,
+                            R"({"optionalInt64": "\u0661\u0662\u0663"})");
+  // '1' U+0662 '2'.  A parser that accepts this reads 122 and reports no
+  // error, so the value is silently wrong rather than refused.
+  ExpectParseFailureForJson(
+      "Int64FieldMixedAsciiAndArabicIndicDigits", REQUIRED,
+      "{\"optionalInt64\": \"1\xD9\xA2" "2\"}");
+  // The other quoted numeric types take the same conversion path.
+  ExpectParseFailureForJson(
+      "Int32FieldArabicIndicDigits", REQUIRED,
+      "{\"optionalInt32\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  ExpectParseFailureForJson(
+      "Int32FieldMixedAsciiAndArabicIndicDigits", REQUIRED,
+      "{\"optionalInt32\": \"1\xD9\xA2" "2\"}");
+  ExpectParseFailureForJson(
+      "Uint32FieldArabicIndicDigits", REQUIRED,
+      "{\"optionalUint32\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  ExpectParseFailureForJson(
+      "Uint64FieldArabicIndicDigits", REQUIRED,
+      "{\"optionalUint64\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  ExpectParseFailureForJson(
+      "DoubleFieldArabicIndicDigits", REQUIRED,
+      "{\"optionalDouble\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  // Controls for the cases above.  A group of tests that only asserts
+  // rejection cannot distinguish a correctly strict parser from one that
+  // rejects everything, so pin down what must still be accepted: ASCII digits
+  // in a quoted int64, and the same non-ASCII digits in a string field, where
+  // they are text rather than a number and must round-trip unchanged.
+  RunValidJsonTest("Int64FieldStringValueAsciiDigits", REQUIRED,
+                   R"({"optionalInt64": "123"})", "optional_int64: 123");
+  RunValidJsonTest("StringFieldArabicIndicDigits", REQUIRED,
+                   "{\"optionalString\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}",
+                   "optional_string: \"\xD9\xA1\xD9\xA2\xD9\xA3\"");
+
   // Parser reject empty string values.
   ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
                             R"({"optionalInt32": ""})");

@@ -9,16 +9,29 @@
 
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse or matched expected output but did not.
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse or matched expected output but did not.
+Required.*.JsonInput.DoubleFieldArabicIndicDigits                                                                  # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldFalseValue                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldTrueValue                                                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldFalseValue                                                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldTrueValue                                                                            # Should have failed to parse, but didn't.
 Required.*.JsonInput.FloatFieldFalseValue                                                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.FloatFieldTrueValue                                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int32FieldArabicIndicDigits                                                                   # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int32FieldMixedAsciiAndArabicIndicDigits                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldArabicIndicDigits                                                                   # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldArabicIndicDigitsEscaped                                                            # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldDevanagariDigits                                                                    # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldExtendedArabicIndicDigits                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldFullwidthDigits                                                                     # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldMixedAsciiAndArabicIndicDigits                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldNkoDigits                                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldThaiDigits                                                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputDayTooShort                                                                 # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputMonthTooShort                                                               # Should have failed to parse, but didn't.
+Required.*.JsonInput.Uint32FieldArabicIndicDigits                                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.Uint64FieldArabicIndicDigits                                                                  # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey                                          # Should have failed to parse, but didn't.
