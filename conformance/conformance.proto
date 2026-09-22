@@ -19,10 +19,11 @@ option objc_class_prefix = "Conformance";
 //
 // You can either run the tests in two different ways:
 //
-//   1. in-process (using the interface in conformance_test.h).
+//   1. in-process (a C++ library that implements MakeTesteeRunner(), see
+//      testee_runner.h, linked into the test binary).
 //
 //   2. as a sub-process communicating over a pipe.  Information about how to
-//      do this is in conformance_test_runner.cc.
+//      do this is in README.md and conformance_test_runner.h.
 //
 // Pros/cons of the two approaches:
 //
@@ -79,8 +80,16 @@ message FailureSet {
 // Represents a single test case's input.  The testee should:
 //
 //   1. parse this proto (which should always succeed)
-//   2. parse the protobuf or JSON payload in "payload" (which may fail)
-//   3. if the parse succeeded, serialize the message in the requested format.
+//   2. parse the protobuf, JSON or text payload in "payload" (which may
+//      fail)
+//   3. if the parse succeeded and "merge_payload" is set, merge it into the
+//      message (which may fail)
+//   4. if "discard_unknown_fields" is set, discard the message's unknown
+//      fields
+//   5. serialize the message in the requested format.
+//
+// Steps 3 and 4 are optional features; a testee that does not support one of
+// them must respond with "skipped" when a request asks for it.
 message ConformanceRequest {
   // The payload (whether protobuf of JSON) is always for a
   // protobuf_test_messages.proto3.TestAllTypes proto (as defined in
@@ -116,6 +125,32 @@ message ConformanceRequest {
   // This can be used in json and text format. If true, testee should print
   // unknown fields instead of ignore. This feature is optional.
   bool print_unknown_fields = 9;
+
+  // If true, the testee discards the unknown fields of the message
+  // (recursively, like C++'s DiscardUnknownFields()) after parsing `payload`
+  // and merging `merge_payload`, and before serializing.  This is optional: a
+  // testee that does not support it must respond with `skipped` rather than
+  // ignore it, since a round trip that silently keeps the unknown fields is
+  // indistinguishable from a passing result.
+  bool discard_unknown_fields = 10;
+
+  // A second payload for the same message type, which the testee merges into
+  // the message parsed from `payload` (as with MergeFrom) after that parse
+  // succeeded and before `discard_unknown_fields` and serialization.  Its
+  // format is independent of `payload`'s; `merge_json_payload` is parsed with
+  // the same `test_category`-derived options as `json_payload` (so unknown
+  // JSON fields are only ignored under JSON_IGNORE_UNKNOWN_PARSING_TEST).  A
+  // failure to parse it is a `parse_error`.  Whether a default value written
+  // explicitly in the merge payload for a field without presence overwrites
+  // the existing value is unspecified (it depends on whether the format's
+  // parser can tell it apart from an absent field), so tests must not rely on
+  // it.  Like `discard_unknown_fields` this is optional and a testee that does
+  // not support it must respond with `skipped`.
+  oneof merge_payload {
+    bytes merge_protobuf_payload = 11;
+    string merge_json_payload = 12;
+    string merge_text_payload = 13;
+  }
 }
 
 // Represents a single test case's output.
