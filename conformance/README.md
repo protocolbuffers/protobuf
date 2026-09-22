@@ -7,23 +7,247 @@ This directory contains conformance tests for testing completeness and
 correctness of Protocol Buffers implementations.  These tests are designed
 to be easy to run against any Protocol Buffers implementation.
 
-This directory contains the tester process `conformance-test`, which
-contains all of the tests themselves.  Then separate programs written
-in whatever language you want to test communicate with the tester
-program over a pipe.
+## How the tests work
 
-If you're not using Bazel to run these tests, make sure you build the C++
-tester code beforehand, e.g. from the base directory:
+The tests themselves are gtest suites written in C++, one suite per format plus
+one for the slow tests:
+
+*   `binary` (`binary_*_test.cc`): wire-format parsing and serialization,
+*   `json` (`json_*_test.cc`): the ProtoJSON mapping,
+*   `text` (`text_*_test.cc`): text format,
+*   `performance` (`*_performance_test.cc`, `binary_recursion_limit_test.cc`):
+    the tests that stress the testee with deeply nested or very large payloads
+    (binary and text format; JSON has none); kept apart because they are slow
+    and their expected failures are unrelated to a format's.
+
+Each test builds a `ConformanceRequest` (see
+[conformance.proto](https://github.com/protocolbuffers/protobuf/blob/main/conformance/conformance.proto)),
+sends it to the implementation under test (the *testee*) and checks the
+`ConformanceResponse`. The testee is normally a separate program written in the
+language being tested, which reads requests from stdin and writes responses to
+stdout; a C++ implementation can instead be linked into the test binary (see
+"In-process testees" below).
+
+Test names look like
+`Required.TextStringFieldTest.BadUtf8Octal/Proto3.TextFormatInput`, i.e.
+
+```
+<Level>.<Suite>.<Test>[/<Params>][.<Suffix>].<Input>Input[.<Output>Output]
+```
+
+`<Level>` names the test's priority (see "Priorities" below): `Required` tests
+must pass for an implementation to be conformant; failures of `Recommended`
+tests fail the run only under `--enforce_recommended`, which
+`conformance_test()` passes by default. `<Suite>.<Test>[/<Params>]` is the name
+of the gtest test the request comes from, exactly as `--gtest_filter` takes it:
+the suite and test, then for a parameterized test a `/` and the parameter name,
+which typically starts with the message type's edition or syntax (`Proto2`,
+`Proto3`, `EditionsProto2`, `EditionsProto3`, `Editions`, `EditionUnstable`)
+followed by the other parameters, `_`-separated (e.g. the field type:
+`Proto3_INT32`); tests newer than `--maximum_edition` (default: proto2 and
+proto3) are skipped. `<Input>Input` is the format of the payload sent
+(`ProtobufInput`, `JsonInput`, `TextFormatInput`) and `<Output>Output` the
+output format requested (absent for tests that only check that the input is
+rejected). See `Testee()` in `test_environment.h`.
+
+### Priorities
+
+Every test has a priority, `kP0` to `kP3` (`TestPriority` in `testee.h`), that
+says how important it is that an implementation passes it. `kP0` is the
+baseline every implementation must pass; `kP1` and `kP2` are deliberate
+downgrades of individual tests; `kP3` tests are only recommended, and their
+failures are tolerated unless `--enforce_recommended` is set or the test is in
+the failure list. A suite declares its priority by overriding
+`ConformanceTest::DefaultPriority()` (`kP0` unless overridden), and a single
+test departs from it by passing the priority to the builder, e.g.
+`Testee(kP3).ParseJson(...)`. For now the `<Level>` of a test name is
+`Required` for `kP0`-`kP2` and `Recommended` for `kP3`; the names will change
+to `P0.`...`P3.` once every suite has been triaged (b/564550230), and failure
+lists with them.
+
+Known failures are kept in *failure lists*: text files with one test name per
+line, optionally followed by `#` and the failure message the test currently
+produces, e.g.
+
+```
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/Proto3.JsonInput  # Should have failed to parse, but didn't.
+```
+
+A `*` in an entry matches any run of characters up to the next `.` or `/`, so
+`Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/*.JsonInput` covers
+the test under every message type,
+`Required.ValidDataScalarTest.Scalar/*_INT32_0.ProtobufInput.ProtobufOutput` one
+field-type instance of a test under every message type, and a trailing `.*`
+covers a test's `.ProtobufOutput` and `.JsonOutput` variants at once. A `*`
+never spans a `.` or `/` (`Bar/*` doesn't match an unparameterized `Bar`), and
+`.` and `/` aren't interchangeable. A wildcard entry that covers more than about
+twenty failures fails the run (`kMaximumWildcardExpansions` in
+`test_manager.cc`). A listed test that fails with the listed message (the
+message is compared as a prefix of the actual one, and an entry without a
+message accepts any failure) is an expected failure; a listed test that passes,
+an unlisted test that fails, a listed test that fails with a different message,
+and a listed test that the testee skips all fail the run, so a failure list
+never goes stale silently. A wildcard matches skipped tests too: a testee that
+skips a whole syntax (say, proto2) must list its failures per syntax
+(`Required.FooTest.X/Proto3.ProtobufInput`,
+`Required.FooTest.X/EditionsProto3.ProtobufInput`) rather than as
+`Required.FooTest.X/*.ProtobufInput`.
+
+## Running the tests with Bazel
+
+`conformance.bzl` defines the `conformance_test()` macro, which runs every suite
+against one testee. In the package that holds the testee:
+
+```
+load("//conformance:conformance.bzl", "conformance_test", "failure_lists")
+
+failure_lists(name = "failure_lists")
+
+conformance_test(
+    name = "cpp",
+    testee = ":conformance_cpp",
+    failure_lists = ":failure_lists",
+    maximum_edition = "2023",
+)
+```
+
+This creates one `cc_test` per suite (`:cpp_binary_test`, `:cpp_json_test`,
+`:cpp_text_test`, `:cpp_performance_test`) and a `:cpp` test suite running all
+of them. Each test reads its failure list from
+`failure_lists/<name>_<suite>.txt` in the same package
+(`failure_lists/cpp_binary.txt`, ...); if the file doesn't exist the testee is
+expected to pass every test of that suite. `suites` restricts the suites to run
+(e.g. for a runtime without text format, or to leave the performance suite out),
+and `enforce_recommended = False` tolerates failures of `Recommended` tests.
+
+To update a failure list after a change, run the test with `--fix`, which
+rewrites (or creates) the file to match the observed results, keeping comments
+and any wildcard that still matches:
+
+```
+$ bazel run //conformance:cpp_binary_test -- --fix
+```
+
+(It has to be `bazel run`: under `bazel test` the file would be written inside
+the sandbox. `--fix` is refused, and the run fails without rewriting the list,
+when only some of the tests ran, e.g. with `--gtest_filter`.)
+
+The tests are ordinary gtest binaries, so the usual flags apply, for example:
+
+```
+$ bazel test //conformance:cpp_json_test \
+    --test_arg=--gtest_filter='*FieldName*' --test_output=errors
+$ bazel run //conformance:cpp_json_test -- --gtest_list_tests
+```
+
+Since a conformance test's name embeds its gtest test's name, a failure list
+entry says what to filter on: to re-run just the tests behind
+`Required.JsonFieldNameTest.FieldNameWithNumbers/*.JsonInput.ProtobufOutput`,
+pass `--gtest_filter='*/JsonFieldNameTest.FieldNameWithNumbers/*'` (the leading
+`*/` covers the suite's `INSTANTIATE_TEST_SUITE_P` prefix).
+
+Their own flags (`--failure_list`, `--maximum_edition`, `--enforce_recommended`,
+`--fix`, `--fix_output_file`, and `--testee_binary` / `--testee_args` for a
+forked testee) are documented in `test_environment_flags.cc`;
+`conformance_test()` sets them from its attributes.
+
+### In-process testees
+
+For a C++ implementation the testee can be a `cc_library` that defines
+`MakeTesteeRunner()` (see `testee_runner.h`) and is linked into each test with
+`conformance_test(in_process = True, ...)`. The suites then call the testee
+directly, in the test's own process: no fork or pipe, and a crash or a log
+message of the testee shows up in the test itself. `//conformance:cpp` runs the
+C++ runtime this way, on top of `conformance_cpp_harness.h`, which
+`conformance_cpp` (the stdin/stdout testee binary) shares.
+
+## Coordinates and reports
+
+Besides its gtest-derived name, every test has a second identity made of four
+parts, each spelled both as a number (the *coordinate*) and as a word
+(the *test name*):
+
+| part      | number | name                              |
+|:----------|:-------|:----------------------------------|
+| domain    | `01`   | `wire`                            |
+| section   | `01`   | `varint`                          |
+| test case | `001`  | `eof_before_known_..._parsefails` |
+| variant   | `31`   | `ed_proto2_pb2pb`                 |
+
+giving the coordinate `01.01.001.31` and the name
+`wire.varint.eof_before_known_..._parsefails.ed_proto2_pb2pb`.
+The domain and section come from a table keyed on the gtest suite
+(`taxonomy.h`; `taxonomy_test` fails if a suite is missing from it), the test
+case is the suite, test and non-syntax parameters in snake_case (with a
+`_parsefails` suffix for tests that only check that an input is rejected), and
+the variant is the syntax (`proto2`, `proto3`, `ed_proto2`, `ed_proto3`,
+`ed2023`, `ed_next`) and the payload transform (`pb2pb`, `json2pb`, ...).
+Every variant of a test case shares its first three parts, so the coordinate
+space shows which syntaxes and formats a test runs under. The test-case number
+is assigned per run, in sorted order of the test cases that run, so it is only
+stable across runs of the same set of tests (a `--gtest_filter` or a partial
+run renumbers); the test name is the identity to key on.
+
+To export the results of a run, pass `--output_result_file`; the test writes a
+`ConformanceRunResult` (`conformance_result.proto`) textproto with one entry
+per test that ran, its identity, priority and status (`PASS_CANONICAL`,
+`FAILURE`, `CRASH` for a runtime error or timeout, `SKIPPED` for a test the
+testee declined, and `PASS_ALTERNATE` for informational tests). Tests that a
+`--gtest_filter` left out are not in the file. `--implementation_name` labels
+the run; it defaults to the testee binary's name. `conformance_test()` forwards
+both through its `result_file` (where `{suite}` is replaced by the suite name)
+and `implementation_name` attributes; `conformance_test_runner` takes them as
+`--output_result_file` and `--implementation_name`. A sharded test writes one
+file per shard (`cpp_binary.shard0.textproto`, ...). Like `--fix`, this wants
+`bazel run` or an absolute path so that the file doesn't land in the test
+sandbox:
+
+```
+$ bazel run //conformance:cpp_binary_test -- \
+    --output_result_file=/tmp/cpp_binary.textproto --implementation_name=cpp
+```
+
+`report_generator.py` renders these files as Markdown: `--mode=single` for one
+implementation's report, `--mode=master` for a matrix comparing several (with
+`--output_html` for an interactive page), and `--mode=index` for the catalog
+of test cases the suite defines, which only needs one run as input:
+
+```
+$ report_generator.py --mode=single /tmp/cpp_binary.textproto \
+    --output_file=/tmp/cpp_report.md
+$ report_generator.py --mode=master /tmp/cpp_binary.textproto \
+    /tmp/upb_binary.textproto --output_file=/tmp/conformance_matrix.md
+```
+
+The failure lists keep using the gtest-derived names (the reports carry both
+names for every test, so either can be looked up from the other).
+
+## The conformance_test_runner command line
+
+`conformance_test_runner` is a single binary that contains all four suites
+(`--performance` runs the performance suite alone, its absence the other three)
+and runs them against a testee program given on its command line, printing one
+report per failure list with the `update_failure_list` commands that fix it. It
+takes failure lists in the same format as the Bazel tests (`--failure_list` for
+the binary and JSON suites, `--text_format_failure_list` for the text suite) and
+`--help` lists its options. The languages that aren't built with Bazel, and the
+`conformance_test()` macro in `defs.bzl` that the per-language `BUILD.bazel`
+files still use, run the tests through it.
+
+If you're not using Bazel, build it with CMake from the base directory:
 
     $ cmake . -Dprotobuf_BUILD_CONFORMANCE=ON && cmake --build .
-
-This will produce a `conformance_test_runner` binary that can be used to run
-conformance tests on any executable.  Pass it `--help` for more information.
 
 Running the tests for C++
 -------------------------
 
 To run the tests against the C++ implementation, run:
+
+```
+$ bazel test //conformance:cpp
+```
+
+or, through `conformance_test_runner`:
 
     $ bazel test //src:conformance_test
 
@@ -121,6 +345,10 @@ This is designed to be as easy as possible: the C++ version is only
 150 lines and is a good example for what this program should look like
 (see [conformance_cpp.cc](https://github.com/protocolbuffers/protobuf/blob/main/conformance/conformance_cpp.cc)).
 The program only needs to be able to read from stdin and write to stdout.
+
+Then either declare a `conformance_test()` for it as shown above (create the
+`failure_lists/` directory, then run each test with `--fix` to write its first
+list), or pass it to `conformance_test_runner`.
 
 Portability
 -----------
