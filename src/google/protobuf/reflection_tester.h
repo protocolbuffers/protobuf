@@ -8,6 +8,8 @@
 #ifndef GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 #define GOOGLE_PROTOBUF_REFLECTION_TESTER_H__
 
+#include <string>
+
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/map_field.h"
@@ -30,40 +32,71 @@ class MapReflectionTester {
   void SetMapFieldsViaReflection(Message* message);
   void SetMapFieldsViaMapReflection(Message* message);
   void ClearMapFieldsViaReflection(Message* message);
+  void ClearMapFieldsViaMapReflection(Message* message);
   void ModifyMapFieldsViaReflection(Message* message);
   void RemoveLastMapsViaReflection(Message* message);
   void ReleaseLastMapsViaReflection(Message* message);
   void SwapMapsViaReflection(Message* message);
+  void SwapMapsViaMapReflection(Message* message1, Message* message2);
+  void AssignMapsViaMapReflection(Message* dst, Message* src);
+  void EraseMapValuesViaMapReflectionIterator(Message* message);
   void MutableUnknownFieldsOfMapFieldsViaReflection(Message* message);
   void ExpectMapFieldsSetViaReflection(const Message& message);
   void ExpectMapFieldsSetViaReflectionIterator(Message* message);
+  void ExpectMapFieldsSetViaReflectionIterator(const Message& message);
   void ExpectClearViaReflection(const Message& message);
   void ExpectClearViaReflectionIterator(Message* message);
-  void GetMapValueViaMapReflection(Message* message,
-                                   absl::string_view field_name,
-                                   const MapKey& map_key, MapValueRef* map_val);
+  void ExpectClearViaReflectionIterator(const Message& message);
   void DeleteMapValueViaMapReflection(Message* message,
                                       absl::string_view field_name,
-                                      const MapKey& map_key);
+                                      MapKey map_key);
   Message* GetMapEntryViaReflection(Message* message,
                                     absl::string_view field_name, int index);
-  MapIterator MapBegin(Message* message, absl::string_view field_name);
-  MapIterator MapEnd(Message* message, absl::string_view field_name);
-  ConstMapIterator ConstMapBegin(const Message* message,
-                                 absl::string_view field_name);
-  ConstMapIterator ConstMapEnd(const Message* message,
-                               absl::string_view field_name);
+
+  bool InsertOrLookupMapValue(Message* message, absl::string_view field_name,
+                              const MapKey& map_key, MapValueRef* map_val) {
+    auto res = message->GetReflection()
+                   ->MutableMap(message, F(field_name))
+                   .try_emplace(map_key);
+    *map_val = res.first->value();
+    return res.second;
+  }
+
+  bool LookupMapValue(Message* message, absl::string_view field_name,
+                      const MapKey& map_key,
+                      MapValueConstRef* map_value_const_ref) {
+    return LookupMapValue(*message, field_name, map_key, map_value_const_ref);
+  }
+
+  bool LookupMapValue(const Message& message, absl::string_view field_name,
+                      const MapKey& map_key,
+                      MapValueConstRef* map_value_const_ref) {
+    auto map = message.GetReflection()->GetMap(message, F(field_name));
+    auto it = map.find(map_key);
+    if (it == map.end()) return false;
+    *map_value_const_ref = it->value();
+    return true;
+  }
+
+  bool IsRepeatedFieldValid(const Message& message,
+                            absl::string_view field_name) {
+    const internal::MapFieldBase& map_field =
+        message.GetReflection()->GetRaw<internal::MapFieldBase>(message,
+                                                                F(field_name));
+    return map_field.IsRepeatedFieldValid();
+  }
+
   int MapSize(const Message& message, absl::string_view field_name);
 
   static absl::optional<MapValueConstRef> LookupMapValue(
       const Reflection& reflection, const Message& message,
       const FieldDescriptor& descriptor, const MapKey& map_key) {
-    MapValueConstRef map_val_const;
-    if (reflection.LookupMapValue(message, &descriptor, map_key,
-                                  &map_val_const)) {
-      return map_val_const;
+    auto map = reflection.GetMap(message, &descriptor);
+    auto it = map.find(map_key);
+    if (it == map.end()) {
+      return absl::nullopt;
     }
-    return absl::nullopt;
+    return it->value();
   }
 
   static std::string long_string() {

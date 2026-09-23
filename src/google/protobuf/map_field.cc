@@ -12,7 +12,10 @@
 #include <cstdint>
 #include <string>
 #include <type_traits>
+#include <utility>
 
+#include "absl/base/optimization.h"
+// #include "absl/base/throw_delegate.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
 #include "absl/synchronization/mutex.h"
@@ -20,6 +23,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_ptr_field.h"
@@ -80,117 +84,8 @@ auto VisitMapKey(const MapKey& map_key, Map& map, F f) {
   }
 }
 
-bool MapFieldBase::InsertOrLookupMapValueNoSync(const MapKey& map_key,
-                                                MapValueRef* val) {
-  if (LookupMapValueNoSync(map_key, static_cast<MapValueConstRef*>(val))) {
-    return false;
-  }
-
-  auto& map = GetMapRaw();
-  Arena* arena = map.arena();
-
-  NodeBase* node = map.AllocNode(arena);
-  map.VisitValue(node, [&](auto* v) { InitializeKeyValue(v); });
-  val->SetValue(map.GetVoidValue(node));
-
-  return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
-    InitializeKeyValue(map.GetKey(node), key);
-    map.InsertOrReplaceNode(
-        arena,
-        static_cast<typename std::decay_t<decltype(map)>::KeyNode*>(node));
-    return true;
-  });
-}
-
-bool MapFieldBase::DeleteMapValue(Arena* arena, const MapKey& map_key) {
-  return VisitMapKey(map_key, *MutableMap(),
-                     [arena](auto& map, const auto& key) {
-                       return map.EraseImpl(arena, key);
-                     });
-}
-
 void MapFieldBase::ClearMapNoSync() {
   GetMapRaw().ClearTable(arena(), /*reset=*/true);
-}
-
-template <bool kIsMutable>
-void MapFieldBase::SetMapIteratorValue(
-    MapIteratorBase<kIsMutable>* map_iter) const {
-  if (map_iter->iter_.Equals(UntypedMapBase::EndIterator())) return;
-
-  const UntypedMapBase& map = *map_iter->iter_.m_;
-  NodeBase* node = map_iter->iter_.node_;
-  auto& key = map_iter->key_;
-  map.VisitKey(node,
-               absl::Overload{
-                   [&](const std::string* v) { key.val_.string_value = *v; },
-                   [&](const auto* v) {
-                     // Memcpy the scalar into the union.
-                     memcpy(static_cast<void*>(&key.val_), v, sizeof(*v));
-                   },
-               });
-  map_iter->value_.SetValue(map.GetVoidValue(node));
-}
-
-bool MapFieldBase::LookupMapValueNoSync(const MapKey& map_key,
-                                        MapValueConstRef* val) const {
-  auto& map = GetMapRaw();
-  if (map.empty()) return false;
-
-  return VisitMapKey(map_key, map, [&](auto& map, const auto& key) {
-    auto res = map.FindHelper(key);
-    if (res.node == nullptr) {
-      return false;
-    }
-    if (val != nullptr) {
-      val->SetValue(map.GetVoidValue(res.node));
-    }
-    return true;
-  });
-}
-
-void MapFieldBase::MapBegin(MapIterator* map_iter) const {
-  map_iter->iter_ = GetMap().begin();
-  SetMapIteratorValue(map_iter);
-}
-
-void MapFieldBase::MapEnd(MapIterator* map_iter) const {
-  map_iter->iter_ = UntypedMapBase::EndIterator();
-}
-
-void MapFieldBase::ConstMapBegin(ConstMapIterator* map_iter) const {
-  map_iter->iter_ = GetMap().begin();
-  SetMapIteratorValue(map_iter);
-}
-
-void MapFieldBase::ConstMapEnd(ConstMapIterator* map_iter) const {
-  map_iter->iter_ = UntypedMapBase::EndIterator();
-}
-
-template <bool kIsMutable>
-bool MapFieldBase::EqualIterator(const MapIteratorBase<kIsMutable>& a,
-                                 const MapIteratorBase<kIsMutable>& b) const {
-  return a.iter_.Equals(b.iter_);
-}
-
-template <bool kIsMutable>
-void MapFieldBase::IncreaseIterator(
-    MapIteratorBase<kIsMutable>* map_iter) const {
-  map_iter->iter_.PlusPlus();
-  SetMapIteratorValue(map_iter);
-}
-
-template <bool kIsMutable>
-void MapFieldBase::CopyIterator(
-    MapIteratorBase<kIsMutable>* this_iter,
-    const MapIteratorBase<kIsMutable>& that_iter) const {
-  this_iter->iter_ = that_iter.iter_;
-  this_iter->key_.SetType(that_iter.key_.type());
-  // MapValueRef::type() fails when containing data is null. However, if
-  // this_iter points to MapEnd, data can be null.
-  this_iter->value_.SetType(
-      static_cast<FieldDescriptor::CppType>(that_iter.value_.type_));
-  SetMapIteratorValue(this_iter);
 }
 
 const RepeatedPtrFieldBase& MapFieldBase::GetRepeatedField() const {
@@ -340,21 +235,22 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
   RepeatedPtrField<Message>& rep = payload().repeated_field();
   rep.Clear();
 
-  ConstMapIterator it(this, descriptor);
-  ConstMapIterator end(this, descriptor);
-
+  GenericConstMapRef::iterator it;
+  it.key_type_ = descriptor->map_key()->cpp_type();
+  it.value_type_ = descriptor->map_value()->cpp_type();
   it.iter_ = GetMapRaw().begin();
-  SetMapIteratorValue(&it);
+
+  GenericConstMapRef::iterator end;
   end.iter_ = UntypedMapBase::EndIterator();
 
   Arena* arena = this->arena();
-  for (; !EqualIterator(it, end); IncreaseIterator(&it)) {
+  for (; it != end; ++it) {
     Message* new_entry = reinterpret_cast<Message*>(
         rep.AddInternal(arena, [prototype](Arena* arena, void*& ptr) {
           ptr = prototype->New(arena);
         }));
 
-    const MapKey& map_key = it.GetKey();
+    MapKey map_key = it->key();
     switch (key_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
         reflection->SetString(new_entry, key_des,
@@ -379,7 +275,7 @@ void MapFieldBase::SyncRepeatedFieldWithMapNoLock() {
         Unreachable();
     }
 
-    const MapValueConstRef& map_val = it.GetValueRef();
+    MapValueConstRef map_val = it->value();
     switch (val_des->cpp_type()) {
       case FieldDescriptor::CPPTYPE_STRING:
         reflection->SetString(new_entry, val_des,
@@ -450,6 +346,15 @@ void MapFieldBase::SyncMapWithRepeatedFieldNoLock() {
   const FieldDescriptor* key_des = descriptor->map_key();
   const FieldDescriptor* val_des = descriptor->map_value();
 
+  GenericMapRef map_ref;
+  map_ref.key_type_ = descriptor->map_key()->cpp_type();
+  map_ref.value_type_ = descriptor->map_value()->cpp_type();
+  map_ref.map_ = &GetMapRaw();
+  if (descriptor->map_value()->message_type()) {
+    map_ref.value_class_data_ =
+        GetClassData(GetMapEntryValuePrototype(*prototype));
+  }
+
   for (const Message& elem : rep) {
     // MapKey type will be set later.
     Reflection::ScratchSpace map_key_scratch_space;
@@ -478,9 +383,7 @@ void MapFieldBase::SyncMapWithRepeatedFieldNoLock() {
         Unreachable();
     }
 
-    MapValueRef map_val;
-    map_val.SetType(val_des->cpp_type());
-    InsertOrLookupMapValueNoSync(map_key, &map_val);
+    MapValueRef map_val = map_ref.try_emplace(map_key).first->value();
 
     switch (val_des->cpp_type()) {
 #define HANDLE_TYPE(CPPTYPE, METHOD)                                    \
@@ -520,76 +423,205 @@ void MapFieldBase::Clear() {
   SetMapDirty();
 }
 
-int MapFieldBase::size() const { return GetMap().size(); }
-
-bool MapFieldBase::InsertOrLookupMapValue(const MapKey& map_key,
-                                          MapValueRef* val) {
-  SyncMapWithRepeatedField();
-  SetMapDirty();
-  return InsertOrLookupMapValueNoSync(map_key, val);
-}
-
 void MapFieldBase::ReflectionPayload::Swap(ReflectionPayload& other) {
   repeated_field().Swap(&other.repeated_field());
   SwapRelaxed(state_, other.state_);
 }
 
+MapKey MapIteratorEntry::key() const {
+  return MapConstIteratorEntry(*this).key();
+}
+
+MapValueRef MapIteratorEntry::value() const {
+  MapValueRef value;
+  value.SetType(static_cast<FieldDescriptor::CppType>(value_type_));
+  value.SetValue(iter_.m_->GetVoidValue(iter_.node_));
+  return value;
+}
+
+MapKey MapConstIteratorEntry::key() const {
+  MapKey key;
+  key.SetType(static_cast<FieldDescriptor::CppType>(key_type_));
+  iter_.m_->VisitKey(
+      iter_.node_,
+      absl::Overload{
+          [&](const std::string* v) { key.val_.string_value = *v; },
+          [&](const auto* v) {
+            // Memcpy the scalar into the union.
+            memcpy(static_cast<void*>(&key.val_), v, sizeof(*v));
+          },
+      });
+  return key;
+}
+
+MapValueConstRef MapConstIteratorEntry::value() const {
+  MapValueConstRef value;
+  value.SetType(static_cast<FieldDescriptor::CppType>(value_type_));
+  value.SetValue(iter_.m_->GetVoidValue(iter_.node_));
+  return value;
+}
+
 }  // namespace internal
 
-template <bool kIsMutable>
-MapIteratorBase<kIsMutable>::MapIteratorBase(MessageT* message,
-                                             const FieldDescriptor* field) {
-  const Reflection* reflection = message->GetReflection();
-  if constexpr (kIsMutable) {
-    map_ = reflection->MutableMapData(message, field);
-  } else {
-    map_ = reflection->GetMapData(*message, field);
+GenericMapRef::iterator GenericMapRef::begin() const {
+  iterator iter;
+  iter.key_type_ = key_type_;
+  iter.value_type_ = value_type_;
+  iter.iter_ = map_->begin();
+  return iter;
+}
+
+GenericMapRef::iterator GenericMapRef::end() const {
+  iterator iter;
+  iter.iter_ = internal::UntypedMapBase::EndIterator();
+  return iter;
+}
+
+size_t GenericMapRef::size() const { return map_->size(); }
+
+bool GenericMapRef::empty() const { return size() == 0; }
+
+bool GenericMapRef::contains(const MapKey& key) const {
+  return find(key) != end();
+}
+
+GenericMapRef::iterator GenericMapRef::find(const MapKey& key) const {
+  auto it = GenericConstMapRef(*this).find(key);
+  iterator res;
+  res.key_type_ = key_type_;
+  res.value_type_ = value_type_;
+  res.iter_ = it.iter_;
+  return res;
+}
+
+GenericMapRef::mapped_type GenericMapRef::at(const MapKey& key) const {
+  iterator it = find(key);
+  if (ABSL_PREDICT_FALSE(it == end())) {
+    // DO NOT SUBMIT
+    // absl::ThrowStdOutOfRange("Key not found.");
+    ABSL_LOG(FATAL);
   }
-  key_.SetType(field->message_type()->map_key()->cpp_type());
-  value_.SetType(field->message_type()->map_value()->cpp_type());
+  return it->value();
 }
 
-template <bool kIsMutable>
-MapIteratorBase<kIsMutable>& MapIteratorBase<kIsMutable>::operator=(
-    const MapIteratorBase& other) {
+void GenericMapRef::assign(const GenericMapRef& other) const {
+  map_->AssertSameType(*other.map_);
+  if (map_ == other.map_) return;
+  clear();
+  map_->UntypedMergeFrom(map_->arena(), *other.map_);
+}
+
+void GenericMapRef::swap(const GenericMapRef& other) const {
+  map_->AssertSameType(*other.map_);
+  map_->UntypedSwap(map_->arena(), *other.map_, other.map_->arena());
+}
+
+void GenericMapRef::shallow_assign(const GenericMapRef& other) {
+  map_->AssertSameType(*other.map_);
   map_ = other.map_;
-  map_->CopyIterator(this, other);
-  return *this;
 }
 
-template <bool kIsMutable>
-bool MapIteratorBase<kIsMutable>::operator==(
-    const MapIteratorBase<kIsMutable>& other) const {
-  return map_->EqualIterator(*this, other);
+void GenericMapRef::shallow_swap(GenericMapRef& other) {
+  map_->AssertSameType(*other.map_);
+  std::swap(map_, other.map_);
 }
 
-template <bool kIsMutable>
-typename MapIteratorBase<kIsMutable>::DerivedIterator&
-MapIteratorBase<kIsMutable>::operator++() {
-  map_->IncreaseIterator(this);
-  return static_cast<DerivedIterator&>(*this);
+void GenericMapRef::clear() const {
+  map_->ClearTable(map_->arena(), /*reset=*/true);
 }
 
-template <bool kIsMutable>
-typename MapIteratorBase<kIsMutable>::DerivedIterator
-MapIteratorBase<kIsMutable>::operator++(int) {
-  // iter_ is copied from Map<...>::iterator, no need to
-  // copy from its self again. Use the same implementation
-  // with operator++()
-  map_->IncreaseIterator(this);
-  return *static_cast<DerivedIterator*>(this);
+bool GenericMapRef::erase(const MapKey& key) const {
+  return internal::VisitMapKey(key, *map_, [](auto& map, const auto& key) {
+    return map.EraseImpl(map.arena(), key);
+  });
 }
 
-template <bool kIsMutable>
-MapIteratorBase<kIsMutable>::MapIteratorBase(MapFieldBase* map,
-                                             const Descriptor* descriptor) {
-  map_ = map;
-  key_.SetType(descriptor->map_key()->cpp_type());
-  value_.SetType(descriptor->map_value()->cpp_type());
+bool GenericMapRef::erase(iterator it) const { return erase(it->key()); }
+
+std::pair<GenericMapRef::iterator, bool> GenericMapRef::try_emplace(
+    const MapKey& key) const {
+  std::pair<iterator, bool> res;
+  res.first.key_type_ = key_type_;
+  res.first.value_type_ = value_type_;
+  res.first.iter_.m_ = map_;
+
+  if (!map_->empty()) {
+    auto find_res = internal::VisitMapKey(
+        key, *map_,
+        [&](auto& map, const auto& key) { return map.FindHelper(key); });
+    if (find_res.node != nullptr) {
+      res.first.iter_.node_ = find_res.node;
+      res.first.iter_.bucket_index_ = find_res.bucket;
+      res.second = false;
+      return res;
+    }
+  }
+
+  Arena* arena = map_->arena();
+  auto* node = map_->AllocNode(arena);
+  map_->VisitValue(node, [&](auto* v) { InitializeKeyValue(v); });
+  res.second = true;
+  res.first.iter_.node_ = node;
+  res.first.iter_.bucket_index_ = 0;
+
+  internal::VisitMapKey(key, *map_, [&](auto& map, const auto& key) {
+    InitializeKeyValue(map.GetKey(node), key);
+    map.InsertOrReplaceNode(
+        arena,
+        static_cast<typename std::decay_t<decltype(map)>::KeyNode*>(node));
+  });
+
+  return res;
 }
 
-template class MapIteratorBase</*kIsMutable=*/false>;
-template class MapIteratorBase</*kIsMutable=*/true>;
+GenericConstMapRef::iterator GenericConstMapRef::begin() const {
+  iterator iter;
+  iter.key_type_ = key_type_;
+  iter.value_type_ = value_type_;
+  iter.iter_ = map_->begin();
+  return iter;
+}
+
+GenericConstMapRef::iterator GenericConstMapRef::end() const {
+  iterator iter;
+  iter.iter_ = internal::UntypedMapBase::EndIterator();
+  return iter;
+}
+
+size_t GenericConstMapRef::size() const { return map_->size(); }
+
+bool GenericConstMapRef::empty() const { return size() == 0; }
+
+bool GenericConstMapRef::contains(const MapKey& key) const {
+  return find(key) != end();
+}
+
+GenericConstMapRef::iterator GenericConstMapRef::find(
+    const MapKey& map_key) const {
+  iterator res;
+  res.key_type_ = key_type_;
+  res.value_type_ = value_type_;
+
+  if (map_->empty()) {
+    res.iter_ = internal::UntypedMapBase::EndIterator();
+    return res;
+  }
+
+  res.iter_ =
+      internal::VisitMapKey(map_key, *map_, [&](auto& map, const auto& key) {
+        auto res = map.FindHelper(key);
+        if (res.node == nullptr) {
+          return internal::UntypedMapBase::EndIterator();
+        }
+        internal::UntypedMapIterator iter;
+        iter.node_ = res.node;
+        iter.bucket_index_ = res.bucket;
+        iter.m_ = &map;
+        return iter;
+      });
+
+  return res;
+}
 
 }  // namespace protobuf
 }  // namespace google

@@ -370,9 +370,9 @@ absl::Status WriteMap(JsonWriter& writer, const Msg<Traits>& msg,
 
   if (Traits::MapFieldUseMapReflection(field, msg)) {
     RETURN_IF_ERROR(Traits::ForEachMapEntry(
-        field, msg, [&](auto it, const auto& type) -> absl::Status {
+        field, msg, [&](auto entry, const auto& type) -> absl::Status {
           auto is_empty =
-              IsEmptyValue<Traits>(it.GetValueRef(), Traits::ValueField(type));
+              IsEmptyValue<Traits>(entry.value(), Traits::ValueField(type));
           RETURN_IF_ERROR(is_empty.status());
           if (*is_empty) {
             // Empty google.protobuf.Values are silently discarded.
@@ -382,11 +382,11 @@ absl::Status WriteMap(JsonWriter& writer, const Msg<Traits>& msg,
           writer.WriteComma(first);
           writer.NewLine();
           RETURN_IF_ERROR(
-              WriteMapKey<Traits>(writer, it.GetKey(), Traits::KeyField(type)));
+              WriteMapKey<Traits>(writer, entry.key(), Traits::KeyField(type)));
           writer.Write(":");
           writer.Whitespace(" ");
           RETURN_IF_ERROR(WriteSingular<Traits>(
-              writer, Traits::ValueField(type), it.GetValueRef()));
+              writer, Traits::ValueField(type), entry.value()));
           return absl::OkStatus();
         }));
   } else {

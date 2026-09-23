@@ -1252,7 +1252,7 @@ void MapDynamicFieldVisitValue(MapValueRefT& value, MapValueCallback&& cb) {
 // Dispatches based on key type to instantiate a right KeyInfo, then calls
 // MapDynamicFieldVisitValue to dispatch on the value type.
 template <typename MapValueRefT, typename MapFieldCallback>
-void MapDynamicFieldVisitKey(const MapKey& key, MapValueRefT& value,
+void MapDynamicFieldVisitKey(const MapKey& key, MapValueRefT value,
                              const MapFieldCallback& user_cb) {
   switch (key.type()) {
 #define PROTOBUF_HANDLE_MAP_KEY_CASE(NAME, CPPTYPE)                            \
@@ -1284,14 +1284,8 @@ struct MapDynamicFieldInfo {
   constexpr MapDynamicFieldInfo(const Reflection* r, MessageT& m,
                                 const FieldDescriptor* f,
                                 const FieldDescriptor* key_f,
-                                const FieldDescriptor* val_f,
-                                const MapFieldBase& map_field)
-      : reflection(r),
-        message(m),
-        field(f),
-        key(key_f),
-        value(val_f),
-        const_map_field(map_field) {
+                                const FieldDescriptor* val_f)
+      : reflection(r), message(m), field(f), key(key_f), value(val_f) {
     ABSL_DCHECK(f->is_map());
     ABSL_DCHECK_NE(key_f, nullptr);
     ABSL_DCHECK_NE(val_f, nullptr);
@@ -1300,7 +1294,7 @@ struct MapDynamicFieldInfo {
   int number() const { return field->number(); }
   FieldDescriptor::Type key_type() const { return key->type(); }
   FieldDescriptor::Type value_type() const { return value->type(); }
-  int size() const { return const_map_field.size(); }
+  int size() const { return reflection->GetMap(message, field).size(); }
 
   // go/ranked-overloads for the rationale.
   struct Rank0 {};
@@ -1310,40 +1304,26 @@ struct MapDynamicFieldInfo {
   template <typename T, typename Callback,
             typename = std::enable_if_t<!std::is_const_v<T>>>
   static void VisitElementsImpl(T& msg, const Reflection* reflection,
-                                const FieldDescriptor* field,
-                                const MapFieldBase&, Callback&& cb, Rank1) {
-    auto& map_field =
-        DynamicFieldInfoHelper<false>::template Mutable<MapFieldBase>(
-            reflection, msg, field);
-    const Descriptor* descriptor = field->message_type();
-    MapIterator begin(&map_field, descriptor), end(&map_field, descriptor);
-    map_field.MapBegin(&begin);
-    map_field.MapEnd(&end);
-
-    for (auto it = begin; it != end; ++it) {
-      MapDynamicFieldVisitKey(it.GetKey(), *it.MutableValueRef(), cb);
+                                const FieldDescriptor* field, Callback&& cb,
+                                Rank1) {
+    for (auto entry : reflection->MutableMap(&msg, field)) {
+      MapDynamicFieldVisitKey(entry.key(), entry.value(), cb);
     }
   }
 
   // Fallback version otherwise.
   template <typename T, typename Callback>
-  static void VisitElementsImpl(T& msg, const Reflection*,
-                                const FieldDescriptor* field,
-                                const MapFieldBase& map_field, Callback&& cb,
+  static void VisitElementsImpl(T& msg, const Reflection* ref,
+                                const FieldDescriptor* field, Callback&& cb,
                                 Rank0) {
-    const Descriptor* descriptor = field->message_type();
-    ConstMapIterator begin(&map_field, descriptor), end(&map_field, descriptor);
-    map_field.ConstMapBegin(&begin);
-    map_field.ConstMapEnd(&end);
-
-    for (auto it = begin; it != end; ++it) {
-      MapDynamicFieldVisitKey(it.GetKey(), it.GetValueRef(), cb);
+    for (auto entry : ref->GetMap(msg, field)) {
+      MapDynamicFieldVisitKey(entry.key(), entry.value(), cb);
     }
   }
 
   template <typename MapFieldCallback>
   void VisitElements(MapFieldCallback&& cb) const {
-    VisitElementsImpl(message, reflection, field, const_map_field,
+    VisitElementsImpl(message, reflection, field,
                       static_cast<MapFieldCallback&&>(cb), Rank1{});
   }
 
@@ -1367,7 +1347,7 @@ struct MapDynamicFieldInfo {
   const FieldDescriptor* field;
   const FieldDescriptor* key;
   const FieldDescriptor* value;
-  const MapFieldBase& const_map_field;
+  GenericConstMapRef map;
 };
 
 }  // namespace internal

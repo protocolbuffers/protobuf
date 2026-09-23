@@ -135,25 +135,23 @@ void ReflectionVisit::VisitFields(MessageT& message, CallbackFn&& func,
         PROTOBUF_HANDLE_REPEATED_CASE(SINT32, int32_t, SInt32);
         PROTOBUF_HANDLE_REPEATED_CASE(SINT64, int64_t, SInt64);
 
-#define PROTOBUF_HANDLE_REPEATED_PTR_CASE(TYPE, CPPTYPE, NAME)                 \
-  case FieldDescriptor::TYPE_##TYPE: {                                         \
-    if (ABSL_PREDICT_TRUE(!field->is_map())) {                                 \
-      /* Handle repeated fields. */                                            \
-      const auto& rep =                                                        \
-          reflection->GetRaw<RepeatedPtrField<CPPTYPE>>(message, field);       \
-      if (rep.size() == 0) continue;                                           \
-      func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{               \
-          reflection, message, field, rep});                                   \
-    } else {                                                                   \
-      /* Handle map fields. */                                                 \
-      const auto& map = reflection->GetRaw<MapFieldBase>(message, field);      \
-      if (map.size() == 0) continue; /* NOLINT */                              \
-      const Descriptor* desc = field->message_type();                          \
-      func(internal::MapDynamicFieldInfo<MessageT>{reflection, message, field, \
-                                                   desc->map_key(),            \
-                                                   desc->map_value(), map});   \
-    }                                                                          \
-    break;                                                                     \
+#define PROTOBUF_HANDLE_REPEATED_PTR_CASE(TYPE, CPPTYPE, NAME)              \
+  case FieldDescriptor::TYPE_##TYPE: {                                      \
+    if (ABSL_PREDICT_TRUE(!field->is_map())) {                              \
+      /* Handle repeated fields. */                                         \
+      const auto& rep =                                                     \
+          reflection->GetRaw<RepeatedPtrField<CPPTYPE>>(message, field);    \
+      if (rep.size() == 0) continue;                                        \
+      func(internal::Repeated##NAME##DynamicFieldInfo<MessageT>{            \
+          reflection, message, field, rep});                                \
+    } else {                                                                \
+      /* Handle map fields. */                                              \
+      if (reflection->GetMap(message, field).empty()) continue;             \
+      const Descriptor* desc = field->message_type();                       \
+      func(internal::MapDynamicFieldInfo<MessageT>{                         \
+          reflection, message, field, desc->map_key(), desc->map_value()}); \
+    }                                                                       \
+    break;                                                                  \
   }
 
         PROTOBUF_HANDLE_REPEATED_PTR_CASE(MESSAGE, Message, Message);
