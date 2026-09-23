@@ -7,6 +7,8 @@
 
 //! Traits that are implemented by codegen types.
 
+#[cfg(not(lite_runtime))]
+use crate::__internal::runtime::KernelWithReflection;
 use crate::__internal::runtime::{
     KernelMessage, KernelMessageMut, KernelMessageView, MessageMutInterop, MessageViewInterop,
     OwnedMessageInterop,
@@ -66,6 +68,10 @@ pub trait Message: SealedInternal
     /// that can appease the trait solver in some cases.
     type MessageMut<'msg>: MessageMut<'msg, Message = Self>;
 }
+
+/// A marker trait for messages that support reflection.
+#[cfg(not(lite_runtime))]
+pub trait WithReflection: Message + KernelWithReflection {}
 
 /// A trait that all generated message views implement.
 #[diagnostic::on_unimplemented(
