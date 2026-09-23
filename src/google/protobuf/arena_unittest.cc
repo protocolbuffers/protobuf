@@ -274,10 +274,9 @@ TEST(ArenaTest, ZeroAllocDoesNotReturnNull) {
 TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {
   TestCtorAndDtorTraits<false, false>({"()", "~()"}, {"(const T&)", "~()"},
                                       {"(int)", "~()"});
-  // If the object is not arena constructible, then the destructor is always
-  // called even if marked as skippable.
-  TestCtorAndDtorTraits<false, true>({"()", "~()"}, {"(const T&)", "~()"},
-                                     {"(int)", "~()"});
+  // Even if the object is not arena constructible, the destructor can be
+  // skipped if marked as skippable.
+  TestCtorAndDtorTraits<false, true>({"()"}, {"(const T&)"}, {"(int)"});
 
   // Some types are arena constructible but we can't skip the destructor. Those
   // are constructed with an arena but still destroyed.
