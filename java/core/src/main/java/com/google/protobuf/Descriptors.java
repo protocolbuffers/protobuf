@@ -33,6 +33,7 @@ import com.google.protobuf.JavaFeaturesProto.JavaFeatures;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -3331,7 +3332,19 @@ public final class Descriptors {
       ALL_SYMBOLS
     }
 
-    FileDescriptorTables(final FileDescriptor[] dependencies, boolean allowUnknownDependencies) {
+    /**
+     * Maximum number of files one file may pull in through {@code import public}.
+     *
+     * <p>Every {@link FileDescriptor#buildFrom} call walks the transitive public-dependency closure
+     * of the files handed to it, so an unbounded closure makes building a graph of N files cost
+     * Theta(N * closure) time -- quadratic in the number of files for a chain. Public imports are
+     * rare in practice (the standard protos in this repository do not use them at all), so a limit
+     * only affects pathological graphs while bounding the work done for a single file.
+     */
+    static final int MAX_PUBLIC_DEPENDENCY_CLOSURE_SIZE = 4096;
+
+    FileDescriptorTables(final FileDescriptor[] dependencies, boolean allowUnknownDependencies)
+        throws DescriptorValidationException {
       this.dependencies =
           Collections.newSetFromMap(
               new IdentityHashMap<FileDescriptor, Boolean>(dependencies.length));
@@ -3354,12 +3367,53 @@ public final class Descriptors {
       }
     }
 
-    /** Find and put public dependencies of the file into dependencies set. */
-    private void importPublicDependencies(final FileDescriptor file) {
-      for (FileDescriptor dependency : file.getPublicDependencies()) {
+    /**
+     * Find and put the transitive public dependencies of the file into the dependencies set.
+     *
+     * <p>{@code dependencies} is an identity set, so every file is visited and recorded exactly
+     * once.
+     *
+     * <p>The walk uses an explicit worklist instead of recursion: a chain of N files that {@code
+     * import public} one another used to consume one Java stack frame per link, so a graph of a few
+     * thousand files threw {@link StackOverflowError} out of {@link FileDescriptor#buildFrom} --
+     * an {@link Error} that callers cannot handle as a schema problem. The worklist makes the
+     * memory use O(closure) on the heap instead of O(closure) Java stack frames.
+     *
+     * <p>The walk also stops with a {@link DescriptorValidationException} once the closure exceeds
+     * {@link #MAX_PUBLIC_DEPENDENCY_CLOSURE_SIZE}, which bounds the work done for a single file and
+     * therefore bounds the total work for a set of files to O(files) instead of Theta(files^2).
+     */
+    private void importPublicDependencies(final FileDescriptor file)
+        throws DescriptorValidationException {
+      int publicDependencyCount = 0;
+      final ArrayDeque<FileDescriptor> worklist = new ArrayDeque<>();
+      for (final FileDescriptor dependency : file.getPublicDependencies()) {
         if (dependencies.add(dependency)) {
-          importPublicDependencies(dependency);
+          checkPublicDependencyClosureSize(file, ++publicDependencyCount);
+          worklist.addLast(dependency);
         }
+      }
+      while (!worklist.isEmpty()) {
+        final FileDescriptor current = worklist.removeLast();
+        for (final FileDescriptor dependency : current.getPublicDependencies()) {
+          if (dependencies.add(dependency)) {
+            checkPublicDependencyClosureSize(file, ++publicDependencyCount);
+            worklist.addLast(dependency);
+          }
+        }
+      }
+    }
+
+    /** Returns normally while {@code count} is within the public-dependency closure limit. */
+    private static void checkPublicDependencyClosureSize(
+        final FileDescriptor file, final int count) throws DescriptorValidationException {
+      if (count > MAX_PUBLIC_DEPENDENCY_CLOSURE_SIZE) {
+        throw new DescriptorValidationException(
+            file,
+            "The transitive public-dependency closure of this dependency is larger than "
+                + MAX_PUBLIC_DEPENDENCY_CLOSURE_SIZE
+                + " files, which is not supported; this is usually caused by a very long chain of"
+                + " files that \"import public\" one another.");
       }
     }
 

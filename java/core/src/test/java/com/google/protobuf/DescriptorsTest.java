@@ -906,6 +906,33 @@ public class DescriptorsTest {
     }
 
     @Test
+    public void testDeepPublicDependencyChainIsRejected() throws Exception {
+      // A chain of files that `import public` one another puts the whole chain into the closure
+      // of every link.  Walking that closure used to use one Java stack frame per link, so a few
+      // thousand links threw StackOverflowError out of buildFrom instead of a validation error,
+      // and each link re-walked the closure of every file below it, which is quadratic in the
+      // length of the chain.
+      FileDescriptor previous =
+          Descriptors.FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder().setName("chain0.proto").build(),
+              new FileDescriptor[0]);
+      try {
+        for (int i = 1; i < 4200; i++) {
+          FileDescriptorProto link =
+              FileDescriptorProto.newBuilder()
+                  .setName("chain" + i + ".proto")
+                  .addDependency("chain" + (i - 1) + ".proto")
+                  .addPublicDependency(0)
+                  .build();
+          previous = Descriptors.FileDescriptor.buildFrom(link, new FileDescriptor[] {previous});
+        }
+        assertWithMessage("DescriptorValidationException expected").fail();
+      } catch (DescriptorValidationException e) {
+        assertThat(e).hasMessageThat().contains("public-dependency closure");
+      }
+    }
+
+    @Test
     public void testUnknownFieldsDenied() throws Exception {
       FileDescriptorProto fooProto =
           FileDescriptorProto.newBuilder()
