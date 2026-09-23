@@ -1,29 +1,29 @@
-Recommended.*.JsonInput.FieldNameDuplicate                                  # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                  # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                  # Should have failed to parse or matched expected output but did not.
-Required.*.JsonInput.Int32FieldQuotedExponentialValue.*                     # Failed to parse input or produce output.
-Required.*.JsonInput.AnyWithNoType.*
+P3.JsonDuplicateFieldNameTest.FieldNameDuplicate/*.JsonInput                 # Should have failed to parse, but didn't., and Output was not equivalent to reference message:
+P3.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message:
+P3.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message:
+P0.JsonIntegerTest.Int32FieldQuotedExponentialValue/*.JsonInput.*            # Failed to parse input or produce output.
+P0.JsonAnyTest.AnyWithNoType/*.JsonInput.*
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey   # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof    # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey            # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue          # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof             # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated          # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular          # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapKey/EditionsProto2.ProtobufInput   # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapValue/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Oneof/EditionsProto2.ProtobufInput    # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Repeated/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Singular/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapKey/Proto2.ProtobufInput           # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapValue/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Oneof/Proto2.ProtobufInput            # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Repeated/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Singular/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
 
-Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                    # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputDayZero                                                        # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputHourTooLarge                                                   # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputHourTooLarge25                                                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                              # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                            # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMinuteTooLarge                                                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMonthTooLarge                                                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMonthZero                                                      # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                                                   # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputOffsetBoundaryOverflow                                         # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                 # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputDayTooLarge/*.JsonInput               # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputDayZero/*.JsonInput                   # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputHourTooLarge/*.JsonInput              # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputHourTooLarge25/*.JsonInput            # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/*.JsonInput         # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/*.JsonInput       # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputMinuteTooLarge/*.JsonInput            # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputMonthTooLarge/*.JsonInput             # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputMonthZero/*.JsonInput                 # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputNonLeapFeb29/*.JsonInput              # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputOffsetBoundaryOverflow/*.JsonInput    # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputSecondTooLarge/*.JsonInput            # Should have failed to parse, but didn't.
