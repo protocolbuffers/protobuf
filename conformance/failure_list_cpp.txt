@@ -7,53 +7,53 @@
 # TODO: insert links to corresponding bugs tracking the issue.
 # Should we use GitHub issues or the Google-internal bug tracker?
 
-Recommended.*.JsonInput.BoolFieldDoubleQuotedFalse                                                                 # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.BoolFieldDoubleQuotedTrue                                                                  # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.FieldNameDuplicate                                                                         # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameNotQuoted                                                                         # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.MapFieldValueIsNull                                                                        # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.RepeatedFieldMessageElementIsNull                                                          # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.RepeatedFieldPrimitiveElementIsNull                                                        # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.RepeatedFieldTrailingComma                                                                 # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.RepeatedFieldTrailingCommaWithNewlines                                                     # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.RepeatedFieldTrailingCommaWithSpace                                                        # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.RepeatedFieldTrailingCommaWithSpaceCommaSpace                                              # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.StringFieldSingleQuoteBoth                                                                 # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.StringFieldSingleQuoteKey                                                                  # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.StringFieldSingleQuoteValue                                                                # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.StringFieldUppercaseEscapeLetter                                                           # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.TrailingCommaInAnObject                                                                    # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.TrailingCommaInAnObjectWithNewlines                                                        # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.TrailingCommaInAnObjectWithSpace                                                           # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace                                                 # Should have failed to parse, but didn't.
-Recommended.*.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput                                               # Should have failed to serialize, but didn't.
-Recommended.*.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput                                                 # Should have failed to serialize, but didn't.
-Recommended.*.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput                                                  # Should have failed to serialize, but didn't.
-Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
-Required.*.JsonInput.SingleValueForRepeatedFieldMessage                                                            # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                                 # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputHourTooLarge                                                                # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputHourTooLarge25                                                              # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputInvalidOffsetHour                                                           # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputInvalidOffsetMinute                                                         # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMinuteTooLarge                                                              # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputMonthTooLarge                                                               # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                                                                # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputOffsetBoundaryOverflow                                                      # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputOffsetBoundaryUnderflow                                                     # Should have failed to parse, but didn't.
-Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                              # Should have failed to parse, but didn't.
-Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+P3.JsonBoolTest.BoolFieldDoubleQuotedFalse/*.JsonInput                         # Should have failed to parse, but didn't.
+P3.JsonBoolTest.BoolFieldDoubleQuotedTrue/*.JsonInput                          # Should have failed to parse, but didn't.
+P3.JsonDuplicateFieldNameTest.FieldNameDuplicate/*.JsonInput                   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+P3.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/*.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+P3.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/*.JsonInput   # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+P3.JsonFieldNameTest.FieldNameNotQuoted/*.JsonInput                            # Should have failed to parse, but didn't.
+P3.JsonNullTest.MapFieldValueIsNull/*.JsonInput                                # Should have failed to parse, but didn't.
+P3.JsonNullTest.RepeatedFieldMessageElementIsNull/*.JsonInput                  # Should have failed to parse, but didn't.
+P3.JsonNullTest.RepeatedFieldPrimitiveElementIsNull/*.JsonInput                # Should have failed to parse, but didn't.
+P3.JsonRepeatedTest.RepeatedFieldTrailingComma/*.JsonInput                     # Should have failed to parse, but didn't.
+P3.JsonRepeatedTest.RepeatedFieldTrailingCommaWithNewlines/*.JsonInput         # Should have failed to parse, but didn't.
+P3.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpace/*.JsonInput            # Should have failed to parse, but didn't.
+P3.JsonRepeatedTest.RepeatedFieldTrailingCommaWithSpaceCommaSpace/*.JsonInput  # Should have failed to parse, but didn't.
+P3.JsonStringTest.StringFieldSingleQuoteBoth/*.JsonInput                       # Should have failed to parse, but didn't.
+P3.JsonStringTest.StringFieldSingleQuoteKey/*.JsonInput                        # Should have failed to parse, but didn't.
+P3.JsonStringTest.StringFieldSingleQuoteValue/*.JsonInput                      # Should have failed to parse, but didn't.
+P3.JsonStringTest.StringFieldUppercaseEscapeLetter/*.JsonInput                 # Should have failed to parse, but didn't.
+P3.JsonObjectSyntaxTest.TrailingCommaInAnObject/*.JsonInput                    # Should have failed to parse, but didn't.
+P3.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithNewlines/*.JsonInput        # Should have failed to parse, but didn't.
+P3.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpace/*.JsonInput           # Should have failed to parse, but didn't.
+P3.JsonObjectSyntaxTest.TrailingCommaInAnObjectWithSpaceCommaSpace/*.JsonInput # Should have failed to parse, but didn't.
+P3.JsonFieldMaskTest.FieldMaskNumbersDontRoundTrip/*.ProtobufInput.JsonOutput  # Should have failed to serialize, but didn't.
+P3.JsonFieldMaskTest.FieldMaskPathsDontRoundTrip/*.ProtobufInput.JsonOutput    # Should have failed to serialize, but didn't.
+P3.JsonFieldMaskTest.FieldMaskTooManyUnderscore/*.ProtobufInput.JsonOutput     # Should have failed to serialize, but didn't.
+P3.JsonFieldMaskTest.FieldMaskInvalidCharacter/*.JsonInput                     # Should have failed to parse, but didn't.
+P0.JsonRepeatedTest.SingleValueForRepeatedFieldInt32/*.JsonInput               # Should have failed to parse, but didn't.
+P0.JsonRepeatedTest.SingleValueForRepeatedFieldMessage/*.JsonInput             # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputDayTooLarge/*.JsonInput                 # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputHourTooLarge/*.JsonInput                # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputHourTooLarge25/*.JsonInput              # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/*.JsonInput           # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/*.JsonInput         # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputMinuteTooLarge/*.JsonInput              # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputMonthTooLarge/*.JsonInput               # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputNonLeapFeb29/*.JsonInput                # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputOffsetBoundaryOverflow/*.JsonInput      # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputOffsetBoundaryUnderflow/*.JsonInput     # Should have failed to parse, but didn't.
+P0.JsonTimestampTest.TimestampJsonInputSecondTooLarge/*.JsonInput              # Should have failed to parse, but didn't.
+P0.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/*.ProtobufInput            # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey                                          # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue                                        # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                           # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                        # Should have failed to parse, but didn't.
-# Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                        # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.MapKey                                                   # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.MapValue                                                 # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                                    # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                                 # Should have failed to parse, but didn't.
-# Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                                 # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapKey/EditionsProto2.ProtobufInput   # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapValue/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Oneof/EditionsProto2.ProtobufInput    # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Repeated/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Singular/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapKey/Proto2.ProtobufInput           # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.MapValue/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Oneof/Proto2.ProtobufInput            # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Repeated/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+# P3.Utf8StringTest.Singular/Proto2.ProtobufInput         # Should have failed to parse, but didn't.

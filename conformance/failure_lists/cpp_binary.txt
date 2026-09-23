@@ -1,0 +1,4 @@
+P0.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/EditionsProto2.ProtobufInput # Should have failed to parse, but didn't.
+P0.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/EditionsProto3.ProtobufInput # Should have failed to parse, but didn't.
+P0.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/Proto2.ProtobufInput         # Should have failed to parse, but didn't.
+P0.IllegalTagsTest.BadTagFieldNumberSlightlyTooHigh/Proto3.ProtobufInput         # Should have failed to parse, but didn't.

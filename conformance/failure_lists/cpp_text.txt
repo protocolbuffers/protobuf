@@ -1,0 +1,45 @@
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateFirstOnly/EditionsProto3_Bytes.TextFormatInput    # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateFirstOnly/EditionsProto3_String.TextFormatInput   # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogatePair/EditionsProto3_Bytes.TextFormatInput         # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogatePair/EditionsProto3_String.TextFormatInput        # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateSecondOnly/EditionsProto3_Bytes.TextFormatInput   # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateSecondOnly/EditionsProto3_String.TextFormatInput  # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateFirstOnly/EditionsProto3_Bytes.TextFormatInput   # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateFirstOnly/EditionsProto3_String.TextFormatInput  # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogatePair/EditionsProto3_Bytes.TextFormatInput        # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogatePair/EditionsProto3_String.TextFormatInput       # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateSecondOnly/EditionsProto3_Bytes.TextFormatInput  # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateSecondOnly/EditionsProto3_String.TextFormatInput # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairLongShort/EditionsProto3_Bytes.TextFormatInput    # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairLongShort/EditionsProto3_String.TextFormatInput   # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairShortLong/EditionsProto3_Bytes.TextFormatInput    # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairShortLong/EditionsProto3_String.TextFormatInput   # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateFirstOnly/Proto3_Bytes.TextFormatInput            # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateFirstOnly/Proto3_String.TextFormatInput           # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogatePair/Proto3_Bytes.TextFormatInput                 # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogatePair/Proto3_String.TextFormatInput                # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateSecondOnly/Proto3_Bytes.TextFormatInput           # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.LongUnicodeEscapeSurrogateSecondOnly/Proto3_String.TextFormatInput          # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateFirstOnly/Proto3_Bytes.TextFormatInput           # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateFirstOnly/Proto3_String.TextFormatInput          # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogatePair/Proto3_Bytes.TextFormatInput                # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogatePair/Proto3_String.TextFormatInput               # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateSecondOnly/Proto3_Bytes.TextFormatInput          # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.ShortUnicodeEscapeSurrogateSecondOnly/Proto3_String.TextFormatInput         # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairLongShort/Proto3_Bytes.TextFormatInput            # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairLongShort/Proto3_String.TextFormatInput           # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairShortLong/Proto3_Bytes.TextFormatInput            # Should have failed to parse, but didn't.
+P3.TextStringLiteralTest.UnicodeEscapeSurrogatePairShortLong/Proto3_String.TextFormatInput           # Should have failed to parse, but didn't.
+P0.TextStringFieldTest.BadUtf8Hex/EditionsProto3.TextFormatInput                                     # Should have failed to parse, but didn't.
+P0.TextStringFieldTest.BadUtf8Octal/EditionsProto3.TextFormatInput                                   # Should have failed to parse, but didn't.
+P0.TextStringLiteralTest.LongUnicodeEscapeTooLarge/EditionsProto3_Bytes.TextFormatInput              # Should have failed to parse, but didn't.
+P0.TextStringLiteralTest.LongUnicodeEscapeTooLarge/EditionsProto3_String.TextFormatInput             # Should have failed to parse, but didn't.
+P0.TextStringFieldTest.BadUtf8Hex/Proto3.TextFormatInput                                             # Should have failed to parse, but didn't.
+P0.TextStringFieldTest.BadUtf8Octal/Proto3.TextFormatInput                                           # Should have failed to parse, but didn't.
+P0.TextStringLiteralTest.LongUnicodeEscapeTooLarge/Proto3_Bytes.TextFormatInput                      # Should have failed to parse, but didn't.
+P0.TextStringLiteralTest.LongUnicodeEscapeTooLarge/Proto3_String.TextFormatInput                     # Should have failed to parse, but didn't.
+
+# Hex literals with the high bit set are parsed as negative numbers instead of
+# being rejected.  (The same entries are in text_format_failure_list_cpp.txt,
+# the list merged_runner_test and the open-source build pass to
+# conformance_test_runner.)
