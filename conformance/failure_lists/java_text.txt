@@ -1,0 +1,26 @@
+P3.TextUnknownFieldTest.GroupUnknownFields/*.Drop.ProtobufInput.TextFormatOutput           # TEXT_FORMAT output we received from test was unparseable.
+P3.TextUnknownFieldTest.MessageUnknownFields/*.Drop.ProtobufInput.TextFormatOutput         # TEXT_FORMAT output we received from test was unparseable.
+P3.TextUnknownFieldTest.RepeatedUnknownFields/*.Drop.ProtobufInput.TextFormatOutput        # TEXT_FORMAT output we received from test was unparseable.
+P3.TextUnknownFieldTest.ScalarUnknownFields/*.Drop.ProtobufInput.TextFormatOutput          # TEXT_FORMAT output we received from test was unparseable.
+P0.TextAnyTest.AnyField/*.TextFormatInput.ProtobufOutput                                   # Failed to parse input or produce output.
+P0.TextAnyTest.AnyField/*.TextFormatInput.TextFormatOutput                                 # Failed to parse input or produce output.
+P0.TextFloatTest.NoNegativeOctal/*.TextFormatInput                                         # Should have failed to parse, but didn't.
+P0.TextFloatTest.NoOctal/*.TextFormatInput                                                 # Should have failed to parse, but didn't.
+P0.TextStringFieldTest.BadUtf8Hex/*.TextFormatInput                                        # Should have failed to parse, but didn't.
+P0.TextStringFieldTest.BadUtf8Octal/*.TextFormatInput                                      # Should have failed to parse, but didn't.
+P0.TextReservedFieldTest.*/*.TextFormatInput.ProtobufOutput                                # Failed to parse input or produce output.
+P0.TextReservedFieldTest.*/*.TextFormatInput.TextFormatOutput                              # Failed to parse input or produce output.
+P0.TextDelimitedTest.ExtensionNameWithComment.TextFormatInput.ProtobufOutput               # Failed to parse input or produce output.
+P0.TextDelimitedTest.ExtensionNameWithComment.TextFormatInput.TextFormatOutput             # Failed to parse input or produce output.
+P0.TextDelimitedTest.ExtensionNameWithWhitespace.TextFormatInput.ProtobufOutput            # Failed to parse input or produce output.
+P0.TextDelimitedTest.ExtensionNameWithWhitespace.TextFormatInput.TextFormatOutput          # Failed to parse input or produce output.
+P0.TextAnyTest.WithCustomTypeUrlPrefix/*.TextFormatInput.ProtobufOutput                    # Failed to parse input or produce output.
+P0.TextAnyTest.WithCustomTypeUrlPrefix/*.TextFormatInput.TextFormatOutput                  # Failed to parse input or produce output.
+P0.TextAnyTest.WithSpecialCharactersInTypeUrlPrefix/*.TextFormatInput.ProtobufOutput       # Failed to parse input or produce output.
+P0.TextAnyTest.WithSpecialCharactersInTypeUrlPrefix/*.TextFormatInput.TextFormatOutput     # Failed to parse input or produce output.
+P0.TextAnyTest.WithWhitespaceInTypeUrl/*.TextFormatInput.ProtobufOutput                    # Failed to parse input or produce output.
+P0.TextAnyTest.WithWhitespaceInTypeUrl/*.TextFormatInput.TextFormatOutput                  # Failed to parse input or produce output.
+P0.TextAnyTest.WithCommentsInTypeUrl/*.TextFormatInput.ProtobufOutput                      # Failed to parse input or produce output.
+P0.TextAnyTest.WithCommentsInTypeUrl/*.TextFormatInput.TextFormatOutput                    # Failed to parse input or produce output.
+P0.TextAnyTest.WithValidUrlPercentEscapeInTypeUrlPrefix/*.TextFormatInput.ProtobufOutput   # Failed to parse input or produce output.
+P0.TextAnyTest.WithValidUrlPercentEscapeInTypeUrlPrefix/*.TextFormatInput.TextFormatOutput # Failed to parse input or produce output.
