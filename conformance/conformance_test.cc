@@ -17,6 +17,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -26,6 +27,8 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/failure_list_trie_node.h"
 #include "google/protobuf/descriptor_legacy.h"
@@ -136,35 +139,58 @@ static TestStatus FormatFailureMessage(const TestStatus& input) {
   return properly_formatted;
 }
 
+// Adapts the legacy per-category maps to google::protobuf::ReportTestStatusSet(), which
+// does the actual reporting.
 bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
                    absl::string_view write_to_file, absl::string_view msg,
                    absl::string_view output_dir, std::string* output) {
-  if (set_to_check.empty()) return true;
+  std::vector<google::protobuf::ReportedTestStatus> statuses;
+  statuses.reserve(set_to_check.size());
+  for (const auto& [test_name, status] : set_to_check) {
+    google::protobuf::ReportedTestStatus reported;
+    reported.test_name = test_name;
+    reported.failure_message = status.failure_message();
+    reported.matched_name = status.matched_name();
+    statuses.push_back(std::move(reported));
+  }
+  return google::protobuf::ReportTestStatusSet(statuses, write_to_file, msg, output_dir,
+                                     output);
+}
+
+}  // namespace
+
+namespace google {
+namespace protobuf {
+
+bool ReportTestStatusSet(absl::Span<const ReportedTestStatus> statuses,
+                         absl::string_view file_name, absl::string_view message,
+                         absl::string_view output_dir, std::string* output) {
+  if (statuses.empty()) return true;
 
   absl::StrAppendFormat(output, "\n");
-  absl::StrAppendFormat(output, "%s\n\n", msg);
-  for (const auto& pair : set_to_check) {
-    absl::StrAppendFormat(output, "  %s # %s\n", pair.first,
-                          pair.second.failure_message());
+  absl::StrAppendFormat(output, "%s\n\n", message);
+  for (const ReportedTestStatus& status : statuses) {
+    absl::StrAppendFormat(output, "  %s # %s\n", status.test_name,
+                          status.failure_message);
   }
   absl::StrAppendFormat(output, "\n");
 
-  if (!write_to_file.empty()) {
+  if (!file_name.empty()) {
     std::string full_filename;
-    absl::string_view filename = write_to_file;
+    absl::string_view filename = file_name;
     if (!output_dir.empty()) {
       full_filename = std::string(output_dir);
-      absl::StrAppend(&full_filename, write_to_file);
+      absl::StrAppend(&full_filename, file_name);
       filename = full_filename;
     }
     std::ofstream os{std::string(filename)};
     if (os) {
-      for (const auto& pair : set_to_check) {
+      for (const ReportedTestStatus& status : statuses) {
         // Additions will not have a 'matched_name' while removals will.
-        string potential_add_or_removal = pair.second.matched_name().empty()
-                                              ? pair.first
-                                              : pair.second.matched_name();
-        os << potential_add_or_removal << " # " << pair.second.failure_message()
+        absl::string_view potential_add_or_removal = status.matched_name.empty()
+                                                         ? status.test_name
+                                                         : status.matched_name;
+        os << potential_add_or_removal << " # " << status.failure_message
            << "\n";
       }
     } else {
@@ -176,11 +202,6 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
 
   return false;
 }
-
-}  // namespace
-
-namespace google {
-namespace protobuf {
 
 constexpr int kMaximumWildcardExpansions = 20;
 
@@ -658,6 +679,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   test_names_ran_.clear();
   unexpected_failing_tests_.clear();
   unexpected_succeeding_tests_.clear();
+  // Like the failure list, the candidates are for this run only; take them
+  // now so that none of the ways this run can end leaves them behind.
+  const absl::optional<absl::flat_hash_set<std::string>> unmatched_candidates =
+      std::exchange(unmatched_candidates_, absl::nullopt);
 
   std::string mode = debug_ ? "DEBUG" : "TEST";
   absl::StrAppendFormat(
@@ -675,11 +700,21 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
 
   RunSuiteImpl();
 
-  if (*output_dir_.rbegin() != '/') {
+  // Without an --output_dir the report files are written relative to the
+  // current directory (the empty prefix is used as is, as ReportTestStatusSet()
+  // documents); an empty string has no last character to look at.
+  if (!output_dir_.empty() && output_dir_.back() != '/') {
     output_dir_.push_back('/');
   }
 
   bool ok = true;
+  if (unmatched_candidates.has_value()) {
+    // Entries outside the candidates matched a test in another suite running
+    // in this process (see SetUnmatchedCandidates()), so they are not stale.
+    absl::erase_if(unmatched_, [&](const auto& entry) {
+      return !unmatched_candidates->contains(entry.first);
+    });
+  }
   if (!CheckSetEmpty(
           unmatched_, "unmatched.txt",
           absl::StrCat(
