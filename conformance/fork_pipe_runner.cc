@@ -56,26 +56,44 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
   CheckedWrite(&len, sizeof(uint32_t));
   CheckedWrite(request.data(), request.size());
 
-  std::string response;
-  bool timed_out = false;
-  if (!TryRead(&len, sizeof(uint32_t), &timed_out)) {
-    conformance::ConformanceResponse response_obj;
-    std::string error_msg = GetTestProgramFailure(timed_out);
-    ABSL_LOG(INFO) << error_msg;
-    if (timed_out) {
-      response_obj.set_timeout_error(error_msg);
-    } else {
-      response_obj.set_runtime_error(error_msg);
-    }
-    // TODO: Remove this suppression.
-    (void)response_obj.SerializeToString(&response);
-    return response;
-  }
+  const ReadResult read_result = TryRead(&len, sizeof(uint32_t));
+  if (read_result != ReadResult::kOk) return ReportReadFailure(read_result);
 
   len = internal::little_endian::ToHost(len);
-  response.resize(len);
-  CheckedRead((void*)response.c_str(), len);
+  std::string response(len, '\0');
+  CheckedRead(&response[0], len);
   return response;
+}
+
+std::string ForkPipeRunner::ReportReadFailure(ReadResult read_result) {
+  // The testee produced no response: it exited, crashed, or hung.  It is shut
+  // down and the outcome classified by the platform's implementation; the next
+  // RunTest() call will spawn a fresh testee.
+  absl::string_view what_failed;
+  switch (read_result) {
+    case ReadResult::kTimeout:
+      what_failed = "child timed out";
+      break;
+    case ReadResult::kEof:
+      what_failed = "child closed its output without responding";
+      break;
+    default:
+      what_failed = "error reading from child";
+      break;
+  }
+  const std::string error_msg = GetTestProgramFailure(what_failed);
+  ABSL_LOG(INFO) << error_msg;
+
+  conformance::ConformanceResponse response;
+  if (read_result == ReadResult::kTimeout) {
+    response.set_timeout_error(error_msg);
+  } else {
+    response.set_runtime_error(error_msg);
+  }
+  std::string serialized;
+  // TODO: Remove this suppression.
+  (void)response.SerializeToString(&serialized);
+  return serialized;
 }
 
 }  // namespace protobuf
