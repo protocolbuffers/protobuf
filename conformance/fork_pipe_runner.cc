@@ -53,29 +53,55 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
   uint32_t len =
       internal::little_endian::FromHost(static_cast<uint32_t>(request.size()));
 
-  CheckedWrite(&len, sizeof(uint32_t));
-  CheckedWrite(request.data(), request.size());
-
-  std::string response;
-  bool timed_out = false;
-  if (!TryRead(&len, sizeof(uint32_t), &timed_out)) {
-    conformance::ConformanceResponse response_obj;
-    std::string error_msg = GetTestProgramFailure(timed_out);
-    ABSL_LOG(INFO) << error_msg;
-    if (timed_out) {
-      response_obj.set_timeout_error(error_msg);
-    } else {
-      response_obj.set_runtime_error(error_msg);
-    }
-    // TODO: Remove this suppression.
-    (void)response_obj.SerializeToString(&response);
-    return response;
+  if (!TryWrite(&len, sizeof(uint32_t)) ||
+      !TryWrite(request.data(), request.size())) {
+    return ReportFailure(/*timed_out=*/false, "error writing to child");
   }
 
+  ReadResult read_result = TryRead(&len, sizeof(uint32_t));
+  if (read_result != ReadResult::kOk) return ReportReadFailure(read_result);
+
   len = internal::little_endian::ToHost(len);
-  response.resize(len);
-  CheckedRead((void*)response.c_str(), len);
+  std::string response(len, '\0');
+  read_result = TryRead(&response[0], len);
+  if (read_result != ReadResult::kOk) return ReportReadFailure(read_result);
   return response;
+}
+
+std::string ForkPipeRunner::ReportReadFailure(ReadResult read_result) {
+  absl::string_view what_failed;
+  switch (read_result) {
+    case ReadResult::kTimeout:
+      what_failed = "child timed out";
+      break;
+    case ReadResult::kEof:
+      what_failed = "child closed its output without responding";
+      break;
+    default:
+      what_failed = "error reading from child";
+      break;
+  }
+  return ReportFailure(read_result == ReadResult::kTimeout, what_failed);
+}
+
+std::string ForkPipeRunner::ReportFailure(bool timed_out,
+                                          absl::string_view what_failed) {
+  // The exchange with the testee failed: it exited, crashed, or hung.  It is
+  // shut down and the outcome classified by the platform's implementation;
+  // the next RunTest() call will spawn a fresh testee.
+  const std::string error_msg = GetTestProgramFailure(what_failed);
+  ABSL_LOG(INFO) << error_msg;
+
+  conformance::ConformanceResponse response;
+  if (timed_out) {
+    response.set_timeout_error(error_msg);
+  } else {
+    response.set_runtime_error(error_msg);
+  }
+  std::string serialized;
+  // TODO: Remove this suppression.
+  (void)response.SerializeToString(&serialized);
+  return serialized;
 }
 
 }  // namespace protobuf
