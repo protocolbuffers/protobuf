@@ -23,10 +23,10 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
  private:
   void RunSuiteImpl() override;
 
-  bool ParseTextFormatResponse(const conformance::ConformanceResponse& response,
-                               const ConformanceRequestSetting& setting,
-                               Message* test_message);
-  bool ParseResponse(const conformance::ConformanceResponse& response,
+  bool ParseTextFormatResponse(
+      const ::conformance::ConformanceResponse& response,
+      const ConformanceRequestSetting& setting, Message* test_message);
+  bool ParseResponse(const ::conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
 
@@ -45,33 +45,8 @@ class TextFormatConformanceTestSuiteImpl {
       TextFormatConformanceTestSuite::ConformanceRequestSetting;
   using ConformanceLevel = TextFormatConformanceTestSuite::ConformanceLevel;
   constexpr static ConformanceLevel RECOMMENDED = ConformanceLevel::RECOMMENDED;
-  constexpr static ConformanceLevel REQUIRED = ConformanceLevel::REQUIRED;
 
   void RunAllTests();
-
-  void RunDelimitedTests();
-  void RunGroupTests();
-  void RunAnyTests();
-  void RunOpenEnumTests();
-  void RunClosedEnumTests();
-
-  void RunTextFormatPerformanceTests();
-  void RunValidTextFormatTest(const std::string& test_name,
-                              ConformanceLevel level, const std::string& input);
-  void RunValidTextFormatTestWithExpected(const std::string& test_name,
-                                          ConformanceLevel level,
-                                          const std::string& input_text,
-                                          const std::string& expected_text);
-  void RunValidUnknownTextFormatTest(const std::string& test_name,
-                                     const Message& message);
-  void RunValidTextFormatTestWithMessage(const std::string& test_name,
-                                         ConformanceLevel level,
-                                         const std::string& input_text,
-                                         const Message& message);
-  void ExpectParseFailure(const std::string& test_name, ConformanceLevel level,
-                          const std::string& input);
-  void TestTextFormatPerformanceMergeMessageWithRepeatedField(
-      const std::string& test_type_name, const std::string& message_field);
 
   TextFormatConformanceTestSuite& suite_;
 };
