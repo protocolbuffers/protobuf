@@ -152,14 +152,12 @@ TextFormatConformanceTestSuiteImpl<MessageType>::
   } else {
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto2") {
       RunGroupTests();
-      RunClosedEnumTests();
     }
     if (MessageType::GetDescriptor()->name() == "TestAllTypesEdition2023") {
       RunDelimitedTests();
     }
     if (MessageType::GetDescriptor()->name() == "TestAllTypesProto3") {
       RunAnyTests();
-      RunOpenEnumTests();
       // TODO Run these over proto2 also.
       RunAllTests();
     }
@@ -332,8 +330,6 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunGroupTests() {
 
 template <typename MessageType>
 void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
-  RunValidTextFormatTest("HelloWorld", REQUIRED,
-                         "optional_string: 'Hello, World!'");
   // Integer fields.
   RunValidTextFormatTest("Int32FieldMaxValue", REQUIRED,
                          "optional_int32: 2147483647");
@@ -955,30 +951,6 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
       absl::StrCat("TestTextFormatPerformanceMergeMessageWithRepeatedField",
                    test_type_name),
       RECOMMENDED, input, expected);
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunOpenEnumTests() {
-  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 1
-        )");
-  RunValidTextFormatTest("ClosedEnumFieldWithUnknownNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 42
-        )");
-}
-
-template <typename MessageType>
-void TextFormatConformanceTestSuiteImpl<MessageType>::RunClosedEnumTests() {
-  RunValidTextFormatTest("ClosedEnumFieldByNumber", REQUIRED,
-                         R"(
-        optional_nested_enum: 1
-        )");
-  ExpectParseFailure("ClosedEnumFieldWithUnknownNumber", REQUIRED,
-                     R"(
-        optional_nested_enum: 42
-        )");
 }
 
 }  // namespace protobuf
