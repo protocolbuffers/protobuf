@@ -7,11 +7,16 @@
 
 use core::marker::PhantomData;
 
-use reflection::def_pool::{upb_DefPool_Free, upb_DefPool_New, RawDefPool};
+use reflection::def_pool::{
+    upb_DefPool_FindMessageByNameWithSize, upb_DefPool_Free, upb_DefPool_LoadDefInit,
+    upb_DefPool_New, RawDefPool,
+};
 use reflection::message_def::RawMessageDef;
 use reflection::upb_TextEncode;
 
 use upb::MessagePtr;
+
+pub use reflection::def_pool::upb_DefPool_Init;
 
 /// A wrapper over a `upb_DefPool`.
 ///
@@ -34,6 +39,35 @@ impl DefPool {
         // SAFETY: `upb_DefPool_New` has no preconditions.
         let raw = unsafe { upb_DefPool_New() }.expect("DefPool allocation failed");
         Self { raw }
+    }
+
+    /// Loads a generated descriptor, and everything it imports, into the pool.
+    ///
+    /// # Safety
+    /// - `init` must point to a valid `upb_DefPool_Init`, and so must every init reachable from
+    ///   it through its dependencies according to the correct orderings and counts.
+    pub unsafe fn load_def_init(&mut self, init: *const upb_DefPool_Init) -> bool {
+        // SAFETY:
+        // - `self.raw` is a live pool; only `Drop` frees it.
+        // - `init` is valid per the safety requirements of this function.
+        unsafe { upb_DefPool_LoadDefInit(self.raw, init) }
+    }
+
+    /// Looks up a message by fully-qualified name in the pool.
+    pub fn find_message_by_name(&self, full_name: &str) -> Option<MessageDef<'_>> {
+        // SAFETY:
+        // - `self.raw` is a live pool; only `Drop` frees it.
+        // - `full_name.as_ptr()` is readable for `full_name.len()` bytes.
+        let raw = unsafe {
+            upb_DefPool_FindMessageByNameWithSize(
+                self.raw,
+                full_name.as_ptr().cast(),
+                full_name.len(),
+            )
+        }?;
+
+        // SAFETY: `raw` was allocated by `self`, and the returned `MessageDef` borrows `self`.
+        Some(unsafe { MessageDef::from_raw(raw) })
     }
 
     /// Returns the internal NonNull representation of the pool.

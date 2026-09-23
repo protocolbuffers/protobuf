@@ -57,6 +57,7 @@ rust_library(
         ":sys",
         ":upb_c_api",
         "//upb/reflection",
+        "//upb/reflection:def_pool_init",
         "//upb/text",
     ],
 )
