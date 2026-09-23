@@ -29,9 +29,9 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
  private:
   void RunSuiteImpl() override;
-  bool ParseJsonResponse(const conformance::ConformanceResponse& response,
+  bool ParseJsonResponse(const ::conformance::ConformanceResponse& response,
                          Message* test_message);
-  bool ParseResponse(const conformance::ConformanceResponse& response,
+  bool ParseResponse(const ::conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
   void SetTypeUrl(absl::string_view type_url) {
