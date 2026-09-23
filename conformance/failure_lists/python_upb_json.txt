@@ -1,0 +1,12 @@
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Required.JsonDoubleTest.DoubleFieldFalseValue/*.JsonInput                             # Should have failed to parse, but didn't.
+Required.JsonDoubleTest.DoubleFieldTrueValue/*.JsonInput                              # Should have failed to parse, but didn't.
+Required.JsonEnumTest.EnumFieldFalseValue/*.JsonInput                                 # Should have failed to parse, but didn't.
+Required.JsonEnumTest.EnumFieldTrueValue/*.JsonInput                                  # Should have failed to parse, but didn't.
+Required.JsonFloatTest.FloatFieldFalseValue/*.JsonInput                               # Should have failed to parse, but didn't.
+Required.JsonFloatTest.FloatFieldTrueValue/*.JsonInput                                # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayTooShort/*.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/*.JsonInput            # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/*.JsonInput          # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooShort/*.JsonInput                # Should have failed to parse, but didn't.
