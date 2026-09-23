@@ -7,19 +7,75 @@
 
 #include "conformance/failure_list_trie_node.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "absl/status/status.h"
-#include "absl/strings/match.h"
-#include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
-#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 
 namespace google {
 namespace protobuf {
+namespace {
+
+constexpr absl::string_view kDelimiters = "./";
+
+// The first section of `name`, the delimiter that follows it ('\0' if it is
+// the last section) and what comes after that delimiter.
+struct Split {
+  absl::string_view section;
+  char delimiter;
+  absl::string_view rest;
+};
+
+Split SplitFirstSection(absl::string_view name) {
+  size_t pos = name.find_first_of(kDelimiters);
+  if (pos == absl::string_view::npos) return {name, '\0', ""};
+  return {name.substr(0, pos), name[pos], name.substr(pos + 1)};
+}
+
+// Whether some string matches both `a` and `b`, in each of which '*' matches
+// any run of characters.  When neither contains a wildcard this is equality;
+// when one does, whether it matches the other; when both do, whether the two
+// wildcards can agree on a string (so "*_INT32" and "Proto2_*" match, since
+// "Proto2_INT32" satisfies both, while "*_INT32" and "*_INT64" don't).
+bool SectionsMatch(absl::string_view a, absl::string_view b) {
+  if (a.find('*') == absl::string_view::npos &&
+      b.find('*') == absl::string_view::npos) {
+    return a == b;
+  }
+  // matches[i][j]: whether a.substr(i) and b.substr(j) have a common string.
+  // Filled from the ends: a '*' either matches nothing (skip it) or absorbs
+  // the other side's next character (advance the other side).
+  std::vector<std::vector<bool>> matches(
+      a.size() + 1, std::vector<bool>(b.size() + 1, false));
+  matches[a.size()][b.size()] = true;
+  for (size_t i = a.size() + 1; i-- > 0;) {
+    for (size_t j = b.size() + 1; j-- > 0;) {
+      if (i == a.size() && j == b.size()) continue;
+      bool a_star = i < a.size() && a[i] == '*';
+      bool b_star = j < b.size() && b[j] == '*';
+      bool result = false;
+      if (a_star) {
+        result = matches[i + 1][j] || (j < b.size() && matches[i][j + 1]);
+      }
+      if (!result && b_star) {
+        result = matches[i][j + 1] || (i < a.size() && matches[i + 1][j]);
+      }
+      if (!result && !a_star && !b_star && i < a.size() && j < b.size() &&
+          a[i] == b[j]) {
+        result = matches[i + 1][j + 1];
+      }
+      matches[i][j] = result;
+    }
+  }
+  return matches[0][0];
+}
+
+}  // namespace
 
 absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
   auto result = WalkDownMatch(test_name);
@@ -28,74 +84,51 @@ absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
         absl::StrFormat("Test name  %s  already exists in the trie  FROM  %s",
                         test_name, result.value()));
   }
-
-  auto sections = absl::StrSplit(test_name, '.');
-  for (auto section : sections) {
-    if (absl::StrContains(section, '*') && section.length() > 1) {
-      return absl::InvalidArgumentError(absl::StrFormat(
-          "Test name %s contains invalid wildcard(s) (wildcards "
-          "must span the whole of a section)",
-          test_name));
-    }
-  }
-  InsertImpl(test_name);
+  InsertImpl(test_name, '\0', test_name);
   return absl::OkStatus();
 }
 
-void FailureListTrieNode::InsertImpl(absl::string_view test_name) {
-  absl::string_view section = test_name.substr(0, test_name.find('.'));
-
-  bool is_last_section = test_name == section;
-
-  // test_name cannot be overwritten
-  absl::string_view test_name_rest =
-      is_last_section ? "" : test_name.substr(section.length() + 1);
-  for (auto& child : children_) {
-    if (child->data_ == section) {
-      if (is_last_section) {
-        // Extracted last section -> no more '.' -> test_name will be equal to
-        // section
-        child->is_test_name_ = true;
-      } else {
-        child->InsertImpl(test_name_rest);
-      }
-      return;
+void FailureListTrieNode::InsertImpl(absl::string_view rest, char separator,
+                                     absl::string_view full_name) {
+  Split split = SplitFirstSection(rest);
+  FailureListTrieNode* child = nullptr;
+  for (auto& candidate : children_) {
+    if (candidate->separator_ == separator &&
+        candidate->data_ == split.section) {
+      child = candidate.get();
+      break;
     }
   }
-
-  // No match
-  children_.push_back(std::make_unique<FailureListTrieNode>(section));
-  if (is_last_section) {
-    children_.back()->is_test_name_ = true;
-    return;
+  if (child == nullptr) {
+    children_.push_back(std::unique_ptr<FailureListTrieNode>(
+        new FailureListTrieNode(separator, split.section)));
+    child = children_.back().get();
   }
-  children_.back()->InsertImpl(test_name_rest);
+  if (split.delimiter == '\0') {
+    child->test_name_ = std::string(full_name);
+  } else {
+    child->InsertImpl(split.rest, split.delimiter, full_name);
+  }
 }
 
 absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
-    absl::string_view test_name) {
-  absl::string_view section = test_name.substr(0, test_name.find('.'));
-  // test_name cannot be overwritten
-  absl::string_view to_match;
-  if (section != test_name) {
-    to_match = test_name.substr(section.length() + 1);
-  }
+    absl::string_view test_name) const {
+  return WalkDownMatchImpl(test_name, '\0');
+}
 
-  for (auto& child : children_) {
-    if (child->data_ == section || child->data_ == "*" || section == "*") {
-      absl::string_view appended = child->data_;
-      // Extracted last section -> no more '.' -> test_name will be
-      // equal to section
-      if (test_name == section) {
-        if (child->is_test_name_) {
-          return std::string(appended);
-        }
-      } else {
-        auto result = child->WalkDownMatch(to_match);
-        if (result.has_value()) {
-          return absl::StrCat(appended, ".", result.value());
-        }
-      }
+absl::optional<std::string> FailureListTrieNode::WalkDownMatchImpl(
+    absl::string_view rest, char separator) const {
+  Split split = SplitFirstSection(rest);
+  for (const auto& child : children_) {
+    if (child->separator_ != separator ||
+        !SectionsMatch(child->data_, split.section)) {
+      continue;
+    }
+    if (split.delimiter == '\0') {
+      if (child->test_name_.has_value()) return child->test_name_;
+    } else {
+      auto result = child->WalkDownMatchImpl(split.rest, split.delimiter);
+      if (result.has_value()) return result;
     }
   }
   // No match
