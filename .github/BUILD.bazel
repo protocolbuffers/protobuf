@@ -27,7 +27,7 @@ sh_test(
 # `.github/workflows/test_objectivec.yml` are supported for the given versions
 # of Xcode.
 xcode_version(
-    name = "version16_4",
+    name = "version16_4_16F6",
     aliases = [
         "16F6",
         "16.4",
@@ -92,6 +92,6 @@ xcode_config(
 # https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md
 xcode_config(
     name = "host_xcodes_macos15",
-    default = ":version16_4",
-    versions = [":version16_4"],
+    default = ":version16_4_16F6",
+    versions = [":version16_4_16F6"],
 )
