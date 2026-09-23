@@ -1125,6 +1125,13 @@ bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
     // The message is not an Any message.
     return false;
   }
+  std::string type_url = reflection->GetString(message, any_type_url_field);
+  if (type_url.empty()) {
+    // The Any message does not have type_url set (e.g. `{}` or `{ value: ... }`
+    // using regular field syntax). Return false so regular fields (if any) are
+    // collected normally.
+    return false;
+  }
   absl::StatusOr<TextFormat::FieldLocation> location =
       tree.GetFieldLocation(any_type_url_field);
   if (location.ok()) {
@@ -1145,7 +1152,6 @@ bool OptionInterpreter::MaybeCollectAnyFieldInAggregateOption(
                       << ". This should never happen in practice";
   }
 
-  std::string type_url = reflection->GetString(message, any_type_url_field);
   std::string url_prefix, full_type_name;
   if (!internal::ParseAnyTypeUrl(type_url, &url_prefix, &full_type_name)) {
     // The type_url is not a valid Any type URL.
