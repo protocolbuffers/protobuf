@@ -853,9 +853,7 @@ void BinaryAndJsonConformanceSuiteImpl<
       prototype, test_name, input_json);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  std::string effective_test_name = absl::StrCat(
-      setting.ConformanceLevelToString(level), ".",
-      setting.GetSyntaxIdentifier(), ".JsonInput.", test_name, ".Validator");
+  const std::string& effective_test_name = setting.GetTestName();
 
   if (!suite_.RunTest(effective_test_name, request, &response)) {
     return;
@@ -1003,9 +1001,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       payload_message.SerializeAsString());
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  std::string effective_test_name =
-      absl::StrCat(setting.ConformanceLevelToString(level), ".",
-                   SyntaxIdentifier(), ".", test_name, ".JsonOutput");
+  const std::string& effective_test_name = setting.GetTestName();
 
   if (!suite_.RunTest(effective_test_name, request, &response)) {
     return;
@@ -2645,7 +2641,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                                          value.isMember("FieldName3") &&
                                          value.isMember("fieldName4");
                                 });
-  RunValidJsonTestWithValidator("FieldNameWithNumbers", REQUIRED,
+  RunValidJsonTestWithValidator("FieldNameWithNumbersValidator", REQUIRED,
                                 R"({
         "field0name5": 5,
         "field0Name6": 6
@@ -2655,7 +2651,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                                          value.isMember("field0Name6");
                                 });
   RunValidJsonTestWithValidator(
-      "FieldNameWithMixedCases", REQUIRED,
+      "FieldNameWithMixedCasesValidator", REQUIRED,
       R"({
         "fieldName7": 7,
         "FieldName8": 8,
@@ -2670,7 +2666,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                value.isMember("FIELDNAME11") && value.isMember("FIELDName12");
       });
   RunValidJsonTestWithValidator(
-      "FieldNameWithDoubleUnderscores", RECOMMENDED,
+      "FieldNameWithDoubleUnderscoresValidator", RECOMMENDED,
       R"({
         "FieldName13": 13,
         "FieldName14": 14,
