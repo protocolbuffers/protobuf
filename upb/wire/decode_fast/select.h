@@ -13,6 +13,7 @@
 
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode_fast/combinations.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -34,6 +35,13 @@ typedef struct {
   // placed into _upb_FastTable_Entry.field_data.
   uint64_t function_data;
 } upb_DecodeFast_TableEntry;
+
+// Attempts to fill a fasttable entry for a map field. Returns false if the map
+// is incompatible with fast decoding.
+bool upb_DecodeFast_TryFillMapEntry(const upb_MiniTableField* field,
+                                    const upb_MiniTable* map_sub, uint16_t tag,
+                                    uint64_t subofs,
+                                    upb_DecodeFast_TableEntry* entry);
 
 // Builds the fasttable for the given message.  The table will be written into
 // the given array.  Returns the number of entries in the table that were

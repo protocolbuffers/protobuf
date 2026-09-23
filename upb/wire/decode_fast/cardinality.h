@@ -457,6 +457,7 @@ UPB_FORCEINLINE bool _upb_DecodeFast_DecodeSizeSlow(const char** pp,
 UPB_FORCEINLINE
 bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
                                upb_DecodeFastNext* next) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), 5);
   const char* ptr = *pp;
   if ((ptr[0] & 0x80) == 0) {
     *pp = ptr + 1;
@@ -473,6 +474,27 @@ bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
   }
 
   return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, next);
+}
+
+typedef struct {
+  const upb_MiniTable* table;
+  bool is_repeated;
+  upb_Message* msg;
+} upb_DecodeFast_MessageContext;
+
+UPB_FORCEINLINE
+const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
+                                       const char* ptr, int size, void* ctx) {
+  UPB_STATIC_ASSERT(
+      offsetof(upb_Decoder, input) == 0,
+      "EpsCopyInputStream must be pointer interconvertible with upb_Decoder");
+  upb_Decoder* d = (upb_Decoder*)st;
+  upb_DecodeFast_MessageContext* c = (upb_DecodeFast_MessageContext*)ctx;
+  ptr = _upb_Decoder_DecodeMessage(d, ptr, c->msg, c->table);
+  if (d->end_group != DECODE_NOGROUP) {
+    _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  }
+  return ptr;
 }
 
 UPB_FORCEINLINE

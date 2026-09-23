@@ -22,6 +22,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/internal/arena.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension_registry.h"
@@ -83,6 +84,9 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->err = err;
   upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, d->err);
 
+  UPB_STATIC_ASSERT(
+      offsetof(upb_Decoder, input) == 0,
+      "EpsCopyInputStream must be pointer-interconvertible with upb_Decoder");
   UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
                     "mismatched error codes");
   UPB_STATIC_ASSERT(
@@ -220,12 +224,15 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
+struct upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
+                                       const upb_MiniTable* entry);
+
 #if UPB_FASTTABLE
 UPB_PRESERVE_NONE
 #endif
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
-                                       const upb_MiniTable* layout);
+                                       const upb_MiniTable* mt);
 
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
@@ -259,6 +266,18 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
   }
   *sv = tmp;
   return true;
+}
+
+// Zig-zag decoding for sint32/sint64. The 32-bit variant must truncate the
+// varint to 32 bits *before* decoding (proto semantics for overlong sint32
+// varints, e.g. 2^32 decodes to 0).
+UPB_INLINE uint32_t _upb_Decoder_ZigZagDecode32(uint64_t val) {
+  uint32_t n = (uint32_t)val;
+  return (n >> 1) ^ -(int32_t)(n & 1);
+}
+
+UPB_INLINE uint64_t _upb_Decoder_ZigZagDecode64(uint64_t n) {
+  return (n >> 1) ^ -(int64_t)(n & 1);
 }
 
 #include "upb/port/undef.inc"

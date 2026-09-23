@@ -65,15 +65,12 @@ static bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr,
     case kUpb_DecodeFast_Bool:
       val = val != 0;
       break;
-    case kUpb_DecodeFast_ZigZag32: {
-      uint32_t n = val;
-      val = (n >> 1) ^ -(int32_t)(n & 1);
+    case kUpb_DecodeFast_ZigZag32:
+      val = _upb_Decoder_ZigZagDecode32(val);
       break;
-    }
-    case kUpb_DecodeFast_ZigZag64: {
-      val = (val >> 1) ^ -(int64_t)(val & 1);
+    case kUpb_DecodeFast_ZigZag64:
+      val = _upb_Decoder_ZigZagDecode64(val);
       break;
-    }
     default:
       break;
   }
