@@ -12112,20 +12112,29 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
             kUpb_FieldMode_Map;
 
 #if UPB_FASTTABLE
-        // The fasttable decoder cannot decode maps. Unfortunately we do not
-        // know until this moment that the field is a map, so we have to
-        // overwrite the fasttable entry (if any) that we built for this field
-        // previously.
+        // Update fasttable entry with specialized map decoder function pointer
+        // and metadata.
         int size = table->UPB_PRIVATE(table_mask) == 0xff
                        ? 0
                        : ((table->UPB_PRIVATE(table_mask) >> 3) + 1);
         for (int i = 0; i < size; i++) {
           _upb_FastTable_Entry* entry = &table->UPB_PRIVATE(fasttable)[i];
-          uint32_t field_number = (((int)entry->field_data >> 3) & 0xf) |
-                                  (((int)entry->field_data >> 4) & 0x7f0);
+          uint32_t field_number =
+              upb_DecodeFastData_GetFieldNumber(entry->field_data);
           if (field_number == upb_MiniTableField_Number(field)) {
-            entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
-            entry->field_data = 0;
+            uint16_t expected_tag =
+                upb_DecodeFastData_GetExpectedTag(entry->field_data);
+            uint64_t subofs = upb_DecodeFastData_GetSubofs(entry->field_data);
+            upb_DecodeFast_TableEntry fast_entry;
+            if (upb_DecodeFast_TryFillMapEntry(field, sub, expected_tag, subofs,
+                                               &fast_entry)) {
+              entry->field_parser =
+                  upb_DecodeFast_GetFunctionPointer(fast_entry.function_idx);
+              entry->field_data = fast_entry.function_data;
+            } else {
+              entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
+              entry->field_data = 0;
+            }
           }
         }
 #endif
@@ -12148,8 +12157,8 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   upb_MiniTableSubInternal* table_sub =
       UPB_PTR_AT(field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);
-  // TODO: Add this assert back once YouTube is updated to not call
-  // this function repeatedly.
+  // TODO: Add this assert back once YouTube is updated to not
+  // call this function repeatedly.
   // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
   table_sub->UPB_PRIVATE(submsg) = sub;
   return true;
@@ -17587,16 +17596,12 @@ static void _upb_Decoder_Munge(const upb_MiniTableField* field, wireval* val) {
     case kUpb_FieldType_Bool:
       val->bool_val = val->uint64_val != 0;
       break;
-    case kUpb_FieldType_SInt32: {
-      uint32_t n = val->uint64_val;
-      val->uint32_val = (n >> 1) ^ -(int32_t)(n & 1);
+    case kUpb_FieldType_SInt32:
+      val->uint32_val = _upb_Decoder_ZigZagDecode32(val->uint64_val);
       break;
-    }
-    case kUpb_FieldType_SInt64: {
-      uint64_t n = val->uint64_val;
-      val->uint64_val = (n >> 1) ^ -(int64_t)(n & 1);
+    case kUpb_FieldType_SInt64:
+      val->uint64_val = _upb_Decoder_ZigZagDecode64(val->uint64_val);
       break;
-    }
     case kUpb_FieldType_Int32:
     case kUpb_FieldType_UInt32:
       _upb_Decoder_MungeInt32(val);
@@ -17879,8 +17884,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
   }
 }
 
-static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
-                                       const upb_MiniTable* entry) {
+upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
   // Maps descriptor type -> upb map size
   static const uint8_t kSizeInMap[] = {
       [0] = -1,  // invalid descriptor type
@@ -19897,7 +19901,8 @@ const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
     e->limit_ptr = e->end + e->limit;
     UPB_ASSERT(ptr < e->limit_ptr);
     e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+        e, kUpb_EpsCopyInputStream_SlopBytes);
     return new_start;
   } else {
     UPB_ASSERT(overrun > e->limit);
