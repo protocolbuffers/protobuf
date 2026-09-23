@@ -36,7 +36,7 @@ jobs:
           destination: "platform=macOS"
           xc_project: "ProtocolBuffers_OSX.xcodeproj"
         - platform: "iOS"
-          destination: "platform=iOS Simulator,name=iPhone 16,OS=latest"
+          destination: "platform=iOS Simulator,name=iPhone 16"
           xc_project: "ProtocolBuffers_iOS.xcodeproj"
         # We run presubmits on all "Debug" entries, but not on "Release" entries
         - xc_config: "Debug"
