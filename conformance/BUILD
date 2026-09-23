@@ -210,6 +210,7 @@ cc_library(
     testonly = 1,
     srcs = ["binary_wireformat.cc"],
     hdrs = ["binary_wireformat.h"],
+    visibility = ["//upb/conformance:__pkg__"],
     deps = [
         "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
