@@ -46,7 +46,7 @@ jobs:
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
     runs-on: macos-15
     env:
-      DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -93,7 +93,7 @@ jobs:
         CONFIGURATION: ["Debug", "Release"]
         include:
           - OS: macos-15
-            XCODE: "15.2"
+            XCODE: "16.4"
           # We run presubmits on all "Debug" entries, but not on "Release" entries
           - CONFIGURATION: "Debug"
           - CONFIGURATION: "Release"
