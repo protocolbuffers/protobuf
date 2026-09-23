@@ -134,11 +134,33 @@ target_include_directories(
 target_include_directories(conformance_test_runner PRIVATE ${ABSL_ROOT_DIR})
 target_include_directories(conformance_cpp PRIVATE ${ABSL_ROOT_DIR})
 
+# The runner hosts gtest-based conformance suites alongside the legacy ones (see
+# conformance/conformance_test_main.cc), so it needs googletest even when
+# protobuf_BUILD_TESTS is off.  gtest.cmake is a no-op if GTest::gmock already
+# exists, and otherwise finds or fetches googletest the same way the unit tests
+# do.
+include(${protobuf_SOURCE_DIR}/cmake/gtest.cmake)
+
 target_link_libraries(conformance_test_runner
   libconformance_common
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
+  GTest::gmock
 )
+# The runner reads and sets gtest's flags (GTEST_FLAG_GET/GTEST_FLAG_SET), which
+# are exported data symbols of the gtest library.  When googletest is built as
+# a shared library, consumers must compile with GTEST_LINKED_AS_SHARED_LIBRARY
+# so that those symbols are declared dllimport on Windows; googletest only
+# attaches that definition to its installed (find_package) targets, not to the
+# ones FetchContent builds in-tree, so set it here for either case.
+if(TARGET GTest::gtest)
+  get_target_property(_gtest_target_type GTest::gtest TYPE)
+  if(_gtest_target_type STREQUAL "SHARED_LIBRARY")
+    target_compile_definitions(conformance_test_runner
+      PRIVATE GTEST_LINKED_AS_SHARED_LIBRARY=1)
+  endif()
+endif()
+
 target_link_libraries(conformance_cpp
   libconformance_common
   ${protobuf_LIB_PROTOBUF}
