@@ -119,6 +119,7 @@ cc_test(
 test_suite(
     name = "conformance_framework_tests",
     tests = [
+        "binary_test_util_test",
         "binary_wireformat_test",
         "failure_list_trie_node_test",
         "naming_test",
@@ -155,6 +156,30 @@ cc_library(
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/strings:string_view",
         "@jsoncpp",
+    ],
+)
+
+# Helpers shared by the gtest-based binary conformance tests (the field-type
+# tables the tests are parameterized over).
+cc_library(
+    name = "binary_test_util",
+    testonly = 1,
+    srcs = ["binary_test_util.cc"],
+    hdrs = ["binary_test_util.h"],
+    deps = [
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "binary_test_util_test",
+    srcs = ["binary_test_util_test.cc"],
+    deps = [
+        ":binary_test_util",
+        "//src/google/protobuf",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
