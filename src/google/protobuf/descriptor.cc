@@ -103,6 +103,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
 namespace google {
 namespace protobuf {
 
@@ -315,33 +319,63 @@ class FlatAllocation {
   U* Begin() const {
     int begin = BeginOffset<U>(), end = EndOffset<U>();
     if (begin == end) return nullptr;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: `data()` points at the flat allocation header; `begin` is the
+    // offset of the U array computed by PlanArray/CalculateEnds.
     return reinterpret_cast<U*>(data() + begin);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
   }
 
   template <typename U>
   U* End() const {
     int begin = BeginOffset<U>(), end = EndOffset<U>();
     if (begin == end) return nullptr;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: see Begin() above.
     return reinterpret_cast<U*>(data() + end);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
   }
 
   template <typename U>
   bool Init() {
     // Skip for the `char` block. No need to zero initialize it.
     if (std::is_same<U, char>::value) return true;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: placement-new loop over the U array inside the flat allocation;
+    // see Begin() for the offset computation.
     for (char *p = data() + BeginOffset<U>(), *end = data() + EndOffset<U>();
          p != end; p += sizeof(U)) {
       ::new (p) U{};
     }
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
     return true;
   }
 
   template <typename U>
   bool Destroy() {
     if (std::is_trivially_destructible<U>::value) return true;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: destruction loop over the U array obtained from Begin()/End().
     for (U *it = Begin<U>(), *end = End<U>(); it != end; ++it) {
       it->~U();
     }
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
     return true;
   }
 
@@ -415,7 +449,15 @@ class FlatAllocatorImpl {
 
     TypeToUse*& data = pointers_.template Get<TypeToUse>();
     int& used = used_.template Get<TypeToUse>();
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: bump-pointer allocation inside the flat allocation buffer;
+    // bounds are enforced by the ABSL_CHECK_LE on `used` below.
     U* res = reinterpret_cast<U*>(data + used);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
     used += trivial ? RoundUpTo<8>(array_size * sizeof(U)) : array_size;
     ABSL_CHECK_LE(used, total_.template Get<TypeToUse>());
     return res;
@@ -437,15 +479,20 @@ class FlatAllocatorImpl {
     for (auto b : bytes) total_size += b.size();
     total_size += sizes.size() * sizeof(uint16_t);
     char* out = AllocateArray<char>(total_size);
+    absl::Span<char> out_span(out, total_size);
+    size_t out_pos = 0;
     for (absl::string_view b : bytes) {
-      memcpy(out, b.data(), b.size());
-      out += b.size();
+      absl::c_copy(b, out_span.subspan(out_pos, b.size()).begin());
+      out_pos += b.size();
     }
-    auto res = internal::DescriptorNames::Input{out};
+    auto res = internal::DescriptorNames::Input{out_span.subspan(out_pos).data()};
     for (size_t size : sizes) {
       uint16_t size16 = static_cast<uint16_t>(size);
-      memcpy(out, &size16, sizeof(size16));
-      out += sizeof(size16);
+      absl::c_copy(
+          absl::Span<const char>(reinterpret_cast<const char*>(&size16),
+                                 sizeof(size16)),
+          out_span.subspan(out_pos, sizeof(size16)).begin());
+      out_pos += sizeof(size16);
     }
     return res;
   }
@@ -480,14 +527,15 @@ class FlatAllocatorImpl {
   template <typename... In>
   const std::string* AllocateStrings(In&&... in) {
     std::string* strings = AllocateArray<std::string>(sizeof...(in));
-    std::string* res = strings;
-    ((*strings++ = std::string(std::forward<In>(in))), ...);
-    return res;
+    absl::Span<std::string> strings_span(strings, sizeof...(in));
+    size_t i = 0;
+    ((strings_span[i++] = std::string(std::forward<In>(in))), ...);
+    return strings;
   }
 
   absl::string_view AllocateStringView(const absl::string_view name) {
     char* res = AllocateArray<char>(name.size());
-    memcpy(res, name.data(), name.size());
+    absl::c_copy(name, absl::MakeSpan(res, name.size()).begin());
     return {res, name.size()};
   }
 
@@ -658,31 +706,32 @@ static auto DisableTracking() {
 Descriptor::WellKnownType FindWellKnownType(absl::string_view name) {
   // Must match the order of Descriptor::WellKnownType enum in descriptor.h
   // starting from WELLKNOWNTYPE_DOUBLEVALUE.
-  static constexpr absl::string_view kWellKnownTypes[] = {
-      "DoubleValue",  // WELLKNOWNTYPE_DOUBLEVALUE
-      "FloatValue",   // WELLKNOWNTYPE_FLOATVALUE
-      "Int64Value",   // WELLKNOWNTYPE_INT64VALUE
-      "UInt64Value",  // WELLKNOWNTYPE_UINT64VALUE
-      "Int32Value",   // WELLKNOWNTYPE_INT32VALUE
-      "UInt32Value",  // WELLKNOWNTYPE_UINT32VALUE
-      "StringValue",  // WELLKNOWNTYPE_STRINGVALUE
-      "BytesValue",   // WELLKNOWNTYPE_BYTESVALUE
-      "BoolValue",    // WELLKNOWNTYPE_BOOLVALUE
-      "Any",          // WELLKNOWNTYPE_ANY
-      "FieldMask",    // WELLKNOWNTYPE_FIELDMASK
-      "Duration",     // WELLKNOWNTYPE_DURATION
-      "Timestamp",    // WELLKNOWNTYPE_TIMESTAMP
-      "Value",        // WELLKNOWNTYPE_VALUE
-      "ListValue",    // WELLKNOWNTYPE_LISTVALUE
-      "Struct",       // WELLKNOWNTYPE_STRUCT
-  };
-  static_assert(std::size(kWellKnownTypes) == Descriptor::WELLKNOWNTYPE_STRUCT,
+  static constexpr std::array<absl::string_view, Descriptor::WELLKNOWNTYPE_STRUCT>
+      kWellKnownTypes = {{
+          "DoubleValue",  // WELLKNOWNTYPE_DOUBLEVALUE
+          "FloatValue",   // WELLKNOWNTYPE_FLOATVALUE
+          "Int64Value",   // WELLKNOWNTYPE_INT64VALUE
+          "UInt64Value",  // WELLKNOWNTYPE_UINT64VALUE
+          "Int32Value",   // WELLKNOWNTYPE_INT32VALUE
+          "UInt32Value",  // WELLKNOWNTYPE_UINT32VALUE
+          "StringValue",  // WELLKNOWNTYPE_STRINGVALUE
+          "BytesValue",   // WELLKNOWNTYPE_BYTESVALUE
+          "BoolValue",    // WELLKNOWNTYPE_BOOLVALUE
+          "Any",          // WELLKNOWNTYPE_ANY
+          "FieldMask",    // WELLKNOWNTYPE_FIELDMASK
+          "Duration",     // WELLKNOWNTYPE_DURATION
+          "Timestamp",    // WELLKNOWNTYPE_TIMESTAMP
+          "Value",        // WELLKNOWNTYPE_VALUE
+          "ListValue",    // WELLKNOWNTYPE_LISTVALUE
+          "Struct",       // WELLKNOWNTYPE_STRUCT
+      }};
+  static_assert(kWellKnownTypes.size() == Descriptor::WELLKNOWNTYPE_STRUCT,
                 "kWellKnownTypes size must match WellKnownType enum");
 
   if (!absl::ConsumePrefix(&name, "google.protobuf.")) {
     return Descriptor::WELLKNOWNTYPE_UNSPECIFIED;
   }
-  for (size_t i = 0; i < std::size(kWellKnownTypes); ++i) {
+  for (size_t i = 0; i < kWellKnownTypes.size(); ++i) {
     if (kWellKnownTypes[i] == name) {
       return static_cast<Descriptor::WellKnownType>(i + 1);
     }
@@ -694,18 +743,19 @@ Descriptor::WellKnownType FindWellKnownType(absl::string_view name) {
 
 FieldDescriptor::CppType FieldDescriptor::TypeToCppType(Type type) {
   ABSL_CHECK(type >= 0 && type <= MAX_TYPE) << "Invalid input value.";
-  return kTypeToCppTypeMap[type];
+  return absl::Span<const CppType>(kTypeToCppTypeMap, MAX_TYPE + 1)[type];
 }
 
 absl::string_view FieldDescriptor::TypeName(Type type) {
   ABSL_CHECK(type >= 0 && type <= MAX_TYPE) << "Invalid input value.";
-  return kTypeToName[type];
+  return absl::Span<const char* const>(kTypeToName, MAX_TYPE + 1)[type];
 }
 
 absl::string_view FieldDescriptor::CppTypeName(CppType cpp_type) {
   ABSL_CHECK(cpp_type >= 0 && cpp_type <= MAX_CPPTYPE)
       << "Invalid input value.";
-  return kCppTypeToName[cpp_type];
+  return absl::Span<const char* const>(kCppTypeToName, MAX_CPPTYPE + 1)
+      [cpp_type];
 }
 
 const FieldDescriptor::CppType
@@ -2037,7 +2087,15 @@ void* DescriptorPool::Tables::AllocateBytes(int size) {
   int* sizep = static_cast<int*>(p);
   misc_allocs_.emplace_back(sizep);
   *sizep = size;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+  // AUDITED: the returned pointer is offset past the size header inside the
+  // freshly allocated block of `size + RoundUpTo<8>(sizeof(int))` bytes.
   return static_cast<char*>(p) + RoundUpTo<8>(sizeof(int));
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 }
 
 template <typename... T>
@@ -2942,11 +3000,14 @@ void FileDescriptor::CopyTo(FileDescriptorProto* proto) const {
   }
 
   for (int i = 0; i < public_dependency_count(); i++) {
-    proto->add_public_dependency(public_dependencies_[i]);
+    proto->add_public_dependency(
+        absl::Span<const int>(public_dependencies_, public_dependency_count_)
+            [i]);
   }
 
   for (int i = 0; i < weak_dependency_count(); i++) {
-    proto->add_weak_dependency(weak_dependencies_[i]);
+    proto->add_weak_dependency(
+        absl::Span<const int>(weak_dependencies_, weak_dependency_count_)[i]);
   }
 
   for (int i = 0; i < option_dependency_count(); i++) {
@@ -3446,11 +3507,14 @@ std::string FileDescriptor::DebugStringWithOptions(
   SourceLocationCommentPrinter comment_printer(this, "", debug_string_options);
   comment_printer.AddPreComment(&contents);
 
-  absl::flat_hash_set<int> public_dependencies(
-      public_dependencies_.get(),
-      public_dependencies_ + public_dependency_count_);
-  absl::flat_hash_set<int> weak_dependencies(
-      weak_dependencies_.get(), weak_dependencies_ + weak_dependency_count_);
+  absl::Span<const int> public_dependency_span(public_dependencies_.get(),
+                                               public_dependency_count_);
+  absl::flat_hash_set<int> public_dependencies(public_dependency_span.begin(),
+                                               public_dependency_span.end());
+  absl::Span<const int> weak_dependency_span(weak_dependencies_.get(),
+                                             weak_dependency_count_);
+  absl::flat_hash_set<int> weak_dependencies(weak_dependency_span.begin(),
+                                             weak_dependency_span.end());
 
   for (int i = 0; i < dependency_count(); i++) {
     if (public_dependencies.contains(i)) {
@@ -3708,13 +3772,15 @@ std::string FieldDescriptor::FieldTypeNameDebugString() const {
     case TYPE_MESSAGE:
     case TYPE_GROUP:
       if (IsGroupSyntax(file()->edition(), this)) {
-        return kTypeToName[type()];
+        return absl::Span<const char* const>(kTypeToName, MAX_TYPE + 1)
+            [type()];
       }
       return absl::StrCat(".", message_type()->full_name());
     case TYPE_ENUM:
       return absl::StrCat(".", enum_type()->full_name());
     default:
-      return kTypeToName[type()];
+      return absl::Span<const char* const>(kTypeToName, MAX_TYPE + 1)
+          [type()];
   }
 }
 
@@ -3734,8 +3800,10 @@ void FieldDescriptor::DebugString(
     field_type = FieldTypeNameDebugString();
   }
 
-  std::string label =
-      absl::StrCat(kLabelToName[static_cast<Label>(label_)], " ");
+  std::string label = absl::StrCat(
+      absl::Span<const char* const>(kLabelToName, MAX_LABEL + 1)
+          [static_cast<Label>(label_)],
+      " ");
 
   // Label is omitted for maps, oneof, and plain proto3 fields.
   if (is_map() || real_containing_oneof() ||
@@ -4764,8 +4832,16 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     placeholder_file->enum_type_count_ = 1;
     placeholder_file->enum_types_ = alloc.AllocateArray<EnumDescriptor>(1);
 
-    EnumDescriptor* placeholder_enum = &placeholder_file->enum_types_[0];
+    absl::Span<EnumDescriptor> enum_span(placeholder_file->enum_types_, 1);
+    EnumDescriptor* placeholder_enum = &enum_span[0];
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: zero-initialize the freshly allocated placeholder.
     memset(static_cast<void*>(placeholder_enum), 0, sizeof(*placeholder_enum));
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 
     placeholder_enum->all_names_.SetPayload(alloc.AllocatePlaceholderNames(
         placeholder_full_name, placeholder_name.size()));
@@ -4782,9 +4858,17 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     // Disable fast-path lookup for this enum.
     placeholder_enum->sequential_value_limit_ = -1;
 
-    EnumValueDescriptor* placeholder_value = &placeholder_enum->values_[0];
+    absl::Span<EnumValueDescriptor> value_span(placeholder_enum->values_, 1);
+    EnumValueDescriptor* placeholder_value = &value_span[0];
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: zero-initialize the freshly allocated placeholder.
     memset(static_cast<void*>(placeholder_value), 0,
            sizeof(*placeholder_value));
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 
     // Note that enum value names are siblings of their type, not children.
     placeholder_value->all_names_ = alloc.AllocateStrings(
@@ -4802,9 +4886,17 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     placeholder_file->message_type_count_ = 1;
     placeholder_file->message_types_ = alloc.AllocateArray<Descriptor>(1);
 
-    Descriptor* placeholder_message = &placeholder_file->message_types_[0];
+    absl::Span<Descriptor> message_span(placeholder_file->message_types_, 1);
+    Descriptor* placeholder_message = &message_span[0];
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: zero-initialize the freshly allocated placeholder.
     memset(static_cast<void*>(placeholder_message), 0,
            sizeof(*placeholder_message));
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 
     placeholder_message->all_names_.SetPayload(alloc.AllocatePlaceholderNames(
         placeholder_full_name, placeholder_name.size()));
@@ -4819,14 +4911,16 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       placeholder_message->extension_range_count_ = 1;
       placeholder_message->extension_ranges_ =
           alloc.AllocateArray<Descriptor::ExtensionRange>(1);
-      placeholder_message->extension_ranges_[0].start_ = 1;
+      absl::Span<Descriptor::ExtensionRange> extension_range_span(
+          placeholder_message->extension_ranges_, 1);
+      extension_range_span[0].start_ = 1;
       // kMaxNumber + 1 because ExtensionRange::end is exclusive.
-      placeholder_message->extension_ranges_[0].end_ =
+      extension_range_span[0].end_ =
           FieldDescriptor::kMaxNumber + 1;
-      placeholder_message->extension_ranges_[0].options_ = nullptr;
-      placeholder_message->extension_ranges_[0].proto_features_ =
+      extension_range_span[0].options_ = nullptr;
+      extension_range_span[0].proto_features_ =
           &FeatureSet::default_instance();
-      placeholder_message->extension_ranges_[0].merged_features_ =
+      extension_range_span[0].merged_features_ =
           &FeatureSet::default_instance();
     }
 
@@ -4851,7 +4945,14 @@ FileDescriptor* DescriptorPool::NewPlaceholderFileWithMutexHeld(
     mutex_->AssertHeld();
   }
   FileDescriptor* placeholder = alloc.AllocateArray<FileDescriptor>(1);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+  // AUDITED: zero-initialize the freshly allocated placeholder.
   memset(static_cast<void*>(placeholder), 0, sizeof(*placeholder));
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 
   placeholder->name_ = alloc.AllocateStrings(name);
   placeholder->package_ = &internal::GetEmptyString();
@@ -5231,8 +5332,10 @@ void internal::DescriptorBuilder::PostProcessFieldFeatures(
   OUTPUT->NAME##s_ =                                               \
       alloc.AllocateArray<decltype(OUTPUT->NAME##s_)::value_type>( \
           INPUT.NAME##_size());                                    \
+  absl::Span<decltype(OUTPUT->NAME##s_)::value_type> NAME##_span(  \
+      OUTPUT->NAME##s_, INPUT.NAME##_size());                      \
   for (int i = 0; i < INPUT.NAME##_size(); i++) {                  \
-    METHOD(INPUT.NAME(i), PARENT, OUTPUT->NAME##s_ + i, alloc);    \
+    METHOD(INPUT.NAME(i), PARENT, &NAME##_span[i], alloc);         \
   }
 
 PROTOBUF_NOINLINE void internal::DescriptorBuilder::AddRecursiveImportError(
@@ -5648,8 +5751,10 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   result->option_dependencies_ =
       alloc.AllocateArray<absl::string_view>(proto.option_dependency_size());
   // Copy option dependency names to result->option_dependencies_.
+  absl::Span<absl::string_view> option_dependencies_span(
+      result->option_dependencies_, proto.option_dependency_size());
   for (int i = 0; i < proto.option_dependency_size(); ++i) {
-    result->option_dependencies_[i] =
+    option_dependencies_span[i] =
         alloc.AllocateStringView(proto.option_dependency(i));
   }
 
@@ -5663,6 +5768,8 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   }
 
   std::vector<std::string> unknown_option_dependencies;
+  absl::Span<const FileDescriptor*> dependencies_span(
+      result->dependencies_, proto.dependency_size());
 
   bool need_lazy_deps = false;
   for (int i = 0; i < proto.dependency_size() + proto.option_dependency_size();
@@ -5720,7 +5827,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     if (is_option_dep) {
       result_option_dependencies[i - proto.dependency_size()] = dependency;
     } else {
-      result->dependencies_[i] = dependency;
+      dependencies_span[i] = dependency;
     }
     if (pool_->lazily_build_dependencies_ && !dependency) {
       need_lazy_deps = true;
@@ -5732,7 +5839,7 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     // options interpretation and may be discarded by protoc.
     int total_char_size = 0;
     for (int i = 0; i < proto.dependency_size(); i++) {
-      const FileDescriptor* result_dependency = result->dependencies_[i];
+      const FileDescriptor* result_dependency = dependencies_span[i];
       if (result_dependency == nullptr) {
         total_char_size += static_cast<int>(proto.dependency(i).size());
       }
@@ -5742,26 +5849,36 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     void* data = tables_->AllocateBytes(
         static_cast<int>(sizeof(absl::once_flag)) + total_char_size);
     result->dependencies_once_ = ::new (data) absl::once_flag{};
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+    // AUDITED: `name_data` points past the once_flag header inside the freshly
+    // allocated block; the loop writes at most total_char_size bytes.
     char* name_data = reinterpret_cast<char*>(result->dependencies_once_ + 1);
     for (int i = 0; i < proto.dependency_size(); i++) {
-      if (result->dependencies_[i] == nullptr) {
+      if (dependencies_span[i] == nullptr) {
         memcpy(name_data, proto.dependency(i).data(),
                proto.dependency(i).size());
         name_data += proto.dependency(i).size();
       }
       *name_data++ = '\0';
     }
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
   }
 
   // Check public dependencies.
   int public_dependency_count = 0;
   result->public_dependencies_ =
       alloc.AllocateArray<int>(proto.public_dependency_size());
+  absl::Span<int> public_dependencies_span(result->public_dependencies_,
+                                           proto.public_dependency_size());
   for (int i = 0; i < proto.public_dependency_size(); i++) {
     // Only put valid public dependency indexes.
     int index = proto.public_dependency(i);
     if (index >= 0 && index < proto.dependency_size()) {
-      result->public_dependencies_[public_dependency_count++] = index;
+      public_dependencies_span[public_dependency_count++] = index;
       // Do not track unused imported files for public import.
       // Calling dependency(i) builds that file when doing lazy imports,
       // need to avoid doing this. Unused dependency detection isn't done
@@ -5795,10 +5912,12 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
   int weak_dependency_count = 0;
   result->weak_dependencies_ =
       alloc.AllocateArray<int>(proto.weak_dependency_size());
+  absl::Span<int> weak_dependencies_span(result->weak_dependencies_,
+                                         proto.weak_dependency_size());
   for (int i = 0; i < proto.weak_dependency_size(); i++) {
     int index = proto.weak_dependency(i);
     if (index >= 0 && index < proto.dependency_size()) {
-      result->weak_dependencies_[weak_dependency_count++] = index;
+      weak_dependencies_span[weak_dependency_count++] = index;
     } else {
       AddError(proto.name(), proto, DescriptorPool::ErrorCollector::OTHER,
                "Invalid weak dependency index.");
@@ -6068,12 +6187,14 @@ void internal::DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   result->reserved_name_count_ = reserved_name_count;
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
+  absl::Span<const std::string*> reserved_names_span(result->reserved_names_,
+                                                     reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
     if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
       AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Reserved name too long.");
     }
-    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
+    reserved_names_span[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
@@ -6369,6 +6490,11 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
   if (proto.has_type()) {
     if (proto.has_default_value()) {
       char* end_pos = nullptr;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+      // AUDITED: `default_value()` is a NUL-terminated std::string; the strto*
+      // calls preserve the existing base-0 auto-detection semantics (hex/octal).
       switch (result->cpp_type()) {
         case FieldDescriptor::CPPTYPE_INT32:
           result->default_value_int32_t_ =
@@ -6392,6 +6518,9 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
               std::strtoull(proto.default_value().c_str(), &end_pos, 0);
           break;
         case FieldDescriptor::CPPTYPE_FLOAT:
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
           if (proto.default_value() == "inf") {
             result->default_value_float_ =
                 std::numeric_limits<float>::infinity();
@@ -6863,12 +6992,14 @@ void internal::DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   result->reserved_name_count_ = reserved_name_count;
   result->reserved_names_ =
       alloc.AllocateArray<const std::string*>(reserved_name_count);
+  absl::Span<const std::string*> reserved_names_span(result->reserved_names_,
+                                                     reserved_name_count);
   for (int i = 0; i < reserved_name_count; ++i) {
     if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
       AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Reserved name too long.");
     }
-    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
+    reserved_names_span[i] = alloc.AllocateStrings(proto.reserved_name(i));
   }
 
   // Copy options.
@@ -7051,31 +7182,42 @@ void internal::DescriptorBuilder::BuildMethod(
 
 void internal::DescriptorBuilder::CrossLinkFile(
     FileDescriptor* file, const FileDescriptorProto& proto) {
+  absl::Span<Descriptor> message_types(file->message_types_,
+                                       file->message_type_count());
   for (int i = 0; i < file->message_type_count(); i++) {
-    CrossLinkMessage(&file->message_types_[i], proto.message_type(i));
+    CrossLinkMessage(&message_types[i], proto.message_type(i));
   }
 
+  absl::Span<FieldDescriptor> extensions(file->extensions_,
+                                         file->extension_count());
   for (int i = 0; i < file->extension_count(); i++) {
-    CrossLinkField(&file->extensions_[i], proto.extension(i));
+    CrossLinkField(&extensions[i], proto.extension(i));
   }
 
+  absl::Span<ServiceDescriptor> services(file->services_,
+                                         file->service_count());
   for (int i = 0; i < file->service_count(); i++) {
-    CrossLinkService(&file->services_[i], proto.service(i));
+    CrossLinkService(&services[i], proto.service(i));
   }
 }
 
 void internal::DescriptorBuilder::CrossLinkMessage(
     Descriptor* message, const DescriptorProto& proto) {
+  absl::Span<Descriptor> nested_types(message->nested_types_,
+                                      message->nested_type_count());
   for (int i = 0; i < message->nested_type_count(); i++) {
-    CrossLinkMessage(&message->nested_types_[i], proto.nested_type(i));
+    CrossLinkMessage(&nested_types[i], proto.nested_type(i));
   }
 
+  absl::Span<FieldDescriptor> fields(message->fields_, message->field_count());
   for (int i = 0; i < message->field_count(); i++) {
-    CrossLinkField(&message->fields_[i], proto.field(i));
+    CrossLinkField(&fields[i], proto.field(i));
   }
 
+  absl::Span<FieldDescriptor> extensions(message->extensions_,
+                                         message->extension_count());
   for (int i = 0; i < message->extension_count(); i++) {
-    CrossLinkField(&message->extensions_[i], proto.extension(i));
+    CrossLinkField(&extensions[i], proto.extension(i));
   }
 
   // Set up field array for each oneof.
@@ -7105,7 +7247,9 @@ void internal::DescriptorBuilder::CrossLinkMessage(
       }
       // Must go through oneof_decls_ array to get a non-const version of the
       // OneofDescriptor.
-      auto& out_oneof_decl = message->oneof_decls_[oneof_decl->index()];
+      absl::Span<OneofDescriptor> oneof_decls(message->oneof_decls_,
+                                              message->oneof_decl_count());
+      auto& out_oneof_decl = oneof_decls[oneof_decl->index()];
       if (out_oneof_decl.field_count_ == 0) {
         out_oneof_decl.fields_ = message->field(i);
       }
@@ -7114,8 +7258,16 @@ void internal::DescriptorBuilder::CrossLinkMessage(
         // Verify that they are contiguous.
         // This is assumed by OneofDescriptor::field(i).
         // But only if there are no errors.
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+        // AUDITED: `fields_` is the start of this oneof's contiguous run inside
+        // `message->fields_`, and `field_count_` fields have been counted.
         ABSL_CHECK_EQ(out_oneof_decl.fields_ + out_oneof_decl.field_count_,
                       message->field(i));
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
       }
       ++out_oneof_decl.field_count_;
     }
@@ -7123,7 +7275,9 @@ void internal::DescriptorBuilder::CrossLinkMessage(
 
   // Then verify the sizes.
   for (int i = 0; i < message->oneof_decl_count(); i++) {
-    OneofDescriptor* oneof_decl = &message->oneof_decls_[i];
+    absl::Span<OneofDescriptor> oneof_decls(message->oneof_decls_,
+                                            message->oneof_decl_count());
+    OneofDescriptor* oneof_decl = &oneof_decls[i];
 
     if (oneof_decl->field_count() == 0) {
       AddError(absl::StrCat(message->full_name(), ".", oneof_decl->name()),
@@ -7326,11 +7480,19 @@ void internal::DescriptorBuilder::CrossLinkField(
         field->type_once_ = ::new (tables_->AllocateBytes(
             static_cast<int>(sizeof(absl::once_flag)) + name_sizes))
             absl::once_flag{};
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+        // AUDITED: `names` points past the once_flag header inside the freshly
+        // allocated block of sizeof(once_flag) + name_sizes bytes.
         char* names = reinterpret_cast<char*>(field->type_once_ + 1);
 
         memcpy(names, name.c_str(), name.size() + 1);
         memcpy(names + name.size() + 1, proto.default_value().c_str(),
                proto.default_value().size() + 1);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 
         // AddFieldByNumber and AddExtension are done later in this function,
         // and can/must be done if the field type was not found. The related
@@ -7564,8 +7726,10 @@ void internal::DescriptorBuilder::CrossLinkField(
 
 void internal::DescriptorBuilder::CrossLinkService(
     ServiceDescriptor* service, const ServiceDescriptorProto& proto) {
+  absl::Span<MethodDescriptor> methods(service->methods_,
+                                       service->method_count());
   for (int i = 0; i < service->method_count(); i++) {
-    CrossLinkMethod(&service->methods_[i], proto.method(i));
+    CrossLinkMethod(&methods[i], proto.method(i));
   }
 }
 
@@ -7628,9 +7792,11 @@ void internal::DescriptorBuilder::CrossLinkMethod(
 
 void internal::DescriptorBuilder::SuggestFieldNumbers(
     FileDescriptor* file, const FileDescriptorProto& proto) {
+  absl::Span<const Descriptor> message_types(file->message_types_,
+                                             file->message_type_count());
   for (int message_index = 0; message_index < file->message_type_count();
        message_index++) {
-    const Descriptor* message = &file->message_types_[message_index];
+    const Descriptor* message = &message_types[message_index];
     auto hints_it = message_hints_.find(message);
     if (hints_it == message_hints_.end()) continue;
     auto* hints = &hints_it->second;
@@ -7755,24 +7921,34 @@ void internal::DescriptorBuilder::ValidateOptions(
 
 void internal::DescriptorBuilder::ValidateProto3(
     const FileDescriptor* file, const FileDescriptorProto& proto) {
+  absl::Span<const FieldDescriptor> extensions(file->extensions_,
+                                               file->extension_count());
   for (int i = 0; i < file->extension_count(); ++i) {
-    ValidateProto3Field(file->extensions_ + i, proto.extension(i));
+    ValidateProto3Field(&extensions[i], proto.extension(i));
   }
+  absl::Span<const Descriptor> message_types(file->message_types_,
+                                             file->message_type_count());
   for (int i = 0; i < file->message_type_count(); ++i) {
-    ValidateProto3Message(file->message_types_ + i, proto.message_type(i));
+    ValidateProto3Message(&message_types[i], proto.message_type(i));
   }
 }
 
 void internal::DescriptorBuilder::ValidateProto3Message(
     const Descriptor* message, const DescriptorProto& proto) {
+  absl::Span<const Descriptor> nested_types(message->nested_types_,
+                                            message->nested_type_count());
   for (int i = 0; i < message->nested_type_count(); ++i) {
-    ValidateProto3Message(message->nested_types_ + i, proto.nested_type(i));
+    ValidateProto3Message(&nested_types[i], proto.nested_type(i));
   }
+  absl::Span<const FieldDescriptor> fields(message->fields_,
+                                           message->field_count());
   for (int i = 0; i < message->field_count(); ++i) {
-    ValidateProto3Field(message->fields_ + i, proto.field(i));
+    ValidateProto3Field(&fields[i], proto.field(i));
   }
+  absl::Span<const FieldDescriptor> extensions(message->extensions_,
+                                               message->extension_count());
   for (int i = 0; i < message->extension_count(); ++i) {
-    ValidateProto3Field(message->extensions_ + i, proto.extension(i));
+    ValidateProto3Field(&extensions[i], proto.extension(i));
   }
   if (message->extension_range_count() > 0) {
     AddError(message->full_name(), proto.extension_range(0),
@@ -8895,9 +9071,17 @@ Symbol DescriptorPool::CrossLinkOnDemandHelper(absl::string_view name,
 void FieldDescriptor::InternalTypeOnceInit() const {
   ABSL_CHECK(file()->finished_building_ == true);
   const EnumDescriptor* enum_type = nullptr;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+  // AUDITED: `type_once_` owns a trailing block of two consecutive
+  // NUL-terminated strings written by CrossLinkField (see type_once_ setup).
   const char* lazy_type_name = reinterpret_cast<const char*>(type_once_ + 1);
   const char* lazy_default_value_enum_name =
       lazy_type_name + strlen(lazy_type_name) + 1;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
   Symbol result = file()->pool()->CrossLinkOnDemandHelper(
       lazy_type_name, type_ == FieldDescriptor::TYPE_ENUM);
   if (result.type() == Symbol::MESSAGE) {
@@ -8981,6 +9165,11 @@ absl::string_view FieldDescriptor::PrintableNameForExtension() const {
 
 void FileDescriptor::InternalDependenciesOnceInit() const {
   ABSL_CHECK(finished_building_ == true);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+  // AUDITED: `dependencies_once_` owns a trailing block of consecutive
+  // NUL-terminated dependency names written in BuildFile (see need_lazy_deps).
   const char* names_ptr = reinterpret_cast<const char*>(dependencies_once_ + 1);
   for (int i = 0; i < dependency_count(); i++) {
     const char* name = names_ptr;
@@ -8989,6 +9178,9 @@ void FileDescriptor::InternalDependenciesOnceInit() const {
       dependencies_[i] = pool_->FindFileByName(name);
     }
   }
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 }
 
 void FileDescriptor::DependenciesOnceInit(const FileDescriptor* to_init) {
@@ -9002,12 +9194,14 @@ const FileDescriptor* FileDescriptor::dependency(int index) const {
     absl::call_once(*dependencies_once_, FileDescriptor::DependenciesOnceInit,
                     this);
   }
-  return dependencies_[index];
+  return absl::Span<const FileDescriptor* const>(
+      dependencies_, dependency_count_)[index];
 }
 
 absl::string_view FileDescriptor::option_dependency_name(int index) const {
   ABSL_DCHECK_LT(index, option_dependency_count());
-  return option_dependencies_[index];
+  return absl::Span<const absl::string_view>(option_dependencies_,
+                                             option_dependency_count_)[index];
 }
 
 const Descriptor* MethodDescriptor::input_type() const {
@@ -9034,9 +9228,17 @@ void LazyDescriptor::SetLazy(absl::string_view name,
   ABSL_CHECK(!file->finished_building_);
   once_ = ::new (file->pool_->tables_->AllocateBytes(static_cast<int>(
       sizeof(absl::once_flag) + name.size() + 1))) absl::once_flag{};
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+  // AUDITED: `lazy_name` points past the once_flag header inside the freshly
+  // allocated block of sizeof(once_flag) + name.size() + 1 bytes.
   char* lazy_name = reinterpret_cast<char*>(once_ + 1);
   memcpy(lazy_name, name.data(), name.size());
   lazy_name[name.size()] = 0;
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
 }
 
 void LazyDescriptor::Once(const ServiceDescriptor* service) {
@@ -9044,7 +9246,15 @@ void LazyDescriptor::Once(const ServiceDescriptor* service) {
     absl::call_once(*once_, [&] {
       auto* file = service->file();
       ABSL_CHECK(file->finished_building_);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage begin
+#endif
+      // AUDITED: `lazy_name` points past the once_flag header inside the block
+      // allocated by SetLazy; the block is sizeof(once_flag) + name.size() + 1.
       const char* lazy_name = reinterpret_cast<const char*>(once_ + 1);
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang unsafe_buffer_usage end
+#endif
       descriptor_ =
           file->pool_->CrossLinkOnDemandHelper(lazy_name, false).descriptor();
     });
