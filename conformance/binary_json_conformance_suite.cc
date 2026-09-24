@@ -345,7 +345,9 @@ void BinaryAndJsonConformanceSuite::RunSuiteImpl() {
     if (!this->performance_) {
       RunDelimitedFieldTests();
       RunUnstableTests();
-      RunEdition2026Tests();
+      if (maximum_edition_ >= Edition::EDITION_2026) {
+        RunEdition2026Tests();
+      }
       RunUtf8ValidationTests();
     }
   }
