@@ -378,6 +378,35 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       "extensions");
 }
 
+TEST_F(CppGeneratorTest, DeprecatedEnumMessageIsNotSelfWarning) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto3";
+    message Result {
+      enum Status {
+        option deprecated = true;
+        UNSET = 0;
+        OK = 1;
+        FAILED = 2;
+      }
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "foo.pb.h",
+      "PROTOBUF_IGNORE_DEPRECATION_START\n"
+      "template <>\n"
+      "struct is_proto_enum<::Result_Status> : std::true_type {};\n"
+      "template <>\n"
+      "inline const EnumDescriptor* PROTOBUF_NONNULL "
+      "GetEnumDescriptor<::Result_Status>() {\n"
+      "  return ::Result_Status_descriptor();\n"
+      "}\n"
+      "PROTOBUF_IGNORE_DEPRECATION_STOP\n");
+}
+
 TEST_F(CppGeneratorTest, DeprecatedNestedEnumValueImportIsNotSelfWarning) {
   // The class-scoped alias for a deprecated nested enum value initializes
   // itself from the deprecated enumerator, which would otherwise trigger
