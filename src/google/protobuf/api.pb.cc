@@ -43,9 +43,18 @@ class Mixin::_Internal {
   using HasBits = decltype(::std::declval<Mixin>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Mixin, _impl_._has_bits_);
+
+  static constexpr Mixin::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
-constexpr Mixin::ParseTableT_ Mixin::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr Mixin::ParseTableT_ Mixin::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(Mixin, _impl_._has_bits_),
@@ -60,9 +69,6 @@ constexpr Mixin::ParseTableT_ Mixin::InternalGenerateParseTable_(const ::_pbi::C
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::Mixin>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // string root = 2;
       {::_pbi::TcParser::FastUS1,
@@ -112,39 +118,32 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Mixin::Mixin(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL Mixin::PlacementNew_(
+inline void* PROTOBUF_NONNULL Mixin::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Mixin(arena);
 }
-constexpr auto Mixin::InternalNewImpl_() {
+constexpr auto Mixin::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Mixin), alignof(Mixin));
 }
-constexpr auto Mixin::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-          tc_table,
-          nullptr,  // IsInitialized
-          &Mixin::MergeImpl,
-          Super_::GetNewImpl<Mixin>(),
+constexpr auto Mixin::_Internal::GenerateClassData() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &Mixin::MergeImpl,
+      Super_::GetNewImpl<Mixin>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Mixin::SharedDtor,
-          &Helpers_::Clear, &Helpers_::ByteSizeLong,
-              &Helpers_::_InternalSerialize,
+      &Mixin::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
-          false,
-      },
+      PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
       &file_reflection_data[2],
   };
 }
 struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr MixinGlobalsTypeInternal()
-      : MessageGlobalsBase(Mixin::InternalGenerateClassData_(
-            _default, &Mixin_globals_._table.header)),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<Mixin>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Mixin>(
             GetClassData())) {}
@@ -166,9 +165,18 @@ class Method::_Internal {
   using HasBits = decltype(::std::declval<Method>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Method, _impl_._has_bits_);
+
+  static constexpr Method::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
-constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr Method::ParseTableT_ Method::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(Method, _impl_._has_bits_),
@@ -183,9 +191,6 @@ constexpr Method::ParseTableT_ Method::InternalGenerateParseTable_(const ::_pbi:
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::Method>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // string edition = 8 [deprecated = true];
       {::_pbi::TcParser::FastUS1,
@@ -289,39 +294,32 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Method::Method(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL Method::PlacementNew_(
+inline void* PROTOBUF_NONNULL Method::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Method(arena);
 }
-constexpr auto Method::InternalNewImpl_() {
+constexpr auto Method::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Method), alignof(Method));
 }
-constexpr auto Method::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-          tc_table,
-          nullptr,  // IsInitialized
-          &Method::MergeImpl,
-          Super_::GetNewImpl<Method>(),
+constexpr auto Method::_Internal::GenerateClassData() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &Method::MergeImpl,
+      Super_::GetNewImpl<Method>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Method::SharedDtor,
-          &Helpers_::Clear, &Helpers_::ByteSizeLong,
-              &Helpers_::_InternalSerialize,
+      &Method::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
-          false,
-      },
+      PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
       &file_reflection_data[1],
   };
 }
 struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr MethodGlobalsTypeInternal()
-      : MessageGlobalsBase(Method::InternalGenerateClassData_(
-            _default, &Method_globals_._table.header)),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<Method>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Method>(
             GetClassData())) {}
@@ -343,9 +341,18 @@ class Api::_Internal {
   using HasBits = decltype(::std::declval<Api>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_);
+
+  static constexpr Api::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
-constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr Api::ParseTableT_ Api::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(Api, _impl_._has_bits_),
@@ -360,9 +367,6 @@ constexpr Api::ParseTableT_ Api::InternalGenerateParseTable_(const ::_pbi::Class
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::Api>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // string edition = 8;
       {::_pbi::TcParser::FastUS1,
@@ -474,39 +478,32 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Api::Api(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL Api::PlacementNew_(
+inline void* PROTOBUF_NONNULL Api::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) Api(arena);
 }
-constexpr auto Api::InternalNewImpl_() {
+constexpr auto Api::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(Api), alignof(Api));
 }
-constexpr auto Api::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-          tc_table,
-          nullptr,  // IsInitialized
-          &Api::MergeImpl,
-          Super_::GetNewImpl<Api>(),
+constexpr auto Api::_Internal::GenerateClassData() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &Api::MergeImpl,
+      Super_::GetNewImpl<Api>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &Api::SharedDtor,
-          &Helpers_::Clear, &Helpers_::ByteSizeLong,
-              &Helpers_::_InternalSerialize,
+      &Api::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
-          false,
-      },
+      PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
       &file_reflection_data[0],
   };
 }
 struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr ApiGlobalsTypeInternal()
-      : MessageGlobalsBase(Api::InternalGenerateClassData_(
-            _default, &Api_globals_._table.header)),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<Api>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<Api>(
             GetClassData())) {}
@@ -652,7 +649,7 @@ void Api::clear_source_context() {
 }
 Api::Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Api_globals_.GetClassData()) {
+    : Super_(arena, &Api_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -693,7 +690,7 @@ Api::Api(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Api& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Api_globals_.GetClassData()) {
+    : Super_(arena, &Api_globals_.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -765,7 +762,7 @@ Api::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Api_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Api_globals_));
-  return Api_globals_.GetClassData();
+  return &Api_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void Api::Helpers_::Clear(MessageLite& base) {
@@ -1098,7 +1095,7 @@ void Api::InternalSwap(Api* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Api::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(Api_globals_.class_data);
 }
 // ===================================================================
 
@@ -1109,7 +1106,7 @@ void Method::clear_options() {
 }
 Method::Method(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Method_globals_.GetClassData()) {
+    : Super_(arena, &Method_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1137,7 +1134,7 @@ Method::Method(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Method& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Method_globals_.GetClassData()) {
+    : Super_(arena, &Method_globals_.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -1202,7 +1199,7 @@ Method::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Method_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Method_globals_));
-  return Method_globals_.GetClassData();
+  return &Method_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void Method::Helpers_::Clear(MessageLite& base) {
@@ -1531,13 +1528,13 @@ void Method::InternalSwap(Method* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Method::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(Method_globals_.class_data);
 }
 // ===================================================================
 
 Mixin::Mixin(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Mixin_globals_.GetClassData()) {
+    : Super_(arena, &Mixin_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1556,7 +1553,7 @@ Mixin::Mixin(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Mixin& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, Mixin_globals_.GetClassData()) {
+    : Super_(arena, &Mixin_globals_.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -1599,7 +1596,7 @@ Mixin::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Mixin_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Mixin_globals_));
-  return Mixin_globals_.GetClassData();
+  return &Mixin_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void Mixin::Helpers_::Clear(MessageLite& base) {
@@ -1765,7 +1762,7 @@ void Mixin::InternalSwap(Mixin* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Mixin::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(Mixin_globals_.class_data);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

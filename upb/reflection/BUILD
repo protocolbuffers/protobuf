@@ -177,6 +177,23 @@ bootstrap_cc_library(
     ],
 )
 
+cc_library(
+    name = "def_pool_init",
+    srcs = ["internal/def_pool_init.c"],
+    hdrs = ["internal/def_pool_init.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//rust/upb:__subpackages__"],
+    deps = [
+        ":internal",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/mini_table:internal",
+        "//upb/port",
+    ],
+)
+
 bootstrap_cc_library(
     name = "internal_cc",
     hdrs = [

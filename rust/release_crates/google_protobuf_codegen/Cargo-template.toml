@@ -1,9 +1,11 @@
 [package]
+edition = "2021"   # The Rust edition (not to be confused with Protobuf Edition).
 name = "google-protobuf-codegen"
+readme = "README.md"
 version = "{PROTOBUF_RUST_VERSION}"
-edition = "2021"
+description = "Code generator for Rust Protocol Buffers bindings"
 license = "BSD-3-Clause"
-description = "Re-export of protobuf-codegen"
+rust-version = "1.79"
 
-[dependencies]
-protobuf_codegen = { package = "protobuf-codegen", version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf_codegen" }
+[dev-dependencies]
+googletest = "0.14.2"

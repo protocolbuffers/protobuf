@@ -2,13 +2,14 @@
 set(JSONCPP_WITH_TESTS OFF)
 
 include(${protobuf_SOURCE_DIR}/src/file_lists.cmake)
+include(${protobuf_SOURCE_DIR}/cmake/protobuf-configure-target.cmake)
 
-if (NOT TARGET jsoncpp_lib)
+if (NOT TARGET jsoncpp_lib AND NOT TARGET jsoncpp_static)
   if (NOT protobuf_FORCE_FETCH_DEPENDENCIES)
     find_package(jsoncpp)
   endif()
 
-  # Fallback to fetching Googletest from github if it's not found locally.
+  # Fallback to fetching jsoncpp from github if it's not found locally.
   if (NOT jsoncpp_FOUND AND NOT protobuf_LOCAL_DEPENDENCIES_ONLY)
     include(${protobuf_SOURCE_DIR}/cmake/dependencies.cmake)
     message(STATUS "Fallback to downloading jsoncpp ${jsoncpp-version} from GitHub")
@@ -23,7 +24,7 @@ if (NOT TARGET jsoncpp_lib)
   endif()
 endif()
 
-if (NOT TARGET jsoncpp_lib)
+if (NOT TARGET jsoncpp_lib AND NOT TARGET jsoncpp_static)
   message(FATAL_ERROR
           "Cannot find jsoncpp dependency that's needed to build conformance tests.\n"
           "If instead you want to skip these tests, run cmake with:\n"
@@ -111,6 +112,7 @@ add_library(libconformance_common STATIC
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.h
   ${protobuf_BINARY_DIR}/src/google/protobuf/test_messages_proto3.pb.cc
 )
+protobuf_configure_target(libconformance_common)
 target_link_libraries(libconformance_common
   ${protobuf_LIB_PROTOBUF}
   ${protobuf_ABSL_USED_TARGETS}
@@ -120,15 +122,17 @@ add_executable(conformance_test_runner
   ${conformance_runner_srcs}
   ${conformance_runner_hdrs}
 )
+protobuf_configure_target(conformance_test_runner)
 
 add_executable(conformance_cpp
   ${conformance_testee_srcs}
   ${conformance_testee_hdrs}
 )
+protobuf_configure_target(conformance_cpp)
 
 target_include_directories(
   conformance_test_runner
-  PUBLIC ${protobuf_SOURCE_DIR} ${protobuf_SOURCE_DIR}/conformance)
+  PUBLIC ${protobuf_SOURCE_DIR})
 
 target_include_directories(
   conformance_cpp
@@ -149,7 +153,7 @@ target_link_libraries(conformance_cpp
 )
 
 add_test(NAME conformance_cpp_test
-  COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/conformance_test_runner
+  COMMAND $<TARGET_FILE:conformance_test_runner>
     --failure_list ${protobuf_SOURCE_DIR}/conformance/failure_list_cpp.txt
     --text_format_failure_list ${protobuf_SOURCE_DIR}/conformance/text_format_failure_list_cpp.txt
     --output_dir ${protobuf_TEST_XML_OUTDIR}
@@ -159,8 +163,8 @@ add_test(NAME conformance_cpp_test
 
 set(JSONCPP_WITH_TESTS OFF CACHE BOOL "Disable tests")
 
-if(BUILD_SHARED_LIBS)
-  target_link_libraries(conformance_test_runner jsoncpp_lib)
-else()
+if(TARGET jsoncpp_static AND NOT BUILD_SHARED_LIBS)
   target_link_libraries(conformance_test_runner jsoncpp_static)
+else()
+  target_link_libraries(conformance_test_runner jsoncpp_lib)
 endif()

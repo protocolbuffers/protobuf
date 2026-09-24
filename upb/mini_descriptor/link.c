@@ -28,7 +28,10 @@
 #include "upb/port/undef.inc"
 
 #ifdef UPB_INCLUDE_FAST_DECODE
+#include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/field_parsers.h"
+#include "upb/wire/decode_fast/function_array.h"
+#include "upb/wire/decode_fast/select.h"
 #endif
 
 #undef UPB_INCLUDE_FAST_DECODE
@@ -45,41 +48,67 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   UPB_ASSERT(sub);
 
   const bool sub_is_map = sub->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
+  const bool table_is_map = table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
 
   switch (field->UPB_PRIVATE(descriptortype)) {
     case kUpb_FieldType_Message:
       if (sub_is_map) {
-        const bool table_is_map =
-            table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry;
         if (UPB_UNLIKELY(table_is_map)) return false;
+
+        // A map field on the parent table must be repeated (or already marked
+        // as a map if SetSubMessage is called repeatedly), and cannot be in a
+        // oneof or an extension.
+        // TODO: Add this assert back once YouTube is updated to not
+        // call this function repeatedly.
+        // UPB_ASSERT(!upb_MiniTableField_IsMap(field));
+        if (UPB_UNLIKELY((!upb_MiniTableField_IsArray(field) &&
+                          !upb_MiniTableField_IsMap(field)) ||
+                         upb_MiniTableField_IsInOneof(field) ||
+                         upb_MiniTableField_IsExtension(field))) {
+          return false;
+        }
 
         field->UPB_PRIVATE(mode) =
             (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
             kUpb_FieldMode_Map;
 
 #if UPB_FASTTABLE
-        // The fasttable decoder cannot decode maps. Unfortunately we do not
-        // know until this moment that the field is a map, so we have to
-        // overwrite the fasttable entry (if any) that we built for this field
-        // previously.
+        // Update fasttable entry with specialized map decoder function pointer
+        // and metadata.
         int size = table->UPB_PRIVATE(table_mask) == 0xff
                        ? 0
                        : ((table->UPB_PRIVATE(table_mask) >> 3) + 1);
         for (int i = 0; i < size; i++) {
           _upb_FastTable_Entry* entry = &table->UPB_PRIVATE(fasttable)[i];
-          uint32_t field_number = (((int)entry->field_data >> 3) & 0xf) |
-                                  (((int)entry->field_data >> 4) & 0x7f0);
+          uint32_t field_number =
+              upb_DecodeFastData_GetFieldNumber(entry->field_data);
           if (field_number == upb_MiniTableField_Number(field)) {
-            entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
-            entry->field_data = 0;
+            uint16_t expected_tag =
+                upb_DecodeFastData_GetExpectedTag(entry->field_data);
+            uint64_t subofs = upb_DecodeFastData_GetSubofs(entry->field_data);
+            upb_DecodeFast_TableEntry fast_entry;
+            if (upb_DecodeFast_TryFillMapEntry(field, sub, expected_tag, subofs,
+                                               &fast_entry)) {
+              entry->field_parser =
+                  upb_DecodeFast_GetFunctionPointer(fast_entry.function_idx);
+              entry->field_data = fast_entry.function_data;
+            } else {
+              entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
+              entry->field_data = 0;
+            }
           }
         }
 #endif
+      } else if (table_is_map) {
+        // If table is a map entry, only field 2 (value) can be a submessage.
+        if (UPB_UNLIKELY(upb_MiniTableField_Number(field) != 2)) {
+          return false;
+        }
       }
       break;
 
     case kUpb_FieldType_Group:
-      if (UPB_UNLIKELY(sub_is_map)) return false;
+      if (UPB_UNLIKELY(sub_is_map || table_is_map)) return false;
       break;
 
     default:
@@ -89,8 +118,8 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   upb_MiniTableSubInternal* table_sub =
       UPB_PTR_AT(field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);
-  // TODO: Add this assert back once YouTube is updated to not call
-  // this function repeatedly.
+  // TODO: Add this assert back once YouTube is updated to not
+  // call this function repeatedly.
   // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
   table_sub->UPB_PRIVATE(submsg) = sub;
   return true;
@@ -107,15 +136,19 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
     return false;
   }
 
-  if ((table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) &&
-      !upb_MiniTableEnum_CheckValue(sub, 0)) {
-    // An enum used in a map must include 0 as a value.  This matches a check
-    // performed in protoc ("Enum value in map must define 0 as the first
-    // value").  Protoc should ensure that we never get here.
-    //
-    // This ends up being important if we receive wire messages where a map
-    // entry omits the value (and thus defaults to 0).
-    return false;
+  if (table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
+    if (UPB_UNLIKELY(upb_MiniTableField_Number(field) != 2)) {
+      return false;
+    }
+    if (!upb_MiniTableEnum_CheckValue(sub, 0)) {
+      // An enum used in a map must include 0 as a value.  This matches a check
+      // performed in protoc ("Enum value in map must define 0 as the first
+      // value").  Protoc should ensure that we never get here.
+      //
+      // This ends up being important if we receive wire messages where a map
+      // entry omits the value (and thus defaults to 0).
+      return false;
+    }
   }
 
   upb_MiniTableSubInternal* table_sub =

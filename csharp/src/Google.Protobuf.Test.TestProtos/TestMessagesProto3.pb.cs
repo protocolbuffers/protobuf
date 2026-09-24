@@ -234,11 +234,14 @@ namespace ProtobufTestMessages.Proto3 {
             "YWdlEgkKAWMYASABKAUiFgoUTnVsbEh5cG90aGVzaXNQcm90bzMiLwoORW51",
             "bU9ubHlQcm90bzMiHQoEQm9vbBIKCgZrRmFsc2UQABIJCgVrVHJ1ZRABKkAK",
             "C0ZvcmVpZ25FbnVtEg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlHTl9CQVIQ",
-            "ARIPCgtGT1JFSUdOX0JBWhACQjgKKGNvbS5nb29nbGUucHJvdG9idWZfdGVz",
-            "dF9tZXNzYWdlcy5wcm90bzNIAfgBAaICBlByb3RvM2IGcHJvdG8z"));
+            "ARIPCgtGT1JFSUdOX0JBWhACKm0KDkRlcHJlY2F0ZWRFbnVtEh8KG0RFUFJF",
+            "Q0FURURfRU5VTV9VTlNQRUNJRklFRBAAEhoKFkRFUFJFQ0FURURfRU5VTV9W",
+            "QUxVRTEQARIaChZERVBSRUNBVEVEX0VOVU1fVkFMVUUyEAIaAhgBQjgKKGNv",
+            "bS5nb29nbGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5wcm90bzNIAfgBAaIC",
+            "BlByb3RvM2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto3.ForeignEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Proto3.ForeignEnum), typeof(global::ProtobufTestMessages.Proto3.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3), global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalAliasedEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "OneofNullValue", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "OptionalNullValue", "OptionalEmpty", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "RepeatedListValue", "RepeatedEmpty", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12", "FieldName13", "FieldName14", "FieldName15", "FieldName16", "FieldName17", "FieldName18" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedEnum), typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.AliasedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage), global::ProtobufTestMessages.Proto3.TestAllTypesProto3.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Proto3.ForeignMessage), global::ProtobufTestMessages.Proto3.ForeignMessage.Parser, new[]{ "C" }, null, null, null, null),
@@ -254,6 +257,13 @@ namespace ProtobufTestMessages.Proto3 {
     [pbr::OriginalName("FOREIGN_FOO")] ForeignFoo = 0,
     [pbr::OriginalName("FOREIGN_BAR")] ForeignBar = 1,
     [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 2,
+  }
+
+  [global::System.ObsoleteAttribute]
+  public enum DeprecatedEnum {
+    [pbr::OriginalName("DEPRECATED_ENUM_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("DEPRECATED_ENUM_VALUE1")] Value1 = 1,
+    [pbr::OriginalName("DEPRECATED_ENUM_VALUE2")] Value2 = 2,
   }
 
   #endregion

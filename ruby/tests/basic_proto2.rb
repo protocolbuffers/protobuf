@@ -117,7 +117,7 @@ module BasicTestProto2
       assert_equal 6.0, m.optional_float
       assert_equal 7.0, m.optional_double
       assert_equal "Default Str", m.optional_string
-      assert_equal "\xCF\xA5s\xBD\xBA\xE6fubar".force_encoding("ASCII-8BIT"), m.optional_bytes
+      assert_equal "\xCF\xA5s\xBD\xBA\xE6fubar".b, m.optional_bytes
       assert_equal :B2, m.optional_enum
 
       refute m.has_optional_int32?

@@ -39,9 +39,18 @@ class FieldMask::_Internal {
   using HasBits = decltype(::std::declval<FieldMask>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._has_bits_);
+
+  static constexpr FieldMask::ParseTableT_ GenerateParseTable(
+      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
+  static constexpr auto GenerateClassData();
+
+  static void* PROTOBUF_NONNULL PlacementNew(const void* PROTOBUF_NONNULL,
+                                      void* PROTOBUF_NONNULL mem,
+                                      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  static constexpr auto NewImpl();
 };
 
-constexpr FieldMask::ParseTableT_ FieldMask::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr FieldMask::ParseTableT_ FieldMask::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._has_bits_),
@@ -56,9 +65,6 @@ constexpr FieldMask::ParseTableT_ FieldMask::InternalGenerateParseTable_(const :
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
-      #ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-      ::_pbi::TcParser::GetTable<::google::protobuf::FieldMask>(),  // to_prefetch
-      #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
     }, {{
       // repeated string paths = 1;
       {::_pbi::TcParser::FastUR1,
@@ -100,39 +106,32 @@ PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldMask::FieldMask(
           ),
       _impl_(internal_visibility(), ::_pbi::ConstantInitialized()) {
 }
-inline void* PROTOBUF_NONNULL FieldMask::PlacementNew_(
+inline void* PROTOBUF_NONNULL FieldMask::_Internal::PlacementNew(
     const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena) {
   return ::new (mem) FieldMask(arena);
 }
-constexpr auto FieldMask::InternalNewImpl_() {
+constexpr auto FieldMask::_Internal::NewImpl() {
   return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(FieldMask), alignof(FieldMask));
 }
-constexpr auto FieldMask::InternalGenerateClassData_(
-    const MessageLite& prototype,
-    const ::google::protobuf::internal::TcParseTableBase* tc_table) {
-  return ::google::protobuf::internal::ClassDataFull{
-      ::google::protobuf::internal::ClassData{
-          &prototype,
-          tc_table,
-          nullptr,  // IsInitialized
-          &FieldMask::MergeImpl,
-          Super_::GetNewImpl<FieldMask>(),
+constexpr auto FieldMask::_Internal::GenerateClassData() {
+  return ::google::protobuf::internal::ClassData{
+      nullptr,  // IsInitialized
+      &FieldMask::MergeImpl,
+      Super_::GetNewImpl<FieldMask>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          &FieldMask::SharedDtor,
-          &Helpers_::Clear, &Helpers_::ByteSizeLong,
-              &Helpers_::_InternalSerialize,
+      &FieldMask::SharedDtor,
+      &Helpers_::Clear, &Helpers_::ByteSizeLong,
+          &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
-          PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
-          false,
-      },
+      PROTOBUF_FIELD_OFFSET(FieldMask, _impl_._cached_size_),
       &file_reflection_data[0],
   };
 }
 struct FieldMaskGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
   constexpr FieldMaskGlobalsTypeInternal()
-      : MessageGlobalsBase(FieldMask::InternalGenerateClassData_(
-            _default, &FieldMask_globals_._table.header)),
+      : MessageGlobalsBase(
+            ::_pbi::PrivateAccess::GenerateClassData<FieldMask>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldMask>(
             GetClassData())) {}
@@ -205,7 +204,7 @@ namespace protobuf {
 
 FieldMask::FieldMask(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, FieldMask_globals_.GetClassData()) {
+    : Super_(arena, &FieldMask_globals_.class_data) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -229,7 +228,7 @@ FieldMask::FieldMask(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const FieldMask& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, FieldMask_globals_.GetClassData()) {
+    : Super_(arena, &FieldMask_globals_.class_data) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -273,7 +272,7 @@ FieldMask::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&FieldMask_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&FieldMask_globals_));
-  return FieldMask_globals_.GetClassData();
+  return &FieldMask_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
 PROTOBUF_NOINLINE void FieldMask::Helpers_::Clear(MessageLite& base) {
@@ -402,7 +401,7 @@ void FieldMask::InternalSwap(FieldMask* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 }
 
 ::google::protobuf::Metadata FieldMask::GetMetadata() const {
-  return Super_::GetMetadataImpl(GetClassData()->full());
+  return Super_::GetMetadataImpl(FieldMask_globals_.class_data);
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace protobuf

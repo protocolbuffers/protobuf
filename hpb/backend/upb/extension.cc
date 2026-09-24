@@ -50,6 +50,6 @@ void SetAliasExtension(upb_Message* message, upb_Arena* message_arena,
   ABSL_CHECK(upb_Arena_IsFused(message_arena, extension_arena) ||
              upb_Arena_HasRef(message_arena, extension_arena));
 #endif
-  upb_Message_SetExtension(message, ext, &extension, message_arena);
+  ABSL_CHECK(upb_Message_SetExtension(message, ext, &extension, message_arena));
 }
 }  // namespace hpb::internal

@@ -12,6 +12,16 @@
 #   # functions with this command:
 #
 #   $ third_party/upb/upb/wire/decode_fast/bisect.sh third_party/upb/upb/test:test_generated_code
+#
+# Note that the map parsers are not part of the bisected range: they use
+# out-of-band function indices rather than the (type, cardinality, tag size)
+# numbering that UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE walks.  To check whether
+# they are implicated, disable them all at once with:
+#
+#   $ blaze test --//third_party/upb:fasttable_enabled=True \
+#       --per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_MAPS \
+#       --host_per_file_copt=//third_party/upb/upb/wire/decode_fast:select@-DUPB_DECODEFAST_DISABLE_MAPS \
+#       <test_target(s)>
 
 if [[ $# -lt 1 ]]; then
   echo "Usage: bisect.sh [blaze test flags] <test_target(s)>"

@@ -937,8 +937,9 @@ TEST(MessageTest, FreezeNonCanonicalExtensions) {
       ext_submsg, 456);
 
   // Attach as non-canonical extension
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg, arena.ptr());
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg,
+      arena.ptr()));
 
   EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
   EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(ext_submsg)));
@@ -960,8 +961,9 @@ TEST(MessageTest, DiscardUnknownsNonCanonicalExtensions) {
       protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
 
   // Attach as non-canonical extension
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg, arena.ptr());
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg,
+      arena.ptr()));
 
   // Add a canonical extension
   upb_test_TestExtensions_set_optional_int32_ext(msg, 123, arena.ptr());

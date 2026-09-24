@@ -218,8 +218,8 @@ TEST(EncodeTest, EncodeNonCanonicalExtensionSuccess) {
 
   // Attach scalar extension as non-canonical
   int32_t val = 42;
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val, arena);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val, arena));
 
   // Encode the message.
   char* buf;
@@ -257,8 +257,8 @@ TEST(EncodeTest, SkipUnknownNonCanonicalExtensionSuccess) {
 
   // 2. Attach a non-canonical extension (ext_recursive, tag 101) to msg
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena));
 
   // 3. Also add some standard raw unknown bytes (tag 150)
   char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
@@ -312,13 +312,13 @@ TEST(EncodeTest, EncodeNonCanonicalExtensionDeterministicSuccess) {
 
   // 1. Attach scalar extension as non-canonical (tag 100)
   int32_t val = 42;
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val, arena);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val, arena));
 
   // 2. Attach recursive extension as non-canonical (tag 101)
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena));
 
   // Encode the message with deterministic option!
   char* buf;
@@ -385,8 +385,8 @@ TEST(EncodeTest, SkipUnknownNonCanonicalExtensionDeterministicSuccess) {
 
   // 2. Attach a non-canonical extension (ext_recursive, tag 101) to msg
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_recursive_ext, &sub_msg, arena));
 
   // 3. Also add some standard raw unknown bytes (tag 150)
   char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
@@ -447,8 +447,8 @@ TEST(EncodeTest, MixedExtensionAndUnknownOrderSuccess) {
 
   // 2. Add Non-Canonical Extension 1 (Tag 100, ext_i32)
   int32_t val1 = 42;
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val1, arena);
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      (upb_Message*)msg, upb_wire_test_ext_i32_ext, &val1, arena));
 
   // 3. Add Unknown 2 (Tag 12, Varint)
   char unknown2[] = "\x60\x64";

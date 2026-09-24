@@ -5,8 +5,6 @@ pkg_filegroup(
     name = "protobuf_crate",
     srcs = [
         ":crate_root_files",
-        "//rust:rust_protobuf_libupb_src",
-        "//rust:rust_protobuf_src_dir",
         "//rust/release_crates:license",
     ],
     prefix = "protobuf",
@@ -26,10 +24,6 @@ substitute_rust_release_version(
 
 filegroup(
     name = "srcs",
-    srcs = [
-        "Cargo.toml",
-        "README.md",
-        "build.rs",
-    ],
-    visibility = ["//visibility:private"],
+    srcs = ["Cargo.toml"] + glob(["**/*"]),
+    visibility = ["//rust:__subpackages__"],
 )

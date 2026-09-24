@@ -10,11 +10,13 @@
 #include <cstddef>
 #include <string>
 
+#include "google/protobuf/field_mask.upb.h"
 #include "google/protobuf/struct.upb.h"
 #include <gtest/gtest.h>
 #include "google/protobuf/json/json_enumval_custom_string.upb.h"
 #include "google/protobuf/json/json_enumval_custom_string.upbdefs.h"
 #include "upb/base/status.hpp"
+#include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
@@ -219,4 +221,31 @@ TEST(JsonTest, EncodeEnumWithIntegerFormatOverride) {
       knight, json_enumval_custom_string_ARMOR_GREAT_HELM);
   EXPECT_EQ(R"({"armor":1})",
             JsonEncodeKnight(knight, upb_JsonEncode_FormatEnumsAsIntegers));
+}
+
+// Test encoding when a FieldMask has paths containing characters that require
+// escaping.
+TEST(JsonTest, EncodeFieldMaskEscapedPaths) {
+  upb::Arena a;
+  upb_test_Box* foo = upb_test_Box_new(a.ptr());
+  google_protobuf_FieldMask* mask = upb_test_Box_mutable_mask_val(foo, a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("foo_bar"), a.ptr());
+  google_protobuf_FieldMask_add_paths(mask, upb_StringView_FromString("path\n"),
+                                      a.ptr());
+  google_protobuf_FieldMask_add_paths(mask, upb_StringView_FromString("path\t"),
+                                      a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("path_a\n"), a.ptr());
+  google_protobuf_FieldMask_add_paths(
+      mask, upb_StringView_FromString("path\"quote"), a.ptr());
+
+  // "foo_bar" -> "fooBar"
+  // "path\n" -> "path\n"
+  // "path\t" -> "path\t"
+  // "path_a\n" -> "pathA\n"
+  // "path\"quote" -> "path\"quote"
+  const std::string expected =
+      R"({"maskVal":"fooBar,path\n,path\t,pathA\n,path\"quote"})";
+  EXPECT_EQ(expected, JsonEncode(foo, 0));
 }

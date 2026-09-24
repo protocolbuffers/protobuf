@@ -774,8 +774,7 @@ namespace Google.Protobuf
             {
                 var jsonOptions = value.GetOptions()?.GetExtension(
                     Pb.Enumvalue.JsonEnumvalueOptionsExtensions.Json);
-                if (jsonOptions != null && jsonOptions.HasString &&
-                    !map.ContainsKey(jsonOptions.String))
+                if (jsonOptions != null && jsonOptions.HasString)
                 {
                     map[jsonOptions.String] = value;
                 }

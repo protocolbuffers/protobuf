@@ -443,7 +443,7 @@ bool ExtensionSet::ShouldRegisterAtThisTime(
     std::initializer_list<WeakPrototypeRef> messages, bool is_preregistration) {
   bool has_all = true;
   for (auto ref : messages) {
-    has_all = has_all && GetPrototypeForWeakDescriptor(ref.table, ref.index,
+    has_all = has_all && GetClassDataForWeakDescriptor(ref.table, ref.index,
                                                        false) != nullptr;
   }
   return has_all == is_preregistration;

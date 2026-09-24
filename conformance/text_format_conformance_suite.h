@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "google/protobuf/message.h"
 
 namespace google {

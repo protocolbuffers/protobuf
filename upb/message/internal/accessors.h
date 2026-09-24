@@ -330,9 +330,9 @@ UPB_API_INLINE void upb_Message_SetBaseField(struct upb_Message* msg,
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), val);
 }
 
-UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
-                                             const upb_MiniTableExtension* e,
-                                             const void* val, upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtension(
+    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
+    upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
@@ -343,9 +343,10 @@ UPB_API_INLINE bool upb_Message_SetExtension(struct upb_Message* msg,
   return true;
 }
 
-UPB_API_INLINE bool UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-    struct upb_Message* msg, const upb_MiniTableExtension* e, const void* val,
-    upb_Arena* a) {
+UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
+    _upb_Message_SetNonCanonicalExtension)(struct upb_Message* msg,
+                                           const upb_MiniTableExtension* e,
+                                           const void* val, upb_Arena* a) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(a);
   upb_Extension* ext =
@@ -372,7 +373,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_SetField)(struct upb_Message* msg,
   }
 }
 
-UPB_API_INLINE const upb_Array* upb_Message_GetArray(
+UPB_NODISCARD UPB_API_INLINE const upb_Array* upb_Message_GetArray(
     const struct upb_Message* msg, const upb_MiniTableField* f) {
   UPB_PRIVATE(_upb_MiniTableField_CheckIsArray)(f);
   upb_Array* ret;

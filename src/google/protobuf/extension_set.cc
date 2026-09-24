@@ -135,42 +135,39 @@ bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
   }
 }
 
-void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
+void ExtensionSet::RegisterExtension(const ClassData* extendee, int number,
                                      FieldType type, bool is_repeated,
                                      bool is_packed, bool is_utf8) {
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed, is_utf8);
+  ExtensionInfo info(extendee->default_instance(), number, type, is_repeated,
+                     is_packed, is_utf8);
   Register(info);
 }
 
-void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
-                                         int number, FieldType type,
-                                         bool is_repeated, bool is_packed,
+void ExtensionSet::RegisterEnumExtension(const ClassData* extendee, int number,
+                                         FieldType type, bool is_repeated,
+                                         bool is_packed,
                                          const uint32_t* validation_data) {
   ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     /*is_utf8=*/false);
+  ExtensionInfo info(extendee->default_instance(), number, type, is_repeated,
+                     is_packed, /*is_utf8=*/false);
   info.enum_validity_check.enum_data = validation_data;
   Register(info);
 }
 
-// TODO: Change the registration function to take ClassData*
-// instead.
-void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
+void ExtensionSet::RegisterMessageExtension(const ClassData* extendee,
                                             int number, FieldType type,
                                             bool is_repeated, bool is_packed,
-                                            const MessageLite* prototype,
+                                            const ClassData* inner_data,
                                             LazyEagerVerifyFnType verify_func,
                                             LazyAnnotation is_lazy) {
   ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
              type == WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func, is_lazy);
-  info.message_info = {
-      &internal::MessageGlobalsBase::FromDefaultInstance(prototype)
-           ->class_data};
+  ExtensionInfo info(extendee->default_instance(), number, type, is_repeated,
+                     is_packed, verify_func, is_lazy);
+  info.message_info = {inner_data};
   Register(info);
 }
 

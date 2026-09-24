@@ -14,4 +14,4 @@ build --remote_download_outputs=all
 
 # Import Bazel 9 specific flags (such as --repo_contents_cache)
 # TODO: Remove it when --repo_contents_cache issue has been resolved in bazel
-try-import-if-bazel-version >=9.0.0 %workspace%/../ci/bazel9.bazelrc
+try-import-if-bazel-version >=9.0.0 %workspace%/../bazel9.bazelrc

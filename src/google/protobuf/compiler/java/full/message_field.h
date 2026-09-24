@@ -83,6 +83,7 @@ class ImmutableMessageFieldGenerator : public ImmutableFieldGenerator {
   void GenerateHasMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
@@ -110,8 +111,9 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateMembers(io::Printer* printer) const override;
   void GenerateBuilderMembers(io::Printer* printer) const override;
   void GenerateBuilderClearCode(io::Printer* printer) const override;
-  void GenerateBuildingCode(io::Printer* printer) const override;
+
   void GenerateMergingCode(io::Printer* printer) const override;
+  void GenerateBuildingCode(io::Printer* printer) const override;
   void GenerateBuilderParsingCode(io::Printer* printer) const override;
   void GenerateSerializationCode(io::Printer* printer) const override;
   void GenerateSerializedSizeCode(io::Printer* printer) const override;
@@ -120,6 +122,7 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateHasMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
@@ -130,6 +133,7 @@ class ImmutableMessageOneofFieldGenerator
   void GenerateBuilderGetBuilderMethod(io::Printer* printer) const;
   void GenerateBuilderGetOrBuilderMethod(io::Printer* printer) const;
   void GenerateBuilderInternalGetFieldBuilderMethod(io::Printer* printer) const;
+  void GenerateBuilderParseMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutableMessageFieldGenerator
@@ -173,6 +177,7 @@ class RepeatedImmutableMessageFieldGenerator
   void GenerateGetMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderListMethod(io::Printer* printer) const;
   void GenerateGetOrBuilderMethod(io::Printer* printer) const;
+  void GenerateWriteFieldMethod(io::Printer* printer) const;
 
   void GenerateEnsureIsMutableMethod(io::Printer* printer) const;
   void GenerateBuilderGetListMethod(io::Printer* printer) const;

@@ -4036,21 +4036,23 @@ void AddDescriptorsImpl(const DescriptorTable* table) {
   // we hit data races and would need to add locks.
   [[maybe_unused]] static std::true_type lazy_register =
       (internal::ExtensionSet::RegisterMessageExtension(
-           &FeatureSet::default_instance(), pb::cpp.number(),
+           internal::MessageTraits<FeatureSet>::class_data(), pb::cpp.number(),
            FieldDescriptor::TYPE_MESSAGE, false, false,
-           &pb::CppFeatures::default_instance(),
+           internal::MessageTraits<pb::CppFeatures>::class_data(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        internal::ExtensionSet::RegisterMessageExtension(
-           &FileOptions::default_instance(), pb::file::cpp.number(),
-           FieldDescriptor::TYPE_MESSAGE, false, false,
-           &pb::file::CppFileOptions::default_instance(),
+           internal::MessageTraits<FileOptions>::class_data(),
+           pb::file::cpp.number(), FieldDescriptor::TYPE_MESSAGE, false, false,
+           internal::MessageTraits<pb::file::CppFileOptions>::class_data(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        internal::ExtensionSet::RegisterMessageExtension(
-           &EnumValueOptions::default_instance(), pb::enumvalue::json.number(),
-           FieldDescriptor::TYPE_MESSAGE, false, false,
-           &pb::enumvalue::JsonEnumValueOptions::default_instance(),
+           internal::MessageTraits<EnumValueOptions>::class_data(),
+           pb::enumvalue::json.number(), FieldDescriptor::TYPE_MESSAGE, false,
+           false,
+           internal::MessageTraits<
+               pb::enumvalue::JsonEnumValueOptions>::class_data(),
            nullptr,
            internal::LazyAnnotation::kUndefined),
        std::true_type{});
@@ -4175,14 +4177,14 @@ bool SplitFieldHasExtraIndirection(const FieldDescriptor* field) {
 }
 
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
-const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index, bool force_build) {
+const ClassData* GetClassDataForWeakDescriptor(const DescriptorTable* table,
+                                               int index, bool force_build) {
   // First, make sure we inject the surviving default instances.
   InitProtobufDefaults();
 
   // Now check if the table has it. If so, return it.
   if (const auto* globals = table->message_globals[index]) {
-    return MessageGlobalsBase::ToDefaultInstance<Message>(globals);
+    return MessageGlobalsBase::GetClassData(globals);
   }
 
   if (!force_build) {
@@ -4204,7 +4206,8 @@ const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
         return nullptr;
       });
 
-  return MessageFactory::generated_factory()->GetPrototype(descriptor);
+  return internal::GetClassData(
+      *MessageFactory::generated_factory()->GetPrototype(descriptor));
 }
 #endif  // PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 

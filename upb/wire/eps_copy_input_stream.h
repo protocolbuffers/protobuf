@@ -76,6 +76,13 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDone(upb_EpsCopyInputStream* e,
 UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const upb_EpsCopyInputStream* e, const char* ptr, int size);
 
+// Returns true if the given delimited field size fits entirely within the
+// current buffer before limit_ptr (i.e. without needing to swap into the slop
+// patch buffer). If so, updates debug bounds tracking with the guaranteed
+// readable bytes (size + slop).
+UPB_FORCEINLINE bool upb_EpsCopyInputStream_SizeFitsWithoutSwap(
+    upb_EpsCopyInputStream* e, const char* ptr, int size);
+
 // Marks the start of a capture operation.  The capture operation will be
 // finalized by a call to upb_EpsCopyCapture_End().  The captured string will
 // be returned in sv, and will point to the original input buffer if possible.

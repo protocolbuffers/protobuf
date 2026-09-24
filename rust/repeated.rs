@@ -309,10 +309,9 @@ impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     ///
     /// Returns `None` if `index >= len`.
     #[inline]
-    pub fn get_mut<'r>(&'r mut self, index: usize) -> Option<Mut<'msg, T>>
+    pub fn get_mut(&mut self, index: usize) -> Option<Mut<'_, T>>
     where
         T: Message,
-        'r: 'msg,
     {
         if index >= self.len() {
             return None;

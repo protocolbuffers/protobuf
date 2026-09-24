@@ -14,11 +14,11 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "absl/container/btree_map.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
 #include "google/protobuf/compiler/java/full/oneof_generator.h"
 #include "google/protobuf/descriptor.h"
@@ -67,8 +67,7 @@ class MessageBuilderGenerator {
       io::Printer* printer, absl::Span<const std::string> merging_code_blocks,
       absl::string_view method_suffix);
   void GenerateBuildPartial(io::Printer* printer);
-  int GenerateBuildPartialShard(io::Printer* printer, int shard,
-                                int first_field);
+  void GenerateBuildPartialShard(io::Printer* printer, int shard);
   void GenerateDescriptorMethods(io::Printer* printer);
   void GenerateBuilderParsingMethods(io::Printer* printer);
   void GenerateBuilderFieldParsingCases(io::Printer* printer);

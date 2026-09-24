@@ -47,6 +47,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -447,16 +448,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
         reinterpret_cast<char*>(this), reinterpret_cast<char*>(rhs));
   }
 
-  // Returns true if there are no preallocated elements in the array.
-  PROTOBUF_FUTURE_ADD_NODISCARD bool PrepareForParse() {
-    return allocated_size() == current_size_;
-  }
-
-  // Similar to `AddAllocated` but faster.
+  // Similar to `AddAllocated` but faster when we know there are no cleared
+  // elements.
   //
-  // Pre-condition: PrepareForParse() is true.
-  void AddAllocatedForParse(void* value, Arena* arena) {
-    ABSL_DCHECK(PrepareForParse());
+  // REQUIRES: allocated_size() == size()
+  void AddAllocatedForParse(void* value, SerialArena* arena) {
+    ABSL_DCHECK_EQ(allocated_size(), size());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
       *InternalExtend(1, arena) = value;
       ++rep()->allocated_size;
@@ -559,8 +556,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   Value<TypeHandler>* AddFromCleared() {
     if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
+      auto* res =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      PROTOBUF_ASSUME(res != nullptr);
+      return res;
     } else {
       return nullptr;
     }
@@ -872,6 +871,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   // Pre-condition: |extend_amount| must be > 0.
   void** InternalExtend(int extend_amount, Arena* arena);
+  void** InternalExtend(int extend_amount, SerialArena* arena);
 
   // Ensures that capacity is at least `n` elements.
   // Returns a pointer to the element directly beyond the last element.
@@ -1133,8 +1133,8 @@ class GenericTypeHandler {
 
   static const Type& default_instance() {
     static_assert(has_default_instance());
-    return *static_cast<const GenericType*>(
-        MessageTraits<Type>::default_instance());
+    return *reinterpret_cast<const GenericType*>(
+        MessageTraits<Type>::class_data()->default_instance());
   }
   static constexpr bool has_default_instance() {
     return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;
@@ -1625,10 +1625,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   void ExtractSubrangeWithArena(Arena* arena, int start, int num,
                                 Element** elements);
-
-  void AddAllocatedForParse(Element* p, Arena* arena) {
-    return RepeatedPtrFieldBase::AddAllocatedForParse(p, arena);
-  }
 };
 
 // -------------------------------------------------------------------

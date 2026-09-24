@@ -2863,7 +2863,7 @@ bool CommandLineInterface::EnforceEditionsSupport(
       std::cerr << absl::Substitute(
           "$0: is a file using edition $2, which isn't supported by code "
           "generator $1.  Please ask the owner of this code generator to add "
-          "support or switch back to a maximum of edition $3.",
+          "support or switch back to a maximum of edition $3.\n",
           fd->name(), codegen_name, edition, maximum_edition);
       return false;
     }

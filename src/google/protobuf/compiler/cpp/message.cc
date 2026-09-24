@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "absl/algorithm/container.h"
@@ -175,10 +176,9 @@ void PrintPresenceCheckCondition(const FieldDescriptor* field,
           R"cc($condition$)cc");
 }
 
-struct FieldOrderingByNumber {
-  bool operator()(const FieldDescriptor* a, const FieldDescriptor* b) const {
-    return a->number() < b->number();
-  }
+constexpr auto kCompareFieldsByNumber = [](const FieldDescriptor* a,
+                                           const FieldDescriptor* b) {
+  return a->number() < b->number();
 };
 
 // Sort the fields of the given Descriptor by number into a new[]'d array
@@ -189,17 +189,22 @@ std::vector<const FieldDescriptor*> SortFieldsByNumber(
   for (int i = 0; i < descriptor->field_count(); ++i) {
     fields[i] = descriptor->field(i);
   }
-  std::sort(fields.begin(), fields.end(), FieldOrderingByNumber());
+  absl::c_sort(fields, kCompareFieldsByNumber);
   return fields;
 }
 
-// Functor for sorting extension ranges by their "start" field number.
-struct ExtensionRangeSorter {
-  bool operator()(const Descriptor::ExtensionRange* left,
-                  const Descriptor::ExtensionRange* right) const {
-    return left->start_number() < right->start_number();
+std::vector<const Descriptor::ExtensionRange*> SortExtensionRanges(
+    const Descriptor* descriptor) {
+  std::vector<const Descriptor::ExtensionRange*> ranges(
+      descriptor->extension_range_count());
+  for (int i = 0; i < descriptor->extension_range_count(); ++i) {
+    ranges[i] = descriptor->extension_range(i);
   }
-};
+  absl::c_sort(ranges, [](auto* left, auto* right) {
+    return left->start_number() < right->start_number();
+  });
+  return ranges;
+}
 
 bool IsPOD(const FieldDescriptor* field) {
   if (field->is_repeated() || field->is_extension()) return false;
@@ -1424,11 +1429,6 @@ void MessageGenerator::GenerateMapEntryClassDefinition(io::Printer* p) {
           $decl_annotate$;
 
           class _Internal;
-          struct Helpers_ : public Super_::Helpers_ {
-            //~ Declare a single constructor out of line to enable constructor
-            //~ homing. See go/constructor-homing.
-            PROTOBUF_NODEBUG Helpers_();
-          };
 
           const $pbi$::ClassData* $nonnull$ GetClassData() const PROTOBUF_FINAL;
         };
@@ -1975,29 +1975,21 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             static constexpr int _kInternalFieldNumber = $field_count$;
           )cc");
         }},
-       {"decl_get_cached_size",
-        [&] {
-          if (HasSimpleBaseClass(descriptor_, options_)) return;
-          p->Emit(R"cc(
-            $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
-                const {
-              return $cached_size$.Get();
-            }
-          )cc");
-        }},
-       {"maybe_derive_from_simple_base",
-        HasSimpleBaseClass(descriptor_, options_) ? ": public Super_::Helpers_"
-                                                  : ""},
        {"decl_non_simple_base",
         [&] {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
+          p->Emit(
+              R"cc(
+                $nodiscard $PROTOBUF_ALWAYS_INLINE_NODEBUG int GetCachedSize()
+                    const {
+                  return $cached_size$.Get();
+                }
 
-          p->Emit(R"cc(
-            static void SharedCtor(MessageLite& self,
-                                   $pb$::Arena* $nullable$ arena);
-            static void SharedDtor(MessageLite& self);
-            static void InternalSwap(MessageLite& self, $Msg$* $nonnull$ other);
-          )cc");
+                private:
+                void SharedCtor($pb$::Arena* $nullable$ arena);
+                static void SharedDtor(MessageLite& self);
+                void InternalSwap($Msg$* $nonnull$ other);
+              )cc");
         }},
        {"arena_dtor",
         [&] {
@@ -2139,7 +2131,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ the type is statically known
           PROTOBUF_ALWAYS_INLINE_NODEBUG void operator delete(
               $Msg$* $nonnull$ msg, ::std::destroying_delete_t) {
-            Helpers_::SharedDtor(*msg);
+            SharedDtor(*msg);
             $pbi$::SizedDelete(msg, sizeof($Msg$));
           }
 #endif
@@ -2162,7 +2154,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           inline $Msg$& operator=($Msg$&& from) noexcept {
             if (this == &from) return *this;
             if ($pbi$::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
-              Helpers_::InternalSwap(*this, &from);
+              InternalSwap(&from);
             } else {
               CopyFrom(from);
             }
@@ -2193,7 +2185,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           inline void Swap($Msg$* $nonnull$ other) {
             if (other == this) return;
             if ($pbi$::CanUseInternalSwap(GetArena(), other->GetArena())) {
-              Helpers_::InternalSwap(*this, other);
+              InternalSwap(other);
             } else {
               $pbi$::GenericSwap(this, other);
             }
@@ -2201,7 +2193,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           void UnsafeArenaSwap($Msg$* $nonnull$ other) {
             if (other == this) return;
             $DCHK$(GetArena() == other->GetArena());
-            Helpers_::InternalSwap(*this, other);
+            InternalSwap(other);
           }
 
           // implements Message ----------------------------------------------
@@ -2212,7 +2204,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           }
           $generated_methods$;
           $internal_field_number$;
-          $decl_get_cached_size$;
+          $decl_non_simple_base$;
 
          private:
           static ::absl::string_view FullMessageName() { return "$full_name$"; }
@@ -2249,22 +2241,20 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           //~ Generate private members.
          private:
           class _Internal;
-          struct Helpers_$ maybe_derive_from_simple_base$ {
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+          struct Helpers_ {
             //~ Declare a single constructor out of line to enable constructor
             //~ homing. We don't define this constructor, since it is not
             //~ called. See go/constructor-homing.
             PROTOBUF_NODEBUG Helpers_();
 
-            $decl_non_simple_base$;
-
-#if defined(PROTOBUF_CUSTOM_VTABLE)
             static void Clear($pb$::MessageLite& msg);
             $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
             $nodiscard $static $uint8$* $nonnull$ _InternalSerialize(
                 const $pb$::MessageLite& msg, $uint8$* $nonnull$ target,
                 $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
-#endif  // PROTOBUF_CUSTOM_VTABLE
           };
+#endif  // PROTOBUF_CUSTOM_VTABLE
           $decl_set_has$;
           $decl_oneof_has$;
           $alias_parse_table_type$;
@@ -2627,7 +2617,7 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
                  {"Impl", "Impl_"},
                  {"impl", "_impl_"}},
                 R"cc(
-                  ::memset(reinterpret_cast<char*>(&this_.$impl$) +
+                  ::memset(reinterpret_cast<char*>(&$impl$) +
                                offsetof($Impl$, $first$_),
                            0,
                            offsetof($Impl$, $last$_) -
@@ -2637,7 +2627,7 @@ void MessageGenerator::GenerateZeroInitFields(io::Printer* p) const {
       } else {
         p->Emit({{"field_", FieldMemberName(first, false)}},
                 R"cc(
-                  this_.$field_$ = {};
+                  $field_$ = {};
                 )cc");
       }
       first = nullptr;
@@ -2792,10 +2782,8 @@ void MessageGenerator::GenerateSharedConstructorCode(io::Printer* p) {
                 //~
                 $init_impl$ {}
 
-            inline void $Msg$::Helpers_::SharedCtor(
-                ::_pb::MessageLite& self, ::_pb::Arena* $nullable$ arena) {
-              $Msg$& this_ = static_cast<$Msg$&>(self);
-              new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+            inline void $Msg$::SharedCtor(::_pb::Arena* $nullable$ arena) {
+              new (&_impl_) Impl_(internal_visibility(), arena);
               $zero_init$;
             }
           )cc");
@@ -2854,7 +2842,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
           {"impl_dtor", [&] { p->Emit("this_._impl_.~Impl_();\n"); }},
       },
       R"cc(
-        inline void $Msg$::Helpers_::SharedDtor(MessageLite& self) {
+        inline void $Msg$::SharedDtor(MessageLite& self) {
           $Msg$& this_ = static_cast<$Msg$&>(self);
           $has_bit_consistency$;
           this_._internal_metadata_.Delete<$unknown_fields_type$>();
@@ -3234,7 +3222,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           {"ctor_body",
            [&] {
              if (HasSimpleBaseClass(descriptor_, options_)) return;
-             p->Emit(R"cc(Helpers_::SharedCtor(*this, arena);)cc");
+             p->Emit(R"cc(SharedCtor(arena);)cc");
              switch (NeedsArenaDestructor()) {
                case ArenaDtorNeeds::kRequired: {
                  p->Emit(R"cc(
@@ -3309,7 +3297,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
         R"cc(
           $Msg$::~$Msg$() {
             // @@protoc_insertion_point(destructor:$full_name$)
-            Helpers_::SharedDtor(*this);
+            SharedDtor(*this);
           }
         )cc");
   }
@@ -3630,43 +3618,34 @@ void MessageGenerator::GenerateOneofClear(io::Printer* p) {
 
 void MessageGenerator::GenerateSwap(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
+  Formatter format(p);
 
-  p->Emit(
-      R"cc(
-        void $Msg$::Helpers_::InternalSwap(
-            ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-            $Msg$* PROTOBUF_RESTRICT $nonnull$ other) {
-      )cc");
-  p->Indent();
-  p->Emit(R"cc(
-    using ::std::swap;
-    $WeakDescriptorSelfPin$;
-    $Msg$& this_ = static_cast<$Msg$&>(self);
-  )cc");
+  format(
+      "void $Msg$::InternalSwap($Msg$* PROTOBUF_RESTRICT "
+      "$nonnull$ other) {\n");
+  format.Indent();
+  format("using ::std::swap;\n");
+  format("$WeakDescriptorSelfPin$");
 
   if (HasGeneratedMethods(descriptor_->file(), options_)) {
     if (descriptor_->extension_range_count() > 0) {
-      p->Emit(R"cc(
-        this_.$extensions$.InternalSwap(&other->$extensions$);
-      )cc");
+      format(
+          "$extensions$.InternalSwap(&other->$extensions$);"
+          "\n");
     }
 
     if (HasNonSplitOptionalString(descriptor_, options_)) {
       p->Emit(R"cc(
-        auto* arena = this_.GetArena();
+        auto* arena = GetArena();
         ABSL_DCHECK_EQ(arena, other->GetArena());
       )cc");
     }
-    p->Emit(R"cc(
-      this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-    )cc");
+    format("_internal_metadata_.InternalSwap(&other->_internal_metadata_);\n");
 
     if (field_layout_.HasHasbits()) {
       for (size_t i = 0; i < static_cast<size_t>(field_layout_.HasBitsSize());
            ++i) {
-        p->Emit({{"i", i}}, R"cc(
-          swap(this_.$has_bits$[$i$], other->$has_bits$[$i$]);
-        )cc");
+        format("swap($has_bits$[$1$], other->$has_bits$[$1$]);\n", i);
       }
     }
 
@@ -3701,13 +3680,13 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
             {"last", last_field_name},
         });
 
-        p->Emit(R"cc(
-          $pbi$::memswap<PROTOBUF_FIELD_OFFSET($Msg$, $last$) +
-                         sizeof($Msg$::$last$) -
-                         PROTOBUF_FIELD_OFFSET($Msg$, $first$)>(
-              reinterpret_cast<char*>(&this_.$first$),
-              reinterpret_cast<char*>(&other->$first$));
-        )cc");
+        format(
+            "$pbi$::memswap<\n"
+            "    PROTOBUF_FIELD_OFFSET($Msg$, $last$)\n"
+            "    + sizeof($Msg$::$last$)\n"
+            "    - PROTOBUF_FIELD_OFFSET($Msg$, $first$)>(\n"
+            "        reinterpret_cast<char*>(&$first$),\n"
+            "        reinterpret_cast<char*>(&other->$first$));\n");
 
         i += run_length - 1;
         // ++i at the top of the loop.
@@ -3716,33 +3695,23 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
       }
     }
     if (ShouldSplit(descriptor_, options_)) {
-      p->Emit(R"cc(
-        swap(this_.$split$, other->$split$);
-      )cc");
+      format("swap($split$, other->$split$);\n");
     }
 
     for (auto oneof : OneOfRange(descriptor_)) {
-      p->Emit({{"name", oneof->name()}}, R"cc(
-        swap(this_._impl_.$name$_, other->_impl_.$name$_);
-      )cc");
+      format("swap(_impl_.$1$_, other->_impl_.$1$_);\n", oneof->name());
     }
 
     for (int i = 0; i < descriptor_->real_oneof_decl_count(); ++i) {
-      p->Emit({{"i", i}}, R"cc(
-        swap(this_.$oneof_case$[$i$], other->$oneof_case$[$i$]);
-      )cc");
+      format("swap($oneof_case$[$1$], other->$oneof_case$[$1$]);\n", i);
     }
 
   } else {
-    p->Emit(R"cc(
-      this_.GetReflection()->Swap(&this_, other);
-    )cc");
+    format("GetReflection()->Swap(this, other);");
   }
 
-  p->Outdent();
-  p->Emit(R"cc(
-    }
-  )cc");
+  format.Outdent();
+  format("}\n");
 }
 
 MessageGenerator::NewOpRequirements MessageGenerator::GetNewOp() const {
@@ -3816,7 +3785,8 @@ void MessageGenerator::GenerateNewOp(io::Printer* p) const {
   if (new_op.needs_to_run_constructor) {
     p->Emit(R"cc(
       constexpr auto $Msg$::_Internal::NewImpl() {
-        return $pbi$::MessageCreator(&PlacementNew, sizeof($Msg$), alignof($Msg$));
+        return $pbi$::MessageCreator(&$Msg$::_Internal::PlacementNew,
+                                     sizeof($Msg$), alignof($Msg$));
       }
     )cc");
   } else {
@@ -3887,7 +3857,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
                 &$Msg$::MergeImpl,
                 Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                &$Msg$::Helpers_::SharedDtor,
+                &$Msg$::SharedDtor,
                 $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
                 PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
@@ -3908,7 +3878,7 @@ void MessageGenerator::GenerateInternalGenerateClassData(io::Printer* p) {
                 &$Msg$::MergeImpl,
                 Super_::GetNewImpl<$Msg$>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                &$Msg$::Helpers_::SharedDtor,
+                &$Msg$::SharedDtor,
                 $custom_vtable_methods$,
 #endif  // PROTOBUF_CUSTOM_VTABLE
                 PROTOBUF_FIELD_OFFSET($Msg$, $cached_size$),
@@ -4540,73 +4510,123 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
       )cc");
 }
 
+namespace {
+
+struct ExtensionRangeChunk {
+  int start;
+  int end;
+};
+
+struct OneofChunk {
+  std::vector<const FieldDescriptor*> fields;
+};
+
+struct SerializeFieldChunk {
+  bool should_split;
+  absl::optional<int> hasword_index;
+  std::vector<const FieldDescriptor*> fields;
+};
+
+using SerializeChunk =
+    std::variant<SerializeFieldChunk, OneofChunk, ExtensionRangeChunk>;
+
+bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
+  if (to->should_split != from.should_split ||
+      to->hasword_index != from.hasword_index) {
+    return false;
+  }
+  absl::c_copy(from.fields, std::back_inserter(to->fields));
+  return true;
+}
+
+bool TryMerge(OneofChunk* to, const OneofChunk& from) {
+  if (to->fields.front()->containing_oneof() !=
+      from.fields.front()->containing_oneof()) {
+    return false;
+  }
+  absl::c_copy(from.fields, std::back_inserter(to->fields));
+  return true;
+}
+
+bool TryMerge(ExtensionRangeChunk* to, const ExtensionRangeChunk& from) {
+  to->start = std::min(to->start, from.start);
+  to->end = std::max(to->end, from.end);
+  return true;
+}
+
+template <typename Chunk>
+void TryAppendToBack(std::vector<SerializeChunk>& chunks, Chunk chunk) {
+  if (!chunks.empty()) {
+    auto* back = std::get_if<Chunk>(&chunks.back());
+    if (back != nullptr && TryMerge(back, chunk)) {
+      return;
+    }
+  }
+  chunks.push_back(std::move(chunk));
+}
+
+std::vector<SerializeChunk> CollectSerializeChunks(
+    const Descriptor* descriptor, const FieldLayout& field_layout,
+    const Options& options) {
+  std::vector<const FieldDescriptor*> ordered_fields =
+      SortFieldsByNumber(descriptor);
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions =
+      SortExtensionRanges(descriptor);
+
+  std::vector<SerializeChunk> chunks;
+
+  auto add_field = [&](const FieldDescriptor* field) {
+    if (field->real_containing_oneof() != nullptr && field->has_presence()) {
+      // If there are multiple fields in a row from the same oneof then we
+      // coalesce them and emit a switch statement.  This is more efficient
+      // because it lets the C++ compiler know this is a "at most one can
+      // happen" situation. If we emitted "if (has_x()) ...; if (has_y()) ..."
+      // the C++ compiler's emitted code might check has_y() even when has_x()
+      // is true.
+      TryAppendToBack(chunks, OneofChunk{{field}});
+    } else {
+      TryAppendToBack(chunks, SerializeFieldChunk{
+                                  /*should_split=*/ShouldSplit(field, options),
+                                  /*hasword_index=*/
+                                  field_layout.GetHasWordIndex(field),
+                                  /*fields=*/{field},
+                              });
+    }
+  };
+
+  auto add_extension = [&](const Descriptor::ExtensionRange* range) {
+    TryAppendToBack(chunks, ExtensionRangeChunk{range->start_number(),
+                                                range->end_number()});
+  };
+
+  auto field_it = ordered_fields.begin();
+  auto ext_it = sorted_extensions.begin();
+  while (field_it != ordered_fields.end() ||
+         ext_it != sorted_extensions.end()) {
+    if (ext_it == sorted_extensions.end() ||
+        (field_it != ordered_fields.end() &&
+         (*field_it)->number() < (*ext_it)->start_number())) {
+      add_field(*field_it++);
+    } else {
+      add_extension(*ext_it++);
+    }
+  }
+
+  return chunks;
+}
+}  // namespace
+
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
-  // If there are multiple fields in a row from the same oneof then we
-  // coalesce them and emit a switch statement.  This is more efficient
-  // because it lets the C++ compiler know this is a "at most one can happen"
-  // situation. If we emitted "if (has_x()) ...; if (has_y()) ..." the C++
-  // compiler's emitted code might check has_y() even when has_x() is true.
-  class LazySerializerEmitter {
+  class SerializeEmitter {
    public:
-    LazySerializerEmitter(MessageGenerator* mg, io::Printer* p,
-                          const Options& options)
-        : mg_(mg), p_(p), options_(options), cached_has_bit_index_(kNoHasbit) {}
+    SerializeEmitter(MessageGenerator* mg, io::Printer* p,
+                     bool is_single_extension_range)
+        : mg_(mg),
+          p_(p),
+          is_single_extension_range_(is_single_extension_range) {}
 
-    ~LazySerializerEmitter() { Flush(); }
+    ~SerializeEmitter() { CloseSplit(); }
 
-    // If conditions allow, try to accumulate a run of fields from the same
-    // oneof, and handle them at the next Flush().
-    void Emit(const FieldDescriptor* field) {
-      if (!field->has_presence() || MustFlush(field)) {
-        Flush();
-      }
-      if (field->real_containing_oneof()) {
-        v_.push_back(field);
-      } else {
-        if (ShouldSplit(field, options_)) {
-          OpenSplit();
-        } else {
-          CloseSplit();
-        }
-
-        // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field, options_)) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
-          int has_word_index =
-              mg_->field_layout_.GetHasWordIndex(field).value();
-          if (cached_has_bit_index_ != has_word_index) {
-            // Reload.
-            int new_index = has_word_index;
-            p_->Emit({{"index", new_index}},
-                     R"cc(
-                       cached_has_bits = this_._impl_._has_bits_[$index$];
-                     )cc");
-            cached_has_bit_index_ = new_index;
-          }
-        }
-
-        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
-      }
-    }
-
-    void EmitIfNotNull(const FieldDescriptor* field) {
-      if (field != nullptr) {
-        Emit(field);
-      }
-    }
-
-    void Flush() {
-      CloseSplit();
-      if (!v_.empty()) {
-        mg_->GenerateSerializeOneofFields(p_, v_);
-        v_.clear();
-      }
-    }
-
-   private:
     void OpenSplit() {
       if (is_split_open_) return;
       is_split_open_ = true;
@@ -4615,6 +4635,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       )cc");
       p_->Indent();
     }
+
     void CloseSplit() {
       if (!is_split_open_) return;
       is_split_open_ = false;
@@ -4624,78 +4645,72 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       )cc");
       // The split block is conditional so we might or might not have changed
       // the index. Just forget it.
-      cached_has_bit_index_ = -1;
+      cached_has_bit_index_ = kNoHasbit;
     }
 
-    // If we have multiple fields in v_ then they all must be from the same
-    // oneof.  Would adding field to v_ break that invariant?
-    bool MustFlush(const FieldDescriptor* field) {
-      return !v_.empty() &&
-             v_[0]->containing_oneof() != field->containing_oneof();
-    }
-
-    MessageGenerator* mg_;
-    io::Printer* p_;
-    bool is_split_open_ = false;
-    const Options& options_;
-    std::vector<const FieldDescriptor*> v_;
-
-    // cached_has_bit_index_ maintains that:
-    //   cached_has_bits = from._has_bits_[cached_has_bit_index_]
-    // for cached_has_bit_index_ >= 0
-    int cached_has_bit_index_;
-  };
-
-  class LazyExtensionRangeEmitter {
-   public:
-    LazyExtensionRangeEmitter(MessageGenerator* mg, io::Printer* p)
-        : mg_(mg), p_(p) {}
-
-    void AddToRange(const Descriptor::ExtensionRange* range) {
-      if (!has_current_range_) {
-        min_start_ = range->start_number();
-        max_end_ = range->end_number();
-        has_current_range_ = true;
+    void operator()(const SerializeFieldChunk& fields_chunk) {
+      if (fields_chunk.should_split) {
+        OpenSplit();
       } else {
-        min_start_ = std::min(min_start_, range->start_number());
-        max_end_ = std::max(max_end_, range->end_number());
+        CloseSplit();
+      }
+      for (const auto* field : fields_chunk.fields) {
+        // TODO: Defer non-oneof fields similarly to oneof fields.
+        if (HasHasbit(field, mg_->options_)) {
+          // We speculatively load the entire _has_bits_[index] contents, even
+          // if it is for only one field.  Deferring non-oneof emitting would
+          // allow us to determine whether this is going to be useful.
+          int has_word_index =
+              mg_->field_layout_.GetHasWordIndex(field).value();
+          if (cached_has_bit_index_ != has_word_index) {
+            // Reload.
+            cached_has_bit_index_ = has_word_index;
+            p_->Emit({{"index", cached_has_bit_index_}},
+                     R"cc(
+                       cached_has_bits = this_._impl_._has_bits_[$index$];
+                     )cc");
+          }
+        }
+        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
       }
     }
 
-    void Flush(bool is_last_range) {
-      if (!has_current_range_) {
-        return;
-      }
-      has_current_range_ = false;
-      ++range_count_;
-      if (is_last_range && range_count_ == 1) {
+    void operator()(const OneofChunk& oneof_chunk) {
+      CloseSplit();
+      mg_->GenerateSerializeOneofFields(p_, oneof_chunk.fields);
+    }
+
+    void operator()(const ExtensionRangeChunk& ext_chunk) {
+      CloseSplit();
+      if (is_single_extension_range_) {
         mg_->GenerateSerializeAllExtensions(p_);
       } else {
-        mg_->GenerateSerializeOneExtensionRange(p_, min_start_, max_end_);
+        mg_->GenerateSerializeOneExtensionRange(p_, ext_chunk.start,
+                                                ext_chunk.end);
       }
     }
 
    private:
     MessageGenerator* mg_;
     io::Printer* p_;
-    int range_count_ = 0;
-    bool has_current_range_ = false;
-    int min_start_ = 0;
-    int max_end_ = 0;
+    bool is_single_extension_range_;
+    bool is_split_open_ = false;
+
+    // cached_has_bit_index_ maintains that:
+    //   cached_has_bits = this_._impl_._has_bits_[cached_has_bit_index_]
+    // for cached_has_bit_index_ >= 0
+    int cached_has_bit_index_ = kNoHasbit;
   };
 
+  if (HasSimpleBaseClass(descriptor_, options_)) return;
 
+  std::vector<SerializeChunk> chunks =
+      CollectSerializeChunks(descriptor_, field_layout_, options_);
 
-  std::vector<const FieldDescriptor*> ordered_fields =
-      SortFieldsByNumber(descriptor_);
+  int num_ext_chunks = absl::c_count_if(chunks, [](const auto& chunk) {
+    return std::holds_alternative<ExtensionRangeChunk>(chunk);
+  });
 
-  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-  sorted_extensions.reserve(descriptor_->extension_range_count());
-  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
-    sorted_extensions.push_back(descriptor_->extension_range(i));
-  }
-  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-            ExtensionRangeSorter());
   p->Emit(
       {
           {"serialize_split_var",
@@ -4708,27 +4723,10 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
            }},
           {"handle_lazy_fields",
            [&] {
-             // Merge fields and extension ranges, sorted by field number.
-             LazySerializerEmitter e(this, p, options_);
-             LazyExtensionRangeEmitter re(this, p);
-
-             size_t i, j;
-             for (i = 0, j = 0;
-                  i < ordered_fields.size() || j < sorted_extensions.size();) {
-               bool no_more_extensions = j == sorted_extensions.size();
-               if (no_more_extensions ||
-                   (i < static_cast<size_t>(descriptor_->field_count()) &&
-                    ordered_fields[i]->number() <
-                        sorted_extensions[j]->start_number())) {
-                 const FieldDescriptor* field = ordered_fields[i++];
-                 re.Flush(no_more_extensions);
-                 e.Emit(field);
-               } else {
-                 e.Flush();
-                 re.AddToRange(sorted_extensions[j++]);
-               }
+             SerializeEmitter emitter(this, p, num_ext_chunks == 1);
+             for (const auto& chunk : chunks) {
+               std::visit(emitter, chunk);
              }
-             re.Flush(/*is_last_range=*/true);
            }},
           {"handle_unknown_fields",
            [&] {
@@ -4763,14 +4761,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBodyShuffled(
     io::Printer* p) {
   std::vector<const FieldDescriptor*> ordered_fields =
       SortFieldsByNumber(descriptor_);
-
-  std::vector<const Descriptor::ExtensionRange*> sorted_extensions;
-  sorted_extensions.reserve(descriptor_->extension_range_count());
-  for (int i = 0; i < descriptor_->extension_range_count(); ++i) {
-    sorted_extensions.push_back(descriptor_->extension_range(i));
-  }
-  std::sort(sorted_extensions.begin(), sorted_extensions.end(),
-            ExtensionRangeSorter());
+  std::vector<const Descriptor::ExtensionRange*> sorted_extensions =
+      SortExtensionRanges(descriptor_);
 
   int num_fields = ordered_fields.size() + sorted_extensions.size();
   constexpr int kLargePrime = 1000003;

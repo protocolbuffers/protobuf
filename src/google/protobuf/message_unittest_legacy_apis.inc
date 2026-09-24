@@ -79,7 +79,14 @@ TEST(MESSAGE_TEST_NAME, LegacyAddMethodsOnRepeatedStringField) {
 }
 
 
-
+TEST(MESSAGE_TEST_NAME, MutableStringDoesNotLeak_b552593973) {
+  const std::string long_string(1000, 'x');
+  {
+    Arena arena;
+    auto* msg = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    msg->mutable_optional_string()->assign(long_string);
+  }
+}
 
 }  // namespace protobuf
 }  // namespace google

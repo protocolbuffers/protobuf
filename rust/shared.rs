@@ -18,6 +18,8 @@ use std::fmt;
 pub use crate::__internal::runtime::message_eq;
 
 pub use crate::__internal::runtime::interop::*;
+#[cfg(not(lite_runtime))]
+pub use crate::codegen_traits::WithReflection;
 pub use crate::codegen_traits::{
     create::Parse,
     read::Serialize,
