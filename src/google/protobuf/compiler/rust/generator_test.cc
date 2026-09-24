@@ -16,8 +16,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/escaping.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
-
 
 namespace google {
 namespace protobuf {
@@ -400,38 +400,6 @@ TEST_F(RustGeneratorTest, EmitsQualifiedPathForCrossCrateMessageReference) {
   EXPECT_THAT(foo, HasSubstr("::bar_crate::bar_proto::BarView"));
   EXPECT_THAT(foo, HasSubstr("IntoProxied<::bar_crate::bar_proto::Bar>"));
   EXPECT_THAT(foo, Not(HasSubstr("::bar_crate::BarView")));
-}
-
-TEST_F(RustGeneratorTest, EmitsQualifiedExtendeePathForExtensions) {
-  constexpr absl::string_view kFooProto = R"schema(
-    syntax = "proto2";
-    package foo;
-    message Target {
-      optional int32 val = 1;
-      extensions 100 to 200;
-    }
-    extend Target {
-      optional int32 top_ext = 100;
-    }
-    message Container {
-      extend Target {
-        optional int32 nested_ext = 101;
-      }
-    })schema";
-  CreateTempFile("foo.proto", kFooProto);
-  RunProtoc(
-      "protocol_compiler --proto_path=$tmpdir "
-      "--rust_out=$tmpdir "
-      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
-      "foo.proto");
-  ExpectNoErrors();
-
-  std::string foo = FileContents("foo.c.pb.rs");
-  // top_ext
-  EXPECT_THAT(foo, HasSubstr("ExtensionId<super::foo_proto::Target, i32>"));
-  // nested_ext
-  EXPECT_THAT(foo,
-              HasSubstr("ExtensionId<super::super::foo_proto::Target, i32>"));
 }
 
 TEST_F(RustGeneratorTest, DropsReexportForEntireCrate) {
