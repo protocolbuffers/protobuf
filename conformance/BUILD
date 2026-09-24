@@ -578,7 +578,7 @@ inline_sh_binary(
         "conformance_php.php",
     ],
     cmd = """
-        php -d include_path=php/generated:conformance:src/google/protobuf:editions/golden \\
+        php -d include_path=php/generated:conformance:conformance/test_protos:src/google/protobuf:editions/golden \\
             -d auto_prepend_file=$(rootpath autoload.php) \\
             $(rootpath conformance_php.php)
     """,
@@ -586,6 +586,8 @@ inline_sh_binary(
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//conformance/test_protos:json_enumvalue_options_php_proto",
+        "//conformance/test_protos:test_messages_edition2026_php_proto",
         "//editions:test_messages_proto3_editions_php_proto",
         "//php:source_files",
     ],
@@ -600,13 +602,15 @@ inline_sh_binary(
     ],
     cmd = """
         php -dextension=$(rootpath //php:extension) \\
-            -d include_path=conformance:src/google/protobuf:editions/golden \\
+            -d include_path=conformance:conformance/test_protos:src/google/protobuf:editions/golden \\
             $(rootpath conformance_php.php)
     """,
     visibility = ["//php:__subpackages__"],
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//conformance/test_protos:json_enumvalue_options_php_proto",
+        "//conformance/test_protos:test_messages_edition2026_php_proto",
         "//editions:test_messages_proto3_editions_php_proto",
     ],
 )

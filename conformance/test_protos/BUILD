@@ -2,6 +2,7 @@ load(
     "//:protobuf.bzl",
     "internal_csharp_proto_library",
     "internal_objc_proto_library",
+    "internal_php_proto_library",
     "internal_py_proto_library",
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
@@ -154,6 +155,46 @@ internal_py_proto_library(
 internal_objc_proto_library(
     name = "test_messages_edition2023_objc_proto",
     srcs = [":test_messages_edition2023.proto"],
+)
+
+# The generated metadata for test_messages_edition2026.proto references
+# \GPBMetadata\Google\Protobuf\JsonEnumvalueOptions, which requires generating
+# the import with its full google/protobuf/ path. internal_php_proto_library
+# only supports outputs rooted next to the source file, so use protoc directly.
+genrule(
+    name = "json_enumvalue_options_php_proto",
+    srcs = [
+        "//:well_known_protos",
+        "//src/google/protobuf:json_enumvalue_options_proto_srcs",
+    ],
+    outs = [
+        "GPBMetadata/Google/Protobuf/JsonEnumvalueOptions.php",
+        "Pb/Enumvalue/JsonEnumValueOptions.php",
+    ],
+    cmd = """
+        $(location //:protoc) --php_out=$(RULEDIR) -Isrc \\
+            $(location //src/google/protobuf:json_enumvalue_options_proto_srcs)
+    """,
+    tools = ["//:protoc"],
+    visibility = ["//conformance:__pkg__"],
+)
+
+internal_php_proto_library(
+    name = "test_messages_edition2026_php_proto",
+    srcs = ["test_messages_edition2026.proto"],
+    outs = [
+        "GPBMetadata/TestMessagesEdition2026.php",
+        "Protobuf_test_messages/Edition2026/ForeignEnumEdition2026.php",
+        "Protobuf_test_messages/Edition2026/TestAllTypesEdition2026.php",
+    ],
+    includes = [
+        ".",
+        "src",
+    ],
+    proto_deps = [
+        "//:json_enumvalue_options_proto_srcs",
+        "//:well_known_protos",
+    ],
 )
 
 internal_objc_proto_library(
