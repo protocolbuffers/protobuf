@@ -468,6 +468,22 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ExchangeCurrentSize(current_size_ + 1);
   }
 
+  // Trim the array if possible.
+  void TryShrinkToFit(internal::SerialArena* arena) {
+    if (using_sso() || arena == nullptr) return;
+    auto* r = rep();
+    size_t desired_capacity = size();
+    if constexpr (ArenaAlignDefault::Ceil(sizeof(void*)) != sizeof(void*)) {
+      desired_capacity =
+          ArenaAlignDefault::Ceil(desired_capacity * sizeof(void*)) /
+          sizeof(void*);
+    }
+    if (arena->TryTrimTail(r->elements + r->capacity,
+                           r->elements + desired_capacity)) {
+      r->capacity = desired_capacity;
+    }
+  }
+
  protected:
   template <typename TypeHandler, typename AddOne>
   void ResizeImpl(int new_size, AddOne add_one);

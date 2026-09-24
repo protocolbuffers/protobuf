@@ -997,6 +997,13 @@ class PROTOBUF_EXPORT TcParser final {
   template <typename TagType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* RepeatedCord(PROTOBUF_TC_PARAM_DECL);
 
+  // For certain repeated fields we want to keep going as long as we continue
+  // seeing the same tag. This reduces dispatching and increases the efficiency
+  // of container shrinking.
+  // We use this function as a way to annotate intention on the call sites.
+  static bool DataAvailableForRepeatedField(const char*& ptr,
+                                            ParseContext* ctx);
+
   static inline std::string* ParseRepeatedStringOnce(
       const char*& ptr, SerialArena* serial_arena, ParseContext* ctx,
       RepeatedPtrField<std::string>& field);
