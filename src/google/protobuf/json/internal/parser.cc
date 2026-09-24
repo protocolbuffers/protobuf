@@ -7,6 +7,7 @@
 
 #include "google/protobuf/json/internal/parser.h"
 
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -15,6 +16,7 @@
 #include <utility>
 
 #include "google/protobuf/type.pb.h"
+#include "absl/algorithm/container.h"
 #include "absl/base/attributes.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
@@ -46,6 +48,10 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
 namespace google {
 namespace protobuf {
 namespace json_internal {
@@ -68,7 +74,7 @@ namespace {
 // If a character is not valid base64, it maps to -1; this is used by the bit
 // operations that assemble a base64-encoded word to determine if an error
 // occurred, by checking the sign bit.
-constexpr signed char kBase64Table[256] = {
+constexpr std::array<signed char, 256> kBase64Table = {
     -1,       -1,       -1,       -1,       -1,       -1,        -1,
     -1,       -1,       -1,       -1,       -1,       -1,        -1,
     -1,       -1,       -1,       -1,       -1,       -1,        -1,
@@ -116,46 +122,52 @@ uint32_t Base64Lookup(char c) {
 absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
   // We decode in place. This is safe because this is a new buffer (not
   // aliasing the input) and because base64 decoding shrinks 4 bytes into 3.
-  char* out = base64.data();
-  const char* ptr = base64.data();
-  const char* end = ptr + base64.size();
-  const char* end4 = ptr + (base64.size() & ~3u);
+  // In particular, the write cursor always trails the read cursor, and each
+  // 4-byte group is fully read before its 3 output bytes are written.
+  size_t read_pos = 0;
+  size_t write_pos = 0;
 
-  for (; ptr < end4; ptr += 4, out += 3) {
-    auto val = Base64Lookup(ptr[0]) << 18 | Base64Lookup(ptr[1]) << 12 |
-               Base64Lookup(ptr[2]) << 6 | Base64Lookup(ptr[3]) << 0;
+  // Decode complete 4-byte groups.
+  const size_t end4 = base64.size() & ~3u;
+  for (; read_pos < end4; read_pos += 4, write_pos += 3) {
+    auto val = Base64Lookup(base64[read_pos]) << 18 |
+               Base64Lookup(base64[read_pos + 1]) << 12 |
+               Base64Lookup(base64[read_pos + 2]) << 6 |
+               Base64Lookup(base64[read_pos + 3]) << 0;
 
     if (static_cast<int32_t>(val) < 0) {
       // Junk chars or padding. Remove trailing padding, if any.
-      if (end - ptr == 4 && ptr[3] == '=') {
-        if (ptr[2] == '=') {
-          end -= 2;
+      if (base64.size() - read_pos == 4 && base64[read_pos + 3] == '=') {
+        if (base64[read_pos + 2] == '=') {
+          base64 = base64.first(base64.size() - 2);
         } else {
-          end -= 1;
+          base64 = base64.first(base64.size() - 1);
         }
       }
       break;
     }
 
-    out[0] = val >> 16;
-    out[1] = (val >> 8) & 0xff;
-    out[2] = val & 0xff;
+    base64[write_pos] = val >> 16;
+    base64[write_pos + 1] = (val >> 8) & 0xff;
+    base64[write_pos + 2] = val & 0xff;
   }
 
-  if (ptr < end) {
+  if (read_pos < base64.size()) {
     uint32_t val = ~0u;
-    switch (end - ptr) {
+    switch (base64.size() - read_pos) {
       case 2:
-        val = Base64Lookup(ptr[0]) << 18 | Base64Lookup(ptr[1]) << 12;
-        out[0] = val >> 16;
-        out += 1;
+        val = Base64Lookup(base64[read_pos]) << 18 |
+              Base64Lookup(base64[read_pos + 1]) << 12;
+        base64[write_pos] = val >> 16;
+        write_pos += 1;
         break;
       case 3:
-        val = Base64Lookup(ptr[0]) << 18 | Base64Lookup(ptr[1]) << 12 |
-              Base64Lookup(ptr[2]) << 6;
-        out[0] = val >> 16;
-        out[1] = (val >> 8) & 0xff;
-        out += 2;
+        val = Base64Lookup(base64[read_pos]) << 18 |
+              Base64Lookup(base64[read_pos + 1]) << 12 |
+              Base64Lookup(base64[read_pos + 2]) << 6;
+        base64[write_pos] = val >> 16;
+        base64[write_pos + 1] = (val >> 8) & 0xff;
+        write_pos += 2;
         break;
     }
 
@@ -164,8 +176,7 @@ absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
     }
   }
 
-  return absl::Span<char>(base64.data(),
-                          static_cast<size_t>(out - base64.data()));
+  return base64.first(write_pos);
 }
 
 template <typename T>
@@ -1415,8 +1426,10 @@ absl::Status JsonToBinaryStream(google::protobuf::util::TypeResolver* resolver,
     const void* data;
     int len;
     while (json_input->Next(&data, &len)) {
-      copy.resize(copy.size() + len);
-      std::memcpy(&copy[copy.size() - len], data, len);
+      const size_t old_size = copy.size();
+      copy.resize(old_size + len);
+      absl::c_copy(absl::Span<const char>(static_cast<const char*>(data), len),
+                   absl::MakeSpan(copy).subspan(old_size, len).begin());
     }
     tee_input.emplace(copy.data(), copy.size());
     tee_output.emplace(&out);

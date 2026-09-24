@@ -17,6 +17,7 @@
 #include <vector>
 
 #include "google/protobuf/type.pb.h"
+#include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -35,6 +36,10 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -71,10 +76,12 @@ absl::Span<const ResolverPool::Field> ResolverPool::Message::FieldsByIndex()
     const {
   if (raw_.fields_size() > 0 && fields_ == nullptr) {
     fields_ = std::unique_ptr<Field[]>(new Field[raw_.fields_size()]);
+    absl::Span<Field> fields =
+        absl::MakeSpan(fields_.get(), raw_.fields_size());
     for (size_t i = 0; i < raw_.fields_size(); ++i) {
-      fields_[i].pool_ = pool_;
-      fields_[i].raw_ = &raw_.fields(i);
-      fields_[i].parent_ = this;
+      fields[i].pool_ = pool_;
+      fields[i].raw_ = &raw_.fields(i);
+      fields[i].parent_ = this;
     }
   }
 
