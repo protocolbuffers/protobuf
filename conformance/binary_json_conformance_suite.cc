@@ -1762,6 +1762,21 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
 }
 
 template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalLengths() {
+  const FieldDescriptor* string_field =
+      GetFieldForType(FieldDescriptor::TYPE_STRING, false);
+
+  // A 5-byte varint length where bits 32-34 are set (e.g. bit 32 = 0x10), which
+  // overflows 32-bit arithmetic and wraps to 0 modulo 2^32. Parsers must not
+  // overflow and must reject this invalid wire format.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(string_field->number(),
+                       WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                   "\x80\x80\x80\x80\x10"),
+      "BadLength_Varint32BitOverflow", REQUIRED);
+}
+
+template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestUnmatchedGroup() {
   ExpectParseFailureForProto(tag(201, WireFormatLite::WIRETYPE_END_GROUP),
                              "UnmatchedEndGroup", REQUIRED);
@@ -2019,6 +2034,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     }
 
     TestIllegalTags();
+    TestIllegalLengths();
     TestUnmatchedGroup();
     TestUnknownWireType();
     TestInvalidUtf8String();

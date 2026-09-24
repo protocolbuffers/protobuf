@@ -164,6 +164,7 @@ class BinaryAndJsonConformanceSuiteImpl {
                                       ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   void TestIllegalTags();
+  void TestIllegalLengths();
   void TestUnmatchedGroup();
   void TestUnknownWireType();
   void TestInvalidUtf8String();
