@@ -41,11 +41,15 @@ namespace ProtobufTestMessages.Edition2026 {
             "A2tleRgBIAEoCRJJCgV2YWx1ZRgCIAEoDjI6LnByb3RvYnVmX3Rlc3RfbWVz",
             "c2FnZXMuZWRpdGlvbjIwMjYuRm9yZWlnbkVudW1FZGl0aW9uMjAyNjoCOAEa",
             "NAoSTWFwSW50MzJJbnQzMkVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgC",
-            "IAEoBToCOAFYAiptChZGb3JlaWduRW51bUVkaXRpb24yMDI2Eg8KC0ZPUkVJ",
-            "R05fRk9PEAASHwoLRk9SRUlHTl9CQVIQARoOsj4LCgljdXN0b21CYXISHwoL",
-            "Rk9SRUlHTl9CQVoQAhoOsj4LCgljdXN0b21CYXowAkI9Ci1jb20uZ29vZ2xl",
-            "LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbjIwMjaiAgtFZGl0aW9u",
-            "MjAyNmIIZWRpdGlvbnNw6gc="));
+            "IAEoBToCOAFYAiqbAgoWRm9yZWlnbkVudW1FZGl0aW9uMjAyNhIPCgtGT1JF",
+            "SUdOX0ZPTxAAEh8KC0ZPUkVJR05fQkFSEAEaDrI+CwoJY3VzdG9tQmFyEh8K",
+            "C0ZPUkVJR05fQkFaEAIaDrI+CwoJY3VzdG9tQmF6EhgKDUZPUkVJR05fRU1Q",
+            "VFkQAxoFsj4CCgASIwoPRk9SRUlHTl9FU0NBUEVTEAQaDrI+CwoJZSJzYwlh",
+            "cAplEiMKDUZPUkVJR05fQUxJQVMQBRoQsj4NCgtjdXN0b21BbGlhcxInChFG",
+            "T1JFSUdOX0FMSUFTX1RPTxAFGhCyPg0KC2N1c3RvbUFsaWFzEhsKD0ZPUkVJ",
+            "R05fTlVNRVJJQxAGGgayPgMKATYaAhABMAJCPQotY29tLmdvb2dsZS5wcm90",
+            "b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb24yMDI2ogILRWRpdGlvbjIwMjZi",
+            "CGVkaXRpb25zcOoH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Pb.Enumvalue.JsonEnumvalueOptionsReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -64,6 +68,11 @@ namespace ProtobufTestMessages.Edition2026 {
     /// </summary>
     [pbr::OriginalName("FOREIGN_BAR")] ForeignBar = 1,
     [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 2,
+    [pbr::OriginalName("FOREIGN_EMPTY")] ForeignEmpty = 3,
+    [pbr::OriginalName("FOREIGN_ESCAPES")] ForeignEscapes = 4,
+    [pbr::OriginalName("FOREIGN_ALIAS")] ForeignAlias = 5,
+    [pbr::OriginalName("FOREIGN_ALIAS_TOO", PreferredAlias = false)] ForeignAliasToo = 5,
+    [pbr::OriginalName("FOREIGN_NUMERIC")] ForeignNumeric = 6,
   }
 
   #endregion

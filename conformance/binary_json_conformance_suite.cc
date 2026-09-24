@@ -456,9 +456,69 @@ void BinaryAndJsonConformanceSuite::RunEdition2026Tests() {
         map_string_foreign_enum { key: "a" value: FOREIGN_BAR }
         map_string_foreign_enum { key: "b" value: FOREIGN_BAZ }
       )");
+  // Unknown names that are neither a declared name nor a custom JSON name.
   ExpectParseFailureForJson<TestAllTypesEdition2026>(
       "EnumValueUnknownCustomJsonName", REQUIRED,
       R"({"optionalForeignEnum": "customQux"})");
+  ExpectParseFailureForJson<TestAllTypesEdition2026>(
+      "EnumValueUnknownOriginalName", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_QUX"})");
+  // Empty custom JSON name.
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueEmptyCustomJsonName", REQUIRED,
+      R"({"optionalForeignEnum": ""})",
+      "optional_foreign_enum: FOREIGN_EMPTY");
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueEmptyCustomJsonNameOutput", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_EMPTY"})",
+      [](const Json::Value& value) {
+        return value["optionalForeignEnum"].isString() &&
+               value["optionalForeignEnum"].asString().empty();
+      });
+  // Custom JSON name with characters that require escaping in JSON.
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueEscapedCustomJsonName", REQUIRED,
+      R"({"optionalForeignEnum": "e\"sc\tap\ne"})",
+      "optional_foreign_enum: FOREIGN_ESCAPES");
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueEscapedCustomJsonNameOutput", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_ESCAPES"})",
+      [](const Json::Value& value) {
+        return value["optionalForeignEnum"].asString() == "e\"sc\tap\ne";
+      });
+  // Aliased values share a custom JSON name, and their declared names both
+  // still parse.
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueAliasCustomJsonName", REQUIRED,
+      R"({"optionalForeignEnum": "customAlias"})",
+      "optional_foreign_enum: FOREIGN_ALIAS");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueAliasCustomJsonNameOriginalName", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_ALIAS_TOO"})",
+      "optional_foreign_enum: FOREIGN_ALIAS");
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueAliasCustomJsonNameOutput", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_ALIAS"})",
+      [](const Json::Value& value) {
+        return value["optionalForeignEnum"].asString() == "customAlias";
+      });
+  // A numeric-looking custom JSON name serializes as a JSON string, and both
+  // the string and the integer forms parse.
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueNumericCustomJsonName", REQUIRED,
+      R"({"optionalForeignEnum": "6"})",
+      "optional_foreign_enum: FOREIGN_NUMERIC");
+  RunValidJsonTest<TestAllTypesEdition2026>(
+      "EnumValueNumericCustomJsonNameIntegerValue", REQUIRED,
+      R"({"optionalForeignEnum": 6})",
+      "optional_foreign_enum: FOREIGN_NUMERIC");
+  RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
+      "EnumValueNumericCustomJsonNameOutput", REQUIRED,
+      R"({"optionalForeignEnum": "FOREIGN_NUMERIC"})",
+      [](const Json::Value& value) {
+        return value["optionalForeignEnum"].isString() &&
+               value["optionalForeignEnum"].asString() == "6";
+      });
   RunValidJsonTestWithValidator<TestAllTypesEdition2026>(
       "EnumValueCustomJsonNameOutput", REQUIRED,
       R"({"optionalForeignEnum": "FOREIGN_BAR"})",

@@ -27,10 +27,17 @@ export message TestAllTypesEdition2026 {
 }
 
 export enum ForeignEnumEdition2026 {
+  option allow_alias = true;
+
   FOREIGN_FOO = 0;
 
   // Values with a custom JSON name, for testing the (pb.enumvalue.json)
   // option in JSON serialization.
   FOREIGN_BAR = 1 [(pb.enumvalue.json).string = "customBar"];
   FOREIGN_BAZ = 2 [(pb.enumvalue.json).string = "customBaz"];
+  FOREIGN_EMPTY = 3 [(pb.enumvalue.json).string = ""];
+  FOREIGN_ESCAPES = 4 [(pb.enumvalue.json).string = "e\"sc\tap\ne"];
+  FOREIGN_ALIAS = 5 [(pb.enumvalue.json).string = "customAlias"];
+  FOREIGN_ALIAS_TOO = 5 [(pb.enumvalue.json).string = "customAlias"];
+  FOREIGN_NUMERIC = 6 [(pb.enumvalue.json).string = "6"];
 }
