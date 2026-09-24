@@ -639,6 +639,25 @@ TEST_F(RustGeneratorTest, KeepsReexportForCrateWithFeaturesButNoCollision) {
   EXPECT_THAT(entry_point, HasSubstr("pub use b_proto::*;"));
 }
 
+TEST_F(RustGeneratorTest, AvoidsInherentAsMutAccessorCollision) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Limit {}
+    message Rlimits {
+      optional Limit as = 1;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=cpp "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string rs = FileContents("foo.c.pb.rs");
+  EXPECT_THAT(rs, HasSubstr("pub fn as_1_mut("));
+}
+
 }  // namespace
 }  // namespace rust
 }  // namespace compiler

@@ -16,6 +16,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -24,7 +25,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-uint32_t GetWireTypeForField(const upb_MiniTableField* field) {
+UPB_NODISCARD
+static uint32_t GetWireTypeForField(const upb_MiniTableField* field) {
   if (upb_MiniTableField_IsPacked(field)) return kUpb_WireType_Delimited;
   switch (upb_MiniTableField_Type(field)) {
     case kUpb_FieldType_Double:
@@ -55,6 +57,7 @@ uint32_t GetWireTypeForField(const upb_MiniTableField* field) {
   }
 }
 
+UPB_NODISCARD
 static bool upb_DecodeFast_GetEncodedTag(const upb_MiniTableField* field,
                                          uint16_t* out_tag,
                                          upb_DecodeFast_TagSize* out_tag_size) {
@@ -73,6 +76,7 @@ static bool upb_DecodeFast_GetEncodedTag(const upb_MiniTableField* field,
   }
 }
 
+UPB_NODISCARD
 static bool upb_DecodeFast_GetFieldCardinality(
     const upb_MiniTableField* field,
     upb_DecodeFast_Cardinality* out_cardinality) {
@@ -93,6 +97,7 @@ static bool upb_DecodeFast_GetFieldCardinality(
   UPB_UNREACHABLE();
 }
 
+UPB_NODISCARD
 static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
                                         upb_DecodeFast_Type* out_type) {
@@ -137,6 +142,7 @@ static bool upb_DecodeFast_GetFieldType(const upb_MiniTable* m,
   return true;
 }
 
+UPB_NODISCARD
 static bool upb_DecodeFast_GetFunctionIndex(const upb_MiniTable* m,
                                             const upb_MiniTableField* field,
                                             upb_DecodeFast_TagSize tag_size,
@@ -150,6 +156,7 @@ static bool upb_DecodeFast_GetFunctionIndex(const upb_MiniTable* m,
   return true;
 }
 
+UPB_NODISCARD
 static uint64_t upb_DecodeFast_GetPresence(const upb_MiniTableField* field,
                                            uint64_t* out_data) {
   if (upb_MiniTableField_IsInOneof(field)) {
@@ -166,9 +173,34 @@ static uint64_t upb_DecodeFast_GetPresence(const upb_MiniTableField* field,
   }
 }
 
-static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
-                                           const upb_MiniTableField* field,
-                                           uint16_t tag, uint64_t* out_data) {
+// Returns the offset of the upb_MiniTableSubInternal entry for `field`,
+// expressed in 8-byte units relative to the start of the fields array.
+UPB_NODISCARD static uint64_t upb_DecodeFast_GetSubofs(
+    const upb_MiniTable* m, const upb_MiniTableField* field) {
+  uint64_t idx = field - m->UPB_PRIVATE(fields);
+  // Here we rely on the fact that sizeof(upb_MiniTableField) is the same on
+  // both 32 and 64 bit; if it wasn't, we could generate a bad offset if we
+  // compiled on a 32 bit machine targetting a 64 bit one.
+  UPB_STATIC_ASSERT(sizeof(upb_MiniTableField) % kUpb_SubmsgOffsetBytes == 0,
+                    "upb_MiniTableField must be a multiple of the offset");
+  uint64_t ofs_4byte =
+      idx * (sizeof(upb_MiniTableField) / kUpb_SubmsgOffsetBytes) +
+      field->UPB_PRIVATE(submsg_ofs);
+  // Fasttable is only supported on 64-bit platforms where pointers and the
+  // submessage entries (upb_MiniTableSubInternal) are 8 bytes, requiring
+  // 8-byte alignment. Since the base fields array is aligned to pointer size
+  // (at least 8 bytes), and each submessage entry must be 8-byte aligned,
+  // the total byte offset (4 * ofs_4byte) from the start of the fields array
+  // to the submessage entry is guaranteed to be a multiple of 8.
+  // Consequently, ofs_4byte is guaranteed to be even, and thus this offset
+  // can be scaled by 8 when loading.
+  UPB_ASSERT(ofs_4byte % 2 == 0);
+  return ofs_4byte / 2;
+}
+
+UPB_NODISCARD static bool upb_DecodeFast_GetFunctionData(
+    const upb_MiniTable* m, const upb_MiniTableField* field, uint16_t tag,
+    uint64_t* out_data) {
   uint64_t offset = UPB_PRIVATE(_upb_MiniTableField_Offset)(field);
   uint64_t case_offset =
       upb_MiniTableField_IsInOneof(field)
@@ -177,25 +209,7 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
   uint64_t subofs = 0;
   if (upb_MiniTableField_IsSubMessage(field) ||
       upb_MiniTableField_IsClosedEnum(field)) {
-    uint64_t idx = field - m->UPB_PRIVATE(fields);
-    // Here we rely on the fact that sizeof(upb_MiniTableField) is the same on
-    // both 32 and 64 bit; if it wasn't, we could generate a bad offset if we
-    // compiled on a 32 bit machine targetting a 64 bit one.
-    UPB_STATIC_ASSERT(sizeof(upb_MiniTableField) % kUpb_SubmsgOffsetBytes == 0,
-                      "upb_MiniTableField must be a multiple of the offset");
-    uint64_t ofs_4byte =
-        idx * (sizeof(upb_MiniTableField) / kUpb_SubmsgOffsetBytes) +
-        field->UPB_PRIVATE(submsg_ofs);
-    // Fasttable is only supported on 64-bit platforms where pointers and the
-    // submessage entries (upb_MiniTableSubInternal) are 8 bytes, requiring
-    // 8-byte alignment. Since the base fields array is aligned to pointer size
-    // (at least 8 bytes), and each submessage entry must be 8-byte aligned,
-    // the total byte offset (4 * ofs_4byte) from the start of the fields array
-    // to the submessage entry is guaranteed to be a multiple of 8.
-    // Consequently, ofs_4byte is guaranteed to be even, and thus this offset
-    // can be scaled by 8 when loading.
-    UPB_ASSERT(ofs_4byte % 2 == 0);
-    subofs = ofs_4byte / 2;
+    subofs = upb_DecodeFast_GetSubofs(m, field);
   }
 
   uint64_t presence;
@@ -205,6 +219,121 @@ static bool upb_DecodeFast_GetFunctionData(const upb_MiniTable* m,
                                  out_data);
 }
 
+// Provides the upb_Map storage size for a map key/value of the given type.
+// Returns false for types that cannot appear as a map key or value.
+UPB_NODISCARD static bool MapTypeSize(upb_FieldType type, size_t* out_size) {
+  switch (type) {
+    case kUpb_FieldType_Bool:
+      *out_size = 1;
+      return true;
+    case kUpb_FieldType_Float:
+    case kUpb_FieldType_Int32:
+    case kUpb_FieldType_UInt32:
+    case kUpb_FieldType_Fixed32:
+    case kUpb_FieldType_SFixed32:
+    case kUpb_FieldType_SInt32:
+    case kUpb_FieldType_Enum:
+      *out_size = 4;
+      return true;
+    case kUpb_FieldType_Double:
+    case kUpb_FieldType_Int64:
+    case kUpb_FieldType_UInt64:
+    case kUpb_FieldType_Fixed64:
+    case kUpb_FieldType_SFixed64:
+    case kUpb_FieldType_SInt64:
+      *out_size = 8;
+      return true;
+    case kUpb_FieldType_Message:
+    case kUpb_FieldType_Group:
+      *out_size = sizeof(void*);
+      return true;
+    case kUpb_FieldType_String:
+    case kUpb_FieldType_Bytes:
+      *out_size = UPB_MAPTYPE_STRING;
+      return true;
+  }
+  return false;
+}
+
+bool upb_DecodeFast_TryFillMapEntry(const upb_MiniTableField* field,
+                                    const upb_MiniTable* map_sub, uint16_t tag,
+                                    uint64_t subofs,
+                                    upb_DecodeFast_TableEntry* entry) {
+  if (!UPB_DECODEFAST_MAP_ISENABLED()) return false;
+  if (!map_sub || map_sub->UPB_PRIVATE(field_count) != 2) {
+    return false;
+  }
+
+  // Check entry minitable: closed enums (on values) and boolean keys are
+  // excluded from fasttable and handled by generic decode fallback.
+  const upb_MiniTableField* kfield = &map_sub->UPB_PRIVATE(fields)[0];
+  const upb_MiniTableField* vfield = &map_sub->UPB_PRIVATE(fields)[1];
+  upb_FieldType ktype = kfield->UPB_PRIVATE(descriptortype);
+  upb_FieldType vtype = vfield->UPB_PRIVATE(descriptortype);
+
+  if (upb_MiniTableField_IsClosedEnum(vfield)) {
+    return false;
+  }
+
+  if (vtype == kUpb_FieldType_Group) {
+    return false;
+  }
+
+  bool is_string_key;
+  switch (ktype) {
+    case kUpb_FieldType_Int32:
+    case kUpb_FieldType_Int64:
+    case kUpb_FieldType_UInt32:
+    case kUpb_FieldType_UInt64:
+    case kUpb_FieldType_SInt32:
+    case kUpb_FieldType_SInt64:
+    case kUpb_FieldType_Fixed32:
+    case kUpb_FieldType_Fixed64:
+    case kUpb_FieldType_SFixed32:
+    case kUpb_FieldType_SFixed64:
+      is_string_key = false;
+      break;
+    case kUpb_FieldType_String:
+    case kUpb_FieldType_Bytes:
+      is_string_key = true;
+      break;
+    default:
+      return false;
+  }
+
+  bool key_is_zigzag =
+      (ktype == kUpb_FieldType_SInt32 || ktype == kUpb_FieldType_SInt64);
+  bool val_is_zigzag =
+      (vtype == kUpb_FieldType_SInt32 || vtype == kUpb_FieldType_SInt64);
+
+  uint32_t key_wire_type = GetWireTypeForField(kfield);
+  uint32_t val_wire_type = GetWireTypeForField(vfield);
+
+  // Must agree with kSizeInMap[] in decode.c, which is what actually sizes the
+  // upb_Map. The decoder UPB_ASSUME()s the two agree, so a divergence trips an
+  // assert in debug builds rather than silently corrupting the map.
+  size_t key_size, val_size;
+  if (!MapTypeSize(ktype, &key_size) || !MapTypeSize(vtype, &val_size)) {
+    return false;
+  }
+
+  bool is_tag2 = (tag > 0x7f);
+  if (is_string_key) {
+    entry->function_idx = is_tag2 ? kUpb_DecodeFast_StrMap_Tag2Byte
+                                  : kUpb_DecodeFast_StrMap_Tag1Byte;
+  } else {
+    entry->function_idx = is_tag2 ? kUpb_DecodeFast_IntMap_Tag2Byte
+                                  : kUpb_DecodeFast_IntMap_Tag1Byte;
+  }
+
+  uint64_t offset = UPB_PRIVATE(_upb_MiniTableField_Offset)(field);
+  return upb_DecodeFast_MakeMapData(offset, key_is_zigzag, val_is_zigzag,
+                                    is_tag2, is_string_key, key_wire_type,
+                                    val_wire_type, key_size, val_size, subofs,
+                                    tag, &entry->function_data);
+}
+
+UPB_NODISCARD
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
                                         bool* out_supported_tag_size,
@@ -214,8 +343,20 @@ static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
   upb_DecodeFast_TagSize tag_size;
   *out_supported_tag_size =
       upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size);
-  return *out_supported_tag_size &&
-         upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
+  if (!*out_supported_tag_size) return false;
+
+  if (upb_MiniTableField_IsMap(field)) {
+    // Map fields use specialized fast decoder functions:
+    // 4 specialized routines for integer and string keys with 1-byte and 2-byte
+    // tags, decoding full map entries and handling consecutive entries inline.
+    uint64_t subofs = upb_DecodeFast_GetSubofs(m, field);
+    const upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+        m->UPB_ONLYBITS(fields), subofs * 8, upb_MiniTableSubInternal);
+    const upb_MiniTable* map_sub = sub->UPB_PRIVATE(submsg);
+    return upb_DecodeFast_TryFillMapEntry(field, map_sub, tag, subofs, entry);
+  }
+
+  return upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
                                          &entry->function_idx) &&
          UPB_DECODEFAST_ISENABLED(
              upb_DecodeFast_GetType(entry->function_idx),
@@ -316,6 +457,18 @@ const char* upb_DecodeFast_GetFunctionName(uint32_t function_idx) {
   }
   if (function_idx == kUpb_DecodeFast_ExtensionOrUnknown) {
     return "_upb_FastDecoder_DecodeExtensionOrUnknown";
+  }
+  if (function_idx == kUpb_DecodeFast_IntMap_Tag1Byte) {
+    return "upb_DecodeFast_IntMap_Tag1Byte";
+  }
+  if (function_idx == kUpb_DecodeFast_IntMap_Tag2Byte) {
+    return "upb_DecodeFast_IntMap_Tag2Byte";
+  }
+  if (function_idx == kUpb_DecodeFast_StrMap_Tag1Byte) {
+    return "upb_DecodeFast_StrMap_Tag1Byte";
+  }
+  if (function_idx == kUpb_DecodeFast_StrMap_Tag2Byte) {
+    return "upb_DecodeFast_StrMap_Tag2Byte";
   }
   UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(names));
   return names[function_idx];

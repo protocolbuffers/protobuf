@@ -250,6 +250,23 @@ class PROTOBUF_EXPORT SerialArena {
 
   std::vector<void*> PeekCleanupListForTesting();
 
+  // Attempts to grow the most recent allocation in place by `desired_growth`
+  // bytes. Succeeds only if `alloc_end` matches the current tail pointer and
+  // the current arena block has enough remaining space. Returns true if the
+  // allocation was grown in place, false otherwise.
+  bool TryGrowTail(void* alloc_end, size_t desired_growth) {
+    char* tail = ptr();
+    if (static_cast<char*>(alloc_end) != tail) {
+      return false;
+    }
+    if (static_cast<size_t>(limit_ - tail) < desired_growth) {
+      return false;
+    }
+    internal::UnpoisonMemoryRegion(tail, desired_growth);
+    set_ptr(tail + desired_growth);
+    return true;
+  }
+
  private:
   friend class ThreadSafeArena;
   friend class cleanup::ChunkList;
@@ -377,13 +394,15 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
 
-  // Repeated*Field and Arena play together to reduce memory consumption by
-  // reusing blocks. Currently, natural growth of the repeated field types makes
-  // them allocate blocks of size `8 + 2^N, N>=3`.
-  // When the repeated field grows returns the previous block and we put it in
-  // this free list.
+  // Repeated*Field/Map/etc and Arena play together to reduce memory consumption
+  // by reusing blocks. Currently, natural growth of the repeated field types
+  // makes them allocate blocks of size `8 + 2^N, N>=3`. When the repeated field
+  // grows returns the previous block and we put it in this free list.
   // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
   // The array of freelists is grown when needed in `ReturnArrayMemory()`.
+  // Note that this optimization somewhat conflicts with TryGrowTail because
+  // allocating from the free list means we won't be able to grow in the tail.
+  // On average, it works out because the free list tends to be mostly empty.
   uint8_t cached_block_length_ = 0;
 
   // Current prefetch positions. Data from `ptr_` up to but not including

@@ -287,7 +287,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   //    would.
   //  - `Ptr` has no `reset()`. It can be assigned from another `Ptr`.
   template <typename T>
-  class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Ptr;
+  class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Ptr;
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
@@ -522,11 +522,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     struct Rank1 : Rank0 {};
 
     static void InternalSwap(T* PROTOBUF_NONNULL a, T* PROTOBUF_NONNULL b) {
-      if constexpr (std::is_base_of_v<MessageLite, T>) {
-        T::Helpers_::InternalSwap(*a, b);
-      } else {
-        a->InternalSwap(b);
-      }
+      a->InternalSwap(b);
     }
 
     static Arena* PROTOBUF_NULLABLE GetArena(T* PROTOBUF_NONNULL p) {
@@ -735,15 +731,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     }
   }
 
-  template <typename T, bool trivial = std::is_trivially_destructible_v<T>>
+  template <typename T>
   PROTOBUF_NDEBUG_INLINE void* PROTOBUF_NONNULL AllocateInternal() {
-    if (trivial) {
+    if constexpr (is_destructor_skippable<T>::value) {
       return AllocateAligned(sizeof(T), alignof(T));
     } else {
-      // We avoid instantiating arena_destruct_object<T> in the trivial case.
-      constexpr auto dtor = &internal::cleanup::arena_destruct_object<
-          std::conditional_t<trivial, std::string, T>>;
-      return AllocateAlignedWithCleanup(sizeof(T), alignof(T), dtor);
+      return AllocateAlignedWithCleanup(
+          sizeof(T), alignof(T), &internal::cleanup::arena_destruct_object<T>);
     }
   }
 
@@ -769,9 +763,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreateMessage(Args&&... args) {
     using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
     auto* arena_repr = InternalHelper<ArenaRepT>::ConstructOnArena(
-        AllocateInternal<ArenaRepT,
-                         is_destructor_skippable<ArenaRepT>::value>(),
-        *this, std::forward<Args>(args)...);
+        AllocateInternal<ArenaRepT>(), *this, std::forward<Args>(args)...);
     // Note that we can't static_cast arena_repr to T* here, since T might be a
     // member of ArenaRepT.
     return internal::FieldArenaRep<T>::Get(arena_repr);
@@ -1064,7 +1056,7 @@ class
 };
 
 template <typename T>
-class ABSL_MUST_USE_RESULT ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
+class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
     : internal::ArenaPtrCmpBase {
  public:
   using pointer = T*;
@@ -1194,7 +1186,7 @@ PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
 }
 
 template <>
-inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string, false>() {
+inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string>() {
   return impl_.AllocateFromStringBlock();
 }
 

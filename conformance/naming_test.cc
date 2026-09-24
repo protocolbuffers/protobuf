@@ -1,4 +1,4 @@
-#include "naming.h"
+#include "conformance/naming.h"
 
 #include <gtest/gtest.h>
 #include "conformance/test_protos/test_messages_edition2023.pb.h"

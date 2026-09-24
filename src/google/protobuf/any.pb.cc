@@ -131,7 +131,7 @@ constexpr auto Any::_Internal::GenerateClassData() {
       &Any::MergeImpl,
       Super_::GetNewImpl<Any>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Any::Helpers_::SharedDtor,
+      &Any::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -232,7 +232,7 @@ Any::Any(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Any)
 }
 PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
@@ -266,16 +266,14 @@ PROTOBUF_NDEBUG_INLINE Any::Impl_::Impl_(
       : type_url_(arena),
         value_(arena) {}
 
-inline void Any::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Any& this_ = static_cast<Any&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void Any::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Any::Helpers_::SharedDtor(MessageLite& self) {
+inline void Any::SharedDtor(MessageLite& self) {
   Any& this_ = static_cast<Any&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -445,19 +443,14 @@ void Any::CopyFrom(const Any& from) {
 }
 
 
-void Any::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Any* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Any::InternalSwap(Any* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Any& this_ = static_cast<Any&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.type_url_, &other->_impl_.type_url_,
-                                       arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.value_, &other->_impl_.value_,
-                                       arena);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.type_url_, &other->_impl_.type_url_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.value_, &other->_impl_.value_, arena);
 }
 
 ::google::protobuf::Metadata Any::GetMetadata() const {

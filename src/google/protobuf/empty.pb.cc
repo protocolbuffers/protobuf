@@ -97,7 +97,7 @@ constexpr auto Empty::_Internal::GenerateClassData() {
       &Empty::MergeImpl,
       Super_::GetNewImpl<Empty>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Empty::Helpers_::SharedDtor,
+      &Empty::SharedDtor,
       &Empty::Clear, &Empty::ByteSizeLong, &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),

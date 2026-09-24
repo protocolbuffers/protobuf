@@ -32,6 +32,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
@@ -169,55 +170,72 @@ TEST(RepeatedField, Small) {
 class RepeatedFieldIsFullTest : public testing::Test {
  protected:
   void SetUp() override {
-    if (!internal::RunLargeMemoryTests()) {
-      GTEST_SKIP() << "Not enough memory for this test.";
-    }
     if (internal::GetBoundsCheckMode() != internal::BoundsCheckMode::kAbort) {
       GTEST_SKIP() << "Preemtive abort is not enabled.";
     }
   }
 
-  RepeatedField<bool> MakeFullField() {
-    // Using `bool` to make it easier on the system to allocate the memory.
+  template <typename T>
+  static void SetFakeCapacityAndSize(RepeatedField<T>& field, int capacity,
+                                     int size) {
+    field.Reserve(10);
+    auto& base = reinterpret_cast<internal::RepeatedFieldBase&>(field);
+    struct Robber : internal::RepeatedFieldBase {
+      using internal::RepeatedFieldBase::soo_rep_;
+    };
+    auto& soo_rep = (base.*&Robber::soo_rep_);
+    auto* rep = soo_rep.heap_rep();
+    rep->set_capacity(capacity);
+    soo_rep.set_size(size);
+  }
+
+  // Returns a container that looks as if it is at maximum size/capacity.
+  // For performance reasons the buffer does not actually contain that capacity
+  // and the elements were not actually written to. They should not be read.
+  RepeatedField<bool> MakeFakeFullField() {
     RepeatedField<bool> field;
-    field.resize(std::numeric_limits<int>::max());
+    SetFakeCapacityAndSize(field, std::numeric_limits<int>::max(),
+                           std::numeric_limits<int>::max());
     return field;
   }
 };
 
 TEST_F(RepeatedFieldIsFullTest, AddAbortOnFull) {
-  EXPECT_DEATH(MakeFullField().Add(),
+  EXPECT_DEATH(MakeFakeFullField().Add(),
                HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
 }
 
 TEST_F(RepeatedFieldIsFullTest, AddValueAbortOnFull) {
-  EXPECT_DEATH(MakeFullField().Add(0),
+  EXPECT_DEATH(MakeFakeFullField().Add(0),
                HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
 }
 
 TEST_F(RepeatedFieldIsFullTest, AddFwdIterAbortOnFull) {
   int i = 2;
-  EXPECT_DEATH(MakeFullField().Add(&i, &i + 1),
+  EXPECT_DEATH(MakeFakeFullField().Add(&i, &i + 1),
                HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
 }
 
 TEST_F(RepeatedFieldIsFullTest, AddInputIterAbortOnFull) {
   std::istringstream test_data("1 2 3 4 5");
-  EXPECT_DEATH(MakeFullField().Add(std::istream_iterator<int>(test_data),
-                                   std::istream_iterator<int>()),
+  EXPECT_DEATH(MakeFakeFullField().Add(std::istream_iterator<int>(test_data),
+                                       std::istream_iterator<int>()),
                HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
 }
 
 TEST_F(RepeatedFieldIsFullTest, MergeFromAbortOnFull) {
-  RepeatedField<bool> f1 = MakeFullField();
   RepeatedField<bool> f2;
   f2.Add(true);
-  EXPECT_DEATH(f1.MergeFrom(f2),
-               HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
+  EXPECT_DEATH(
+      {
+        RepeatedField<bool> f1 = MakeFakeFullField();
+        f1.MergeFrom(f2);
+      },
+      HasSubstr("Integer overflow in CheckedAdd: 2147483647 + 1"));
 }
 
 TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeOverflow) {
-  EXPECT_DEATH(MakeFullField().ExtractSubrange(2147483640, 10, nullptr),
+  EXPECT_DEATH(MakeFakeFullField().ExtractSubrange(2147483640, 10, nullptr),
                HasSubstr("Value (2147483650) must be less than or equal to "
                          "limit (2147483647)"));
 }
@@ -236,6 +254,9 @@ TEST_F(RepeatedFieldIsFullTest, ExtractSubrangeNegativeNum) {
 }
 
 TEST_F(RepeatedFieldIsFullTest, ParsedPackedOverflow) {
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
   proto2_unittest::TestPackedTypes msg;
   msg.mutable_packed_bool()->resize(10);
   std::string str10 = msg.SerializeAsString();
@@ -258,6 +279,9 @@ TEST_F(RepeatedFieldIsFullTest, ParsedPackedOverflow) {
 }
 
 TEST_F(RepeatedFieldIsFullTest, RepeatedVarintOverflow) {
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
   proto2_unittest::RepFieldWithBoolForFastOverflow msg;
   msg.mutable_b()->resize(10);
   std::string str10 = msg.SerializeAsString();
@@ -338,24 +362,79 @@ TEST(RepeatedField, ArenaAllocationSizesMatchExpectedValues) {
   EXPECT_NO_FATAL_FAILURE(CheckAllocationSizes<RepeatedField<absl::Cord>>());
 }
 
-TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocks) {
+TEST(RepeatedField, NaturalGrowthOnArenasGrowsTheTail) {
   Arena arena;
   std::vector<RepeatedField<int>*> values;
 
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
+  size_t total_pointers_seen = 0;
+
   for (int i = 0; i < kNumFields; ++i) {
     values.push_back(Arena::Create<RepeatedField<int>>(&arena));
+    absl::flat_hash_set<const void*> pointers_seen;
+    absl::flat_hash_set<size_t> capacities_seen;
     auto& field = *values.back();
     for (int j = 0; j < kNumElems; ++j) {
       field.Add(j);
+      capacities_seen.insert(field.Capacity());
+      pointers_seen.insert(field.data());
     }
+
+    total_pointers_seen += pointers_seen.size();
+    // Remove the SOO pointer.
+    if (internal::SooCapacityElements<int>() != 0) {
+      --total_pointers_seen;
+    }
+
+    // We should still see the capacities grow naturally. The in-place
+    // growth is an implementation detail.
+    ASSERT_THAT(capacities_seen.size(), AllOf(Ge(8), Le(11)));
+  }
+
+  // We should have seen close to 1 pointer per container on average.
+  // Sometimes we get more because we can't grow in place in the remaining space
+  // in the block.
+  EXPECT_THAT(static_cast<double>(total_pointers_seen) / kNumFields,
+              AllOf(Ge(1.0), Le(1.5)));
+
+  size_t expected = values.size() * values[0]->Capacity() * sizeof(int);
+  // Verify that we used the expected, plus some overhead.
+  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.1 * expected)));
+}
+
+TEST(RepeatedField, NaturalGrowthOnArenasReuseBlocksIfItCantGrowTheTail) {
+  Arena arena;
+  std::vector<RepeatedField<int>*> values;
+
+  static constexpr int kNumFields = 100;
+  static constexpr int kNumElems = 1000;
+  size_t dummy_alloc = 0;
+  for (int i = 0; i < kNumFields; ++i) {
+    values.push_back(Arena::Create<RepeatedField<int>>(&arena));
+    absl::flat_hash_set<const void*> pointers_seen;
+    auto& field = *values.back();
+    for (int j = 0; j < kNumElems; ++j) {
+      field.Add(j);
+      pointers_seen.insert(field.data());
+
+      // We need to force dummy allocations to exist between Add calls so that
+      // we disable the fastpath that grows the array in place.
+      (void)Arena::Create<int64_t>(&arena);
+      dummy_alloc += 8;
+    }
+
+    // We should have seen more or less log2(kNumElems) different pointers while
+    // growing.
+    ASSERT_THAT(pointers_seen.size(), AllOf(Ge(8), Le(11)));
   }
 
   size_t expected = values.size() * values[0]->Capacity() * sizeof(int);
-  // Use a 2% slack for other overhead. If we were not reusing the blocks, the
-  // actual value would be ~2x the expected.
-  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
+  // Verify that we used the expected, plus some overhead.
+  // If we were not reusing the blocks, the actual value would be ~2x the
+  // expected.
+  EXPECT_THAT(arena.SpaceUsed() - dummy_alloc,
+              AllOf(Ge(expected), Le(1.1 * expected)));
 }
 
 // Test swapping between various types of RepeatedFields.

@@ -120,7 +120,7 @@ constexpr auto Duration::_Internal::GenerateClassData() {
       &Duration::MergeImpl,
       Super_::GetNewImpl<Duration>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Duration::Helpers_::SharedDtor,
+      &Duration::SharedDtor,
       &Helpers_::Clear, &Helpers_::ByteSizeLong,
           &Helpers_::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -210,7 +210,7 @@ Duration::Duration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Duration)
 }
 Duration::Duration(
@@ -229,11 +229,9 @@ PROTOBUF_NDEBUG_INLINE Duration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
      {}
 
-inline void Duration::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Duration& this_ = static_cast<Duration&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
-  ::memset(reinterpret_cast<char*>(&this_._impl_) +
+inline void Duration::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
+  ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, seconds_),
            0,
            offsetof(Impl_, nanos_) -
@@ -242,9 +240,9 @@ inline void Duration::Helpers_::SharedCtor(
 }
 Duration::~Duration() {
   // @@protoc_insertion_point(destructor:google.protobuf.Duration)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Duration::Helpers_::SharedDtor(MessageLite& self) {
+inline void Duration::SharedDtor(MessageLite& self) {
   Duration& this_ = static_cast<Duration&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -403,18 +401,16 @@ void Duration::CopyFrom(const Duration& from) {
 }
 
 
-void Duration::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Duration* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Duration::InternalSwap(Duration* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Duration& this_ = static_cast<Duration&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::google::protobuf::internal::memswap<PROTOBUF_FIELD_OFFSET(Duration, _impl_.nanos_) +
-                 sizeof(Duration::_impl_.nanos_) -
-                 PROTOBUF_FIELD_OFFSET(Duration, _impl_.seconds_)>(
-      reinterpret_cast<char*>(&this_._impl_.seconds_),
-      reinterpret_cast<char*>(&other->_impl_.seconds_));
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::google::protobuf::internal::memswap<
+      PROTOBUF_FIELD_OFFSET(Duration, _impl_.nanos_)
+      + sizeof(Duration::_impl_.nanos_)
+      - PROTOBUF_FIELD_OFFSET(Duration, _impl_.seconds_)>(
+          reinterpret_cast<char*>(&_impl_.seconds_),
+          reinterpret_cast<char*>(&other->_impl_.seconds_));
 }
 
 ::google::protobuf::Metadata Duration::GetMetadata() const {

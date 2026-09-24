@@ -1,0 +1,33 @@
+edition = "2026";
+
+import option "google/protobuf/cpp_options.proto";
+
+option (pb.file.cpp).namespace = "cpp::no_package";
+
+enum TestEnum {
+  TEST_ENUM_UNSPECIFIED = 0;
+  TEST_ENUM_VALUE = 1;
+}
+
+message ExtendMessage {
+  message NestedMessage {
+    int32 a = 1;
+  }
+
+  int32 a = 1;
+  fixed64 b = 2;
+  repeated fixed32 c = 3;
+  TestEnum d = 4;
+  NestedMessage e = 5;
+  repeated TestRepeatedMessage repeated_msg = 6;
+
+  extensions 100 to 199;
+}
+
+message TestRepeatedMessage {
+  int32 a = 1;
+}
+
+extend ExtendMessage {
+  int32 ext_field = 100;
+}
