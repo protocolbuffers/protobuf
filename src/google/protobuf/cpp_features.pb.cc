@@ -405,13 +405,13 @@ PROTOBUF_NOINLINE void CppFeatures::Clear() {
   if (BatchCheckHasBit(cached_has_bits, 0x00000009U)) {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
+      total_size += 1 + ::_pbi::WireFormatLite::EnumSize(
+                                      this_._internal_string_type());
     }
     // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_repeated_type());
+      total_size += 1 + ::_pbi::WireFormatLite::EnumSize(
+                                      this_._internal_repeated_type());
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

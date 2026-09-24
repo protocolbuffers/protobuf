@@ -299,8 +299,8 @@ inline bool CSharpFeatures::nullable_reference_types() const {
   return _internal_nullable_reference_types();
 }
 inline void CSharpFeatures::set_nullable_reference_types(bool value) {
-  _internal_set_nullable_reference_types(value);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
+  _internal_set_nullable_reference_types(value);
   // @@protoc_insertion_point(field_set:pb.CSharpFeatures.nullable_reference_types)
 }
 inline bool CSharpFeatures::_internal_nullable_reference_types() const {

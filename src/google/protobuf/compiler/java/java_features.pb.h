@@ -617,8 +617,8 @@ inline bool JavaFeatures::legacy_closed_enum() const {
   return _internal_legacy_closed_enum();
 }
 inline void JavaFeatures::set_legacy_closed_enum(bool value) {
-  _internal_set_legacy_closed_enum(value);
   SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  _internal_set_legacy_closed_enum(value);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.legacy_closed_enum)
 }
 inline bool JavaFeatures::_internal_legacy_closed_enum() const {
@@ -676,8 +676,8 @@ inline bool JavaFeatures::large_enum() const {
   return _internal_large_enum();
 }
 inline void JavaFeatures::set_large_enum(bool value) {
-  _internal_set_large_enum(value);
   SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  _internal_set_large_enum(value);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.large_enum)
 }
 inline bool JavaFeatures::_internal_large_enum() const {
@@ -704,8 +704,8 @@ inline bool JavaFeatures::use_old_outer_classname_default() const {
   return _internal_use_old_outer_classname_default();
 }
 inline void JavaFeatures::set_use_old_outer_classname_default(bool value) {
-  _internal_set_use_old_outer_classname_default(value);
   SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  _internal_set_use_old_outer_classname_default(value);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.use_old_outer_classname_default)
 }
 inline bool JavaFeatures::_internal_use_old_outer_classname_default() const {

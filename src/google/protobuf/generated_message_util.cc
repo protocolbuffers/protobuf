@@ -13,7 +13,9 @@
 
 #include <atomic>
 #include <climits>
+#include <cstddef>
 #include <cstdint>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -426,6 +428,15 @@ const internal::ExtensionSet* PrivateAccess::GetExtensionSet(
   if (tc_table->extension_offset == 0) return nullptr;
   return reinterpret_cast<const internal::ExtensionSet*>(
       reinterpret_cast<const char*>(msg) + tc_table->extension_offset);
+}
+
+void CreateSplitMessageGeneric(MessageLite* msg, void** split, size_t size) {
+  auto* arena = msg->GetArena();
+  void* new_split =
+      (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
+  const void* default_split = *split;
+  *split = new_split;
+  memcpy(new_split, default_split, size);
 }
 
 }  // namespace internal

@@ -473,16 +473,6 @@ size_t Message::SpaceUsedLong() const {
   return GetClassData()->descriptor_methods()->space_used_long(*this);
 }
 
-namespace internal {
-void CreateSplitMessageGeneric(Arena* arena, void** split, size_t size) {
-  void* new_split =
-      (arena == nullptr) ? Allocate(size) : arena->AllocateAligned(size);
-  const void* default_split = *split;
-  *split = new_split;
-  memcpy(new_split, default_split, size);
-}
-}  // namespace internal
-
 // =============================================================================
 // MessageFactory
 

@@ -469,8 +469,8 @@ inline bool CppFeatures::legacy_closed_enum() const {
   return _internal_legacy_closed_enum();
 }
 inline void CppFeatures::set_legacy_closed_enum(bool value) {
-  _internal_set_legacy_closed_enum(value);
   SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  _internal_set_legacy_closed_enum(value);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.legacy_closed_enum)
 }
 inline bool CppFeatures::_internal_legacy_closed_enum() const {
@@ -528,8 +528,8 @@ inline bool CppFeatures::enum_name_uses_string_view() const {
   return _internal_enum_name_uses_string_view();
 }
 inline void CppFeatures::set_enum_name_uses_string_view(bool value) {
-  _internal_set_enum_name_uses_string_view(value);
   SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  _internal_set_enum_name_uses_string_view(value);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.enum_name_uses_string_view)
 }
 inline bool CppFeatures::_internal_enum_name_uses_string_view() const {

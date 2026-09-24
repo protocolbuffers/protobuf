@@ -573,13 +573,13 @@ PROTOBUF_NOINLINE void JavaFeatures::Clear() {
   if (BatchCheckHasBit(cached_has_bits, 0x00000011U)) {
     // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_utf8_validation());
+      total_size += 1 + ::_pbi::WireFormatLite::EnumSize(
+                                      this_._internal_utf8_validation());
     }
     // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_nest_in_file_class());
+      total_size += 1 + ::_pbi::WireFormatLite::EnumSize(
+                                      this_._internal_nest_in_file_class());
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

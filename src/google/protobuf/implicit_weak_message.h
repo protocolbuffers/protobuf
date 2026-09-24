@@ -177,6 +177,7 @@ struct WeakRepeatedPtrField {
   typedef internal::RepeatedPtrOverPtrsIterator<const MessageLite>
       const_pointer_iterator;
 
+  int size() const { return base().size(); }
   bool empty() const { return base().empty(); }
   iterator begin() { return iterator(base().raw_data()); }
   const_iterator begin() const { return iterator(base().raw_data()); }

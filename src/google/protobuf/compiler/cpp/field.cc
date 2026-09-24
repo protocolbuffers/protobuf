@@ -46,6 +46,7 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
+  auto split_address = absl::StrCat("&Impl_::Split::", FieldName(field), "_");
   std::vector<Sub> vars = {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
@@ -57,15 +58,12 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
-      {"field_", FieldMemberName(field, split)},
+      {"split_address", split_address},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
       {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
-      Sub("PrepareSplitMessageForWrite",
-          split ? "PrepareSplitMessageForWrite();" : "")
-          .WithSuffix(";"),
       Sub("DEPRECATED", DeprecatedAttribute(opts, field)).WithSuffix(" "),
 
       // These variables are placeholders to pick out the beginning and ends of
@@ -92,6 +90,14 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
               : "")
           .WithSuffix(";"),
   };
+
+  vars.push_back({"field_", FieldMemberName(field, split)});
+  if (split) {
+    vars.push_back({"mutable_field_",
+                    absl::StrCat("MutableSplitField_(", split_address, ")")});
+  } else {
+    vars.push_back({"mutable_field_", FieldMemberName(field, false)});
+  }
 
   if (const auto* oneof = field->containing_oneof()) {
     auto field_name = UnderscoresToCamelCase(field->name(), true);
@@ -232,7 +238,7 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
-    format("$field_$ = from.$field_$;\n");
+    format("$mutable_field_$ = from.$field_$;\n");
   }
 }
 

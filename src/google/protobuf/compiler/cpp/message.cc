@@ -1081,8 +1081,20 @@ void MessageGenerator::GenerateSingularFieldHasBits(
                  // returning true implies that x_ is not null. By giving this
                  // information to the compiler, we allow it to eliminate
                  // unnecessary null checks later on.
-                 p->Emit(
-                     R"cc(PROTOBUF_ASSUME(!value || $field_$ != nullptr);)cc");
+                 if (ShouldSplit(field, options_)) {
+                   p->Emit(R"cc(
+                     if (value) {
+                       bool has_split = !IsSplitMessageDefault_();
+                       PROTOBUF_ASSUME(has_split);
+                       bool has_ptr = $field_$;
+                       PROTOBUF_ASSUME(has_ptr);
+                     }
+                   )cc");
+                 } else {
+                   p->Emit(R"cc(
+                     PROTOBUF_ASSUME(!value || $field_$ != nullptr);
+                   )cc");
+                 }
                }
              }}
              .WithSuffix(";")},
@@ -1173,10 +1185,12 @@ void MessageGenerator::GenerateFieldClear(const FieldDescriptor* field,
                 // TODO: figure out if early return breaks tracking
                 if (ShouldSplit(field, options_)) {
                   p->Emit(R"cc(
-                    if (ABSL_PREDICT_TRUE(IsSplitMessageDefault()))
+                    if (ABSL_PREDICT_TRUE(IsSplitMessageDefault_()))
                       return;
                   )cc");
                 }
+                auto v = p->WithVars(
+                    {{"this_split_field", FieldMemberName(field, true)}});
                 field_generators_.get(field).GenerateClearingCode(p);
                 if (HasHasbit(field, options_)) {
                   auto v = p->WithVars(HasBitVars(field));
@@ -1266,6 +1280,9 @@ void MessageGenerator::EmitCheckAndUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p) const {
   absl::AnyInvocable<void()> emit_body = [&] {
     const auto& gen = field_generators_.get(field);
+    auto v = p->WithVars(
+        {{"this_split_field",
+          absl::StrCat("cached_split_ptr->", FieldName(field), "_")}});
     gen.GenerateByteSize(p);
   };
 
@@ -1544,7 +1561,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
                     };
                     static_assert(::std::is_trivially_copy_constructible<Split>::value);
                     static_assert(::std::is_trivially_destructible<Split>::value);
-                    Split* $nonnull$ _split_;
+                    $pbi$::SplitHolder<Split> _split_;
                   )cc");
         }},
        {"oneof_members",
@@ -1603,6 +1620,13 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           // clang-format off
             p->Emit(R"cc(union { Impl_ _impl_; };)cc");
           // clang-format on
+        }},
+       {"split_friend",
+        [&] {
+          if (!ShouldSplit(descriptor_, options_)) return;
+          p->Emit(R"cc(
+            friend $pbi$::SplitHolder<Impl_::Split>;
+          )cc");
         }}},
       R"cc(
         struct Impl_ {
@@ -1635,6 +1659,7 @@ void MessageGenerator::GenerateImplDefinition(io::Printer* p) {
           PROTOBUF_TSAN_DECLARE_MEMBER
         };
         $union_impl$;
+        $split_friend$;
       )cc");
 
   ABSL_DCHECK(!need_to_emit_cached_size);
@@ -2011,10 +2036,18 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                     SplitDefaultInstanceName(descriptor_, options_)}},
                   R"cc(
                     private:
-                    inline bool IsSplitMessageDefault() const {
-                      return $split$ == reinterpret_cast<const Impl_::Split*>(&$split_default$);
+                    bool IsSplitMessageDefault_() const {
+                      return $split$.IsDefault(&$split_default$);
                     }
+
                     PROTOBUF_NOINLINE void PrepareSplitMessageForWrite();
+
+                    template <typename T, typename S>
+                    PROTOBUF_ALWAYS_INLINE auto& MutableSplitField_(
+                        T S::* PROTOBUF_NONNULL address) {
+                      return $split$.Mutable(address, this);
+                    }
+                    static const void* PROTOBUF_NONNULL DefaultSplit_() { return &$split_default$; }
 
                     public:
                   )cc");
@@ -2397,11 +2430,10 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
              {"globals", MsgGlobalsInstanceName(descriptor_, options_)}},
             R"cc(
               void $Msg$::PrepareSplitMessageForWrite() {
-                if (ABSL_PREDICT_TRUE(IsSplitMessageDefault())) {
+                if (ABSL_PREDICT_TRUE(IsSplitMessageDefault_())) {
                   ABSL_DCHECK_NE(this, &default_instance());
                   $pbi$::CreateSplitMessageGeneric(
-                      GetArena(), reinterpret_cast<void**>(&$split$),
-                      sizeof(Impl_::Split));
+                      this, $split$.mutable_inner(), sizeof(Impl_::Split));
                 }
               }
             )cc");
@@ -2795,7 +2827,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
              if (!ShouldSplit(descriptor_, options_)) return;
              p->Emit(
                  R"cc(
-                   if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
+                   if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault_())) {
                      _Internal::DestroySplit(this_);
                    }
                  )cc");
@@ -2878,7 +2910,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
                       [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
-                   if (ABSL_PREDICT_FALSE(!_this->IsSplitMessageDefault())) {
+                   if (ABSL_PREDICT_FALSE(!_this->IsSplitMessageDefault_())) {
                      $split_field_dtors_impl$;
                    }
                  )cc");
@@ -3101,7 +3133,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit(R"cc(
-      if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
+      if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault_())) {
         _Internal::MergeSplit(this, from);
       }
     )cc");
@@ -3371,6 +3403,10 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         if (memset_start) {
           if (memset_start == memset_end) {
             // For clarity, do not memset a single field.
+            auto v =
+                p->WithVars({{"this_split_field",
+                              absl::StrCat("cached_split_ptr->",
+                                           FieldName(memset_start), "_")}});
             field_generators_.get(memset_start).GenerateMessageClearingCode(p);
           } else {
             p->Emit(
@@ -3385,6 +3421,11 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
                                reinterpret_cast<char*>(&this_.$start$)) +
                                sizeof($end$));
                 )cc");
+            if (ShouldSplit(memset_start, options_)) {
+              // Silence the unused warning. We don't want to do it on the
+              // variable itself because it is useful normally.
+              p->Emit("(void)$cached_split_ptr$;");
+            }
           }
         }
 
@@ -3398,6 +3439,9 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
           const bool have_enclosing_if = ShouldGenerateEnclosingIf(*field);
 
           auto print_clear_field = [&] {
+            auto v = p->WithVars(
+                {{"this_split_field",
+                  absl::StrCat("cached_split_ptr->", FieldName(field), "_")}});
             field_generators_.get(field).GenerateMessageClearingCode(p);
           };
 
@@ -3496,7 +3540,7 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
              EmitClearChunks(p, /* is_split= */ false);
              if (ShouldSplit(descriptor_, options_)) {
                p->Emit(R"cc(
-                 if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
+                 if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault_())) {
                    _Internal::ClearSplit(this_);
                  }
                )cc");
@@ -3946,13 +3990,6 @@ bool MessageGenerator::RequiresArena(GeneratorFunction function,
 }
 
 bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
-  const auto prepare_split = [&] {
-    if (is_split) {
-      p->Emit(R"cc(
-        _this->PrepareSplitMessageForWrite();
-      )cc");
-    }
-  };
   // cached_has_word_index maintains that:
   //   cached_has_bits = from._has_bits_[cached_has_word_index]
   // for cached_has_word_index >= 0
@@ -3997,6 +4034,10 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
     for (const auto* field : fields) {
       const auto& generator = field_generators_.get(field);
 
+      auto from_split =
+          p->WithVars({{"from_split_field",
+                        absl::StrCat("from.", FieldMemberName(field, true))}});
+
       if (!field->is_required() && !HasHasbit(field, options_)) {
         // Merge semantics without true field presence: primitive fields are
         // merged only if non-zero (numeric) or non-empty (string).
@@ -4004,7 +4045,6 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
             p, "from.", field, is_split, options_,
             /*emit_body=*/
             [&]() {
-              prepare_split();
               generator.GenerateMergingCode(p);
             },
             /*with_enclosing_braces_always=*/true);
@@ -4015,7 +4055,6 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
         p->Emit(
             {{"merge_field",
               [&] {
-                prepare_split();
                 generator.GenerateMergingCode(p);
               }}},
             R"cc(
@@ -4033,7 +4072,6 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
                                has_bit_index, field, options_)},
              {"merge_field",
               [&] {
-                prepare_split();
                 if (GetFieldHasbitMode(field, options_) ==
                     HasbitMode::kHintHasbit) {
                   // Merge semantics without true field presence: primitive
@@ -4046,7 +4084,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
                 } else {
                   ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
                               HasbitMode::kTrueHasbit);
-                  if (check_has_byte && IsPOD(field)) {
+                  if (check_has_byte && IsPOD(field) &&
+                      !ShouldSplit(field, options_)) {
                     generator.GenerateCopyConstructorCode(p);
                   } else {
                     generator.GenerateMergingCode(p);
@@ -4133,7 +4172,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
           p->Emit(R"cc(
-            if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
+            if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault_())) {
               _Internal::MergeSplit(_this, from);
             }
           )cc");
@@ -4688,7 +4727,7 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
              if (!ShouldSplit(descriptor_, options_)) return;
              p->Emit(R"cc(
                //~
-               const bool serialize_split_fields = !this_.IsSplitMessageDefault();
+               const bool serialize_split_fields = !this_.IsSplitMessageDefault_();
              )cc");
            }},
           {"handle_lazy_fields",
@@ -4932,6 +4971,14 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                   //~
                   total_size += $popcount$($mask$ & cached_has_bits) * $fsize$;
                 )cc");
+        for (auto* field : fields) {
+          if (ShouldSplit(field, options_)) {
+            // Silence the unused warning. We don't want to do it on the
+            // variable itself because it is useful normally.
+            p->Emit("(void)$cached_split_ptr$;");
+            break;
+          }
+        }
         ++it;
         continue;
       }
@@ -5070,7 +5117,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           EmitByteSizeChunks(p, /* is_split= */ false);
           if (ShouldSplit(descriptor_, options_)) {
             p->Emit(R"cc(
-              if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
+              if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault_())) {
                 total_size += _Internal::ByteSizeSplit(this_);
               }
             )cc");
@@ -5375,6 +5422,11 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                   [&] {
                     for (const auto* field : field_layout_.optimized_order()) {
                       if (!ShouldSplit(field, options_)) continue;
+                      auto v =
+                          p->WithVars({{"this_split_field",
+                                        absl::StrCat("cached_split_ptr->",
+                                                     FieldName(field), "_")}});
+
                       field_generators_.get(field).GenerateDestructorCode(p);
                     }
                   }},
@@ -5395,9 +5447,9 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                   [&] { EmitByteSizeChunks(p, /* is_split= */ true); }}},
                 R"cc(
                   PROTOBUF_NOINLINE static void DestroySplit($Msg$& this_) {
-                    auto* const $cached_split_ptr$ = this_._impl_._split_;
+                    auto $cached_split_ptr$ = this_._impl_._split_;
                     $destroy_fields$;
-                    delete $cached_split_ptr$;
+                    delete $cached_split_ptr$.get();
                   }
                   PROTOBUF_NOINLINE static void MergeSplit($Msg$* _this, const $Msg$& from) {
                     $get_arena_merge$;
@@ -5405,11 +5457,13 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                     $merge_fields$;
                   }
                   PROTOBUF_NOINLINE static void ClearSplit($Msg$& this_) {
+                    auto $cached_split_ptr$ = this_._impl_._split_;
                     ::uint32_t cached_has_bits [[maybe_unused]] = 0;
                     $clear_fields$;
                   }
 
                   PROTOBUF_NOINLINE static ::size_t ByteSizeSplit(const $Msg$& this_) {
+                    auto $cached_split_ptr$ = this_._impl_._split_;
                     ::size_t total_size = 0;
                     ::uint32_t cached_has_bits [[maybe_unused]] = 0;
                     $byte_size_fields$;

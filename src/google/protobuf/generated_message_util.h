@@ -42,6 +42,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -396,6 +397,70 @@ inline void AddToRepeatedPtrField(InternalVisibility visibility,
                                   BytesTag /*tag*/ = BytesTag{}) {
   dest.InternalAddWithArena(visibility, arena, std::move(value));
 }
+
+// Creates and returns an allocation for a split message.
+// `msg` for the arena.
+void CreateSplitMessageGeneric(MessageLite* msg, void** split, size_t size);
+
+// This class provides some functions we can use from codegen to reduce
+// boilerplate there.
+template <typename Split>
+class SplitHolder {
+ public:
+  explicit constexpr SplitHolder(Split* split) : split_(split) {}
+
+  bool IsDefault(const void* def) const { return split_ == def; }
+
+  Split* operator->() const { return get(); }
+  Split* get() const { return static_cast<Split*>(split_); }
+  void** mutable_inner() { return &split_; }
+
+  // If already mutable, returns a pointer to the member.
+  // Otherwise, returns null
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE T* TryMutable(T Split::* address, const void* def) {
+    if (ABSL_PREDICT_FALSE(split_ == def)) {
+      return nullptr;
+    }
+    T* res = &(get()->*address);
+    PROTOBUF_ASSUME(res != nullptr);
+    return res;
+  }
+
+  // Allocates the split section if needed and returns a reference to the
+  // member.
+  // If it is a RawPtr, it also allocates the inner value.
+  template <typename T, typename Msg>
+  PROTOBUF_ALWAYS_INLINE auto& Mutable(T Split::* address, Msg* msg) {
+    msg->PrepareSplitMessageForWrite();
+    T& res = get()->*address;
+    if constexpr (kIsRawPtr<T>) {
+      if (res.IsDefault()) {
+        res.Set(Arena::Create<typename T::value_type>(msg->GetArena()));
+      }
+      return *res;
+    } else {
+      return res;
+    }
+  }
+
+  // Calls ClearToEmpty on the field, if not the default split.
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE void ClearToEmpty(T Split::* address,
+                                           const void* def) {
+    if (T* p = TryMutable(address, def)) p->ClearToEmpty();
+  }
+
+  // Calls ClearIfNotDefault on the field, if not the default split.
+  template <typename T>
+  PROTOBUF_ALWAYS_INLINE void ClearIfNotDefault(T Split::* address,
+                                                const void* def) {
+    if (T* p = TryMutable(address, def)) p->ClearIfNotDefault();
+  }
+
+ private:
+  void* split_;
+};
 
 // The struct PrivateAccess is used to provide access to private members of
 // message classes without making them public. This is useful for highly
