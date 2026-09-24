@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
@@ -26,6 +27,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -41,6 +43,10 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -913,8 +919,10 @@ absl::Status BinaryToJsonStream(google::protobuf::util::TypeResolver* resolver,
     const void* data;
     int len;
     while (binary_input->Next(&data, &len)) {
-      copy.resize(copy.size() + len);
-      std::memcpy(&copy[copy.size() - len], data, len);
+      const size_t old_size = copy.size();
+      copy.resize(old_size + len);
+      absl::c_copy(absl::Span<const char>(static_cast<const char*>(data), len),
+                   absl::MakeSpan(copy).subspan(old_size, len).begin());
     }
     tee_input.emplace(copy.data(), copy.size());
     tee_output.emplace(&out);
