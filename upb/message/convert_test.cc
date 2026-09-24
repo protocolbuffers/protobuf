@@ -162,6 +162,210 @@ TEST(ConvertTest, Demotion) {
   EXPECT_FALSE(upb_Message_NextUnknown2(dst, &unknown, &iter));
 }
 
+TEST(ConvertTest, MultipleDemotionContiguous) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 111);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int64(msg, 222);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
+      msg, upb_StringView_FromString("demoted_str"));
+
+  // Convert to Empty message. All three fields should become unknown.
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
+  EXPECT_NE(dst, nullptr);
+
+  // All demoted unknown fields must be contiguously packed into a SINGLE
+  // StringView entry in dst, rather than multiple separate allocations.
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  // There should be NO second unknown entry.
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+
+  // Verify that decoding dst back into TestAllTypesProto3 recovers all fields.
+  const upb_Message* converted_back =
+      upb_Message_Convert(dst, empty_mt, TEST_MT, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted_back, nullptr);
+  const auto* rt =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)converted_back;
+  EXPECT_EQ(
+      111, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(rt));
+  EXPECT_EQ(
+      222, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(rt));
+  upb_StringView str =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(rt);
+  EXPECT_EQ("demoted_str", std::string(str.data, str.size));
+}
+
+TEST(ConvertTest, DemoteUnsetFieldsNoAlloc) {
+  upb::Arena arena;
+  // All fields unset in msg.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
+  EXPECT_NE(dst, nullptr);
+
+  // Dst should have ZERO unknown entries.
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+}
+
+TEST(ConvertTest, DemoteBigFieldThenSmallFieldChunked) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  // Create a large 2KB string field and a small 4-byte int32 field.
+  std::string large_string(2048, 'X');
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
+      msg, upb_StringView_FromString(large_string.c_str()));
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 777);
+
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
+  EXPECT_NE(dst, nullptr);
+
+  // The large field should be isolated in its own chunk, and the small field in
+  // its own chunk, avoiding reallocation and copying of the 2KB data.
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown chunk1, chunk2;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk1, &iter));
+  EXPECT_EQ(chunk1.type, kUpb_MessageUnknownType_StringView);
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk2, &iter));
+  EXPECT_EQ(chunk2.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &chunk2, &iter));
+
+  // Round-trip must recover both fields accurately.
+  const upb_Message* converted_back =
+      upb_Message_Convert(dst, empty_mt, TEST_MT, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted_back, nullptr);
+  const auto* rt =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)converted_back;
+  EXPECT_EQ(
+      777, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(rt));
+  upb_StringView str =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(rt);
+  EXPECT_EQ(large_string, std::string(str.data, str.size));
+}
+
+TEST(ConvertTest, DemoteSmallFieldThenBigFieldChunked) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  // Set field 21 (small enum), field 14 (large 2KB string), and field 1 (small
+  // int32).
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
+      msg, protobuf_test_messages_proto3_TestAllTypesProto3_BAZ);
+  std::string large_string(2048, 'Y');
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
+      msg, upb_StringView_FromString(large_string.c_str()));
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 999);
+
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
+  EXPECT_NE(dst, nullptr);
+
+  // Field 21 (first in descending order) should be in chunk 1, field 14 (large)
+  // in chunk 2, and field 1 in chunk 3.
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown chunk1, chunk2, chunk3;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk1, &iter));
+  EXPECT_EQ(chunk1.type, kUpb_MessageUnknownType_StringView);
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk2, &iter));
+  EXPECT_EQ(chunk2.type, kUpb_MessageUnknownType_StringView);
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk3, &iter));
+  EXPECT_EQ(chunk3.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &chunk3, &iter));
+
+  // Round-trip must recover all three fields accurately.
+  const upb_Message* converted_back =
+      upb_Message_Convert(dst, empty_mt, TEST_MT, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted_back, nullptr);
+  const auto* rt =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)converted_back;
+  EXPECT_EQ(
+      999, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(rt));
+  EXPECT_EQ(
+      protobuf_test_messages_proto3_TestAllTypesProto3_BAZ,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_enum(
+          rt));
+  upb_StringView str =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(rt);
+  EXPECT_EQ(large_string, std::string(str.data, str.size));
+}
+
+TEST(ConvertTest, DemoteMultiplePrimitivesSingleChunk) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  // Set several scalar primitive fields: bool, float, double, int32, int64,
+  // enum.
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_bool(msg, true);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_float(msg,
+                                                                      1.5f);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_double(msg,
+                                                                       3.14);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 42);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int64(
+      msg, 1000000000LL);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_nested_enum(
+      msg, protobuf_test_messages_proto3_TestAllTypesProto3_BAZ);
+
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  const upb_Message* dst = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
+  EXPECT_NE(dst, nullptr);
+
+  // All scalar primitive fields must fit contiguously into a SINGLE StringView
+  // chunk.
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown chunk;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk, &iter));
+  EXPECT_EQ(chunk.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &chunk, &iter));
+
+  // Round-trip recovery check.
+  const upb_Message* converted_back =
+      upb_Message_Convert(dst, empty_mt, TEST_MT, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(converted_back, nullptr);
+  const auto* rt =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)converted_back;
+  EXPECT_EQ(true,
+            protobuf_test_messages_proto3_TestAllTypesProto3_optional_bool(rt));
+  EXPECT_EQ(
+      1.5f,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_float(rt));
+  EXPECT_EQ(
+      3.14,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_double(rt));
+  EXPECT_EQ(
+      42, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(rt));
+  EXPECT_EQ(
+      1000000000LL,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_int64(rt));
+  EXPECT_EQ(
+      protobuf_test_messages_proto3_TestAllTypesProto3_BAZ,
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_enum(
+          rt));
+}
+
 TEST(ConvertTest, DeepConvertMap) {
   upb::Arena arena;
   protobuf_test_messages_proto3_TestAllTypesProto3* msg =

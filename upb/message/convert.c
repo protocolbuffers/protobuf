@@ -33,6 +33,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -99,20 +100,126 @@ UPB_NODISCARD static bool upb_Message_SetFieldOrExtension(
   return true;
 }
 
-static void upb_Message_EncodeFieldAsUnknown(
-    upb_encstate* e, upb_Message* dst, const upb_Message* src,
-    const upb_MiniTableField* src_field, int depth, int options,
-    upb_ErrorHandler* err) {
-  size_t size;
-  int encode_options = upb_Encode_LimitDepth(options, depth);
-  char* buf = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
-  UPB_PRIVATE(_upb_Encode_Field)(e, src, src_field, &buf, &size,
-                                 encode_options);
-  if (size > 0) {
-    if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, buf, size, e->alloc.arena,
-                                              kUpb_AddUnknown_Alias)) {
-      upb_ErrorHandler_ThrowError(err, kUpb_ErrorCode_OutOfMemory);
+static void upb_Message_FlushUnknownChunk(upb_Converter* c, upb_Message* dst,
+                                          char* ptr) {
+  size_t size = upb_BackAlloc_Finish(&c->encoder.alloc, ptr);
+  UPB_ASSERT(size > 0);
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
+          dst, ptr, size, c->encoder.alloc.arena, kUpb_AddUnknown_Alias)) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+  }
+}
+
+UPB_FORCEINLINE
+size_t upb_Message_FieldMaxWireSize(const upb_Message* msg,
+                                    const upb_MiniTableField* f) {
+  if (upb_MiniTableField_IsScalar(f)) {
+    upb_CType ctype = upb_MiniTableField_CType(f);
+    if (ctype == kUpb_CType_String || ctype == kUpb_CType_Bytes) {
+      const upb_StringView* str =
+          (const upb_StringView*)UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
+      // Tag + length varint overhead is at most 15 bytes (given 10 byte bounds
+      // checks for encoding varints)
+      size_t needed;
+      if (upb_AddOverflow(str->size, (size_t)15, &needed)) {
+        return SIZE_MAX;
+      }
+      return needed;
     }
+    if (ctype != kUpb_CType_Message) {
+      // Encoding varints checks for the worst-case size, which could be a 10
+      // byte encoded varint plus a tag that will only be 5 bytes but reserves
+      // 10 for a generic varint encoder
+      return 20;
+    }
+  }
+  // For submessages, repeated fields, and maps with variable length,
+  // require at least 64 bytes of headroom to reduce reallocations.
+  return 64;
+}
+
+UPB_FORCEINLINE
+char* upb_Message_EncodeOneUnknownField(upb_Converter* c, upb_Message* dst,
+                                        const upb_Message* src,
+                                        const upb_MiniTableField* f, char* ptr,
+                                        int depth) {
+  if (!UPB_PRIVATE(_upb_Message_FieldIsSet)(src, f)) return ptr;
+
+  upb_encstate* e = &c->encoder;
+  if (ptr) {
+    size_t available = ptr - e->alloc.buf;
+    if (upb_Message_FieldMaxWireSize(src, f) > available) {
+      upb_Message_FlushUnknownChunk(c, dst, ptr);
+      ptr = NULL;
+    }
+  }
+
+  if (!ptr) {
+    int encode_options = upb_Encode_LimitDepth(c->encode_options, depth);
+    ptr = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
+    e->options = encode_options;
+    e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(encode_options);
+  }
+
+  ptr = UPB_PRIVATE(_upb_Encode_FieldToBuffer)(ptr, e, src, f);
+
+  // If the accumulated chunk reached 1KB, flush it immediately so subsequent
+  // fields start in a fresh buffer and avoid reallocating this chunk. It's
+  // better to add a new entry in the unknowns list than to copy and reallocate
+  // to save 24 bytes of overhead.
+  if (upb_BackAlloc_Size(&e->alloc, ptr) < 1024) {
+    return ptr;
+  }
+
+  upb_Message_FlushUnknownChunk(c, dst, ptr);
+  return NULL;
+}
+
+static void upb_Message_EncodeUnknownFields(upb_Converter* c, upb_Message* dst,
+                                            const upb_Message* src,
+                                            const upb_MiniTable* dst_mt,
+                                            const upb_MiniTable* src_mt,
+                                            int depth) {
+  if (dst_mt == src_mt || upb_MiniTable_FieldCount(src_mt) == 0) return;
+
+  const upb_MiniTableField* dst_first =
+      upb_MiniTable_FieldCount(dst_mt) > 0
+          ? upb_MiniTable_GetFieldByIndex(dst_mt, 0)
+          : NULL;
+  const upb_MiniTableField* dst_f =
+      dst_first ? dst_first + upb_MiniTable_FieldCount(dst_mt) : NULL;
+
+  const upb_MiniTableField* src_first =
+      upb_MiniTable_GetFieldByIndex(src_mt, 0);
+  const upb_MiniTableField* src_f =
+      src_first + upb_MiniTable_FieldCount(src_mt);
+
+  char* ptr = NULL;
+
+  // Walk fields in descending order. Because the encoder writes backwards,
+  // encoding fields in descending order produces ascending canonical wire
+  // order.
+  while (dst_f != dst_first && src_f != src_first) {
+    uint32_t src_nr = upb_MiniTableField_Number(src_f - 1);
+    uint32_t dst_nr = upb_MiniTableField_Number(dst_f - 1);
+
+    if (src_nr < dst_nr) {
+      dst_f--;
+    } else if (src_nr == dst_nr) {
+      dst_f--;
+      src_f--;
+    } else {
+      // src_nr > dst_nr: Field is present in src_mt but absent in dst_mt.
+      ptr = upb_Message_EncodeOneUnknownField(c, dst, src, --src_f, ptr, depth);
+    }
+  }
+
+  while (src_f != src_first) {
+    ptr = upb_Message_EncodeOneUnknownField(c, dst, src, --src_f, ptr, depth);
+  }
+
+  if (ptr) {
+    upb_Message_FlushUnknownChunk(c, dst, ptr);
   }
 }
 
@@ -637,6 +744,8 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
     upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
   }
 
+  bool has_unknowns = false;
+
   const upb_MiniTableField* dst_f = NULL;
   const upb_MiniTableField* dst_first = NULL;
   const upb_MiniTableField* src_f = NULL;
@@ -651,12 +760,10 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
     src_f = src_first + upb_MiniTable_FieldCount(src_mt);
   }
 
-  // Convert fields in descending order of field number.
-  while (dst_f != dst_first || src_f != src_first) {
-    uint32_t dst_nr =
-        dst_f != dst_first ? upb_MiniTableField_Number(dst_f - 1) : 0;
-    uint32_t src_nr =
-        src_f != src_first ? upb_MiniTableField_Number(src_f - 1) : 0;
+  // Convert matching fields in descending order of field number.
+  while (dst_f != dst_first && src_f != src_first) {
+    uint32_t dst_nr = upb_MiniTableField_Number(dst_f - 1);
+    uint32_t src_nr = upb_MiniTableField_Number(src_f - 1);
 
     if (dst_nr == src_nr) {
       const upb_MiniTableField* dst_next = dst_f - 1;
@@ -679,11 +786,17 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
     } else if (dst_nr > src_nr) {
       dst_f--;
     } else {
-      const upb_MiniTableField* src_next = src_f - 1;
-      upb_Message_EncodeFieldAsUnknown(&c->encoder, dst, src, src_next, depth,
-                                       c->encode_options, &c->err);
+      has_unknowns = true;
       src_f--;
     }
+  }
+
+  if (src_f != src_first) {
+    has_unknowns = true;
+  }
+
+  if (has_unknowns) {
+    upb_Message_EncodeUnknownFields(c, dst, src, dst_mt, src_mt, depth);
   }
 
   // Convert extensions.

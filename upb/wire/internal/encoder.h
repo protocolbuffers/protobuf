@@ -55,6 +55,12 @@ UPB_INLINE void UPB_PRIVATE(_upb_encstate_destroy)(upb_encstate* e) {
   _upb_mapsorter_destroy(&e->sorter);
 }
 
+// Encodes a single field into the back_alloc buffer without finishing it.
+// Returns the updated buffer pointer (pointing to the start of encoded data).
+char* UPB_PRIVATE(_upb_Encode_FieldToBuffer)(char* ptr, upb_encstate* e,
+                                             const upb_Message* msg,
+                                             const upb_MiniTableField* field);
+
 // Internal version of upb_Encode that encodes a single field.
 //
 // The caller must clean up the `upb_encstate` by calling
