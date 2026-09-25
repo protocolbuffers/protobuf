@@ -32,6 +32,8 @@ syntax = "proto3";
 
 package google.protobuf;
 
+import "storage/datapol/annotations/proto/semantic_annotations.proto";
+
 option cc_enable_arenas = true;
 option go_package = "google.golang.org/protobuf/types/known/durationpb";
 option java_package = "com.google.protobuf";
@@ -103,7 +105,7 @@ message Duration {
   // Signed seconds of the span of time. Must be from -315,576,000,000
   // to +315,576,000,000 inclusive. Note: these bounds are computed from:
   // 60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years
-  int64 seconds = 1;
+  int64 seconds = 1 [(datapol.semantic_type) = ST_DURATION];
 
   // Signed fractions of a second at nanosecond resolution of the span
   // of time. Durations less than one second are represented with a 0
@@ -111,5 +113,5 @@ message Duration {
   // of one second or more, a non-zero value for the `nanos` field must be
   // of the same sign as the `seconds` field. Must be from -999,999,999
   // to +999,999,999 inclusive.
-  int32 nanos = 2;
+  int32 nanos = 2 [(datapol.semantic_type) = ST_DURATION];
 }
