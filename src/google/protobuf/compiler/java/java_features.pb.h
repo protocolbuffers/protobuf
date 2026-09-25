@@ -106,10 +106,13 @@ template <typename T>
                 "Incorrect type passed to NestInFileClass_Name().");
   return JavaFeatures_NestInFileClassFeature_NestInFileClass_Name(static_cast<JavaFeatures_NestInFileClassFeature_NestInFileClass>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(JavaFeatures_NestInFileClassFeature_NestInFileClass) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 3}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& JavaFeatures_NestInFileClassFeature_NestInFileClass_Name(JavaFeatures_NestInFileClassFeature_NestInFileClass value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_NestInFileClassFeature_NestInFileClass_descriptor, 0, 3>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<JavaFeatures_NestInFileClassFeature_NestInFileClass>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool JavaFeatures_NestInFileClassFeature_NestInFileClass_Parse(
     ::absl::string_view name, JavaFeatures_NestInFileClassFeature_NestInFileClass* PROTOBUF_NONNULL value) {
@@ -143,10 +146,13 @@ template <typename T>
                 "Incorrect type passed to Utf8Validation_Name().");
   return JavaFeatures_Utf8Validation_Name(static_cast<JavaFeatures_Utf8Validation>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(JavaFeatures_Utf8Validation) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& JavaFeatures_Utf8Validation_Name(JavaFeatures_Utf8Validation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<JavaFeatures_Utf8Validation_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<JavaFeatures_Utf8Validation>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool JavaFeatures_Utf8Validation_Parse(
     ::absl::string_view name, JavaFeatures_Utf8Validation* PROTOBUF_NONNULL value) {

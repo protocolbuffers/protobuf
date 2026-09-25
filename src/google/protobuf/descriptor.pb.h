@@ -294,10 +294,13 @@ template <typename T>
                 "Incorrect type passed to VerificationState_Name().");
   return ExtensionRangeOptions_VerificationState_Name(static_cast<ExtensionRangeOptions_VerificationState>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(ExtensionRangeOptions_VerificationState) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 1}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& ExtensionRangeOptions_VerificationState_Name(ExtensionRangeOptions_VerificationState value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<ExtensionRangeOptions_VerificationState_descriptor, 0, 1>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<ExtensionRangeOptions_VerificationState>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool ExtensionRangeOptions_VerificationState_Parse(
     ::absl::string_view name, ExtensionRangeOptions_VerificationState* PROTOBUF_NONNULL value) {
@@ -346,10 +349,13 @@ template <typename T>
                 "Incorrect type passed to Type_Name().");
   return FieldDescriptorProto_Type_Name(static_cast<FieldDescriptorProto_Type>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FieldDescriptorProto_Type) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{1, 18}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FieldDescriptorProto_Type_Name(FieldDescriptorProto_Type value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Type_descriptor, 1, 18>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FieldDescriptorProto_Type>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldDescriptorProto_Type_Parse(
     ::absl::string_view name, FieldDescriptorProto_Type* PROTOBUF_NONNULL value) {
@@ -383,10 +389,13 @@ template <typename T>
                 "Incorrect type passed to Label_Name().");
   return FieldDescriptorProto_Label_Name(static_cast<FieldDescriptorProto_Label>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FieldDescriptorProto_Label) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{1, 3}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FieldDescriptorProto_Label_Name(FieldDescriptorProto_Label value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldDescriptorProto_Label_descriptor, 1, 3>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FieldDescriptorProto_Label>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldDescriptorProto_Label_Parse(
     ::absl::string_view name, FieldDescriptorProto_Label* PROTOBUF_NONNULL value) {
@@ -420,10 +429,13 @@ template <typename T>
                 "Incorrect type passed to OptimizeMode_Name().");
   return FileOptions_OptimizeMode_Name(static_cast<FileOptions_OptimizeMode>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FileOptions_OptimizeMode) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{1, 3}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FileOptions_OptimizeMode_Name(FileOptions_OptimizeMode value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FileOptions_OptimizeMode_descriptor, 1, 3>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FileOptions_OptimizeMode>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FileOptions_OptimizeMode_Parse(
     ::absl::string_view name, FileOptions_OptimizeMode* PROTOBUF_NONNULL value) {
@@ -457,10 +469,13 @@ template <typename T>
                 "Incorrect type passed to CType_Name().");
   return FieldOptions_CType_Name(static_cast<FieldOptions_CType>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FieldOptions_CType) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_CType_Name(FieldOptions_CType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_CType_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FieldOptions_CType>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_CType_Parse(
     ::absl::string_view name, FieldOptions_CType* PROTOBUF_NONNULL value) {
@@ -494,10 +509,13 @@ template <typename T>
                 "Incorrect type passed to JSType_Name().");
   return FieldOptions_JSType_Name(static_cast<FieldOptions_JSType>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FieldOptions_JSType) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_JSType_Name(FieldOptions_JSType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_JSType_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FieldOptions_JSType>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_JSType_Parse(
     ::absl::string_view name, FieldOptions_JSType* PROTOBUF_NONNULL value) {
@@ -531,10 +549,13 @@ template <typename T>
                 "Incorrect type passed to OptionRetention_Name().");
   return FieldOptions_OptionRetention_Name(static_cast<FieldOptions_OptionRetention>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FieldOptions_OptionRetention) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_OptionRetention_Name(FieldOptions_OptionRetention value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionRetention_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FieldOptions_OptionRetention>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_OptionRetention_Parse(
     ::absl::string_view name, FieldOptions_OptionRetention* PROTOBUF_NONNULL value) {
@@ -575,10 +596,13 @@ template <typename T>
                 "Incorrect type passed to OptionTargetType_Name().");
   return FieldOptions_OptionTargetType_Name(static_cast<FieldOptions_OptionTargetType>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FieldOptions_OptionTargetType) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 9}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FieldOptions_OptionTargetType_Name(FieldOptions_OptionTargetType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FieldOptions_OptionTargetType_descriptor, 0, 9>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FieldOptions_OptionTargetType>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FieldOptions_OptionTargetType_Parse(
     ::absl::string_view name, FieldOptions_OptionTargetType* PROTOBUF_NONNULL value) {
@@ -612,10 +636,13 @@ template <typename T>
                 "Incorrect type passed to IdempotencyLevel_Name().");
   return MethodOptions_IdempotencyLevel_Name(static_cast<MethodOptions_IdempotencyLevel>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(MethodOptions_IdempotencyLevel) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& MethodOptions_IdempotencyLevel_Name(MethodOptions_IdempotencyLevel value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<MethodOptions_IdempotencyLevel_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<MethodOptions_IdempotencyLevel>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool MethodOptions_IdempotencyLevel_Parse(
     ::absl::string_view name, MethodOptions_IdempotencyLevel* PROTOBUF_NONNULL value) {
@@ -651,10 +678,13 @@ template <typename T>
                 "Incorrect type passed to DefaultSymbolVisibility_Name().");
   return FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(static_cast<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_VisibilityFeature_DefaultSymbolVisibility) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 4}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Name(FeatureSet_VisibilityFeature_DefaultSymbolVisibility value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility_descriptor, 0, 4>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_VisibilityFeature_DefaultSymbolVisibility>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_VisibilityFeature_DefaultSymbolVisibility_Parse(
     ::absl::string_view name, FeatureSet_VisibilityFeature_DefaultSymbolVisibility* PROTOBUF_NONNULL value) {
@@ -688,10 +718,13 @@ template <typename T>
                 "Incorrect type passed to EnforceProtoLimits_Name().");
   return FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Name(static_cast<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_ProtoLimitsFeature_EnforceProtoLimits) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Name(FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_ProtoLimitsFeature_EnforceProtoLimits>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_ProtoLimitsFeature_EnforceProtoLimits_Parse(
     ::absl::string_view name, FeatureSet_ProtoLimitsFeature_EnforceProtoLimits* PROTOBUF_NONNULL value) {
@@ -726,10 +759,13 @@ template <typename T>
                 "Incorrect type passed to FieldPresence_Name().");
   return FeatureSet_FieldPresence_Name(static_cast<FeatureSet_FieldPresence>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_FieldPresence) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 3}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_FieldPresence_Name(FeatureSet_FieldPresence value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_FieldPresence_descriptor, 0, 3>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_FieldPresence>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_FieldPresence_Parse(
     ::absl::string_view name, FeatureSet_FieldPresence* PROTOBUF_NONNULL value) {
@@ -763,10 +799,13 @@ template <typename T>
                 "Incorrect type passed to EnumType_Name().");
   return FeatureSet_EnumType_Name(static_cast<FeatureSet_EnumType>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_EnumType) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_EnumType_Name(FeatureSet_EnumType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnumType_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_EnumType>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_EnumType_Parse(
     ::absl::string_view name, FeatureSet_EnumType* PROTOBUF_NONNULL value) {
@@ -800,10 +839,13 @@ template <typename T>
                 "Incorrect type passed to RepeatedFieldEncoding_Name().");
   return FeatureSet_RepeatedFieldEncoding_Name(static_cast<FeatureSet_RepeatedFieldEncoding>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_RepeatedFieldEncoding) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_RepeatedFieldEncoding_Name(FeatureSet_RepeatedFieldEncoding value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_RepeatedFieldEncoding_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_RepeatedFieldEncoding>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_RepeatedFieldEncoding_Parse(
     ::absl::string_view name, FeatureSet_RepeatedFieldEncoding* PROTOBUF_NONNULL value) {
@@ -837,10 +879,13 @@ template <typename T>
                 "Incorrect type passed to Utf8Validation_Name().");
   return FeatureSet_Utf8Validation_Name(static_cast<FeatureSet_Utf8Validation>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_Utf8Validation) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 3}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_Utf8Validation_Name(FeatureSet_Utf8Validation value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_Utf8Validation_descriptor, 0, 3>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_Utf8Validation>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_Utf8Validation_Parse(
     ::absl::string_view name, FeatureSet_Utf8Validation* PROTOBUF_NONNULL value) {
@@ -874,10 +919,13 @@ template <typename T>
                 "Incorrect type passed to MessageEncoding_Name().");
   return FeatureSet_MessageEncoding_Name(static_cast<FeatureSet_MessageEncoding>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_MessageEncoding) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_MessageEncoding_Name(FeatureSet_MessageEncoding value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_MessageEncoding_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_MessageEncoding>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_MessageEncoding_Parse(
     ::absl::string_view name, FeatureSet_MessageEncoding* PROTOBUF_NONNULL value) {
@@ -911,10 +959,13 @@ template <typename T>
                 "Incorrect type passed to JsonFormat_Name().");
   return FeatureSet_JsonFormat_Name(static_cast<FeatureSet_JsonFormat>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_JsonFormat) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_JsonFormat_Name(FeatureSet_JsonFormat value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_JsonFormat_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_JsonFormat>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_JsonFormat_Parse(
     ::absl::string_view name, FeatureSet_JsonFormat* PROTOBUF_NONNULL value) {
@@ -949,10 +1000,13 @@ template <typename T>
                 "Incorrect type passed to EnforceNamingStyle_Name().");
   return FeatureSet_EnforceNamingStyle_Name(static_cast<FeatureSet_EnforceNamingStyle>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(FeatureSet_EnforceNamingStyle) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 3}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& FeatureSet_EnforceNamingStyle_Name(FeatureSet_EnforceNamingStyle value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<FeatureSet_EnforceNamingStyle_descriptor, 0, 3>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<FeatureSet_EnforceNamingStyle>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool FeatureSet_EnforceNamingStyle_Parse(
     ::absl::string_view name, FeatureSet_EnforceNamingStyle* PROTOBUF_NONNULL value) {
@@ -986,10 +1040,13 @@ template <typename T>
                 "Incorrect type passed to Semantic_Name().");
   return GeneratedCodeInfo_Annotation_Semantic_Name(static_cast<GeneratedCodeInfo_Annotation_Semantic>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(GeneratedCodeInfo_Annotation_Semantic) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& GeneratedCodeInfo_Annotation_Semantic_Name(GeneratedCodeInfo_Annotation_Semantic value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<GeneratedCodeInfo_Annotation_Semantic_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<GeneratedCodeInfo_Annotation_Semantic>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool GeneratedCodeInfo_Annotation_Semantic_Parse(
     ::absl::string_view name, GeneratedCodeInfo_Annotation_Semantic* PROTOBUF_NONNULL value) {
@@ -1031,7 +1088,15 @@ template <typename T>
   static_assert(::std::is_same<T, Edition>::value ||
                     ::std::is_integral<T>::value,
                 "Incorrect type passed to Edition_Name().");
-  return ::google::protobuf::internal::NameOfEnum(Edition_descriptor(), value);
+  return Edition_Name(static_cast<Edition>(value));
+}
+constexpr auto ProtobufInternalEnumChunks(Edition) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 6>({{{0, 2}, {900, 900}, {998, 1002}, {9999, 9999}, {99997, 99999}, {2147483647, 2147483647}}});
+}
+
+template <>
+[[nodiscard]] inline const ::std::string& Edition_Name(Edition value) {
+  return ::google::protobuf::internal::NameOfFastEnum<Edition>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool Edition_Parse(
     ::absl::string_view name, Edition* PROTOBUF_NONNULL value) {
@@ -1065,10 +1130,13 @@ template <typename T>
                 "Incorrect type passed to SymbolVisibility_Name().");
   return SymbolVisibility_Name(static_cast<SymbolVisibility>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(SymbolVisibility) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& SymbolVisibility_Name(SymbolVisibility value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<SymbolVisibility_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<SymbolVisibility>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool SymbolVisibility_Parse(
     ::absl::string_view name, SymbolVisibility* PROTOBUF_NONNULL value) {

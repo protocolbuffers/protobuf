@@ -102,10 +102,13 @@ template <typename T>
                 "Incorrect type passed to StringType_Name().");
   return CppFeatures_StringType_Name(static_cast<CppFeatures_StringType>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(CppFeatures_StringType) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 3}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& CppFeatures_StringType_Name(CppFeatures_StringType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_StringType_descriptor, 0, 3>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<CppFeatures_StringType>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool CppFeatures_StringType_Parse(
     ::absl::string_view name, CppFeatures_StringType* PROTOBUF_NONNULL value) {
@@ -139,10 +142,13 @@ template <typename T>
                 "Incorrect type passed to RepeatedType_Name().");
   return CppFeatures_RepeatedType_Name(static_cast<CppFeatures_RepeatedType>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(CppFeatures_RepeatedType) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& CppFeatures_RepeatedType_Name(CppFeatures_RepeatedType value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CppFeatures_RepeatedType_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<CppFeatures_RepeatedType>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool CppFeatures_RepeatedType_Parse(
     ::absl::string_view name, CppFeatures_RepeatedType* PROTOBUF_NONNULL value) {

@@ -106,10 +106,13 @@ template <typename T>
                 "Incorrect type passed to Feature_Name().");
   return CodeGeneratorResponse_Feature_Name(static_cast<CodeGeneratorResponse_Feature>(value));
 }
+constexpr auto ProtobufInternalEnumChunks(CodeGeneratorResponse_Feature) {
+  return std::array<const ::google::protobuf::internal::ChunkInfo, 1>({{{0, 2}}});
+}
+
 template <>
 [[nodiscard]] inline const ::std::string& CodeGeneratorResponse_Feature_Name(CodeGeneratorResponse_Feature value) {
-  return ::google::protobuf::internal::NameOfDenseEnum<CodeGeneratorResponse_Feature_descriptor, 0, 2>(
-      static_cast<int>(value));
+  return ::google::protobuf::internal::NameOfFastEnum<CodeGeneratorResponse_Feature>(static_cast<int>(value));
 }
 [[nodiscard]] inline bool CodeGeneratorResponse_Feature_Parse(
     ::absl::string_view name, CodeGeneratorResponse_Feature* PROTOBUF_NONNULL value) {
