@@ -1,35 +1,70 @@
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 name: Clear expensive caches to prevent unbounded growth
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 on:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   schedule:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     # Run every 4 months at 10 AM UTC (2 AM PDT)
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     - cron: 0 10 5 */4 *
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   # manual
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   workflow_dispatch:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 permissions:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   contents: read
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 jobs:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   bazel-repository-cache:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     strategy:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       fail-fast: false   # Don't cancel all jobs if one fails.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       matrix:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         os: [ubuntu-latest, macos-latest, windows-latest]
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     name: Clear Bazel repository cache ${{ matrix.os }}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     runs-on: ${{ matrix.os }}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     permissions:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       actions: write # permission is required to delete caches
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       contents: read
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     steps:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7  # v5.0.2
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         with:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           path: ${{ github.workspace }}/${{ steps.output.outputs.repository-cache }}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           key: repository-cache-${{ github.ref_name }}-${{ runner.os }}-reset-${{ github.sha }}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - name: Create an empty cache with a single file
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         run: |
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           rm -rf .repository-cache
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           mkdir -p .repository-cache
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           touch .repository-cache/reset_file

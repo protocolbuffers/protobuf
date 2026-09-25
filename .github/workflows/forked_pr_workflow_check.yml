@@ -1,30 +1,60 @@
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 name: Forked PR workflow check
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 # This workflow prevents modifications to our workflow files in PRs from forked
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 # repositories.  Since tests in these PRs always use the workflows in the
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 # *target* branch, modifications to these files can't be properly tested.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 on:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   # safe presubmit
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   pull_request:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     branches:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - main
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - '[0-9]+.x'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       # The 21.x branch still uses Kokoro
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - '!21.x'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       # For testing purposes so we can stage this on the `gha` branch.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - gha
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     paths:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - '.github/workflows/**'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 permissions:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   contents: read
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 jobs:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   check:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     name: Check PR source
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     runs-on: ubuntu-latest
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     steps:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - run: >
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           ${{ github.event.pull_request.head.repo.full_name == 'protocolbuffers/protobuf' }} ||
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           (echo "This pull request is from an unsafe fork (${{ github.event.pull_request.head.repo.full_name }}) and isn't allowed to modify workflow files!" && exit 1)

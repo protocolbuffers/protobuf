@@ -1,38 +1,76 @@
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 # Publish new releases to Bazel Central Registry.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 name: Publish to BCR
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 on:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   # Run the publish workflow after a successful release
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   # Will be triggered from the release.yaml workflow
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   workflow_call:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     inputs:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       tag_name:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         required: true
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         type: string
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     secrets:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       # This token should be owned by https://github.com/protobuf-team-bot
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       BOT_ACCESS_TOKEN:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         required: true
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   # In case of problems, let release engineers retry by manually dispatching
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   # the workflow from the GitHub UI
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   workflow_dispatch:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     inputs:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       tag_name:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         description: git tag being released
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         required: true
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         type: string
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 jobs:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   publish:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     uses: bazel-contrib/publish-to-bcr/.github/workflows/publish.yaml@v1.0.0
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     with:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       attest: false # protobuf releases are not created with provenance attestations
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       draft: false
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       tag_name: ${{ inputs.tag_name }}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       # GitHub repository which is a fork of the upstream where the Pull Request will be opened.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       registry_fork: protocolbuffers/bazel-central-registry
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     permissions:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       attestations: write
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       contents: write
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       id-token: write
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     secrets:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       # Necessary to push to the BCR fork, and to open a pull request against a registry
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       publish_token: ${{ secrets.BOT_ACCESS_TOKEN }}
