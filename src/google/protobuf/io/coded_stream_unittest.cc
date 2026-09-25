@@ -1576,6 +1576,58 @@ TEST_F(CodedStreamTest, RecursionLimit) {
   EXPECT_FALSE(coded_input.IncrementRecursionDepth());  // 7
 }
 
+TEST_F(CodedStreamTest, ReadLengthAndPushLimitBoundaries) {
+  // 1. Normal case: length 5 followed by "hello"
+  {
+    uint8_t bytes[] = {0x05, 'h', 'e', 'l', 'l', 'o'};
+    ArrayInputStream input(bytes, sizeof(bytes));
+    CodedInputStream coded_input(&input);
+
+    CodedInputStream::Limit limit = coded_input.ReadLengthAndPushLimit();
+    EXPECT_EQ(5, coded_input.BytesUntilLimit());
+    std::string str;
+    EXPECT_TRUE(coded_input.ReadString(&str, 5));
+    EXPECT_EQ("hello", str);
+    EXPECT_TRUE(coded_input.ConsumedEntireMessage());
+    coded_input.PopLimit(limit);
+  }
+
+  // 2. INT_MAX boundary: length = INT_MAX (0x7FFFFFFF)
+  {
+    uint8_t bytes[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x07};
+    ArrayInputStream input(bytes, sizeof(bytes));
+    CodedInputStream coded_input(&input);
+
+    CodedInputStream::Limit limit = coded_input.ReadLengthAndPushLimit();
+    EXPECT_EQ(-1, coded_input.BytesUntilLimit());
+    coded_input.PopLimit(limit);
+  }
+
+  // 3. Overflow boundary: 0x80000000 (INT_MAX + 1)
+  {
+    uint8_t bytes[] = {0x80, 0x80, 0x80, 0x80, 0x08, 'h', 'e', 'l', 'l', 'o'};
+    ArrayInputStream input(bytes, sizeof(bytes));
+    CodedInputStream coded_input(&input);
+
+    CodedInputStream::Limit limit = coded_input.ReadLengthAndPushLimit();
+    EXPECT_EQ(0, coded_input.BytesUntilLimit());
+    EXPECT_TRUE(coded_input.ConsumedEntireMessage());
+    coded_input.PopLimit(limit);
+  }
+
+  // 4. Maximum 32-bit unsigned integer: UINT_MAX (0xFFFFFFFF)
+  {
+    uint8_t bytes[] = {0xFF, 0xFF, 0xFF, 0xFF, 0x0F, 't', 'e', 's', 't'};
+    ArrayInputStream input(bytes, sizeof(bytes));
+    CodedInputStream coded_input(&input);
+
+    CodedInputStream::Limit limit = coded_input.ReadLengthAndPushLimit();
+    EXPECT_EQ(0, coded_input.BytesUntilLimit());
+    EXPECT_TRUE(coded_input.ConsumedEntireMessage());
+    coded_input.PopLimit(limit);
+  }
+}
+
 
 class ReallyBigInputStream : public ZeroCopyInputStream {
  public:
