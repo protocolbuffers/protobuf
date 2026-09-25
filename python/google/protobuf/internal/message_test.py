@@ -874,6 +874,13 @@ class MessageTest(unittest.TestCase):
     req = more_messages_pb2.RequiredField()
     more_messages_pb2.RequiredWrapper(request=req)
 
+  def testByteSizeWithMissingRequiredField(self, message_module):
+    del message_module  # Unused.
+    req = more_messages_pb2.RequiredField()
+    self.assertFalse(req.IsInitialized())
+    # Should not raise EncodeError
+    self.assertEqual(req.ByteSize(), 0)
+
   def testMergeFromMissingRequiredField(self, message_module):
     msg = more_messages_pb2.RequiredField()
     message = more_messages_pb2.RequiredField()

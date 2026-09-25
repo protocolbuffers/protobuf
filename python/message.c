@@ -1635,7 +1635,10 @@ static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
   // moment upb does not have a "byte size" function, so we just serialize to
   // string and get the size of the string.
   PyObject* subargs = PyTuple_New(0);
-  PyObject* serialized = PyUpb_Message_SerializeToString(self, subargs, NULL);
+  // SerializePartialToString because Message.ByteSize should not raise
+  // EncodeError if required fields are not set, unlike SerializeToString.
+  PyObject* serialized =
+      PyUpb_Message_SerializePartialToString(self, subargs, NULL);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
   size_t size = PyBytes_Size(serialized);
