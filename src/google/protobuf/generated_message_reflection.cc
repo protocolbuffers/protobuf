@@ -1299,6 +1299,7 @@ void Reflection::SwapFieldsImpl(
   absl::flat_hash_set<int> swapped_oneof;
 
   for (const auto* field : fields) {
+    USAGE_CHECK_MESSAGE_TYPE(SwapFields);
     if (field->is_extension()) {
       if constexpr (unsafe_shallow_swap) {
         MutableExtensionSet(message1)->UnsafeShallowSwapExtension(
