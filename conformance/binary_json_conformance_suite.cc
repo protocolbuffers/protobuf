@@ -1774,6 +1774,14 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalLengths() {
                        WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
                    "\x80\x80\x80\x80\x10"),
       "BadLength_Varint32BitOverflow", REQUIRED);
+
+  // A length where the varint is more than 5 bytes, even if the decoded value
+  // is small. Lengths in protobuf are uint32 and must be at most 5 bytes.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(string_field->number(),
+                       WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                   "\x80\x80\x80\x80\x80", std::string("\0", 1)),
+      "BadLength_OverlongVarint", REQUIRED);
 }
 
 template <typename MessageType>

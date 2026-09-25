@@ -75,6 +75,7 @@ Required.Editions_Proto3.ProtobufInput.BadTag_FieldNumberTooHigh                
 Required.Proto3.ProtobufInput.BadTag_FieldNumberTooHigh                                                            # Should have failed to parse, but didn't.
 Required.Editions_Proto3.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                           # Should have failed to parse, but didn't.
 Required.Proto3.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                    # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadLength_OverlongVarint                                                                  # Should have failed to parse, but didn't.
 Required.Editions_Proto3.ProtobufInput.BadTag_OverlongVarint                                                       # Should have failed to parse, but didn't.
 Required.Proto3.ProtobufInput.BadTag_OverlongVarint                                                                # Should have failed to parse, but didn't.
 Required.Editions_Proto3.ProtobufInput.BadTag_VarintMoreThanTenBytes                                               # Should have failed to parse, but didn't.
