@@ -444,7 +444,7 @@ class EncodedDescriptorDatabase::DescriptorIndex {
  private:
   friend class EncodedDescriptorDatabase;
 
-  bool AddSymbol(absl::string_view symbol);
+  bool AddSymbol(absl::string_view package, absl::string_view symbol);
 
   template <typename DescProto>
   bool AddNestedExtensions(absl::string_view filename,
@@ -572,17 +572,64 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       return parts(index).IsSubSymbolOf({super_symbol, ""});
     }
 
+    template <typename Super>
+    bool IsSubSymbolOf(const DescriptorIndex& index,
+                       const Super& super_symbol) const {
+      if (data_offset == super_symbol.data_offset) {
+        return IsSubSymbol(symbol(index), super_symbol.symbol(index));
+      }
+      return parts(index).IsSubSymbolOf(super_symbol.parts(index));
+    }
+  };
+
+  struct UnencodedSymbolEntry {
+    int data_offset;
+    absl::string_view pkg;
+    absl::string_view sym;
+
+    absl::string_view package(const DescriptorIndex&) const { return pkg; }
+    absl::string_view symbol(const DescriptorIndex&) const { return sym; }
+
+    SymbolEntry::Parts parts(const DescriptorIndex&) const {
+      if (pkg.empty()) return {sym, ""};
+      return {pkg, sym};
+    }
+
+    std::string AsString(const DescriptorIndex&) const {
+      return absl::StrCat(pkg, pkg.empty() ? "" : ".", sym);
+    }
+
     bool IsSubSymbolOf(const DescriptorIndex& index,
                        const SymbolEntry& super_symbol) const {
+      if (data_offset == super_symbol.data_offset) {
+        return IsSubSymbol(sym, super_symbol.symbol(index));
+      }
       return parts(index).IsSubSymbolOf(super_symbol.parts(index));
     }
   };
 
   struct SymbolCompare {
+    using is_transparent = void;
     const DescriptorIndex& index;
 
-    bool operator()(const SymbolEntry& lhs, const SymbolEntry& rhs) const {
+    template <typename Lhs, typename Rhs>
+    bool Compare(const Lhs& lhs, const Rhs& rhs) const {
+      if (lhs.data_offset == rhs.data_offset) {
+        return lhs.symbol(index) < rhs.symbol(index);
+      }
       return lhs.parts(index) < rhs.parts(index);
+    }
+
+    bool operator()(const SymbolEntry& lhs, const SymbolEntry& rhs) const {
+      return Compare(lhs, rhs);
+    }
+    bool operator()(const UnencodedSymbolEntry& lhs,
+                    const SymbolEntry& rhs) const {
+      return Compare(lhs, rhs);
+    }
+    bool operator()(const SymbolEntry& lhs,
+                    const UnencodedSymbolEntry& rhs) const {
+      return Compare(lhs, rhs);
     }
 
     bool operator()(absl::string_view lhs, const SymbolEntry& rhs) const {
@@ -715,19 +762,20 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
     return false;
   }
 
+  const absl::string_view package = file.package();
   for (const auto& message_type : file.message_type()) {
-    if (!AddSymbol(message_type.name())) return false;
+    if (!AddSymbol(package, message_type.name())) return false;
     if (!AddNestedExtensions(file.name(), message_type)) return false;
   }
   for (const auto& enum_type : file.enum_type()) {
-    if (!AddSymbol(enum_type.name())) return false;
+    if (!AddSymbol(package, enum_type.name())) return false;
   }
   for (const auto& extension : file.extension()) {
-    if (!AddSymbol(extension.name())) return false;
+    if (!AddSymbol(package, extension.name())) return false;
     if (!AddExtension(file.name(), extension)) return false;
   }
   for (const auto& service : file.service()) {
-    if (!AddSymbol(service.name())) return false;
+    if (!AddSymbol(package, service.name())) return false;
   }
 
   return true;
@@ -763,9 +811,10 @@ static bool CheckForMutualSubsymbols(const SymbolEntry& symbol_entry,
 }
 
 bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
-    absl::string_view symbol) {
-  SymbolEntry entry = {static_cast<int>(all_values_.size() - 1),
-                       EncodeString(symbol)};
+    absl::string_view package, absl::string_view symbol) {
+  const int data_offset = static_cast<int>(all_values_.size() - 1);
+  SymbolEntry entry = {data_offset, EncodeString(symbol)};
+  UnencodedSymbolEntry unencoded = {data_offset, package, symbol};
 
   // We need to make sure not to violate our map invariant.
 
@@ -773,21 +822,23 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
   // relies on the fact that '.' sorts before all other characters that are
   // valid in symbol names).
   if (!ValidateSymbolName(symbol)) {
-    ABSL_LOG(ERROR) << "Invalid symbol name: " << entry.AsString(*this);
+    ABSL_LOG(ERROR) << "Invalid symbol name: " << unencoded.AsString(*this);
     return false;
   }
 
-  auto iter = FindLastLessOrEqual(&by_symbol_, entry);
-  if (!CheckForMutualSubsymbols(entry, &iter, by_symbol_.end(), *this)) {
+  auto iter = FindLastLessOrEqual(&by_symbol_, unencoded);
+  if (!CheckForMutualSubsymbols(unencoded, &iter, by_symbol_.end(), *this)) {
     return false;
   }
 
   // Same, but on by_symbol_flat_
-  auto flat_iter =
-      FindLastLessOrEqual(&by_symbol_flat_, entry, by_symbol_.key_comp());
-  if (!CheckForMutualSubsymbols(entry, &flat_iter, by_symbol_flat_.end(),
-                                *this)) {
-    return false;
+  if (!by_symbol_flat_.empty()) {
+    auto flat_iter =
+        FindLastLessOrEqual(&by_symbol_flat_, unencoded, by_symbol_.key_comp());
+    if (!CheckForMutualSubsymbols(unencoded, &flat_iter, by_symbol_flat_.end(),
+                                  *this)) {
+      return false;
+    }
   }
 
   // OK, no conflicts.
@@ -875,6 +926,11 @@ EncodedDescriptorDatabase::DescriptorIndex::FindExtension(
 template <typename T, typename Less>
 static void MergeIntoFlat(absl::btree_set<T, Less>* s, std::vector<T>* flat) {
   if (s->empty()) return;
+  if (flat->empty()) {
+    flat->assign(s->begin(), s->end());
+    s->clear();
+    return;
+  }
   std::vector<T> new_flat(s->size() + flat->size());
   std::merge(s->begin(), s->end(), flat->begin(), flat->end(), &new_flat[0],
              s->key_comp());
