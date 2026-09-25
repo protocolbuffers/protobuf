@@ -120,6 +120,13 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     int decode_options, upb_Arena* arena, upb_MessageValue* value) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
+  // Promotion stores a upb_Message* in the extension slot. Repeated
+  // extensions are read as upb_Array* by the encoder and accessors, so
+  // promoting a repeated message extension is a type confusion. Repeated
+  // unknowns should use upb_MiniTable_PromoteUnknownToMessageArray.
+  if (!upb_MiniTableField_IsScalar(upb_MiniTableExtension_ToField(ext_table))) {
+    return kUpb_GetExtension_ParseError;
+  }
   const upb_Extension* extension =
       UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
   if (extension) {
