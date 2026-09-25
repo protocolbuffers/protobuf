@@ -529,6 +529,53 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       }
       return consume_part(symbol(index));
     }
+
+    static char CharAt(absl::string_view pkg, absl::string_view sym,
+                       size_t pos) {
+      if (pkg.empty()) return sym[pos];
+      if (pos < pkg.size()) return pkg[pos];
+      if (pos == pkg.size()) return '.';
+      return sym[pos - pkg.size() - 1];
+    }
+
+    bool IsSubSymbolOf(const DescriptorIndex& index,
+                       const SymbolEntry& super) const {
+      const absl::string_view a_pkg = package(index);
+      const absl::string_view a_sym = symbol(index);
+      const absl::string_view b_pkg = super.package(index);
+      const absl::string_view b_sym = super.symbol(index);
+      const size_t a_len =
+          a_pkg.size() + (a_pkg.empty() ? 0 : 1) + a_sym.size();
+      const size_t b_len =
+          b_pkg.size() + (b_pkg.empty() ? 0 : 1) + b_sym.size();
+      if (a_len > b_len) return false;
+      if (a_len < b_len && CharAt(b_pkg, b_sym, a_len) != '.') return false;
+      if (data_offset == super.data_offset) {
+        return absl::StartsWith(b_sym, a_sym);
+      }
+      absl::string_view a_parts[3] = {
+          a_pkg, a_pkg.empty() ? absl::string_view{} : ".", a_sym};
+      absl::string_view b_parts[3] = {
+          b_pkg, b_pkg.empty() ? absl::string_view{} : ".", b_sym};
+      int i = 0, j = 0;
+      while (i < 3) {
+        if (a_parts[i].empty()) {
+          ++i;
+          continue;
+        }
+        if (b_parts[j].empty()) {
+          ++j;
+          continue;
+        }
+        const size_t len = std::min(a_parts[i].size(), b_parts[j].size());
+        if (a_parts[i].substr(0, len) != b_parts[j].substr(0, len)) {
+          return false;
+        }
+        a_parts[i].remove_prefix(len);
+        b_parts[j].remove_prefix(len);
+      }
+      return true;
+    }
   };
 
   struct SymbolCompare {
@@ -546,6 +593,9 @@ class EncodedDescriptorDatabase::DescriptorIndex {
     }
 
     bool operator()(const SymbolEntry& lhs, const SymbolEntry& rhs) const {
+      if (lhs.data_offset == rhs.data_offset) {
+        return lhs.symbol(index) < rhs.symbol(index);
+      }
       auto lhs_parts = GetParts(lhs);
       auto rhs_parts = GetParts(rhs);
 
@@ -558,7 +608,38 @@ class EncodedDescriptorDatabase::DescriptorIndex {
       } else if (lhs_parts.first.size() == rhs_parts.first.size()) {
         return lhs_parts.second < rhs_parts.second;
       }
-      return AsString(lhs) < AsString(rhs);
+      // One entry's first part is a prefix of the other's (for example,
+      // package="foo", symbol="bar.Baz" vs. package="foo.bar", symbol="Qux", or
+      // when one package is empty). Compare the full symbol name
+      // "<package>.<symbol>" piecewise across string_view segments without
+      // allocating temporary strings.
+      const absl::string_view a_pkg = lhs.package(index);
+      const absl::string_view b_pkg = rhs.package(index);
+      absl::string_view a_parts[3] = {
+          a_pkg, a_pkg.empty() ? absl::string_view{} : ".", lhs.symbol(index)};
+      absl::string_view b_parts[3] = {
+          b_pkg, b_pkg.empty() ? absl::string_view{} : ".", rhs.symbol(index)};
+      int i = 0, j = 0;
+      while (i < 3 && j < 3) {
+        if (a_parts[i].empty()) {
+          ++i;
+          continue;
+        }
+        if (b_parts[j].empty()) {
+          ++j;
+          continue;
+        }
+        const size_t len = std::min(a_parts[i].size(), b_parts[j].size());
+        if (int res =
+                a_parts[i].substr(0, len).compare(b_parts[j].substr(0, len))) {
+          return res < 0;
+        }
+        a_parts[i].remove_prefix(len);
+        b_parts[j].remove_prefix(len);
+      }
+      while (i < 3 && a_parts[i].empty()) ++i;
+      while (j < 3 && b_parts[j].empty()) ++j;
+      return i == 3 && j < 3;
     }
 
     bool operator()(absl::string_view lhs, const SymbolEntry& rhs) const {
@@ -722,12 +803,13 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
   return true;
 }
 
-template <typename Iter, typename Iter2, typename Index>
-static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
-                                     Iter2 end, const Index& index) {
+template <typename SymbolEntry, typename Iter, typename Iter2, typename Index>
+static bool CheckForMutualSubsymbols(const SymbolEntry& symbol_entry,
+                                     Iter* iter, Iter2 end,
+                                     const Index& index) {
   if (*iter != end) {
-    if (IsSubSymbol((*iter)->AsString(index), symbol_name)) {
-      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+    if ((*iter)->IsSubSymbolOf(index, symbol_entry)) {
+      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_entry.AsString(index)
                       << "\" conflicts with the existing symbol \""
                       << (*iter)->AsString(index) << "\".";
       return false;
@@ -740,8 +822,8 @@ static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
     // to increment it.
     ++*iter;
 
-    if (*iter != end && IsSubSymbol(symbol_name, (*iter)->AsString(index))) {
-      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+    if (*iter != end && symbol_entry.IsSubSymbolOf(index, **iter)) {
+      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_entry.AsString(index)
                       << "\" conflicts with the existing symbol \""
                       << (*iter)->AsString(index) << "\".";
       return false;
@@ -754,7 +836,6 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
     absl::string_view symbol) {
   SymbolEntry entry = {static_cast<int>(all_values_.size() - 1),
                        EncodeString(symbol)};
-  std::string entry_as_string = entry.AsString(*this);
 
   // We need to make sure not to violate our map invariant.
 
@@ -762,21 +843,20 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
   // relies on the fact that '.' sorts before all other characters that are
   // valid in symbol names).
   if (!ValidateSymbolName(symbol)) {
-    ABSL_LOG(ERROR) << "Invalid symbol name: " << entry_as_string;
+    ABSL_LOG(ERROR) << "Invalid symbol name: " << entry.AsString(*this);
     return false;
   }
 
   auto iter = FindLastLessOrEqual(&by_symbol_, entry);
-  if (!CheckForMutualSubsymbols(entry_as_string, &iter, by_symbol_.end(),
-                                *this)) {
+  if (!CheckForMutualSubsymbols(entry, &iter, by_symbol_.end(), *this)) {
     return false;
   }
 
   // Same, but on by_symbol_flat_
   auto flat_iter =
       FindLastLessOrEqual(&by_symbol_flat_, entry, by_symbol_.key_comp());
-  if (!CheckForMutualSubsymbols(entry_as_string, &flat_iter,
-                                by_symbol_flat_.end(), *this)) {
+  if (!CheckForMutualSubsymbols(entry, &flat_iter, by_symbol_flat_.end(),
+                                *this)) {
     return false;
   }
 
