@@ -73,6 +73,16 @@
 #undef ERROR_RETRY
 #pragma push_macro("ERROR_TIMEOUT")
 #undef ERROR_TIMEOUT
+#pragma push_macro("FILE_TYPE_UNKNOWN")
+#undef FILE_TYPE_UNKNOWN
+#pragma push_macro("FILE_TYPE_DISK")
+#undef FILE_TYPE_DISK
+#pragma push_macro("FILE_TYPE_CHAR")
+#undef FILE_TYPE_CHAR
+#pragma push_macro("FILE_TYPE_PIPE")
+#undef FILE_TYPE_PIPE
+#pragma push_macro("FILE_TYPE_REMOTE")
+#undef FILE_TYPE_REMOTE
 #pragma push_macro("GetClassName")
 #undef GetClassName
 #pragma push_macro("GetCurrentTime")
