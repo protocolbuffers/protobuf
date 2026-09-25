@@ -133,8 +133,7 @@ constexpr auto Mixin::_Internal::GenerateClassData() {
       Super_::GetNewImpl<Mixin>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
       &Mixin::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Mixin, _impl_._cached_size_),
       &file_reflection_data[2],
@@ -309,8 +308,7 @@ constexpr auto Method::_Internal::GenerateClassData() {
       Super_::GetNewImpl<Method>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
       &Method::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Method, _impl_._cached_size_),
       &file_reflection_data[1],
@@ -493,8 +491,7 @@ constexpr auto Api::_Internal::GenerateClassData() {
       Super_::GetNewImpl<Api>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
       &Api::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Api, _impl_._cached_size_),
       &file_reflection_data[0],
@@ -765,7 +762,7 @@ Api::GetClassData() const {
   return &Api_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Api::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Api::Clear(MessageLite& base) {
   Api& this_ = static_cast<Api&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Api::Clear() {
@@ -807,7 +804,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Api::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Api::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Api& this_ = static_cast<const Api&>(base);
@@ -917,7 +914,7 @@ PROTOBUF_NOINLINE void Api::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Api::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t Api::ByteSizeLong(const MessageLite& base) {
   const Api& this_ = static_cast<const Api&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Api::ByteSizeLong() const {
@@ -1202,7 +1199,7 @@ Method::GetClassData() const {
   return &Method_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Method::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Method::Clear(MessageLite& base) {
   Method& this_ = static_cast<Method&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Method::Clear() {
@@ -1243,7 +1240,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Method::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Method::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Method& this_ = static_cast<const Method&>(base);
@@ -1350,7 +1347,7 @@ PROTOBUF_NOINLINE void Method::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Method::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t Method::ByteSizeLong(const MessageLite& base) {
   const Method& this_ = static_cast<const Method&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Method::ByteSizeLong() const {
@@ -1599,7 +1596,7 @@ Mixin::GetClassData() const {
   return &Mixin_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Mixin::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Mixin::Clear(MessageLite& base) {
   Mixin& this_ = static_cast<Mixin&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Mixin::Clear() {
@@ -1624,7 +1621,7 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Mixin::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Mixin::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Mixin& this_ = static_cast<const Mixin&>(base);
@@ -1672,7 +1669,7 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Mixin::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t Mixin::ByteSizeLong(const MessageLite& base) {
   const Mixin& this_ = static_cast<const Mixin&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Mixin::ByteSizeLong() const {

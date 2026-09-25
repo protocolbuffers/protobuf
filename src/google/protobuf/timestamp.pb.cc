@@ -121,8 +121,7 @@ constexpr auto Timestamp::_Internal::GenerateClassData() {
       Super_::GetNewImpl<Timestamp>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
       &Timestamp::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Timestamp, _impl_._cached_size_),
       &file_reflection_data[0],
@@ -260,7 +259,7 @@ Timestamp::GetClassData() const {
   return &Timestamp_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Timestamp::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Timestamp::Clear(MessageLite& base) {
   Timestamp& this_ = static_cast<Timestamp&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Timestamp::Clear() {
@@ -284,7 +283,7 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Timestamp::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Timestamp::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Timestamp& this_ = static_cast<const Timestamp&>(base);
@@ -330,7 +329,7 @@ PROTOBUF_NOINLINE void Timestamp::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Timestamp::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t Timestamp::ByteSizeLong(const MessageLite& base) {
   const Timestamp& this_ = static_cast<const Timestamp&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Timestamp::ByteSizeLong() const {
