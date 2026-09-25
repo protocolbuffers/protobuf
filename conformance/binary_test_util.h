@@ -8,15 +8,69 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_BINARY_TEST_UTIL_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_BINARY_TEST_UTIL_H__
 
+#include <cstdint>
+#include <string>
+#include <vector>
+
+#include "absl/base/nullability.h"
+#include "absl/strings/string_view.h"
 #include "absl/types/span.h"
+#include "conformance/binary_wireformat.h"
 #include "google/protobuf/descriptor.h"
 
-// Helpers shared by the gtest-based binary conformance tests: the field-type
-// tables the tests are parameterized over.  Deliberately gtest-free.
+// Helpers shared by the gtest-based binary conformance tests: looking up the
+// test-message fields exercised for a given field type, the parameter sets the
+// tests are instantiated over, and the stringification of those parameters for
+// gtest names.  The lookups are ported from the legacy
+// BinaryAndJsonConformanceSuite with identical semantics, since the requests
+// built with them must stay byte-identical to the legacy ones.
+//
+// This header is deliberately gtest-free, so that the legacy suite can share
+// it while both exist.  The fixtures and INSTANTIATE_TEST_SUITE_P name
+// generators built on top of these helpers live in message_type_fixtures.h.
+//
+// TODO: b/410122237 - GetFieldForMapType(), GetFieldForOneofType(),
+// GetDefaultValue(), GetNonDefaultValue() and friends still live in
+// binary_json_conformance_suite.cc and move here when their test groups
+// migrate.
 
 namespace google {
 namespace protobuf {
 namespace conformance {
+
+// Restricts GetFieldForType() to packed or unpacked repeated fields.  (Named
+// Packedness rather than Packed because Packed() is already the wire-format
+// builder in binary_wireformat.h.)
+enum class Packedness {
+  kUnspecified = 0,
+  kPacked = 1,
+  kUnpacked = 2,
+};
+
+// Returns the first field of `message`, in declaration order, whose type is
+// `type` and whose cardinality matches `repeated`.  When `packedness` isn't
+// kUnspecified only fields whose is_packed() matches it are considered, which
+// is how proto2 and proto3 messages (with their different packing defaults)
+// select their [packed = true] / [packed = false] test fields.  Check-fails if
+// `message` has no such field, exactly like the legacy suite; in particular,
+// kPacked with `repeated` false is always fatal, since singular fields are
+// never packed.
+const FieldDescriptor* absl_nonnull GetFieldForType(
+    const Descriptor& message, FieldDescriptor::Type type, bool repeated,
+    Packedness packedness = Packedness::kUnspecified);
+
+// `field`'s number as the wire-format builders of binary_wireformat.h take it
+// (FieldDescriptor::number() is an int; field numbers are never negative).
+inline uint32_t FieldNumber(const FieldDescriptor& field) {
+  return static_cast<uint32_t>(field.number());
+}
+
+// Returns the wire type a non-packed value of `type` is encoded with.
+WireType WireTypeForFieldType(FieldDescriptor::Type type);
+
+// Returns the upper-case name of `type` as it appears in legacy conformance
+// test names, e.g. "INT32", "SFIXED64" or "MESSAGE".
+std::string UpperCaseTypeName(FieldDescriptor::Type type);
 
 // Every field type except TYPE_GROUP (the 17 types the test messages have
 // singular, repeated, packed and unpacked fields of), in the order the legacy
@@ -34,6 +88,41 @@ absl::Span<const FieldDescriptor::Type> PackableFieldTypes();
 // The subset of AllFieldTypesExceptGroup() encoded length-delimited, i.e. the
 // non-packable ones: STRING, BYTES, MESSAGE, in the same order.
 absl::Span<const FieldDescriptor::Type> LengthDelimitedFieldTypes();
+
+// All four TestAllTypes message types the binary conformance tests run over,
+// in the legacy order: Proto3, Proto2, Editions_Proto3, Editions_Proto2.  The
+// editions variants are skipped at runtime by the ConformanceTest fixture when
+// --maximum_edition doesn't cover them (see MessageUnderTest() and
+// CONFORMANCE_SKIP_IF_UNSUPPORTED in test_environment.h).
+//
+// Calling this from INSTANTIATE_TEST_SUITE_P is fine: gtest evaluates the
+// parameter generators during test registration (inside InitGoogleTest() /
+// RUN_ALL_TESTS()), not during static initialization, so calling the
+// generated messages' descriptor() accessors there is unproblematic.
+std::vector<const Descriptor*> AllTestMessageTypes();
+
+// ParamName() renders one test parameter as a component of a gtest parameter
+// name.  Every overload yields a non-empty string of letters and digits only,
+// so components can be joined with "_" (see TupleParamName() in
+// message_type_fixtures.h) and the result is always a valid gtest name.
+// Add an overload here for each new parameter type the conformance tests are
+// instantiated over.
+
+// `text` with every character that isn't a letter or digit removed, e.g.
+// "Editions_Proto2" becomes "EditionsProto2".  `text` must contain at least one
+// letter or digit.
+std::string ParamName(absl::string_view text);
+
+// The edition identifier of `message` as used in conformance test names (see
+// GetEditionIdentifier() in naming.h), minus its underscore: "Proto3",
+// "Proto2", "EditionsProto3", "EditionsProto2" or "EditionUnstable".
+std::string ParamName(const Descriptor* absl_nonnull message);
+
+// The upper-case type name, e.g. "INT32"; see UpperCaseTypeName().
+std::string ParamName(FieldDescriptor::Type type);
+
+// The decimal representation of `value`, which must not be negative.
+std::string ParamName(int value);
 
 }  // namespace conformance
 }  // namespace protobuf
