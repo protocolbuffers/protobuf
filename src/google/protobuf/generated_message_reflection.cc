@@ -4115,15 +4115,33 @@ void UnknownFieldSetSerializer(const uint8_t* base, uint32_t offset,
 
 bool IsDescendant(const Message& root, const Message& message) {
   const Reflection* reflection = root.GetReflection();
-  std::vector<const FieldDescriptor*> fields;
-  reflection->ListFields(root, &fields);
+  if (reflection->schema_.IsDefaultInstance(root)) return false;
 
-  for (const auto* field : fields) {
-    // Skip non-message fields.
+  const Descriptor* const descriptor = reflection->descriptor_;
+  const uint32_t* const has_bits =
+      reflection->schema_.HasHasbits() ? reflection->GetHasBits(root) : nullptr;
+
+  int i = -1;
+  for (const FieldDescriptor* field : internal::FieldRange(descriptor)) {
+    ++i;
+    // Skip non-message fields before checking presence.
     if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) continue;
 
     // Optional messages.
     if (!field->is_repeated()) {
+      if (reflection->schema_.InRealOneof(field)) {
+        const uint32_t oneof_case = GetConstRefAtOffset<uint32_t>(
+            root,
+            reflection->schema_.GetOneofCaseOffset(field->containing_oneof()));
+        if (static_cast<int64_t>(oneof_case) != field->number()) continue;
+      } else if (uint32_t hasbit_index =
+                     reflection->schema_.HasBitIndex(field, /*field_index=*/i);
+                 hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
+        if (!IsIndexInHasBitSet(has_bits, hasbit_index)) continue;
+      } else if (!reflection->HasFieldWithHasbits(root, field)) {
+        continue;
+      }
+
       const Message& sub_message = reflection->GetMessage(root, field);
       if (&sub_message == &message || IsDescendant(sub_message, message)) {
         return true;
@@ -4141,6 +4159,7 @@ bool IsDescendant(const Message& root, const Message& message) {
 
       const auto& map = reflection->GetRaw<MapFieldBase>(root, field);
       if (map.IsMapValid()) {
+        if (map.size() == 0) continue;
         const auto end = reflection->ConstMapEnd(&root, field);
         for (auto iter = reflection->ConstMapBegin(&root, field); iter != end;
              ++iter) {
@@ -4155,16 +4174,56 @@ bool IsDescendant(const Message& root, const Message& message) {
 
       // If the map is in state STATE_MODIFIED_REPEATED, then accessing it as a
       // repeated message field will not require syncing.
+      const int count = reflection->FieldSize(root, field);
+      for (int j = 0; j < count; ++j) {
+        const Message& sub_message =
+            reflection->GetRepeatedMessage(root, field, j);
+        if (&sub_message == &message || IsDescendant(sub_message, message)) {
+          return true;
+        }
+      }
+      continue;
     }
 
     // Repeated messages.
-    int count = reflection->FieldSize(root, field);
-    for (int i = 0; i < count; i++) {
-      const Message& sub_message =
-          reflection->GetRepeatedMessage(root, field, i);
+    for (const Message& sub_message :
+         reflection->GetRaw<RepeatedPtrField<Message>>(root, field)) {
       if (&sub_message == &message || IsDescendant(sub_message, message)) {
         return true;
       }
+    }
+  }
+
+  if (reflection->schema_.HasExtensionSet()) {
+    const ExtensionSet& extension_set = reflection->GetExtensionSet(root);
+    if (extension_set.AnyOfNoPrefetch(
+            [&](int /*number*/, const ExtensionSet::Extension& ext) -> bool {
+              if (FieldDescriptor::TypeToCppType(
+                      static_cast<FieldDescriptor::Type>(ext.type)) !=
+                  FieldDescriptor::CPPTYPE_MESSAGE) {
+                return false;
+              }
+              if (ext.is_repeated) {
+                const auto* rep = ext.ptr.repeated_message_value;
+                if (rep == nullptr) return false;
+                for (const MessageLite& sub_lite : *rep) {
+                  const Message& sub_message =
+                      DownCastMessage<Message>(sub_lite);
+                  if (&sub_message == &message ||
+                      IsDescendant(sub_message, message)) {
+                    return true;
+                  }
+                }
+                return false;
+              }
+              if (ext.is_cleared) return false;
+              if (ext.ptr.message_value == nullptr) return false;
+              const Message& sub_message =
+                  DownCastMessage<Message>(*ext.ptr.message_value);
+              return &sub_message == &message ||
+                     IsDescendant(sub_message, message);
+            })) {
+      return true;
     }
   }
 
