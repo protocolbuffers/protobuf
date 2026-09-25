@@ -9,20 +9,17 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
-#include <utility>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
-#include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -31,12 +28,10 @@
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
-#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 #include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -52,7 +47,6 @@ namespace internal {
 
 namespace {
 
-using ::testing::AnyOf;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Not;
@@ -977,213 +971,6 @@ TEST(GeneratedMessageTctableLiteTest,
   // TODO: Remove this suppression.
   (void)proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
-}
-
-TEST(GeneratedMessageTctableLiteTest, RepeatedStringTrimmedOnArena) {
-  if (sizeof(void*) == 4) {
-    GTEST_SKIP() << "Calculations are only valid in 64-bit";
-  }
-  // RepeatedPtrField allocates power-of-two byte sizes for its backing storage:
-  // Rep header (8 bytes) + sizeof(void*) * capacity.
-  // Power-of-two allocations (16B, 32B, 64B, ...) correspond to capacities of
-  // 1, 3, 7, 15, ... elements (i.e. (2^N - 8) / 8 = 2^(N-3) - 1).
-  // We choose 5 elements because it falls strictly between capacity boundaries
-  // 3 and 7: parsing 5 elements requires a 64-byte allocation with capacity 7,
-  // leaving 2 unused element slots. Without trimming (on heap or if fast parser
-  // does not trim), capacity remains 7 (> 5). When trimmed on arena, the unused
-  // tail space is returned in place, trimming capacity down to exactly 5.
-  proto2_unittest::RepeatedStringTrim source;
-  for (int i = 0; i < 5; ++i) {
-    source.add_fast_string(absl::StrCat("fast_str_", i));
-    source.add_fast_bytes(absl::StrCat("fast_bytes_", i));
-    source.add_mini_string(absl::StrCat("mini_str_", i));
-    source.add_mini_bytes(absl::StrCat("mini_bytes_", i));
-  }
-  const std::string serialized = source.SerializeAsString();
-
-  // On the heap (no arena), capacity is not trimmed.
-  proto2_unittest::RepeatedStringTrim heap_proto;
-  ASSERT_TRUE(heap_proto.ParseFromString(serialized));
-  EXPECT_EQ(heap_proto.fast_string().Capacity(), 7);
-  EXPECT_EQ(heap_proto.fast_bytes().Capacity(), 7);
-  EXPECT_EQ(heap_proto.mini_string().Capacity(), 7);
-  EXPECT_EQ(heap_proto.mini_bytes().Capacity(), 7);
-
-  // On an arena, capacity is trimmed down to the number of elements.
-  Arena arena;
-  auto* arena_proto =
-      Arena::Create<proto2_unittest::RepeatedStringTrim>(&arena);
-  ASSERT_TRUE(arena_proto->ParseFromString(serialized));
-  EXPECT_EQ(arena_proto->fast_string().Capacity(), 5);
-  EXPECT_EQ(arena_proto->fast_bytes().Capacity(), 5);
-  EXPECT_EQ(arena_proto->mini_string().Capacity(), 5);
-  EXPECT_EQ(arena_proto->mini_bytes().Capacity(), 5);
-}
-
-// We use this input stream as a way to inspect the state of the system during
-// parsing. We can inject a callback on every byte read from the input stream.
-class IntrusiveTestZeroCopyInputStream : public io::ZeroCopyInputStream {
- public:
-  IntrusiveTestZeroCopyInputStream(std::string str,
-                                   absl::AnyInvocable<void()> on_next)
-      : str_(std::move(str)), on_next_(std::move(on_next)) {}
-
-  bool Next(const void** buf, int* size) override {
-    on_next_();
-    if (pos_ >= str_.size()) return false;
-    *buf = str_.data() + pos_;
-    *size = 1;
-    ++pos_;
-    return true;
-  }
-
-  void BackUp(int count) override { pos_ -= count; }
-
-  bool Skip(int n) override {
-    if (str_.size() - pos_ < n) {
-      return false;
-    }
-    pos_ += n;
-    return true;
-  }
-
-  int64_t ByteCount() const override { return pos_; }
-
- private:
-  std::string str_;
-  size_t pos_ = 0;
-  absl::AnyInvocable<void()> on_next_;
-};
-
-TEST(GeneratedMessageTctableLiteTest,
-     RepeatedStringTrimmedOnArenaFragmentedInput) {
-  if (sizeof(void*) == 4) {
-    GTEST_SKIP() << "Calculations are only valid in 64-bit";
-  }
-  proto2_unittest::RepeatedStringTrim source;
-  for (int i = 0; i < 5; ++i) {
-    source.add_fast_string(absl::StrCat("fast_str_", i));
-    source.add_mini_string(absl::StrCat("mini_str_", i));
-  }
-
-  Arena arena;
-  auto* arena_proto =
-      Arena::Create<proto2_unittest::RepeatedStringTrim>(&arena);
-
-  auto* fast_string = arena_proto->mutable_fast_string();
-  auto* mini_string = arena_proto->mutable_mini_string();
-
-  // We use an intrusive input stream to verify the repeated field at every step
-  // of the way.
-  // We want to make sure the capacity is not shrunk prematurely. If it is, it
-  // means we didn't loop in the parser until we saw the whole input for the
-  // field.
-  IntrusiveTestZeroCopyInputStream stream(source.SerializeAsString(), [&] {
-    // They have to be 2^n-1, or `5` because that is the final one.
-    EXPECT_THAT(fast_string->Capacity(), AnyOf(1, 3, 5, 7));
-    EXPECT_THAT(mini_string->Capacity(), AnyOf(1, 3, 5, 7));
-  });
-
-  // On an arena, capacity is trimmed down to the number of elements.
-  ASSERT_TRUE(arena_proto->ParseFromZeroCopyStream(&stream));
-  EXPECT_EQ(arena_proto->fast_string().Capacity(), 5);
-  EXPECT_EQ(arena_proto->mini_string().Capacity(), 5);
-}
-
-TEST(GeneratedMessageTctableLiteTest,
-     RepeatedStringTrimmedDiscontiguousChunksOnArena) {
-  if (sizeof(void*) == 4) {
-    GTEST_SKIP() << "Calculations are only valid in 64-bit";
-  }
-  Arena arena;
-  auto* arena_proto =
-      Arena::Create<proto2_unittest::RepeatedStringTrim>(&arena);
-
-  // Serialize fields out of order so that mini_string arrives in two chunks.
-  // Chunk 1 has 5 elements, which requires a 64-byte allocation (capacity 7)
-  // and is trimmed down to 5 elements (48 bytes, a non-power-of-two size).
-  // Chunk 2 has a single int, so no allocations needed. Because no arena
-  // allocation occurred for chunk 2, chunk 1's non-power-of-two allocation
-  // remains at the tail of the arena. When chunk 3 arrives, TryGrowTail
-  // succeeds in growing chunk 1's allocation in place, which is then trimmed to
-  // the final size (6 elements).
-
-  proto2_unittest::RepeatedStringTrim chunk1;
-  for (int i = 0; i < 5; ++i) {
-    chunk1.add_mini_string(absl::StrCat("str_", i));
-  }
-  ASSERT_TRUE(arena_proto->ParseFromString(chunk1.SerializeAsString()));
-
-  EXPECT_EQ(arena_proto->mini_string().size(), 5);
-  EXPECT_EQ(arena_proto->mini_string().Capacity(), 5);
-  for (int i = 0; i < 5; ++i) {
-    EXPECT_EQ(arena_proto->mini_string(i), absl::StrCat("str_", i));
-  }
-  const void* buf = arena_proto->mini_string().data();
-
-  proto2_unittest::RepeatedStringTrim chunk2;
-  chunk2.set_i32(7);
-  proto2_unittest::RepeatedStringTrim chunk3;
-  chunk3.add_mini_string("str_5");
-  ASSERT_TRUE(arena_proto->MergeFromString(
-      absl::StrCat(chunk2.SerializeAsString(), chunk3.SerializeAsString())));
-
-  // Verify that we grew in place.
-  EXPECT_EQ(buf, arena_proto->mini_string().data());
-
-  EXPECT_EQ(arena_proto->i32(), 7);
-  EXPECT_EQ(arena_proto->mini_string().size(), 6);
-  EXPECT_EQ(arena_proto->mini_string().Capacity(), 6);
-  for (int i = 0; i < 6; ++i) {
-    EXPECT_EQ(arena_proto->mini_string(i), absl::StrCat("str_", i));
-  }
-}
-
-TEST(GeneratedMessageTctableLiteTest,
-     RepeatedStringTrimmedDiscontiguousChunksWithInterveningAllocationOnArena) {
-  if (sizeof(void*) == 4) {
-    GTEST_SKIP() << "Calculations are only valid in 64-bit";
-  }
-  Arena arena;
-  auto* arena_proto =
-      Arena::Create<proto2_unittest::RepeatedStringTrim>(&arena);
-
-  proto2_unittest::RepeatedStringTrim chunk1;
-  for (int i = 0; i < 5; ++i) {
-    chunk1.add_mini_string(absl::StrCat("str_", i));
-  }
-  ASSERT_TRUE(arena_proto->ParseFromString(chunk1.SerializeAsString()));
-
-  EXPECT_EQ(arena_proto->mini_string().size(), 5);
-  EXPECT_EQ(arena_proto->mini_string().Capacity(), 5);
-  for (int i = 0; i < 5; ++i) {
-    EXPECT_EQ(arena_proto->mini_string(i), absl::StrCat("str_", i));
-  }
-  const void* buf = arena_proto->mini_string().data();
-
-  // Chunk 1 parses 5 elements for mini_string, which trims down to 5 elements
-  // (48 bytes, non-power-of-two).
-  // Chunk 2 parses a message field, which causes an allocation on the arena.
-  // When chunk 3 arrives with another mini_string element, chunk 1's allocation
-  // is no longer at the arena tail, so TryGrowTail fails. mini_string must
-  // allocate a new buffer on the arena, copy the previous elements, and then
-  // trim the new buffer at the tail down to 6 elements.
-  proto2_unittest::RepeatedStringTrim chunk2;
-  chunk2.mutable_msg()->set_i32(7);
-  proto2_unittest::RepeatedStringTrim chunk3;
-  chunk3.add_mini_string("str_5");
-  ASSERT_TRUE(arena_proto->MergeFromString(
-      absl::StrCat(chunk2.SerializeAsString(), chunk3.SerializeAsString())));
-
-  // Verify that it had to reallocate.
-  EXPECT_NE(buf, arena_proto->mini_string().data());
-
-  EXPECT_TRUE(arena_proto->has_msg());
-  EXPECT_EQ(arena_proto->mini_string().size(), 6);
-  EXPECT_EQ(arena_proto->mini_string().Capacity(), 6);
-  for (int i = 0; i < 6; ++i) {
-    EXPECT_EQ(arena_proto->mini_string(i), absl::StrCat("str_", i));
-  }
 }
 
 

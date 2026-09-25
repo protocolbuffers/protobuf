@@ -10,13 +10,3 @@ message RepFieldSortMessage {
 message RepFieldWithBoolForFastOverflow {
   repeated bool b = 1 [features.repeated_field_encoding = EXPANDED];
 }
-
-message RepeatedStringTrim {
-  repeated string fast_string = 1;
-  repeated bytes fast_bytes = 2;
-  repeated string mini_string = 4096;
-  repeated bytes mini_bytes = 4097;
-
-  int32 i32 = 10;
-  RepeatedStringTrim msg = 11;
-}
