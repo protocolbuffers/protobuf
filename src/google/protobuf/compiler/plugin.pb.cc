@@ -119,9 +119,8 @@ inline constexpr Version::Impl_::Impl_(
         patch_{0} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Version::Version(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Version::Version(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -254,9 +253,8 @@ inline constexpr CodeGeneratorResponse_File::Impl_::Impl_(
         generated_code_info_{nullptr} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CodeGeneratorResponse_File::CodeGeneratorResponse_File(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr CodeGeneratorResponse_File::CodeGeneratorResponse_File(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -399,9 +397,8 @@ inline constexpr CodeGeneratorResponse::Impl_::Impl_(
         maximum_edition_{0} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CodeGeneratorResponse::CodeGeneratorResponse(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr CodeGeneratorResponse::CodeGeneratorResponse(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -551,9 +548,8 @@ inline constexpr CodeGeneratorRequest::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr CodeGeneratorRequest::CodeGeneratorRequest(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr CodeGeneratorRequest::CodeGeneratorRequest(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

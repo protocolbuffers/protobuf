@@ -169,9 +169,8 @@ inline constexpr UninterpretedOption_NamePart::Impl_::Impl_(
         is_extension_{false} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr UninterpretedOption_NamePart::UninterpretedOption_NamePart(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr UninterpretedOption_NamePart::UninterpretedOption_NamePart(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -328,9 +327,8 @@ inline constexpr SourceCodeInfo_Location::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr SourceCodeInfo_Location::SourceCodeInfo_Location(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -479,9 +477,8 @@ inline constexpr GeneratedCodeInfo_Annotation::Impl_::Impl_(
         semantic_{static_cast< ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -630,9 +627,8 @@ inline constexpr FieldOptions_FeatureSupport::Impl_::Impl_(
         edition_removed_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -753,9 +749,8 @@ inline constexpr FieldOptions_EditionDefault::Impl_::Impl_(
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldOptions_EditionDefault::FieldOptions_EditionDefault(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FieldOptions_EditionDefault::FieldOptions_EditionDefault(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -850,9 +845,8 @@ constexpr FeatureSet_VisibilityFeature::ParseTableT_ FeatureSet_VisibilityFeatur
 }
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -946,9 +940,8 @@ constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ FeatureSet_ProtoLimitsFeat
 }
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1130,9 +1123,8 @@ inline constexpr FeatureSet::Impl_::Impl_(
         enforce_proto_limits_{static_cast< ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSet::FeatureSet(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FeatureSet::FeatureSet(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1277,9 +1269,8 @@ inline constexpr ExtensionRangeOptions_Declaration::Impl_::Impl_(
         repeated_{false} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1396,9 +1387,8 @@ inline constexpr EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
         end_{0} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1515,9 +1505,8 @@ inline constexpr DescriptorProto_ReservedRange::Impl_::Impl_(
         end_{0} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1682,9 +1671,8 @@ inline constexpr UninterpretedOption::Impl_::Impl_(
         double_value_{0.} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr UninterpretedOption::UninterpretedOption(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr UninterpretedOption::UninterpretedOption(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1800,9 +1788,8 @@ inline constexpr SourceCodeInfo::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr SourceCodeInfo::SourceCodeInfo(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr SourceCodeInfo::SourceCodeInfo(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -1918,9 +1905,8 @@ inline constexpr GeneratedCodeInfo::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr GeneratedCodeInfo::GeneratedCodeInfo(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr GeneratedCodeInfo::GeneratedCodeInfo(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -2049,9 +2035,8 @@ inline constexpr FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -2187,9 +2172,8 @@ inline constexpr ServiceOptions::Impl_::Impl_(
         deprecated_{false} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ServiceOptions::ServiceOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr ServiceOptions::ServiceOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -2317,9 +2301,8 @@ inline constexpr OneofOptions::Impl_::Impl_(
         features_{nullptr} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr OneofOptions::OneofOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr OneofOptions::OneofOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -2466,9 +2449,8 @@ inline constexpr MethodOptions::Impl_::Impl_(
         idempotency_level_{static_cast< ::google::protobuf::MethodOptions_IdempotencyLevel >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr MethodOptions::MethodOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr MethodOptions::MethodOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -2624,9 +2606,8 @@ inline constexpr MessageOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr MessageOptions::MessageOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr MessageOptions::MessageOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -2907,9 +2888,8 @@ inline constexpr FileOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FileOptions::FileOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FileOptions::FileOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -3123,9 +3103,8 @@ inline constexpr FieldOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldOptions::FieldOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FieldOptions::FieldOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -3253,9 +3232,8 @@ inline constexpr FeatureSetDefaults::Impl_::Impl_(
         maximum_edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FeatureSetDefaults::FeatureSetDefaults(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FeatureSetDefaults::FeatureSetDefaults(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -3404,9 +3382,8 @@ inline constexpr ExtensionRangeOptions::Impl_::Impl_(
         verification_{static_cast< ::google::protobuf::ExtensionRangeOptions_VerificationState >(1)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ExtensionRangeOptions::ExtensionRangeOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr ExtensionRangeOptions::ExtensionRangeOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -3557,9 +3534,8 @@ inline constexpr EnumValueOptions::Impl_::Impl_(
         debug_redact_{false} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumValueOptions::EnumValueOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr EnumValueOptions::EnumValueOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -3706,9 +3682,8 @@ inline constexpr EnumOptions::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumOptions::EnumOptions(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr EnumOptions::EnumOptions(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -3829,9 +3804,8 @@ inline constexpr OneofDescriptorProto::Impl_::Impl_(
         options_{nullptr} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr OneofDescriptorProto::OneofDescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr OneofDescriptorProto::OneofDescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -3986,9 +3960,8 @@ inline constexpr MethodDescriptorProto::Impl_::Impl_(
         server_streaming_{false} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr MethodDescriptorProto::MethodDescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr MethodDescriptorProto::MethodDescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -4184,9 +4157,8 @@ inline constexpr FieldDescriptorProto::Impl_::Impl_(
         type_{static_cast< ::google::protobuf::FieldDescriptorProto_Type >(1)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FieldDescriptorProto::FieldDescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FieldDescriptorProto::FieldDescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -4315,9 +4287,8 @@ inline constexpr EnumValueDescriptorProto::Impl_::Impl_(
         number_{0} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumValueDescriptorProto::EnumValueDescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr EnumValueDescriptorProto::EnumValueDescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -4444,9 +4415,8 @@ inline constexpr DescriptorProto_ExtensionRange::Impl_::Impl_(
         end_{0} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -4580,9 +4550,8 @@ inline constexpr ServiceDescriptorProto::Impl_::Impl_(
         options_{nullptr} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ServiceDescriptorProto::ServiceDescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr ServiceDescriptorProto::ServiceDescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -4748,9 +4717,8 @@ inline constexpr EnumDescriptorProto::Impl_::Impl_(
         visibility_{static_cast< ::google::protobuf::SymbolVisibility >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr EnumDescriptorProto::EnumDescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr EnumDescriptorProto::EnumDescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -4979,9 +4947,8 @@ inline constexpr DescriptorProto::Impl_::Impl_(
         visibility_{static_cast< ::google::protobuf::SymbolVisibility >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DescriptorProto::DescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr DescriptorProto::DescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -5230,9 +5197,8 @@ inline constexpr FileDescriptorProto::Impl_::Impl_(
         edition_{static_cast< ::google::protobuf::Edition >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FileDescriptorProto::FileDescriptorProto(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FileDescriptorProto::FileDescriptorProto(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -5348,9 +5314,8 @@ inline constexpr FileDescriptorSet::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FileDescriptorSet::FileDescriptorSet(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FileDescriptorSet::FileDescriptorSet(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
