@@ -49,6 +49,20 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_IGNORE_DEPRECATION_START \
+  _Pragma("GCC diagnostic push")     \
+      _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#define UPB_IGNORE_DEPRECATION_STOP _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define UPB_IGNORE_DEPRECATION_START \
+  __pragma(warning(push)) __pragma(warning(disable : 4996))
+#define UPB_IGNORE_DEPRECATION_STOP __pragma(warning(pop))
+#else
+#define UPB_IGNORE_DEPRECATION_START
+#define UPB_IGNORE_DEPRECATION_STOP
+#endif
+
 namespace {
 
 size_t GetUnknownLength(const upb_Message* msg) {
@@ -82,6 +96,7 @@ TEST(GeneratedCode, FindUnknown) {
       upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
                                                 arena);
 
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet result = upb_Message_FindUnknown(
       UPB_UPCAST(base_msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
@@ -90,6 +105,7 @@ TEST(GeneratedCode, FindUnknown) {
   result = upb_Message_FindUnknown(
       UPB_UPCAST(base_msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
 
   upb_Arena_Free(arena);
@@ -134,9 +150,11 @@ TEST(GeneratedCode, PromoteFromMultiple) {
   upb_StringView field = upb_test_ModelExtension1_str(parsed_ex);
   EXPECT_EQ(absl::string_view(field.data, field.size), "Everyone");
 
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(
       UPB_UPCAST(parsed),
       upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 
   upb_Arena_Free(arena);
@@ -372,7 +390,9 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
   int32_t val = upb_Message_GetInt32(
       msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
   EXPECT_EQ(val, 11);
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 5, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
@@ -421,7 +441,9 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have repeated field data in an unknown.
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 6, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -481,7 +503,9 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have map data in an unknown.
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 3, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -580,7 +604,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtension) {
 
   // 8. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 
@@ -614,7 +640,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithSameMinitable) {
                                         &ext_iter));
   EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
                                          &ext_iter));
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 
@@ -705,7 +733,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
 
   // 11. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 }  // namespace
