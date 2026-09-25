@@ -463,6 +463,9 @@ public abstract class CodedInputStream {
   /** Read a raw Varint from the stream. If larger than 32 bits, discard the upper bits. */
   public abstract int readRawVarint32() throws IOException;
 
+  /** Read a raw Varint size from the stream. */
+  public abstract int readRawVarintSize() throws IOException;
+
   /** Read a raw Varint from the stream. */
   public abstract long readRawVarint64() throws IOException;
 
@@ -610,7 +613,7 @@ public abstract class CodedInputStream {
   public abstract int pushLimit(int byteLimit) throws InvalidProtocolBufferException;
 
   public final int pushLimitBeforeMessage() throws IOException {
-    final int length = readRawVarint32();
+    final int length = readRawVarintSize();
     checkRecursionLimit();
     final int oldLimit = pushLimit(length);
     ++messageDepth;
@@ -783,6 +786,65 @@ public abstract class CodedInputStream {
     return readRawVarint32(firstByte, input);
   }
 
+  /**
+   * Like {@link #readRawVarintSize(InputStream)}, but expects that the caller has already read one
+   * byte.
+   */
+  public static int readRawVarintSize(final int firstByte, final InputStream input)
+      throws IOException {
+    if ((firstByte & 0x80) == 0) {
+      return firstByte;
+    }
+
+    int result = firstByte & 0x7f;
+    int offset = 7;
+    for (; offset < 28; offset += 7) {
+      final int b = input.read();
+      if (b == -1) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      result |= (b & 0x7f) << offset;
+      if ((b & 0x80) == 0) {
+        return result;
+      }
+    }
+    final int b = input.read();
+    if (b == -1) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    result |= (b & 0x7f) << 28;
+    if ((b & 0x80) == 0) {
+      if ((b & 0x70) != 0) {
+        throw InvalidProtocolBufferException.malformedVarint();
+      }
+      if (result < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      return result;
+    }
+    for (int i = 0; i < 5; i++) {
+      final int next = input.read();
+      if (next == -1) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      if ((next & 0x80) == 0) {
+        if (result >= 0) {
+          throw InvalidProtocolBufferException.malformedVarint();
+        }
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+    }
+    throw InvalidProtocolBufferException.malformedVarint();
+  }
+
+  static int readRawVarintSize(final InputStream input) throws IOException {
+    final int firstByte = input.read();
+    if (firstByte == -1) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    return readRawVarintSize(firstByte, input);
+  }
+
   /** A {@link CodedInputStream} implementation that uses a backing array as the input. */
   private static final class ArrayDecoder extends CodedInputStream {
     private final byte[] buffer;
@@ -864,7 +926,7 @@ public abstract class CodedInputStream {
           skipRawBytes(FIXED64_SIZE);
           return true;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          skipRawBytes(readRawVarint32());
+          skipRawBytes(readRawVarintSize());
           return true;
         case WireFormat.WIRETYPE_START_GROUP:
           skipMessage();
@@ -978,7 +1040,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readString() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -998,7 +1060,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readStringRequireUtf8() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size > 0 && size <= (limit - pos)) {
         String result = Utf8.decodeUtf8(buffer, pos, size);
         pos += size;
@@ -1067,7 +1129,7 @@ public abstract class CodedInputStream {
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -1092,13 +1154,13 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readByteArray() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       return readRawBytes(size);
     }
 
     @Override
     public ByteBuffer readByteBuffer() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path: We already have the bytes in a contiguous buffer.
         // When aliasing is enabled, we can return a ByteBuffer pointing directly
@@ -1202,6 +1264,61 @@ public abstract class CodedInputStream {
             && buffer[tempPos++] < 0
             && buffer[tempPos++] < 0) {
           throw InvalidProtocolBufferException.malformedVarint();
+        }
+      }
+      pos = tempPos;
+      return x;
+    }
+
+    @Override
+    public int readRawVarintSize() throws IOException {
+      try {
+        int x = readRawVarintSizeFast();
+        if (pos > limit) {
+          throw InvalidProtocolBufferException.truncatedMessage();
+        }
+        return x;
+      } catch (IndexOutOfBoundsException unused) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      } catch (InvalidProtocolBufferException e) {
+        if (pos > limit) {
+          throw InvalidProtocolBufferException.truncatedMessage();
+        }
+        throw e;
+      }
+    }
+
+    private int readRawVarintSizeFast() throws IOException {
+      int tempPos = pos;
+
+      final byte[] buffer = this.buffer;
+      int x = buffer[tempPos++];
+      if (x >= 0) {
+      } else if ((x ^= (buffer[tempPos++] << 7)) < 0) {
+        x ^= (~0 << 7);
+      } else if ((x ^= (buffer[tempPos++] << 14)) >= 0) {
+        x ^= (~0 << 7) ^ (~0 << 14);
+      } else if ((x ^= (buffer[tempPos++] << 21)) < 0) {
+        x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
+      } else {
+        int y = buffer[tempPos++];
+        x ^= y << 28;
+        x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
+        if (y < 0) {
+          int i = 0;
+          while (buffer[tempPos++] < 0) {
+            if (++i == 5) {
+              throw InvalidProtocolBufferException.malformedVarint();
+            }
+          }
+          if (x >= 0) {
+            throw InvalidProtocolBufferException.malformedVarint();
+          }
+        } else if ((y & 0x70) != 0) {
+          throw InvalidProtocolBufferException.malformedVarint();
+        }
+        if (x < 0) {
+          throw InvalidProtocolBufferException.negativeSize();
         }
       }
       pos = tempPos;
@@ -1654,7 +1771,7 @@ public abstract class CodedInputStream {
           skipRawBytes(FIXED64_SIZE);
           return true;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          skipRawBytes(readRawVarint32());
+          skipRawBytes(readRawVarintSize());
           return true;
         case WireFormat.WIRETYPE_START_GROUP:
           skipMessage();
@@ -1768,7 +1885,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readString() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size > 0 && size <= (bufferSize - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -1794,7 +1911,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readStringRequireUtf8() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       final byte[] bytes;
       final int oldPos = pos;
       final int tempPos;
@@ -1874,7 +1991,7 @@ public abstract class CodedInputStream {
     }
 
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size <= (bufferSize - pos) && size > 0) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -1898,7 +2015,7 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readByteArray() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size <= (bufferSize - pos) && size > 0) {
         // Fast path: We already have the bytes in a contiguous buffer, so
         // just copy directly from it.
@@ -1916,7 +2033,7 @@ public abstract class CodedInputStream {
 
     @Override
     public ByteBuffer readByteBuffer() throws IOException {
-      final int size = readRawVarint32();
+      final int size = readRawVarintSize();
       if (size <= (bufferSize - pos) && size > 0) {
         // Fast path: We already have the bytes in a contiguous buffer.
         ByteBuffer result = ByteBuffer.wrap(Arrays.copyOfRange(buffer, pos, pos + size));
@@ -2009,6 +2126,87 @@ public abstract class CodedInputStream {
         return x;
       }
       return (int) readRawVarint64SlowPath();
+    }
+
+    @Override
+    public int readRawVarintSize() throws IOException {
+      fastpath:
+      {
+        int tempPos = pos;
+
+        if (bufferSize == tempPos) {
+          break fastpath;
+        }
+
+        final byte[] buffer = this.buffer;
+        int x;
+        if ((x = buffer[tempPos++]) >= 0) {
+          pos = tempPos;
+          return x;
+        } else if (bufferSize - tempPos < 9) {
+          break fastpath;
+        } else if ((x ^= (buffer[tempPos++] << 7)) < 0) {
+          x ^= (~0 << 7);
+        } else if ((x ^= (buffer[tempPos++] << 14)) >= 0) {
+          x ^= (~0 << 7) ^ (~0 << 14);
+        } else if ((x ^= (buffer[tempPos++] << 21)) < 0) {
+          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
+        } else {
+          int y = buffer[tempPos++];
+          x ^= y << 28;
+          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
+          if (y < 0) {
+            int i = 0;
+            while (buffer[tempPos++] < 0) {
+              if (++i == 5) {
+                break fastpath; // Will fall back to slow path
+              }
+            }
+            if (x >= 0) {
+              throw InvalidProtocolBufferException.malformedVarint();
+            }
+          } else if ((y & 0x70) != 0) {
+            throw InvalidProtocolBufferException.malformedVarint();
+          }
+          if (x < 0) {
+            throw InvalidProtocolBufferException.negativeSize();
+          }
+        }
+        pos = tempPos;
+        return x;
+      }
+      return readRawVarintSizeSlowPath();
+    }
+
+    private int readRawVarintSizeSlowPath() throws IOException {
+      int result = 0;
+      for (int shift = 0; shift < 28; shift += 7) {
+        final byte b = readRawByte();
+        result |= (b & 0x7F) << shift;
+        if ((b & 0x80) == 0) {
+          return result;
+        }
+      }
+      final byte b = readRawByte();
+      result |= (b & 0x7F) << 28;
+      if ((b & 0x80) == 0) {
+        if ((b & 0x70) != 0) {
+          throw InvalidProtocolBufferException.malformedVarint();
+        }
+        if (result < 0) {
+          throw InvalidProtocolBufferException.negativeSize();
+        }
+        return result;
+      }
+      for (int i = 0; i < 5; i++) {
+        if (readRawByte() >= 0) {
+          if (result >= 0) {
+            throw InvalidProtocolBufferException.malformedVarint();
+          }
+          throw InvalidProtocolBufferException.negativeSize();
+        }
+      }
+      throw InvalidProtocolBufferException.malformedVarint();
     }
 
     private void skipRawVarint() throws IOException {
