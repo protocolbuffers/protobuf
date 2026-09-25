@@ -82,7 +82,8 @@ const char* TcParser::GenericFallbackLite(PROTOBUF_TC_PARAM_DECL) {
 
 namespace {
 
-bool ReadHas(const FieldEntry& entry, const MessageLite* msg) {
+PROTOBUF_ALWAYS_INLINE bool ReadHas(const FieldEntry& entry,
+                                    const MessageLite* msg) {
   auto has_idx = static_cast<uint32_t>(entry.has_idx);
   const auto& hasblock = TcParser::RefAt<const uint32_t>(msg, has_idx / 32 * 4);
   return (hasblock & (uint32_t{1} << (has_idx % 32))) != 0;
@@ -104,6 +105,9 @@ absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
     return absl::OkStatus();
   }
 
+  const void* default_msg = table->default_instance();
+  const void* split_base = nullptr;
+  const void* split_default_base = nullptr;
   for (const auto& entry : table->field_entries()) {
     const auto make_error_status = [&] {
       return absl::InternalError(
@@ -116,19 +120,25 @@ absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
       continue;
     }
     const bool has_bit = ReadHas(entry, msg);
+    if (cardinality == fl::kFcRepeated && has_bit) {
+      continue;
+    }
     const void* base = msg;
-    const void* default_base = table->default_instance();
+    const void* default_base = default_msg;
     const bool is_split = (entry.type_card & field_layout::kSplitMask) ==
                           field_layout::kSplitTrue;
     if (is_split) {
-      const size_t offset = table->field_aux(kSplitOffsetAuxIdx)->offset;
-      base = TcParser::RefAt<const void*>(base, offset);
-      default_base = TcParser::RefAt<const void*>(default_base, offset);
+      if (split_base == nullptr) {
+        const size_t offset = table->field_aux(kSplitOffsetAuxIdx)->offset;
+        split_base = TcParser::RefAt<const void*>(msg, offset);
+        split_default_base = TcParser::RefAt<const void*>(default_msg, offset);
+      }
+      base = split_base;
+      default_base = split_default_base;
     }
 
     if (cardinality == fl::kFcRepeated) {
-      if (!has_bit &&
-          !RepeatedFieldIsEmptySlow(msg, table, entry, base, is_split)) {
+      if (!RepeatedFieldIsEmptySlow(msg, table, entry, base, is_split)) {
         return make_error_status();
       }
       continue;
