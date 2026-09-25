@@ -2156,6 +2156,31 @@ absl::Cord Reflection::GetCord(const Message& message,
   }
 }
 
+Reflection::StringOrCordView Reflection::GetStringOrCordView(
+    const Message& message, const FieldDescriptor* field) const {
+  USAGE_CHECK_ALL(GetStringOrCordView, SINGULAR, STRING);
+  if (field->is_extension()) {
+    return GetExtensionSet(message).Get<std::string>(
+        field->number(), internal::DefaultValueStringAsString(field));
+  }
+  if (schema_.InRealOneof(field) && !HasOneofField(message, field)) {
+    return field->default_value_string();
+  }
+
+  switch (field->cpp_string_type()) {
+    case FieldDescriptor::CppStringType::kCord:
+      if (schema_.InRealOneof(field)) {
+        return GetField<absl::Cord*>(message, field);
+      } else {
+        return &GetField<absl::Cord>(message, field);
+      }
+    default: {
+      auto str = GetField<ArenaStringPtr>(message, field);
+      return str.IsDefault() ? field->default_value_string() : str.Get();
+    }
+  }
+}
+
 absl::string_view Reflection::GetStringViewImpl(const Message& message,
                                                 const FieldDescriptor* field,
                                                 ScratchSpace* scratch) const {
@@ -2305,6 +2330,23 @@ const std::string& Reflection::GetRepeatedStringReference(
     }
     internal::Unreachable();
   }
+}
+
+Reflection::StringOrCordView Reflection::GetRepeatedStringOrCordView(
+    const Message& message, const FieldDescriptor* field, int index) const {
+  USAGE_CHECK_ALL(GetRepeatedStringOrCordView, REPEATED, STRING);
+  if (field->is_extension()) {
+    return GetExtensionSet(message).GetRepeated<std::string>(field->number(),
+                                                             index);
+  }
+
+  switch (field->cpp_string_type()) {
+    case FieldDescriptor::CppStringType::kCord:
+    case FieldDescriptor::CppStringType::kView:
+    case FieldDescriptor::CppStringType::kString:
+      return GetRepeatedPtrField<std::string>(message, field, index);
+  }
+  internal::Unreachable();
 }
 
 // See GetStringView(), above.
