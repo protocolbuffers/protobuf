@@ -54,8 +54,17 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
     uint32_t tag;
     uint64_t message_len = 0;
     // This assumes that the unknown field is a message type, so it is
-    // a delimited wire type.
+    // a delimited wire type. Verify that instead of assuming it:
+    // `upb_Message_FindUnknown2` matches on field number alone, so an unknown
+    // of any other wire type can arrive here, and only the delimited wire
+    // type carries a length prefix. Reading one from, say, a varint would
+    // make `message_len` attacker-controlled and `upb_Decode` below would
+    // read out of bounds.
     ptr = upb_WireReader_ReadTag(ptr, &tag, NULL);
+    if (upb_WireReader_GetWireType(tag) != kUpb_WireType_Delimited) {
+      ret.status = kUpb_UnknownToMessage_ParseError;
+      return ret;
+    }
     ptr = upb_WireReader_ReadVarint(ptr, &message_len, NULL);
     data = ptr;
     size = message_len;
