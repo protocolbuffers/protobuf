@@ -67,6 +67,7 @@ def python_nuget_package(cpu, version, sha256):
     folder_name_dict = {
         "i686": "pythonx86",
         "x86-64": "python",
+        "arm64": "pythonarm64",
     }
 
     http_archive(

@@ -41,6 +41,10 @@ PLATFORMS = {
         "@platforms//cpu:x86_64",
         "@platforms//os:windows",
     ],
+    "win-arm64": [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:windows",
+    ],
     "k8": [
         "@platforms//cpu:x86_64",
         "@platforms//os:linux",

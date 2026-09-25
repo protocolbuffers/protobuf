@@ -21,6 +21,7 @@ package(
 
 LIMITED_API_FLAG_SELECT = {
     ":limited_api_3.10": ["-DPy_LIMITED_API=0x030a0000"],
+    ":limited_api_3.11": ["-DPy_LIMITED_API=0x030b0000"],
     "//conditions:default": [],
 }
 
@@ -69,6 +70,26 @@ config_setting(
     flag_values = {
         ":limited_api": "True",
         ":python_version": "310",
+    },
+)
+
+config_setting(
+    name = "limited_api_3.11",
+    flag_values = {
+        ":limited_api": "True",
+        ":python_version": "311",
+    },
+)
+
+config_setting(
+    name = "limited_api_3.11_win_arm64",
+    constraint_values = [
+        "@platforms//cpu:aarch64",
+        "@platforms//os:windows",
+    ],
+    flag_values = {
+        ":limited_api": "True",
+        ":python_version": "311",
     },
 )
 
