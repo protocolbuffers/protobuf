@@ -417,6 +417,14 @@ class PROTOBUF_EXPORT TextFormat {
     // look like
     //    type_url: "<type_url>"  value: "serialized_content"
     void SetExpandAny(bool expand) { expand_any_ = expand; }
+  // Sets the maximum nesting depth of google.protobuf.Any expansion in
+  // PrintAny(). Without this guard, a chain of Any-of-Any messages
+  // drives PrintAny into unbounded recursion, which on a 1 MB stack
+  // crashes the process with SIGSEGV, and on larger stacks produces
+  // an exponentially-growing string (a 180 KB Any-of-Any chain
+  // produces a 32 MB DebugString). Defaults to 100.
+  void SetAnyExpansionDepth(int depth) { any_expansion_depth_ = depth; }
+  int any_expansion_depth() const { return any_expansion_depth_; }
 
     // Set how parser finds message for Any payloads.
     void SetFinder(const Finder* finder) { finder_ = finder; }
@@ -568,6 +576,9 @@ class PROTOBUF_EXPORT TextFormat {
     bool hide_unknown_fields_;
     bool print_message_fields_in_index_order_;
     bool expand_any_;
+    // Remaining Any-of-Any nesting budget. Decremented on every entry
+    // to PrintAny(). Set by SetAnyExpansionDepth().
+    mutable int any_expansion_depth_;
     int64_t truncate_string_field_longer_than_;
 
     std::unique_ptr<const FastFieldValuePrinter> default_field_value_printer_;
