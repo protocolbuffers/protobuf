@@ -21,9 +21,14 @@ require_once('Protobuf_test_messages/Editions/Proto3/TestAllTypesProto3.php');
 require_once('Protobuf_test_messages/Editions/Proto3/NullHypothesisProto3.php');
 require_once('Protobuf_test_messages/Editions/Proto3/ForeignEnum.php');
 require_once('Protobuf_test_messages/Editions/Proto3/ForeignMessage.php');
+require_once('Protobuf_test_messages/Edition2026/ForeignEnumEdition2026.php');
+require_once('Protobuf_test_messages/Edition2026/TestAllTypesEdition2026.php');
+require_once('Pb/Enumvalue/JsonEnumValueOptions.php');
 require_once('GPBMetadata/Conformance.php');
 require_once('GPBMetadata/TestMessagesProto3.php');
 require_once('GPBMetadata/TestMessagesProto3Editions.php');
+require_once('GPBMetadata/Google/Protobuf/JsonEnumvalueOptions.php');
+require_once('GPBMetadata/TestMessagesEdition2026.php');
 
 use Conformance\ConformanceRequest;
 use Conformance\ConformanceResponse;
@@ -31,6 +36,7 @@ use Conformance\TestCategory;
 use Conformance\WireFormat;
 use Protobuf_test_messages\Proto3\TestAllTypesProto3;
 use Protobuf_test_messages\Editions\Proto3\TestAllTypesProto3 as TestAllTypesProto3Editions;
+use Protobuf_test_messages\Edition2026\TestAllTypesEdition2026;
 
 if (!ini_get('date.timezone')) {
     ini_set('date.timezone', 'UTC');
@@ -63,6 +69,9 @@ function doTest($request)
                 case 'protobuf_test_messages.editions.TestAllTypesEdition2023':
                     $response->setSkipped('PHP doesn\'t support editions-specific features yet');
                     return $response;
+                case 'protobuf_test_messages.edition2026.TestAllTypesEdition2026':
+                    $test_message = new TestAllTypesEdition2026();
+                    break;
                 case 'protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable':
                     $response->setSkipped('PHP doesn\'t support editions-specific features yet');
                     return $response;
@@ -93,6 +102,9 @@ function doTest($request)
             switch ($request->getMessageType()) {
                 case 'protobuf_test_messages.editions.proto3.TestAllTypesProto3':
                     $test_message = new TestAllTypesProto3Editions();
+                    break;
+                case 'protobuf_test_messages.edition2026.TestAllTypesEdition2026':
+                    $test_message = new TestAllTypesEdition2026();
                     break;
                 case 'protobuf_test_messages.proto2.TestAllTypesProto2':
                 case 'protobuf_test_messages.editions.proto2.TestAllTypesProto2':
