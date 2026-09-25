@@ -44,9 +44,12 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
+#include "absl/types/optional.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/conformance_test.h"
 #include "conformance/fork_pipe_runner.h"
+#include "conformance/recording_test_runner.h"
+#include "conformance/test_runner.h"
 
 using google::protobuf::ConformanceTestSuite;
 
@@ -54,8 +57,8 @@ namespace google {
 namespace protobuf {
 namespace {
 
-void ParseFailureList(const char *filename,
-                      conformance::FailureSet *failure_list) {
+void ParseFailureList(const char* filename,
+                      ::conformance::FailureSet* failure_list) {
   std::ifstream infile(filename);
 
   if (!infile.is_open()) {
@@ -88,7 +91,7 @@ void ParseFailureList(const char *filename,
         // failure message and the test will still pass.
         message = std::string(absl::StripAsciiWhitespace(message));
       }
-      conformance::TestStatus *test = failure_list->add_test();
+      ::conformance::TestStatus* test = failure_list->add_test();
       test->set_name(test_name);
       test->set_failure_message(message);
     }
@@ -148,7 +151,17 @@ void UsageError() {
           "                              passed to --test (required)\n\n");
   fprintf(stderr, "  --performance               Boolean option\n");
   fprintf(stderr, "                              for enabling run of\n");
-  fprintf(stderr, "                              performance tests.\n");
+  fprintf(stderr, "                              performance tests.\n\n");
+  fprintf(stderr,
+          "  --record_requests <file>    Write one line per request sent\n"
+          "                              to the testee, of the form\n"
+          "                              '<test_name> <input_size> "
+          "<fnv1a64_hex>', where the\n"
+          "                              hash is of the request's\n"
+          "                              canonical (text-format)\n"
+          "                              rendering, for verifying that\n"
+          "                              refactorings of the suites\n"
+          "                              preserve behavior.\n");
   exit(1);
 }
 
@@ -170,6 +183,7 @@ int RunConformanceTests(int argc, char *argv[],
   bool enforce_recommended = false;
   Edition maximum_edition = EDITION_UNKNOWN;
   std::string output_dir;
+  std::string record_requests_filename;
   bool verbose = false;
   bool isolated = false;
 
@@ -193,6 +207,10 @@ int RunConformanceTests(int argc, char *argv[],
     } else if (strcmp(argv[arg], "--output_dir") == 0) {
       if (++arg == argc) UsageError();
       output_dir = argv[arg];
+
+    } else if (strcmp(argv[arg], "--record_requests") == 0) {
+      if (++arg == argc) UsageError();
+      record_requests_filename = argv[arg];
 
     } else if (strcmp(argv[arg], "--test") == 0) {
       if (++arg == argc) UsageError();
@@ -227,10 +245,22 @@ int RunConformanceTests(int argc, char *argv[],
     isolated = true;
   }
 
+  // Opened once (truncating) so that requests from all suites are appended in
+  // order to a single file.
+  std::ofstream record_requests_file;
+  if (!record_requests_filename.empty()) {
+    record_requests_file.open(record_requests_filename);
+    if (!record_requests_file.is_open()) {
+      fprintf(stderr, "Couldn't open record_requests file: %s\n",
+              record_requests_filename.c_str());
+      return EXIT_FAILURE;
+    }
+  }
+
   bool all_ok = true;
   for (ConformanceTestSuite *suite : suites) {
     std::string failure_list_filename;
-    conformance::FailureSet failure_list;
+    ::conformance::FailureSet failure_list;
     for (int arg = 1; arg < argc; ++arg) {
       if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
         if (++arg == argc) UsageError();
@@ -248,14 +278,29 @@ int RunConformanceTests(int argc, char *argv[],
     suite->SetTestee(program);
     suite->SetIsolated(isolated);
 
-    ForkPipeRunner runner(program, program_args);
+    ForkPipeRunner fork_pipe_runner(program, program_args);
+    ConformanceTestRunner* runner = &fork_pipe_runner;
+    absl::optional<conformance::RecordingTestRunner> recording_runner;
+    if (record_requests_file.is_open()) {
+      recording_runner.emplace(&fork_pipe_runner, &record_requests_file);
+      runner = &*recording_runner;
+    }
 
     std::string output;
-    all_ok = all_ok && suite->RunSuite(&runner, &output, failure_list_filename,
+    all_ok = all_ok && suite->RunSuite(runner, &output, failure_list_filename,
                                        &failure_list);
 
     names_to_test = suite->GetExpectedTestsNotRun();
     fwrite(output.c_str(), 1, output.size(), stderr);
+  }
+
+  if (record_requests_file.is_open()) {
+    record_requests_file.close();
+    if (!record_requests_file) {
+      fprintf(stderr, "Error writing record_requests file: %s\n",
+              record_requests_filename.c_str());
+      return EXIT_FAILURE;
+    }
   }
 
   if (!names_to_test.empty()) {
