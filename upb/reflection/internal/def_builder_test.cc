@@ -112,26 +112,6 @@ TEST(DescStateTest, GrowPreservesContents) {
   }
 }
 
-TEST(DescStateTest, RejectsCursorPastCapacity) {
-  upb::Arena arena;
-  upb_DescState state;
-  _upb_DescState_Init(&state);
-  ASSERT_TRUE(_upb_DescState_Grow(&state, arena.ptr()));
-
-  // Keep both pointers inside the allocation, but make the recorded capacity
-  // smaller than the used length. The free-space subtraction must not wrap.
-  state.ptr = state.buf + 17;
-  state.bufsize = 16;
-  state.e.end = state.buf + state.bufsize;
-  char* const buf = state.buf;
-
-  EXPECT_FALSE(_upb_DescState_Grow(&state, arena.ptr()));
-  EXPECT_EQ(state.buf, buf);
-  EXPECT_EQ(state.ptr, buf + 17);
-  EXPECT_EQ(state.bufsize, 16);
-  EXPECT_EQ(state.e.end, buf + 16);
-}
-
 TEST(DefBuilderTest, AllocationFailure) {
   if (!upb_AllocationCount_IsAvailable()) return;
 

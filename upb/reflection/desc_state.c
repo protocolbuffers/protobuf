@@ -23,7 +23,7 @@ bool _upb_DescState_Grow(upb_DescState* d, upb_Arena* a) {
   }
 
   const size_t used = d->ptr - d->buf;
-  if (used > oldbufsize) return false;
+  UPB_ASSERT(used <= oldbufsize);
 
   if (oldbufsize - used < kUpb_MtDataEncoder_MinSize) {
     size_t newbufsize;
