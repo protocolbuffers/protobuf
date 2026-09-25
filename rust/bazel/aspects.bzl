@@ -500,12 +500,16 @@ def _rust_proto_aspect_common(target, ctx, is_upb):
         ),
     )]
 
+def _rust_proto_aspect_propagation_predicate(ctx):
+    return ctx.rule.qualified_kind.rule_name != "cc_library"
+
 def _make_proto_library_aspect(is_upb):
     return aspect(
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
         required_providers = [ProtoInfo],
+        propagation_predicate = _rust_proto_aspect_propagation_predicate,
         attrs = {
             "_cpp_thunks_deps": attr.label_list(
                 default = [
