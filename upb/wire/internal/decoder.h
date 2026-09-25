@@ -280,6 +280,22 @@ UPB_INLINE uint64_t _upb_Decoder_ZigZagDecode64(uint64_t n) {
   return (n >> 1) ^ -(int64_t)(n & 1);
 }
 
+// Avoid emitting an out-of-line memcpy call when the size is not a compile-time
+// constant.
+UPB_FORCEINLINE void* _upb_primitive_memcpy(void* dst, const void* src,
+                                            size_t size) {
+  switch (size) {
+    case 1:
+      return memcpy(dst, src, 1);
+    case 4:
+      return memcpy(dst, src, 4);
+    case 8:
+      return memcpy(dst, src, 8);
+    default:
+      UPB_UNREACHABLE();
+  }
+}
+
 #include "upb/port/undef.inc"
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */

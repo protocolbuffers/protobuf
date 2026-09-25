@@ -298,7 +298,7 @@ const char* _upb_Decoder_DecodeVarintPacked(upb_Decoder* d, const char* ptr,
                        arr->UPB_PRIVATE(size) << lg2, void);
     }
     arr->UPB_PRIVATE(size)++;
-    memcpy(out, &elem, scale);
+    _upb_primitive_memcpy(out, &elem, scale);
     out += scale;
   }
   upb_EpsCopyInputStream_PopLimit(&d->input, ptr, delta);
@@ -377,7 +377,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
       mem = UPB_PTR_AT(upb_Array_MutableDataPtr(arr),
                        arr->UPB_PRIVATE(size) << op, void);
       arr->UPB_PRIVATE(size)++;
-      memcpy(mem, val, 1 << op);
+      _upb_primitive_memcpy(mem, val, 1 << op);
       return ptr;
     case kUpb_DecodeOp_String: {
       /* Append string. */

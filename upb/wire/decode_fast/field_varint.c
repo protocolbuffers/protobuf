@@ -76,7 +76,7 @@ static bool upb_DecodeFast_SingleVarint(upb_Decoder* d, const char** ptr,
   }
 
   UPB_ASSERT(upb_IsLittleEndian());
-  memcpy(dst, &val, upb_DecodeFast_ValueBytes(type));
+  _upb_primitive_memcpy(dst, &val, upb_DecodeFast_ValueBytes(type));
   *ptr = p;
   return true;
 }
