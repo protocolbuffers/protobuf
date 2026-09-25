@@ -656,7 +656,7 @@ void Map_ModuleInit() {
 
   h = &MapField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
-  h->dtor_obj = MapField_destructor;
+  h->free_obj = MapField_destructor;
   h->compare = MapField_compare_objects;
   h->clone_obj = MapField_clone_obj;
   h->get_properties = Map_GetProperties;
