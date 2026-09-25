@@ -417,7 +417,10 @@ void UPB_PRIVATE(_upb_Arena_UseBlock)(upb_Arena* a, void* ptr, size_t size) {
 #if UPB_HWASAN
   size = UPB_ALIGN_DOWN(size, UPB_MALLOC_ALIGN);
 #endif
-  if (size <= UPB_PRIVATE(_upb_ArenaHas)(a)) return;
+  if (size <= UPB_PRIVATE(_upb_ArenaHas)(a)) {
+    UPB_PRIVATE(_upb_Arena_Harvest)(a, ptr, size);
+    return;
+  }
 
   // Harvest remaining space from the retired active block into power-of-2
   // pool bins.

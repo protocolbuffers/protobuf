@@ -1105,4 +1105,25 @@ TEST(ArenaTest, PoolMultiSizeReuse) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(ArenaTest, UseBlockDeclinedHarvestsToPool) {
+  upb_Arena* arena = upb_Arena_Init(nullptr, 4096, &upb_alloc_global);
+  // First FreePool grows the pool table itself using `prime`.
+  void* prime = upb_Arena_AllocPool(arena, 128);
+  upb_Arena_FreePool(arena, prime, 128);
+  EXPECT_EQ(upb_Arena_TryAllocPool(arena, 128), nullptr);
+
+  // Allocate a 128-byte chunk while the arena still has >128 bytes in its
+  // active block, then pass it to _upb_Arena_UseBlock. Since the active block
+  // is larger, _upb_Arena_UseBlock declines to make it the active block and
+  // instead harvests it into the pool.
+  void* block = upb_Arena_Malloc(arena, 128);
+  ASSERT_NE(block, nullptr);
+  UPB_PRIVATE(_upb_Arena_UseBlock)(arena, block, 128);
+
+  void* from_pool = upb_Arena_TryAllocPool(arena, 128);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(from_pool, block));
+
+  upb_Arena_Free(arena);
+}
 }  // namespace

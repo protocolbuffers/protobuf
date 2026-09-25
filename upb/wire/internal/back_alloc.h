@@ -20,11 +20,17 @@
 extern "C" {
 #endif
 
+typedef enum {
+  kUpb_BackAlloc_Stolen,
+  kUpb_BackAlloc_Pooled,
+  kUpb_BackAlloc_Standalone,
+} upb_BackAlloc_Type;
+
 // Allocates memory from the back of the arena.
 typedef struct {
   upb_Arena* arena;
   char *buf, *limit;
-  bool standalone;
+  upb_BackAlloc_Type type;
 } upb_BackAlloc;
 
 // Needed because C doesn't allow NULL - NULL.
@@ -38,20 +44,28 @@ UPB_INLINE char* upb_BackAlloc_Init(upb_BackAlloc* a, upb_Arena* arena) {
   // minimum of 0 can't fail.
   a->buf = &upb_BackAlloc_sentinel;
   a->limit = &upb_BackAlloc_sentinel;
-  a->standalone = false;
+  a->type = kUpb_BackAlloc_Stolen;
   return a->limit;
 }
 
 UPB_INLINE void upb_BackAlloc_Abort(upb_BackAlloc* a) {
-  if (a->standalone) {
-    UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
-  } else if (a->limit != a->buf) {
-    UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
+  switch (a->type) {
+    case kUpb_BackAlloc_Stolen:
+      if (a->limit != a->buf) {
+        UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
+      }
+      break;
+    case kUpb_BackAlloc_Pooled:
+      upb_Arena_FreePool(a->arena, a->buf, a->limit - a->buf);
+      break;
+    case kUpb_BackAlloc_Standalone:
+      UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
+      break;
   }
 }
 
 UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
-  if (a->standalone) {
+  if (a->type == kUpb_BackAlloc_Standalone) {
     UPB_PRIVATE(_upb_Arena_AddBlock)(a->arena, a->buf);
   }
   if (ptr != a->buf) {
