@@ -1452,6 +1452,28 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
                      ".DuplicateValueInMapEntry"),
         REQUIRED, proto, text);
   }
+
+  if (value_type == FieldDescriptor::TYPE_MESSAGE) {
+    // Tests map with duplicate value in map entry setting different fields.
+    // The values must be merged, like any other singular message field.
+    std::string value3_data = absl::StrCat(
+        tag(2, value_wire_type),
+        delim(absl::StrCat(
+            tag(2, WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+            delim(absl::StrCat(tag(1, WireFormatLite::WIRETYPE_VARINT),
+                               varint(1))))));
+    std::string proto = absl::StrCat(
+        tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+        delim(absl::StrCat(key2_data, value2_data, value3_data)));
+    MessageType test_message;
+    ABSL_CHECK(test_message.MergeFromString(proto));
+    std::string text;
+    ABSL_CHECK(TextFormat::PrintToString(test_message, &text));
+    RunValidProtobufTest(
+        absl::StrCat("ValidDataMap", key_type_name, value_type_name,
+                     ".MergeValueInMapEntry"),
+        REQUIRED, proto, text);
+  }
 }
 
 template <typename MessageType>
