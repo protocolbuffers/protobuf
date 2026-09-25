@@ -1635,7 +1635,8 @@ static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
   // moment upb does not have a "byte size" function, so we just serialize to
   // string and get the size of the string.
   PyObject* subargs = PyTuple_New(0);
-  PyObject* serialized = PyUpb_Message_SerializeToString(self, subargs, NULL);
+  PyObject* serialized =
+      PyUpb_Message_SerializePartialToString(self, subargs, NULL);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
   size_t size = PyBytes_Size(serialized);
@@ -1902,6 +1903,9 @@ PyObject* PyUpb_Message_SerializeInternal(PyObject* _self, PyObject* args,
 
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   if (PyUpb_Message_IsStub(self)) {
+    if (!check_required) {
+      return PyBytes_FromStringAndSize(NULL, 0);
+    }
     // Nothing to serialize, but we do have to check whether the message is
     // initialized.
     PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
