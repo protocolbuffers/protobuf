@@ -26,7 +26,12 @@ enum {
   upb_JsonEncode_UseProtoNames = 1 << 1,
 
   /* When set, emits enums as their integer values instead of as their names. */
-  upb_JsonEncode_FormatEnumsAsIntegers = 1 << 2
+  upb_JsonEncode_FormatEnumsAsIntegers = 1 << 2,
+
+  /* When set, encodes `bytes` fields with the URL- and filename-safe base64
+     alphabet from RFC 4648 section 5 ('-' and '_' instead of '+' and '/').
+     Padding is unchanged. The decoder accepts both alphabets regardless. */
+  upb_JsonEncode_WebSafeBase64 = 1 << 3
 };
 
 /* Encodes the given |msg| to JSON format.  The message's reflection is given in
