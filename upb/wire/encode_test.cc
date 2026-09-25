@@ -501,6 +501,91 @@ TEST(EncodeTest, MixedExtensionAndUnknownOrderSuccess) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(EncodeTest, BackAllocPoolReuseAndReturn) {
+  upb_Arena* arena = upb_Arena_Init(nullptr, 4096, &upb_alloc_global);
+
+  // First FreePool call initializes the pool table itself; subsequent calls
+  // populate the 256-byte and 512-byte bins.
+  void* pool_table = upb_Arena_AllocPool(arena, 512);
+  void* p512 = upb_Arena_AllocPool(arena, 512);
+  void* p256 = upb_Arena_AllocPool(arena, 256);
+  upb_Arena_FreePool(arena, pool_table, 512);
+  upb_Arena_FreePool(arena, p512, 512);
+  upb_Arena_FreePool(arena, p256, 256);
+
+  // Exhaust the arena's active block so _upb_Arena_Steal won't satisfy a 200B
+  // reservation, leaving ~100 bytes in the active block.
+  size_t remaining = UPB_PRIVATE(_upb_ArenaHas)(arena);
+  if (remaining > 96) {
+    (void)upb_Arena_Malloc(arena, remaining - 96);
+  }
+  uintptr_t space_before = upb_Arena_SpaceAllocated(arena, nullptr);
+
+  // 1. Reserve 200 bytes: Steal fails (only <=96B left), so BackAlloc should
+  // grab the 256-byte block from the pool without allocating a new block.
+  upb_BackAlloc ba;
+  char* ptr = upb_BackAlloc_Init(&ba, arena);
+  ptr = upb_BackAlloc_Reserve(&ba, ptr, 200);
+  ASSERT_NE(ptr, nullptr);
+  EXPECT_EQ(ba.type, kUpb_BackAlloc_Pooled);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ba.buf, p256));
+  EXPECT_EQ(upb_Arena_SpaceAllocated(arena, nullptr), space_before);
+
+  // 2. Grow by another 200 bytes (400B total): BackAlloc should grab the
+  // 512-byte block from the pool and return the 256-byte block to the pool.
+  ptr = upb_BackAlloc_Reserve(&ba, ptr, 200);
+  ASSERT_NE(ptr, nullptr);
+  EXPECT_EQ(ba.type, kUpb_BackAlloc_Pooled);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(ba.buf, p512));
+  EXPECT_EQ(upb_Arena_SpaceAllocated(arena, nullptr), space_before);
+
+  // Verify the 256-byte block was returned to the pool.
+  void* p256_again = upb_Arena_TryAllocPool(arena, 256);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(p256_again, p256));
+
+  // 3. Abort BackAlloc: the 512-byte pooled block should be returned to the
+  // pool.
+  upb_BackAlloc_Abort(&ba);
+  void* p512_again = upb_Arena_TryAllocPool(arena, 512);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(p512_again, p512));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(EncodeTest, BackAllocFinishHarvestsDeclinedRemainder) {
+  upb_Arena* arena = upb_Arena_Init(nullptr, 4096, &upb_alloc_global);
+
+  // Prime the pool with a 256-byte block.
+  void* p512 = upb_Arena_AllocPool(arena, 512);
+  void* p256 = upb_Arena_AllocPool(arena, 256);
+  upb_Arena_FreePool(arena, p512, 512);
+  upb_Arena_FreePool(arena, p256, 256);
+
+  // Leave ~128 bytes in the arena's active block so Steal(192) fails,
+  // while _upb_ArenaHas(arena) (~128) > 64.
+  size_t remaining = UPB_PRIVATE(_upb_ArenaHas)(arena);
+  if (remaining > 128) {
+    (void)upb_Arena_Malloc(arena, remaining - 128);
+  }
+
+  // Reserve 192 bytes from the 256-byte pooled block, leaving 64 bytes unused
+  // at the front of ba.buf.
+  upb_BackAlloc ba;
+  char* ptr = upb_BackAlloc_Init(&ba, arena);
+  ptr = upb_BackAlloc_Reserve(&ba, ptr, 192);
+  ASSERT_NE(ptr, nullptr);
+  EXPECT_EQ(ba.type, kUpb_BackAlloc_Pooled);
+
+  // Finish: ptr - ba.buf == 64 <= _upb_ArenaHas(arena) (~128), so UseBlock
+  // declines to replace the active block and harvests the 64-byte prefix into
+  // the pool.
+  EXPECT_EQ(upb_BackAlloc_Finish(&ba, ptr), 192u);
+  void* harvested_64 = upb_Arena_TryAllocPool(arena, 64);
+  EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)(harvested_64, p256));
+
+  upb_Arena_Free(arena);
+}
 }  // namespace
 }  // namespace upb
 

@@ -60,36 +60,35 @@ static char* upb_BackAlloc_Realloc(upb_BackAlloc* a, char* ptr, size_t n) {
     return NULL;
   }
 
-  bool one_off = false;
-  size_t size = upb_BackAlloc_CalcBlockSize(a, required_block_size, &one_off);
-
-  char* block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a->arena, &size);
-
+  size_t size = upb_RoundUpToPowerOfTwo(
+      UPB_MAX(required_block_size, UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize)));
+  char* block =
+      size != SIZE_MAX ? upb_Arena_TryAllocPool(a->arena, size) : NULL;
+  upb_BackAlloc_Type type = kUpb_BackAlloc_Pooled;
   if (!block) {
-    return NULL;
-  }
+    bool one_off = false;
+    size = upb_BackAlloc_CalcBlockSize(a, required_block_size, &one_off);
 
-  UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(a->arena, required_block_size, size,
-                                            one_off);
+    block = UPB_PRIVATE(_upb_Arena_AllocBlock)(a->arena, &size);
+
+    if (!block) {
+      return NULL;
+    }
+
+    UPB_PRIVATE(_upb_Arena_UpdateGrowthState)(a->arena, required_block_size,
+                                              size, one_off);
+    type = kUpb_BackAlloc_Standalone;
+  }
 
   char* dst = block + size - copy;
   memcpy(dst, ptr, copy);
 
-  if (a->limit != a->buf) {
-    // Dispose of the old block.
-    if (a->standalone) {
-      // Note: while it would technically be possible to give this block to the
-      // arena to use for allocations, this could lead to a lot of garbage
-      // blocks that never get used.
-      UPB_PRIVATE(_upb_Arena_FreeBlock)(a->arena, a->buf);
-    } else {
-      UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
-    }
-  }
+  // Dispose of the old block.
+  upb_BackAlloc_Abort(a);
 
   a->buf = block;
   a->limit = block + size;
-  a->standalone = true;
+  a->type = type;
   return dst - n;
 }
 
@@ -103,7 +102,7 @@ char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t n) {
     char* block = UPB_PRIVATE(_upb_Arena_Steal)(a->arena, &size);
     if (block) {
       UPB_ASSERT(size >= n);
-      UPB_ASSERT(a->standalone == false);
+      UPB_ASSERT(a->type == kUpb_BackAlloc_Stolen);
       a->buf = block;
       a->limit = block + size;
       return a->limit - n;
