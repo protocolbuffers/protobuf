@@ -110,9 +110,60 @@ final class ArrayDecoders {
     return position;
   }
 
+  static int decodeVarintSize(byte[] data, int position, Registers registers)
+      throws InvalidProtocolBufferException {
+    int value = data[position++];
+    if (value >= 0) {
+      registers.int1 = value;
+      return position;
+    }
+    return decodeVarintSize(value, data, position, registers);
+  }
+
+  static int decodeVarintSize(int firstByte, byte[] data, int position, Registers registers)
+      throws InvalidProtocolBufferException {
+    int value = firstByte & 0x7F;
+    final byte b2 = data[position++];
+    if (b2 >= 0) {
+      registers.int1 = value | ((int) b2 << 7);
+      return position;
+    }
+    value |= (b2 & 0x7F) << 7;
+
+    final byte b3 = data[position++];
+    if (b3 >= 0) {
+      registers.int1 = value | ((int) b3 << 14);
+      return position;
+    }
+    value |= (b3 & 0x7F) << 14;
+
+    final byte b4 = data[position++];
+    if (b4 >= 0) {
+      registers.int1 = value | ((int) b4 << 21);
+      return position;
+    }
+    value |= (b4 & 0x7F) << 21;
+
+    final byte b5 = data[position++];
+    if (b5 >= 0) {
+      if ((b5 & 0x70) != 0) {
+        throw InvalidProtocolBufferException.malformedVarint();
+      }
+      registers.int1 = value | ((int) b5 << 28);
+      return position;
+    }
+    value |= (b5 & 0x7F) << 28;
+    while (data[position++] < 0) {}
+    registers.int1 = value;
+    if (value >= 0) {
+      throw InvalidProtocolBufferException.malformedVarint();
+    }
+    return position;
+  }
+
   static int decodeLengthPrefixVarint(byte[] data, int position, int limit, Registers registers)
       throws InvalidProtocolBufferException {
-    position = decodeVarint32(data, position, registers);
+    position = decodeVarintSize(data, position, registers);
     final int length = registers.int1;
     if (length < 0) {
       throw InvalidProtocolBufferException.negativeSize();
@@ -761,7 +812,10 @@ final class ArrayDecoders {
   }
 
   static int decodeExtensionOrUnknownField(
-      int tag, byte[] data, int position, int limit,
+      int tag,
+      byte[] data,
+      int position,
+      int limit,
       Object message,
       MessageLite defaultInstance,
       UnknownFieldSchema<UnknownFieldSetLite, UnknownFieldSetLite> unknownFieldSchema,
@@ -773,13 +827,19 @@ final class ArrayDecoders {
     if (extension == null) {
       return decodeUnknownField(
           tag, data, position, limit, getMutableUnknownFields(message), registers);
-    } else  {
+    } else {
       // TODO: remove the unused variable
       FieldSet<ExtensionDescriptor> unused =
           ((GeneratedMessageLite.ExtendableMessage<?, ?>) message).ensureExtensionsAreMutable();
       return decodeExtension(
-          tag, data, position, limit, (GeneratedMessageLite.ExtendableMessage) message,
-          extension, unknownFieldSchema, registers);
+          tag,
+          data,
+          position,
+          limit,
+          (GeneratedMessageLite.ExtendableMessage) message,
+          extension,
+          unknownFieldSchema,
+          registers);
     }
   }
 
@@ -798,72 +858,72 @@ final class ArrayDecoders {
     if (extension.descriptor.isRepeated() && extension.descriptor.isPacked()) {
       switch (extension.getLiteType()) {
         case DOUBLE:
-        {
-          DoubleArrayList list = new DoubleArrayList();
-          position = decodePackedDoubleList(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            DoubleArrayList list = new DoubleArrayList();
+            position = decodePackedDoubleList(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case FLOAT:
-        {
-          FloatArrayList list = new FloatArrayList();
-          position = decodePackedFloatList(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            FloatArrayList list = new FloatArrayList();
+            position = decodePackedFloatList(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case INT64:
         case UINT64:
-        {
-          LongArrayList list = new LongArrayList();
-          position = decodePackedVarint64List(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            LongArrayList list = new LongArrayList();
+            position = decodePackedVarint64List(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case INT32:
         case UINT32:
-        {
-          IntArrayList list = new IntArrayList();
-          position = decodePackedVarint32List(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            IntArrayList list = new IntArrayList();
+            position = decodePackedVarint32List(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case FIXED64:
         case SFIXED64:
-        {
-          LongArrayList list = new LongArrayList();
-          position = decodePackedFixed64List(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            LongArrayList list = new LongArrayList();
+            position = decodePackedFixed64List(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case FIXED32:
         case SFIXED32:
-        {
-          IntArrayList list = new IntArrayList();
-          position = decodePackedFixed32List(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            IntArrayList list = new IntArrayList();
+            position = decodePackedFixed32List(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case BOOL:
-        {
-          BooleanArrayList list = new BooleanArrayList();
-          position = decodePackedBoolList(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            BooleanArrayList list = new BooleanArrayList();
+            position = decodePackedBoolList(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case SINT32:
-        {
-          IntArrayList list = new IntArrayList();
-          position = decodePackedSInt32List(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            IntArrayList list = new IntArrayList();
+            position = decodePackedSInt32List(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case SINT64:
-        {
-          LongArrayList list = new LongArrayList();
-          position = decodePackedSInt64List(data, position, list, registers);
-          extensions.setField(extension.descriptor, list);
-          break;
-        }
+          {
+            LongArrayList list = new LongArrayList();
+            position = decodePackedSInt64List(data, position, list, registers);
+            extensions.setField(extension.descriptor, list);
+            break;
+          }
         case ENUM:
           {
             IntArrayList list = new IntArrayList();
