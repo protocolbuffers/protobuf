@@ -64,12 +64,12 @@ TEST(TesteeTest, BinaryToBinary) {
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
 
   TestResult result =
-      testee.CreateTest("foo", TestStrictness::kRequired)
+      testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeBinary();
 
   EXPECT_EQ(result.name(), "Required.Proto2.ProtobufInput.foo.ProtobufOutput");
-  EXPECT_EQ(result.strictness(), TestStrictness::kRequired);
+  EXPECT_EQ(result.priority(), TestPriority::kP0);
   EXPECT_EQ(result.type(), TestAllTypesProto2::descriptor());
   EXPECT_THAT(result.format(), ::conformance::PROTOBUF);
   EXPECT_THAT(result.response(), EqualsProto(R"pb(runtime_error: "error")pb"));
@@ -89,13 +89,13 @@ TEST(TesteeTest, TextToText) {
               )pb")))
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
 
-  TestResult result = testee.CreateTest("foo", TestStrictness::kRecommended)
+  TestResult result = testee.CreateTest("foo", TestPriority::kP3)
                           .ParseText(TestAllTypesProto2::descriptor(), "text")
                           .SerializeText();
 
   EXPECT_EQ(result.name(),
             "Recommended.Proto2.TextFormatInput.foo.TextFormatOutput");
-  EXPECT_EQ(result.strictness(), TestStrictness::kRecommended);
+  EXPECT_EQ(result.priority(), TestPriority::kP3);
   EXPECT_EQ(result.type(), TestAllTypesProto2::descriptor());
   EXPECT_THAT(result.format(), ::conformance::TEXT_FORMAT);
   EXPECT_THAT(result.response(), EqualsProto(R"pb(runtime_error: "error")pb"));
@@ -117,13 +117,13 @@ TEST(TesteeTest, TextPrintUnknownFields) {
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
 
   TestResult result =
-      testee.CreateTest("foo", TestStrictness::kRequired)
+      testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeText({/*print_unknown_fields=*/true});
 
   EXPECT_EQ(result.name(),
             "Required.Proto2.ProtobufInput.foo.TextFormatOutput");
-  EXPECT_EQ(result.strictness(), TestStrictness::kRequired);
+  EXPECT_EQ(result.priority(), TestPriority::kP0);
   EXPECT_EQ(result.type(), TestAllTypesProto2::descriptor());
   EXPECT_THAT(result.format(), ::conformance::TEXT_FORMAT);
   EXPECT_THAT(result.response(), EqualsProto(R"pb(runtime_error: "error")pb"));
@@ -142,12 +142,12 @@ TEST(TesteeTest, JsonToJson) {
               )pb")))
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
 
-  TestResult result = testee.CreateTest("foo", TestStrictness::kRequired)
+  TestResult result = testee.CreateTest("foo", TestPriority::kP0)
                           .ParseJson(TestAllTypesProto2::descriptor(), "json")
                           .SerializeJson();
 
   EXPECT_EQ(result.name(), "Required.Proto2.JsonInput.foo.JsonOutput");
-  EXPECT_EQ(result.strictness(), TestStrictness::kRequired);
+  EXPECT_EQ(result.priority(), TestPriority::kP0);
   EXPECT_EQ(result.type(), TestAllTypesProto2::descriptor());
   EXPECT_THAT(result.format(), ::conformance::JSON);
   EXPECT_THAT(result.response(), EqualsProto(R"pb(runtime_error: "error")pb"));
@@ -167,13 +167,13 @@ TEST(TesteeTest, JsonIgnoreUnknownParsing) {
               )pb")))
       .WillOnce(RespondWith(R"pb(runtime_error: "error")pb"));
 
-  TestResult result = testee.CreateTest("foo", TestStrictness::kRequired)
+  TestResult result = testee.CreateTest("foo", TestPriority::kP0)
                           .ParseJson(TestAllTypesProto2::descriptor(), "json",
                                      {/*ignore_unknown_fields=*/true})
                           .SerializeBinary();
 
   EXPECT_EQ(result.name(), "Required.Proto2.JsonInput.foo.ProtobufOutput");
-  EXPECT_EQ(result.strictness(), TestStrictness::kRequired);
+  EXPECT_EQ(result.priority(), TestPriority::kP0);
   EXPECT_EQ(result.type(), TestAllTypesProto2::descriptor());
   EXPECT_THAT(result.format(), ::conformance::PROTOBUF);
   EXPECT_THAT(result.response(), EqualsProto(R"pb(runtime_error: "error")pb"));
@@ -194,12 +194,12 @@ TEST(TesteeTest, InvalidResponse) {
       .WillOnce(Return(std::string("\004")));
 
   TestResult result =
-      testee.CreateTest("foo", TestStrictness::kRequired)
+      testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeBinary();
 
   EXPECT_EQ(result.name(), "Required.Proto2.ProtobufInput.foo.ProtobufOutput");
-  EXPECT_EQ(result.strictness(), TestStrictness::kRequired);
+  EXPECT_EQ(result.priority(), TestPriority::kP0);
   EXPECT_EQ(result.type(), TestAllTypesProto2::descriptor());
   EXPECT_THAT(result.format(), ::conformance::PROTOBUF);
   EXPECT_THAT(
@@ -223,15 +223,29 @@ TEST(TesteeTest, DuplicateTestName) {
       .WillRepeatedly(Return(std::string("\004")));
 
   TestResult result =
-      testee.CreateTest("foo", TestStrictness::kRequired)
+      testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeBinary();
 
   EXPECT_DEATH(
-      testee.CreateTest("foo", TestStrictness::kRequired)
+      testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeBinary(),
       "Duplicated test name: Required.Proto2.ProtobufInput.foo.ProtobufOutput");
+}
+
+TEST(TestPriorityTest, PriorityName) {
+  EXPECT_EQ(PriorityName(kP0), "P0");
+  EXPECT_EQ(PriorityName(kP1), "P1");
+  EXPECT_EQ(PriorityName(kP2), "P2");
+  EXPECT_EQ(PriorityName(kP3), "P3");
+}
+
+TEST(TestPriorityTest, PriorityLevelName) {
+  EXPECT_EQ(PriorityLevelName(kP0), "Required");
+  EXPECT_EQ(PriorityLevelName(kP1), "Required");
+  EXPECT_EQ(PriorityLevelName(kP2), "Required");
+  EXPECT_EQ(PriorityLevelName(kP3), "Recommended");
 }
 
 }  // namespace
