@@ -15,7 +15,6 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
-#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -72,6 +71,10 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Map_Set(upb_Map* map,
 // If present and |val| is non-NULL, stores the deleted value.
 UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
                             upb_MessageValue* val);
+
+// Pre-allocates memory for at least `size` elements in the map.
+UPB_NODISCARD UPB_API bool upb_Map_Reserve(upb_Map* map, size_t size,
+                                           upb_Arena* arena);
 
 // Map iteration:
 //

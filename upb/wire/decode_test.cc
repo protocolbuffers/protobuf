@@ -14,6 +14,7 @@
 #include <optional>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -33,6 +34,7 @@
 #include "upb/message/accessors.hpp"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -1495,53 +1497,62 @@ static const upb_MiniTable* CreateDynamicMapTable(
 }
 
 template <typename K, typename V>
-std::string SerializeDynamicMap(const upb_MiniTable* mt, K key, V val,
-                                upb_Arena* arena) {
+std::string SerializeDynamicMapMultiple(
+    const upb_MiniTable* mt, const std::vector<std::pair<K, V>>& entries,
+    upb_Arena* arena) {
   upb_Message* src = upb_Message_New(mt, arena);
   const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(mt, 0);
   const upb_MiniTable* entry_mt = upb_MiniTable_GetSubMessageTable(f);
   upb_Map* map = upb_Message_GetOrCreateMutableMap(src, entry_mt, f, arena);
-  upb_MessageValue kv{}, vv{};
-  if constexpr (std::is_same_v<K, int32_t>)
-    kv.int32_val = key;
-  else if constexpr (std::is_same_v<K, int64_t>)
-    kv.int64_val = key;
-  else if constexpr (std::is_same_v<K, uint32_t>)
-    kv.uint32_val = key;
-  else if constexpr (std::is_same_v<K, uint64_t>)
-    kv.uint64_val = key;
-  else if constexpr (std::is_same_v<K, bool>)
-    kv.bool_val = key;
-  else if constexpr (std::is_same_v<K, upb_StringView>)
-    kv.str_val = key;
+  for (const auto& [key, val] : entries) {
+    upb_MessageValue kv{}, vv{};
+    if constexpr (std::is_same_v<K, int32_t>)
+      kv.int32_val = key;
+    else if constexpr (std::is_same_v<K, int64_t>)
+      kv.int64_val = key;
+    else if constexpr (std::is_same_v<K, uint32_t>)
+      kv.uint32_val = key;
+    else if constexpr (std::is_same_v<K, uint64_t>)
+      kv.uint64_val = key;
+    else if constexpr (std::is_same_v<K, bool>)
+      kv.bool_val = key;
+    else if constexpr (std::is_same_v<K, upb_StringView>)
+      kv.str_val = key;
 
-  if constexpr (std::is_same_v<V, int32_t>)
-    vv.int32_val = val;
-  else if constexpr (std::is_same_v<V, int64_t>)
-    vv.int64_val = val;
-  else if constexpr (std::is_same_v<V, uint32_t>)
-    vv.uint32_val = val;
-  else if constexpr (std::is_same_v<V, uint64_t>)
-    vv.uint64_val = val;
-  else if constexpr (std::is_same_v<V, float>)
-    vv.float_val = val;
-  else if constexpr (std::is_same_v<V, double>)
-    vv.double_val = val;
-  else if constexpr (std::is_same_v<V, bool>)
-    vv.bool_val = val;
-  else if constexpr (std::is_same_v<V, upb_StringView>)
-    vv.str_val = val;
-  else if constexpr (std::is_same_v<V, const upb_Message*> ||
-                     std::is_same_v<V, upb_Message*>)
-    vv.msg_val = val;
+    if constexpr (std::is_same_v<V, int32_t>)
+      vv.int32_val = val;
+    else if constexpr (std::is_same_v<V, int64_t>)
+      vv.int64_val = val;
+    else if constexpr (std::is_same_v<V, uint32_t>)
+      vv.uint32_val = val;
+    else if constexpr (std::is_same_v<V, uint64_t>)
+      vv.uint64_val = val;
+    else if constexpr (std::is_same_v<V, float>)
+      vv.float_val = val;
+    else if constexpr (std::is_same_v<V, double>)
+      vv.double_val = val;
+    else if constexpr (std::is_same_v<V, bool>)
+      vv.bool_val = val;
+    else if constexpr (std::is_same_v<V, upb_StringView>)
+      vv.str_val = val;
+    else if constexpr (std::is_same_v<V, const upb_Message*> ||
+                       std::is_same_v<V, upb_Message*>)
+      vv.msg_val = val;
 
-  ABSL_CHECK(upb_Map_Set(map, kv, vv, arena));
+    ABSL_CHECK(upb_Map_Set(map, kv, vv, arena));
+  }
 
   char* buf;
   size_t size;
   upb_EncodeStatus status = upb_Encode(src, mt, 0, arena, &buf, &size);
   ABSL_CHECK_EQ(status, kUpb_EncodeStatus_Ok);
   return std::string(buf, size);
+}
+
+template <typename K, typename V>
+std::string SerializeDynamicMap(const upb_MiniTable* mt, K key, V val,
+                                upb_Arena* arena) {
+  return SerializeDynamicMapMultiple<K, V>(mt, {{key, val}}, arena);
 }
 
 TEST(DecodeTest, DecodeMapTag2Byte) {
@@ -1617,6 +1628,151 @@ TEST(DecodeTest, DecodeMapTag2Byte) {
       }
 #endif
       EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), expected_trace);
+#endif
+    }
+  }
+}
+
+TEST(DecodeTest, DecodeMapPresizeSkipScan) {
+  for (int options : GetDecodeOptionsToTest()) {
+    // 1. Multi-entry 1-byte tag (field 1)
+    {
+      Arena mt_arena;
+      const upb_MiniTable* mt = CreateDynamicMapTable(
+          1, kUpb_FieldType_Int32, kUpb_FieldType_Int32, mt_arena.ptr());
+      std::vector<std::pair<int32_t, int32_t>> entries;
+      for (int i = 1; i <= 25; ++i) {
+        entries.emplace_back(i, i * 10);
+      }
+      std::string payload =
+          SerializeDynamicMapMultiple(mt, entries, mt_arena.ptr());
+      Arena msg_arena;
+      char trace_buf[256] = {0};
+      upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+      upb_DecodeStatus result = upb_DecodeWithTrace(
+          payload.data(), payload.size(), msg, mt, nullptr, options,
+          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+      ASSERT_EQ(result, kUpb_DecodeStatus_Ok)
+          << upb_DecodeStatus_String(result);
+
+      const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(mt, 0);
+      const upb_Map* map = upb_Message_GetMap(msg, f);
+      ASSERT_NE(map, nullptr);
+      EXPECT_EQ(upb_Map_Size(map), 25u);
+      for (int i = 1; i <= 25; ++i) {
+        upb_MessageValue val;
+        EXPECT_TRUE(upb_Map_Get(map, MsgVal(i), &val));
+        EXPECT_EQ(val.int32_val, i * 10);
+      }
+
+#if UPB_FASTTABLE
+      if (!(options & kUpb_DecodeOption_DisableFastTable)) {
+        // Presizing allocated capacity 32 directly (_upb_entries_needed_for(25)
+        // = 29 -> log2ceil 5 -> 32).
+        EXPECT_EQ(_upb_Map_Capacity(map), 32);
+#ifndef NDEBUG
+        EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)),
+                  "D" + std::string(22, 'F') + "<MMMDFF");
+#endif
+      }
+#endif
+    }
+
+    // 2. Multi-entry 2-byte tag (field 16)
+    {
+      Arena mt_arena;
+      const upb_MiniTable* mt = CreateDynamicMapTable(
+          16, kUpb_FieldType_Int32, kUpb_FieldType_Int32, mt_arena.ptr());
+      std::vector<std::pair<int32_t, int32_t>> entries;
+      for (int i = 1; i <= 25; ++i) {
+        entries.emplace_back(i, i * 10);
+      }
+      std::string payload =
+          SerializeDynamicMapMultiple(mt, entries, mt_arena.ptr());
+      Arena msg_arena;
+      char trace_buf[256] = {0};
+      upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+      upb_DecodeStatus result = upb_DecodeWithTrace(
+          payload.data(), payload.size(), msg, mt, nullptr, options,
+          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+      ASSERT_EQ(result, kUpb_DecodeStatus_Ok)
+          << upb_DecodeStatus_String(result);
+
+      const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(mt, 0);
+      const upb_Map* map = upb_Message_GetMap(msg, f);
+      ASSERT_NE(map, nullptr);
+      EXPECT_EQ(upb_Map_Size(map), 25u);
+      for (int i = 1; i <= 25; ++i) {
+        upb_MessageValue val;
+        EXPECT_TRUE(upb_Map_Get(map, MsgVal(i), &val));
+        EXPECT_EQ(val.int32_val, i * 10);
+      }
+
+#if UPB_FASTTABLE
+      if (!(options & kUpb_DecodeOption_DisableFastTable)) {
+        EXPECT_EQ(_upb_Map_Capacity(map), 32);
+#ifndef NDEBUG
+        EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)),
+                  "D" + std::string(22, 'F') + "<MMMDFF");
+#endif
+      }
+#endif
+    }
+
+    // 3. Multibyte length entry (>= 128 bytes) stops skip-scan early
+    {
+      Arena mt_arena;
+      const upb_MiniTable* mt = CreateDynamicMapTable(
+          1, kUpb_FieldType_String, kUpb_FieldType_String, mt_arena.ptr());
+      std::string long_val(130, 'x');
+      std::string payload;
+      payload += SerializeDynamicMap<upb_StringView, upb_StringView>(
+          mt, upb_StringView_FromString("k0"), upb_StringView_FromString("v0"),
+          mt_arena.ptr());
+      payload += SerializeDynamicMap<upb_StringView, upb_StringView>(
+          mt, upb_StringView_FromString("k1"), upb_StringView_FromString("v1"),
+          mt_arena.ptr());
+      payload += SerializeDynamicMap<upb_StringView, upb_StringView>(
+          mt, upb_StringView_FromString("k2"), upb_StringView_FromString("v2"),
+          mt_arena.ptr());
+      payload += SerializeDynamicMap<upb_StringView, upb_StringView>(
+          mt, upb_StringView_FromString("k3"),
+          upb_StringView_FromString(long_val.c_str()), mt_arena.ptr());
+      payload += SerializeDynamicMap<upb_StringView, upb_StringView>(
+          mt, upb_StringView_FromString("k4"), upb_StringView_FromString("v4"),
+          mt_arena.ptr());
+
+      Arena msg_arena;
+      char trace_buf[256] = {0};
+      upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+      upb_DecodeStatus result = upb_DecodeWithTrace(
+          payload.data(), payload.size(), msg, mt, nullptr, options,
+          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+      ASSERT_EQ(result, kUpb_DecodeStatus_Ok)
+          << upb_DecodeStatus_String(result);
+
+      const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(mt, 0);
+      const upb_Map* map = upb_Message_GetMap(msg, f);
+      ASSERT_NE(map, nullptr);
+      EXPECT_EQ(upb_Map_Size(map), 5u);
+
+      upb_MessageValue val;
+      EXPECT_TRUE(
+          upb_Map_Get(map, MsgVal(upb_StringView_FromString("k3")), &val));
+      EXPECT_EQ(absl::string_view(val.str_val.data, val.str_val.size),
+                long_val);
+
+#if UPB_FASTTABLE
+      if (!(options & kUpb_DecodeOption_DisableFastTable)) {
+        // Fast decoder decodes all entries successfully even when skip-scan
+        // stopped early at the multibyte length entry.
+#ifndef NDEBUG
+        EXPECT_EQ(FilteredTrace(absl::string_view(trace_buf)), "DFFF<MMMF");
+#endif
+      }
 #endif
     }
   }
