@@ -21,6 +21,7 @@
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_pool.h"
 #include "upb/reflection/def_type.h"
+#include "upb/reflection/internal/desc_state.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -93,6 +94,23 @@ INSTANTIATE_TEST_SUITE_P(PartIdentTest, PartIdentTestBase,
                              {"#", false},
                              {".", false},
                              {"", false}}));
+
+TEST(DescStateTest, GrowPreservesContents) {
+  upb::Arena arena;
+  upb_DescState state;
+  _upb_DescState_Init(&state);
+
+  for (int i = 0; i < 256; ++i) {
+    ASSERT_TRUE(_upb_DescState_Grow(&state, arena.ptr()));
+    ASSERT_GE(state.e.end - state.ptr, kUpb_MtDataEncoder_MinSize);
+    *state.ptr++ = static_cast<char>(i % 127);
+  }
+
+  EXPECT_EQ(state.ptr - state.buf, 256);
+  for (int i = 0; i < 256; ++i) {
+    EXPECT_EQ(state.buf[i], static_cast<char>(i % 127));
+  }
+}
 
 TEST(DefBuilderTest, AllocationFailure) {
   if (!upb_AllocationCount_IsAvailable()) return;
