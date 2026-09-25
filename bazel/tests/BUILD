@@ -29,6 +29,11 @@ cc_proto_library_test_suite(name = "cc_proto_library_tests")
 
 proto_bzl_test_suite_tests(name = "proto_bzl_test_suite")
 
+test_suite(
+    name = "pyi_typecheck_tests",
+    tests = ["//python/pyi_test:typecheck_golden_test"],
+)
+
 bzl_library(
     name = "proto_bzl_test_suite_bzl",
     srcs = ["proto_bzl_test_suite.bzl"],
