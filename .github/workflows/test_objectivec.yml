@@ -44,7 +44,7 @@ jobs:
           continuous-only: true
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Xcode ${{ matrix.platform}} ${{ matrix.xc_config }}
-    runs-on: macos-14
+    runs-on: macos-15
     env:
       DEVELOPER_DIR: /Applications/Xcode_15.2.app/Contents/Developer
     steps:
@@ -92,7 +92,7 @@ jobs:
         PLATFORM: ["ios", "macos", "tvos", "watchos"]
         CONFIGURATION: ["Debug", "Release"]
         include:
-          - OS: macos-14
+          - OS: macos-15
             XCODE: "15.2"
           # We run presubmits on all "Debug" entries, but not on "Release" entries
           - CONFIGURATION: "Debug"
@@ -150,7 +150,7 @@ jobs:
         - platform: "macOS"
           bazel_targets: //objectivec/...
     name: ${{ matrix.config.continuous-only && inputs.continuous-prefix || '' }} Bazel ${{ matrix.platform }} ${{ matrix.config.name }}
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout pending changes
         if: ${{ !matrix.config.continuous-only || inputs.continuous-run }}

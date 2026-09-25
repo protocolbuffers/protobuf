@@ -32,7 +32,6 @@ py_repositories()
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel/private/oss:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
-load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
@@ -134,12 +133,6 @@ def protobuf_deps():
             sha256 = "70c519e8f0a5d9244c0d3496a6993bd42edf111c4499b68ce2f155c26fc8d4ee",
             strip_prefix = "rules_python-2.3.0",
             url = "https://github.com/bazel-contrib/rules_python/releases/download/2.3.0/rules_python-2.3.0.tar.gz",
-        )
-
-    if not native.existing_rule("system_python"):
-        system_python(
-            name = "system_python",
-            minimum_python_version = "3.10",
         )
 
     if not native.existing_rule("rules_jvm_external"):
