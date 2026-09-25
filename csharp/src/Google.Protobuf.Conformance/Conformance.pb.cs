@@ -68,51 +68,65 @@ namespace Conformance {
     [pbr::OriginalName("UNSPECIFIED")] Unspecified = 0,
     [pbr::OriginalName("PROTOBUF")] Protobuf = 1,
     [pbr::OriginalName("JSON")] Json = 2,
-    /// <summary>
-    /// Only used inside Google. Opensource testees just skip it.
-    /// </summary>
+    /**
+     * <summary>
+     *  Only used inside Google. Opensource testees just skip it.
+     * </summary>
+     */
     [pbr::OriginalName("JSPB")] Jspb = 3,
     [pbr::OriginalName("TEXT_FORMAT")] TextFormat = 4,
   }
 
   public enum TestCategory {
     [pbr::OriginalName("UNSPECIFIED_TEST")] UnspecifiedTest = 0,
-    /// <summary>
-    /// Test binary wire format.
-    /// </summary>
+    /**
+     * <summary>
+     *  Test binary wire format.
+     * </summary>
+     */
     [pbr::OriginalName("BINARY_TEST")] BinaryTest = 1,
-    /// <summary>
-    /// Test json wire format.
-    /// </summary>
+    /**
+     * <summary>
+     *  Test json wire format.
+     * </summary>
+     */
     [pbr::OriginalName("JSON_TEST")] JsonTest = 2,
-    /// <summary>
-    /// Similar to JSON_TEST. However, during parsing json, testee should ignore
-    /// unknown fields. This feature is optional. Each implementation can decide
-    /// whether to support it.  See
-    /// https://developers.google.com/protocol-buffers/docs/proto3#json_options
-    /// for more detail.
-    /// </summary>
+    /**
+     * <summary>
+     *  Similar to JSON_TEST. However, during parsing json, testee should ignore
+     *  unknown fields. This feature is optional. Each implementation can decide
+     *  whether to support it.  See
+     *  https://developers.google.com/protocol-buffers/docs/proto3#json_options
+     *  for more detail.
+     * </summary>
+     */
     [pbr::OriginalName("JSON_IGNORE_UNKNOWN_PARSING_TEST")] JsonIgnoreUnknownParsingTest = 3,
-    /// <summary>
-    /// Test jspb wire format. Only used inside Google. Opensource testees just
-    /// skip it.
-    /// </summary>
+    /**
+     * <summary>
+     *  Test jspb wire format. Only used inside Google. Opensource testees just
+     *  skip it.
+     * </summary>
+     */
     [pbr::OriginalName("JSPB_TEST")] JspbTest = 4,
-    /// <summary>
-    /// Test text format. For cpp, java and python, testees can already deal with
-    /// this type. Testees of other languages can simply skip it.
-    /// </summary>
+    /**
+     * <summary>
+     *  Test text format. For cpp, java and python, testees can already deal with
+     *  this type. Testees of other languages can simply skip it.
+     * </summary>
+     */
     [pbr::OriginalName("TEXT_FORMAT_TEST")] TextFormatTest = 5,
   }
 
   #endregion
 
   #region Messages
-  /// <summary>
-  /// Meant to encapsulate all types of tests: successes, skips, failures, etc.
-  /// Therefore, this may or may not have a failure message. Failure messages
-  /// may be truncated for our failure lists.
-  /// </summary>
+  /**
+   * <summary>
+   *  Meant to encapsulate all types of tests: successes, skips, failures, etc.
+   *  Therefore, this may or may not have a failure message. Failure messages
+   *  may be truncated for our failure lists.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestStatus : pb::IMessage<TestStatus>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -187,10 +201,12 @@ namespace Conformance {
     /// <summary>Field number for the "matched_name" field.</summary>
     public const int MatchedNameFieldNumber = 3;
     private string matchedName_ = "";
-    /// <summary>
-    /// What an actual test name matched to in a failure list. Can be wildcarded or
-    /// an exact match without wildcards.
-    /// </summary>
+    /**
+     * <summary>
+     *  What an actual test name matched to in a failure list. Can be wildcarded or
+     *  an exact match without wildcards.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string MatchedName {
@@ -389,11 +405,13 @@ namespace Conformance {
 
   }
 
-  /// <summary>
-  /// The conformance runner will request a list of failures as the first request.
-  /// This will be known by message_type == "conformance.FailureSet", a conformance
-  /// test should return a serialized FailureSet in protobuf_payload.
-  /// </summary>
+  /**
+   * <summary>
+   *  The conformance runner will request a list of failures as the first request.
+   *  This will be known by message_type == "conformance.FailureSet", a conformance
+   *  test should return a serialized FailureSet in protobuf_payload.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FailureSet : pb::IMessage<FailureSet>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -581,13 +599,15 @@ namespace Conformance {
 
   }
 
-  /// <summary>
-  /// Represents a single test case's input.  The testee should:
-  ///
-  ///   1. parse this proto (which should always succeed)
-  ///   2. parse the protobuf or JSON payload in "payload" (which may fail)
-  ///   3. if the parse succeeded, serialize the message in the requested format.
-  /// </summary>
+  /**
+   * <summary>
+   *  Represents a single test case's input.  The testee should:
+   * 
+   *    1. parse this proto (which should always succeed)
+   *    2. parse the protobuf or JSON payload in "payload" (which may fail)
+   *    3. if the parse succeeded, serialize the message in the requested format.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ConformanceRequest : pb::IMessage<ConformanceRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -706,9 +726,11 @@ namespace Conformance {
 
     /// <summary>Field number for the "jspb_payload" field.</summary>
     public const int JspbPayloadFieldNumber = 7;
-    /// <summary>
-    /// Only used inside Google.  Opensource testees just skip it.
-    /// </summary>
+    /**
+     * <summary>
+     *  Only used inside Google.  Opensource testees just skip it.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JspbPayload {
@@ -762,9 +784,11 @@ namespace Conformance {
     /// <summary>Field number for the "requested_output_format" field.</summary>
     public const int RequestedOutputFormatFieldNumber = 3;
     private global::Conformance.WireFormat requestedOutputFormat_ = global::Conformance.WireFormat.Unspecified;
-    /// <summary>
-    /// Which format should the testee serialize its message to?
-    /// </summary>
+    /**
+     * <summary>
+     *  Which format should the testee serialize its message to?
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Conformance.WireFormat RequestedOutputFormat {
@@ -777,15 +801,17 @@ namespace Conformance {
     /// <summary>Field number for the "message_type" field.</summary>
     public const int MessageTypeFieldNumber = 4;
     private string messageType_ = "";
-    /// <summary>
-    /// The full name for the test message to use; for the moment, either:
-    /// protobuf_test_messages.proto3.TestAllTypesProto3 or
-    /// protobuf_test_messages.proto2.TestAllTypesProto2 or
-    /// protobuf_test_messages.editions.proto2.TestAllTypesProto2 or
-    /// protobuf_test_messages.editions.proto3.TestAllTypesProto3 or
-    /// protobuf_test_messages.editions.TestAllTypesEdition2023 or
-    /// protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable.
-    /// </summary>
+    /**
+     * <summary>
+     *  The full name for the test message to use; for the moment, either:
+     *  protobuf_test_messages.proto3.TestAllTypesProto3 or
+     *  protobuf_test_messages.proto2.TestAllTypesProto2 or
+     *  protobuf_test_messages.editions.proto2.TestAllTypesProto2 or
+     *  protobuf_test_messages.editions.proto3.TestAllTypesProto3 or
+     *  protobuf_test_messages.editions.TestAllTypesEdition2023 or
+     *  protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string MessageType {
@@ -798,11 +824,13 @@ namespace Conformance {
     /// <summary>Field number for the "test_category" field.</summary>
     public const int TestCategoryFieldNumber = 5;
     private global::Conformance.TestCategory testCategory_ = global::Conformance.TestCategory.UnspecifiedTest;
-    /// <summary>
-    /// Each test is given a specific test category. Some category may need
-    /// specific support in testee programs. Refer to the definition of
-    /// TestCategory for more information.
-    /// </summary>
+    /**
+     * <summary>
+     *  Each test is given a specific test category. Some category may need
+     *  specific support in testee programs. Refer to the definition of
+     *  TestCategory for more information.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Conformance.TestCategory TestCategory {
@@ -815,9 +843,11 @@ namespace Conformance {
     /// <summary>Field number for the "jspb_encoding_options" field.</summary>
     public const int JspbEncodingOptionsFieldNumber = 6;
     private global::Conformance.JspbEncodingConfig jspbEncodingOptions_;
-    /// <summary>
-    /// Specify details for how to encode jspb.
-    /// </summary>
+    /**
+     * <summary>
+     *  Specify details for how to encode jspb.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Conformance.JspbEncodingConfig JspbEncodingOptions {
@@ -830,10 +860,12 @@ namespace Conformance {
     /// <summary>Field number for the "print_unknown_fields" field.</summary>
     public const int PrintUnknownFieldsFieldNumber = 9;
     private bool printUnknownFields_;
-    /// <summary>
-    /// This can be used in json and text format. If true, testee should print
-    /// unknown fields instead of ignore. This feature is optional.
-    /// </summary>
+    /**
+     * <summary>
+     *  This can be used in json and text format. If true, testee should print
+     *  unknown fields instead of ignore. This feature is optional.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool PrintUnknownFields {
@@ -1213,9 +1245,11 @@ namespace Conformance {
 
   }
 
-  /// <summary>
-  /// Represents a single test case's output.
-  /// </summary>
+  /**
+   * <summary>
+   *  Represents a single test case's output.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ConformanceResponse : pb::IMessage<ConformanceResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1292,13 +1326,15 @@ namespace Conformance {
 
     /// <summary>Field number for the "parse_error" field.</summary>
     public const int ParseErrorFieldNumber = 1;
-    /// <summary>
-    /// This string should be set to indicate parsing failed.  The string can
-    /// provide more information about the parse error if it is available.
-    ///
-    /// Setting this string does not necessarily mean the testee failed the
-    /// test.  Some of the test cases are intentionally invalid input.
-    /// </summary>
+    /**
+     * <summary>
+     *  This string should be set to indicate parsing failed.  The string can
+     *  provide more information about the parse error if it is available.
+     * 
+     *  Setting this string does not necessarily mean the testee failed the
+     *  test.  Some of the test cases are intentionally invalid input.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string ParseError {
@@ -1325,11 +1361,13 @@ namespace Conformance {
 
     /// <summary>Field number for the "serialize_error" field.</summary>
     public const int SerializeErrorFieldNumber = 6;
-    /// <summary>
-    /// If the input was successfully parsed but errors occurred when
-    /// serializing it to the requested output format, set the error message in
-    /// this field.
-    /// </summary>
+    /**
+     * <summary>
+     *  If the input was successfully parsed but errors occurred when
+     *  serializing it to the requested output format, set the error message in
+     *  this field.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string SerializeError {
@@ -1356,11 +1394,13 @@ namespace Conformance {
 
     /// <summary>Field number for the "timeout_error" field.</summary>
     public const int TimeoutErrorFieldNumber = 9;
-    /// <summary>
-    /// This should be set if the test program timed out.  The string should
-    /// provide more information about what the child process was doing when it
-    /// was killed.
-    /// </summary>
+    /**
+     * <summary>
+     *  This should be set if the test program timed out.  The string should
+     *  provide more information about what the child process was doing when it
+     *  was killed.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TimeoutError {
@@ -1387,11 +1427,13 @@ namespace Conformance {
 
     /// <summary>Field number for the "runtime_error" field.</summary>
     public const int RuntimeErrorFieldNumber = 2;
-    /// <summary>
-    /// This should be set if some other error occurred.  This will always
-    /// indicate that the test failed.  The string can provide more information
-    /// about the failure.
-    /// </summary>
+    /**
+     * <summary>
+     *  This should be set if some other error occurred.  This will always
+     *  indicate that the test failed.  The string can provide more information
+     *  about the failure.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string RuntimeError {
@@ -1418,10 +1460,12 @@ namespace Conformance {
 
     /// <summary>Field number for the "protobuf_payload" field.</summary>
     public const int ProtobufPayloadFieldNumber = 3;
-    /// <summary>
-    /// If the input was successfully parsed and the requested output was
-    /// protobuf, serialize it to protobuf and set it in this field.
-    /// </summary>
+    /**
+     * <summary>
+     *  If the input was successfully parsed and the requested output was
+     *  protobuf, serialize it to protobuf and set it in this field.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString ProtobufPayload {
@@ -1448,10 +1492,12 @@ namespace Conformance {
 
     /// <summary>Field number for the "json_payload" field.</summary>
     public const int JsonPayloadFieldNumber = 4;
-    /// <summary>
-    /// If the input was successfully parsed and the requested output was JSON,
-    /// serialize to JSON and set it in this field.
-    /// </summary>
+    /**
+     * <summary>
+     *  If the input was successfully parsed and the requested output was JSON,
+     *  serialize to JSON and set it in this field.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JsonPayload {
@@ -1478,10 +1524,12 @@ namespace Conformance {
 
     /// <summary>Field number for the "skipped" field.</summary>
     public const int SkippedFieldNumber = 5;
-    /// <summary>
-    /// For when the testee skipped the test, likely because a certain feature
-    /// wasn't supported, like JSON input/output.
-    /// </summary>
+    /**
+     * <summary>
+     *  For when the testee skipped the test, likely because a certain feature
+     *  wasn't supported, like JSON input/output.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Skipped {
@@ -1508,11 +1556,13 @@ namespace Conformance {
 
     /// <summary>Field number for the "jspb_payload" field.</summary>
     public const int JspbPayloadFieldNumber = 7;
-    /// <summary>
-    /// If the input was successfully parsed and the requested output was JSPB,
-    /// serialize to JSPB and set it in this field. JSPB is only used inside
-    /// Google. Opensource testees can just skip it.
-    /// </summary>
+    /**
+     * <summary>
+     *  If the input was successfully parsed and the requested output was JSPB,
+     *  serialize to JSPB and set it in this field. JSPB is only used inside
+     *  Google. Opensource testees can just skip it.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JspbPayload {
@@ -1539,10 +1589,12 @@ namespace Conformance {
 
     /// <summary>Field number for the "text_payload" field.</summary>
     public const int TextPayloadFieldNumber = 8;
-    /// <summary>
-    /// If the input was successfully parsed and the requested output was
-    /// TEXT_FORMAT, serialize to TEXT_FORMAT and set it in this field.
-    /// </summary>
+    /**
+     * <summary>
+     *  If the input was successfully parsed and the requested output was
+     *  TEXT_FORMAT, serialize to TEXT_FORMAT and set it in this field.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TextPayload {
@@ -1933,9 +1985,11 @@ namespace Conformance {
 
   }
 
-  /// <summary>
-  /// Encoding options for jspb format.
-  /// </summary>
+  /**
+   * <summary>
+   *  Encoding options for jspb format.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class JspbEncodingConfig : pb::IMessage<JspbEncodingConfig>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1984,9 +2038,11 @@ namespace Conformance {
     /// <summary>Field number for the "use_jspb_array_any_format" field.</summary>
     public const int UseJspbArrayAnyFormatFieldNumber = 1;
     private bool useJspbArrayAnyFormat_;
-    /// <summary>
-    /// Encode the value field of Any as jspb array if true, otherwise binary.
-    /// </summary>
+    /**
+     * <summary>
+     *  Encode the value field of Any as jspb array if true, otherwise binary.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool UseJspbArrayAnyFormat {

@@ -117,9 +117,11 @@ namespace ProtobufUnittest {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// Retention attributes set on fields nested within a message
-  /// </summary>
+  /**
+   * <summary>
+   *  Retention attributes set on fields nested within a message
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OptionsMessage : pb::IMessage<OptionsMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

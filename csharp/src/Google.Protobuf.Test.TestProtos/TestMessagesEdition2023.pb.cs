@@ -635,9 +635,11 @@ namespace ProtobufTestMessages.Editions {
     private readonly static int OptionalInt32DefaultValue = 0;
 
     private int optionalInt32_;
-    /// <summary>
-    /// Singular
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
@@ -1183,9 +1185,11 @@ namespace ProtobufTestMessages.Editions {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Repeated
-    /// </summary>
+    /**
+     * <summary>
+     *  Repeated
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -1417,9 +1421,11 @@ namespace ProtobufTestMessages.Editions {
     private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
         = pb::FieldCodec.ForInt32(602);
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Packed
-    /// </summary>
+    /**
+     * <summary>
+     *  Packed
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> PackedInt32 {
@@ -1574,9 +1580,11 @@ namespace ProtobufTestMessages.Editions {
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
         = pb::FieldCodec.ForInt32(712);
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Unpacked
-    /// </summary>
+    /**
+     * <summary>
+     *  Unpacked
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> UnpackedInt32 {
@@ -1731,9 +1739,11 @@ namespace ProtobufTestMessages.Editions {
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 450);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
-    /// <summary>
-    /// Map
-    /// </summary>
+    /**
+     * <summary>
+     *  Map
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapInt32Int32 {
@@ -2211,9 +2221,11 @@ namespace ProtobufTestMessages.Editions {
     private static readonly pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023>.Codec _map_mapRecursive_codec
         = new pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForMessage(18, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023.Parser), 2410);
     private readonly pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023> mapRecursive_ = new pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023>();
-    /// <summary>
-    /// recursive
-    /// </summary>
+    /**
+     * <summary>
+     *  recursive
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, global::ProtobufTestMessages.Editions.TestAllTypesEdition2023> MapRecursive {
@@ -4327,9 +4339,11 @@ namespace ProtobufTestMessages.Editions {
         [pbr::OriginalName("FOO")] Foo = 0,
         [pbr::OriginalName("BAR")] Bar = 1,
         [pbr::OriginalName("BAZ")] Baz = 2,
-        /// <summary>
-        /// Intentionally negative.
-        /// </summary>
+        /**
+         * <summary>
+         *  Intentionally negative.
+         * </summary>
+         */
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
@@ -4594,9 +4608,11 @@ namespace ProtobufTestMessages.Editions {
 
       }
 
-      /// <summary>
-      /// groups
-      /// </summary>
+      /**
+       * <summary>
+       *  groups
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class GroupLikeType : pb::IMessage<GroupLikeType>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

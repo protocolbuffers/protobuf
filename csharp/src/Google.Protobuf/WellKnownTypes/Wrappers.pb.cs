@@ -53,14 +53,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
   #region Messages
-  /// <summary>
-  /// Wrapper message for `double`.
-  ///
-  /// The JSON representation for `DoubleValue` is JSON number.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `double`.
+   * 
+   *  The JSON representation for `DoubleValue` is JSON number.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DoubleValue : pb::IMessage<DoubleValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -109,9 +111,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private double value_;
-    /// <summary>
-    /// The double value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The double value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double Value {
@@ -262,14 +266,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `float`.
-  ///
-  /// The JSON representation for `FloatValue` is JSON number.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `float`.
+   * 
+   *  The JSON representation for `FloatValue` is JSON number.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FloatValue : pb::IMessage<FloatValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -318,9 +324,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private float value_;
-    /// <summary>
-    /// The float value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The float value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public float Value {
@@ -471,14 +479,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `int64`.
-  ///
-  /// The JSON representation for `Int64Value` is JSON string.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `int64`.
+   * 
+   *  The JSON representation for `Int64Value` is JSON string.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int64Value : pb::IMessage<Int64Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -527,9 +537,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private long value_;
-    /// <summary>
-    /// The int64 value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The int64 value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public long Value {
@@ -680,14 +692,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `uint64`.
-  ///
-  /// The JSON representation for `UInt64Value` is JSON string.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `uint64`.
+   * 
+   *  The JSON representation for `UInt64Value` is JSON string.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UInt64Value : pb::IMessage<UInt64Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -736,9 +750,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private ulong value_;
-    /// <summary>
-    /// The uint64 value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The uint64 value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong Value {
@@ -889,14 +905,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `int32`.
-  ///
-  /// The JSON representation for `Int32Value` is JSON number.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `int32`.
+   * 
+   *  The JSON representation for `Int32Value` is JSON number.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int32Value : pb::IMessage<Int32Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -945,9 +963,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private int value_;
-    /// <summary>
-    /// The int32 value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The int32 value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Value {
@@ -1098,14 +1118,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `uint32`.
-  ///
-  /// The JSON representation for `UInt32Value` is JSON number.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `uint32`.
+   * 
+   *  The JSON representation for `UInt32Value` is JSON number.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UInt32Value : pb::IMessage<UInt32Value>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1154,9 +1176,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private uint value_;
-    /// <summary>
-    /// The uint32 value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The uint32 value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public uint Value {
@@ -1307,14 +1331,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `bool`.
-  ///
-  /// The JSON representation for `BoolValue` is JSON `true` and `false`.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `bool`.
+   * 
+   *  The JSON representation for `BoolValue` is JSON `true` and `false`.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BoolValue : pb::IMessage<BoolValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1363,9 +1389,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private bool value_;
-    /// <summary>
-    /// The bool value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The bool value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Value {
@@ -1516,14 +1544,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `string`.
-  ///
-  /// The JSON representation for `StringValue` is JSON string.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `string`.
+   * 
+   *  The JSON representation for `StringValue` is JSON string.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class StringValue : pb::IMessage<StringValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1572,9 +1602,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private string value_ = "";
-    /// <summary>
-    /// The string value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The string value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Value {
@@ -1725,14 +1757,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Wrapper message for `bytes`.
-  ///
-  /// The JSON representation for `BytesValue` is JSON string.
-  ///
-  /// Not recommended for use in new APIs, but still useful for legacy APIs and
-  /// has no plan to be removed.
-  /// </summary>
+  /**
+   * <summary>
+   *  Wrapper message for `bytes`.
+   * 
+   *  The JSON representation for `BytesValue` is JSON string.
+   * 
+   *  Not recommended for use in new APIs, but still useful for legacy APIs and
+   *  has no plan to be removed.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class BytesValue : pb::IMessage<BytesValue>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1781,9 +1815,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 1;
     private pb::ByteString value_ = pb::ByteString.Empty;
-    /// <summary>
-    /// The bytes value.
-    /// </summary>
+    /**
+     * <summary>
+     *  The bytes value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString Value {

@@ -54,22 +54,24 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
   #region Messages
-  /// <summary>
-  /// Api is a light-weight descriptor for an API Interface.
-  ///
-  /// Interfaces are also described as "protocol buffer services" in some contexts,
-  /// such as by the "service" keyword in a .proto file, but they are different
-  /// from API Services, which represent a concrete implementation of an interface
-  /// as opposed to simply a description of methods and bindings. They are also
-  /// sometimes simply referred to as "APIs" in other contexts, such as the name of
-  /// this message itself. See https://cloud.google.com/apis/design/glossary for
-  /// detailed terminology.
-  ///
-  /// New usages of this message as an alternative to ServiceDescriptorProto are
-  /// strongly discouraged. This message does not reliability preserve all
-  /// information necessary to model the schema and preserve semantics. Instead
-  /// make use of FileDescriptorSet which preserves the necessary information.
-  /// </summary>
+  /**
+   * <summary>
+   *  Api is a light-weight descriptor for an API Interface.
+   * 
+   *  Interfaces are also described as "protocol buffer services" in some contexts,
+   *  such as by the "service" keyword in a .proto file, but they are different
+   *  from API Services, which represent a concrete implementation of an interface
+   *  as opposed to simply a description of methods and bindings. They are also
+   *  sometimes simply referred to as "APIs" in other contexts, such as the name of
+   *  this message itself. See https://cloud.google.com/apis/design/glossary for
+   *  detailed terminology.
+   * 
+   *  New usages of this message as an alternative to ServiceDescriptorProto are
+   *  strongly discouraged. This message does not reliability preserve all
+   *  information necessary to model the schema and preserve semantics. Instead
+   *  make use of FileDescriptorSet which preserves the necessary information.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Api : pb::IMessage<Api>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -125,10 +127,12 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    /// <summary>
-    /// The fully qualified name of this interface, including package name
-    /// followed by the interface's simple name.
-    /// </summary>
+    /**
+     * <summary>
+     *  The fully qualified name of this interface, including package name
+     *  followed by the interface's simple name.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Name {
@@ -143,9 +147,11 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Method> _repeated_methods_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.WellKnownTypes.Method.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method> methods_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method>();
-    /// <summary>
-    /// The methods of this interface, in unspecified order.
-    /// </summary>
+    /**
+     * <summary>
+     *  The methods of this interface, in unspecified order.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Method> Methods {
@@ -157,9 +163,11 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Option> _repeated_options_codec
         = pb::FieldCodec.ForMessage(26, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
-    /// <summary>
-    /// Any metadata attached to the interface.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any metadata attached to the interface.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
@@ -169,27 +177,29 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "version" field.</summary>
     public const int VersionFieldNumber = 4;
     private string version_ = "";
-    /// <summary>
-    /// A version string for this interface. If specified, must have the form
-    /// `major-version.minor-version`, as in `1.10`. If the minor version is
-    /// omitted, it defaults to zero. If the entire version field is empty, the
-    /// major version is derived from the package name, as outlined below. If the
-    /// field is not empty, the version in the package name will be verified to be
-    /// consistent with what is provided here.
-    ///
-    /// The versioning schema uses [semantic
-    /// versioning](http://semver.org) where the major version number
-    /// indicates a breaking change and the minor version an additive,
-    /// non-breaking change. Both version numbers are signals to users
-    /// what to expect from different versions, and should be carefully
-    /// chosen based on the product plan.
-    ///
-    /// The major version is also reflected in the package name of the
-    /// interface, which must end in `v&lt;major-version>`, as in
-    /// `google.feature.v1`. For major versions 0 and 1, the suffix can
-    /// be omitted. Zero major versions must only be used for
-    /// experimental, non-GA interfaces.
-    /// </summary>
+    /**
+     * <summary>
+     *  A version string for this interface. If specified, must have the form
+     *  `major-version.minor-version`, as in `1.10`. If the minor version is
+     *  omitted, it defaults to zero. If the entire version field is empty, the
+     *  major version is derived from the package name, as outlined below. If the
+     *  field is not empty, the version in the package name will be verified to be
+     *  consistent with what is provided here.
+     * 
+     *  The versioning schema uses [semantic
+     *  versioning](http://semver.org) where the major version number
+     *  indicates a breaking change and the minor version an additive,
+     *  non-breaking change. Both version numbers are signals to users
+     *  what to expect from different versions, and should be carefully
+     *  chosen based on the product plan.
+     * 
+     *  The major version is also reflected in the package name of the
+     *  interface, which must end in `v&lt;major-version>`, as in
+     *  `google.feature.v1`. For major versions 0 and 1, the suffix can
+     *  be omitted. Zero major versions must only be used for
+     *  experimental, non-GA interfaces.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Version {
@@ -202,10 +212,12 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "source_context" field.</summary>
     public const int SourceContextFieldNumber = 5;
     private global::Google.Protobuf.WellKnownTypes.SourceContext sourceContext_;
-    /// <summary>
-    /// Source context for the protocol buffer service represented by this
-    /// message.
-    /// </summary>
+    /**
+     * <summary>
+     *  Source context for the protocol buffer service represented by this
+     *  message.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.WellKnownTypes.SourceContext SourceContext {
@@ -220,9 +232,11 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Mixin> _repeated_mixins_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.WellKnownTypes.Mixin.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Mixin> mixins_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Mixin>();
-    /// <summary>
-    /// Included interfaces. See [Mixin][].
-    /// </summary>
+    /**
+     * <summary>
+     *  Included interfaces. See [Mixin][].
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Mixin> Mixins {
@@ -232,9 +246,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 7;
     private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
-    /// <summary>
-    /// The source syntax of the service.
-    /// </summary>
+    /**
+     * <summary>
+     *  The source syntax of the service.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.WellKnownTypes.Syntax Syntax {
@@ -247,9 +263,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "edition" field.</summary>
     public const int EditionFieldNumber = 8;
     private string edition_ = "";
-    /// <summary>
-    /// The source edition string, only valid when syntax is SYNTAX_EDITIONS.
-    /// </summary>
+    /**
+     * <summary>
+     *  The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Edition {
@@ -547,14 +565,16 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Method represents a method of an API interface.
-  ///
-  /// New usages of this message as an alternative to MethodDescriptorProto are
-  /// strongly discouraged. This message does not reliability preserve all
-  /// information necessary to model the schema and preserve semantics. Instead
-  /// make use of FileDescriptorSet which preserves the necessary information.
-  /// </summary>
+  /**
+   * <summary>
+   *  Method represents a method of an API interface.
+   * 
+   *  New usages of this message as an alternative to MethodDescriptorProto are
+   *  strongly discouraged. This message does not reliability preserve all
+   *  information necessary to model the schema and preserve semantics. Instead
+   *  make use of FileDescriptorSet which preserves the necessary information.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Method : pb::IMessage<Method>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -610,9 +630,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    /// <summary>
-    /// The simple name of this method.
-    /// </summary>
+    /**
+     * <summary>
+     *  The simple name of this method.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Name {
@@ -625,9 +647,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "request_type_url" field.</summary>
     public const int RequestTypeUrlFieldNumber = 2;
     private string requestTypeUrl_ = "";
-    /// <summary>
-    /// A URL of the input message type.
-    /// </summary>
+    /**
+     * <summary>
+     *  A URL of the input message type.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string RequestTypeUrl {
@@ -640,9 +664,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "request_streaming" field.</summary>
     public const int RequestStreamingFieldNumber = 3;
     private bool requestStreaming_;
-    /// <summary>
-    /// If true, the request is streamed.
-    /// </summary>
+    /**
+     * <summary>
+     *  If true, the request is streamed.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool RequestStreaming {
@@ -655,9 +681,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "response_type_url" field.</summary>
     public const int ResponseTypeUrlFieldNumber = 4;
     private string responseTypeUrl_ = "";
-    /// <summary>
-    /// The URL of the output message type.
-    /// </summary>
+    /**
+     * <summary>
+     *  The URL of the output message type.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string ResponseTypeUrl {
@@ -670,9 +698,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "response_streaming" field.</summary>
     public const int ResponseStreamingFieldNumber = 5;
     private bool responseStreaming_;
-    /// <summary>
-    /// If true, the response is streamed.
-    /// </summary>
+    /**
+     * <summary>
+     *  If true, the response is streamed.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool ResponseStreaming {
@@ -687,9 +717,11 @@ namespace Google.Protobuf.WellKnownTypes {
     private static readonly pb::FieldCodec<global::Google.Protobuf.WellKnownTypes.Option> _repeated_options_codec
         = pb::FieldCodec.ForMessage(50, global::Google.Protobuf.WellKnownTypes.Option.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> options_ = new pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option>();
-    /// <summary>
-    /// Any metadata attached to the method.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any metadata attached to the method.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.WellKnownTypes.Option> Options {
@@ -699,12 +731,14 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "syntax" field.</summary>
     public const int SyntaxFieldNumber = 7;
     private global::Google.Protobuf.WellKnownTypes.Syntax syntax_ = global::Google.Protobuf.WellKnownTypes.Syntax.Proto2;
-    /// <summary>
-    /// The source syntax of this method.
-    ///
-    /// This field should be ignored, instead the syntax should be inherited from
-    /// Api. This is similar to Field and EnumValue.
-    /// </summary>
+    /**
+     * <summary>
+     *  The source syntax of this method.
+     * 
+     *  This field should be ignored, instead the syntax should be inherited from
+     *  Api. This is similar to Field and EnumValue.
+     * </summary>
+     */
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -718,12 +752,14 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "edition" field.</summary>
     public const int EditionFieldNumber = 8;
     private string edition_ = "";
-    /// <summary>
-    /// The source edition string, only valid when syntax is SYNTAX_EDITIONS.
-    ///
-    /// This field should be ignored, instead the edition should be inherited from
-    /// Api. This is similar to Field and EnumValue.
-    /// </summary>
+    /**
+     * <summary>
+     *  The source edition string, only valid when syntax is SYNTAX_EDITIONS.
+     * 
+     *  This field should be ignored, instead the edition should be inherited from
+     *  Api. This is similar to Field and EnumValue.
+     * </summary>
+     */
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -1033,86 +1069,88 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
 
-  /// <summary>
-  /// Declares an API Interface to be included in this interface. The including
-  /// interface must redeclare all the methods from the included interface, but
-  /// documentation and options are inherited as follows:
-  ///
-  /// - If after comment and whitespace stripping, the documentation
-  ///   string of the redeclared method is empty, it will be inherited
-  ///   from the original method.
-  ///
-  /// - Each annotation belonging to the service config (http,
-  ///   visibility) which is not set in the redeclared method will be
-  ///   inherited.
-  ///
-  /// - If an http annotation is inherited, the path pattern will be
-  ///   modified as follows. Any version prefix will be replaced by the
-  ///   version of the including interface plus the [root][] path if
-  ///   specified.
-  ///
-  /// Example of a simple mixin:
-  ///
-  ///     package google.acl.v1;
-  ///     service AccessControl {
-  ///       // Get the underlying ACL object.
-  ///       rpc GetAcl(GetAclRequest) returns (Acl) {
-  ///         option (google.api.http).get = "/v1/{resource=**}:getAcl";
-  ///       }
-  ///     }
-  ///
-  ///     package google.storage.v2;
-  ///     service Storage {
-  ///       rpc GetAcl(GetAclRequest) returns (Acl);
-  ///
-  ///       // Get a data record.
-  ///       rpc GetData(GetDataRequest) returns (Data) {
-  ///         option (google.api.http).get = "/v2/{resource=**}";
-  ///       }
-  ///     }
-  ///
-  /// Example of a mixin configuration:
-  ///
-  ///     apis:
-  ///     - name: google.storage.v2.Storage
-  ///       mixins:
-  ///       - name: google.acl.v1.AccessControl
-  ///
-  /// The mixin construct implies that all methods in `AccessControl` are
-  /// also declared with same name and request/response types in
-  /// `Storage`. A documentation generator or annotation processor will
-  /// see the effective `Storage.GetAcl` method after inheriting
-  /// documentation and annotations as follows:
-  ///
-  ///     service Storage {
-  ///       // Get the underlying ACL object.
-  ///       rpc GetAcl(GetAclRequest) returns (Acl) {
-  ///         option (google.api.http).get = "/v2/{resource=**}:getAcl";
-  ///       }
-  ///       ...
-  ///     }
-  ///
-  /// Note how the version in the path pattern changed from `v1` to `v2`.
-  ///
-  /// If the `root` field in the mixin is specified, it should be a
-  /// relative path under which inherited HTTP paths are placed. Example:
-  ///
-  ///     apis:
-  ///     - name: google.storage.v2.Storage
-  ///       mixins:
-  ///       - name: google.acl.v1.AccessControl
-  ///         root: acls
-  ///
-  /// This implies the following inherited HTTP annotation:
-  ///
-  ///     service Storage {
-  ///       // Get the underlying ACL object.
-  ///       rpc GetAcl(GetAclRequest) returns (Acl) {
-  ///         option (google.api.http).get = "/v2/acls/{resource=**}:getAcl";
-  ///       }
-  ///       ...
-  ///     }
-  /// </summary>
+  /**
+   * <summary>
+   *  Declares an API Interface to be included in this interface. The including
+   *  interface must redeclare all the methods from the included interface, but
+   *  documentation and options are inherited as follows:
+   * 
+   *  - If after comment and whitespace stripping, the documentation
+   *    string of the redeclared method is empty, it will be inherited
+   *    from the original method.
+   * 
+   *  - Each annotation belonging to the service config (http,
+   *    visibility) which is not set in the redeclared method will be
+   *    inherited.
+   * 
+   *  - If an http annotation is inherited, the path pattern will be
+   *    modified as follows. Any version prefix will be replaced by the
+   *    version of the including interface plus the [root][] path if
+   *    specified.
+   * 
+   *  Example of a simple mixin:
+   * 
+   *      package google.acl.v1;
+   *      service AccessControl {
+   *        // Get the underlying ACL object.
+   *        rpc GetAcl(GetAclRequest) returns (Acl) {
+   *          option (google.api.http).get = "/v1/{resource=**}:getAcl";
+   *        }
+   *      }
+   * 
+   *      package google.storage.v2;
+   *      service Storage {
+   *        rpc GetAcl(GetAclRequest) returns (Acl);
+   * 
+   *        // Get a data record.
+   *        rpc GetData(GetDataRequest) returns (Data) {
+   *          option (google.api.http).get = "/v2/{resource=**}";
+   *        }
+   *      }
+   * 
+   *  Example of a mixin configuration:
+   * 
+   *      apis:
+   *      - name: google.storage.v2.Storage
+   *        mixins:
+   *        - name: google.acl.v1.AccessControl
+   * 
+   *  The mixin construct implies that all methods in `AccessControl` are
+   *  also declared with same name and request/response types in
+   *  `Storage`. A documentation generator or annotation processor will
+   *  see the effective `Storage.GetAcl` method after inheriting
+   *  documentation and annotations as follows:
+   * 
+   *      service Storage {
+   *        // Get the underlying ACL object.
+   *        rpc GetAcl(GetAclRequest) returns (Acl) {
+   *          option (google.api.http).get = "/v2/{resource=**}:getAcl";
+   *        }
+   *        ...
+   *      }
+   * 
+   *  Note how the version in the path pattern changed from `v1` to `v2`.
+   * 
+   *  If the `root` field in the mixin is specified, it should be a
+   *  relative path under which inherited HTTP paths are placed. Example:
+   * 
+   *      apis:
+   *      - name: google.storage.v2.Storage
+   *        mixins:
+   *        - name: google.acl.v1.AccessControl
+   *          root: acls
+   * 
+   *  This implies the following inherited HTTP annotation:
+   * 
+   *      service Storage {
+   *        // Get the underlying ACL object.
+   *        rpc GetAcl(GetAclRequest) returns (Acl) {
+   *          option (google.api.http).get = "/v2/acls/{resource=**}:getAcl";
+   *        }
+   *        ...
+   *      }
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Mixin : pb::IMessage<Mixin>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1162,9 +1200,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    /// <summary>
-    /// The fully qualified name of the interface which is included.
-    /// </summary>
+    /**
+     * <summary>
+     *  The fully qualified name of the interface which is included.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Name {
@@ -1177,10 +1217,12 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "root" field.</summary>
     public const int RootFieldNumber = 2;
     private string root_ = "";
-    /// <summary>
-    /// If non-empty specifies a path under which inherited HTTP paths
-    /// are rooted.
-    /// </summary>
+    /**
+     * <summary>
+     *  If non-empty specifies a path under which inherited HTTP paths
+     *  are rooted.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Root {

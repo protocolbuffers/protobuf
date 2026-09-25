@@ -151,9 +151,11 @@ namespace ProtobufUnittest {
     private readonly static int OptionalInt32DefaultValue = 0;
 
     private int optionalInt32_;
-    /// <summary>
-    /// Singular
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
@@ -632,9 +634,11 @@ namespace ProtobufUnittest {
     /// <summary>Field number for the "singular_int32" field.</summary>
     public const int SingularInt32FieldNumber = 22;
     private int singularInt32_;
-    /// <summary>
-    /// Add some non-optional fields to verify we can mix them.
-    /// </summary>
+    /**
+     * <summary>
+     *  Add some non-optional fields to verify we can mix them.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int SingularInt32 {
@@ -1303,9 +1307,11 @@ namespace ProtobufUnittest {
         [pbr::OriginalName("FOO")] Foo = 1,
         [pbr::OriginalName("BAR")] Bar = 2,
         [pbr::OriginalName("BAZ")] Baz = 3,
-        /// <summary>
-        /// Intentionally negative.
-        /// </summary>
+        /**
+         * <summary>
+         *  Intentionally negative.
+         * </summary>
+         */
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
@@ -1361,11 +1367,13 @@ namespace ProtobufUnittest {
         private readonly static int BbDefaultValue = 0;
 
         private int bb_;
-        /// <summary>
-        /// The field name "b" fails to compile in proto1 because it conflicts with
-        /// a local variable named "b" in one of the generated methods.  Doh.
-        /// This file needs to compile in proto1 to test backwards-compatibility.
-        /// </summary>
+        /**
+         * <summary>
+         *  The field name "b" fails to compile in proto1 because it conflicts with
+         *  a local variable named "b" in one of the generated methods.  Doh.
+         *  This file needs to compile in proto1 to test backwards-compatibility.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Bb {

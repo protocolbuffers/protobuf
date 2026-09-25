@@ -387,9 +387,11 @@ namespace ProtobufTestMessages.EditionUnstable {
     private readonly static int OptionalInt32DefaultValue = 0;
 
     private int optionalInt32_;
-    /// <summary>
-    /// Singular
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
@@ -468,9 +470,11 @@ namespace ProtobufTestMessages.EditionUnstable {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForSFixed32(42);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Repeated
-    /// </summary>
+    /**
+     * <summary>
+     *  Repeated
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -504,9 +508,11 @@ namespace ProtobufTestMessages.EditionUnstable {
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForSFixed32(13, 0), pb::FieldCodec.ForSFixed32(21, 0), 66);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
-    /// <summary>
-    /// Map
-    /// </summary>
+    /**
+     * <summary>
+     *  Map
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapInt32Int32 {
@@ -562,9 +568,11 @@ namespace ProtobufTestMessages.EditionUnstable {
     private readonly static pb::ByteString OptionalBytesDefaultValue = pb::ByteString.Empty;
 
     private pb::ByteString optionalBytes_;
-    /// <summary>
-    /// bytes
-    /// </summary>
+    /**
+     * <summary>
+     *  bytes
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString OptionalBytes {

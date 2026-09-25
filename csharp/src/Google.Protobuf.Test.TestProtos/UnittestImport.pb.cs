@@ -47,9 +47,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [pbr::OriginalName("IMPORT_BAZ")] ImportBaz = 9,
   }
 
-  /// <summary>
-  /// To use an enum in a map, it must has the first value as 0.
-  /// </summary>
+  /**
+   * <summary>
+   *  To use an enum in a map, it must has the first value as 0.
+   * </summary>
+   */
   public enum ImportEnumForMap {
     [pbr::OriginalName("UNKNOWN")] Unknown = 0,
     [pbr::OriginalName("FOO")] Foo = 1,

@@ -39,38 +39,40 @@ namespace Google.Protobuf.WellKnownTypes {
 
   }
   #region Messages
-  /// <summary>
-  /// `Any` contains an arbitrary serialized protocol buffer message along with a
-  /// URL that describes the type of the serialized message.
-  ///
-  /// In its binary encoding, an `Any` is an ordinary message; but in other wire
-  /// forms like JSON, it has a special encoding. The format of the type URL is
-  /// described on the `type_url` field.
-  ///
-  /// Protobuf APIs provide utilities to interact with `Any` values:
-  ///
-  /// - A 'pack' operation accepts a message and constructs a generic `Any` wrapper
-  ///   around it.
-  /// - An 'unpack' operation reads the content of an `Any` message, either into an
-  ///   existing message or a new one. Unpack operations must check the type of the
-  ///   value they unpack against the declared `type_url`.
-  /// - An 'is' operation decides whether an `Any` contains a message of the given
-  ///   type, i.e. whether it can 'unpack' that type.
-  ///
-  /// The JSON format representation of an `Any` follows one of these cases:
-  ///
-  /// - For types without special-cased JSON encodings, the JSON format
-  ///   representation of the `Any` is the same as that of the message, with an
-  ///   additional `@type` field which contains the type URL.
-  /// - For types with special-cased JSON encodings (typically called 'well-known'
-  ///   types, listed in https://protobuf.dev/programming-guides/json/#any), the
-  ///   JSON format representation has a key `@type` which contains the type URL
-  ///   and a key `value` which contains the JSON-serialized value.
-  ///
-  /// The text format representation of an `Any` is like a message with one field
-  /// whose name is the type URL in brackets. For example, an `Any` containing a
-  /// `foo.Bar` message may be written `[type.googleapis.com/foo.Bar] { a: 2 }`.
-  /// </summary>
+  /**
+   * <summary>
+   *  `Any` contains an arbitrary serialized protocol buffer message along with a
+   *  URL that describes the type of the serialized message.
+   * 
+   *  In its binary encoding, an `Any` is an ordinary message; but in other wire
+   *  forms like JSON, it has a special encoding. The format of the type URL is
+   *  described on the `type_url` field.
+   * 
+   *  Protobuf APIs provide utilities to interact with `Any` values:
+   * 
+   *  - A 'pack' operation accepts a message and constructs a generic `Any` wrapper
+   *    around it.
+   *  - An 'unpack' operation reads the content of an `Any` message, either into an
+   *    existing message or a new one. Unpack operations must check the type of the
+   *    value they unpack against the declared `type_url`.
+   *  - An 'is' operation decides whether an `Any` contains a message of the given
+   *    type, i.e. whether it can 'unpack' that type.
+   * 
+   *  The JSON format representation of an `Any` follows one of these cases:
+   * 
+   *  - For types without special-cased JSON encodings, the JSON format
+   *    representation of the `Any` is the same as that of the message, with an
+   *    additional `@type` field which contains the type URL.
+   *  - For types with special-cased JSON encodings (typically called 'well-known'
+   *    types, listed in https://protobuf.dev/programming-guides/json/#any), the
+   *    JSON format representation has a key `@type` which contains the type URL
+   *    and a key `value` which contains the JSON-serialized value.
+   * 
+   *  The text format representation of an `Any` is like a message with one field
+   *  whose name is the type URL in brackets. For example, an `Any` containing a
+   *  `foo.Bar` message may be written `[type.googleapis.com/foo.Bar] { a: 2 }`.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Any : pb::IMessage<Any>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -120,37 +122,39 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "type_url" field.</summary>
     public const int TypeUrlFieldNumber = 1;
     private string typeUrl_ = "";
-    /// <summary>
-    /// Identifies the type of the serialized Protobuf message with a URI reference
-    /// consisting of a prefix ending in a slash and the fully-qualified type name.
-    ///
-    /// Example: type.googleapis.com/google.protobuf.StringValue
-    ///
-    /// This string must contain at least one `/` character, and the content after
-    /// the last `/` must be the fully-qualified name of the type in canonical
-    /// form, without a leading dot. Do not write a scheme on these URI references
-    /// so that clients do not attempt to contact them.
-    ///
-    /// The prefix is arbitrary and Protobuf implementations are expected to
-    /// simply strip off everything up to and including the last `/` to identify
-    /// the type. `type.googleapis.com/` is a common default prefix that some
-    /// legacy implementations require. This prefix does not indicate the origin of
-    /// the type, and URIs containing it are not expected to respond to any
-    /// requests.
-    ///
-    /// All type URL strings must be legal URI references with the additional
-    /// restriction (for the text format) that the content of the reference
-    /// must consist only of alphanumeric characters, percent-encoded escapes, and
-    /// characters in the following set (not including the outer backticks):
-    /// `/-.~_!$&amp;()*+,;=`. Despite our allowing percent encodings, implementations
-    /// should not unescape them to prevent confusion with existing parsers. For
-    /// example, `type.googleapis.com%2FFoo` should be rejected.
-    ///
-    /// In the original design of `Any`, the possibility of launching a type
-    /// resolution service at these type URLs was considered but Protobuf never
-    /// implemented one and considers contacting these URLs to be problematic and
-    /// a potential security issue. Do not attempt to contact type URLs.
-    /// </summary>
+    /**
+     * <summary>
+     *  Identifies the type of the serialized Protobuf message with a URI reference
+     *  consisting of a prefix ending in a slash and the fully-qualified type name.
+     * 
+     *  Example: type.googleapis.com/google.protobuf.StringValue
+     * 
+     *  This string must contain at least one `/` character, and the content after
+     *  the last `/` must be the fully-qualified name of the type in canonical
+     *  form, without a leading dot. Do not write a scheme on these URI references
+     *  so that clients do not attempt to contact them.
+     * 
+     *  The prefix is arbitrary and Protobuf implementations are expected to
+     *  simply strip off everything up to and including the last `/` to identify
+     *  the type. `type.googleapis.com/` is a common default prefix that some
+     *  legacy implementations require. This prefix does not indicate the origin of
+     *  the type, and URIs containing it are not expected to respond to any
+     *  requests.
+     * 
+     *  All type URL strings must be legal URI references with the additional
+     *  restriction (for the text format) that the content of the reference
+     *  must consist only of alphanumeric characters, percent-encoded escapes, and
+     *  characters in the following set (not including the outer backticks):
+     *  `/-.~_!$&amp;()*+,;=`. Despite our allowing percent encodings, implementations
+     *  should not unescape them to prevent confusion with existing parsers. For
+     *  example, `type.googleapis.com%2FFoo` should be rejected.
+     * 
+     *  In the original design of `Any`, the possibility of launching a type
+     *  resolution service at these type URLs was considered but Protobuf never
+     *  implemented one and considers contacting these URLs to be problematic and
+     *  a potential security issue. Do not attempt to contact type URLs.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TypeUrl {
@@ -163,9 +167,11 @@ namespace Google.Protobuf.WellKnownTypes {
     /// <summary>Field number for the "value" field.</summary>
     public const int ValueFieldNumber = 2;
     private pb::ByteString value_ = pb::ByteString.Empty;
-    /// <summary>
-    /// Holds a Protobuf serialization of the type described by type_url.
-    /// </summary>
+    /**
+     * <summary>
+     *  Holds a Protobuf serialization of the type described by type_url.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pb::ByteString Value {

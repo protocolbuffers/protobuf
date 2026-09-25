@@ -751,9 +751,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   }
   /// <summary>Holder for extension identifiers generated from the top level of csharp/protos/unittest.proto</summary>
   public static partial class UnittestExtensions {
-    /// <summary>
-    /// Singular
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     * </summary>
+     */
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int> OptionalInt32Extension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int>(1, pb::FieldCodec.ForInt32(8, 0));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, long> OptionalInt64Extension =
@@ -806,9 +808,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.PublicImportMessage>(26, pb::FieldCodec.ForMessage(210, global::Google.Protobuf.TestProtos.Proto2.PublicImportMessage.Parser));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage> OptionalLazyMessageExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage>(27, pb::FieldCodec.ForMessage(218, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage.Parser));
-    /// <summary>
-    /// Repeated
-    /// </summary>
+    /**
+     * <summary>
+     *  Repeated
+     * </summary>
+     */
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int> RepeatedInt32Extension =
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int>(31, pb::FieldCodec.ForInt32(248));
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, long> RepeatedInt64Extension =
@@ -859,9 +863,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(55, pb::FieldCodec.ForString(442));
     public static readonly pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage> RepeatedLazyMessageExtension =
       new pb::RepeatedExtension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage>(57, pb::FieldCodec.ForMessage(458, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage.Parser));
-    /// <summary>
-    /// Singular with defaults
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular with defaults
+     * </summary>
+     */
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int> DefaultInt32Extension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, int>(61, pb::FieldCodec.ForInt32(488, 41));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, long> DefaultInt64Extension =
@@ -902,9 +908,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(84, pb::FieldCodec.ForString(674, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("YWJj"), 0, 3)));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> DefaultCordExtension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(85, pb::FieldCodec.ForString(682, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("MTIz"), 0, 3)));
-    /// <summary>
-    /// For oneof test
-    /// </summary>
+    /**
+     * <summary>
+     *  For oneof test
+     * </summary>
+     */
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, uint> OneofUint32Extension =
       new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, uint>(111, pb::FieldCodec.ForUInt32(888, 0));
     public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage> OneofNestedMessageExtension =
@@ -986,9 +994,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 6,
   }
 
-  /// <summary>
-  /// Test an enum that has multiple values with the same number.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test an enum that has multiple values with the same number.
+   * </summary>
+   */
   public enum TestEnumWithDupValue {
     [pbr::OriginalName("FOO1")] Foo1 = 1,
     [pbr::OriginalName("BAR1")] Bar1 = 2,
@@ -997,9 +1007,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [pbr::OriginalName("BAR2", PreferredAlias = false)] Bar2 = 2,
   }
 
-  /// <summary>
-  /// Test an enum with large, unordered values.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test an enum with large, unordered values.
+   * </summary>
+   */
   public enum TestSparseEnum {
     [pbr::OriginalName("SPARSE_A")] SparseA = 123,
     [pbr::OriginalName("SPARSE_B")] SparseB = 62374,
@@ -1117,10 +1129,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// This proto includes every type of field in both singular and repeated
-  /// forms.
-  /// </summary>
+  /**
+   * <summary>
+   *  This proto includes every type of field in both singular and repeated
+   *  forms.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllTypes : pb::IMessage<TestAllTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1258,9 +1272,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static int OptionalInt32DefaultValue = 0;
 
     private int optionalInt32_;
-    /// <summary>
-    /// Singular
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
@@ -1855,9 +1871,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     /// <summary>Field number for the "optional_public_import_message" field.</summary>
     public const int OptionalPublicImportMessageFieldNumber = 26;
     private global::Google.Protobuf.TestProtos.Proto2.PublicImportMessage optionalPublicImportMessage_;
-    /// <summary>
-    /// Defined in unittest_import_public.proto
-    /// </summary>
+    /**
+     * <summary>
+     *  Defined in unittest_import_public.proto
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.TestProtos.Proto2.PublicImportMessage OptionalPublicImportMessage {
@@ -1884,9 +1902,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(248);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Repeated
-    /// </summary>
+    /**
+     * <summary>
+     *  Repeated
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -2162,9 +2182,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static int DefaultInt32DefaultValue = 41;
 
     private int defaultInt32_;
-    /// <summary>
-    /// Singular with defaults
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular with defaults
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int DefaultInt32 {
@@ -4589,9 +4611,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         [pbr::OriginalName("FOO")] Foo = 1,
         [pbr::OriginalName("BAR")] Bar = 2,
         [pbr::OriginalName("BAZ")] Baz = 3,
-        /// <summary>
-        /// Intentionally negative.
-        /// </summary>
+        /**
+         * <summary>
+         *  Intentionally negative.
+         * </summary>
+         */
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
@@ -4647,11 +4671,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         private readonly static int BbDefaultValue = 0;
 
         private int bb_;
-        /// <summary>
-        /// The field name "b" fails to compile in proto1 because it conflicts with
-        /// a local variable named "b" in one of the generated methods.  Doh.
-        /// This file needs to compile in proto1 to test backwards-compatibility.
-        /// </summary>
+        /**
+         * <summary>
+         *  The field name "b" fails to compile in proto1 because it conflicts with
+         *  a local variable named "b" in one of the generated methods.  Doh.
+         *  This file needs to compile in proto1 to test backwards-compatibility.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Bb {
@@ -5250,9 +5276,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// This proto includes a recursively nested message.
-  /// </summary>
+  /**
+   * <summary>
+   *  This proto includes a recursively nested message.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NestedTestAllTypes : pb::IMessage<NestedTestAllTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -5996,10 +6024,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Define these after TestAllTypes to make sure the compiler can handle
-  /// that.
-  /// </summary>
+  /**
+   * <summary>
+   *  Define these after TestAllTypes to make sure the compiler can handle
+   *  that.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ForeignMessage : pb::IMessage<ForeignMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -8155,16 +8185,20 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Extensions {
-      /// <summary>
-      /// Check for bug where string extensions declared in tested scope did not
-      /// compile.
-      /// </summary>
+      /**
+       * <summary>
+       *  Check for bug where string extensions declared in tested scope did not
+       *  compile.
+       * </summary>
+       */
       public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> Test =
         new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(1002, pb::FieldCodec.ForString(8018, global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("dGVzdA=="), 0, 4)));
-      /// <summary>
-      /// Used to test if generated extension name is correct when there are
-      /// underscores.
-      /// </summary>
+      /**
+       * <summary>
+       *  Used to test if generated extension name is correct when there are
+       *  underscores.
+       * </summary>
+       */
       public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string> NestedStringExtension =
         new pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestAllExtensions, string>(1003, pb::FieldCodec.ForString(8026, ""));
       public static readonly pb::Extension<global::Google.Protobuf.TestProtos.Proto2.TestGroupExtension, global::Google.Protobuf.TestProtos.Proto2.TestNestedExtension.Types.OptionalGroup_extension> OptionalGroupExtension =
@@ -8176,13 +8210,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// We have separate messages for testing required fields because it's
-  /// annoying to have to fill in required fields in TestProto in order to
-  /// do anything with it.  Note that we don't need to test every type of
-  /// required filed because the code output is basically identical to
-  /// optional fields for all types.
-  /// </summary>
+  /**
+   * <summary>
+   *  We have separate messages for testing required fields because it's
+   *  annoying to have to fill in required fields in TestProto in order to
+   *  do anything with it.  Note that we don't need to test every type of
+   *  required filed because the code output is basically identical to
+   *  optional fields for all types.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestRequired : pb::IMessage<TestRequired>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -8350,10 +8386,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static int Dummy4DefaultValue = 0;
 
     private int dummy4_;
-    /// <summary>
-    /// Pad the field count to 32 so that we can test that IsInitialized()
-    /// properly checks multiple elements of has_bits_.
-    /// </summary>
+    /**
+     * <summary>
+     *  Pad the field count to 32 so that we can test that IsInitialized()
+     *  properly checks multiple elements of has_bits_.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Dummy4 {
@@ -10646,9 +10684,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test that we can use NestedMessage from outside TestAllTypes.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test that we can use NestedMessage from outside TestAllTypes.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestForeignNested : pb::IMessage<TestForeignNested>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -10856,9 +10896,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// TestEmptyMessage is used to test unknown field support.
-  /// </summary>
+  /**
+   * <summary>
+   *  TestEmptyMessage is used to test unknown field support.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestEmptyMessage : pb::IMessage<TestEmptyMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -11020,10 +11062,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Like above, but declare all field numbers as potential extensions.  No
-  /// actual extensions should ever be defined for this type.
-  /// </summary>
+  /**
+   * <summary>
+   *  Like above, but declare all field numbers as potential extensions.  No
+   *  actual extensions should ever be defined for this type.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestEmptyMessageWithExtensions : pb::IExtendableMessage<TestEmptyMessageWithExtensions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -11436,9 +11480,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test that really large tag numbers don't break anything.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test that really large tag numbers don't break anything.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestReallyLargeTagNumber : pb::IMessage<TestReallyLargeTagNumber>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -11492,10 +11538,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static int ADefaultValue = 0;
 
     private int a_;
-    /// <summary>
-    /// The largest possible tag number is 2^28 - 1, since the wire format uses
-    /// three bits to communicate wire type.
-    /// </summary>
+    /**
+     * <summary>
+     *  The largest possible tag number is 2^28 - 1, since the wire format uses
+     *  three bits to communicate wire type.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int A {
@@ -11971,9 +12019,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test that mutual recursion works.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test that mutual recursion works.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMutualRecursionA : pb::IMessage<TestMutualRecursionA>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -12500,9 +12550,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         /// <summary>Field number for the "sub_message" field.</summary>
         public const int SubMessageFieldNumber = 3;
         private global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA.Types.SubMessage subMessage_;
-        /// <summary>
-        /// Needed because of bug in javatest
-        /// </summary>
+        /**
+         * <summary>
+         *  Needed because of bug in javatest
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.TestProtos.Proto2.TestMutualRecursionA.Types.SubMessage SubMessage {
@@ -13632,12 +13684,14 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test that groups have disjoint field numbers from their siblings and
-  /// parents.  This is NOT possible in proto1; only google.protobuf.  When
-  /// attempting to compile with proto1, this will emit an error; so we only
-  /// include it in protobuf_unittest_proto.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test that groups have disjoint field numbers from their siblings and
+   *  parents.  This is NOT possible in proto1; only google.protobuf.  When
+   *  attempting to compile with proto1, this will emit an error; so we only
+   *  include it in protobuf_unittest_proto.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestDupFieldNumber : pb::IMessage<TestDupFieldNumber>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -13692,9 +13746,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static int ADefaultValue = 0;
 
     private int a_;
-    /// <summary>
-    /// NO_PROTO1
-    /// </summary>
+    /**
+     * <summary>
+     *  NO_PROTO1
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int A {
@@ -14414,9 +14470,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Additional messages for testing lazy fields.
-  /// </summary>
+  /**
+   * <summary>
+   *  Additional messages for testing lazy fields.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestEagerMessage : pb::IMessage<TestEagerMessage>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -14831,9 +14889,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Needed for a Python test.
-  /// </summary>
+  /**
+   * <summary>
+   *  Needed for a Python test.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestNestedMessageHasBits : pb::IMessage<TestNestedMessageHasBits>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -15264,10 +15324,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test message with CamelCase field names.  This violates Protocol Buffer
-  /// standard style.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test message with CamelCase field names.  This violates Protocol Buffer
+   *  standard style.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestCamelCaseFieldNames : pb::IMessage<TestCamelCaseFieldNames>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -15894,10 +15956,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// We list fields out of order, to ensure that we're using field number and not
-  /// field index to determine serialization order.
-  /// </summary>
+  /**
+   * <summary>
+   *  We list fields out of order, to ensure that we're using field number and not
+   *  field index to determine serialization order.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestFieldOrderings : pb::IExtendableMessage<TestFieldOrderings>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -16390,11 +16454,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
         private readonly static int BbDefaultValue = 0;
 
         private int bb_;
-        /// <summary>
-        /// The field name "b" fails to compile in proto1 because it conflicts with
-        /// a local variable named "b" in one of the generated methods.  Doh.
-        /// This file needs to compile in proto1 to test backwards-compatibility.
-        /// </summary>
+        /**
+         * <summary>
+         *  The field name "b" fails to compile in proto1 because it conflicts with
+         *  a local variable named "b" in one of the generated methods.  Doh.
+         *  This file needs to compile in proto1 to test backwards-compatibility.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Bb {
@@ -17527,11 +17593,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static string Utf8StringDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("4Yi0"), 0, 3);
 
     private string utf8String_;
-    /// <summary>
-    /// The default value here is UTF-8 for "\u1234".  (We could also just type
-    /// the UTF-8 text directly into this text file rather than escape it, but
-    /// lots of people use editors that would be confused by this.)
-    /// </summary>
+    /**
+     * <summary>
+     *  The default value here is UTF-8 for "\u1234".  (We could also just type
+     *  the UTF-8 text directly into this text file rather than escape it, but
+     *  lots of people use editors that would be confused by this.)
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Utf8String {
@@ -17558,9 +17626,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static float ZeroFloatDefaultValue = 0F;
 
     private float zeroFloat_;
-    /// <summary>
-    /// Tests for single-precision floating-point values.
-    /// </summary>
+    /**
+     * <summary>
+     *  Tests for single-precision floating-point values.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public float ZeroFloat {
@@ -17696,9 +17766,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static float LargeFloatDefaultValue = 2e+08F;
 
     private float largeFloat_;
-    /// <summary>
-    /// Using exponents
-    /// </summary>
+    /**
+     * <summary>
+     *  Using exponents
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public float LargeFloat {
@@ -17753,9 +17825,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static double InfDoubleDefaultValue = double.PositiveInfinity;
 
     private double infDouble_;
-    /// <summary>
-    /// Text for nonfinite floating-point values.
-    /// </summary>
+    /**
+     * <summary>
+     *  Text for nonfinite floating-point values.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public double InfDouble {
@@ -17918,13 +17992,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static string CppTrigraphDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("PyA/ID8/ID8/ID8/PyA/Py8gPz8t"), 0, 21);
 
     private string cppTrigraph_;
-    /// <summary>
-    /// Tests for C++ trigraphs.
-    /// Trigraphs should be escaped in C++ generated files, but they should not be
-    /// escaped for other languages.
-    /// Note that in .proto file, "\?" is a valid way to escape ? in string
-    /// literals.
-    /// </summary>
+    /**
+     * <summary>
+     *  Tests for C++ trigraphs.
+     *  Trigraphs should be escaped in C++ generated files, but they should not be
+     *  escaped for other languages.
+     *  Note that in .proto file, "\?" is a valid way to escape ? in string
+     *  literals.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string CppTrigraph {
@@ -17951,9 +18027,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static string StringWithZeroDefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("aGVsAGxv"), 0, 6);
 
     private string stringWithZero_;
-    /// <summary>
-    /// String defaults containing the character '\000'
-    /// </summary>
+    /**
+     * <summary>
+     *  String defaults containing the character '\000'
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string StringWithZero {
@@ -19059,9 +19137,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test String and Bytes: string is for valid UTF-8 strings
-  /// </summary>
+  /**
+   * <summary>
+   *  Test String and Bytes: string is for valid UTF-8 strings
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneString : pb::IMessage<OneString>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -19860,9 +19940,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test int32, uint32, int64, uint64, and bool are all compatible
-  /// </summary>
+  /**
+   * <summary>
+   *  Test int32, uint32, int64, uint64, and bool are all compatible
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Int32Message : pb::IMessage<Int32Message>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -20938,9 +21020,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test oneofs.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test oneofs.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestOneof : pb::IMessage<TestOneof>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -25484,10 +25568,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// A message with the same fields as TestPackedTypes, but without packing. Used
-  /// to test packed &lt;-> unpacked wire compatibility.
-  /// </summary>
+  /**
+   * <summary>
+   *  A message with the same fields as TestPackedTypes, but without packing. Used
+   *  to test packed &lt;-> unpacked wire compatibility.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestUnpackedTypes : pb::IMessage<TestUnpackedTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -26453,11 +26539,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Used by ExtensionSetTest/DynamicExtensions.  The test actually builds
-  /// a set of extensions to TestAllExtensions dynamically, based on the fields
-  /// of this message type.
-  /// </summary>
+  /**
+   * <summary>
+   *  Used by ExtensionSetTest/DynamicExtensions.  The test actually builds
+   *  a set of extensions to TestAllExtensions dynamically, based on the fields
+   *  of this message type.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestDynamicExtensions : pb::IMessage<TestDynamicExtensions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -27207,11 +27295,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::FieldCodec<uint> _repeated_repeatedFixed32_codec
         = pb::FieldCodec.ForFixed32(101);
     private readonly pbc::RepeatedField<uint> repeatedFixed32_ = new pbc::RepeatedField<uint>();
-    /// <summary>
-    /// Parsing repeated fixed size values used to fail. This message needs to be
-    /// used in order to get a tag of the right size; all of the repeated fields
-    /// in TestAllTypes didn't trigger the check.
-    /// </summary>
+    /**
+     * <summary>
+     *  Parsing repeated fixed size values used to fail. This message needs to be
+     *  used in order to get a tag of the right size; all of the repeated fields
+     *  in TestAllTypes didn't trigger the check.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<uint> RepeatedFixed32 {
@@ -27223,9 +27313,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(104);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Check for a varint type, just for good measure.
-    /// </summary>
+    /**
+     * <summary>
+     *  Check for a varint type, just for good measure.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -27237,9 +27329,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::FieldCodec<ulong> _repeated_repeatedFixed64_codec
         = pb::FieldCodec.ForFixed64(16369);
     private readonly pbc::RepeatedField<ulong> repeatedFixed64_ = new pbc::RepeatedField<ulong>();
-    /// <summary>
-    /// These have two-byte tags.
-    /// </summary>
+    /**
+     * <summary>
+     *  These have two-byte tags.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<ulong> RepeatedFixed64 {
@@ -27262,9 +27356,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private static readonly pb::FieldCodec<float> _repeated_repeatedFloat_codec
         = pb::FieldCodec.ForFloat(2097141);
     private readonly pbc::RepeatedField<float> repeatedFloat_ = new pbc::RepeatedField<float>();
-    /// <summary>
-    /// Three byte tags.
-    /// </summary>
+    /**
+     * <summary>
+     *  Three byte tags.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<float> RepeatedFloat {
@@ -27495,10 +27591,12 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test that if an optional or required message/group field appears multiple
-  /// times in the input, they need to be merged.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test that if an optional or required message/group field appears multiple
+   *  times in the input, they need to be merged.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestParsingMerge : pb::IExtendableMessage<TestParsingMerge>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -27912,13 +28010,15 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// RepeatedFieldsGenerator defines matching field types as TestParsingMerge,
-      /// except that all fields are repeated. In the tests, we will serialize the
-      /// RepeatedFieldsGenerator to bytes, and parse the bytes to TestParsingMerge.
-      /// Repeated fields in RepeatedFieldsGenerator are expected to be merged into
-      /// the corresponding required/optional fields in TestParsingMerge.
-      /// </summary>
+      /**
+       * <summary>
+       *  RepeatedFieldsGenerator defines matching field types as TestParsingMerge,
+       *  except that all fields are repeated. In the tests, we will serialize the
+       *  RepeatedFieldsGenerator to bytes, and parse the bytes to TestParsingMerge.
+       *  Repeated fields in RepeatedFieldsGenerator are expected to be merged into
+       *  the corresponding required/optional fields in TestParsingMerge.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class RepeatedFieldsGenerator : pb::IMessage<RepeatedFieldsGenerator>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -29165,9 +29265,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
     private readonly static string ADefaultValue = global::System.Text.Encoding.UTF8.GetString(global::System.Convert.FromBase64String("Ki8gPC0gTmVpdGhlciBzaG91bGQgdGhpcy4="), 0, 26);
 
     private string a_;
-    /// <summary>
-    /// */ &lt;- This should not close the generated doc comment
-    /// </summary>
+    /**
+     * <summary>
+     *  *&#47; &lt;- This should not close the generated doc comment
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string A {
@@ -29330,9 +29432,11 @@ namespace Google.Protobuf.TestProtos.Proto2 {
 
   }
 
-  /// <summary>
-  /// Test that RPC services work.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test that RPC services work.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FooRequest : pb::IMessage<FooRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

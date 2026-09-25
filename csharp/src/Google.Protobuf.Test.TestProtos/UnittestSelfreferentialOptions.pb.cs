@@ -50,9 +50,11 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
   }
   /// <summary>Holder for extension identifiers generated from the top level of csharp/protos/unittest_selfreferential_options.proto</summary>
   public static partial class UnittestSelfreferentialOptionsExtensions {
-    /// <summary>
-    /// Custom field option used on the definition of that field option.
-    /// </summary>
+    /**
+     * <summary>
+     *  Custom field option used on the definition of that field option.
+     * </summary>
+     */
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.FieldOptions, int> BarOptions =
       new pb::Extension<global::Google.Protobuf.Reflection.FieldOptions, int>(1000, pb::FieldCodec.ForInt32(8000, 0));
     public static readonly pb::Extension<global::Google.Protobuf.Reflection.FieldOptions, global::UnitTest.Issues.TestProtos.SelfreferentialOptions.FooOptions> FooOptions =
@@ -120,9 +122,11 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     private readonly static int IntOptDefaultValue = 0;
 
     private int intOpt_;
-    /// <summary>
-    /// Custom field option used in definition of the extension message.
-    /// </summary>
+    /**
+     * <summary>
+     *  Custom field option used in definition of the extension message.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int IntOpt {
@@ -150,9 +154,11 @@ namespace UnitTest.Issues.TestProtos.SelfreferentialOptions {
     private readonly static int FooDefaultValue = 0;
 
     private int foo_;
-    /// <summary>
-    /// Custom field option used in definition of the custom option's message.
-    /// </summary>
+    /**
+     * <summary>
+     *  Custom field option used in definition of the custom option's message.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Foo {
