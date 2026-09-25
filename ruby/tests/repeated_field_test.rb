@@ -147,6 +147,16 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal 5, count
     result = m.repeated_string.each{|val| val + '_junk'}
     assert_equal ['string'] * 5, result
+
+    enum = m.repeated_string.each
+    assert_instance_of Enumerator, enum
+    assert_equal 5, enum.size
+    assert_equal ['string'] * 5, enum.to_a
+
+    empty_enum = TestMessage.new.repeated_string.each
+    assert_instance_of Enumerator, empty_enum
+    assert_equal 0, empty_enum.size
+    assert_equal [], empty_enum.to_a
   end
 
 

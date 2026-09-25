@@ -93,6 +93,16 @@ module Google
         self.size == 0
       end
 
+      # The native (C extension) and FFI implementations of #each require a
+      # block and raise LocalJumpError when called without one. Wrap it so a
+      # blockless call returns an Enumerator, matching Array#each and the
+      # Enumerable contract.
+      alias_method :raw_each, :each
+      def each(&block)
+        return enum_for(:each) { size } unless block_given?
+        raw_each(&block)
+      end
+
       # array aliases into enumerable
       alias_method :slice, :[]
       alias_method :values_at, :select
