@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <string>
 
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/match.h"
@@ -37,9 +38,45 @@ namespace {
 // conflicts with some other types defined in the file.
 const char* kOuterClassNameSuffix = "OuterClass";
 
+// A suffix inserted into the outer class name of an `import public` shim (a
+// file that declares no types of its own and only forwards to other files) when
+// its default outer class name would collide with the outer class of a file it
+// publicly imports. This is what happens when a .proto file is moved and the
+// old path is kept as a forwarding shim with the same basename: without
+// disambiguation both files would generate the same Java class.
+const char* kPublicImportShimSuffix = "Shim";
+
 inline bool UseOldFileClassNameDefault(const FileDescriptor* file) {
   return JavaGenerator::GetResolvedSourceFeatureExtension(*file, pb::java)
       .use_old_outer_classname_default();
+}
+
+// foo/bar_baz.proto -> BarBaz
+std::string FileBaseClassName(const FileDescriptor* file) {
+  absl::string_view basename = file->name();
+  std::string::size_type last_slash = basename.find_last_of('/');
+  if (last_slash != std::string::npos) {
+    basename = basename.substr(last_slash + 1);
+  }
+  return UnderscoresToCamelCase(StripProto(basename), true);
+}
+
+// Returns true if `file` is a pure `import public` shim: it publicly imports
+// other files and declares no messages, enums, services or extensions itself.
+bool IsPublicImportShim(const FileDescriptor* file) {
+  return file->public_dependency_count() > 0 &&
+         file->message_type_count() == 0 && file->enum_type_count() == 0 &&
+         file->service_count() == 0 && file->extension_count() == 0;
+}
+
+// Adds the transitive closure of `file`'s public dependencies to `out`.
+void CollectPublicDependencies(
+    const FileDescriptor* file,
+    absl::flat_hash_set<const FileDescriptor*>* out) {
+  for (int i = 0; i < file->public_dependency_count(); ++i) {
+    const FileDescriptor* dep = file->public_dependency(i);
+    if (out->insert(dep).second) CollectPublicDependencies(dep, out);
+  }
 }
 
 // Strip package name from a descriptor's full name.
@@ -152,17 +189,42 @@ bool NeedsOuterClassSuffix(const FileDescriptor* file) {
   return MemoizeProjection()(file, ComputeNeedsOuterClassSuffix);
 }
 
+// Computes the outer class name of an `import public` shim, making sure it
+// does not collide with the outer class of any file reachable through its
+// public imports that lives in the same Java package. Only the shim is renamed
+// (never the file it forwards to), so consumers that already reference the
+// moved file's class are unaffected.
+std::string ComputePublicImportShimClassName(const FileDescriptor* file) {
+  const std::string java_package = FileJavaPackage(file);
+  absl::flat_hash_set<const FileDescriptor*> public_deps;
+  CollectPublicDependencies(file, &public_deps);
+  absl::flat_hash_set<std::string> taken;
+  for (const FileDescriptor* dep : public_deps) {
+    if (FileJavaPackage(dep) == java_package) {
+      taken.insert(ClassNameResolver().GetFileImmutableClassName(dep));
+    }
+  }
+
+  // Insert the suffix before the "Proto" suffix of the new naming scheme:
+  // codes.proto -> CodesShim (old scheme) / CodesShimProto (new scheme).
+  const absl::string_view scheme_suffix =
+      UseOldFileClassNameDefault(file) ? "" : "Proto";
+  std::string base = FileBaseClassName(file);
+  std::string class_name = absl::StrCat(base, scheme_suffix);
+  while (taken.contains(class_name)) {
+    absl::StrAppend(&base, kPublicImportShimSuffix);
+    class_name = absl::StrCat(base, scheme_suffix);
+  }
+  return class_name;
+}
+
+const std::string& PublicImportShimClassName(const FileDescriptor* file) {
+  return MemoizeProjection()(file, ComputePublicImportShimClassName);
+}
+
 std::string ClassNameResolver::GetFileDefaultImmutableClassName(
     const FileDescriptor* file) {
-  std::string basename;
-  std::string::size_type last_slash = file->name().find_last_of('/');
-  if (last_slash == std::string::npos) {
-    basename = std::string(file->name());
-  } else {
-    basename = std::string(file->name().substr(last_slash + 1));
-  }
-  // foo_bar_baz.proto -> FooBarBaz
-  std::string ret = UnderscoresToCamelCase(StripProto(basename), true);
+  std::string ret = FileBaseClassName(file);
   return UseOldFileClassNameDefault(file) ? ret : ret + "Proto";
 }
 
@@ -170,6 +232,13 @@ std::string ClassNameResolver::GetFileImmutableClassName(
     const FileDescriptor* file) {
   if (file->options().has_java_outer_classname()) {
     return file->options().java_outer_classname();
+  }
+
+  // A pure `import public` shim has no types of its own, so it can never need
+  // the deprecated "OuterClass" suffix below; it may however collide with the
+  // outer class of the file it forwards to.
+  if (IsPublicImportShim(file)) {
+    return PublicImportShimClassName(file);
   }
 
   std::string class_name = GetFileDefaultImmutableClassName(file);
