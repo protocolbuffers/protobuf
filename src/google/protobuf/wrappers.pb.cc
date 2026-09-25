@@ -105,9 +105,8 @@ inline constexpr UInt64Value::Impl_::Impl_(
       : value_{::uint64_t{0u}} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr UInt64Value::UInt64Value(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr UInt64Value::UInt64Value(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -211,9 +210,8 @@ inline constexpr UInt32Value::Impl_::Impl_(
       : value_{0u} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr UInt32Value::UInt32Value(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr UInt32Value::UInt32Value(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -322,9 +320,8 @@ inline constexpr StringValue::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr StringValue::StringValue(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr StringValue::StringValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -428,9 +425,8 @@ inline constexpr Int64Value::Impl_::Impl_(
       : value_{::int64_t{0}} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Int64Value::Int64Value(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Int64Value::Int64Value(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -534,9 +530,8 @@ inline constexpr Int32Value::Impl_::Impl_(
       : value_{0} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Int32Value::Int32Value(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Int32Value::Int32Value(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -640,9 +635,8 @@ inline constexpr FloatValue::Impl_::Impl_(
       : value_{0.f} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr FloatValue::FloatValue(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr FloatValue::FloatValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -746,9 +740,8 @@ inline constexpr DoubleValue::Impl_::Impl_(
       : value_{0.} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr DoubleValue::DoubleValue(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr DoubleValue::DoubleValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -854,9 +847,8 @@ inline constexpr BytesValue::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr BytesValue::BytesValue(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr BytesValue::BytesValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -960,9 +952,8 @@ inline constexpr BoolValue::Impl_::Impl_(
       : value_{false} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr BoolValue::BoolValue(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr BoolValue::BoolValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data

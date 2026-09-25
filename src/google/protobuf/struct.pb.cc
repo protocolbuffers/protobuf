@@ -101,9 +101,8 @@ inline constexpr ListValue::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ListValue::ListValue(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr ListValue::ListValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -220,9 +219,8 @@ inline constexpr Struct::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Struct::Struct(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Struct::Struct(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -364,9 +362,8 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
 }
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -489,9 +486,8 @@ inline constexpr Value::Impl_::Impl_(
         _oneof_case_{} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Value::Value(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Value::Value(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -639,10 +635,8 @@ PROTOBUF_CONSTINIT const uint32_t NullValue_internal_data_[] = {
 // ===================================================================
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_ALWAYS_INLINE_NODEBUG Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse()
-    : Super_(&Struct_FieldsEntry_DoNotUse_globals_.class_data) {}
-PROTOBUF_ALWAYS_INLINE_NODEBUG Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : Super_(&Struct_FieldsEntry_DoNotUse_globals_.class_data) {}
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
     : Super_(arena, &Struct_FieldsEntry_DoNotUse_globals_.class_data) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
 Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : Super_() {}

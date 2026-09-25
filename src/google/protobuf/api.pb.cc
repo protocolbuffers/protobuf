@@ -108,9 +108,8 @@ inline constexpr Mixin::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Mixin::Mixin(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Mixin::Mixin(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -283,9 +282,8 @@ inline constexpr Method::Impl_::Impl_(
         syntax_{static_cast< ::google::protobuf::Syntax >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Method::Method(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Method::Method(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -466,9 +464,8 @@ inline constexpr Api::Impl_::Impl_(
         syntax_{static_cast< ::google::protobuf::Syntax >(0)} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Api::Api(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Api::Api(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
