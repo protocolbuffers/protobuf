@@ -58,7 +58,8 @@ upb_Message* Message_deep_copy(const upb_Message* msg, const upb_MessageDef* m,
 void Message_CheckClass(VALUE klass);
 
 // Returns a new Hash object containing the contents of this message.
-VALUE Scalar_CreateHash(upb_MessageValue val, TypeInfo type_info);
+VALUE Scalar_CreateHash(upb_MessageValue val, TypeInfo type_info,
+                        bool emit_defaults);
 
 // Creates a message class or enum module for this descriptor, respectively.
 VALUE build_class_from_descriptor(VALUE descriptor);
