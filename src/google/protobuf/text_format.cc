@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <climits>
 #include <cmath>
@@ -48,6 +49,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "absl/types/span.h"
 #include "google/protobuf/any.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -68,6 +70,10 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -1666,13 +1672,14 @@ class TextFormat::Printer::TextGenerator
 
   // Print text to the output stream.
   void Print(const char* text, size_t size) override {
+    const absl::Span<const char> input(text, size);
     if (indent_level_ > 0) {
       size_t pos = 0;  // The number of bytes we've written so far.
       for (size_t i = 0; i < size; i++) {
-        if (text[i] == '\n') {
+        if (input[i] == '\n') {
           // Saw newline.  If there is more text, we may need to insert an
           // indent here.  So, write what we have so far, including the '\n'.
-          Write(text + pos, i - pos + 1);
+          Write(input.subspan(pos, i - pos + 1).data(), i - pos + 1);
           if (failed_) return;
           pos = i + 1;
 
@@ -1682,10 +1689,10 @@ class TextFormat::Printer::TextGenerator
         }
       }
       // Write the rest.
-      Write(text + pos, size - pos);
+      Write(input.subspan(pos).data(), size - pos);
     } else {
-      Write(text, size);
-      if (size > 0 && text[size - 1] == '\n') {
+      Write(input.data(), size);
+      if (size > 0 && input[size - 1] == '\n') {
         at_start_of_line_ = true;
       }
     }
@@ -1724,24 +1731,29 @@ class TextFormat::Printer::TextGenerator
       if (failed_) return;
     }
 
-    while (static_cast<int64_t>(size) > buffer_size_) {
+    absl::Span<const char> input(data, size);
+    absl::Span<char> buffer(buffer_, buffer_size_);
+    while (static_cast<int64_t>(input.size()) >
+           static_cast<int64_t>(buffer.size())) {
       // Data exceeds space in the buffer.  Copy what we can and request a
       // new buffer.
-      if (buffer_size_ > 0) {
-        memcpy(buffer_, data, buffer_size_);
-        data += buffer_size_;
-        size -= buffer_size_;
+      if (buffer.size() > 0) {
+        absl::Span<const char> chunk = input.first(buffer.size());
+        std::copy(chunk.begin(), chunk.end(), buffer.begin());
+        input.remove_prefix(chunk.size());
       }
       void* void_buffer = nullptr;
       failed_ = !output_->Next(&void_buffer, &buffer_size_);
       if (failed_) return;
       buffer_ = reinterpret_cast<char*>(void_buffer);
+      buffer = absl::MakeSpan(buffer_, buffer_size_);
     }
 
     // Buffer is big enough to receive the data; copy it.
-    memcpy(buffer_, data, size);
-    buffer_ += size;
-    buffer_size_ -= size;
+    std::copy(input.begin(), input.end(), buffer.begin());
+    buffer.remove_prefix(input.size());
+    buffer_ = buffer.data();
+    buffer_size_ = static_cast<int>(buffer.size());
   }
 
   void WriteIndent() {
@@ -1751,23 +1763,27 @@ class TextFormat::Printer::TextGenerator
     ABSL_DCHECK(!failed_);
     int size = GetCurrentIndentationSize();
 
-    while (size > buffer_size_) {
+    absl::Span<char> buffer(buffer_, buffer_size_);
+    while (size > static_cast<int>(buffer.size())) {
       // Data exceeds space in the buffer. Write what we can and request a new
       // buffer.
-      if (buffer_size_ > 0) {
-        memset(buffer_, ' ', buffer_size_);
+      if (buffer.size() > 0) {
+        std::fill(buffer.begin(), buffer.end(), ' ');
       }
-      size -= buffer_size_;
+      size -= static_cast<int>(buffer.size());
       void* void_buffer;
       failed_ = !output_->Next(&void_buffer, &buffer_size_);
       if (failed_) return;
       buffer_ = reinterpret_cast<char*>(void_buffer);
+      buffer = absl::MakeSpan(buffer_, buffer_size_);
     }
 
     // Buffer is big enough to receive the data; copy it.
-    memset(buffer_, ' ', size);
-    buffer_ += size;
-    buffer_size_ -= size;
+    absl::Span<char> dest = buffer.first(size);
+    std::fill(dest.begin(), dest.end(), ' ');
+    buffer.remove_prefix(size);
+    buffer_ = buffer.data();
+    buffer_size_ = static_cast<int>(buffer.size());
   }
 
   // Return the current value of insert_silent_marker_. If it is true, set it
@@ -3322,7 +3338,7 @@ class TextMarkerGenerator final {
   }
 
  private:
-  static constexpr absl::string_view kRedactionMarkers[] = {
+  static constexpr std::array<absl::string_view, 3> kRedactionMarkers = {
       "goo.gle/debugonly ", "goo.gle/debugstr ", "goo.gle/debugproto "};
 
   static constexpr absl::string_view kRandomMarker = "   ";
