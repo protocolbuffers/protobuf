@@ -794,9 +794,6 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       msg.payload.repeated_string[:] = [1, 2, 3]
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python', 'python has different behavior'
-  )
   def testAssignRepeatedFieldSliceWithStep(self, message_module):
     msg = message_module.NestedTestAllTypes()
     arr = [1, 2, 3, 4]
@@ -813,9 +810,19 @@ class MessageTest(unittest.TestCase):
     arr[::2] = [100, 200]
     self.assertEqual(arr, msg.payload.repeated_int32)
 
+    # Check negative step
+    msg.payload.repeated_int32[::-1] = [5, 6, 7, 8]
+    arr[::-1] = [5, 6, 7, 8]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
     # Check size mismatch raises ValueError
     with self.assertRaises(ValueError):
       msg.payload.repeated_int32[::2] = [1, 2, 3]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+    # Check element type is still validated
+    with self.assertRaises(TypeError):
+      msg.payload.repeated_int32[::2] = ['a', 'b']
 
   def testAssignRepeatedFieldAllRangesArray(self, message_module):
     msg = message_module.NestedTestAllTypes()
