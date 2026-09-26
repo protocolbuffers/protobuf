@@ -48,6 +48,9 @@ UPB_INLINE void upb_BackAlloc_Abort(upb_BackAlloc* a) {
   } else if (a->limit != a->buf) {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
   }
+  a->buf = &upb_BackAlloc_sentinel;
+  a->limit = &upb_BackAlloc_sentinel;
+  a->standalone = false;
 }
 
 UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
@@ -57,7 +60,11 @@ UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
   if (ptr != a->buf) {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, ptr - a->buf);
   }
-  return a->limit - ptr;
+  size_t size = a->limit - ptr;
+  a->buf = &upb_BackAlloc_sentinel;
+  a->limit = &upb_BackAlloc_sentinel;
+  a->standalone = false;
+  return size;
 }
 
 UPB_FORCEINLINE bool upb_BackAlloc_HasBytes(const upb_BackAlloc* a,

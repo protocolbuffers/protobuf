@@ -726,6 +726,7 @@ static bool upb_Message_DoConvert(upb_Converter* c, upb_Message* dst,
     upb_Message_ConvertInternal(c, dst, src, dst_mt, src_mt, extreg, 100);
     return true;
   }
+  upb_BackAlloc_Abort(&c->encoder.alloc);
   return false;
 }
 

@@ -2301,3 +2301,83 @@ TEST(ConvertTest, NonCanonicalMixedToCanonical) {
                                      upb_StringView_FromDataAndSize("", 0));
   EXPECT_EQ(std::string("hello"), std::string(dst_str.data, dst_str.size));
 }
+
+namespace {
+
+struct CountingAlloc {
+  upb_alloc alloc = {nullptr, nullptr};
+  int active_blocks = 0;
+};
+
+void* CountingAllocFunc(upb_alloc* alloc, void* ptr, size_t oldsize,
+                        size_t size, size_t* actual_size) {
+  CountingAlloc* ca = reinterpret_cast<CountingAlloc*>(alloc);
+  if (size == 0) {
+    ca->active_blocks--;
+    return upb_alloc_global.func(&upb_alloc_global, ptr, oldsize, 0,
+                                 actual_size);
+  }
+  void* ret =
+      upb_alloc_global.func(&upb_alloc_global, ptr, oldsize, size, actual_size);
+  if (ret && oldsize == 0) {
+    ca->active_blocks++;
+  }
+  return ret;
+}
+
+}  // namespace
+
+TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
+  using TestMsg = protobuf_test_messages_proto3_TestAllTypesProto3;
+  upb::Arena src_arena;
+  TestMsg* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(src_arena.ptr());
+
+  // Set a high-numbered field (oneof_uint32 = 111) so an initial
+  // upb_Message_EncodeFieldAsUnknown call succeeds and finishes its BackAlloc.
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_oneof_uint32(msg, 42);
+
+  // Set recursive_message (field 27) with a submessage that:
+  // 1) Has a large repeated_string (field 44, encoded first) forcing
+  //    upb_BackAlloc to allocate a standalone block.
+  // 2) Has another recursive_message (field 27, encoded after field 44)
+  //    that exceeds the max depth limit during _upb_Encode_Field.
+  TestMsg* sub =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(src_arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_recursive_message(msg,
+                                                                         sub);
+  std::string large_str(2048, 'x');
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_string(
+      sub, upb_StringView_FromDataAndSize(large_str.data(), large_str.size()),
+      src_arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_mutable_recursive_message(
+      sub, src_arena.ptr());
+
+  CountingAlloc ca;
+  ca.alloc.func = &CountingAllocFunc;
+  upb_Arena* dst_arena = upb_Arena_Init(nullptr, 0, &ca.alloc);
+
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+  const upb_Message* dst =
+      upb_Message_Convert(UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0,
+                          upb_EncodeOptions_MaxDepth(1), dst_arena);
+  EXPECT_EQ(dst, nullptr);
+
+  upb_Arena_Free(dst_arena);
+  EXPECT_EQ(ca.active_blocks, 0);
+
+  // Also verify that if a standalone BackAlloc finishes successfully on a
+  // dropped field (field 27) and a subsequent field (field 1) fails with a
+  // non-encoder error (type mismatch), upb_BackAlloc_Abort does not double-free
+  // the already-finished standalone block.
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 123);
+  upb_Arena* dst_arena2 = upb_Arena_Init(nullptr, 0, &ca.alloc);
+  const upb_MiniTable* incompatible_mt =
+      &upb__test__convert__MessageWithString_msg_init;
+  const upb_Message* dst2 = upb_Message_Convert(
+      UPB_UPCAST(msg), TEST_MT, incompatible_mt, nullptr, 0, 0, dst_arena2);
+  EXPECT_EQ(dst2, nullptr);
+
+  upb_Arena_Free(dst_arena2);
+  EXPECT_EQ(ca.active_blocks, 0);
+}
