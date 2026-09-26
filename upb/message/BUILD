@@ -275,6 +275,7 @@ cc_library(
         "convert.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:friends"],
     deps = [
         ":compare",
