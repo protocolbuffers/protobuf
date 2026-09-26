@@ -24,6 +24,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/repeated_field.h"
@@ -32,6 +33,12 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+// This file has been migrated to use safe buffer abstractions (absl::Span).
+// Enforce -Wunsafe-buffer-usage to prevent backsliding.
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -320,57 +327,61 @@ void EncodeFixedSizeValue(bool v, uint8_t* dest) {
 #endif  // !defined(ABSL_IS_LITTLE_ENDIAN)
 
 template <typename CType>
-static void WriteArray(const CType* a, int n, io::CodedOutputStream* output) {
+static void WriteArray(absl::Span<const CType> data,
+                       io::CodedOutputStream* output) {
 #if defined(ABSL_IS_LITTLE_ENDIAN)
-  output->WriteRaw(reinterpret_cast<const char*>(a), n * sizeof(a[0]));
+  output->WriteRaw(reinterpret_cast<const char*>(data.data()),
+                   data.size() * sizeof(CType));
 #else
   const int kAtATime = 128;
   uint8_t buf[sizeof(CType) * kAtATime];
-  for (int i = 0; i < n; i += kAtATime) {
-    int to_do = std::min(kAtATime, n - i);
+  for (size_t i = 0; i < data.size(); i += kAtATime) {
+    int to_do = std::min<size_t>(kAtATime, data.size() - i);
+    PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
     uint8_t* ptr = buf;
     for (int j = 0; j < to_do; j++) {
-      EncodeFixedSizeValue(a[i + j], ptr);
-      ptr += sizeof(a[0]);
+      EncodeFixedSizeValue(data[i + j], ptr);
+      ptr += sizeof(CType);
     }
-    output->WriteRaw(buf, to_do * sizeof(a[0]));
+    PROTOBUF_UNSAFE_BUFFER_USAGE_END
+    output->WriteRaw(buf, to_do * sizeof(CType));
   }
 #endif
 }
 
 void WireFormatLite::WriteFloatArray(const float* a, int n,
                                      io::CodedOutputStream* output) {
-  WriteArray<float>(a, n, output);
+  WriteArray<float>(absl::MakeConstSpan(a, n), output);
 }
 
 void WireFormatLite::WriteDoubleArray(const double* a, int n,
                                       io::CodedOutputStream* output) {
-  WriteArray<double>(a, n, output);
+  WriteArray<double>(absl::MakeConstSpan(a, n), output);
 }
 
 void WireFormatLite::WriteFixed32Array(const uint32_t* a, int n,
                                        io::CodedOutputStream* output) {
-  WriteArray<uint32_t>(a, n, output);
+  WriteArray<uint32_t>(absl::MakeConstSpan(a, n), output);
 }
 
 void WireFormatLite::WriteFixed64Array(const uint64_t* a, int n,
                                        io::CodedOutputStream* output) {
-  WriteArray<uint64_t>(a, n, output);
+  WriteArray<uint64_t>(absl::MakeConstSpan(a, n), output);
 }
 
 void WireFormatLite::WriteSFixed32Array(const int32_t* a, int n,
                                         io::CodedOutputStream* output) {
-  WriteArray<int32_t>(a, n, output);
+  WriteArray<int32_t>(absl::MakeConstSpan(a, n), output);
 }
 
 void WireFormatLite::WriteSFixed64Array(const int64_t* a, int n,
                                         io::CodedOutputStream* output) {
-  WriteArray<int64_t>(a, n, output);
+  WriteArray<int64_t>(absl::MakeConstSpan(a, n), output);
 }
 
 void WireFormatLite::WriteBoolArray(const bool* a, int n,
                                     io::CodedOutputStream* output) {
-  WriteArray<bool>(a, n, output);
+  WriteArray<bool>(absl::MakeConstSpan(a, n), output);
 }
 
 void WireFormatLite::WriteInt32(int field_number, int32_t value,
@@ -600,7 +611,7 @@ bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
 // this code is deliberately written such that clang makes it into really
 // efficient SSE code.
 template <bool ZigZag, bool SignExtended, typename T>
-static size_t VarintSize(const T* data, const int n) {
+static size_t VarintSize(absl::Span<const T> data) {
   static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert((std::is_unsigned_v<T> ^ ZigZag) || std::is_signed_v<T>,
@@ -610,6 +621,7 @@ static size_t VarintSize(const T* data, const int n) {
                 "Cannot SignExtended unsigned types");
   static_assert(!(SignExtended && ZigZag),
                 "Cannot SignExtended and ZigZag on the same type");
+  const int n = static_cast<int>(data.size());
   // This approach is only faster when vectorized, and the vectorized
   // implementation only works in units of the platform's vector width, and is
   // only faster once a certain number of iterations are used. Normally the
@@ -657,11 +669,12 @@ static size_t VarintSize(const T* data, const int n) {
 }
 
 template <bool ZigZag, typename T>
-static size_t VarintSize64(const T* data, const int n) {
+static size_t VarintSize64(absl::Span<const T> data) {
   static_assert(sizeof(T) == 8, "This routine only works for 64 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert(!ZigZag || !std::is_unsigned_v<T>,
                 "Cannot ZigZag encode unsigned types");
+  const int n = static_cast<int>(data.size());
   int vectorN = n & -32;
   uint64_t sum = vectorN;
   int i = 0;
@@ -705,20 +718,24 @@ static size_t VarintSize64(const T* data, const int n) {
 // implementation, so __AVX512CD__ is not checked.
 #if defined(__SSE__) && defined(__clang__)
 size_t WireFormatLite::Int32Size(const RepeatedField<int32_t>& value) {
-  return VarintSize<false, true>(value.data(), value.size());
+  return VarintSize<false, true>(
+      absl::MakeConstSpan(value.data(), value.size()));
 }
 
 size_t WireFormatLite::UInt32Size(const RepeatedField<uint32_t>& value) {
-  return VarintSize<false, false>(value.data(), value.size());
+  return VarintSize<false, false>(
+      absl::MakeConstSpan(value.data(), value.size()));
 }
 
 size_t WireFormatLite::SInt32Size(const RepeatedField<int32_t>& value) {
-  return VarintSize<true, false>(value.data(), value.size());
+  return VarintSize<true, false>(
+      absl::MakeConstSpan(value.data(), value.size()));
 }
 
 size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
   // On ILP64, sizeof(int) == 8, which would require a different template.
-  return VarintSize<false, true>(value.data(), value.size());
+  return VarintSize<false, true>(
+      absl::MakeConstSpan(value.data(), value.size()));
 }
 
 #else  // !(defined(__SSE__) && defined(__clang__))
@@ -765,15 +782,18 @@ size_t WireFormatLite::EnumSize(const RepeatedField<int>& value) {
 // the normal loop when 256-bit vector registers are available.
 #if defined(__AVX2__) && defined(__clang__)
 size_t WireFormatLite::Int64Size(const RepeatedField<int64_t>& value) {
-  return VarintSize64<false>(value.data(), value.size());
+  return VarintSize64<false>(
+      absl::MakeConstSpan(value.data(), value.size()));
 }
 
 size_t WireFormatLite::UInt64Size(const RepeatedField<uint64_t>& value) {
-  return VarintSize64<false>(value.data(), value.size());
+  return VarintSize64<false>(
+      absl::MakeConstSpan(value.data(), value.size()));
 }
 
 size_t WireFormatLite::SInt64Size(const RepeatedField<int64_t>& value) {
-  return VarintSize64<true>(value.data(), value.size());
+  return VarintSize64<true>(
+      absl::MakeConstSpan(value.data(), value.size()));
 }
 
 #else
