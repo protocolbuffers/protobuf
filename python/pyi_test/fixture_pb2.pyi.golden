@@ -1,0 +1,85 @@
+import datetime
+
+from google.protobuf import duration_pb2 as _duration_pb2
+from google.protobuf import timestamp_pb2 as _timestamp_pb2
+from python.pyi_test import fixture_import_pb2 as _fixture_import_pb2
+from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
+from collections.abc import Iterable as _Iterable, Mapping as _Mapping
+from typing import ClassVar as _ClassVar, Literal as _Literal, NoReturn as _NoReturn, Optional as _Optional, Union as _Union, overload as _overload
+
+DESCRIPTOR: _descriptor.FileDescriptor
+
+class State(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = ()
+    STATE_UNSPECIFIED: _ClassVar[State]
+    STATE_READY: _ClassVar[State]
+STATE_UNSPECIFIED: State
+STATE_READY: State
+
+class Child(_message.Message):
+    __slots__ = ("value",)
+    VALUE_FIELD_NUMBER: _ClassVar[int]
+    value: str
+    def __init__(self, value: _Optional[str] = ...) -> None: ...
+    def WhichOneof(self, oneof_group: _NoReturn, /) -> None: ...
+
+class Step(_message.Message):
+    __slots__ = ("a", "b", "ok", "error", "detail", "labels", "children", "children_by_name", "state", "payload", "imported", "created_at", "elapsed")
+    class Kind(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+        __slots__ = ()
+        KIND_UNSPECIFIED: _ClassVar[Step.Kind]
+        KIND_VALUE: _ClassVar[Step.Kind]
+    KIND_UNSPECIFIED: Step.Kind
+    KIND_VALUE: Step.Kind
+    class Nested(_message.Message):
+        __slots__ = ("started", "finished")
+        STARTED_FIELD_NUMBER: _ClassVar[int]
+        FINISHED_FIELD_NUMBER: _ClassVar[int]
+        started: str
+        finished: str
+        def __init__(self, started: _Optional[str] = ..., finished: _Optional[str] = ...) -> None: ...
+        def WhichOneof(self, oneof_group: _Literal["event", b"event"], /) -> _Optional[_Literal["started", "finished"]]: ...
+    class ChildrenByNameEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: Child
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[_Union[Child, _Mapping]] = ...) -> None: ...
+        def WhichOneof(self, oneof_group: _NoReturn, /) -> None: ...
+    A_FIELD_NUMBER: _ClassVar[int]
+    B_FIELD_NUMBER: _ClassVar[int]
+    OK_FIELD_NUMBER: _ClassVar[int]
+    ERROR_FIELD_NUMBER: _ClassVar[int]
+    DETAIL_FIELD_NUMBER: _ClassVar[int]
+    LABELS_FIELD_NUMBER: _ClassVar[int]
+    CHILDREN_FIELD_NUMBER: _ClassVar[int]
+    CHILDREN_BY_NAME_FIELD_NUMBER: _ClassVar[int]
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    PAYLOAD_FIELD_NUMBER: _ClassVar[int]
+    IMPORTED_FIELD_NUMBER: _ClassVar[int]
+    CREATED_AT_FIELD_NUMBER: _ClassVar[int]
+    ELAPSED_FIELD_NUMBER: _ClassVar[int]
+    a: str
+    b: int
+    ok: bool
+    error: str
+    detail: str
+    labels: _containers.RepeatedScalarFieldContainer[str]
+    children: _containers.RepeatedCompositeFieldContainer[Child]
+    children_by_name: _containers.MessageMap[str, Child]
+    state: State
+    payload: bytes
+    imported: _fixture_import_pb2.Imported
+    created_at: _timestamp_pb2.Timestamp
+    elapsed: _duration_pb2.Duration
+    def __init__(self, a: _Optional[str] = ..., b: _Optional[int] = ..., ok: _Optional[bool] = ..., error: _Optional[str] = ..., detail: _Optional[str] = ..., labels: _Optional[_Iterable[str]] = ..., children: _Optional[_Iterable[_Union[Child, _Mapping]]] = ..., children_by_name: _Optional[_Mapping[str, Child]] = ..., state: _Optional[_Union[State, str]] = ..., payload: _Optional[bytes] = ..., imported: _Optional[_Union[_fixture_import_pb2.Imported, _Mapping]] = ..., created_at: _Optional[_Union[datetime.datetime, _timestamp_pb2.Timestamp, _Mapping]] = ..., elapsed: _Optional[_Union[datetime.timedelta, _duration_pb2.Duration, _Mapping]] = ...) -> None: ...
+    @_overload
+    def WhichOneof(self, oneof_group: _Literal["action", b"action"], /) -> _Optional[_Literal["a", "b"]]: ...
+    @_overload
+    def WhichOneof(self, oneof_group: _Literal["result", b"result"], /) -> _Optional[_Literal["ok", "error"]]: ...
+    @_overload
+    def WhichOneof(self, oneof_group: _Literal["_detail", b"_detail"], /) -> _Optional[_Literal["detail"]]: ...
