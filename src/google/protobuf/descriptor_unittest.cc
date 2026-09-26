@@ -1069,35 +1069,6 @@ TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
               ElementsAre("fieldname7"));
 }
 
-TEST_F(DescriptorTest, RegressionNamesAreNullTerminated) {
-  // Name accessors where migrated from std::string to absl::string_view.
-  // Some callers were taking the C-String out of the std::string via `.data()`
-  // and that code kept working when the type was changed.
-  // We want to keep that working for now to prevent breaking these users
-  // dynamically.
-  const auto check_nul_terminated = [](absl::string_view view) {
-    EXPECT_EQ(view.data()[view.size()], '\0');
-  };
-  const auto check_nul_names = [&](auto* entity) {
-    check_nul_terminated(entity->name());
-    check_nul_terminated(entity->full_name());
-  };
-
-  const auto check_nul_field_names = [&](auto* field) {
-    check_nul_terminated(field->name());
-    check_nul_terminated(field->full_name());
-    check_nul_terminated(field->lowercase_name());
-    check_nul_terminated(field->camelcase_name());
-    check_nul_terminated(field->json_name());
-  };
-
-  check_nul_names(message4_);
-  check_nul_names(enum_);
-  for (int i = 0; i < message4_->field_count(); ++i) {
-    check_nul_field_names(message4_->field(i));
-  }
-}
-
 TEST_F(DescriptorTest, FieldNamesMatchOnCornerCases) {
   const auto names = [&](auto* field) {
     return std::vector<absl::string_view>{
@@ -1575,8 +1546,8 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
       proto,
       proto.mutable_message_type(0)->mutable_field(0)->mutable_json_name(),
       // the math here leaks the implementation details of AllocateFieldNames.
-      kNamesImplLimit - 3 * (1 + proto.message_type(0).field(0).name().size()) -
-          proto.message_type(0).name().size() - proto.package().size() - 3,
+      kNamesImplLimit - 3 * proto.message_type(0).field(0).name().size() -
+          proto.message_type(0).name().size() - proto.package().size() - 2,
       "Name too long");
   // FieldDescriptor::name (extension)
   proto = MakeFile(R"pb(name: "foo.proto"
@@ -1591,7 +1562,7 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
                           extendee: "Message"
                         })pb");
   TestBuildFileOnNameLimits(proto, proto.mutable_extension(0)->mutable_name(),
-                            kNamesImplLimit - 1, "Name too long");
+                            kNamesImplLimit, "Name too long");
   // FieldDescriptor::full_name (extension)
   proto = MakeFile(R"pb(name: "foo.proto"
                         package: "Package"
@@ -1670,6 +1641,25 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
   TestBuildFileOnNameLimits(
       proto, proto.mutable_enum_type(0)->mutable_value(0)->mutable_name(),
       kNamesImplLimit - proto.package().size() - 1, "Name too long");
+  // EnumValueDescriptor::full_name (nested in message)
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          enum_type {
+                            name: "Enum"
+                            value { name: "VALUE" number: 1 }
+                          }
+                        })pb");
+  TestBuildFileOnNameLimits(proto,
+                            proto.mutable_message_type(0)
+                                ->mutable_enum_type(0)
+                                ->mutable_value(0)
+                                ->mutable_name(),
+                            kNamesImplLimit -
+                                proto.message_type(0).name().size() -
+                                proto.package().size() - 2,
+                            "Name too long");
   // ServiceDescriptor::full_name
   proto = MakeFile(R"pb(name: "foo.proto"
                         package: "Package"

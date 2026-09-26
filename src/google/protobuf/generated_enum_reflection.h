@@ -76,6 +76,10 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 PROTOBUF_EXPORT const std::string& NameOfEnum(
     const EnumDescriptor* PROTOBUF_NONNULL descriptor, int value);
 
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
+PROTOBUF_EXPORT absl::string_view NameOfEnumAsView(
+    const EnumDescriptor* PROTOBUF_NONNULL descriptor, int value);
+
 template <typename Enum>
 class EnumeratedEnumView {
   // Make the type dependent to avoid eager instantiations.
