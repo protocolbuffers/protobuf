@@ -36,14 +36,14 @@ extern "C" {
 
 typedef struct {
   void const** entries;
-  int size;
-  int cap;
+  size_t size;
+  size_t cap;
 } _upb_mapsorter;
 
 typedef struct {
-  int start;
-  int pos;
-  int end;
+  size_t start;
+  size_t pos;
+  size_t end;
 } _upb_sortedmap;
 
 UPB_INLINE void _upb_mapsorter_init(_upb_mapsorter* s) {
