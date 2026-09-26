@@ -1896,7 +1896,8 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
     auto* tables = const_cast<DescriptorPool::Tables*>(pool->tables_.get());
     internal::FlatAllocator alloc;
     alloc.PlanArray<EnumValueDescriptor>(1);
-    alloc.PlanArray<std::string>(2);
+    alloc.PlanEntityNames(parent->full_name().size() + 1 +
+                          enum_value_name.size());
 
     {
       // Must lock the pool because we will do allocations in the shared arena.
@@ -1904,9 +1905,11 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
       ABSL_CHECK(alloc.FinalizePlanning(tables));
     }
     EnumValueDescriptor* result = alloc.AllocateArray<EnumValueDescriptor>(1);
-    result->all_names_ = alloc.AllocateStrings(
-        enum_value_name,
-        absl::StrCat(parent->full_name(), ".", enum_value_name));
+    auto names =
+        alloc.AllocateEntityNames(parent->full_name(), enum_value_name);
+    result->all_names_.SetPayload(
+        names.has_value() ? *names
+                          : *alloc.AllocateEntityNames("", enum_value_name));
     result->number_ = number;
     result->type_ = parent;
     result->options_ = nullptr;
@@ -4726,6 +4729,8 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     placeholder_full_name = name;
   }
 
+  const std::string::size_type dotpos = placeholder_full_name.find_last_of('.');
+
   // Create the placeholders.
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
@@ -4735,7 +4740,8 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     alloc.PlanArray<EnumValueDescriptor>(1);
     // names for the descriptor.
     alloc.PlanEntityNames(placeholder_full_name.size());
-    alloc.PlanArray<std::string>(2);  // names for the value.
+    // names for the value ("PLACEHOLDER_VALUE" is 17 chars).
+    alloc.PlanEntityNames(dotpos != std::string::npos ? dotpos + 1 + 17 : 17);
   } else {
     alloc.PlanArray<Descriptor>(1);
     // names for the descriptor.
@@ -4745,8 +4751,6 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     }
   }
   ABSL_CHECK(alloc.FinalizePlanning(tables_));
-
-  const std::string::size_type dotpos = placeholder_full_name.find_last_of('.');
   if (dotpos != std::string::npos) {
     placeholder_package =
         alloc.AllocateStrings(placeholder_full_name.substr(0, dotpos));
@@ -4787,11 +4791,12 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
            sizeof(*placeholder_value));
 
     // Note that enum value names are siblings of their type, not children.
-    placeholder_value->all_names_ = alloc.AllocateStrings(
-        "PLACEHOLDER_VALUE",
-        placeholder_package->empty()
-            ? "PLACEHOLDER_VALUE"
-            : absl::StrCat(*placeholder_package, ".PLACEHOLDER_VALUE"));
+    auto value_names =
+        alloc.AllocateEntityNames(*placeholder_package, "PLACEHOLDER_VALUE");
+    placeholder_value->all_names_.SetPayload(
+        value_names.has_value()
+            ? *value_names
+            : *alloc.AllocateEntityNames("", "PLACEHOLDER_VALUE"));
 
     placeholder_value->number_ = 0;
     placeholder_value->type_ = placeholder_enum;
@@ -5309,10 +5314,12 @@ PROTOBUF_NOINLINE static bool ExistingFileMatchesProto(
 // enough memory and will ABSL_CHECK-fail.
 static void PlanAllocationSize(
     const RepeatedPtrField<EnumValueDescriptorProto>& values,
-    internal::FlatAllocator& alloc) {
+    size_t parent_scope_size, internal::FlatAllocator& alloc) {
   alloc.PlanArray<EnumValueDescriptor>(values.size());
-  alloc.PlanArray<std::string>(2 * values.size());  // name + full_name
   for (const auto& v : values) {
+    alloc.PlanEntityNames(parent_scope_size
+                              ? parent_scope_size + 1 + v.name().size()
+                              : v.name().size());
     if (v.has_options()) alloc.PlanArray<EnumValueOptions>(1);
   }
 }
@@ -5326,7 +5333,7 @@ static void PlanAllocationSize(
                               ? parent_scope_size + 1 + e.name().size()
                               : e.name().size());
     if (e.has_options()) alloc.PlanArray<EnumOptions>(1);
-    PlanAllocationSize(e.value(), alloc);
+    PlanAllocationSize(e.value(), parent_scope_size, alloc);
     alloc.PlanArray<EnumDescriptor::ReservedRange>(e.reserved_range_size());
     alloc.PlanArray<const std::string*>(e.reserved_name_size());
     alloc.PlanArray<std::string>(e.reserved_name_size());
@@ -6935,19 +6942,12 @@ void internal::DescriptorBuilder::BuildEnumValue(
     EnumValueDescriptor* result, internal::FlatAllocator& alloc) {
   // Note:  full_name for enum values is a sibling to the parent's name, not a
   //   child of it.
-  std::string full_name;
-  size_t scope_len = parent->full_name().size() - parent->name().size();
-  full_name.reserve(scope_len + proto.name().size());
-  full_name.append(parent->full_name().data(), scope_len);
-  full_name.append(proto.name());
+  const absl::string_view scope = (parent->containing_type() == nullptr)
+                                      ? file_->package()
+                                      : parent->containing_type()->full_name();
 
-  if (full_name.size() > std::numeric_limits<uint16_t>::max()) {
-    AddError(full_name, proto, DescriptorPool::ErrorCollector::NAME,
-             "Name too long.");
-  }
-
-  result->all_names_ =
-      alloc.AllocateStrings(proto.name(), std::move(full_name));
+  result->all_names_.SetPayload(
+      AllocateNameStrings(scope, proto.name(), proto, alloc));
   result->number_ = proto.number();
   result->type_ = parent;
 
@@ -9167,6 +9167,29 @@ bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
 Edition FileDescriptor::edition() const { return edition_; }
 
 namespace internal {
+namespace {
+struct UniquePtrStringProjection {
+  absl::string_view operator()(
+      const std::unique_ptr<const std::string>& s) const {
+    return *s;
+  }
+  absl::string_view operator()(absl::string_view s) const { return s; }
+};
+}  // namespace
+
+const std::string& NameOfEnumAsString(const EnumValueDescriptor* descriptor) {
+  static absl::Mutex mu(absl::kConstInit);
+  static auto* const interned =
+      OnShutdownDelete(new ProjectedSet<std::unique_ptr<const std::string>,
+                                        UniquePtrStringProjection>());
+  const absl::string_view name = descriptor->name();
+  absl::MutexLock lock(mu);
+  if (auto it = interned->find(name); it != interned->end()) {
+    return **it;
+  }
+  return **interned->insert(std::make_unique<const std::string>(name)).first;
+}
+
 absl::string_view ShortEditionName(Edition edition) {
   return absl::StripPrefix(Edition_Name(edition), "EDITION_");
 }
