@@ -219,6 +219,8 @@ class PROTOBUF_EXPORT TextFormat {
                             BaseTextGenerator* generator) const;
     virtual void PrintEnum(int32_t val, const std::string& name,
                            BaseTextGenerator* generator) const;
+    virtual void PrintEnum(int32_t val, absl::string_view name,
+                           BaseTextGenerator* generator) const;
     virtual void PrintFieldName(const Message& message, int field_index,
                                 int field_count, const Reflection* reflection,
                                 const FieldDescriptor* field,
@@ -260,6 +262,7 @@ class PROTOBUF_EXPORT TextFormat {
     virtual std::string PrintString(const std::string& val) const;
     virtual std::string PrintBytes(const std::string& val) const;
     virtual std::string PrintEnum(int32_t val, const std::string& name) const;
+    virtual std::string PrintEnum(int32_t val, absl::string_view name) const;
     virtual std::string PrintFieldName(const Message& message,
                                        const Reflection* reflection,
                                        const FieldDescriptor* field) const;
