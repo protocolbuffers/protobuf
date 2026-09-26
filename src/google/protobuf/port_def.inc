@@ -186,7 +186,7 @@
 #if defined(NDEBUG) || (defined(_MSC_VER) && !defined(_DEBUG))
 #define PROTOBUF_NDEBUG_INLINE PROTOBUF_ALWAYS_INLINE
 #else
-#define PROTOBUF_NDEBUG_INLINE inline
+#define PROTOBUF_NDEBUG_INLINE inline PROTOBUF_NOINLINE
 #endif
 
 // Note that PROTOBUF_NOINLINE is an attribute applied to functions, to prevent
