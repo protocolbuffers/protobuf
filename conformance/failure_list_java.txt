@@ -37,9 +37,20 @@ Recommended.*.JsonInput.FieldMaskInvalidCharacter                               
 Required.*.JsonInput.EnumFieldNotQuoted                                                                            # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayEnumName                                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayNumericValue                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.DoubleFieldArabicIndicDigits                                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int32FieldArabicIndicDigits                                                                   # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldLeadingZero                                                                         # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int32FieldMixedAsciiAndArabicIndicDigits                                                      # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldNegativeWithLeadingZero                                                             # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldPlusSign                                                                            # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldArabicIndicDigits                                                                   # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldArabicIndicDigitsEscaped                                                            # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldDevanagariDigits                                                                    # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldExtendedArabicIndicDigits                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldFullwidthDigits                                                                     # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldMixedAsciiAndArabicIndicDigits                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldNkoDigits                                                                           # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldThaiDigits                                                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.StringFieldNotAString                                                                         # Should have failed to parse, but didn't.
@@ -59,6 +70,8 @@ Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                             
 Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                              # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputYearTooLong                                                                 # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputYearTooShort                                                                # Should have failed to parse, but didn't.
+Required.*.JsonInput.Uint32FieldArabicIndicDigits                                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.Uint64FieldArabicIndicDigits                                                                  # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.UnknownOrdering.ProtobufOutput                                                            # Unknown field mismatch
 Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
