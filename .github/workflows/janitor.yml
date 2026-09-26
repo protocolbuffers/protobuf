@@ -1,95 +1,190 @@
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 name: Protobuf Janitor
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 on:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   schedule:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     # Run daily at 10 AM UTC (2 AM PDT)
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     - cron: 0 10 * * *
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   workflow_dispatch:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 permissions: {}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 jobs:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   stale-prs:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     name: Close Stale Copybara PRs
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     runs-on: ubuntu-latest
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     permissions:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       contents: write # to allow deleting branches
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       pull-requests: write # to allow closing the PR
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     env:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       GH_REPO: ${{ github.repository }}
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     steps:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - run: |
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           set -ex
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           STALE_PRS=$(gh pr list --author "app/copybara-service" --limit 500 \
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
               --json "number" --search "updated:<=$(date --date="-7 day" +%F)" \
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             | jq ".[].number")
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           for pr in $STALE_PRS; do
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             echo "Closing #$pr..."
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             gh pr close --comment "Auto-closing Copybara pull request" --delete-branch "$pr"
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           done
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
   stale-others:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     name: Close stale non-copybara PRs and issues
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     runs-on: ubuntu-latest
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     permissions:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       issues: write # allow the action to comment on, add labels to, and close issues
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       pull-requests: write # allow the action to comment on, add labels to, and close PRs
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
     steps:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d  # v10.1.1
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         with:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           stale-issue-message: >
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             We triage inactive PRs and issues in order to make it easier to find
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             active work. If this issue should remain active or becomes active
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             again, please add a comment.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             This issue is labeled `inactive` because the last activity was over
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             90 days ago. This issue will be closed and archived after 14
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             additional days without activity.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           close-issue-message: >
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             We triage inactive PRs and issues in order to make it easier to find
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             active work. If this issue should remain active or becomes active
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             again, please reopen it.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             This issue was closed and archived because there has been no new
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             activity in the 14 days since the `inactive` label was added.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           stale-pr-message: >
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             We triage inactive PRs and issues in order to make it easier to find
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             active work. If this PR should remain active, please add a comment.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             This PR is labeled `inactive` because the last activity was over 90
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             days ago. This PR will be closed and archived after 14 additional
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             days without activity.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           close-pr-message: >
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             We triage inactive PRs and issues in order to make it easier to find
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             active work. If this PR should remain active or becomes active
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             again, please reopen it.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             This PR was closed and archived because there has been no new
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
             activity in the 14 days since the `inactive` label was added.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           stale-issue-label: 'inactive'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           stale-pr-label: 'inactive'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           exempt-issue-labels: 'help wanted,keep open'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           labels-to-add-when-unstale: 'untriaged'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           days-before-stale: 90
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           days-before-close: 14
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           operations-per-run: 100
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
       - uses: actions/stale@997185467fa4f803885201cee163a9f38240193d  # v10.1.1
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
         with:
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           # Have any reply on a 'wait for user action' issue or PR to readd 'untriaged' label. This
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           # uses the same action as our actual stale issue management, but sets
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           # days-before-stale to -1 to have it never automatically add the 'wait for user action'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           # label. Instead this run will just only view cases that have the label manually set as
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           # 'stale' for the purpose of a reply unstaling it by readding the 'untriaged' label.
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           days-before-stale: -1
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           days-before-close: -1
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           stale-issue-label: 'wait for user action'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           stale-pr-label: 'wait for user action'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           labels-to-add-when-unstale: 'untriaged'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           operations-per-run: 20
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
           exempt-pr-labels: 'safe for tests'
+uid=1814354(groupagent-codemender) gid=71252(role-accts) groups=71252(role-accts),20(dialout),990(kvm),998(systemd-journal)
 
