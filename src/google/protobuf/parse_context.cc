@@ -806,46 +806,64 @@ const char* EpsCopyInputStream::ReadMicroStringFallback(const char* ptr,
   return ptr;
 }
 
-int CountVarintsAssumingLargeArray(const char* ptr, const char* end) {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
+int CountVarintsAssumingLargeArray(absl::Span<const char> data) {
   // The number of varints is the number of bytes with the highest bit clear.
   // This is easier to compute as the total number of bytes, minus the number
   // of bytes with the highest bit set.
-  int num_varints = end - ptr;
-  ABSL_DCHECK_GE(num_varints, int{sizeof(uint64_t)});
+  const size_t size = data.size();
+  int num_varints = static_cast<int>(size);
+  ABSL_DCHECK_GE(size, sizeof(uint64_t));
+  PROTOBUF_ASSUME(size >= sizeof(uint64_t));
 
-  // Count in whole blocks, except for the last one.
-  const char* const limit = end - sizeof(uint64_t);
-  while (ptr < limit) {
-    num_varints -=
-        absl::popcount(EndianHelper<8>::Load(ptr) & 0x8080808080808080);
-    ptr += sizeof(uint64_t);
+  // Keep the final 8-byte window before shrinking the span. Walking a shrinking
+  // span keeps extent information attached to the cursor, and lets optimized
+  // builds use the same tight load/popcount loop as the old pointer walk.
+  const auto tail = data.last(sizeof(uint64_t));
+  while (data.size() > sizeof(uint64_t)) {
+    num_varints -= absl::popcount(EndianHelper<8>::Load(data.data()) &
+                                  0x8080808080808080);
+    data.remove_prefix(sizeof(uint64_t));
   }
 
-  // Count in the last, possibly incomplete block.
+  // Count the final, possibly overlapping window, masking bytes already seen.
   return num_varints -
-         absl::popcount(EndianHelper<8>::Load(limit) &
-                        (0x8080808080808080 << ((ptr - limit) * 8)));
+         absl::popcount(EndianHelper<8>::Load(tail.data()) &
+                        (0x8080808080808080
+                         << ((sizeof(uint64_t) - data.size()) * 8)));
 }
 
-bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end) {
-  ABSL_DCHECK_GE(end - ptr, int{sizeof(uint64_t)});
+bool VerifyBoolsAssumingLargeArray(absl::Span<const char> data) {
+  const size_t size = data.size();
+  ABSL_DCHECK_GE(size, sizeof(uint64_t));
+  PROTOBUF_ASSUME(size >= sizeof(uint64_t));
 
-  // Verify whole blocks, except for the last one.
+  // Verify whole blocks, except for the last one. Retain the final window before
+  // shrinking so the loop itself only advances an extent-carrying span.
+  const auto tail = data.last(sizeof(uint64_t));
   uint64_t bit_or = 0;
-  const char* const limit = end - sizeof(uint64_t);
-  while (ptr < limit) {
+  while (data.size() > sizeof(uint64_t)) {
     uint64_t block;
-    std::memcpy(&block, ptr, 8);
+    std::memcpy(&block, data.data(), sizeof(block));
     bit_or |= block;
-    ptr += 8;
+    data.remove_prefix(sizeof(uint64_t));
   }
-  // Verify the last, possibly incomplete block.
+
+  // Verify the last, possibly overlapping block.
   uint64_t block;
-  std::memcpy(&block, limit, 8);
+  std::memcpy(&block, tail.data(), sizeof(block));
   bit_or |= block;
 
   return (bit_or & ~0x0101010101010101) == 0;
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 }  // namespace internal
 }  // namespace protobuf
