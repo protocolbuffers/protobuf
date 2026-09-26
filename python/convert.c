@@ -239,8 +239,13 @@ bool PyUpb_IsNumpyNdarray(PyObject* obj, const upb_FieldDef* f) {
     PyErr_Clear();
     return false;
   }
+  const char* type_name = PyUpb_GetStrData(type_name_obj);
+  if (!type_name) {
+    Py_DECREF(type_name_obj);
+    return false;
+  }
   bool is_ndarray = false;
-  if (!strcmp(PyUpb_GetStrData(type_name_obj), "ndarray")) {
+  if (!strcmp(type_name, "ndarray")) {
     PyErr_Format(PyExc_TypeError,
                  "%S has type ndarray, but expected one of: %s", obj,
                  upb_FieldDef_TypeString(f));
@@ -257,7 +262,12 @@ bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
     PyErr_Clear();
     return false;
   }
-  bool is_numpy = !strcmp(PyUpb_GetStrData(type_module_obj), "numpy");
+  const char* type_module = PyUpb_GetStrData(type_module_obj);
+  if (!type_module) {
+    Py_DECREF(type_module_obj);
+    return false;
+  }
+  bool is_numpy = !strcmp(type_module, "numpy");
   Py_DECREF(type_module_obj);
   if (!is_numpy) {
     return false;
@@ -269,7 +279,12 @@ bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
     PyErr_Clear();
     return false;
   }
-  bool is_bool = !strcmp(PyUpb_GetStrData(type_name_obj), "bool");
+  const char* type_name = PyUpb_GetStrData(type_name_obj);
+  if (!type_name) {
+    Py_DECREF(type_name_obj);
+    return false;
+  }
+  bool is_bool = !strcmp(type_name, "bool");
   Py_DECREF(type_name_obj);
   if (!is_bool) {
     return false;
@@ -280,7 +295,9 @@ bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
 static bool PyUpb_GetBool(PyObject* obj, const upb_FieldDef* f, bool* val) {
   if (!PyBool_Check(obj)) {
     if (PyUpb_IsNumpyNdarray(obj, f)) return false;
+    if (PyErr_Occurred()) return false;
     if (PyUpb_IsNumpyBoolScalar(obj)) {
+      if (PyErr_Occurred()) return false;
       *val = PyObject_IsTrue(obj);
       return !PyErr_Occurred();
     }
@@ -303,11 +320,15 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
     case kUpb_CType_UInt64:
       return PyUpb_GetUint64(obj, f, &val->uint64_val);
     case kUpb_CType_Float:
-      if (!PyFloat_Check(obj) && PyUpb_IsNumpyNdarray(obj, f)) return false;
+      if (!PyFloat_Check(obj)) {
+        if (PyUpb_IsNumpyNdarray(obj, f) || PyErr_Occurred()) return false;
+      }
       val->float_val = PyFloat_AsDouble(obj);
       return !PyErr_Occurred();
     case kUpb_CType_Double:
-      if (!PyFloat_Check(obj) && PyUpb_IsNumpyNdarray(obj, f)) return false;
+      if (!PyFloat_Check(obj)) {
+        if (PyUpb_IsNumpyNdarray(obj, f) || PyErr_Occurred()) return false;
+      }
       val->double_val = PyFloat_AsDouble(obj);
       return !PyErr_Occurred();
     case kUpb_CType_Bool:
