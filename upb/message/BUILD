@@ -275,6 +275,7 @@ cc_library(
         "convert.h",
     ],
     copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
     visibility = ["//upb:friends"],
     deps = [
         ":compare",
@@ -298,9 +299,11 @@ cc_test(
     name = "convert_test",
     srcs = ["convert_test.cc"],
     deps = [
+        ":compare",
         ":convert",
         ":convert_test_upb_minitable_proto",
         ":convert_test_upb_proto",
+        ":copy",
         ":internal",
         ":message",
         ":message_test_upb_minitable_proto",
@@ -310,6 +313,7 @@ cc_test(
         "//upb/base",
         "//upb/mem",
         "//upb/mini_table",
+        "//upb/mini_table:internal",
         "//upb/port",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_minitable",
