@@ -53,7 +53,7 @@ Model below, please open a
         non-default implementations are generally supported for more exotic
         use-cases and may not have as much hardening attention. The default
         Python and PHP runtimes use a C extension that has been hardened more
-        than the fallback behaviors that that do not use any C extension.
+        than the fallback behaviors that do not use any C extension.
 *   **Use latest releases:** Ensure that the generated code and the runtime
     library version match exactly and are kept up to date with the latest patch
     release. Certain obscure and low severity issues may only be patched on the
@@ -93,7 +93,7 @@ compatibility guarantees to address security issues in these areas (especially
 for lower severity risks).
 
 Defensive hardening is applied to these surfaces, but with weaker guarantees
-compared to our hardened surfaces.
+compared to our proactively hardened surfaces.
 
 *   Serious security issues are still highly prioritized for fixing on these
     surfaces.
@@ -176,7 +176,7 @@ enforce depth limits by default as part of a future breaking change release.
 ### Lite Runtimes (C++ Lite, Java Lite) Denial of Service Risks
 
 Lite runtimes target mobile and web usage: they are optimized for those
-constrained envirnoments, and prioritize small binary size at the expense of
+constrained environments, and prioritize small binary size at the expense of
 other properties.
 
 Lite runtimes are still intended to be used to parse untrusted inputs, but DoS
@@ -213,9 +213,9 @@ While `protoc` is hardened on a best-effort basis for this use case, we
 recommend using defensive validation and sandboxing whenever running `protoc`
 against potentially malicious inputs.
 
-Untrusted flags being passed to `protoc` is fully outside of our threat model:
-CLI flags are never be adversarial and arbitrary behavior driven by CLI flags
-may be working as intended.
+Untrusted flags being passed to `protoc` are fully outside of our threat model:
+CLI flags are never adversarial, and arbitrary behavior driven by CLI flags may
+be working as intended.
 
 Caution: Compiling and executing generated code from untrusted schemas is
 functionally equivalent to compiling and running arbitrary third-party `.java`
@@ -229,29 +229,31 @@ gencode which was generated off of untrusted `.proto` files.
 
 Protobuf supports encoding schemas into a Protobuf message format (e.g.
 `FileDescriptorSet` or `DescriptorProto`). These messages can be handled as any
-other Protobuf type. Parsing untrusted binary-encoded DescriptorProto falls
+other Protobuf type. Parsing untrusted binary-encoded `DescriptorProto` falls
 within the "primary use-case" described above.
 
-In addition to simply processing DescriptorProto, it is additionally possible in
+In addition to simply processing `DescriptorProto`, it is additionally possible in
 most runtimes to use a type named `DynamicMessage` which allows for using
 runtime-loaded descriptors instead of using generated code and to use that type
 with the reflection APIs.
 
-For use-cases sensetive to DoS risks, it is recommended to use `DynamicMessage`
+For use-cases sensitive to DoS risks, it is recommended to use `DynamicMessage`
 only with trusted descriptors (via trusted side channel source / config pushes).
 When using `DynamicMessage` with a descriptor sourced from an untrusted source,
 you may need to validate and sanitize them as you would user provided SQL.
 
 Caution: Usage of `DynamicMessage` with malicious descriptors reaching an RCE or
-information leak would still be treated as a high priority issue. However, there
-are inherently reachable cases of where malicious descriptors used with
-`DynamicMessage` can reach behavior which may otherwise be considered a Denial
-of Service risk under our primary threat model. For example, it will be
+information leak would still be treated as a high priority issue, and any RCE or
+information leak concerns on this surface should be reported via a
+[draft GitHub Security Advisory](https://github.com/protocolbuffers/protobuf/security/advisories/new).
+However, there are inherently reachable cases of where malicious descriptors
+used with `DynamicMessage` can reach behavior which may otherwise be considered
+a Denial of Service risk under our primary threat model. For example, it will be
 reachable to hit memory use which is O(N*M) where N is "# of messages observed
 on the wire" and M is "size of the message definition". Since untrusted
 descriptors gives an affordance for arbitrarily large message definitions, using
-DynamicMessage with untrusted descriptors and untrusted binary format inherently
-can have memory amplification risks.
+`DynamicMessage` with untrusted descriptors and untrusted binary format
+inherently can have memory amplification risks.
 
 ### Adversarial Application Code
 
@@ -260,8 +262,8 @@ API is considered an application integration error rather than a library
 vulnerability.
 
 Protobuf libraries do harden against the impact of certain classes of mistakes
-being worse; for example, we often will panic if we can detect that an out of
-bounds memory reads will occur in some cases. This is considered
+being worse; for example, we often will panic if we can detect that
+out-of-bounds memory reads will occur in some cases. This is considered
 defense-in-depth and misuse is not considered a vulnerability.
 
 Excepting the surfaces enumerated above as hardened, Protobuf APIs in
@@ -280,13 +282,13 @@ Examples:
     panic instead of risk out of bounds memory reads, but is not intended to be
     gracefully handled as a malformed-wire-bytes input would be (following C++
     idioms).
-*   In a memory language Python, if code like `msg.repeatedField[-2147483649]`
+*   In a memory-safe language like Python, if code like `msg.repeatedField[-2147483649]`
     can reach a segfault, that is considered an important bug to fix, but it is
     not considered to be within CVE scope.
 
 ### Differential Parsing (Gateway propagation of original payload)
 
-Differential parsing is a risk stemming from by two different libraries parsing
+Differential parsing is a risk stemming from two different libraries parsing
 the same data with different interpretations.
 
 In some contexts and for some formats differential parsing is considered a
@@ -324,7 +326,7 @@ model.
 
 For best security practice, it is recommended to:
 
-*   Use a different set of messages schema for your public API and internal
+*   Use a different set of message schema for your public API and internal
     messages. Besides the security benefits, this decoupling also allows for
     easier evolution of your system, where public APIs often need to change
     slowly but internal ones can evolve faster.
@@ -345,9 +347,9 @@ To generally maintain consistent and interoperable behavior, we intend these
 depth limits to be consistent in behavior in what payloads will be accepted or
 rejected for a given integer depth.
 
-Issues where an edge case is successfully parsed which is deeper than the exact
-intended limit, this is viewed as a simple bug as long as it does not expose
-meaningful resource exhaustion risks.
+Issues where an edge case is successfully parsed deeper than the exact intended
+limit are viewed as simple bugs as long as it does not expose meaningful
+resource exhaustion risks.
 
 We welcome reports and patches for issues of that nature, but do not view it as
 a security concern and so these issues can be filed via our public GitHub Issues
@@ -381,7 +383,7 @@ features.
 
 Best practice is to transport Protobuf encoded data over https. If signing or
 other integrity features are needed, it is expected to be done in the layers
-built top of the Protobuf libraries.
+built on top of the Protobuf libraries.
 
 ### API surfaces which not intended for direct public use
 
@@ -394,8 +396,36 @@ library which requires callers maintain invariants to be sound.
 
 Security issues may arise if our language-specific runtimes which use `upb` do
 not maintain those necessary invariants, or if `upb` has reachable bad behavior
-when all intended invariants are maintained. However, it is not considered not a
+when all intended invariants are maintained. However, it is not considered a
 security topic if arbitrary bad behavior may be reachable if `upb` APIs are
 directly misused (including that `upb's` APIs accept MiniDescriptors/MiniTables
 which are considered trusted types, and so will have arbitrary behavior if those
 types do not meet the intended invariants).
+
+## Dependency Pinning
+
+### In Builds of Protobuf
+
+Due to the diversity of build systems used across the language bindings
+supported by Protobuf, there is not a singular policy on how narrowly
+dependencies are described. In many cases, Protobuf's dependencies' versions are
+allowed to float within the range of versions that also fit within our
+[Support Matrix](https://protobuf.dev/support/version-support/). In no cases do
+we require that dependencies of Protobuf are pinned to a specific commit. Users
+building directly from source are strongly advised to review what versions are
+downloaded and installed by the dependency management tools used by their local
+build system.
+
+### In Build Infrastructure
+
+Protobuf's build infrastructure may treat other Google-controlled open source
+projects as inherently trusted. For these trusted resources we allowing version
+pinning using release tags rather than SHAs. For example lines similar to:
+
+`uses: protocolbuffers/protobuf-ci/checkout@v6`
+
+can be found in our GitHub Actions configuration files. Resources that are not
+Google-controlled should be pinned with SHAs of the commit to prevent supply
+attacks, followed with a comment documenting the version:
+
+`uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2`

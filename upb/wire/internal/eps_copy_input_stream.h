@@ -54,7 +54,9 @@ struct upb_EpsCopyInputStream {
 };
 
 UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
-    struct upb_EpsCopyInputStream* e);
+    struct upb_EpsCopyInputStream* e, int n);
+UPB_INLINE int UPB_PRIVATE(upb_EpsCopyInputStream_GetBoundsCheckedBytes)(
+    const struct upb_EpsCopyInputStream* e);
 
 UPB_INLINE bool upb_EpsCopyInputStream_IsError(
     struct upb_EpsCopyInputStream* e) {
@@ -80,7 +82,8 @@ UPB_INLINE void upb_EpsCopyInputStream_InitWithErrorHandler(
   }
   e->limit_ptr = e->end;
   e->error = false;
-  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+      e, kUpb_EpsCopyInputStream_SlopBytes);
 }
 
 UPB_INLINE void upb_EpsCopyInputStream_Init(struct upb_EpsCopyInputStream* e,
@@ -126,9 +129,18 @@ UPB_INLINE const char* UPB_PRIVATE(upb_EpsCopyInputStream_AssumeResult)(
 // bytes, even if each varint is its maximum possible length.
 
 UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
-    struct upb_EpsCopyInputStream* e) {
+    struct upb_EpsCopyInputStream* e, int n) {
 #ifndef NDEBUG
-  e->guaranteed_bytes = kUpb_EpsCopyInputStream_SlopBytes;
+  e->guaranteed_bytes = n;
+#endif
+}
+
+UPB_INLINE int UPB_PRIVATE(upb_EpsCopyInputStream_GetBoundsCheckedBytes)(
+    const struct upb_EpsCopyInputStream* e) {
+#ifndef NDEBUG
+  return e ? e->guaranteed_bytes : 0;
+#else
+  return 0;
 #endif
 }
 
@@ -171,7 +183,8 @@ UPB_INLINE upb_IsDoneStatus UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneStatus)(
     struct upb_EpsCopyInputStream* e, const char* ptr, int* overrun) {
   *overrun = ptr - e->end;
   if (UPB_LIKELY(ptr < e->limit_ptr)) {
-    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+        e, kUpb_EpsCopyInputStream_SlopBytes);
     return kUpb_IsDoneStatus_NotDone;
   } else if (UPB_LIKELY(*overrun == e->limit)) {
     UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(e);
@@ -193,13 +206,15 @@ UPB_INLINE bool upb_EpsCopyInputStream_IsDone(struct upb_EpsCopyInputStream* e,
       UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(e);
       return true;
     case kUpb_IsDoneStatus_NotDone:
-      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+          e, kUpb_EpsCopyInputStream_SlopBytes);
       return false;
     case kUpb_IsDoneStatus_NeedFallback:
       *ptr =
           UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(e, *ptr, overrun);
       if (*ptr) {
-        UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+        UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+            e, kUpb_EpsCopyInputStream_SlopBytes);
       } else {
         UPB_PRIVATE(upb_EpsCopyInputStream_BoundsHit)(e);
       }
@@ -212,6 +227,47 @@ UPB_INLINE bool upb_EpsCopyInputStream_CheckSize(
     const struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
   UPB_ASSERT(size >= 0);
   return size <= e->limit - (ptr - e->end);
+}
+
+// Returns the bounds-check budget for a position from which `size` bytes of
+// payload are known to be present in the buffer: the payload itself plus the
+// slop bytes that always follow it.
+UPB_INLINE int UPB_PRIVATE(upb_EpsCopyInputStream_GuaranteedBytes)(
+    ptrdiff_t size) {
+  return size > INT32_MAX - kUpb_EpsCopyInputStream_SlopBytes
+             ? INT32_MAX
+             : (int)size + kUpb_EpsCopyInputStream_SlopBytes;
+}
+
+UPB_FORCEINLINE bool upb_EpsCopyInputStream_SizeFitsWithoutSwap(
+    struct upb_EpsCopyInputStream* e, const char* ptr, int size) {
+  if (UPB_UNLIKELY(size < 0 || (ptrdiff_t)size > e->limit_ptr - ptr)) {
+    return false;
+  }
+  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+      e, UPB_PRIVATE(upb_EpsCopyInputStream_GuaranteedBytes)(size));
+  return true;
+}
+
+// Re-establishes the bounds-check budget at `ptr` for a region ending at `end`
+// that was already validated by upb_EpsCopyInputStream_SizeFitsWithoutSwap().
+//
+// upb_EpsCopyInputStream_ConsumeBytes() charges every read its worst-case
+// length (eg. 10 bytes for a varint, even though most varints are one byte),
+// and those charges accumulate without regard for how far `ptr` actually
+// advanced. Code that performs several reads inside a single validated region
+// therefore has to restore the budget as it goes, or it will exhaust an
+// allowance that the reads never really spent.
+//
+// This grants reads up to `end + kUpb_EpsCopyInputStream_SlopBytes`, which is
+// the exact same final address that SizeFitsWithoutSwap() already established
+// for the region, so it relaxes nothing: it only re-expresses the remaining
+// guarantee relative to the new `ptr`.
+UPB_INLINE void UPB_PRIVATE(upb_EpsCopyInputStream_BoundsCheckedToEnd)(
+    struct upb_EpsCopyInputStream* e, const char* ptr, const char* end) {
+  UPB_ASSERT(ptr <= end);
+  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+      e, UPB_PRIVATE(upb_EpsCopyInputStream_GuaranteedBytes)(end - ptr));
 }
 
 // Returns a pointer into an input buffer that corresponds to the parsing

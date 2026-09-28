@@ -124,7 +124,6 @@ conformance_test(
     failure_list = "//conformance:failure_list_php_c.txt",
     maximum_edition = "2023",
     testee = "//conformance:conformance_php_c",
-    text_format_failure_list = "//conformance:text_format_failure_list_php.txt",
 )
 
 genrule(

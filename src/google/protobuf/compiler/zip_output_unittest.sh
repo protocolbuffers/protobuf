@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Protocol Buffers - Google's data interchange format
 # Copyright 2009 Google Inc.  All rights reserved.

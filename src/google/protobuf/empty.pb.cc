@@ -74,9 +74,8 @@ constexpr Empty::ParseTableT_ Empty::_Internal::GenerateParseTable(const ::_pbi:
 }
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Empty::Empty(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Empty::Empty(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -97,7 +96,7 @@ constexpr auto Empty::_Internal::GenerateClassData() {
       &Empty::MergeImpl,
       Super_::GetNewImpl<Empty>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Empty::Helpers_::SharedDtor,
+      &Empty::SharedDtor,
       &Empty::Clear, &Empty::ByteSizeLong, &Empty::_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Empty, _impl_._cached_size_),

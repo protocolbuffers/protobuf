@@ -1,4 +1,4 @@
-#include "testee.h"
+#include "conformance/testee.h"
 
 #include <string>
 #include <utility>
@@ -7,9 +7,9 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "binary_wireformat.h"
+#include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
-#include "naming.h"
+#include "conformance/naming.h"
 #include "google/protobuf/descriptor.h"
 
 namespace google {

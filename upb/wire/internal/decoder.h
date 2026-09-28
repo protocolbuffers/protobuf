@@ -22,6 +22,7 @@
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/internal/arena.h"
+#include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension_registry.h"
@@ -38,7 +39,6 @@
 #include "upb/port/def.inc"
 
 #define DECODE_NOGROUP (uint32_t)-1
-#define kUpb_Decoder_EncodeVarint32MaxSize 5
 
 typedef union {
   bool bool_val;
@@ -84,6 +84,9 @@ UPB_INLINE const char* upb_Decoder_Init(upb_Decoder* d, const char* buf,
   d->err = err;
   upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &buf, size, d->err);
 
+  UPB_STATIC_ASSERT(
+      offsetof(upb_Decoder, input) == 0,
+      "EpsCopyInputStream must be pointer-interconvertible with upb_Decoder");
   UPB_STATIC_ASSERT((int)kUpb_DecodeStatus_Ok == (int)kUpb_ErrorCode_Ok,
                     "mismatched error codes");
   UPB_STATIC_ASSERT(
@@ -221,12 +224,15 @@ const char* _upb_Decoder_CheckRequired(upb_Decoder* d, const char* ptr,
                                        const upb_Message* msg,
                                        const upb_MiniTable* m);
 
+struct upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
+                                       const upb_MiniTable* entry);
+
 #if UPB_FASTTABLE
 UPB_PRESERVE_NONE
 #endif
 const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
                                        upb_Message* msg,
-                                       const upb_MiniTable* layout);
+                                       const upb_MiniTable* mt);
 
 UPB_INLINE bool _upb_Decoder_FieldRequiresUtf8Validation(
     const upb_Decoder* d, const upb_MiniTableField* field) {
@@ -262,37 +268,16 @@ UPB_INLINE bool _upb_Decoder_ReadString(upb_Decoder* d, const char** ptr,
   return true;
 }
 
-UPB_INLINE char* upb_Decoder_EncodeVarint32(uint32_t val, char* ptr) {
-  do {
-    uint8_t byte = val & 0x7fU;
-    val >>= 7;
-    if (val) byte |= 0x80U;
-    *(ptr++) = byte;
-  } while (val);
-  return ptr;
+// Zig-zag decoding for sint32/sint64. The 32-bit variant must truncate the
+// varint to 32 bits *before* decoding (proto semantics for overlong sint32
+// varints, e.g. 2^32 decodes to 0).
+UPB_INLINE uint32_t _upb_Decoder_ZigZagDecode32(uint64_t val) {
+  uint32_t n = (uint32_t)val;
+  return (n >> 1) ^ -(int32_t)(n & 1);
 }
 
-UPB_FORCEINLINE
-void _upb_Decoder_AddEnumValueToUnknown(upb_Decoder* d, upb_Message* msg,
-                                        const upb_MiniTableField* field,
-                                        uint64_t val) {
-  // Unrecognized enum goes into unknown fields.
-  // For packed fields the tag could be arbitrarily far in the past,
-  // so we just re-encode the tag and value here.
-  const uint32_t tag =
-      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
-  upb_Message* unknown_msg =
-      field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension ? d->original_msg
-                                                             : msg;
-  char buf[2 * kUpb_Decoder_EncodeVarint32MaxSize];
-  char* end = buf;
-  end = upb_Decoder_EncodeVarint32(tag, end);
-  end = upb_Decoder_EncodeVarint32(val, end);
-
-  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(unknown_msg, buf, end - buf,
-                                            &d->arena, kUpb_AddUnknown_Copy)) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
-  }
+UPB_INLINE uint64_t _upb_Decoder_ZigZagDecode64(uint64_t n) {
+  return (n >> 1) ^ -(int64_t)(n & 1);
 }
 
 #include "upb/port/undef.inc"

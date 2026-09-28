@@ -13,15 +13,12 @@ build --@rules_rust//rust/settings:experimental_use_cc_common_link=True
 # upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
 # running bazelisk with the --migrate flag and filtering out all flags that
 # default to true or are deprecated.
-build --incompatible_check_sharding_support
 build --incompatible_config_setting_private_default_visibility
 build --incompatible_default_to_explicit_init_py
-build --incompatible_disable_native_android_rules
 build --incompatible_disable_starlark_host_transitions
 build --incompatible_disable_target_provider_fields
 build --incompatible_disallow_empty_glob
 build --incompatible_dont_use_javasourceinfoprovider
-build --incompatible_enable_android_toolchain_resolution
 build --incompatible_enable_apple_toolchain_resolution
 build --incompatible_exclusive_test_sandboxed
 build --incompatible_top_level_aspects_require_providers

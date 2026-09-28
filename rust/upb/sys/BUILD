@@ -40,6 +40,37 @@ rust_library(
     deps = [":upb_c_api"],
 )
 
+rust_library(
+    name = "reflection",
+    srcs = [
+        "reflection/def_pool.rs",
+        "reflection/message_def.rs",
+        "reflection/mod.rs",
+        "reflection/opaque_pointee.rs",
+        "reflection/test_helpers.rs",
+    ],
+    crate_root = "reflection/mod.rs",
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    visibility = ["//rust/upb:__subpackages__"],
+    deps = [
+        ":sys",
+        ":upb_c_api",
+        "//upb/reflection",
+        "//upb/reflection:def_pool_init",
+        "//upb/text",
+    ],
+)
+
+rust_test(
+    name = "sys_reflection_test",
+    crate = ":reflection",
+    edition = "2024",
+    deps = [
+        "@crate_index//:googletest",
+    ],
+)
+
 rust_test(
     name = "sys_test",
     crate = ":sys",

@@ -24,6 +24,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "absl/strings/str_cat.h"
@@ -36,6 +37,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 #include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/unittest.pb.h"
@@ -405,7 +407,76 @@ TEST_F(RepeatedPtrFieldTest, ArenaAllocationSizesMatchExpectedValues) {
   EXPECT_NO_FATAL_FAILURE(CheckAllocationSizes<TestAllTypes::NestedMessage>());
 }
 
-TEST_F(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
+TEST_F(RepeatedPtrFieldTest, NaturalGrowthOnArenasGrowsTheTail) {
+  using Elem = std::string;
+  using Field = RepeatedPtrField<Elem>;
+
+  Arena arena;
+  internal::SerialArena* serial_arena = GetSerialArena(&arena);
+  std::vector<Field*> fields;
+  static constexpr int kNumFields = 100;
+  static constexpr int kNumElems = 100;
+  absl::optional<int> common_capacity;
+  size_t total_pointers_seen = 0;
+
+  for (int i = 0; i < kNumFields; ++i) {
+    fields.push_back(Arena::Create<Field>(&arena));
+    absl::flat_hash_set<const void*> pointers_seen;
+    absl::flat_hash_set<size_t> capacities_seen;
+    auto& field = *fields.back();
+    for (int j = 0; j < kNumElems; ++j) {
+      field.Add("");
+      capacities_seen.insert(field.Capacity());
+      pointers_seen.insert(field.data());
+    }
+
+    // Free-lists and tail grow optimizations on the arena interfere with each
+    // other.
+    // In normal usage, free list usage is distributed in a way that does not
+    // permanently affect the tail grow optimization. Arrays are different sizes
+    // and many are small so they end up taking the small blocks from the free
+    // lists.
+    //
+    // But in this test, all our arrays are very large so if a single block ends
+    // up in the first slot of the free list, we will use it consistently on
+    // every following container and that will interfere with testing the tail
+    // growth optimization.
+    //
+    // To prevent this interference, we artifically allocate from the free lists
+    // here so that containers always have their first allocation in the tail of
+    // the arena. Take into account the blocks for 32-bit and 64-bit.
+    serial_arena->TryAllocateFromCachedBlock(16);
+    serial_arena->TryAllocateFromCachedBlock(32);
+
+    total_pointers_seen += pointers_seen.size();
+
+    // We should still see the capacities grow naturally. The in-place
+    // growth is an implementation detail.
+    ASSERT_THAT(capacities_seen.size(), AllOf(Ge(6), Le(8)));
+
+    if (!common_capacity.has_value()) {
+      common_capacity = field.Capacity();
+    } else {
+      ASSERT_EQ(field.Capacity(), *common_capacity);
+    }
+  }
+
+  // We should have seen close to 2 pointers per container on average: one for
+  // the soo and one for the arena block. Sometimes we get more because we can't
+  // grow in place in the remaining space in the block. Also, every now and then
+  // the StringBlock is exhausted and we allocate a new one from the Arena
+  // block, breaking the tail growth.
+  EXPECT_THAT(static_cast<double>(total_pointers_seen) / kNumFields,
+              AllOf(Ge(2.0), Le(2.5)));
+
+  const size_t expected = kNumFields * (*common_capacity) * sizeof(Elem*) +
+                          kNumFields * kNumElems * sizeof(Elem);
+  // Verify that we used the expected, plus some overhead.
+  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.05 * expected)));
+}
+
+TEST_F(RepeatedPtrFieldTest,
+       NaturalGrowthOnArenasReuseBlocksIfItCantGrowTheTail) {
   using Elem = std::string;
   using Field = RepeatedPtrField<Elem>;
 
@@ -413,12 +484,18 @@ TEST_F(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
   std::vector<Field*> fields;
   static constexpr int kNumFields = 100;
   static constexpr int kNumElems = 1000;
+  size_t dummy_alloc = 0;
   absl::optional<int> common_capacity;
   for (int i = 0; i < kNumFields; ++i) {
     fields.push_back(Arena::Create<Field>(&arena));
     auto& field = *fields.back();
     for (int j = 0; j < kNumElems; ++j) {
       field.Add("");
+
+      // We need to force dummy allocations to exist between Add calls so that
+      // we disable the fastpath that grows the array in place.
+      (void)Arena::Create<int64_t>(&arena);
+      dummy_alloc += 8;
     }
     if (!common_capacity.has_value()) {
       common_capacity = field.Capacity();
@@ -429,10 +506,11 @@ TEST_F(RepeatedPtrFieldTest, NaturalGrowthOnArenasReuseBlocks) {
 
   const size_t expected = kNumFields * (*common_capacity) * sizeof(Elem*) +
                           kNumFields * kNumElems * sizeof(Elem);
-  // Use a 2% slack for other overhead.
+  // Verify that we used the expected, plus some overhead.
   // If we were not reusing the blocks, the actual value would be ~2x the
   // expected.
-  EXPECT_THAT(arena.SpaceUsed(), AllOf(Ge(expected), Le(1.02 * expected)));
+  EXPECT_THAT(arena.SpaceUsed() - dummy_alloc,
+              AllOf(Ge(expected), Le(1.02 * expected)));
 }
 
 TEST_F(RepeatedPtrFieldTest, AddAndAssignRanges) {

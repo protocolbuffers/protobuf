@@ -1,4 +1,3 @@
-load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//bazel/private:compat_flag.bzl", "compat_bool_flag", "compat_label_flag", "compat_string_list_flag")
 
@@ -7,20 +6,11 @@ package(
     default_visibility = ["//visibility:public"],
 )
 
-bzl_library(
-    name = "flags_bzl",
-    srcs = ["flags.bzl"],
-    deps = [
-        "@bazel_skylib//rules:common_settings",
-    ],
-)
-
 filegroup(
     name = "for_bazel_tests",
     testonly = True,
     srcs = [
         "BUILD",
-        "flags.bzl",
         "//bazel/flags/cc:BUILD",
         "//bazel/flags/java:BUILD",
     ],

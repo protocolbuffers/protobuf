@@ -12,8 +12,10 @@
 #ifndef GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ONEOF_GENERATOR_H__
 #define GOOGLE_PROTOBUF_COMPILER_JAVA_IMMUTABLE_ONEOF_GENERATOR_H__
 
+#include <map>
 #include <string>
 
+#include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/full/field_generator.h"
@@ -39,7 +41,9 @@ namespace java {
 
 class OneofGenerator {
  public:
-  OneofGenerator(const OneofDescriptor* descriptor, Context* context);
+  OneofGenerator(
+      const OneofDescriptor* descriptor, Context* context,
+      const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators);
   OneofGenerator(const OneofGenerator&) = delete;
   OneofGenerator& operator=(const OneofGenerator&) = delete;
   ~OneofGenerator();
@@ -59,16 +63,21 @@ class OneofGenerator {
   void GenerateMergingCode(
       io::Printer* printer,
       const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const;
-  void GenerateBuildingCode(
-      io::Printer* printer,
-      const FieldGeneratorMap<ImmutableFieldGenerator>& field_generators) const;
+  bool HasScalarFields(int shard) const;
+  void GenerateBuildingCode(io::Printer* printer, int shard) const;
 
  private:
   void GenerateBuilderGetOneofCase(io::Printer* printer) const;
   void GenerateBuilderClearOneof(io::Printer* printer) const;
+  void GenerateBuilderClearOneofHasBits(io::Printer* printer) const;
 
   const OneofDescriptor* descriptor_;
   absl::flat_hash_map<absl::string_view, std::string> variables_;
+  // A map from bit_field index (e.g. 0 for hasBits0) to the mask
+  // representing the bits to clear for this oneof's fields.
+  absl::btree_map<int, uint32_t> clear_masks_;
+  // A map from bit_field index to the mask of scalar fields for this oneof.
+  absl::btree_map<int, uint32_t> scalar_masks_;
 };
 
 }  // namespace java

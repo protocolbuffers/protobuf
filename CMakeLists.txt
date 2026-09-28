@@ -88,6 +88,10 @@ if (protobuf_BUILD_SHARED_LIBS)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
     set(CMAKE_PDB_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
   endif ()
+else ()
+  # Build dependencies statically too. Some of them default to shared when this
+  # is unset (jsoncpp), and a DLL built under _deps/ can't be found at runtime.
+  set(BUILD_SHARED_LIBS OFF)
 endif ()
 
 # Version metadata

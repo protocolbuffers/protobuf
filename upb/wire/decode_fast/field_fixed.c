@@ -6,7 +6,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 #include <stdint.h>
-#include <string.h>
 
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
@@ -17,6 +16,7 @@
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/reader.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -25,9 +25,12 @@ static bool upb_DecodeFast_SingleFixed(upb_Decoder* d, const char** ptr,
                                        void* dst, upb_DecodeFast_Type type,
                                        upb_DecodeFastNext* next, void* ctx) {
   UPB_UNUSED(ctx);
-  int valbytes = upb_DecodeFast_ValueBytes(type);
-  memcpy(dst, *ptr, valbytes);
-  *ptr += valbytes;
+  if (type == kUpb_DecodeFast_Fixed32) {
+    *ptr = upb_WireReader_ReadFixed32(*ptr, dst, EPS(d));
+  } else {
+    UPB_ASSERT(type == kUpb_DecodeFast_Fixed64);
+    *ptr = upb_WireReader_ReadFixed64(*ptr, dst, EPS(d));
+  }
   return true;
 }
 

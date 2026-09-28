@@ -205,11 +205,6 @@ std::unique_ptr<OverflowTestCase> FindOverflowTestCase() {
     ABSL_CHECK_NE(mid, low) << "Bad initial bounds.";
     ABSL_CHECK_NE(mid, hi) << "Bad initial bounds.";
     auto test_case = GenerateOverflowTestCase(mid);
-    ABSL_LOG(INFO) << "FindOverflowTestCase: low=" << low << " mid=" << mid
-                   << " hi=" << hi << " first_offset="
-                   << test_case->table->field_entries()[0].offset
-                   << " second_offset="
-                   << test_case->table->field_entries()[1].offset;
     if (test_case->table->field_entries()[0].offset >=
         std::numeric_limits<uint16_t>::max()) {
       // Too much padding.

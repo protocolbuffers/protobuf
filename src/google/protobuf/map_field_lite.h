@@ -86,7 +86,8 @@ class MapFieldLite {
   void InternalSwap(MapFieldLite* other) { map_.InternalSwap(&other->map_); }
 
  private:
-  typedef void DestructorSkippable_;
+  using InternalArenaConstructable_ = void;
+  using DestructorSkippable_ = void;
 
   // map_ is inside an anonymous union so we can explicitly control its
   // destruction

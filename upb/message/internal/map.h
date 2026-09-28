@@ -74,9 +74,24 @@ UPB_INLINE upb_StringView _upb_map_tokey(const void* key, size_t size) {
   }
 }
 
+// Avoid emitting an out-of-line memcpy call when the size is not a compile-time
+// constant
+UPB_FORCEINLINE void* _upb_map_memcpy(void* dst, const void* src, size_t size) {
+  switch (size) {
+    case 1:
+      return memcpy(dst, src, 1);
+    case 4:
+      return memcpy(dst, src, 4);
+    case 8:
+      return memcpy(dst, src, 8);
+    default:
+      UPB_UNREACHABLE();
+  }
+}
+
 UPB_INLINE uintptr_t _upb_map_tointkey(const void* key, size_t key_size) {
   uintptr_t intkey = 0;
-  memcpy(&intkey, key, key_size);
+  _upb_map_memcpy(&intkey, key, key_size);
   return intkey;
 }
 
@@ -84,7 +99,7 @@ UPB_INLINE void _upb_map_fromkey(upb_StringView key, void* out, size_t size) {
   if (size == UPB_MAPTYPE_STRING) {
     memcpy(out, &key, sizeof(key));
   } else {
-    memcpy(out, key.data, size);
+    _upb_map_memcpy(out, key.data, size);
   }
 }
 
@@ -96,7 +111,7 @@ UPB_INLINE bool _upb_map_tovalue(const void* val, size_t size,
     *strp = *(upb_StringView*)val;
     *msgval = upb_value_ptr(strp);
   } else {
-    memcpy(msgval, val, size);
+    _upb_map_memcpy(msgval, val, size);
   }
   return true;
 }
@@ -106,7 +121,7 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
     const upb_StringView* strp = (const upb_StringView*)upb_value_getptr(val);
     memcpy(out, strp, sizeof(upb_StringView));
   } else {
-    memcpy(out, &val, size);
+    _upb_map_memcpy(out, &val, size);
   }
 }
 
@@ -169,10 +184,11 @@ UPB_INLINE bool _upb_Map_Get(const struct upb_Map* map, const void* key,
   return ret;
 }
 
-UPB_INLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
-                                               const void* key, size_t key_size,
-                                               void* val, size_t val_size,
-                                               upb_Arena* a) {
+UPB_FORCEINLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
+                                                    const void* key,
+                                                    size_t key_size, void* val,
+                                                    size_t val_size,
+                                                    upb_Arena* a) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
   // Prep the value.

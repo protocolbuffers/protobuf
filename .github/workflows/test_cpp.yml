@@ -462,15 +462,15 @@ jobs:
           - name: Windows Bazel
             os: windows-2022
             cache_key: windows-2022-msvc-cl
-            bazel: test //src/...  --config=msvc-cl --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel: test //src/... conformance:conformance_framework_tests --config=msvc-cl
           - name: Windows Bazel C++20
             os: windows-2022
             cache_key: windows-2022-msvc-cl
-            bazel: test //src/...  --config=msvc-cl --cxxopt="-std:c++20" --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel: test //src/... conformance:conformance_framework_tests --config=msvc-cl --cxxopt="-std:c++20"
           - name: Windows Bazel clang-cl
             os: windows-2022
             cache_key: windows-2022-clang-cl
-            bazel: test //src/...  --test_tag_filters=-conformance --build_tag_filters=-conformance
+            bazel: test //src/... conformance:conformance_framework_tests
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -504,7 +504,7 @@ jobs:
           - name: Windows CMake
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON
               -Dprotobuf_BUILD_SHARED_LIBS=OFF
               -Dprotobuf_BUILD_EXAMPLES=ON
             vsversion: '2022'
@@ -512,7 +512,7 @@ jobs:
           - name: Windows CMake 32-bit
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON
             vsversion: '2022'
             windows-arch: 'win32'
             cache-prefix: windows-2022-win32-cmake
@@ -520,7 +520,7 @@ jobs:
           - name: Windows CMake Shared
             os: windows-2022
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON
               -Dprotobuf_BUILD_SHARED_LIBS=ON
             vsversion: '2022'
             cache-prefix: windows-2022-cmake
@@ -529,7 +529,7 @@ jobs:
             install-flags: >-
               -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
             flags: >-
-              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=OFF
+              -G Ninja -Dprotobuf_WITH_ZLIB=OFF -Dprotobuf_BUILD_CONFORMANCE=ON
               -Dprotobuf_REMOVE_INSTALLED_HEADERS=ON
               -Dprotobuf_BUILD_PROTOBUF_BINARIES=OFF
             vsversion: '2022'
@@ -636,3 +636,23 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/abseil_head
           bazel: test //src/... --override_module=abseil-cpp=abseil-cpp-head
+
+  # Runs tests against unreleased Bazel HEAD (last_green) to catch regressions early.
+  linux-bazel-last-green:
+    name: ${{ inputs.continuous-prefix }} Linux Bazel last_green
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v6
+        with:
+          ref: ${{ inputs.safe-checkout }}
+      - name: Run tests
+        if: ${{ inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v6
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/bazel_last_green
+          bash: USE_BAZEL_VERSION=last_green bazelisk test //src/... //third_party/utf8_range/... --cxxopt=-Wno-self-assign-overloaded
+

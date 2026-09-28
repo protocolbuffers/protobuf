@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -47,10 +48,20 @@
 #include "google/protobuf/unittest_import_option.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
+#include "google/protobuf/unittest_no_package.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+// Define ::ExtendMessage, ::ExtendMessage_NestedMessage,
+// ::TestRepeatedMessage, and ::TestEnum in the global namespace to verify that
+// unittest_no_package.proto.h only generates symbols inside ::cpp::no_package
+// and does not emit them into the global namespace.
+struct ExtendMessage {};
+struct ExtendMessage_NestedMessage {};
+struct TestRepeatedMessage {};
+struct TestEnum {};
 
 namespace google {
 namespace protobuf {
@@ -2041,6 +2052,40 @@ TEST(CppNamespaceOption, NewNamespaceSymbolSameProtoName) {
 
   EXPECT_EQ(new_message.GetDescriptor()->file()->package(),
             "cpp.file.options.test");
+}
+
+TEST(CppNamespaceOption, EmptyPackageWithCcNamespace) {
+  cpp::no_package::ExtendMessage extend_message;
+  cpp::no_package::TestRepeatedMessage* repeated_message =
+      extend_message.add_repeated_msg();
+  extend_message.set_d(cpp::no_package::TEST_ENUM_VALUE);
+  extend_message.mutable_e()->set_a(10);
+  extend_message.SetExtension(cpp::no_package::ext_field, 42);
+
+  EXPECT_EQ(extend_message.GetTypeName(), "ExtendMessage");
+  EXPECT_EQ(extend_message.e().GetTypeName(), "ExtendMessage.NestedMessage");
+  EXPECT_EQ(repeated_message->GetTypeName(), "TestRepeatedMessage");
+  EXPECT_EQ(extend_message.d(), cpp::no_package::TEST_ENUM_VALUE);
+  EXPECT_EQ(extend_message.e().a(), 10);
+  EXPECT_EQ(extend_message.GetExtension(cpp::no_package::ext_field), 42);
+  EXPECT_THAT(extend_message.GetDescriptor()->file()->package(), IsEmpty());
+
+  EXPECT_TRUE(
+      (std::is_base_of_v<google::protobuf::Message, ::cpp::no_package::ExtendMessage>));
+  EXPECT_TRUE(
+      (std::is_base_of_v<google::protobuf::Message,
+                         ::cpp::no_package::ExtendMessage::NestedMessage>));
+  EXPECT_TRUE(
+      (std::is_base_of_v<google::protobuf::Message,
+                         ::cpp::no_package::ExtendMessage_NestedMessage>));
+  EXPECT_TRUE((std::is_base_of_v<google::protobuf::Message,
+                                 ::cpp::no_package::TestRepeatedMessage>));
+  EXPECT_TRUE((google::protobuf::is_proto_enum<::cpp::no_package::TestEnum>::value));
+  EXPECT_FALSE((std::is_base_of_v<google::protobuf::Message, ::ExtendMessage>));
+  EXPECT_FALSE(
+      (std::is_base_of_v<google::protobuf::Message, ::ExtendMessage_NestedMessage>));
+  EXPECT_FALSE((std::is_base_of_v<google::protobuf::Message, ::TestRepeatedMessage>));
+  EXPECT_FALSE((google::protobuf::is_proto_enum<::TestEnum>::value));
 }
 
 }  // namespace

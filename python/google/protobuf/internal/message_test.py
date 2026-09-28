@@ -78,6 +78,8 @@ class MessageTest(unittest.TestCase):
       msg2 = message_module.TestAllTypes()
       msg2.ParseFromString(serialized)
       msg3 = message_module.TestAllTypes()
+      _ = msg3.optional_nested_message
+      _ = msg3.optional_import_message
       msg3.MergeFrom(msg2)
       _ = msg3.optional_string
       _ = msg3.optional_bytes
@@ -871,6 +873,13 @@ class MessageTest(unittest.TestCase):
   def testInternalMergeWithMissingRequiredField(self, message_module):
     req = more_messages_pb2.RequiredField()
     more_messages_pb2.RequiredWrapper(request=req)
+
+  def testByteSizeWithMissingRequiredField(self, message_module):
+    del message_module  # Unused.
+    req = more_messages_pb2.RequiredField()
+    self.assertFalse(req.IsInitialized())
+    # Should not raise EncodeError
+    self.assertEqual(req.ByteSize(), 0)
 
   def testMergeFromMissingRequiredField(self, message_module):
     msg = more_messages_pb2.RequiredField()
@@ -3325,6 +3334,76 @@ class Proto3Test(unittest.TestCase):
     serialized = msg.SerializeToString()
     msg2.ParseFromString(serialized)
     self.assertEqual(msg, msg2)
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testDirectSubmessageMutationAfterSync(self):
+    msg = map_unittest_pb2.TestMapSubmessage()
+    submsg = msg.test_map.map_int32_foreign_message[1]
+    submsg.c = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+    submsg.c = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 6
+    )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testDeepSubmessageMutationAfterSync(self):
+    msg = map_unittest_pb2.TestMap()
+    submsg = msg.map_int32_all_types[1]
+    submsg.optional_nested_message.bb = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+    submsg.optional_nested_message.bb = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 6
+    )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testMultipleMapsInParentChainMutationAfterSync(self):
+    msg = more_messages_pb2.TestRecursiveMapMessage()
+    submsg = msg.map_field[1].map_field[2]
+    submsg.i = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 10
+    )
+
+    submsg.i = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+  def testDeleteMapItemAndMutateReleasedSubmessage(self):
+    msg = map_unittest_pb2.TestMap()
+    submsg = msg.map_int32_foreign_message[1]
+    submsg.c = 7
+    del msg.map_int32_foreign_message[1]
+    submsg.c = 5
 
   def testModifyMapWhileIterating(self):
     msg = map_unittest_pb2.TestMap()

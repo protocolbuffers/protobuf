@@ -16,7 +16,7 @@
 
 #include "absl/strings/string_view.h"
 #include "json/json.h"
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/util/type_resolver.h"
 
@@ -164,6 +164,7 @@ class BinaryAndJsonConformanceSuiteImpl {
                                       ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   void TestIllegalTags();
+  void TestIllegalLengths();
   void TestUnmatchedGroup();
   void TestUnknownWireType();
   void TestInvalidUtf8String();
@@ -176,6 +177,10 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestValidDataForRepeatedScalarMessage();
   void TestValidDataForMapType(google::protobuf::FieldDescriptor::Type,
                                google::protobuf::FieldDescriptor::Type);
+  void TestMapEntryWireTypeMismatch(google::protobuf::FieldDescriptor::Type,
+                                    google::protobuf::FieldDescriptor::Type);
+  void RunMapEntryWireTypeMismatchTest(const std::string& test_name,
+                                       const std::string& proto);
   void TestValidDataForOneofType(google::protobuf::FieldDescriptor::Type);
   void TestMergeOneofMessage();
   void TestOverwriteMessageValueMap();

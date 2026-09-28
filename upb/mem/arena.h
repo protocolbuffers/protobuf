@@ -32,8 +32,6 @@
 
 typedef struct upb_Arena upb_Arena;
 
-typedef void upb_AllocCleanupFunc(upb_alloc* alloc);
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -50,11 +48,6 @@ UPB_NODISCARD UPB_API upb_Arena* upb_Arena_Init(void* mem, size_t n,
                                                 upb_alloc* alloc);
 
 UPB_API void upb_Arena_Free(upb_Arena* a);
-// Sets the cleanup function for the upb_alloc used by the arena. Only one
-// cleanup function can be set, which will be called after all blocks are
-// freed.
-UPB_API void upb_Arena_SetAllocCleanup(upb_Arena* a,
-                                       upb_AllocCleanupFunc* func);
 
 // Fuses the lifetime of two arenas, such that no arenas that have been
 // transitively fused together will be freed until all of them have reached a
@@ -148,6 +141,26 @@ UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Malloc(struct upb_Arena* a,
 UPB_NODISCARD UPB_API_INLINE void* upb_Arena_Realloc(upb_Arena* a, void* ptr,
                                                      size_t oldsize,
                                                      size_t size);
+
+// Attempts to allocate memory from the arena's power-of-2 free pool.
+// Returns a recycled block of `size` bytes if available in the pool,
+// or NULL if the pool has no available block of that size.
+// `size` must be a power of 2 and >= UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize).
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_TryAllocPool(upb_Arena* a,
+                                                          size_t size);
+
+// Allocates memory of `size` bytes, attempting to reuse a recycled block from
+// the arena's power-of-2 free pool first, and falling back to arena allocation
+// if no pooled block is available.
+// `size` must be a power of 2 and >= UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize).
+UPB_NODISCARD UPB_API_INLINE void* upb_Arena_AllocPool(upb_Arena* a,
+                                                       size_t size);
+
+// Returns a block of memory to the arena's free pool.
+UPB_API_INLINE void upb_Arena_FreePool(upb_Arena* a, void* ptr, size_t size);
+
+static const size_t UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize) =
+    _UPB_ARENA_MIN_POOL_BLOCK_SIZE;
 
 static const size_t UPB_PRIVATE(kUpbDefaultMaxBlockSize) =
     UPB_DEFAULT_MAX_BLOCK_SIZE;

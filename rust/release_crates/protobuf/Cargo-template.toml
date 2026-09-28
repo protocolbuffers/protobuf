@@ -4,6 +4,9 @@ version = "{PROTOBUF_LEGACY_VERSION}"
 edition = "2021"  
 license = "BSD-3-Clause"
 description = "Protocol Buffers - Google's data interchange format"
+# Superseded by the google-protobuf crate, which this crate re-exports. No new
+# versions are published to crates.io.
+publish = false
 
 [dependencies]
 google_protobuf = { package = "google-protobuf", version = "{PROTOBUF_RUST_VERSION}", path = "../google_protobuf" }

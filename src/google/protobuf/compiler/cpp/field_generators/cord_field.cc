@@ -269,7 +269,7 @@ void CordFieldGenerator::GenerateMergingCode(io::Printer* p) const {
 void CordFieldGenerator::GenerateSwappingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    this_.$field_$.swap(other->$field_$);
+    $field_$.swap(other->$field_$);
   )cc");
 }
 

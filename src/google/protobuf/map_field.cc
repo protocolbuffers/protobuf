@@ -588,8 +588,10 @@ MapIteratorBase<kIsMutable>::MapIteratorBase(MapFieldBase* map,
   value_.SetType(descriptor->map_value()->cpp_type());
 }
 
-template class MapIteratorBase</*kIsMutable=*/false>;
-template class MapIteratorBase</*kIsMutable=*/true>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE
+    MapIteratorBase</*kIsMutable=*/false>;
+template class PROTOBUF_EXPORT_TEMPLATE_DEFINE
+    MapIteratorBase</*kIsMutable=*/true>;
 
 }  // namespace protobuf
 }  // namespace google

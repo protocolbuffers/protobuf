@@ -101,9 +101,8 @@ inline constexpr ListValue::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr ListValue::ListValue(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr ListValue::ListValue(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -125,9 +124,8 @@ constexpr auto ListValue::_Internal::GenerateClassData() {
       &ListValue::MergeImpl,
       Super_::GetNewImpl<ListValue>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &ListValue::Helpers_::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &ListValue::SharedDtor,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(ListValue, _impl_._cached_size_),
       &file_reflection_data[3],
@@ -221,9 +219,8 @@ inline constexpr Struct::Impl_::Impl_(
      {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Struct::Struct(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Struct::Struct(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -245,9 +242,8 @@ constexpr auto Struct::_Internal::GenerateClassData() {
       &Struct::MergeImpl,
       Super_::GetNewImpl<Struct>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Struct::Helpers_::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &Struct::SharedDtor,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Struct, _impl_._cached_size_),
       &file_reflection_data[1],
@@ -303,9 +299,6 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct_FieldsEntry_DoNotUse final
                           2>;
 
   class _Internal;
-  struct Helpers_ : public Super_::Helpers_ {
-    PROTOBUF_NODEBUG Helpers_();
-  };
 
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
 };
@@ -369,9 +362,8 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
 }
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -392,7 +384,7 @@ constexpr auto Struct_FieldsEntry_DoNotUse::_Internal::GenerateClassData() {
       &Struct_FieldsEntry_DoNotUse::MergeImpl,
       Super_::GetNewImpl<Struct_FieldsEntry_DoNotUse>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Struct_FieldsEntry_DoNotUse::Helpers_::SharedDtor,
+      &Struct_FieldsEntry_DoNotUse::SharedDtor,
       &Struct_FieldsEntry_DoNotUse::ClearImpl, Super_::ByteSizeLongImpl,
           Super_::_InternalSerializeImpl,
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -494,9 +486,8 @@ inline constexpr Value::Impl_::Impl_(
         _oneof_case_{} {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr Value::Value(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr Value::Value(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -518,9 +509,8 @@ constexpr auto Value::_Internal::GenerateClassData() {
       &Value::MergeImpl,
       Super_::GetNewImpl<Value>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &Value::Helpers_::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &Value::SharedDtor,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(Value, _impl_._cached_size_),
       &file_reflection_data[2],
@@ -645,10 +635,8 @@ PROTOBUF_CONSTINIT const uint32_t NullValue_internal_data_[] = {
 // ===================================================================
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_ALWAYS_INLINE_NODEBUG Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse()
-    : Super_(&Struct_FieldsEntry_DoNotUse_globals_.class_data) {}
-PROTOBUF_ALWAYS_INLINE_NODEBUG Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : Super_(&Struct_FieldsEntry_DoNotUse_globals_.class_data) {}
+Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
     : Super_(arena, &Struct_FieldsEntry_DoNotUse_globals_.class_data) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
 Struct_FieldsEntry_DoNotUse::Struct_FieldsEntry_DoNotUse() : Super_() {}
@@ -669,7 +657,7 @@ Struct::Struct(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Struct)
 }
 PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
@@ -711,16 +699,14 @@ PROTOBUF_NDEBUG_INLINE Struct::Impl_::Impl_(
          }
      {}
 
-inline void Struct::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Struct& this_ = static_cast<Struct&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void Struct::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 Struct::~Struct() {
   // @@protoc_insertion_point(destructor:google.protobuf.Struct)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Struct::Helpers_::SharedDtor(MessageLite& self) {
+inline void Struct::SharedDtor(MessageLite& self) {
   Struct& this_ = static_cast<Struct&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -738,7 +724,7 @@ Struct::GetClassData() const {
   return &Struct_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Struct::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Struct::Clear(MessageLite& base) {
   Struct& this_ = static_cast<Struct&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Struct::Clear() {
@@ -758,7 +744,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Struct::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Struct::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Struct& this_ = static_cast<const Struct&>(base);
@@ -815,7 +801,7 @@ PROTOBUF_NOINLINE void Struct::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Struct::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t Struct::ByteSizeLong(const MessageLite& base) {
   const Struct& this_ = static_cast<const Struct&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Struct::ByteSizeLong() const {
@@ -873,14 +859,11 @@ void Struct::CopyFrom(const Struct& from) {
 }
 
 
-void Struct::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Struct* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Struct::InternalSwap(Struct* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Struct& this_ = static_cast<Struct&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.fields_.InternalSwap(&other->_impl_.fields_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.fields_.InternalSwap(&other->_impl_.fields_);
 }
 
 ::google::protobuf::Metadata Struct::GetMetadata() const {
@@ -920,7 +903,7 @@ Value::Value(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Value)
 }
 PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
@@ -975,16 +958,14 @@ PROTOBUF_NDEBUG_INLINE Value::Impl_::Impl_(
       : kind_{},
         _oneof_case_{} {}
 
-inline void Value::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  Value& this_ = static_cast<Value&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void Value::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 Value::~Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Value)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void Value::Helpers_::SharedDtor(MessageLite& self) {
+inline void Value::SharedDtor(MessageLite& self) {
   Value& this_ = static_cast<Value&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1049,7 +1030,7 @@ Value::GetClassData() const {
   return &Value_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Value::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void Value::Clear(MessageLite& base) {
   Value& this_ = static_cast<Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void Value::Clear() {
@@ -1065,7 +1046,7 @@ PROTOBUF_NOINLINE void Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Value::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL Value::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Value& this_ = static_cast<const Value&>(base);
@@ -1133,7 +1114,7 @@ PROTOBUF_NOINLINE void Value::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t Value::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t Value::ByteSizeLong(const MessageLite& base) {
   const Value& this_ = static_cast<const Value&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t Value::ByteSizeLong() const {
@@ -1263,14 +1244,11 @@ void Value::CopyFrom(const Value& from) {
 }
 
 
-void Value::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void Value::InternalSwap(Value* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  Value& this_ = static_cast<Value&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_.kind_, other->_impl_.kind_);
-  swap(this_._impl_._oneof_case_[0], other->_impl_._oneof_case_[0]);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_.kind_, other->_impl_.kind_);
+  swap(_impl_._oneof_case_[0], other->_impl_._oneof_case_[0]);
 }
 
 ::google::protobuf::Metadata Value::GetMetadata() const {
@@ -1284,7 +1262,7 @@ ListValue::ListValue(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.ListValue)
 }
 PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
@@ -1326,16 +1304,14 @@ PROTOBUF_NDEBUG_INLINE ListValue::Impl_::Impl_(
          }
      {}
 
-inline void ListValue::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  ListValue& this_ = static_cast<ListValue&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void ListValue::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 ListValue::~ListValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.ListValue)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void ListValue::Helpers_::SharedDtor(MessageLite& self) {
+inline void ListValue::SharedDtor(MessageLite& self) {
   ListValue& this_ = static_cast<ListValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1353,7 +1329,7 @@ ListValue::GetClassData() const {
   return &ListValue_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void ListValue::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void ListValue::Clear(MessageLite& base) {
   ListValue& this_ = static_cast<ListValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void ListValue::Clear() {
@@ -1373,7 +1349,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL ListValue::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL ListValue::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ListValue& this_ = static_cast<const ListValue&>(base);
@@ -1413,7 +1389,7 @@ PROTOBUF_NOINLINE void ListValue::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t ListValue::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t ListValue::ByteSizeLong(const MessageLite& base) {
   const ListValue& this_ = static_cast<const ListValue&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t ListValue::ByteSizeLong() const {
@@ -1471,14 +1447,11 @@ void ListValue::CopyFrom(const ListValue& from) {
 }
 
 
-void ListValue::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    ListValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void ListValue::InternalSwap(ListValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  ListValue& this_ = static_cast<ListValue&>(self);
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  this_._impl_.values_.InternalSwap(&other->_impl_.values_);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  _impl_.values_.InternalSwap(&other->_impl_.values_);
 }
 
 ::google::protobuf::Metadata ListValue::GetMetadata() const {

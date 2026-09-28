@@ -4,6 +4,9 @@ version = "{PROTOBUF_LEGACY_VERSION}"
 edition = "2021"
 description = "Example use of Rust Protocol Buffers bindings"
 license = "BSD-3-Clause"
+# Superseded by the google-protobuf-example crate. No new versions are
+# published to crates.io.
+publish = false
 
 [dependencies]
 protobuf = { version = "{PROTOBUF_LEGACY_VERSION}", path = "../protobuf", package = "protobuf" }

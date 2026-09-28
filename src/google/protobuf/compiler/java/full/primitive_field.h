@@ -104,6 +104,7 @@ class ImmutablePrimitiveOneofFieldGenerator
   void GenerateBuilderGetMethod(io::Printer* printer) const;
   void GenerateBuilderSetMethod(io::Printer* printer) const;
   void GenerateBuilderClearMethod(io::Printer* printer) const;
+  void GenerateBuilderParseMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutablePrimitiveFieldGenerator

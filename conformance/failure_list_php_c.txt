@@ -1,15 +1,11 @@
-Recommended.*.JsonInput.FieldNameDuplicate                                                                         # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse or matched expected output but did not.
-Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse or matched expected output but did not.
-Recommended.Proto2.JsonInput.FieldNameExtension.Validator
-Required.*.JsonInput.Int32FieldQuotedExponentialValue.*                                                            # Failed to parse input or produce output.
-Required.Proto2.JsonInput.BoolFieldFalse.JsonOutput
-Required.Proto2.JsonInput.BoolFieldFalse.ProtobufOutput
-Required.Proto2.JsonInput.EnumField.JsonOutput
-Required.Proto2.JsonInput.EnumField.ProtobufOutput
-Required.Proto2.JsonInput.EnumFieldNumericValueZero.JsonOutput
-Required.Proto2.JsonInput.EnumFieldNumericValueZero.ProtobufOutput
-Required.Proto2.JsonInput.StoresDefaultPrimitive.Validator
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicate                                                           # Should have failed to parse or matched expected output but did not.
+Recommended.Proto3.JsonInput.FieldNameDuplicate                                                                    # Should have failed to parse or matched expected output but did not.
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                                           # Should have failed to parse or matched expected output but did not.
+Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing1                                                    # Should have failed to parse or matched expected output but did not.
+Recommended.Editions_Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                                           # Should have failed to parse or matched expected output but did not.
+Recommended.Proto3.JsonInput.FieldNameDuplicateDifferentCasing2                                                    # Should have failed to parse or matched expected output but did not.
+Required.Editions_Proto3.JsonInput.Int32FieldQuotedExponentialValue.*                                              # Failed to parse input or produce output.
+Required.Proto3.JsonInput.Int32FieldQuotedExponentialValue.*                                                       # Failed to parse input or produce output.
 Required.*.JsonInput.AnyWithNoType.*
 Required.*.JsonInput.TimestampJsonInputDayTooLarge                                                                 # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputDayZero                                                                     # Should have failed to parse, but didn't.
