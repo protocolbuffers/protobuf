@@ -23,8 +23,6 @@ struct upb_MiniTableExtension {
   // Do not move this field. We need to be able to alias pointers.
   struct upb_MiniTableField UPB_PRIVATE(field);
 
-  union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
-
   // A known extendee schema for a canonical extension. For a non-canonical
   // extension, it's typically converted from a canonical extension via the
   // upb_Message_Convert() API, but is not registered on the extension
@@ -57,7 +55,7 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Message) {
     return NULL;
   }
-  return upb_MiniTableSub_Message(e->UPB_PRIVATE(sub));
+  return upb_MiniTable_GetSubMessageTable(&e->UPB_PRIVATE(field));
 }
 
 UPB_API_INLINE const struct upb_MiniTableEnum*
@@ -65,7 +63,7 @@ upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Enum) {
     return NULL;
   }
-  return upb_MiniTableSub_Enum(e->UPB_PRIVATE(sub));
+  return upb_MiniTable_GetSubEnumTable(&e->UPB_PRIVATE(field));
 }
 
 UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
@@ -79,7 +77,12 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
   if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
     return false;
   }
-  e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+  UPB_ASSERT(e->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) != kUpb_NoSub);
+  upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+      &e->UPB_PRIVATE(field),
+      e->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+      upb_MiniTableSubInternal);
+  sub->UPB_PRIVATE(submsg) = m;
   return true;
 }
 
@@ -89,7 +92,12 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
       kUpb_FieldType_Enum) {
     return false;
   }
-  e->UPB_PRIVATE(sub).UPB_PRIVATE(subenum) = en;
+  UPB_ASSERT(e->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) != kUpb_NoSub);
+  upb_MiniTableSubInternal* sub = UPB_PTR_AT(
+      &e->UPB_PRIVATE(field),
+      e->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+      upb_MiniTableSubInternal);
+  sub->UPB_PRIVATE(subenum) = en;
   return true;
 }
 

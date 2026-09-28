@@ -8,7 +8,6 @@
 #include "upb/message/internal/extension.h"
 
 #include <stdint.h>
-#include <string.h>
 
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
@@ -56,10 +55,8 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
   }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  upb_Extension* ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
+  upb_Extension* ext = UPB_PRIVATE(_upb_Extension_New)(e, a);
   if (!ext) return NULL;
-  memset(ext, 0, sizeof(upb_Extension));
-  ext->UPB_ONLYBITS(ext) = e;
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext, tag);
   return ext;
 }

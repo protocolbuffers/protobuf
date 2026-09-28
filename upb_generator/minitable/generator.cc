@@ -292,19 +292,68 @@ void WriteEnum(upb::EnumDefPtr e, Output& output) {
   output("\n");
 }
 
+// Returns true if the extension has trailing sub storage (i.e. it is a
+// sub-message or closed enum). We derive this from the MiniTable so that it
+// always agrees with `submsg_ofs`.
+bool ExtensionHasSub(const DefPoolPair& pools, upb::FieldDefPtr ext) {
+  return pools.GetField64(ext)->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub;
+}
+
+// Returns the C type of the `<ext>_obj` variable.
+std::string ExtensionObjType(const DefPoolPair& pools, upb::FieldDefPtr ext) {
+  return ExtensionHasSub(pools, ext)
+             ? absl::StrCat(ExtensionVarName(ext), "_ext_struct")
+             : "upb_MiniTableExtension";
+}
+
+// Emits the struct typedef for an extension with trailing sub storage. This
+// must be emitted in every translation unit that declares `<ext>_obj`, so that
+// the declaration and definition types agree.
+void WriteExtensionObjTypedef(const DefPoolPair& pools, upb::FieldDefPtr ext,
+                              Output& output) {
+  if (!ExtensionHasSub(pools, ext)) return;
+  output(
+      "typedef struct {\n"
+      "  upb_MiniTableExtension ext;\n"
+      "  upb_MiniTableSubInternal sub;\n"
+      "} $0;\n\n",
+      ExtensionObjType(pools, ext));
+}
+
 void WriteExtension(const DefPoolPair& pools, upb::FieldDefPtr ext,
                     const MiniTableOptions& options, Output& output) {
+  bool has_sub = ExtensionHasSub(pools, ext);
+  std::string type = ExtensionObjType(pools, ext);
+  WriteExtensionObjTypedef(pools, ext, output);
+  if (has_sub) {
+    // Guard against `submsg_ofs` disagreeing with the actual struct layout on
+    // any platform.
+    output(
+        "UPB_STATIC_ASSERT(offsetof($0, sub) == $1,\n"
+        "                  \"extension sub offset mismatch\");\n",
+        type,
+        ArchDependentSize(pools.GetField32(ext)->UPB_PRIVATE(submsg_ofs) *
+                              kUpb_SubmsgOffsetBytes,
+                          pools.GetField64(ext)->UPB_PRIVATE(submsg_ofs) *
+                              kUpb_SubmsgOffsetBytes));
+  }
   if (!options.one_output_per_message) {
     output("static ");
   }
-  output("const upb_MiniTableExtension $0_obj = {\n  ", ExtensionVarName(ext));
-  output("$0,\n", FieldInitializer(pools, ext));
-  output("  $0,\n", GetSub(ext, true, options));
+  output("const $0 $1_obj = {\n", type, ExtensionVarName(ext));
+  if (has_sub) output("  {\n");
+  output("  $0,\n", FieldInitializer(pools, ext));
   output("  &$0,\n", MessageVarName(ext.containing_type()));
-  output("\n};\n");
+  if (has_sub) {
+    output("  },\n");
+    output("  $0,\n", GetSub(ext, true, options));
+  }
+  output("};\n");
   output("UPB_LINKARR_APPEND(upb_AllExts)\n");
-  output("const upb_MiniTableExtension* $0 = &$0_obj;\n  ",
-         ExtensionVarName(ext));
+  output(
+      "const upb_MiniTableExtension* $0 = "
+      "(const upb_MiniTableExtension*)&$0_obj;\n  ",
+      ExtensionVarName(ext));
 }
 
 void RegisterExtensions(Output& output, absl::string_view unique_name) {
@@ -443,7 +492,8 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
     for (const auto ext : extensions) {
       output("extern const upb_MiniTableExtension* $0;\n",
              ExtensionVarName(ext));
-      output("extern const upb_MiniTableExtension $0_obj;\n",
+      WriteExtensionObjTypedef(pools, ext, output);
+      output("extern const $0 $1_obj;\n", ExtensionObjType(pools, ext),
              ExtensionVarName(ext));
     }
   } else {
@@ -494,7 +544,8 @@ void WriteMiniTableSource(const DefPoolPair& pools, upb::FileDefPtr file,
         extensions_layout, extensions.size());
 
     for (auto ext : extensions) {
-      output("  &$0_obj,\n", ExtensionVarName(ext));
+      output("  (const upb_MiniTableExtension*)&$0_obj,\n",
+             ExtensionVarName(ext));
     }
 
     output(

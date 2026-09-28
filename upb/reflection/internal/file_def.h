@@ -24,6 +24,8 @@ extern "C" {
 
 const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
     const upb_FileDef* f, int i);
+void _upb_FileDef_SetExtensionMiniTable(upb_FileDef* f, int i,
+                                        const upb_MiniTableExtension* ext);
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
 bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f);
