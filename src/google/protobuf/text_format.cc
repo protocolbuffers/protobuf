@@ -1093,7 +1093,7 @@ class TextFormat::Parser::ParserImpl {
           }
         }
 
-        SET_FIELD(Enum, enum, enum_value);
+        SET_FIELD(EnumValue, enum()->number, enum_value->number());
         break;
       }
 
