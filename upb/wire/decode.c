@@ -356,9 +356,9 @@ UPB_PRESERVE_NONE
 #endif
 static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
                                               upb_Message* msg,
+                                              upb_Array** arrp,
                                               const upb_MiniTableField* field,
                                               wireval* val, int op) {
-  upb_Array** arrp = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
   upb_Array* arr = *arrp;
   void* mem;
 
@@ -466,10 +466,9 @@ upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
 UPB_PRESERVE_NONE
 #endif
 static const char* _upb_Decoder_DecodeToMap(upb_Decoder* d, const char* ptr,
-                                            upb_Message* msg,
+                                            upb_Message* msg, upb_Map** map_p,
                                             const upb_MiniTableField* field,
                                             wireval* val) {
-  upb_Map** map_p = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), upb_Map*);
   upb_Map* map = *map_p;
   upb_MapEntry ent;
   UPB_ASSERT(upb_MiniTableField_Type(field) == kUpb_FieldType_Message);
@@ -600,10 +599,11 @@ static void upb_Decoder_AddKnownMessageSetItem(
   if (UPB_UNLIKELY(!ext)) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
-  upb_Message** submsgp = (upb_Message**)&ext->data.msg_val;
-  upb_Message* submsg = _upb_Decoder_NewSubMessage2(
-      d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
-      &ext->ext->UPB_PRIVATE(field), submsgp);
+  upb_Message* submsg = upb_Extension_GetMutableMessage(ext);
+  submsg = _upb_Decoder_NewSubMessage2(
+      d, upb_MiniTableExtension_GetSubMessage(item_mt),
+      &item_mt->UPB_PRIVATE(field), &submsg);
+  upb_Extension_SetMessage(ext, submsg);
   // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
   if (d->depth <= 1) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
@@ -944,14 +944,68 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
       upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }
     d->original_msg = msg;
-    msg = &ext->data.UPB_PRIVATE(ext_msg_val);
+    switch (mode & kUpb_FieldMode_Mask) {
+      case kUpb_FieldMode_Array: {
+        upb_Array* arr = upb_Extension_GetMutableArray(ext);
+        if (!arr) {
+          // Link the array into the extension before decoding, so that the
+          // message stays valid if decoding throws partway through.
+          arr = _upb_Decoder_CreateArray(d, field);
+          upb_Extension_SetArray(ext, arr);
+        }
+        return _upb_Decoder_DecodeToArray(d, ptr, msg, &arr, field, val, op);
+      }
+      case kUpb_FieldMode_Map: {
+        upb_Map* map = upb_Extension_GetMutableMap(ext);
+        ptr = _upb_Decoder_DecodeToMap(d, ptr, msg, &map, field, val);
+        upb_Extension_SetMap(ext, map);
+        return ptr;
+      }
+      case kUpb_FieldMode_Scalar: {
+        if (op == kUpb_DecodeOp_SubMessage) {
+          upb_Message* submsg = upb_Extension_GetMutableMessage(ext);
+          if (!submsg) {
+            submsg = _upb_Decoder_NewSubMessage(d, field, &submsg);
+            upb_Extension_SetMessage(ext, submsg);
+          }
+          if (UPB_UNLIKELY(field->UPB_PRIVATE(descriptortype) ==
+                           kUpb_FieldType_Group)) {
+            return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
+          } else {
+            return _upb_Decoder_DecodeSubMessage(d, ptr, submsg, field,
+                                                 val->size);
+          }
+        } else if (op == kUpb_DecodeOp_String) {
+          upb_StringView str;
+          ptr = _upb_Decoder_ReadString2(d, ptr, val->size, &str,
+                                         /*validate_utf8=*/true);
+          upb_Extension_SetString(ext, str);
+          return ptr;
+        } else if (op == kUpb_DecodeOp_Bytes) {
+          upb_StringView str;
+          ptr = _upb_Decoder_ReadString2(d, ptr, val->size, &str,
+                                         /*validate_utf8=*/false);
+          upb_Extension_SetString(ext, str);
+          return ptr;
+        } else {
+          upb_Extension_SetField(ext, val);
+          return ptr;
+        }
+      }
+      default:
+        UPB_UNREACHABLE();
+    }
   }
 
   switch (mode & kUpb_FieldMode_Mask) {
-    case kUpb_FieldMode_Array:
-      return _upb_Decoder_DecodeToArray(d, ptr, msg, field, val, op);
-    case kUpb_FieldMode_Map:
-      return _upb_Decoder_DecodeToMap(d, ptr, msg, field, val);
+    case kUpb_FieldMode_Array: {
+      upb_Array** arrp = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
+      return _upb_Decoder_DecodeToArray(d, ptr, msg, arrp, field, val, op);
+    }
+    case kUpb_FieldMode_Map: {
+      upb_Map** map_p = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), upb_Map*);
+      return _upb_Decoder_DecodeToMap(d, ptr, msg, map_p, field, val);
+    }
     case kUpb_FieldMode_Scalar:
       return _upb_Decoder_DecodeToSubMessage(d, ptr, msg, field, val, op);
     default:
