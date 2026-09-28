@@ -260,7 +260,9 @@ TextFormat::ParseLocationRange TextFormat::ParseInfoTree::GetLocationRange(
 
 TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
     const FieldDescriptor* field, int index) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   return GetLocationRange(field, index).start;
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 absl::StatusOr<TextFormat::FieldLocation>
