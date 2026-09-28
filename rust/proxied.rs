@@ -303,6 +303,13 @@ impl<'msg, T: MutProtoObject> IntoMut<'msg> for &'msg mut T {
     }
 }
 
+#[cfg(any(not(bzl), upb_kernel))]
+#[doc(hidden)]
+pub enum ProxiedInArena<'a, T: ProtoObject> {
+    Owned(T),
+    Borrowed(View<'a, T>),
+}
+
 /// A value to `ProtoObject`-value conversion that consumes the input value.
 ///
 /// All setter functions accept types that implement `IntoProxied`. The purpose
@@ -315,6 +322,20 @@ impl<'msg, T: MutProtoObject> IntoMut<'msg> for &'msg mut T {
 pub trait IntoProxied<T: ProtoObject> {
     #[doc(hidden)]
     fn into_proxied(self, _private: Private) -> T;
+
+    /// Converts `self` into an owned `T` or a `View<'a, T>` allocated directly in `arena`.
+    #[cfg(any(not(bzl), upb_kernel))]
+    #[doc(hidden)]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        _arena: &'a crate::__internal::runtime::Arena,
+    ) -> ProxiedInArena<'a, T>
+    where
+        Self: Sized,
+    {
+        ProxiedInArena::Owned(self.into_proxied(private))
+    }
 }
 
 impl<T: ProtoObject> IntoProxied<T> for T {

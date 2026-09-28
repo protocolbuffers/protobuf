@@ -68,17 +68,15 @@ where
         mut repeated: Mut<Repeated<Self>>,
         val: impl IntoProxied<Self>,
     ) {
+        let arena = repeated.arena(Private);
         // SAFETY:
         // - `repeated.as_raw()` is a valid `upb_Array*`.
         // - `msg_ptr` is a valid `upb_Message*`.
         unsafe {
             upb_Array_Append(
                 repeated.as_raw(Private),
-                T::into_message_value_fuse_if_required(
-                    repeated.raw_arena(Private),
-                    val.into_proxied(Private),
-                ),
-                repeated.raw_arena(Private),
+                T::into_proxied_message_value_in_arena(arena, val),
+                arena.raw(),
             );
         };
     }
@@ -129,14 +127,12 @@ where
         index: usize,
         val: impl IntoProxied<Self>,
     ) {
+        let arena = repeated.arena(Private);
         unsafe {
             upb_Array_Set(
                 repeated.as_raw(Private),
                 index,
-                T::into_message_value_fuse_if_required(
-                    repeated.raw_arena(Private),
-                    val.into_proxied(Private),
-                ),
+                T::into_proxied_message_value_in_arena(arena, val),
             )
         }
     }
@@ -191,8 +187,8 @@ pub fn empty_array<T: Singular>() -> RepeatedView<'static, T> {
     static EMPTY_REPEATED_VIEW: OnceLock<Repeated<i32>> = OnceLock::new();
 
     // SAFETY:
-    // - Because the repeated is never mutated, the repeated type is unused and
-    //   therefore valid for `T`.
+    // - Because the repeated is never mutated, the repeated type is unused and therefore valid for
+    //   `T`.
     unsafe {
         RepeatedView::from_raw(
             Private,

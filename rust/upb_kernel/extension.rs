@@ -304,10 +304,9 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
         mut msg: impl AsMut<MutProxied = Extendee>,
         value: impl IntoProxied<ProtoString>,
     ) {
-        let s = value.into_proxied(Private);
-        let (view, arena) = s.into_inner(Private).into_raw_parts();
         let mut msg_mut = msg.as_mut();
-        msg_mut.get_arena(Private).fuse(&arena);
+        let parent_arena = msg_mut.get_arena(Private);
+        let view = value.into_proxied_in_arena(Private, parent_arena).into_view(parent_arena);
         unsafe {
             assert!(upb_Message_SetExtensionString(
                 msg_mut.get_ptr_mut(Private).raw(),
@@ -344,10 +343,9 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
         mut msg: impl AsMut<MutProxied = Extendee>,
         value: impl IntoProxied<ProtoBytes>,
     ) {
-        let s = value.into_proxied(Private);
-        let (view, arena) = s.into_inner(Private).into_raw_parts();
         let mut msg_mut = msg.as_mut();
-        msg_mut.get_arena(Private).fuse(&arena);
+        let parent_arena = msg_mut.get_arena(Private);
+        let view = value.into_proxied_in_arena(Private, parent_arena).into_view(parent_arena);
         unsafe {
             assert!(upb_Message_SetExtensionString(
                 msg_mut.get_ptr_mut(Private).raw(),

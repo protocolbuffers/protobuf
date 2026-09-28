@@ -82,47 +82,119 @@ impl IntoProxied<ProtoBytes> for &[u8] {
     fn into_proxied(self, _private: Private) -> ProtoBytes {
         ProtoBytes::from(self)
     }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        _private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        crate::proxied::ProxiedInArena::Borrowed(arena.copy_slice_in(self).unwrap())
+    }
 }
 
 impl<const N: usize> IntoProxied<ProtoBytes> for &[u8; N] {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        ProtoBytes::from(self.as_ref())
+    fn into_proxied(self, private: Private) -> ProtoBytes {
+        self.as_slice().into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        self.as_slice().into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoBytes> for Vec<u8> {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoBytes {
+        self.as_slice().into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        self.as_slice().into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoBytes> for &Vec<u8> {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        ProtoBytes::from(AsRef::<[u8]>::as_ref(self))
+    fn into_proxied(self, private: Private) -> ProtoBytes {
+        self.as_slice().into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        self.as_slice().into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoBytes> for Box<[u8]> {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoBytes {
+        AsRef::<[u8]>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        AsRef::<[u8]>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoBytes> for Cow<'_, [u8]> {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoBytes {
+        AsRef::<[u8]>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        AsRef::<[u8]>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoBytes> for Rc<[u8]> {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoBytes {
+        AsRef::<[u8]>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        AsRef::<[u8]>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoBytes> for Arc<[u8]> {
-    fn into_proxied(self, _private: Private) -> ProtoBytes {
-        ProtoBytes::from(AsRef::<[u8]>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoBytes {
+        AsRef::<[u8]>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoBytes> {
+        AsRef::<[u8]>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
@@ -179,7 +251,6 @@ impl From<std::str::Utf8Error> for Utf8Error {
 ///
 /// Doing so should be done with great caution however, as it can lead to difficult to debug
 /// issues and problems in downstream systems.
-///
 ///
 /// `ProtoString` represents a string type that is expected to contain valid
 /// UTF-8. However, `ProtoString` is not validated, so users must
@@ -279,8 +350,17 @@ impl SealedInternal for &str {}
 impl SealedInternal for &ProtoStr {}
 
 impl IntoProxied<ProtoString> for &str {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(self)
+    fn into_proxied(self, private: Private) -> ProtoString {
+        ProtoStr::from_str(self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        ProtoStr::from_str(self).into_proxied_in_arena(private, arena)
     }
 }
 
@@ -288,17 +368,46 @@ impl IntoProxied<ProtoString> for &ProtoStr {
     fn into_proxied(self, _private: Private) -> ProtoString {
         ProtoString::from_utf8_unchecked(self.as_bytes())
     }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        _private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        crate::proxied::ProxiedInArena::Borrowed(ProtoStr::from_utf8_unchecked(
+            arena.copy_slice_in(self.as_bytes()).unwrap(),
+        ))
+    }
 }
 
 impl IntoProxied<ProtoString> for String {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(self.as_str())
+    fn into_proxied(self, private: Private) -> ProtoString {
+        self.as_str().into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        self.as_str().into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoString> for &String {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from_utf8_unchecked(self.as_bytes())
+    fn into_proxied(self, private: Private) -> ProtoString {
+        self.as_str().into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        self.as_str().into_proxied_in_arena(private, arena)
     }
 }
 
@@ -306,35 +415,89 @@ impl IntoProxied<ProtoString> for OsString {
     fn into_proxied(self, private: Private) -> ProtoString {
         self.as_os_str().into_proxied(private)
     }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        self.as_os_str().into_proxied_in_arena(private, arena)
+    }
 }
 
 impl IntoProxied<ProtoString> for &OsStr {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from_utf8_unchecked(self.as_encoded_bytes())
+    fn into_proxied(self, private: Private) -> ProtoString {
+        ProtoStr::from_utf8_unchecked(self.as_encoded_bytes()).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        ProtoStr::from_utf8_unchecked(self.as_encoded_bytes()).into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoString> for Box<str> {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(AsRef::<str>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoString {
+        AsRef::<str>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        AsRef::<str>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoString> for Cow<'_, str> {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(AsRef::<str>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoString {
+        AsRef::<str>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        AsRef::<str>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoString> for Rc<str> {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(AsRef::<str>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoString {
+        AsRef::<str>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        AsRef::<str>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
 impl IntoProxied<ProtoString> for Arc<str> {
-    fn into_proxied(self, _private: Private) -> ProtoString {
-        ProtoString::from(AsRef::<str>::as_ref(&self))
+    fn into_proxied(self, private: Private) -> ProtoString {
+        AsRef::<str>::as_ref(&self).into_proxied(private)
+    }
+
+    #[cfg(any(not(bzl), upb_kernel))]
+    fn into_proxied_in_arena<'a>(
+        self,
+        private: Private,
+        arena: &'a crate::__internal::runtime::Arena,
+    ) -> crate::proxied::ProxiedInArena<'a, ProtoString> {
+        AsRef::<str>::as_ref(&self).into_proxied_in_arena(private, arena)
     }
 }
 
@@ -442,8 +605,7 @@ impl ProtoStr {
     /// poor, including that that you could end up storing malformed data which is not parsable.
     pub const fn from_utf8_unchecked(bytes: &[u8]) -> &Self {
         // SAFETY:
-        // - `ProtoStr` is `#[repr(transparent)]` over `[u8]`, so it has the same
-        //   layout.
+        // - `ProtoStr` is `#[repr(transparent)]` over `[u8]`, so it has the same layout.
         // - `ProtoStr` has the same pointer metadata and element size as `[u8]`.
         unsafe { &*(bytes as *const [u8] as *const Self) }
     }

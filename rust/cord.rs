@@ -67,6 +67,18 @@ macro_rules! impl_cord_types {
                   [< $t Cow>]::Borrowed(borrowed) => borrowed.into_proxied(Private),
                 }
               }
+
+              #[cfg(any(not(bzl), upb_kernel))]
+              fn into_proxied_in_arena<'a>(
+                  self,
+                  private: Private,
+                  arena: &'a crate::__internal::runtime::Arena,
+              ) -> crate::proxied::ProxiedInArena<'a, $t> {
+                match self {
+                  [< $t Cow>]::Owned(owned) => crate::proxied::ProxiedInArena::Owned(owned),
+                  [< $t Cow>]::Borrowed(borrowed) => borrowed.into_proxied_in_arena(private, arena),
+                }
+              }
           }
 
           impl<'a> Deref for [< $t Cow>]<'a> {
