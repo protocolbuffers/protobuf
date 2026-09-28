@@ -104,4 +104,57 @@ class GCTest < Test::Unit::TestCase
     GC.stress = old_gc
     puts "passed"
   end
+
+  # Regression test: the map key must be copied into the arena, not aliased.
+  #
+  # Convert_RubyToUpb returns a *temporary* String for a key that is a Symbol or
+  # is not already tagged UTF-8. Converting the value afterwards allocates, which
+  # can trigger GC and free that temporary before upb_Map_Set copies the key --
+  # leaving a silently corrupted key holding unrelated heap bytes.
+  def assert_map_keys_survive_gc(&builder)
+    old_gc = GC.stress
+    GC.stress = true
+    begin
+      100.times do
+        # Non-UTF-8 key and value: the key conversion allocates a temporary, and
+        # the value conversion allocates again, opening the window.
+        key = ("K" * 5000).dup.force_encoding("ISO-8859-1") +
+              "\xE9".dup.force_encoding("ISO-8859-1")
+        value = ("V" * 5000).dup.force_encoding("ISO-8859-1") +
+                "\xE9".dup.force_encoding("ISO-8859-1")
+        assert_equal [key.encode("UTF-8")], builder.call(key, value).keys
+      end
+    ensure
+      GC.stress = old_gc
+    end
+  end
+
+  def test_map_string_key_not_corrupted_by_gc
+    assert_map_keys_survive_gc do |key, value|
+      map = Google::Protobuf::Map.new(:string, :string)
+      map[key] = value
+      map
+    end
+  end
+
+  def test_map_symbol_key_not_corrupted_by_gc
+    old_gc = GC.stress
+    GC.stress = true
+    begin
+      100.times do
+        map = Google::Protobuf::Map.new(:string, :string)
+        map[:some_symbol_key] = :some_symbol_value
+        assert_equal ["some_symbol_key"], map.keys
+      end
+    ensure
+      GC.stress = old_gc
+    end
+  end
+
+  def test_map_field_kwarg_key_not_corrupted_by_gc
+    assert_map_keys_survive_gc do |key, value|
+      A::B::C::TestMessage.new(:map_string_string => { key => value })
+        .map_string_string
+    end
+  end
 end

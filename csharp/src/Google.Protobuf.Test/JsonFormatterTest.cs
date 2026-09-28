@@ -18,6 +18,7 @@ using static Google.Protobuf.JsonParserTest; // For WrapInQuotes
 using System.IO;
 using Google.Protobuf.Collections;
 using ProtobufUnittest;
+using JsonEnumvalCustomString;
 
 namespace Google.Protobuf
 {
@@ -955,6 +956,86 @@ namespace Google.Protobuf
         {
             var value = new ProtobufTestMessages.Proto2.TestAllTypesProto2() { FieldName13 = 0 };
             AssertWriteValue(value, "{ 'FieldName13': 0 }");
+        }
+
+        [Test]
+        // No custom value.
+        [TestCase(Armor.Gorget, "ARMOR_GORGET")]
+        // Simple custom value.
+        [TestCase(Armor.GreatHelm, "gr8 helm")]
+        // Escaping of quotes mid-value.
+        [TestCase(Armor.Gauntlet, "a\\\"b")]
+        // Escaping of quotes at start and end.
+        [TestCase(Armor.Plate, "\\\"plate\\\"")]
+        // Empty string.
+        [TestCase(Armor.Coif, "")]
+        // Escaping of tab and newline.
+        [TestCase(Armor.Pauldron, "p\\taul\\ndron")]
+        // Aliased enum values.
+        [TestCase(Armor.Sabaton, "sabaton")]
+        [TestCase(Armor.Solleret, "sabaton")]
+        // Numeric string custom value.
+        [TestCase(Armor.HachiMaiDo, "8")]
+        // Custom value same as enum name.
+        [TestCase(Armor.Greaves, "ARMOR_GREAVES")]
+        public void Serialize(Armor value, string expectedSerializedJsonValue)
+        {
+            var msg = new Knight { Armor = value };
+            var actualJson = JsonFormatter.Default.Format(msg);
+            var expectedJson =
+                $"{{ \"armor\": \"{expectedSerializedJsonValue}\" }}";
+            Assert.AreEqual(expectedJson, actualJson);
+        }
+
+        [Test]
+        public void SerializeUnknownValue()
+        {
+            var msg = new Knight { Armor = (Armor) 12345 };
+            var actualJson = JsonFormatter.Default.Format(msg);
+            var expectedJson = $"{{ \"armor\": 12345 }}";
+            Assert.AreEqual(expectedJson, actualJson);
+        }
+
+        [Test]
+        public void IntegerFormatSettingOverridesCustomString()
+        {
+            var msg = new Knight { Armor = Armor.GreatHelm };
+            var settings = JsonFormatter.Settings.Default
+                .WithFormatEnumsAsIntegers(true);
+            var formatter = new JsonFormatter(settings);
+
+            var json = formatter.Format(msg);
+            Assert.AreEqual("{ \"armor\": 1 }", json);
+        }
+
+        [Test]
+        public void SerializeRepeated()
+        {
+            var msg = new Knight
+            {
+                Armors = { Armor.GreatHelm, Armor.Gorget, Armor.Gauntlet }
+            };
+            var actualJson = JsonFormatter.Default.Format(msg);
+            var expectedJson =
+                "{ \"armors\": [ \"gr8 helm\", \"ARMOR_GORGET\", \"a\\\"b\" ] }";
+            Assert.AreEqual(expectedJson, actualJson);
+        }
+
+        [Test]
+        public void SerializeMap()
+        {
+            var msg = new Knight
+            {
+                ArmorMap =
+                {
+                    { "primary", Armor.GreatHelm },
+                    { "secondary", Armor.Gorget }
+                }
+            };
+            var actualJson = JsonFormatter.Default.Format(msg);
+            AssertJson(
+                "{ 'armorMap': { 'primary': 'gr8 helm', 'secondary': 'ARMOR_GORGET' } }",
+                actualJson);
         }
 
         private static void AssertWriteValue(object value, string expectedJson, JsonFormatter.Settings settings = null)

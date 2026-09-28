@@ -270,6 +270,9 @@ inline InlinedStringField::InlinedStringField([[maybe_unused]] Arena* arena,
                                               const InlinedStringField& rhs) {
   const std::string& src = *rhs.get_const();
   ::new (static_cast<void*>(&str_)) std::string(src);
+  if (arena != nullptr) {
+    MaybeRegisterForDestruction(arena, get_mutable());
+  }
 }
 
 inline const std::string& InlinedStringField::GetNoArena() const {
@@ -302,22 +305,27 @@ inline void InlinedStringField::SetNoArena(std::string&& value) {
 
 PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
     InlinedStringField* lhs, InlinedStringField* rhs, Arena* arena) {
-#ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
   const bool lhs_donated = lhs->IsDonated();
   const bool rhs_donated = rhs->IsDonated();
+#ifdef GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
   lhs->get_mutable()->swap(*rhs->get_mutable());
   if (arena != nullptr && lhs_donated != rhs_donated) {
     if (lhs_donated) lhs->RegisterForDestruction(arena, lhs->get_mutable());
     if (rhs_donated) rhs->RegisterForDestruction(arena, rhs->get_mutable());
   }
 #else
-  (void)arena;
   lhs->get_mutable()->swap(*rhs->get_mutable());
+  if (arena != nullptr && lhs_donated != rhs_donated) {
+    MaybeRegisterForDestruction(arena, lhs->get_mutable());
+    MaybeRegisterForDestruction(arena, rhs->get_mutable());
+  }
 #endif
 }
 
 inline void InlinedStringField::Set(absl::string_view value, Arena* arena) {
-  (void)arena;
+  if (arena != nullptr) {
+    MaybeRegisterForDestruction(arena, get_mutable());
+  }
   SetNoArena(value);
 }
 

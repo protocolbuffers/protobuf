@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "failure_list_trie_node.h"
+#include "conformance/failure_list_trie_node.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

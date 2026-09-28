@@ -55,6 +55,7 @@ class TestFilesMatch(unittest.TestCase):
 
 
 if len(sys.argv) > 1 and sys.argv[1] == "--fix":
-  staleness_test_lib.FixFiles(config)
+  print_diffs = "--print-diffs" in sys.argv
+  staleness_test_lib.FixFiles(config, print_diffs=print_diffs)
 else:
   unittest.main()

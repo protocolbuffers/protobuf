@@ -2,17 +2,19 @@ syntax = "proto3";
 
 package lower;
 
+// BEGIN RESERVED NAMES
+// @see php/update_reserved_words.sh - DO NOT MODIFY THIS LIST MANUALLY
 message abstract {}
 message and {}
 message array {}
 message as {}
+message bool {}
 message break {}
 message callable {}
 message case {}
 message catch {}
-message class {
-} message clone {
-}
+message class {}
+message clone {}
 message const {}
 message continue {}
 message declare {}
@@ -20,8 +22,7 @@ message default {}
 message die {}
 message do {}
 message echo {}
-message else {
-}
+message else {}
 message elseif {}
 message empty {}
 message enddeclare {}
@@ -33,8 +34,10 @@ message endwhile {}
 message eval {}
 message exit {}
 message extends {}
+message false {}
 message final {}
 message finally {}
+message float {}
 message fn {}
 message for {}
 message foreach {}
@@ -47,13 +50,18 @@ message include {}
 message include_once {}
 message instanceof {}
 message insteadof {}
-message interface {
-} message isset {
-}
+message int {}
+message interface {}
+message isset {}
+message iterable {}
 message list {}
 message match {}
+message mixed {}
 message namespace {}
+message never {}
 message new {}
+message null {}
+message object {}
 message or {}
 message parent {}
 message print {}
@@ -66,25 +74,17 @@ message require_once {}
 message return {}
 message self {}
 message static {}
+message string {}
 message switch {}
 message throw {}
 message trait {}
+message true {}
 message try {}
 message unset {}
 message use {}
 message var {}
+message void {}
 message while {}
 message xor {}
 message yield {}
-message int {}
-message float {}
-message bool {}
-message string {}
-message true {}
-message false {}
-message null {}
-message void {}
-message iterable {}
-message object {}
-message mixed {}
-message never {}
+// END RESERVED NAMES

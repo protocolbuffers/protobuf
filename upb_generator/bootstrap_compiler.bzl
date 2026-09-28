@@ -3,6 +3,10 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load(
+    "//upb/bazel:copts.bzl",
+    "UPB_DEFAULT_COPTS",
+)
+load(
     "//upb/bazel:upb_minitable_proto_library.bzl",
     "upb_minitable_proto_library",
 )
@@ -15,10 +19,18 @@ load(
     "staleness_test",
 )
 
+def _c_library_with_default_copts(**kwargs):
+    cc_kwargs = dict(kwargs)
+    cc_kwargs["copts"] = UPB_DEFAULT_COPTS + cc_kwargs.get("copts", [])
+    cc_library(**cc_kwargs)
+
 _stages = ["_stage0", "_stage1", ""]
 _protoc = "//src/google/protobuf/compiler/release:protoc_minimal"
 
-_extra_proto_path = "-I$$(dirname $(location //:descriptor_proto_srcs))/../.. "
+# Uses bash parameter expansion (${var%/*}) instead of the external `dirname`
+# binary, which may not be resolvable in a sandboxed action with no PATH.
+_extra_proto_path_setup = "descriptor_proto_dir=$(location //:descriptor_proto_srcs); "
+_extra_proto_path = "-I$${descriptor_proto_dir%/*}/../.. "
 
 # This visibility is used automatically for anything used by the bootstrapping process.
 _bootstrap_visibility = [
@@ -105,27 +117,31 @@ def _generated_hdrs_and_srcs(protos, stage, generator):
         ret += _generated_files(protos, stage, generator, "c")
     return ret
 
-def _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix):
+def _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix, third_party_dir = "3rd_party"):
     native.genrule(
         name = name + "_generate_bootstrap",
         srcs = src_rules,
-        outs = ["bootstrap_generated_sources/" + f.replace("third_party", "3rd_party") for f in _generated_hdrs_and_srcs(src_files, "stage0", "upb")],
+        outs = ["bootstrap_generated_sources/" + f.replace("third_party", third_party_dir) for f in _generated_hdrs_and_srcs(src_files, "stage0", "upb")],
         tools = [_protoc, _upbc("upb", 0)],
         cmd =
+            _extra_proto_path_setup +
             "$(location " + _protoc + ") " +
             "-I. -I$(GENDIR)/" + strip_prefix + " " + _extra_proto_path +
             "--plugin=protoc-gen-upb=$(location " + _upbc("upb", 0) + ") " +
             "--upb_out=bootstrap_stage=0:$(@D)/bootstrap_generated_sources/stage0 " +
             " ".join(src_files) +
-            "; rm -rf $(@D)/bootstrap_generated_sources/stage0/3rd_party" +
-            "; if [ -e $(@D)/bootstrap_generated_sources/stage0/third_party ]; then mv $(@D)/bootstrap_generated_sources/stage0/third_party $(@D)/bootstrap_generated_sources/stage0/3rd_party; fi",
+            "; rm -rf $(@D)/bootstrap_generated_sources/stage0/" + third_party_dir +
+            "; if [ -e $(@D)/bootstrap_generated_sources/stage0/third_party ]; then mv $(@D)/bootstrap_generated_sources/stage0/third_party $(@D)/bootstrap_generated_sources/stage0/" + third_party_dir + "; fi",
     )
 
     staleness_test(
         name = name + "_stage0_staleness_test",
-        outs = [f.replace("third_party", "3rd_party") for f in _generated_hdrs_and_srcs(src_files, "stage0", "upb")],
+        outs = [f.replace("third_party", third_party_dir) for f in _generated_hdrs_and_srcs(src_files, "stage0", "upb")],
         generated_pattern = "bootstrap_generated_sources/%s",
-        target_files = native.glob(["stage0/**"]),
+        target_files = [
+            f.replace("third_party", third_party_dir)
+            for f in _generated_hdrs_and_srcs(src_files, "stage0", "upb")
+        ],
         # To avoid skew problems for descriptor.proto/plugin.proto between
         # GitHub repos.  It's not critical that the checked-in protos are up to
         # date for every change, they just needs to be complete enough to have
@@ -138,7 +154,8 @@ def _generate_stage1_proto(name, src_files, src_rules, generator, kwargs):
         name = "gen_{}_{}_stage1".format(name, generator),
         srcs = src_rules,
         outs = _generated_hdrs_and_srcs(src_files, "stage1", generator),
-        cmd = "$(location " + _protoc + ") " +
+        cmd = _extra_proto_path_setup +
+              "$(location " + _protoc + ") " +
               "--plugin=protoc-gen-" + generator +
               "=$(location " + _upbc(generator, 0) + ") " + _extra_proto_path +
               "--" + generator + "_out=bootstrap_stage=1:$(RULEDIR)/stage1 " +
@@ -194,6 +211,7 @@ def bootstrap_upb_proto_library(
         proto_lib_deps,
         deps = [],
         strip_prefix = "",
+        third_party_dir = "3rd_party",
         **kwargs):
     """A version of upb_proto_library() that is augmented to allow for bootstrapping the compiler.
 
@@ -211,13 +229,15 @@ def bootstrap_upb_proto_library(
           not bootstrapping.
         deps: other bootstrap_upb_proto_library() rules that this one depends on.
         strip_prefix: Prefix that should be stripped from file names.
+        third_party_dir: Subdirectory name to use instead of "third_party" for stage0 checked-in
+          files to comply with repository structure rules.
         **kwargs: Other arguments that will be passed through to cc_library(), genrule(), and
           upb_proto_library().
     """
-    _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix)
+    _stage0_proto_staleness_test(name, src_files, src_rules, strip_prefix, third_party_dir)
 
     # stage0 uses checked-in protos, and has no MiniTable.
-    cc_library(
+    _c_library_with_default_copts(
         name = name + "_stage0",
         srcs = _generated_hdrs_and_srcs(src_files, "stage0", "upb"),
         hdrs = [bootstrap_hdr],
@@ -233,7 +253,7 @@ def bootstrap_upb_proto_library(
     # Generate stage1 protos (C API and MiniTables) using stage0 compiler.
     _generate_stage1_proto(name, src_files, src_rules, "upb", kwargs)
     _generate_stage1_proto(name, src_files, src_rules, "upb_minitable", kwargs)
-    cc_library(
+    _c_library_with_default_copts(
         name = name + "_minitable_stage1",
         srcs = _generated_files(src_files, "stage1", "upb_minitable", "c"),
         hdrs = _generated_files(src_files, "stage1", "upb_minitable", "h"),
@@ -244,7 +264,7 @@ def bootstrap_upb_proto_library(
         ] + [dep + "_minitable_stage1" for dep in deps],
         **kwargs
     )
-    cc_library(
+    _c_library_with_default_copts(
         name = name + "_stage1",
         srcs = _generated_files(src_files, "stage1", "upb", "h"),
         hdrs = [bootstrap_hdr],
@@ -263,7 +283,7 @@ def bootstrap_upb_proto_library(
         deps = proto_lib_deps,
         **kwargs
     )
-    cc_library(
+    _c_library_with_default_copts(
         name = name,
         hdrs = [bootstrap_hdr],
         deps = [name + "_upb_proto"],

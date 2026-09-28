@@ -1,4 +1,4 @@
-#include "testee.h"
+#include "conformance/testee.h"
 
 #include <string>
 
@@ -6,8 +6,8 @@
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
-#include "binary_wireformat.h"
-#include "test_runner.h"
+#include "conformance/binary_wireformat.h"
+#include "conformance/test_runner.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_textproto.h"
@@ -119,7 +119,7 @@ TEST(TesteeTest, TextPrintUnknownFields) {
   TestResult result =
       testee.CreateTest("foo", TestStrictness::kRequired)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
-          .SerializeText({.print_unknown_fields = true});
+          .SerializeText({/*print_unknown_fields=*/true});
 
   EXPECT_EQ(result.name(),
             "Required.Proto2.ProtobufInput.foo.TextFormatOutput");
@@ -169,7 +169,7 @@ TEST(TesteeTest, JsonIgnoreUnknownParsing) {
 
   TestResult result = testee.CreateTest("foo", TestStrictness::kRequired)
                           .ParseJson(TestAllTypesProto2::descriptor(), "json",
-                                     {.ignore_unknown_fields = true})
+                                     {/*ignore_unknown_fields=*/true})
                           .SerializeBinary();
 
   EXPECT_EQ(result.name(), "Required.Proto2.JsonInput.foo.ProtobufOutput");

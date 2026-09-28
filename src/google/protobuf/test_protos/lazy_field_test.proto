@@ -7,6 +7,10 @@ package protobuf_lazy_test;
 
 message LazyTestAllExtensions {
   extensions 1 to max;
+
+  extend LazyTestAllExtensions {
+    optional int32 int_200 = 200;
+  }
 }
 
 message TestUnverifiedLazyWithExtensions {
@@ -27,4 +31,12 @@ message TestNestedLazyNested {
 
 message TestNestedLazy {
   optional TestNestedLazyNested nested = 1 [lazy = true];
+}
+
+message TestNestedEagerNested {
+  optional LazyTestAllExtensions submessage = 1;
+}
+
+message TestNestedEager {
+  optional TestNestedEagerNested nested = 1;
 }

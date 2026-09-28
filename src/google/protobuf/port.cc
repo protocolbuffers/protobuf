@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/int128.h"
 #include "absl/strings/numbers.h"
@@ -62,8 +63,7 @@ static auto& CounterMap() {
       std::map<std::variant<int64_t, absl::string_view>,
                std::array<std::atomic<size_t>, RealDebugCounter::kNumBuckets>>>;
   static auto* counter_map = new Map{};
-  static bool dummy = std::atexit(PrintAllCounters);
-  (void)dummy;
+  static auto print [[maybe_unused]] = absl::Cleanup(PrintAllCounters);
   return *counter_map;
 }
 

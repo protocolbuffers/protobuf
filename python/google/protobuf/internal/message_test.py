@@ -78,9 +78,29 @@ class MessageTest(unittest.TestCase):
       msg2 = message_module.TestAllTypes()
       msg2.ParseFromString(serialized)
       msg3 = message_module.TestAllTypes()
+      _ = msg3.optional_nested_message
+      _ = msg3.optional_import_message
       msg3.MergeFrom(msg2)
       _ = msg3.optional_string
       _ = msg3.optional_bytes
+      _ = msg3.ByteSize()
+      _ = msg3.SerializePartialToString()
+      _ = msg3.ListFields()
+      _ = msg3.DiscardUnknownFields()
+      _ = msg3.FindInitializationErrors()
+
+      msg4 = message_module.TestAllTypes()
+      msg4.CopyFrom(msg3)
+
+      # Try deepcopy
+      _ = copy.deepcopy(msg3)
+
+      # Try other upb message APIs
+      _ = msg3.ByteSize()
+      _ = msg3.SerializePartialToString()
+      _ = msg3.ListFields()
+      _ = msg3.FindInitializationErrors()
+      _ = msg3.DiscardUnknownFields()
 
       if hasattr(message_module, 'TestAllExtensions'):
         ext_msg = message_module.TestAllExtensions()
@@ -95,6 +115,9 @@ class MessageTest(unittest.TestCase):
         _ = ext_msg3.Extensions[
             unittest_pb2.optional_nested_message_extension
         ].bb
+
+        ext_msg4 = message_module.TestAllExtensions()
+        ext_msg4.CopyFrom(ext_msg3)
 
         # MessageSet extensions coverage
         mset_msg = message_set_extensions_pb2.TestMessageSet()
@@ -113,6 +136,9 @@ class MessageTest(unittest.TestCase):
         mset_msg3.MergeFrom(mset_msg2)
         _ = mset_msg3.Extensions[ext1].i
         _ = mset_msg3.Extensions[ext2].str
+
+        mset_msg4 = message_set_extensions_pb2.TestMessageSet()
+        mset_msg4.CopyFrom(mset_msg3)
 
         # Unknown fields in MessageSet representation
         mset_unknown = message_set_extensions_pb2.TestMessageSet()
@@ -848,6 +874,13 @@ class MessageTest(unittest.TestCase):
     req = more_messages_pb2.RequiredField()
     more_messages_pb2.RequiredWrapper(request=req)
 
+  def testByteSizeWithMissingRequiredField(self, message_module):
+    del message_module  # Unused.
+    req = more_messages_pb2.RequiredField()
+    self.assertFalse(req.IsInitialized())
+    # Should not raise EncodeError
+    self.assertEqual(req.ByteSize(), 0)
+
   def testMergeFromMissingRequiredField(self, message_module):
     msg = more_messages_pb2.RequiredField()
     message = more_messages_pb2.RequiredField()
@@ -1075,6 +1108,52 @@ class MessageTest(unittest.TestCase):
     message.repeated_nested_message.sort(key=get_bb, reverse=True)
     self.assertEqual(
         [k.bb for k in message.repeated_nested_message], [6, 5, 4, 3, 2, 1]
+    )
+
+  def testRepeatedCompositeSubscriptMutation(self, message_module):
+    """Check that accessing repeated composite items via subscript and mutating works."""
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=1)
+    msg.repeated_nested_message.add(bb=2)
+    serialized = msg.SerializeToString()
+
+    msg2 = message_module.TestAllTypes()
+    msg2.ParseFromString(serialized)
+    item0 = msg2.repeated_nested_message[0]
+    item1 = msg2.repeated_nested_message[1]
+    # item0 and item1 start as default/lazy submessages.
+    # Mutating them promotes them in-place.
+    item0.bb = 10
+    item1.bb = 20
+    self.assertEqual(msg2.repeated_nested_message[0].bb, 10)
+    self.assertEqual(msg2.repeated_nested_message[1].bb, 20)
+    self.assertEqual(item0.bb, 10)
+    self.assertEqual(item1.bb, 20)
+
+  def testSortingRepeatedCompositeFieldsWithSubscriptReferences(
+      self, message_module
+  ):
+    """Check sorting repeated composite fields after retrieving elements via subscript."""
+    msg = message_module.TestAllTypes()
+    msg.repeated_nested_message.add(bb=30)
+    msg.repeated_nested_message.add(bb=10)
+    msg.repeated_nested_message.add(bb=20)
+    serialized = msg.SerializeToString()
+
+    msg2 = message_module.TestAllTypes()
+    msg2.ParseFromString(serialized)
+    ref0 = msg2.repeated_nested_message[0]
+    ref1 = msg2.repeated_nested_message[1]
+    ref2 = msg2.repeated_nested_message[2]
+
+    msg2.repeated_nested_message.sort(key=operator.attrgetter('bb'))
+    self.assertEqual([k.bb for k in msg2.repeated_nested_message], [10, 20, 30])
+
+    ref0.bb = 300
+    ref1.bb = 100
+    ref2.bb = 200
+    self.assertEqual(
+        [k.bb for k in msg2.repeated_nested_message], [100, 200, 300]
     )
 
   def testRepeatedScalarFieldSortArguments(self, message_module):
@@ -1458,6 +1537,26 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(m.foo_message.moo_int, 0)
     m.foo_message.CopyFrom(reference)
     self.assertEqual(m.foo_message.moo_int, 123)
+
+  def testLazyFieldRepeatedChildMutation(self, message_module):
+    orig = message_module.NestedTestAllTypes()
+    child = orig.lazy_child if hasattr(orig, 'lazy_child') else orig.child
+    child.payload.repeated_nested_message.add().bb = 123
+    serialized = orig.SerializeToString()
+
+    parsed = message_module.NestedTestAllTypes.FromString(serialized)
+    child = parsed.lazy_child if hasattr(parsed, 'lazy_child') else parsed.child
+    item = child.payload.repeated_nested_message[0]
+    item.bb = 456
+
+    reserialized = parsed.SerializeToString()
+    reparsed = message_module.NestedTestAllTypes.FromString(reserialized)
+    reparsed_child = (
+        reparsed.lazy_child
+        if hasattr(reparsed, 'lazy_child')
+        else reparsed.child
+    )
+    self.assertEqual(reparsed_child.payload.repeated_nested_message[0].bb, 456)
 
   def testNestedOneofRleaseMergeFrom(self, message_module):
     m = message_module.NestedTestAllTypes()
@@ -2972,6 +3071,24 @@ class Proto3Test(unittest.TestCase):
         ('{-456: , 123: c: 1\n}', '{123: c: 1\n, -456: }'),
     )
 
+  def testMessageMapMutationAfterReprAndIteration(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[123].c = 1
+    msg.map_int32_foreign_message[456].c = 2
+
+    # Formatting/repr exercises const iteration over map elements.
+    _ = str(msg.map_int32_foreign_message)
+    _ = repr(msg.map_int32_foreign_message)
+    _ = str(msg)
+
+    # Mutating existing and new entries after repr/str must succeed.
+    msg.map_int32_foreign_message[123].c = 10
+    msg.map_int32_foreign_message[456].c = 20
+    msg.map_int32_foreign_message[789].c = 30
+    self.assertEqual(msg.map_int32_foreign_message[123].c, 10)
+    self.assertEqual(msg.map_int32_foreign_message[456].c, 20)
+    self.assertEqual(msg.map_int32_foreign_message[789].c, 30)
+
   def testNestedMessageMapItemDelete(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_all_types[1].optional_nested_message.bb = 1
@@ -3217,6 +3334,76 @@ class Proto3Test(unittest.TestCase):
     serialized = msg.SerializeToString()
     msg2.ParseFromString(serialized)
     self.assertEqual(msg, msg2)
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testDirectSubmessageMutationAfterSync(self):
+    msg = map_unittest_pb2.TestMapSubmessage()
+    submsg = msg.test_map.map_int32_foreign_message[1]
+    submsg.c = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+    submsg.c = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 6
+    )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testDeepSubmessageMutationAfterSync(self):
+    msg = map_unittest_pb2.TestMap()
+    submsg = msg.map_int32_all_types[1]
+    submsg.optional_nested_message.bb = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+    submsg.optional_nested_message.bb = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 6
+    )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testMultipleMapsInParentChainMutationAfterSync(self):
+    msg = more_messages_pb2.TestRecursiveMapMessage()
+    submsg = msg.map_field[1].map_field[2]
+    submsg.i = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 10
+    )
+
+    submsg.i = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+  def testDeleteMapItemAndMutateReleasedSubmessage(self):
+    msg = map_unittest_pb2.TestMap()
+    submsg = msg.map_int32_foreign_message[1]
+    submsg.c = 7
+    del msg.map_int32_foreign_message[1]
+    submsg.c = 5
 
   def testModifyMapWhileIterating(self):
     msg = map_unittest_pb2.TestMap()

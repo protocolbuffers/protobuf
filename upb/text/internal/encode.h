@@ -16,6 +16,7 @@
 #include "upb/message/array.h"
 #include "upb/message/internal/map_sorter.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/internal/message.h"
 #include "upb/port/vsnprintf_compat.h"
 #include "upb/text/options.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -234,6 +235,9 @@ const char* UPB_PRIVATE(_upb_TextEncode_Unknown)(txtenc* e, const char* ptr,
 
 void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
                                                const upb_Message* msg);
+
+void UPB_PRIVATE(_upb_MessageDebugString)(txtenc* e, const upb_Message* msg,
+                                          const struct upb_MiniTable* mt);
 
 // Must not be called for ctype = kUpb_CType_Enum, as they require different
 // handling depending on whether or not we're doing reflection-based encoding.

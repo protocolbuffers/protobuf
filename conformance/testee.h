@@ -6,9 +6,9 @@
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
-#include "binary_wireformat.h"
+#include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
-#include "test_runner.h"
+#include "conformance/test_runner.h"
 #include "google/protobuf/descriptor.h"
 
 // This file defines the APIs used by conformance tests to interact with
@@ -24,7 +24,7 @@
 //
 // EXPECT_THAT(RequiredTest()
 //                .ParseBinary(Wire(LengthPrefixedField(1, "foo"))
-//                .SerializeText({.print_unknown_fields = true}),
+//                .SerializeText({/*print_unknown_fields=*/true}),
 //             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
 
 // TODO Possible future APIs to expand conformance coverage:

@@ -144,15 +144,51 @@ def _CopyFiles(file_pairs):
     copyfile(pair.generated, pair.target)
 
 
-def FixFiles(config):
+def _GetDiffErrors(missing_files, stale_files, is_fixing=False):
+  """Generates error messages/diffs for missing and stale files."""
+  diff_errors = []
+  for pair in missing_files:
+    with open(pair.generated) as g:
+      diff = "".join(
+          difflib.unified_diff(
+              [],
+              g.read().splitlines(keepends=True),
+          )
+      )
+    if is_fixing:
+      diff_errors.append("Creating missing file %s:\n%s" % (pair.target, diff))
+    else:
+      diff_errors.append("File %s does not exist:\n%s" % (pair.target, diff))
+
+  for pair in stale_files:
+    with open(pair.generated) as g, open(pair.target) as t:
+      diff = "".join(
+          difflib.unified_diff(
+              g.read().splitlines(keepends=True),
+              t.read().splitlines(keepends=True),
+          )
+      )
+      if is_fixing:
+        diff_errors.append("Updating stale file %s:\n%s" % (pair.target, diff))
+      else:
+        diff_errors.append("File %s is out of date:\n%s" % (pair.target, diff))
+  return diff_errors
+
+
+def FixFiles(config, print_diffs=False):
   """Implements the --fix option: overwrites missing or out-of-date files.
 
   Args:
     config: the Config object for this test.
+    print_diffs: whether to print diffs before fixing.
   """
 
   file_pairs = _GetFilePairs(config)
   missing_files, stale_files = _GetMissingAndStaleFiles(file_pairs)
+
+  if print_diffs:
+    for error in _GetDiffErrors(missing_files, stale_files, is_fixing=True):
+      print(error)
 
   _CopyFiles(stale_files + missing_files)
 
@@ -167,20 +203,9 @@ def CheckFilesMatch(config):
     None if everything matches, otherwise a string error message.
   """
 
-  diff_errors = []
-
   file_pairs = _GetFilePairs(config)
   missing_files, stale_files = _GetMissingAndStaleFiles(file_pairs)
-
-  for pair in missing_files:
-    diff_errors.append("File %s does not exist" % pair.target)
-    continue
-
-  for pair in stale_files:
-    with open(pair.generated) as g, open(pair.target) as t:
-        diff = ''.join(difflib.unified_diff(g.read().splitlines(keepends=True),
-                                            t.read().splitlines(keepends=True)))
-        diff_errors.append("File %s is out of date:\n%s" % (pair.target, diff))
+  diff_errors = _GetDiffErrors(missing_files, stale_files, is_fixing=False)
 
   if diff_errors:
     error_msg = "Files out of date!\n\n"

@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "absl/log/check.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
 #include "hpb/status.h"
@@ -20,6 +21,7 @@
 #include "upb/message/copy.h"
 #include "upb/message/message.h"
 #include "upb/message/promote.h"
+#include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/encode.h"
@@ -58,7 +60,7 @@ bool HasExtensionOrUnknown(const upb_Message* msg,
   if (upb_Message_HasExtension(msg, eid)) return true;
 
   const uint32_t number = upb_MiniTableExtension_Number(eid);
-  return upb_Message_FindUnknown(msg, number, 0).status == kUpb_FindUnknown_Ok;
+  return upb_Message_FindUnknown2(msg, number, 0).status == kUpb_FindUnknown_Ok;
 }
 
 bool GetOrPromoteExtension(const upb_Message* msg,
@@ -89,7 +91,9 @@ absl::StatusOr<absl::string_view> Serialize(const upb_Message* message,
 void DeepCopy(upb_Message* target, const upb_Message* source,
               const upb_MiniTable* mini_table, upb_Arena* arena) {
   MessageLock msg_lock(source);
-  upb_Message_DeepCopy(target, source, mini_table, arena);
+  // TODO: Change to absl::ThrowStdBadAlloc once our min absl version is above
+  // 202603
+  ABSL_CHECK(upb_Message_DeepCopy(target, source, mini_table, arena));
 }
 
 upb_Message* DeepClone(const upb_Message* source,

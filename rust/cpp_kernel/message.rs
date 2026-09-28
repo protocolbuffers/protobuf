@@ -21,6 +21,13 @@ unsafe extern "C" {
     /// - `raw1` and `raw2` legally dereferenceable MessageLite* pointers.
     #[link_name = "proto2_rust_messagelite_equals"]
     pub fn raw_message_equals(raw1: RawMessage, raw2: RawMessage) -> bool;
+
+    /// From compare.h
+    ///
+    /// # Safety
+    /// - `actual` and `expected` legally dereferenceable MessageLite* pointers.
+    #[link_name = "proto2_rust_messagelite_partially_equals"]
+    pub fn raw_message_partially_equals(actual: RawMessage, expected: RawMessage) -> bool;
 }
 
 #[derive(Debug)]
@@ -248,6 +255,24 @@ where
     }
 }
 
+/// Message equality definition for checking partial equality of two messages. Fields that are not
+/// set in the expected message are ignored when comparing against the actual message.
+///
+/// This should only be used for testing purposes.
+pub fn message_partially_eq<T>(actual: &T, expected: &T) -> bool
+where
+    T: AsView + Debug,
+    for<'a> View<'a, <T as AsView>::Proxied>: CppGetRawMessage,
+{
+    // Safety: we provide valid pointers and the C++ code does not retain them.
+    unsafe {
+        raw_message_partially_equals(
+            actual.as_view().get_raw_message(Private),
+            expected.as_view().get_raw_message(Private),
+        )
+    }
+}
+
 impl<T> MatcherEq for T
 where
     Self: AsView + Debug,
@@ -255,6 +280,10 @@ where
 {
     fn matches(&self, o: &Self) -> bool {
         message_eq(self, o)
+    }
+
+    fn matches_partially(&self, expected: &Self) -> bool {
+        message_partially_eq(self, expected)
     }
 }
 

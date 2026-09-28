@@ -158,6 +158,20 @@ rb_test(
 )
 
 rb_test(
+    name = "oom_test",
+    srcs = ["oom_test.rb"],
+    args = [
+        "-Iruby/lib:ruby:ruby/tests",
+        "ruby/tests/oom_test.rb",
+    ],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle",
+    ],
+)
+
+rb_test(
     name = "stress",
     srcs = ["stress.rb"],
     args = [

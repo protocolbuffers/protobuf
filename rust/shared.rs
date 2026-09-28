@@ -18,6 +18,8 @@ use std::fmt;
 pub use crate::__internal::runtime::message_eq;
 
 pub use crate::__internal::runtime::interop::*;
+#[cfg(not(lite_runtime))]
+pub use crate::codegen_traits::WithReflection;
 pub use crate::codegen_traits::{
     create::Parse,
     read::Serialize,
@@ -29,8 +31,10 @@ pub use crate::extension::ExtensionId;
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 
 pub use crate::proxied::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProtoObject, ProtoObject, View,
 };
+#[allow(deprecated)]
+pub use crate::proxied::{MutProxied, Proxied};
 pub use crate::r#enum::{Enum, UnknownEnumValue};
 pub use crate::repeated::{Repeated, RepeatedIter, RepeatedMut, RepeatedView};
 pub use crate::singular::Singular;

@@ -27,6 +27,7 @@
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/type_id.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -46,8 +47,13 @@ std::string* CloneSlow(Arena* arena, const std::string& value) {
 }
 
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
+  return InternalExtend(extend_amount, GetSerialArena(arena));
+}
+
+void** RepeatedPtrFieldBase::InternalExtend(int extend_amount,
+                                            SerialArena* arena) {
   ABSL_DCHECK(extend_amount > 0);
-  ABSL_DCHECK_EQ(arena, GetArena());
+  ABSL_DCHECK_EQ(arena, GetSerialArena(GetArena()));
   constexpr size_t kPtrSize = sizeof(rep()->elements[0]);
   constexpr size_t kMaxSize = std::numeric_limits<size_t>::max();
   constexpr size_t kMaxCapacity = (kMaxSize - kRepHeaderSize) / kPtrSize;
@@ -59,13 +65,29 @@ void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
   {
     ABSL_DCHECK_LE(new_capacity, kMaxCapacity)
         << "New capacity is too large to fit into internal representation";
-    const size_t new_size = kRepHeaderSize + kPtrSize * new_capacity;
+    size_t bytes = kRepHeaderSize + kPtrSize * new_capacity;
     if (arena == nullptr) {
-      const internal::SizedPtr alloc = internal::AllocateAtLeast(new_size);
+      const internal::SizedPtr alloc = internal::AllocateAtLeast(bytes);
       new_capacity = static_cast<int>((alloc.n - kRepHeaderSize) / kPtrSize);
       new_rep = reinterpret_cast<Rep*>(alloc.p);
     } else {
-      auto* alloc = Arena::CreateArray<char>(arena, new_size);
+      if constexpr (internal::ArenaAlignDefault::Ceil(kPtrSize) != kPtrSize) {
+        // We need to manually align the allocation.
+        bytes = internal::ArenaAlignDefault::Ceil(bytes);
+        new_capacity = (bytes - kRepHeaderSize) / kPtrSize;
+      }
+
+      // Try grow in place if the arena allows it.
+      if (!using_sso()) {
+        auto* r = rep();
+        const size_t old_bytes = kRepHeaderSize + kPtrSize * old_capacity;
+        if (arena->TryGrowTail(r->elements + old_capacity, bytes - old_bytes)) {
+          r->capacity = new_capacity;
+          return r->elements + current_size_;
+        }
+      }
+      auto* alloc =
+          arena->AllocateAligned<internal::AllocationClient::kArray>(bytes);
       new_rep = reinterpret_cast<Rep*>(alloc);
     }
   }
@@ -118,6 +140,13 @@ void RepeatedPtrFieldBase::DestroyMessageLites(const ClassData* class_data) {
       absl::PrefetchToLocalCacheNta(elems[i + 5]);
     }
     auto* ptr = cast<H>(elems[i]);
+
+    ABSL_DCHECK_EQ(GetClassData(*ptr), class_data)
+        << "Type mismatch in RepeatedPtrFieldBase::DestroyMessageLites: found "
+           "element of type "
+        << GetClassData(*ptr)->DebugName() << " at index " << i
+        << " in a repeated field of " << class_data->DebugName();
+
     destroy(*ptr);
     internal::SizedDelete(ptr, allocation_size);
   }
@@ -208,8 +237,9 @@ PROTOBUF_ALWAYS_INLINE void RepeatedPtrFieldBase::MergeFromInternal(
 }
 
 template <>
-void RepeatedPtrFieldBase::MergeFrom<std::string>(
-    const RepeatedPtrFieldBase& from, Arena* arena) {
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void
+RepeatedPtrFieldBase::MergeFrom<std::string>(const RepeatedPtrFieldBase& from,
+                                             Arena* arena) {
   MergeFromInternal<std::string>(
       from, arena, [](Arena* arena, std::string* dst, const std::string& src) {
         dst->assign(src);
@@ -264,8 +294,9 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
 }
 
 template <>
-void RepeatedPtrFieldBase::MergeFrom<MessageLite>(
-    const RepeatedPtrFieldBase& from, Arena* arena) {
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void
+RepeatedPtrFieldBase::MergeFrom<MessageLite>(const RepeatedPtrFieldBase& from,
+                                             Arena* arena) {
   ABSL_DCHECK(from.current_size_ > 0);
   const ClassData* class_data =
       GetClassData(*reinterpret_cast<const MessageLite*>(from.element_at(0)));

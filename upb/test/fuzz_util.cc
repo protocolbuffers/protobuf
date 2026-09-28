@@ -38,8 +38,17 @@ class Builder {
 
   const upb_MiniTable* Build(upb_ExtensionRegistry** exts) {
     BuildMessages();
+    if (mini_tables_.size() < input_->mini_descriptors.size()) {
+      return nullptr;
+    }
     BuildEnums();
+    if (enum_tables_.size() < input_->enum_mini_descriptors.size()) {
+      return nullptr;
+    }
     BuildExtensions(exts);
+    if (!input_->extensions.empty() && (!exts || !*exts)) {
+      return nullptr;
+    }
     if (!LinkMessages()) return nullptr;
     return mini_tables_.empty() ? nullptr : mini_tables_.front();
   }
@@ -117,18 +126,26 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
     *exts = nullptr;
   } else {
     *exts = upb_ExtensionRegistry_New(arena_);
+    if (!*exts) return;
     const char* ptr = input_->extensions.data();
     const char* end = ptr + input_->extensions.size();
     // Iterate through the buffer, building extensions as long as we can.
     while (ptr < end) {
       upb_MiniTableExtension* ext = reinterpret_cast<upb_MiniTableExtension*>(
           upb_Arena_Malloc(arena_, sizeof(*ext)));
+      if (!ext) {
+        *exts = nullptr;
+        return;
+      }
       upb_MiniTableSub sub;
       const upb_MiniTable* extendee = NextMiniTable();
       if (!extendee) break;
       ptr = upb_MiniTableExtension_Init(ptr, end - ptr, ext, extendee, sub,
                                         status.ptr());
-      if (!ptr) break;
+      if (!ptr) {
+        *exts = nullptr;
+        return;
+      }
       if (!LinkExtension(ext)) continue;
       if (upb_MiniTable_FindFieldByNumber(
               extendee, upb_MiniTableExtension_Number(ext)) != nullptr) {
@@ -139,7 +156,10 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
         continue;
       auto status = upb_ExtensionRegistry_AddArray(
           *exts, const_cast<const upb_MiniTableExtension**>(&ext), 1);
-      UPB_ASSERT(status == kUpb_ExtensionRegistryStatus_Ok);
+      if (status != kUpb_ExtensionRegistryStatus_Ok) {
+        *exts = nullptr;
+        return;
+      }
     }
   }
 }

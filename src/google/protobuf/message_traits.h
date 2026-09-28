@@ -24,18 +24,18 @@ class MessageLite;
 
 namespace internal {
 
+struct MessageGlobalsBase;
 struct ClassData;
 
 template <typename MessageT>
 const ClassData* GetClassData(const MessageT& msg);
 
-template <typename T>
+template <typename T, typename Globals = MessageGlobalsBase>
 struct FallbackMessageTraits {
-  static const void* default_instance() { return &T::default_instance(); }
-  static constexpr const auto* class_data() {
-    return GetClassData(static_cast<const MessageLite&>(T::default_instance()));
+  static const auto* class_data() {
+    return Globals::GetClassData(
+        Globals::FromDefaultInstance(&T::default_instance()));
   }
-  static const auto* tc_table() { return class_data()->GetTcParseTable(); }
   // We can't make a constexpr pointer to the default, so use a function pointer
   // instead.
   static constexpr auto StrongPointer() { return &T::default_instance; }

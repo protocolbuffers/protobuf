@@ -14,8 +14,7 @@ Recommended.*.JsonInput.BoolMapFieldKeyNotQuoted                                
 Recommended.*.JsonInput.DoubleFieldInfinityNotQuoted                                                               # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.DoubleFieldNanNotQuoted                                                                    # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.DoubleFieldNegativeInfinityNotQuoted                                                       # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.FieldNameDuplicate                                                                         # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.FieldNameExtension.Validator                                                               # Expected JSON payload but got type 1
+Recommended.*.JsonInput.FieldNameExtension.JsonOutput                                                              # Expected JSON payload but got type 1
 Recommended.*.JsonInput.FieldNameNotQuoted                                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FloatFieldInfinityNotQuoted                                                                # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FloatFieldNanNotQuoted                                                                     # Should have failed to parse, but didn't.
@@ -31,9 +30,9 @@ Recommended.*.JsonInput.StringFieldUnpairedHighSurrogate                        
 Recommended.*.JsonInput.StringFieldUnpairedLowSurrogate                                                            # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.Uint32MapFieldKeyNotQuoted                                                                 # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.Uint64MapFieldKeyNotQuoted                                                                 # Should have failed to parse, but didn't.
-Recommended.*.FieldMaskNumbersDontRoundTrip.JsonOutput                                                             # Should have failed to serialize, but didn't.
-Recommended.*.FieldMaskPathsDontRoundTrip.JsonOutput                                                               # Should have failed to serialize, but didn't.
-Recommended.*.FieldMaskTooManyUnderscore.JsonOutput                                                                # Should have failed to serialize, but didn't.
+Recommended.*.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput                                               # Should have failed to serialize, but didn't.
+Recommended.*.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput                                                 # Should have failed to serialize, but didn't.
+Recommended.*.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput                                                  # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldNotQuoted                                                                            # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayEnumName                                                           # Should have failed to parse, but didn't.
@@ -63,6 +62,7 @@ Required.*.JsonInput.TimestampJsonInputYearTooShort                             
 Required.*.ProtobufInput.UnknownOrdering.ProtobufOutput                                                            # Unknown field mismatch
 Required.*.ProtobufInput.BadTag_FieldNumberTooHigh                                                                 # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
+Required.*.ProtobufInput.BadLength_Varint32BitOverflow                                                             # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_OverlongVarint                                                                     # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.
 # Recommended.Editions_Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                           # Should have failed to parse, but didn't.
@@ -71,3 +71,6 @@ Required.*.ProtobufInput.BadTag_OverlongVarint                                  
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                                    # Should have failed to parse, but didn't.
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                                 # Should have failed to parse, but didn't.
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                                 # Should have failed to parse, but didn't.
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateDifferentTypeId.ProtobufOutput                      # Output was not equivalent to reference message
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValue.ProtobufOutput                                # Output was not equivalent to reference message
+Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValueOutOfOrder.ProtobufOutput                      # Output was not equivalent to reference message

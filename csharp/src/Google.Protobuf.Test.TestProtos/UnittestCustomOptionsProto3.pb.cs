@@ -252,10 +252,12 @@ namespace UnitTest.Issues.TestProtos {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// A test message with custom options at all possible locations (and also some
-  /// regular options, to make sure they interact nicely).
-  /// </summary>
+  /**
+   * <summary>
+   *  A test message with custom options at all possible locations (and also some
+   *  regular options, to make sure they interact nicely).
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMessageWithCustomOptions : pb::IMessage<TestMessageWithCustomOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -549,10 +551,12 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// A test RPC service with custom options at all possible locations (and also
-  /// some regular options, to make sure they interact nicely).
-  /// </summary>
+  /**
+   * <summary>
+   *  A test RPC service with custom options at all possible locations (and also
+   *  some regular options, to make sure they interact nicely).
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CustomOptionFooRequest : pb::IMessage<CustomOptionFooRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -3368,9 +3372,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// Note that we try various different ways of naming the same extension.
-  /// </summary>
+  /**
+   * <summary>
+   *  Note that we try various different ways of naming the same extension.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class VariousComplexOptions : pb::IMessage<VariousComplexOptions>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -3532,9 +3538,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// A helper type used to test aggregate option parsing
-  /// </summary>
+  /**
+   * <summary>
+   *  A helper type used to test aggregate option parsing
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Aggregate : pb::IMessage<Aggregate>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -3609,9 +3617,11 @@ namespace UnitTest.Issues.TestProtos {
     /// <summary>Field number for the "sub" field.</summary>
     public const int SubFieldNumber = 3;
     private global::UnitTest.Issues.TestProtos.Aggregate sub_;
-    /// <summary>
-    /// A nested object
-    /// </summary>
+    /**
+     * <summary>
+     *  A nested object
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::UnitTest.Issues.TestProtos.Aggregate Sub {
@@ -4017,9 +4027,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// Test custom options for nested type.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test custom options for nested type.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class NestedOptionType : pb::IMessage<NestedOptionType>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

@@ -36,7 +36,8 @@ import java.util.RandomAccess;
  *
  * @author jonp@google.com (Jon Perlow)
  */
-public class LazyStringArrayList extends AbstractProtobufList<String>
+public
+class LazyStringArrayList extends AbstractProtobufList<String>
     implements LazyStringList, RandomAccess {
 
   private static final LazyStringArrayList EMPTY_LIST = new LazyStringArrayList(false);

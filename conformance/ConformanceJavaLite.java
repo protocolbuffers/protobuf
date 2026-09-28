@@ -7,7 +7,6 @@
 
 import com.google.protobuf.AbstractMessageLite;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
@@ -70,11 +69,8 @@ class ConformanceJavaLite {
 
   private enum BinaryDecoderType {
     BYTE_STRING_DECODER,
-    BYTE_ARRAY_DECODER,
     ARRAY_BYTE_BUFFER_DECODER,
-    READONLY_ARRAY_BYTE_BUFFER_DECODER,
     DIRECT_BYTE_BUFFER_DECODER,
-    READONLY_DIRECT_BYTE_BUFFER_DECODER,
     INPUT_STREAM_DECODER;
   }
 
@@ -87,34 +83,20 @@ class ConformanceJavaLite {
         throws InvalidProtocolBufferException {
       switch (type) {
         case BYTE_STRING_DECODER:
-        case BYTE_ARRAY_DECODER:
           return parser.parseFrom(bytes, extensions);
         case ARRAY_BYTE_BUFFER_DECODER:
           {
             ByteBuffer buffer = ByteBuffer.allocate(bytes.size());
             bytes.copyTo(buffer);
             buffer.flip();
-            return parser.parseFrom(CodedInputStream.newInstance(buffer), extensions);
-          }
-        case READONLY_ARRAY_BYTE_BUFFER_DECODER:
-          {
-            return parser.parseFrom(
-                CodedInputStream.newInstance(bytes.asReadOnlyByteBuffer()), extensions);
+            return parser.parseFrom(buffer, extensions);
           }
         case DIRECT_BYTE_BUFFER_DECODER:
           {
             ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
             bytes.copyTo(buffer);
             buffer.flip();
-            return parser.parseFrom(CodedInputStream.newInstance(buffer), extensions);
-          }
-        case READONLY_DIRECT_BYTE_BUFFER_DECODER:
-          {
-            ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
-            bytes.copyTo(buffer);
-            buffer.flip();
-            return parser.parseFrom(
-                CodedInputStream.newInstance(buffer.asReadOnlyBuffer()), extensions);
+            return parser.parseFrom(buffer, extensions);
           }
         case INPUT_STREAM_DECODER:
           {

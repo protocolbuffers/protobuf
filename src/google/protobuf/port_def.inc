@@ -581,11 +581,6 @@
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 
-// TODO: Enable the feature by default and remove this flag.
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-#error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
-#endif
-
 #ifdef PROTOBUF_PREFETCH_WITH_OFFSET
 #error PROTOBUF_PREFETCH_WITH_OFFSET was previously defined
 #endif
@@ -813,16 +808,9 @@ namespace internal {
 #ifdef PROTOBUF_MESSAGE_GLOBALS
 #error PROTOBUF_MESSAGE_GLOBALS was previously defined
 #endif
-// Use PROTOBUF_ENABLE_STABLE_EXPERIMENTS to turn on the old code for now.
-#if !defined(PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT) && \
-    !defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
+// TODO: Clean up these macros
 #define PROTOBUF_MESSAGE_GLOBALS
-#define PROTOBUF_MESSAGE_GLOBALS_CONST const
-#endif  // PROTOBUF_MESSAGE_GLOBALS_TEMPORARY_OPTOUT
 
-#if !defined(PROTOBUF_MESSAGE_GLOBALS_CONST)
-#define PROTOBUF_MESSAGE_GLOBALS_CONST
-#endif
 #if !defined(PROTOBUF_MESSAGE_GLOBALS_SECTION)
 #define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)
 #endif

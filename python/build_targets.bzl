@@ -12,6 +12,7 @@ load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python/cc:py_extension.bzl", "py_extension")
 load("//:protobuf.bzl", "internal_py_proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
@@ -33,7 +34,7 @@ def build_targets(name):
             "//conditions:default": [],
             ":use_fast_cpp_protos": [
                 ":google/protobuf/internal/_api_implementation.so",
-                ":google/protobuf/pyext/_message.so",
+                ":google/protobuf/pyext/_message",
             ],
         }),
         visibility = ["//:__pkg__"],
@@ -99,7 +100,7 @@ def build_targets(name):
             # https://docs.bazel.build/versions/master/be/common-definitions.html#common-attributes
             "manual",
         ],
-        deps = ["@system_python//:python_headers"],
+        deps = ["@rules_python//python/cc:current_py_cc_headers"],
     )
 
     native.config_setting(
@@ -114,8 +115,8 @@ def build_targets(name):
         visibility = ["//python:__subpackages__"],
     )
 
-    cc_binary(
-        name = "google/protobuf/pyext/_message.so",
+    py_extension(
+        name = "google/protobuf/pyext/_message",
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
@@ -162,15 +163,28 @@ def build_targets(name):
             "@abseil-cpp//absl/strings",
             "@abseil-cpp//absl/synchronization",
             "@abseil-cpp//absl/types:span",
-            "@system_python//:python_headers",
         ],
+    )
+
+    py_extension(
+        name = "google/protobuf/pyext/_map_test_helper",
+        testonly = True,
+        srcs = ["google/protobuf/pyext/testing/map_test_helper.cc"],
+        deps = [
+            ":proto_api",
+            "//src/google/protobuf",
+            "@rules_python//python/cc:current_py_cc_headers",
+        ],
+        linkshared = 1,
+        linkstatic = 1,
+        visibility = ["//python:__subpackages__"],
     )
 
     aarch64_test(
         name = "aarch64_test",
         bazel_binaries = [
             "google/protobuf/internal/_api_implementation.so",
-            "google/protobuf/pyext/_message.so",
+            "google/protobuf/pyext/_message",
         ],
     )
 
@@ -178,7 +192,7 @@ def build_targets(name):
         name = "x86_64_test",
         bazel_binaries = [
             "google/protobuf/internal/_api_implementation.so",
-            "google/protobuf/pyext/_message.so",
+            "google/protobuf/pyext/_message",
         ],
     )
 
@@ -411,6 +425,9 @@ def build_targets(name):
         name = "message_test",
         srcs = ["google/protobuf/internal/message_test.py"],
         data = ["//src/google/protobuf:testdata"],
+        deps = [
+            ":google/protobuf/pyext/_map_test_helper",
+        ],
     )
 
     internal_py_test(
@@ -485,7 +502,7 @@ def build_targets(name):
             "@abseil-cpp//absl/log:absl_check",
             "@abseil-cpp//absl/status",
             "@abseil-cpp//absl/status:statusor",
-            "@system_python//:python_headers",
+            "@rules_python//python/cc:current_py_cc_headers",
         ],
     )
 

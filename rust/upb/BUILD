@@ -34,6 +34,33 @@ rust_library(
     ],
 )
 
+rust_library(
+    name = "reflection",
+    srcs = [
+        "reflection.rs",
+    ],
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":upb",
+        "//rust/upb/sys:reflection",
+    ],
+)
+
+rust_test(
+    name = "upb_reflection_test",
+    crate = ":reflection",
+    edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
+    deps = [
+        "@crate_index//:googletest",
+    ],
+)
+
 rust_test(
     name = "upb_rs_crate_test",
     crate = ":upb",

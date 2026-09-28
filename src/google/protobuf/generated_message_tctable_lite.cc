@@ -26,6 +26,7 @@
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/generated_enum_util.h"
@@ -638,42 +639,23 @@ MessageLite* TcParser::AddMessage(const ClassData* class_data,
                                                                  class_data);
 }
 
-template <bool kIsTable>
-inline TcParser::TableAndClassData TcParser::GetTableAndClassDataFromAux(
-    TcParseTableBase::FieldAux aux) {
-  if constexpr (kIsTable) {
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-    const TcParseTableBase* inner_table = aux.table_ptr();
-    return {inner_table, inner_table->class_data};
-#else
-    const auto* globals = aux.message_globals();
-    return {MessageGlobalsBase::ToParseTableBase(globals),
-            MessageGlobalsBase::GetClassData(globals)};
-#endif
-  } else {
-    const MessageLite* prototype = aux.message_default();
-    const TcParseTableBase* inner_table = prototype->GetTcParseTable();
-    return {inner_table, inner_table->class_data};
-  }
-}
-
-inline TcParser::TableAndClassData TcParser::GetTableAndClassDataFromAux(
+static inline const ClassData* GetClassDataFromAux(
     uint16_t type_card, TcParseTableBase::FieldAux aux) {
-  uint16_t tv = type_card & field_layout::kTvMask;
-  if (ABSL_PREDICT_TRUE(tv == field_layout::kTvTable)) {
-    return GetTableAndClassDataFromAux</*kIsTable=*/true>(aux);
+  ABSL_DCHECK((type_card & field_layout::kTvMask) ==
+                  field_layout::kTvClassData ||
+              (type_card & field_layout::kTvMask) == field_layout::kTvWeakPtr);
+  // To optimize the check, we want to make sure we can do a single it test
+  // instead of and/==
+  static_assert(absl::has_single_bit<uint16_t>(field_layout::kTvClassData));
+  static_assert((field_layout::kTvClassData & field_layout::kTvWeakPtr) == 0);
+  if (ABSL_PREDICT_TRUE(type_card & field_layout::kTvClassData)) {
+    return aux.class_data();
   } else {
-    ABSL_DCHECK(tv == field_layout::kTvDefault ||
-                tv == field_layout::kTvWeakPtr);
-    const MessageLite* prototype = tv == field_layout::kTvDefault
-                                       ? aux.message_default()
-                                       : aux.message_default_weak();
-    const TcParseTableBase* inner_table = prototype->GetTcParseTable();
-    return {inner_table, inner_table->class_data};
+    return aux.class_data_weak();
   }
 }
 
-template <typename TagType, bool group_coding, bool aux_is_table>
+template <typename TagType, bool group_coding>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_PREFETCH_WITH_OFFSET(ptr, 192);
@@ -686,60 +668,39 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularParseMessageAuxImpl(
   SetCachedHasBit(hasbits, data.hasbit_idx());
   SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<MessageLite*>(msg, data.offset());
-  const auto aux = *table->field_aux(data.aux_idx());
-
-  // Captured structured bindings are a C++20 feature.
-  auto [inner_table_alias, class_data] =
-      GetTableAndClassDataFromAux<aux_is_table>(aux);
-  const TcParseTableBase* inner_table = inner_table_alias;
-  if (field == nullptr) {
-    field = NewMessage(class_data, msg->GetArena());
+  const auto* class_data = table->field_aux(data.aux_idx())->class_data();
+  // Keep `inner_msg` in a local variable to avoid a second read in the
+  // ParseLoop call.
+  MessageLite* inner_msg = field;
+  if (inner_msg == nullptr) {
+    inner_msg = field = NewMessage(class_data, msg->GetArena());
   }
+  const auto* inner_table = class_data->GetTcParseTable();
   const auto inner_loop = [&](const char* ptr) {
-    return ParseLoop(field, ptr, ctx, inner_table);
+    return ParseLoop(inner_msg, ptr, ctx, inner_table);
   };
   return group_coding
              ? ctx->ParseGroupInlined(ptr, FastDecodeTag(saved_tag), inner_loop)
              : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastMdS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false, false>(
+PROTOBUF_NOINLINE const char* TcParser::FastMcS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastMdS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false, false>(
+PROTOBUF_NOINLINE const char* TcParser::FastMcS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastGdS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true, false>(
+PROTOBUF_NOINLINE const char* TcParser::FastGcS1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastGdS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true, false>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastMtS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, false, true>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastMtS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, false, true>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastGtS1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint8_t, true, true>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastGtS2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true, true>(
+PROTOBUF_NOINLINE const char* TcParser::FastGcS2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return SingularParseMessageAuxImpl<uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -757,7 +718,7 @@ PROTOBUF_NOINLINE const char* TcParser::FastMlS2(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return LazyMessage<uint16_t>(PROTOBUF_TC_PARAM_PASS);
 }
 
-template <typename TagType, bool group_coding, bool aux_is_table>
+template <typename TagType, bool group_coding>
 PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
     PROTOBUF_TC_PARAM_DECL) {
   if (ABSL_PREDICT_FALSE(data.coded_tag<TagType>() != 0)) {
@@ -770,10 +731,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   const auto aux = *table->field_aux(data.aux_idx());
   auto& field = RefAt<RepeatedPtrFieldBase>(msg, data.offset());
   ABSL_DCHECK_EQ(field.GetArena(), arena);
-  // Captured structured bindings are a C++20 feature.
-  auto [inner_table_alias, class_data] =
-      GetTableAndClassDataFromAux<aux_is_table>(aux);
-  const TcParseTableBase* inner_table = inner_table_alias;
+  const auto* class_data = aux.class_data();
+  const TcParseTableBase* inner_table = class_data->GetTcParseTable();
   do {
     ptr += sizeof(TagType);
     MessageLite* submsg = AddMessage(class_data, field, arena);
@@ -794,43 +753,23 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedParseMessageAuxImpl(
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastMdR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false, false>(
+PROTOBUF_NOINLINE const char* TcParser::FastMcR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastMdR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false, false>(
+PROTOBUF_NOINLINE const char* TcParser::FastMcR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastGdR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true, false>(
+PROTOBUF_NOINLINE const char* TcParser::FastGcR1(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
-PROTOBUF_NOINLINE const char* TcParser::FastGdR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true, false>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastMtR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, false, true>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastMtR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, false, true>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastGtR1(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint8_t, true, true>(
-      PROTOBUF_TC_PARAM_PASS);
-}
-
-PROTOBUF_NOINLINE const char* TcParser::FastGtR2(PROTOBUF_TC_PARAM_DECL) {
-  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true, true>(
+PROTOBUF_NOINLINE const char* TcParser::FastGcR2(PROTOBUF_TC_PARAM_DECL) {
+  PROTOBUF_MUSTTAIL return RepeatedParseMessageAuxImpl<uint16_t, true>(
       PROTOBUF_TC_PARAM_PASS);
 }
 
@@ -1909,13 +1848,12 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
   auto& field = RefAt<FieldType>(msg, data.offset());
   ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
 
-  const auto validate_last_string = [expected_tag, table, &field] {
+  const auto validate_string = [expected_tag, table](const auto& str) {
     switch (utf8) {
       case kNoUtf8:
         return true;
       case kUtf8:
-        if (ABSL_PREDICT_TRUE(
-                utf8_range::IsStructurallyValid(field[field.size() - 1]))) {
+        if (ABSL_PREDICT_TRUE(utf8_range::IsStructurallyValid(str))) {
           return true;
         }
         ReportFastUtf8Error(FastDecodeTag(expected_tag), table);
@@ -1923,31 +1861,16 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::RepeatedString(
     }
   };
 
-  auto* arena = field.GetArena();
-  SerialArena* serial_arena;
-  if (ABSL_PREDICT_TRUE(arena != nullptr &&
-                        arena->impl_.GetSerialArenaFast(&serial_arena) &&
-                        field.PrepareForParse())) {
-    do {
-      ptr += sizeof(TagType);
-      ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
+  SerialArena* serial_arena = GetSerialArena(msg);
+  do {
+    ptr += sizeof(TagType);
+    std::string* str = ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
 
-      if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
-        PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-      }
-      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
-  } else {
-    do {
-      ptr += sizeof(TagType);
-      std::string* str = field.AddWithArena(arena);
-      ptr = InlineGreedyStringParser(str, ptr, ctx);
-      if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_last_string())) {
-        PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-      }
-      if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-    } while (UnalignedLoad<TagType>(ptr) == expected_tag);
-  }
+    if (ABSL_PREDICT_FALSE(ptr == nullptr || !validate_string(*str))) {
+      PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+    }
+    if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+  } while (UnalignedLoad<TagType>(ptr) == expected_tag);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 parse_loop:
   PROTOBUF_MUSTTAIL return ToParseLoop(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2661,17 +2584,39 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
-PROTOBUF_ALWAYS_INLINE const char* TcParser::ParseRepeatedStringOnce(
-    const char* ptr, Arena* arena, SerialArena* serial_arena, ParseContext* ctx,
+PROTOBUF_ALWAYS_INLINE std::string* TcParser::ParseRepeatedStringOnce(
+    const char*& ptr, SerialArena* serial_arena, ParseContext* ctx,
     RepeatedPtrField<std::string>& field) {
+  if (std::string* str =
+          field.AddFromCleared<GenericTypeHandler<std::string>>();
+      ABSL_PREDICT_FALSE(str != nullptr)) {
+    ptr = InlineGreedyStringParser(str, ptr, ctx);
+    return str;
+  }
+
+  // For simplicity we allocate and add the object now, even though it is not
+  // yet initialized.
+  // We make sure below to not have early exits that leave it uninitialized.
+  auto* mem = serial_arena != nullptr ? serial_arena->AllocateFromStringBlock()
+                                      : ::operator new(sizeof(std::string));
+  field.AddAllocatedForParse(mem, serial_arena);
   int size = ReadSize(&ptr);
-  if (ABSL_PREDICT_FALSE(!ptr)) return {};
-  auto* str = new (serial_arena->AllocateFromStringBlock()) std::string();
-  ptr = ctx->ReadString(ptr, size, str);
-  field.AddAllocatedForParse(str, arena);
-  if (ABSL_PREDICT_FALSE(!ptr)) return {};
-  PROTOBUF_ASSUME(ptr != nullptr);
-  return ptr;
+  if (ABSL_PREDICT_FALSE(!ptr)) {
+    ::new (mem) std::string();
+    return nullptr;
+  }
+
+  // If the input is contiguous, construct the string directly with it.
+  if (size <= ctx->MaximumReadSize(ptr)) {
+    std::string* str = ::new (mem) std::string(ptr, static_cast<size_t>(size));
+    ptr += size;
+    PROTOBUF_ASSUME(ptr != nullptr);
+    return str;
+  } else {
+    std::string* str = new (mem) std::string();
+    ptr = ctx->ReadString(ptr, size, str);
+    return str;
+  }
 }
 
 template <bool is_split>
@@ -2699,36 +2644,18 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
       const char* ptr2 = ptr;
       uint32_t next_tag;
 
-      SerialArena* serial_arena;
-      if (ABSL_PREDICT_TRUE(arena != nullptr &&
-                            arena->impl_.GetSerialArenaFast(&serial_arena) &&
-                            field.PrepareForParse())) {
-        do {
-          ptr = ptr2;
-          ptr = ParseRepeatedStringOnce(ptr, arena, serial_arena, ctx, field);
-          if (ABSL_PREDICT_FALSE(ptr == nullptr ||
-                                 !MpVerifyUtf8(field[field.size() - 1], table,
-                                               entry, xform_val))) {
-            PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-          }
-          if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-          ptr2 = ReadTag(ptr, &next_tag);
-        } while (next_tag == decoded_tag);
-      } else {
-        do {
-          ptr = ptr2;
-          std::string* str = field.AddWithArena(arena);
-          ptr = InlineGreedyStringParser(str, ptr, ctx);
-          if (ABSL_PREDICT_FALSE(
-                  ptr == nullptr ||
-                  !MpVerifyUtf8(*str, table, entry, xform_val))) {
-            PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
-          }
-          if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
-          ptr2 = ReadTag(ptr, &next_tag);
-        } while (next_tag == decoded_tag);
-      }
-
+      SerialArena* serial_arena = GetSerialArena(arena);
+      do {
+        ptr = ptr2;
+        std::string* str =
+            ParseRepeatedStringOnce(ptr, serial_arena, ctx, field);
+        if (ABSL_PREDICT_FALSE(ptr == nullptr ||
+                               !MpVerifyUtf8(*str, table, entry, xform_val))) {
+          PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+        }
+        if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
+        ptr2 = ReadTag(ptr, &next_tag);
+      } while (next_tag == decoded_tag);
       break;
     }
 
@@ -2790,10 +2717,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
   }
 
   const auto aux = *table->field_aux(&entry);
-  // Captured structured bindings are a C++20 feature.
-  auto [inner_table_alias, class_data] =
-      GetTableAndClassDataFromAux(type_card, aux);
-  const TcParseTableBase* inner_table = inner_table_alias;
+  const ClassData* class_data = GetClassDataFromAux(type_card, aux);
 
   const bool is_oneof = card == field_layout::kFcOneof;
   if (card == field_layout::kFcOptional) {
@@ -2806,11 +2730,16 @@ PROTOBUF_NOINLINE const char* TcParser::MpMessage(PROTOBUF_TC_PARAM_DECL) {
 
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   MessageLite*& field = RefAt<MessageLite*>(base, entry.offset);
-  if (field == nullptr) {
-    field = NewMessage(class_data, msg->GetArena());
+
+  // Keep `inner_msg` in a local variable to avoid a second read in the
+  // ParseLoop call.
+  MessageLite* inner_msg = field;
+  if (inner_msg == nullptr) {
+    inner_msg = field = NewMessage(class_data, msg->GetArena());
   }
+  const auto* inner_table = class_data->GetTcParseTable();
   const auto inner_loop = [&](const char* ptr) {
-    return ParseLoopPreserveNone(field, ptr, ctx, inner_table);
+    return ParseLoopPreserveNone(inner_msg, ptr, ctx, inner_table);
   };
   return is_group ? ctx->ParseGroupInlined(ptr, decoded_tag, inner_loop)
                   : ctx->ParseLengthDelimitedInlined(ptr, inner_loop);
@@ -2846,10 +2775,8 @@ const char* TcParser::MpRepeatedMessageOrGroup(PROTOBUF_TC_PARAM_DECL) {
           base, entry.offset, msg);
   ABSL_DCHECK_EQ(field.GetArena(), msg->GetArena());
   const auto aux = *table->field_aux(&entry);
-  // Captured structured bindings are a C++20 feature.
-  auto [inner_table_alias, class_data] =
-      GetTableAndClassDataFromAux(type_card, aux);
-  const TcParseTableBase* inner_table = inner_table_alias;
+  const ClassData* class_data = GetClassDataFromAux(type_card, aux);
+  const auto* inner_table = class_data->GetTcParseTable();
   SetHasForRepeated(entry, msg);
 
   const char* ptr2 = ptr;
@@ -3051,7 +2978,7 @@ const char* TcParser::ParseOneMapEntry(
           ABSL_DCHECK_EQ(inner_tag, value_tag);
           ptr = ctx->ParseLengthDelimitedInlined(ptr, [&](const char* ptr) {
             return ParseLoop(reinterpret_cast<MessageLite*>(obj), ptr, ctx,
-                             aux[1].table_ptr());
+                             aux[1].class_data()->GetTcParseTable());
           });
           if (ABSL_PREDICT_FALSE(ptr == nullptr)) return nullptr;
           continue;
@@ -3067,7 +2994,7 @@ template <bool is_split>
 PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
   const auto& entry = RefAt<FieldEntry>(table, data.entry_offset());
   // `aux[0]` points into a MapAuxInfo.
-  // If we have a message mapped_type aux[1] points into a `create_in_arena`.
+  // If we have a message mapped_type aux[1] points into a `ClassData*`.
   // If we have a validated enum mapped_type aux[1] point into a
   // `enum_data`.
   const auto* aux = table->field_aux(&entry);
@@ -3131,12 +3058,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpMap(PROTOBUF_TC_PARAM_DECL) {
         absl::Overload{
             [&](std::string* str) { Arena::CreateInArenaStorage(str, arena); },
             [&](MessageLite* msg) {
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-              aux[1].table_ptr()->class_data->PlacementNew(msg, arena);
-#else
-              MessageGlobalsBase::GetClassData(aux[1].message_globals())
-                  ->PlacementNew(msg, arena);
-#endif
+              aux[1].class_data()->PlacementNew(msg, arena);
             },
             // Already initialized above. Do nothing here.
             [](void*) {},
@@ -3249,12 +3171,11 @@ std::string TypeCardToString(uint16_t type_card) {
         absl::StrAppend(&out, " | ::_fl::kRep", rep);
       }
 
-      static constexpr const char* kXFormNames[2][4] = {
-          {nullptr, "Default", "Table", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
+      static constexpr const char* kXFormNames[2][3] = {
+          {nullptr, "ClassData", "WeakPtr"}, {nullptr, "Eager", "Lazy"}};
 
-      static_assert((fl::kTvDefault >> fl::kTvShift) == 1, "");
-      static_assert((fl::kTvTable >> fl::kTvShift) == 2, "");
-      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 3, "");
+      static_assert((fl::kTvClassData >> fl::kTvShift) == 1, "");
+      static_assert((fl::kTvWeakPtr >> fl::kTvShift) == 2, "");
       static_assert((fl::kTvEager >> fl::kTvShift) == 1, "");
       static_assert((fl::kTvLazy >> fl::kTvShift) == 2, "");
 

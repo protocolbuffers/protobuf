@@ -174,9 +174,11 @@ namespace Google.Protobuf.TestProtos {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// Tests maps.
-  /// </summary>
+  /**
+   * <summary>
+   *  Tests maps.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestMap : pb::IMessage<TestMap>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1174,9 +1176,11 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
-  /// <summary>
-  /// Two map fields share the same entry default instance.
-  /// </summary>
+  /**
+   * <summary>
+   *  Two map fields share the same entry default instance.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestSameTypeMap : pb::IMessage<TestSameTypeMap>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1941,10 +1945,12 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
-  /// <summary>
-  /// Previously, message containing enum called Type cannot be used as value of
-  /// map field.
-  /// </summary>
+  /**
+   * <summary>
+   *  Previously, message containing enum called Type cannot be used as value of
+   *  map field.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MessageContainingEnumCalledType : pb::IMessage<MessageContainingEnumCalledType>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -2144,9 +2150,11 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
-  /// <summary>
-  /// Previously, message cannot contain map field called "entry".
-  /// </summary>
+  /**
+   * <summary>
+   *  Previously, message cannot contain map field called "entry".
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MessageContainingMapCalledEntry : pb::IMessage<MessageContainingMapCalledEntry>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

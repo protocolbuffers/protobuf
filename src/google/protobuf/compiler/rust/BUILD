@@ -14,6 +14,20 @@ load(
     "bootstrap_cc_library",
 )
 
+cc_test(
+    name = "generator_test",
+    srcs = ["generator_test.cc"],
+    deps = [
+        ":rust",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "crate_mapping",
     srcs = ["crate_mapping.cc"],
@@ -202,7 +216,7 @@ bootstrap_cc_library(
         ":enum",
         ":extension",
         ":message",
-        "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
         "//upb_generator:plugin",
     ],
     copts = COPTS,
@@ -244,7 +258,7 @@ bootstrap_cc_library(
     bootstrap_deps = [
         ":enum",
         ":extension",
-        "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
@@ -272,7 +286,7 @@ bootstrap_cc_library(
     srcs = ["extension.cc"],
     hdrs = ["extension.h"],
     bootstrap_deps = [
-        "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",
@@ -291,7 +305,7 @@ bootstrap_cc_library(
     srcs = ["enum.cc"],
     hdrs = ["enum.h"],
     bootstrap_deps = [
-        "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
     ],
     copts = COPTS,
     strip_include_prefix = "/src",

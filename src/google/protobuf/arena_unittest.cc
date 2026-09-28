@@ -274,10 +274,9 @@ TEST(ArenaTest, ZeroAllocDoesNotReturnNull) {
 TEST(ArenaTest, AllConstructibleAndDestructibleCombinationsWorkCorrectly) {
   TestCtorAndDtorTraits<false, false>({"()", "~()"}, {"(const T&)", "~()"},
                                       {"(int)", "~()"});
-  // If the object is not arena constructible, then the destructor is always
-  // called even if marked as skippable.
-  TestCtorAndDtorTraits<false, true>({"()", "~()"}, {"(const T&)", "~()"},
-                                     {"(int)", "~()"});
+  // Even if the object is not arena constructible, the destructor can be
+  // skipped if marked as skippable.
+  TestCtorAndDtorTraits<false, true>({"()"}, {"(const T&)"}, {"(int)"});
 
   // Some types are arena constructible but we can't skip the destructor. Those
   // are constructed with an arena but still destroyed.
@@ -1974,6 +1973,199 @@ TEST(ArenaTest, SpaceReusePoisonsAndUnpoisonsMemory) {
   // Should not be poisoned after destruction.
   for (char& c : buf) {
     ASSERT_FALSE(internal::IsMemoryPoisoned(&c));
+  }
+}
+
+TEST(ArenaTest, TryGrowTailSuccess) {
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+  ASSERT_NE(serial, nullptr);
+
+  // Allocate an initial aligned buffer.
+  constexpr size_t kInitialSize = 32;
+  char* p = Arena::CreateArray<char>(&arena, kInitialSize);
+  ASSERT_NE(p, nullptr);
+
+  const uint64_t initial_space_used = arena.SpaceUsed();
+
+  // Grow tail once.
+  constexpr size_t kGrowth1 = 64;
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize, kGrowth1));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used + kGrowth1);
+
+  // Grow tail again.
+  constexpr size_t kGrowth2 = 128;
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize + kGrowth1, kGrowth2));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used + kGrowth1 + kGrowth2);
+
+  // Growth by 0 bytes at the tail should succeed and not change space used.
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize + kGrowth1 + kGrowth2, 0));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used + kGrowth1 + kGrowth2);
+
+  // The next allocation from the arena must be contiguous with the grown
+  // buffer.
+  char* next = Arena::CreateArray<char>(&arena, 16);
+  EXPECT_EQ(next, p + kInitialSize + kGrowth1 + kGrowth2);
+}
+
+TEST(ArenaTest, TryGrowTailFailsWhenNotAtTail) {
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+  ASSERT_NE(serial, nullptr);
+
+  char* p1 = Arena::CreateArray<char>(&arena, 32);
+  ASSERT_NE(p1, nullptr);
+
+  // Random or misaligned pointers should fail.
+  EXPECT_FALSE(serial->TryGrowTail(nullptr, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 16, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 31, 16));
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 33, 16));
+
+  // A second allocation moves the tail pointer.
+  char* p2 = Arena::CreateArray<char>(&arena, 32);
+  ASSERT_NE(p2, nullptr);
+
+  // p1 is no longer at the tail, so TryGrowTail must fail.
+  EXPECT_FALSE(serial->TryGrowTail(p1 + 32, 16));
+
+  // But p2 is at the tail, so growing p2 should succeed.
+  EXPECT_TRUE(serial->TryGrowTail(p2 + 32, 16));
+}
+
+TEST(ArenaTest, TryGrowTailFailsWhenInsufficientSpace) {
+  alignas(8) char buf[256];
+  Arena arena(buf, sizeof(buf));
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+  ASSERT_NE(serial, nullptr);
+
+  constexpr size_t kInitialSize = 32;
+  char* p = Arena::CreateArray<char>(&arena, kInitialSize);
+  ASSERT_NE(p, nullptr);
+
+  // Request growth that exceeds the remaining block space.
+  EXPECT_FALSE(serial->TryGrowTail(p + kInitialSize, sizeof(buf)));
+
+  // Verify that the failed attempt did not mutate the tail pointer:
+  // a smaller growth that fits within the buffer should still succeed.
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize, 16));
+}
+
+TEST(ArenaTest, TryTrimTailSuccess) {
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+
+  // Allocate an initial aligned buffer.
+  constexpr size_t kInitialSize = 256;
+  char* p = Arena::CreateArray<char>(&arena, kInitialSize);
+
+  const uint64_t initial_space_used = arena.SpaceUsed();
+
+  // Trim tail once.
+  constexpr size_t kTrim1 = 64;
+  EXPECT_TRUE(serial->TryTrimTail(p + kInitialSize, p + kInitialSize - kTrim1));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used - kTrim1);
+
+  // Trim tail again.
+  constexpr size_t kTrim2 = 128;
+  EXPECT_TRUE(serial->TryTrimTail(p + kInitialSize - kTrim1,
+                                  p + kInitialSize - kTrim1 - kTrim2));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used - kTrim1 - kTrim2);
+
+  // Trimming by 0 bytes at the tail should succeed and not change space used.
+  EXPECT_TRUE(serial->TryTrimTail(p + kInitialSize - kTrim1 - kTrim2,
+                                  p + kInitialSize - kTrim1 - kTrim2));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used - kTrim1 - kTrim2);
+
+  // The next allocation from the arena must be contiguous with the trimmed
+  // buffer.
+  char* next = Arena::CreateArray<char>(&arena, 16);
+  EXPECT_EQ(next, p + kInitialSize - kTrim1 - kTrim2);
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used - kTrim1 - kTrim2 + 16);
+
+  // Trimming the next allocation should also work.
+  EXPECT_TRUE(serial->TryTrimTail(next + 16, next));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used - kTrim1 - kTrim2);
+
+  // We can also grow the tail after trimming.
+  EXPECT_TRUE(serial->TryGrowTail(p + kInitialSize - kTrim1 - kTrim2, kTrim2));
+  EXPECT_EQ(arena.SpaceUsed(), initial_space_used - kTrim1);
+}
+
+TEST(ArenaTest, TryTrimTailFailsWhenNotAtTail) {
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+
+  char* p1 = Arena::CreateArray<char>(&arena, 32);
+
+  // Random or misaligned pointers should fail.
+  EXPECT_FALSE(serial->TryTrimTail(p1, p1));
+  EXPECT_FALSE(serial->TryTrimTail(p1 + 16, p1));
+  EXPECT_FALSE(serial->TryTrimTail(p1 + 31, p1));
+  EXPECT_FALSE(serial->TryTrimTail(p1 + 33, p1));
+
+  // A second allocation moves the tail pointer.
+  char* p2 = Arena::CreateArray<char>(&arena, 32);
+
+  // p1 is no longer at the tail, so TryTrimTail must fail.
+  EXPECT_FALSE(serial->TryTrimTail(p1 + 32, p1 + 16));
+
+  // But p2 is at the tail, so trimming p2 should succeed.
+  EXPECT_TRUE(serial->TryTrimTail(p2 + 32, p2 + 16));
+}
+
+#if GTEST_HAS_DEATH_TEST
+TEST(ArenaTest, TryTrimTailDchecks) {
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+
+  constexpr size_t kInitialSize = 32;
+  char* p = Arena::CreateArray<char>(&arena, kInitialSize);
+
+  // desired_end not in the block
+  EXPECT_DEBUG_DEATH(serial->TryTrimTail(p + kInitialSize, nullptr),
+                     "head.*<=.*desired_end");
+
+  // desired_end > alloc_end
+  EXPECT_DEBUG_DEATH(
+      serial->TryTrimTail(p + kInitialSize, p + kInitialSize + 16),
+      "desired_end <= alloc_end");
+
+  // desired_end not aligned
+  EXPECT_DEBUG_DEATH(
+      serial->TryTrimTail(p + kInitialSize, p + kInitialSize - 1), "IsAligned");
+}
+#endif
+
+TEST(ArenaTest, TryTrimTailPoisonsTrimmedMemory) {
+  if constexpr (!internal::HasMemoryPoisoning()) {
+    GTEST_SKIP() << "Memory poisoning not enabled.";
+  }
+
+  Arena arena;
+  internal::SerialArena* serial = internal::GetSerialArena(&arena);
+
+  constexpr size_t kInitialSize = 64;
+  char* p = Arena::CreateArray<char>(&arena, kInitialSize);
+
+  // Initially, the allocated buffer is unpoisoned.
+  for (size_t i = 0; i < kInitialSize; ++i) {
+    EXPECT_FALSE(internal::IsMemoryPoisoned(p + i));
+  }
+
+  // Trim the tail by 32 bytes.
+  constexpr size_t kTrim = 32;
+  EXPECT_TRUE(serial->TryTrimTail(p + kInitialSize, p + kInitialSize - kTrim));
+
+  // The retained part remains unpoisoned.
+  for (size_t i = 0; i < kInitialSize - kTrim; ++i) {
+    EXPECT_FALSE(internal::IsMemoryPoisoned(p + i));
+  }
+
+  // The trimmed part must now be poisoned.
+  for (size_t i = kInitialSize - kTrim; i < kInitialSize; ++i) {
+    EXPECT_TRUE(internal::IsMemoryPoisoned(p + i));
   }
 }
 

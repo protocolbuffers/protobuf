@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include "binary_json_conformance_suite.h"
+#include "conformance/binary_json_conformance_suite.h"
 
 #include <cassert>
 #include <cctype>
@@ -16,6 +16,7 @@
 #include <string>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -28,9 +29,9 @@
 #include "json/config.h"
 #include "json/reader.h"
 #include "json/value.h"
-#include "binary_wireformat.h"
+#include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
@@ -40,6 +41,7 @@
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/util/message_differencer.h"
 #include "google/protobuf/util/type_resolver_util.h"
 #include "google/protobuf/wire_format_lite.h"
 
@@ -202,6 +204,16 @@ std::string UpperCase(std::string str) {
     str[i] = toupper(str[i]);
   }
   return str;
+}
+
+std::string MismatchedWireTypeField(
+    int field_number, WireFormatLite::WireType correct_wire_type) {
+  if (correct_wire_type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
+    return absl::StrCat(tag(field_number, WireFormatLite::WIRETYPE_VARINT),
+                        varint(1));
+  }
+  return absl::StrCat(
+      tag(field_number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), delim("a"));
 }
 
 bool IsProto3Default(FieldDescriptor::Type type,
@@ -498,6 +510,64 @@ void BinaryAndJsonConformanceSuite::RunMessageSetTests() {
            })pb"
       // clang-format on
   );
+
+  // [type_id, value, type_id (different)] -> first type_id and value honored.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateDifferentTypeId"),
+      RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(1547769))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
+
+  // [type_id, value, value] -> first value honored, no merge.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateValue"), RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  len(3,
+                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
+
+  // [value, type_id, value] -> first value honored, no merge.
+  RunValidBinaryProtobufTest<TestAllTypesProto2>(
+      absl::StrCat("ValidMessageSetEncoding.DuplicateValueOutOfOrder"),
+      RECOMMENDED,
+      len(500,
+          group(
+              1,
+              absl::StrCat(
+                  len(3, field(9, WireFormatLite::WIRETYPE_VARINT, varint(99))),
+                  field(2, WireFormatLite::WIRETYPE_VARINT, varint(4135312)),
+                  len(3,
+                      field(9, WireFormatLite::WIRETYPE_VARINT, varint(88)))))),
+      // clang-format off
+      R"pb(message_set_correct: {
+             [protobuf_test_messages.proto2
+                  .TestAllTypesProto2.MessageSetCorrectExtension2]: { i: 99 }
+            })pb"
+      // clang-format on
+  );
 }
 
 void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
@@ -512,6 +582,19 @@ void BinaryAndJsonConformanceSuite::RunRecursionLimitTests() {
     }
     ExpectParseFailureForProto<TestAllTypesEdition2023>(
         message.SerializeAsString(), "EnforceDepthLimit.Map", RECOMMENDED);
+  }
+
+  {
+    TestAllTypesEdition2023 message;
+    TestAllTypesEdition2023* sub = &message;
+    for (int i = 0; i < 10000; i++) {
+      sub =
+          (*sub->mutable_map_string_nested_message())[""].mutable_corecursive();
+      sub->set_optional_int32(123);
+    }
+    ExpectParseFailureForProto<TestAllTypesEdition2023>(
+        message.SerializeAsString(), "EnforceDepthLimit.MapStringKey",
+        RECOMMENDED);
   }
 
   {
@@ -770,9 +853,7 @@ void BinaryAndJsonConformanceSuiteImpl<
       prototype, test_name, input_json);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  std::string effective_test_name = absl::StrCat(
-      setting.ConformanceLevelToString(level), ".",
-      setting.GetSyntaxIdentifier(), ".JsonInput.", test_name, ".Validator");
+  const std::string& effective_test_name = setting.GetTestName();
 
   if (!suite_.RunTest(effective_test_name, request, &response)) {
     return;
@@ -846,6 +927,66 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::ExpectParseFailureForJson(
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    RunValidJsonTestOrParseFailure(const std::string& test_name,
+                                   ConformanceLevel level,
+                                   const std::string& input_json,
+                                   const std::string& equivalent_text_format) {
+  MessageType prototype;
+  ConformanceRequestSetting setting(
+      level, ::conformance::JSON, ::conformance::PROTOBUF,
+      ::conformance::JSON_TEST, prototype, test_name, input_json);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  std::string effective_test_name =
+      absl::StrCat(setting.ConformanceLevelToString(level), ".",
+                   SyntaxIdentifier(), ".JsonInput.", test_name);
+
+  if (!suite_.RunTest(effective_test_name, request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(effective_test_name);
+  if (response.result_case() == ConformanceResponse::kParseError) {
+    suite_.ReportSuccess(test);
+  } else if (response.result_case() == ConformanceResponse::kSkipped) {
+    suite_.ReportSkip(test, request, response);
+  } else {
+    std::unique_ptr<Message> reference_message(setting.NewTestMessage());
+    ABSL_CHECK(TextFormat::ParseFromString(equivalent_text_format,
+                                           reference_message.get()))
+        << "Failed to parse data for test case: " << setting.GetTestName()
+        << ", data: " << equivalent_text_format;
+    std::unique_ptr<Message> test_message(setting.NewTestMessage());
+    bool parsed = false;
+    if (response.result_case() == ConformanceResponse::kProtobufPayload) {
+      parsed = test_message->ParseFromString(response.protobuf_payload());
+    }
+    if (!parsed) {
+      test.set_failure_message("Malformed protobuf response");
+      suite_.ReportFailure(test, level, request, response);
+      return;
+    }
+
+    util::MessageDifferencer differencer;
+    util::DefaultFieldComparator field_comparator;
+    field_comparator.set_treat_nan_as_equal(true);
+    differencer.set_field_comparator(&field_comparator);
+    std::string differences;
+    differencer.ReportDifferencesToString(&differences);
+    if (differencer.Compare(*reference_message, *test_message)) {
+      suite_.ReportSuccess(test);
+    } else {
+      test.set_failure_message(
+          "Should have failed to parse or matched expected output but did "
+          "not.");
+      suite_.ReportFailure(test, level, request, response);
+    }
+  }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
     ExpectSerializeFailureForJson(const std::string& test_name,
                                   ConformanceLevel level,
                                   const std::string& text_format) {
@@ -860,9 +1001,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::
       payload_message.SerializeAsString());
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
-  std::string effective_test_name =
-      absl::StrCat(setting.ConformanceLevelToString(level), ".",
-                   SyntaxIdentifier(), ".", test_name, ".JsonOutput");
+  const std::string& effective_test_name = setting.GetTestName();
 
   if (!suite_.RunTest(effective_test_name, request, &response)) {
     return;
@@ -1317,6 +1456,93 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestValidDataForMapType(
 
 template <typename MessageType>
 void BinaryAndJsonConformanceSuiteImpl<
+    MessageType>::RunMapEntryWireTypeMismatchTest(const std::string& test_name,
+                                                  const std::string& proto) {
+  MessageType prototype;
+  ConformanceRequestSetting setting(
+      RECOMMENDED, ::conformance::PROTOBUF, ::conformance::PROTOBUF,
+      ::conformance::BINARY_TEST, prototype, test_name, proto);
+  const ConformanceRequest& request = setting.GetRequest();
+  ConformanceResponse response;
+  if (!suite_.RunTest(setting.GetTestName(), request, &response)) {
+    return;
+  }
+
+  TestStatus test;
+  test.set_name(setting.GetTestName());
+
+  if (response.result_case() == ConformanceResponse::kSkipped) {
+    suite_.ReportSkip(test, request, response);
+  } else if (response.result_case() == ConformanceResponse::kParseError) {
+    suite_.ReportSuccess(test);
+  } else if (response.result_case() == ConformanceResponse::kProtobufPayload) {
+    MessageType reference;
+    ABSL_CHECK(reference.MergeFromString(proto));
+    MessageType response_message;
+    if (suite_.ParseResponse(response, setting, &response_message)) {
+      if (google::protobuf::util::MessageDifferencer::Equals(reference,
+                                                   response_message)) {
+        suite_.ReportSuccess(test);
+      } else {
+        test.set_failure_message(
+            "Output was not equivalent to reference message; the mismatched "
+            "field appears to have been decoded as a value.");
+        suite_.ReportFailure(test, setting.GetLevel(), request, response);
+      }
+    }
+  } else {
+    test.set_failure_message(
+        "Should have failed to parse or matched expected output but did "
+        "not.");
+    suite_.ReportFailure(test, setting.GetLevel(), request, response);
+  }
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::
+    TestMapEntryWireTypeMismatch(FieldDescriptor::Type key_type,
+                                 FieldDescriptor::Type value_type) {
+  const std::string key_type_name =
+      UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(key_type)));
+  const std::string value_type_name =
+      UpperCase(absl::StrCat(".", FieldDescriptor::TypeName(value_type)));
+  const WireFormatLite::WireType key_wire_type =
+      WireFormatLite::WireTypeForFieldType(
+          static_cast<WireFormatLite::FieldType>(key_type));
+  const WireFormatLite::WireType value_wire_type =
+      WireFormatLite::WireTypeForFieldType(
+          static_cast<WireFormatLite::FieldType>(value_type));
+
+  const std::string good_key_data =
+      absl::StrCat(tag(1, key_wire_type), GetNonDefaultValue(key_type));
+  const std::string good_value_data =
+      absl::StrCat(tag(2, value_wire_type), GetNonDefaultValue(value_type));
+
+  const FieldDescriptor* field = GetFieldForMapType(key_type, value_type);
+
+  // A map entry whose key is encoded with the wrong wire type; the value is
+  // still well formed.
+  RunMapEntryWireTypeMismatchTest(
+      absl::StrCat("ValidDataMap", key_type_name, value_type_name,
+                   ".KeyWireTypeMismatch"),
+      absl::StrCat(
+          tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(absl::StrCat(MismatchedWireTypeField(1, key_wire_type),
+                             good_value_data))));
+
+  // A map entry whose value is encoded with the wrong wire type; the key is
+  // still well formed.
+  RunMapEntryWireTypeMismatchTest(
+      absl::StrCat("ValidDataMap", key_type_name, value_type_name,
+                   ".ValueWireTypeMismatch"),
+      absl::StrCat(
+          tag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+          delim(absl::StrCat(good_key_data,
+                             MismatchedWireTypeField(2, value_wire_type)))));
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<
     MessageType>::TestOverwriteMessageValueMap() {
   std::string key_data = absl::StrCat(
       tag(1, WireFormatLite::WIRETYPE_LENGTH_DELIMITED), delim(""));
@@ -1533,6 +1759,21 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalTags() {
                    "\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80\x80",
                    std::string("\0", 1), varint(1234)),
       "BadTag_VarintMoreThanTenBytes", REQUIRED);
+}
+
+template <typename MessageType>
+void BinaryAndJsonConformanceSuiteImpl<MessageType>::TestIllegalLengths() {
+  const FieldDescriptor* string_field =
+      GetFieldForType(FieldDescriptor::TYPE_STRING, false);
+
+  // A 5-byte varint length where bits 32-34 are set (e.g. bit 32 = 0x10), which
+  // overflows 32-bit arithmetic and wraps to 0 modulo 2^32. Parsers must not
+  // overflow and must reject this invalid wire format.
+  ExpectParseFailureForProto(
+      absl::StrCat(tag(string_field->number(),
+                       WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+                   "\x80\x80\x80\x80\x10"),
+      "BadLength_Varint32BitOverflow", REQUIRED);
 }
 
 template <typename MessageType>
@@ -1793,6 +2034,7 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
     }
 
     TestIllegalTags();
+    TestIllegalLengths();
     TestUnmatchedGroup();
     TestUnknownWireType();
     TestInvalidUtf8String();
@@ -1921,12 +2163,12 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
             {delim(""), delim("")},
             {delim("Hello world!"), delim("Hello world!")},
             {delim("\'\"\?\\\a\b\f\n\r\t\v"),
-             delim("\'\"\?\\\a\b\f\n\r\t\v")},       // escape
-            {delim("谷歌"), delim("谷歌")},          // Google in Chinese
-            {delim("\u8C37\u6B4C"), delim("谷歌")},  // unicode escape
-            {delim("\u8c37\u6b4c"), delim("谷歌")},  // lowercase unicode
-            {delim("\xF0\x9F\x98\x81"),
-             delim("\xF0\x9F\x98\x81")},  // emoji: 😁
+             delim("\'\"\?\\\a\b\f\n\r\t\v")},  // escape
+            // U+8C37 U+6B4C ("Google" in Chinese), as UTF-8.
+            {delim("\xE8\xB0\xB7\xE6\xAD\x8C"),
+             delim("\xE8\xB0\xB7\xE6\xAD\x8C")},
+            // U+1F601 (grinning face with smiling eyes), as UTF-8.
+            {delim("\xF0\x9F\x98\x81"), delim("\xF0\x9F\x98\x81")},
         });
     TestValidDataForType(FieldDescriptor::TYPE_BYTES,
                          {
@@ -1991,6 +2233,17 @@ void BinaryAndJsonConformanceSuiteImpl<MessageType>::RunAllTests() {
                             FieldDescriptor::TYPE_MESSAGE);
     // Additional test to check overwriting message value map.
     TestOverwriteMessageValueMap();
+
+    TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_INT32,
+                                 FieldDescriptor::TYPE_INT32);
+    TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_FIXED32,
+                                 FieldDescriptor::TYPE_FIXED32);
+    TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_BOOL,
+                                 FieldDescriptor::TYPE_BOOL);
+    TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_STRING,
+                                 FieldDescriptor::TYPE_STRING);
+    TestMapEntryWireTypeMismatch(FieldDescriptor::TYPE_STRING,
+                                 FieldDescriptor::TYPE_MESSAGE);
 
     TestValidDataForOneofType(FieldDescriptor::TYPE_UINT32);
     TestValidDataForOneofType(FieldDescriptor::TYPE_BOOL);
@@ -2369,22 +2622,27 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson(
       "MissingCommaMultiline", RECOMMENDED,
       "{\n  \"optionalInt32\": 1\n  \"optionalInt64\": 2\n}");
-  // Duplicated field names are not allowed.
-  ExpectParseFailureForJson("FieldNameDuplicate", RECOMMENDED,
-                            R"({
-        "optionalNestedMessage": {"a": 1},
-        "optionalNestedMessage": {}
-      })");
-  ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing1", RECOMMENDED,
-                            R"({
-        "optional_nested_message": {"a": 1},
-        "optionalNestedMessage": {}
-      })");
-  ExpectParseFailureForJson("FieldNameDuplicateDifferentCasing2", RECOMMENDED,
-                            R"({
-        "optionalNestedMessage": {"a": 1},
-        "optional_nested_message": {}
-      })");
+  // Duplicated field names have either last-wins or parse failure.
+  RunValidJsonTestOrParseFailure("FieldNameDuplicate", RECOMMENDED,
+                                 R"({
+                                   "optionalNestedMessage": {"a": 1},
+                                   "optionalNestedMessage": {}
+                                 })",
+                                 "optional_nested_message: {}");
+  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing1",
+                                 RECOMMENDED,
+                                 R"({
+                                   "optional_nested_message": {"a": 1},
+                                   "optionalNestedMessage": {}
+                                 })",
+                                 "optional_nested_message: {}");
+  RunValidJsonTestOrParseFailure("FieldNameDuplicateDifferentCasing2",
+                                 RECOMMENDED,
+                                 R"({
+                                   "optionalNestedMessage": {"a": 1},
+                                   "optional_nested_message": {}
+                                 })",
+                                 "optional_nested_message: {}");
   // Serializers should use lowerCamelCase by default.
   RunValidJsonTestWithValidator("FieldNameInLowerCamelCase", REQUIRED,
                                 R"({
@@ -2399,7 +2657,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                                          value.isMember("FieldName3") &&
                                          value.isMember("fieldName4");
                                 });
-  RunValidJsonTestWithValidator("FieldNameWithNumbers", REQUIRED,
+  RunValidJsonTestWithValidator("FieldNameWithNumbersValidator", REQUIRED,
                                 R"({
         "field0name5": 5,
         "field0Name6": 6
@@ -2409,7 +2667,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                                          value.isMember("field0Name6");
                                 });
   RunValidJsonTestWithValidator(
-      "FieldNameWithMixedCases", REQUIRED,
+      "FieldNameWithMixedCasesValidator", REQUIRED,
       R"({
         "fieldName7": 7,
         "FieldName8": 8,
@@ -2424,7 +2682,7 @@ void BinaryAndJsonConformanceSuiteImpl<
                value.isMember("FIELDNAME11") && value.isMember("FIELDName12");
       });
   RunValidJsonTestWithValidator(
-      "FieldNameWithDoubleUnderscores", RECOMMENDED,
+      "FieldNameWithDoubleUnderscoresValidator", RECOMMENDED,
       R"({
         "FieldName13": 13,
         "FieldName14": 14,
@@ -2538,8 +2796,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             REQUIRED, R"({"optionalInt32": "12 34"})");
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericComma",
                             REQUIRED, R"({"optionalInt32": "12,34"})");
+  // Not a raw string literal: the payload holds the UTF-8 bytes of U+8C37
+  // U+6B4C between the digits.
   ExpectParseFailureForJson("Int32FieldStringValuePartiallyNumericUnicode",
-                            REQUIRED, R"({"optionalInt32": "12谷歌34"})");
+                            REQUIRED,
+                            "{\"optionalInt32\": \"12\xE8\xB0\xB7\xE6\xAD\x8C"
+                            "34\"}");
   ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalInt32": "abc"})");
 
@@ -2699,8 +2961,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                             REQUIRED, R"({"optionalFloat": "12 34"})");
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericComma",
                             REQUIRED, R"({"optionalFloat": "12,34"})");
+  // Not a raw string literal: the payload holds the UTF-8 bytes of U+8C37
+  // U+6B4C between the digits.
   ExpectParseFailureForJson("FloatFieldStringValuePartiallyNumericUnicode",
-                            REQUIRED, R"({"optionalFloat": "12谷歌34"})");
+                            REQUIRED,
+                            "{\"optionalFloat\": \"12\xE8\xB0\xB7\xE6\xAD\x8C"
+                            "34\"}");
 
   // Parser reject boolean values for float fields.
   ExpectParseFailureForJson("FloatFieldTrueValue", REQUIRED,
@@ -2833,24 +3099,24 @@ void BinaryAndJsonConformanceSuiteImpl<
   RunValidJsonTest("StringField", REQUIRED,
                    R"({"optionalString": "Hello world!"})",
                    R"(optional_string: "Hello world!")");
+  // Non-ASCII characters in the JSON text itself, as opposed to the \uXXXX
+  // escapes tested below. Note that this is deliberately not a raw string
+  // literal: the compiler resolves the \x escapes, so the payload holds the
+  // UTF-8 bytes of U+8C37 U+6B4C ("Google" in Chinese). In the raw string
+  // literals below, the \u escapes reach the testee's JSON parser verbatim.
   RunValidJsonTest("StringFieldUnicode", REQUIRED,
-                   // Google in Chinese.
-                   R"({"optionalString": "谷歌"})",
-                   R"(optional_string: "谷歌")");
+                   "{\"optionalString\": \"\xE8\xB0\xB7\xE6\xAD\x8C\"}",
+                   R"(optional_string: "\xE8\xB0\xB7\xE6\xAD\x8C")");
   RunValidJsonTest("StringFieldEscape", REQUIRED,
                    R"({"optionalString": "\"\\\/\b\f\n\r\t"})",
                    R"(optional_string: "\"\\/\b\f\n\r\t")");
   RunValidJsonTest("StringFieldUnicodeEscape", REQUIRED,
                    R"({"optionalString": "\u8C37\u6B4C"})",
-                   R"(optional_string: "谷歌")");
-  RunValidJsonTest("StringFieldUnicodeEscapeWithLowercaseHexLetters", REQUIRED,
-                   R"({"optionalString": "\u8c37\u6b4c"})",
-                   R"(optional_string: "谷歌")");
-  RunValidJsonTest(
-      "StringFieldSurrogatePair", REQUIRED,
-      // The character is an emoji: grinning face with smiling eyes. 😁
-      R"({"optionalString": "\uD83D\uDE01"})",
-      R"(optional_string: "\xF0\x9F\x98\x81")");
+                   R"(optional_string: "\xE8\xB0\xB7\xE6\xAD\x8C")");
+  RunValidJsonTest("StringFieldSurrogatePair", REQUIRED,
+                   // U+1F601 (grinning face with smiling eyes).
+                   R"({"optionalString": "\uD83D\uDE01"})",
+                   R"(optional_string: "\xF0\x9F\x98\x81")");
   RunValidJsonTest("StringFieldEmbeddedNull", REQUIRED,
                    R"({"optionalString": "Hello\u0000world!"})",
                    R"(optional_string: "Hello\000world!")");
@@ -2883,8 +3149,12 @@ void BinaryAndJsonConformanceSuiteImpl<
                    "optional_nested_message: {a: 1234}");
 
   // Oneof fields.
-  ExpectParseFailureForJson("OneofFieldDuplicate", REQUIRED,
-                            R"({"oneofUint32": 1, "oneofString": "test"})");
+  RunValidJsonTestOrParseFailure("OneofFieldDuplicate", REQUIRED,
+                                 R"({"oneofUint32": 1, "oneofString": "test"})",
+                                 "oneof_string: \"test\"");
+  RunValidJsonTestOrParseFailure("OneofFieldDuplicate2", REQUIRED,
+                                 R"({"oneofString": "test", "oneofUint32": 1})",
+                                 "oneof_uint32: 1");
   RunValidJsonTest("OneofFieldNullFirst", REQUIRED,
                    R"({"oneofUint32": null, "oneofString": "test"})",
                    "oneof_string: \"test\"");

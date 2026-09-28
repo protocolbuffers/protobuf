@@ -283,6 +283,7 @@ message ComplexOptionType1 {
   optional int32 foo3 = 3;
   repeated int32 foo4 = 4;
   map<string, int32> my_map = 5;
+  map<string, ComplexOptionType3> submsg_map = 6;
 
   extensions 100 to max;
 }
@@ -346,6 +347,10 @@ message VariousComplexOptions {
   option (complex_opt1).my_map = {
     key: "other_key"
     value: 456
+  };
+  option (complex_opt1).submsg_map = {
+    key: "sub_key"
+    value: { moo: 555 }
   };
   option (complex_opt2).baz = 987;
   option (complex_opt2).(grault) = 654;

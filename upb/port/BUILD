@@ -16,6 +16,7 @@ cc_library(
     srcs = ["port.c"],
     hdrs = [
         "atomic.h",
+        "overflow.h",
         "sanitizers.h",
         "vsnprintf_compat.h",
     ],
@@ -56,10 +57,22 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "port_fallback_test",
+    srcs = ["port_test.cc"],
+    local_defines = ["UPB_DISABLE_BUILTIN_OVERFLOW"],
+    deps = [
+        ":port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 filegroup(
     name = "source_files",
     srcs = glob(
         [
+            "**/*.c",
             "**/*.h",
             "**/*.inc",
         ],

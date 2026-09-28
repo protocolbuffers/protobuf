@@ -8,6 +8,11 @@ load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
 licenses(["notice"])
 
+exports_files([
+    "Cargo.Bazel.lock",
+    "Cargo.lock",
+])
+
 package_group(
     name = "protobuf_internal",
     packages = [
@@ -32,6 +37,18 @@ package_group(
 rust_library(
     name = "protobuf",
     srcs = ["protobuf.rs"],
+    edition = "2024",
+    rustc_flags = select({
+        ":use_upb_kernel": ["--cfg=upb_kernel"],
+        "//conditions:default": ["--cfg=cpp_kernel"],
+    }),
+    visibility = ["//visibility:public"],
+    deps = [":protobuf_lite"],
+)
+
+rust_library(
+    name = "protobuf_lite",
+    srcs = ["protobuf_lite.rs"],
     edition = "2024",
     rustc_flags = select({
         ":use_upb_kernel": ["--cfg=upb_kernel"],
@@ -78,11 +95,13 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "cpp_kernel/message.rs",
     "cpp_kernel/mod.rs",
     "cpp_kernel/raw.rs",
+    "cpp_kernel/reflection.rs",
     "cpp_kernel/repeated.rs",
     "cpp_kernel/string.rs",
     "gtest_matchers.rs",
     "gtest_matchers_impl.rs",
     "protobuf.rs",
+    "protobuf_lite.rs",
     "upb_kernel/conversions.rs",
     "upb_kernel/extension.rs",
     "upb_kernel/interop.rs",
@@ -146,13 +165,24 @@ rust_test(
 # This provides an identical set of re-exports as `:protobuf` with `:use_upb_kernel` active.
 # This is only used for tests shared between runtimes.
 rust_library(
-    name = "protobuf_upb_export",
+    name = "protobuf_upb_lite_export",
     testonly = True,
-    srcs = ["protobuf.rs"],
+    srcs = ["protobuf_lite.rs"],
     edition = "2024",
     rustc_flags = ["--cfg=upb_kernel"],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_upb"],
+)
+
+rust_library(
+    name = "protobuf_upb_export",
+    testonly = True,
+    srcs = ["protobuf.rs"],
+    aliases = {"//rust:protobuf_upb_lite_export": "protobuf_lite"},
+    edition = "2024",
+    rustc_flags = ["--cfg=upb_kernel"],
+    visibility = [":protobuf_internal"],
+    deps = [":protobuf_upb_lite_export"],
 )
 
 # The Rust Protobuf runtime using the cpp kernel.
@@ -169,6 +199,7 @@ rust_library(
         "cpp_kernel/message.rs",
         "cpp_kernel/mod.rs",
         "cpp_kernel/raw.rs",
+        "cpp_kernel/reflection.rs",
         "cpp_kernel/repeated.rs",
         "cpp_kernel/string.rs",
     ],
@@ -204,13 +235,24 @@ rust_test(
 # This provides an identical set of re-exports as `:protobuf` with `:use_upb_kernel` inactive.
 # This is only used for tests shared between runtimes.
 rust_library(
-    name = "protobuf_cpp_export",
+    name = "protobuf_cpp_lite_export",
     testonly = True,
-    srcs = ["protobuf.rs"],
+    srcs = ["protobuf_lite.rs"],
     edition = "2024",
     rustc_flags = ["--cfg=cpp_kernel"],
     visibility = [":protobuf_internal"],
     deps = [":protobuf_cpp"],
+)
+
+rust_library(
+    name = "protobuf_cpp_export",
+    testonly = True,
+    srcs = ["protobuf.rs"],
+    aliases = {"//rust:protobuf_cpp_lite_export": "protobuf_lite"},
+    edition = "2024",
+    rustc_flags = ["--cfg=cpp_kernel"],
+    visibility = [":protobuf_internal"],
+    deps = [":protobuf_cpp_lite_export"],
 )
 
 cc_library(
@@ -240,12 +282,33 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
+        "//src/google/protobuf/util:differencer",
         "@abseil-cpp//absl/functional:overload",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings:string_view",
     ],
+)
+
+# The part of the C++ FFI implementation that needs the full C++ runtime.
+# buildifier: disable=no-hdrs-no-alwayslink
+cc_library(
+    name = "cpp_api_reflection",
+    srcs = [
+        "cpp_kernel/reflection.cc",
+    ],
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":cpp_api",
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+    alwayslink = 1,
 )
 
 rust_library(

@@ -20,9 +20,13 @@ const _CHECK_UPB_MALLOC_ALIGN_AT_LEAST_POINTER_ALIGNED: () =
 unsafe extern "C" {
     // `Option<NonNull<T: Sized>>` is ABI-compatible with `*mut T`
     pub fn upb_Arena_New() -> Option<RawArena>;
+    pub fn upb_Arena_NewSized(size_hint: usize) -> Option<RawArena>;
     pub fn upb_Arena_Free(arena: RawArena);
     pub fn upb_Arena_Malloc(arena: RawArena, size: usize) -> *mut u8;
     pub fn upb_Arena_Fuse(arena1: RawArena, arena2: RawArena) -> bool;
+    // Only used in tests.
+    #[allow(dead_code)]
+    pub fn upb_Arena_SpaceAllocated(arena: RawArena, fused_count: *mut usize) -> usize;
 }
 
 #[cfg(test)]
@@ -34,9 +38,11 @@ mod tests {
     fn assert_arena_linked() {
         use crate::assert_linked;
         assert_linked!(upb_Arena_New);
+        assert_linked!(upb_Arena_NewSized);
         assert_linked!(upb_Arena_Free);
         assert_linked!(upb_Arena_Malloc);
         assert_linked!(upb_Arena_Fuse);
+        assert_linked!(upb_Arena_SpaceAllocated);
     }
 
     #[gtest]

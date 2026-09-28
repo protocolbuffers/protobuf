@@ -43,6 +43,26 @@
 namespace google {
 namespace protobuf {
 
+namespace internal {
+
+static thread_local bool g_suppress_fallback_database_errors = false;
+
+ScopedFallbackDatabaseErrorSuppressor::ScopedFallbackDatabaseErrorSuppressor()
+    : previous_value_(g_suppress_fallback_database_errors) {
+  g_suppress_fallback_database_errors = true;
+}
+
+ScopedFallbackDatabaseErrorSuppressor::
+    ~ScopedFallbackDatabaseErrorSuppressor() {
+  g_suppress_fallback_database_errors = previous_value_;
+}
+
+bool ScopedFallbackDatabaseErrorSuppressor::IsSuppressed() {
+  return g_suppress_fallback_database_errors;
+}
+
+}  // namespace internal
+
 namespace {
 void RecordMessageNames(const DescriptorProto& desc_proto,
                         absl::string_view prefix,
@@ -787,14 +807,14 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddExtension(
   if (!field.extendee().empty() && field.extendee()[0] == '.') {
     // The extension is fully-qualified.  We can use it as a lookup key in
     // the by_symbol_ table.
-    if (!by_extension_
-             .insert({static_cast<int>(all_values_.size() - 1),
-                      EncodeString(field.extendee()), field.number()})
-             .second ||
-        std::binary_search(
+    if (std::binary_search(
             by_extension_flat_.begin(), by_extension_flat_.end(),
             std::make_pair(field.extendee().substr(1), field.number()),
-            by_extension_.key_comp())) {
+            by_extension_.key_comp()) ||
+        !by_extension_
+             .insert({static_cast<int>(all_values_.size() - 1),
+                      EncodeString(field.extendee()), field.number()})
+             .second) {
       ABSL_LOG(ERROR)
           << "Extension conflicts with extension already in database: "
              "extend "

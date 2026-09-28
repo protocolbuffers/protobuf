@@ -21,12 +21,12 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/map.h"
-#include "upb/message/unknown_fields.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -58,8 +58,8 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
           // represents the end of that allocation.
           size_t prev_alloc_size =
               (existing->data + existing->size) - (char*)existing;
-          if (SIZE_MAX - prev_alloc_size >= len) {
-            size_t new_alloc_size = prev_alloc_size + len;
+          size_t new_alloc_size;
+          if (!upb_AddOverflow(prev_alloc_size, len, &new_alloc_size)) {
             if (upb_Arena_TryExtend(arena, existing, prev_alloc_size,
                                     new_alloc_size)) {
               memcpy(UPB_PTR_AT(existing, prev_alloc_size, void), data, len);
@@ -82,8 +82,9 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     if (!view) return false;
     view->data = data;
   } else {
-    if (SIZE_MAX - sizeof(upb_StringView) < len) return false;
-    view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
+    size_t total_size;
+    if (upb_AddOverflow(sizeof(upb_StringView), len, &total_size)) return false;
+    view = upb_Arena_Malloc(arena, total_size);
     if (!view) return false;
     char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
     memcpy(copy, data, len);
@@ -105,10 +106,9 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
   UPB_ASSERT(count > 0);
   size_t total_len = 0;
   for (size_t i = 0; i < count; i++) {
-    if (SIZE_MAX - total_len < data[i].size) {
+    if (upb_AddOverflow(total_len, data[i].size, &total_len)) {
       return false;
     }
-    total_len += data[i].size;
   }
 
   {
@@ -120,8 +120,8 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
         if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
           size_t prev_alloc_size =
               (existing->data + existing->size) - (char*)existing;
-          if (SIZE_MAX - prev_alloc_size >= total_len) {
-            size_t new_alloc_size = prev_alloc_size + total_len;
+          size_t new_alloc_size;
+          if (!upb_AddOverflow(prev_alloc_size, total_len, &new_alloc_size)) {
             if (upb_Arena_TryExtend(arena, existing, prev_alloc_size,
                                     new_alloc_size)) {
               char* copy = UPB_PTR_AT(existing, prev_alloc_size, char);
@@ -138,11 +138,13 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
     }
   }
 
-  if (SIZE_MAX - sizeof(upb_StringView) < total_len) return false;
+  size_t total_size;
+  if (upb_AddOverflow(sizeof(upb_StringView), total_len, &total_size)) {
+    return false;
+  }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) return false;
 
-  upb_StringView* view =
-      upb_Arena_Malloc(arena, sizeof(upb_StringView) + total_len);
+  upb_StringView* view = upb_Arena_Malloc(arena, total_size);
   if (!view) return false;
   char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
   view->data = copy;
@@ -171,26 +173,6 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
     }
   }
   in->size = size;
-}
-
-upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(upb_Message* msg,
-                                                          upb_StringView* data,
-                                                          uintptr_t* iter,
-                                                          upb_Arena* arena) {
-  upb_MessageUnknown unknown;
-  unknown.type = kUpb_MessageUnknownType_StringView;
-  unknown.value.bytes = *data;
-
-  upb_Message_DeleteUnknownStatus res =
-      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
-  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
-  if (res == kUpb_DeleteUnknown_IterUpdated ||
-      res == kUpb_DeleteUnknown_DeletedLast) {
-    // the unknown data remains the same on the result of
-    // kUpb_DeleteUnknown_AllocFail.
-    *data = unknown.value.bytes;
-  }
-  return res;
 }
 
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
@@ -274,4 +256,23 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         break;
     }
   }
+}
+
+bool upb_Message_NextSerializableField(const upb_Message* msg,
+                                       const upb_MiniTable* mt,
+                                       const upb_MiniTableField** f,
+                                       uintptr_t* iter) {
+  const size_t field_count = upb_MiniTable_FieldCount(mt);
+  uintptr_t i = *iter;
+  while (i < field_count) {
+    const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(mt, i);
+    if (UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, field)) {
+      *f = field;
+      *iter = i + 1;
+      return true;
+    }
+    i++;
+  }
+  *iter = i;
+  return false;
 }

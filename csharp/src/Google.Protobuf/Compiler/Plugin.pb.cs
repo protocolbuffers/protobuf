@@ -58,9 +58,11 @@ namespace Google.Protobuf.Compiler {
 
   }
   #region Messages
-  /// <summary>
-  /// The version number of protocol compiler.
-  /// </summary>
+  /**
+   * <summary>
+   *  The version number of protocol compiler.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Version : pb::IMessage<Version>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -197,10 +199,12 @@ namespace Google.Protobuf.Compiler {
     private readonly static string SuffixDefaultValue = "";
 
     private string suffix_;
-    /// <summary>
-    /// A suffix for alpha, beta or rc release, e.g., "alpha-1", "rc2". It should
-    /// be empty for mainline stable releases.
-    /// </summary>
+    /**
+     * <summary>
+     *  A suffix for alpha, beta or rc release, e.g., "alpha-1", "rc2". It should
+     *  be empty for mainline stable releases.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Suffix {
@@ -435,9 +439,11 @@ namespace Google.Protobuf.Compiler {
 
   }
 
-  /// <summary>
-  /// An encoded CodeGeneratorRequest is written to the plugin's stdin.
-  /// </summary>
+  /**
+   * <summary>
+   *  An encoded CodeGeneratorRequest is written to the plugin's stdin.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CodeGeneratorRequest : pb::IMessage<CodeGeneratorRequest>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -492,11 +498,13 @@ namespace Google.Protobuf.Compiler {
     private static readonly pb::FieldCodec<string> _repeated_fileToGenerate_codec
         = pb::FieldCodec.ForString(10);
     private readonly pbc::RepeatedField<string> fileToGenerate_ = new pbc::RepeatedField<string>();
-    /// <summary>
-    /// The .proto files that were explicitly listed on the command-line.  The
-    /// code generator should generate code only for these files.  Each file's
-    /// descriptor will be included in proto_file, below.
-    /// </summary>
+    /**
+     * <summary>
+     *  The .proto files that were explicitly listed on the command-line.  The
+     *  code generator should generate code only for these files.  Each file's
+     *  descriptor will be included in proto_file, below.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<string> FileToGenerate {
@@ -508,9 +516,11 @@ namespace Google.Protobuf.Compiler {
     private readonly static string ParameterDefaultValue = "";
 
     private string parameter_;
-    /// <summary>
-    /// The generator parameter passed on the command-line.
-    /// </summary>
+    /**
+     * <summary>
+     *  The generator parameter passed on the command-line.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Parameter {
@@ -537,27 +547,29 @@ namespace Google.Protobuf.Compiler {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FileDescriptorProto> _repeated_protoFile_codec
         = pb::FieldCodec.ForMessage(122, global::Google.Protobuf.Reflection.FileDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> protoFile_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto>();
-    /// <summary>
-    /// FileDescriptorProtos for all files in files_to_generate and everything
-    /// they import.  The files will appear in topological order, so each file
-    /// appears before any file that imports it.
-    ///
-    /// Note: the files listed in files_to_generate will include runtime-retention
-    /// options only, but all other files will include source-retention options.
-    /// The source_file_descriptors field below is available in case you need
-    /// source-retention options for files_to_generate.
-    ///
-    /// protoc guarantees that all proto_files will be written after
-    /// the fields above, even though this is not technically guaranteed by the
-    /// protobuf wire format.  This theoretically could allow a plugin to stream
-    /// in the FileDescriptorProtos and handle them one by one rather than read
-    /// the entire set into memory at once.  However, as of this writing, this
-    /// is not similarly optimized on protoc's end -- it will store all fields in
-    /// memory at once before sending them to the plugin.
-    ///
-    /// Type names of fields and extensions in the FileDescriptorProto are always
-    /// fully qualified.
-    /// </summary>
+    /**
+     * <summary>
+     *  FileDescriptorProtos for all files in files_to_generate and everything
+     *  they import.  The files will appear in topological order, so each file
+     *  appears before any file that imports it.
+     * 
+     *  Note: the files listed in files_to_generate will include runtime-retention
+     *  options only, but all other files will include source-retention options.
+     *  The source_file_descriptors field below is available in case you need
+     *  source-retention options for files_to_generate.
+     * 
+     *  protoc guarantees that all proto_files will be written after
+     *  the fields above, even though this is not technically guaranteed by the
+     *  protobuf wire format.  This theoretically could allow a plugin to stream
+     *  in the FileDescriptorProtos and handle them one by one rather than read
+     *  the entire set into memory at once.  However, as of this writing, this
+     *  is not similarly optimized on protoc's end -- it will store all fields in
+     *  memory at once before sending them to the plugin.
+     * 
+     *  Type names of fields and extensions in the FileDescriptorProto are always
+     *  fully qualified.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> ProtoFile {
@@ -569,11 +581,13 @@ namespace Google.Protobuf.Compiler {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.FileDescriptorProto> _repeated_sourceFileDescriptors_codec
         = pb::FieldCodec.ForMessage(138, global::Google.Protobuf.Reflection.FileDescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> sourceFileDescriptors_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto>();
-    /// <summary>
-    /// File descriptors with all options, including source-retention options.
-    /// These descriptors are only provided for the files listed in
-    /// files_to_generate.
-    /// </summary>
+    /**
+     * <summary>
+     *  File descriptors with all options, including source-retention options.
+     *  These descriptors are only provided for the files listed in
+     *  files_to_generate.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.FileDescriptorProto> SourceFileDescriptors {
@@ -583,9 +597,11 @@ namespace Google.Protobuf.Compiler {
     /// <summary>Field number for the "compiler_version" field.</summary>
     public const int CompilerVersionFieldNumber = 3;
     private global::Google.Protobuf.Compiler.Version compilerVersion_;
-    /// <summary>
-    /// The version number of protocol compiler.
-    /// </summary>
+    /**
+     * <summary>
+     *  The version number of protocol compiler.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Compiler.Version CompilerVersion {
@@ -811,9 +827,11 @@ namespace Google.Protobuf.Compiler {
 
   }
 
-  /// <summary>
-  /// The plugin writes an encoded CodeGeneratorResponse to stdout.
-  /// </summary>
+  /**
+   * <summary>
+   *  The plugin writes an encoded CodeGeneratorResponse to stdout.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class CodeGeneratorResponse : pb::IMessage<CodeGeneratorResponse>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -870,16 +888,18 @@ namespace Google.Protobuf.Compiler {
     private readonly static string ErrorDefaultValue = "";
 
     private string error_;
-    /// <summary>
-    /// Error message.  If non-empty, code generation failed.  The plugin process
-    /// should exit with status code zero even if it reports an error in this way.
-    ///
-    /// This should be used to indicate errors in .proto files which prevent the
-    /// code generator from generating correct code.  Errors which indicate a
-    /// problem in protoc itself -- such as the input CodeGeneratorRequest being
-    /// unparseable -- should be reported by writing a message to stderr and
-    /// exiting with a non-zero status code.
-    /// </summary>
+    /**
+     * <summary>
+     *  Error message.  If non-empty, code generation failed.  The plugin process
+     *  should exit with status code zero even if it reports an error in this way.
+     * 
+     *  This should be used to indicate errors in .proto files which prevent the
+     *  code generator from generating correct code.  Errors which indicate a
+     *  problem in protoc itself -- such as the input CodeGeneratorRequest being
+     *  unparseable -- should be reported by writing a message to stderr and
+     *  exiting with a non-zero status code.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Error {
@@ -906,10 +926,12 @@ namespace Google.Protobuf.Compiler {
     private readonly static ulong SupportedFeaturesDefaultValue = 0UL;
 
     private ulong supportedFeatures_;
-    /// <summary>
-    /// A bitmask of supported features that the code generator supports.
-    /// This is a bitwise "or" of values from the Feature enum.
-    /// </summary>
+    /**
+     * <summary>
+     *  A bitmask of supported features that the code generator supports.
+     *  This is a bitwise "or" of values from the Feature enum.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public ulong SupportedFeatures {
@@ -937,12 +959,14 @@ namespace Google.Protobuf.Compiler {
     private readonly static int MinimumEditionDefaultValue = 0;
 
     private int minimumEdition_;
-    /// <summary>
-    /// The minimum edition this plugin supports.  This will be treated as an
-    /// Edition enum, but we want to allow unknown values.  It should be specified
-    /// according the edition enum value, *not* the edition number.  Only takes
-    /// effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
-    /// </summary>
+    /**
+     * <summary>
+     *  The minimum edition this plugin supports.  This will be treated as an
+     *  Edition enum, but we want to allow unknown values.  It should be specified
+     *  according the edition enum value, *not* the edition number.  Only takes
+     *  effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int MinimumEdition {
@@ -970,12 +994,14 @@ namespace Google.Protobuf.Compiler {
     private readonly static int MaximumEditionDefaultValue = 0;
 
     private int maximumEdition_;
-    /// <summary>
-    /// The maximum edition this plugin supports.  This will be treated as an
-    /// Edition enum, but we want to allow unknown values.  It should be specified
-    /// according the edition enum value, *not* the edition number.  Only takes
-    /// effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
-    /// </summary>
+    /**
+     * <summary>
+     *  The maximum edition this plugin supports.  This will be treated as an
+     *  Edition enum, but we want to allow unknown values.  It should be specified
+     *  according the edition enum value, *not* the edition number.  Only takes
+     *  effect for plugins that have FEATURE_SUPPORTS_EDITIONS set.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int MaximumEdition {
@@ -1239,18 +1265,22 @@ namespace Google.Protobuf.Compiler {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// Sync with code_generator.h.
-      /// </summary>
+      /**
+       * <summary>
+       *  Sync with code_generator.h.
+       * </summary>
+       */
       public enum Feature {
         [pbr::OriginalName("FEATURE_NONE")] None = 0,
         [pbr::OriginalName("FEATURE_PROTO3_OPTIONAL")] Proto3Optional = 1,
         [pbr::OriginalName("FEATURE_SUPPORTS_EDITIONS")] SupportsEditions = 2,
       }
 
-      /// <summary>
-      /// Represents a single generated file.
-      /// </summary>
+      /**
+       * <summary>
+       *  Represents a single generated file.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class File : pb::IMessage<File>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1304,19 +1334,21 @@ namespace Google.Protobuf.Compiler {
         private readonly static string NameDefaultValue = "";
 
         private string name_;
-        /// <summary>
-        /// The file name, relative to the output directory.  The name must not
-        /// contain "." or ".." components and must be relative, not be absolute (so,
-        /// the file cannot lie outside the output directory).  "/" must be used as
-        /// the path separator, not "\".
-        ///
-        /// If the name is omitted, the content will be appended to the previous
-        /// file.  This allows the generator to break large files into small chunks,
-        /// and allows the generated text to be streamed back to protoc so that large
-        /// files need not reside completely in memory at one time.  Note that as of
-        /// this writing protoc does not optimize for this -- it will read the entire
-        /// CodeGeneratorResponse before writing files to disk.
-        /// </summary>
+        /**
+         * <summary>
+         *  The file name, relative to the output directory.  The name must not
+         *  contain "." or ".." components and must be relative, not be absolute (so,
+         *  the file cannot lie outside the output directory).  "/" must be used as
+         *  the path separator, not "\".
+         * 
+         *  If the name is omitted, the content will be appended to the previous
+         *  file.  This allows the generator to break large files into small chunks,
+         *  and allows the generated text to be streamed back to protoc so that large
+         *  files need not reside completely in memory at one time.  Note that as of
+         *  this writing protoc does not optimize for this -- it will read the entire
+         *  CodeGeneratorResponse before writing files to disk.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string Name {
@@ -1343,45 +1375,47 @@ namespace Google.Protobuf.Compiler {
         private readonly static string InsertionPointDefaultValue = "";
 
         private string insertionPoint_;
-        /// <summary>
-        /// If non-empty, indicates that the named file should already exist, and the
-        /// content here is to be inserted into that file at a defined insertion
-        /// point.  This feature allows a code generator to extend the output
-        /// produced by another code generator.  The original generator may provide
-        /// insertion points by placing special annotations in the file that look
-        /// like:
-        ///   @@protoc_insertion_point(NAME)
-        /// The annotation can have arbitrary text before and after it on the line,
-        /// which allows it to be placed in a comment.  NAME should be replaced with
-        /// an identifier naming the point -- this is what other generators will use
-        /// as the insertion_point.  Code inserted at this point will be placed
-        /// immediately above the line containing the insertion point (thus multiple
-        /// insertions to the same point will come out in the order they were added).
-        /// The double-@ is intended to make it unlikely that the generated code
-        /// could contain things that look like insertion points by accident.
-        ///
-        /// For example, the C++ code generator places the following line in the
-        /// .pb.h files that it generates:
-        ///   // @@protoc_insertion_point(namespace_scope)
-        /// This line appears within the scope of the file's package namespace, but
-        /// outside of any particular class.  Another plugin can then specify the
-        /// insertion_point "namespace_scope" to generate additional classes or
-        /// other declarations that should be placed in this scope.
-        ///
-        /// Note that if the line containing the insertion point begins with
-        /// whitespace, the same whitespace will be added to every line of the
-        /// inserted text.  This is useful for languages like Python, where
-        /// indentation matters.  In these languages, the insertion point comment
-        /// should be indented the same amount as any inserted code will need to be
-        /// in order to work correctly in that context.
-        ///
-        /// The code generator that generates the initial file and the one which
-        /// inserts into it must both run as part of a single invocation of protoc.
-        /// Code generators are executed in the order in which they appear on the
-        /// command line.
-        ///
-        /// If |insertion_point| is present, |name| must also be present.
-        /// </summary>
+        /**
+         * <summary>
+         *  If non-empty, indicates that the named file should already exist, and the
+         *  content here is to be inserted into that file at a defined insertion
+         *  point.  This feature allows a code generator to extend the output
+         *  produced by another code generator.  The original generator may provide
+         *  insertion points by placing special annotations in the file that look
+         *  like:
+         *    @@protoc_insertion_point(NAME)
+         *  The annotation can have arbitrary text before and after it on the line,
+         *  which allows it to be placed in a comment.  NAME should be replaced with
+         *  an identifier naming the point -- this is what other generators will use
+         *  as the insertion_point.  Code inserted at this point will be placed
+         *  immediately above the line containing the insertion point (thus multiple
+         *  insertions to the same point will come out in the order they were added).
+         *  The double-@ is intended to make it unlikely that the generated code
+         *  could contain things that look like insertion points by accident.
+         * 
+         *  For example, the C++ code generator places the following line in the
+         *  .pb.h files that it generates:
+         *    // @@protoc_insertion_point(namespace_scope)
+         *  This line appears within the scope of the file's package namespace, but
+         *  outside of any particular class.  Another plugin can then specify the
+         *  insertion_point "namespace_scope" to generate additional classes or
+         *  other declarations that should be placed in this scope.
+         * 
+         *  Note that if the line containing the insertion point begins with
+         *  whitespace, the same whitespace will be added to every line of the
+         *  inserted text.  This is useful for languages like Python, where
+         *  indentation matters.  In these languages, the insertion point comment
+         *  should be indented the same amount as any inserted code will need to be
+         *  in order to work correctly in that context.
+         * 
+         *  The code generator that generates the initial file and the one which
+         *  inserts into it must both run as part of a single invocation of protoc.
+         *  Code generators are executed in the order in which they appear on the
+         *  command line.
+         * 
+         *  If |insertion_point| is present, |name| must also be present.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string InsertionPoint {
@@ -1408,9 +1442,11 @@ namespace Google.Protobuf.Compiler {
         private readonly static string ContentDefaultValue = "";
 
         private string content_;
-        /// <summary>
-        /// The file contents.
-        /// </summary>
+        /**
+         * <summary>
+         *  The file contents.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string Content {
@@ -1435,11 +1471,13 @@ namespace Google.Protobuf.Compiler {
         /// <summary>Field number for the "generated_code_info" field.</summary>
         public const int GeneratedCodeInfoFieldNumber = 16;
         private global::Google.Protobuf.Reflection.GeneratedCodeInfo generatedCodeInfo_;
-        /// <summary>
-        /// Information describing the file content being inserted. If an insertion
-        /// point is used, this information will be appropriately offset and inserted
-        /// into the code generation metadata for the generated files.
-        /// </summary>
+        /**
+         * <summary>
+         *  Information describing the file content being inserted. If an insertion
+         *  point is used, this information will be appropriately offset and inserted
+         *  into the code generation metadata for the generated files.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.Reflection.GeneratedCodeInfo GeneratedCodeInfo {

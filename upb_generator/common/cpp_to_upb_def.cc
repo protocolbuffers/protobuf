@@ -39,8 +39,7 @@ google_protobuf_FileDescriptorProto* ToUpbProto(const FileDescriptor* file,
 
 void AddFile(const FileDescriptor* file, upb::DefPool* pool) {
   // Avoid adding the same file twice.
-  const std::string name(file->name());
-  if (pool->FindFileByName(name.c_str())) return;
+  if (pool->FindFileByName(file->name())) return;
 
   // Like a google::protobuf::DescriptorPool, a upb::DefPool requires that all
   // dependencies are added first.
@@ -56,17 +55,16 @@ void AddFile(const FileDescriptor* file, upb::DefPool* pool) {
 
 upb::MessageDefPtr FindMessageDef(upb::DefPool& pool,
                                   const Descriptor* descriptor) {
-  const std::string name(descriptor->full_name());
-  upb::MessageDefPtr message_def = pool.FindMessageByName(name.c_str());
-  ABSL_CHECK(message_def) << "No message named " << name;
+  upb::MessageDefPtr message_def =
+      pool.FindMessageByName(descriptor->full_name());
+  ABSL_CHECK(message_def) << "No message named " << descriptor->full_name();
   return message_def;
 }
 
 upb::EnumDefPtr FindEnumDef(upb::DefPool& pool,
                             const EnumDescriptor* enum_descriptor) {
-  const std::string name(enum_descriptor->full_name());
-  upb::EnumDefPtr enum_def = pool.FindEnumByName(name.c_str());
-  ABSL_CHECK(enum_def) << "No enum named " << name;
+  upb::EnumDefPtr enum_def = pool.FindEnumByName(enum_descriptor->full_name());
+  ABSL_CHECK(enum_def) << "No enum named " << enum_descriptor->full_name();
   return enum_def;
 }
 
@@ -84,8 +82,7 @@ upb::FieldDefPtr FindBaseFieldDef(upb::DefPool& pool,
 upb::FieldDefPtr FindExtensionDef(upb::DefPool& pool,
                                   const FieldDescriptor* field) {
   ABSL_CHECK(field->is_extension());
-  const std::string name(field->full_name());
-  return pool.FindExtensionByName(name.c_str());
+  return pool.FindExtensionByName(field->full_name());
 }
 
 const FieldDescriptor* FindFieldDescriptor(

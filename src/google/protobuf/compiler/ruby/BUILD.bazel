@@ -4,7 +4,6 @@
 
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("//build_defs:cpp_opts.bzl", "COPTS")
 
 cc_binary(
@@ -44,6 +43,7 @@ cc_library(
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
     ],
 )
 
@@ -74,7 +74,10 @@ cc_test(
     ],
     deps = [
         ":ruby",
+        "//:protobuf",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
         "//src/google/protobuf/io",
         "//src/google/protobuf/io:printer",
         "//src/google/protobuf/testing",

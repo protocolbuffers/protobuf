@@ -1816,9 +1816,7 @@ public final class TextFormat {
       throws ParseException {
     Message.Builder builder = Internal.getDefaultInstance(protoClass).newBuilderForType();
     merge(input, builder);
-    @SuppressWarnings("unchecked")
-    T output = (T) builder.build();
-    return output;
+    return protoClass.cast(builder.build());
   }
 
   /**
@@ -1858,9 +1856,7 @@ public final class TextFormat {
       throws ParseException {
     Message.Builder builder = Internal.getDefaultInstance(protoClass).newBuilderForType();
     merge(input, extensionRegistry, builder);
-    @SuppressWarnings("unchecked")
-    T output = (T) builder.build();
-    return output;
+    return protoClass.cast(builder.build());
   }
 
   /**

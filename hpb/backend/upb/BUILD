@@ -126,13 +126,14 @@ cc_library(
     deps = [
         ":interop",
         ":repeated_field_iterator",
-        "//hpb",
-        "//hpb:multibackend",
+        "//hpb:ptr",
+        "//hpb/internal",
         "//hpb/internal:template_help",
-        "//upb/base",
         "//upb/mem",
         "//upb/message",
         "//upb/message:copy",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
     ],
 )
 

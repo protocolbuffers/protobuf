@@ -74,9 +74,6 @@ template <typename Key, typename T>
 class MapFieldLite;
 class MapFieldBase;
 
-template <typename Derived, typename Key, typename T>
-class MapField;
-
 struct MapTestPeer;
 struct MapBenchmarkPeer;
 
@@ -1105,6 +1102,15 @@ class RustMapHelper {
   static google::protobuf::MessageLite* PlacementNew(const MessageLite* prototype,
                                            void* mem) {
     return prototype->GetClassData()->PlacementNew(mem, /* arena = */ nullptr);
+  }
+
+  template <typename Map>
+  static void DestructiveMove(Map* dest, UntypedMapBase* src) {
+    dest->clear();
+    ABSL_DCHECK_EQ(src->arena(), nullptr);
+    dest->UntypedSwap(dest->arena(), *src, nullptr);
+    src->ClearTable(nullptr, /*reset=*/false);
+    delete src;
   }
 };
 
