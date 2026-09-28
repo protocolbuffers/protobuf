@@ -66,6 +66,17 @@ final class BooleanArrayList extends AbstractProtobufList<Boolean>
         isMutable);
   }
 
+  /**
+   * Returns a new mutable list that takes ownership of {@code array} and contains all of its
+   * elements.
+   *
+   * <p>The array is used directly as the backing store, without copying. The caller must not read
+   * or write {@code array} after passing it in.
+   */
+  static BooleanArrayList unsafeWrap(boolean[] array) {
+    return new BooleanArrayList(array, array.length, /* isMutable= */ true);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();
