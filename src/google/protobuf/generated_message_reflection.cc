@@ -47,7 +47,6 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
