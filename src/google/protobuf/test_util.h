@@ -667,12 +667,14 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
   EXPECT_EQ(227,
             sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(nested_bar_,
             reflection->GetRepeatedEnum(message, F("repeated_nested_enum"), 0));
   EXPECT_EQ(foreign_bar_, reflection->GetRepeatedEnum(
                               message, F("repeated_foreign_enum"), 0));
   EXPECT_EQ(import_bar_,
             reflection->GetRepeatedEnum(message, F("repeated_import_enum"), 0));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   EXPECT_EQ("224", reflection->GetRepeatedString(
                        message, F("repeated_string_piece"), 0));
@@ -736,12 +738,14 @@ inline void TestUtil::ReflectionTester::ExpectAllFieldsSetViaReflection2(
   EXPECT_EQ(327,
             sub_message->GetReflection()->GetInt32(*sub_message, nested_b_));
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(nested_baz_,
             reflection->GetRepeatedEnum(message, F("repeated_nested_enum"), 1));
   EXPECT_EQ(foreign_baz_, reflection->GetRepeatedEnum(
                               message, F("repeated_foreign_enum"), 1));
   EXPECT_EQ(import_baz_,
             reflection->GetRepeatedEnum(message, F("repeated_import_enum"), 1));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   EXPECT_EQ("324", reflection->GetRepeatedString(
                        message, F("repeated_string_piece"), 1));
@@ -859,8 +863,10 @@ inline void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
   EXPECT_EQ(611, reflection->GetRepeatedFloat(message, F("packed_float"), 0));
   EXPECT_EQ(612, reflection->GetRepeatedDouble(message, F("packed_double"), 0));
   EXPECT_TRUE(reflection->GetRepeatedBool(message, F("packed_bool"), 0));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(foreign_bar_,
             reflection->GetRepeatedEnum(message, F("packed_enum"), 0));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   EXPECT_EQ(701, reflection->GetRepeatedInt32(message, F("packed_int32"), 1));
   EXPECT_EQ(702, reflection->GetRepeatedInt64(message, F("packed_int64"), 1));
@@ -879,8 +885,10 @@ inline void TestUtil::ReflectionTester::ExpectPackedFieldsSetViaReflection(
   EXPECT_EQ(711, reflection->GetRepeatedFloat(message, F("packed_float"), 1));
   EXPECT_EQ(712, reflection->GetRepeatedDouble(message, F("packed_double"), 1));
   EXPECT_FALSE(reflection->GetRepeatedBool(message, F("packed_bool"), 1));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(foreign_baz_,
             reflection->GetRepeatedEnum(message, F("packed_enum"), 1));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 // -------------------------------------------------------------------

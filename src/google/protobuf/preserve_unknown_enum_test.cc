@@ -185,7 +185,9 @@ TEST(PreserveUnknownEnumTest, DynamicEnumValueDescriptors) {
 
   // Check the repeated case too.
   const FieldDescriptor* repeated_field = d->FindFieldByName("repeated_e");
+  PROTOBUF_IGNORE_DEPRECATION_START
   enum_value = r->GetRepeatedEnum(message, repeated_field, 0);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(enum_value->number(),
             static_cast<int>(proto3_preserve_unknown_enum_unittest::E_EXTRA));
   // Should reuse the same EnumValueDescriptor, even for a different field.
@@ -248,8 +250,10 @@ TEST(PreserveUnknownEnumTest, Proto2CatchesUnknownValues) {
   PROTOBUF_IGNORE_DEPRECATION_STOP
   r->SetRepeatedEnumValue(&message, repeated_field, 0, 4242);
   // repeated_nested_enum was set to bar above, this should not have changed.
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(r->GetRepeatedEnum(message, repeated_field, 0)->number(),
             proto2_unittest::TestAllTypes::BAR);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   r->AddEnumValue(&message, repeated_field, 4242);
   // No element should be added
   EXPECT_EQ(message.repeated_nested_enum_size(), 1);
