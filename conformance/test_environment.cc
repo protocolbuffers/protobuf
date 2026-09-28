@@ -24,9 +24,12 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "absl/types/span.h"
+#include "conformance/failure_list.h"
 #include "conformance/fork_pipe_runner.h"
 #include "conformance/global_test_environment.h"
-#include "conformance/test_manager.h"
+#include "conformance/result_ledger.h"
+#include "conformance/result_listener.h"
 #include "conformance/test_runner.h"
 #include "conformance/testee.h"
 
@@ -112,54 +115,26 @@ class ForwardingEnvironment : public testing::Environment {
 
 }  // namespace
 
-Statistics Statistics::From(const TestManager& manager) {
-  Statistics statistics;
-  statistics.skipped_tests = manager.skipped();
-  statistics.listed_skips = manager.listed_skips();
-  statistics.tolerated_failures = manager.tolerated_failures();
-  statistics.expected_failures = manager.expected_failures();
-  statistics.unexpected_failures = manager.unexpected_failures();
-  statistics.expected_successes = manager.expected_successes();
-  statistics.unexpected_successes = manager.unexpected_successes();
-  return statistics;
-}
+// Hooks ReportUncheckedResults() into the end of every gtest test.  gtest
+// still attributes failures to the test at that point (it forgets the current
+// test only after the listeners ran).
+class ConformanceEnvironment::UncheckedResultReporter
+    : public testing::EmptyTestEventListener {
+ public:
+  explicit UncheckedResultReporter(
+      ConformanceEnvironment* absl_nonnull environment)
+      : environment_(environment) {}
 
-Statistics Statistics::operator-(const Statistics& other) const {
-  Statistics delta;
-  delta.skipped_tests = skipped_tests - other.skipped_tests;
-  delta.listed_skips = listed_skips - other.listed_skips;
-  delta.tolerated_failures = tolerated_failures - other.tolerated_failures;
-  delta.expected_failures = expected_failures - other.expected_failures;
-  delta.unexpected_failures = unexpected_failures - other.unexpected_failures;
-  delta.expected_successes = expected_successes - other.expected_successes;
-  delta.unexpected_successes =
-      unexpected_successes - other.unexpected_successes;
-  return delta;
-}
+  void OnTestEnd(const testing::TestInfo& /*test_info*/) override {
+    environment_->ReportUncheckedResults();
+  }
 
-Statistics& Statistics::operator+=(const Statistics& other) {
-  skipped_tests += other.skipped_tests;
-  listed_skips += other.listed_skips;
-  tolerated_failures += other.tolerated_failures;
-  expected_failures += other.expected_failures;
-  unexpected_failures += other.unexpected_failures;
-  expected_successes += other.expected_successes;
-  unexpected_successes += other.unexpected_successes;
-  return *this;
-}
+ private:
+  ConformanceEnvironment* const absl_nonnull environment_;
+};
 
-void Statistics::RecordProperties() const {
-  testing::Test::RecordProperty("skipped_tests", skipped_tests);
-  testing::Test::RecordProperty("listed_skips", listed_skips);
-  testing::Test::RecordProperty("tolerated_failures", tolerated_failures);
-  testing::Test::RecordProperty("expected_failures", expected_failures);
-  testing::Test::RecordProperty("unexpected_failures", unexpected_failures);
-  testing::Test::RecordProperty("expected_successes", expected_successes);
-  testing::Test::RecordProperty("unexpected_successes", unexpected_successes);
-}
-
-TestManager& GetGlobalTestManager() {
-  return ConformanceEnvironment::Get().test_manager();
+const FailureList& GetGlobalFailureList() {
+  return ConformanceEnvironment::Get().ledger().failure_list();
 }
 
 ConformanceEnvironment::ConformanceEnvironment(
@@ -167,7 +142,9 @@ ConformanceEnvironment::ConformanceEnvironment(
     : options_(std::move(options)),
       owned_runner_(TakeOwnedRunner(options_)),
       testee_(std::make_unique<Testee>(
-          options_.runner != nullptr ? options_.runner : owned_runner_.get())) {
+          options_.runner != nullptr ? options_.runner : owned_runner_.get())),
+      result_listener_(new ResultListener(&ledger_)),
+      unchecked_result_reporter_(new UncheckedResultReporter(this)) {
   ABSL_CHECK(global_environment == nullptr)
       << "A global ConformanceEnvironment is already set.";
   global_environment = this;
@@ -175,16 +152,24 @@ ConformanceEnvironment::ConformanceEnvironment(
   // default) is meaningless, since proto2 and proto3 tests always run.  This is
   // the one place the maximum edition is clamped; see the option's comment.
   options_.maximum_edition = std::max(options_.maximum_edition, EDITION_PROTO3);
-  test_manager_.set_enforcement_level(options_.enforcement_level);
+  ledger_.set_enforcement_level(options_.enforcement_level);
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(result_listener_);
+  listeners.Append(unchecked_result_reporter_);
 }
 
 ConformanceEnvironment::~ConformanceEnvironment() {
-  // TestManager insists on being finalized before destruction.  An installed
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  delete listeners.Release(unchecked_result_reporter_);
+  delete listeners.Release(result_listener_);
+  // ResultLedger insists on being finalized before destruction.  An installed
   // environment is never destroyed (see Install()), so this only runs for
   // environments constructed by ScopedGlobalConformanceEnvironment in unit
   // tests, and those don't necessarily call TearDown(); make sure we don't
   // crash on the way out.
-  test_manager_.Finalize().IgnoreError();
+  ledger_.Finalize().IgnoreError();
   ABSL_CHECK_EQ(global_environment, this);
   global_environment = nullptr;
 }
@@ -195,11 +180,11 @@ ConformanceEnvironment& ConformanceEnvironment::Install(
       << "ConformanceEnvironment::Install() must only be called once.";
   // gtest deletes the environments it owns at the end of RUN_ALL_TESTS(), but
   // callers (e.g. the merged conformance_test_runner) still need the test
-  // manager afterwards.  So although this class is a testing::Environment, it
+  // ledger afterwards.  So although this class is a testing::Environment, it
   // isn't registered with gtest itself: gtest only gets a forwarding proxy,
   // and the real environment intentionally lives until the process exits.
   // Only the environment object leaks, though; TearDown() releases the testee.
-  // TODO: b/410122039 - register it directly once the legacy suites are gone.
+  // TODO: register it directly once the legacy suites are gone.
   auto* environment = new ConformanceEnvironment(std::move(options));
   testing::AddGlobalTestEnvironment(new ForwardingEnvironment(environment));
   return *environment;
@@ -209,8 +194,30 @@ ConformanceEnvironment& ConformanceEnvironment::Get() {
   ABSL_CHECK(global_environment != nullptr)
       << "No ConformanceEnvironment has been installed.  Conformance test "
          "binaries must call ConformanceEnvironment::Install() before "
-         "RUN_ALL_TESTS().";
+         "RUN_ALL_TESTS(); the usual way to do that is to depend on the "
+         "test_environment_main library instead of a generic gtest main.";
   return *global_environment;
+}
+
+void ConformanceEnvironment::ReportUncheckedResults() {
+  if (testee_ == nullptr) {
+    return;  // TearDown() has already run.
+  }
+  absl::Span<const std::string> tests_run = testee_->tests_run();
+  absl::Span<const std::string> new_tests =
+      tests_run.subspan(results_reconciled_);
+  results_reconciled_ = tests_run.size();
+  // Don't pile a second failure onto a test that bailed out before it could
+  // check its results.
+  if (testing::Test::HasFatalFailure()) {
+    return;
+  }
+  for (const std::string& test_name : new_tests) {
+    if (!ledger_.WasReported(test_name)) {
+      ADD_FAILURE() << "TestResult for " << test_name
+                    << " was never checked; wrap the matcher in Yields()";
+    }
+  }
 }
 
 Testee& ConformanceEnvironment::testee() {
@@ -223,7 +230,7 @@ Testee& ConformanceEnvironment::testee() {
 
 void ConformanceEnvironment::SetUp() {
   for (const std::string& failure_list : options_.failure_list_files) {
-    absl::Status status = test_manager_.LoadFailureList(failure_list);
+    absl::Status status = ledger_.LoadFailureList(failure_list);
     ASSERT_TRUE(status.ok())
         << "Failed to load failure list " << failure_list << ": " << status;
   }
@@ -231,7 +238,18 @@ void ConformanceEnvironment::SetUp() {
 }
 
 void ConformanceEnvironment::TearDown() {
-  Statistics::From(test_manager_).RecordProperties();
+  // What's left after the last test: results checked outside any test suite
+  // are only reported here, and results run after the last test (e.g. in a
+  // TearDownTestSuite()) are only checked here.
+  result_listener_->ReportRecordedResults();
+  ReportUncheckedResults();
+  Statistics::From(ledger_).RecordProperties();
+  for (const std::string& entry : ledger_.OverexpandedWildcards()) {
+    ADD_FAILURE() << "The failure list entry " << entry << " matched more than "
+                  << kMaximumWildcardExpansions
+                  << " tests, which hides too much.  List the failing tests "
+                     "individually, or narrow the wildcard.";
+  }
   const bool partial_run = partial_run_override_.value_or(IsPartialRun());
 
   // The path the failure list was rewritten to, if --fix succeeded.
@@ -266,7 +284,7 @@ void ConformanceEnvironment::TearDown() {
         }
       }
       if (!output_file.empty()) {
-        absl::Status status = test_manager_.SaveFailureList(output_file);
+        absl::Status status = ledger_.SaveFailureList(output_file);
         if (status.ok()) {
           ABSL_LOG(INFO) << "Wrote updated failure list to " << output_file;
           fixed_list = output_file;
@@ -278,7 +296,7 @@ void ConformanceEnvironment::TearDown() {
     }
   }
 
-  absl::Status status = test_manager_.Finalize();
+  absl::Status status = ledger_.Finalize();
   if (!status.ok() && set_up_succeeded_ &&
       options_.check_unseen_expected_failures) {
     if (partial_run) {
