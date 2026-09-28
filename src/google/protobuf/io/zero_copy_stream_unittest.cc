@@ -2090,6 +2090,53 @@ TEST(ZeroSizeArray, Output) {
   EXPECT_FALSE(output.Next(&data, &size));
 }
 
+TEST(NegativeSizeArray, Input) {
+  ArrayInputStream input(nullptr, -1);
+  const void* data;
+  int size;
+  EXPECT_FALSE(input.Next(&data, &size));
+  EXPECT_EQ(input.ByteCount(), 0);
+}
+
+TEST(NegativeSizeArray, Output) {
+  ArrayOutputStream output(nullptr, -1);
+  void* data;
+  int size;
+  EXPECT_FALSE(output.Next(&data, &size));
+  EXPECT_EQ(output.ByteCount(), 0);
+}
+
+TEST_F(IoTest, LimitingInputStreamNegativeLimit) {
+  const int kBufferSize = 64;
+  uint8_t buffer[kBufferSize] = {};
+  ArrayInputStream array_input(buffer, kBufferSize);
+  {
+    // A negative limit should be clamped to zero and not trigger spurious
+    // BackUp() on the underlying stream upon destruction.
+    LimitingInputStream input(&array_input, -1);
+    const void* data;
+    int size;
+    EXPECT_FALSE(input.Next(&data, &size));
+    EXPECT_EQ(input.ByteCount(), 0);
+  }
+  // The underlying stream must remain untouched and readable.
+  const void* data;
+  int size;
+  EXPECT_TRUE(array_input.Next(&data, &size));
+  EXPECT_GT(size, 0);
+}
+
+TEST_F(IoTest, CopyingAdaptorsNullStream) {
+  CopyingInputStreamAdaptor input_adaptor(nullptr);
+  const void* in_data;
+  int in_size;
+  EXPECT_FALSE(input_adaptor.Next(&in_data, &in_size));
+  EXPECT_FALSE(input_adaptor.Skip(10));
+
+  CopyingOutputStreamAdaptor output_adaptor(nullptr);
+  EXPECT_FALSE(output_adaptor.Flush());
+}
+
 }  // namespace
 }  // namespace io
 }  // namespace protobuf
