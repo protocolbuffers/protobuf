@@ -19,6 +19,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 import calendar
 import collections.abc
 import datetime
+import math
 from typing import Union
 import warnings
 from google.protobuf.internal import field_mask
@@ -208,33 +209,35 @@ class Timestamp(object):
 
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds since epoch to Timestamp."""
-    seconds = nanos // _NANOS_PER_SECOND
-    nanos = nanos % _NANOS_PER_SECOND
+    seconds, nanos = _SplitIntoSecondsAndNanos(nanos, _NANOS_PER_SECOND)
     _CheckTimestampValid(seconds, nanos)
     self.seconds = seconds
     self.nanos = nanos
 
   def FromMicroseconds(self, micros):
     """Converts microseconds since epoch to Timestamp."""
-    seconds = micros // _MICROS_PER_SECOND
-    nanos = (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND
+    seconds, nanos = _SplitIntoSecondsAndNanos(micros, _MICROS_PER_SECOND)
     _CheckTimestampValid(seconds, nanos)
     self.seconds = seconds
     self.nanos = nanos
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds since epoch to Timestamp."""
-    seconds = millis // _MILLIS_PER_SECOND
-    nanos = (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND
+    seconds, nanos = _SplitIntoSecondsAndNanos(millis, _MILLIS_PER_SECOND)
     _CheckTimestampValid(seconds, nanos)
     self.seconds = seconds
     self.nanos = nanos
 
   def FromSeconds(self, seconds):
     """Converts seconds since epoch to Timestamp."""
-    _CheckTimestampValid(seconds, 0)
+    # Non-floats are assigned unchanged, so types that only support __index__
+    # keep working.
+    nanos = 0
+    if isinstance(seconds, float):
+      seconds, nanos = _SplitIntoSecondsAndNanos(seconds, 1)
+    _CheckTimestampValid(seconds, nanos)
     self.seconds = seconds
-    self.nanos = 0
+    self.nanos = nanos
 
   def ToDatetime(self, tzinfo=None):
     """Converts Timestamp to a datetime.
@@ -420,27 +423,29 @@ class Duration(object):
   def FromNanoseconds(self, nanos):
     """Converts nanoseconds to Duration."""
     self._NormalizeDuration(
-        nanos // _NANOS_PER_SECOND, nanos % _NANOS_PER_SECOND
+        *_SplitIntoSecondsAndNanos(nanos, _NANOS_PER_SECOND)
     )
 
   def FromMicroseconds(self, micros):
     """Converts microseconds to Duration."""
     self._NormalizeDuration(
-        micros // _MICROS_PER_SECOND,
-        (micros % _MICROS_PER_SECOND) * _NANOS_PER_MICROSECOND,
+        *_SplitIntoSecondsAndNanos(micros, _MICROS_PER_SECOND)
     )
 
   def FromMilliseconds(self, millis):
     """Converts milliseconds to Duration."""
     self._NormalizeDuration(
-        millis // _MILLIS_PER_SECOND,
-        (millis % _MILLIS_PER_SECOND) * _NANOS_PER_MILLISECOND,
+        *_SplitIntoSecondsAndNanos(millis, _MILLIS_PER_SECOND)
     )
 
   def FromSeconds(self, seconds):
     """Converts seconds to Duration."""
-    self.seconds = seconds
-    self.nanos = 0
+    # Non-floats are assigned unchanged; see Timestamp.FromSeconds.
+    if isinstance(seconds, float):
+      self._NormalizeDuration(*_SplitIntoSecondsAndNanos(seconds, 1))
+    else:
+      self.seconds = seconds
+      self.nanos = 0
 
   def ToTimedelta(self) -> datetime.timedelta:
     """Converts Duration to timedelta."""
@@ -508,6 +513,28 @@ def _CheckDurationValid(seconds, nanos):
     )
   if (nanos < 0 and seconds > 0) or (nanos > 0 and seconds < 0):
     raise ValueError('Duration is not valid: Sign mismatch.')
+
+
+def _SplitIntoSecondsAndNanos(value, units_per_second):
+  """Splits a count of time units into whole seconds and nanos in [0, 1e9).
+
+  A float is rounded to the nearest nanosecond, ties to even; NaN or infinity
+  raises ValueError. units_per_second must divide 1e9.
+  """
+  nanos_per_unit = _NANOS_PER_SECOND // units_per_second
+  if not isinstance(value, float):
+    return (
+        value // units_per_second,
+        (value % units_per_second) * nanos_per_unit,
+    )
+  if not math.isfinite(value):
+    raise ValueError('Time value must be finite, got {0}.'.format(value))
+  seconds, remainder = divmod(value, units_per_second)
+  nanos = round(remainder * nanos_per_unit)
+  if nanos == _NANOS_PER_SECOND:
+    seconds += 1
+    nanos = 0
+  return int(seconds), nanos
 
 
 def _RoundTowardZero(value, divider):
