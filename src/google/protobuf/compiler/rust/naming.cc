@@ -329,6 +329,15 @@ std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
     }
   }
 
+  if (absl::StartsWith(name, "set_") && absl::EndsWith(name, "_opt")) {
+    absl::string_view without_both = name;
+    without_both.remove_prefix(4);
+    without_both.remove_suffix(4);
+    if (msg.FindFieldByName(without_both) != nullptr) {
+      return absl::StrCat(name, "_", field.number());
+    }
+  }
+
   return std::string(name);
 }
 

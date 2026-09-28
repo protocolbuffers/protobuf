@@ -284,3 +284,63 @@ fn test_submsg_clear() {
     // ...but it does clear the submsg's value:
     assert_that!(m.optional_nested_message().bb(), eq(0));
 }
+
+#[gtest]
+fn test_optional_setter_opt() {
+    let mut msg = TestProto3Optional::new();
+
+    // Scalar int32
+    assert_that!(msg.optional_int32_opt(), eq(None));
+    msg.set_optional_int32_opt(Some(42));
+    assert_that!(msg.has_optional_int32(), eq(true));
+    assert_that!(msg.optional_int32(), eq(42));
+    assert_that!(msg.optional_int32_opt(), eq(Some(42)));
+
+    msg.set_optional_int32_opt(None);
+    assert_that!(msg.has_optional_int32(), eq(false));
+    assert_that!(msg.optional_int32(), eq(0));
+    assert_that!(msg.optional_int32_opt(), eq(None));
+
+    // String
+    msg.set_optional_string_opt(Some("hello world"));
+    assert_that!(msg.has_optional_string(), eq(true));
+    assert_that!(msg.optional_string(), eq("hello world"));
+    assert_that!(msg.optional_string_opt(), eq(Some("hello world".into())));
+
+    msg.set_optional_string_opt(None::<&str>);
+    assert_that!(msg.has_optional_string(), eq(false));
+    assert_that!(msg.optional_string_opt(), eq(None));
+
+    // Bytes
+    msg.set_optional_bytes_opt(Some(&b"hello bytes"[..]));
+    assert_that!(msg.has_optional_bytes(), eq(true));
+    assert_that!(msg.optional_bytes(), eq(b"hello bytes"));
+    assert_that!(msg.optional_bytes_opt(), eq(Some(&b"hello bytes"[..])));
+
+    msg.set_optional_bytes_opt(None::<&[u8]>);
+    assert_that!(msg.has_optional_bytes(), eq(false));
+    assert_that!(msg.optional_bytes_opt(), eq(None));
+
+    // Enum
+    use test_proto3_optional::NestedEnum;
+    msg.set_optional_nested_enum_opt(Some(NestedEnum::Baz));
+    assert_that!(msg.has_optional_nested_enum(), eq(true));
+    assert_that!(msg.optional_nested_enum(), eq(NestedEnum::Baz));
+    assert_that!(msg.optional_nested_enum_opt(), eq(Some(NestedEnum::Baz)));
+
+    msg.set_optional_nested_enum_opt(None);
+    assert_that!(msg.has_optional_nested_enum(), eq(false));
+    assert_that!(msg.optional_nested_enum_opt(), eq(None));
+
+    // Message
+    use test_proto3_optional::NestedMessage;
+    let mut sub = NestedMessage::new();
+    sub.set_bb(100);
+    msg.set_optional_nested_message_opt(Some(sub));
+    assert_that!(msg.has_optional_nested_message(), eq(true));
+    assert_that!(msg.optional_nested_message().bb(), eq(100));
+
+    msg.set_optional_nested_message_opt(None::<NestedMessage>);
+    assert_that!(msg.has_optional_nested_message(), eq(false));
+    assert_that!(msg.optional_nested_message().bb(), eq(0));
+}

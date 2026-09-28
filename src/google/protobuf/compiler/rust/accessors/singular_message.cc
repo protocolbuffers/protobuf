@@ -151,11 +151,26 @@ void SingularMessage::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 }
               )rs");
            }},
+          {"setter_opt",
+           [&] {
+             if (accessor_case == AccessorCase::VIEW) return;
+             if (!field.has_presence()) return;
+             ctx.Emit(R"rs(
+                pub fn set_$raw_field_name$_opt(&mut self,
+                  val: $std$::option::Option<impl $pb$::IntoProxied<$msg_type$>>) {
+                  match val {
+                    $std$::option::Option::Some(val) => self.set_$raw_field_name$(val),
+                    $std$::option::Option::None => self.clear_$raw_field_name$(),
+                  }
+                }
+              )rs");
+           }},
       },
       R"rs(
             $getter$
             $getter_mut$
             $setter$
+            $setter_opt$
         )rs");
 }
 

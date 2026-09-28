@@ -168,12 +168,20 @@ TEST_F(RustGeneratorTest, EmitsFieldMetadata) {
       "set_int32_field", GeneratedCodeInfo::Annotation::SET, 2);
   CountMatchingAnnotations(
       {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0,
+       google::protobuf::DescriptorProto::kFieldFieldNumber, 0},
+      "set_int32_field_opt", GeneratedCodeInfo::Annotation::SET, 2);
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0,
        google::protobuf::DescriptorProto::kFieldFieldNumber, 1},
       "string_field", GeneratedCodeInfo::Annotation::NONE, 3);
   CountMatchingAnnotations(
       {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0,
        google::protobuf::DescriptorProto::kFieldFieldNumber, 1},
       "set_string_field", GeneratedCodeInfo::Annotation::SET, 2);
+  CountMatchingAnnotations(
+      {google::protobuf::FileDescriptorProto::kMessageTypeFieldNumber, 0,
+       google::protobuf::DescriptorProto::kFieldFieldNumber, 1},
+      "set_string_field_opt", GeneratedCodeInfo::Annotation::SET, 2);
 }
 
 TEST_F(RustGeneratorTest, EmitsEnumMetadata) {
