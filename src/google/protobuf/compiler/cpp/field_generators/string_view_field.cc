@@ -314,7 +314,6 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
         }
         inline void $Msg$::_internal_set_$name_internal$(::absl::string_view value) {
           $TsanDetectConcurrentMutation$;
-          $update_hasbit$;
           $field_$.Set(value, GetArena());
         }
       )cc");

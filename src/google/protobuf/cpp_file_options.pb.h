@@ -309,7 +309,6 @@ inline ::absl::string_view CppFileOptions::_internal_namespace_() const {
 }
 inline void CppFileOptions::_internal_set_namespace_(::absl::string_view value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.namespace__.Set(value, GetArena());
 }
 

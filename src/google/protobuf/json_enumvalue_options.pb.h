@@ -309,7 +309,6 @@ inline ::absl::string_view JsonEnumValueOptions::_internal_string() const {
 }
 inline void JsonEnumValueOptions::_internal_set_string(::absl::string_view value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  SetHasBit(_impl_._has_bits_[0], 0x00000001U);
   _impl_.string_.Set(value, GetArena());
 }
 
