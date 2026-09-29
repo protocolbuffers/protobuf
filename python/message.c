@@ -1556,7 +1556,9 @@ static bool PyUpb_AsReadBuffer(PyObject* arg, const char** buf,
     PyBuffer_Release(&buffer);
   }
 #else
+  UPB_IGNORE_DEPRECATION_START
   int err = PyObject_AsReadBuffer(arg, (const void**)buf, size);
+  UPB_IGNORE_DEPRECATION_STOP
 #endif
   if (err != 0) {
     PyErr_Clear();
