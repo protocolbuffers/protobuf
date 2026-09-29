@@ -10,7 +10,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "conformance/conformance.pb.h"
-#include "failure_list_trie_node.h"
+#include "conformance/failure_list_trie_node.h"
 
 namespace google {
 namespace protobuf {

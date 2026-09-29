@@ -94,7 +94,7 @@ class SingularEnum : public FieldGeneratorBase {
     if (is_oneof()) return;
 
     p->Emit(R"cc(
-      swap(this_.$field_$, other->$field_$);
+      swap($field_$, other->$field_$);
     )cc");
   }
 
@@ -301,7 +301,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      this_.$field_$.InternalSwap(&other->$field_$);
+      $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 

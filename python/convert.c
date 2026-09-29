@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "python/descriptor.h"
+#include "python/descriptor_pool.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/descriptor_constants.h"
@@ -60,7 +62,8 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
       return ret;
     }
     case kUpb_CType_Message:
-      return PyUpb_Message_Get((upb_Message*)val.msg_val,
+      return PyUpb_Message_Get(PyUpb_Arena_GetPool(arena),
+                               (upb_Message*)val.msg_val,
                                upb_FieldDef_MessageSubDef(f), arena);
     default:
       PyErr_Format(PyExc_SystemError,

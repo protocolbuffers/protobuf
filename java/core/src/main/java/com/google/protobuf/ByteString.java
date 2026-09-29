@@ -1764,7 +1764,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
     @Override
     public ByteBuffer asReadOnlyByteBuffer() {
-      return ByteBuffer.wrap(bytes, offset, length).asReadOnlyBuffer();
+      // slice() moves the offset out of the buffer's position and into its arrayOffset, which is
+      // inaccessible on a read-only buffer. Without it the returned buffer would have position
+      // offset and capacity bytes.length, exposing the rest of the backing array to absolute
+      // get(int) calls and to any caller that repositions the buffer.
+      return ByteBuffer.wrap(bytes, offset, length).slice().asReadOnlyBuffer();
     }
 
     @Override

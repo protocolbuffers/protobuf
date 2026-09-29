@@ -101,14 +101,12 @@ static char* upb_Encoder_EncodeVarint64(uint64_t val, char* ptr) {
 }
 
 UPB_INLINE
-bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg,
-                                        const upb_MiniTableField* field,
+bool _upb_Encoder_AddEnumValueToUnknown(upb_Message* msg, uint32_t field_num,
                                         uint64_t val, upb_Arena* arena) {
   // Unrecognized enum goes into unknown fields.
   // For packed fields the tag could be arbitrarily far in the past,
   // so we just re-encode the tag and value here.
-  const uint32_t tag =
-      ((uint32_t)field->UPB_PRIVATE(number) << 3) | kUpb_WireType_Varint;
+  const uint32_t tag = (field_num << 3) | kUpb_WireType_Varint;
   char buf[kUpb_Encoder_EncodeVarint32MaxSize +
            kUpb_Encoder_EncodeVarint64MaxSize];
   char* end = buf;

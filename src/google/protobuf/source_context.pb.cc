@@ -94,9 +94,8 @@ inline constexpr SourceContext::Impl_::Impl_(
             ::_pbi::ConstantInitialized()) {}
 
 template <typename>
-PROTOBUF_ALWAYS_INLINE_NODEBUG constexpr SourceContext::SourceContext(
-    ::_pbi::ConstantInitialized,
-    const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
+constexpr SourceContext::SourceContext(::_pbi::ConstantInitialized,
+                       const ::_pbi::ClassData* PROTOBUF_NONNULL class_data)
     : Super_(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
           class_data
@@ -118,9 +117,8 @@ constexpr auto SourceContext::_Internal::GenerateClassData() {
       &SourceContext::MergeImpl,
       Super_::GetNewImpl<SourceContext>(),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-      &SourceContext::Helpers_::SharedDtor,
-      &Helpers_::Clear, &Helpers_::ByteSizeLong,
-          &Helpers_::_InternalSerialize,
+      &SourceContext::SharedDtor,
+      &Clear, &ByteSizeLong, &_InternalSerialize,
 #endif  // PROTOBUF_CUSTOM_VTABLE
       PROTOBUF_FIELD_OFFSET(SourceContext, _impl_._cached_size_),
       &file_reflection_data[0],
@@ -206,7 +204,7 @@ SourceContext::SourceContext(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Helpers_::SharedCtor(*this, arena);
+  SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.SourceContext)
 }
 PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
@@ -238,16 +236,14 @@ PROTOBUF_NDEBUG_INLINE SourceContext::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
       : file_name_(arena) {}
 
-inline void SourceContext::Helpers_::SharedCtor(
-    ::_pb::MessageLite& self, ::_pb::Arena* PROTOBUF_NULLABLE arena) {
-  SourceContext& this_ = static_cast<SourceContext&>(self);
-  new (&this_._impl_) Impl_(this_.internal_visibility(), arena);
+inline void SourceContext::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
+  new (&_impl_) Impl_(internal_visibility(), arena);
 }
 SourceContext::~SourceContext() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceContext)
-  Helpers_::SharedDtor(*this);
+  SharedDtor(*this);
 }
-inline void SourceContext::Helpers_::SharedDtor(MessageLite& self) {
+inline void SourceContext::SharedDtor(MessageLite& self) {
   SourceContext& this_ = static_cast<SourceContext&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -266,7 +262,7 @@ SourceContext::GetClassData() const {
   return &SourceContext_globals_.class_data;
 }
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void SourceContext::Helpers_::Clear(MessageLite& base) {
+PROTOBUF_NOINLINE void SourceContext::Clear(MessageLite& base) {
   SourceContext& this_ = static_cast<SourceContext&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 PROTOBUF_NOINLINE void SourceContext::Clear() {
@@ -286,7 +282,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL SourceContext::Helpers_::_InternalSerialize(
+::uint8_t* PROTOBUF_NONNULL SourceContext::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const SourceContext& this_ = static_cast<const SourceContext&>(base);
@@ -324,7 +320,7 @@ PROTOBUF_NOINLINE void SourceContext::Clear() {
 }
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-::size_t SourceContext::Helpers_::ByteSizeLong(const MessageLite& base) {
+::size_t SourceContext::ByteSizeLong(const MessageLite& base) {
   const SourceContext& this_ = static_cast<const SourceContext&>(base);
 #else   // PROTOBUF_CUSTOM_VTABLE
 ::size_t SourceContext::ByteSizeLong() const {
@@ -384,17 +380,13 @@ void SourceContext::CopyFrom(const SourceContext& from) {
 }
 
 
-void SourceContext::Helpers_::InternalSwap(
-    ::_pb::MessageLite& PROTOBUF_RESTRICT self,
-    SourceContext* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
+void SourceContext::InternalSwap(SourceContext* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
-  SourceContext& this_ = static_cast<SourceContext&>(self);
-  auto* arena = this_.GetArena();
+  auto* arena = GetArena();
   ABSL_DCHECK_EQ(arena, other->GetArena());
-  this_._internal_metadata_.InternalSwap(&other->_internal_metadata_);
-  swap(this_._impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&this_._impl_.file_name_, &other->_impl_.file_name_,
-                                       arena);
+  _internal_metadata_.InternalSwap(&other->_internal_metadata_);
+  swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.file_name_, &other->_impl_.file_name_, arena);
 }
 
 ::google::protobuf::Metadata SourceContext::GetMetadata() const {

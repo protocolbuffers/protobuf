@@ -111,6 +111,7 @@ class ImmutableStringOneofFieldGenerator
   void GenerateBuilderSetMethod(io::Printer* printer) const;
   void GenerateBuilderClearMethod(io::Printer* printer) const;
   void GenerateBuilderSetBytesMethod(io::Printer* printer) const;
+  void GenerateBuilderParseMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutableStringFieldGenerator

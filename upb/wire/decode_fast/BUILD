@@ -39,6 +39,7 @@ cc_library(
         "field_fixed.c",
         "field_generic.c",
         "field_helpers.h",
+        "field_map.c",
         "field_message.c",
         "field_mismatch.c",
         "field_string.c",
@@ -73,6 +74,7 @@ cc_library(
         "//upb/port",
         "//upb/wire",
         "//upb/wire:decoder",
+        "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:eps_copy_input_stream_internal",
         "//upb/wire:reader",
@@ -162,6 +164,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = [
         "//upb:__pkg__",
+        "//upb/mini_descriptor:__pkg__",
         "//upb/wire:__subpackages__",
     ],
     deps = [

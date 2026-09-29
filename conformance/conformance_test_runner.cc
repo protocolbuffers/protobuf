@@ -30,11 +30,7 @@
 //   3. testee sends 4-byte length M (little endian)
 //   4. testee sends M bytes representing a ConformanceResponse proto
 
-#include <signal.h>
 #include <stdio.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 
 #include <algorithm>
 #include <cctype>
@@ -49,8 +45,8 @@
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
-#include "conformance_test.h"
-#include "fork_pipe_runner.h"
+#include "conformance/conformance_test.h"
+#include "conformance/fork_pipe_runner.h"
 
 using google::protobuf::ConformanceTestSuite;
 

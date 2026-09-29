@@ -10,33 +10,27 @@
 //! Rust is to pass around references and operate on those. Unfortunately,
 //! references come with two major drawbacks:
 //!
-//! * We must store the value somewhere in the memory to create a reference to
-//!   it. The value must be readable by a single load. However for Protobuf
-//!   fields it happens that the actual memory representation of a value differs
-//!   from what users expect and it is an implementation detail that can change
-//!   as more optimizations are implemented. For example, rarely accessed
-//!   `int64` fields can be represented in a packed format with 32 bits for the
-//!   value in the common case. Or, a single logical value can be spread across
-//!   multiple memory locations. For example, presence information for all the
-//!   fields in a protobuf message is centralized in a bitset.
-//! * We cannot store extra data on the reference that might be necessary for
-//!   correctly manipulating it (and custom-metadata DSTs do not exist yet in
-//!   Rust). Concretely, messages, string, bytes, and repeated fields in UPB
-//!   need to carry around an arena parameter separate from the data pointer to
-//!   enable mutation (for example adding an element to a repeated field) or
-//!   potentially to enable optimizations (for example referencing a string
-//!   value using a Cord-like type instead of copying it if the source and
-//!   target messages are on the same arena already). Mutable references to
-//!   messages have one additional drawback: Rust allows users to
-//!   indiscriminately run a bytewise swap() on mutable references, which could
-//!   result in pointers to the wrong arena winding up on a message. For
-//!   example, imagine swapping a submessage across two root messages allocated
-//!   on distinct arenas A and B; after the swap, the message allocated in A may
-//!   contain pointers from B by way of the submessage, because the swap does
-//!   not know to fix up those pointers as needed. The C++ API uses
-//!   message-owned arenas, and this ends up resembling self-referential types,
-//!   which need `Pin` in order to be sound. However, `Pin` has much stronger
-//!   guarantees than we need to uphold.
+//! * We must store the value somewhere in the memory to create a reference to it. The value must be
+//!   readable by a single load. However for Protobuf fields it happens that the actual memory
+//!   representation of a value differs from what users expect and it is an implementation detail
+//!   that can change as more optimizations are implemented. For example, rarely accessed `int64`
+//!   fields can be represented in a packed format with 32 bits for the value in the common case.
+//!   Or, a single logical value can be spread across multiple memory locations. For example,
+//!   presence information for all the fields in a protobuf message is centralized in a bitset.
+//! * We cannot store extra data on the reference that might be necessary for correctly manipulating
+//!   it (and custom-metadata DSTs do not exist yet in Rust). Concretely, messages, string, bytes,
+//!   and repeated fields in UPB need to carry around an arena parameter separate from the data
+//!   pointer to enable mutation (for example adding an element to a repeated field) or potentially
+//!   to enable optimizations (for example referencing a string value using a Cord-like type instead
+//!   of copying it if the source and target messages are on the same arena already). Mutable
+//!   references to messages have one additional drawback: Rust allows users to indiscriminately run
+//!   a bytewise swap() on mutable references, which could result in pointers to the wrong arena
+//!   winding up on a message. For example, imagine swapping a submessage across two root messages
+//!   allocated on distinct arenas A and B; after the swap, the message allocated in A may contain
+//!   pointers from B by way of the submessage, because the swap does not know to fix up those
+//!   pointers as needed. The C++ API uses message-owned arenas, and this ends up resembling
+//!   self-referential types, which need `Pin` in order to be sound. However, `Pin` has much
+//!   stronger guarantees than we need to uphold.
 //!
 //! These drawbacks put the "idiomatic Rust" goal in conflict with the
 //! "performance", "evolvability", and "safety" goals. Given the project design
@@ -46,25 +40,66 @@
 
 use crate::__internal::{Private, SealedInternal};
 
-/// A type that can be accessed through a reference-like proxy.
+/// NOTE: This type is primarily an implementation detail in support of trait resolution, and
+/// application code should very rarely write this type.
 ///
-/// An instance of a `Proxied` can be accessed immutably via `Proxied::View`.
+/// An owned Protobuf entity or field type that can be accessed through reference-like proxies.
 ///
-/// All Protobuf field types implement `Proxied`.
-pub trait Proxied: SealedInternal + AsView<Proxied = Self> + Sized + 'static {
+/// In standard Rust, shared and exclusive access to borrowed data is provided via native
+/// references (`&T` and `&mut T`). However, standard references don't provide sufficient power
+/// to hide implementation details that Protobuf wants to take advantage of: for example, handing
+/// out `&mut` always allows for `std::mem::swap`, which precludes certain optimizations across
+/// parenting relationships. It also prevents optimizations like root messages and child messages
+/// of the same type having different layouts.
+///
+/// To provide safe, ergonomic, and zero-cost or low-cost access across these representations,
+/// Protobuf uses "proxy" types:
+/// - [`View<'msg, T>`](View): A proxy type that provides shared, read-only access (analogous to
+///   `&'msg T`).
+/// - [`Mut<'msg, T>`](Mut): A proxy type that provides exclusive mutable access (analogous to
+///   `&'msg mut T`).
+///
+/// An implementor of `ProtoObject` represents the *owned* target type (for example, a generated
+/// message struct `MyMessage`, primitive types like `i32`, `Repeated<T>`, `Map<K, V>`,
+/// `ProtoBytes`, or `ProtoString`). It is **not** the proxy itself.
+///
+/// # Writing User Code
+///
+/// In general, application code should rarely ever need to write the type `ProtoObject`.
+///
+/// - **Concrete usage**: Work directly with the owned message types (e.g. `MyMessage`), concrete
+///   view types (e.g. `MyMessageView<'msg>`, `MyMessageMut<'msg>`), or the type aliases
+///   [`View<'msg, T>`](View) and [`Mut<'msg, T>`](Mut).
+/// - **Generic functions**: When writing functions that operate generically on messages or borrows
+///   of messages, prefer higher-level traits such as [`Message`](crate::Message), [`AsView`],
+///   [`IntoView`], [`AsMut`], or [`IntoMut`]. For example: ```ignore fn process_message(msg: impl
+///   AsView<Proxied = MyMessage>) { let view = msg.as_view(); // ... } ```
+///
+/// `ProtoObject` is primarily a foundational plumbing trait connecting owned types with their
+/// associated proxy representations for the Protobuf runtime and code generator.
+pub trait ProtoObject: SealedInternal + AsView<Proxied = Self> + Sized + 'static {
     /// The proxy type that provides shared access to a `T`, like a `&'msg T`.
     ///
     /// Most code should use the type alias [`View`].
     type View<'msg>: AsView<Proxied = Self> + IntoView<'msg>;
 }
 
-/// A type that can be be accessed through a reference-like proxy.
+/// Deprecated alias for [`ProtoObject`].
+#[deprecated(note = "Use `ProtoObject` instead.")]
+pub use self::ProtoObject as Proxied;
+
+/// NOTE: This type is primarily an implementation detail in support of trait resolution, and
+/// application code should very rarely write this type.
 ///
-/// An instance of a `MutProxied` can be accessed mutably via `MutProxied::Mut`
-/// and immutably via `MutProxied::View`.
+/// A [`ProtoObject`] that can also be accessed mutably through a reference-like proxy.
 ///
-/// `MutProxied` is implemented by message, map and repeated field types.
-pub trait MutProxied: SealedInternal + Proxied + AsMut<MutProxied = Self> + 'static {
+/// An instance of a `MutProtoObject` can be accessed mutably via `MutProtoObject::Mut`
+/// and immutably via `ProtoObject::View`.
+///
+/// `MutProtoObject` is implemented by message, map and repeated field types.
+pub trait MutProtoObject:
+    SealedInternal + ProtoObject + AsMut<MutProxied = Self> + 'static
+{
     /// The proxy type that provides exclusive mutable access to a `T`, like a
     /// `&'msg mut T`.
     ///
@@ -72,26 +107,35 @@ pub trait MutProxied: SealedInternal + Proxied + AsMut<MutProxied = Self> + 'sta
     type Mut<'msg>: AsMut<MutProxied = Self> + IntoMut<'msg> + IntoView<'msg>;
 }
 
+/// Deprecated alias for [`MutProtoObject`].
+#[deprecated(note = "Use `MutProtoObject` instead.")]
+pub use self::MutProtoObject as MutProxied;
+
 /// A proxy type that provides shared access to a `T`, like a `&'msg T`.
 ///
 /// This is more concise than fully spelling the associated type.
 #[allow(dead_code)]
-pub type View<'msg, T> = <T as Proxied>::View<'msg>;
+pub type View<'msg, T> = <T as ProtoObject>::View<'msg>;
 
 /// A proxy type that provides exclusive mutable access to a `T`, like a
 /// `&'msg mut T`.
 ///
 /// This is more concise than fully spelling the associated type.
 #[allow(dead_code)]
-pub type Mut<'msg, T> = <T as MutProxied>::Mut<'msg>;
+pub type Mut<'msg, T> = <T as MutProtoObject>::Mut<'msg>;
 
 /// Used to semantically do a cheap "to-reference" conversion. This is
-/// implemented on both owned `Proxied` types as well as view and mut proxy
+/// implemented on both owned `ProtoObject` types as well as view and mut proxy
 /// types.
 ///
 /// On a view proxy this will behave as a reborrow into a shorter lifetime.
+#[diagnostic::on_unimplemented(
+    message = "the trait `AsView` is not implemented for `{Self}`",
+    note = "consider calling `.as_view()`, or changing the fn to accept \
+            `impl AsView<Proxied = T>`"
+)]
 pub trait AsView: SealedInternal {
-    type Proxied: Proxied;
+    type Proxied: ProtoObject;
 
     /// Converts a borrow into a `View` with the lifetime of that borrow.
     ///
@@ -105,7 +149,7 @@ pub trait AsView: SealedInternal {
     /// wouldn't be necessary in concrete code:
     /// ```ignore
     /// fn reborrow<'a, 'b, T>(x: &'b View<'a, T>) -> View<'b, T>
-    /// where 'a: 'b, T: Proxied
+    /// where 'a: 'b, T: ProtoObject
     /// {
     ///   x.as_view()
     /// }
@@ -115,14 +159,14 @@ pub trait AsView: SealedInternal {
     fn as_view(&self) -> View<'_, Self::Proxied>;
 }
 
-impl<T: Proxied> AsView for &T {
+impl<T: ProtoObject> AsView for &T {
     type Proxied = T::Proxied;
     fn as_view(&self) -> View<'_, Self::Proxied> {
         (**self).as_view()
     }
 }
 
-impl<T: Proxied> AsView for &mut T {
+impl<T: ProtoObject> AsView for &mut T {
     type Proxied = T::Proxied;
     fn as_view(&self) -> View<'_, Self::Proxied> {
         (**self).as_view()
@@ -136,6 +180,11 @@ impl<T: Proxied> AsView for &mut T {
 ///
 /// On a view proxy this will behave as a reborrow into a shorter lifetime
 /// (semantically matching a `&'a T` into a `&'b T` where `'a: 'b`).
+#[diagnostic::on_unimplemented(
+    message = "the trait `IntoView` is not implemented for `{Self}` (consider calling `.as_view()` \
+               or borrowing)",
+    note = "consider calling `.as_view()` or `.into_view()`"
+)]
 pub trait IntoView<'msg>: SealedInternal + AsView {
     /// Converts into a `View` with a potentially shorter lifetime.
     ///
@@ -151,7 +200,7 @@ pub trait IntoView<'msg>: SealedInternal + AsView {
     ///     y: View<'b, T>,
     /// ) -> [View<'b, T>; 2]
     /// where
-    ///     T: MutProxied,
+    ///     T: MutProtoObject,
     ///     'a: 'b,
     /// {
     ///     // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `View`
@@ -167,7 +216,7 @@ pub trait IntoView<'msg>: SealedInternal + AsView {
         'msg: 'shorter;
 }
 
-impl<'msg, T: Proxied> IntoView<'msg> for &'msg T {
+impl<'msg, T: ProtoObject> IntoView<'msg> for &'msg T {
     fn into_view<'shorter>(self) -> View<'shorter, T>
     where
         'msg: 'shorter,
@@ -176,7 +225,7 @@ impl<'msg, T: Proxied> IntoView<'msg> for &'msg T {
     }
 }
 
-impl<'msg, T: Proxied> IntoView<'msg> for &'msg mut T {
+impl<'msg, T: ProtoObject> IntoView<'msg> for &'msg mut T {
     fn into_view<'shorter>(self) -> View<'shorter, T>
     where
         'msg: 'shorter,
@@ -186,17 +235,22 @@ impl<'msg, T: Proxied> IntoView<'msg> for &'msg mut T {
 }
 
 /// Used to semantically do a cheap "to-mut-reference" conversion. This is
-/// implemented on both owned `Proxied` types as well as mut proxy types.
+/// implemented on both owned `ProtoObject` types as well as mut proxy types.
 ///
 /// On a mut proxy this will behave as a reborrow into a shorter lifetime.
+#[diagnostic::on_unimplemented(
+    message = "the trait `AsMut` is not implemented for `{Self}`",
+    note = "consider calling `.as_mut()`, or changing the fn to accept \
+            `impl AsMut<MutProxied = T>`"
+)]
 pub trait AsMut: SealedInternal + AsView<Proxied = Self::MutProxied> {
-    type MutProxied: MutProxied;
+    type MutProxied: MutProtoObject;
 
     /// Converts a borrow into a `Mut` with the lifetime of that borrow.
     fn as_mut(&mut self) -> Mut<'_, Self::MutProxied>;
 }
 
-impl<T: MutProxied> AsMut for &mut T {
+impl<T: MutProtoObject> AsMut for &mut T {
     type MutProxied = T::MutProxied;
     fn as_mut(&mut self) -> Mut<'_, Self::MutProxied> {
         (*self).as_mut()
@@ -207,6 +261,11 @@ impl<T: MutProxied> AsMut for &mut T {
 ///
 /// On a mut proxy this will behave as a reborrow into a shorter lifetime
 /// (semantically matching a `&mut 'a T` into a `&mut 'b T` where `'a: 'b`).
+#[diagnostic::on_unimplemented(
+    message = "the trait `IntoMut` is not implemented for `{Self}` (consider calling `.as_mut()` \
+               or mutably borrowing)",
+    note = "consider calling `.as_mut()` or `.into_mut()`"
+)]
 pub trait IntoMut<'msg>: SealedInternal + AsMut {
     /// Converts into a `Mut` with a potentially shorter lifetime.
     ///
@@ -219,7 +278,7 @@ pub trait IntoMut<'msg>: SealedInternal + AsMut {
     /// ```ignore
     /// fn reborrow_generic_mut_into_mut<'a, 'b, T>(x: Mut<'a, T>, y: Mut<'b, T>) -> [Mut<'b, T>; 2]
     /// where
-    ///     T: Proxied,
+    ///     T: ProtoObject,
     ///     'a: 'b,
     /// {
     ///     // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `Mut`
@@ -235,7 +294,7 @@ pub trait IntoMut<'msg>: SealedInternal + AsMut {
         'msg: 'shorter;
 }
 
-impl<'msg, T: MutProxied> IntoMut<'msg> for &'msg mut T {
+impl<'msg, T: MutProtoObject> IntoMut<'msg> for &'msg mut T {
     fn into_mut<'shorter>(self) -> Mut<'shorter, T>
     where
         'msg: 'shorter,
@@ -244,7 +303,7 @@ impl<'msg, T: MutProxied> IntoMut<'msg> for &'msg mut T {
     }
 }
 
-/// A value to `Proxied`-value conversion that consumes the input value.
+/// A value to `ProtoObject`-value conversion that consumes the input value.
 ///
 /// All setter functions accept types that implement `IntoProxied`. The purpose
 /// of `IntoProxied` is to allow setting arbitrary values on Protobuf fields
@@ -253,12 +312,12 @@ impl<'msg, T: MutProxied> IntoMut<'msg> for &'msg mut T {
 /// This trait must not be implemented on types outside the Protobuf codegen and
 /// runtime. We expect it to change in backwards incompatible ways in the
 /// future.
-pub trait IntoProxied<T: Proxied> {
+pub trait IntoProxied<T: ProtoObject> {
     #[doc(hidden)]
     fn into_proxied(self, _private: Private) -> T;
 }
 
-impl<T: Proxied> IntoProxied<T> for T {
+impl<T: ProtoObject> IntoProxied<T> for T {
     fn into_proxied(self, _private: Private) -> T {
         self
     }
@@ -286,8 +345,17 @@ mod tests {
 
     impl SealedInternal for MyProxied {}
 
-    impl Proxied for MyProxied {
+    impl ProtoObject for MyProxied {
         type View<'msg> = MyProxiedView<'msg>;
+    }
+
+    #[gtest]
+    #[allow(deprecated)]
+    fn test_deprecated_proxied_alias() {
+        fn check_proxied<T: Proxied>() {}
+        check_proxied::<MyProxied>();
+        fn check_mut_proxied<T: MutProxied>() {}
+        check_mut_proxied::<MyProxied>();
     }
 
     impl AsView for MyProxied {
@@ -297,7 +365,7 @@ mod tests {
         }
     }
 
-    impl MutProxied for MyProxied {
+    impl MutProtoObject for MyProxied {
         type Mut<'msg> = MyProxiedMut<'msg>;
     }
 
@@ -419,7 +487,7 @@ mod tests {
         y: &'b View<'a, T>,
     ) -> [View<'b, T>; 2]
     where
-        T: MutProxied,
+        T: MutProtoObject,
         'a: 'b,
     {
         // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `View`
@@ -445,7 +513,7 @@ mod tests {
         y: View<'b, T>,
     ) -> [View<'b, T>; 2]
     where
-        T: Proxied,
+        T: ProtoObject,
         'a: 'b,
     {
         // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `View`
@@ -468,7 +536,7 @@ mod tests {
 
     fn reborrow_generic_mut_into_view<'a, 'b, T>(x: Mut<'a, T>, y: View<'b, T>) -> [View<'b, T>; 2]
     where
-        T: MutProxied,
+        T: MutProtoObject,
         'a: 'b,
     {
         [x.into_view(), y]
@@ -488,7 +556,7 @@ mod tests {
 
     fn reborrow_generic_mut_into_mut<'a, 'b, T>(x: Mut<'a, T>, y: Mut<'b, T>) -> [Mut<'b, T>; 2]
     where
-        T: MutProxied,
+        T: MutProtoObject,
         'a: 'b,
     {
         // `[x, y]` fails to compile because `'a` is not the same as `'b` and the `Mut`
@@ -511,5 +579,38 @@ mod tests {
             // lifetime.
             reborrow_generic_mut_into_mut::<MyProxied>(my_mut, other_mut);
         }
+    }
+
+    // Functions written the way the `#[diagnostic::on_unimplemented]` notes suggest: accepting a
+    // generic proxy bound rather than a concrete view or mut proxy.
+    fn accepts_as_view(_: impl AsView<Proxied = MyProxied>) {}
+    fn accepts_as_mut(_: impl AsMut<MutProxied = MyProxied>) {}
+    fn accepts_into_view<'a>(_: impl IntoView<'a, Proxied = MyProxied>) {}
+    fn accepts_into_mut<'a>(_: impl IntoMut<'a, MutProxied = MyProxied>) {}
+
+    #[gtest]
+    fn test_suggested_conversions_satisfy_proxy_bounds() {
+        let mut my_proxied = MyProxied { val: "Hello".to_string() };
+
+        // Callers of an `impl AsView` / `impl AsMut` function don't need to write `.as_view()` or
+        // `.as_mut()` at all; a plain borrow suffices.
+        accepts_as_view(&my_proxied);
+        accepts_as_mut(&mut my_proxied);
+
+        // Explicitly converting, as the notes suggest at the call site, also satisfies the bounds.
+        accepts_as_view(my_proxied.as_view());
+        accepts_as_mut(my_proxied.as_mut());
+
+        // A view is not itself `AsMut`, but reborrowing a mut proxy is.
+        let mut my_mut = my_proxied.as_mut();
+        accepts_as_view(my_mut.as_view());
+        accepts_as_mut(my_mut.as_mut());
+
+        // The `IntoView` / `IntoMut` bounds additionally accept a borrow directly, which is what
+        // rustc suggests when an owned message is passed to them.
+        accepts_into_view(&my_proxied);
+        accepts_into_mut(&mut my_proxied);
+        accepts_into_view(my_proxied.as_view());
+        accepts_into_mut(my_proxied.as_mut());
     }
 }

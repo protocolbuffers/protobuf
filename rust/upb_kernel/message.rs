@@ -250,6 +250,10 @@ impl<T> KernelMessage for T where
 {
 }
 
+// TODO: UPB currently lacks an `MessageDescriptorInterop` equivalent.
+// Once UPB generates reflection hooks, add that as a supertrait and create a blanket impl here.
+pub trait KernelWithReflection {}
+
 pub trait KernelMessageView<'msg>:
     UpbGetMessagePtr + MessageViewInterop<'msg> + From<MessageViewInner<'msg, Self::KMessage>>
 {

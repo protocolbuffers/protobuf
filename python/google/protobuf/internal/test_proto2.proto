@@ -68,6 +68,7 @@ message ContainerForRepeatedComposite {
 message MessageWithRepeatedAndMap {
   repeated NestedMessageForFT repeated_items = 1;
   map<string, NestedMessageForFT> map_items = 2;
+  map<string, string> scalar_map = 3;
 }
 
 message ContainerForLazyRepeatedAndMap {

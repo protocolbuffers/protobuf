@@ -28,6 +28,7 @@ import map_test.MapTestProto.TestOnChangeEventPropagation;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -1625,5 +1626,41 @@ public class MapTest {
     assertThrows(UnsupportedOperationException.class, mapEntries::clear);
     builder.clearField(int2MessageMapField);
     assertThat(mapEntries).hasSize(1);
+  }
+
+  @Test
+  public void emptyMapField_doesNotTransitionToDualState() {
+    MapEntry<Integer, Integer> defaultEntry =
+        MapEntry.newDefaultInstance(
+            TestMap.getDescriptor()
+                .findFieldByNumber(TestMap.INT32_TO_INT32_FIELD_FIELD_NUMBER)
+                .getMessageType(),
+            WireFormat.FieldType.INT32,
+            0,
+            WireFormat.FieldType.INT32,
+            0);
+    MapField<Integer, Integer> mapField = MapField.emptyMapField(defaultEntry);
+    assertThat(mapField.isEmpty()).isTrue();
+    assertThat(mapField.getMap()).isSameInstanceAs(Collections.emptyMap());
+    assertThat(mapField.getList()).isSameInstanceAs(Collections.emptyList());
+
+    // Also test a new mutable MapField that is empty
+    MapField<Integer, Integer> mutableMapField = MapField.newMapField(defaultEntry);
+    assertThat(mutableMapField.isEmpty()).isTrue();
+    assertThat(mutableMapField.getList()).isSameInstanceAs(Collections.emptyList());
+    assertThat(mutableMapField.getMap()).isSameInstanceAs(Collections.emptyMap());
+
+    // When in LIST mode and empty, getMap() and getList() also return empty collections
+    MapField<Integer, Integer> listModeField = MapField.newMapField(defaultEntry);
+    assertThat(listModeField.getMutableList()).isEmpty();
+    assertThat(listModeField.isEmpty()).isTrue();
+    assertThat(listModeField.getMap()).isSameInstanceAs(Collections.emptyMap());
+    assertThat(listModeField.getList()).isSameInstanceAs(Collections.emptyList());
+
+    // Mutating the map now transitions normally
+    mutableMapField.getMutableMap().put(1, 10);
+    assertThat(mutableMapField.isEmpty()).isFalse();
+    assertThat(mutableMapField.getMap()).containsExactly(1, 10);
+    assertThat(mutableMapField.getList()).hasSize(1);
   }
 }

@@ -47,7 +47,6 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/descriptor_lite.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
@@ -701,7 +700,7 @@ void Reflection::InternalMoveOneofField(const FieldDescriptor* field,
       to->SetBool(from->GetBool());
       break;
     case FieldDescriptor::CPPTYPE_ENUM:
-      to->SetEnum(from->GetEnum());
+      to->SetEnumValue(from->GetEnumValue());
       break;
     case FieldDescriptor::CPPTYPE_MESSAGE:
       if (!unsafe_shallow_swap) {
@@ -1128,7 +1127,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     LOCAL_VAR_ACCESSOR(float, Float);
     LOCAL_VAR_ACCESSOR(double, Double);
     LOCAL_VAR_ACCESSOR(bool, Bool);
-    LOCAL_VAR_ACCESSOR(int, Enum);
+    LOCAL_VAR_ACCESSOR(int, EnumValue);
     LOCAL_VAR_ACCESSOR(Message*, Message);
     LOCAL_VAR_ACCESSOR(ArenaStringPtr, ArenaStringPtr);
     LOCAL_VAR_ACCESSOR(MicroString, MicroString);
@@ -1155,7 +1154,7 @@ void Reflection::SwapOneofField(Message* lhs, Message* rhs,
     MESSAGE_FIELD_ACCESSOR(float, Float);
     MESSAGE_FIELD_ACCESSOR(double, Double);
     MESSAGE_FIELD_ACCESSOR(bool, Bool);
-    MESSAGE_FIELD_ACCESSOR(int, Enum);
+    MESSAGE_FIELD_ACCESSOR(int, EnumValue);
     MESSAGE_FIELD_ACCESSOR(ArenaStringPtr, ArenaStringPtr);
     MESSAGE_FIELD_ACCESSOR(MicroString, MicroString);
     MESSAGE_FIELD_ACCESSOR(absl::Cord*, Cord);

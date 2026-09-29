@@ -260,7 +260,9 @@ TextFormat::ParseLocationRange TextFormat::ParseInfoTree::GetLocationRange(
 
 TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
     const FieldDescriptor* field, int index) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   return GetLocationRange(field, index).start;
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 absl::StatusOr<TextFormat::FieldLocation>
@@ -1093,7 +1095,7 @@ class TextFormat::Parser::ParserImpl {
           }
         }
 
-        SET_FIELD(Enum, enum, enum_value);
+        SET_FIELD(EnumValue, enum()->number, enum_value->number());
         break;
       }
 

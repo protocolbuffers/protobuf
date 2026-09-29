@@ -22,19 +22,19 @@ def _protoc_authenticity_impl(ctx):
         toolchain = toolchains.PROTO_TOOLCHAIN,
         command = """\
         {protoc} --version > {validation_output}
-        grep -q -e "-dev$" {validation_output} && {{
+        IFS= read -r version_line < {validation_output}
+        [[ $version_line == *-dev ]] && {{
           echo 'WARNING: Detected a development version of protoc.
           Development versions are not validated for authenticity.
           To ensure a secure build, please use a released version of protoc.'
           exit 0
         }}
-        grep -q "^libprotoc {RELEASE_VERSION}" {validation_output} || {{
+        [[ $version_line == "libprotoc {RELEASE_VERSION}"* ]] || {{
           echo '{severity}: protoc version does not match protobuf Bazel module; we do not support this.
           It is considered undefined behavior that is expected to break in the future even if it appears to work today.'
           echo '{suppression_note}'
           echo 'Expected: libprotoc {RELEASE_VERSION}'
-          echo -n 'Actual:   '
-          cat {validation_output}
+          echo "Actual: $version_line"
           exit {mismatch_exit_code}
         }} >&2
         """.format(

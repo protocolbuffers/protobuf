@@ -710,7 +710,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         impl<'msg> $pb$::AsMut for $Msg$Mut<'msg> {
           type MutProxied = $Msg$;
-          fn as_mut(&mut self) -> $Msg$Mut<'msg> {
+          fn as_mut(&mut self) -> $Msg$Mut<'_> {
             self.inner.reborrow().into()
           }
         }
@@ -877,6 +877,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                   unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as $std$::default::Default>::default().raw_msg()) }
                 }
               }
+              impl $pb$::WithReflection for $Msg$ {}
             )rs");
     }
   }

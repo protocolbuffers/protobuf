@@ -14,6 +14,20 @@ load(
     "bootstrap_cc_library",
 )
 
+cc_test(
+    name = "generator_test",
+    srcs = ["generator_test.cc"],
+    deps = [
+        ":rust",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "crate_mapping",
     srcs = ["crate_mapping.cc"],

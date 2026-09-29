@@ -99,11 +99,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool NullableReferenceTypesDefaultValue = false;
 
     private bool nullableReferenceTypes_;
-    /// <summary>
-    /// Whether the generated files should have nullable reference type annotations.
-    /// When enabled, the generated C# code includes `#nullable enable annotations`
-    /// and annotates message-typed properties and certain parameters with `?`.
-    /// </summary>
+    /**
+     * <summary>
+     *  Whether the generated files should have nullable reference type annotations.
+     *  When enabled, the generated C# code includes `#nullable enable annotations`
+     *  and annotates message-typed properties and certain parameters with `?`.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool NullableReferenceTypes {

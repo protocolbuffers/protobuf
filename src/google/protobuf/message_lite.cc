@@ -270,11 +270,9 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
                              aliasing, &ptr, input.zcis, input.limit);
   ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   if (ABSL_PREDICT_FALSE(!ptr)) return false;
+  if (ABSL_PREDICT_FALSE(!ctx.EndedAtLimit())) return false;
   ctx.BackUp(ptr);
-  if (ABSL_PREDICT_TRUE(ctx.EndedAtLimit())) {
-    return CheckFieldPresenceImpl(ctx, *msg, parse_flags);
-  }
-  return false;
+  return CheckFieldPresenceImpl(ctx, *msg, parse_flags);
 }
 
 template bool MergeFromImpl<false>(absl::string_view input, MessageLite* msg,
