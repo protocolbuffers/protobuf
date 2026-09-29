@@ -1359,6 +1359,24 @@ TEST_1D(TokenizerTest, BackUpOnDestruction, kBlockSizes) {
   EXPECT_EQ(strlen("foo"), input.ByteCount());
 }
 
+TEST(TokenizerTest, NullStreamOrCollector) {
+  // Passing nullptr input stream should not crash and Next should return false.
+  {
+    TestErrorCollector error_collector;
+    Tokenizer tokenizer(nullptr, &error_collector);
+    EXPECT_FALSE(tokenizer.Next());
+  }
+
+  // Passing nullptr error collector should safely ignore errors without crash.
+  {
+    std::string text = "foo /* unclosed comment";
+    ArrayInputStream input(text.data(), static_cast<int>(text.size()));
+    Tokenizer tokenizer(&input, nullptr);
+    EXPECT_TRUE(tokenizer.Next());
+    EXPECT_EQ("foo", tokenizer.current().text);
+    EXPECT_FALSE(tokenizer.Next());
+  }
+}
 
 }  // namespace
 }  // namespace io

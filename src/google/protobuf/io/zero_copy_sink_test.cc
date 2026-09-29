@@ -195,6 +195,26 @@ TEST_F(ZeroCopyStreamByteSinkTest, WriteLong) {
     ASSERT_EQ(output_view_, "0123456789");
   } while (output_chunks_.NextPattern());
 }
+
+TEST_F(ZeroCopyStreamByteSinkTest, NullStreamOrBuffer) {
+  // Passing nullptr stream should set failed and not crash on destruction.
+  {
+    ZeroCopyStreamByteSink sink(nullptr);
+    EXPECT_TRUE(sink.failed());
+    sink.Append("hello", 5);
+    EXPECT_TRUE(sink.failed());
+    EXPECT_EQ(sink.bytes_written(), 0);
+  }
+
+  // Passing null buffer with positive length should set failed.
+  {
+    PatternedOutputStream output_stream(output_chunks_);
+    ZeroCopyStreamByteSink sink(&output_stream);
+    EXPECT_FALSE(sink.failed());
+    sink.Append(nullptr, 5);
+    EXPECT_TRUE(sink.failed());
+  }
+}
 }  // namespace
 }  // namespace zc_sink_internal
 }  // namespace io

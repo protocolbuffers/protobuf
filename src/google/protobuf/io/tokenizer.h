@@ -341,7 +341,9 @@ class PROTOBUF_EXPORT Tokenizer {
 
   // Convenience method to add an error at the current line and column.
   void AddError(const std::string& message) {
-    error_collector_->RecordError(line_, column_, message);
+    if (error_collector_ != nullptr) {
+      error_collector_->RecordError(line_, column_, message);
+    }
   }
 
   // -----------------------------------------------------------------

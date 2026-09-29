@@ -997,6 +997,32 @@ TEST_F(IoTest, GzipInputByteCountBackUpSkip) {
     EXPECT_EQ(gz_input.ByteCount(), golden.size());
   }
 }
+
+TEST_F(IoTest, GzipStreamNullAndBounds) {
+  // Test GzipInputStream and GzipOutputStream with nullptr and bounds.
+  GzipInputStream gz_null(nullptr, GzipInputStream::GZIP, -1);
+  const void* null_data;
+  int null_size = 0;
+  EXPECT_FALSE(gz_null.Next(&null_data, &null_size));
+  EXPECT_FALSE(gz_null.Next(nullptr, &null_size));
+  EXPECT_FALSE(gz_null.Next(&null_data, nullptr));
+  EXPECT_FALSE(gz_null.Skip(10));
+  EXPECT_TRUE(gz_null.Skip(0));
+  EXPECT_FALSE(gz_null.Skip(-1));
+  gz_null.BackUp(0);
+  gz_null.BackUp(-1);
+
+  GzipOutputStream::Options options;
+  options.buffer_size = 0;
+  GzipOutputStream gz_out_null(nullptr, options);
+  void* out_data;
+  int out_size = 0;
+  EXPECT_FALSE(gz_out_null.Next(nullptr, &out_size));
+  EXPECT_FALSE(gz_out_null.Next(&out_data, nullptr));
+  EXPECT_FALSE(gz_out_null.Flush());
+  gz_out_null.BackUp(0);
+  gz_out_null.BackUp(-1);
+}
 #endif
 
 // There is no string input, only string output.  Also, it doesn't support

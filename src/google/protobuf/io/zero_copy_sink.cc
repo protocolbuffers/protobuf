@@ -15,6 +15,12 @@ namespace protobuf {
 namespace io {
 namespace zc_sink_internal {
 void ZeroCopyStreamByteSink::Append(const char* bytes, size_t len) {
+  if (stream_ == nullptr || (bytes == nullptr && len > 0)) {
+    if (len > 0) {
+      failed_ = true;
+    }
+    return;
+  }
   while (!failed_ && len > 0) {
     if (buffer_size_ == 0) {
       int size;
