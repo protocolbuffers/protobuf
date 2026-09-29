@@ -11,6 +11,7 @@
 #include "google/protobuf/pyext/repeated_composite_container.h"
 
 #include <memory>
+#include <utility>
 
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
@@ -48,28 +49,31 @@ static Py_ssize_t Length(PyObject* pself) {
 // ---------------------------------------------------------------------
 // add()
 
+static PyObject* AttachQuiescentMessage(RepeatedCompositeContainer* self,
+                                        ScopedPyObjectPtr child) {
+  Message* parent_msg = cmessage::AssureWritable(self->parent);
+  if (parent_msg == nullptr) return nullptr;
+
+  CMessage* cmsg = reinterpret_cast<CMessage*>(child.get());
+  parent_msg->GetReflection()->UnsafeArenaAddAllocatedMessage(
+      parent_msg, self->parent_field_descriptor, cmsg->GetQuiescent());
+  Py_INCREF(self->parent);
+  cmsg->parent = self->parent;
+  cmsg->parent_field_descriptor = self->parent_field_descriptor;
+  cmsg->has_mutable_map_ancestor = self->parent->has_mutable_map_ancestor;
+  cmessage::SetSubmessage(self->parent, cmsg);
+  return child.release();
+}
+
 PyObject* Add(RepeatedCompositeContainer* self, PyObject* args,
               PyObject* kwargs) {
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
-
-  const Reflection* reflection = message->GetReflection();
-  Message* sub_message = reflection->AddMessage(
-      message, self->parent_field_descriptor,
-      self->child_message_class->py_message_factory->message_factory);
-  CMessage* cmsg = self->parent->BuildSubMessageFromPointer(
-      self->parent_field_descriptor, sub_message, self->child_message_class,
-      MESSAGE_MUTABLE);
+  CMessage* cmsg = cmessage::NewCMessage(self->child_message_class);
   if (cmsg == nullptr) return nullptr;
-
+  ScopedPyObjectPtr child(cmsg->AsPyObject());
   if (cmessage::InitAttributes(cmsg, args, kwargs) < 0) {
-    message->GetReflection()->RemoveLast(message,
-                                         self->parent_field_descriptor);
-    Py_DECREF(cmsg);
     return nullptr;
   }
-
-  return cmsg->AsPyObject();
+  return AttachQuiescentMessage(self, std::move(child));
 }
 
 static PyObject* AddMethod(PyObject* self, PyObject* args, PyObject* kwargs) {
@@ -80,19 +84,13 @@ static PyObject* AddMethod(PyObject* self, PyObject* args, PyObject* kwargs) {
 // append()
 
 static PyObject* AddMessage(RepeatedCompositeContainer* self, PyObject* value) {
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
-  PyObject* py_cmsg;
-  const Reflection* reflection = message->GetReflection();
-  py_cmsg = Add(self, nullptr, nullptr);
-  if (py_cmsg == nullptr) return nullptr;
-  CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
+  CMessage* cmsg = cmessage::NewCMessage(self->child_message_class);
+  if (cmsg == nullptr) return nullptr;
+  ScopedPyObjectPtr child(cmsg->AsPyObject());
   if (ScopedPyObjectPtr(cmessage::MergeFrom(cmsg, value)) == nullptr) {
-    reflection->RemoveLast(message, self->parent_field_descriptor);
-    Py_DECREF(cmsg);
     return nullptr;
   }
-  return py_cmsg;
+  return AttachQuiescentMessage(self, std::move(child));
 }
 
 static PyObject* AppendMethod(PyObject* pself, PyObject* value) {
@@ -155,13 +153,8 @@ PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
       PyErr_SetString(PyExc_TypeError, "Not a cmessage");
       return nullptr;
     }
-    ScopedPyObjectPtr new_message(Add(self, nullptr, nullptr));
+    ScopedPyObjectPtr new_message(AddMessage(self, next.get()));
     if (new_message == nullptr) {
-      return nullptr;
-    }
-    CMessage* new_cmessage = reinterpret_cast<CMessage*>(new_message.get());
-    if (ScopedPyObjectPtr(cmessage::MergeFrom(new_cmessage, next.get())) ==
-        nullptr) {
       return nullptr;
     }
   }
