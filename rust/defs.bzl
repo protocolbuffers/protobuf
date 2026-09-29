@@ -13,7 +13,7 @@ ProtoCrateNamesInfo = _ProtoCrateNamesInfo
 rust_upb_proto_library = _rust_upb_proto_library
 rust_cc_proto_library = _rust_cc_proto_library
 
-def _rust_proto_library_impl(name, deps, visibility = None, tags = None, **kwargs):
+def rust_proto_library(name, deps, **args):
     """Declares all the boilerplate needed to use Rust protobufs conveniently.
 
     Hopefully no user will ever need to read this code.
@@ -21,47 +21,37 @@ def _rust_proto_library_impl(name, deps, visibility = None, tags = None, **kwarg
     Args:
         name: name of the Rust protobuf target.
         deps: proto_library target for which to generate Rust gencode.
-        visibility: visibility of the generated targets.
-        tags: tags of the generated targets.
-        **kwargs: other args passed to the rust_<kernel>_proto_library targets.
+        **args: other args passed to the rust_<kernel>_proto_library targets.
     """
     if not name.endswith("_rust_proto"):
         fail(
             "Name rust_proto_library target should end with `_rust_proto`, but was '{}'"
                 .format(name),
         )
-
+    name = name.removesuffix("_rust_proto")
+    alias_args = {}
+    if "visibility" in args:
+        alias_args["visibility"] = args.pop("visibility")
+    alias_args["tags"] = args.get("tags", [])
     native.alias(
-        name = name,
+        name = name + "_rust_proto",
         actual = select({
-            Label("//rust:use_upb_kernel"): name + "_upb",
-            "//conditions:default": name + "_cpp",
+            Label("//rust:use_upb_kernel"): name + "_upb_rust_proto",
+            "//conditions:default": name + "_cpp_rust_proto",
         }),
-        visibility = visibility,
-        tags = tags,
+        **alias_args
     )
 
     rust_upb_proto_library(
-        name = name + "_upb",
+        name = name + "_upb_rust_proto",
         deps = deps,
         visibility = ["//rust/test:__subpackages__"],
-        tags = tags,
-        **kwargs
+        **args
     )
 
     rust_cc_proto_library(
-        name = name + "_cpp",
+        name = name + "_cpp_rust_proto",
         deps = deps,
         visibility = ["//rust/test:__subpackages__"],
-        tags = tags,
-        **kwargs
+        **args
     )
-
-rust_proto_library = macro(
-    implementation = _rust_proto_library_impl,
-    inherit_attrs = rust_upb_proto_library,
-    doc = """Declares all the boilerplate needed to use Rust protobufs conveniently.
-
-    Hopefully no user will ever need to read this code.
-    """,
-)
