@@ -537,14 +537,9 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   void* mem = UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void);
   int type = field->UPB_PRIVATE(descriptortype);
 
-  // Set presence if necessary.
-  if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(field)) {
-    UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
-  } else if (upb_MiniTableField_IsInOneof(field)) {
-    // Oneof case
+  if (op == kUpb_DecodeOp_SubMessage && upb_MiniTableField_IsInOneof(field)) {
     uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
-    if (op == kUpb_DecodeOp_SubMessage &&
-        *oneof_case != field->UPB_PRIVATE(number)) {
+    if (*oneof_case != field->UPB_PRIVATE(number)) {
       memset(mem, 0, sizeof(void*));
     }
     *oneof_case = field->UPB_PRIVATE(number);
@@ -553,22 +548,26 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   // Store into message.
   switch (op) {
     case kUpb_DecodeOp_SubMessage: {
+      if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(field)) {
+        UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
+      }
       upb_Message** submsgp = mem;
       upb_Message* submsg = *submsgp;
       if (!submsg) submsg = _upb_Decoder_NewSubMessage(d, field, submsgp);
       if (UPB_UNLIKELY(type == kUpb_FieldType_Group)) {
-        ptr = _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
+        return _upb_Decoder_DecodeKnownGroup(d, ptr, submsg, field);
       } else {
-        ptr = _upb_Decoder_DecodeSubMessage(d, ptr, submsg, field, val->size);
+        return _upb_Decoder_DecodeSubMessage(d, ptr, submsg, field, val->size);
       }
-      break;
     }
     case kUpb_DecodeOp_String:
-      return _upb_Decoder_ReadString2(d, ptr, val->size, mem,
-                                      /*validate_utf8=*/true);
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     /*validate_utf8=*/true);
+      break;
     case kUpb_DecodeOp_Bytes:
-      return _upb_Decoder_ReadString2(d, ptr, val->size, mem,
-                                      /*validate_utf8=*/false);
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     /*validate_utf8=*/false);
+      break;
     case kUpb_DecodeOp_Scalar8Byte:
       memcpy(mem, val, 8);
       break;
@@ -580,6 +579,14 @@ static const char* _upb_Decoder_DecodeToSubMessage(
       break;
     default:
       UPB_UNREACHABLE();
+  }
+
+  // Set presence if necessary.
+  if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(field)) {
+    UPB_PRIVATE(_upb_Message_SetHasbit)(msg, field);
+  } else if (upb_MiniTableField_IsInOneof(field)) {
+    *UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field) =
+        field->UPB_PRIVATE(number);
   }
 
   return ptr;

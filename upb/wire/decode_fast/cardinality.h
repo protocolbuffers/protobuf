@@ -406,9 +406,18 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   void* dst;
 
-  if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
-                                    type)) {
+  if (card == kUpb_DecodeFast_Scalar || card == kUpb_DecodeFast_Oneof) {
+    if (type == kUpb_DecodeFast_Message) {
+      upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
+                                    type);
+    } else {
+      dst = UPB_PTR_AT(msg, upb_DecodeFastData_GetOffset(*data), char);
+    }
     if (!single(d, &p, dst, type, ret, ctx)) return false;
+    if (type != kUpb_DecodeFast_Message) {
+      upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
+                                    type);
+    }
     *ptr = p;
     _upb_Decoder_Trace(d, 'F');
     return true;
