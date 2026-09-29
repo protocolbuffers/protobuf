@@ -234,9 +234,24 @@ bool OptionInterpreter::InterpretSingleOption(
   std::vector<const FieldDescriptor*> intermediate_fields;
   std::string debug_msg_name = "";
 
+  // The path to the top-level option field (e.g., [options_path, field0_tag]),
+  // along with any repeated index if the top-level option is repeated.
+  // Represents the overall option location, matching the convention used for
+  // aggregate options.
   SourceCodePath dest_path;
+  // For dot-notation options with multiple name components, stores the path
+  // prefix for each component using -kAggregateValueFieldNumber (-8) between
+  // nesting levels (e.g., part 0: [options_path, field0_tag], part 1:
+  // [options_path, field0_tag, -8, field1_tag]). Used in UpdateSourceCodeInfo
+  // to emit locations for each name component (with -kNameFieldNumber), for
+  // the leaf value (with -uninterpreted_field), and to derive the legacy path
+  // (by stripping -8 markers).
+  std::vector<SourceCodePath> part_dest_paths;
   if (update_source_code_info_) {
     dest_path = options_path;
+    if (uninterpreted_option_->name_size() > 1) {
+      part_dest_paths.reserve(uninterpreted_option_->name_size());
+    }
   }
 
   for (int i = 0; i < uninterpreted_option_->name_size(); ++i) {
@@ -313,8 +328,36 @@ bool OptionInterpreter::InterpretSingleOption(
       }
     } else {
       if (update_source_code_info_) {
-        // accumulate field numbers to form path to interpreted option
-        dest_path.push_back(field->number());
+        if (i == 0) {
+          dest_path.push_back(field->number());
+        }
+        // For dot-notation options with multiple name components (e.g.,
+        // `option (foo).bar.baz = "123"` where `foo` has tag 10101, `bar` has
+        // tag 2, and `baz` has tag 3), build the destination path prefix for
+        // each component using -kAggregateValueFieldNumber (-8) between nested
+        // message levels:
+        //   part 0: [options_path, 10101]
+        //   part 1: [options_path, 10101, -8, 2]
+        //   part 2: [options_path, 10101, -8, 2, -8, 3]
+        // These prefixes are later used in UpdateSourceCodeInfo to emit
+        // locations for each name component (appending -kNameFieldNumber),
+        // for the leaf value (appending the uninterpreted value tag), and for
+        // the legacy path (by stripping -8 markers from
+        // part_dest_paths.back()). Single-component options (`name_size() ==
+        // 1`, e.g. `option (foo) = 123` or aggregate options) do not need
+        // part_dest_paths.
+        if (uninterpreted_option_->name_size() > 1) {
+          SourceCodePath part_path;
+          if (i == 0) {
+            part_path = dest_path;
+          } else {
+            part_path = part_dest_paths.back();
+            part_path.push_back(
+                -UninterpretedOption::kAggregateValueFieldNumber);
+            part_path.push_back(field->number());
+          }
+          part_dest_paths.push_back(std::move(part_path));
+        }
       }
 
       // Special handling to prevent feature use in the same file as the
@@ -371,8 +414,16 @@ bool OptionInterpreter::InterpretSingleOption(
   if (update_source_code_info_) {
     // record the element path of the interpreted option
     if (field->is_repeated()) {
-      int index = repeated_option_counts_[dest_path]++;
-      dest_path.push_back(index);
+      // For dot-notation options where the leaf field is repeated (e.g.,
+      // `(foo).repeated_bar = 100`), the top-level option `foo` is a message
+      // (not repeated), so dest_path does not receive an index; only the leaf
+      // component path (`part_dest_paths.back()`) receives the element index.
+      // For single-component repeated options (e.g., `(repeated_opt) = 100`),
+      // `part_dest_paths` is empty and `dest_path` itself receives the index.
+      SourceCodePath& leaf_path =
+          part_dest_paths.empty() ? dest_path : part_dest_paths.back();
+      int index = repeated_option_counts_[leaf_path]++;
+      leaf_path.push_back(index);
     }
   }
 
@@ -424,6 +475,9 @@ bool OptionInterpreter::InterpretSingleOption(
 
   if (update_source_code_info_) {
     interpreted_paths_[src_path] = dest_path;
+    if (uninterpreted_option_->name_size() > 1) {
+      dot_notation_name_paths_[src_path] = std::move(part_dest_paths);
+    }
   }
 
   return true;
@@ -483,6 +537,16 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
   // child sub-locations are inspected and either remapped or removed.
   bool matched = false;
 
+  // For dot-notation options (e.g., `(foo).bar = 123`), points to the sequence
+  // of destination path prefixes for each name component in the current option
+  // (stored in dot_notation_name_paths_). When not null, child locations are
+  // remapped using these per-component paths (name parts at [src_path, 2, i]
+  // and the leaf value at dot_name_paths->back()), and the legacy duplicate
+  // path is emitted.
+  // When null, the current option is a standard single-component option (e.g.
+  // `(foo) = 123` or an aggregate option `(foo) = { bar: 123 }`).
+  const std::vector<SourceCodePath>* dot_name_paths = nullptr;
+
   for (RepeatedPtrField<SourceCodeInfo_Location>::iterator loc = locs->begin();
        loc != locs->end(); loc++) {
     if (matched) {
@@ -502,7 +566,7 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
       if (loc_matches) {
         // TODO: b/168903973 - Remove once we update the format.
         // don't copy this row since it is a sub-location that we're removing
-        // (or we already mapped it if it's a direct child)
+        // (or we already mapped it if it's a direct child / name component)
         continue;
       }
 
@@ -523,6 +587,9 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
     matched = true;
     match_src = std::move(curr_path);
     match_dest = entry->second;
+    auto dot_it = dot_notation_name_paths_.find(match_src);
+    dot_name_paths =
+        (dot_it != dot_notation_name_paths_.end()) ? &dot_it->second : nullptr;
 
     if (!copying) {
       // initialize the copy we are building
@@ -537,6 +604,19 @@ void OptionInterpreter::UpdateSourceCodeInfo(SourceCodeInfo* info) {
     *replacement = *loc;
     replacement->mutable_path()->Assign(entry->second.begin(),
                                         entry->second.end());
+
+    if (dot_name_paths != nullptr) {
+      // Also emit the legacy path (concatenated field numbers without -8
+      // aggregate markers) for backward compatibility.
+      SourceCodeInfo_Location* legacy_loc = new_locs.Add();
+      *legacy_loc = *loc;
+      legacy_loc->clear_path();
+      for (int elem : dot_name_paths->back()) {
+        if (elem != -UninterpretedOption::kAggregateValueFieldNumber) {
+          legacy_loc->add_path(elem);
+        }
+      }
+    }
   }
 
   // if we made a changed copy, put it in place
