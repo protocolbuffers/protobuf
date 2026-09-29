@@ -1871,7 +1871,7 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
       H::Delete(static_cast<Element*>(subrange[i]));
     }
   }
-  UnsafeArenaExtractSubrange(start, num, nullptr);
+  UnsafeArenaExtractSubrange(start, num, /*elements=*/nullptr);
 }
 
 template <typename Element>
