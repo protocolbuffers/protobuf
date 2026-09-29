@@ -171,7 +171,9 @@ class RepeatedFieldProxyBase {
 
   // Returns a const reference or view into the element at the given index,
   // performing bounds checking in accordance with `bounds_check_mode_*`.
-  [[nodiscard]] const_reference get(size_type index) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  [[nodiscard]] const const_reference get(size_type index) const {
     return field()[index];
   }
 
@@ -460,7 +462,9 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES MutableRepeatedFieldProxyImpl
 
   // Returns a type which references the element at the given index. Performs
   // bounds checking in accordance with `bounds_check_mode_*`.
-  [[nodiscard]] reference operator[](size_type index) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  [[nodiscard]] const reference operator[](size_type index) const {
     return field()[index];
   }
 
@@ -603,7 +607,9 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES ConstRepeatedFieldProxyImpl
 
   // Returns a type which references the element at the given index. Performs
   // bounds checking in accordance with `bounds_check_mode_*`.
-  [[nodiscard]] const_reference operator[](size_type index) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  [[nodiscard]] const const_reference operator[](size_type index) const {
     return field()[index];
   }
 

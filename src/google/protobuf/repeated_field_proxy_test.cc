@@ -742,11 +742,13 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy.get(2), StringEq("3"));
 
     if constexpr (std::is_same_v<ElementType, absl::string_view>) {
-      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy[0]), const absl::string_view>));
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy.get(0)), const absl::string_view>));
     } else {
-      static_assert(std::is_same_v<decltype(proxy[0]), ElementType&>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+      EXPECT_TRUE((std::is_same_v<decltype(proxy[0]), ElementType&>));
+      EXPECT_TRUE((std::is_same_v<decltype(proxy.get(0)), const ElementType&>));
     }
   }
 
@@ -761,11 +763,13 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy.get(2), StringEq("3"));
 
     if constexpr (std::is_same_v<ElementType, absl::string_view>) {
-      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy[0]), const absl::string_view>));
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy.get(0)), const absl::string_view>));
     } else {
-      static_assert(std::is_same_v<decltype(proxy[0]), const ElementType&>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+      EXPECT_TRUE((std::is_same_v<decltype(proxy[0]), const ElementType&>));
+      EXPECT_TRUE((std::is_same_v<decltype(proxy.get(0)), const ElementType&>));
     }
   }
 }
@@ -3188,6 +3192,79 @@ TEST(RepeatedFieldProxyInterfaceTest, RepeatedStringViewProxy) {
 
   auto proxy = msg.string_views_proxy();
   EXPECT_THAT(proxy, ElementsAre("1", "2", "3"));
+}
+
+// Probe which tests whether the expression `proxy[index] = value` compiles.
+template <typename T, typename = void>
+static constexpr bool kBracketAssignmentCompiles = false;
+
+template <typename T>
+static constexpr bool kBracketAssignmentCompiles<
+    T, std::void_t<decltype(std::declval<RepeatedFieldProxy<T>>()[std::declval<
+                                size_t>()] = std::declval<T>())>> = true;
+
+TEST(RepeatedFieldProxyInterfaceTest, BracketAssignmentCompiles) {
+  EXPECT_FALSE(kBracketAssignmentCompiles<bool>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<int32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<uint32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<int64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<uint64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<float>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<double>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<absl::string_view>);
+  EXPECT_TRUE(kBracketAssignmentCompiles<std::string>);
+  EXPECT_TRUE(kBracketAssignmentCompiles<absl::Cord>);
+  EXPECT_TRUE(kBracketAssignmentCompiles<RepeatedFieldProxyTestSimpleMessage>);
+
+  EXPECT_FALSE(kBracketAssignmentCompiles<const bool>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const int32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const uint32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const int64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const uint64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const float>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const double>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const absl::string_view>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const std::string>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const absl::Cord>);
+  EXPECT_FALSE(
+      kBracketAssignmentCompiles<const RepeatedFieldProxyTestSimpleMessage>);
+}
+
+// Probe which tests whether the expression `proxy.get(index) = value` compiles.
+template <typename T, typename = void>
+static constexpr bool kGetAssignmentCompiles = false;
+
+template <typename T>
+static constexpr bool kGetAssignmentCompiles<
+    T, std::void_t<decltype(std::declval<RepeatedFieldProxy<T>>().get(
+                                std::declval<size_t>()) = std::declval<T>())>> =
+    true;
+
+TEST(RepeatedFieldProxyInterfaceTest, GetAssignmentCompiles) {
+  EXPECT_FALSE(kGetAssignmentCompiles<bool>);
+  EXPECT_FALSE(kGetAssignmentCompiles<int32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<uint32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<int64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<uint64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<float>);
+  EXPECT_FALSE(kGetAssignmentCompiles<double>);
+  EXPECT_FALSE(kGetAssignmentCompiles<absl::string_view>);
+  EXPECT_FALSE(kGetAssignmentCompiles<std::string>);
+  EXPECT_FALSE(kGetAssignmentCompiles<absl::Cord>);
+  EXPECT_FALSE(kGetAssignmentCompiles<RepeatedFieldProxyTestSimpleMessage>);
+
+  EXPECT_FALSE(kGetAssignmentCompiles<const bool>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const int32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const uint32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const int64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const uint64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const float>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const double>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const absl::string_view>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const std::string>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const absl::Cord>);
+  EXPECT_FALSE(
+      kGetAssignmentCompiles<const RepeatedFieldProxyTestSimpleMessage>);
 }
 
 }  // namespace
