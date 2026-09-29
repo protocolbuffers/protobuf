@@ -27,17 +27,18 @@ bool upb_DecodeFast_SingleStringAlias(upb_Decoder* d, const char** ptr,
                                       upb_DecodeFastNext* next, void* ctx) {
   UPB_UNUSED(ctx);
   bool validate_utf8 = type == kUpb_DecodeFast_String;
-  upb_StringView* sv = dst;
+  upb_StringView sv;
   int size;
 
   if (!upb_DecodeFast_DecodeSize(d, ptr, &size, next)) return false;
 
-  *ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(EPS(d), *ptr, size, sv);
+  *ptr = upb_EpsCopyInputStream_ReadStringAlwaysAlias(EPS(d), *ptr, size, &sv);
 
-  if (validate_utf8 && !utf8_range_IsValid(sv->data, sv->size)) {
+  if (validate_utf8 && !utf8_range_IsValid(sv.data, sv.size)) {
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_BadUtf8, next);
   }
 
+  *(upb_StringView*)dst = sv;
   return true;
 }
 
@@ -52,7 +53,6 @@ bool upb_DecodeFast_SingleStringCopy(upb_Decoder* d, const char** ptr,
   if (!upb_DecodeFast_DecodeSize(d, ptr, &size, next)) return false;
 
   if (!_upb_Decoder_ReadString(d, ptr, size, sv, validate_utf8)) {
-    sv->size = 0;
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
   }
 
