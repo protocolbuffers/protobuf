@@ -251,6 +251,7 @@ IstreamInputStream::CopyingIstreamInputStream::~CopyingIstreamInputStream() =
 
 int IstreamInputStream::CopyingIstreamInputStream::Read(void* buffer,
                                                         int size) {
+  if (input_ == nullptr) return -1;
   input_->read(reinterpret_cast<char*>(buffer), size);
   int result = input_->gcount();
   if (result == 0 && input_->fail() && !input_->eof()) {
@@ -283,6 +284,7 @@ OstreamOutputStream::CopyingOstreamOutputStream::~CopyingOstreamOutputStream() =
 
 bool OstreamOutputStream::CopyingOstreamOutputStream::Write(const void* buffer,
                                                             int size) {
+  if (output_ == nullptr) return false;
   output_->write(reinterpret_cast<const char*>(buffer), size);
   return output_->good();
 }
@@ -291,8 +293,9 @@ bool OstreamOutputStream::CopyingOstreamOutputStream::Write(const void* buffer,
 
 ConcatenatingInputStream::ConcatenatingInputStream(
     ZeroCopyInputStream* const streams[], int count)
-    : streams_(streams), stream_count_(count), bytes_retired_(0) {
-}
+    : streams_(streams),
+      stream_count_(streams == nullptr ? 0 : std::max(0, count)),
+      bytes_retired_(0) {}
 
 bool ConcatenatingInputStream::Next(const void** data, int* size) {
   while (stream_count_ > 0) {
@@ -309,6 +312,7 @@ bool ConcatenatingInputStream::Next(const void** data, int* size) {
 }
 
 void ConcatenatingInputStream::BackUp(int count) {
+  ABSL_CHECK_GE(count, 0);
   if (stream_count_ > 0) {
     streams_[0]->BackUp(count);
   } else {
@@ -317,6 +321,8 @@ void ConcatenatingInputStream::BackUp(int count) {
 }
 
 bool ConcatenatingInputStream::Skip(int count) {
+  ABSL_CHECK_GE(count, 0);
+  if (count == 0) return true;
   while (stream_count_ > 0) {
     // Assume that ByteCount() can be used to find out how much we actually
     // skipped when Skip() fails.
@@ -339,7 +345,7 @@ bool ConcatenatingInputStream::Skip(int count) {
 }
 
 int64_t ConcatenatingInputStream::ByteCount() const {
-  if (stream_count_ == 0) {
+  if (stream_count_ <= 0) {
     return bytes_retired_;
   } else {
     return bytes_retired_ + streams_[0]->ByteCount();
