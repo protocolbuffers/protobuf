@@ -96,13 +96,11 @@ static upb_Array* PyUpb_RepeatedContainer_GetIfReified(
  * attached to the provided `arr`.
  *
  * An important part of this transition is moving the container from the
- * parent's unset_subobj_map to the arena's cache.  If `subobj_map` and `iter`
- * are non-NULL, this is happening during iteration, and we remove
- * `subobj_map`.
+ * parent's unset_subobj_map to the arena's cache.  If `iter` is non-NULL,
+ * this is happening during iteration, and we remove the entry from the map.
  */
 upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
-                                         PyUpb_WeakMap* subobj_map,
-                                         intptr_t* iter) {
+                                         PyUpb_WeakMapIter* iter) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   assert(PyUpb_RepeatedContainer_IsStub(self));
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
@@ -114,8 +112,8 @@ upb_Array* PyUpb_RepeatedContainer_Reify(PyObject* _self, upb_Array* arr,
       return NULL;
     }
   }
-  if (subobj_map) {
-    PyUpb_WeakMap_DeleteIter(subobj_map, iter);
+  if (iter) {
+    PyUpb_WeakMapIter_Delete(iter);
   } else {
     if (!PyUpb_Message_SetConcreteSubobj(
             self->ptr.parent, f, (upb_MessageValue){.array_val = arr}, _self)) {
@@ -152,7 +150,7 @@ upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* _self) {
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   if (arr) return arr;  // Already writable.
 
-  return PyUpb_RepeatedContainer_Reify((PyObject*)self, NULL, NULL, 0);
+  return PyUpb_RepeatedContainer_Reify((PyObject*)self, NULL, NULL);
 }
 
 static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {

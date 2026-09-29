@@ -91,6 +91,8 @@ class MessageTest(unittest.TestCase):
 
       msg4 = message_module.TestAllTypes()
       msg4.CopyFrom(msg3)
+      _ = msg4.optional_nested_message
+      msg4.Clear()
 
       # Try deepcopy
       _ = copy.deepcopy(msg3)
