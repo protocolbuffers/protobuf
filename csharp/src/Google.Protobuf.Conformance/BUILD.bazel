@@ -52,11 +52,17 @@ genrule(
         "Google.Protobuf.Conformance.csproj",
         "//conformance:conformance_csharp_proto",
         "//csharp:srcs",
+        "//csharp/protos/unittest_deep_dependencies:cached_csharp_gen",
+        "//csharp/protos/unittest_deep_dependencies:notcached_csharp_gen",
     ],
     outs = CONFORMANCE_DEPS + ["Google.Protobuf.Conformance.dll"],
     cmd = """
         SRCDIR=$$(dirname $(location :Program.cs))
         cp $(location //conformance:conformance_csharp_proto) $$SRCDIR
+        mkdir -p $$SRCDIR/../Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesCached
+        mkdir -p $$SRCDIR/../Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesNotCached
+        cp $(locations //csharp/protos/unittest_deep_dependencies:cached_csharp_gen) $$SRCDIR/../Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesCached/
+        cp $(locations //csharp/protos/unittest_deep_dependencies:notcached_csharp_gen) $$SRCDIR/../Google.Protobuf.Test.TestProtos/UnittestDeepDependenciesNotCached/
         DOTNET_CLI_HOME=/tmp ./$(location :build_conformance_test)
         cp -r $$SRCDIR/bin/Release/net8.0/* $(RULEDIR)
     """,

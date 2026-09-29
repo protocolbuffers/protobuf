@@ -5,6 +5,10 @@ inline_sh_test(
     name = "tests",
     srcs = ["test.sh"],
     cmd = "$(location test.sh) 3.0.0 $(rootpath //:protoc)",
+    tags = [
+        "manual",
+        "requires-network",
+    ],
     tools = ["//:protoc"],
     deps = glob([
         "src/**/*.cs*",  # .cs and .csproj

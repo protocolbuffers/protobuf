@@ -1,5 +1,4 @@
 """
-Macro to generate exponential dependency proto structure for both cached and notcached variants.
 Generates proto files into separate subdirectories without duplication.
 """
 
@@ -57,7 +56,7 @@ def _generate_variant(variant, width, depth, package):
     proto_library(
         name = variant + "_file_00_00_proto",
         srcs = [":" + package + "/file_00_00.proto"],
-        strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+        strip_import_prefix = "/csharp/protos/unittest_deep_dependencies",
     )
 
     # Level 1: WIDTH proto_library targets
@@ -66,7 +65,7 @@ def _generate_variant(variant, width, depth, package):
         proto_library(
             name = variant + "_file_01_" + i_pad + "_proto",
             srcs = [":" + package + "/file_01_" + i_pad + ".proto"],
-            strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+            strip_import_prefix = "/csharp/protos/unittest_deep_dependencies",
             deps = [":" + variant + "_file_00_00_proto"],
             exports = [":" + variant + "_file_00_00_proto"],
         )
@@ -87,7 +86,7 @@ def _generate_variant(variant, width, depth, package):
             proto_library(
                 name = variant + "_file_" + level_pad + "_" + idx_pad + "_proto",
                 srcs = [":" + package + "/file_" + level_pad + "_" + idx_pad + ".proto"],
-                strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+                strip_import_prefix = "/csharp/protos/unittest_deep_dependencies",
                 deps = deps,
                 exports = deps,
             )
@@ -96,7 +95,7 @@ def _generate_variant(variant, width, depth, package):
     proto_library(
         name = variant + "_entry_proto",
         srcs = [":" + package + "/file_entry.proto"],
-        strip_import_prefix = "/third_party/protobuf/csharp/protos/unittest_deep_dependencies",
+        strip_import_prefix = "/csharp/protos/unittest_deep_dependencies",
         deps = [":" + variant + "_file_" + _pad(depth) + "_00_proto"],
         exports = [":" + variant + "_file_" + _pad(depth) + "_00_proto"],
     )
@@ -243,17 +242,16 @@ def _generate_csharp_sources(name, variant, all_files):
     # Invoke protoc hermetically with the correct base namespace and include path
     native.genrule(
         name = name,
-        testonly = True,
         srcs = [":" + f for f in all_files],
         outs = csharp_outputs,
         cmd = (
-            "$(location //net/proto2/compiler/public:protocol_compiler) " +
+            "$(location //:protoc) " +
             "--csharp_out=$(RULEDIR)/" + variant + "_cs " +
             "--csharp_opt=file_extension=.pb.cs " +
             "--csharp_opt=base_namespace=" + base_namespace + " " +
             "-I$$(dirname $$(dirname $(location :" + all_files[0] + "))) " +
             "$(SRCS)"
         ),
-        tools = ["//net/proto2/compiler/public:protocol_compiler"],
-        visibility = ["//src/google/protobuf/csharp:__subpackages__"],
+        tools = ["//:protoc"],
+        visibility = ["//csharp:__subpackages__"],
     )
