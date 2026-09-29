@@ -17,6 +17,7 @@ use reflection::upb_TextEncode;
 use upb::MessagePtr;
 
 pub use reflection::def_pool::upb_DefPool_Init;
+pub use reflection::def_pool::RawDefPoolInit as DefPoolInitPtr;
 
 /// A wrapper over a `upb_DefPool`.
 ///
@@ -44,8 +45,8 @@ impl DefPool {
     /// Loads a generated descriptor, and everything it imports, into the pool.
     ///
     /// # Safety
-    /// - `init` must point to a valid `upb_DefPool_Init`, and so must every init reachable from
-    ///   it through its dependencies according to the correct orderings and counts.
+    /// - `init` must point to a valid `upb_DefPool_Init`, and so must every init reachable from it
+    ///   through its dependencies according to the correct orderings and counts.
     pub unsafe fn load_def_init(&mut self, init: *const upb_DefPool_Init) -> bool {
         // SAFETY:
         // - `self.raw` is a live pool; only `Drop` frees it.
@@ -101,7 +102,7 @@ impl<'pool> MessageDef<'pool> {
 
     /// Returns the internal NonNull representation of the descriptor.
     #[inline]
-    pub(crate) fn raw(&self) -> RawMessageDef {
+    pub fn raw(&self) -> RawMessageDef {
         self.raw
     }
 }

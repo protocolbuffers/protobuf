@@ -123,6 +123,7 @@ rust_library(
     name = "protobuf_upb",
     srcs = PROTOBUF_SHARED + [
         "upb_kernel/conversions.rs",
+        "upb_kernel/def_pool.rs",
         "upb_kernel/extension.rs",
         "upb_kernel/interop.rs",
         "upb_kernel/map.rs",
@@ -145,6 +146,7 @@ rust_library(
     visibility = [":protobuf_internal"],
     deps = [
         "//rust/upb",
+        "//rust/upb:reflection",
         "@crate_index//:linkme",
     ],
 )
