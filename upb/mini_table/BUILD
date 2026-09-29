@@ -65,11 +65,7 @@ cc_library(
     ],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = [
-        "//rust/upb:__pkg__",
-        "//upb:__pkg__",
-        "//upb:friends",
-    ],
+    visibility = ["//upb:friends"],
     deps = [
         ":internal",
         ":mini_table",
