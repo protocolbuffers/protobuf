@@ -170,6 +170,7 @@ cc_test(
     deps = [
         ":ptr",
         ":status",
+        "//hpb/backend:types",
         "//hpb_generator/tests:test_model_hpb_proto",
         "//upb/wire",
         "@abseil-cpp//absl/status:statusor",
