@@ -571,7 +571,14 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES MutableRepeatedFieldProxyImpl
  private:
   friend RepeatedFieldProxyInternalPrivateAccessHelper<ElementType, kOrProxy>;
 
-  Arena* PROTOBUF_NULLABLE const arena_;
+  // Rebinds the proxy to a different repeated field. Intentionally not exposed
+  // in the public interface.
+  void rebind(const MutableRepeatedFieldProxyImpl& other) {
+    static_cast<Base&>(*this) = static_cast<const Base&>(other);
+    arena_ = other.arena_;
+  }
+
+  Arena* PROTOBUF_NULLABLE arena_;
 };
 
 template <typename ElementType, bool kOrProxy>
@@ -736,6 +743,8 @@ class RepeatedFieldProxyInternalPrivateAccessHelper {
       std::conditional_t<kOrProxy, RepeatedFieldOrProxy<ElementType>,
                          RepeatedFieldProxy<ElementType>>;
 
+  using MutableProxyImpl = MutableRepeatedFieldProxyImpl<ElementType, kOrProxy>;
+
   // Casts up to a `MutableRepeatedFieldProxyImpl<ElementType>` from a subclass
   // of `MutableRepeatedFieldProxyImpl<ElementType>`. This is used to implement
   // the CRTP pattern for `*With<MethodName>` classes.
@@ -760,6 +769,10 @@ class RepeatedFieldProxyInternalPrivateAccessHelper {
   template <typename C>
   static auto& field(const C* PROTOBUF_NONNULL proxy) {
     return ToProxyType(proxy).field();
+  }
+
+  static void rebind(MutableProxyImpl& proxy, const MutableProxyImpl& other) {
+    proxy.rebind(other);
   }
 
   template <typename C, typename... Args>
@@ -1049,6 +1062,24 @@ void c_stable_sort(internal::RepeatedFieldOrProxy<T> cont, Compare cmp) {
 template <int&..., typename T>
 void c_stable_sort(internal::RepeatedFieldOrProxy<T> cont) {
   google::protobuf::stable_sort(cont.begin(), cont.end());
+}
+
+// Provides a back insert iterator for RepeatedFieldOrProxy instances,
+// similar to std::back_inserter().
+template <typename T>
+auto RepeatedFieldBackInserter(RepeatedFieldProxy<T> field) {
+  return internal::RepeatedFieldProxyBackInsertIteratorImpl<T,
+                                                            /*kOrProxy=*/false>(
+      field);
+}
+
+// Provides a back insert iterator for RepeatedFieldOrProxy instances,
+// similar to std::back_inserter().
+template <typename T>
+auto RepeatedFieldBackInserter(internal::RepeatedFieldOrProxy<T> field) {
+  return internal::RepeatedFieldProxyBackInsertIteratorImpl<T,
+                                                            /*kOrProxy=*/true>(
+      field);
 }
 
 }  // namespace protobuf
