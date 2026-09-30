@@ -131,7 +131,7 @@ namespace internal {
 class DescriptorBuilder;
 // Defined in option_interpreter.cc
 class AggregateOptionFinder;
-}
+}  // namespace internal
 class FileDescriptorTables;
 
 // Defined in unknown_field_set.h.
@@ -2351,8 +2351,18 @@ enum class ExtDeclEnforcementLevel : uint8_t {
 // extensions by number.
 class PROTOBUF_EXPORT DescriptorPool {
  public:
-  // Create a normal, empty DescriptorPool.
+  struct Options {
+    // If true, enables internal synchronization (mutex_) for the pool even
+    // without a fallback database, allowing thread-safe concurrent calls to
+    // BuildFile* and concurrent lookups.
+    bool thread_safe = false;
+  };
+
+  // Create a normal, empty DescriptorPool (single-threaded by default).
   DescriptorPool();
+
+  // Create a DescriptorPool with custom options (e.g. thread_safe = true).
+  explicit DescriptorPool(Options options);
 
   // Constructs a DescriptorPool that, when it can't find something among the
   // descriptors already in the pool, looks for it in the given
@@ -2895,6 +2905,7 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool enforce_feature_support_validation_ = false;
   bool enforce_symbol_visibility_ = false;
   mutable bool build_started_ = false;
+  bool thread_safe_ = false;
 
   // Set of files to track for additional validation. The bool value when true
   // means unused imports are treated as errors (and as warnings when false).
