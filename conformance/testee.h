@@ -1,33 +1,40 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 
+#include <limits>
 #include <string>
 #include <utility>
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/test_runner.h"
 #include "google/protobuf/descriptor.h"
 
-// This file defines the APIs used by conformance tests to interact with
-// testees.  The structure of these APIs are intentionally decoupled from the
-// runner/testee protocol (which are used to implement them), in order to
-// maximize their flexibility in tests.
+// The APIs conformance tests use to interact with a testee.  They are
+// deliberately decoupled from the runner/testee protocol that implements
+// them.  That keeps them flexible for tests.
 //
-// Tests should not ever need to name any of these types directly, but will
-// obtain a Test object pointing to the global testee and pass the final
-// TestResult to one of our matchers.
+// Tests should never need to name any of these types directly.  A test
+// obtains a Test object for the global testee from Testee() (see
+// test_environment.h), chains operations on it and passes the final
+// TestResult to Yields() (see matchers.h):
 //
-// Example:
-//
-// EXPECT_THAT(RequiredTest()
-//                .ParseBinary(Wire(LengthPrefixedField(1, "foo"))
-//                .SerializeText({/*print_unknown_fields=*/true}),
-//             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
+//   EXPECT_THAT(Testee()
+//                   .ParseBinary(TestAllTypesProto2::descriptor(), input)
+//                   .SerializeBinary(),
+//               Yields(ParsedPayload(EqualsBinaryProto(input))));
 
-// TODO Possible future APIs to expand conformance coverage:
+// TODO: b/563659337 - Possible future APIs to expand conformance coverage:
 // - Add ClearUnknownFields() to InMemoryMessage
 // - Add MergeFrom() method to InMemoryMessage to merge raw binary
 // - Remove && qualifiers on Parse* and add InMemoryMessage::Merge that merges
@@ -40,25 +47,70 @@
 namespace google {
 namespace protobuf {
 namespace conformance {
+
+// How important it is that an implementation passes a test.  kP0 is the
+// baseline every implementation must pass.  Every priority is enforced
+// unless the enforcement level (see below) leaves some out.  A failing kP1
+// test is then counted but not failed, unless it is in the failure list (see
+// matchers.h).  Test names still spell kP0 as "Required" and kP1 as
+// "Recommended" (see PriorityLevelName()).
+//
+// A suite declares its priority with ConformanceTest::DefaultPriority().  A
+// single test overrides it with Testee(priority); see test_environment.h.
+// TODO: b/564550230 - rename the levels in test names to P0/P1 once every
+// suite has been triaged.
+enum class TestPriority { kP0 = 0, kP1 = 1 };
+
+// The priorities, spelled the way suites write them: Testee(kP1).
+inline constexpr TestPriority kP0 = TestPriority::kP0;
+inline constexpr TestPriority kP1 = TestPriority::kP1;
+
+// An enforcement level is the highest priority, as an int (0 for kP0, 1 for
+// kP1), whose unlisted failures fail the run.  See TestManager in
+// test_manager.h.  kEnforceAllPriorities, the default, enforces every
+// priority, however many there are.
+inline constexpr int kEnforceAllPriorities = std::numeric_limits<int>::max();
+
+// The name of a priority: "P0" or "P1".
+absl::string_view PriorityName(TestPriority priority);
+
+// The level a priority is named with in test names, until the rename (see
+// TestPriority): "Required" for kP0, "Recommended" for kP1.
+absl::string_view PriorityLevelName(TestPriority priority);
+
 namespace internal {
 
-// The strictness of a test.  Required tests will fail the test suite if they
-// fail.  Recommended tests will not fail the test suite if they fail, but will
-// be reported as a warning.
-enum class TestStrictness {
-  kRequired = 0,
-  kRecommended = 1,
-};
-
-// The final result of a conformance test, to be processed by a matcher.
+// The final result of a conformance test: the testee's response and what the
+// test asked of it.  Hand it to exactly one EXPECT_THAT(..., Yields(...)),
+// which records the outcome against the failure list (see matchers.h).
+//
+// Results are move-only.  A result that is destroyed without having been
+// checked by Yields() reports a gtest failure.  Otherwise the outcome of its
+// test would silently bypass the failure list.  A moved-from result is inert.
 class TestResult {
  public:
+  // The outcome Yields() reached for a result.  `matched` says whether the
+  // test passed once the failure list and the test's priority were taken
+  // into account.  `explanation` is the text to show for it.
+  struct Verdict {
+    bool matched = false;
+    std::string explanation;
+  };
+
+  TestResult(TestResult&& other) noexcept;
+  TestResult& operator=(TestResult&& other) noexcept;
+  TestResult(const TestResult&) = delete;
+  TestResult& operator=(const TestResult&) = delete;
+  ~TestResult();
+
   // The name of the test that was run, useful for failure matching and
   // reporting.
   absl::string_view name() const { return test_name_; }
 
-  // The strictness of the test.
-  TestStrictness strictness() const { return strictness_; }
+  // The priority of the test (see TestPriority).  Yields() tolerates a
+  // failing kP1 test only if the enforcement level leaves kP1 out and the
+  // test isn't listed.
+  TestPriority priority() const { return priority_; }
 
   // The type of the message that was tested, needed for parsing.
   const Descriptor* type() const { return type_; }
@@ -66,34 +118,71 @@ class TestResult {
   // The format of the output that was requested.
   ::conformance::WireFormat format() const { return format_; }
 
+  // Whether the testee was asked to print unknown fields when serializing
+  // text format, as SerializeText({/*print_unknown_fields=*/true}) does.  It
+  // then prints them by field number.
+  bool print_unknown_fields() const { return print_unknown_fields_; }
+
   // The conformance response that was returned from the testee.  This will
   // contain either the resulting payload or an error message.
   const ::conformance::ConformanceResponse& response() const {
     return response_;
   }
 
+  // Whether this result has been checked by Yields() (or MarkChecked()).
+  bool checked() const { return checked_; }
+
+  // Marks this result as checked without recording a verdict.  Tests that
+  // inspect a result directly instead of matching it must call this, or the
+  // destructor reports the result as never checked.
+  void MarkChecked() const { checked_ = true; }
+
+  // Records the verdict Yields() reached for this result and marks it checked.
+  // Must be called at most once, on an unchecked result.
+  void SetVerdict(Verdict verdict) const;
+
+  // The verdict recorded by SetVerdict(), if any.  A checked result without a
+  // verdict was marked checked by MarkChecked().
+  const absl::optional<Verdict>& verdict() const { return verdict_; }
+
  private:
-  TestResult(absl::string_view test_name, TestStrictness strictness,
-             const Descriptor* type, ::conformance::WireFormat format,
+  // Records what `request` asked of the testee, without keeping the request
+  // itself.
+  TestResult(absl::string_view test_name, TestPriority priority,
+             const Descriptor* type,
+             const ::conformance::ConformanceRequest& request,
              ::conformance::ConformanceResponse response)
       : test_name_(test_name),
-        strictness_(strictness),
+        priority_(priority),
         type_(type),
-        format_(format),
+        format_(request.requested_output_format()),
+        print_unknown_fields_(request.print_unknown_fields()),
         response_(std::move(response)) {}
   friend class InMemoryMessage;
 
+  // Reports a gtest failure if this (non-moved-from) result was never checked.
+  void ReportIfUnchecked() const;
+
   std::string test_name_;
-  TestStrictness strictness_;
+  TestPriority priority_;
   const Descriptor* type_;
   ::conformance::WireFormat format_;
+  bool print_unknown_fields_;
   ::conformance::ConformanceResponse response_;
+  mutable bool checked_ = false;
+  mutable absl::optional<Verdict> verdict_;
+  bool moved_from_ = false;
 };
 
 // Options for serializing text format.
 struct TextSerializationOptions {
   bool print_unknown_fields = false;
 };
+
+// How a test's full name is derived from the name it was created with: with
+// the usual ".<Format>Output" suffix, or (for InMemoryMessage::ParseOnly())
+// without it.
+enum class NameStyle { kWithOutputFormat, kWithoutOutputFormat };
 
 // This class represents a message held in memory by the testee that can be
 // manipulated in various ways.
@@ -107,22 +196,37 @@ class InMemoryMessage {
   TestResult SerializeText(TextSerializationOptions options = {}) &&;
   TestResult SerializeJson() &&;
 
+  // Finishes a test whose outcome depends only on parsing, e.g. one that
+  // expects a parse error.  The testee is still asked to serialize (in the same
+  // format the input was in; there is no parse-only request), but the test name
+  // carries no output-format suffix: "Required.Proto3.ProtobufInput.<name>".
+  //
+  // Like the Serialize*() methods this consumes the message and must remain
+  // the terminal call of a test: once further operations on an InMemoryMessage
+  // exist (Merge, reflection accessors; see the TODO at the top of this file)
+  // they have to come before it, not after.
+  TestResult ParseOnly() &&;
+
  private:
   InMemoryMessage(class Testee* testee, absl::string_view name,
-                  TestStrictness strictness, const Descriptor* type,
+                  TestPriority priority, const Descriptor* type,
                   ::conformance::ConformanceRequest request)
       : testee_(testee),
         name_(name),
-        strictness_(strictness),
+        priority_(priority),
         type_(type),
         request_(std::move(request)) {}
   friend class Test;
 
-  TestResult SerializeImpl(::conformance::WireFormat format);
+  // Finishes the test: requests `output_format` from the testee and runs it
+  // under the name built according to `name_style`.  All public terminal
+  // methods funnel into this.
+  TestResult Finish(::conformance::WireFormat output_format,
+                    NameStyle name_style);
 
   class Testee* testee_;
   std::string name_;
-  TestStrictness strictness_;
+  TestPriority priority_;
   const Descriptor* type_;
   ::conformance::ConformanceRequest request_;
 };
@@ -146,13 +250,13 @@ class Test {
                             JsonParseOptions options = {}) &&;
 
  private:
-  Test(class Testee* testee, absl::string_view name, TestStrictness strictness)
-      : testee_(testee), name_(name), strictness_(strictness) {}
+  Test(class Testee* testee, absl::string_view name, TestPriority priority)
+      : testee_(testee), name_(name), priority_(priority) {}
   friend class Testee;
 
   class Testee* testee_;
   std::string name_;
-  TestStrictness strictness_;
+  TestPriority priority_;
 };
 
 // This class represents an abstraction of the testee.  It is used to
@@ -161,8 +265,8 @@ class Testee {
  public:
   explicit Testee(ConformanceTestRunner* runner) : runner_(runner) {}
 
-  Test CreateTest(absl::string_view name, TestStrictness strictness) {
-    return Test(this, name, strictness);
+  Test CreateTest(absl::string_view name, TestPriority priority) {
+    return Test(this, name, priority);
   }
 
  private:
