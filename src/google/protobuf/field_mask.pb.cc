@@ -312,8 +312,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   cached_has_bits = this_._impl_._has_bits_[0];
   // repeated string paths = 1;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (int i = 0, n = this_._internal_paths_size(); i < n; ++i) {
-      const auto& s = this_._internal_paths().Get(i);
+    for (const auto& s : this_._impl_.paths_) {
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.FieldMask.paths");
       target = stream->WriteString(1, s, target);
@@ -349,11 +348,12 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // repeated string paths = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size +=
-          1 * ::google::protobuf::internal::FromIntSize(this_._internal_paths().size());
-      for (int i = 0, n = this_._internal_paths().size(); i < n; ++i) {
-        total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-            this_._internal_paths().Get(i));
+      if (const ::google::protobuf::RepeatedPtrField<::std::string>& f = this_._impl_.paths_;
+          !f.empty()) {
+        total_size += 1 * ::google::protobuf::internal::FromIntSize(f.size());
+        for (const auto& v : f) {
+          total_size += ::google::protobuf::internal::WireFormatLite::StringSize(v);
+        }
       }
     }
   }

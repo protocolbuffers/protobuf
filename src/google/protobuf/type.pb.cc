@@ -1199,20 +1199,15 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.Field fields = 2;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_fields_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_fields().Get(i);
+    for (const auto& sub : this_._impl_.fields_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          2, repfield, repfield.GetCachedSize(), target,
-          stream);
+          2, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
   // repeated string oneofs = 3;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    for (int i = 0, n = this_._internal_oneofs_size(); i < n; ++i) {
-      const auto& s = this_._internal_oneofs().Get(i);
+    for (const auto& s : this_._impl_.oneofs_) {
       ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.oneofs");
       target = stream->WriteString(3, s, target);
@@ -1221,13 +1216,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.Option options = 4;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_options_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_options().Get(i);
+    for (const auto& sub : this_._impl_.options_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          4, repfield, repfield.GetCachedSize(), target,
-          stream);
+          4, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
@@ -1293,11 +1284,12 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // repeated string oneofs = 3;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size +=
-          1 * ::google::protobuf::internal::FromIntSize(this_._internal_oneofs().size());
-      for (int i = 0, n = this_._internal_oneofs().size(); i < n; ++i) {
-        total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-            this_._internal_oneofs().Get(i));
+      if (const ::google::protobuf::RepeatedPtrField<::std::string>& f = this_._impl_.oneofs_;
+          !f.empty()) {
+        total_size += 1 * ::google::protobuf::internal::FromIntSize(f.size());
+        for (const auto& v : f) {
+          total_size += ::google::protobuf::internal::WireFormatLite::StringSize(v);
+        }
       }
     }
     // repeated .google.protobuf.Option options = 4;
@@ -1664,13 +1656,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.Option options = 9;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_options_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_options().Get(i);
+    for (const auto& sub : this_._impl_.options_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          9, repfield, repfield.GetCachedSize(), target,
-          stream);
+          9, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
@@ -2088,25 +2076,17 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.EnumValue enumvalue = 2;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_enumvalue_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_enumvalue().Get(i);
+    for (const auto& sub : this_._impl_.enumvalue_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          2, repfield, repfield.GetCachedSize(), target,
-          stream);
+          2, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
   // repeated .google.protobuf.Option options = 3;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_options_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_options().Get(i);
+    for (const auto& sub : this_._impl_.options_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          3, repfield, repfield.GetCachedSize(), target,
-          stream);
+          3, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
@@ -2440,13 +2420,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.Option options = 3;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_options_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_options().Get(i);
+    for (const auto& sub : this_._impl_.options_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          3, repfield, repfield.GetCachedSize(), target,
-          stream);
+          3, sub, sub.GetCachedSize(), target, stream);
     }
   }
 

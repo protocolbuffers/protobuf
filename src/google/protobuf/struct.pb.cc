@@ -1366,13 +1366,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   cached_has_bits = this_._impl_._has_bits_[0];
   // repeated .google.protobuf.Value values = 1;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_values_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_values().Get(i);
+    for (const auto& sub : this_._impl_.values_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          1, repfield, repfield.GetCachedSize(), target,
-          stream);
+          1, sub, sub.GetCachedSize(), target, stream);
     }
   }
 

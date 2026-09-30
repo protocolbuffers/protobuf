@@ -830,25 +830,17 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.Method methods = 2;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_methods_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_methods().Get(i);
+    for (const auto& sub : this_._impl_.methods_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          2, repfield, repfield.GetCachedSize(), target,
-          stream);
+          2, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
   // repeated .google.protobuf.Option options = 3;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_options_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_options().Get(i);
+    for (const auto& sub : this_._impl_.options_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          3, repfield, repfield.GetCachedSize(), target,
-          stream);
+          3, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
@@ -871,13 +863,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.Mixin mixins = 6;
   if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_mixins_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_mixins().Get(i);
+    for (const auto& sub : this_._impl_.mixins_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          6, repfield, repfield.GetCachedSize(), target,
-          stream);
+          6, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
@@ -1303,13 +1291,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.Option options = 6;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_options_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_options().Get(i);
+    for (const auto& sub : this_._impl_.options_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          6, repfield, repfield.GetCachedSize(), target,
-          stream);
+          6, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
