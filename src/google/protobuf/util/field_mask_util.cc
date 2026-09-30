@@ -211,7 +211,7 @@ class FieldMaskTree {
     if (root_.children.empty()) {
       return;
     }
-    MergeMessage(&root_, source, options, destination);
+    MergeMessage(&root_, source, options, destination, /*depth=*/0);
   }
 
   // Add required field path of the message to this tree based on current tree
@@ -280,9 +280,14 @@ class FieldMaskTree {
                             FieldMaskTree* out);
 
   // Merge all fields specified by a sub-tree from one message to another.
+  // `depth` is the number of message levels already descended from the root.
+  // Sub-paths nested deeper than kMaxMergeDepth are ignored, mirroring the
+  // default recursion limit that applies when parsing messages.
   void MergeMessage(const Node* node, const Message& source,
                     const FieldMaskUtil::MergeOptions& options,
-                    Message* destination);
+                    Message* destination, int depth);
+
+  static constexpr int kMaxMergeDepth = 100;
 
   // Add required field path of the message to this tree based on current tree
   // structure. If a message is present in the tree, add the path of its
@@ -475,7 +480,7 @@ void FieldMaskTree::MergeLeafNodesToTree(absl::string_view prefix,
 
 void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
                                  const FieldMaskUtil::MergeOptions& options,
-                                 Message* destination) {
+                                 Message* destination, int depth) {
   ABSL_DCHECK(!node->children.empty());
   const Reflection* source_reflection = source.GetReflection();
   const Reflection* destination_reflection = destination->GetReflection();
@@ -499,8 +504,17 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
                         << "have sub-fields.";
         continue;
       }
+      if (depth >= kMaxMergeDepth) {
+        ABSL_LOG(ERROR) << "Field \"" << field_name << "\" in message "
+                        << descriptor->full_name()
+                        << " is nested deeper than the maximum supported "
+                        << "field mask depth (" << kMaxMergeDepth
+                        << ") and will be ignored.";
+        continue;
+      }
       MergeMessage(child, source_reflection->GetMessage(source, field), options,
-                   destination_reflection->MutableMessage(destination, field));
+                   destination_reflection->MutableMessage(destination, field),
+                   depth + 1);
       continue;
     }
     if (!field->is_repeated()) {
