@@ -552,11 +552,8 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
                } else {
                  p->Emit(R"cc(
                    ::size_t byte_size = 0;
-                   auto count = static_cast<::size_t>(this_._internal_$name$_size());
-
-                   for (::size_t i = 0; i < count; ++i) {
-                     byte_size += ::_pbi::WireFormatLite::EnumSize(
-                         this_._internal_$name$().Get(static_cast<int>(i)));
+                   for (int v : this_._internal_$name$()) {
+                     byte_size += ::_pbi::WireFormatLite::EnumSize(v);
                    }
                  )cc");
                }
@@ -574,11 +571,9 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
     return;
   }
   p->Emit(R"cc(
-    for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
+    for (int v : this_._internal_$name$()) {
       target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          $number$, static_cast<$Enum$>(this_._internal_$name$().Get(i)),
-          target);
+      target = ::_pbi::WireFormatLite::WriteEnumToArray($number$, v, target);
     }
   )cc");
 }

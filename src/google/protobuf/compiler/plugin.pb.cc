@@ -1159,8 +1159,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   cached_has_bits = this_._impl_._has_bits_[0];
   // repeated string file_to_generate = 1;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (int i = 0, n = this_._internal_file_to_generate_size(); i < n; ++i) {
-      const auto& s = this_._internal_file_to_generate().Get(i);
+    for (const auto& s : this_._impl_.file_to_generate_) {
       target = stream->WriteString(1, s, target);
     }
   }
@@ -1180,25 +1179,17 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_proto_file_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_proto_file().Get(i);
+    for (const auto& sub : this_._impl_.proto_file_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          15, repfield, repfield.GetCachedSize(), target,
-          stream);
+          15, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
   if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_source_file_descriptors_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_source_file_descriptors().Get(i);
+    for (const auto& sub : this_._impl_.source_file_descriptors_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          17, repfield, repfield.GetCachedSize(), target,
-          stream);
+          17, sub, sub.GetCachedSize(), target, stream);
     }
   }
 
@@ -1231,11 +1222,12 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     // repeated string file_to_generate = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size +=
-          1 * ::google::protobuf::internal::FromIntSize(this_._internal_file_to_generate().size());
-      for (int i = 0, n = this_._internal_file_to_generate().size(); i < n; ++i) {
-        total_size += ::google::protobuf::internal::WireFormatLite::StringSize(
-            this_._internal_file_to_generate().Get(i));
+      if (const ::google::protobuf::RepeatedPtrField<::std::string>& f = this_._impl_.file_to_generate_;
+          !f.empty()) {
+        total_size += 1 * ::google::protobuf::internal::FromIntSize(f.size());
+        for (const auto& v : f) {
+          total_size += ::google::protobuf::internal::WireFormatLite::StringSize(v);
+        }
       }
     }
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -1780,13 +1772,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (unsigned i = 0, n = static_cast<unsigned>(
-                             this_._internal_file_size());
-         i < n; i++) {
-      const auto& repfield = this_._internal_file().Get(i);
+    for (const auto& sub : this_._impl_.file_) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          15, repfield, repfield.GetCachedSize(), target,
-          stream);
+          15, sub, sub.GetCachedSize(), target, stream);
     }
   }
 

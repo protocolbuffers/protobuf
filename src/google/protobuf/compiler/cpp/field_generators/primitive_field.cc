@@ -616,10 +616,10 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!field_->is_packed()) {
     p->Emit(R"cc(
-      for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
+      for ($Type$ v : this_.$field_$) {
         target = stream->EnsureSpace(target);
-        target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-            $number$, this_._internal_$name$().Get(i), target);
+        target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray($number$, v,
+                                                                    target);
       }
     )cc");
     return;

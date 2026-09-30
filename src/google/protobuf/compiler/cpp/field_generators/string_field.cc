@@ -745,11 +745,12 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size +=
-          $kTagBytes$ * $pbi$::FromIntSize(this_._internal_$name$().size());
-      for (int i = 0, n = this_._internal_$name$().size(); i < n; ++i) {
-        total_size += $pbi$::WireFormatLite::$DeclaredType$Size(
-            this_._internal_$name$().Get(i));
+      if (const $pb$::RepeatedPtrField<::std::string>& f = this_.$field_$;
+          !f.empty()) {
+        total_size += $kTagBytes$ * $pbi$::FromIntSize(f.size());
+        for (const auto& v : f) {
+          total_size += $pbi$::WireFormatLite::$DeclaredType$Size(v);
+        }
       }
     )cc");
   }
@@ -975,8 +976,7 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
                   "s.data(), static_cast<int>(s.length()),");
             }}},
           R"cc(
-            for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
-              const auto& s = this_._internal_$name$().Get(i);
+            for (const auto& s : this_.$field_$) {
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }
