@@ -26,6 +26,11 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+#else
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE PROTOBUF_ALWAYS_INLINE
+#endif
 namespace {
 PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
     file_reflection_data[] = {
@@ -759,13 +764,9 @@ Api::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Api_globals_));
   return &Api_globals_.class_data;
 }
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Api::Clear(MessageLite& base) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+void Api::Clear(MessageLite& base) {
   Api& this_ = static_cast<Api&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-PROTOBUF_NOINLINE void Api::Clear() {
-  Api& this_ [[maybe_unused]] = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Api)
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
@@ -800,18 +801,15 @@ PROTOBUF_NOINLINE void Api::Clear() {
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void Api::Clear() { Clear(*this); }
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 ::uint8_t* PROTOBUF_NONNULL Api::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Api& this_ = static_cast<const Api&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* PROTOBUF_NONNULL Api::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
-    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-  const Api& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -910,14 +908,17 @@ PROTOBUF_NOINLINE void Api::Clear() {
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Api)
   return target;
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL Api::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  return _InternalSerialize(*this, target, stream);
+}
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 ::size_t Api::ByteSizeLong(const MessageLite& base) {
   const Api& this_ = static_cast<const Api&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::size_t Api::ByteSizeLong() const {
-  const Api& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Api)
   ::size_t total_size = 0;
 
@@ -984,6 +985,9 @@ PROTOBUF_NOINLINE void Api::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t Api::ByteSizeLong() const { return ByteSizeLong(*this); }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
 void Api::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
@@ -1196,13 +1200,9 @@ Method::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Method_globals_));
   return &Method_globals_.class_data;
 }
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Method::Clear(MessageLite& base) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+void Method::Clear(MessageLite& base) {
   Method& this_ = static_cast<Method&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-PROTOBUF_NOINLINE void Method::Clear() {
-  Method& this_ [[maybe_unused]] = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Method)
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
@@ -1236,18 +1236,15 @@ PROTOBUF_NOINLINE void Method::Clear() {
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void Method::Clear() { Clear(*this); }
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 ::uint8_t* PROTOBUF_NONNULL Method::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Method& this_ = static_cast<const Method&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* PROTOBUF_NONNULL Method::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
-    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-  const Method& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -1343,14 +1340,17 @@ PROTOBUF_NOINLINE void Method::Clear() {
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Method)
   return target;
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL Method::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  return _InternalSerialize(*this, target, stream);
+}
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 ::size_t Method::ByteSizeLong(const MessageLite& base) {
   const Method& this_ = static_cast<const Method&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::size_t Method::ByteSizeLong() const {
-  const Method& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Method)
   ::size_t total_size = 0;
 
@@ -1417,6 +1417,9 @@ PROTOBUF_NOINLINE void Method::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t Method::ByteSizeLong() const { return ByteSizeLong(*this); }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
 void Method::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
@@ -1593,13 +1596,9 @@ Mixin::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Mixin_globals_));
   return &Mixin_globals_.class_data;
 }
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-PROTOBUF_NOINLINE void Mixin::Clear(MessageLite& base) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+void Mixin::Clear(MessageLite& base) {
   Mixin& this_ = static_cast<Mixin&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-PROTOBUF_NOINLINE void Mixin::Clear() {
-  Mixin& this_ [[maybe_unused]] = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
   // @@protoc_insertion_point(message_clear_start:google.protobuf.Mixin)
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
@@ -1617,18 +1616,15 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NOINLINE void Mixin::Clear() { Clear(*this); }
+#endif  // PROTOBUF_CUSTOM_VTABLE
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 ::uint8_t* PROTOBUF_NONNULL Mixin::_InternalSerialize(
     const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Mixin& this_ = static_cast<const Mixin&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::uint8_t* PROTOBUF_NONNULL Mixin::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
-    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
-  const Mixin& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
   }
@@ -1665,14 +1661,17 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Mixin)
   return target;
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+::uint8_t* PROTOBUF_NONNULL Mixin::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NONNULL target,
+    ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
+  return _InternalSerialize(*this, target, stream);
+}
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 ::size_t Mixin::ByteSizeLong(const MessageLite& base) {
   const Mixin& this_ = static_cast<const Mixin&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-::size_t Mixin::ByteSizeLong() const {
-  const Mixin& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Mixin)
   ::size_t total_size = 0;
 
@@ -1699,6 +1698,9 @@ PROTOBUF_NOINLINE void Mixin::Clear() {
   return this_.MaybeComputeUnknownFieldsSize(total_size,
                                              &this_._impl_._cached_size_);
 }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+::size_t Mixin::ByteSizeLong() const { return ByteSizeLong(*this); }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
 
 void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {

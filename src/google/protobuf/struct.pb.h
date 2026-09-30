@@ -213,7 +213,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
   [[nodiscard]] bool IsInitialized() const {
     return true;
   }
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static void Clear(::google::protobuf::MessageLite& msg);
   [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
@@ -222,6 +221,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -235,7 +235,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
@@ -419,7 +419,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
   [[nodiscard]] bool IsInitialized() const {
     return true;
   }
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static void Clear(::google::protobuf::MessageLite& msg);
   [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
@@ -428,6 +427,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -441,7 +441,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,
@@ -631,7 +631,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
   [[nodiscard]] bool IsInitialized() const {
     return true;
   }
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
   private:
   static void Clear(::google::protobuf::MessageLite& msg);
   [[nodiscard]] static::size_t ByteSizeLong(const ::google::protobuf::MessageLite& msg);
@@ -640,6 +639,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
+  #if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -653,7 +653,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
     return _InternalSerialize(*this, target, stream);
   }
   #else   // PROTOBUF_CUSTOM_VTABLE
-  ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+  ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NONNULL _InternalSerialize(
       ::uint8_t* PROTOBUF_NONNULL target,

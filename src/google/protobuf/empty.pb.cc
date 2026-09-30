@@ -26,6 +26,11 @@ PROTOBUF_PRAGMA_INIT_SEG
 namespace _pb = ::google::protobuf;
 namespace _pbi = ::google::protobuf::internal;
 namespace _fl = ::google::protobuf::internal::field_layout;
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+#else
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE PROTOBUF_ALWAYS_INLINE
+#endif
 namespace {
 PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
     file_reflection_data[] = {
