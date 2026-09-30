@@ -2960,6 +2960,17 @@ void BinaryAndJsonConformanceSuiteImpl<
   ExpectParseFailureForJson("Int32FieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalInt32": "abc"})");
 
+  // Only ASCII digits 0-9 are digits; other Unicode decimal digits (Nd) are
+  // rejected. Not raw string literals: the payloads hold UTF-8 bytes of
+  // Arabic-Indic digits (U+0660-U+0669) and fullwidth digits (U+FF10-U+FF19).
+  // "١٢٣"
+  ExpectParseFailureForJson(
+      "Int32FieldStringValueArabicIndicDigits", REQUIRED,
+      "{\"optionalInt32\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  ExpectParseFailureForJson(
+      "Int64FieldStringValueFullwidthDigits", REQUIRED,
+      "{\"optionalInt64\": \"\xEF\xBC\x91\xEF\xBC\x92\xEF\xBC\x93\"}");
+
   // Parser reject empty string values.
   ExpectParseFailureForJson("Int32FieldEmptyString", REQUIRED,
                             R"({"optionalInt32": ""})");
@@ -3122,6 +3133,14 @@ void BinaryAndJsonConformanceSuiteImpl<
                             REQUIRED,
                             "{\"optionalFloat\": \"12\xE8\xB0\xB7\xE6\xAD\x8C"
                             "34\"}");
+  // Non-ASCII Unicode decimal digits: "١٢٣" (Arabic-Indic) and "１２３"
+  // (fullwidth).
+  ExpectParseFailureForJson(
+      "FloatFieldStringValueArabicIndicDigits", REQUIRED,
+      "{\"optionalFloat\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  ExpectParseFailureForJson(
+      "FloatFieldStringValueFullwidthDigits", REQUIRED,
+      "{\"optionalFloat\": \"\xEF\xBC\x91\xEF\xBC\x92\xEF\xBC\x93\"}");
 
   // Parser reject boolean values for float fields.
   ExpectParseFailureForJson("FloatFieldTrueValue", REQUIRED,
@@ -3193,6 +3212,14 @@ void BinaryAndJsonConformanceSuiteImpl<
                             R"({"optionalDouble": "12abc"})");
   ExpectParseFailureForJson("DoubleFieldStringValueNonNumeric", REQUIRED,
                             R"({"optionalDouble": "abc"})");
+  // Non-ASCII Unicode decimal digits: "١٢٣" (Arabic-Indic) and "１２３"
+  // (fullwidth).
+  ExpectParseFailureForJson(
+      "DoubleFieldStringValueArabicIndicDigits", REQUIRED,
+      "{\"optionalDouble\": \"\xD9\xA1\xD9\xA2\xD9\xA3\"}");
+  ExpectParseFailureForJson(
+      "DoubleFieldStringValueFullwidthDigits", REQUIRED,
+      "{\"optionalDouble\": \"\xEF\xBC\x91\xEF\xBC\x92\xEF\xBC\x93\"}");
 
   // Parser reject boolean values for double fields.
   ExpectParseFailureForJson("DoubleFieldTrueValue", REQUIRED,

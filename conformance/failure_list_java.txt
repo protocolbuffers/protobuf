@@ -34,12 +34,16 @@ Recommended.*.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput            
 Recommended.*.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput                                                 # Should have failed to serialize, but didn't.
 Recommended.*.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput                                                  # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
+Required.*.JsonInput.DoubleFieldStringValueArabicIndicDigits                                                       # Should have failed to parse, but didn't.
+Required.*.JsonInput.DoubleFieldStringValueFullwidthDigits                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldNotQuoted                                                                            # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayEnumName                                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayNumericValue                                                      # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldLeadingZero                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldNegativeWithLeadingZero                                                             # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldPlusSign                                                                            # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int32FieldStringValueArabicIndicDigits                                                        # Should have failed to parse, but didn't.
+Required.*.JsonInput.Int64FieldStringValueFullwidthDigits                                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotBool                                          # Should have failed to parse, but didn't.
 Required.*.JsonInput.RepeatedFieldWrongElementTypeExpectingStringsGotInt                                           # Should have failed to parse, but didn't.
 Required.*.JsonInput.StringFieldNotAString                                                                         # Should have failed to parse, but didn't.
