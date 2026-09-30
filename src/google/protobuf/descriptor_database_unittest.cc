@@ -89,6 +89,25 @@ class SimpleDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
   SimpleDescriptorDatabase database_;
 };
 
+// Specialization for ThreadSafeSimpleDescriptorDatabase.
+class ThreadSafeSimpleDescriptorDatabaseTestCase
+    : public DescriptorDatabaseTestCase {
+ public:
+  static DescriptorDatabaseTestCase* New() {
+    return new ThreadSafeSimpleDescriptorDatabaseTestCase;
+  }
+
+  ~ThreadSafeSimpleDescriptorDatabaseTestCase() override = default;
+
+  DescriptorDatabase* GetDatabase() override { return &database_; }
+  bool AddToDatabase(const FileDescriptorProto& file) override {
+    return database_.Add(file);
+  }
+
+ private:
+  ThreadSafeSimpleDescriptorDatabase database_;
+};
+
 // Specialization for EncodedDescriptorDatabase.
 class EncodedDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
  public:
@@ -456,6 +475,9 @@ INSTANTIATE_TEST_SUITE_P(
     Simple, DescriptorDatabaseTest,
     testing::Values(&SimpleDescriptorDatabaseTestCase::New));
 INSTANTIATE_TEST_SUITE_P(
+    ThreadSafeSimple, DescriptorDatabaseTest,
+    testing::Values(&ThreadSafeSimpleDescriptorDatabaseTestCase::New));
+INSTANTIATE_TEST_SUITE_P(
     MemoryConserving, DescriptorDatabaseTest,
     testing::Values(&EncodedDescriptorDatabaseTestCase::New));
 INSTANTIATE_TEST_SUITE_P(Pool, DescriptorDatabaseTest,
@@ -636,6 +658,7 @@ TEST(SimpleDescriptorDatabaseExtraTest, AddUnowned) {
   EXPECT_TRUE(db.FindAllMessageNames(&messages));
   EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
 }
+
 
 TEST(DescriptorPoolDatabaseTest, PreserveSourceCodeInfo) {
   SimpleDescriptorDatabase original_db;

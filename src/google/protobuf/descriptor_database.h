@@ -23,6 +23,7 @@
 #include "absl/base/macros.h"
 #include "absl/container/btree_map.h"
 #include "absl/strings/string_view.h"
+#include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
 
 // Must be included last.
@@ -38,6 +39,7 @@ namespace protobuf {
 // Defined in this file.
 class DescriptorDatabase;
 class SimpleDescriptorDatabase;
+class ThreadSafeSimpleDescriptorDatabase;
 class EncodedDescriptorDatabase;
 class DescriptorPoolDatabase;
 class MergedDescriptorDatabase;
@@ -127,6 +129,12 @@ class PROTOBUF_EXPORT DescriptorDatabase {
   // unchanged.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllMessageNames(
       std::vector<std::string>* PROTOBUF_NONNULL output);
+
+  // Returns true if extensions can be dynamically added to this database at
+  // runtime. When true, DescriptorPool will not permanently cache the set of
+  // extensions for a descriptor, allowing newly added extensions to be
+  // discovered by FindAllExtensions.
+  virtual bool AreExtensionsDynamic() const { return false; }
 
  private:
   static_assert(std::is_same<absl::string_view, absl::string_view>::value ||
@@ -279,6 +287,50 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   // return false.
   bool MaybeCopy(const FileDescriptorProto* PROTOBUF_NULLABLE file,
                  FileDescriptorProto* PROTOBUF_NONNULL output);
+};
+
+// A thread-safe subclass of SimpleDescriptorDatabase that synchronizes all Add*
+// and Find* methods with an internal absl::Mutex.
+class PROTOBUF_EXPORT ThreadSafeSimpleDescriptorDatabase
+    : public SimpleDescriptorDatabase {
+ public:
+  ThreadSafeSimpleDescriptorDatabase();
+  ThreadSafeSimpleDescriptorDatabase(
+      const ThreadSafeSimpleDescriptorDatabase&) = delete;
+  ThreadSafeSimpleDescriptorDatabase& operator=(
+      const ThreadSafeSimpleDescriptorDatabase&) = delete;
+  ~ThreadSafeSimpleDescriptorDatabase() override;
+
+  // Adds the FileDescriptorProto to the database, making a copy.
+  bool Add(const FileDescriptorProto& file);
+
+  // Adds the FileDescriptorProto to the database and takes ownership of it.
+  bool AddAndOwn(const FileDescriptorProto* PROTOBUF_NONNULL file);
+
+  // Adds the FileDescriptorProto to the database without taking ownership.
+  bool AddUnowned(const FileDescriptorProto* PROTOBUF_NONNULL file);
+
+  // implements DescriptorDatabase -----------------------------------
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileByName(
+      absl::string_view filename,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingSymbol(
+      absl::string_view symbol_name,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindFileContainingExtension(
+      absl::string_view containing_type, int field_number,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override;
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllExtensionNumbers(
+      absl::string_view extendee_type,
+      std::vector<int>* PROTOBUF_NONNULL output) override;
+
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD bool FindAllFileNames(
+      std::vector<std::string>* PROTOBUF_NONNULL output) override;
+
+  bool AreExtensionsDynamic() const override { return true; }
+
+ private:
+  mutable absl::Mutex mutex_;
 };
 
 // Very similar to SimpleDescriptorDatabase, but stores all the descriptors

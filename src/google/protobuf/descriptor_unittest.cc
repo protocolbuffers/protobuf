@@ -16731,6 +16731,72 @@ TEST_F(DatabaseBackedPoolTest, FindAllExtensions) {
   }
 }
 
+TEST_F(DatabaseBackedPoolTest, DynamicDatabaseFindAllExtensions) {
+  ThreadSafeSimpleDescriptorDatabase dynamic_db;
+  DescriptorPool pool(&dynamic_db);
+
+  FileDescriptorProto base_file;
+  base_file.set_name("base.proto");
+  base_file.set_package("pkg");
+  DescriptorProto* base_msg = base_file.add_message_type();
+  base_msg->set_name("BaseMsg");
+  DescriptorProto::ExtensionRange* range = base_msg->add_extension_range();
+  range->set_start(100);
+  range->set_end(200);
+  EXPECT_TRUE(dynamic_db.Add(base_file));
+
+  const Descriptor* base_desc = pool.FindMessageTypeByName("pkg.BaseMsg");
+  ASSERT_NE(base_desc, nullptr);
+
+  std::vector<const FieldDescriptor*> extensions;
+  pool.FindAllExtensions(base_desc, &extensions);
+  EXPECT_TRUE(extensions.empty());
+
+  // Add extension 1 dynamically after pool has already queried BaseMsg
+  // extensions.
+  FileDescriptorProto ext1_file;
+  ext1_file.set_name("ext1.proto");
+  ext1_file.set_package("pkg");
+  ext1_file.add_dependency("base.proto");
+  FieldDescriptorProto* ext1 = ext1_file.add_extension();
+  ext1->set_name("ext_field_1");
+  ext1->set_number(101);
+  ext1->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  ext1->set_type(FieldDescriptorProto::TYPE_INT32);
+  ext1->set_extendee(".pkg.BaseMsg");
+  EXPECT_TRUE(dynamic_db.Add(ext1_file));
+
+  extensions.clear();
+  pool.FindAllExtensions(base_desc, &extensions);
+  ASSERT_EQ(extensions.size(), 1);
+  EXPECT_EQ(extensions[0]->number(), 101);
+  EXPECT_EQ(extensions[0]->name(), "ext_field_1");
+
+  // Add extension 2 dynamically after ext1 was loaded.
+  FileDescriptorProto ext2_file;
+  ext2_file.set_name("ext2.proto");
+  ext2_file.set_package("pkg");
+  ext2_file.add_dependency("base.proto");
+  FieldDescriptorProto* ext2 = ext2_file.add_extension();
+  ext2->set_name("ext_field_2");
+  ext2->set_number(102);
+  ext2->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+  ext2->set_type(FieldDescriptorProto::TYPE_INT32);
+  ext2->set_extendee(".pkg.BaseMsg");
+  EXPECT_TRUE(dynamic_db.Add(ext2_file));
+
+  extensions.clear();
+  pool.FindAllExtensions(base_desc, &extensions);
+  ASSERT_EQ(extensions.size(), 2);
+  std::vector<int> numbers;
+  for (const FieldDescriptor* ext : extensions) {
+    numbers.push_back(ext->number());
+  }
+  std::sort(numbers.begin(), numbers.end());
+  EXPECT_EQ(numbers[0], 101);
+  EXPECT_EQ(numbers[1], 102);
+}
+
 TEST_F(DatabaseBackedPoolTest, ErrorWithoutErrorCollector) {
   ErrorDescriptorDatabase error_database;
   DescriptorPool pool(&error_database);
