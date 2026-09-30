@@ -140,6 +140,7 @@ cc_library(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -193,6 +194,7 @@ cc_library(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -284,6 +286,7 @@ cc_test(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -477,6 +480,7 @@ cc_binary(
         "//:type_cc_proto",
         "//:wrappers_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -510,6 +514,7 @@ java_binary(
         "//:test_messages_proto2_java_proto",
         "//:test_messages_proto3_java_proto",
         "//conformance/test_protos:test_messages_edition2023_java_proto",
+        "//conformance/test_protos:test_messages_edition2026_java_proto",
         "//conformance/test_protos:test_messages_edition_unstable_java_proto",
         "//editions:test_messages_proto2_editions_java_proto",
         "//editions:test_messages_proto3_editions_java_proto",
@@ -531,6 +536,7 @@ java_binary(
         "//:test_messages_proto2_java_proto_lite",
         "//:test_messages_proto3_java_proto_lite",
         "//conformance/test_protos:test_messages_edition2023_java_proto_lite",
+        "//conformance/test_protos:test_messages_edition2026_java_proto_lite",
         "//conformance/test_protos:test_messages_edition_unstable_java_proto_lite",
         "//editions:test_messages_proto2_editions_java_proto_lite",
         "//editions:test_messages_proto3_editions_java_proto_lite",
@@ -551,6 +557,7 @@ py_binary(
         ":conformance_py_proto",
         "//:protobuf_python",
         "//conformance/test_protos:test_messages_edition2023_py_pb2",
+        "//conformance/test_protos:test_messages_edition2026_py_pb2",
         "//conformance/test_protos:test_messages_edition_unstable_py_pb2",
         "//editions:test_messages_proto2_editions_py_pb2",
         "//editions:test_messages_proto3_editions_py_pb2",
@@ -572,7 +579,7 @@ inline_sh_binary(
         "conformance_php.php",
     ],
     cmd = """
-        php -d include_path=php/generated:conformance:src/google/protobuf:editions/golden \\
+        php -d include_path=php/generated:conformance:conformance/test_protos:src/google/protobuf:editions/golden \\
             -d auto_prepend_file=$(rootpath autoload.php) \\
             $(rootpath conformance_php.php)
     """,
@@ -580,6 +587,8 @@ inline_sh_binary(
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//conformance/test_protos:json_enumvalue_options_php_proto",
+        "//conformance/test_protos:test_messages_edition2026_php_proto",
         "//editions:test_messages_proto3_editions_php_proto",
         "//php:source_files",
     ],
@@ -594,13 +603,15 @@ inline_sh_binary(
     ],
     cmd = """
         php -dextension=$(rootpath //php:extension) \\
-            -d include_path=conformance:src/google/protobuf:editions/golden \\
+            -d include_path=conformance:conformance/test_protos:src/google/protobuf:editions/golden \\
             $(rootpath conformance_php.php)
     """,
     visibility = ["//php:__subpackages__"],
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//conformance/test_protos:json_enumvalue_options_php_proto",
+        "//conformance/test_protos:test_messages_edition2026_php_proto",
         "//editions:test_messages_proto3_editions_php_proto",
     ],
 )
@@ -613,6 +624,7 @@ inline_sh_binary(
     visibility = ["//csharp:__subpackages__"],
     deps = [
         "//conformance/test_protos:test_messages_edition2023_csharp_proto",
+        "//conformance/test_protos:test_messages_edition2026_csharp_proto",
         "//conformance/test_protos:test_messages_edition_unstable_csharp_proto",
         "//csharp/src/Google.Protobuf.Conformance:conformance_runfiles",
     ],
@@ -629,6 +641,7 @@ objc_library(
         "//:test_messages_proto2_objc_proto",
         "//:test_messages_proto3_objc_proto",
         "//conformance/test_protos:test_messages_edition2023_objc_proto",
+        "//conformance/test_protos:test_messages_edition2026_objc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_objc_proto",
         "//editions:test_messages_proto2_editions_objc_proto",
         "//editions:test_messages_proto3_editions_objc_proto",

@@ -140,20 +140,28 @@ genrule(
     name = "conformance_gen",
     testonly = True,
     srcs = [
+        "//net/proto2/proto:descriptor_proto_source",
+        "//src/google/protobuf:json_enumvalue_options.proto",
         "//conformance:conformance.proto",
         "//conformance/test_protos:test_messages_edition2023.proto",
+        "//conformance/test_protos:test_messages_edition2026.proto",
         "//conformance/test_protos:test_messages_edition_unstable.proto",
     ],
     outs = [
         "src/Google.Protobuf.Conformance/Conformance.pb.cs",
         "src/Google.Protobuf.Conformance/TestMessagesEdition2023.pb.cs",
+        "src/Google.Protobuf.Conformance/TestMessagesEdition2026.pb.cs",
         "src/Google.Protobuf.Conformance/TestMessagesEditionUnstable.pb.cs",
     ],
-    cmd = ("$(location //net/proto2/compiler/public:protocol_compiler) " +
+    cmd = ("$(execpath //net/proto2/compiler/public:protocol_compiler) " +
            "-I. " +
-           "-I$$(dirname $(location //conformance:conformance.proto)) " +
+           "-I$$(dirname $(execpath //conformance:conformance.proto)) " +
            "--csharp_out=$(RULEDIR)/src/Google.Protobuf.Conformance " +
-           "--csharp_opt=file_extension=.pb.cs $(SRCS)"),
+           "--csharp_opt=file_extension=.pb.cs " +
+           "$(execpath //conformance:conformance.proto) " +
+           "$(execpath //conformance/test_protos:test_messages_edition2023.proto) " +
+           "$(execpath //conformance/test_protos:test_messages_edition2026.proto) " +
+           "$(execpath //conformance/test_protos:test_messages_edition_unstable.proto)"),
     compatible_with = ["//buildenv/target:non_prod"],
     tools = ["//net/proto2/compiler/public:protocol_compiler"],
     visibility = ["//visibility:private"],
