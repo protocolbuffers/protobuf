@@ -31,17 +31,19 @@ def _test_command_line_controls_output_file_suffixes(env, target):
         ),
     )
 
+    # Shared libs may be _solib symlinks whose names escape '_' as '_U'
+    # (e.g. ..._Slibfoo_Uproto.so), so match "foo*proto" rather than "foo_proto".
     if any([f.basename.endswith(".ifso") for f in artifacts.shared_libs_in_package]):
         env.expect.that_collection(artifacts.shared_libs_in_package).contains_at_least_predicates([
-            matching.file_path_matches("*foo_proto*.ifso"),
-            matching.file_path_matches("*foo_proto*.so"),
+            matching.file_path_matches("*foo*proto*.ifso"),
+            matching.file_path_matches("*foo*proto*.so"),
         ])
     elif artifacts.shared_libs_in_package:
         env.expect.that_collection(artifacts.shared_libs_in_package).contains_predicate(
             matching.any(
-                matching.file_path_matches("*foo_proto*.so"),
-                matching.file_path_matches("*foo_proto*.dylib"),
-                matching.file_path_matches("*foo_proto*.dll"),
+                matching.file_path_matches("*foo*proto*.so"),
+                matching.file_path_matches("*foo*proto*.dylib"),
+                matching.file_path_matches("*foo*proto*.dll"),
             ),
         )
 
