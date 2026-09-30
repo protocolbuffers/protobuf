@@ -558,6 +558,38 @@ TEST(FieldMaskUtilTest, MergeMessage) {
   EXPECT_EQ(1234, nested_dst.payload().repeated_int32(0));
 }
 
+TEST(FieldMaskUtilTest, MergeMessageWithinDepthLimit) {
+  proto2_unittest::TestRecursiveMessage src, dst;
+  src.mutable_a()->mutable_a()->set_i(7);
+  FieldMask mask;
+  mask.add_paths("a.a.i");
+  FieldMaskUtil::MergeMessageTo(src, mask, FieldMaskUtil::MergeOptions(),
+                                &dst);
+  EXPECT_EQ(dst.a().a().i(), 7);
+}
+
+TEST(FieldMaskUtilTest, MergeMessageDeepMaskIsBounded) {
+  // A path far deeper than any parseable message must not cause unbounded
+  // recursion or unbounded allocation in the destination message.
+  std::string path;
+  for (int i = 0; i < 200000; ++i) {
+    path += "a.";
+  }
+  path += "i";
+  FieldMask mask;
+  mask.add_paths(path);
+
+  proto2_unittest::TestRecursiveMessage src, dst;
+  FieldMaskUtil::MergeMessageTo(src, mask, FieldMaskUtil::MergeOptions(), &dst);
+
+  int depth = 0;
+  for (const proto2_unittest::TestRecursiveMessage* m = &dst; m->has_a();
+       m = &m->a()) {
+    ++depth;
+  }
+  EXPECT_LE(depth, 100);
+}
+
 TEST(FieldMaskUtilTest, TrimMessage) {
 #define TEST_TRIM_ONE_PRIMITIVE_FIELD(field_name)    \
   {                                                  \
