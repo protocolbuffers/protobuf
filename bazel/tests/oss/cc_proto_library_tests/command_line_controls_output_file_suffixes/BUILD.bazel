@@ -19,7 +19,7 @@ cc_proto_library(
 )
 
 bzl_test_suite(
-    name = "test_command_line_controls_output_file_suffixes",
+    name = "tests",
     config_settings = {
         "@@//bazel/flags/cc:cc_proto_library_header_suffixes": [
             ".pb.h",

@@ -31,15 +31,24 @@ def _test_command_line_controls_output_file_suffixes(env, target):
         ),
     )
 
+    # Shared/interface library naming varies across toolchains (which may mangle '_' to '_U' in
+    # dynamic library names) and OSS CI platforms (Linux .so/.ifso, macOS .dylib, Windows .dll).
     if any([f.basename.endswith(".ifso") for f in artifacts.shared_libs_in_package]):
         env.expect.that_collection(artifacts.shared_libs_in_package).contains_at_least_predicates([
-            matching.file_path_matches("*foo_proto*.ifso"),
-            matching.file_path_matches("*foo_proto*.so"),
+            matching.any(
+                matching.file_path_matches("*foo_proto*.ifso"),
+                matching.file_path_matches("*foo_Uproto*.ifso"),
+            ),
+            matching.any(
+                matching.file_path_matches("*foo_proto*.so"),
+                matching.file_path_matches("*foo_Uproto*.so"),
+            ),
         ])
     elif artifacts.shared_libs_in_package:
         env.expect.that_collection(artifacts.shared_libs_in_package).contains_predicate(
             matching.any(
                 matching.file_path_matches("*foo_proto*.so"),
+                matching.file_path_matches("*foo_Uproto*.so"),
                 matching.file_path_matches("*foo_proto*.dylib"),
                 matching.file_path_matches("*foo_proto*.dll"),
             ),
