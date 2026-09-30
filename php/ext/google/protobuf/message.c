@@ -1409,6 +1409,13 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
   upb_MessageValue seconds = Message_getval(intern, "seconds");
   upb_MessageValue nanos = Message_getval(intern, "nanos");
 
+  if (nanos.int32_val < 0 || nanos.int32_val > 999999999) {
+    zend_throw_exception(
+        NULL,
+        "Nanoseconds must be in the range of 0 to 999,999,999 nanoseconds.", 0);
+    return;
+  }
+
   // Get formatted time string.
   char formatted_time[32];
   snprintf(formatted_time, sizeof(formatted_time), "%" PRId64 ".%06" PRId32,
@@ -1416,6 +1423,7 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
 
   // Create Datetime object.
   zval datetime;
+  ZVAL_UNDEF(&datetime);
   zval function_name;
   zval format_string;
   zval formatted_time_php;
@@ -1429,17 +1437,20 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
       formatted_time_php,
   };
 
-  if (call_user_function(EG(function_table), NULL, &function_name, &datetime, 2,
-                         params) == FAILURE) {
-    zend_error(E_ERROR, "Cannot create DateTime.");
-    return;
-  }
+  int res = call_user_function(EG(function_table), NULL, &function_name,
+                               &datetime, 2, params);
 
   zval_dtor(&function_name);
   zval_dtor(&format_string);
   zval_dtor(&formatted_time_php);
 
-  ZVAL_OBJ(return_value, Z_OBJ(datetime));
+  if (res == FAILURE || Z_TYPE(datetime) != IS_OBJECT) {
+    zval_ptr_dtor(&datetime);
+    zend_throw_exception(NULL, "Cannot create DateTime.", 0);
+    return;
+  }
+
+  ZVAL_COPY_VALUE(return_value, &datetime);
 }
 
 #include "wkt.inc"
