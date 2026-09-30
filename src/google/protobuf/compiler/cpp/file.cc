@@ -751,6 +751,9 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
 void FileGenerator::GenerateSource(io::Printer* p) {
   auto v = p->WithVars(FileVars(file_, options_));
 
+  p->Emit(R"cc(
+    // clang-format off
+  )cc");
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
   CrossFileReferences refs;
@@ -923,6 +926,9 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GenerateStaticInitializer(p);
 
   IncludeFile("third_party/protobuf/port_undef.inc", p);
+  p->Emit(R"cc(
+    // clang-format on
+  )cc");
 }
 
 static void GatherAllCustomOptionTypes(
