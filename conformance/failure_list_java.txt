@@ -14,7 +14,7 @@ Recommended.*.JsonInput.BoolMapFieldKeyNotQuoted                                
 Recommended.*.JsonInput.DoubleFieldInfinityNotQuoted                                                               # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.DoubleFieldNanNotQuoted                                                                    # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.DoubleFieldNegativeInfinityNotQuoted                                                       # Should have failed to parse, but didn't.
-Recommended.*.JsonInput.FieldNameExtension.JsonOutput                                                              # Expected JSON payload but got type 1
+Recommended.*.JsonInput.FieldNameExtension.JsonOutput                                                              # Failed to parse input or produce output.
 Recommended.*.JsonInput.FieldNameNotQuoted                                                                         # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FloatFieldInfinityNotQuoted                                                                # Should have failed to parse, but didn't.
 Recommended.*.JsonInput.FloatFieldNanNotQuoted                                                                     # Should have failed to parse, but didn't.
