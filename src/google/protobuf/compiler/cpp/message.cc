@@ -1927,7 +1927,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             // virtual overrides. This reduces the number of functions in the
             // binary in both modes.
             p->Emit(R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
               private:
               static void Clear($pb$::MessageLite& msg);
               $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
@@ -1936,6 +1935,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
 
               public:
+#if defined(PROTOBUF_CUSTOM_VTABLE)
               ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
                 Clear(*this);
               }
@@ -1949,7 +1949,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                 return _InternalSerialize(*this, target, stream);
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
-              ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
               $nodiscard $::size_t ByteSizeLong() const final;
               $nodiscard $$uint8$* $nonnull$ _InternalSerialize(
                   //~
@@ -3521,13 +3521,9 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
            }},
       },
       R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-        PROTOBUF_NOINLINE void $Msg$::Clear(MessageLite& base) {
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+        void $Msg$::Clear(MessageLite& base) {
           $Msg$& this_ = static_cast<$Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_NOINLINE void $Msg$::Clear() {
-          $Msg$& this_ [[maybe_unused]] = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
           // @@protoc_insertion_point(message_clear_start:$full_name$)
           $pbi$::TSanWrite(&this_._impl_);
@@ -3539,6 +3535,9 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           $maybe_clear_hasbits$;
           this_._internal_metadata_.Clear<$unknown_fields_type$>();
         }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+        PROTOBUF_NOINLINE void $Msg$::Clear() { Clear(*this); }
+#endif  // PROTOBUF_CUSTOM_VTABLE
       )cc");
 }
 
@@ -4414,17 +4413,11 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
     p->Emit(R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+      PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       $uint8$* $nonnull$ $Msg$::_InternalSerialize(
           const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
           $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
         const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-      $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-          $uint8$* $nonnull$ target,
-          $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
-        const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
         $annotate_serialize$ target =
             this_.$extensions$
                 .InternalSerializeMessageSetWithCachedSizesToArray(
@@ -4433,6 +4426,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
             this_.$unknown_fields$, target, stream);
         return target;
       }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+      $uint8$* $nonnull$ $Msg$::_InternalSerialize(
+          $uint8$* $nonnull$ target,
+          $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
+        return _InternalSerialize(*this, target, stream);
+      }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
     )cc");
     return;
   }
@@ -4459,17 +4459,11 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
            }},
       },
       R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE
         $uint8$* $nonnull$ $Msg$::_InternalSerialize(
             const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
             $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
           const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-        $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-            $uint8$* $nonnull$ target,
-            $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
-          const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
           $annotate_serialize$;
           $has_bit_consistency$;
           // @@protoc_insertion_point(serialize_to_array_start:$full_name$)
@@ -4477,6 +4471,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
           // @@protoc_insertion_point(serialize_to_array_end:$full_name$)
           return target;
         }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+        $uint8$* $nonnull$ $Msg$::_InternalSerialize(
+            $uint8$* $nonnull$ target,
+            $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
+          return _InternalSerialize(*this, target, stream);
+        }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
       )cc");
 }
 
@@ -5007,13 +5008,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     // Special-case MessageSet.
     p->Emit(
         R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+          PROTOBUF_NO_CUSTOM_VTABLE_INLINE
           ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
             const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-          ::size_t $Msg$::ByteSizeLong() const {
-            const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
             $WeakDescriptorSelfPin$;
             $annotate_bytesize$;
             // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
@@ -5025,6 +5022,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
             this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
             return total_size;
           }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+          ::size_t $Msg$::ByteSizeLong() const { return ByteSizeLong(*this); }
+#endif  // PROTOBUF_CUSTOM_VTABLE
         )cc");
     p->Emit("\n");
     return;
@@ -5144,13 +5144,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           }
         }}},
       R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE
         ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
           const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-        ::size_t $Msg$::ByteSizeLong() const {
-          const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
           $WeakDescriptorSelfPin$;
           $annotate_bytesize$;
           // @@protoc_insertion_point(message_byte_size_start:$full_name$)
@@ -5164,6 +5160,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           $handle_oneof_fields$;
           $handle_unknown_fields$;
         }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t $Msg$::ByteSizeLong() const { return ByteSizeLong(*this); }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
       )cc");
 }
 

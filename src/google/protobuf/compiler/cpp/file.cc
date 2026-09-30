@@ -545,6 +545,15 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     namespace _pb = $pb$;
     namespace _pbi = $pbi$;
     namespace _fl = $pbi$::field_layout;
+    //~ When custom VTable is off, we want the static generated method helpers
+    //~ to be inlined into the public virtual non-static stubs, preventing a
+    //~ double call. Since these static helpers will not be referenced anywhere
+    //~ else, we mark them as inline so they aren't linked into the binary.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+#else
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE PROTOBUF_ALWAYS_INLINE
+#endif
   )cc");
 }
 
