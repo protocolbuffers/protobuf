@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace ProtobufTestMessages.Edition2026 {
+namespace ProtobufTestMessages.Editions {
 
   /// <summary>Holder for reflection information generated from conformance/test_protos/test_messages_edition2026.proto</summary>
   public static partial class TestMessagesEdition2026Reflection {
@@ -25,35 +25,37 @@ namespace ProtobufTestMessages.Edition2026 {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "Cjdjb25mb3JtYW5jZS90ZXN0X3Byb3Rvcy90ZXN0X21lc3NhZ2VzX2VkaXRp",
-            "b24yMDI2LnByb3RvEiJwcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb24y",
-            "MDI2Gixnb29nbGUvcHJvdG9idWYvanNvbl9lbnVtdmFsdWVfb3B0aW9ucy5w",
-            "cm90byL5BAoXVGVzdEFsbFR5cGVzRWRpdGlvbjIwMjYSFgoOb3B0aW9uYWxf",
-            "aW50MzIYASABKAUSWQoVb3B0aW9uYWxfZm9yZWlnbl9lbnVtGAIgASgOMjou",
-            "cHJvdG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9uMjAyNi5Gb3JlaWduRW51",
-            "bUVkaXRpb24yMDI2ElkKFXJlcGVhdGVkX2ZvcmVpZ25fZW51bRgDIAMoDjI6",
-            "LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbjIwMjYuRm9yZWlnbkVu",
-            "dW1FZGl0aW9uMjAyNhJ2ChdtYXBfc3RyaW5nX2ZvcmVpZ25fZW51bRgEIAMo",
-            "CzJVLnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbjIwMjYuVGVzdEFs",
-            "bFR5cGVzRWRpdGlvbjIwMjYuTWFwU3RyaW5nRm9yZWlnbkVudW1FbnRyeRJn",
-            "Cg9tYXBfaW50MzJfaW50MzIYBSADKAsyTi5wcm90b2J1Zl90ZXN0X21lc3Nh",
-            "Z2VzLmVkaXRpb24yMDI2LlRlc3RBbGxUeXBlc0VkaXRpb24yMDI2Lk1hcElu",
-            "dDMySW50MzJFbnRyeRp3ChlNYXBTdHJpbmdGb3JlaWduRW51bUVudHJ5EgsK",
-            "A2tleRgBIAEoCRJJCgV2YWx1ZRgCIAEoDjI6LnByb3RvYnVmX3Rlc3RfbWVz",
-            "c2FnZXMuZWRpdGlvbjIwMjYuRm9yZWlnbkVudW1FZGl0aW9uMjAyNjoCOAEa",
-            "NAoSTWFwSW50MzJJbnQzMkVudHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgC",
-            "IAEoBToCOAFYAiqbAgoWRm9yZWlnbkVudW1FZGl0aW9uMjAyNhIPCgtGT1JF",
-            "SUdOX0ZPTxAAEh8KC0ZPUkVJR05fQkFSEAEaDrI+CwoJY3VzdG9tQmFyEh8K",
-            "C0ZPUkVJR05fQkFaEAIaDrI+CwoJY3VzdG9tQmF6EhgKDUZPUkVJR05fRU1Q",
-            "VFkQAxoFsj4CCgASIwoPRk9SRUlHTl9FU0NBUEVTEAQaDrI+CwoJZSJzYwlh",
-            "cAplEiMKDUZPUkVJR05fQUxJQVMQBRoQsj4NCgtjdXN0b21BbGlhcxInChFG",
-            "T1JFSUdOX0FMSUFTX1RPTxAFGhCyPg0KC2N1c3RvbUFsaWFzEhsKD0ZPUkVJ",
-            "R05fTlVNRVJJQxAGGgayPgMKATYaAhABMAJCPQotY29tLmdvb2dsZS5wcm90",
-            "b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb24yMDI2ogILRWRpdGlvbjIwMjZi",
-            "CGVkaXRpb25zcOoH"));
+            "b24yMDI2LnByb3RvEh9wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25z",
+            "Gixnb29nbGUvcHJvdG9idWYvanNvbl9lbnVtdmFsdWVfb3B0aW9ucy5wcm90",
+            "byLoBAoXVGVzdEFsbFR5cGVzRWRpdGlvbjIwMjYSFgoOb3B0aW9uYWxfaW50",
+            "MzIYASABKAUSVgoVb3B0aW9uYWxfZm9yZWlnbl9lbnVtGAIgASgOMjcucHJv",
+            "dG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5Gb3JlaWduRW51bUVkaXRp",
+            "b24yMDI2ElYKFXJlcGVhdGVkX2ZvcmVpZ25fZW51bRgDIAMoDjI3LnByb3Rv",
+            "YnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuRm9yZWlnbkVudW1FZGl0aW9u",
+            "MjAyNhJzChdtYXBfc3RyaW5nX2ZvcmVpZ25fZW51bRgEIAMoCzJSLnByb3Rv",
+            "YnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMuVGVzdEFsbFR5cGVzRWRpdGlv",
+            "bjIwMjYuTWFwU3RyaW5nRm9yZWlnbkVudW1FbnRyeRJkCg9tYXBfaW50MzJf",
+            "aW50MzIYBSADKAsySy5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVkaXRpb25z",
+            "LlRlc3RBbGxUeXBlc0VkaXRpb24yMDI2Lk1hcEludDMySW50MzJFbnRyeRp0",
+            "ChlNYXBTdHJpbmdGb3JlaWduRW51bUVudHJ5EgsKA2tleRgBIAEoCRJGCgV2",
+            "YWx1ZRgCIAEoDjI3LnByb3RvYnVmX3Rlc3RfbWVzc2FnZXMuZWRpdGlvbnMu",
+            "Rm9yZWlnbkVudW1FZGl0aW9uMjAyNjoCOAEaNAoSTWFwSW50MzJJbnQzMkVu",
+            "dHJ5EgsKA2tleRgBIAEoBRINCgV2YWx1ZRgCIAEoBToCOAEqoQMKFkZvcmVp",
+            "Z25FbnVtRWRpdGlvbjIwMjYSIAocRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2",
+            "X0ZPTxAAEjAKHEZPUkVJR05fRU5VTV9FRElUSU9OMjAyNl9CQVIQARoOsj4L",
+            "CgljdXN0b21CYXISMAocRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2X0JBWhAC",
+            "Gg6yPgsKCWN1c3RvbUJhehIpCh5GT1JFSUdOX0VOVU1fRURJVElPTjIwMjZf",
+            "RU1QVFkQAxoFsj4CCgASNAogRk9SRUlHTl9FTlVNX0VESVRJT04yMDI2X0VT",
+            "Q0FQRVMQBBoOsj4LCgllInNjCWFwCmUSNAoeRk9SRUlHTl9FTlVNX0VESVRJ",
+            "T04yMDI2X0FMSUFTEAUaELI+DQoLY3VzdG9tQWxpYXMSOAoiRk9SRUlHTl9F",
+            "TlVNX0VESVRJT04yMDI2X0FMSUFTX1RPTxAFGhCyPg0KC2N1c3RvbUFsaWFz",
+            "EiwKIEZPUkVJR05fRU5VTV9FRElUSU9OMjAyNl9OVU1FUklDEAYaBrI+AwoB",
+            "NhoCEAFCNwoqY29tLmdvb2dsZS5wcm90b2J1Zl90ZXN0X21lc3NhZ2VzLmVk",
+            "aXRpb25zogIIRWRpdGlvbnNiCGVkaXRpb25zcOoH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Pb.Enumvalue.JsonEnumvalueOptionsReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Edition2026.TestAllTypesEdition2026), global::ProtobufTestMessages.Edition2026.TestAllTypesEdition2026.Parser, new[]{ "OptionalInt32", "OptionalForeignEnum", "RepeatedForeignEnum", "MapStringForeignEnum", "MapInt32Int32" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, })
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.ForeignEnumEdition2026), }, null, new pbr::GeneratedClrTypeInfo[] {
+            new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.TestAllTypesEdition2026), global::ProtobufTestMessages.Editions.TestAllTypesEdition2026.Parser, new[]{ "OptionalInt32", "OptionalForeignEnum", "RepeatedForeignEnum", "MapStringForeignEnum", "MapInt32Int32" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, })
           }));
     }
     #endregion
@@ -61,18 +63,20 @@ namespace ProtobufTestMessages.Edition2026 {
   }
   #region Enums
   public enum ForeignEnumEdition2026 {
-    [pbr::OriginalName("FOREIGN_FOO")] ForeignFoo = 0,
-    /// <summary>
-    /// Values with a custom JSON name, for testing the (pb.enumvalue.json)
-    /// option in JSON serialization.
-    /// </summary>
-    [pbr::OriginalName("FOREIGN_BAR")] ForeignBar = 1,
-    [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 2,
-    [pbr::OriginalName("FOREIGN_EMPTY")] ForeignEmpty = 3,
-    [pbr::OriginalName("FOREIGN_ESCAPES")] ForeignEscapes = 4,
-    [pbr::OriginalName("FOREIGN_ALIAS")] ForeignAlias = 5,
-    [pbr::OriginalName("FOREIGN_ALIAS_TOO", PreferredAlias = false)] ForeignAliasToo = 5,
-    [pbr::OriginalName("FOREIGN_NUMERIC")] ForeignNumeric = 6,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_FOO")] Foo = 0,
+    /**
+     * <summary>
+     *  Values with a custom JSON name, for testing the (pb.enumvalue.json)
+     *  option in JSON serialization.
+     * </summary>
+     */
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_BAR")] Bar = 1,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_BAZ")] Baz = 2,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_EMPTY")] Empty = 3,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ESCAPES")] Escapes = 4,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS")] Alias = 5,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_ALIAS_TOO", PreferredAlias = false)] AliasToo = 5,
+    [pbr::OriginalName("FOREIGN_ENUM_EDITION2026_NUMERIC")] Numeric = 6,
   }
 
   #endregion
@@ -94,7 +98,7 @@ namespace ProtobufTestMessages.Edition2026 {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::ProtobufTestMessages.Edition2026.TestMessagesEdition2026Reflection.Descriptor.MessageTypes[0]; }
+      get { return global::ProtobufTestMessages.Editions.TestMessagesEdition2026Reflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -158,12 +162,12 @@ namespace ProtobufTestMessages.Edition2026 {
 
     /// <summary>Field number for the "optional_foreign_enum" field.</summary>
     public const int OptionalForeignEnumFieldNumber = 2;
-    private readonly static global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026 OptionalForeignEnumDefaultValue = global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026.ForeignFoo;
+    private readonly static global::ProtobufTestMessages.Editions.ForeignEnumEdition2026 OptionalForeignEnumDefaultValue = global::ProtobufTestMessages.Editions.ForeignEnumEdition2026.Foo;
 
-    private global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026 optionalForeignEnum_;
+    private global::ProtobufTestMessages.Editions.ForeignEnumEdition2026 optionalForeignEnum_;
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026 OptionalForeignEnum {
+    public global::ProtobufTestMessages.Editions.ForeignEnumEdition2026 OptionalForeignEnum {
       get { if ((_hasBits0 & 2) != 0) { return optionalForeignEnum_; } else { return OptionalForeignEnumDefaultValue; } }
       set {
         _hasBits0 |= 2;
@@ -185,23 +189,23 @@ namespace ProtobufTestMessages.Edition2026 {
 
     /// <summary>Field number for the "repeated_foreign_enum" field.</summary>
     public const int RepeatedForeignEnumFieldNumber = 3;
-    private static readonly pb::FieldCodec<global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026> _repeated_repeatedForeignEnum_codec
-        = pb::FieldCodec.ForEnum(26, x => (int) x, x => (global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026) x);
-    private readonly pbc::RepeatedField<global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026> repeatedForeignEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026>();
+    private static readonly pb::FieldCodec<global::ProtobufTestMessages.Editions.ForeignEnumEdition2026> _repeated_repeatedForeignEnum_codec
+        = pb::FieldCodec.ForEnum(26, x => (int) x, x => (global::ProtobufTestMessages.Editions.ForeignEnumEdition2026) x);
+    private readonly pbc::RepeatedField<global::ProtobufTestMessages.Editions.ForeignEnumEdition2026> repeatedForeignEnum_ = new pbc::RepeatedField<global::ProtobufTestMessages.Editions.ForeignEnumEdition2026>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::RepeatedField<global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026> RepeatedForeignEnum {
+    public pbc::RepeatedField<global::ProtobufTestMessages.Editions.ForeignEnumEdition2026> RepeatedForeignEnum {
       get { return repeatedForeignEnum_; }
     }
 
     /// <summary>Field number for the "map_string_foreign_enum" field.</summary>
     public const int MapStringForeignEnumFieldNumber = 4;
-    private static readonly pbc::MapField<string, global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026>.Codec _map_mapStringForeignEnum_codec
-        = new pbc::MapField<string, global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026) x, global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026.ForeignFoo), 34);
-    private readonly pbc::MapField<string, global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026> mapStringForeignEnum_ = new pbc::MapField<string, global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026>();
+    private static readonly pbc::MapField<string, global::ProtobufTestMessages.Editions.ForeignEnumEdition2026>.Codec _map_mapStringForeignEnum_codec
+        = new pbc::MapField<string, global::ProtobufTestMessages.Editions.ForeignEnumEdition2026>.Codec(pb::FieldCodec.ForString(10, ""), pb::FieldCodec.ForEnum(16, x => (int) x, x => (global::ProtobufTestMessages.Editions.ForeignEnumEdition2026) x, global::ProtobufTestMessages.Editions.ForeignEnumEdition2026.Foo), 34);
+    private readonly pbc::MapField<string, global::ProtobufTestMessages.Editions.ForeignEnumEdition2026> mapStringForeignEnum_ = new pbc::MapField<string, global::ProtobufTestMessages.Editions.ForeignEnumEdition2026>();
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public pbc::MapField<string, global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026> MapStringForeignEnum {
+    public pbc::MapField<string, global::ProtobufTestMessages.Editions.ForeignEnumEdition2026> MapStringForeignEnum {
       get { return mapStringForeignEnum_; }
     }
 
@@ -362,7 +366,7 @@ namespace ProtobufTestMessages.Edition2026 {
             break;
           }
           case 16: {
-            OptionalForeignEnum = (global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026) input.ReadEnum();
+            OptionalForeignEnum = (global::ProtobufTestMessages.Editions.ForeignEnumEdition2026) input.ReadEnum();
             break;
           }
           case 26:
@@ -402,7 +406,7 @@ namespace ProtobufTestMessages.Edition2026 {
             break;
           }
           case 16: {
-            OptionalForeignEnum = (global::ProtobufTestMessages.Edition2026.ForeignEnumEdition2026) input.ReadEnum();
+            OptionalForeignEnum = (global::ProtobufTestMessages.Editions.ForeignEnumEdition2026) input.ReadEnum();
             break;
           }
           case 26:
