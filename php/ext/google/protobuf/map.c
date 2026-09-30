@@ -94,6 +94,14 @@ static void MapField_destructor(zend_object* obj) {
  *   $map1 == $map2
  */
 static int MapField_compare_objects(zval* map1, zval* map2) {
+  // The engine passes the other operand through unchecked; do not reinterpret a
+  // non-object or a foreign object as a MapField*.
+  if (Z_TYPE_P(map1) != IS_OBJECT || Z_TYPE_P(map2) != IS_OBJECT ||
+      Z_OBJCE_P(map1) != MapField_class_entry ||
+      Z_OBJCE_P(map2) != MapField_class_entry) {
+    return ZEND_UNCOMPARABLE;
+  }
+
   MapField* intern1 = (MapField*)Z_OBJ_P(map1);
   MapField* intern2 = (MapField*)Z_OBJ_P(map2);
 
