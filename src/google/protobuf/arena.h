@@ -1192,6 +1192,8 @@ inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string>() {
 
 namespace internal {
 
+inline std::nullptr_t GetSerialArena(std::nullptr_t) { return nullptr; }
+
 inline SerialArena* PROTOBUF_NULLABLE
 GetSerialArena(SerialArena* PROTOBUF_NULLABLE arena) {
   return arena;

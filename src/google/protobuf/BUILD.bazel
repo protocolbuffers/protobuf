@@ -809,6 +809,7 @@ cc_library(
         "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:no_destructor",
         "@abseil-cpp//absl/base:prefetch",
+        "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_set",
         "@abseil-cpp//absl/functional:function_ref",
@@ -2338,6 +2339,7 @@ cc_test(
         ],
     }),
     deps = [
+        ":arena",
         ":cc_test_protos",
         ":descriptor_visitor",
         ":port",
@@ -2346,6 +2348,7 @@ cc_test(
         "//src/google/protobuf/io",
         "//src/google/protobuf/test_protos:test_cc_protos",
         "@abseil-cpp//absl/algorithm:container",
+        "@abseil-cpp//absl/functional:any_invocable",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/strings",

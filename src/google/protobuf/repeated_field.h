@@ -600,6 +600,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   template <typename ArenaProvider>
   void ReserveWithArena(ArenaProvider arena_provider, int new_size);
 
+  void TryShrinkToFit(internal::SerialArena* arena);
+
   template <typename ArenaProvider>
   void* AddUninitializedWithArena(ArenaProvider arena_provider);
 
@@ -1531,6 +1533,21 @@ inline int CalculateReserveSize(int capacity, int new_size) {
 template <typename Element>
 inline void RepeatedField<Element>::Reserve(int new_size) {
   ReserveWithArena(SelfArena{}, new_size);
+}
+
+template <typename Element>
+void RepeatedField<Element>::TryShrinkToFit(internal::SerialArena* arena) {
+  if (arena == nullptr || is_soo()) return;
+
+  internal::HeapRep* rep = heap_rep();
+  Element* tail = rep->elements<Element>() + rep->capacity();
+  // We must Ceil to make sure the new tail is properly aligned.
+  Element* new_tail =
+      internal::ArenaAlignDefault::Ceil(rep->elements<Element>() + size());
+
+  if (arena->TryTrimTail(tail, new_tail)) {
+    rep->set_capacity(new_tail - rep->elements<Element>());
+  }
 }
 
 template <typename Element>

@@ -2,6 +2,8 @@ edition = "2024";
 
 package proto2_unittest;
 
+import "google/protobuf/cpp_features.proto";
+
 message RepFieldSortMessage {
   int32 i = 1;
   string s = 2;
@@ -9,4 +11,43 @@ message RepFieldSortMessage {
 
 message RepFieldWithBoolForFastOverflow {
   repeated bool b = 1 [features.repeated_field_encoding = EXPANDED];
+}
+
+message RepeatedFieldTrim {
+  enum SmallEnum {
+    option features.enum_type = CLOSED;
+
+    SMALL_ZERO = 0;
+    SMALL_ONE = 1;
+    SMALL_TWO = 2;
+  }
+
+  enum LargeEnum {
+    option features.enum_type = CLOSED;
+
+    LARGE_ZERO = 0;
+    LARGE_TEN = 10;
+    LARGE_THOUSAND = 1000;
+  }
+
+  repeated fixed32 fast_fixed32 = 1
+      [features.repeated_field_encoding = EXPANDED];
+  repeated bool fast_bool = 2 [features.repeated_field_encoding = EXPANDED];
+  repeated LargeEnum fast_enum = 3
+      [features.repeated_field_encoding = EXPANDED];
+  repeated LargeEnum fast_packed_enum = 4;
+  repeated SmallEnum fast_small_enum = 5
+      [features.repeated_field_encoding = EXPANDED];
+  repeated SmallEnum fast_packed_small_enum = 6;
+
+  repeated fixed32 mini_fixed32 = 4096
+      [features.repeated_field_encoding = EXPANDED];
+  repeated fixed64 mini_fixed64 = 4097
+      [features.repeated_field_encoding = EXPANDED];
+  repeated int64 mini_int64 = 4098
+      [features.repeated_field_encoding = EXPANDED];
+  repeated int32 mini_packed_int32 = 4099;
+
+  int32 i32 = 20;
+  RepeatedFieldTrim msg = 21;
 }
