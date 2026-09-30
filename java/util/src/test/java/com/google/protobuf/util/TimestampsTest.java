@@ -366,6 +366,71 @@ public class TimestampsTest {
   @Test
   @GwtIncompatible("ParseException is not supported in Xplat")
   @J2ObjCIncompatible
+  public void testTimestampInvalidOffsetOverflowRejected() {
+    // Regression test for unbounded timezone-offset digits overflowing the `long`
+    // arithmetic in Timestamps.parseTimezoneOffset(): these used to be accepted and to
+    // change the parsed value (seconds wrapped around modulo 2^64).
+    String[] invalidOffsets = {
+      "1970-01-01T00:00:00+1152921504606846976:00", // hours = 2^60
+      "1970-01-01T00:00:00+1152921504606846977:00", // hours = 2^60 + 1
+      "1970-01-01T00:00:00+9223372036854775807:00", // hours = Long.MAX_VALUE
+      "1970-01-01T00:00:00+00:9223372036854775807", // minutes = Long.MAX_VALUE
+      "1970-01-01T00:00:00+24:00", // hours out of range
+      "1970-01-01T00:00:00+23:60", // minutes out of range
+      "1970-01-01T00:00:00+5:00", // hours not 2 digits
+      "1970-01-01T00:00:00+05:5", // minutes not 2 digits
+    };
+    for (String invalidOffset : invalidOffsets) {
+      assertParseFails(invalidOffset);
+    }
+  }
+
+  @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
+  public void testTimestampValidOffsetBoundaries() throws Exception {
+    // RFC 3339 offsets run -23:59 .. +23:59 and must still parse.
+    assertThat(Timestamps.parse("1970-01-01T00:00:00+23:59"))
+        .isEqualTo(timestamp(-86340, 0));
+    assertThat(Timestamps.parse("1970-01-01T00:00:00-23:59"))
+        .isEqualTo(timestamp(86340, 0));
+    assertThat(Timestamps.parse("1970-01-01T00:00:00+07:30"))
+        .isEqualTo(timestamp(-27000, 0));
+    assertThat(Timestamps.parse("1970-01-01T00:00:00-07:30"))
+        .isEqualTo(timestamp(27000, 0));
+  }
+
+  @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
+  public void testTimestampFractionalDigitsBeyondNanosRejected() {
+    // Regression test: more than 9 fractional digits used to be silently truncated to
+    // nanosecond precision (e.g. ".1234567890" -> 123456789 ns). The C++ parser rejects
+    // them (frac_digits > 9).
+    String[] invalidNanos = {
+      "1970-01-01T00:00:00.1234567890Z",
+      "1970-01-01T00:00:00.12345678912345678901234567890Z",
+      "1970-01-01T00:00:00.0000000001Z",
+    };
+    for (String invalidNano : invalidNanos) {
+      assertParseFails(invalidNano);
+    }
+  }
+
+  @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
+  public void testTimestampFractionalDigitsStillParse() throws Exception {
+    // 1..9 fractional digits keep their existing zero-padded semantics.
+    assertThat(Timestamps.parse("1970-01-01T00:00:00.123456789Z"))
+        .isEqualTo(timestamp(0, 123456789));
+    assertThat(Timestamps.parse("1970-01-01T00:00:00.021Z")).isEqualTo(timestamp(0, 21000000));
+    assertThat(Timestamps.parse("1970-01-01T00:00:00.5Z")).isEqualTo(timestamp(0, 500000000));
+  }
+
+  @Test
+  @GwtIncompatible("ParseException is not supported in Xplat")
+  @J2ObjCIncompatible
   public void testTimestampParseInvalidMonth() throws Exception {
     final String value = "2000-40-01T00:00:00Z";
     final String expected = "2003-04-01T00:00:00Z";

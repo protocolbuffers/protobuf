@@ -507,22 +507,46 @@ public final class Timestamps {
   }
 
   private static long parseTimezoneOffset(String value) throws ParseException {
-    int pos = value.indexOf(':');
-    if (pos == -1) {
+    // RFC 3339 requires an offset of exactly "hh:mm" with 2 digits each. The C++
+    // reference parser (src/google/protobuf/json/internal/parser.cc) enforces the same
+    // shape and never accepts more than 2 digits per part, so it cannot suffer the
+    // unbounded `long` overflow below. Parse strictly here as well: without this
+    // validation, inputs such as "1970-01-01T00:00:00+1152921504606846976:00"
+    // (2^60 hours) silently overflow `(hours * 60 + minutes) * 60` and store an
+    // attacker-chosen epoch second with no error raised.
+    if (value.length() != 5 || value.charAt(2) != ':') {
       throw new ParseException("Invalid offset value: " + value, 0);
     }
-    String hours = value.substring(0, pos);
-    String minutes = value.substring(pos + 1);
-    try {
-      return (Long.parseLong(hours) * 60 + Long.parseLong(minutes)) * 60;
-    } catch (NumberFormatException e) {
-      ParseException ex = new ParseException("Invalid offset value: " + value, 0);
-      ex.initCause(e);
-      throw ex;
+    int hours = 0;
+    int minutes = 0;
+    for (int i = 0; i < 5; ++i) {
+      if (i == 2) {
+        continue; // skip ':'
+      }
+      char c = value.charAt(i);
+      if (c < '0' || c > '9') {
+        throw new ParseException("Invalid offset value: " + value, 0);
+      }
+      if (i < 2) {
+        hours = hours * 10 + (c - '0');
+      } else {
+        minutes = minutes * 10 + (c - '0');
+      }
     }
+    if (hours > 23 || minutes > 59) {
+      throw new ParseException("Invalid offset value: " + value, 0);
+    }
+    return (hours * 60 + minutes) * 60L;
   }
 
   static int parseNanos(String value) throws ParseException {
+    // RFC 3339 allows at most 9 fractional digits (nanosecond precision). Mirror the C++
+    // reference parser (TakeNanosAndAdvance in parser.cc rejects frac_digits > 9) and
+    // reject extra digits instead of silently truncating them: e.g.
+    // "1970-01-01T00:00:00.1234567890Z" must not silently become 123456789 ns.
+    if (value.length() > 9) {
+      throw new ParseException("Invalid nanoseconds.", 0);
+    }
     int result = 0;
     for (int i = 0; i < 9; ++i) {
       result = result * 10;
