@@ -18,6 +18,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 // Each node represents a section of a test name (divided by '.'). One can
 // imagine them as prefixes to search for a match. Once we hit a prefix that
@@ -61,6 +62,7 @@ class FailureListTrieNode {
   bool is_test_name_;
   void InsertImpl(absl::string_view test_name);
 };
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

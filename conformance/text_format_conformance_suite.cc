@@ -40,6 +40,7 @@ using TestAllTypesProto3Editions =
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 // The number of repetitions to use for performance tests.
 // Corresponds approx to 500KB wireformat bytes.
@@ -79,7 +80,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
   test.set_name(test_name);
   switch (response.result_case()) {
     case ConformanceResponse::kProtobufPayload: {
-      if (requested_output != conformance::PROTOBUF) {
+      if (requested_output != ::conformance::PROTOBUF) {
         test.set_failure_message(absl::StrCat(
             "Test was asked for ", WireFormatToString(requested_output),
             " output but provided PROTOBUF instead."));
@@ -98,7 +99,7 @@ bool TextFormatConformanceTestSuite::ParseResponse(
     }
 
     case ConformanceResponse::kTextPayload: {
-      if (requested_output != conformance::TEXT_FORMAT) {
+      if (requested_output != ::conformance::TEXT_FORMAT) {
         test.set_failure_message(absl::StrCat(
             "Test was asked for ", WireFormatToString(requested_output),
             " output but provided TEXT_FORMAT instead."));
@@ -174,8 +175,8 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::ExpectParseFailure(
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
   ConformanceRequestSetting setting(
-      level, conformance::TEXT_FORMAT, conformance::TEXT_FORMAT,
-      conformance::TEXT_FORMAT_TEST, prototype, test_name, input);
+      level, ::conformance::TEXT_FORMAT, ::conformance::TEXT_FORMAT,
+      ::conformance::TEXT_FORMAT_TEST, prototype, test_name, input);
   const ConformanceRequest& request = setting.GetRequest();
   ConformanceResponse response;
   std::string effective_test_name = absl::StrCat(
@@ -213,12 +214,12 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
                                       const std::string& input_text,
                                       const Message& message) {
   ConformanceRequestSetting setting1(
-      level, conformance::TEXT_FORMAT, conformance::PROTOBUF,
-      conformance::TEXT_FORMAT_TEST, message, test_name, input_text);
+      level, ::conformance::TEXT_FORMAT, ::conformance::PROTOBUF,
+      ::conformance::TEXT_FORMAT_TEST, message, test_name, input_text);
   suite_.RunValidInputTest(setting1, input_text);
   ConformanceRequestSetting setting2(
-      level, conformance::TEXT_FORMAT, conformance::TEXT_FORMAT,
-      conformance::TEXT_FORMAT_TEST, message, test_name, input_text);
+      level, ::conformance::TEXT_FORMAT, ::conformance::TEXT_FORMAT,
+      ::conformance::TEXT_FORMAT_TEST, message, test_name, input_text);
   suite_.RunValidInputTest(setting2, input_text);
 }
 
@@ -230,12 +231,12 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::
                                        const std::string& expected_text) {
   MessageType prototype;
   ConformanceRequestSetting setting1(
-      level, conformance::TEXT_FORMAT, conformance::PROTOBUF,
-      conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
+      level, ::conformance::TEXT_FORMAT, ::conformance::PROTOBUF,
+      ::conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
   suite_.RunValidInputTest(setting1, expected_text);
   ConformanceRequestSetting setting2(
-      level, conformance::TEXT_FORMAT, conformance::TEXT_FORMAT,
-      conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
+      level, ::conformance::TEXT_FORMAT, ::conformance::TEXT_FORMAT,
+      ::conformance::TEXT_FORMAT_TEST, prototype, test_name, input_text);
   suite_.RunValidInputTest(setting2, expected_text);
 }
 
@@ -248,15 +249,15 @@ void TextFormatConformanceTestSuiteImpl<
   (void)message.SerializeToString(&serialized_input);
   MessageType prototype;
   ConformanceRequestSetting setting1(
-      RECOMMENDED, conformance::PROTOBUF, conformance::TEXT_FORMAT,
-      conformance::TEXT_FORMAT_TEST, prototype,
+      RECOMMENDED, ::conformance::PROTOBUF, ::conformance::TEXT_FORMAT,
+      ::conformance::TEXT_FORMAT_TEST, prototype,
       absl::StrCat(test_name, "_Drop"), serialized_input);
   setting1.SetPrototypeMessageForCompare(message);
   suite_.RunValidBinaryInputTest(setting1, "");
 
   ConformanceRequestSetting setting2(
-      RECOMMENDED, conformance::PROTOBUF, conformance::TEXT_FORMAT,
-      conformance::TEXT_FORMAT_TEST, prototype,
+      RECOMMENDED, ::conformance::PROTOBUF, ::conformance::TEXT_FORMAT,
+      ::conformance::TEXT_FORMAT_TEST, prototype,
       absl::StrCat(test_name, "_Print"), serialized_input);
   setting2.SetPrototypeMessageForCompare(message);
   setting2.SetPrintUnknownFields(true);
@@ -809,8 +810,8 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunAllTests() {
 
   prototype.Clear();
   ConformanceRequestSetting setting_map(
-      REQUIRED, conformance::TEXT_FORMAT, conformance::PROTOBUF,
-      conformance::TEXT_FORMAT_TEST, prototype, "DuplicateMapKey", R"(
+      REQUIRED, ::conformance::TEXT_FORMAT, ::conformance::PROTOBUF,
+      ::conformance::TEXT_FORMAT_TEST, prototype, "DuplicateMapKey", R"(
         map_string_nested_message {
           key: "duplicate"
           value: { a: 123 }
@@ -981,5 +982,6 @@ void TextFormatConformanceTestSuiteImpl<MessageType>::RunClosedEnumTests() {
         )");
 }
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google

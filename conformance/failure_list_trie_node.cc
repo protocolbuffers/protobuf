@@ -20,6 +20,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 absl::Status FailureListTrieNode::Insert(absl::string_view test_name) {
   auto result = WalkDownMatch(test_name);
@@ -101,5 +102,6 @@ absl::optional<std::string> FailureListTrieNode::WalkDownMatch(
   // No match
   return absl::nullopt;
 }
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google

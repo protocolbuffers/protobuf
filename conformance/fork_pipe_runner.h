@@ -20,6 +20,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 // Test runner that spawns the process being tested and communicates with it
 // over a pipe.
@@ -59,6 +60,7 @@ class ForkPipeRunner : public ConformanceTestRunner {
   std::unique_ptr<State> state_;
 };
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

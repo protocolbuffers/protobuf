@@ -58,6 +58,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 struct ForkPipeRunner::State {
   int write_fd = -1;
@@ -240,6 +241,7 @@ void ForkPipeRunner::CloseTestProgram() {
   state_->child_pid = -1;
 }
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

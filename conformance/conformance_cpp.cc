@@ -55,6 +55,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 namespace {
 using ::conformance::ConformanceRequest;
 using ::conformance::ConformanceResponse;
@@ -161,7 +162,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       JsonParseOptions options;
       options.ignore_unknown_fields =
           (request.test_category() ==
-           conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
+           ::conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
       absl::Status status = JsonStringToMessage(request.json_payload(),
                                                 test_message.get(), options);
       if (!status.ok()) {
@@ -190,16 +191,16 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
   }
 
   switch (request.requested_output_format()) {
-    case conformance::UNSPECIFIED:
+    case ::conformance::UNSPECIFIED:
       return absl::InvalidArgumentError("unspecified output format");
 
-    case conformance::PROTOBUF: {
+    case ::conformance::PROTOBUF: {
       ABSL_CHECK(
           test_message->SerializeToString(response.mutable_protobuf_payload()));
       break;
     }
 
-    case conformance::JSON: {
+    case ::conformance::JSON: {
       absl::Status status =
           MessageToJsonString(*test_message, response.mutable_json_payload());
       if (!status.ok()) {
@@ -209,7 +210,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       break;
     }
 
-    case conformance::TEXT_FORMAT: {
+    case ::conformance::TEXT_FORMAT: {
       TextFormat::Printer printer;
       printer.SetHideUnknownFields(!request.print_unknown_fields());
       ABSL_CHECK(printer.PrintToString(*test_message,
@@ -231,7 +232,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
     // EOF means we're done.
     return true;
   }
-  in_len = internal::little_endian::ToHost(in_len);
+  in_len = ::google::protobuf::internal::little_endian::ToHost(in_len);
 
   std::string serialized_input;
   serialized_input.resize(in_len);
@@ -247,7 +248,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   // TODO: Remove this suppression.
   (void)response->SerializeToString(&serialized_output);
 
-  uint32_t out_len = internal::little_endian::FromHost(
+  uint32_t out_len = ::google::protobuf::internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_output.size()));
 
   RETURN_IF_ERROR(WriteAll(stdout, &out_len, sizeof(out_len)));
@@ -265,6 +266,7 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   return false;
 }
 }  // namespace
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 
@@ -273,7 +275,7 @@ int main() {
   _setmode(_fileno(stdin), _O_BINARY);
   _setmode(_fileno(stdout), _O_BINARY);
 #endif
-  google::protobuf::Harness harness;
+  google::protobuf::conformance::Harness harness;
   int total_runs = 0;
   while (true) {
     auto is_done = harness.ServeConformanceRequest();

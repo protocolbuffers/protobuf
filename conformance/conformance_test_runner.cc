@@ -48,14 +48,13 @@
 #include "conformance/conformance_test.h"
 #include "conformance/fork_pipe_runner.h"
 
-using google::protobuf::ConformanceTestSuite;
-
 namespace google {
 namespace protobuf {
+namespace conformance {
 namespace {
 
-void ParseFailureList(const char *filename,
-                      conformance::FailureSet *failure_list) {
+void ParseFailureList(const char* filename,
+                      ::conformance::FailureSet* failure_list) {
   std::ifstream infile(filename);
 
   if (!infile.is_open()) {
@@ -88,7 +87,7 @@ void ParseFailureList(const char *filename,
         // failure message and the test will still pass.
         message = std::string(absl::StripAsciiWhitespace(message));
       }
-      conformance::TestStatus *test = failure_list->add_test();
+      ::conformance::TestStatus* test = failure_list->add_test();
       test->set_name(test_name);
       test->set_failure_message(message);
     }
@@ -230,7 +229,7 @@ int RunConformanceTests(int argc, char *argv[],
   bool all_ok = true;
   for (ConformanceTestSuite *suite : suites) {
     std::string failure_list_filename;
-    conformance::FailureSet failure_list;
+    ::conformance::FailureSet failure_list;
     for (int arg = 1; arg < argc; ++arg) {
       if (strcmp(argv[arg], suite->GetFailureListFlagName().c_str()) == 0) {
         if (++arg == argc) UsageError();
@@ -270,5 +269,6 @@ int RunConformanceTests(int argc, char *argv[],
   return all_ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google

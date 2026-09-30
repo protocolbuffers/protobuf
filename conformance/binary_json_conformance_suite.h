@@ -22,6 +22,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
  public:
@@ -29,9 +30,9 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
  private:
   void RunSuiteImpl() override;
-  bool ParseJsonResponse(const conformance::ConformanceResponse& response,
+  bool ParseJsonResponse(const ::conformance::ConformanceResponse& response,
                          Message* test_message);
-  bool ParseResponse(const conformance::ConformanceResponse& response,
+  bool ParseResponse(const ::conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
   void SetTypeUrl(absl::string_view type_url) {
@@ -208,6 +209,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   bool run_proto3_tests_;
 };
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

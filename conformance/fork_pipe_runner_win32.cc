@@ -30,6 +30,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 namespace {
 
@@ -375,6 +376,7 @@ void ForkPipeRunner::CloseTestProgram() {
   }
 }
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

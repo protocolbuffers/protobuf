@@ -250,6 +250,7 @@ bool IsProto3Default(FieldDescriptor::Type type,
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 bool BinaryAndJsonConformanceSuite::ParseJsonResponse(
     const ConformanceResponse& response, Message* test_message) {
@@ -4314,5 +4315,6 @@ std::string BinaryAndJsonConformanceSuiteImpl<MessageType>::SyntaxIdentifier()
   }
 }
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google

@@ -42,6 +42,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 std::string ForkPipeRunner::RunTest(absl::string_view test_name,
                                     absl::string_view request) {
@@ -50,8 +51,8 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
   }
   current_test_name_ = std::string(test_name);
 
-  uint32_t len =
-      internal::little_endian::FromHost(static_cast<uint32_t>(request.size()));
+  uint32_t len = ::google::protobuf::internal::little_endian::FromHost(
+      static_cast<uint32_t>(request.size()));
 
   CheckedWrite(&len, sizeof(uint32_t));
   CheckedWrite(request.data(), request.size());
@@ -59,7 +60,7 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
   std::string response;
   bool timed_out = false;
   if (!TryRead(&len, sizeof(uint32_t), &timed_out)) {
-    conformance::ConformanceResponse response_obj;
+    ::conformance::ConformanceResponse response_obj;
     std::string error_msg = GetTestProgramFailure(timed_out);
     ABSL_LOG(INFO) << error_msg;
     if (timed_out) {
@@ -72,11 +73,12 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
     return response;
   }
 
-  len = internal::little_endian::ToHost(len);
+  len = ::google::protobuf::internal::little_endian::ToHost(len);
   response.resize(len);
   CheckedRead((void*)response.c_str(), len);
   return response;
 }
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google

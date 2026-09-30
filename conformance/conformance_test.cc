@@ -181,13 +181,14 @@ bool CheckSetEmpty(const absl::btree_map<std::string, TestStatus>& set_to_check,
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 constexpr int kMaximumWildcardExpansions = 20;
 
 ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
-    ConformanceLevel level, conformance::WireFormat input_format,
-    conformance::WireFormat output_format,
-    conformance::TestCategory test_category, const Message& prototype_message,
+    ConformanceLevel level, ::conformance::WireFormat input_format,
+    ::conformance::WireFormat output_format,
+    ::conformance::TestCategory test_category, const Message& prototype_message,
     const std::string& test_name, const std::string& input)
     : level_(level),
       input_format_(input_format),
@@ -196,22 +197,22 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceRequestSetting(
       prototype_message_for_compare_(prototype_message.New()),
       test_name_(test_name) {
   switch (input_format) {
-    case conformance::PROTOBUF: {
+    case ::conformance::PROTOBUF: {
       request_.set_protobuf_payload(input);
       break;
     }
 
-    case conformance::JSON: {
+    case ::conformance::JSON: {
       request_.set_json_payload(input);
       break;
     }
 
-    case conformance::JSPB: {
+    case ::conformance::JSPB: {
       request_.set_jspb_payload(input);
       break;
     }
 
-    case conformance::TEXT_FORMAT: {
+    case ::conformance::TEXT_FORMAT: {
       request_.set_text_payload(input);
       break;
     }
@@ -275,13 +276,13 @@ ConformanceTestSuite::ConformanceRequestSetting::ConformanceLevelToString(
 }
 
 std::string ConformanceTestSuite::ConformanceRequestSetting::InputFormatString(
-    conformance::WireFormat format) const {
+    ::conformance::WireFormat format) const {
   switch (format) {
-    case conformance::PROTOBUF:
+    case ::conformance::PROTOBUF:
       return "ProtobufInput";
-    case conformance::JSON:
+    case ::conformance::JSON:
       return "JsonInput";
-    case conformance::TEXT_FORMAT:
+    case ::conformance::TEXT_FORMAT:
       return "TextFormatInput";
     default:
       ABSL_LOG(FATAL) << "Unspecified output format";
@@ -290,13 +291,13 @@ std::string ConformanceTestSuite::ConformanceRequestSetting::InputFormatString(
 }
 
 std::string ConformanceTestSuite::ConformanceRequestSetting::OutputFormatString(
-    conformance::WireFormat format) const {
+    ::conformance::WireFormat format) const {
   switch (format) {
-    case conformance::PROTOBUF:
+    case ::conformance::PROTOBUF:
       return "ProtobufOutput";
-    case conformance::JSON:
+    case ::conformance::JSON:
       return "JsonOutput";
-    case conformance::TEXT_FORMAT:
+    case ::conformance::TEXT_FORMAT:
       return "TextFormatOutput";
     default:
       ABSL_LOG(FATAL) << "Unspecified output format";
@@ -557,7 +558,7 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
   std::string serialized_request;
   ABSL_CHECK(request.SerializeToString(&serialized_request));
 
-  uint32_t len = internal::little_endian::FromHost(
+  uint32_t len = ::google::protobuf::internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_request.size()));
 
   if (isolated_) {
@@ -617,15 +618,15 @@ bool ConformanceTestSuite::RunTest(const std::string& test_name,
 
 std::string ConformanceTestSuite::WireFormatToString(WireFormat wire_format) {
   switch (wire_format) {
-    case conformance::PROTOBUF:
+    case ::conformance::PROTOBUF:
       return "PROTOBUF";
-    case conformance::JSON:
+    case ::conformance::JSON:
       return "JSON";
-    case conformance::JSPB:
+    case ::conformance::JSPB:
       return "JSPB";
-    case conformance::TEXT_FORMAT:
+    case ::conformance::TEXT_FORMAT:
       return "TEXT_FORMAT";
-    case conformance::UNSPECIFIED:
+    case ::conformance::UNSPECIFIED:
       return "UNSPECIFIED";
     default:
       ABSL_LOG(FATAL) << "unknown wire type: " << wire_format;
@@ -649,7 +650,7 @@ bool ConformanceTestSuite::AddExpectedFailedTest(
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     std::string* output,
                                     const std::string& filename,
-                                    conformance::FailureSet* failure_list) {
+                                    ::conformance::FailureSet* failure_list) {
   runner_ = runner;
   failure_list_root_ = FailureListTrieNode("root");
   successes_ = 0;
@@ -790,5 +791,6 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   return ok;
 }
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
