@@ -18044,6 +18044,14 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   } else if (upb_MiniTableField_IsInOneof(field)) {
     // Oneof case
     uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
+    if (op == kUpb_DecodeOp_String || op == kUpb_DecodeOp_Bytes) {
+      // Read the string before setting the oneof case, so that if the read
+      // fails the case still points to the previous member, which is intact.
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     op == kUpb_DecodeOp_String);
+      *oneof_case = field->UPB_PRIVATE(number);
+      return ptr;
+    }
     if (op == kUpb_DecodeOp_SubMessage &&
         *oneof_case != field->UPB_PRIVATE(number)) {
       memset(mem, 0, sizeof(void*));
