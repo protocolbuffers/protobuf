@@ -276,7 +276,7 @@ bool TcParser::RepeatedFieldIsEmptySlow(const MessageLite* msg,
         default:
           Unreachable();
       }
-      ABSL_FALLTHROUGH_INTENDED;
+      [[fallthrough]];
     }
     case fl::kFkMessage: {
       const auto& repeated_field = GetRepeatedFieldAt<RepeatedPtrFieldBase>(
