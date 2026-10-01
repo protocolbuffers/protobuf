@@ -608,3 +608,8 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/dangra/durable
     *   Extensions: 1374-1375
+
+1.  buffa
+
+    *   Website: https://github.com/anthropics/buffa
+    *   Extensions: 1381-1390
