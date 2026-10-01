@@ -7,14 +7,6 @@
 
 use core::marker::PhantomData;
 
-// In Bazel `upb` and `reflection` are dependency crates. In Cargo this file is compiled as
-// <crate_root>::upb::reflection, so bring the parent and sibling modules into scope under the same
-// names.
-#[cfg(not(bzl))]
-use super::super::upb;
-#[cfg(not(bzl))]
-use super::sys::reflection;
-
 use reflection::def_pool::{
     upb_DefPool_FindMessageByNameWithSize, upb_DefPool_Free, upb_DefPool_LoadDefInit,
     upb_DefPool_New, RawDefPool,

@@ -5,11 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// In Bazel `sys` is a dependency crate. In Cargo this file is compiled as
-// <crate_root>::upb::sys::reflection, so bring the parent module into scope under the same name.
-#[cfg(not(bzl))]
-use super::super::sys;
-
 pub mod def_pool;
 pub mod message_def;
 
@@ -27,8 +22,8 @@ unsafe extern "C" {
     /// up to `size - 1` bytes and null-terminated.
     ///
     /// # Safety
-    /// - `msg` must point to a valid `upb_Message` whose shape perfectly aligns with the supplied
-    ///   descriptor `m`.
+    /// - `msg` must point to a valid `upb_Message` whose shape perfectly aligns with the
+    ///   supplied descriptor `m`.
     /// - `m` must be a valid, securely allocated `RawMessageDef`.
     /// - `ext_pool` may be `None`, but if `Some`, it must hold a valid `RawDefPool`.
     /// - `buf` must be legally writable for at least `size` bytes (or may be null if `size` is 0).
