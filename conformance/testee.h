@@ -1,6 +1,7 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -42,10 +43,11 @@ namespace protobuf {
 namespace conformance {
 
 // How important it is that an implementation passes a test.  kP0 is the
-// baseline every implementation must pass.  A kP1 failure is counted but not
-// failed, unless the enforcement level includes kP1 (--enforce_recommended)
-// or the test is in the failure list (see matchers.h).  Test names still
-// spell kP0 as "Required" and kP1 as "Recommended" (see PriorityLevelName()).
+// baseline every implementation must pass.  Every priority is enforced
+// unless the enforcement level (see below) leaves some out.  A failing kP1
+// test is then counted but not failed, unless it is in the failure list (see
+// matchers.h).  Test names still spell kP0 as "Required" and kP1 as
+// "Recommended" (see PriorityLevelName()).
 //
 // A suite declares its priority with ConformanceTest::DefaultPriority().  A
 // single test overrides it with Testee(priority); see test_environment.h.
@@ -56,6 +58,12 @@ enum class TestPriority { kP0 = 0, kP1 = 1 };
 // The priorities, spelled the way suites write them: Testee(kP1).
 inline constexpr TestPriority kP0 = TestPriority::kP0;
 inline constexpr TestPriority kP1 = TestPriority::kP1;
+
+// An enforcement level is the highest priority, as an int (0 for kP0, 1 for
+// kP1), whose unlisted failures fail the run.  See TestManager in
+// test_manager.h.  kEnforceAllPriorities, the default, enforces every
+// priority, however many there are.
+inline constexpr int kEnforceAllPriorities = std::numeric_limits<int>::max();
 
 // The name of a priority: "P0" or "P1".
 absl::string_view PriorityName(TestPriority priority);
@@ -74,8 +82,8 @@ class TestResult {
   absl::string_view name() const { return test_name_; }
 
   // The priority of the test (see TestPriority).  Yields() tolerates a
-  // failing kP1 test unless the enforcement level includes kP1 or the test is
-  // listed.
+  // failing kP1 test only if the enforcement level leaves kP1 out and the
+  // test isn't listed.
   TestPriority priority() const { return priority_; }
 
   // The type of the message that was tested, needed for parsing.
