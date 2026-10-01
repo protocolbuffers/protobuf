@@ -31,16 +31,18 @@
 // This inclusion must appear before all the others.
 #include <Python.h>
 
-#include <string>
+// clang-format on
 
 #include "google/protobuf/pyext/descriptor_containers.h"
-// clang-format on
+
+#include <new>
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/port_def.inc"
 #include "google/protobuf/pyext/descriptor.h"
-#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
+#include "google/protobuf/pyext/free_threading/guarded.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
@@ -127,8 +129,12 @@ struct PyContainerIterator {
   // The container we are iterating over. Own a reference.
   PyContainer* container;
 
-  // The current index in the iterator.
-  int index;
+  // Guards the iterator's own mutable state. Sharing one iterator across
+  // threads is not supported: concurrent next() calls fail with a RuntimeError.
+  AccessGuard guard;
+
+  // The current index in the iterator. Protected by guard.
+  Guarded<int> index;
 
   // The kind of container: list, or dict by name or value.
   enum IterKind {
@@ -829,14 +835,15 @@ static void Iterator_Dealloc(PyContainerIterator* self) {
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
-static PyObject* Iterator_Next(PyContainerIterator* self) {
+static PyObject* IteratorNextLocked(PyContainerIterator* self,
+                                    const WriteAccess& access) {
   int count = self->container->container_def->count_fn(self->container);
-  if (self->index >= count) {
+  int index = self->index.Get(access);
+  if (index >= count) {
     // Return null with no exception to indicate the end.
     return nullptr;
   }
-  int index = self->index;
-  self->index += 1;
+  self->index.Set(index + 1, access);
   switch (self->kind) {
     case PyContainerIterator::KIND_ITERKEY:
       return _NewKey_ByIndex(self->container, index);
@@ -867,6 +874,12 @@ static PyObject* Iterator_Next(PyContainerIterator* self) {
       PyErr_SetNone(PyExc_NotImplementedError);
       return nullptr;
   }
+}
+
+static PyObject* Iterator_Next(PyContainerIterator* self) {
+  return self->guard.WithWrite(nullptr, [&](const WriteAccess& access) {
+    return IteratorNextLocked(self, access);
+  });
 }
 
 static PyTypeObject ContainerIterator_Type = {
@@ -925,7 +938,9 @@ static PyObject* NewContainerIterator(PyContainer* container,
   Py_INCREF(container);
   self->container = container;
   self->kind = kind;
-  self->index = 0;
+  // PyObject_New does not run constructors.
+  new (&self->guard) AccessGuard();
+  new (&self->index) Guarded<int>(0, self->guard);
 
   return reinterpret_cast<PyObject*>(self);
 }

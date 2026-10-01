@@ -21,7 +21,7 @@ namespace google {
 namespace protobuf {
 namespace python {
 
-typedef struct RepeatedScalarContainer : public ContainerBase {
+typedef struct RepeatedScalarContainer : public FieldContainer {
 } RepeatedScalarContainer;
 
 extern PyTypeObject RepeatedScalarContainer_Type;

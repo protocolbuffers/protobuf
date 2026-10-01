@@ -28,7 +28,7 @@ struct CMessageClass;
 
 // A RepeatedCompositeContainer always has a parent message.
 // The parent message also caches reference to items of the container.
-typedef struct RepeatedCompositeContainer : public ContainerBase {
+typedef struct RepeatedCompositeContainer : public FieldContainer {
   // The type used to create new child messages.
   CMessageClass* child_message_class;
 } RepeatedCompositeContainer;
