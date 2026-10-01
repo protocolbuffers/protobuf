@@ -5518,7 +5518,8 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
             i >= proto.dependency_size()
                 ? proto.option_dependency(i - proto.dependency_size())
                 : proto.dependency(i);
-        if (tables_->FindFile(name) == nullptr &&
+        if (!absl::StrContains(name, '\0') &&
+            tables_->FindFile(name) == nullptr &&
             (pool_->underlay_ == nullptr ||
              pool_->underlay_->FindFileByName(name) == nullptr)) {
           // We don't care what this returns since we'll find out below anyway.
@@ -5672,6 +5673,12 @@ FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     absl::string_view name =
         is_option_dep ? proto.option_dependency(i - proto.dependency_size())
                       : proto.dependency(i);
+    if (absl::StrContains(name, '\0')) {
+      AddError(name, proto, DescriptorPool::ErrorCollector::IMPORT, [&] {
+        return absl::StrCat("\"", name, "\" contains null character.");
+      });
+      return nullptr;
+    }
     if (!seen_dependencies.insert(name).second) {
       AddTwiceListedError(proto, name);
     }
