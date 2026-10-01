@@ -56,6 +56,13 @@ typedef enum {
   //   - for Bytes, this indicates that the actual type is String (but does
   //     not require any UTF-8 check).
   kUpb_LabelFlags_IsAlternate = 16,
+  // Only set on the field of a `upb_MiniTableExtension` that was synthesized
+  // at runtime from a regular field (e.g. by `upb_Message_Convert()` when it
+  // demotes a field that the destination schema doesn't have to a
+  // non-canonical extension). Such a `upb_MiniTableExtension` is allocated on
+  // the arena of the message that references it, so copies of the message into
+  // another arena must copy the `upb_MiniTableExtension` as well.
+  kUpb_LabelFlags_IsSynthesized = 32,
 } upb_LabelFlags;
 
 // Note: we sort by this number when calculating layout order.
@@ -104,6 +111,11 @@ UPB_API_INLINE bool upb_MiniTableField_IsScalar(
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsAlternate)(
     const struct upb_MiniTableField* f) {
   return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate) != 0;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsSynthesized)(
+    const struct upb_MiniTableField* f) {
+  return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsSynthesized) != 0;
 }
 
 UPB_API_INLINE bool upb_MiniTableField_IsExtension(
