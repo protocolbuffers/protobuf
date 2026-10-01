@@ -54,7 +54,8 @@ typedef struct {
 UPB_FORCEINLINE
 bool upb_DecodeFast_GetMap(upb_Decoder* d, upb_Message* msg,
                            const upb_MiniTable* table, uint64_t data,
-                           uint64_t* hasbits, upb_DecodeFastMap* map_ctx,
+                           bool is_str_map, uint64_t* hasbits,
+                           upb_DecodeFastMap* map_ctx,
                            upb_DecodeFastNext* next) {
   // Sync hasbits so we don't have to preserve them across the map entries.
   upb_DecodeFast_SetHasbits(msg, *hasbits);
@@ -74,6 +75,7 @@ bool upb_DecodeFast_GetMap(upb_Decoder* d, upb_Message* msg,
 
   const upb_MiniTableField* key_field = &entry_table->UPB_PRIVATE(fields)[0];
   const upb_MiniTableField* val_field = &entry_table->UPB_PRIVATE(fields)[1];
+  UPB_ASSUME(val_field->UPB_PRIVATE(descriptortype) != kUpb_FieldType_Group);
 
   bool value_is_message = upb_MiniTableField_IsSubMessage(val_field);
   const upb_MiniTable* sub_table =
@@ -97,6 +99,11 @@ bool upb_DecodeFast_GetMap(upb_Decoder* d, upb_Message* msg,
   map_ctx->sub_table = sub_table;
   map_ctx->key_field = key_field;
   map_ctx->val_field = val_field;
+  if (is_str_map) {
+    UPB_ASSUME(key_field->UPB_PRIVATE(descriptortype) ==
+                   kUpb_FieldType_String ||
+               key_field->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Bytes);
+  }
   map_ctx->key_validate_utf8 =
       _upb_Decoder_FieldRequiresUtf8Validation(d, key_field);
   map_ctx->val_validate_utf8 =
@@ -119,6 +126,12 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
                                   const upb_DecodeFastMap* map_ctx,
                                   uint64_t data, bool is_str_map,
                                   upb_DecodeFastNext* next) {
+  size_t key_size = is_str_map ? UPB_MAPTYPE_STRING
+                               : (upb_DecodeFastData_KeyIs32(data) ? 4 : 8);
+  size_t val_size = upb_DecodeFastData_GetValSize(data);
+  UPB_ASSERT(key_size == upb_DecodeFastData_GetKeySize(data));
+  UPB_ASSERT(map_ctx->map->UPB_PRIVATE(is_strtable) == is_str_map);
+
   const char* p = *ptr;
   int size;
   if (UPB_UNLIKELY(!upb_DecodeFast_DecodeSize(d, &p, &size, next))) {
@@ -139,6 +152,9 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
   UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), 1);
   uint8_t key_tag = *p++;
   uint8_t expected_key_tag = upb_DecodeFastData_GetKeyTag(data);
+  if (is_str_map) {
+    UPB_ASSUME(expected_key_tag == ((1 << 3) | kUpb_WireType_Delimited));
+  }
   if (UPB_UNLIKELY(key_tag != expected_key_tag)) {
     return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
   }
@@ -175,8 +191,7 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
       case kUpb_WireType_Varint:
         p = upb_WireReader_ReadVarint(p, &k, EPS(d));
         if (UPB_UNLIKELY(upb_DecodeFastData_KeyIsZigZag(data))) {
-          k = upb_DecodeFast_MapZigZagDecode(
-              k, upb_DecodeFastData_GetKeySize(data));
+          k = upb_DecodeFast_MapZigZagDecode(k, key_size);
         }
         break;
       case kUpb_WireType_32Bit: {
@@ -250,8 +265,7 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
         val.bool_val = (v != 0);
       } else {
         if (UPB_UNLIKELY(upb_DecodeFastData_ValIsZigZag(data))) {
-          v = upb_DecodeFast_MapZigZagDecode(
-              v, upb_DecodeFastData_GetValSize(data));
+          v = upb_DecodeFast_MapZigZagDecode(v, val_size);
         }
         val.uint64_val = v;
       }
@@ -315,10 +329,8 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
       UPB_UNREACHABLE();
   }
 
-  if (UPB_UNLIKELY(_upb_Map_Insert(map_ctx->map, &key_val,
-                                   upb_DecodeFastData_GetKeySize(data), &val,
-                                   upb_DecodeFastData_GetValSize(data),
-                                   &d->arena) ==
+  if (UPB_UNLIKELY(_upb_Map_Insert(map_ctx->map, &key_val, key_size, &val,
+                                   val_size, &d->arena) ==
                    kUpb_MapInsertStatus_OutOfMemory)) {
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
   }
@@ -397,29 +409,20 @@ void upb_DecodeFast_Map(upb_Decoder* d, const char** ptr, upb_Message* msg,
   }
 
   upb_DecodeFastMap map_ctx;
-  if (UPB_UNLIKELY(!upb_DecodeFast_GetMap(d, msg, table, data, hasbits,
-                                          &map_ctx, next))) {
+  if (UPB_UNLIKELY(!upb_DecodeFast_GetMap(d, msg, table, data, is_str_map,
+                                          hasbits, &map_ctx, next))) {
     return;
   }
 
-  // The map's table discriminator is derived from the same entry MiniTable that
-  // selected this parser, so it always agrees with our compile-time is_str_map:
-  // _upb_Decoder_CreateMap() passes key_size = UPB_MAPTYPE_STRING (0) exactly
-  // for string/bytes keys, and _upb_Map_New() sets is_strtable from that. Tell
-  // the compiler so it can fold away the strtable/inttable branch on the insert
-  // path.
-  UPB_ASSUME(map_ctx.map->UPB_PRIVATE(is_strtable) == is_str_map);
-
   // The sizes packed into `data` by upb_DecodeFast_TryFillMapEntry() describe
   // the same map that _upb_Decoder_CreateMap() sized from kSizeInMap[], so they
-  // must agree.
-  UPB_ASSUME(map_ctx.map->key_size == upb_DecodeFastData_GetKeySize(data));
-  UPB_ASSUME(map_ctx.map->val_size == upb_DecodeFastData_GetValSize(data));
-
-  // Lets string-map instantiations fold key_size to the constant
-  // UPB_MAPTYPE_STRING rather than extracting it from `data` on the insert
-  // path.
-  UPB_ASSUME(is_str_map ==
+  // must agree. Use UPB_ASSERT rather than UPB_ASSUME here so the compiler does
+  // not replace register bitfield extractions from `data` with memory loads
+  // from `map_ctx.map`.
+  UPB_ASSERT(map_ctx.map->UPB_PRIVATE(is_strtable) == is_str_map);
+  UPB_ASSERT(map_ctx.map->key_size == upb_DecodeFastData_GetKeySize(data));
+  UPB_ASSERT(map_ctx.map->val_size == upb_DecodeFastData_GetValSize(data));
+  UPB_ASSERT(is_str_map ==
              (upb_DecodeFastData_GetKeySize(data) == UPB_MAPTYPE_STRING));
 
   int depth_cost = map_ctx.sub_table ? 2 : 1;
@@ -437,6 +440,11 @@ void upb_DecodeFast_Map(upb_Decoder* d, const char** ptr, upb_Message* msg,
   size_t estimated_entries =
       upb_DecodeFast_EstimateMapSize(d, *ptr, expected, tagsize);
   if (estimated_entries > 0) {
+    // The map's table discriminator is derived from the same entry MiniTable
+    // that selected this parser, so it always agrees with our compile-time
+    // is_str_map. Place the assume immediately before _upb_Map_Size() with no
+    // intervening memory writes so EarlyCSE folds the strtable/inttable branch.
+    UPB_ASSUME(map_ctx.map->UPB_PRIVATE(is_strtable) == is_str_map);
     if (UPB_UNLIKELY(!_upb_Map_Reserve(
             map_ctx.map, _upb_Map_Size(map_ctx.map) + estimated_entries,
             &d->arena))) {
