@@ -1,0 +1,2 @@
+# Fixture for conformance_bzl_test (see conformance_bzl_test.bzl); the test
+# it belongs to is never run.
