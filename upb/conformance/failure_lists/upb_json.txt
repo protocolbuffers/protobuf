@@ -1,0 +1,17 @@
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicate/*.JsonInput                 # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing1/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Recommended.JsonDuplicateFieldNameTest.FieldNameDuplicateDifferentCasing2/*.JsonInput # Should have failed to parse, but didn't., and Output was not equivalent to reference message: added: optional_nested_message.a:
+Required.JsonIntegerTest.Int32FieldQuotedExponentialValue/*.JsonInput.*               # Failed to parse input or produce output.
+Required.JsonAnyTest.AnyWithNoType/*.JsonInput.*                                      # Failed to parse input or produce output.
+Required.JsonTimestampTest.TimestampJsonInputDayTooLarge/*.JsonInput                  # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputDayZero/*.JsonInput                      # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge/*.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputHourTooLarge25/*.JsonInput               # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetHour/*.JsonInput            # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputInvalidOffsetMinute/*.JsonInput          # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMinuteTooLarge/*.JsonInput               # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthTooLarge/*.JsonInput                # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputMonthZero/*.JsonInput                    # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputNonLeapFeb29/*.JsonInput                 # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputOffsetBoundaryOverflow/*.JsonInput       # Should have failed to parse, but didn't.
+Required.JsonTimestampTest.TimestampJsonInputSecondTooLarge/*.JsonInput               # Should have failed to parse, but didn't.
