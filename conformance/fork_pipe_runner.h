@@ -44,6 +44,18 @@ struct ForkPipeRunnerOptions {
 // on its stdin.  Leaving it to the end of the process is not an option.
 // Several runners can be created in one process, one per test phase, and some
 // testees busy-poll stdin while idle.
+//
+// On POSIX the testee is made the leader of its own process group, so that
+// the SIGKILL reaches anything it forked, for example the real testee behind
+// a wrapper script that does not exec it.  The same goes for the diagnostic
+// SIGQUIT sent when the testee stops answering.  Once the testee has exited,
+// whatever it left behind in the group is killed too.  This has two
+// trade-offs.  The testee is not in the terminal's foreground process group,
+// so an interactive Ctrl-C reaches the runner but not the testee, which then
+// only learns that the run is over from EOF on its stdin.  And a wrapper
+// script that does not exec the testee is terminated by the SIGQUIT, which is
+// acceptable since the testee is shut down right after.  On Windows the
+// testee runs in a job object that is terminated as a whole.
 class ForkPipeRunner : public ConformanceTestRunner {
  public:
   // The testee, `executable` run with `executable_args`, is spawned by the
@@ -92,7 +104,9 @@ class ForkPipeRunner : public ConformanceTestRunner {
   bool IsTestProgramRunning() const;
 
   // Closes the pipes to the testee, waits up to `grace_period` for it to exit,
-  // kills it if it hasn't, and reaps it.  A no-op if there is no testee.
+  // kills it if it hasn't, and reaps it.  Anything it spawned is killed with
+  // it (its process group on POSIX, its job object on Windows).  A no-op if
+  // there is no testee.
   ShutdownResult Shutdown(absl::Duration grace_period);
 
   // Shuts the testee down after a failed exchange and returns `what_failed`

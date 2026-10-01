@@ -260,6 +260,7 @@ cc_test(
         "@abseil-cpp//absl/log:scoped_mock_log",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

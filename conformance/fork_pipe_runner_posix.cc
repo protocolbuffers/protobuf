@@ -126,6 +126,18 @@ std::string ReadSigquitOutput(int fd) {
   return out.empty() ? "(no output)" : out;
 }
 
+// Sends `sig` to the testee's process group, so that it also reaches anything
+// the testee forked, e.g. the real testee behind a wrapper script that does
+// not exec it.  The group exists from the moment SpawnTestProgram() returns
+// until the testee is reaped (see the setpgid() calls there), so ESRCH means
+// that something else reaped it and there is nothing left to signal.
+void SignalTestee(pid_t pid, int sig) {
+  if (kill(-pid, sig) != 0 && errno != ESRCH) {
+    ABSL_LOG(ERROR) << "kill(-" << pid << ", " << sig
+                    << ") failed: " << strerror(errno);
+  }
+}
+
 // Outcome of WaitForExit().
 struct WaitOutcome {
   enum Kind {
@@ -138,24 +150,41 @@ struct WaitOutcome {
   int status = 0;
 };
 
-// Polls for up to `timeout` for the child `pid` to exit, reaping it if it
-// does.
+// Polls for up to `timeout` for the testee `pid` to exit.  Once it has, kills
+// whatever it left behind in its process group (e.g. a wrapper script that
+// exits on EOF after backgrounding the real testee leaves that behind) and
+// reaps it.
 WaitOutcome WaitForExit(pid_t pid, absl::Duration timeout) {
   const absl::Time deadline = absl::Now() + timeout;
   while (true) {
-    int status = 0;
-    const pid_t reaped = waitpid(pid, &status, WNOHANG);
-    if (reaped == pid) return {WaitOutcome::kExited, status};
-    if (reaped < 0 && errno != EINTR) {
+    // Look at the testee's state without reaping it: until it is reaped its
+    // pid cannot be reused, so the group id (which is that pid) still
+    // unambiguously names its group.
+    siginfo_t info = {};
+    if (waitid(P_PID, static_cast<id_t>(pid), &info,
+               WEXITED | WNOHANG | WNOWAIT) != 0) {
+      if (errno == EINTR) continue;
       if (errno != ECHILD) {
-        ABSL_LOG(WARNING) << "waitpid(" << pid
+        ABSL_LOG(WARNING) << "waitid(" << pid
                           << ") failed: " << strerror(errno);
       }
       return {WaitOutcome::kGone};
     }
+    if (info.si_pid == pid) break;  // Exited, not yet reaped.
     if (absl::Now() >= deadline) return {WaitOutcome::kStillRunning};
     absl::SleepFor(kPollInterval);
   }
+  SignalTestee(pid, SIGKILL);  // A no-op for the zombie leader itself.
+  int status = 0;
+  pid_t reaped;
+  do {
+    reaped = waitpid(pid, &status, 0);
+  } while (reaped < 0 && errno == EINTR);
+  if (reaped != pid) {
+    ABSL_LOG(WARNING) << "waitpid(" << pid << ") failed: " << strerror(errno);
+    return {WaitOutcome::kGone};
+  }
+  return {WaitOutcome::kExited, status};
 }
 
 }  // namespace
@@ -220,6 +249,13 @@ void ForkPipeRunner::SpawnTestProgram() {
 
   if (pid) {
     // Parent.
+    // Put the child in its own process group, as the child does for itself
+    // below: whichever of the two gets there first creates the group, so it
+    // exists before this function returns and kill(-pid) cannot race the
+    // child's setpgid().  EACCES means the child already exec'd, i.e. it won.
+    if (setpgid(pid, pid) != 0 && errno != EACCES) {
+      ABSL_LOG(WARNING) << "setpgid(" << pid << ") failed: " << strerror(errno);
+    }
     CHECK_SYSCALL(close(toproc_pipe_fd[0]));
     CHECK_SYSCALL(close(fromproc_pipe_fd[1]));
     state_->write_fd = toproc_pipe_fd[1];
@@ -236,6 +272,12 @@ void ForkPipeRunner::SpawnTestProgram() {
     CHECK_SYSCALL_IN_CHILD(close(fromproc_pipe_fd[1]));
     CHECK_SYSCALL_IN_CHILD(close(toproc_pipe_fd[1]));
     CHECK_SYSCALL_IN_CHILD(close(fromproc_pipe_fd[0]));
+
+    // Become the leader of a new process group (setpgid() is
+    // async-signal-safe), so that Shutdown() can SIGKILL the group and reach
+    // any process the testee forks.  See the class comment for the trade-offs.
+    // A no-op if the parent's setpgid() above got there first.
+    CHECK_SYSCALL_IN_CHILD(setpgid(0, 0));
 
     // Never returns.
     CHECK_SYSCALL_IN_CHILD(
@@ -266,15 +308,12 @@ ForkPipeRunner::ShutdownResult ForkPipeRunner::Shutdown(
 
   WaitOutcome outcome = WaitForExit(pid, grace_period);
   if (outcome.kind == WaitOutcome::kStillRunning) {
-    // A blocking waitpid() would let a testee that ignores EOF hang the
-    // runner; SIGKILL cannot be ignored.
+    // A blocking wait would let a testee that ignores EOF hang the runner;
+    // SIGKILL cannot be ignored.
     ABSL_LOG(WARNING) << "child pid=" << pid << " has not exited "
                       << grace_period
                       << " after its pipes were closed, sending SIGKILL";
-    if (kill(pid, SIGKILL) != 0) {
-      ABSL_LOG(ERROR) << "kill(" << pid
-                      << ", SIGKILL) failed: " << strerror(errno);
-    }
+    SignalTestee(pid, SIGKILL);
     result.killed = true;
     outcome = WaitForExit(pid, kKillWait);
     if (outcome.kind == WaitOutcome::kStillRunning) {
@@ -285,11 +324,13 @@ ForkPipeRunner::ShutdownResult ForkPipeRunner::Shutdown(
   if (outcome.kind == WaitOutcome::kExited) {
     result.wait_status = outcome.status;
   } else if (outcome.kind == WaitOutcome::kGone) {
-    // Not a testee that has not exited: there is nothing left to kill, and the
-    // pid may already belong to some other process.
+    // Not a testee that has not exited: the pid may already belong to some
+    // other process.  Its group cannot have been reused while it has members,
+    // though, so whatever the testee left behind in it can still be killed.
     ABSL_LOG(WARNING) << "child pid=" << pid
                       << " was reaped by something other than the runner (is "
                          "SIGCHLD ignored?), so how it ended is unknown";
+    SignalTestee(pid, SIGKILL);
     result.reaped_elsewhere = true;
   }
   return result;
@@ -392,7 +433,7 @@ ForkPipeRunner::ReadResult ForkPipeRunner::TryRead(void* buf, size_t len) {
       // the testee down.
       // TODO: Only log in flag-guarded mode, since reading output from
       // SIGQUIT is slow and verbose.
-      kill(*state_->child_pid, SIGQUIT);
+      SignalTestee(*state_->child_pid, SIGQUIT);
       ABSL_LOG(ERROR) << "child pid=" << *state_->child_pid << " SIGQUIT: \n"
                       << ReadSigquitOutput(fd);
       return ReadResult::kTimeout;
