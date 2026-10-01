@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "upb/base/string_view.h"
 #include "upb/message/internal/map.h"
@@ -326,6 +327,59 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
   return true;
 }
 
+// Estimates the number of contiguous map entries with single-byte lengths by
+// skip-scanning ahead. If an entry has a length > 127 (multibyte varint),
+// scanning stops early to avoid cache pollution on large entries.
+UPB_FORCEINLINE
+size_t upb_DecodeFast_EstimateMapSize(upb_Decoder* d, const char* ptr,
+                                      uint16_t expected,
+                                      upb_DecodeFast_TagSize tagsize) {
+  size_t count = 0;
+  const char* limit_ptr = d->input.limit_ptr;
+  int saved_guaranteed =
+      UPB_PRIVATE(upb_EpsCopyInputStream_GetBoundsCheckedBytes)(EPS(d));
+
+  if (tagsize == kUpb_DecodeFast_Tag1Byte) {
+    if (limit_ptr - ptr >= 2) {
+      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsCheckedToEnd)(EPS(d), ptr,
+                                                             limit_ptr);
+      while (limit_ptr - ptr >= 2) {
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), 2);
+        uint16_t val;
+        memcpy(&val, ptr, 2);
+        if ((val & 0x80ff) != (uint8_t)expected) break;
+        uint32_t len = val >> 8;
+        uint32_t skip = 2 + len;
+        if (limit_ptr - ptr < skip) break;
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), len);
+        count++;
+        ptr += skip;
+      }
+    }
+  } else {
+    UPB_ASSERT(tagsize == kUpb_DecodeFast_Tag2Byte);
+    if (limit_ptr - ptr >= 3) {
+      UPB_PRIVATE(upb_EpsCopyInputStream_BoundsCheckedToEnd)(EPS(d), ptr,
+                                                             limit_ptr);
+      while (limit_ptr - ptr >= 3) {
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), 4);
+        uint32_t val = 0;
+        memcpy(&val, ptr, 4);
+        if ((val & 0x80ffff) != expected) break;
+        uint32_t len = (val >> 16) & 0x7f;
+        uint32_t skip = 3 + len;
+        if (skip < 4 || limit_ptr - ptr < skip) break;
+        UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), skip - 4);
+        count++;
+        ptr += skip;
+      }
+    }
+  }
+
+  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(EPS(d), saved_guaranteed);
+  return count;
+}
+
 UPB_FORCEINLINE
 void upb_DecodeFast_Map(upb_Decoder* d, const char** ptr, upb_Message* msg,
                         const upb_MiniTable* table, uint64_t* hasbits,
@@ -379,6 +433,18 @@ void upb_DecodeFast_Map(upb_Decoder* d, const char** ptr, upb_Message* msg,
     return;
   }
   d->depth -= depth_cost;
+
+  size_t estimated_entries =
+      upb_DecodeFast_EstimateMapSize(d, *ptr, expected, tagsize);
+  if (estimated_entries > 0) {
+    if (UPB_UNLIKELY(!_upb_Map_Reserve(
+            map_ctx.map, _upb_Map_Size(map_ctx.map) + estimated_entries,
+            &d->arena))) {
+      d->depth += depth_cost;
+      UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
+      return;
+    }
+  }
 
   const char* p = *ptr + upb_DecodeFast_TagSizeBytes(tagsize);
   while (1) {
