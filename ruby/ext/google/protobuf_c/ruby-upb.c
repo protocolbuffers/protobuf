@@ -3209,14 +3209,6 @@ static bool streql(upb_key k1, upb_value v1, lookupkey_t k2) {
          (k1s->size == 0 || memcmp(k1s->data, k2s.data, k1s->size) == 0);
 }
 
-/** Calculates the number of entries required to hold an expected number of
- * values, within the table's load factor. */
-static size_t _upb_entries_needed_for(size_t expected_size) {
-  size_t need_entries = expected_size + 1 + expected_size / 7;
-  UPB_ASSERT(need_entries - (need_entries >> 3) >= expected_size);
-  return need_entries;
-}
-
 bool upb_strtable_init(upb_strtable* t, size_t expected_size, upb_Arena* a) {
   int size_lg2 = upb_Log2Ceiling(_upb_entries_needed_for(expected_size));
   return init(&t->t, size_lg2, a);
@@ -3229,27 +3221,32 @@ void upb_strtable_clear(upb_strtable* t) {
 }
 
 bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
+  if (t->t.entries != NULL && _upb_log2_table_size(&t->t) >= size_lg2) {
+    return true;
+  }
   upb_strtable new_table;
   if (!init(&new_table.t, size_lg2, a)) return false;
 
-  intptr_t iter = UPB_STRTABLE_BEGIN;
-  upb_StringView sv;
-  upb_value val;
-  while (upb_strtable_next2(t, &sv, &val, &iter)) {
-    // Unlike normal insert, does not copy string data or possibly reallocate
-    // the table
-    // The data pointer used in the table is guaranteed to point at a
-    // upb_SizePrefixString, we just need to back up by the size of the uint32_t
-    // length prefix.
-    const upb_SizePrefixString* keystr =
-        (const upb_SizePrefixString*)(sv.data - sizeof(uint32_t));
-    UPB_ASSERT(keystr->data == sv.data);
-    UPB_ASSERT(keystr->size == sv.size);
+  if (t->t.count > 0) {
+    intptr_t iter = UPB_STRTABLE_BEGIN;
+    upb_StringView sv;
+    upb_value val;
+    while (upb_strtable_next2(t, &sv, &val, &iter)) {
+      // Unlike normal insert, does not copy string data or possibly reallocate
+      // the table
+      // The data pointer used in the table is guaranteed to point at a
+      // upb_SizePrefixString, we just need to back up by the size of the
+      // uint32_t length prefix.
+      const upb_SizePrefixString* keystr =
+          (const upb_SizePrefixString*)(sv.data - sizeof(uint32_t));
+      UPB_ASSERT(keystr->data == sv.data);
+      UPB_ASSERT(keystr->size == sv.size);
 
-    lookupkey_t lookupkey = {.str = sv};
-    upb_key tabkey = {.str = keystr};
-    uint32_t hash = _upb_Hash_NoSeed(sv.data, sv.size);
-    insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
+      lookupkey_t lookupkey = {.str = sv};
+      upb_key tabkey = {.str = keystr};
+      uint32_t hash = _upb_Hash_NoSeed(sv.data, sv.size);
+      insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
+    }
   }
   *t = new_table;
   return true;
@@ -3637,22 +3634,34 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
   return true;
 }
 
-UPB_NOINLINE static bool upb_inttable_grow(upb_inttable* t, upb_Arena* a) {
-  size_t new_size = _upb_log2_table_size(&t->t) + 1;
-  if (upb_inttable_trygrow(t, new_size, a)) return true;
+bool upb_inttable_resize(upb_inttable* t, size_t size_lg2, upb_Arena* a) {
+  if (t->t.entries != NULL && _upb_log2_table_size(&t->t) >= size_lg2) {
+    return true;
+  }
+  if (t->t.entries != NULL && upb_inttable_trygrow(t, size_lg2, a)) {
+    return true;
+  }
 
   upb_table new_table;
-  if (!init(&new_table, new_size, a)) return false;
+  if (!init(&new_table, size_lg2, a)) return false;
 
-  for (size_t i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
-    const upb_tabent* e = &t->t.entries[i];
-    insert(&new_table, intkey(e->key.num), e->key, e->val,
-           inthash(e->key, e->val), &inthash, &inteql);
+  if (t->t.count > 0) {
+    for (size_t i = begin(&t->t); i < upb_table_size(&t->t);
+         i = next(&t->t, i)) {
+      const upb_tabent* e = &t->t.entries[i];
+      insert(&new_table, intkey(e->key.num), e->key, e->val,
+             inthash(e->key, e->val), &inthash, &inteql);
+    }
   }
 
   UPB_ASSERT(t->t.count == new_table.count);
   t->t = new_table;
   return true;
+}
+
+UPB_NOINLINE static bool upb_inttable_grow(upb_inttable* t, upb_Arena* a) {
+  size_t new_size = _upb_log2_table_size(&t->t) + 1;
+  return upb_inttable_resize(t, new_size, a);
 }
 
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
@@ -7731,6 +7740,7 @@ bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
 
 bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
                   upb_MessageValue* val, size_t* iter) {
+  if (_upb_Map_Size(map) == 0) return false;
   upb_value v;
   bool ret;
   if (map->UPB_PRIVATE(is_strtable)) {
@@ -7768,6 +7778,10 @@ bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
 }
 
 bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
+  // upb_MapIterator_Next() returns early on an empty map without advancing
+  // `iter`, which may still be kUpb_Map_Begin, and the table may not be
+  // allocated.
+  if (_upb_Map_Size(map) == 0) return true;
   UPB_ASSERT(iter != kUpb_Map_Begin);
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_strtable_iter i;
@@ -7814,7 +7828,7 @@ void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m) {
   if (upb_Map_IsFrozen(map)) return;
   UPB_PRIVATE(_upb_Map_ShallowFreeze)(map);
 
-  if (m) {
+  if (m && _upb_Map_Size(map) > 0) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
 
@@ -7830,11 +7844,10 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
+  memset(&map->t, 0, sizeof(map->t));
   if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING) {
-    if (!upb_inttable_init(&map->t.inttable, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = false;
   } else {
-    if (!upb_strtable_init(&map->t.strtable, 4, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = true;
   }
   map->key_size = key_size;
@@ -7842,6 +7855,29 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   map->UPB_PRIVATE(is_frozen) = false;
 
   return map;
+}
+
+bool _upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+  if (size == 0) return true;
+
+  size_t target = _upb_entries_needed_for(size);
+  if (target < 8) target = 8;
+  int size_lg2 = upb_Log2Ceiling(target);
+
+  if (_upb_Map_Capacity(map) >= ((size_t)1 << size_lg2)) {
+    return true;
+  }
+
+  if (map->UPB_PRIVATE(is_strtable)) {
+    return upb_strtable_resize(&map->t.strtable, size_lg2, arena);
+  } else {
+    return upb_inttable_resize(&map->t.inttable, size_lg2, arena);
+  }
+}
+
+bool upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
+  return _upb_Map_Reserve(map, size, arena);
 }
 
 

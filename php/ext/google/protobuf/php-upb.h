@@ -3559,6 +3559,7 @@ UPB_INLINE uint64_t upb_BigEndian64(uint64_t val) {
 #ifndef UPB_HASH_COMMON_H_
 #define UPB_HASH_COMMON_H_
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -3714,6 +3715,14 @@ UPB_INLINE void upb_tabent_setnext(upb_tabent* e, upb_tabent* next) {
 
 uint32_t _upb_Hash(const void* p, size_t n, uint64_t seed);
 
+/** Calculates the number of entries required to hold an expected number of
+ * values, within the table's load factor (0.875). */
+UPB_INLINE size_t _upb_entries_needed_for(size_t expected_size) {
+  size_t need_entries = expected_size + 1 + expected_size / 7;
+  UPB_ASSERT(need_entries - (need_entries >> 3) >= expected_size);
+  return need_entries;
+}
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
@@ -3752,6 +3761,10 @@ size_t upb_inttable_count(const upb_inttable* t);
 // returned and the table is unchanged.
 UPB_NODISCARD bool upb_inttable_insert(upb_inttable* t, uintptr_t key,
                                        upb_value val, upb_Arena* a);
+
+// Resizes the table to 1 << size_lg2.
+UPB_NODISCARD bool upb_inttable_resize(upb_inttable* t, size_t size_lg2,
+                                       upb_Arena* a);
 
 // Copies the table without rehashing. Performing a shallow copy of entries;
 // the caller is responsible for cloning non-primitive values.
@@ -3982,6 +3995,29 @@ UPB_API_INLINE bool upb_Map_IsFrozen(const struct upb_Map* map) {
   return map->UPB_PRIVATE(is_frozen);
 }
 
+bool _upb_Map_Reserve(struct upb_Map* map, size_t size, upb_Arena* a);
+
+UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
+  if (map->UPB_PRIVATE(is_strtable)) {
+    return map->t.strtable.t.count;
+  } else {
+    return upb_inttable_count(&map->t.inttable);
+  }
+}
+
+UPB_INLINE bool _upb_Map_IsInitialized(const struct upb_Map* map) {
+  const upb_table* t =
+      map->UPB_PRIVATE(is_strtable) ? &map->t.strtable.t : &map->t.inttable.t;
+  return t->entries != NULL;
+}
+
+UPB_INLINE size_t _upb_Map_Capacity(const struct upb_Map* map) {
+  if (!_upb_Map_IsInitialized(map)) return 0;
+  const upb_table* t =
+      map->UPB_PRIVATE(is_strtable) ? &map->t.strtable.t : &map->t.inttable.t;
+  return upb_table_size(t);
+}
+
 // Converting between internal table representation and user values.
 //
 // _upb_map_tokey() and _upb_map_fromkey() are inverses.
@@ -4050,6 +4086,7 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
 }
 
 UPB_INLINE bool _upb_map_next(const struct upb_Map* map, size_t* iter) {
+  if (_upb_Map_Size(map) == 0) return false;
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_strtable_iter it;
     it.t = &map->t.strtable;
@@ -4071,6 +4108,10 @@ UPB_INLINE bool _upb_map_next(const struct upb_Map* map, size_t* iter) {
 UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
+  const upb_table* t =
+      map->UPB_PRIVATE(is_strtable) ? &map->t.strtable.t : &map->t.inttable.t;
+  if (!t->entries || t->count == 0) return;
+
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_strtable_clear(&map->t.strtable);
   } else {
@@ -4081,6 +4122,7 @@ UPB_INLINE void _upb_Map_Clear(struct upb_Map* map) {
 UPB_INLINE bool _upb_Map_Delete(struct upb_Map* map, const void* key,
                                 size_t key_size, upb_value* val) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
+  if (_upb_Map_Size(map) == 0) return false;
 
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_StringView k = _upb_map_tokey(key, key_size);
@@ -4115,6 +4157,14 @@ UPB_FORCEINLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                     upb_Arena* a) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
+  if (UPB_UNLIKELY(!_upb_Map_IsInitialized(map))) {
+    // Reserving for 1 element allocates the minimum table capacity of 8
+    // (since _upb_entries_needed_for(1) <= 8 -> log2ceil 3 -> capacity 8).
+    if (!_upb_Map_Reserve(map, 1, a)) {
+      return kUpb_MapInsertStatus_OutOfMemory;
+    }
+  }
+
   // Prep the value.
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
@@ -4140,14 +4190,6 @@ UPB_FORCEINLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
   }
   return removed ? kUpb_MapInsertStatus_Replaced
                  : kUpb_MapInsertStatus_Inserted;
-}
-
-UPB_INLINE size_t _upb_Map_Size(const struct upb_Map* map) {
-  if (map->UPB_PRIVATE(is_strtable)) {
-    return map->t.strtable.t.count;
-  } else {
-    return upb_inttable_count(&map->t.inttable);
-  }
 }
 
 // Strings/bytes are special-cased in maps.
@@ -6001,6 +6043,13 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Map_Set(upb_Map* map,
 // If present and |val| is non-NULL, stores the deleted value.
 UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
                             upb_MessageValue* val);
+
+// Pre-allocates memory for at least `size` elements in the map.
+// The `size` parameter accounts for the total capacity (existing elements plus
+// additional capacity). If the map already has sufficient capacity, this is a
+// no-op.
+UPB_NODISCARD UPB_API bool upb_Map_Reserve(upb_Map* map, size_t size,
+                                           upb_Arena* arena);
 
 // Map iteration:
 //
