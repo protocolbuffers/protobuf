@@ -493,7 +493,6 @@ cc_test(
     name = "map_test",
     srcs = ["map_test.cc"],
     deps = [
-        ":internal",
         ":message",
         "//upb/base",
         "//upb/mem",
