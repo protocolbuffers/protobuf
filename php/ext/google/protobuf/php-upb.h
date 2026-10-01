@@ -4085,7 +4085,8 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
   }
 }
 
-UPB_INLINE bool _upb_map_next(const struct upb_Map* map, size_t* iter) {
+UPB_NODISCARD UPB_INLINE bool _upb_map_next(const struct upb_Map* map,
+                                            size_t* iter) {
   if (_upb_Map_Size(map) == 0) return false;
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_strtable_iter it;
@@ -6063,8 +6064,9 @@ UPB_NODISCARD UPB_API bool upb_Map_Reserve(upb_Map* map, size_t size,
 
 // Advances to the next entry. Returns false if no more entries are present.
 // Otherwise returns true and populates both *key and *value.
-UPB_API bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
-                          upb_MessageValue* val, size_t* iter);
+UPB_NODISCARD UPB_API bool upb_Map_Next(const upb_Map* map,
+                                        upb_MessageValue* key,
+                                        upb_MessageValue* val, size_t* iter);
 
 // Sets the value for the entry pointed to by iter.
 // WARNING: this does not currently work for string values!
@@ -6083,12 +6085,10 @@ UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
  */
 
 // Advances to the next entry. Returns false if no more entries are present.
-UPB_API bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
-
-// Returns true if the iterator still points to a valid entry, or false if the
-// iterator is past the last element. It is an error to call this function with
-// kUpb_Map_Begin (you must call next() at least once first).
-UPB_API bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
+// Once this returns false, the value of *iter is unspecified and it must not be
+// passed to any other iterator function.
+UPB_NODISCARD UPB_API bool upb_MapIterator_Next(const upb_Map* map,
+                                                size_t* iter);
 
 // Returns the key and value for this entry of the map.
 UPB_API upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);
