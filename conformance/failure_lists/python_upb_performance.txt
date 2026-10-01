@@ -1,0 +1,16 @@
+# This is the list of conformance performance tests that are known to fail for
+# the Python/upb implementation right now.
+
+# Expected: Non-repeated field "recursive_message" is specified multiple times.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldBool.ProtobufOutput     # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldBool.TextFormatOutput   # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldBytes.ProtobufOutput    # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldBytes.TextFormatOutput  # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldDouble.ProtobufOutput   # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldDouble.TextFormatOutput # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldInt32.ProtobufOutput    # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldInt32.TextFormatOutput  # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldInt64.ProtobufOutput    # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldInt64.TextFormatOutput  # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldString.ProtobufOutput   # Failed to parse input or produce output.
+Recommended.*.TextFormatInput.TestTextFormatPerformanceMergeMessageWithRepeatedFieldString.TextFormatOutput # Failed to parse input or produce output.
