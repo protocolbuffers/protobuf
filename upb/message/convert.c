@@ -758,6 +758,7 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
   c.arena = &c.decoder.arena;
 
   if (!upb_Message_DoConvert(&c, dst, src, dst_mt, src_mt, extreg)) {
+    upb_BackAlloc_Abort(&c.encoder.alloc);
     dst = NULL;
   }
 
