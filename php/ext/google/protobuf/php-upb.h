@@ -4030,6 +4030,7 @@ UPB_INLINE upb_StringView _upb_map_tokey(const void* key, size_t size) {
   if (size == UPB_MAPTYPE_STRING) {
     return *(upb_StringView*)key;
   } else {
+    UPB_ASSUME(size > sizeof(uintptr_t));
     return upb_StringView_FromDataAndSize((const char*)key, size);
   }
 }
