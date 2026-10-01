@@ -293,39 +293,23 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                                   absl::AnyInvocable<void()> emit_body) {
   ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
   ABSL_DCHECK(IsArenaStringPtr(field, opts));
+  // The merge semantic is "overwrite if present". This statement is emitted
+  // when hasbit is set and src proto field is nonpresent (i.e. an empty
+  // string). Now, the destination string can be either empty or nonempty.
+  // - If dst is empty and pointing to the default instance, allocate a new
+  // empty instance.
+  // - If dst is already pointing to a nondefault instance, do nothing.
+  // This will allow destructors and Clear() to be simpler.
   p->Emit(
       {
           {"condition", [&] { EmitNonDefaultCheck(p, prefix, field, opts); }},
           {"emit_body", [&] { emit_body(); }},
-          {"set_empty_string",
-           [&] {
-             p->Emit(
-                 {
-                     {"prefix", prefix},
-                     {"name", FieldName(field)},
-                     {"field_", FieldMemberName(field, split)},
-                 },
-                 // The merge semantic is "overwrite if present". This statement
-                 // is emitted when hasbit is set and src proto field is
-                 // nonpresent (i.e. an empty string). Now, the destination
-                 // string can be either empty or nonempty.
-                 // - If dst is empty and pointing to the default instance,
-                 //   allocate a new empty instance.
-                 // - If dst is already pointing to a nondefault instance,
-                 //   do nothing.
-                 // This will allow destructors and Clear() to be simpler.
-                 R"cc(
-                   if (_this->$field_$.IsDefault()) {
-                     _this->_internal_set_$name$("");
-                   }
-                 )cc");
-           }},
       },
       R"cc(
         if ($condition$) {
           $emit_body$;
-        } else {
-          $set_empty_string$;
+        } else if ($this_field$.IsDefault()) {
+          this_._internal_set_$name$("");
         }
       )cc");
 }
@@ -2443,7 +2427,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
                             MessageLite* $nonnull$ msg,
                             const char* $nullable$ ptr,
                             ::_pbi::ParseContext* $nonnull$ ctx) {
-                          $Msg$* _this = static_cast<$Msg$*>(msg);
+                          $Msg$& this_ = *static_cast<$Msg$*>(msg);
                           $annotate_deserialize$;
                           $required$;
                           return ptr;
@@ -2861,7 +2845,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
 
   // This code is placed inside a static method, rather than an ordinary one,
   // since that simplifies Arena's destructor list (ordinary function pointers
-  // rather than member function pointers). _this is the object being
+  // rather than member function pointers). this_ is the object being
   // destructed.
   p->Emit(
       {
@@ -2878,7 +2862,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
                       [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
-                   if (ABSL_PREDICT_FALSE(!_this->IsSplitMessageDefault())) {
+                   if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
                      $split_field_dtors_impl$;
                    }
                  )cc");
@@ -2894,7 +2878,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
       },
       R"cc(
         void $Msg$::ArenaDtor(void* $nonnull$ object) {
-          $Msg$* _this = reinterpret_cast<$Msg$*>(object);
+          $Msg$& this_ = *reinterpret_cast<$Msg$*>(object);
           $field_dtors$;
           $split_field_dtors$;
           $oneof_field_dtors$;
@@ -2988,9 +2972,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
                                sizeof(Impl_::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field_", FieldMemberName(first, false)}},
+        p->Emit(FieldVars(first, options_),
                 R"cc(
-                  $field_$ = from.$field_$;
+                  $field_$ = $from_field$;
                 )cc");
       }
       first = nullptr;
@@ -3011,7 +2995,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto has_message = [&](const FieldDescriptor* field) {
     if (!field_layout_.HasHasbits()) {
-      p->Emit("from.$field_$ != nullptr");
+      p->Emit("$from_field$ != nullptr");
     } else {
       int has_bit_index = field_layout_.GetHasBitIndex(field).value();
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
@@ -3026,7 +3010,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
               $field_$ = ($has_msg$)
-                             ? Super_::CopyConstruct(arena, *from.$field_$)
+                             ? Super_::CopyConstruct(arena, *$from_field$)
                              : nullptr;
             )cc");
   };
@@ -3102,7 +3086,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit(R"cc(
       if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
-        _Internal::MergeSplit(this, from);
+        _Internal::MergeSplit(this_, from);
       }
     )cc");
   }
@@ -3173,8 +3157,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
 #else   // PROTOBUF_CUSTOM_VTABLE
                 : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-              $Msg$* const _this = this;
-              (void)_this;
+              $Msg$& this_ [[maybe_unused]] = *this;
               _internal_metadata_.MergeFrom<$unknown_fields_type$>(
                   from._internal_metadata_);
               $copy_construct_impl$;
@@ -3948,7 +3931,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
   const auto prepare_split = [&] {
     if (is_split) {
       p->Emit(R"cc(
-        _this->PrepareSplitMessageForWrite();
+        this_.PrepareSplitMessageForWrite();
       )cc");
     }
   };
@@ -3995,6 +3978,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
     // Go back and emit merging code for each of the fields we processed.
     for (const auto* field : fields) {
       const auto& generator = field_generators_.get(field);
+
+      auto field_vars = p->WithVars(FieldVars(field, options_));
 
       if (!field->is_required() && !HasHasbit(field, options_)) {
         // Merge semantics without true field presence: primitive fields are
@@ -4119,7 +4104,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           if (RequiresArena(GeneratorFunction::kMergeFrom,
                             /* is_split= */ false)) {
             p->Emit(R"cc(
-              $pb$::Arena* arena = _this->GetArena();
+              $pb$::Arena* arena = this_.GetArena();
             )cc");
           }
         }},
@@ -4133,7 +4118,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           if (!ShouldSplit(descriptor_, options_)) return;
           p->Emit(R"cc(
             if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
-              _Internal::MergeSplit(_this, from);
+              _Internal::MergeSplit(this_, from);
             }
           )cc");
         }},
@@ -4144,11 +4129,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
             // Optimization to avoid a load. Assuming that most messages have
             // fewer than 32 fields, this seems useful.
             p->Emit(R"cc(
-              _this->$has_bits$[0] |= cached_has_bits;
+              this_.$has_bits$[0] |= cached_has_bits;
             )cc");
           } else if (field_layout_.HasBitsSize() >= 1) {
             p->Emit(R"cc(
-              _this->$has_bits$.Or(from.$has_bits$);
+              this_.$has_bits$.Or(from.$has_bits$);
             )cc");
           }
         }},
@@ -4182,13 +4167,13 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                 R"cc(
                   if (const uint32_t oneof_from_case =
                           from.$oneof_case$[$index$]) {
-                    const uint32_t oneof_to_case = _this->$oneof_case$[$index$];
+                    const uint32_t oneof_to_case = this_.$oneof_case$[$index$];
                     const bool oneof_needs_init = oneof_to_case != oneof_from_case;
                     if (oneof_needs_init) {
                       if (oneof_to_case != 0) {
-                        _this->clear_$name$();
+                        this_.clear_$name$();
                       }
-                      _this->$oneof_case$[$index$] = oneof_from_case;
+                      this_.$oneof_case$[$index$] = oneof_from_case;
                     }
 
                     switch (oneof_from_case) {
@@ -4207,21 +4192,22 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           // the opportunity for tail calls.
           if (descriptor_->extension_range_count() > 0) {
             p->Emit(R"cc(
-              _this->$extensions$.MergeFrom(arena, &default_instance(),
-                                            from.$extensions$, from.GetArena());
+              this_.$extensions$.MergeFrom(arena, &default_instance(),
+                                           from.$extensions$, from.GetArena());
             )cc");
           }
         }}},
       R"cc(
         void $Msg$::MergeImpl($pb$::MessageLite& to_msg,
                               const $pb$::MessageLite& from_msg) {
-          $WeakDescriptorSelfPin$ auto* const _this = static_cast<$Msg$*>(&to_msg);
+          $WeakDescriptorSelfPin$;
+          $Msg$& this_ = static_cast<$Msg$&>(to_msg);
           auto& from = static_cast<const $Msg$&>(from_msg);
           $has_bit_consistency$;
           $get_arena$;
           $annotate_mergefrom$;
           // @@protoc_insertion_point(class_specific_merge_from_start:$full_name$)
-          $DCHK$_NE(&from, _this);
+          $DCHK$_NE(&from, &this_);
           $uint32$ cached_has_bits = 0;
           (void)cached_has_bits;
 
@@ -4230,7 +4216,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $merge_hasbits$;
           $merge_oneof$;
           $merge_extensions$;
-          _this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(
+          this_._internal_metadata_.MergeFrom<$unknown_fields_type$>(
               from._internal_metadata_);
         }
       )cc");
@@ -5382,7 +5368,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                     if (RequiresArena(GeneratorFunction::kMergeFrom,
                                       /* is_split= */ true)) {
                       p->Emit(R"cc(
-                        $pb$::Arena* arena = _this->GetArena();
+                        $pb$::Arena* arena = this_.GetArena();
                       )cc");
                     }
                   }},
@@ -5398,7 +5384,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                     $destroy_fields$;
                     delete $cached_split_ptr$;
                   }
-                  PROTOBUF_NOINLINE static void MergeSplit($Msg$* _this, const $Msg$& from) {
+                  PROTOBUF_NOINLINE static void MergeSplit($Msg$& this_, const $Msg$& from) {
                     $get_arena_merge$;
                     ::uint32_t cached_has_bits [[maybe_unused]] = 0;
                     $merge_fields$;

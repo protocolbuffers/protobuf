@@ -6476,8 +6476,7 @@ FileDescriptorSet::FileDescriptorSet(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FileDescriptorSet* const _this = this;
-  (void)_this;
+  FileDescriptorSet& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -6610,27 +6609,27 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FileDescriptorSet*>(&to_msg);
+  FileDescriptorSet& this_ = static_cast<FileDescriptorSet&>(to_msg);
   auto& from = static_cast<const FileDescriptorSet&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorSet)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _this->_internal_mutable_file()->InternalMergeFromWithArena(
+    this_._internal_mutable_file()->InternalMergeFromWithArena(
         ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_file());
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -6749,8 +6748,7 @@ FileDescriptorProto::FileDescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FileDescriptorProto* const _this = this;
-  (void)_this;
+  FileDescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -7135,13 +7133,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FileOptions options = 8;
     if (CheckHasBit(cached_has_bits, 0x00000800U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
     // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
     if (CheckHasBit(cached_has_bits, 0x00001000U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_code_info_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_code_info_);
     }
     // optional .google.protobuf.Edition edition = 14;
     if (CheckHasBit(cached_has_bits, 0x00002000U)) {
@@ -7158,88 +7156,88 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FileDescriptorProto*>(&to_msg);
+  FileDescriptorProto& this_ = static_cast<FileDescriptorProto&>(to_msg);
   auto& from = static_cast<const FileDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileDescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_dependency()->InternalMergeFromWithArena(
+      this_._internal_mutable_dependency()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_dependency());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_message_type()->InternalMergeFromWithArena(
+      this_._internal_mutable_message_type()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_message_type());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_enum_type()->InternalMergeFromWithArena(
+      this_._internal_mutable_enum_type()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_enum_type());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_internal_mutable_service()->InternalMergeFromWithArena(
+      this_._internal_mutable_service()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_service());
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_internal_mutable_extension()->InternalMergeFromWithArena(
+      this_._internal_mutable_extension()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_extension());
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
+      this_._internal_mutable_public_dependency()->MergeFrom(from._internal_public_dependency());
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
+      this_._internal_mutable_weak_dependency()->MergeFrom(from._internal_weak_dependency());
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _this->_internal_mutable_option_dependency()->InternalMergeFromWithArena(
+      this_._internal_mutable_option_dependency()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_option_dependency());
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
-      _this->_internal_set_package(from._internal_package());
+      this_._internal_set_package(from._internal_package());
     }
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
-      _this->_internal_set_syntax(from._internal_syntax());
+      this_._internal_set_syntax(from._internal_syntax());
     }
     if (CheckHasBit(cached_has_bits, 0x00000800U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00001000U)) {
       ABSL_DCHECK(from._impl_.source_code_info_ != nullptr);
-      if (_this->_impl_.source_code_info_ == nullptr) {
-        _this->_impl_.source_code_info_ = Super_::CopyConstruct(arena, *from._impl_.source_code_info_);
+      if (this_._impl_.source_code_info_ == nullptr) {
+        this_._impl_.source_code_info_ = Super_::CopyConstruct(arena, *from._impl_.source_code_info_);
       } else {
-        _this->_impl_.source_code_info_->MergeFrom(*from._impl_.source_code_info_);
+        this_._impl_.source_code_info_->MergeFrom(*from._impl_.source_code_info_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00002000U)) {
-      _this->_impl_.edition_ = from._impl_.edition_;
+      this_._impl_.edition_ = from._impl_.edition_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -7324,8 +7322,7 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  DescriptorProto_ExtensionRange* const _this = this;
-  (void)_this;
+  DescriptorProto_ExtensionRange& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -7469,8 +7466,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     // optional .google.protobuf.ExtensionRangeOptions options = 3;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
     // optional int32 start = 1;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
@@ -7492,14 +7489,14 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<DescriptorProto_ExtensionRange*>(&to_msg);
+  DescriptorProto_ExtensionRange& this_ = static_cast<DescriptorProto_ExtensionRange&>(to_msg);
   auto& from = static_cast<const DescriptorProto_ExtensionRange&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ExtensionRange)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -7507,21 +7504,21 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.start_ = from._impl_.start_;
+      this_._impl_.start_ = from._impl_.start_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.end_ = from._impl_.end_;
+      this_._impl_.end_ = from._impl_.end_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -7710,27 +7707,27 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<DescriptorProto_ReservedRange*>(&to_msg);
+  DescriptorProto_ReservedRange& this_ = static_cast<DescriptorProto_ReservedRange&>(to_msg);
   auto& from = static_cast<const DescriptorProto_ReservedRange&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto.ReservedRange)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_impl_.start_ = from._impl_.start_;
+      this_._impl_.start_ = from._impl_.start_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.end_ = from._impl_.end_;
+      this_._impl_.end_ = from._impl_.end_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -7840,8 +7837,7 @@ DescriptorProto::DescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  DescriptorProto* const _this = this;
-  (void)_this;
+  DescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -8173,8 +8169,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.MessageOptions options = 7;
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
     // optional .google.protobuf.SymbolVisibility visibility = 11;
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
@@ -8191,78 +8187,78 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<DescriptorProto*>(&to_msg);
+  DescriptorProto& this_ = static_cast<DescriptorProto&>(to_msg);
   auto& from = static_cast<const DescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.DescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_field()->InternalMergeFromWithArena(
+      this_._internal_mutable_field()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_field());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_nested_type()->InternalMergeFromWithArena(
+      this_._internal_mutable_nested_type()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_nested_type());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_enum_type()->InternalMergeFromWithArena(
+      this_._internal_mutable_enum_type()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_enum_type());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_internal_mutable_extension_range()->InternalMergeFromWithArena(
+      this_._internal_mutable_extension_range()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_extension_range());
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_internal_mutable_extension()->InternalMergeFromWithArena(
+      this_._internal_mutable_extension()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_extension());
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_internal_mutable_oneof_decl()->InternalMergeFromWithArena(
+      this_._internal_mutable_oneof_decl()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_oneof_decl());
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_internal_mutable_reserved_range()->InternalMergeFromWithArena(
+      this_._internal_mutable_reserved_range()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_reserved_range());
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _this->_internal_mutable_reserved_name()->InternalMergeFromWithArena(
+      this_._internal_mutable_reserved_name()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_reserved_name());
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
-      _this->_impl_.visibility_ = from._impl_.visibility_;
+      this_._impl_.visibility_ = from._impl_.visibility_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -8348,8 +8344,7 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  ExtensionRangeOptions_Declaration* const _this = this;
-  (void)_this;
+  ExtensionRangeOptions_Declaration& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -8531,36 +8526,36 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<ExtensionRangeOptions_Declaration*>(&to_msg);
+  ExtensionRangeOptions_Declaration& this_ = static_cast<ExtensionRangeOptions_Declaration&>(to_msg);
   auto& from = static_cast<const ExtensionRangeOptions_Declaration&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_full_name(from._internal_full_name());
+      this_._internal_set_full_name(from._internal_full_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_type(from._internal_type());
+      this_._internal_set_type(from._internal_type());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.number_ = from._impl_.number_;
+      this_._impl_.number_ = from._impl_.number_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.reserved_ = from._impl_.reserved_;
+      this_._impl_.reserved_ = from._impl_.reserved_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.repeated_ = from._impl_.repeated_;
+      this_._impl_.repeated_ = from._impl_.repeated_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -8633,8 +8628,7 @@ ExtensionRangeOptions::ExtensionRangeOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  ExtensionRangeOptions* const _this = this;
-  (void)_this;
+  ExtensionRangeOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -8814,8 +8808,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FeatureSet features = 50;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
     // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
@@ -8832,45 +8826,45 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<ExtensionRangeOptions*>(&to_msg);
+  ExtensionRangeOptions& this_ = static_cast<ExtensionRangeOptions&>(to_msg);
   auto& from = static_cast<const ExtensionRangeOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ExtensionRangeOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_declaration()->InternalMergeFromWithArena(
+      this_._internal_mutable_declaration()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_declaration());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.verification_ = from._impl_.verification_;
+      this_._impl_.verification_ = from._impl_.verification_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -8945,8 +8939,7 @@ FieldDescriptorProto::FieldDescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldDescriptorProto* const _this = this;
-  (void)_this;
+  FieldDescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -9200,8 +9193,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FieldOptions options = 8;
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
     // optional int32 number = 3;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
@@ -9235,62 +9228,62 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FieldDescriptorProto*>(&to_msg);
+  FieldDescriptorProto& this_ = static_cast<FieldDescriptorProto&>(to_msg);
   auto& from = static_cast<const FieldDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldDescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_extendee(from._internal_extendee());
+      this_._internal_set_extendee(from._internal_extendee());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_set_type_name(from._internal_type_name());
+      this_._internal_set_type_name(from._internal_type_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_internal_set_default_value(from._internal_default_value());
+      this_._internal_set_default_value(from._internal_default_value());
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_internal_set_json_name(from._internal_json_name());
+      this_._internal_set_json_name(from._internal_json_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_impl_.number_ = from._impl_.number_;
+      this_._impl_.number_ = from._impl_.number_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _this->_impl_.oneof_index_ = from._impl_.oneof_index_;
+      this_._impl_.oneof_index_ = from._impl_.oneof_index_;
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-      _this->_impl_.proto3_optional_ = from._impl_.proto3_optional_;
+      this_._impl_.proto3_optional_ = from._impl_.proto3_optional_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
-      _this->_impl_.label_ = from._impl_.label_;
+      this_._impl_.label_ = from._impl_.label_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
-      _this->_impl_.type_ = from._impl_.type_;
+      this_._impl_.type_ = from._impl_.type_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -9359,8 +9352,7 @@ OneofDescriptorProto::OneofDescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  OneofDescriptorProto* const _this = this;
-  (void)_this;
+  OneofDescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -9488,8 +9480,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.OneofOptions options = 2;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -9501,33 +9493,33 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<OneofDescriptorProto*>(&to_msg);
+  OneofDescriptorProto& this_ = static_cast<OneofDescriptorProto&>(to_msg);
   auto& from = static_cast<const OneofDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofDescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -9714,27 +9706,27 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<EnumDescriptorProto_EnumReservedRange*>(&to_msg);
+  EnumDescriptorProto_EnumReservedRange& this_ = static_cast<EnumDescriptorProto_EnumReservedRange&>(to_msg);
   auto& from = static_cast<const EnumDescriptorProto_EnumReservedRange&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_impl_.start_ = from._impl_.start_;
+      this_._impl_.start_ = from._impl_.start_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.end_ = from._impl_.end_;
+      this_._impl_.end_ = from._impl_.end_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -9809,8 +9801,7 @@ EnumDescriptorProto::EnumDescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumDescriptorProto* const _this = this;
-  (void)_this;
+  EnumDescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -10023,8 +10014,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.EnumOptions options = 3;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
     // optional .google.protobuf.SymbolVisibility visibility = 6;
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
@@ -10041,51 +10032,51 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<EnumDescriptorProto*>(&to_msg);
+  EnumDescriptorProto& this_ = static_cast<EnumDescriptorProto&>(to_msg);
   auto& from = static_cast<const EnumDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumDescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_value()->InternalMergeFromWithArena(
+      this_._internal_mutable_value()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_value());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_reserved_range()->InternalMergeFromWithArena(
+      this_._internal_mutable_reserved_range()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_reserved_range());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_reserved_name()->InternalMergeFromWithArena(
+      this_._internal_mutable_reserved_name()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_reserved_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_impl_.visibility_ = from._impl_.visibility_;
+      this_._impl_.visibility_ = from._impl_.visibility_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -10155,8 +10146,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumValueDescriptorProto* const _this = this;
-  (void)_this;
+  EnumValueDescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -10298,8 +10288,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.EnumValueOptions options = 3;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
     // optional int32 number = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
@@ -10316,36 +10306,36 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<EnumValueDescriptorProto*>(&to_msg);
+  EnumValueDescriptorProto& this_ = static_cast<EnumValueDescriptorProto&>(to_msg);
   auto& from = static_cast<const EnumValueDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueDescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.number_ = from._impl_.number_;
+      this_._impl_.number_ = from._impl_.number_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -10417,8 +10407,7 @@ ServiceDescriptorProto::ServiceDescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  ServiceDescriptorProto* const _this = this;
-  (void)_this;
+  ServiceDescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -10569,8 +10558,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.ServiceOptions options = 3;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -10582,38 +10571,38 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<ServiceDescriptorProto*>(&to_msg);
+  ServiceDescriptorProto& this_ = static_cast<ServiceDescriptorProto&>(to_msg);
   auto& from = static_cast<const ServiceDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceDescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_method()->InternalMergeFromWithArena(
+      this_._internal_mutable_method()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_method());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -10678,8 +10667,7 @@ MethodDescriptorProto::MethodDescriptorProto(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  MethodDescriptorProto* const _this = this;
-  (void)_this;
+  MethodDescriptorProto& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -10871,8 +10859,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.MethodOptions options = 4;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.options_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -10884,45 +10872,45 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<MethodDescriptorProto*>(&to_msg);
+  MethodDescriptorProto& this_ = static_cast<MethodDescriptorProto&>(to_msg);
   auto& from = static_cast<const MethodDescriptorProto&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodDescriptorProto)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_name(from._internal_name());
+      this_._internal_set_name(from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_input_type(from._internal_input_type());
+      this_._internal_set_input_type(from._internal_input_type());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_set_output_type(from._internal_output_type());
+      this_._internal_set_output_type(from._internal_output_type());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.options_ != nullptr);
-      if (_this->_impl_.options_ == nullptr) {
-        _this->_impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
+      if (this_._impl_.options_ == nullptr) {
+        this_._impl_.options_ = Super_::CopyConstruct(arena, *from._impl_.options_);
       } else {
-        _this->_impl_.options_->MergeFrom(*from._impl_.options_);
+        this_._impl_.options_->MergeFrom(*from._impl_.options_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.client_streaming_ = from._impl_.client_streaming_;
+      this_._impl_.client_streaming_ = from._impl_.client_streaming_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_impl_.server_streaming_ = from._impl_.server_streaming_;
+      this_._impl_.server_streaming_ = from._impl_.server_streaming_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -11007,8 +10995,7 @@ FileOptions::FileOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FileOptions* const _this = this;
-  (void)_this;
+  FileOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -11407,8 +11394,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FeatureSet features = 50;
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00140000U)) {
@@ -11434,98 +11421,98 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FileOptions*>(&to_msg);
+  FileOptions& this_ = static_cast<FileOptions&>(to_msg);
   auto& from = static_cast<const FileOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FileOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_java_package(from._internal_java_package());
+      this_._internal_set_java_package(from._internal_java_package());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_java_outer_classname(from._internal_java_outer_classname());
+      this_._internal_set_java_outer_classname(from._internal_java_outer_classname());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_set_go_package(from._internal_go_package());
+      this_._internal_set_go_package(from._internal_go_package());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_internal_set_objc_class_prefix(from._internal_objc_class_prefix());
+      this_._internal_set_objc_class_prefix(from._internal_objc_class_prefix());
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_internal_set_csharp_namespace(from._internal_csharp_namespace());
+      this_._internal_set_csharp_namespace(from._internal_csharp_namespace());
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_internal_set_swift_prefix(from._internal_swift_prefix());
+      this_._internal_set_swift_prefix(from._internal_swift_prefix());
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_internal_set_php_class_prefix(from._internal_php_class_prefix());
+      this_._internal_set_php_class_prefix(from._internal_php_class_prefix());
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _this->_internal_set_php_namespace(from._internal_php_namespace());
+      this_._internal_set_php_namespace(from._internal_php_namespace());
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x0000ff00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-      _this->_internal_set_php_metadata_namespace(from._internal_php_metadata_namespace());
+      this_._internal_set_php_metadata_namespace(from._internal_php_metadata_namespace());
     }
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
-      _this->_internal_set_ruby_package(from._internal_ruby_package());
+      this_._internal_set_ruby_package(from._internal_ruby_package());
     }
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000800U)) {
-      _this->_impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
+      this_._impl_.java_multiple_files_ = from._impl_.java_multiple_files_;
     }
     if (CheckHasBit(cached_has_bits, 0x00001000U)) {
-      _this->_impl_.cc_generic_services_ = from._impl_.cc_generic_services_;
+      this_._impl_.cc_generic_services_ = from._impl_.cc_generic_services_;
     }
     if (CheckHasBit(cached_has_bits, 0x00002000U)) {
-      _this->_impl_.java_generic_services_ = from._impl_.java_generic_services_;
+      this_._impl_.java_generic_services_ = from._impl_.java_generic_services_;
     }
     if (CheckHasBit(cached_has_bits, 0x00004000U)) {
-      _this->_impl_.py_generic_services_ = from._impl_.py_generic_services_;
+      this_._impl_.py_generic_services_ = from._impl_.py_generic_services_;
     }
     if (CheckHasBit(cached_has_bits, 0x00008000U)) {
-      _this->_impl_.java_generate_equals_and_hash_ = from._impl_.java_generate_equals_and_hash_;
+      this_._impl_.java_generate_equals_and_hash_ = from._impl_.java_generate_equals_and_hash_;
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x001f0000U)) {
     if (CheckHasBit(cached_has_bits, 0x00010000U)) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
     if (CheckHasBit(cached_has_bits, 0x00020000U)) {
-      _this->_impl_.java_string_check_utf8_ = from._impl_.java_string_check_utf8_;
+      this_._impl_.java_string_check_utf8_ = from._impl_.java_string_check_utf8_;
     }
     if (CheckHasBit(cached_has_bits, 0x00040000U)) {
-      _this->_impl_.optimize_for_ = from._impl_.optimize_for_;
+      this_._impl_.optimize_for_ = from._impl_.optimize_for_;
     }
     if (CheckHasBit(cached_has_bits, 0x00080000U)) {
-      _this->_impl_.cc_enable_arenas_ = from._impl_.cc_enable_arenas_;
+      this_._impl_.cc_enable_arenas_ = from._impl_.cc_enable_arenas_;
     }
     if (CheckHasBit(cached_has_bits, 0x00100000U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -11615,8 +11602,7 @@ MessageOptions::MessageOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  MessageOptions* const _this = this;
-  (void)_this;
+  MessageOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -11809,8 +11795,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0x00000041U)) {
     // optional .google.protobuf.FeatureSet features = 12;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
@@ -11829,14 +11815,14 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<MessageOptions*>(&to_msg);
+  MessageOptions& this_ = static_cast<MessageOptions&>(to_msg);
   auto& from = static_cast<const MessageOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MessageOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -11844,37 +11830,37 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.message_set_wire_format_ = from._impl_.message_set_wire_format_;
+      this_._impl_.message_set_wire_format_ = from._impl_.message_set_wire_format_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.no_standard_descriptor_accessor_ = from._impl_.no_standard_descriptor_accessor_;
+      this_._impl_.no_standard_descriptor_accessor_ = from._impl_.no_standard_descriptor_accessor_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.map_entry_ = from._impl_.map_entry_;
+      this_._impl_.map_entry_ = from._impl_.map_entry_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
+      this_._impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -11944,8 +11930,7 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldOptions_EditionDefault* const _this = this;
-  (void)_this;
+  FieldOptions_EditionDefault& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -12077,27 +12062,27 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FieldOptions_EditionDefault*>(&to_msg);
+  FieldOptions_EditionDefault& this_ = static_cast<FieldOptions_EditionDefault&>(to_msg);
   auto& from = static_cast<const FieldOptions_EditionDefault&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions.EditionDefault)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_value(from._internal_value());
+      this_._internal_set_value(from._internal_value());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.edition_ = from._impl_.edition_;
+      this_._impl_.edition_ = from._impl_.edition_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -12150,8 +12135,7 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldOptions_FeatureSupport* const _this = this;
-  (void)_this;
+  FieldOptions_FeatureSupport& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -12342,36 +12326,36 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FieldOptions_FeatureSupport*>(&to_msg);
+  FieldOptions_FeatureSupport& this_ = static_cast<FieldOptions_FeatureSupport&>(to_msg);
   auto& from = static_cast<const FieldOptions_FeatureSupport&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions.FeatureSupport)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_deprecation_warning(from._internal_deprecation_warning());
+      this_._internal_set_deprecation_warning(from._internal_deprecation_warning());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_removal_error(from._internal_removal_error());
+      this_._internal_set_removal_error(from._internal_removal_error());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.edition_introduced_ = from._impl_.edition_introduced_;
+      this_._impl_.edition_introduced_ = from._impl_.edition_introduced_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.edition_deprecated_ = from._impl_.edition_deprecated_;
+      this_._impl_.edition_deprecated_ = from._impl_.edition_deprecated_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.edition_removed_ = from._impl_.edition_removed_;
+      this_._impl_.edition_removed_ = from._impl_.edition_removed_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -12451,8 +12435,7 @@ FieldOptions::FieldOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldOptions* const _this = this;
-  (void)_this;
+  FieldOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -12744,13 +12727,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FeatureSet features = 21;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
     // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.feature_support_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.feature_support_);
     }
     // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
@@ -12787,82 +12770,82 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FieldOptions*>(&to_msg);
+  FieldOptions& this_ = static_cast<FieldOptions&>(to_msg);
   auto& from = static_cast<const FieldOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FieldOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_edition_defaults()->InternalMergeFromWithArena(
+      this_._internal_mutable_edition_defaults()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_edition_defaults());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.feature_support_ != nullptr);
-      if (_this->_impl_.feature_support_ == nullptr) {
-        _this->_impl_.feature_support_ = Super_::CopyConstruct(arena, *from._impl_.feature_support_);
+      if (this_._impl_.feature_support_ == nullptr) {
+        this_._impl_.feature_support_ = Super_::CopyConstruct(arena, *from._impl_.feature_support_);
       } else {
-        _this->_impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
+        this_._impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.ctype_ = from._impl_.ctype_;
+      this_._impl_.ctype_ = from._impl_.ctype_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_impl_.packed_ = from._impl_.packed_;
+      this_._impl_.packed_ = from._impl_.packed_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _this->_impl_.lazy_ = from._impl_.lazy_;
+      this_._impl_.lazy_ = from._impl_.lazy_;
     }
   }
   if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-      _this->_impl_.weak_ = from._impl_.weak_;
+      this_._impl_.weak_ = from._impl_.weak_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
-      _this->_impl_.jstype_ = from._impl_.jstype_;
+      this_._impl_.jstype_ = from._impl_.jstype_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000400U)) {
-      _this->_impl_.unverified_lazy_ = from._impl_.unverified_lazy_;
+      this_._impl_.unverified_lazy_ = from._impl_.unverified_lazy_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000800U)) {
-      _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
+      this_._impl_.debug_redact_ = from._impl_.debug_redact_;
     }
     if (CheckHasBit(cached_has_bits, 0x00001000U)) {
-      _this->_impl_.retention_ = from._impl_.retention_;
+      this_._impl_.retention_ = from._impl_.retention_;
     }
     if (CheckHasBit(cached_has_bits, 0x00002000U)) {
-      _this->_internal_mutable_targets()->MergeFrom(from._internal_targets());
+      this_._internal_mutable_targets()->MergeFrom(from._internal_targets());
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -12942,8 +12925,7 @@ OneofOptions::OneofOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  OneofOptions* const _this = this;
-  (void)_this;
+  OneofOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -13090,8 +13072,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FeatureSet features = 1;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -13103,37 +13085,37 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<OneofOptions*>(&to_msg);
+  OneofOptions& this_ = static_cast<OneofOptions&>(to_msg);
   auto& from = static_cast<const OneofOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.OneofOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -13206,8 +13188,7 @@ EnumOptions::EnumOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumOptions* const _this = this;
-  (void)_this;
+  EnumOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -13384,8 +13365,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0x00000011U)) {
     // optional .google.protobuf.FeatureSet features = 7;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
     // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
@@ -13404,14 +13385,14 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<EnumOptions*>(&to_msg);
+  EnumOptions& this_ = static_cast<EnumOptions&>(to_msg);
   auto& from = static_cast<const EnumOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -13419,31 +13400,31 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.allow_alias_ = from._impl_.allow_alias_;
+      this_._impl_.allow_alias_ = from._impl_.allow_alias_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
+      this_._impl_.deprecated_legacy_json_field_conflicts_ = from._impl_.deprecated_legacy_json_field_conflicts_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -13521,8 +13502,7 @@ EnumValueOptions::EnumValueOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumValueOptions* const _this = this;
-  (void)_this;
+  EnumValueOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -13716,13 +13696,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FeatureSet features = 2;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
     // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 4;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.feature_support_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.feature_support_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -13734,51 +13714,51 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<EnumValueOptions*>(&to_msg);
+  EnumValueOptions& this_ = static_cast<EnumValueOptions&>(to_msg);
   auto& from = static_cast<const EnumValueOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.EnumValueOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       ABSL_DCHECK(from._impl_.feature_support_ != nullptr);
-      if (_this->_impl_.feature_support_ == nullptr) {
-        _this->_impl_.feature_support_ = Super_::CopyConstruct(arena, *from._impl_.feature_support_);
+      if (this_._impl_.feature_support_ == nullptr) {
+        this_._impl_.feature_support_ = Super_::CopyConstruct(arena, *from._impl_.feature_support_);
       } else {
-        _this->_impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
+        this_._impl_.feature_support_->MergeFrom(*from._impl_.feature_support_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.debug_redact_ = from._impl_.debug_redact_;
+      this_._impl_.debug_redact_ = from._impl_.debug_redact_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -13856,8 +13836,7 @@ ServiceOptions::ServiceOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  ServiceOptions* const _this = this;
-  (void)_this;
+  ServiceOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -14019,8 +13998,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FeatureSet features = 34;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -14032,40 +14011,40 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<ServiceOptions*>(&to_msg);
+  ServiceOptions& this_ = static_cast<ServiceOptions&>(to_msg);
   auto& from = static_cast<const ServiceOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ServiceOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -14143,8 +14122,7 @@ MethodOptions::MethodOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  MethodOptions* const _this = this;
-  (void)_this;
+  MethodOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -14325,8 +14303,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // optional .google.protobuf.FeatureSet features = 35;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 2 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
+      total_size +=
+          2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
     // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
@@ -14343,43 +14321,43 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<MethodOptions*>(&to_msg);
+  MethodOptions& this_ = static_cast<MethodOptions&>(to_msg);
   auto& from = static_cast<const MethodOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.MethodOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
+      this_._internal_mutable_uninterpreted_option()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_uninterpreted_option());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.features_ != nullptr);
-      if (_this->_impl_.features_ == nullptr) {
-        _this->_impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
+      if (this_._impl_.features_ == nullptr) {
+        this_._impl_.features_ = Super_::CopyConstruct(arena, *from._impl_.features_);
       } else {
-        _this->_impl_.features_->MergeFrom(*from._impl_.features_);
+        this_._impl_.features_->MergeFrom(*from._impl_.features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.deprecated_ = from._impl_.deprecated_;
+      this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.idempotency_level_ = from._impl_.idempotency_level_;
+      this_._impl_.idempotency_level_ = from._impl_.idempotency_level_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -14449,8 +14427,7 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  UninterpretedOption_NamePart* const _this = this;
-  (void)_this;
+  UninterpretedOption_NamePart& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -14578,27 +14555,27 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<UninterpretedOption_NamePart*>(&to_msg);
+  UninterpretedOption_NamePart& this_ = static_cast<UninterpretedOption_NamePart&>(to_msg);
   auto& from = static_cast<const UninterpretedOption_NamePart&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption.NamePart)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_set_name_part(from._internal_name_part());
+      this_._internal_set_name_part(from._internal_name_part());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.is_extension_ = from._impl_.is_extension_;
+      this_._impl_.is_extension_ = from._impl_.is_extension_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -14667,8 +14644,7 @@ UninterpretedOption::UninterpretedOption(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  UninterpretedOption* const _this = this;
-  (void)_this;
+  UninterpretedOption& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -14894,45 +14870,45 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<UninterpretedOption*>(&to_msg);
+  UninterpretedOption& this_ = static_cast<UninterpretedOption&>(to_msg);
   auto& from = static_cast<const UninterpretedOption&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.UninterpretedOption)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_name()->InternalMergeFromWithArena(
+      this_._internal_mutable_name()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_name());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_identifier_value(from._internal_identifier_value());
+      this_._internal_set_identifier_value(from._internal_identifier_value());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_set_string_value(from._internal_string_value());
+      this_._internal_set_string_value(from._internal_string_value());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_internal_set_aggregate_value(from._internal_aggregate_value());
+      this_._internal_set_aggregate_value(from._internal_aggregate_value());
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.positive_int_value_ = from._impl_.positive_int_value_;
+      this_._impl_.positive_int_value_ = from._impl_.positive_int_value_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_impl_.negative_int_value_ = from._impl_.negative_int_value_;
+      this_._impl_.negative_int_value_ = from._impl_.negative_int_value_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_impl_.double_value_ = from._impl_.double_value_;
+      this_._impl_.double_value_ = from._impl_.double_value_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -14991,8 +14967,7 @@ FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSet_VisibilityFeature* const _this = this;
-  (void)_this;
+  FeatureSet_VisibilityFeature& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 
@@ -15035,8 +15010,7 @@ FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSet_ProtoLimitsFeature* const _this = this;
-  (void)_this;
+  FeatureSet_ProtoLimitsFeature& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 
@@ -15088,8 +15062,7 @@ FeatureSet::FeatureSet(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSet* const _this = this;
-  (void)_this;
+  FeatureSet& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -15330,51 +15303,51 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FeatureSet*>(&to_msg);
+  FeatureSet& this_ = static_cast<FeatureSet&>(to_msg);
   auto& from = static_cast<const FeatureSet&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSet)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_impl_.field_presence_ = from._impl_.field_presence_;
+      this_._impl_.field_presence_ = from._impl_.field_presence_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.enum_type_ = from._impl_.enum_type_;
+      this_._impl_.enum_type_ = from._impl_.enum_type_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.repeated_field_encoding_ = from._impl_.repeated_field_encoding_;
+      this_._impl_.repeated_field_encoding_ = from._impl_.repeated_field_encoding_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
+      this_._impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.message_encoding_ = from._impl_.message_encoding_;
+      this_._impl_.message_encoding_ = from._impl_.message_encoding_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-      _this->_impl_.json_format_ = from._impl_.json_format_;
+      this_._impl_.json_format_ = from._impl_.json_format_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      _this->_impl_.enforce_naming_style_ = from._impl_.enforce_naming_style_;
+      this_._impl_.enforce_naming_style_ = from._impl_.enforce_naming_style_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-      _this->_impl_.default_symbol_visibility_ = from._impl_.default_symbol_visibility_;
+      this_._impl_.default_symbol_visibility_ = from._impl_.default_symbol_visibility_;
     }
   }
   if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-    _this->_impl_.enforce_proto_limits_ = from._impl_.enforce_proto_limits_;
+    this_._impl_.enforce_proto_limits_ = from._impl_.enforce_proto_limits_;
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -15437,8 +15410,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSetDefaults_FeatureSetEditionDefault* const _this = this;
-  (void)_this;
+  FeatureSetDefaults_FeatureSetEditionDefault& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -15580,13 +15552,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     // optional .google.protobuf.FeatureSet overridable_features = 4;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.overridable_features_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.overridable_features_);
     }
     // optional .google.protobuf.FeatureSet fixed_features = 5;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.fixed_features_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.fixed_features_);
     }
     // optional .google.protobuf.Edition edition = 3;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
@@ -15603,14 +15575,14 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FeatureSetDefaults_FeatureSetEditionDefault*>(&to_msg);
+  FeatureSetDefaults_FeatureSetEditionDefault& this_ = static_cast<FeatureSetDefaults_FeatureSetEditionDefault&>(to_msg);
   auto& from = static_cast<const FeatureSetDefaults_FeatureSetEditionDefault&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -15618,26 +15590,26 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       ABSL_DCHECK(from._impl_.overridable_features_ != nullptr);
-      if (_this->_impl_.overridable_features_ == nullptr) {
-        _this->_impl_.overridable_features_ = Super_::CopyConstruct(arena, *from._impl_.overridable_features_);
+      if (this_._impl_.overridable_features_ == nullptr) {
+        this_._impl_.overridable_features_ = Super_::CopyConstruct(arena, *from._impl_.overridable_features_);
       } else {
-        _this->_impl_.overridable_features_->MergeFrom(*from._impl_.overridable_features_);
+        this_._impl_.overridable_features_->MergeFrom(*from._impl_.overridable_features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       ABSL_DCHECK(from._impl_.fixed_features_ != nullptr);
-      if (_this->_impl_.fixed_features_ == nullptr) {
-        _this->_impl_.fixed_features_ = Super_::CopyConstruct(arena, *from._impl_.fixed_features_);
+      if (this_._impl_.fixed_features_ == nullptr) {
+        this_._impl_.fixed_features_ = Super_::CopyConstruct(arena, *from._impl_.fixed_features_);
       } else {
-        _this->_impl_.fixed_features_->MergeFrom(*from._impl_.fixed_features_);
+        this_._impl_.fixed_features_->MergeFrom(*from._impl_.fixed_features_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.edition_ = from._impl_.edition_;
+      this_._impl_.edition_ = from._impl_.edition_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -15708,8 +15680,7 @@ FeatureSetDefaults::FeatureSetDefaults(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSetDefaults* const _this = this;
-  (void)_this;
+  FeatureSetDefaults& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -15877,33 +15848,33 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<FeatureSetDefaults*>(&to_msg);
+  FeatureSetDefaults& this_ = static_cast<FeatureSetDefaults&>(to_msg);
   auto& from = static_cast<const FeatureSetDefaults&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.FeatureSetDefaults)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_defaults()->InternalMergeFromWithArena(
+      this_._internal_mutable_defaults()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_defaults());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.minimum_edition_ = from._impl_.minimum_edition_;
+      this_._impl_.minimum_edition_ = from._impl_.minimum_edition_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.maximum_edition_ = from._impl_.maximum_edition_;
+      this_._impl_.maximum_edition_ = from._impl_.maximum_edition_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -15987,8 +15958,7 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SourceCodeInfo_Location* const _this = this;
-  (void)_this;
+  SourceCodeInfo_Location& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -16200,39 +16170,39 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<SourceCodeInfo_Location*>(&to_msg);
+  SourceCodeInfo_Location& this_ = static_cast<SourceCodeInfo_Location&>(to_msg);
   auto& from = static_cast<const SourceCodeInfo_Location&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo.Location)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_path()->MergeFrom(from._internal_path());
+      this_._internal_mutable_path()->MergeFrom(from._internal_path());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_span()->MergeFrom(from._internal_span());
+      this_._internal_mutable_span()->MergeFrom(from._internal_span());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_leading_detached_comments()->InternalMergeFromWithArena(
+      this_._internal_mutable_leading_detached_comments()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_leading_detached_comments());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_internal_set_leading_comments(from._internal_leading_comments());
+      this_._internal_set_leading_comments(from._internal_leading_comments());
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_internal_set_trailing_comments(from._internal_trailing_comments());
+      this_._internal_set_trailing_comments(from._internal_trailing_comments());
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -16295,8 +16265,7 @@ SourceCodeInfo::SourceCodeInfo(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SourceCodeInfo* const _this = this;
-  (void)_this;
+  SourceCodeInfo& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -16429,27 +16398,27 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<SourceCodeInfo*>(&to_msg);
+  SourceCodeInfo& this_ = static_cast<SourceCodeInfo&>(to_msg);
   auto& from = static_cast<const SourceCodeInfo&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceCodeInfo)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _this->_internal_mutable_location()->InternalMergeFromWithArena(
+    this_._internal_mutable_location()->InternalMergeFromWithArena(
         ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_location());
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_impl_._extensions_.MergeFrom(arena, &default_instance(),
-                                from._impl_._extensions_, from.GetArena());
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
+                               from._impl_._extensions_, from.GetArena());
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -16515,8 +16484,7 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  GeneratedCodeInfo_Annotation* const _this = this;
-  (void)_this;
+  GeneratedCodeInfo_Annotation& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -16717,36 +16685,36 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<GeneratedCodeInfo_Annotation*>(&to_msg);
+  GeneratedCodeInfo_Annotation& this_ = static_cast<GeneratedCodeInfo_Annotation&>(to_msg);
   auto& from = static_cast<const GeneratedCodeInfo_Annotation&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_path()->MergeFrom(from._internal_path());
+      this_._internal_mutable_path()->MergeFrom(from._internal_path());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_set_source_file(from._internal_source_file());
+      this_._internal_set_source_file(from._internal_source_file());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.begin_ = from._impl_.begin_;
+      this_._impl_.begin_ = from._impl_.begin_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.end_ = from._impl_.end_;
+      this_._impl_.end_ = from._impl_.end_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.semantic_ = from._impl_.semantic_;
+      this_._impl_.semantic_ = from._impl_.semantic_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -16810,8 +16778,7 @@ GeneratedCodeInfo::GeneratedCodeInfo(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  GeneratedCodeInfo* const _this = this;
-  (void)_this;
+  GeneratedCodeInfo& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -16935,25 +16902,25 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<GeneratedCodeInfo*>(&to_msg);
+  GeneratedCodeInfo& this_ = static_cast<GeneratedCodeInfo&>(to_msg);
   auto& from = static_cast<const GeneratedCodeInfo&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.GeneratedCodeInfo)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _this->_internal_mutable_annotation()->InternalMergeFromWithArena(
+    this_._internal_mutable_annotation()->InternalMergeFromWithArena(
         ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_annotation());
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 

@@ -74,7 +74,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      this_.$field_$ = $kDefault$;
+      $this_field$ = $kDefault$;
     )cc");
   }
 
@@ -86,7 +86,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
+      $this_field$ = $from_field$;
     )cc");
   }
 
@@ -100,7 +100,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
+      $this_field$ = $from_field$;
     )cc");
   }
 
@@ -265,9 +265,9 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+      p->Emit("$this_field$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("this_.$field_$.Clear();\n");
+      p->Emit("$this_field$.Clear();\n");
     }
   }
 
@@ -284,14 +284,14 @@ class RepeatedEnum : public FieldGeneratorBase {
     // `if (!from.empty()) { body(); }` for both split and non-split cases.
     auto body = [&] {
       p->Emit(R"cc(
-        _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+        this_._internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
     if (!should_split()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
-        if (!from.$field_$.IsDefault()) {
+        if (!$from_field$.IsDefault()) {
           $body$;
         }
       )cc");
@@ -308,7 +308,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        this_.$field_$.DeleteIfNotDefault();
+        $this_field$.DeleteIfNotDefault();
       )cc");
     }
   }

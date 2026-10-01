@@ -134,7 +134,7 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$ = Super_::CopyConstruct(arena, *from.$field_$);
+      $field_$ = Super_::CopyConstruct(arena, *$from_field$);
     )cc");
   }
 
@@ -318,8 +318,8 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(
       R"cc(
-        $DCHK$(this_.$field_$ != nullptr);
-        this_.$field_$->Clear();
+        $DCHK$($this_field$ != nullptr);
+        $this_field$->Clear();
       )cc");
 }
 
@@ -335,15 +335,15 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
         R"cc(
-          if (_this->$field_$ == nullptr) {
-            _this->$field_$ = from.$field_$->New(arena);
+          if ($this_field$ == nullptr) {
+            $this_field$ = $from_field$->New(arena);
           }
-          _this->$field_$->CheckTypeAndMergeFrom(*from.$field_$);
+          $this_field$->CheckTypeAndMergeFrom(*$from_field$);
         )cc");
   } else if (should_split()) {
     p->Emit(
         R"cc(
-          _this->_internal_mutable_$name$()->$Submsg$::MergeFrom(
+          this_._internal_mutable_$name$()->$Submsg$::MergeFrom(
               from._internal_$name$());
         )cc");
   } else {
@@ -353,11 +353,11 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     // until after we copied the message.
     // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
-      $DCHK$(from.$field_$ != nullptr);
-      if (_this->$field_$ == nullptr) {
-        _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
+      $DCHK$($from_field$ != nullptr);
+      if ($this_field$ == nullptr) {
+        $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
       } else {
-        _this->$field_$->MergeFrom(*from.$field_$);
+        $this_field$->MergeFrom(*$from_field$);
       }
     )cc");
   }
@@ -374,7 +374,7 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      delete this_.$field_$;
+      delete $this_field$;
     )cc");
   }
 }
@@ -383,7 +383,7 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(R"cc(
     if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
-      _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
+      $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
     }
   )cc");
 }
@@ -393,22 +393,22 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   if (!is_group()) {
     p->Emit(R"cc(
       target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
-          $number$, *this_.$field_$, this_.$field_$->GetCachedSize(), target,
+          $number$, *$this_field$, $this_field$->GetCachedSize(), target,
           stream);
     )cc");
   } else {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
-          $number$, *this_.$field_$, target, stream);
+          $number$, *$this_field$, target, stream);
     )cc");
   }
 }
 
 void SingularMessage::GenerateByteSize(io::Printer* p) const {
   p->Emit(R"cc(
-    total_size += $kTagBytes$ +
-                  $pbi$::WireFormatLite::$DeclaredType$Size(*this_.$field_$);
+    total_size +=
+        $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(*$this_field$);
   )cc");
 }
 
@@ -418,13 +418,13 @@ void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (HasHasbit(field_, *opts_)) {
     p->Emit(R"cc(
       if (CheckHasBit(this_.$has_bits_array$, $has_mask$)) {
-        if (!this_.$field_$->IsInitialized()) return false;
+        if (!$this_field$->IsInitialized()) return false;
       }
     )cc");
   } else {
     p->Emit(R"cc(
       if (this_._internal_has_$name$()) {
-        if (!this_.$field_$->IsInitialized()) return false;
+        if (!$this_field$->IsInitialized()) return false;
       }
     )cc");
   }
@@ -663,7 +663,7 @@ void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(!has_hasbit_);
   p->Emit(R"cc(
     if (from._internal_has_$name$()) {
-      _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
+      $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
     }
   )cc");
 }
@@ -672,7 +672,7 @@ void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
   p->Emit(R"cc(
-    if (this_.$has_field$ && !this_.$field_$->IsInitialized())
+    if (this_.$has_field$ && !$this_field$->IsInitialized())
       return false;
   )cc");
 }
@@ -686,9 +686,9 @@ void OneofMessage::GenerateMergingCode(io::Printer* p) const {
                 : "MergeFrom"}},
           R"cc(
             if (oneof_needs_init) {
-              _this->$field_$ = Super_::CopyConstruct(arena, *from.$field_$);
+              $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
             } else {
-              _this->$field_$->$merge$(*from.$field_$);
+              $this_field$->$merge$(*$from_field$);
             }
           )cc");
 }
@@ -947,9 +947,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
   if (should_split()) {
-    p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+    p->Emit("$this_field$.ClearIfNotDefault();\n");
   } else {
-    p->Emit("this_.$field_$.Clear();\n");
+    p->Emit("$this_field$.Clear();\n");
   }
 }
 
@@ -966,7 +966,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
   // `if (!from.empty()) { body(); }` for both split and non-split cases.
   auto body = [&] {
     p->Emit(R"cc(
-      _this->_internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
+      this_._internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
           $pb$::MessageLite::internal_visibility(), arena,
           from._internal$_weak$_$name$());
     )cc");
@@ -975,7 +975,7 @@ void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
     body();
   } else {
     p->Emit({{"body", body}}, R"cc(
-      if (!from.$field_$.IsDefault()) {
+      if (!$from_field$.IsDefault()) {
         $body$;
       }
     )cc");
@@ -1006,7 +1006,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
-      this_.$field_$.DeleteIfNotDefault();
+      $this_field$.DeleteIfNotDefault();
     )cc");
   }
 }
@@ -1032,7 +1032,7 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
           }
         }}},
       R"cc(
-        for (const auto& sub : this_.$field_$) {
+        for (const auto& sub : $this_field$) {
           $serialize_field$;
         }
       )cc");
@@ -1054,8 +1054,7 @@ void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
         R"cc(
-          if (!$pbi$::AllAreInitializedWeak(this_.$field_$.weak))
-            return false;
+          if (!$pbi$::AllAreInitializedWeak($this_field$.weak)) return false;
         )cc");
   } else {
     p->Emit(

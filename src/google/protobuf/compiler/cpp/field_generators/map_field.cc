@@ -102,13 +102,13 @@ class Map : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      this_.$field_$.Clear();
+      $this_field$.Clear();
     )cc");
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$.MergeFrom(from.$field_$);
+      $this_field$.MergeFrom($from_field$);
     )cc");
   }
 
@@ -126,7 +126,7 @@ class Map : public FieldGeneratorBase {
     if (!NeedsIsInitialized()) return;
 
     p->Emit(R"cc(
-      if (!$pbi$::AllAreInitialized(this_.$field_$)) {
+      if (!$pbi$::AllAreInitialized($this_field$)) {
         return false;
       }
     )cc");

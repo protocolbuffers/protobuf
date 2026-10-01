@@ -425,33 +425,33 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<CppFeatures*>(&to_msg);
+  CppFeatures& this_ = static_cast<CppFeatures&>(to_msg);
   auto& from = static_cast<const CppFeatures&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.CppFeatures)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000000fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_impl_.string_type_ = from._impl_.string_type_;
+      this_._impl_.string_type_ = from._impl_.string_type_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
+      this_._impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.enum_name_uses_string_view_ = from._impl_.enum_name_uses_string_view_;
+      this_._impl_.enum_name_uses_string_view_ = from._impl_.enum_name_uses_string_view_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.repeated_type_ = from._impl_.repeated_type_;
+      this_._impl_.repeated_type_ = from._impl_.repeated_type_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 

@@ -392,8 +392,7 @@ JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  JavaFeatures_NestInFileClassFeature* const _this = this;
-  (void)_this;
+  JavaFeatures_NestInFileClassFeature& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 
@@ -593,36 +592,36 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<JavaFeatures*>(&to_msg);
+  JavaFeatures& this_ = static_cast<JavaFeatures&>(to_msg);
   auto& from = static_cast<const JavaFeatures&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.JavaFeatures)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_impl_.utf8_validation_ = from._impl_.utf8_validation_;
+      this_._impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
+      this_._impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_impl_.large_enum_ = from._impl_.large_enum_;
+      this_._impl_.large_enum_ = from._impl_.large_enum_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      _this->_impl_.use_old_outer_classname_default_ = from._impl_.use_old_outer_classname_default_;
+      this_._impl_.use_old_outer_classname_default_ = from._impl_.use_old_outer_classname_default_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      _this->_impl_.nest_in_file_class_ = from._impl_.nest_in_file_class_;
+      this_._impl_.nest_in_file_class_ = from._impl_.nest_in_file_class_;
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
