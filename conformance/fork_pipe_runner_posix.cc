@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/types.h>
@@ -322,11 +323,56 @@ std::string ForkPipeRunner::GetTestProgramFailure(
   return error_msg;
 }
 
-void ForkPipeRunner::CheckedWrite(const void* buf, size_t len) {
-  if (static_cast<size_t>(write(*state_->write_fd, buf, len)) != len) {
-    ABSL_LOG(FATAL) << current_test_name_
-                    << ": error writing to test program: " << strerror(errno);
+bool ForkPipeRunner::TryWrite(const void* buf, size_t len) {
+  // Writing to a pipe whose reader has exited raises SIGPIPE, whose default
+  // action would kill the runner.  The signal is directed at the writing
+  // thread, so blocking it on this thread alone for the duration of the write
+  // turns it into an EPIPE error return without changing the process-wide
+  // disposition (which the testee would inherit across exec).  A blocked
+  // SIGPIPE stays pending until it is consumed or unblocked, so it is consumed
+  // before the mask is restored.
+  sigset_t sigpipe;
+  sigemptyset(&sigpipe);
+  sigaddset(&sigpipe, SIGPIPE);
+  sigset_t old_mask;
+  pthread_sigmask(SIG_BLOCK, &sigpipe, &old_mask);
+
+  const char* in = static_cast<const char*>(buf);
+  size_t ofs = 0;
+  int error = 0;
+  while (ofs < len) {
+    const ssize_t written = write(*state_->write_fd, in + ofs, len - ofs);
+    if (written < 0) {
+      if (errno == EINTR) continue;
+      error = errno;
+      break;
+    }
+    ofs += static_cast<size_t>(written);
   }
+
+  if (error == EPIPE && !sigismember(&old_mask, SIGPIPE)) {
+    // Discard the SIGPIPE the failed write left pending for this thread.  This
+    // cannot block: the signal is thread-directed and blocked here, so if
+    // sigpending() reports it, sigwait() takes it at once; if the process
+    // ignores SIGPIPE none was raised and sigwait() is not called.  (If the
+    // caller had SIGPIPE blocked already the signal is left for the caller.)
+    sigset_t pending;
+    sigemptyset(&pending);
+    sigpending(&pending);
+    if (sigismember(&pending, SIGPIPE)) {
+      int sig;
+      while (sigwait(&sigpipe, &sig) == EINTR) {
+      }
+    }
+  }
+  pthread_sigmask(SIG_SETMASK, &old_mask, nullptr);
+
+  if (error != 0) {
+    ABSL_LOG(ERROR) << current_test_name_
+                    << ": error writing to test program: " << strerror(error);
+    return false;
+  }
+  return true;
 }
 
 ForkPipeRunner::ReadResult ForkPipeRunner::TryRead(void* buf, size_t len) {
@@ -369,15 +415,6 @@ ForkPipeRunner::ReadResult ForkPipeRunner::TryRead(void* buf, size_t len) {
   }
 
   return ReadResult::kOk;
-}
-
-void ForkPipeRunner::CheckedRead(void* buf, size_t len) {
-  // TODO: b/564149373 - classify mid-body read failures like header-read
-  // failures instead of crashing the runner.
-  if (TryRead(buf, len) != ReadResult::kOk) {
-    ABSL_LOG(FATAL) << current_test_name_
-                    << ": error reading from test program: " << strerror(errno);
-  }
 }
 
 }  // namespace conformance

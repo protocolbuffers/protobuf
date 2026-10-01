@@ -60,22 +60,22 @@ std::string ForkPipeRunner::RunTest(absl::string_view test_name,
   uint32_t len = ::google::protobuf::internal::little_endian::FromHost(
       static_cast<uint32_t>(request.size()));
 
-  CheckedWrite(&len, sizeof(uint32_t));
-  CheckedWrite(request.data(), request.size());
+  if (!TryWrite(&len, sizeof(uint32_t)) ||
+      !TryWrite(request.data(), request.size())) {
+    return ReportFailure(/*timed_out=*/false, "error writing to child");
+  }
 
-  const ReadResult read_result = TryRead(&len, sizeof(uint32_t));
+  ReadResult read_result = TryRead(&len, sizeof(uint32_t));
   if (read_result != ReadResult::kOk) return ReportReadFailure(read_result);
 
   len = ::google::protobuf::internal::little_endian::ToHost(len);
   std::string response(len, '\0');
-  CheckedRead(&response[0], len);
+  read_result = TryRead(&response[0], len);
+  if (read_result != ReadResult::kOk) return ReportReadFailure(read_result);
   return response;
 }
 
 std::string ForkPipeRunner::ReportReadFailure(ReadResult read_result) {
-  // The testee produced no response: it exited, crashed, or hung.  It is shut
-  // down and the outcome classified by the platform's implementation; the next
-  // RunTest() call will spawn a fresh testee.
   absl::string_view what_failed;
   switch (read_result) {
     case ReadResult::kTimeout:
@@ -88,11 +88,19 @@ std::string ForkPipeRunner::ReportReadFailure(ReadResult read_result) {
       what_failed = "error reading from child";
       break;
   }
+  return ReportFailure(read_result == ReadResult::kTimeout, what_failed);
+}
+
+std::string ForkPipeRunner::ReportFailure(bool timed_out,
+                                          absl::string_view what_failed) {
+  // The exchange with the testee failed: it exited, crashed, or hung.  It is
+  // shut down and the outcome classified by the platform's implementation;
+  // the next RunTest() call will spawn a fresh testee.
   const std::string error_msg = GetTestProgramFailure(what_failed);
   ABSL_LOG(INFO) << error_msg;
 
   ::conformance::ConformanceResponse response;
-  if (read_result == ReadResult::kTimeout) {
+  if (timed_out) {
     response.set_timeout_error(error_msg);
   } else {
     response.set_runtime_error(error_msg);

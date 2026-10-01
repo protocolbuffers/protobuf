@@ -150,9 +150,6 @@ struct ForkPipeRunner::State {
   // when not open.
   HANDLE write_handle = nullptr;
   HANDLE read_handle = nullptr;
-  // Error code of the last failed read from the test program, captured on the
-  // reader thread. Zero if the last read hit EOF instead.
-  DWORD last_read_error = 0;
   // True if TryRead() terminated the test program after a read timeout, so
   // that Shutdown() can report the kill as the runner's own.
   bool killed_on_timeout = false;
@@ -264,7 +261,6 @@ void ForkPipeRunner::SpawnTestProgram() {
   state_->read_handle = child_stdout_read;
   state_->child_process = process_info.hProcess;
   state_->job = job;
-  state_->last_read_error = 0;
   state_->killed_on_timeout = false;
 }
 
@@ -343,19 +339,36 @@ std::string ForkPipeRunner::GetTestProgramFailure(
   return error_msg;
 }
 
-void ForkPipeRunner::CheckedWrite(const void* buf, size_t len) {
-  DWORD bytes_written = 0;
-  if (len > static_cast<size_t>(std::numeric_limits<DWORD>::max()) ||
-      !WriteFile(state_->write_handle, buf, static_cast<DWORD>(len),
-                 &bytes_written, nullptr) ||
-      static_cast<size_t>(bytes_written) != len) {
-    ABSL_LOG(FATAL) << current_test_name_
-                    << ": error writing to test program: " << LastSystemError();
+bool ForkPipeRunner::TryWrite(const void* buf, size_t len) {
+  // There is no SIGPIPE on Windows: writing to a pipe whose reader has exited
+  // simply fails (ERROR_NO_DATA or ERROR_BROKEN_PIPE), so a testee that dies
+  // between two requests shows up as a failed write, which the caller reports.
+  const char* in = static_cast<const char*>(buf);
+  size_t offset = 0;
+  while (offset < len) {
+    const DWORD chunk = static_cast<DWORD>(std::min<size_t>(
+        len - offset, static_cast<size_t>(std::numeric_limits<DWORD>::max())));
+    DWORD bytes_written = 0;
+    if (!WriteFile(state_->write_handle, in + offset, chunk, &bytes_written,
+                   nullptr)) {
+      ABSL_LOG(ERROR) << current_test_name_
+                      << ": error writing to test program: "
+                      << LastSystemError();
+      return false;
+    }
+    if (bytes_written == 0) {
+      // A synchronous pipe write either writes everything or fails, so this
+      // should not happen; bail out rather than spin.
+      ABSL_LOG(ERROR) << current_test_name_
+                      << ": error writing to test program: wrote 0 bytes";
+      return false;
+    }
+    offset += static_cast<size_t>(bytes_written);
   }
+  return true;
 }
 
 ForkPipeRunner::ReadResult ForkPipeRunner::TryRead(void* buf, size_t len) {
-  state_->last_read_error = 0;
   size_t offset = 0;
   while (offset < len) {
     std::future<ReadChunk> future = std::async(
@@ -385,7 +398,6 @@ ForkPipeRunner::ReadResult ForkPipeRunner::TryRead(void* buf, size_t len) {
     }
 
     ReadChunk chunk = future.get();
-    state_->last_read_error = chunk.error_code;
     // A broken pipe is how the test program exiting normally shows up on
     // Windows, so treat it the same as a zero-byte read.
     if (chunk.bytes_read == 0 ||
@@ -404,25 +416,6 @@ ForkPipeRunner::ReadResult ForkPipeRunner::TryRead(void* buf, size_t len) {
   }
 
   return ReadResult::kOk;
-}
-
-void ForkPipeRunner::CheckedRead(void* buf, size_t len) {
-  // TODO: b/564149373 - classify mid-body read failures like header-read
-  // failures instead of crashing the runner.
-  const ReadResult read_result = TryRead(buf, len);
-  if (read_result == ReadResult::kOk) {
-    return;
-  }
-  std::string reason;
-  if (read_result == ReadResult::kTimeout) {
-    reason = "timed out";
-  } else if (read_result == ReadResult::kEof) {
-    reason = "unexpected EOF";
-  } else {
-    reason = WindowsErrorMessage(state_->last_read_error);
-  }
-  ABSL_LOG(FATAL) << current_test_name_
-                  << ": error reading from test program: " << reason;
 }
 
 }  // namespace conformance

@@ -99,16 +99,23 @@ class ForkPipeRunner : public ConformanceTestRunner {
   // (e.g. "child timed out") with how the testee ended appended, if known.
   // The next RunTest() call spawns a fresh testee.
   std::string GetTestProgramFailure(absl::string_view what_failed);
-  // Shuts the testee down after a TryRead() that did not return kOk and
-  // returns the serialized ConformanceResponse reporting it: a timeout_error
-  // for kTimeout, a runtime_error otherwise.
+  // Shuts the testee down after a failed exchange and returns the serialized
+  // ConformanceResponse reporting it: a timeout_error if `timed_out`, a
+  // runtime_error otherwise.
+  std::string ReportFailure(bool timed_out, absl::string_view what_failed);
+  // ReportFailure() for a TryRead() that did not return kOk.
   std::string ReportReadFailure(ReadResult read_result);
 
-  void CheckedWrite(const void* buf, size_t len);
+  // Writes all `len` bytes of `buf` to the testee.  Returns false if the write
+  // failed, in particular because the testee has exited.  That shows as EPIPE
+  // on POSIX and as a broken-pipe error on Windows.  On POSIX, SIGPIPE is
+  // blocked on the calling thread for the duration of the write, so that a
+  // testee that dies between two requests is reported instead of killing the
+  // runner.
+  bool TryWrite(const void* buf, size_t len);
   // Reads exactly `len` bytes from the testee, giving up if it produces
   // nothing for `options_.read_timeout`.  Never blocks indefinitely.
   ReadResult TryRead(void* buf, size_t len);
-  void CheckedRead(void* buf, size_t len);
 
   std::string executable_;
   const std::vector<std::string> executable_args_;

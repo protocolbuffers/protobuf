@@ -247,6 +247,24 @@ TEST(ForkPipeRunnerTest, SignaledTesteeIsReported) {
   EXPECT_TRUE(NoChildRemains());
 }
 
+TEST(ForkPipeRunnerTest, TesteeClosingItsOutputIsKilledAndReported) {
+  // Consumes the request, closes its stdout without answering and then lives
+  // on: the runner sees EOF at once but has a live testee to shut down, so the
+  // SIGKILL it sends must be reported as its own rather than as the testee's
+  // death.
+  auto runner = MakeRunner("head -c 7 >/dev/null; exec 1>&-; exec sleep 1000");
+
+  ::conformance::ConformanceResponse response =
+      ParseResponse(runner->RunTest("t", "abc"));
+  EXPECT_EQ(response.runtime_error(),
+            "child closed its output without responding (killed by runner)");
+  EXPECT_FALSE(response.has_timeout_error());
+  EXPECT_TRUE(NoChildRemains()) << "EOF path must reap the testee";
+
+  runner.reset();
+  EXPECT_TRUE(NoChildRemains());
+}
+
 TEST(ForkPipeRunnerTest, HungTesteeTimesOutAndIsKilled) {
   // Consumes the request, then hangs without answering.  It ignores SIGQUIT
   // (the ignore disposition survives the exec) and prints nothing in response
@@ -314,6 +332,112 @@ TEST(ForkPipeRunnerTest, SigquitOutputIsBounded) {
   // bounded diagnostic read and the grace period; an unbounded read would
   // never return.
   EXPECT_LT(elapsed, absl::Seconds(10));
+  EXPECT_TRUE(NoChildRemains());
+}
+
+TEST(ForkPipeRunnerTest, TesteeHangingMidResponseTimesOutAndIsKilled) {
+  // Consumes the request, announces an 8-byte response (the printf's first 4
+  // bytes are the little-endian length), sends 3 bytes of it and then hangs,
+  // ignoring SIGQUIT and holding its stdout open, like
+  // HungTesteeTimesOutAndIsKilled but with the hang inside the response body
+  // rather than before the header.
+  constexpr absl::Duration kReadTimeout = absl::Milliseconds(200);
+  auto runner = MakeRunner(
+      "trap '' QUIT; head -c 7 >/dev/null; printf '\\010\\000\\000\\000abc'; "
+      "exec sleep 1000",
+      WithReadTimeout(kReadTimeout));
+
+  const absl::Time start = absl::Now();
+  ::conformance::ConformanceResponse response =
+      ParseResponse(runner->RunTest("t", "abc"));
+  const absl::Duration elapsed = absl::Now() - start;
+
+  EXPECT_THAT(response.timeout_error(), HasSubstr("child timed out"));
+  EXPECT_THAT(response.timeout_error(), HasSubstr("killed by runner"));
+  EXPECT_FALSE(response.has_runtime_error());
+  EXPECT_GE(elapsed, kReadTimeout);
+  EXPECT_LT(elapsed, absl::Seconds(15));
+  EXPECT_TRUE(NoChildRemains()) << "timeout path must reap the testee";
+
+  runner.reset();
+  EXPECT_TRUE(NoChildRemains());
+}
+
+TEST(ForkPipeRunnerTest, TesteeExitingMidResponseIsReportedAndRespawned) {
+  // Consumes the request, announces an 8-byte response, sends 3 bytes of it
+  // and exits.
+  auto runner = MakeRunner(
+      "head -c 7 >/dev/null; printf '\\010\\000\\000\\000abc'; exit 0");
+
+  ::conformance::ConformanceResponse response =
+      ParseResponse(runner->RunTest("t", "abc"));
+  EXPECT_THAT(response.runtime_error(), HasSubstr("exited with status=0"));
+  EXPECT_FALSE(response.has_timeout_error());
+  EXPECT_TRUE(NoChildRemains()) << "crash path must reap the testee";
+
+  // The next call respawns the (same) testee, which fails the same way.
+  response = ParseResponse(runner->RunTest("t2", "abc"));
+  EXPECT_THAT(response.runtime_error(), HasSubstr("exited with status=0"));
+
+  runner.reset();
+  EXPECT_TRUE(NoChildRemains());
+}
+
+// True iff some child of this process has exited within `timeout`.  Only
+// peeks (WNOWAIT), so the child stays reapable by its runner.
+bool AChildHasExited(absl::Duration timeout) {
+  const absl::Time deadline = absl::Now() + timeout;
+  while (true) {
+    siginfo_t info = {};
+    if (waitid(P_ALL, 0, &info, WEXITED | WNOHANG | WNOWAIT) == 0 &&
+        info.si_pid != 0) {
+      return true;
+    }
+    if (absl::Now() >= deadline) return false;
+    absl::SleepFor(absl::Milliseconds(10));
+  }
+}
+
+TEST(ForkPipeRunnerTest, TesteeExitingBetweenRequestsIsReportedAndRespawned) {
+  // Answers one request in full and then exits instead of waiting for EOF.
+  auto runner = MakeRunner(
+      "head -c 7 >/dev/null; printf '\\003\\000\\000\\000abc'; exit 0");
+  EXPECT_EQ(runner->RunTest("t", "abc"), "abc");
+  // Once the testee is gone the pipe to it has no reader left, so the next
+  // request cannot even be written: without special handling the write would
+  // raise SIGPIPE and kill this process.
+  ASSERT_TRUE(AChildHasExited(absl::Seconds(5)))
+      << "the testee should have exited";
+
+  ::conformance::ConformanceResponse response =
+      ParseResponse(runner->RunTest("t2", "abc"));
+  EXPECT_EQ(response.runtime_error(),
+            "error writing to child (exited with status=0)");
+  EXPECT_FALSE(response.has_timeout_error());
+  EXPECT_TRUE(NoChildRemains()) << "write failure path must reap the testee";
+
+  // The next call respawns the testee, which answers its one request again.
+  EXPECT_EQ(runner->RunTest("t3", "abc"), "abc");
+
+  runner.reset();
+  EXPECT_TRUE(NoChildRemains());
+}
+
+TEST(ForkPipeRunnerTest, NonexistentExecutableIsReported) {
+  // The child's exec fails and it exits with status 1 at once, before or after
+  // the request has been written; either way the failure is reported like any
+  // other testee death, rather than crashing the runner.
+  auto runner = std::make_unique<ForkPipeRunner>("/nonexistent/testee");
+
+  ::conformance::ConformanceResponse response =
+      ParseResponse(runner->RunTest("t", "abc"));
+  EXPECT_THAT(response.runtime_error(), HasSubstr("exited with status=1"));
+  EXPECT_FALSE(response.has_timeout_error());
+  EXPECT_TRUE(NoChildRemains());
+
+  response = ParseResponse(runner->RunTest("t2", "abc"));
+  EXPECT_THAT(response.runtime_error(), HasSubstr("exited with status=1"));
+  runner.reset();
   EXPECT_TRUE(NoChildRemains());
 }
 
