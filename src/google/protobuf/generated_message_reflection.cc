@@ -398,6 +398,23 @@ static void ReportReflectionUsageEnumTypeError(
                   << value->full_name();
 }
 
+static void ReportReflectionUsageOneofError(
+    const Descriptor* descriptor, const OneofDescriptor* oneof_descriptor,
+    const char* method, const char* description) {
+  ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
+                     "  Method      : google::protobuf::Reflection::"
+                  << method
+                  << "\n"
+                     "  Message type: "
+                  << descriptor->full_name()
+                  << "\n"
+                     "  Oneof       : "
+                  << oneof_descriptor->full_name()
+                  << "\n"
+                     "  Problem     : "
+                  << description;
+}
+
 #define USAGE_CHECK(CONDITION, METHOD, ERROR_DESCRIPTION) \
   if (!(CONDITION))                                       \
   ReportReflectionUsageError(descriptor_, field, #METHOD, ERROR_DESCRIPTION)
@@ -433,6 +450,10 @@ static void ReportReflectionUsageEnumTypeError(
 #define USAGE_CHECK_MESSAGE_TYPE(METHOD)                        \
   USAGE_CHECK_EQ(field->containing_type(), descriptor_, METHOD, \
                  "Field does not match message type.");
+#define USAGE_CHECK_ONEOF_MESSAGE_TYPE(METHOD)                             \
+  if (oneof_descriptor->containing_type() != descriptor_)                  \
+  ReportReflectionUsageOneofError(descriptor_, oneof_descriptor, #METHOD,  \
+                                  "Oneof does not match message type.")
 #define USAGE_CHECK_SINGULAR(METHOD)                 \
   USAGE_CHECK_NE(field->is_repeated(), true, METHOD, \
                  "Field is repeated; the method requires a singular field.")
@@ -3022,6 +3043,7 @@ const void* Reflection::GetRawRepeatedField(
 
 const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
+  USAGE_CHECK_ONEOF_MESSAGE_TYPE(GetOneofFieldDescriptor);
   if (oneof_descriptor->is_synthetic()) {
     const FieldDescriptor* field = oneof_descriptor->field(0);
     return HasField(message, field) ? field : nullptr;
@@ -3382,6 +3404,7 @@ void Reflection::NaiveSwapHasBit(Message* message1, Message* message2,
 
 bool Reflection::HasOneof(const Message& message,
                           const OneofDescriptor* oneof_descriptor) const {
+  USAGE_CHECK_ONEOF_MESSAGE_TYPE(HasOneof);
   if (oneof_descriptor->is_synthetic()) {
     return HasField(message, oneof_descriptor->field(0));
   }
@@ -3402,6 +3425,7 @@ void Reflection::ClearOneofField(Message* message,
 
 void Reflection::ClearOneof(Message* message,
                             const OneofDescriptor* oneof_descriptor) const {
+  USAGE_CHECK_ONEOF_MESSAGE_TYPE(ClearOneof);
   if (oneof_descriptor->is_synthetic()) {
     ClearField(message, oneof_descriptor->field(0));
     return;
