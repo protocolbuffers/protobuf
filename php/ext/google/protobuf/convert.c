@@ -407,6 +407,10 @@ bool Convert_PhpToUpb(zval* php_val, upb_MessageValue* upb_val, TypeInfo type,
       // alive.
       if (arena) {
         char* copy = upb_Arena_Malloc(arena, size);
+        if (!copy) {
+          zend_throw_exception_ex(NULL, 0, "Out of memory");
+          return false;
+        }
         memcpy(copy, ptr, size);
         ptr = copy;
       }
@@ -509,11 +513,18 @@ bool Convert_PhpToUpbAutoWrap(zval* val, upb_MessageValue* upb_val,
     // message manually.
     const upb_MiniTable* t = upb_MessageDef_MiniTable(subm);
     upb_Message* wrapper = upb_Message_New(t, arena);
+    if (!wrapper) {
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      return false;
+    }
     const upb_FieldDef* val_f = upb_MessageDef_FindFieldByNumber(subm, 1);
     upb_MessageValue msgval;
     if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(val_f), arena))
       return false;
-    upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena);
+    if (!upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena)) {
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      return false;
+    }
     upb_val->msg_val = wrapper;
     return true;
   } else {

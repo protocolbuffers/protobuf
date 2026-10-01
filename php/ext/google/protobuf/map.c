@@ -12,6 +12,9 @@
 
 #include <ext/spl/spl_iterators.h>
 
+// This is not self-contained: it must be after other Zend includes.
+#include <Zend/zend_exceptions.h>
+
 #include "arena.h"
 #include "convert.h"
 #include "message.h"
@@ -65,7 +68,7 @@ static zend_object* MapField_create(zend_class_entry* class_type) {
   MapField* intern = emalloc(sizeof(MapField));
   zend_object_std_init(&intern->std, class_type);
   intern->std.handlers = &MapField_object_handlers;
-  Arena_Init(&intern->arena);
+  ZVAL_NULL(&intern->arena);
   intern->map = NULL;
   // Skip object_properties_init(), we don't allow derived classes.
   return &intern->std;
@@ -115,12 +118,19 @@ static zend_object* MapField_clone_obj(zend_object* object) {
   upb_Arena* arena = Arena_Get(&intern->arena);
   upb_Map* clone =
       upb_Map_New(arena, intern->type.key_type, intern->type.val_type.type);
+  if (!clone) {
+    zend_throw_exception_ex(NULL, 0, "Out of memory");
+    return NULL;
+  }
   size_t iter = kUpb_Map_Begin;
 
   while (upb_MapIterator_Next(intern->map, &iter)) {
     upb_MessageValue key = upb_MapIterator_Key(intern->map, iter);
     upb_MessageValue val = upb_MapIterator_Value(intern->map, iter);
-    upb_Map_Set(clone, key, val, arena);
+    if (!upb_Map_Set(clone, key, val, arena)) {
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      return NULL;
+    }
   }
 
   zval ret;
@@ -168,6 +178,10 @@ upb_Map* MapField_GetUpbMap(zval* val, MapField_Type type, upb_Arena* arena) {
 
   if (Z_TYPE_P(val) == IS_ARRAY) {
     upb_Map* map = upb_Map_New(arena, type.key_type, type.val_type.type);
+    if (!map) {
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      return NULL;
+    }
     HashTable* table = HASH_OF(val);
     HashPosition pos;
 
@@ -186,10 +200,15 @@ upb_Map* MapField_GetUpbMap(zval* val, MapField_Type type, upb_Arena* arena) {
 
       if (!Convert_PhpToUpb(&php_key, &upb_key, KeyType(type), arena) ||
           !Convert_PhpToUpbAutoWrap(php_val, &upb_val, type.val_type, arena)) {
+        zval_dtor(&php_key);
         return NULL;
       }
 
-      upb_Map_Set(map, upb_key, upb_val, arena);
+      if (!upb_Map_Set(map, upb_key, upb_val, arena)) {
+        zend_throw_exception_ex(NULL, 0, "Out of memory");
+        zval_dtor(&php_key);
+        return NULL;
+      }
       zend_hash_move_forward_ex(table, &pos);
       zval_dtor(&php_key);
     }
@@ -241,7 +260,6 @@ bool MapEq(const upb_Map* m1, const upb_Map* m2, MapField_Type type) {
  */
 PHP_METHOD(MapField, __construct) {
   MapField* intern = (MapField*)Z_OBJ_P(getThis());
-  upb_Arena* arena = Arena_Get(&intern->arena);
   zend_long key_type, val_type;
   zend_class_entry* klass = NULL;
 
@@ -277,8 +295,19 @@ PHP_METHOD(MapField, __construct) {
     return;
   }
 
+  if (!Arena_Init(&intern->arena)) {
+    return;
+  }
+
+  upb_Arena* arena = Arena_Get(&intern->arena);
   intern->map =
       upb_Map_New(arena, intern->type.key_type, intern->type.val_type.type);
+  if (!intern->map) {
+    zval_ptr_dtor(&intern->arena);
+    ZVAL_NULL(&intern->arena);
+    zend_throw_exception_ex(NULL, 0, "Out of memory");
+    return;
+  }
   ObjCache_Add(intern->map, &intern->std);
 }
 
@@ -363,7 +392,9 @@ PHP_METHOD(MapField, offsetSet) {
     return;
   }
 
-  upb_Map_Set(intern->map, upb_key, upb_val, arena);
+  if (!upb_Map_Set(intern->map, upb_key, upb_val, arena)) {
+    zend_throw_exception_ex(NULL, 0, "Out of memory");
+  }
 }
 
 /**
