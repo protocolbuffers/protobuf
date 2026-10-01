@@ -63,6 +63,7 @@ cc_library(
         ":conformance_cc_proto",
         ":failure_list_trie_node",
         ":fork_pipe_runner",
+        ":recording_test_runner",
         ":test_runner",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
@@ -75,6 +76,7 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -123,6 +125,7 @@ test_suite(
         "binary_wireformat_test",
         "failure_list_trie_node_test",
         "naming_test",
+        "recording_test_runner_test",
         "test_manager_test",
         "testee_test",
     ],
@@ -214,6 +217,17 @@ cc_library(
 )
 
 cc_library(
+    name = "mock_test_runner",
+    testonly = True,
+    hdrs = ["mock_test_runner.h"],
+    deps = [
+        ":test_runner",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "fork_pipe_runner",
     srcs = [
         "fork_pipe_runner.cc",
@@ -246,6 +260,39 @@ cc_test(
         "@abseil-cpp//absl/log:scoped_mock_log",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/time",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "recording_test_runner",
+    srcs = ["recording_test_runner.cc"],
+    hdrs = ["recording_test_runner.h"],
+    deps = [
+        ":conformance_cc_proto",
+        ":test_runner",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/crc:crc32c",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "recording_test_runner_test",
+    srcs = ["recording_test_runner_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":mock_test_runner",
+        ":recording_test_runner",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/crc:crc32c",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
