@@ -963,6 +963,23 @@ class MessageTest(unittest.TestCase):
     sub = msg.repeated_nested_message.add(bb=7)
     self.assertEqual(sub.bb, 7)
 
+  def testRepeatedCompositeReverse(self, message_module):
+    msg = message_module.TestAllTypes()
+    for i in [1, 2, 3, 4]:
+      msg.repeated_nested_message.add(bb=i)
+    first = msg.repeated_nested_message[0]
+    last = msg.repeated_nested_message[3]
+    msg.repeated_nested_message.reverse()
+    self.assertEqual([m.bb for m in msg.repeated_nested_message], [4, 3, 2, 1])
+    self.assertIs(msg.repeated_nested_message[0], last)
+    self.assertIs(msg.repeated_nested_message[3], first)
+
+    parsed = message_module.TestAllTypes.FromString(msg.SerializeToString())
+    parsed.repeated_nested_message.reverse()
+    self.assertEqual(
+        [m.bb for m in parsed.repeated_nested_message], [1, 2, 3, 4]
+    )
+
   def testRepeatedContains(self, message_module):
     msg = message_module.TestAllTypes()
     msg.repeated_int32.extend([1, 2, 3])
