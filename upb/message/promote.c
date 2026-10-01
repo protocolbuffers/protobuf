@@ -115,16 +115,105 @@ static upb_GetExtension_Status upb_UnknownToMessage_ToGetExtensionStatus(
   return kUpb_GetExtension_ParseError;
 }
 
+static upb_GetExtension_Status _upb_LazyExtension_Parse(
+    const upb_LazyExtensionData* lazy, upb_Arena* arena, upb_Message** out) {
+  switch (UPB_PRIVATE(_upb_Decode_LazyExtension)(lazy, arena, out)) {
+    case kUpb_DecodeStatus_Ok:
+      return kUpb_GetExtension_Ok;
+    case kUpb_DecodeStatus_OutOfMemory:
+      return kUpb_GetExtension_OutOfMemory;
+    default:
+      return kUpb_GetExtension_ParseError;
+  }
+}
+
+upb_GetExtension_Status upb_Message_PromoteLazyExtension(
+    const upb_Message* msg, const upb_MiniTableExtension* ext_table,
+    upb_Arena* arena, upb_MessageValue* value) {
+  UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
+  size_t index;
+  upb_TaggedAuxPtr tagged_ptr;
+  if (!UPB_PRIVATE(_upb_Message_FindExtensionEntry)(msg, ext_table, &index,
+                                                    &tagged_ptr)) {
+    return kUpb_GetExtension_NotPresent;
+  }
+  if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+    // Already parsed (eagerly, or promoted earlier, possibly by another
+    // thread; _upb_Message_Internal_GetAux() provided the acquire ordering).
+    *value = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr)->data;
+    return kUpb_GetExtension_Ok;
+  }
+  UPB_ASSERT(upb_TaggedAuxPtr_IsLazyExtension(tagged_ptr));
+  const upb_LazyExtensionData* lazy =
+      upb_TaggedAuxPtr_LazyExtension(tagged_ptr);
+
+  // Parse into a private arena so that this (const, possibly concurrent)
+  // operation never allocates from the shared message arena.
+  upb_Arena* tmp = upb_Arena_Init(NULL, 0, upb_Arena_GetUpbAlloc(arena));
+  if (!tmp) return kUpb_GetExtension_OutOfMemory;
+
+  upb_Message* sub;
+  upb_GetExtension_Status status = _upb_LazyExtension_Parse(lazy, tmp, &sub);
+  upb_Extension* ext = NULL;
+  if (status == kUpb_GetExtension_Ok) {
+    ext = upb_Arena_Malloc(tmp, sizeof(upb_Extension));
+    if (!ext) status = kUpb_GetExtension_OutOfMemory;
+  }
+  if (status != kUpb_GetExtension_Ok) {
+    upb_Arena_Free(tmp);
+    return status;
+  }
+  ext->ext = ext_table;
+  ext->data.msg_val = sub;
+  if (upb_Message_IsFrozen(msg)) {
+    upb_Message_Freeze(sub, upb_MiniTableExtension_GetSubMessage(ext_table));
+  }
+
+  // Tie the lifetime of the parsed data to the message before publishing a
+  // pointer to it. Fusing is thread-safe; it fails only for arenas that cannot
+  // be fused (initial-block arenas), which we report as an allocation failure.
+  if (!upb_Arena_Fuse(arena, tmp)) {
+    upb_Arena_Free(tmp);
+    return kUpb_GetExtension_OutOfMemory;
+  }
+  upb_Arena_Free(tmp);
+
+  // Publish. The CAS has release semantics so that readers who observe the
+  // promoted tag (and re-read with acquire) see the fully parsed submessage.
+  upb_Message_Internal* in =
+      (upb_Message_Internal*)UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  upb_TaggedAuxPtr expected = tagged_ptr;
+  if (UPB_PRIVATE(_upb_Message_Internal_CompareExchangeAux)(
+          in, index, &expected, upb_TaggedAuxPtr_MakePromotedExtension(ext))) {
+    *value = ext->data;
+    return kUpb_GetExtension_Ok;
+  }
+
+  // Another thread promoted this extension first; discard our parse (it stays
+  // in the fused arena and is reclaimed with the message) and return theirs.
+  if (upb_TaggedAuxPtr_IsCanonicalExtension(expected)) {
+    *value = upb_TaggedAuxPtr_CanonicalExtension(expected)->data;
+    return kUpb_GetExtension_Ok;
+  }
+  // The entry can only change out from under us through a concurrent mutation,
+  // which is a contract violation; fail gracefully rather than crash.
+  return kUpb_GetExtension_NotPresent;
+}
+
 upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, upb_MessageValue* value) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSERT(upb_MiniTableExtension_CType(ext_table) == kUpb_CType_Message);
-  const upb_Extension* extension =
-      UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
-  if (extension) {
-    memcpy(value, &extension->data, sizeof(upb_MessageValue));
-    return kUpb_GetExtension_Ok;
+  upb_TaggedAuxPtr tagged_ptr;
+  if (UPB_PRIVATE(_upb_Message_FindExtensionEntry)(msg, ext_table, NULL,
+                                                   &tagged_ptr)) {
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      memcpy(value, &upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr)->data,
+             sizeof(upb_MessageValue));
+      return kUpb_GetExtension_Ok;
+    }
+    return upb_Message_PromoteLazyExtension(msg, ext_table, arena, value);
   }
 
   // Check unknown fields, if available promote.

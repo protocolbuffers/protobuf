@@ -18,7 +18,6 @@
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/mem/alloc.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/map_entry.h"
 #include "upb/message/internal/message.h"
@@ -73,11 +72,13 @@ UPB_INLINE bool _upb_sortedmap_next(_upb_mapsorter* s,
   return true;
 }
 
+// Returns the next extension entry, which is either a canonical (possibly
+// promoted) extension or a lazy extension that has not been promoted.
 UPB_INLINE bool _upb_sortedmap_nextext(_upb_mapsorter* s,
                                        _upb_sortedmap* sorted,
-                                       const upb_Extension** ext) {
+                                       upb_TaggedAuxPtr* ext) {
   if (sorted->pos == sorted->end) return false;
-  *ext = (const upb_Extension*)s->entries[sorted->pos++];
+  ext->ptr = (uintptr_t)s->entries[sorted->pos++];
   return true;
 }
 
@@ -89,7 +90,8 @@ UPB_INLINE void _upb_mapsorter_popmap(_upb_mapsorter* s,
 bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
                             const struct upb_Map* map, _upb_sortedmap* sorted);
 
-// Pushes canonical extensions from the given message onto the sorter.
+// Pushes canonical and lazy extensions from the given message onto the
+// sorter, ordered by field number.
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
                              _upb_sortedmap* sorted);
 

@@ -18,8 +18,11 @@
 typedef enum {
   kUpb_TaggedAuxType_Unknown = 0,                // tag 000
   kUpb_TaggedAuxType_NonCanonicalExtension = 1,  // tag 001
+  kUpb_TaggedAuxType_LazyExtension = 2,          // tag 010
   kUpb_TaggedAuxType_CanonicalExtension = 3,     // tag 011
-  kUpb_TaggedAuxType_AliasedUnknown = 4          // tag 100
+  kUpb_TaggedAuxType_AliasedUnknown = 4,         // tag 100
+  kUpb_TaggedAuxType_AliasedLazyExtension = 6,   // tag 110
+  kUpb_TaggedAuxType_PromotedExtension = 7,      // tag 111
 } upb_TaggedAuxType;
 
 struct upb_Message {

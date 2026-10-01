@@ -46,7 +46,8 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     // Alias fast path was already checked in the inline function that calls
     // this one
     if (!alias && in && in->size) {
-      upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
+      upb_TaggedAuxPtr ptr =
+          UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, in->size - 1);
       if (upb_TaggedAuxPtr_IsUnknownStringView(ptr)) {
         upb_StringView* existing = upb_TaggedPtrAux_StringViewRepr(ptr);
         if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
@@ -92,9 +93,11 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
   }
   view->size = len;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  in->aux_data[in->size++] = alias
-                                 ? upb_TaggedAuxPtr_MakeUnknownDataAliased(view)
-                                 : upb_TaggedAuxPtr_MakeUnknownData(view);
+  UPB_PRIVATE(_upb_Message_Internal_SetAux)(
+      in, in->size,
+      alias ? upb_TaggedAuxPtr_MakeUnknownDataAliased(view)
+            : upb_TaggedAuxPtr_MakeUnknownData(view));
+  in->size++;
   return true;
 }
 
@@ -114,7 +117,8 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
   {
     upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
     if (in && in->size) {
-      upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
+      upb_TaggedAuxPtr ptr =
+          UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, in->size - 1);
       if (upb_TaggedAuxPtr_IsUnknownStringView(ptr)) {
         upb_StringView* existing = upb_TaggedPtrAux_StringViewRepr(ptr);
         if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
@@ -156,7 +160,9 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
   // TODO: b/376969853  - Add debug check that the unknown field is an overall
   // valid proto field
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeUnknownData(view);
+  UPB_PRIVATE(_upb_Message_Internal_SetAux)(
+      in, in->size, upb_TaggedAuxPtr_MakeUnknownData(view));
+  in->size++;
   return true;
 }
 
@@ -166,10 +172,12 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
   if (!in) return;
   uint32_t size = 0;
   for (uint32_t i = 0; i < in->size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    // Only keep semantically known fields (i.e., canonical extensions).
+    upb_TaggedAuxPtr tagged_ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i);
+    // Only keep semantically known fields (i.e., canonical extensions,
+    // including lazy ones).
     if (upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
-      in->aux_data[size++] = tagged_ptr;
+      UPB_PRIVATE(_upb_Message_Internal_SetAux)(in, size++, tagged_ptr);
     }
   }
   in->size = size;
@@ -178,12 +186,21 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return 0;
-  const upb_MiniTableExtension* ext;
-  upb_MessageValue val;
-  uintptr_t iter = kUpb_Message_ExtensionBegin;
   size_t count = 0;
-  while (upb_Message_NextExtension(msg, &ext, &val, &iter)) {
-    count++;
+  for (size_t i = 0; i < in->size; i++) {
+    upb_TaggedAuxPtr tagged_ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i);
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      // Empty repeated fields or maps semantically don't exist.
+      if (UPB_PRIVATE(_upb_Extension_IsEmpty)(
+              upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr))) {
+        continue;
+      }
+      count++;
+    } else if (upb_TaggedAuxPtr_IsLazyExtension(tagged_ptr)) {
+      // Lazy extensions are present even though they have not been parsed.
+      count++;
+    }
   }
   return count;
 }
@@ -229,8 +246,8 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
   // TODO: b/376969853 - use iterator API
   uint32_t size = in ? in->size : 0;
   for (size_t i = 0; i < size; i++) {
-    const upb_Extension* ext =
-        upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
+    const upb_Extension* ext = upb_TaggedAuxPtr_TryGetExtension(
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i));
     if (!ext) continue;
     const upb_MiniTableExtension* e = ext->ext;
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);

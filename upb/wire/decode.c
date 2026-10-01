@@ -595,22 +595,40 @@ enum {
 static void upb_Decoder_AddKnownMessageSetItem(
     upb_Decoder* d, upb_Message* msg, const upb_MiniTableExtension* item_mt,
     const char* data, uint32_t size) {
-  upb_Extension* ext =
-      UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, item_mt, &d->arena);
-  if (UPB_UNLIKELY(!ext)) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+  // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
+  if (d->depth <= 1) {
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
+  }
+  const int options = upb_Decode_LimitDepth(d->options, d->depth - 1);
+  upb_Extension* ext;
+  if (UPB_UNLIKELY(upb_MiniTableExtension_IsLazy(item_mt))) {
+    // `data` always aliases the input buffer (see
+    // upb_Decoder_DecodeMessageSetItem()).
+    upb_StringView payload = upb_StringView_FromDataAndSize(data, size);
+    const bool alias = (d->options & kUpb_DecodeOption_AliasString) != 0;
+    switch (UPB_PRIVATE(_upb_Message_AddLazyExtension)(
+        msg, item_mt, d->extreg, options, payload, alias, &d->arena, &ext)) {
+      case kUpb_AddLazyExtension_Ok:
+        return;
+      case kUpb_AddLazyExtension_ParseEagerly:
+        break;
+      case kUpb_AddLazyExtension_OutOfMemory:
+        upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
+  } else {
+    ext =
+        UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, item_mt, &d->arena);
+    if (UPB_UNLIKELY(!ext)) {
+      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    }
   }
   upb_Message** submsgp = (upb_Message**)&ext->data.msg_val;
   upb_Message* submsg = _upb_Decoder_NewSubMessage2(
       d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
       &ext->ext->UPB_PRIVATE(field), submsgp);
-  // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
-  if (d->depth <= 1) {
-    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
-  }
   upb_DecodeStatus status = upb_Decode(
       data, size, submsg, upb_MiniTableExtension_GetSubMessage(item_mt),
-      d->extreg, upb_Decode_LimitDepth(d->options, d->depth - 1), &d->arena);
+      d->extreg, options, &d->arena);
   if (status != kUpb_DecodeStatus_Ok) {
     upb_ErrorHandler_ThrowError(d->err, status);
   }
@@ -928,6 +946,40 @@ const char* _upb_Decoder_DecodeWireValue(upb_Decoder* d, const char* ptr,
   upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
 }
 
+// Stores the length-delimited payload at `ptr` as the lazy extension
+// `ext_layout` without parsing it. If the message already holds a parsed value
+// for the extension, nothing is stored; instead `*out_ext` is set and the
+// caller must parse the payload into it.
+UPB_NOINLINE
+static const char* _upb_Decoder_AddLazyExtension(
+    upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTableExtension* ext_layout, uint32_t size,
+    upb_Extension** out_ext) {
+  upb_StringView payload;
+  const char* end = upb_EpsCopyInputStream_ReadStringAlwaysAlias(
+      &d->input, ptr, size, &payload);
+  if (UPB_UNLIKELY(!end)) {
+    upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_Malformed);
+  }
+  // The deferred parse must observe the same depth limit that an eager parse
+  // of this submessage would have. d->depth > 1 is guaranteed by the caller.
+  const int options = upb_Decode_LimitDepth(d->options, d->depth - 1);
+  const bool alias = (d->options & kUpb_DecodeOption_AliasString) != 0;
+  switch (UPB_PRIVATE(_upb_Message_AddLazyExtension)(msg, ext_layout, d->extreg,
+                                                     options, payload, alias,
+                                                     &d->arena, out_ext)) {
+    case kUpb_AddLazyExtension_Ok:
+      *out_ext = NULL;
+      return end;
+    case kUpb_AddLazyExtension_ParseEagerly:
+      // Merge into the existing parsed value by parsing the payload normally.
+      return ptr;
+    case kUpb_AddLazyExtension_OutOfMemory:
+      break;
+  }
+  upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+}
+
 UPB_FORCEINLINE
 const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           upb_Message* msg,
@@ -938,10 +990,20 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
   if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
     const upb_MiniTableExtension* ext_layout =
         (const upb_MiniTableExtension*)field;
-    upb_Extension* ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-        msg, ext_layout, &d->arena);
-    if (UPB_UNLIKELY(!ext)) {
-      upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+    upb_Extension* ext;
+    if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsLazy) &&
+        op == kUpb_DecodeOp_SubMessage && d->depth > 1) {
+      // A lazy extension can only be marked on singular message fields, so
+      // kUpb_DecodeOp_SubMessage implies a length-delimited value here.
+      ptr = _upb_Decoder_AddLazyExtension(d, ptr, msg, ext_layout, val->size,
+                                          &ext);
+      if (!ext) return ptr;
+    } else {
+      ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(msg, ext_layout,
+                                                           &d->arena);
+      if (UPB_UNLIKELY(!ext)) {
+        upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
+      }
     }
     d->original_msg = msg;
     msg = &ext->data.UPB_PRIVATE(ext_msg_val);
@@ -1300,6 +1362,21 @@ static uint16_t upb_DecodeOptions_GetMaxDepth(uint32_t options) {
 uint16_t upb_DecodeOptions_GetEffectiveMaxDepth(uint32_t options) {
   uint16_t max_depth = upb_DecodeOptions_GetMaxDepth(options);
   return max_depth ? max_depth : kUpb_WireFormat_DefaultDepthLimit;
+}
+
+upb_DecodeStatus UPB_PRIVATE(_upb_Decode_LazyExtension)(
+    const upb_LazyExtensionData* lazy, upb_Arena* arena, upb_Message** out) {
+  const upb_MiniTable* subm = upb_MiniTableExtension_GetSubMessage(lazy->ext);
+  upb_Message* sub = _upb_Message_New(subm, arena);
+  if (!sub) return kUpb_DecodeStatus_OutOfMemory;
+  // The payload is guaranteed to outlive the message (it either lives in the
+  // message's arena or in a buffer that the original aliasing parse already
+  // required to outlive the message), so there is no reason to copy strings.
+  upb_DecodeStatus status =
+      upb_Decode(lazy->data.data, lazy->data.size, sub, subm, lazy->registry,
+                 lazy->options | kUpb_DecodeOption_AliasString, arena);
+  if (status == kUpb_DecodeStatus_Ok) *out = sub;
+  return status;
 }
 
 upb_DecodeStatus upb_Decode(const char* buf, size_t size, upb_Message* msg,

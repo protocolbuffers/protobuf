@@ -61,7 +61,8 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
   const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return false;
   for (size_t i = 0; i < in->size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    upb_TaggedAuxPtr tagged_ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i);
     if (!upb_TaggedAuxPtr_IsNull(tagged_ptr) &&
         !upb_TaggedAuxPtr_IsSemanticallyKnown(tagged_ptr)) {
       return true;

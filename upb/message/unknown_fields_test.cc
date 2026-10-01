@@ -17,6 +17,7 @@
 #include <string>
 
 #include <gtest/gtest.h>
+#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
@@ -353,6 +354,16 @@ TEST(UnknownFieldsTest, MessageInternalPoolReuse) {
   // Big enough for all allocation to fit in the first block
   upb_Arena* arena = upb_Arena_NewSized(4096);
 
+  // The first internal block holds a single slot, rounded up to a power of two
+  // (and to the minimum pool block size). Derive the numbers from the struct
+  // rather than hard-coding them: the header size differs between regular and
+  // sanitizer builds (UPB_XSAN_MEMBER).
+  const size_t initial_bytes = upb_RoundUpToPowerOfTwo(
+      UPB_MAX(UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, 1),
+              UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize)));
+  const size_t initial_slots =
+      UPB_FLEX_CAPACITY(upb_Message_Internal, aux_data, initial_bytes);
+
   // Prime the pool with a 64-byte block to host the pool structure.
   void* p0 = upb_Arena_AllocPool(arena, 64);
   upb_Arena_FreePool(arena, p0, 64);
@@ -360,31 +371,29 @@ TEST(UnknownFieldsTest, MessageInternalPoolReuse) {
   auto* msg1 = upb_test_TestMessageSet_new(arena);
   const char data1[] = "111";
   const char data2[] = "222";
-  const char data3[] = "333";
-  // Add 3 aliased unknowns (filling the initial 32-byte internal block: 3
-  // slots).
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
-      UPB_UPCAST(msg1), data1, 3, arena, kUpb_AddUnknown_Alias));
+  // Add aliased unknowns until the initial internal block is full.
+  for (size_t i = 0; i < initial_slots; i++) {
+    EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+        UPB_UPCAST(msg1), data1, 3, arena, kUpb_AddUnknown_Alias));
+  }
 
   // Interleave an allocation so in-place extension fails and forces
   // reallocation.
   void* blocker = upb_Arena_Malloc(arena, 8);
   UPB_UNUSED(blocker);
 
-  // Adding second and third unknown triggers reallocation to 32 bytes and frees
-  // the 16-byte block to the pool.
+  // Adding one more unknown triggers reallocation to the next power of two and
+  // frees the initial block to the pool.
   EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
       UPB_UPCAST(msg1), data2, 3, arena, kUpb_AddUnknown_Alias));
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
-      UPB_UPCAST(msg1), data3, 3, arena, kUpb_AddUnknown_Alias));
 
-  // The retired 16-byte block is now in the pool.
-  void* pooled_block = upb_Arena_TryAllocPool(arena, 16);
+  // The retired initial block is now in the pool.
+  void* pooled_block = upb_Arena_TryAllocPool(arena, initial_bytes);
   EXPECT_NE(pooled_block, nullptr);
-  upb_Arena_FreePool(arena, pooled_block, 16);
+  upb_Arena_FreePool(arena, pooled_block, initial_bytes);
 
   // Creating msg2 and adding an unknown should allocate from the pool and reuse
-  // the 16-byte block.
+  // the retired block.
   auto* msg2 = upb_test_TestMessageSet_new(arena);
   EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
       UPB_UPCAST(msg2), data1, 3, arena, kUpb_AddUnknown_Alias));

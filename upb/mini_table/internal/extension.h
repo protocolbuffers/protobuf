@@ -98,6 +98,34 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTableExtension_ToField(
   return &e->UPB_PRIVATE(field);
 }
 
+UPB_API_INLINE bool upb_MiniTableExtension_IsLazy(
+    const struct upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_MiniTableField_IsLazy)(&e->UPB_PRIVATE(field));
+}
+
+// Marks the extension as lazy. When a lazy extension is encountered while
+// decoding, its serialized bytes are stored in the message instead of being
+// parsed eagerly; see upb_Message_PromoteLazyExtension(). Only singular,
+// length-delimited message-typed extensions may be lazy; returns false (and
+// leaves the extension unchanged) otherwise.
+//
+// This must be called before the extension is added to a upb_ExtensionRegistry
+// or used to decode any message.
+UPB_API_INLINE bool upb_MiniTableExtension_SetLazy(
+    struct upb_MiniTableExtension* e, bool lazy) {
+  struct upb_MiniTableField* f = &e->UPB_PRIVATE(field);
+  if (f->UPB_PRIVATE(descriptortype) != kUpb_FieldType_Message ||
+      !upb_MiniTableField_IsScalar(f)) {
+    return false;
+  }
+  if (lazy) {
+    f->UPB_ONLYBITS(mode) |= kUpb_LabelFlags_IsLazy;
+  } else {
+    f->UPB_ONLYBITS(mode) &= ~kUpb_LabelFlags_IsLazy;
+  }
+  return true;
+}
+
 UPB_INLINE upb_FieldRep UPB_PRIVATE(_upb_MiniTableExtension_GetRep)(
     const struct upb_MiniTableExtension* e) {
   return UPB_PRIVATE(_upb_MiniTableField_GetRep)(&e->UPB_PRIVATE(field));

@@ -48,6 +48,11 @@ UPB_NODISCARD upb_Extension* UPB_PRIVATE(
 // Adds the given extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
+//
+// If the message holds a lazy (not yet promoted) payload for this extension,
+// the payload is discarded and replaced by a fresh, empty extension. Callers
+// that need the parsed value must call upb_Message_PromoteLazyExtension()
+// first.
 UPB_NODISCARD upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* ext,
     upb_Arena* arena);
@@ -61,9 +66,45 @@ UPB_NODISCARD upb_Extension* UPB_PRIVATE(
                                               upb_Arena* arena);
 
 // Returns an extension for a message with a given mini table,
-// or NULL if no extension exists with this mini table.
+// or NULL if no extension exists with this mini table. Lazy extensions that
+// have not been promoted yet are not returned.
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* ext);
+
+struct upb_TaggedAuxPtr;
+struct upb_ExtensionRegistry;
+
+// Finds the aux_data entry holding the canonical, promoted or lazy extension
+// `e`, if any. Returns true and sets `*index` and `*ptr` (either of which may
+// be NULL) on success. Non-canonical extensions are never matched.
+bool UPB_PRIVATE(_upb_Message_FindExtensionEntry)(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e,
+    size_t* index, struct upb_TaggedAuxPtr* ptr);
+
+typedef enum {
+  // The payload was stored (or appended to an existing lazy payload).
+  kUpb_AddLazyExtension_Ok,
+  // The message already holds a parsed value for this extension; the caller
+  // must parse the payload into `*out_ext` instead.
+  kUpb_AddLazyExtension_ParseEagerly,
+  kUpb_AddLazyExtension_OutOfMemory,
+} upb_AddLazyExtensionStatus;
+
+// Stores the serialized payload of one occurrence of the lazy extension `e` in
+// the message. `payload` is the length-delimited value without its tag and
+// length prefix. If `alias` is true the message will reference `payload`
+// directly, otherwise it is copied into `arena`. When the extension already
+// has a lazy payload, the two are coalesced into a single contiguous copy.
+//
+// `registry` and `options` are retained so that the deferred parse can be
+// performed later; `registry` must outlive the message.
+UPB_NODISCARD upb_AddLazyExtensionStatus UPB_PRIVATE(
+    _upb_Message_AddLazyExtension)(struct upb_Message* msg,
+                                   const upb_MiniTableExtension* e,
+                                   const struct upb_ExtensionRegistry* registry,
+                                   int options, upb_StringView payload,
+                                   bool alias, upb_Arena* arena,
+                                   upb_Extension** out_ext);
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
   switch (

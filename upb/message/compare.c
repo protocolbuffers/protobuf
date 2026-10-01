@@ -11,18 +11,22 @@
 #include <stdint.h>
 
 #include "upb/base/descriptor_constants.h"
+#include "upb/base/string_view.h"
+#include "upb/mem/arena.h"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/compare_unknown.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/iterator.h"
+#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/wire/decode.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -189,23 +193,81 @@ static bool _upb_Message_BaseFieldsAreEqual(const upb_Message* msg1,
   }
 }
 
+// Produces the value of the extension entry `tagged_ptr`, parsing the payload
+// of a lazy extension into `*scratch` (created on demand) if necessary. Returns
+// false if the payload could not be parsed.
+static bool _upb_Message_ExtensionEntryValue(upb_TaggedAuxPtr tagged_ptr,
+                                             upb_Arena** scratch,
+                                             upb_MessageValue* val) {
+  if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+    *val = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr)->data;
+    return true;
+  }
+  UPB_ASSERT(upb_TaggedAuxPtr_IsLazyExtension(tagged_ptr));
+  if (!*scratch) {
+    *scratch = upb_Arena_New();
+    if (!*scratch) return false;
+  }
+  upb_Message* sub;
+  if (UPB_PRIVATE(_upb_Decode_LazyExtension)(
+          upb_TaggedAuxPtr_LazyExtension(tagged_ptr), *scratch, &sub) !=
+      kUpb_DecodeStatus_Ok) {
+    return false;
+  }
+  val->msg_val = sub;
+  return true;
+}
+
 static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
                                             const upb_Message* msg2,
                                             const upb_MiniTable* m,
                                             int options) {
-  const upb_MiniTableExtension* e;
-  upb_MessageValue val2;
+  const upb_Message_Internal* in2 = UPB_PRIVATE(_upb_Message_GetInternal)(msg2);
+  const size_t size2 = in2 ? in2->size : 0;
+
+  // Lazy extensions that have not been promoted are compared by parsing them
+  // into a scratch arena; comparing never modifies either message.
+  upb_Arena* scratch = NULL;
+  bool ret = false;
 
   // Iterate over all extensions for msg2, and search msg1 for each extension.
   size_t count1 = 0;
-  size_t iter2 = kUpb_Message_ExtensionBegin;
-  while (upb_Message_NextExtension(msg2, &e, &val2, &iter2)) {
-    const upb_Extension* ext1 = UPB_PRIVATE(_upb_Message_Getext)(msg1, e);
-    if (!ext1) return false;
+  for (size_t i = 0; i < size2; i++) {
+    upb_TaggedAuxPtr ptr2 = UPB_PRIVATE(_upb_Message_Internal_GetAux)(in2, i);
+    const upb_MiniTableExtension* e;
+    if (upb_TaggedAuxPtr_IsCanonicalExtension(ptr2)) {
+      const upb_Extension* ext2 = upb_TaggedAuxPtr_CanonicalExtension(ptr2);
+      // Empty repeated fields or maps semantically don't exist.
+      if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext2)) continue;
+      e = ext2->ext;
+    } else if (upb_TaggedAuxPtr_IsLazyExtension(ptr2)) {
+      e = upb_TaggedAuxPtr_LazyExtension(ptr2)->ext;
+    } else {
+      continue;
+    }
+
+    upb_TaggedAuxPtr ptr1;
+    if (!UPB_PRIVATE(_upb_Message_FindExtensionEntry)(msg1, e, NULL, &ptr1)) {
+      goto done;
+    }
 
     count1++;
 
-    const upb_MessageValue val1 = ext1->data;
+    if (upb_TaggedAuxPtr_IsLazyExtension(ptr1) &&
+        upb_TaggedAuxPtr_IsLazyExtension(ptr2)) {
+      // Identical serialized payloads parse to identical messages, so we can
+      // skip the parse in the common case of two copies of the same message.
+      const upb_StringView d1 = upb_TaggedAuxPtr_LazyExtension(ptr1)->data;
+      const upb_StringView d2 = upb_TaggedAuxPtr_LazyExtension(ptr2)->data;
+      if (upb_StringView_IsEqual(d1, d2)) continue;
+    }
+
+    upb_MessageValue val1, val2;
+    if (!_upb_Message_ExtensionEntryValue(ptr1, &scratch, &val1) ||
+        !_upb_Message_ExtensionEntryValue(ptr2, &scratch, &val2)) {
+      goto done;
+    }
+
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* subm = upb_MiniTableField_IsSubMessage(f)
                                     ? upb_MiniTableExtension_GetSubMessage(e)
@@ -226,16 +288,20 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
         break;
       }
     }
-    if (!eq) return false;
+    if (!eq) goto done;
   }
 
   if (!(options & kUpb_CompareOption_Partial)) {
     // Must have identical extension counts (this catches the case where msg1
     // has extensions that msg2 doesn't).
-    if (count1 != upb_Message_ExtensionCount(msg1)) return false;
+    if (count1 != upb_Message_ExtensionCount(msg1)) goto done;
   }
 
-  return true;
+  ret = true;
+
+done:
+  if (scratch) upb_Arena_Free(scratch);
+  return ret;
 }
 
 bool upb_Message_IsEqual(const upb_Message* msg1, const upb_Message* msg2,

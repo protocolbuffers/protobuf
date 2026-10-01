@@ -16,11 +16,9 @@
 #include "upb/base/string_view.h"
 #include "upb/hash/common.h"
 #include "upb/mem/alloc.h"
-#include "upb/message/internal/extension.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
-#include "upb/mini_table/extension.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -155,28 +153,36 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 }
 
 static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
-  const upb_Extension* const* a = _a;
-  const upb_Extension* const* b = _b;
-  uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
-  uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
+  upb_TaggedAuxPtr a = {(uintptr_t)*(const void* const*)_a};
+  upb_TaggedAuxPtr b = {(uintptr_t)*(const void* const*)_b};
+  uint32_t a_num = upb_TaggedAuxPtr_ExtensionNumber(a);
+  uint32_t b_num = upb_TaggedAuxPtr_ExtensionNumber(b);
   UPB_ASSERT(a_num != b_num);
   return a_num < b_num ? -1 : 1;
+}
+
+static bool _upb_mapsorter_isext(upb_TaggedAuxPtr tagged_ptr) {
+  return upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr) ||
+         upb_TaggedAuxPtr_IsLazyExtension(tagged_ptr);
 }
 
 bool _upb_mapsorter_pushexts(_upb_mapsorter* s, const upb_Message_Internal* in,
                              _upb_sortedmap* sorted) {
   size_t count = 0;
   for (size_t i = 0; i < in->size; i++) {
-    count += upb_TaggedAuxPtr_IsCanonicalExtension(in->aux_data[i]);
+    count +=
+        _upb_mapsorter_isext(UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i));
   }
   if (!_upb_mapsorter_resize(s, sorted, count)) return false;
   if (count == 0) return true;
-  const upb_Extension** entry =
-      (const upb_Extension**)&s->entries[sorted->start];
+  const void** entry = &s->entries[sorted->start];
   for (size_t i = 0; i < in->size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      *entry++ = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+    upb_TaggedAuxPtr tagged_ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i);
+    if (_upb_mapsorter_isext(tagged_ptr)) {
+      // The tagged pointer is stored as-is so that the encoder can tell lazy
+      // entries apart from parsed ones.
+      *entry++ = (const void*)tagged_ptr.ptr;
     }
   }
   qsort(&s->entries[sorted->start], count, sizeof(*s->entries),
