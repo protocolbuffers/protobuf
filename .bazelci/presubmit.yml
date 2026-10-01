@@ -23,7 +23,6 @@ tasks:
       - "//editions/..."
       - "//java/..."
       - "//python/..."
-      - "//rust/..."
       - "//src/..."
       - "//upb/..."
       - "//upb_generator/..."
