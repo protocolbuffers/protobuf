@@ -813,7 +813,9 @@ void OnShutdown(void (*func)()) {
 
 void OnShutdownRun(void (*f)(const void*), const void* arg) {
   auto shutdown_data = ShutdownData::get();
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::MutexLock lock(&shutdown_data->mutex);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 
