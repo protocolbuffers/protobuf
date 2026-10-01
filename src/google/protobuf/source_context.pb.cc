@@ -229,8 +229,7 @@ SourceContext::SourceContext(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  SourceContext* const _this = this;
-  (void)_this;
+  SourceContext& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -352,28 +351,26 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void SourceContext::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<SourceContext*>(&to_msg);
+  SourceContext& this_ = static_cast<SourceContext&>(to_msg);
   auto& from = static_cast<const SourceContext&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.SourceContext)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!from._internal_file_name().empty()) {
-      _this->_internal_set_file_name(from._internal_file_name());
-    } else {
-      if (_this->_impl_.file_name_.IsDefault()) {
-        _this->_internal_set_file_name("");
-      }
+      this_._internal_set_file_name(from._internal_file_name());
+    } else if (this_._impl_.file_name_.IsDefault()) {
+      this_._internal_set_file_name("");
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 

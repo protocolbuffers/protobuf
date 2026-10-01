@@ -695,8 +695,7 @@ Api::Api(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Api* const _this = this;
-  (void)_this;
+  Api& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -959,8 +958,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // .google.protobuf.SourceContext source_context = 5;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.source_context_);
     }
     // .google.protobuf.Syntax syntax = 7;
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
@@ -979,77 +978,71 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void Api::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<Api*>(&to_msg);
+  Api& this_ = static_cast<Api&>(to_msg);
   auto& from = static_cast<const Api&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Api)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_methods()->InternalMergeFromWithArena(
+      this_._internal_mutable_methods()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_methods());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      _this->_internal_mutable_options()->InternalMergeFromWithArena(
+      this_._internal_mutable_options()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_options());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      _this->_internal_mutable_mixins()->InternalMergeFromWithArena(
+      this_._internal_mutable_mixins()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_mixins());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!from._internal_name().empty()) {
-        _this->_internal_set_name(from._internal_name());
-      } else {
-        if (_this->_impl_.name_.IsDefault()) {
-          _this->_internal_set_name("");
-        }
+        this_._internal_set_name(from._internal_name());
+      } else if (this_._impl_.name_.IsDefault()) {
+        this_._internal_set_name("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (!from._internal_version().empty()) {
-        _this->_internal_set_version(from._internal_version());
-      } else {
-        if (_this->_impl_.version_.IsDefault()) {
-          _this->_internal_set_version("");
-        }
+        this_._internal_set_version(from._internal_version());
+      } else if (this_._impl_.version_.IsDefault()) {
+        this_._internal_set_version("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (!from._internal_edition().empty()) {
-        _this->_internal_set_edition(from._internal_edition());
-      } else {
-        if (_this->_impl_.edition_.IsDefault()) {
-          _this->_internal_set_edition("");
-        }
+        this_._internal_set_edition(from._internal_edition());
+      } else if (this_._impl_.edition_.IsDefault()) {
+        this_._internal_set_edition("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       ABSL_DCHECK(from._impl_.source_context_ != nullptr);
-      if (_this->_impl_.source_context_ == nullptr) {
-        _this->_impl_.source_context_ = Super_::CopyConstruct(arena, *from._impl_.source_context_);
+      if (this_._impl_.source_context_ == nullptr) {
+        this_._impl_.source_context_ = Super_::CopyConstruct(arena, *from._impl_.source_context_);
       } else {
-        _this->_impl_.source_context_->MergeFrom(*from._impl_.source_context_);
+        this_._impl_.source_context_->MergeFrom(*from._impl_.source_context_);
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       if (from._internal_syntax() != 0) {
-        _this->_impl_.syntax_ = from._impl_.syntax_;
+        this_._impl_.syntax_ = from._impl_.syntax_;
       }
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -1126,8 +1119,7 @@ Method::Method(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Method* const _this = this;
-  (void)_this;
+  Method& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -1407,78 +1399,70 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void Method::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<Method*>(&to_msg);
+  Method& this_ = static_cast<Method&>(to_msg);
   auto& from = static_cast<const Method&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Method)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      _this->_internal_mutable_options()->InternalMergeFromWithArena(
+      this_._internal_mutable_options()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_options());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_name().empty()) {
-        _this->_internal_set_name(from._internal_name());
-      } else {
-        if (_this->_impl_.name_.IsDefault()) {
-          _this->_internal_set_name("");
-        }
+        this_._internal_set_name(from._internal_name());
+      } else if (this_._impl_.name_.IsDefault()) {
+        this_._internal_set_name("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!from._internal_request_type_url().empty()) {
-        _this->_internal_set_request_type_url(from._internal_request_type_url());
-      } else {
-        if (_this->_impl_.request_type_url_.IsDefault()) {
-          _this->_internal_set_request_type_url("");
-        }
+        this_._internal_set_request_type_url(from._internal_request_type_url());
+      } else if (this_._impl_.request_type_url_.IsDefault()) {
+        this_._internal_set_request_type_url("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!from._internal_response_type_url().empty()) {
-        _this->_internal_set_response_type_url(from._internal_response_type_url());
-      } else {
-        if (_this->_impl_.response_type_url_.IsDefault()) {
-          _this->_internal_set_response_type_url("");
-        }
+        this_._internal_set_response_type_url(from._internal_response_type_url());
+      } else if (this_._impl_.response_type_url_.IsDefault()) {
+        this_._internal_set_response_type_url("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (!from._internal_edition().empty()) {
-        _this->_internal_set_edition(from._internal_edition());
-      } else {
-        if (_this->_impl_.edition_.IsDefault()) {
-          _this->_internal_set_edition("");
-        }
+        this_._internal_set_edition(from._internal_edition());
+      } else if (this_._impl_.edition_.IsDefault()) {
+        this_._internal_set_edition("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (from._internal_request_streaming() != 0) {
-        _this->_impl_.request_streaming_ = from._impl_.request_streaming_;
+        this_._impl_.request_streaming_ = from._impl_.request_streaming_;
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       if (from._internal_response_streaming() != 0) {
-        _this->_impl_.response_streaming_ = from._impl_.response_streaming_;
+        this_._impl_.response_streaming_ = from._impl_.response_streaming_;
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       if (from._internal_syntax() != 0) {
-        _this->_impl_.syntax_ = from._impl_.syntax_;
+        this_._impl_.syntax_ = from._impl_.syntax_;
       }
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -1540,8 +1524,7 @@ Mixin::Mixin(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Mixin* const _this = this;
-  (void)_this;
+  Mixin& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -1688,13 +1671,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<Mixin*>(&to_msg);
+  Mixin& this_ = static_cast<Mixin&>(to_msg);
   auto& from = static_cast<const Mixin&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Mixin)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -1702,25 +1685,21 @@ void Mixin::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!from._internal_name().empty()) {
-        _this->_internal_set_name(from._internal_name());
-      } else {
-        if (_this->_impl_.name_.IsDefault()) {
-          _this->_internal_set_name("");
-        }
+        this_._internal_set_name(from._internal_name());
+      } else if (this_._impl_.name_.IsDefault()) {
+        this_._internal_set_name("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_root().empty()) {
-        _this->_internal_set_root(from._internal_root());
-      } else {
-        if (_this->_impl_.root_.IsDefault()) {
-          _this->_internal_set_root("");
-        }
+        this_._internal_set_root(from._internal_root());
+      } else if (this_._impl_.root_.IsDefault()) {
+        this_._internal_set_root("");
       }
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 

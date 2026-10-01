@@ -368,13 +368,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<Timestamp*>(&to_msg);
+  Timestamp& this_ = static_cast<Timestamp&>(to_msg);
   auto& from = static_cast<const Timestamp&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Timestamp)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
@@ -382,17 +382,17 @@ void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (from._internal_seconds() != 0) {
-        _this->_impl_.seconds_ = from._impl_.seconds_;
+        this_._impl_.seconds_ = from._impl_.seconds_;
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (from._internal_nanos() != 0) {
-        _this->_impl_.nanos_ = from._impl_.nanos_;
+        this_._impl_.nanos_ = from._impl_.nanos_;
       }
     }
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
