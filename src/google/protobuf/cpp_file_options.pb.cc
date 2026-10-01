@@ -291,8 +291,8 @@ PROTOBUF_NOINLINE void CppFileOptions::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL CppFileOptions::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CppFileOptions::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CppFileOptions& this_ = static_cast<const CppFileOptions&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -320,8 +320,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CppFileOptions::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CppFileOptions::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }

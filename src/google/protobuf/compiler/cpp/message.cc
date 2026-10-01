@@ -1930,8 +1930,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               private:
               static void Clear($pb$::MessageLite& msg);
               $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
-              $nodiscard $static $uint8$* $nonnull$ _InternalSerialize(
-                  const $pb$::MessageLite& msg, $uint8$* $nonnull$ target,
+              $nodiscard $static $uint8$* $nullable$ _InternalSerialize(
+                  const $pb$::MessageLite& msg, $uint8$* $nullable$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
 
               public:
@@ -1942,8 +1942,8 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
               PROTOBUF_ALWAYS_INLINE $nodiscard $::size_t ByteSizeLong() const {
                 return ByteSizeLong(*this);
               }
-              PROTOBUF_ALWAYS_INLINE $nodiscard $$uint8$* $nonnull$
-              _InternalSerialize($uint8$* $nonnull$ target,
+              PROTOBUF_ALWAYS_INLINE $nodiscard $$uint8$* $nullable$
+              _InternalSerialize($uint8$* $nullable$ target,
                                  $pb$::io::EpsCopyOutputStream* $nonnull$
                                      stream) const {
                 return _InternalSerialize(*this, target, stream);
@@ -1951,9 +1951,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
 #else   // PROTOBUF_CUSTOM_VTABLE
               ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
               $nodiscard $::size_t ByteSizeLong() const final;
-              $nodiscard $$uint8$* $nonnull$ _InternalSerialize(
+              $nodiscard $$uint8$* $nullable$ _InternalSerialize(
                   //~
-                  $uint8$* $nonnull$ target,
+                  $uint8$* $nullable$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const final;
 #endif  // PROTOBUF_CUSTOM_VTABLE
             )cc");
@@ -4414,8 +4414,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
     // Special-case MessageSet.
     p->Emit(R"cc(
       PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-      $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-          const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
+      $uint8$* $nullable$ $Msg$::_InternalSerialize(
+          const $pb$::MessageLite& base, $uint8$* $nullable$ target,
           $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
         const $Msg$& this_ = static_cast<const $Msg$&>(base);
         $annotate_serialize$ target =
@@ -4427,8 +4427,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
         return target;
       }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-      $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-          $uint8$* $nonnull$ target,
+      $uint8$* $nullable$ $Msg$::_InternalSerialize(
+          $uint8$* $nullable$ target,
           $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
         return _InternalSerialize(*this, target, stream);
       }
@@ -4460,8 +4460,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
       },
       R"cc(
         PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-        $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-            const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
+        $uint8$* $nullable$ $Msg$::_InternalSerialize(
+            const $pb$::MessageLite& base, $uint8$* $nullable$ target,
             $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
           const $Msg$& this_ = static_cast<const $Msg$&>(base);
           $annotate_serialize$;
@@ -4472,8 +4472,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
           return target;
         }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-        $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-            $uint8$* $nonnull$ target,
+        $uint8$* $nullable$ $Msg$::_InternalSerialize(
+            $uint8$* $nullable$ target,
             $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
           return _InternalSerialize(*this, target, stream);
         }

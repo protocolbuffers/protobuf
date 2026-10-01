@@ -841,8 +841,8 @@ PROTOBUF_NOINLINE void Version::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL Version::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE Version::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Version& this_ = static_cast<const Version&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -889,8 +889,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Version::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE Version::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
@@ -1145,8 +1145,8 @@ PROTOBUF_NOINLINE void CodeGeneratorRequest::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL CodeGeneratorRequest::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CodeGeneratorRequest::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CodeGeneratorRequest& this_ = static_cast<const CodeGeneratorRequest&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -1202,8 +1202,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CodeGeneratorRequest::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CodeGeneratorRequest::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
@@ -1456,8 +1456,8 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse_File::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL CodeGeneratorResponse_File::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CodeGeneratorResponse_File::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CodeGeneratorResponse_File& this_ = static_cast<const CodeGeneratorResponse_File&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -1502,8 +1502,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CodeGeneratorResponse_File::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CodeGeneratorResponse_File::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
@@ -1731,8 +1731,8 @@ PROTOBUF_NOINLINE void CodeGeneratorResponse::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL CodeGeneratorResponse::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CodeGeneratorResponse::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const CodeGeneratorResponse& this_ = static_cast<const CodeGeneratorResponse&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -1787,8 +1787,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL CodeGeneratorResponse::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE CodeGeneratorResponse::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
