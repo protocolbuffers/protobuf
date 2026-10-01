@@ -12,10 +12,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/string_view.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -405,6 +407,23 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
   }
 
   void* dst;
+
+  if (card == kUpb_DecodeFast_Oneof && type != kUpb_DecodeFast_Message) {
+    // Decode into a temporary and only set the oneof case once we succeed, so
+    // that if decoding fails the case still points to the previous member,
+    // which is intact.
+    union {
+      uint64_t u64;
+      upb_StringView sv;
+    } tmp;
+    if (!single(d, &p, &tmp, type, ret, ctx)) return false;
+    upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
+                                  type);
+    memcpy(dst, &tmp, upb_DecodeFast_ValueBytes(type));
+    *ptr = p;
+    _upb_Decoder_Trace(d, 'F');
+    return true;
+  }
 
   if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
                                     type)) {

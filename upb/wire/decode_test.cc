@@ -10,6 +10,7 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <initializer_list>
 #include <memory>
 #include <optional>
 #include <string>
@@ -2802,6 +2803,117 @@ TEST(DecodeTest, DecodeMapBadUtf8KeyWithMalformedValueMatchesMiniTableDecoder) {
       1, kUpb_WireType_Delimited, absl::string_view("\x02\xff\xfe", 3),
       kUpb_WireType_Delimited, absl::string_view("\x02\x08\x80", 3));
   ExpectFastMatchesMiniTable(mt, payload);
+}
+
+// Builds a message whose fields 1..N have the given types and are all members
+// of a single oneof.
+const upb_MiniTable* MakeOneofTable(std::initializer_list<upb_FieldType> types,
+                                    upb_Arena* arena) {
+  MtDataEncoder e;
+  e.StartMessage(kUpb_MessageModifier_ValidateUtf8);
+  int field_number = 1;
+  for (upb_FieldType type : types) {
+    e.PutField(type, field_number++, kUpb_FieldModifier_ValidateUtf8);
+  }
+  e.StartOneof();
+  for (int i = 1; i < field_number; i++) e.PutOneofField(i);
+  Status status;
+  const upb_MiniTable* mt = upb_MiniTable_Build(
+      e.data().data(), e.data().size(), arena, status.ptr());
+  ABSL_CHECK(mt) << upb_Status_ErrorMessage(status.ptr());
+  return mt;
+}
+
+std::vector<int> GetOneofDecodeOptionsToTest() {
+  std::vector<int> ret;
+  for (int options : GetDecodeOptionsToTest()) {
+    ret.push_back(options);
+    ret.push_back(options | kUpb_DecodeOption_AliasString);
+  }
+  return ret;
+}
+
+// If decoding a oneof member fails, the oneof must still name the member that
+// was set before, with its value intact. In particular we must never select the
+// new member while its storage still holds the previous member's bytes (eg. a
+// string's data pointer read back as an integer).
+TEST(DecodeTest, FailedOneofScalarLeavesPreviousMember) {
+  Arena mt_arena;
+  const upb_MiniTable* mt =
+      MakeOneofTable({kUpb_FieldType_String, kUpb_FieldType_Bool,
+                      kUpb_FieldType_Int32, kUpb_FieldType_Int64},
+                     mt_arena.ptr());
+  const upb_MiniTableField* str_field = upb_MiniTable_FindFieldByNumber(mt, 1);
+  ASSERT_EQ(upb_MiniTableField_Type(str_field), kUpb_FieldType_String);
+
+  for (int field_number : {2, 3, 4}) {
+    SCOPED_TRACE(field_number);
+#if UPB_FASTTABLE
+    ASSERT_TRUE(MiniTable::HasFastTableEntry(
+        mt, upb_MiniTable_FindFieldByNumber(mt, field_number)));
+#endif
+    // str_field = "abc", then the scalar with an overlong (malformed) varint.
+    std::string payload(
+        "\x0a\x03"
+        "abc");
+    payload.push_back(static_cast<char>(field_number << 3));
+    payload.append(10, '\x80');
+    payload.push_back('\x01');
+
+    for (int options : GetOneofDecodeOptionsToTest()) {
+      SCOPED_TRACE(options);
+      Arena arena;
+      upb_Message* msg = upb_Message_New(mt, arena.ptr());
+      EXPECT_EQ(upb_Decode(payload.data(), payload.size(), msg, mt, nullptr,
+                           options, arena.ptr()),
+                kUpb_DecodeStatus_Malformed);
+      EXPECT_EQ(upb_Message_WhichOneofFieldNumber(msg, str_field), 1u);
+      upb_StringView sv = upb_Message_GetString(
+          msg, str_field, upb_StringView_FromDataAndSize(nullptr, 0));
+      EXPECT_EQ(absl::string_view(sv.data, sv.size), "abc");
+    }
+  }
+}
+
+TEST(DecodeTest, FailedOneofStringLeavesPreviousMember) {
+  Arena mt_arena;
+  const upb_MiniTable* mt = MakeOneofTable(
+      {kUpb_FieldType_Int64, kUpb_FieldType_String, kUpb_FieldType_Bytes},
+      mt_arena.ptr());
+  const upb_MiniTableField* int_field = upb_MiniTable_FindFieldByNumber(mt, 1);
+  ASSERT_EQ(upb_MiniTableField_Type(upb_MiniTable_FindFieldByNumber(mt, 2)),
+            kUpb_FieldType_String);
+#if UPB_FASTTABLE
+  ASSERT_TRUE(
+      MiniTable::HasFastTableEntry(mt, upb_MiniTable_FindFieldByNumber(mt, 2)));
+  ASSERT_TRUE(
+      MiniTable::HasFastTableEntry(mt, upb_MiniTable_FindFieldByNumber(mt, 3)));
+#endif
+
+  // int_field = 123, followed by a string/bytes member that fails to parse.
+  const std::string kPrefix = "\x08\x7b";
+  const std::string kPayloads[] = {
+      // string = "\xff" (invalid UTF-8).
+      kPrefix + "\x12\x01\xff",
+      // bytes with length 5 but only 2 bytes of data.
+      kPrefix +
+          "\x1a\x05"
+          "ab",
+  };
+
+  for (const std::string& payload : kPayloads) {
+    SCOPED_TRACE(absl::CEscape(payload));
+    for (int options : GetOneofDecodeOptionsToTest()) {
+      SCOPED_TRACE(options);
+      Arena arena;
+      upb_Message* msg = upb_Message_New(mt, arena.ptr());
+      EXPECT_NE(upb_Decode(payload.data(), payload.size(), msg, mt, nullptr,
+                           options, arena.ptr()),
+                kUpb_DecodeStatus_Ok);
+      EXPECT_EQ(upb_Message_WhichOneofFieldNumber(msg, int_field), 1u);
+      EXPECT_EQ(upb_Message_GetInt64(msg, int_field, 0), 123);
+    }
+  }
 }
 
 }  // namespace
