@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use reflection::{DefPool, DefPoolInitPtr, MessageDef};
+use super::reflection::{DefPool, DefPoolInitPtr, MessageDef};
 use std::sync::{Mutex, OnceLock};
 
 #[derive(Clone, Copy)]

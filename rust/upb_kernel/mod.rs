@@ -8,7 +8,6 @@
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
 pub mod conversions;
-#[cfg(bzl)]
 pub mod def_pool;
 pub mod extension;
 pub mod interop;
@@ -19,7 +18,6 @@ pub mod repeated;
 pub mod string;
 
 pub use conversions::*;
-#[cfg(bzl)]
 pub use def_pool::*;
 pub use extension::*;
 pub use interop::*;
@@ -48,6 +46,11 @@ use std::sync::OnceLock;
 extern crate upb;
 #[cfg(not(bzl))]
 use crate::upb;
+
+#[cfg(bzl)]
+extern crate reflection;
+#[cfg(not(bzl))]
+use crate::upb::reflection;
 
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;

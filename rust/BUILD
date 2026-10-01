@@ -103,6 +103,7 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "protobuf.rs",
     "protobuf_lite.rs",
     "upb_kernel/conversions.rs",
+    "upb_kernel/def_pool.rs",
     "upb_kernel/extension.rs",
     "upb_kernel/interop.rs",
     "upb_kernel/map.rs",
