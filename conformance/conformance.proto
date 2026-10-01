@@ -19,10 +19,11 @@ option objc_class_prefix = "Conformance";
 //
 // You can either run the tests in two different ways:
 //
-//   1. in-process (using the interface in conformance_test.h).
+//   1. in-process (a C++ library that implements MakeTesteeRunner(), see
+//      testee_runner.h, linked into the test binary).
 //
 //   2. as a sub-process communicating over a pipe.  Information about how to
-//      do this is in conformance_test_runner.cc.
+//      do this is in README.md and conformance_test_runner.h.
 //
 // Pros/cons of the two approaches:
 //
