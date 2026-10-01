@@ -248,3 +248,50 @@ TEST(MapIteratorTest, ZeroKeyAndOtherKeys) {
   EXPECT_EQ(CountEntriesWithMapIterator(map), 10);
   EXPECT_EQ(CountEntriesWithMapNext(map), 10);
 }
+
+TEST(MapTest, MemoryReuseOnGrow) {
+  upb::Arena arena(1024);
+  upb_Map* map1 = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_Int32);
+  upb_Map* map2 = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_Int32);
+  ASSERT_NE(map1, nullptr);
+  ASSERT_NE(map2, nullptr);
+
+  // Interleave insertions to prevent in-place TryExtend, forcing new table
+  // allocations and recycling of old table buffers via UseBlock.
+  for (int32_t i = 1; i <= 60; i++) {
+    InsertInt32(map1, i, i * 10, arena.ptr());
+    InsertInt32(map2, i, i * 20, arena.ptr());
+  }
+
+  EXPECT_EQ(upb_Map_Size(map1), 60);
+  EXPECT_EQ(upb_Map_Size(map2), 60);
+  for (int32_t i = 1; i <= 60; i++) {
+    upb_MessageValue k, v1, v2;
+    k.int32_val = i;
+    EXPECT_TRUE(upb_Map_Get(map1, k, &v1));
+    EXPECT_EQ(v1.int32_val, i * 10);
+    EXPECT_TRUE(upb_Map_Get(map2, k, &v2));
+    EXPECT_EQ(v2.int32_val, i * 20);
+  }
+
+  // String map growth test with old table harvesting via UseBlock.
+  upb_Map* str_map =
+      upb_Map_New(arena.ptr(), kUpb_CType_String, kUpb_CType_Int32);
+  ASSERT_NE(str_map, nullptr);
+  for (int i = 0; i < 50; i++) {
+    std::string s = "test_key_" + std::to_string(i);
+    upb_MessageValue k, v;
+    k.str_val = upb_StringView_FromDataAndSize(s.data(), s.size());
+    v.int32_val = i;
+    ASSERT_EQ(kUpb_MapInsertStatus_Inserted,
+              upb_Map_Insert(str_map, k, v, arena.ptr()));
+  }
+  EXPECT_EQ(upb_Map_Size(str_map), 50);
+  for (int i = 0; i < 50; i++) {
+    std::string s = "test_key_" + std::to_string(i);
+    upb_MessageValue k, v;
+    k.str_val = upb_StringView_FromDataAndSize(s.data(), s.size());
+    EXPECT_TRUE(upb_Map_Get(str_map, k, &v));
+    EXPECT_EQ(v.int32_val, i);
+  }
+}
