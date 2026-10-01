@@ -3971,12 +3971,7 @@ class OversizeProtosTest(unittest.TestCase):
     decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
   def testRecursionMap(self):
-    if api_implementation.Type() == 'python':
-      # pure python need a smaller depth limit to avoid test timeout
-      depth = 10
-      decoder.SetRecursionLimit(depth * 2)
-    else:
-      depth = 50
+    depth = 50
     msg = more_messages_pb2.TestRecursiveMapMessage()
     sub = msg
     for _ in range(depth):
@@ -3990,8 +3985,6 @@ class OversizeProtosTest(unittest.TestCase):
     with self.assertRaises(message.DecodeError) as context:
       parsed_msg.ParseFromString(msg.SerializeToString())
     self.assertIn('Error parsing message', str(context.exception))
-    if api_implementation.Type() == 'python':
-      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
   def testRecisionMessageSet(self):
     msg = message_set_extensions_pb2.TestMessageSet()

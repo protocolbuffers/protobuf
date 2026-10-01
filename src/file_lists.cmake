@@ -1178,6 +1178,7 @@ set(conformance_runner_srcs
   ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner.cc
   ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner_posix.cc
   ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner_win32.cc
+  ${protobuf_SOURCE_DIR}/conformance/recording_test_runner.cc
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.cc
 )
 
@@ -1188,6 +1189,7 @@ set(conformance_runner_hdrs
   ${protobuf_SOURCE_DIR}/conformance/conformance_test.h
   ${protobuf_SOURCE_DIR}/conformance/failure_list_trie_node.h
   ${protobuf_SOURCE_DIR}/conformance/fork_pipe_runner.h
+  ${protobuf_SOURCE_DIR}/conformance/recording_test_runner.h
   ${protobuf_SOURCE_DIR}/conformance/test_runner.h
   ${protobuf_SOURCE_DIR}/conformance/text_format_conformance_suite.h
 )
