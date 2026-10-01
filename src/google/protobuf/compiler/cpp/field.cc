@@ -308,7 +308,7 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
               return MakeSingularCordGenerator(field, options);
             }
           }
-          ABSL_FALLTHROUGH_INTENDED;
+          [[fallthrough]];
         default:
           return MakeSinguarStringGenerator(field, options);
       }
