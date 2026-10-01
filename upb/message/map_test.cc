@@ -141,21 +141,6 @@ size_t CountEntriesWithMapIterator(const upb_Map* map) {
   return n;
 }
 
-// Walks `map` the way PHP's MapFieldIter does: rewind() calls
-// upb_MapIterator_Next() and ignores the result, and valid() asks
-// upb_MapIterator_Done(). Returns the number of entries visited. Stops early
-// (returning upb_Map_Size() + 1) if iteration fails to terminate.
-size_t CountEntriesWithDone(const upb_Map* map) {
-  size_t iter = kUpb_Map_Begin;
-  upb_MapIterator_Next(map, &iter);
-  size_t n = 0;
-  while (!upb_MapIterator_Done(map, iter)) {
-    if (++n > upb_Map_Size(map)) break;
-    upb_MapIterator_Next(map, &iter);
-  }
-  return n;
-}
-
 // Walks `map` with upb_Map_Next(). Returns the number of entries visited.
 // Stops early (returning upb_Map_Size() + 1) if iteration fails to terminate.
 size_t CountEntriesWithMapNext(const upb_Map* map) {
@@ -190,7 +175,6 @@ TEST(MapIteratorTest, NeverPopulatedIntMap) {
   upb_Map* map = upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_Int32);
   ASSERT_NE(map, nullptr);
   EXPECT_EQ(CountEntriesWithMapIterator(map), 0);
-  EXPECT_EQ(CountEntriesWithDone(map), 0);
   EXPECT_EQ(CountEntriesWithMapNext(map), 0);
 }
 
@@ -199,7 +183,6 @@ TEST(MapIteratorTest, NeverPopulatedStringMap) {
   upb_Map* map = upb_Map_New(arena.ptr(), kUpb_CType_String, kUpb_CType_Int32);
   ASSERT_NE(map, nullptr);
   EXPECT_EQ(CountEntriesWithMapIterator(map), 0);
-  EXPECT_EQ(CountEntriesWithDone(map), 0);
   EXPECT_EQ(CountEntriesWithMapNext(map), 0);
 }
 
@@ -210,7 +193,6 @@ TEST(MapIteratorTest, ClearedMap) {
   for (int32_t i = 1; i <= 5; i++) InsertInt32(map, i, i, arena.ptr());
   upb_Map_Clear(map);
   EXPECT_EQ(CountEntriesWithMapIterator(map), 0);
-  EXPECT_EQ(CountEntriesWithDone(map), 0);
   EXPECT_EQ(CountEntriesWithMapNext(map), 0);
 }
 
@@ -226,7 +208,6 @@ TEST(MapIteratorTest, AllEntriesDeleted) {
   k.str_val = upb_StringView_FromString("b");
   EXPECT_TRUE(upb_Map_Delete(map, k, nullptr));
   EXPECT_EQ(CountEntriesWithMapIterator(map), 0);
-  EXPECT_EQ(CountEntriesWithDone(map), 0);
   EXPECT_EQ(CountEntriesWithMapNext(map), 0);
 }
 
@@ -236,7 +217,6 @@ TEST(MapIteratorTest, PopulatedIntMapTerminates) {
   ASSERT_NE(map, nullptr);
   for (int32_t i = 1; i <= 20; i++) InsertInt32(map, i, i, arena.ptr());
   EXPECT_EQ(CountEntriesWithMapIterator(map), 20);
-  EXPECT_EQ(CountEntriesWithDone(map), 20);
   EXPECT_EQ(CountEntriesWithMapNext(map), 20);
 }
 
@@ -248,7 +228,6 @@ TEST(MapIteratorTest, PopulatedStringMapTerminates) {
   InsertString(map, "y", 2, arena.ptr());
   InsertString(map, "z", 3, arena.ptr());
   EXPECT_EQ(CountEntriesWithMapIterator(map), 3);
-  EXPECT_EQ(CountEntriesWithDone(map), 3);
   EXPECT_EQ(CountEntriesWithMapNext(map), 3);
 }
 
@@ -258,7 +237,6 @@ TEST(MapIteratorTest, ZeroKeyOnly) {
   ASSERT_NE(map, nullptr);
   InsertInt32(map, 0, 42, arena.ptr());
   EXPECT_EQ(CountEntriesWithMapIterator(map), 1);
-  EXPECT_EQ(CountEntriesWithDone(map), 1);
   EXPECT_EQ(CountEntriesWithMapNext(map), 1);
 }
 
@@ -268,6 +246,5 @@ TEST(MapIteratorTest, ZeroKeyAndOtherKeys) {
   ASSERT_NE(map, nullptr);
   for (int32_t i = 0; i < 10; i++) InsertInt32(map, i, i, arena.ptr());
   EXPECT_EQ(CountEntriesWithMapIterator(map), 10);
-  EXPECT_EQ(CountEntriesWithDone(map), 10);
   EXPECT_EQ(CountEntriesWithMapNext(map), 10);
 }
