@@ -1,6 +1,7 @@
 """upb_minitable_proto_library() exposes upb's generated minitables (foo.upb_minitable.h)"""
 
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_shared_library_hint_info.bzl", "CcSharedLibraryHintInfo")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//upb/bazel:visibility.bzl", "upb_clients")
 load("//upb/bazel/private:upb_proto_library_internal/aspect.bzl", "upb_proto_aspect_impl")
@@ -27,13 +28,14 @@ def _upb_minitable_proto_library_aspect_impl(target, ctx):
         cc_provider = UpbMinitableCcInfo,
         dep_cc_provider = None,
         file_provider = _UpbWrappedGeneratedSrcsInfo,
-        provide_cc_shared_library_hints = False,
+        provide_cc_shared_library_hints = True,
     )
 
 def _get_upb_minitable_proto_library_aspect_provides():
     return [
         UpbMinitableCcInfo,
         _UpbWrappedGeneratedSrcsInfo,
+        CcSharedLibraryHintInfo,
     ]
 
 upb_minitable_proto_library_aspect = aspect(

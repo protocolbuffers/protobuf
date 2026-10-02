@@ -1,7 +1,7 @@
 """Internal rule implementation for upb_*_proto_library() rules."""
 
-load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
-load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+#load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+#load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 def _filter_none(elems):
     out = []
@@ -30,8 +30,10 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     cc_info = dep[cc_info_provider].cc_info
 
     # Direct library extraction for DefaultInfo
-    all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
-    direct_input = all_linker_inputs[0]
+    direct_input = cc_info.linking_context.linker_inputs.to_list()[0]
+
+    # all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
+    # direct_input = all_linker_inputs[0]
     lib = direct_input.libraries[0]
     files = _filter_none([
         lib.static_library,
@@ -39,26 +41,26 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
         lib.dynamic_library,
     ])
 
-    # Re-wrap only the direct input with owner = ctx.label
-    new_direct_input = cc_common.create_linker_input(
-        owner = ctx.label,
-        libraries = depset(direct_input.libraries),
-        user_link_flags = depset(direct_input.user_link_flags),
-        additional_inputs = depset(direct_input.additional_inputs),
-    )
-
-    # Preserve the rest of the transitive depset lazily without flattening
-    linking_context = cc_common.create_linking_context(
-        linker_inputs = depset(
-            direct = [new_direct_input] + all_linker_inputs[1:],
-            order = "topological",
-        ),
-    )
-
-    cc_info = CcInfo(
-        compilation_context = cc_info.compilation_context,
-        linking_context = linking_context,
-    )
+    # # Re-wrap only the direct input with owner = ctx.label
+    # new_direct_input = cc_common.create_linker_input(
+    #     owner = ctx.label,
+    #     libraries = depset(direct_input.libraries),
+    #     user_link_flags = depset(direct_input.user_link_flags),
+    #     additional_inputs = depset(direct_input.additional_inputs),
+    # )
+    #
+    # # Preserve the rest of the transitive depset lazily without flattening
+    # linking_context = cc_common.create_linking_context(
+    #     linker_inputs = depset(
+    #         direct = [new_direct_input] + all_linker_inputs[1:],
+    #         order = "topological",
+    #     ),
+    # )
+    #
+    # cc_info = CcInfo(
+    #     compilation_context = cc_info.compilation_context,
+    #     linking_context = linking_context,
+    # )
 
     return [
         DefaultInfo(files = depset(files + srcs.hdrs + srcs.srcs)),
