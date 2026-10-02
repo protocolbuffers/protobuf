@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -160,6 +160,23 @@ namespace Google.Protobuf
         {
             IMessage message = factory();
             JsonParser.Default.Merge(message, json);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given Protocol Buffers text format string.
+        /// </summary>
+        /// <remarks>This method always uses the default text format parser; it is not affected by <see cref="WithDiscardUnknownFields(bool)"/>.
+        /// To ignore unknown fields when parsing text format, create a <see cref="TextParser"/> using a <see cref="TextParser.Settings"/>
+        /// with <see cref="TextParser.Settings.IgnoreUnknownFields"/> set to true and call <see cref="TextParser.Parse{T}(string)"/> directly.
+        /// </remarks>
+        /// <param name="text">The text format to parse.</param>
+        /// <returns>The parsed message.</returns>
+        /// <exception cref="InvalidProtocolBufferException">The text does not represent a Protocol Buffers message correctly</exception>
+        public IMessage ParseText(string text)
+        {
+            IMessage message = factory();
+            TextParser.Default.Merge(message, text);
             return message;
         }
 
@@ -366,6 +383,19 @@ namespace Google.Protobuf
         {
             T message = factory();
             JsonParser.Default.Merge(message, json);
+            return message;
+        }
+
+        /// <summary>
+        /// Parses a message from the given Protocol Buffers text format string.
+        /// </summary>
+        /// <param name="text">The text format to parse.</param>
+        /// <returns>The parsed message.</returns>
+        /// <exception cref="InvalidProtocolBufferException">The text does not represent a Protocol Buffers message correctly</exception>
+        public new T ParseText(string text)
+        {
+            T message = factory();
+            TextParser.Default.Merge(message, text);
             return message;
         }
 

@@ -102,6 +102,13 @@ namespace Google.Protobuf
                 "Use JsonParser.Settings to increase the depth limit.");
         }
 
+        internal static InvalidProtocolBufferException TextRecursionLimitExceeded()
+        {
+            return new InvalidProtocolBufferException(
+                "Protocol message had too many levels of nesting.  May be malicious.  " +
+                "Use TextParser.Settings to increase the depth limit.");
+        }
+
         internal static InvalidProtocolBufferException SizeLimitExceeded()
         {
             return new InvalidProtocolBufferException(
