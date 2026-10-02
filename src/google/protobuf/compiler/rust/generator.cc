@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/rust/generator.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -40,6 +42,7 @@
 #include "google/protobuf/io/printer.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
+#include "upb_generator/file_layout.h"
 #include "upb_generator/plugin.h"
 
 namespace google {
@@ -163,6 +166,99 @@ bool CrateHasSymbolCollision(const std::vector<const FileDescriptor*>& files) {
   }
 
   return false;
+}
+
+// Emits `def_init()` for the given file.
+void EmitDefInit(Context& ctx, const FileDescriptor& file,
+                 const upb::DefPool& pool) {
+  // DescriptorInfo lives in generated.rs, i.e. the crate root.
+  std::string crate_root;
+  for (size_t i = 0; i < ctx.GetModuleDepth(); ++i) {
+    absl::StrAppend(&crate_root, "super::");
+  }
+
+  upb::FileDefPtr upb_file = pool.FindFileByName(file.name());
+  ABSL_CHECK(upb_file);
+  const DescriptorPool& desc_pool = *file.pool();
+
+  ctx.Emit(
+      {{"def_init", DefInitName(file)},
+       {"file_name", absl::CHexEscape(file.name())},
+       {"descriptor_info",
+        absl::StrCat(crate_root, "__unstable::", DescriptorInfoName(file))},
+       {"deps",
+        [&] {
+          for (int i = 0; i < file.dependency_count(); ++i) {
+            const FileDescriptor& dep = *file.dependency(i);
+            ctx.Emit({{"mod", RustModule(ctx, dep)},
+                      {"dep_def_init", DefInitName(dep)}},
+                     "$mod$$dep_def_init$($pbi$::Private),\n");
+          }
+        }},
+       {"msgs",
+        [&] {
+          for (upb::MessageDefPtr m :
+               upb::generator::SortedMessages(upb_file)) {
+            const Descriptor* msg =
+                desc_pool.FindMessageTypeByName(m.full_name());
+            ABSL_CHECK(msg != nullptr) << m.full_name();
+            ctx.Emit({{"type", RsTypePath(ctx, *msg)}},
+                     "<$type$ as $pbr$::AssociatedMiniTable>::mini_table(),\n");
+          }
+        }},
+       {"enums",
+        [&] {
+          for (upb::EnumDefPtr e : upb::generator::SortedEnums(
+                   upb_file, upb::generator::kClosedEnums)) {
+            const EnumDescriptor* enum_ =
+                desc_pool.FindEnumTypeByName(e.full_name());
+            ABSL_CHECK(enum_ != nullptr) << e.full_name();
+            ctx.Emit(
+                {{"type", RsTypePath(ctx, *enum_)}},
+                "<$type$ as $pbr$::AssociatedMiniTableEnum>::mini_table(),\n");
+          }
+        }},
+       {"exts",
+        [&] {
+          for (upb::FieldDefPtr f :
+               upb::generator::SortedExtensions(upb_file)) {
+            const FieldDescriptor* ext =
+                desc_pool.FindExtensionByName(f.full_name());
+            ABSL_CHECK(ext != nullptr) << f.full_name();
+            ctx.Emit({{"mod", RustModuleForExtension(ctx, *ext)},
+                      {"ext", ExtensionRsName(*ext)}},
+                     "$mod$$ext$.__internal_mini_table($pbi$::Private),\n");
+          }
+        }}},
+      R"rs(
+        #[doc(hidden)]
+        pub fn $def_init$(_private: $pbi$::Private) -> $pbr$::DefPoolInit {
+          static INIT: $std$::sync::OnceLock<$pbr$::DefPoolInit> =
+              $std$::sync::OnceLock::new();
+          *INIT.get_or_init(|| {
+            // SAFETY: This is the file's own name and descriptor, the inits of
+            // the files it imports, and its own MiniTables in upb's layout order.
+            unsafe {
+              $pbr$::build_def_init(
+                c"$file_name$",
+                $descriptor_info$.descriptor,
+                &[
+                  $deps$
+                ],
+                &[
+                  $msgs$
+                ],
+                &[
+                  $enums$
+                ],
+                &[
+                  $exts$
+                ],
+              )
+            }
+          })
+        }
+      )rs");
 }
 
 void EmitEntryPointRsFile(GeneratorContext* generator_context,
@@ -429,6 +525,12 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     if (ctx.is_cpp()) {
       auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
       GenerateThunksCc(thunks_ctx, extension);
+    }
+  }
+
+  if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen) {
+    if (!FileOrImportsHaveExtensions(*file)) {
+      EmitDefInit(ctx, *file, pool);
     }
   }
 
