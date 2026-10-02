@@ -2587,6 +2587,24 @@ cc_test(
 )
 
 cc_test(
+    name = "parse_context_test",
+    srcs = ["parse_context_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:test_zero_copy_stream",
+        "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:cord",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "preserve_unknown_enum_test",
     srcs = ["preserve_unknown_enum_test.cc"],
     deps = [
