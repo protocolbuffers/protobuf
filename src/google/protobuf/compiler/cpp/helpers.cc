@@ -2015,7 +2015,11 @@ static bool HasBootstrapProblem(const FileDescriptor* file,
   };
   static auto& bootstrap_cache = *new BootstrapGlobals();
 
+#if PROTOBUF_ABSL_MIN(20250814, 0)
+  absl::MutexLock lock(bootstrap_cache.mutex);
+#else
   absl::MutexLock lock(&bootstrap_cache.mutex);
+#endif
   if (bootstrap_cache.cached.contains(file)) return true;
   if (bootstrap_cache.non_cached.contains(file)) return false;
 

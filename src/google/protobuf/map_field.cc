@@ -266,7 +266,11 @@ size_t MapFieldBase::SpaceUsedExcludingSelfLong() const {
   ConstAccess();
   size_t size = 0;
   if (auto* p = maybe_payload()) {
+#if PROTOBUF_ABSL_MIN(20250814, 0)
+    absl::MutexLock lock(p->mutex());
+#else
     absl::MutexLock lock(&p->mutex());
+#endif
     // Measure the map under the lock, because there could be some repeated
     // field data that might be sync'd back into the map.
     size = GetMapRaw().SpaceUsedExcludingSelfLong();
@@ -316,7 +320,11 @@ const RepeatedPtrFieldBase& MapFieldBase::SyncRepeatedFieldWithMap(
     }
 
     {
+#if PROTOBUF_ABSL_MIN(20250814, 0)
+      absl::MutexLock lock(p->mutex());
+#else
       absl::MutexLock lock(&p->mutex());
+#endif
       // Double check state, because another thread may have seen the same
       // state and done the synchronization before the current thread.
       if (p->load_state_relaxed() == STATE_MODIFIED_MAP) {
@@ -425,7 +433,11 @@ void MapFieldBase::SyncMapWithRepeatedField() const {
   if (state() == STATE_MODIFIED_REPEATED) {
     auto& p = payload();
     {
+#if PROTOBUF_ABSL_MIN(20250814, 0)
+      absl::MutexLock lock(p.mutex());
+#else
       absl::MutexLock lock(&p.mutex());
+#endif
       // Double check state, because another thread may have seen the same state
       // and done the synchronization before the current thread.
       if (p.load_state_relaxed() == STATE_MODIFIED_REPEATED) {
