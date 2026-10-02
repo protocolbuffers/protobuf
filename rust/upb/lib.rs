@@ -32,7 +32,6 @@ extern crate sys;
 mod sys;
 
 #[cfg(not(bzl))]
-#[allow(dead_code)] // TODO - Remove when the public print API is implemented.
 pub mod reflection;
 
 // All sys re-exports below here intended to be burned down.

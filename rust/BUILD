@@ -110,6 +110,7 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "upb_kernel/message.rs",
     "upb_kernel/minitable.rs",
     "upb_kernel/mod.rs",
+    "upb_kernel/reflection.rs",
     "upb_kernel/repeated.rs",
     "upb_kernel/string.rs",
     # go/keep-sorted end
@@ -131,6 +132,7 @@ rust_library(
         "upb_kernel/message.rs",
         "upb_kernel/minitable.rs",
         "upb_kernel/mod.rs",
+        "upb_kernel/reflection.rs",
         "upb_kernel/repeated.rs",
         "upb_kernel/string.rs",
     ],
