@@ -211,7 +211,7 @@ class FieldMaskTree {
     if (root_.children.empty()) {
       return;
     }
-    MergeMessage(&root_, source, options, destination, /*depth=*/0);
+    MergeMessage(&root_, source, options, destination);
   }
 
   // Add required field path of the message to this tree based on current tree
@@ -280,14 +280,9 @@ class FieldMaskTree {
                             FieldMaskTree* out);
 
   // Merge all fields specified by a sub-tree from one message to another.
-  // `depth` is the number of message levels already descended from the root.
-  // Sub-paths nested deeper than kMaxMergeDepth are ignored, mirroring the
-  // default recursion limit that applies when parsing messages.
   void MergeMessage(const Node* node, const Message& source,
                     const FieldMaskUtil::MergeOptions& options,
-                    Message* destination, int depth);
-
-  static constexpr int kMaxMergeDepth = 100;
+                    Message* destination);
 
   // Add required field path of the message to this tree based on current tree
   // structure. If a message is present in the tree, add the path of its
@@ -480,60 +475,79 @@ void FieldMaskTree::MergeLeafNodesToTree(absl::string_view prefix,
 
 void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
                                  const FieldMaskUtil::MergeOptions& options,
-                                 Message* destination, int depth) {
+                                 Message* destination) {
   ABSL_DCHECK(!node->children.empty());
-  const Reflection* source_reflection = source.GetReflection();
-  const Reflection* destination_reflection = destination->GetReflection();
-  const Descriptor* descriptor = source.GetDescriptor();
-  for (const auto& kv : node->children) {
-    absl::string_view field_name = kv.first;
-    const Node* child = kv.second.get();
-    const FieldDescriptor* field = descriptor->FindFieldByName(field_name);
+
+  struct MergeTask {
+    const Node* child;
+    const Message* source;
+    Message* destination;
+    absl::string_view field_name;
+  };
+
+  std::vector<MergeTask> stack;
+  for (auto it = node->children.crbegin(); it != node->children.crend(); ++it) {
+    stack.push_back(
+        MergeTask{it->second.get(), &source, destination, it->first});
+  }
+
+  while (!stack.empty()) {
+    MergeTask task = stack.back();
+    stack.pop_back();
+
+    const Reflection* source_reflection = task.source->GetReflection();
+    const Reflection* destination_reflection =
+        task.destination->GetReflection();
+    const Descriptor* descriptor = task.source->GetDescriptor();
+    const FieldDescriptor* field =
+        descriptor->FindFieldByName(task.field_name);
     if (field == nullptr) {
-      ABSL_LOG(ERROR) << "Cannot find field \"" << field_name
+      ABSL_LOG(ERROR) << "Cannot find field \"" << task.field_name
                       << "\" in message " << descriptor->full_name();
       continue;
     }
-    if (!child->children.empty()) {
+
+    if (!task.child->children.empty()) {
       // Sub-paths are only allowed for singular message fields.
       if (field->is_repeated() ||
           field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-        ABSL_LOG(ERROR) << "Field \"" << field_name << "\" in message "
+        ABSL_LOG(ERROR) << "Field \"" << task.field_name << "\" in message "
                         << descriptor->full_name()
                         << " is not a singular message field and cannot "
                         << "have sub-fields.";
         continue;
       }
-      if (depth >= kMaxMergeDepth) {
-        ABSL_LOG(ERROR) << "Field \"" << field_name << "\" in message "
-                        << descriptor->full_name()
-                        << " is nested deeper than the maximum supported "
-                        << "field mask depth (" << kMaxMergeDepth
-                        << ") and will be ignored.";
-        continue;
+
+      const Message& nested_source =
+          source_reflection->GetMessage(*task.source, field);
+      Message* nested_destination =
+          destination_reflection->MutableMessage(task.destination, field);
+      for (auto it = task.child->children.crbegin();
+           it != task.child->children.crend(); ++it) {
+        stack.push_back(MergeTask{it->second.get(), &nested_source,
+                                  nested_destination, it->first});
       }
-      MergeMessage(child, source_reflection->GetMessage(source, field), options,
-                   destination_reflection->MutableMessage(destination, field),
-                   depth + 1);
       continue;
     }
+
     if (!field->is_repeated()) {
       switch (field->cpp_type()) {
-#define COPY_VALUE(TYPE, Name)                                              \
-  case FieldDescriptor::CPPTYPE_##TYPE: {                                   \
-    if (source_reflection->HasField(source, field)) {                       \
-      destination_reflection->Set##Name(                                    \
-          destination, field, source_reflection->Get##Name(source, field)); \
-    } else {                                                                \
-      destination_reflection->ClearField(destination, field);               \
-    }                                                                       \
-    break;                                                                  \
+#define COPY_VALUE(TYPE, Name)                                             \
+  case FieldDescriptor::CPPTYPE_##TYPE: {                                  \
+    if (source_reflection->HasField(*task.source, field)) {                 \
+      destination_reflection->Set##Name(                                   \
+          task.destination, field,                                         \
+          source_reflection->Get##Name(*task.source, field));              \
+    } else {                                                               \
+      destination_reflection->ClearField(task.destination, field);         \
+    }                                                                      \
+    break;                                                                 \
   }
         COPY_VALUE(BOOL, Bool)
         COPY_VALUE(INT32, Int32)
         COPY_VALUE(INT64, Int64)
-        COPY_VALUE(UINT32, UInt32)
-        COPY_VALUE(UINT64, UInt64)
+        COPY_VALUE(UINT32, Uint32)
+        COPY_VALUE(UINT64, Uint64)
         COPY_VALUE(FLOAT, Float)
         COPY_VALUE(DOUBLE, Double)
         COPY_VALUE(ENUM, EnumValue)
@@ -541,46 +555,46 @@ void FieldMaskTree::MergeMessage(const Node* node, const Message& source,
 #undef COPY_VALUE
         case FieldDescriptor::CPPTYPE_MESSAGE: {
           if (options.replace_message_fields()) {
-            destination_reflection->ClearField(destination, field);
+            destination_reflection->ClearField(task.destination, field);
           }
-          if (source_reflection->HasField(source, field)) {
-            destination_reflection->MutableMessage(destination, field)
-                ->MergeFrom(source_reflection->GetMessage(source, field));
+          if (source_reflection->HasField(*task.source, field)) {
+            destination_reflection->MutableMessage(task.destination, field)
+                ->MergeFrom(source_reflection->GetMessage(*task.source, field));
           }
           break;
         }
       }
     } else {
       if (options.replace_repeated_fields()) {
-        destination_reflection->ClearField(destination, field);
+        destination_reflection->ClearField(task.destination, field);
       }
       switch (field->cpp_type()) {
-#define COPY_REPEATED_VALUE(TYPE, Name)                            \
-  case FieldDescriptor::CPPTYPE_##TYPE: {                          \
-    int size = source_reflection->FieldSize(source, field);        \
-    for (int i = 0; i < size; ++i) {                               \
-      destination_reflection->Add##Name(                           \
-          destination, field,                                      \
-          source_reflection->GetRepeated##Name(source, field, i)); \
-    }                                                              \
-    break;                                                         \
+#define COPY_REPEATED_VALUE(TYPE, Name)                               \
+  case FieldDescriptor::CPPTYPE_##TYPE: {                             \
+    int size = source_reflection->FieldSize(*task.source, field);     \
+    for (int i = 0; i < size; ++i) {                                  \
+      destination_reflection->Add##Name(                              \
+          task.destination, field,                                    \
+          source_reflection->GetRepeated##Name(*task.source, field, i)); \
+    }                                                                 \
+    break;                                                            \
   }
         COPY_REPEATED_VALUE(BOOL, Bool)
         COPY_REPEATED_VALUE(INT32, Int32)
         COPY_REPEATED_VALUE(INT64, Int64)
-        COPY_REPEATED_VALUE(UINT32, UInt32)
-        COPY_REPEATED_VALUE(UINT64, UInt64)
+        COPY_REPEATED_VALUE(UINT32, Uint32)
+        COPY_REPEATED_VALUE(UINT64, Uint64)
         COPY_REPEATED_VALUE(FLOAT, Float)
         COPY_REPEATED_VALUE(DOUBLE, Double)
         COPY_REPEATED_VALUE(ENUM, EnumValue)
         COPY_REPEATED_VALUE(STRING, String)
 #undef COPY_REPEATED_VALUE
         case FieldDescriptor::CPPTYPE_MESSAGE: {
-          int size = source_reflection->FieldSize(source, field);
+          int size = source_reflection->FieldSize(*task.source, field);
           for (int i = 0; i < size; ++i) {
-            destination_reflection->AddMessage(destination, field)
+            destination_reflection->AddMessage(task.destination, field)
                 ->MergeFrom(
-                    source_reflection->GetRepeatedMessage(source, field, i));
+                    source_reflection->GetRepeatedMessage(*task.source, field, i));
           }
           break;
         }
