@@ -357,7 +357,7 @@ struct ParseProto3Type : Proto3Type {
         // always `2 * abs(n) + (n < 0)`.
         x = static_cast<Int>(
             internal::WireFormatLite::ZigZagEncode64(static_cast<int64_t>(x)));
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case varint:
         msg.stream_.WriteTag(f->proto().number() << 3 |
                              WireFormatLite::WIRETYPE_VARINT);

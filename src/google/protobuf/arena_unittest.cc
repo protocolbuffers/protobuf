@@ -39,7 +39,6 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
-#include "absl/utility/utility.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"
 #include "google/protobuf/descriptor.h"
@@ -569,7 +568,7 @@ class DispatcherTestProto : public Message {
     return nullptr;
   }
 };
-DispatcherTestProto dispatcher_test_proto_instance(absl::in_place);
+DispatcherTestProto dispatcher_test_proto_instance(std::in_place);
 
 // We use a specialization to inject behavior for the test.
 // This test is very intrusive and will have to be fixed if we change the
