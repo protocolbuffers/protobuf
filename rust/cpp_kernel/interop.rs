@@ -9,13 +9,20 @@
 //!
 //! These traits are deliberately not available on the prelude, as they should
 //! be used rarely and with great care.
+//!
+//! The raw pointers vended and accepted by these traits are only guaranteed to
+//! point to a `proto2::MessageLite`. The pointer is only guaranteed to be a full `proto2::Message*`
+//! if the Rust type also implements the `WithReflection` trait. Casting a pointer to
+//! `proto2::Message*` for a type that does not implement `WithReflection` is
+//! undefined behavior.
 
 use super::*;
 
 /// Methods for converting to and from a raw, owned C++ message pointer.
 pub trait OwnedMessageInterop: SealedInternal {
     /// Drops `self` and returns an underlying pointer that it was wrapping
-    /// without deleting it.
+    /// without deleting it. The pointer is a `MessageLite*` in C++ (and only a
+    /// `Message*` if `Self` implements `WithReflection`, see the module docs).
     ///
     /// The caller is responsible for ensuring the returned pointer is
     /// subsequently deleted (eg by moving it into a std::unique_ptr in
@@ -26,8 +33,8 @@ pub trait OwnedMessageInterop: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The pointer passed in must not be used by the caller after being
-    ///     passed here (must not be read, written, or deleted)
+    ///   - The pointer passed in must not be used by the caller after being passed here (must not
+    ///     be read, written, or deleted)
     unsafe fn __unstable_take_ownership_of_raw_message(raw_message: *mut std::ffi::c_void) -> Self;
 }
 
@@ -37,9 +44,10 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
     ///
     /// Note that the returned Value must be used under the same constraints
     /// as though it were a borrow of `self`: it should be treated as a
-    /// `const Message*` in C++, and not be mutated in any way, and any
-    /// mutation to the parent message may invalidate it, and it
-    /// must not be deleted.
+    /// `const MessageLite*` in C++ (and only as a `const Message*` if `Self`
+    /// implements `WithReflection`, see the module docs), and not be mutated
+    /// in any way, and any mutation to the parent message may invalidate it,
+    /// and it must not be deleted.
     fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void;
 
     /// Wraps the provided pointer as a MessageView.
@@ -58,8 +66,7 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for 'msg and not mutated
-    ///     while the wrapper is live.
+    ///   - The underlying message must be alive for 'msg and not mutated while the wrapper is live.
     unsafe fn __unstable_wrap_raw_message(raw: &'msg *const std::ffi::c_void) -> Self;
 
     /// Wraps the provided pointer as a MessageView.
@@ -74,8 +81,8 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for the caller-chosen 'msg
-    ///     and not mutated while the wrapper is live.
+    ///   - The underlying message must be alive for the caller-chosen 'msg and not mutated while
+    ///     the wrapper is live.
     unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(raw: *const std::ffi::c_void) -> Self;
 }
 
@@ -85,8 +92,9 @@ pub trait MessageMutInterop<'msg>: SealedInternal {
     ///
     /// Note that the returned Value must be used under the same constraints
     /// as though it were a mut borrow of `self`: it should be treated as a
-    /// non-owned `Message*` in C++. And any mutation to the parent message
-    /// may invalidate it, and it must not be deleted.
+    /// non-owned `MessageLite*` in C++ (and only as a `Message*` if `Self`
+    /// implements `WithReflection`, see the module docs). And any mutation to
+    /// the parent message may invalidate it, and it must not be deleted.
     fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void;
 
     /// Wraps the provided C++ pointer as a MessageMut.
@@ -105,8 +113,8 @@ pub trait MessageMutInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for 'msg and not read or
-    ///     mutated while the wrapper is live.
+    ///   - The underlying message must be alive for 'msg and not read or mutated while the wrapper
+    ///     is live.
     unsafe fn __unstable_wrap_raw_message_mut(raw: &'msg mut *mut std::ffi::c_void) -> Self;
 
     /// Wraps the provided pointer as a MessageMut.
@@ -121,8 +129,8 @@ pub trait MessageMutInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for the caller-chosen 'msg
-    ///     and not mutated while the wrapper is live.
+    ///   - The underlying message must be alive for the caller-chosen 'msg and not mutated while
+    ///     the wrapper is live.
     unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
         raw: *mut std::ffi::c_void,
     ) -> Self;
