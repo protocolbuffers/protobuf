@@ -40,11 +40,13 @@ final class IsValidUtf8TestUtil {
         }
       };
 
+  /** Factory for read-only heap {@link ByteBuffer} instances, which expose no backing array. */
   static final ByteStringFactory HEAP_NIO_FACTORY =
       new ByteStringFactory() {
         @Override
         public ByteString newByteString(byte[] bytes) {
-          return ByteString.wrap(ByteBuffer.wrap(bytes));
+          return ByteString.wrap(
+              ByteBuffer.wrap(bytes).asReadOnlyBuffer(), /* copyOffHeap= */ false);
         }
       };
 
@@ -69,7 +71,7 @@ final class IsValidUtf8TestUtil {
           buffer.clear();
           buffer.put(bytes);
           buffer.flip();
-          return ByteString.wrap(buffer);
+          return ByteString.wrap(buffer, /* copyOffHeap= */ false);
         }
       };
 
