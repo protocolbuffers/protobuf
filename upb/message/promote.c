@@ -8,6 +8,7 @@
 #include "upb/message/promote.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -32,13 +33,31 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-// Parses unknown data by merging into existing base_message or creating a
-// new message using mini_table.
+// Returns the number of messages in `unknown`: the number of elements of a
+// non-canonical extension for a repeated message field (e.g. a field that
+// `upb_Message_Convert()` demoted), or 1 otherwise.
+static size_t upb_MessageUnknown_MessageCount(
+    const upb_MessageUnknown* unknown) {
+  if (unknown->type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+    const upb_Extension* ext = unknown->value.extension;
+    if (upb_MiniTableExtension_CType(ext->ext) == kUpb_CType_Message &&
+        upb_MiniTableField_IsArray(upb_MiniTableExtension_ToField(ext->ext))) {
+      return upb_Array_Size(ext->data.array_val);
+    }
+  }
+  return 1;
+}
+
+// Parses the message at `index` (see `upb_MessageUnknown_MessageCount()`) of
+// unknown data by merging into existing base_message or creating a new message
+// using mini_table.
 //
 // Note: This function only supports unknowns with message types.
 static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
-    const upb_MessageUnknown* unknown, const upb_MiniTable* mini_table,
-    upb_Message* base_message, int decode_options, upb_Arena* arena) {
+    const upb_MessageUnknown* unknown, size_t index,
+    const upb_MiniTable* mini_table, upb_Message* base_message,
+    int decode_options, upb_Arena* arena) {
+  UPB_ASSERT(index < upb_MessageUnknown_MessageCount(unknown));
   upb_UnknownToMessageRet ret;
   ret.message =
       base_message ? base_message : _upb_Message_New(mini_table, arena);
@@ -73,10 +92,14 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
       ret.status = kUpb_UnknownToMessage_ParseError;
       return ret;
     }
+    const upb_Message* ext_msg =
+        upb_MiniTableField_IsArray(upb_MiniTableExtension_ToField(ext->ext))
+            ? upb_Array_Get(ext->data.array_val, index).msg_val
+            : ext->data.msg_val;
     char* buf;
-    upb_EncodeStatus enc_status = upb_Encode(
-        ext->data.msg_val, upb_MiniTableExtension_GetSubMessage(ext->ext),
-        /* options= */ 0, arena, &buf, &size);
+    upb_EncodeStatus enc_status =
+        upb_Encode(ext_msg, upb_MiniTableExtension_GetSubMessage(ext->ext),
+                   /* options= */ 0, arena, &buf, &size);
     if (enc_status != kUpb_EncodeStatus_Ok) {
       ret.status = enc_status == kUpb_EncodeStatus_OutOfMemory
                        ? kUpb_UnknownToMessage_OutOfMemory
@@ -142,14 +165,20 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
       const upb_Extension* ext = (const upb_Extension*)data.value.extension;
       if (upb_MiniTableExtension_Number(ext->ext) == field_number) {
         found_count++;
-        upb_UnknownToMessageRet parse_result =
-            upb_MiniTable_ParseUnknownMessage(&data, extension_table,
-                                              /* base_message= */ extension_msg,
-                                              decode_options, arena);
-        if (parse_result.status != kUpb_UnknownToMessage_Ok) {
-          return upb_UnknownToMessage_ToGetExtensionStatus(parse_result.status);
+        // Like multiple occurrences of a message field on the wire, the
+        // elements of a repeated field are merged.
+        size_t count = upb_MessageUnknown_MessageCount(&data);
+        for (size_t i = 0; i < count; i++) {
+          upb_UnknownToMessageRet parse_result =
+              upb_MiniTable_ParseUnknownMessage(
+                  &data, i, extension_table,
+                  /* base_message= */ extension_msg, decode_options, arena);
+          if (parse_result.status != kUpb_UnknownToMessage_Ok) {
+            return upb_UnknownToMessage_ToGetExtensionStatus(
+                parse_result.status);
+          }
+          extension_msg = parse_result.message;
         }
-        extension_msg = parse_result.message;
       }
     } else {
       UPB_ASSERT(data.type == kUpb_MessageUnknownType_StringView);
@@ -176,7 +205,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
           unknown_item.value.bytes = data;
           upb_UnknownToMessageRet parse_result =
               upb_MiniTable_ParseUnknownMessage(
-                  &unknown_item, extension_table,
+                  &unknown_item, 0, extension_table,
                   /* base_message= */ extension_msg, decode_options, arena);
           if (parse_result.status != kUpb_UnknownToMessage_Ok) {
             return upb_UnknownToMessage_ToGetExtensionStatus(
@@ -285,10 +314,17 @@ upb_UnknownToMessageRet upb_MiniTable_PromoteUnknownToMessage(
         upb_DecodeOptions_GetEffectiveMaxDepth(decode_options));
     switch (unknown.status) {
       case kUpb_FindUnknown_Ok: {
-        ret = upb_MiniTable_ParseUnknownMessage(
-            &unknown.unknown, sub_mini_table, message, decode_options, arena);
-        if (ret.status == kUpb_UnknownToMessage_Ok) {
+        // Like multiple occurrences of a message field on the wire, the
+        // elements of a repeated field are merged.
+        size_t count = upb_MessageUnknown_MessageCount(&unknown.unknown);
+        for (size_t i = 0; i < count; i++) {
+          ret = upb_MiniTable_ParseUnknownMessage(&unknown.unknown, i,
+                                                  sub_mini_table, message,
+                                                  decode_options, arena);
+          if (ret.status != kUpb_UnknownToMessage_Ok) break;
           message = ret.message;
+        }
+        if (ret.status == kUpb_UnknownToMessage_Ok) {
           upb_Message_DeleteUnknownStatus del_status =
               upb_Message_DeleteUnknown2(msg, &unknown.unknown, &(unknown.iter),
                                          arena);
@@ -337,10 +373,13 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         msg, upb_MiniTableField_Number(field),
         upb_DecodeOptions_GetEffectiveMaxDepth(decode_options));
     if (unknown.status == kUpb_FindUnknown_Ok) {
-      upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
-          &unknown.unknown, mini_table,
-          /* base_message= */ NULL, decode_options, arena);
-      if (ret.status == kUpb_UnknownToMessage_Ok) {
+      // A non-canonical extension of a repeated field holds multiple messages.
+      size_t count = upb_MessageUnknown_MessageCount(&unknown.unknown);
+      for (size_t i = 0; i < count; i++) {
+        upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
+            &unknown.unknown, i, mini_table,
+            /* base_message= */ NULL, decode_options, arena);
+        if (ret.status != kUpb_UnknownToMessage_Ok) return ret.status;
         upb_MessageValue value;
         value.msg_val = ret.message;
         // Allocate array on demand before append.
@@ -353,13 +392,11 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMessageArray(
         if (!upb_Array_Append(repeated_messages, value, arena)) {
           return kUpb_UnknownToMessage_OutOfMemory;
         }
-        upb_Message_DeleteUnknownStatus del_status = upb_Message_DeleteUnknown2(
-            msg, &unknown.unknown, &(unknown.iter), arena);
-        if (del_status == kUpb_DeleteUnknown_AllocFail) {
-          return kUpb_UnknownToMessage_OutOfMemory;
-        }
-      } else {
-        return ret.status;
+      }
+      upb_Message_DeleteUnknownStatus del_status = upb_Message_DeleteUnknown2(
+          msg, &unknown.unknown, &(unknown.iter), arena);
+      if (del_status == kUpb_DeleteUnknown_AllocFail) {
+        return kUpb_UnknownToMessage_OutOfMemory;
       }
     }
   } while (unknown.status == kUpb_FindUnknown_Ok);
@@ -382,17 +419,21 @@ upb_UnknownToMessage_Status upb_MiniTable_PromoteUnknownToMap(
         msg, upb_MiniTableField_Number(field),
         upb_DecodeOptions_GetEffectiveMaxDepth(decode_options));
     if (unknown.status != kUpb_FindUnknown_Ok) break;
-    upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
-        &unknown.unknown, map_entry_mini_table,
-        /* base_message= */ NULL, decode_options, arena);
-    if (ret.status != kUpb_UnknownToMessage_Ok) return ret.status;
-    // Allocate map on demand before append.
-    upb_Map* map = upb_Message_GetOrCreateMutableMap(msg, map_entry_mini_table,
-                                                     field, arena);
-    upb_Message* map_entry_message = ret.message;
-    bool insert_success =
-        upb_Message_SetMapEntry(map, field, map_entry_message, arena);
-    if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
+    // A non-canonical extension of a repeated field holds multiple messages.
+    size_t count = upb_MessageUnknown_MessageCount(&unknown.unknown);
+    for (size_t i = 0; i < count; i++) {
+      upb_UnknownToMessageRet ret = upb_MiniTable_ParseUnknownMessage(
+          &unknown.unknown, i, map_entry_mini_table,
+          /* base_message= */ NULL, decode_options, arena);
+      if (ret.status != kUpb_UnknownToMessage_Ok) return ret.status;
+      // Allocate map on demand before append.
+      upb_Map* map = upb_Message_GetOrCreateMutableMap(
+          msg, map_entry_mini_table, field, arena);
+      upb_Message* map_entry_message = ret.message;
+      bool insert_success =
+          upb_Message_SetMapEntry(map, field, map_entry_message, arena);
+      if (!insert_success) return kUpb_UnknownToMessage_OutOfMemory;
+    }
     upb_Message_DeleteUnknownStatus del_status =
         upb_Message_DeleteUnknown2(msg, &unknown.unknown, &unknown.iter, arena);
     if (del_status == kUpb_DeleteUnknown_AllocFail) {
