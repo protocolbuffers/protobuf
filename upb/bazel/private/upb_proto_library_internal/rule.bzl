@@ -1,7 +1,7 @@
 """Internal rule implementation for upb_*_proto_library() rules."""
 
-load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
-load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+#load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+#load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 _is_google3 = False
 
@@ -43,8 +43,10 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     cc_info = dep[cc_info_provider].cc_info
 
     # Direct library extraction for DefaultInfo
-    all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
-    direct_input = all_linker_inputs[0]
+    direct_input = cc_info.linking_context.linker_inputs.to_list()[0]
+
+    # all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
+    # direct_input = all_linker_inputs[0]
     lib = direct_input.libraries[0]
     files = _filter_none([
         lib.static_library,
