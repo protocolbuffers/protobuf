@@ -7,7 +7,8 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
-#include "conformance/test_runner.h"
+#include "conformance/conformance.pb.h"
+#include "conformance/mock_test_runner.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/test_textproto.h"
@@ -41,13 +42,6 @@ auto RespondWith(absl::string_view textproto) {
   ABSL_CHECK(TextFormat::ParseFromString(textproto, &response));
   return Return(response.SerializeAsString());
 }
-
-class MockTestRunner : public ConformanceTestRunner {
- public:
-  MOCK_METHOD(std::string, RunTest,
-              (absl::string_view test_name, absl::string_view input),
-              (override));
-};
 
 TEST(TesteeTest, BinaryToBinary) {
   MockTestRunner mock;

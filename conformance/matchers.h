@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
+#include "conformance/testee.h"
 #include "google/protobuf/message.h"
 
 namespace google {
@@ -37,6 +38,23 @@ testing::Matcher<const Message&> EqualsTextProto(absl::string_view text);
 testing::Matcher<const Message&> EqualsBinaryProto(Wire bytes);
 
 // TODO: b/410122158 - Add JSON matchers once JSON support is migrated.
+
+// Matches a response that reports a parse error.
+//
+//   EXPECT_THAT(result, IsParseError());
+//
+// Any other response fails with "Should have failed to parse, but didn't."  A
+// runtime error fails with "Should have failed to parse, but raised an error
+// instead."
+testing::Matcher<const internal::TestResult&> IsParseError();
+
+// Matches a response that reports a serialize error.
+//
+//   EXPECT_THAT(result, IsSerializeError());
+//
+// Any other response fails like it does for IsParseError(), with the
+// corresponding "Should have failed to serialize, ..." messages.
+testing::Matcher<const internal::TestResult&> IsSerializeError();
 
 }  // namespace conformance
 }  // namespace protobuf

@@ -388,7 +388,8 @@ cc_test(
     srcs = ["testee_test.cc"],
     deps = [
         ":binary_wireformat",
-        ":test_runner",
+        ":conformance_cc_proto",
+        ":mock_test_runner",
         ":testee",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
@@ -429,6 +430,7 @@ cc_library(
     deps = [
         ":binary_wireformat",
         ":conformance_cc_proto",
+        ":testee",
         "//src/google/protobuf",
         "//src/google/protobuf/util:differencer",
         "@abseil-cpp//absl/log:absl_check",
@@ -444,10 +446,15 @@ cc_test(
     srcs = ["matchers_test.cc"],
     deps = [
         ":binary_wireformat",
+        ":conformance_cc_proto",
         ":matchers",
+        ":mock_test_runner",
+        ":testee",
         "//:test_messages_proto2_cc_proto",
         "//src/google/protobuf",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

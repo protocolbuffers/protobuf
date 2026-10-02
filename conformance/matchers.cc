@@ -19,6 +19,7 @@
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
+#include "conformance/testee.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/field_comparator.h"
@@ -29,7 +30,9 @@ namespace protobuf {
 namespace conformance {
 namespace {
 
+using ::conformance::ConformanceResponse;
 using ::conformance::WireFormat;
+using ::google::protobuf::conformance::internal::TestResult;
 
 // Implements EqualsTextProto() and EqualsBinaryProto(): matches a message
 // equivalent to the one obtained by decoding `expected` (in `format`) as the
@@ -90,6 +93,53 @@ class EquivalentMessageMatcher {
   std::string expected_;
 };
 
+// Matches a result whose response holds a specific kind of error.
+class FailureMatcher {
+ public:
+  using is_gtest_matcher = void;
+
+  // `name` is used for descriptions (e.g. "parse error").  `failure_message`
+  // is the explanation when the response isn't the expected error, and
+  // `runtime_error_failure_message` the one when it is a runtime error.
+  FailureMatcher(absl::string_view name,
+                 ConformanceResponse::ResultCase expected_result,
+                 absl::string_view failure_message,
+                 absl::string_view runtime_error_failure_message)
+      : name_(name),
+        expected_result_(expected_result),
+        failure_message_(failure_message),
+        runtime_error_failure_message_(runtime_error_failure_message) {}
+
+  bool MatchAndExplain(const TestResult& result,
+                       testing::MatchResultListener* listener) const {
+    ConformanceResponse::ResultCase actual = result.response().result_case();
+    if (actual == expected_result_) {
+      return true;
+    }
+    if (actual == ConformanceResponse::kSkipped) {
+      *listener << "the testee skipped the test: "
+                << result.response().skipped();
+      return false;
+    }
+    if (actual == ConformanceResponse::kRuntimeError) {
+      *listener << runtime_error_failure_message_;
+      return false;
+    }
+    *listener << failure_message_;
+    return false;
+  }
+  void DescribeTo(std::ostream* os) const { *os << "is a " << name_; }
+  void DescribeNegationTo(std::ostream* os) const {
+    *os << "is not a " << name_;
+  }
+
+ private:
+  std::string name_;
+  ConformanceResponse::ResultCase expected_result_;
+  std::string failure_message_;
+  std::string runtime_error_failure_message_;
+};
+
 }  // namespace
 
 testing::Matcher<const Message&> EqualsTextProto(absl::string_view text) {
@@ -100,6 +150,20 @@ testing::Matcher<const Message&> EqualsTextProto(absl::string_view text) {
 testing::Matcher<const Message&> EqualsBinaryProto(Wire bytes) {
   return EquivalentMessageMatcher(::conformance::PROTOBUF,
                                   std::move(bytes).str());
+}
+
+testing::Matcher<const internal::TestResult&> IsParseError() {
+  return FailureMatcher(
+      "parse error", ConformanceResponse::kParseError,
+      "Should have failed to parse, but didn't.",
+      "Should have failed to parse, but raised an error instead.");
+}
+
+testing::Matcher<const internal::TestResult&> IsSerializeError() {
+  return FailureMatcher(
+      "serialize error", ConformanceResponse::kSerializeError,
+      "Should have failed to serialize, but didn't.",
+      "Should have failed to serialize, but raised an error instead.");
 }
 
 }  // namespace conformance
