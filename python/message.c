@@ -799,9 +799,8 @@ static bool PyUpb_Message_Reify(PyUpb_Message* self, const upb_FieldDef* f,
   self->ptr.msg = msg;  // Overwrites self->ptr.parent
   self->def = (uintptr_t)upb_FieldDef_MessageSubDef(f);
   assert(!PyUpb_Message_IsStub(self));
-  bool ok = PyUpb_Message_SyncSubobjs(self);  // May DECREF self!
   Py_DECREF(parent);
-  return ok;
+  return true;
 }
 
 static bool PyUpb_Message_SyncSubobj(PyUpb_Message* self, PyObject* obj,
@@ -850,7 +849,48 @@ static bool PyUpb_Message_SyncSubobj(PyUpb_Message* self, PyObject* obj,
  * This requires that all of the new sub-objects that have appeared are owned
  * by `self`'s arena.
  */
-static bool PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
+static bool PyUpb_Message_DoSyncSubobjs(upb_Message* msg,
+                                        const upb_MessageDef* msgdef,
+                                        PyObject* arena, PyUpb_Message* py_msg);
+
+static bool PyUpb_Message_SyncPresentSubobjs(upb_Message* msg,
+                                             const upb_MessageDef* msgdef,
+                                             PyObject* arena) {
+  const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
+  size_t field_iter = kUpb_Message_Begin;
+  const upb_FieldDef* f;
+  upb_MessageValue val;
+
+  while (upb_Message_Next(msg, msgdef, symtab, &f, &val, &field_iter)) {
+    if (upb_FieldDef_IsMap(f)) {
+      PyObject* sub = PyUpb_Arena_CacheGet(arena, val.map_val);
+      if (sub) {
+        PyUpb_MapContainer_Invalidate(sub);
+        Py_DECREF(sub);
+      }
+    } else if (upb_FieldDef_IsSubMessage(f) && !upb_FieldDef_IsRepeated(f)) {
+      if (!val.msg_val) continue;
+      PyObject* sub = PyUpb_Arena_CacheGet(arena, val.msg_val);
+      bool ok = PyUpb_Message_DoSyncSubobjs((upb_Message*)val.msg_val,
+                                            upb_FieldDef_MessageSubDef(f),
+                                            arena, (PyUpb_Message*)sub);
+      Py_XDECREF(sub);
+      if (!ok) return false;
+    }
+  }
+
+  return true;
+}
+
+static bool PyUpb_Message_SyncStubSubobjs(PyUpb_Message* self,
+                                          const upb_MessageDef* msgdef,
+                                          PyObject* arena) {
+  // `self` can be NULL when a present C submessage has no live Python wrapper
+  // in `arena->obj_cache` (because the user dropped their reference to the
+  // intermediate submessage wrapper), while a deeper descendant still has a
+  // live Python wrapper or unpromoted stub.
+  if (!self) return true;
+
   PyUpb_WeakMap* subobj_map = PyUpb_LazyPtr_RawGet(&self->unset_subobj_map);
   if (!subobj_map) return true;
 
@@ -858,9 +898,9 @@ static bool PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
   const void* key;
   // The last ref to this message could disappear during iteration.
   // When we call PyUpb_*Container_Reify() below, the container will drop
-  // its ref on `self`.  If that was the last ref on self, the object will be
-  // deleted, and `subobj_map` along with it.  We need it to live until we are
-  // done iterating.
+  // its ref on `self`.  If that was the last ref on self, the object will
+  // be deleted, and `subobj_map` along with it.  We need it to live until we
+  // are done iterating.
   Py_INCREF(&self->ob_base);
 
   bool ok = true;
@@ -879,9 +919,21 @@ static bool PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
   PyUpb_WeakMapIter_End(&iter);
 
   Py_DECREF(&self->ob_base);
-  // TODO: present fields need to be iterated too if they can reach
-  // a WeakMap.
   return ok;
+}
+
+static bool PyUpb_Message_DoSyncSubobjs(upb_Message* msg,
+                                        const upb_MessageDef* msgdef,
+                                        PyObject* arena,
+                                        PyUpb_Message* py_msg) {
+  return PyUpb_Message_SyncStubSubobjs(py_msg, msgdef, arena) &&
+         PyUpb_Message_SyncPresentSubobjs(msg, msgdef, arena);
+}
+
+static bool PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
+  return PyUpb_Message_DoSyncSubobjs(PyUpb_Message_GetMsg(self),
+                                     _PyUpb_Message_GetMsgdef(self),
+                                     self->arena, self);
 }
 
 static PyObject* PyUpb_Message_ToString(PyUpb_Message* self) {
