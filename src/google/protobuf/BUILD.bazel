@@ -2339,7 +2339,9 @@ cc_test(
     }),
     deps = [
         ":cc_test_protos",
+        ":class_data",
         ":descriptor_visitor",
+        ":message_traits",
         ":port",
         ":protobuf",
         ":protobuf_lite",
