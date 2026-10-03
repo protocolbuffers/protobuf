@@ -915,7 +915,9 @@ def MessageSetItemDecoder(descriptor):
         break
       else:
         field_number, wire_type = DecodeTag(tag_bytes)
-        _, pos = _DecodeUnknownField(buffer, pos, end, field_number, wire_type)
+        _, pos = _DecodeUnknownField(
+            buffer, pos, end, field_number, wire_type, current_depth
+        )
         if pos == -1:
           raise _DecodeError('Unexpected end-group tag.')
 
