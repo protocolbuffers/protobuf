@@ -615,8 +615,10 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
     return false;
   }
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::strings_internal::STLStringResizeUninitializedAmortized(
       output, old_size + byte_size);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   uint8_t* start =
       reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
   SerializeToArrayImpl(*this, start, byte_size);
@@ -813,7 +815,9 @@ void OnShutdown(void (*func)()) {
 
 void OnShutdownRun(void (*f)(const void*), const void* arg) {
   auto shutdown_data = ShutdownData::get();
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::MutexLock lock(&shutdown_data->mutex);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 

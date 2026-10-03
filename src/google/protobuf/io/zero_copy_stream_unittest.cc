@@ -1159,10 +1159,12 @@ TEST(CordInputStreamTest, HugeCordNodes) {
 
   std::string input_str;
   // We don't care about the bytes, so avoid the cost.
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::strings_internal::STLStringResizeUninitializedAmortized(
       &input_str,
       // Something larger than INT_MAX
       3'000'000'000);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   absl::Cord source = absl::MakeCordFromExternal(input_str, [](auto) {});
   ASSERT_EQ(source.Chunks().begin()->size(), input_str.size());
 
@@ -1787,13 +1789,17 @@ TEST_F(IoTest, NonBlockingFileIo) {
       ASSERT_EQ(fcntl(fd[1], F_SETFL, O_NONBLOCK), 0);
 
       absl::Mutex go_write;
+      PROTOBUF_IGNORE_DEPRECATION_START
       go_write.Lock();
+      PROTOBUF_IGNORE_DEPRECATION_STOP
 
       bool done_reading = false;
 
       std::thread write_thread([this, fd, &go_write, i]() {
+        PROTOBUF_IGNORE_DEPRECATION_START
         go_write.Lock();
         go_write.Unlock();
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         FileOutputStream output(fd[1], kBlockSizes[i]);
         WriteStuff(&output);
         EXPECT_EQ(0, output.GetErrno());
@@ -1812,7 +1818,9 @@ TEST_F(IoTest, NonBlockingFileIo) {
       // reading thread waits for the data to be available before returning.
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       EXPECT_FALSE(done_reading);
+      PROTOBUF_IGNORE_DEPRECATION_START
       go_write.Unlock();
+      PROTOBUF_IGNORE_DEPRECATION_STOP
       write_thread.join();
       read_thread.join();
       EXPECT_TRUE(done_reading);
