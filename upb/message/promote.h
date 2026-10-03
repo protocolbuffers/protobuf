@@ -42,7 +42,7 @@ typedef enum {
 
 // Returns a message value or promotes an unknown field to an extension.
 //
-// TODO: Only supports extension fields that are messages,
+// TODO: Only supports singular message extensions,
 // expand support to include non-message types.
 UPB_NODISCARD upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
