@@ -667,6 +667,35 @@ public abstract class CodedInputStream {
    */
   public abstract int countPackedVarints(int length);
 
+  /*
+   * Packed repeated field readers.
+   *
+   * Each reads the varint length prefix and then the payload of a packed repeated field, and
+   * returns a new mutable list holding the decoded values, which the caller owns. For use by
+   * generated code only.
+   */
+
+  /**
+   * Reads a packed repeated {@code int32} or {@code uint32} payload. For use by generated code
+   * only.
+   */
+  abstract Internal.IntList readPackedInt32() throws IOException;
+
+  /**
+   * Reads a packed repeated {@code int64} or {@code uint64} payload. For use by generated code
+   * only.
+   */
+  abstract Internal.LongList readPackedInt64() throws IOException;
+
+  /** Reads a packed repeated {@code bool} payload. For use by generated code only. */
+  abstract Internal.BooleanList readPackedBool() throws IOException;
+
+  /** Reads a packed repeated {@code float} payload. For use by generated code only. */
+  abstract Internal.FloatList readPackedFloat() throws IOException;
+
+  /** Reads a packed repeated {@code double} payload. For use by generated code only. */
+  abstract Internal.DoubleList readPackedDouble() throws IOException;
+
   /**
    * Read one byte from the input.
    *
@@ -1486,6 +1515,250 @@ public abstract class CodedInputStream {
       return numVarints;
     }
 
+    /**
+     * Validates the length of a packed varint payload and returns the number of varints in it. The
+     * count is 0 only for an empty payload.
+     */
+    private int checkPackedVarintPayload(int length) throws InvalidProtocolBufferException {
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      if (length > limit - pos) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      // countPackedVarints is the number of terminating bytes in the payload. The decoders below
+      // decode exactly that many varints, each stopping at its first terminating byte (or throwing
+      // after 10 bytes), so they never read past the end of the payload; a trailing unterminated
+      // varint leaves the position short of the end and is rejected.
+      final int count = countPackedVarints(length);
+      if (count == 0 && length != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      return count;
+    }
+
+    /** Validates the length of a packed fixed-width payload of {@code width}-byte elements. */
+    private void checkPackedFixedPayload(int length, int width)
+        throws InvalidProtocolBufferException {
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      if (length > limit - pos || length % width != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+    }
+
+    /** Decodes a packed payload of varints truncated to 32 bits (int32 and uint32). */
+    private int[] decodePackedVarint32(int length) throws IOException {
+      final int count = checkPackedVarintPayload(length);
+      final int[] values = new int[count];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      final int end = p + length;
+      if (count == length) {
+        // Every varint is 1 byte long, so no need to varint decode.
+        for (int i = 0; i < values.length; ++i) {
+          values[i] = buffer[p + i];
+        }
+        p = end;
+      } else {
+        // Same decoding as readRawVarint32Fast, on a local position.
+        for (int i = 0; i < values.length; ++i) {
+          int x = buffer[p++];
+          if (x >= 0) {
+          } else if ((x ^= (buffer[p++] << 7)) < 0) {
+            x ^= (~0 << 7);
+          } else if ((x ^= (buffer[p++] << 14)) >= 0) {
+            x ^= (~0 << 7) ^ (~0 << 14);
+          } else if ((x ^= (buffer[p++] << 21)) < 0) {
+            x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
+          } else {
+            int y = buffer[p++];
+            x ^= y << 28;
+            x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
+            if (y < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0) {
+              throw InvalidProtocolBufferException.malformedVarint();
+            }
+          }
+          values[i] = x;
+        }
+      }
+      if (p != end) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      pos = p;
+      return values;
+    }
+
+    /** Decodes a packed payload of 64-bit varints (int64 and uint64). */
+    private long[] decodePackedVarint64(int length) throws IOException {
+      final int count = checkPackedVarintPayload(length);
+      final long[] values = new long[count];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      final int end = p + length;
+      if (count == length) {
+        // Every varint is 1 byte long, so no need to varint decode.
+        for (int i = 0; i < values.length; ++i) {
+          values[i] = buffer[p + i];
+        }
+        p = end;
+      } else {
+        // Same decoding as readRawVarint64, on a local position.
+        for (int i = 0; i < values.length; ++i) {
+          long x;
+          int y;
+          if ((y = buffer[p++]) >= 0) {
+            x = y;
+          } else if ((y ^= (buffer[p++] << 7)) < 0) {
+            x = y ^ (~0 << 7);
+          } else if ((y ^= (buffer[p++] << 14)) >= 0) {
+            x = y ^ ((~0 << 7) ^ (~0 << 14));
+          } else if ((y ^= (buffer[p++] << 21)) < 0) {
+            x = y ^ ((~0 << 7) ^ (~0 << 14) ^ (~0 << 21));
+          } else if ((x = y ^ ((long) buffer[p++] << 28)) >= 0L) {
+            x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
+          } else if ((x ^= ((long) buffer[p++] << 35)) < 0L) {
+            x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35);
+          } else if ((x ^= ((long) buffer[p++] << 42)) >= 0L) {
+            x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42);
+          } else if ((x ^= ((long) buffer[p++] << 49)) < 0L) {
+            x ^=
+                (~0L << 7)
+                    ^ (~0L << 14)
+                    ^ (~0L << 21)
+                    ^ (~0L << 28)
+                    ^ (~0L << 35)
+                    ^ (~0L << 42)
+                    ^ (~0L << 49);
+          } else if ((x ^= ((long) buffer[p++] << 56)) >= 0L) {
+            x ^=
+                (~0L << 7)
+                    ^ (~0L << 14)
+                    ^ (~0L << 21)
+                    ^ (~0L << 28)
+                    ^ (~0L << 35)
+                    ^ (~0L << 42)
+                    ^ (~0L << 49)
+                    ^ (~0L << 56);
+          } else {
+            // Tenth byte: must terminate, and only its low bit is kept (as in the slow path).
+            final int b = buffer[p++];
+            if (b < 0) {
+              throw InvalidProtocolBufferException.malformedVarint();
+            }
+            x ^= (long) b << 63;
+            x ^=
+                (~0L << 7)
+                    ^ (~0L << 14)
+                    ^ (~0L << 21)
+                    ^ (~0L << 28)
+                    ^ (~0L << 35)
+                    ^ (~0L << 42)
+                    ^ (~0L << 49)
+                    ^ (~0L << 56)
+                    ^ (~0L << 63);
+          }
+          values[i] = x;
+        }
+      }
+      if (p != end) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      pos = p;
+      return values;
+    }
+
+    @Override
+    Internal.IntList readPackedInt32() throws IOException {
+      final int[] values = decodePackedVarint32(readRawVarint32());
+      return IntArrayList.unsafeWrap(values);
+    }
+
+    @Override
+    Internal.LongList readPackedInt64() throws IOException {
+      final long[] values = decodePackedVarint64(readRawVarint32());
+      return LongArrayList.unsafeWrap(values);
+    }
+
+    @Override
+    Internal.BooleanList readPackedBool() throws IOException {
+      final int length = readRawVarint32();
+      final int count = checkPackedVarintPayload(length);
+      if (count != length) {
+        // Some bool is encoded in more than one byte, which writers essentially never produce.
+        return readPackedBoolSlow(length);
+      }
+      final boolean[] values = new boolean[count];
+      final byte[] buffer = this.buffer;
+      final int p = pos;
+      for (int i = 0; i < values.length; ++i) {
+        values[i] = buffer[p + i] != 0;
+      }
+      pos = p + length;
+      return BooleanArrayList.unsafeWrap(values);
+    }
+
+    /** A more 'naive' implementation which handles multi-byte varint bools. */
+    private Internal.BooleanList readPackedBoolSlow(int length) throws IOException {
+      final BooleanArrayList list = new BooleanArrayList();
+      final int oldLimit = pushLimit(length);
+      while (getBytesUntilLimit() > 0) {
+        list.addBoolean(readBool());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.FloatList readPackedFloat() throws IOException {
+      final int length = readRawVarint32();
+      checkPackedFixedPayload(length, FIXED32_SIZE);
+      final float[] values = new float[length / FIXED32_SIZE];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      for (int i = 0; i < values.length; ++i) {
+        values[i] =
+            Float.intBitsToFloat(
+                (buffer[p] & 0xff)
+                    | ((buffer[p + 1] & 0xff) << 8)
+                    | ((buffer[p + 2] & 0xff) << 16)
+                    | ((buffer[p + 3] & 0xff) << 24));
+        p += FIXED32_SIZE;
+      }
+      pos = p;
+      return FloatArrayList.unsafeWrap(values);
+    }
+
+    @Override
+    Internal.DoubleList readPackedDouble() throws IOException {
+      final int length = readRawVarint32();
+      checkPackedFixedPayload(length, FIXED64_SIZE);
+      final double[] values = new double[length / FIXED64_SIZE];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      for (int i = 0; i < values.length; ++i) {
+        values[i] =
+            Double.longBitsToDouble(
+                (buffer[p] & 0xffL)
+                    | ((buffer[p + 1] & 0xffL) << 8)
+                    | ((buffer[p + 2] & 0xffL) << 16)
+                    | ((buffer[p + 3] & 0xffL) << 24)
+                    | ((buffer[p + 4] & 0xffL) << 32)
+                    | ((buffer[p + 5] & 0xffL) << 40)
+                    | ((buffer[p + 6] & 0xffL) << 48)
+                    | ((buffer[p + 7] & 0xffL) << 56));
+        p += FIXED64_SIZE;
+      }
+      pos = p;
+      return DoubleArrayList.unsafeWrap(values);
+    }
+
     @Override
     public byte readRawByte() throws IOException {
       if (pos == limit) {
@@ -2258,6 +2531,61 @@ public abstract class CodedInputStream {
       // by the normal amount of memory wasted by ArrayLists.
       // This also prevents OOMs due to pre-allocation from arbitrarily large lengths.
       return Math.min(length / 5, 4096);
+    }
+
+    @Override
+    Internal.IntList readPackedInt32() throws IOException {
+      final IntArrayList list = new IntArrayList();
+      final int oldLimit = pushLimit(readRawVarint32());
+      while (getBytesUntilLimit() > 0) {
+        list.addInt(readInt32());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.LongList readPackedInt64() throws IOException {
+      final LongArrayList list = new LongArrayList();
+      final int oldLimit = pushLimit(readRawVarint32());
+      while (getBytesUntilLimit() > 0) {
+        list.addLong(readInt64());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.BooleanList readPackedBool() throws IOException {
+      final BooleanArrayList list = new BooleanArrayList();
+      final int oldLimit = pushLimit(readRawVarint32());
+      while (getBytesUntilLimit() > 0) {
+        list.addBoolean(readBool());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.FloatList readPackedFloat() throws IOException {
+      final FloatArrayList list = new FloatArrayList();
+      final int oldLimit = pushLimit(readRawVarint32());
+      while (getBytesUntilLimit() > 0) {
+        list.addFloat(readFloat());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.DoubleList readPackedDouble() throws IOException {
+      final DoubleArrayList list = new DoubleArrayList();
+      final int oldLimit = pushLimit(readRawVarint32());
+      while (getBytesUntilLimit() > 0) {
+        list.addDouble(readDouble());
+      }
+      popLimit(oldLimit);
+      return list;
     }
 
     /**

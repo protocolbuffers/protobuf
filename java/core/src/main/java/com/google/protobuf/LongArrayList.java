@@ -64,6 +64,17 @@ final class LongArrayList extends AbstractProtobufList<Long>
         isMutable);
   }
 
+  /**
+   * Returns a new mutable list that takes ownership of {@code array} and contains all of its
+   * elements.
+   *
+   * <p>The array is used directly as the backing store, without copying. The caller must not read
+   * or write {@code array} after passing it in.
+   */
+  static LongArrayList unsafeWrap(long[] array) {
+    return new LongArrayList(array, array.length, /* isMutable= */ true);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();

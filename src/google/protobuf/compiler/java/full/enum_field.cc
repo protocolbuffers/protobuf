@@ -18,6 +18,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -1171,16 +1172,22 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
 
 void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCodeFromPacked(
     io::Printer* printer) const {
-  if (SupportUnknownEnumValue(descriptor_)) {
+  // Bulk packed decoding is not yet released to OSS.
+  if (!google::protobuf::internal::IsOss() && SupportUnknownEnumValue(descriptor_)) {
+    // Open enums accept any value and decode exactly like int32, so the
+    // runtime decodes the whole payload into a new list. Adopt it if we have
+    // nothing yet, otherwise append.
     printer->Print(variables_,
-                   "int length = input.readRawVarint32();\n"
-                   "int limit = input.pushLimit(length);\n"
-                   "int count = input.countPackedVarints(length);\n"
-                   "ensure$capitalized_name$IsMutable(count);\n"
-                   "while (input.getBytesUntilLimit() > 0) {\n"
-                   "  $name$_.addInt(input.readEnum());\n"
-                   "}\n"
-                   "input.popLimit(limit);\n");
+                   "$field_list_type$ packed =\n"
+                   "    super.readPackedInt32(input);\n"
+                   "if ($name$_.isEmpty()) {\n"
+                   "  $name$_ = packed;\n"
+                   "  $set_has_field_bit$\n"
+                   "} else {\n"
+                   "  ensure$capitalized_name$IsMutable(\n"
+                   "      $name$_.size() + packed.size());\n"
+                   "  $name$_.addAll(packed);\n"
+                   "}\n");
   } else {
     printer->Print(variables_,
                    "int length = input.readRawVarint32();\n"
