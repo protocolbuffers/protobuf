@@ -494,6 +494,16 @@ cc_test(
 )
 
 cc_test(
+    name = "text_format_any_expansion_test",
+    srcs = ["text_format_any_expansion_test.cc"],
+    deps = [
+        ":protobuf",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "reflection_visit_fields_test",
     size = "small",
     srcs = ["reflection_visit_fields_test.cc"],
