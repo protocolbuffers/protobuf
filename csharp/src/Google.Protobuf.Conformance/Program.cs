@@ -156,8 +156,37 @@ namespace Google.Protobuf.Conformance
                       };
                       break;
                     case ConformanceRequest.PayloadOneofCase.TextPayload:
-                      return new ConformanceResponse { Skipped =
-                                                           "CSharp doesn't support text format" };
+                      bool ignoreUnknownText =
+                          request.TestCategory != global::Conformance.TestCategory.TextFormatTest;
+                      TextParser textParser = new TextParser(
+                          TextParser.Settings.Default.WithIgnoreUnknownFields(ignoreUnknownText));
+                      message = request.MessageType switch
+                      {
+                        "protobuf_test_messages.proto2.TestAllTypesProto2" =>
+                            textParser.Parse<ProtobufTestMessages.Proto2.TestAllTypesProto2>(
+                                request.TextPayload),
+                        "protobuf_test_messages.proto3.TestAllTypesProto3" =>
+                            textParser.Parse<ProtobufTestMessages.Proto3.TestAllTypesProto3>(
+                                request.TextPayload),
+                        "protobuf_test_messages.editions.TestAllTypesEdition2023" =>
+                            textParser.Parse<ProtobufTestMessages.Editions.TestAllTypesEdition2023>(
+                                request.TextPayload),
+                        "protobuf_test_messages.editions.TestAllTypesEdition2026" =>
+                            textParser.Parse<ProtobufTestMessages.Editions.TestAllTypesEdition2026>(
+                                request.TextPayload),
+                        "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable" =>
+                            textParser.Parse<ProtobufTestMessages.EditionUnstable.TestAllTypesEditionUnstable>(
+                                request.TextPayload),
+                        "protobuf_test_messages.editions.proto2.TestAllTypesProto2" =>
+                            textParser.Parse<ProtobufTestMessages.Editions.Proto2.TestAllTypesProto2>(
+                                request.TextPayload),
+                        "protobuf_test_messages.editions.proto3.TestAllTypesProto3" =>
+                            textParser.Parse<ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3>(
+                                request.TextPayload),
+                        _ => throw new Exception(
+                            $" Protobuf request doesn't have specific payload type ({request.MessageType})"),
+                      };
+                      break;
                     default:
                         throw new Exception("Unsupported request payload: " + request.PayloadCase);
                 }
@@ -169,6 +198,11 @@ namespace Google.Protobuf.Conformance
             catch (InvalidJsonException e)
             {
                 return new ConformanceResponse { ParseError = e.Message };
+            }
+            catch (NotSupportedException e)
+            {
+                // Text format features not yet implemented by TextParser (extensions, expanded Any).
+                return new ConformanceResponse { Skipped = e.Message };
             }
             try
             {
