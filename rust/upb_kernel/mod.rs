@@ -14,6 +14,7 @@ pub mod interop;
 pub mod map;
 pub mod message;
 pub mod minitable;
+pub mod reflection;
 pub mod repeated;
 pub mod string;
 
@@ -24,6 +25,7 @@ pub use interop::*;
 pub use map::*;
 pub use message::*;
 pub use minitable::*;
+pub use reflection::*;
 pub use repeated::*;
 pub use string::*;
 
@@ -47,10 +49,12 @@ extern crate upb;
 #[cfg(not(bzl))]
 use crate::upb;
 
+// The upb `reflection` crate is renamed so that it does not clash with this kernel's own
+// `reflection` module.
 #[cfg(bzl)]
-extern crate reflection;
+extern crate reflection as upb_reflection;
 #[cfg(not(bzl))]
-use crate::upb::reflection;
+use crate::upb::reflection as upb_reflection;
 
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
