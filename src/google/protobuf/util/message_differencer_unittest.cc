@@ -14,6 +14,8 @@
 #include "google/protobuf/util/message_differencer.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 #include <random>
 #include <string>
 #include <vector>
@@ -119,6 +121,45 @@ TEST(MessageDifferencerTest, BasicInequalityTest) {
   msg1.set_optional_int32(-1);
 
   // Compare
+  EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest, NaNFloatEqualsIsReflexive) {
+  unittest::TestAllTypes msg;
+  msg.set_optional_float(std::numeric_limits<float>::quiet_NaN());
+  EXPECT_TRUE(util::MessageDifferencer::Equals(msg, msg));
+}
+
+TEST(MessageDifferencerTest, NaNDoubleEqualsIsReflexive) {
+  unittest::TestAllTypes msg;
+  msg.set_optional_double(std::numeric_limits<double>::quiet_NaN());
+  EXPECT_TRUE(util::MessageDifferencer::Equals(msg, msg));
+}
+
+TEST(MessageDifferencerTest, NaNEquivalentIsReflexive) {
+  unittest::TestAllTypes msg;
+  msg.set_optional_float(std::numeric_limits<float>::quiet_NaN());
+  EXPECT_TRUE(util::MessageDifferencer::Equivalent(msg, msg));
+}
+
+TEST(MessageDifferencerTest, NaNApproximatelyEqualsIsReflexive) {
+  unittest::TestAllTypes msg;
+  msg.set_optional_double(std::numeric_limits<double>::quiet_NaN());
+  EXPECT_TRUE(util::MessageDifferencer::ApproximatelyEquals(msg, msg));
+}
+
+TEST(MessageDifferencerTest, NaNApproximatelyEquivalentIsReflexive) {
+  unittest::TestAllTypes msg;
+  msg.set_optional_float(std::numeric_limits<float>::quiet_NaN());
+  msg.set_optional_double(std::numeric_limits<double>::quiet_NaN());
+  EXPECT_TRUE(util::MessageDifferencer::ApproximatelyEquivalent(msg, msg));
+}
+
+TEST(MessageDifferencerTest, NaNNotEqualToDifferentValue) {
+  unittest::TestAllTypes msg1;
+  unittest::TestAllTypes msg2;
+  msg1.set_optional_float(std::numeric_limits<float>::quiet_NaN());
+  msg2.set_optional_float(1.0f);
   EXPECT_FALSE(util::MessageDifferencer::Equals(msg1, msg2));
 }
 
