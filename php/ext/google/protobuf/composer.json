@@ -1,0 +1,14 @@
+{
+  "name": "google/protobuf-ext",
+  "type": "php-ext",
+  "description": "Protocol Buffers PHP Extension",
+  "keywords": ["proto", "protobuf"],
+  "homepage": "https://developers.google.com/protocol-buffers/",
+  "license": "BSD-3-Clause",
+  "require": {
+    "php": ">=8.2.0"
+  },
+  "php-ext": {
+    "extension-name": "protobuf"
+  }
+}
