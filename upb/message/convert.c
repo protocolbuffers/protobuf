@@ -7,6 +7,7 @@
 
 #include "upb/message/convert.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -31,7 +32,10 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/port/overflow.h"
 #include "upb/wire/decode.h"
@@ -43,6 +47,17 @@
 
 // Must be last.
 #include "upb/port/def.inc"
+
+// Fields that are present in the source but absent from the destination
+// ("demoted" fields) are normally serialized into the destination's unknown
+// fields. Message fields (singular or repeated, but not maps) and strings of at
+// least UPB_CONVERT_NCE_MIN_STRING_SIZE bytes are instead stored as
+// non-canonical extensions (NCEs) that alias the source value, which defers
+// (and often avoids) serializing them. Define UPB_CONVERT_DISABLE_NCE_DEMOTION
+// to always serialize demoted fields.
+#ifndef UPB_CONVERT_NCE_MIN_STRING_SIZE
+#define UPB_CONVERT_NCE_MIN_STRING_SIZE (64 * 1024)
+#endif
 
 enum {
   kUpb_ConvertStatus_Ok = kUpb_ErrorCode_Ok,
@@ -103,7 +118,9 @@ UPB_NODISCARD static bool upb_Message_SetFieldOrExtension(
 static void upb_Message_FlushUnknownChunk(upb_Converter* c, upb_Message* dst,
                                           char* ptr) {
   size_t size = upb_BackAlloc_Finish(&c->encoder.alloc, ptr);
-  UPB_ASSERT(size > 0);
+  // A chunk can be empty, because allocated-but-empty arrays and maps are
+  // "set" but encode to nothing.
+  if (size == 0) return;
   if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
           dst, ptr, size, c->encoder.alloc.arena, kUpb_AddUnknown_Alias)) {
     upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
@@ -159,12 +176,54 @@ bool upb_Message_FieldHasWireData(const upb_Message* msg,
   return true;
 }
 
+// Returns true if the demoted field `f`, which must be set in `src`, should be
+// stored in the destination as a non-canonical extension that aliases the
+// source value instead of being serialized into unknown fields.
+UPB_FORCEINLINE
+bool upb_Message_DemoteAsExtension(const upb_Message* src,
+                                   const upb_MiniTableField* f) {
+#ifdef UPB_CONVERT_DISABLE_NCE_DEMOTION
+  UPB_UNUSED(src);
+  UPB_UNUSED(f);
+  return false;
+#else
+  switch (upb_MiniTableField_CType(f)) {
+    case kUpb_CType_Message:
+      // Maps stay serialized: NCE consumers (copy, compare, convert, text
+      // format, ...) only support scalar and array values.
+      if (upb_MiniTableField_IsMap(f) || !upb_MiniTable_FieldIsLinked(f)) {
+        return false;
+      }
+      if (upb_MiniTableField_IsArray(f)) {
+        const upb_Array* arr =
+            *(const upb_Array* const*)UPB_PRIVATE(_upb_Message_DataPtr)(src, f);
+        return upb_Array_Size(arr) != 0;
+      }
+      return true;
+    case kUpb_CType_String:
+    case kUpb_CType_Bytes:
+      return upb_MiniTableField_IsScalar(f) &&
+             ((const upb_StringView*)UPB_PRIVATE(_upb_Message_DataPtr)(src, f))
+                     ->size >= UPB_CONVERT_NCE_MIN_STRING_SIZE;
+    default:
+      return false;
+  }
+#endif
+}
+
 UPB_FORCEINLINE
 char* upb_Message_EncodeUnknownField(upb_Converter* c, upb_Message* dst,
                                      const upb_Message* src,
                                      const upb_MiniTableField* f, char* ptr,
-                                     int depth) {
+                                     int depth, bool* has_ext) {
   if (!upb_Message_FieldHasWireData(src, f)) return ptr;
+
+  if (upb_Message_DemoteAsExtension(src, f)) {
+    // Deferred to upb_Message_DemoteFieldsAsExtensions(), because the arena
+    // must not be used while a chunk is open.
+    *has_ext = true;
+    return ptr;
+  }
 
   upb_encstate* e = &c->encoder;
   if (ptr) {
@@ -189,6 +248,77 @@ char* upb_Message_EncodeUnknownField(upb_Converter* c, upb_Message* dst,
   return UPB_PRIVATE(_upb_Encode_FieldToBuffer)(ptr, e, src, f);
 }
 
+// Stores the demoted field `f` of `src` in `dst` as a non-canonical extension
+// whose value aliases the source value. The extension's MiniTable is
+// synthesized from `f` on the destination arena, and references `src_mt` and
+// the sub-MiniTable of `f`, so those must outlive `dst`.
+static void upb_Message_DemoteFieldAsExtension(upb_Converter* c,
+                                               upb_Message* dst,
+                                               const upb_Message* src,
+                                               const upb_MiniTable* src_mt,
+                                               const upb_MiniTableField* f) {
+  upb_MiniTableExtension* ext = upb_Arena_Malloc(c->arena, sizeof(*ext));
+  if (!ext) upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+
+  upb_MiniTableField* ext_f = &ext->UPB_PRIVATE(field);
+  *ext_f = *f;
+  // The value of an extension is stored in upb_Extension.data.
+  ext_f->UPB_ONLYBITS(offset) = 0;
+  ext_f->presence = 0;
+  ext_f->UPB_ONLYBITS(mode) |=
+      kUpb_LabelFlags_IsExtension | kUpb_LabelFlags_IsSynthesized;
+  if (upb_MiniTableField_CType(f) == kUpb_CType_Message) {
+    // Like the MiniDescriptor decoder does for extensions, point submsg_ofs at
+    // `ext->sub`, which is relative to the field and thus survives a memcpy of
+    // the whole upb_MiniTableExtension.
+    ext_f->UPB_PRIVATE(submsg_ofs) =
+        offsetof(upb_MiniTableExtension, UPB_PRIVATE(sub)) /
+        kUpb_SubmsgOffsetBytes;
+    ext->UPB_PRIVATE(sub) =
+        upb_MiniTableSub_FromMessage(upb_MiniTable_GetSubMessageTable(f));
+  } else {
+    ext_f->UPB_PRIVATE(submsg_ofs) = kUpb_NoSub;
+    ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromMessage(NULL);
+  }
+  ext->UPB_PRIVATE(extendee) = src_mt;
+
+  if (!UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+          dst, ext, UPB_PRIVATE(_upb_Message_DataPtr)(src, f), c->arena)) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+  }
+}
+
+// Second pass of upb_Message_EncodeUnknownFields(): stores the demoted fields
+// selected by upb_Message_DemoteAsExtension() as non-canonical extensions, in
+// ascending field number order.
+static void upb_Message_DemoteFieldsAsExtensions(upb_Converter* c,
+                                                 upb_Message* dst,
+                                                 const upb_Message* src,
+                                                 const upb_MiniTable* dst_mt,
+                                                 const upb_MiniTable* src_mt) {
+  const int dst_count = upb_MiniTable_FieldCount(dst_mt);
+  const int src_count = upb_MiniTable_FieldCount(src_mt);
+  int dst_i = 0;
+  for (int src_i = 0; src_i < src_count; src_i++) {
+    const upb_MiniTableField* f = upb_MiniTable_GetFieldByIndex(src_mt, src_i);
+    const uint32_t nr = upb_MiniTableField_Number(f);
+    while (dst_i < dst_count &&
+           upb_MiniTableField_Number(
+               upb_MiniTable_GetFieldByIndex(dst_mt, dst_i)) < nr) {
+      dst_i++;
+    }
+    if (dst_i < dst_count &&
+        upb_MiniTableField_Number(
+            upb_MiniTable_GetFieldByIndex(dst_mt, dst_i)) == nr) {
+      continue;  // Present in dst_mt, so not demoted.
+    }
+    if (UPB_PRIVATE(_upb_Message_FieldIsSet)(src, f) &&
+        upb_Message_DemoteAsExtension(src, f)) {
+      upb_Message_DemoteFieldAsExtension(c, dst, src, src_mt, f);
+    }
+  }
+}
+
 static void upb_Message_EncodeUnknownFields(upb_Converter* c, upb_Message* dst,
                                             const upb_Message* src,
                                             const upb_MiniTable* dst_mt,
@@ -209,6 +339,7 @@ static void upb_Message_EncodeUnknownFields(upb_Converter* c, upb_Message* dst,
       src_first + upb_MiniTable_FieldCount(src_mt);
 
   char* ptr = NULL;
+  bool has_ext = false;
 
   // Second pass: walk fields in descending order to encode the fields that
   // are absent from dst_mt as unknown fields. Because the encoder writes
@@ -225,16 +356,22 @@ static void upb_Message_EncodeUnknownFields(upb_Converter* c, upb_Message* dst,
       src_f--;
     } else {
       // src_nr > dst_nr: Field is present in src_mt but absent in dst_mt.
-      ptr = upb_Message_EncodeUnknownField(c, dst, src, --src_f, ptr, depth);
+      ptr = upb_Message_EncodeUnknownField(c, dst, src, --src_f, ptr, depth,
+                                           &has_ext);
     }
   }
 
   while (src_f != src_first) {
-    ptr = upb_Message_EncodeUnknownField(c, dst, src, --src_f, ptr, depth);
+    ptr = upb_Message_EncodeUnknownField(c, dst, src, --src_f, ptr, depth,
+                                         &has_ext);
   }
 
   if (ptr) {
     upb_Message_FlushUnknownChunk(c, dst, ptr);
+  }
+
+  if (has_ext) {
+    upb_Message_DemoteFieldsAsExtensions(c, dst, src, dst_mt, src_mt);
   }
 }
 
@@ -596,6 +733,44 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
   }
 }
 
+// Decodes the wire format `data` into `dst`, which is how unknown fields of the
+// source are converted.
+static void upb_Message_DecodeUnknown(upb_Converter* c, upb_Message* dst,
+                                      const upb_MiniTable* dst_mt,
+                                      const char* data, size_t size,
+                                      int depth) {
+  int decode_options = upb_Decode_LimitDepth(
+      c->decode_options | kUpb_DecodeOption_AliasString, depth);
+
+  // Reuse d. Reset input stream.
+  const char* ptr = data;
+  upb_Decoder* d = &c->decoder;
+  upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &ptr, size, d->err);
+  upb_Decoder_Reset(d, decode_options, dst);
+  _upb_Decoder_DecodeMessage(d, ptr, dst, dst_mt);
+  UPB_ASSERT(d->end_group == DECODE_NOGROUP);
+}
+
+// Converts a field that a previous conversion demoted to the non-canonical
+// extension `ext` through the wire format, as if it had been demoted to unknown
+// field bytes. This is used when `dst_mt` has a field with the same number but
+// a different type, which may still be wire compatible (e.g. singular vs.
+// repeated message, or repeated message vs. map).
+static void upb_Message_ConvertDemotedFieldViaWireFormat(
+    upb_Converter* c, upb_Message* dst, const upb_MiniTable* dst_mt,
+    const upb_MiniTableExtension* ext, upb_MessageValue val, int depth) {
+  upb_encstate* e = &c->encoder;
+  char* buf = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
+  size_t size;
+  // Errors longjmp to the converter's error handler.
+  upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
+      e, ext, val, /*is_message_set=*/false, &buf, &size,
+      upb_Encode_LimitDepth(c->encode_options, depth));
+  UPB_ASSERT(status == kUpb_EncodeStatus_Ok);
+  UPB_UNUSED(status);
+  upb_Message_DecodeUnknown(c, dst, dst_mt, buf, size, depth);
+}
+
 static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
                                          const upb_MiniTable* dst_mt,
                                          const upb_MiniTableExtension* ext,
@@ -633,6 +808,11 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
 
   UPB_ASSERT(!upb_MiniTableField_IsMap(src_f));
   if (UPB_UNLIKELY(!_upb_MiniTableField_IsExtensionCompatible(src_f, dst_f))) {
+    if (UPB_PRIVATE(_upb_MiniTableField_IsSynthesized)(src_f)) {
+      upb_Message_ConvertDemotedFieldViaWireFormat(c, dst, dst_mt, ext, val,
+                                                   depth);
+      return;
+    }
     // Return an error due to type mismatch.
     upb_ErrorHandler_ThrowError(&c->err, kUpb_ConvertStatus_Incompatible);
   }
@@ -824,18 +1004,8 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
   uintptr_t iter = kUpb_Message_UnknownBegin;
   while (upb_Message_NextUnknown2(src, &unknown, &iter)) {
     if (unknown.type == kUpb_MessageUnknownType_StringView) {
-      upb_StringView data = unknown.value.bytes;
-      int decode_options = upb_Decode_LimitDepth(
-          c->decode_options | kUpb_DecodeOption_AliasString, depth);
-
-      // Reuse d. Reset input stream.
-      const char* ptr = data.data;
-      upb_Decoder* d = &c->decoder;
-      upb_EpsCopyInputStream_InitWithErrorHandler(&d->input, &ptr, data.size,
-                                                  d->err);
-      upb_Decoder_Reset(d, decode_options, dst);
-      _upb_Decoder_DecodeMessage(d, ptr, dst, dst_mt);
-      UPB_ASSERT(d->end_group == DECODE_NOGROUP);
+      upb_Message_DecodeUnknown(c, dst, dst_mt, unknown.value.bytes.data,
+                                unknown.value.bytes.size, depth);
     } else {
       UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
       const upb_Extension* ext = unknown.value.extension;

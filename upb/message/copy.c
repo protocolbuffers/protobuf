@@ -29,6 +29,7 @@
 #include "upb/message/message.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/size_log2.h"
 #include "upb/mini_table/message.h"
@@ -303,14 +304,26 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       // Clone a canonical or non-canonical upb_Extension*.
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-      const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
+      const upb_MiniTableExtension* ext = msg_ext->ext;
+      if (UPB_PRIVATE(_upb_MiniTableField_IsSynthesized)(
+              &ext->UPB_PRIVATE(field))) {
+        // A synthesized upb_MiniTableExtension lives on the source arena, which
+        // may be freed before `arena`, so the clone needs its own copy.
+        // submsg_ofs is relative to the field, so a plain copy stays valid.
+        upb_MiniTableExtension* ext_copy =
+            upb_Arena_Malloc(arena, sizeof(*ext_copy));
+        if (!ext_copy) goto err;
+        *ext_copy = *ext;
+        ext = ext_copy;
+      }
+      const upb_MiniTableField* field = &ext->UPB_PRIVATE(field);
       upb_Extension* dst_ext =
           UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-              dst, msg_ext->ext, arena, upb_TaggedAuxPtr_Type(tagged_ptr));
+              dst, ext, arena, upb_TaggedAuxPtr_Type(tagged_ptr));
       if (!dst_ext) goto err;
 
       if (upb_MiniTableField_IsScalar(field)) {
-        if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
+        if (!upb_Clone_ExtensionValue(ext, msg_ext, dst_ext, arena)) {
           goto err;
         }
       } else {
@@ -318,7 +331,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         UPB_ASSERT(msg_array);
         upb_Array* cloned_array = upb_Array_DeepClone(
             msg_array, upb_MiniTableField_CType(field),
-            upb_MiniTableExtension_GetSubMessage(msg_ext->ext), arena);
+            upb_MiniTableExtension_GetSubMessage(ext), arena);
         if (!cloned_array) goto err;
 
         dst_ext->data.array_val = cloned_array;

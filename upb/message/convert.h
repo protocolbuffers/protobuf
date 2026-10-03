@@ -35,9 +35,17 @@ extern "C" {
 // instead of performing a deep copy. Strings and unknown fields are aliased
 // from the input message.
 //
-// Fields present in the source but not the destination will be encoded and
-// added to the destination's unknown fields (or extensions, if the extension
-// registry allows it).
+// Fields present in the source but not the destination are preserved in the
+// destination's unknown fields (see `upb_Message_NextUnknown2()`). Message
+// fields (singular or repeated, but not maps) and very large strings are
+// stored as non-canonical extensions that alias the source value; all other
+// such fields are encoded into unknown field bytes. Source extensions are
+// converted to destination extensions if the extension registry allows it, or
+// to non-canonical extensions otherwise.
+//
+// Non-canonical extensions reference MiniTables of the source schema, so
+// `src_mt` and its sub-MiniTables must outlive the result, including copies of
+// it made with `upb_Message_DeepCopy()` or `upb_Message_DeepClone()`.
 //
 // Returns a new message on success, or NULL on failure. This function may
 // return NULL even for valid inputs, if it encounters a case it does not
