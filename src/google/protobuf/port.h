@@ -496,7 +496,7 @@ struct PrefetchOpts {
 
 // NOTE: Enable prefetching with Clang only: various problems with other
 // compilers, especially old ones.
-#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#if ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 namespace detail {
 
@@ -607,7 +607,7 @@ inline void PrefetchToLocalCache(const void* ptr) {
   Prefetch<kOpts>(ptr);
 }
 
-#else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#else  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 template <const PrefetchOpts& kOpts, typename T, typename U>
 PROTOBUF_ALWAYS_INLINE void Prefetch(const void*) {}
@@ -615,9 +615,9 @@ PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {}
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {}
 inline void PrefetchToLocalCache(const void* ptr) {}
 
-#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#endif  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
-#if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
+#if ABSL_HAVE_BUILTIN(__builtin_unreachable) && defined(NDEBUG)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();
 }

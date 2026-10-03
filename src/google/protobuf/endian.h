@@ -25,7 +25,7 @@ namespace internal {
 
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint64_t BSwap64(uint64_t host_int) {
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap64)
+#if ABSL_HAVE_BUILTIN(__builtin_bswap64) || defined(__GNUC__)
   return __builtin_bswap64(host_int);
 #elif defined(_MSC_VER)
   return _byteswap_uint64(host_int);
@@ -43,7 +43,7 @@ inline uint64_t BSwap64(uint64_t host_int) {
 
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t BSwap32(uint32_t host_int) {
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap32)
+#if ABSL_HAVE_BUILTIN(__builtin_bswap32) || defined(__GNUC__)
   return __builtin_bswap32(host_int);
 #elif defined(_MSC_VER)
   return _byteswap_ulong(host_int);
@@ -57,7 +57,7 @@ inline uint32_t BSwap32(uint32_t host_int) {
 
 PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint16_t BSwap16(uint16_t host_int) {
-#if defined(__GNUC__) || ABSL_HAVE_BUILTIN(__builtin_bswap16)
+#if ABSL_HAVE_BUILTIN(__builtin_bswap16) || defined(__GNUC__)
   return __builtin_bswap16(host_int);
 #elif defined(_MSC_VER)
   return _byteswap_ushort(host_int);
