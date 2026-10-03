@@ -17,6 +17,7 @@
 #include "absl/base/optimization.h"
 #include "absl/functional/overload.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/message_lite.h"
@@ -38,6 +39,14 @@ NodeBase* const kGlobalEmptyTable[kGlobalEmptyTableSize] = {};
 void UntypedMapBase::UntypedMergeFrom(Arena* arena,
                                       const UntypedMapBase& other) {
   ABSL_DCHECK_EQ(arena, this->arena());
+  if (ABSL_PREDICT_FALSE(&other == this)) {
+    // Merging a map with itself inserts into the table while iterating it
+    // below (InsertOrReplaceNode rehashes/replaces the nodes the iterator is
+    // walking), a use-after-free. Self-merge is undefined; terminate loudly,
+    // mirroring RepeatedField::MergeFrom (internal::LogSelfMergeAndAbort).
+    ABSL_LOG(FATAL) << "UntypedMergeFrom called with self-reference; "
+                       "merging a map with itself is undefined behavior.";
+  }
   if (other.empty()) return;
 
   // Do the merging in steps to avoid Key*Value number of instantiations and
