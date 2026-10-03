@@ -517,14 +517,12 @@ pub unsafe fn message_set_string_field<'msg, P: Message + AssociatedMiniTable>(
     index: u32,
     val: impl IntoProxied<ProtoString>,
 ) {
-    let s = val.into_proxied(Private);
-    let (view, arena) = s.into_inner(Private).into_raw_parts();
-    parent.arena().fuse(&arena);
+    let view = val.into_proxied_in_arena(Private, parent.arena()).into_view(parent.arena());
     unsafe {
         // SAFETY:
         // - `parent.ptr` is valid as it comes from a `MessageMutInner`.
         // - The caller guarantees that `index` refers to a valid string field.
-        // - The string's arena has been fused into the parent's arena above.
+        // - The string's memory is allocated in or fused into the parent's arena above.
         parent.ptr.set_base_field_string_at_index(index, view);
     }
 }
@@ -536,14 +534,12 @@ pub unsafe fn message_set_bytes_field<'msg, P: Message + AssociatedMiniTable>(
     index: u32,
     val: impl IntoProxied<ProtoBytes>,
 ) {
-    let s = val.into_proxied(Private);
-    let (view, arena) = s.into_inner(Private).into_raw_parts();
-    parent.arena().fuse(&arena);
+    let view = val.into_proxied_in_arena(Private, parent.arena()).into_view(parent.arena());
     unsafe {
         // SAFETY:
         // - `parent.ptr` is valid as it comes from a `MessageMutInner`.
         // - The caller guarantees that `index` refers to a valid bytes field.
-        // - The string's arena has been fused into the parent's arena above.
+        // - The string's memory is allocated in or fused into the parent's arena above.
         parent.ptr.set_base_field_string_at_index(index, view);
     }
 }

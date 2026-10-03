@@ -13,6 +13,19 @@ pub trait UpbTypeConversions<Tag>: Proxied {
         val: Self,
     ) -> upb_MessageValue;
 
+    fn into_proxied_message_value_in_arena(
+        arena: &Arena,
+        val: impl IntoProxied<Self>,
+    ) -> upb_MessageValue {
+        match val.into_proxied_in_arena(Private, arena) {
+            crate::proxied::ProxiedInArena::Owned(owned) => unsafe {
+                // SAFETY: `arena.raw()` is a valid upb arena.
+                Self::into_message_value_fuse_if_required(arena.raw(), owned)
+            },
+            crate::proxied::ProxiedInArena::Borrowed(borrowed) => Self::to_message_value(borrowed),
+        }
+    }
+
     /// # Safety
     /// - `msg_val` must be the correct variant for `Self`.
     /// - `msg_val` pointers must point to memory valid for `'msg` lifetime.
@@ -275,10 +288,10 @@ unsafe fn copy_repeated_bytes(src: RawArray, dest: RawArray, arena: RawArena) {
     // SAFETY:
     // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
     // - `upb_Array` ensures its elements are never uninitialized memory.
-    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans
-    //   of memory that are valid for at least `len` elements of PtrAndLen.
-    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
-    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
+    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans of memory that are
+    //   valid for at least `len` elements of PtrAndLen.
+    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers are valid, the
+    //   pointers are `#[repr(u8)]`, and the size is correct.
     // - The bytes held within a valid array are valid.
     unsafe {
         let len = upb_Array_Size(src);

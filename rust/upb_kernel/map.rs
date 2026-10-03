@@ -24,10 +24,9 @@ where
     // SAFETY:
     // - The map is empty and never mutated.
     // - The value type is never used.
-    // - The size of the key type is used when `get()` computes the hash of the key.
-    //   The map is empty, therefore it doesn't matter what hash is computed, but we
-    //   have to use `bool` type as the smallest key possible (otherwise UPB would
-    //   read more bytes than Rust allocated).
+    // - The size of the key type is used when `get()` computes the hash of the key. The map is
+    //   empty, therefore it doesn't matter what hash is computed, but we have to use `bool` type as
+    //   the smallest key possible (otherwise UPB would read more bytes than Rust allocated).
     unsafe {
         MapView::from_raw(Private, EMPTY_MAP_VIEW.get_or_init(Map::new).as_view().as_raw(Private))
     }
@@ -105,8 +104,7 @@ impl RawMapIter {
     }
 
     /// # Safety
-    /// - `self.map` must be valid, and remain valid while the return value is
-    ///   in use.
+    /// - `self.map` must be valid, and remain valid while the return value is in use.
     pub unsafe fn next_unchecked(&mut self) -> Option<(upb_MessageValue, upb_MessageValue)> {
         let mut key = MaybeUninit::uninit();
         let mut value = MaybeUninit::uninit();
@@ -148,13 +146,13 @@ where
         key: View<'_, K>,
         value: impl IntoProxied<Self>,
     ) -> bool {
-        let arena = map.inner(Private).raw_arena();
+        let arena = map.arena(Private);
         let insert_status = unsafe {
             upb_Map_Insert(
                 map.as_raw(Private),
                 K::to_message_value(key),
-                Self::into_message_value_fuse_if_required(arena, value.into_proxied(Private)),
-                arena,
+                Self::into_proxied_message_value_in_arena(arena, value),
+                arena.raw(),
             )
         };
         match insert_status {
