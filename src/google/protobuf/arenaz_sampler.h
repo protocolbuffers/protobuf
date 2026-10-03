@@ -39,8 +39,7 @@ struct [[nodiscard]] ThreadSafeArenaStats
   // blocking for any readers that are currently sampling the object.  The
   // 'stride' parameter is the number of ThreadSafeArenas that were instantiated
   // between this sample and the previous one.
-  void PrepareForSampling(int64_t stride)
-      ABSL_EXCLUSIVE_LOCKS_REQUIRED(init_mu);
+  void PrepareForSampling(int64_t stride);
 
   // These fields are mutated by the various Record* APIs and need to be
   // thread-safe.
