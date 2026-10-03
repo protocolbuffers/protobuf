@@ -220,10 +220,10 @@ static VALUE RepeatedField_subarray(RepeatedField* self, long beg, long len) {
  */
 static VALUE RepeatedField_each(VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_Array_Size(self->array);
-  int i;
 
-  for (i = 0; i < size; i++) {
+  // The size is re-read every iteration: the block can clear or shrink the
+  // field, and a cached size would then index past the end of the upb array.
+  for (size_t i = 0; i < upb_Array_Size(self->array); i++) {
     upb_MessageValue msgval = upb_Array_Get(self->array, i);
     VALUE val = Convert_UpbToRuby(msgval, self->type_info, self->arena);
     rb_yield(val);
@@ -293,8 +293,6 @@ static VALUE RepeatedField_index(int argc, VALUE* argv, VALUE _self) {
  */
 static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
-  int size = upb_Array_Size(self->array);
-  upb_Array* array = RepeatedField_GetMutable(_self);
   upb_Arena* arena = Arena_get(self->arena);
   upb_MessageValue msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
 
@@ -302,6 +300,12 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
   if (index < 0 || index >= (INT_MAX - 1)) {
     return Qnil;
   }
+
+  // The array and its size are read only after the conversions above, which
+  // can run Ruby code (index_position calls the index's to_int) that clears,
+  // shrinks or freezes the field.
+  upb_Array* array = RepeatedField_GetMutable(_self);
+  int size = upb_Array_Size(array);
 
   if (index >= size) {
     if (!upb_Array_Resize(array, index + 1, arena)) {

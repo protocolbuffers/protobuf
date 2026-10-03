@@ -149,6 +149,20 @@ class RepeatedFieldTest < Test::Unit::TestCase
     assert_equal ['string'] * 5, result
   end
 
+  def test_each_block_clears_field
+    # Regression: RepeatedField#each read the size once, so a block that
+    # cleared the field kept reading past the end of the upb array. Behaviour
+    # must match Ruby Array#each, which stops once the array is exhausted.
+    m = TestMessage.new
+    m.repeated_string += %w(a b c d e)
+    yielded = []
+    m.repeated_string.each do |val|
+      yielded << val
+      m.repeated_string.clear if yielded.size == 2
+    end
+    assert_equal %w(a b), yielded
+  end
+
 
   def test_each_index
     m = TestMessage.new
@@ -288,6 +302,23 @@ class RepeatedFieldTest < Test::Unit::TestCase
     # check_self_modifying_method(m.repeated_string, reference_arr) do |arr|
     #   arr[0..2] = 'buzz'
     # end
+  end
+
+  def test_array_settor_index_conversion_clears_field
+    omit "FFI RepeatedField#[]= does not convert the index with to_int" if Google::Protobuf::IMPLEMENTATION == :FFI
+    # Regression: RepeatedField#[]= read the size before converting the index,
+    # and that conversion calls to_int, which can clear the field. The stale
+    # size skipped the resize, so the value was written past the end of the upb
+    # array instead of extending it.
+    m = TestMessage.new
+    m.repeated_int32 += [1, 2, 3, 4, 5, 6, 7, 8]
+    index = Object.new
+    index.define_singleton_method(:to_int) do
+      m.repeated_int32.clear
+      5
+    end
+    m.repeated_int32[index] = 42
+    assert_equal [0, 0, 0, 0, 0, 42], m.repeated_int32.to_a
   end
 
   def test_push
