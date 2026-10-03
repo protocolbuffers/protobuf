@@ -7,9 +7,9 @@
 
 // This file defines the map container and its helpers to support protobuf maps.
 //
-// The Map and MapIterator types are provided by this header file.
+// The Map type is provided by this header file.
 // Please avoid using other types defined here, unless they are public
-// types within Map or MapIterator, such as Map::value_type.
+// types within Map, such as Map::value_type.
 
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
@@ -59,7 +59,8 @@ namespace protobuf {
 template <typename Key, typename T>
 class Map;
 
-class MapIterator;
+class GenericMapRef;
+class GenericConstMapRef;
 
 template <typename Enum>
 struct is_proto_enum;
@@ -367,6 +368,8 @@ class PROTOBUF_EXPORT UntypedMapBase {
   static constexpr map_index_t kMaxTableSize = map_index_t{1} << 31;
 
  public:
+  void AssertSameType(const UntypedMapBase& other);
+
   Arena* arena() const {
     return ResolveArena<&UntypedMapBase::resolver_>(this);
   }
@@ -414,6 +417,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
   friend class RustMapHelper;
+  friend GenericMapRef;
 
   // Calls `f(type_t)` where `type_t` is an unspecified type that has a `::type`
   // typedef in it representing the dynamic type of key/value of the node.
@@ -734,6 +738,8 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
+  friend GenericMapRef;
+  friend GenericConstMapRef;
 
   Key* GetKey(NodeBase* node) const {
     return UntypedMapBase::GetKey<Key>(node);

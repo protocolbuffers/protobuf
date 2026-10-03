@@ -32,6 +32,8 @@
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/status.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
@@ -316,21 +318,40 @@ static void Assign(std::string& str, String&& value) {
   }
 }
 
+absl::Status ReflectionUsageError(const Descriptor* descriptor,
+                                  const FieldDescriptor* field,
+                                  absl::string_view method,
+                                  absl::string_view description) {
+  return absl::InvalidArgumentError(absl::StrCat(
+      "Protocol Buffer reflection usage error:\n"
+      "  Method      : google::protobuf::Reflection::",
+      method, "\n", "  Message type: ",
+      descriptor != nullptr ? descriptor->full_name() : "null", "\n",
+      "  Field       : ", field != nullptr ? field->full_name() : "null", "\n",
+      "  Problem     : ", description));
+}
+
 void ReportReflectionUsageError(const Descriptor* descriptor,
                                 const FieldDescriptor* field,
                                 const char* method, const char* description) {
-  ABSL_LOG(FATAL) << "Protocol Buffer reflection usage error:\n"
-                     "  Method      : google::protobuf::Reflection::"
-                  << method
-                  << "\n"
-                     "  Message type: "
-                  << descriptor->full_name()
-                  << "\n"
-                     "  Field       : "
-                  << field->full_name()
-                  << "\n"
-                     "  Problem     : "
-                  << description;
+  ABSL_LOG(FATAL) << ReflectionUsageError(descriptor, field, method,
+                                          description);
+}
+
+absl::Status ReflectionUsageMessageError(const Descriptor* expected,
+                                         const Descriptor* actual,
+                                         const FieldDescriptor* field,
+                                         absl::string_view method) {
+  return absl::InvalidArgumentError(absl::StrFormat(
+      "Protocol Buffer reflection usage error:\n"
+      "  Method       : google::protobuf::Reflection::%s\n"
+      "  Expected type: %s\n"
+      "  Actual type  : %s\n"
+      "  Field        : %s\n"
+      "  Problem      : Message is not the right object for reflection",
+      method, expected != nullptr ? expected->full_name() : "null",
+      actual != nullptr ? actual->full_name() : "null",
+      field != nullptr ? field->full_name() : "n/a"));
 }
 
 #ifndef NDEBUG
@@ -338,15 +359,8 @@ void ReportReflectionUsageMessageError(const Descriptor* expected,
                                        const Descriptor* actual,
                                        const FieldDescriptor* field,
                                        const char* method) {
-  ABSL_LOG(FATAL) << absl::StrFormat(
-      "Protocol Buffer reflection usage error:\n"
-      "  Method       : google::protobuf::Reflection::%s\n"
-      "  Expected type: %s\n"
-      "  Actual type  : %s\n"
-      "  Field        : %s\n"
-      "  Problem      : Message is not the right object for reflection",
-      method, expected->full_name(), actual->full_name(),
-      (field != nullptr ? field->full_name() : "n/a"));
+  ABSL_LOG(FATAL) << ReflectionUsageMessageError(expected, actual, field,
+                                                 method);
 }
 #endif
 
@@ -1525,7 +1539,7 @@ int Reflection::FieldSize(const Message& message,
           } else {
             // No need to materialize the repeated field if it is out of sync:
             // its size will be the same as the map's size.
-            return map.size();
+            return map.GetMap().size();
           }
         } else {
           return GetRaw<RepeatedPtrFieldBase>(message, field).size();
@@ -2569,6 +2583,8 @@ void Reflection::AddEnumValueInternal(Message* message,
 
 const internal::ClassData* Reflection::GetMessageClassData(
     const FieldDescriptor* field) const {
+  ABSL_DCHECK_EQ(descriptor_, field->containing_type())
+      << field->full_name() << " " << descriptor_->full_name();
   // If we are using the generated factory, we cache the prototype in the field
   // descriptor for faster access.
   // The default instances of generated messages are not cross-linked, which
@@ -2950,7 +2966,7 @@ bool Reflection::IsRepeatedOrMapFieldEmpty(const Message& message,
           } else {
             // No need to materialize the repeated field if it is out of sync:
             // its size will be the same as the map's size.
-            return map.size() == 0;
+            return map.GetMap().empty();
           }
         } else {
           return GetRaw<RepeatedPtrFieldBase>(message, field).empty();
@@ -3036,77 +3052,141 @@ const FieldDescriptor* Reflection::GetOneofFieldDescriptor(
 bool Reflection::ContainsMapKey(const Message& message,
                                 const FieldDescriptor* field,
                                 const MapKey& key) const {
-  USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
-              "Field is not a map field.");
-  return GetRaw<MapFieldBase>(message, field).ContainsMapKey(key);
+  auto map = GetMap(message, field);
+  return map.ok() && map->contains(key);
 }
 
 bool Reflection::InsertOrLookupMapValue(Message* message,
                                         const FieldDescriptor* field,
                                         const MapKey& key,
                                         MapValueRef* val) const {
-  USAGE_CHECK(IsMapFieldInApi(field), InsertOrLookupMapValue,
-              "Field is not a map field.");
-  val->SetType(field->message_type()->map_value()->cpp_type());
-  SetHasBit(message, field);
-  return MutableRaw<MapFieldBase>(message, field)
-      ->InsertOrLookupMapValue(key, val);
+  auto map = MutableMap(message, field);
+  if (!map.ok()) return false;
+  auto res = map->try_emplace(key);
+  if (!res.ok()) return false;
+  if (val != nullptr) *val = res->iter->value();
+  return res->inserted;
 }
 
 bool Reflection::LookupMapValue(const Message& message,
                                 const FieldDescriptor* field, const MapKey& key,
                                 MapValueConstRef* val) const {
-  USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
-              "Field is not a map field.");
-  val->SetType(field->message_type()->map_value()->cpp_type());
-  return GetRaw<MapFieldBase>(message, field).LookupMapValue(key, val);
+  auto map = GetMap(message, field);
+  if (!map.ok()) return false;
+  auto it = map->find(key);
+  if (it != map->end()) {
+    if (val != nullptr) *val = it->value();
+    return true;
+  }
+  return false;
 }
 
 bool Reflection::DeleteMapValue(Message* message, const FieldDescriptor* field,
                                 const MapKey& key) const {
-  USAGE_CHECK(IsMapFieldInApi(field), DeleteMapValue,
-              "Field is not a map field.");
-  return MutableRaw<MapFieldBase>(message, field)
-      ->DeleteMapValue(message->GetArena(), key);
-}
-
-MapIterator Reflection::MapBegin(Message* message,
-                                 const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), MapBegin, "Field is not a map field.");
-  MapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).MapBegin(&iter);
-  return iter;
-}
-
-MapIterator Reflection::MapEnd(Message* message,
-                               const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), MapEnd, "Field is not a map field.");
-  MapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).MapEnd(&iter);
-  return iter;
+  auto map = MutableMap(message, field);
+  if (!map.ok()) return false;
+  return map->erase(key);
 }
 
 ConstMapIterator Reflection::ConstMapBegin(const Message* message,
                                            const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), ConstMapBegin,
-              "Field is not a map field.");
-  ConstMapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).ConstMapBegin(&iter);
-  return iter;
+  auto map = GetMap(*message, field);
+  if (!map.ok()) return ConstMapIterator();
+  return map->begin();
 }
 
 ConstMapIterator Reflection::ConstMapEnd(const Message* message,
                                          const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), ConstMapEnd, "Field is not a map field.");
-  ConstMapIterator iter(message, field);
-  GetRaw<MapFieldBase>(*message, field).ConstMapEnd(&iter);
-  return iter;
+  auto map = GetMap(*message, field);
+  if (!map.ok()) return ConstMapIterator();
+  return map->end();
+}
+
+static absl::Status CheckUsage(const Reflection* reflection,
+                               const Descriptor* descriptor,
+                               const Message* message,
+                               const FieldDescriptor* field,
+                               absl::string_view method) {
+  if (ABSL_PREDICT_FALSE(message == nullptr)) {
+    return ReflectionUsageError(descriptor, field, method,
+                                "Message pointer is null.");
+  }
+  if (ABSL_PREDICT_FALSE(field == nullptr)) {
+    return ReflectionUsageError(descriptor, nullptr, method,
+                                "FieldDescriptor is null.");
+  }
+  if (ABSL_PREDICT_FALSE(reflection != message->GetReflection())) {
+    return ReflectionUsageMessageError(descriptor, message->GetDescriptor(),
+                                       field, method);
+  }
+  if (ABSL_PREDICT_FALSE(field->containing_type() != descriptor)) {
+    return ReflectionUsageError(descriptor, field, method,
+                                "Field does not match message type.");
+  }
+  return absl::OkStatus();
+}
+
+static absl::Status CheckMapUsage(const Reflection* reflection,
+                                  const Descriptor* descriptor,
+                                  const Message* message,
+                                  const FieldDescriptor* field,
+                                  absl::string_view method) {
+  if (auto usage = CheckUsage(reflection, descriptor, message, field, method);
+      !usage.ok()) {
+    return usage;
+  }
+  if (ABSL_PREDICT_FALSE(!field->is_map())) {
+    return ReflectionUsageError(
+        descriptor, field, method,
+        "Field is singular or repeated; the method requires a map field.");
+  }
+  return absl::OkStatus();
+}
+
+absl::StatusOr<GenericMapRef> Reflection::MutableMap(
+    Message* message, const FieldDescriptor* field) const {
+  if (auto status =
+          CheckMapUsage(this, descriptor_, message, field, "MutableMap");
+      ABSL_PREDICT_FALSE(!status.ok())) {
+    return status;
+  }
+  GenericMapRef ref;
+  ref.key_type_ = field->message_type()->map_key()->cpp_type();
+  ref.value_type_ = field->message_type()->map_value()->cpp_type();
+  ref.map_ = MutableMapData(message, field)->MutableMap();
+  if (field->message_type()->map_value()->message_type()) {
+    const Message* prototype;
+    // If the map has elements, use it to get the prototype.
+    // Otherwise, fall back to the factory which is slower.
+    if (ref.map_->empty()) {
+      prototype = message_factory_->GetPrototype(
+          field->message_type()->map_value()->message_type());
+    } else {
+      prototype = DownCastMessage<Message>(
+          ref.map_->GetValue<MessageLite>(ref.map_->begin().node_));
+    }
+    ref.value_class_data_ = internal::GetClassData(*prototype);
+  }
+  return ref;
+}
+
+absl::StatusOr<GenericConstMapRef> Reflection::GetMap(
+    const Message& message, const FieldDescriptor* field) const {
+  if (auto status = CheckMapUsage(this, descriptor_, &message, field, "GetMap");
+      ABSL_PREDICT_FALSE(!status.ok())) {
+    return status;
+  }
+  GenericConstMapRef ref;
+  ref.key_type_ = field->message_type()->map_key()->cpp_type();
+  ref.value_type_ = field->message_type()->map_value()->cpp_type();
+  ref.map_ = &GetMapData(message, field)->GetMap();
+  return ref;
 }
 
 int Reflection::MapSize(const Message& message,
                         const FieldDescriptor* field) const {
-  USAGE_CHECK(IsMapFieldInApi(field), MapSize, "Field is not a map field.");
-  return GetRaw<MapFieldBase>(message, field).size();
+  auto map = GetMap(message, field);
+  return map.ok() ? map->size() : 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -4142,12 +4222,14 @@ bool IsDescendant(const Message& root, const Message& message) {
 
       const auto& map = reflection->GetRaw<MapFieldBase>(root, field);
       if (map.IsMapValid()) {
-        const auto end = reflection->ConstMapEnd(&root, field);
-        for (auto iter = reflection->ConstMapBegin(&root, field); iter != end;
-             ++iter) {
-          const Message& sub_message = iter.GetValueRef().GetMessageValue();
-          if (&sub_message == &message || IsDescendant(sub_message, message)) {
-            return true;
+        auto map_or = reflection->GetMap(root, field);
+        if (map_or.ok()) {
+          for (auto entry : *map_or) {
+            const Message& sub_message = entry.value().GetMessageValue();
+            if (&sub_message == &message ||
+                IsDescendant(sub_message, message)) {
+              return true;
+            }
           }
         }
 

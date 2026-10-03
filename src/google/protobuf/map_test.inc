@@ -38,6 +38,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/log/globals.h"
+#include "absl/status/status_matchers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -70,7 +71,9 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+using ::absl_testing::StatusIs;
 using ::testing::ElementsAre;
+using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::Pair;
 
@@ -1083,7 +1086,29 @@ TEST_F(MapImplTest, SwapFieldArenaReflection) {
 
     reflection_tester.ExpectMapFieldsSetViaReflection(rhs);
 
-      // Add an entry to make sure it is using the right arena.
+    (*rhs.mutable_map_int32_int32())[1234] = 1234;
+  }
+}
+
+TEST_F(MapImplTest, SwapFieldArenaMapReflection) {
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+
+  {
+    TestMap rhs;
+
+    {
+      Arena local_arena;
+      auto* lhs = Arena::Create<TestMap>(&local_arena);
+
+      reflection_tester.SetMapFieldsViaMapReflection(lhs);
+      reflection_tester.SwapMapsViaMapReflection(lhs, &rhs);
+
+      reflection_tester.ExpectClearViaReflection(*lhs);
+
+      (*lhs->mutable_map_int32_int32())[1234] = 1234;
+    }
+
+    reflection_tester.ExpectMapFieldsSetViaReflection(rhs);
     (*rhs.mutable_map_int32_int32())[1234] = 1234;
   }
 }
@@ -1127,22 +1152,21 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      ConstMapIterator it =
-          reflection_tester.ConstMapBegin(message, field->name());
-      ConstMapIterator end =
-          reflection_tester.ConstMapEnd(message, field->name());
+      GenericConstMapRef map_ref =
+          message->GetReflection()->GetMap(*message, field).value();
       // It's unordered, so search for it.
-      if (it == end) continue;
+      if (map_ref.empty()) continue;
+      auto it = map_ref.begin();
       auto next = it;
       ++next;
-      ASSERT_NE(next, end);
-      if (next.GetKey() < it.GetKey()) {
+      ASSERT_NE(next, map_ref.end());
+      if (next->key() < it->key()) {
         it = next;
       }
 
       EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 2);
-      reflection_tester.DeleteMapValueViaMapReflection(
-          message, field->name(), it.GetKey());
+      reflection_tester.DeleteMapValueViaMapReflection(message, field->name(),
+                                                       it->key());
       EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 1);
     }
 
@@ -1179,16 +1203,14 @@ TEST_F(MapImplTest, DeleteMapValues) {
       auto* field = descriptor->field(i);
       if (!field->is_map()) continue;
 
-      ConstMapIterator it =
-          reflection_tester.ConstMapBegin(message, field->name());
-      ConstMapIterator end =
-          reflection_tester.ConstMapEnd(message, field->name());
+      GenericConstMapRef map_ref =
+          message->GetReflection()->GetMap(*message, field).value();
 
-      while (it != end) {
+      for (auto it = map_ref.begin(); it != map_ref.end();) {
         auto next = it;
         ++next;
-        reflection_tester.DeleteMapValueViaMapReflection(
-            message, field->name(), it.GetKey());
+        reflection_tester.DeleteMapValueViaMapReflection(message, field->name(),
+                                                         it->key());
         it = next;
       }
       EXPECT_EQ(reflection_tester.MapSize(*message, field->name()), 0);
@@ -1198,65 +1220,99 @@ TEST_F(MapImplTest, DeleteMapValues) {
 
 TEST_F(MapImplTest, CopyAssignMapIterator) {
   TestMap message;
-  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  const auto* desc = message.descriptor();
+  const auto* field = desc->FindFieldByName("map_int32_int32");
+  MapReflectionTester reflection_tester(desc);
   reflection_tester.SetMapFieldsViaMapReflection(&message);
-  ConstMapIterator it1 =
-      reflection_tester.ConstMapBegin(&message, "map_int32_int32");
-  ConstMapIterator it2 =
-      reflection_tester.ConstMapEnd(&message, "map_int32_int32");
+  auto map = message.GetReflection()->GetMap(message, field).value();
+  auto it1 = map.begin();
+  auto it2 = map.end();
   it2 = it1;
-  EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
+  EXPECT_EQ(it1->key().GetInt32Value(), it2->key().GetInt32Value());
 }
 
 class MapTestWithParams
-    : public testing::TestWithParam<std::tuple<bool, bool, bool>> {};
+    : public testing::TestWithParam<std::tuple<bool, bool, bool>> {
+ protected:
+  const Descriptor* descriptor_ = UNITTEST::TestMap::descriptor();
+  DynamicMessageFactory factory_;
+  std::unique_ptr<const Message> dyn_message_{
+      factory_.GetPrototype(descriptor_)->New()};
+  TestMap gen_message_;
+  Arena arena_;
+
+  Message* MakeMessage(bool in_arena) {
+    bool use_dynamic = std::get<0>(GetParam());
+    auto* prototype = use_dynamic ? dyn_message_.get() : &gen_message_;
+    return in_arena ? prototype->New(&arena_)
+                    : Arena::Create<std::unique_ptr<Message>>(&arena_,
+                                                              prototype->New())
+                          ->get();
+  }
+};
 
 INSTANTIATE_TEST_SUITE_P(MapTestWithParamsSuite, MapTestWithParams,
                          testing::Combine(testing::Bool(), testing::Bool(),
                                           testing::Bool()));
 
 TEST_P(MapTestWithParams, SwapMapsFieldsViaReflection) {
-  auto* descriptor = UNITTEST::TestMap::descriptor();
   auto [use_dynamic, lhs_arena, rhs_arena] = GetParam();
-
-  DynamicMessageFactory factory;
-  std::unique_ptr<const Message> dyn_message(
-      factory.GetPrototype(descriptor)->New());
-  TestMap gen_message;
-  Arena arena;
-
-  std::vector<const FieldDescriptor*> fields;
-  for (int i = 0; i < descriptor->field_count(); ++i) {
-    fields.push_back(descriptor->field(i));
-  }
-
-  const auto make = [&, use_dynamic = use_dynamic](bool in_arena) {
-    auto* prototype = use_dynamic ? dyn_message.get() : &gen_message;
-    return in_arena ? prototype->New(&arena)
-                    : Arena::Create<std::unique_ptr<Message>>(&arena,
-                                                              prototype->New())
-                          ->get();
-  };
-
-  auto* lhs = make(lhs_arena);
-  auto* rhs = make(rhs_arena);
-  MapReflectionTester reflection_tester(descriptor);
+  auto* lhs = MakeMessage(lhs_arena);
+  auto* rhs = MakeMessage(rhs_arena);
+  MapReflectionTester reflection_tester(descriptor_);
   reflection_tester.SetMapFieldsViaMapReflection(lhs);
 
-  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(lhs);
-  reflection_tester.ExpectClearViaReflectionIterator(rhs);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*lhs);
+  reflection_tester.ExpectClearViaReflectionIterator(*rhs);
+
+  std::vector<const FieldDescriptor*> fields;
+  for (int i = 0; i < descriptor_->field_count(); ++i) {
+    fields.push_back(descriptor_->field(i));
+  }
 
   lhs->GetReflection()->SwapFields(lhs, rhs, fields);
 
-  reflection_tester.ExpectClearViaReflectionIterator(lhs);
-  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(rhs);
+  reflection_tester.ExpectClearViaReflectionIterator(*lhs);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*rhs);
 
   if (lhs_arena == rhs_arena) {
     // If they are the same arena, we can try the unsafe swap.
     lhs->GetReflection()->UnsafeArenaSwapFields(lhs, rhs, fields);
-    reflection_tester.ExpectClearViaReflectionIterator(rhs);
-    reflection_tester.ExpectMapFieldsSetViaReflectionIterator(lhs);
+    reflection_tester.ExpectClearViaReflectionIterator(*rhs);
+    reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*lhs);
   }
+}
+
+TEST_P(MapTestWithParams, SwapMapsViaMapReflection) {
+  auto [use_dynamic, lhs_arena, rhs_arena] = GetParam();
+  auto* lhs = MakeMessage(lhs_arena);
+  auto* rhs = MakeMessage(rhs_arena);
+  MapReflectionTester reflection_tester(descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(lhs);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*lhs);
+  reflection_tester.ExpectClearViaReflectionIterator(*rhs);
+
+  reflection_tester.SwapMapsViaMapReflection(lhs, rhs);
+
+  reflection_tester.ExpectClearViaReflectionIterator(*lhs);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*rhs);
+}
+
+TEST_P(MapTestWithParams, AssignMapsViaMapReflection) {
+  auto [use_dynamic, lhs_arena, rhs_arena] = GetParam();
+  auto* src = MakeMessage(lhs_arena);
+  auto* dst = MakeMessage(rhs_arena);
+  MapReflectionTester reflection_tester(descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(src);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*src);
+  reflection_tester.ExpectClearViaReflectionIterator(*dst);
+
+  reflection_tester.AssignMapsViaMapReflection(dst, src);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*src);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*dst);
 }
 
 class MapTestCodegenOrDynamic : public testing::TestWithParam<bool> {};
@@ -1550,22 +1606,7 @@ static int Int(const std::string& value) {
   return result;
 }
 
-}  // namespace
-
-// This class is a friend, so no anonymous namespace.
-class MapFieldReflectionTest : public testing::Test {
- protected:
-  typedef FieldDescriptor FD;
-
-  int MapSize(const Reflection* reflection, const FieldDescriptor* field,
-              const Message& message) {
-    return reflection->MapSize(message, field);
-  }
-};
-
-namespace {
-
-TEST_F(MapFieldReflectionTest, RegularFields) {
+TEST(MapFieldReflectionTest, RegularFields) {
   TestMap message;
   const Reflection* refl = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
@@ -1757,7 +1798,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   }
 }
 
-TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
+TEST(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   TestMap message;
   const Reflection* refl = message.GetReflection();
   const Descriptor* desc = message.GetDescriptor();
@@ -2249,7 +2290,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
   }
 }
 
-TEST_F(MapFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
+TEST(MapFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
   // Set-up message content.
   TestMap m0, m1, m2;
   for (int i = 0; i < 10; ++i) {
@@ -2355,7 +2396,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefMergeFromAndSwap) {
   // TODO: add test for duplicated key
 }
 
-TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
+TEST(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
   // Dynamic Message
   {
     DynamicMessageFactory factory;
@@ -2374,7 +2415,7 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
     entry_reflection->SetInt32(entry2, key_field, 1);
 
     EXPECT_EQ(2, reflection->FieldSize(*message, field));
-    EXPECT_EQ(1, MapSize(reflection, field, *message));
+    EXPECT_EQ(1, reflection->GetMap(*message, field).value().size());
     EXPECT_EQ(2, reflection->FieldSize(*message, field));
   }
 
@@ -2394,11 +2435,11 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
     entry_reflection->SetInt32(entry2, key_field, 1);
 
     EXPECT_EQ(2, reflection->FieldSize(message, field));
-    EXPECT_EQ(1, MapSize(reflection, field, message));
+    EXPECT_EQ(1, reflection->GetMap(message, field).value().size());
   }
 }
 
-TEST_F(MapFieldReflectionTest, UninitializedEntry) {
+TEST(MapFieldReflectionTest, UninitializedEntry) {
   UNITTEST::TestRequiredMessageMap message;
   const Reflection* reflection = message.GetReflection();
   const FieldDescriptor* field =
@@ -3508,7 +3549,115 @@ TEST(GeneratedMapFieldReflectionTest, SetViaMapReflection) {
   MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
   reflection_tester.SetMapFieldsViaMapReflection(&message);
   reflection_tester.ExpectMapFieldsSetViaReflection(message);
-  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(&message);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(message);
+}
+
+TEST(GeneratedMapFieldReflectionTest, ClearViaMapReflection) {
+  UNITTEST::TestMap message;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message);
+  reflection_tester.ExpectMapFieldsSetViaReflection(message);
+  reflection_tester.ClearMapFieldsViaMapReflection(&message);
+  reflection_tester.ExpectClearViaReflection(message);
+  reflection_tester.ExpectClearViaReflectionIterator(message);
+}
+
+TEST(GeneratedMapFieldReflectionTest, ModifyViaMapReflection) {
+  UNITTEST::TestMap message;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message);
+  reflection_tester.ModifyMapFieldsViaReflection(&message);
+}
+
+TEST(GeneratedMapFieldReflectionTest, SwapMapsViaMapReflection) {
+  UNITTEST::TestMap message1;
+  UNITTEST::TestMap message2;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message1);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(message1);
+  reflection_tester.ExpectClearViaReflectionIterator(message2);
+
+  reflection_tester.SwapMapsViaMapReflection(&message1, &message2);
+
+  reflection_tester.ExpectClearViaReflectionIterator(message1);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(message2);
+}
+
+TEST(GeneratedMapFieldReflectionTest, ShallowSwapMapsViaMapReflection) {
+  UNITTEST::TestMap message1;
+  UNITTEST::TestMap message2;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message1);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(message1);
+  reflection_tester.ExpectClearViaReflectionIterator(message2);
+
+  reflection_tester.ShallowSwapMapsViaMapReflection(&message1, &message2);
+}
+
+TEST(GeneratedMapFieldReflectionTest, AssignMapsViaMapReflection) {
+  UNITTEST::TestMap src;
+  UNITTEST::TestMap dst;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&src);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(src);
+  reflection_tester.ExpectClearViaReflectionIterator(dst);
+
+  reflection_tester.AssignMapsViaMapReflection(&dst, &src);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(src);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(dst);
+}
+
+TEST(GeneratedMapFieldReflectionTest, ShallowAssignMapsViaMapReflection) {
+  UNITTEST::TestMap src;
+  UNITTEST::TestMap dst;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&src);
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(src);
+  reflection_tester.ExpectClearViaReflectionIterator(dst);
+
+  reflection_tester.ShallowAssignMapsViaMapReflection(&dst, &src);
+}
+
+TEST(GeneratedMapFieldReflectionTest, EraseMapValuesViaMapReflectionIterator) {
+  UNITTEST::TestMap message;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(message);
+
+  reflection_tester.EraseMapValuesViaMapReflectionIterator(&message);
+  reflection_tester.ExpectClearViaReflection(message);
+  reflection_tester.ExpectClearViaReflectionIterator(message);
+}
+
+TEST(GeneratedMapFieldReflectionTest, InsertOrLookupMapValue) {
+  UNITTEST::TestMap message;
+  MapReflectionTester reflection_tester(UNITTEST::TestMap::descriptor());
+
+  MapKey key;
+  key.SetInt32Value(42);
+  MapValueRef val_ref;
+  EXPECT_TRUE(reflection_tester.InsertOrLookupMapValue(
+      &message, "map_int32_int32", key, &val_ref));
+  val_ref.SetInt32Value(100);
+
+  EXPECT_FALSE(reflection_tester.InsertOrLookupMapValue(
+      &message, "map_int32_int32", key, &val_ref));
+  EXPECT_EQ(val_ref.GetInt32Value(), 100);
+
+  MapValueConstRef const_val_ref;
+  EXPECT_TRUE(reflection_tester.LookupMapValue(message, "map_int32_int32", key,
+                                               &const_val_ref));
+  EXPECT_EQ(const_val_ref.GetInt32Value(), 100);
+
+  MapKey non_exist_key;
+  non_exist_key.SetInt32Value(999);
+  EXPECT_FALSE(reflection_tester.LookupMapValue(message, "map_int32_int32",
+                                                non_exist_key, &const_val_ref));
 }
 
 // Dynamic Message Test =============================================
@@ -3554,6 +3703,84 @@ TEST_F(MapFieldInDynamicMessageTest, DynamicMapReflection) {
   MapReflectionTester reflection_tester(map_descriptor_);
   reflection_tester.SetMapFieldsViaMapReflection(message.get());
   reflection_tester.ExpectMapFieldsSetViaReflection(*message);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*message);
+}
+
+TEST_F(MapFieldInDynamicMessageTest, ClearViaMapReflection) {
+  std::unique_ptr<Message> message(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(message.get());
+  reflection_tester.ExpectMapFieldsSetViaReflection(*message);
+
+  reflection_tester.ClearMapFieldsViaMapReflection(message.get());
+  reflection_tester.ExpectClearViaReflection(*message);
+  reflection_tester.ExpectClearViaReflectionIterator(*message);
+}
+
+TEST_F(MapFieldInDynamicMessageTest, SwapMapsViaMapReflection) {
+  std::unique_ptr<Message> message1(map_prototype_->New());
+  std::unique_ptr<Message> message2(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(message1.get());
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*message1);
+  reflection_tester.ExpectClearViaReflectionIterator(*message2);
+
+  reflection_tester.SwapMapsViaMapReflection(message1.get(), message2.get());
+
+  reflection_tester.ExpectClearViaReflectionIterator(*message1);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*message2);
+}
+
+TEST_F(MapFieldInDynamicMessageTest, ShallowSwapMapsViaMapReflection) {
+  std::unique_ptr<Message> message1(map_prototype_->New());
+  std::unique_ptr<Message> message2(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(message1.get());
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*message1);
+  reflection_tester.ExpectClearViaReflectionIterator(*message2);
+
+  reflection_tester.ShallowSwapMapsViaMapReflection(message1.get(),
+                                                    message2.get());
+}
+
+TEST_F(MapFieldInDynamicMessageTest, AssignMapsViaMapReflection) {
+  std::unique_ptr<Message> src(map_prototype_->New());
+  std::unique_ptr<Message> dst(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(src.get());
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*src);
+  reflection_tester.ExpectClearViaReflectionIterator(*dst);
+
+  reflection_tester.AssignMapsViaMapReflection(dst.get(), src.get());
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*src);
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*dst);
+}
+
+TEST_F(MapFieldInDynamicMessageTest, ShallowAssignMapsViaMapReflection) {
+  std::unique_ptr<Message> src(map_prototype_->New());
+  std::unique_ptr<Message> dst(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(src.get());
+
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*src);
+  reflection_tester.ExpectClearViaReflectionIterator(*dst);
+
+  reflection_tester.ShallowAssignMapsViaMapReflection(dst.get(), src.get());
+}
+
+TEST_F(MapFieldInDynamicMessageTest, EraseMapValuesViaMapReflectionIterator) {
+  std::unique_ptr<Message> message(map_prototype_->New());
+  MapReflectionTester reflection_tester(map_descriptor_);
+  reflection_tester.SetMapFieldsViaMapReflection(message.get());
+  reflection_tester.ExpectMapFieldsSetViaReflectionIterator(*message);
+
+  reflection_tester.EraseMapValuesViaMapReflectionIterator(message.get());
+  reflection_tester.ExpectClearViaReflection(*message);
+  reflection_tester.ExpectClearViaReflectionIterator(*message);
 }
 
 TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
@@ -3588,10 +3815,15 @@ TEST_F(MapFieldInDynamicMessageTest, MapValueReferernceValidAfterSerialize) {
   // Get value reference before serialization, so that we know the value is from
   // map.
   MapKey map_key;
-  MapValueRef map_val;
   map_key.SetInt32Value(0);
-  reflection_tester.GetMapValueViaMapReflection(
-      message.get(), "map_int32_foreign_message", map_key, &map_val);
+  auto insert_res =
+      message->GetReflection()
+          ->MutableMap(message.get(), message->GetDescriptor()->FindFieldByName(
+                                          "map_int32_foreign_message"))
+          .value()
+          .try_emplace(map_key)
+          .value();
+  MapValueRef map_val = insert_res.iter->value();
   Message* submsg = map_val.MutableMessageValue();
 
   // In previous implementation, calling SerializeToString will cause syncing
@@ -4432,6 +4664,103 @@ TEST(NonUtf8Test, BytesValuePassesInProto3) {
   auto serialized = message.SerializeAsString();
   ASSERT_TRUE(message.ParseFromString(serialized));
   EXPECT_EQ((*message.mutable_map_bytes())[1], "\xFF");
+}
+
+TEST_F(MapImplTest, FallibleMapReflectionApi) {
+  TestMap message;
+  const auto* desc = message.descriptor();
+  const auto* reflection = message.GetReflection();
+  const auto* map_i32_field = desc->FindFieldByName("map_int32_int32");
+  const auto* map_i64_field = desc->FindFieldByName("map_int64_int64");
+  TestAllTypes other_msg;
+  const auto* non_map_field =
+      other_msg.descriptor()->FindFieldByName("optional_int32");
+
+  // 1. GetMap / MutableMap with invalid arguments (replacing USAGE_CHECK
+  // crashes) Null field
+  EXPECT_THAT(reflection->GetMap(message, nullptr),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("FieldDescriptor is null")));
+  EXPECT_THAT(reflection->MutableMap(&message, nullptr),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("FieldDescriptor is null")));
+
+  // Null message pointer
+  EXPECT_THAT(reflection->MutableMap(nullptr, map_i32_field),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Message pointer is null")));
+
+  // Field is singular/repeated (not a map)
+  EXPECT_THAT(other_msg.GetReflection()->GetMap(other_msg, non_map_field),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("requires a map field")));
+  EXPECT_THAT(other_msg.GetReflection()->MutableMap(&other_msg, non_map_field),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("requires a map field")));
+
+  // Mismatched field from another descriptor
+  EXPECT_THAT(reflection->GetMap(message, non_map_field),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Field does not match message type")));
+  EXPECT_THAT(reflection->MutableMap(&message, non_map_field),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("Field does not match message type")));
+
+  // Mismatched message reflection
+  EXPECT_THAT(reflection->GetMap(other_msg, map_i32_field),
+              StatusIs(absl::StatusCode::kInvalidArgument,
+                       HasSubstr("not the right object for reflection")));
+
+  ASSERT_TRUE(reflection->GetMap(message, map_i32_field).ok());
+  ASSERT_TRUE(reflection->MutableMap(&message, map_i32_field).ok());
+
+  auto map = reflection->MutableMap(&message, map_i32_field).value();
+
+  // 2. MapKey type mismatch or uninitialized key
+  MapKey uninit_key;
+  MapKey int64_key;
+  int64_key.SetInt64Value(42);
+  MapKey int32_key;
+  int32_key.SetInt32Value(42);
+
+  EXPECT_FALSE(map.contains(uninit_key));
+  EXPECT_FALSE(map.contains(int64_key));
+  EXPECT_EQ(map.find(uninit_key), map.end());
+  EXPECT_EQ(map.find(int64_key), map.end());
+
+  EXPECT_FALSE(map.erase(uninit_key));
+  EXPECT_FALSE(map.erase(int64_key));
+
+  EXPECT_THAT(
+      map.try_emplace(uninit_key),
+      StatusIs(absl::StatusCode::kInvalidArgument, HasSubstr("uninitialized")));
+  EXPECT_THAT(
+      map.try_emplace(int64_key),
+      StatusIs(absl::StatusCode::kInvalidArgument, HasSubstr("type mismatch")));
+
+  // Valid try_emplace
+  auto res = map.try_emplace(int32_key);
+  ASSERT_TRUE(res.ok());
+  EXPECT_TRUE(res->inserted);
+  EXPECT_EQ(res->iter->key().GetInt32Value(), 42);
+
+  // 3. assign and swap between incompatible map fields
+  auto map_i64 = reflection->MutableMap(&message, map_i64_field).value();
+  EXPECT_THAT(map.assign(map_i64), StatusIs(absl::StatusCode::kInvalidArgument,
+                                            HasSubstr("mismatch")));
+  EXPECT_THAT(map.swap(map_i64), StatusIs(absl::StatusCode::kInvalidArgument,
+                                          HasSubstr("mismatch")));
+
+  // 4. shallow_assign and shallow_swap work unconditionally on handles
+  GenericMapRef shallow_handle;
+  shallow_handle.shallow_assign(map);
+  EXPECT_EQ(shallow_handle.size(), 1);
+  EXPECT_TRUE(shallow_handle.contains(int32_key));
+
+  GenericMapRef other_handle = map_i64;
+  shallow_handle.shallow_swap(other_handle);
+  EXPECT_EQ(shallow_handle.size(), 0);
+  EXPECT_EQ(other_handle.size(), 1);
 }
 
 }  // namespace
