@@ -304,6 +304,16 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
   file->ext_count = ext_count;
 
+  // Each extension is assigned an incrementing uint16_t layout_index that
+  // indexes file->ext_layouts, so a file may not hold more than UINT16_MAX
+  // extensions or the index wraps and aliases distinct extensions onto one
+  // slot.
+  if (ext_count > UINT16_MAX) {
+    _upb_DefBuilder_Errf(ctx,
+                         "file has too many extensions (%d); the limit is %d",
+                         ext_count, UINT16_MAX);
+  }
+
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.
     file->ext_layouts = ctx->layout->UPB_PRIVATE(exts);

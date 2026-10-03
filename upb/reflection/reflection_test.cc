@@ -552,5 +552,45 @@ TEST(ReflectionTest, DefPoolFindMethodsRespectSize) {
   }
 }
 
+TEST(ReflectionTest, TooManyExtensionsRejected) {
+  // upb_FieldDef::layout_index is a uint16_t that indexes the file's flat
+  // extension table. The def-builder counts every extension in the file (top
+  // level plus nested) and assigns each one an incrementing layout_index. With
+  // more than UINT16_MAX extensions the index wraps, aliasing distinct
+  // extensions onto a single mini-table slot and leaving another slot
+  // uninitialized, so a file this large must be rejected up front.
+  google::protobuf::FileDescriptorProto proto;
+  proto.set_name("overflow.proto");
+  proto.set_package("pkg");
+  proto.set_syntax("proto2");
+
+  google::protobuf::DescriptorProto* msg = proto.add_message_type();
+  msg->set_name("M");
+  google::protobuf::DescriptorProto::ExtensionRange* range =
+      msg->add_extension_range();
+  range->set_start(1);
+  range->set_end(200000);
+
+  const int kCount = 70000;  // > UINT16_MAX
+  int number = 1;
+  for (int i = 0; i < kCount; i++) {
+    // Field numbers [19000, 20000) are reserved and cannot be used.
+    if (number >= 19000 && number < 20000) number = 20000;
+    google::protobuf::FieldDescriptorProto* ext = proto.add_extension();
+    ext->set_name(absl::StrFormat("ext_%d", i));
+    ext->set_number(number++);
+    ext->set_label(google::protobuf::FieldDescriptorProto::LABEL_OPTIONAL);
+    ext->set_type(google::protobuf::FieldDescriptorProto::TYPE_INT32);
+    ext->set_extendee(".pkg.M");
+  }
+
+  google::protobuf::FileDescriptorSet set;
+  *set.add_file() = proto;
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorSetFromProto(set);
+  ASSERT_FALSE(pool.ok());
+  EXPECT_THAT(std::string(pool.status().message()),
+              HasSubstr("too many extensions"));
+}
+
 }  // namespace
 }  // namespace upb_test
