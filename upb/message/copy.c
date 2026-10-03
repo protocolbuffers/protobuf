@@ -299,14 +299,18 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
   if (!in) return dst;
 
   for (size_t i = 0; i < in->size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    upb_TaggedAuxPtr tagged_ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i);
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      // Clone a canonical or non-canonical upb_Extension*.
+      // Clone a canonical (possibly promoted) or non-canonical upb_Extension*.
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
       const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
       upb_Extension* dst_ext =
           UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-              dst, msg_ext->ext, arena, upb_TaggedAuxPtr_Type(tagged_ptr));
+              dst, msg_ext->ext, arena,
+              upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)
+                  ? kUpb_TaggedAuxType_CanonicalExtension
+                  : kUpb_TaggedAuxType_NonCanonicalExtension);
       if (!dst_ext) goto err;
 
       if (upb_MiniTableField_IsScalar(field)) {
@@ -329,6 +333,17 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
       // Make a copy into destination arena.
       if (!UPB_PRIVATE(_upb_Message_AddUnknown)(
               dst, unknown->data, unknown->size, arena, kUpb_AddUnknown_Copy)) {
+        goto err;
+      }
+    } else if (upb_TaggedAuxPtr_IsLazyExtension(tagged_ptr)) {
+      // Clone the unparsed payload of a lazy extension into the destination
+      // arena; it stays lazy in the copy.
+      const upb_LazyExtensionData* lazy =
+          upb_TaggedAuxPtr_LazyExtension(tagged_ptr);
+      upb_Extension* unused;
+      if (UPB_PRIVATE(_upb_Message_AddLazyExtension)(
+              dst, lazy->ext, lazy->registry, lazy->options, lazy->data,
+              /*alias=*/false, arena, &unused) != kUpb_AddLazyExtension_Ok) {
         goto err;
       }
     }

@@ -49,6 +49,16 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
 UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_ToField(
     const upb_MiniTableExtension* e);
 
+// Returns true if the extension is lazily parsed. See
+// upb_MiniTableExtension_SetLazy().
+UPB_API_INLINE bool upb_MiniTableExtension_IsLazy(
+    const upb_MiniTableExtension* e);
+
+// Marks the extension as lazily parsed. See the definition in
+// mini_table/internal/extension.h for details and restrictions.
+UPB_API_INLINE bool upb_MiniTableExtension_SetLazy(upb_MiniTableExtension* e,
+                                                   bool lazy);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

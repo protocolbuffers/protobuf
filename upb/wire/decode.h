@@ -121,6 +121,18 @@ UPB_NODISCARD UPB_API upb_DecodeStatus upb_DecodeWithTrace(
 // Utility function for wrapper languages to get an error string from a
 // upb_DecodeStatus.
 UPB_API const char* upb_DecodeStatus_String(upb_DecodeStatus status);
+
+struct upb_LazyExtensionData;
+
+// Parses the stored payload of a lazy extension (see
+// upb_MiniTableExtension_SetLazy()) into a new message allocated from `arena`,
+// using the extension registry and decode options captured when the payload
+// was stored. The message is not published anywhere; see
+// upb_Message_PromoteLazyExtension() for that. On success `*out` is set.
+UPB_NODISCARD upb_DecodeStatus UPB_PRIVATE(_upb_Decode_LazyExtension)(
+    const struct upb_LazyExtensionData* lazy, upb_Arena* arena,
+    upb_Message** out);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

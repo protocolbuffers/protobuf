@@ -17,6 +17,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/types.h"
+#include "upb/port/atomic.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -77,8 +78,14 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
     if (!in) return false;
     in->size = 0;
     in->capacity = _upb_Message_InternalCapacity(block_bytes);
+    UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(in));
     UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
-  } else if (in->capacity == in->size) {
+  } else {
+    // Reserving a slot is a read-write operation on the existing block even
+    // when no reallocation is needed (the caller is about to append to it).
+    UPB_PRIVATE(_upb_Message_Internal_AccessReadWrite)(in);
+  }
+  if (in->capacity == in->size) {
     if (in->size == UINT32_MAX) return false;
     // Internal data is too small, reallocate.
     if (UPB_SIZEOF_FLEX_WOULD_OVERFLOW(upb_Message_Internal, aux_data,
@@ -101,6 +108,7 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
       memcpy(new_in, in,
              UPB_SIZEOF_FLEX(upb_Message_Internal, aux_data, in->size));
       new_in->capacity = _upb_Message_InternalCapacity(new_bytes);
+      UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(new_in));
       UPB_PRIVATE(_upb_Arena_Harvest)(a, in, old_bytes);
       in = new_in;
       UPB_PRIVATE(_upb_Message_SetInternal)(msg, in);
@@ -108,6 +116,26 @@ bool UPB_PRIVATE(_upb_Message_ReserveSlot)(struct upb_Message* msg,
   }
   UPB_ASSERT(in->capacity - in->size >= 1);
   return true;
+}
+
+uintptr_t UPB_PRIVATE(_upb_Message_Internal_LoadAuxAcquire)(
+    const upb_Message_Internal* in, size_t i) {
+  UPB_ASSERT(i < in->size);
+  UPB_PRIVATE(_upb_Message_Internal_AccessReadOnly)(in);
+  return (uintptr_t)upb_Atomic_Load(&in->aux_data[i], memory_order_acquire);
+}
+
+bool UPB_PRIVATE(_upb_Message_Internal_CompareExchangeAux)(
+    upb_Message_Internal* in, size_t i, upb_TaggedAuxPtr* expected,
+    upb_TaggedAuxPtr desired) {
+  UPB_ASSERT(i < in->size);
+  // Promotion is a read-only operation under the message thread-safety
+  // contract: it may race with other readers and promoters, but not with
+  // mutations. See the comment on _upb_Message_Internal_AccessReadOnly().
+  UPB_PRIVATE(_upb_Message_Internal_AccessReadOnly)(in);
+  return upb_Atomic_CompareExchangeStrong(&in->aux_data[i], &expected->ptr,
+                                          desired.ptr, memory_order_release,
+                                          memory_order_acquire);
 }
 
 bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
@@ -131,23 +159,42 @@ bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
 
   dst_in->size = 0;
   dst_in->capacity = _upb_Message_InternalCapacity(block_bytes);
+  UPB_PRIVATE(upb_Xsan_Init)(UPB_XSAN(dst_in));
 
   for (size_t i = 0; i < in->size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+    upb_TaggedAuxPtr tagged_ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i);
+    upb_TaggedAuxPtr dst_ptr;
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
       upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
       if (!dst_ext) return false;
       *dst_ext = *msg_ext;
-      dst_in->aux_data[dst_in->size++] = upb_TaggedAuxPtr_MakeExtension(
-          dst_ext, upb_TaggedAuxPtr_Type(tagged_ptr));
+      // A promoted extension becomes an ordinary canonical extension in the
+      // copy; the copy is not shared with any concurrent reader.
+      dst_ptr = upb_TaggedAuxPtr_MakeExtension(
+          dst_ext, upb_TaggedAuxPtr_IsPromotedExtension(tagged_ptr)
+                       ? kUpb_TaggedAuxType_CanonicalExtension
+                       : upb_TaggedAuxPtr_Type(tagged_ptr));
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
       upb_StringView* dst_sv = upb_Arena_Malloc(arena, sizeof(upb_StringView));
       if (!dst_sv) return false;
       *dst_sv = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
-      dst_in->aux_data[dst_in->size++] =
-          upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+      dst_ptr = upb_TaggedAuxPtr_MakeUnknownDataAliased(dst_sv);
+    } else if (upb_TaggedAuxPtr_IsLazyExtension(tagged_ptr)) {
+      // Shallow copy: the payload is shared with the source, so the copy is
+      // aliased regardless of how the source stored it.
+      upb_LazyExtensionData* dst_lazy =
+          upb_Arena_Malloc(arena, sizeof(upb_LazyExtensionData));
+      if (!dst_lazy) return false;
+      *dst_lazy = *upb_TaggedAuxPtr_LazyExtension(tagged_ptr);
+      dst_ptr = upb_TaggedAuxPtr_MakeLazyExtension(dst_lazy, true);
+    } else {
+      UPB_ASSERT(upb_TaggedAuxPtr_IsNull(tagged_ptr));
+      continue;
     }
+    UPB_PRIVATE(_upb_Message_Internal_SetAux)(dst_in, dst_in->size, dst_ptr);
+    dst_in->size++;
   }
 
   UPB_PRIVATE(_upb_Message_SetInternal)(dst, dst_in);

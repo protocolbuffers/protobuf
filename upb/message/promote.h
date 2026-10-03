@@ -42,11 +42,43 @@ typedef enum {
 
 // Returns a message value or promotes an unknown field to an extension.
 //
+// If the message holds a lazy (not yet parsed) payload for this extension, it
+// is promoted as if by upb_Message_PromoteLazyExtension().
+//
 // TODO: Only supports extension fields that are messages,
 // expand support to include non-message types.
 UPB_NODISCARD upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
     upb_Message* msg, const upb_MiniTableExtension* ext_table,
     int decode_options, upb_Arena* arena, upb_MessageValue* value);
+
+// Returns the value of the lazy extension `ext_table` (see
+// upb_MiniTableExtension_SetLazy()), parsing its payload first if this has not
+// happened yet.
+//
+// The parse is performed with the extension registry and decode options that
+// were in effect when `msg` was parsed, and the parsed submessage is stored in
+// `msg` so that subsequent calls (and upb_Message_GetExtension(),
+// upb_Message_NextExtension(), etc.) return it directly. `arena` must be the
+// arena that owns `msg`, or one that has been fused with it; a fresh arena is
+// used for the parse and then fused into `arena`, so `arena` must not be an
+// arena created with an initial block, as those cannot be fused.
+//
+// This function is safe to call concurrently with other const operations on
+// `msg` (including other calls to this function for the same or different
+// extensions), which is what makes lazy extensions usable on shared, read-only
+// messages. It must not be called concurrently with mutations of `msg`. If
+// several threads race to promote the same extension, exactly one parse result
+// is published and all callers observe the same message pointer. If `msg` is
+// frozen, the promoted submessage is frozen too.
+//
+// Returns kUpb_GetExtension_NotPresent if the message does not hold the
+// extension at all (neither parsed nor lazy), kUpb_GetExtension_ParseError if
+// the payload is malformed, and kUpb_GetExtension_OutOfMemory if allocation
+// (or the arena fuse) fails. On a parse error the message is left unchanged, so
+// the call may be retried.
+UPB_NODISCARD upb_GetExtension_Status upb_Message_PromoteLazyExtension(
+    const upb_Message* msg, const upb_MiniTableExtension* ext_table,
+    upb_Arena* arena, upb_MessageValue* value);
 
 typedef struct {
   upb_FindUnknown_Status status;

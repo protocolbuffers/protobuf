@@ -271,7 +271,8 @@ UPB_API_INLINE bool upb_Message_HasBaseField(const struct upb_Message* msg,
 UPB_API_INLINE bool upb_Message_HasExtension(const struct upb_Message* msg,
                                              const upb_MiniTableExtension* e) {
   UPB_ASSERT(upb_MiniTableField_HasPresence(&e->UPB_PRIVATE(field)));
-  return UPB_PRIVATE(_upb_Message_Getext)(msg, e) != NULL;
+  // Lazy extensions that have not been promoted yet are present too.
+  return UPB_PRIVATE(_upb_Message_FindExtensionEntry)(msg, e, NULL, NULL);
 }
 
 UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
@@ -944,18 +945,12 @@ UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
 UPB_API_INLINE void upb_Message_ClearExtension(
     struct upb_Message* msg, const upb_MiniTableExtension* e) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  if (!in) return;
-  for (size_t i = 0; i < in->size; i++) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
-      const upb_Extension* ext =
-          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-      if (ext->ext == e) {
-        in->aux_data[i] = upb_TaggedAuxPtr_Null();
-        return;
-      }
-    }
+  size_t index;
+  // This also clears lazy extensions that have not been promoted.
+  if (UPB_PRIVATE(_upb_Message_FindExtensionEntry)(msg, e, &index, NULL)) {
+    upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+    UPB_PRIVATE(_upb_Message_Internal_SetAux)(in, index,
+                                              upb_TaggedAuxPtr_Null());
   }
 }
 

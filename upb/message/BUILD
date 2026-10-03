@@ -203,6 +203,7 @@ cc_library(
         "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
+        "//upb/wire",
         "//upb/wire:back_alloc",
         "//upb/wire:encoder",
         "//upb/wire:eps_copy_input_stream",
@@ -503,6 +504,34 @@ cc_test(
 )
 
 cc_test(
+    name = "lazy_extension_test",
+    srcs = ["lazy_extension_test.cc"],
+    deps = [
+        ":compare",
+        ":copy",
+        ":internal",
+        ":message",
+        ":promote",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_table",
+        "//upb/port",
+        "//upb/test:test_messages_proto2_upb_minitable",
+        "//upb/test:test_messages_proto2_upb_proto",
+        "//upb/test:test_proto_upb_minitable",
+        "//upb/test:test_upb_proto",
+        "//upb/wire",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/random",
+        "@abseil-cpp//absl/random:distributions",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/time",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "promote_test",
     srcs = ["promote_test.cc"],
     deps = [
@@ -540,6 +569,7 @@ cc_test(
         ":message_test_upb_proto",
         ":message_unknowns",
         "//upb/base",
+        "//upb/base:internal",
         "//upb/mem",
         "//upb/mini_table",
         "//upb/port",
@@ -682,8 +712,11 @@ filegroup(
         [
             "**/*test.cc",
         ],
+        # promote_test.cc and lazy_extension_test.cc depend on :promote, which
+        # is not part of the CMake libupb library.
         exclude = [
             "promote_test.cc",
+            "lazy_extension_test.cc",
             "convert_fuzz_test.cc",
             "compare_fuzz_test.cc",
         ],

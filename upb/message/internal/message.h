@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __cplusplus
+#include <atomic>
+#endif
+
 #include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
@@ -26,11 +30,17 @@
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/sanitizers.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+#if defined(UPB_USE_C11_ATOMICS) && !defined(__cplusplus)
+#include <stdatomic.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,16 +60,17 @@ typedef struct upb_TaggedAuxPtr {
   // 100 - aliased unknown data (upb_StringView*)
   // 001 - non-canonical extension (upb_Extension*)
   // 011 - canonical extension (upb_Extension*)
+  // 010 - non-aliased lazy extension (upb_LazyExtensionData*)
+  // 110 - aliased lazy extension (upb_LazyExtensionData*)
+  // 111 - promoted lazy extension (upb_Extension*)
   //
   // Bit 0 (lowest bit): Represents the data format in memory (1 for parsed
   //   form, 0 for serialized form).
   // Bit 1 (middle bit): Represents whether the data is semantically known or
   //   not (1 for known, 0 for unknown).
-  // Bit 2 (highest bit): Aliased/Non-aliased (1 for aliased, 0 for
-  //   non-aliased).
-  //
-  // Following this tag structure, we can later use tag `010` for lazy
-  // extensions.
+  // Bit 2 (highest bit): For serialized data, aliased/non-aliased (1 for
+  //   aliased, 0 for non-aliased). For parsed data, whether the entry was
+  //   promoted from a lazy extension (1) or parsed eagerly (0).
   //
   // The main semantic difference between aliased and non-aliased
   // unknown data is that non-aliased unknown data can be assumed to have the
@@ -81,6 +92,25 @@ typedef struct upb_TaggedAuxPtr {
   // For a non-canonical extension, its schema is known but not
   // the one expected by the message, so it should be treated like an unknown
   // field, but is stored as an extension to lazily defer serialization.
+  //
+  // A lazy extension is a semantically known, canonical extension whose
+  // payload has not been parsed yet (see upb_MiniTableExtension_SetLazy()).
+  // Non-aliased lazy extension data has the layout
+  //
+  //   [upb_LazyExtensionData] [payload]
+  //
+  // analogous to non-aliased unknown data, which allows the payload to be
+  // extended in place when the same extension occurs again on the wire.
+  // Aliased lazy extension data points into the buffer that was decoded.
+  //
+  // A promoted extension is a canonical extension that was published by
+  // upb_Message_PromoteLazyExtension(), which may run concurrently with other
+  // const operations on the same message. Every other kind of entry is only
+  // written under exclusive access to the message, so entries can be read with
+  // relaxed memory order; only an entry carrying the promoted tag must be
+  // re-read with acquire order before the upb_Extension it points to is
+  // dereferenced. UPB_PRIVATE(_upb_Message_Internal_GetAux)() takes care of
+  // this, and must be used for all reads of aux_data.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
@@ -98,6 +128,7 @@ UPB_INLINE bool upb_TaggedAuxPtr_IsSemanticallyKnown(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 0x2) != 0);
 }
 
+// Returns true for both eagerly parsed and promoted canonical extensions.
 UPB_INLINE bool upb_TaggedAuxPtr_IsCanonicalExtension(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 3);
 }
@@ -106,9 +137,25 @@ UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 1);
 }
 
+// Returns true if the entry is a canonical extension that was promoted from a
+// lazy extension, possibly concurrently with the current operation.
+UPB_INLINE bool upb_TaggedAuxPtr_IsPromotedExtension(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 7) == kUpb_TaggedAuxType_PromotedExtension;
+}
+
 // Returns true if the entry is a canonical or non-canonical extension.
 UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
   return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 1) != 0);
+}
+
+// Returns true if the entry is an aliased or non-aliased lazy extension that
+// has not been promoted yet.
+UPB_INLINE bool upb_TaggedAuxPtr_IsLazyExtension(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 3) == kUpb_TaggedAuxType_LazyExtension;
+}
+
+UPB_INLINE bool upb_TaggedAuxPtr_IsLazyExtensionAliased(upb_TaggedAuxPtr ptr) {
+  return (ptr.ptr & 7) == kUpb_TaggedAuxType_AliasedLazyExtension;
 }
 
 // Returns true if the entry is aliased/non-aliased unknown data.
@@ -117,7 +164,7 @@ UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownStringView(upb_TaggedAuxPtr ptr) {
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsUnknownAliased(upb_TaggedAuxPtr ptr) {
-  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 5) == 4);
+  return (ptr.ptr & 7) == kUpb_TaggedAuxType_AliasedUnknown;
 }
 
 UPB_INLINE upb_Extension* upb_TaggedAuxPtr_CanonicalExtension(
@@ -155,11 +202,43 @@ UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
   return (upb_StringView*)(ptr.ptr & ~7ULL);
 }
 
+// The serialized payload of a lazy extension that has not been promoted yet.
+typedef struct upb_LazyExtensionData {
+  // The payload of the extension: the concatenation of the (possibly several)
+  // length-delimited values that were seen on the wire, without their tags or
+  // lengths. Parsing this as a single message yields the merged value.
+  upb_StringView data;
+  const upb_MiniTableExtension* ext;
+  // Decoder state needed to perform the deferred parse. The registry must
+  // remain valid and unmodified for as long as the message is alive.
+  const upb_ExtensionRegistry* registry;
+  // The decode options to use, with the depth limit adjusted to the remaining
+  // depth at the point where the extension was encountered.
+  int options;
+} upb_LazyExtensionData;
+
+UPB_INLINE upb_LazyExtensionData* upb_TaggedAuxPtr_LazyExtension(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsLazyExtension(ptr));
+  return (upb_LazyExtensionData*)(ptr.ptr & ~7ULL);
+}
+
+// Returns the field number of a canonical, promoted or lazy extension entry.
+UPB_INLINE uint32_t upb_TaggedAuxPtr_ExtensionNumber(upb_TaggedAuxPtr ptr) {
+  if (upb_TaggedAuxPtr_IsLazyExtension(ptr)) {
+    return upb_MiniTableExtension_Number(
+        upb_TaggedAuxPtr_LazyExtension(ptr)->ext);
+  }
+  return upb_MiniTableExtension_Number(
+      upb_TaggedAuxPtr_CanonicalExtension(ptr)->ext);
+}
+
 // LINT.ThenChange(//depot/google3/third_party/upb/bits/golang/message.go:tagged_aux_type)
 
 typedef union {
   upb_Extension* extension;
   const upb_StringView* unknown_data;
+  upb_LazyExtensionData* lazy_extension;
 } upb_TaggedAux;
 
 UPB_INLINE upb_TaggedAuxType upb_TaggedAux_Get(upb_TaggedAuxPtr ptr,
@@ -181,7 +260,8 @@ UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeExtension(const upb_Extension* e, upb_TaggedAuxType type) {
   UPB_ASSERT(((uintptr_t)e & 7) == 0);
   UPB_ASSERT(type == kUpb_TaggedAuxType_CanonicalExtension ||
-             type == kUpb_TaggedAuxType_NonCanonicalExtension);
+             type == kUpb_TaggedAuxType_NonCanonicalExtension ||
+             type == kUpb_TaggedAuxType_PromotedExtension);
   upb_TaggedAuxPtr ptr;
   ptr.ptr = (uintptr_t)e | type;
   return ptr;
@@ -191,7 +271,7 @@ UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeCanonicalExtension(const upb_Extension* e) {
   UPB_ASSERT(((uintptr_t)e & 7) == 0);
   upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)e | 3;
+  ptr.ptr = (uintptr_t)e | kUpb_TaggedAuxType_CanonicalExtension;
   return ptr;
 }
 
@@ -199,7 +279,26 @@ UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeNonCanonicalExtension(const upb_Extension* e) {
   UPB_ASSERT(((uintptr_t)e & 7) == 0);
   upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)e | 1;
+  ptr.ptr = (uintptr_t)e | kUpb_TaggedAuxType_NonCanonicalExtension;
+  return ptr;
+}
+
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakePromotedExtension(const upb_Extension* e) {
+  UPB_ASSERT(((uintptr_t)e & 7) == 0);
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)e | kUpb_TaggedAuxType_PromotedExtension;
+  return ptr;
+}
+
+// If `aliased` is false, the payload is stored in the same allocation
+// immediately following the upb_LazyExtensionData.
+UPB_INLINE upb_TaggedAuxPtr upb_TaggedAuxPtr_MakeLazyExtension(
+    const upb_LazyExtensionData* lazy, bool aliased) {
+  UPB_ASSERT(((uintptr_t)lazy & 7) == 0);
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)lazy | (aliased ? kUpb_TaggedAuxType_AliasedLazyExtension
+                                       : kUpb_TaggedAuxType_LazyExtension);
   return ptr;
 }
 
@@ -220,17 +319,130 @@ UPB_INLINE upb_TaggedAuxPtr
 upb_TaggedAuxPtr_MakeUnknownDataAliased(const upb_StringView* sv) {
   UPB_ASSERT(((uintptr_t)sv & 7) == 0);
   upb_TaggedAuxPtr ptr;
-  ptr.ptr = (uintptr_t)sv | 4;
+  ptr.ptr = (uintptr_t)sv | kUpb_TaggedAuxType_AliasedUnknown;
   return ptr;
+}
+
+// The storage type of upb_Message_Internal::aux_data entries.
+//
+// Lazy extensions may be promoted by upb_Message_PromoteLazyExtension(), a
+// const operation that may run concurrently with other const operations on the
+// same message, so entries must be accessed atomically. C++ compilers do not
+// uniformly support C11 `_Atomic`, so from C++ the entries are declared as
+// plain integers (the layout is identical) and accessed through std::atomic.
+#ifdef __cplusplus
+typedef uintptr_t upb_AuxDataEntry;
+#else
+typedef UPB_ATOMIC(uintptr_t) upb_AuxDataEntry;
+#endif
+
+UPB_INLINE uintptr_t
+UPB_PRIVATE(_upb_AuxDataEntry_LoadRelaxed)(const upb_AuxDataEntry* entry) {
+#if defined(__cplusplus)
+  static_assert(sizeof(std::atomic<uintptr_t>) == sizeof(uintptr_t),
+                "std::atomic<uintptr_t> must be layout compatible");
+  return reinterpret_cast<const std::atomic<uintptr_t>*>(entry)->load(
+      std::memory_order_relaxed);
+#elif defined(UPB_USE_C11_ATOMICS)
+  return atomic_load_explicit(entry, memory_order_relaxed);
+#else
+  // MSVC without C11 atomics (`volatile`), or a build that suppressed the
+  // missing atomics error; a plain aligned word-sized load is atomic on all
+  // platforms we support.
+  return *entry;
+#endif
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_AuxDataEntry_StoreRelaxed)(
+    upb_AuxDataEntry* entry, uintptr_t val) {
+#if defined(__cplusplus)
+  reinterpret_cast<std::atomic<uintptr_t>*>(entry)->store(
+      val, std::memory_order_relaxed);
+#elif defined(UPB_USE_C11_ATOMICS)
+  atomic_store_explicit(entry, val, memory_order_relaxed);
+#else
+  *entry = val;
+#endif
 }
 
 typedef struct upb_Message_Internal {
   // Total number of entries set in aux_data
   uint32_t size;
   uint32_t capacity;
-  // Tagged pointers to upb_StringView or upb_Extension
-  upb_TaggedAuxPtr aux_data[];
+  // Sanitizer-only bookkeeping (see UPB_XSAN_MEMBER); used by the TSAN
+  // annotations below. Absent in regular builds, so the layout is unchanged.
+  UPB_XSAN_MEMBER
+  // Tagged pointers to upb_StringView, upb_Extension or upb_LazyExtensionData;
+  // see upb_TaggedAuxPtr. Do not access directly; use
+  // UPB_PRIVATE(_upb_Message_Internal_GetAux)() and
+  // UPB_PRIVATE(_upb_Message_Internal_SetAux)().
+  upb_AuxDataEntry aux_data[];
 } upb_Message_Internal;
+
+// Thread-safety contract for aux_data, mirroring upb_Arena:
+//
+//   * "Read-only" operations (reading entries, iterating extensions/unknown
+//     fields, and upb_Message_PromoteLazyExtension(), which only ever performs
+//     a CAS on an existing entry) may run concurrently with each other on the
+//     same message.
+//   * "Read-write" operations (appending, replacing or deleting entries, or
+//     reallocating the aux_data block) require exclusive access to the message.
+//
+// Because every entry access is atomic, TSAN alone cannot see a read-write
+// operation racing with a concurrent promotion. Like the arena code, we
+// therefore also perform a plain (non-atomic) access to a sanitizer-only byte
+// at the point where each operation *logically* reads or writes the message,
+// so that TSAN reports contract violations even though the real accesses are
+// atomic. These are no-ops outside of TSAN builds.
+UPB_INLINE void UPB_PRIVATE(_upb_Message_Internal_AccessReadOnly)(
+    const upb_Message_Internal* in) {
+  UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN((upb_Message_Internal*)in));
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_Message_Internal_AccessReadWrite)(
+    upb_Message_Internal* in) {
+  UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(in));
+}
+
+// Loads aux_data[i] with acquire memory order. Out of line so that the header
+// does not need to depend on the full atomics port layer.
+uintptr_t UPB_PRIVATE(_upb_Message_Internal_LoadAuxAcquire)(
+    const upb_Message_Internal* in, size_t i);
+
+// Atomically replaces aux_data[i] with `desired` if it currently holds
+// `*expected`, with release order on success. On failure `*expected` is
+// updated to the current value, read with acquire order. This is a "read-only"
+// operation in the sense of the contract above: it may race with other
+// read-only operations (including other calls to itself), but not with
+// read-write operations.
+bool UPB_PRIVATE(_upb_Message_Internal_CompareExchangeAux)(
+    upb_Message_Internal* in, size_t i, upb_TaggedAuxPtr* expected,
+    upb_TaggedAuxPtr desired);
+
+// Reads aux_data[i]. This is safe to call concurrently with
+// upb_Message_PromoteLazyExtension() on the same message; see the discussion of
+// memory ordering in upb_TaggedAuxPtr.
+UPB_INLINE upb_TaggedAuxPtr UPB_PRIVATE(_upb_Message_Internal_GetAux)(
+    const upb_Message_Internal* in, size_t i) {
+  UPB_ASSERT(i < in->size);
+  UPB_PRIVATE(_upb_Message_Internal_AccessReadOnly)(in);
+  upb_TaggedAuxPtr ret;
+  ret.ptr = UPB_PRIVATE(_upb_AuxDataEntry_LoadRelaxed)(&in->aux_data[i]);
+  if (UPB_UNLIKELY(upb_TaggedAuxPtr_IsPromotedExtension(ret))) {
+    // The entry was published by a concurrent promotion; we need acquire
+    // order before dereferencing the upb_Extension it points to.
+    ret.ptr = UPB_PRIVATE(_upb_Message_Internal_LoadAuxAcquire)(in, i);
+  }
+  return ret;
+}
+
+// Writes aux_data[i]. Requires exclusive access to the message.
+UPB_INLINE void UPB_PRIVATE(_upb_Message_Internal_SetAux)(
+    upb_Message_Internal* in, size_t i, upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(i < in->capacity);
+  UPB_PRIVATE(_upb_Message_Internal_AccessReadWrite)(in);
+  UPB_PRIVATE(_upb_AuxDataEntry_StoreRelaxed)(&in->aux_data[i], ptr.ptr);
+}
 
 bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
                                             const struct upb_Message* src,
@@ -346,7 +558,8 @@ UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(
   // pointer bump, so inline it.
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (in && in->size) {
-    upb_TaggedAuxPtr ptr = in->aux_data[in->size - 1];
+    upb_TaggedAuxPtr ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, in->size - 1);
     if (upb_TaggedAuxPtr_IsUnknownStringView(ptr)) {
       upb_StringView* existing = upb_TaggedPtrAux_StringViewRepr(ptr);
       // Fast path if the field we're adding is immediately after the last
@@ -410,7 +623,8 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   size_t i = *iter;
   if (in) {
     while (i < in->size) {
-      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      upb_TaggedAuxPtr tagged_ptr =
+          UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i++);
       if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
         *data = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
         *iter = i;
@@ -424,6 +638,9 @@ UPB_INLINE bool upb_Message_NextUnknown(const struct upb_Message* msg,
   return false;
 }
 
+// Iterates canonical extensions, including promoted lazy extensions. Lazy
+// extensions that have not been promoted yet have no parsed value and are
+// skipped; use upb_Message_PromoteLazyExtension() to materialize them first.
 UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
                                           const upb_MiniTableExtension** out_e,
                                           upb_MessageValue* out_v,
@@ -432,7 +649,8 @@ UPB_INLINE bool upb_Message_NextExtension(const struct upb_Message* msg,
   uintptr_t i = *iter;
   if (in) {
     while (i < in->size) {
-      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      upb_TaggedAuxPtr tagged_ptr =
+          UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i++);
       if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
@@ -460,7 +678,8 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
   uintptr_t i = *iter;
   uint32_t size = in->size;
   while (i < size) {
-    upb_TaggedAuxPtr tagged_ptr = in->aux_data[size - 1 - i];
+    upb_TaggedAuxPtr tagged_ptr =
+        UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, size - 1 - i);
     i++;
     if (!upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       continue;

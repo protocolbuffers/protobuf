@@ -48,7 +48,8 @@ UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
   size_t i = *iter;
   if (in) {
     while (i < in->size) {
-      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i++];
+      upb_TaggedAuxPtr tagged_ptr =
+          UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i++);
       if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
         data->type = kUpb_MessageUnknownType_StringView;
         data->value.bytes = *upb_TaggedPtrAux_StringViewRepr(tagged_ptr);

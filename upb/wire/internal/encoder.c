@@ -690,6 +690,47 @@ static char* encode_ext(char* ptr, upb_encstate* e,
   return ptr;
 }
 
+// Emits a lazy extension that has not been promoted: the stored payload is
+// the serialized submessage, which is written back out verbatim with the
+// framing of a single length-delimited field (or MessageSet item).
+static char* encode_lazy_ext(char* ptr, upb_encstate* e,
+                             const upb_LazyExtensionData* lazy,
+                             bool is_message_set) {
+  const upb_MiniTableExtension* ext = lazy->ext;
+  if (UPB_UNLIKELY(is_message_set)) {
+    ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
+    ptr = encode_bytes(ptr, e, lazy->data.data, lazy->data.size);
+    ptr = encode_varint(ptr, e, lazy->data.size);
+    ptr = encode_tag(ptr, e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
+    ptr = encode_varint(ptr, e, upb_MiniTableExtension_Number(ext));
+    ptr = encode_tag(ptr, e, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
+    ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
+  } else {
+    ptr = encode_bytes(ptr, e, lazy->data.data, lazy->data.size);
+    ptr = encode_varint(ptr, e, lazy->data.size);
+    ptr = encode_tag(ptr, e, upb_MiniTableExtension_Number(ext),
+                     kUpb_WireType_Delimited);
+  }
+  return ptr;
+}
+
+// Encodes one aux_data entry that is a canonical (possibly promoted) or lazy
+// extension. Returns `ptr` unchanged for any other kind of entry.
+static char* encode_ext_entry(char* ptr, upb_encstate* e,
+                              upb_TaggedAuxPtr tagged_ptr,
+                              bool is_message_set) {
+  if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+    const upb_Extension* ext = upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
+    // Empty repeated fields or maps semantically don't exist.
+    if (UPB_PRIVATE(_upb_Extension_IsEmpty)(ext)) return ptr;
+    return encode_ext(ptr, e, ext->ext, ext->data, is_message_set);
+  } else if (upb_TaggedAuxPtr_IsLazyExtension(tagged_ptr)) {
+    return encode_lazy_ext(ptr, e, upb_TaggedAuxPtr_LazyExtension(tagged_ptr),
+                           is_message_set);
+  }
+  return ptr;
+}
+
 static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
                          const upb_Message* msg) {
   if (UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_NonExtendable)
@@ -698,36 +739,32 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
 
-  /* Encode all canonical extensions together. Unlike C++, we do not attempt to
-   * keep these in field number order relative to normal fields or even to each
-   * other. */
-  uintptr_t iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext;
-  upb_MessageValue ext_val;
-  if (!UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
-                                                      &iter)) {
-    // Message has no extensions.
-    return ptr;
-  }
+  /* Encode all canonical extensions (parsed, promoted or still lazy)
+   * together. Unlike C++, we do not attempt to keep these in field number order
+   * relative to normal fields or even to each other. */
+  const bool is_message_set =
+      UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) == kUpb_ExtMode_IsMessageSet;
 
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
     if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
       encode_err(e, kUpb_EncodeStatus_OutOfMemory);
     }
-    const upb_Extension* ext;
-    while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-      ptr = encode_ext(ptr, e, ext->ext, ext->data,
-                       UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
-                           kUpb_ExtMode_IsMessageSet);
+    upb_TaggedAuxPtr tagged_ptr;
+    while (_upb_sortedmap_nextext(&e->sorter, &sorted, &tagged_ptr)) {
+      ptr = encode_ext_entry(ptr, e, tagged_ptr, is_message_set);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
-    do {
-      ptr = encode_ext(ptr, e, ext, ext_val,
-                       m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-    } while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
-                                                            &iter));
+    // Iterate backwards because the encoder builds the buffer in reverse, so
+    // that extensions are emitted in the order they were added.
+    size_t i = in->size;
+    while (i > 0) {
+      i--;
+      ptr = encode_ext_entry(ptr, e,
+                             UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i),
+                             is_message_set);
+    }
   }
   return ptr;
 }
@@ -753,7 +790,8 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     size_t i = in->size;
     while (i > 0) {
       i--;
-      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+      upb_TaggedAuxPtr tagged_ptr =
+          UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i);
       if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
         const upb_StringView* unknown =
             upb_TaggedPtrAux_StringViewRepr(tagged_ptr);

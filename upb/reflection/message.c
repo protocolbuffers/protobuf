@@ -178,7 +178,10 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
     if (!in) return false;
 
     for (; (i - n) < in->size; i++) {
-      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i - n];
+      // Lazy extensions that have not been promoted are skipped here, like in
+      // upb_Message_NextExtension().
+      upb_TaggedAuxPtr tagged_ptr =
+          UPB_PRIVATE(_upb_Message_Internal_GetAux)(in, i - n);
       if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
