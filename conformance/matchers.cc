@@ -15,6 +15,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/nullability.h"
 #include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
@@ -263,11 +264,12 @@ std::string UnparseableMessage(WireFormat format) {
 }
 
 // Parses the payload of `result` (according to its requested output format)
-// into a message of the test's type.  Returns null and sets `failure_message`
-// if the payload is invalid or the format isn't supported.
+// into a message of type `type`.  Returns null and sets `failure_message` if
+// the payload is invalid or the format isn't supported.
 std::unique_ptr<Message> ParsePayload(const TestResult& result,
+                                      const Descriptor* type,
                                       std::string& failure_message) {
-  std::unique_ptr<Message> message = NewMessage(result.type());
+  std::unique_ptr<Message> message = NewMessage(type);
   switch (result.format()) {
     case ::conformance::PROTOBUF:
       if (!message->ParseFromString(result.response().protobuf_payload())) {
@@ -378,11 +380,14 @@ bool PayloadMatcher::MatchAndExplain(
   return MatchPayload(result, listener);
 }
 
-// Implements WhenParsed().
+// Implements WhenParsed() and WhenParsedAs().
 class WhenParsedMatcher : public PayloadMatcher {
  public:
-  explicit WhenParsedMatcher(testing::Matcher<const Message&> matcher)
-      : matcher_(std::move(matcher)) {}
+  // The payload is decoded as `type_override` if it is non-null, and as the
+  // test's message type otherwise.
+  explicit WhenParsedMatcher(testing::Matcher<const Message&> matcher,
+                             const Descriptor* type_override = nullptr)
+      : matcher_(std::move(matcher)), type_override_(type_override) {}
 
  private:
   bool MatchPayload(const TestResult& result,
@@ -390,12 +395,16 @@ class WhenParsedMatcher : public PayloadMatcher {
   void DescribeInnerTo(std::ostream* os, bool negation) const override;
 
   testing::Matcher<const Message&> matcher_;
+  // Null means "the test's message type".
+  const Descriptor* absl_nullable type_override_;
 };
 
 bool WhenParsedMatcher::MatchPayload(
     const TestResult& result, testing::MatchResultListener* listener) const {
   std::string failure_message;
-  std::unique_ptr<Message> actual = ParsePayload(result, failure_message);
+  std::unique_ptr<Message> actual = ParsePayload(
+      result, type_override_ != nullptr ? type_override_ : result.type(),
+      failure_message);
   if (actual == nullptr) {
     *listener << failure_message;
     return false;
@@ -417,8 +426,11 @@ bool WhenParsedMatcher::MatchPayload(
 }
 
 void WhenParsedMatcher::DescribeInnerTo(std::ostream* os, bool negation) const {
-  *os << "when parsed, "
-      << testing::DescribeMatcher<const Message&>(matcher_, negation);
+  *os << "when parsed";
+  if (type_override_ != nullptr) {
+    *os << " as " << type_override_->full_name();
+  }
+  *os << ", " << testing::DescribeMatcher<const Message&>(matcher_, negation);
 }
 
 // Implements RawPayload().
@@ -464,7 +476,7 @@ bool RawPayloadMatcher::MatchPayload(
 
 namespace internal {
 
-void PrintTo(const TestResult& result, std::ostream* os) {
+void PrintTo(const TestResult& result, std::ostream* absl_nonnull os) {
   *os << PriorityLevelName(result.priority()) << " test \"" << result.name()
       << "\" with response {"
       << ToShortString(TruncateResponse(result.response())) << "}";
@@ -481,8 +493,9 @@ void PrintTo(const TestResult& result, std::ostream* os) {
 }
 
 testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
-    testing::Matcher<const Message&> m) {
-  return WhenParsedMatcher(std::move(m));
+    testing::Matcher<const Message&> m,
+    const Descriptor* absl_nullable type_override) {
+  return WhenParsedMatcher(std::move(m), type_override);
 }
 
 }  // namespace internal

@@ -21,6 +21,7 @@
 #include "conformance/conformance.pb.h"
 #include "conformance/mock_test_runner.h"
 #include "conformance/testee.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/text_format.h"
@@ -35,6 +36,7 @@ using ::conformance::WireFormat;
 using ::google::protobuf::conformance::TestPriority;
 using ::google::protobuf::conformance::internal::TestResult;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
+using ::protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
@@ -561,6 +563,98 @@ TEST(WhenParsedTest, ComposesWithGMock) {
       result, AnyOf(IsParseError(),
                     WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")))));
   EXPECT_TRUE(Value(result, AllOf(Not(IsParseError()), WhenParsed(_))));
+}
+
+// ---------------------------------------------------------------------------
+// WhenParsedAs()
+// ---------------------------------------------------------------------------
+
+TEST(WhenParsedAsTest, DecodesBinaryPayloadAsTheGivenType) {
+  // Field 1001 is unknown to the test's type (TestAllTypesProto2) but is
+  // optional_int32 of the shadow type UnknownToTestAllTypes.
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1001, 7)));
+
+  EXPECT_THAT(Explain(WhenParsedAs<UnknownToTestAllTypes>(
+                          EqualsTextProto(R"pb(optional_int32: 7)pb")),
+                      result),
+              Accepts(IsEmpty()));
+  // Decoded as the test's own type the field stays unknown.
+  EXPECT_THAT(
+      Explain(WhenParsed(EqualsTextProto(R"pb(optional_int32: 7)pb")), result),
+      Rejects("Output was not equivalent to reference message: "
+              "added: 1001[0]: 7\n"
+              "deleted: optional_int32: 7\n"));
+}
+
+TEST(WhenParsedAsTest, TextOutputFieldNumbersAccepted) {
+  // A testee asked to print unknown fields emits them by number.  The
+  // shadow type gives them names again.
+  TestResult result =
+      CreateResult("foo", ::conformance::TEXT_FORMAT,
+                   ResponseFromText(R"pb(text_payload: "1001: 7")pb"));
+
+  EXPECT_THAT(Explain(WhenParsedAs<UnknownToTestAllTypes>(
+                          EqualsTextProto(R"pb(optional_int32: 7)pb")),
+                      result),
+              Accepts(IsEmpty()));
+}
+
+TEST(WhenParsedAsTest, FailureMessagesMatchWhenParsed) {
+  // With the test's own type as the override, WhenParsedAs() must behave
+  // exactly like WhenParsed(), failure messages included.
+  {
+    TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                     ProtobufPayload(Wire("\001")));
+    EXPECT_THAT(
+        Explain(WhenParsedAs<TestAllTypesProto2>(EqualsTextProto("")), result),
+        Rejects("Protobuf output we received from test was unparseable."));
+  }
+  {
+    TestResult result =
+        CreateResult("foo", ::conformance::TEXT_FORMAT,
+                     ResponseFromText(R"pb(text_payload: "nonsense: 1")pb"));
+    EXPECT_THAT(
+        Explain(WhenParsedAs<TestAllTypesProto2>(EqualsTextProto("")), result),
+        Rejects("TEXT_FORMAT output we received from test was unparseable."));
+  }
+  {
+    TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                     ProtobufPayload(VarintField(1, 2)));
+    EXPECT_THAT(Explain(WhenParsedAs<TestAllTypesProto2>(
+                            EqualsTextProto(R"pb(optional_int32: 1)pb")),
+                        result),
+                Rejects("Output was not equivalent to reference message: "
+                        "modified: optional_int32: 1 -> 2\n"));
+    EXPECT_THAT(
+        Explain(WhenParsedAs<TestAllTypesProto2>(
+                    Not(EqualsTextProto(R"pb(optional_int32: 2)pb"))),
+                result),
+        Rejects("Expect: when parsed, doesn't equal text proto "
+                R"("optional_int32: 2", but got: {optional_int32: 2})"));
+  }
+  {
+    TestResult result =
+        CreateResult("foo", ::conformance::PROTOBUF,
+                     ResponseFromText(R"pb(parse_error: "foo")pb"));
+    EXPECT_THAT(Explain(WhenParsedAs<TestAllTypesProto2>(_), result),
+                Rejects("Failed to parse input or produce output."));
+  }
+}
+
+TEST(MatcherDescriptionTest, WhenParsedAs) {
+  // The description (gtest's "Expected:" line, never a failure-list message)
+  // names the type the payload is decoded as.
+  EXPECT_EQ(Describe(WhenParsedAs<UnknownToTestAllTypes>(
+                EqualsTextProto(R"pb(optional_int32: 9)pb"))),
+            "when parsed as "
+            "protobuf_test_messages.proto2.UnknownToTestAllTypes, equals text "
+            R"(proto "optional_int32: 9")");
+  EXPECT_EQ(
+      DescribeNegation(WhenParsedAs<UnknownToTestAllTypes>(
+          EqualsTextProto(R"pb(optional_int32: 9)pb"))),
+      "when parsed as protobuf_test_messages.proto2.UnknownToTestAllTypes, "
+      R"(doesn't equal text proto "optional_int32: 9")");
 }
 
 // ---------------------------------------------------------------------------

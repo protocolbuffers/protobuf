@@ -22,9 +22,11 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/base/nullability.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/testee.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 
 namespace google {
@@ -38,11 +40,14 @@ namespace internal {
 // Declared in TestResult's namespace so that gtest finds it through ADL.  It
 // lives with the matchers because their failures are where results get
 // printed.
-void PrintTo(const TestResult& result, std::ostream* os);
+void PrintTo(const TestResult& result, std::ostream* absl_nonnull os);
 
-// Implements WhenParsed() below.
+// Implements WhenParsed() and WhenParsedAs() below.  The payload is
+// decoded as `type_override` if it is non-null, and as the test's message type
+// otherwise.
 testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
-    testing::Matcher<const Message&> m);
+    testing::Matcher<const Message&> m,
+    const Descriptor* absl_nullable type_override = nullptr);
 
 }  // namespace internal
 
@@ -61,6 +66,22 @@ template <typename M>
 testing::Matcher<const internal::TestResult&> WhenParsed(M m) {
   return internal::MakeWhenParsedMatcher(
       testing::SafeMatcherCast<const Message&>(std::move(m)));
+}
+
+// Like WhenParsed(), but decodes the payload as the generated type `T`
+// instead of the message type the test was run against.  Use it when the
+// testee serializes unknown fields that a richer "shadow" type such as
+// UnknownToTestAllTypes can decode:
+//
+//   EXPECT_THAT(Testee("Foo").ParseBinary(type, input).SerializeBinary(),
+//               Yields(WhenParsedAs<UnknownToTestAllTypes>(
+//                   EqualsBinaryProto(input))));
+//
+// Failure messages are the same as WhenParsed()'s.
+template <typename T, typename M>
+testing::Matcher<const internal::TestResult&> WhenParsedAs(M m) {
+  return internal::MakeWhenParsedMatcher(
+      testing::SafeMatcherCast<const Message&>(std::move(m)), T::descriptor());
 }
 
 // Matches a result whose raw payload is exactly `bytes`, whatever the output

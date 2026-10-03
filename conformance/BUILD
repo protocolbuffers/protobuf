@@ -434,6 +434,7 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/base:nullability",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings",
