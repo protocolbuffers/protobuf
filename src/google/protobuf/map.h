@@ -699,7 +699,11 @@ inline map_index_t Hash(absl::string_view k, void* salt) {
 }
 inline map_index_t Hash(uint64_t k, void* salt) {
   const uintptr_t salt_int = reinterpret_cast<uintptr_t>(salt);
-  return absl::HashOf(k, absl::rotr(salt_int, k));
+  // Mask the rotation count: k can be an arbitrary map key (e.g. -2147483648
+  // widened to uint64), and absl::rotr(int s) performs (-s) which is
+  // signed-overflow UB for INT_MIN. Rotation counts are modulo bit-width,
+  // so masking to 6 bits preserves semantics.
+  return absl::HashOf(k, absl::rotr(salt_int, static_cast<unsigned>(k) & 63));
 }
 
 // KeyMapBase is a chaining hash map.
