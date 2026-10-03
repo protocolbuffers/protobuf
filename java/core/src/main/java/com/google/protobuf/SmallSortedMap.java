@@ -297,34 +297,43 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
       // Synchronize on the map to support concurrent read-only access. When multiple threads
       // concurrently invoke read operations on a mutable map that has unsorted entries, they must
       // safely coordinate the lazy sorting and deduplication without data corruption.
-      synchronized (this) {
-        if (isSortedAndDeduped) {
-          return;
-        }
-        if (size <= 1) {
-          return;
-        }
-        Arrays.sort(entries, 0, size);
-
-        // Resolve duplicates in-place (stable, preserving last write)
-        int newSize = 0;
-        for (int i = 0; i < size; i++) {
-          Entry entry = (Entry) entries[i];
-          if (newSize > 0 && ((Entry) entries[newSize - 1]).getKey().equals(entry.getKey())) {
-            entries[newSize - 1] = entry;
-          } else {
-            entries[newSize] = entry;
-            newSize++;
-          }
-        }
-        if (newSize < this.size) {
-          this.size = newSize;
-          // Clear out the unused entries to allow garbage collection.
-          Arrays.fill(entries, newSize, entries.length, null);
-        }
-        this.isSortedAndDeduped = true;
-      }
+      sortAndDeduplicate();
     }
+  }
+
+  private synchronized void sortAndDeduplicate() {
+    if (isSortedAndDeduped) {
+      return;
+    }
+    if (size <= 1) {
+      // No need to sort or deduplicate if the map has 0 or 1 elements.
+      // However, this is effectively unreached, since isSortedAndDeduped is true only for size > 1.
+      return;
+    }
+
+    Arrays.sort(entries, 0, size);
+    
+    // Deduplicate the entries in-place.
+    int newSize = 1;
+    Entry lastEntry = (Entry) entries[0];
+    for (int i = 1, c = size; i < c; i++) {
+      Entry entry = (Entry) entries[i];
+      if (lastEntry.getKey().equals(entry.getKey())) {
+        entries[newSize - 1] = entry;
+      } else {
+        entries[newSize] = entry;
+        newSize++;
+      }
+      lastEntry = entry;
+    }
+
+    // Clear out the unused entries to allow garbage collection.
+    for (int i = newSize; i < size; i++) {
+      entries[i] = null;
+    }
+
+    this.size = newSize;
+    this.isSortedAndDeduped = true;
   }
 
   /**
