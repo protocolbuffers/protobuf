@@ -3948,9 +3948,11 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
     // This only happens once per proto file. So a global mutex to serialize
     // calls to AddDescriptors.
     static absl::Mutex mu{absl::kConstInit};
+    PROTOBUF_IGNORE_DEPRECATION_START
     mu.Lock();
     internal::AddDescriptors(table);
     mu.Unlock();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
   }
   if (eager) {
     // Normally we do not want to eagerly build descriptors of our deps.
