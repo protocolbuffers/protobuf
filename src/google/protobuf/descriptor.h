@@ -2788,7 +2788,11 @@ class PROTOBUF_EXPORT DescriptorPool {
     auto result = std::make_unique<MemoData<ResultT>>();
     result->value = func(descriptor);
     {
+#if PROTOBUF_ABSL_MIN(20250814, 0)
+      absl::MutexLock lock(pool->field_memo_table_mutex_);
+#else
       absl::MutexLock lock(&pool->field_memo_table_mutex_);
+#endif
       auto insert_result =
           pool->field_memo_table_->insert({key, std::move(result)});
       auto it = insert_result.first;
