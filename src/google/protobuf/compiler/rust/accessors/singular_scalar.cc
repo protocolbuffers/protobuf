@@ -147,10 +147,31 @@ void SingularScalar::InMsgImpl(Context& ctx, const FieldDescriptor& field,
                 )rs");
              }
            }},
+          {"setter_opt",
+           [&] {
+             if (accessor_case == AccessorCase::VIEW) return;
+             if (!field.has_presence()) return;
+             ctx.Emit(
+                 {Sub("setter_fn_name", absl::StrCat("set_", field_name)),
+                  Sub("setter_opt_fn_name",
+                      absl::StrCat("set_", field_name, "_opt"))
+                      .AnnotatedAs(
+                          {&field, io::AnnotationCollector::Semantic::kSet}),
+                  {"raw_field_name", field_name}},
+                 R"rs(
+                pub fn $setter_opt_fn_name$(&mut self, val: $std$::option::Option<$Scalar$>) {
+                  match val {
+                    $std$::option::Option::Some(val) => self.$setter_fn_name$(val),
+                    $std$::option::Option::None => self.clear_$raw_field_name$(),
+                  }
+                }
+              )rs");
+           }},
       },
       R"rs(
           $getter$
           $setter$
+          $setter_opt$
         )rs");
 }
 
