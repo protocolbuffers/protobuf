@@ -188,12 +188,7 @@ bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
       memcpy(new_ptr, ptr, old_bytes);
     }
 
-    const size_t array_size =
-        UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-    bool is_contiguous = (ptr == UPB_PTR_AT(array, array_size, void));
-    if (!is_contiguous) {
-      UPB_PRIVATE(_upb_Arena_Harvest)(arena, ptr, old_bytes);
-    }
+    UPB_PRIVATE(_upb_Arena_Harvest)(arena, ptr, old_bytes);
 
     ptr = new_ptr;
     UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, ptr, lg2);
