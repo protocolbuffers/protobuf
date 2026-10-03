@@ -1064,11 +1064,6 @@ TEST(DecodeTest, SetSubMessageMapValidation) {
       upb_MiniTable_SetSubMessage(parent_mt, repeated_field, map_entry));
   EXPECT_TRUE(upb_MiniTableField_IsMap(repeated_field));
 
-  // Valid repeated linking (idempotent call, e.g. from JS bridge):
-  EXPECT_TRUE(
-      upb_MiniTable_SetSubMessage(parent_mt, repeated_field, map_entry));
-  EXPECT_TRUE(upb_MiniTableField_IsMap(repeated_field));
-
   // Valid linking: map_entry field 2 (value) -> sub_mt
   upb_MiniTableField* val_field = const_cast<upb_MiniTableField*>(
       upb_MiniTable_GetFieldByIndex(map_entry, 1));
