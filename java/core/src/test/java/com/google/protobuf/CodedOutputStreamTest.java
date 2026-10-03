@@ -540,6 +540,24 @@ public class CodedOutputStreamTest {
     assertThat(CodedOutputStream.computeTagSize((1 << 30) + 1)).isEqualTo(1);
   }
 
+  @Test
+  public void computeLengthDelimitedFieldSize() {
+    assume().that(outputType).isEqualTo(OutputType.ARRAY);
+
+    assertThat(CodedOutputStream.computeLengthDelimitedFieldSize(0)).isEqualTo(1);   // varint(0)=1 + 0
+    assertThat(CodedOutputStream.computeLengthDelimitedFieldSize(1)).isEqualTo(2);   // varint(1)=1 + 1
+    assertThat(CodedOutputStream.computeLengthDelimitedFieldSize(127)).isEqualTo(128); // varint=1 + 127
+    assertThat(CodedOutputStream.computeLengthDelimitedFieldSize(128)).isEqualTo(130); // varint=2 + 128
+    assertThat(CodedOutputStream.computeLengthDelimitedFieldSize(300)).isEqualTo(302); // varint=2 + 300
+
+    // Consistency: must match what computeBytesSizeNoTag returns for a ByteString of equal length.
+    for (int len : new int[] {0, 1, 127, 128, 300}) {
+      ByteString bs = ByteString.copyFrom(new byte[len]);
+      assertThat(CodedOutputStream.computeLengthDelimitedFieldSize(len))
+          .isEqualTo(CodedOutputStream.computeBytesSizeNoTag(bs));
+    }
+  }
+
   /**
    * Test writing a message containing a negative enum value. This used to fail because the size was
    * not properly computed as a sign-extended varint.
