@@ -255,15 +255,6 @@ namespace internal {
 //  (2)/(3) `lowercase` offset/size. The data bytes could be shared.
 //  (4)/(5) `camelcase` offset/size. The data bytes could be shared.
 //  (6)/(7) `json_name` offset/size. The data bytes could be shared.
-//
-//  NOTE ABOUT NULL TERMINATION:
-//  The name accessors were migrated from `std::string` to `absl::string_view`,
-//  which caused valid code to break. In particular, there are previously
-//  correct callers calling `foo.name().data()` and using it as a NULL
-//  terminated C-string.
-//  To prevent further breakage we are adding null termination on all these
-//  names even though it is outside the contract for `absl::string_view`.
-//  This might change in the future.
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
  public:
   // Uninitialized, to support `= default` of descriptor types.
@@ -283,16 +274,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
 
   // The full name is just before `payload_`, and the name is the suffix of it.
   // We don't need a special offset for them.
-  // NOTE: the sizes don't include the null terminator, so add +1 to the offset.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view name() const {
-    return get(get_size(0) + 1, get_size(0));
+    return get(get_size(0), get_size(0));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view full_name() const {
-    return get(get_size(1) + 1, get_size(1));
+    return get(get_size(1), get_size(1));
   }
 
   // Only available for `FieldDescriptor`. This is not checked at runtime.
-  // NOTE: The offsets here already take into account the null terminator.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view lowercase_name() const {
     return get(get_size(2), get_size(3));
   }
@@ -305,7 +294,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static constexpr size_t
   AllocationSizeForSimpleNames(size_t full_name_size) {
-    return full_name_size + /* \0 */ 1 + 2 * sizeof(uint16_t);
+    return full_name_size + 2 * sizeof(uint16_t);
   }
 
  private:
@@ -383,7 +372,8 @@ PROTOBUF_EXPORT absl::string_view ShortEditionName(Edition edition);
 bool IsEnumFullySequential(const EnumDescriptor* enum_desc);
 
 const std::string& DefaultValueStringAsString(const FieldDescriptor* field);
-const std::string& NameOfEnumAsString(const EnumValueDescriptor* descriptor);
+PROTOBUF_EXPORT const std::string& NameOfEnumAsString(
+    const EnumValueDescriptor* descriptor);
 
 struct NameLimits {
   static constexpr int kPackageName = 511;
@@ -1793,8 +1783,6 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // Allows access to GetLocationPath for annotations.
   friend class io::Printer;
   friend class compiler::cpp::Formatter;
-  friend const std::string& internal::NameOfEnumAsString(
-      const EnumValueDescriptor* descriptor);
 
   // Get the merged features that apply to this enum value.  These are specified
   // in the .proto file through the feature options in the message definition.
@@ -1812,10 +1800,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   void GetLocationPath(std::vector<int>* output) const;
 
   int number_;
-  // We keep the old-style std::string payload to support `NameOfEnumAsString`
-  // Once we start migrating Enum_Name functions to string_view we can switch
-  // this too.
-  internal::NonnullOffsetPtr<const std::string> all_names_;
+  internal::DescriptorNames all_names_;
   internal::OffsetProtoPtr<const EnumValueOptions> options_;
   // Type can be from a different allocation when creating enums via
   // `FindEnumValueByNumberCreatingIfUnknown`.
@@ -3005,12 +2990,7 @@ PROTOBUF_DEFINE_ARRAY_ACCESSOR(EnumDescriptor, reserved_range,
                                const EnumDescriptor::ReservedRange*)
 PROTOBUF_DEFINE_ACCESSOR(EnumDescriptor, reserved_name_count, int)
 
-inline absl::string_view EnumValueDescriptor::name() const {
-  return all_names_[0];
-}
-inline absl::string_view EnumValueDescriptor::full_name() const {
-  return all_names_[1];
-}
+PROTOBUF_DEFINE_NAME_ACCESSOR(EnumValueDescriptor)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, number, int)
 PROTOBUF_DEFINE_ACCESSOR(EnumValueDescriptor, type, const EnumDescriptor*)
 
@@ -3268,11 +3248,6 @@ namespace internal {
 inline const std::string& DefaultValueStringAsString(
     const FieldDescriptor* field) {
   return *field->default_value_string_;
-}
-
-inline const std::string& NameOfEnumAsString(
-    const EnumValueDescriptor* descriptor) {
-  return descriptor->all_names_[0];
 }
 
 inline bool IsEnumFullySequential(const EnumDescriptor* enum_desc) {
