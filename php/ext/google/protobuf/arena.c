@@ -7,6 +7,9 @@
 
 #include <Zend/zend_API.h>
 
+// This is not self-contained: it must be after other Zend includes.
+#include <Zend/zend_exceptions.h>
+
 #include "php-upb.h"
 
 // -----------------------------------------------------------------------------
@@ -34,13 +37,25 @@ static zend_object* Arena_Create(zend_class_entry* class_type) {
 
 static void Arena_Free(zend_object* obj) {
   Arena* intern = (Arena*)obj;
-  upb_Arena_Free(intern->arena);
+  if (intern->arena) {
+    upb_Arena_Free(intern->arena);
+  }
   zend_object_std_dtor(&intern->std);
 }
 
 // C Functions from arena.h ////////////////////////////////////////////////////
 
-void Arena_Init(zval* val) { ZVAL_OBJ(val, Arena_Create(Arena_class_entry)); }
+bool Arena_Init(zval* val) {
+  Arena* a = (Arena*)Arena_Create(Arena_class_entry);
+  if (!a->arena) {
+    OBJ_RELEASE(&a->std);
+    ZVAL_NULL(val);
+    zend_throw_exception_ex(NULL, 0, "Out of memory");
+    return false;
+  }
+  ZVAL_OBJ(val, &a->std);
+  return true;
+}
 
 upb_Arena* Arena_Get(zval* val) {
   Arena* a = (Arena*)Z_OBJ_P(val);

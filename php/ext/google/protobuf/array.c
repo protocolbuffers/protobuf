@@ -50,7 +50,7 @@ static zend_object* RepeatedField_create(zend_class_entry* class_type) {
   RepeatedField* intern = emalloc(sizeof(RepeatedField));
   zend_object_std_init(&intern->std, class_type);
   intern->std.handlers = &RepeatedField_object_handlers;
-  Arena_Init(&intern->arena);
+  ZVAL_NULL(&intern->arena);
   intern->array = NULL;
   // Skip object_properties_init(), we don't allow derived classes.
   return &intern->std;
@@ -99,12 +99,19 @@ static zend_object* RepeatedField_clone_obj(zend_object* object) {
   RepeatedField* intern = (RepeatedField*)object;
   upb_Arena* arena = Arena_Get(&intern->arena);
   upb_Array* clone = upb_Array_New(arena, intern->type.type);
+  if (!clone) {
+    zend_throw_exception_ex(NULL, 0, "Out of memory");
+    return NULL;
+  }
   size_t n = upb_Array_Size(intern->array);
   size_t i;
 
   for (i = 0; i < n; i++) {
     upb_MessageValue msgval = upb_Array_Get(intern->array, i);
-    upb_Array_Append(clone, msgval, arena);
+    if (!upb_Array_Append(clone, msgval, arena)) {
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      return NULL;
+    }
   }
 
   zval ret;
@@ -155,6 +162,10 @@ upb_Array* RepeatedField_GetUpbArray(zval* val, TypeInfo type,
   if (Z_TYPE_P(val) == IS_ARRAY) {
     // Auto-construct, eg. [1, 2, 3] -> upb_Array([1, 2, 3]).
     upb_Array* arr = upb_Array_New(arena, type.type);
+    if (!arr) {
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      return NULL;
+    }
     HashTable* table = HASH_OF(val);
     HashPosition pos;
 
@@ -170,7 +181,10 @@ upb_Array* RepeatedField_GetUpbArray(zval* val, TypeInfo type,
         return NULL;
       }
 
-      upb_Array_Append(arr, val, arena);
+      if (!upb_Array_Append(arr, val, arena)) {
+        zend_throw_exception_ex(NULL, 0, "Out of memory");
+        return NULL;
+      }
       zend_hash_move_forward_ex(table, &pos);
     }
   } else if (Z_TYPE_P(val) == IS_OBJECT &&
@@ -221,7 +235,6 @@ bool ArrayEq(const upb_Array* a1, const upb_Array* a2, TypeInfo type) {
  */
 PHP_METHOD(RepeatedField, __construct) {
   RepeatedField* intern = (RepeatedField*)Z_OBJ_P(getThis());
-  upb_Arena* arena = Arena_Get(&intern->arena);
   zend_long type;
   zend_class_entry* klass = NULL;
 
@@ -238,7 +251,18 @@ PHP_METHOD(RepeatedField, __construct) {
     return;
   }
 
+  if (!Arena_Init(&intern->arena)) {
+    return;
+  }
+
+  upb_Arena* arena = Arena_Get(&intern->arena);
   intern->array = upb_Array_New(arena, intern->type.type);
+  if (!intern->array) {
+    zval_ptr_dtor(&intern->arena);
+    ZVAL_NULL(&intern->arena);
+    zend_throw_exception_ex(NULL, 0, "Out of memory");
+    return;
+  }
   ObjCache_Add(intern->array, &intern->std);
 }
 
@@ -259,7 +283,9 @@ PHP_METHOD(RepeatedField, append) {
     return;
   }
 
-  upb_Array_Append(intern->array, msgval, arena);
+  if (!upb_Array_Append(intern->array, msgval, arena)) {
+    zend_throw_exception_ex(NULL, 0, "Out of memory");
+  }
 }
 
 /**
@@ -355,7 +381,9 @@ PHP_METHOD(RepeatedField, offsetSet) {
   if (index < 0 || index > size) {
     zend_error(E_USER_ERROR, "Element at index %ld doesn't exist.\n", index);
   } else if (index == size) {
-    upb_Array_Append(intern->array, msgval, Arena_Get(&intern->arena));
+    if (!upb_Array_Append(intern->array, msgval, Arena_Get(&intern->arena))) {
+      zend_throw_exception_ex(NULL, 0, "Out of memory");
+    }
   } else {
     upb_Array_Set(intern->array, index, msgval);
   }

@@ -274,7 +274,33 @@ void NameMap_ExitConstructor(zend_class_entry* ce) {
 // Module init.
 // -----------------------------------------------------------------------------
 
-zend_function_entry protobuf_functions[] = {ZEND_FE_END};
+PHP_FUNCTION(allocation_count_is_available) {
+  RETURN_BOOL(upb_AllocationCount_IsAvailable());
+}
+
+PHP_FUNCTION(allocation_count_get) {
+  RETURN_LONG((zend_long)upb_AllocationCount_Get());
+}
+
+PHP_FUNCTION(allocation_count_reset) { upb_AllocationCount_Reset(); }
+
+PHP_FUNCTION(allocation_count_fail_on) {
+  zend_long n;
+  if (zend_parse_parameters(ZEND_NUM_ARGS(), "l", &n) == FAILURE) {
+    return;
+  }
+  upb_AllocationCount_FailOn((size_t)n);
+}
+
+zend_function_entry protobuf_functions[] = {
+    ZEND_NS_FE("Google\\Protobuf\\Internal", allocation_count_is_available,
+               arginfo_void)
+    ZEND_NS_FE("Google\\Protobuf\\Internal", allocation_count_get, arginfo_void)
+    ZEND_NS_FE("Google\\Protobuf\\Internal", allocation_count_reset,
+               arginfo_void)
+    ZEND_NS_FE("Google\\Protobuf\\Internal", allocation_count_fail_on,
+               arginfo_setter)
+    ZEND_FE_END};
 
 static const zend_module_dep protobuf_deps[] = {ZEND_MOD_OPTIONAL("date")
                                                     ZEND_MOD_END};
