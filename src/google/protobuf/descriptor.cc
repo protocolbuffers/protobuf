@@ -133,7 +133,6 @@ bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
-
 template <int R>
 constexpr size_t RoundUpTo(size_t n) {
   static_assert((R & (R - 1)) == 0, "Must be power of two");
@@ -2136,7 +2135,24 @@ DescriptorPool::DescriptorPool()
       enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+      enforce_naming_style_(false),
+      thread_safe_(false) {}
+
+DescriptorPool::DescriptorPool(Options options)
+    : mutex_(options.thread_safe ? new absl::Mutex : nullptr),
+      fallback_database_(nullptr),
+      default_error_collector_(nullptr),
+      underlay_(nullptr),
+      tables_(new Tables),
+      enforce_dependencies_(true),
+      lazily_build_dependencies_(false),
+      allow_unknown_(false),
+      enforce_weak_(false),
+      enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
+      disallow_enforce_utf8_(false),
+      deprecated_legacy_json_field_conflicts_(false),
+      enforce_naming_style_(false),
+      thread_safe_(options.thread_safe) {}
 
 DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
                                ErrorCollector* error_collector)
@@ -2152,7 +2168,8 @@ DescriptorPool::DescriptorPool(DescriptorDatabase* fallback_database,
       enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+      enforce_naming_style_(false),
+      thread_safe_(false) {}
 
 DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
     : mutex_(nullptr),
@@ -2167,7 +2184,8 @@ DescriptorPool::DescriptorPool(const DescriptorPool* underlay)
       enforce_extension_declarations_(ExtDeclEnforcementLevel::kNoEnforcement),
       disallow_enforce_utf8_(false),
       deprecated_legacy_json_field_conflicts_(false),
-      enforce_naming_style_(false) {}
+      enforce_naming_style_(false),
+      thread_safe_(false) {}
 
 DescriptorPool::~DescriptorPool() {
   if (mutex_ != nullptr) delete mutex_;
@@ -4260,15 +4278,27 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
       << "Cannot call BuildFile on a DescriptorPool that uses a "
          "DescriptorDatabase.  You must instead find a way to get your file "
          "into the underlying database.";
-  ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
-  tables_->known_bad_symbols_.clear();
-  tables_->known_bad_files_.clear();
-  build_started_ = true;
+  if (!thread_safe_) {
+    ABSL_CHECK(mutex_ == nullptr);  // Implied by the above ABSL_CHECK.
+  }
+  const FileDescriptor* file = nullptr;
   DeferredValidation deferred_validation(this, error_collector);
-  const FileDescriptor* file =
-      internal::DescriptorBuilder::New(this, tables_.get(), deferred_validation,
-                                       error_collector)
-          ->BuildFile(proto);
+  if (thread_safe_) {
+    absl::MutexLock lock(*mutex_);
+    tables_->known_bad_symbols_.clear();
+    tables_->known_bad_files_.clear();
+    build_started_ = true;
+    file = internal::DescriptorBuilder::New(
+               this, tables_.get(), deferred_validation, error_collector)
+               ->BuildFile(proto);
+  } else {
+    tables_->known_bad_symbols_.clear();
+    tables_->known_bad_files_.clear();
+    build_started_ = true;
+    file = internal::DescriptorBuilder::New(
+               this, tables_.get(), deferred_validation, error_collector)
+               ->BuildFile(proto);
+  }
   if (deferred_validation.Validate()) {
     return file;
   }
