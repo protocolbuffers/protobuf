@@ -35,6 +35,7 @@ using ::conformance::WireFormat;
 using ::google::protobuf::conformance::TestPriority;
 using ::google::protobuf::conformance::internal::TestResult;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
+using ::testing::_;
 using ::testing::AllOf;
 using ::testing::AnyOf;
 using ::testing::IsEmpty;
@@ -240,6 +241,21 @@ TEST(PrintTestResultTest, LargePayloadsAreTruncated) {
 // Descriptions
 // ---------------------------------------------------------------------------
 
+TEST(MatcherDescriptionTest, WhenParsed) {
+  EXPECT_EQ(Describe(WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))),
+            R"(when parsed, equals text proto "optional_int32: 9")");
+  EXPECT_EQ(
+      DescribeNegation(WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))),
+      R"(when parsed, doesn't equal text proto "optional_int32: 9")");
+}
+
+TEST(MatcherDescriptionTest, WhenParsedWithGenericMatcher) {
+  EXPECT_EQ(Describe(WhenParsed(_)), "when parsed, is anything");
+  EXPECT_EQ(
+      Describe(WhenParsed(Not(EqualsTextProto(R"pb(optional_int32: 9)pb")))),
+      R"(when parsed, doesn't equal text proto "optional_int32: 9")");
+}
+
 TEST(MatcherDescriptionTest, RawPayload) {
   EXPECT_EQ(Describe(RawPayload(Wire("foo"))), R"(payload is equal to "foo")");
   EXPECT_EQ(DescribeNegation(RawPayload(Wire("foo"))),
@@ -276,7 +292,7 @@ TEST(MatcherDescriptionTest, FailureMatchers) {
 }
 
 // ---------------------------------------------------------------------------
-// Response handling shared by the payload matchers
+// Response handling shared by WhenParsed() and RawPayload()
 // ---------------------------------------------------------------------------
 
 // These responses fail before any payload is compared, so the expected payload
@@ -286,6 +302,8 @@ TEST(PayloadMatcherTest, EmptyResponse) {
   TestResult result =
       CreateResult("foo", ::conformance::PROTOBUF, ConformanceResponse());
 
+  EXPECT_THAT(Explain(WhenParsed(_), result),
+              Rejects("Response didn't have any field in the Response."));
   EXPECT_THAT(Explain(RawPayload(Wire()), result),
               Rejects("Response didn't have any field in the Response."));
 }
@@ -297,6 +315,14 @@ struct ErrorResponseCase {
 
 class PayloadMatcherErrorResponseTest
     : public testing::TestWithParam<ErrorResponseCase> {};
+
+TEST_P(PayloadMatcherErrorResponseTest, IsAFailureForWhenParsed) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ResponseFromText(GetParam().response));
+
+  EXPECT_THAT(Explain(WhenParsed(_), result),
+              Rejects("Failed to parse input or produce output."));
+}
 
 TEST_P(PayloadMatcherErrorResponseTest, IsAFailureForPayload) {
   TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
@@ -321,6 +347,8 @@ TEST(PayloadMatcherTest, Skipped) {
       CreateResult("foo", ::conformance::PROTOBUF,
                    ResponseFromText(R"pb(skipped: "skipped message")pb"));
 
+  EXPECT_THAT(Explain(WhenParsed(_), result),
+              Rejects("the testee skipped the test: skipped message"));
   EXPECT_THAT(Explain(RawPayload(Wire()), result),
               Rejects("the testee skipped the test: skipped message"));
 }
@@ -331,8 +359,21 @@ TEST(PayloadMatcherTest, WrongOutputFormat) {
                    ResponseFromText(R"pb(json_payload: "{}")pb"));
 
   EXPECT_THAT(
+      Explain(WhenParsed(_), result),
+      Rejects("Test was asked for PROTOBUF output but provided JSON instead."));
+  EXPECT_THAT(
       Explain(RawPayload(Wire()), result),
       Rejects("Test was asked for PROTOBUF output but provided JSON instead."));
+}
+
+TEST(PayloadMatcherTest, WrongOutputFormatText) {
+  TestResult result = CreateResult("foo", ::conformance::TEXT_FORMAT,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")), result),
+      Rejects("Test was asked for TEXT_FORMAT output but provided PROTOBUF "
+              "instead."));
 }
 
 TEST(PayloadMatcherTest, WrongOutputFormatJspb) {
@@ -343,6 +384,183 @@ TEST(PayloadMatcherTest, WrongOutputFormatJspb) {
   EXPECT_THAT(
       Explain(RawPayload(Wire()), result),
       Rejects("Test was asked for JSON output but provided JSPB instead."));
+}
+
+// ---------------------------------------------------------------------------
+// WhenParsed()
+// ---------------------------------------------------------------------------
+
+TEST(WhenParsedTest, Matches) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")), result),
+      Accepts(IsEmpty()));
+}
+
+TEST(WhenParsedTest, UnparseableProtobufPayload) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(Wire("\001")));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(EqualsTextProto("")), result),
+      Rejects("Protobuf output we received from test was unparseable."));
+}
+
+TEST(WhenParsedTest, UnparseableTextPayload) {
+  TestResult result =
+      CreateResult("foo", ::conformance::TEXT_FORMAT,
+                   ResponseFromText(R"pb(text_payload: "nonsense: 1")pb"));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(EqualsTextProto("")), result),
+      Rejects("TEXT_FORMAT output we received from test was unparseable."));
+}
+
+TEST(WhenParsedTest, UnparseablePayloadFailsEvenForAnything) {
+  // The payload has to be decodable before any inner matcher gets a say.
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(Wire("\001")));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(_), result),
+      Rejects("Protobuf output we received from test was unparseable."));
+}
+
+TEST(WhenParsedTest, JsonOutputIsNotSupported) {
+  TestResult result =
+      CreateResult("foo", ::conformance::JSON,
+                   ResponseFromText(R"pb(json_payload: "{}")pb"));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(_), result),
+      Rejects("WhenParsed is not supported for JSON output; use "
+              "RawPayload() to match the raw JSON text until JSON matching is "
+              "migrated to gtest (b/410122158)."));
+}
+
+TEST(WhenParsedTest, TextOutput) {
+  TestResult result = CreateResult(
+      "foo", ::conformance::TEXT_FORMAT,
+      ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
+
+  EXPECT_TRUE(
+      Value(result, WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
+}
+
+TEST(WhenParsedTest, TextOutputFieldNumbersAccepted) {
+  // Testees asked to print unknown fields emit them by number, so field
+  // numbers are always accepted.
+  TestResult result =
+      CreateResult("foo", ::conformance::TEXT_FORMAT,
+                   ResponseFromText(R"pb(text_payload: "1: 9")pb"));
+
+  EXPECT_TRUE(
+      Value(result, WhenParsed(EqualsTextProto(R"pb(optional_int32: 9)pb"))));
+}
+
+TEST(WhenParsedTest, EqualsTextProtoMismatch) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")), result),
+      Rejects("Output was not equivalent to reference message: "
+              "modified: optional_int32: 1 -> 2\n"));
+}
+
+TEST(WhenParsedTest, EqualsTextProtoMatchesNan) {
+  TestAllTypesProto2 message;
+  message.set_optional_float(std::nanf(""));
+  message.set_optional_double(std::nan(""));
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF,
+                   ProtobufPayload(Wire(message.SerializeAsString())));
+
+  EXPECT_TRUE(Value(result, WhenParsed(EqualsTextProto(R"pb(
+                      optional_float: nan
+                      optional_double: nan
+                    )pb"))));
+}
+
+TEST(WhenParsedDeathTest, EqualsTextProtoUnparseableExpected) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_DEATH(
+      (void)Explain(WhenParsed(EqualsTextProto(R"pb(unknown: 1)pb")), result),
+      "Failed to parse expected text proto.*unknown: 1");
+}
+
+TEST(WhenParsedTest, EqualsBinaryProto) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  // Equivalent, but not byte-identical (over-long varint encoding).
+  EXPECT_TRUE(
+      Value(result, WhenParsed(EqualsBinaryProto(LongVarintField(1, 2, 1)))));
+}
+
+TEST(WhenParsedTest, EqualsBinaryProtoWithTextOutput) {
+  TestResult result = CreateResult(
+      "foo", ::conformance::TEXT_FORMAT,
+      ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
+
+  EXPECT_TRUE(Value(result, WhenParsed(EqualsBinaryProto(VarintField(1, 9)))));
+}
+
+TEST(WhenParsedTest, EqualsBinaryProtoMismatch) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_THAT(Explain(WhenParsed(EqualsBinaryProto(VarintField(1, 1))), result),
+              Rejects("Output was not equivalent to reference message: "
+                      "modified: optional_int32: 1 -> 2\n"));
+}
+
+TEST(WhenParsedDeathTest, EqualsBinaryProtoUnparseableExpected) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_DEATH(
+      (void)Explain(WhenParsed(EqualsBinaryProto(Wire("\001"))), result),
+      "Failed to parse expected wire data");
+}
+
+TEST(WhenParsedTest, AcceptsAnyMessageMatcher) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_TRUE(Value(result, WhenParsed(_)));
+  EXPECT_TRUE(Value(
+      result,
+      WhenParsed(AllOf(EqualsTextProto(R"pb(optional_int32: 2)pb"),
+                       Not(EqualsTextProto(R"pb(optional_int32: 3)pb"))))));
+}
+
+TEST(WhenParsedTest, InnerMatcherWithoutExplanation) {
+  // Inner matchers that don't explain themselves still get a useful failure
+  // message, including the decoded payload.
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_THAT(
+      Explain(WhenParsed(Not(EqualsTextProto(R"pb(optional_int32: 2)pb"))),
+              result),
+      Rejects("Expect: when parsed, doesn't equal text proto "
+              R"("optional_int32: 2", but got: {optional_int32: 2})"));
+}
+
+TEST(WhenParsedTest, ComposesWithGMock) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_TRUE(Value(result, Not(WhenParsed(EqualsTextProto("")))));
+  EXPECT_TRUE(Value(
+      result, AnyOf(IsParseError(),
+                    WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")))));
+  EXPECT_TRUE(Value(result, AllOf(Not(IsParseError()), WhenParsed(_))));
 }
 
 // ---------------------------------------------------------------------------

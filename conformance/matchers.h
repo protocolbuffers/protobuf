@@ -18,7 +18,9 @@
 #define GOOGLE_PROTOBUF_CONFORMANCE_MATCHERS_H__
 
 #include <ostream>
+#include <utility>
 
+#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
@@ -38,7 +40,28 @@ namespace internal {
 // printed.
 void PrintTo(const TestResult& result, std::ostream* os);
 
+// Implements WhenParsed() below.
+testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
+    testing::Matcher<const Message&> m);
+
 }  // namespace internal
+
+// Matches a result whose payload, decoded as the test's message type, matches
+// `m`.  The payload is decoded from binary or text output.  `m` is any matcher
+// on `const Message&`, usually EqualsTextProto() or EqualsBinaryProto().
+//
+//   EXPECT_THAT(result,
+//               WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")));
+//
+// A payload that can't be decoded fails with "<format> output we received
+// from test was unparseable."  Otherwise the failure message comes from `m`.
+// JSON output can't be decoded yet (b/410122158) and fails with a message
+// saying so.  Use RawPayload() for it.
+template <typename M>
+testing::Matcher<const internal::TestResult&> WhenParsed(M m) {
+  return internal::MakeWhenParsedMatcher(
+      testing::SafeMatcherCast<const Message&>(std::move(m)));
+}
 
 // Matches a result whose raw payload is exactly `bytes`, whatever the output
 // format.
@@ -56,7 +79,8 @@ testing::Matcher<const internal::TestResult&> RawPayload(Wire bytes);
 // Matches a message equivalent to `text`, parsed as the actual message's type.
 // Messages are compared with MessageDifferencer, with NaN equal to NaN.
 //
-//   EXPECT_THAT(message, EqualsTextProto(R"pb(optional_int32: 1)pb"));
+//   EXPECT_THAT(result,
+//               WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")));
 testing::Matcher<const Message&> EqualsTextProto(absl::string_view text);
 
 // Like EqualsTextProto(), but the expected message is the binary serialization
