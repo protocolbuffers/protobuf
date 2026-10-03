@@ -14,6 +14,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
@@ -39,6 +40,7 @@ using ::testing::AnyOf;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
+using ::testing::PrintToString;
 using ::testing::Return;
 using ::testing::Value;
 
@@ -150,15 +152,98 @@ MATCHER_P(Rejects, explanation,
 }
 
 // ---------------------------------------------------------------------------
+// PrintTo(TestResult)
+// ---------------------------------------------------------------------------
+
+// Runs the binary-to-binary test "foo" of the given priority against a testee
+// that answers `response_textproto`.
+TestResult ResultWithResponse(absl::string_view response_textproto,
+                              TestPriority priority = TestPriority::kP0) {
+  NiceMock<MockTestRunner> runner;
+  ON_CALL(runner, RunTest)
+      .WillByDefault(
+          Return(ResponseFromText(response_textproto).SerializeAsString()));
+  internal::Testee testee(&runner);
+  return testee.CreateTest("foo", priority)
+      .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+      .SerializeBinary();
+}
+
+constexpr absl::string_view kPrintedRequiredTest =
+    R"(Required test "Required.Proto2.ProtobufInput.foo.ProtobufOutput")";
+
+TEST(PrintTestResultTest, ParseError) {
+  EXPECT_EQ(PrintToString(
+                ResultWithResponse(R"pb(parse_error: "failed to parse")pb")),
+            absl::StrCat(kPrintedRequiredTest,
+                         R"( with response {parse_error: "failed to parse"})"));
+}
+
+TEST(PrintTestResultTest, Skipped) {
+  EXPECT_EQ(
+      PrintToString(ResultWithResponse(R"pb(skipped: "skipped message")pb",
+                                       TestPriority::kP1)),
+      R"(Recommended test "Recommended.Proto2.ProtobufInput.foo.ProtobufOutput" )"
+      R"(with response {skipped: "skipped message"})");
+}
+
+TEST(PrintTestResultTest, EmptyResponse) {
+  EXPECT_EQ(PrintToString(ResultWithResponse("")),
+            absl::StrCat(kPrintedRequiredTest, " with response {}"));
+}
+
+TEST(PrintTestResultTest, ProtobufPayloadIsDecoded) {
+  EXPECT_EQ(
+      PrintToString(ResultWithResponse(R"pb(protobuf_payload: "\010\t")pb")),
+      absl::StrCat(kPrintedRequiredTest,
+                   R"( with response {protobuf_payload: "\010\t"} )"
+                   R"((decoded: {optional_int32: 9}))"));
+}
+
+TEST(PrintTestResultTest, UnparseableProtobufPayload) {
+  EXPECT_EQ(
+      PrintToString(ResultWithResponse(R"pb(protobuf_payload: "\001")pb")),
+      absl::StrCat(
+          kPrintedRequiredTest,
+          R"( with response {protobuf_payload: "\001"} (unparseable))"));
+}
+
+TEST(PrintTestResultTest, TruncatedProtobufPayloadIsDecodedInFull) {
+  // The raw bytes are cut after 200 bytes, but the message they decode to is
+  // printed whole.
+  TestAllTypesProto2 message;
+  message.set_optional_string(std::string(300, 'a'));
+  const std::string payload = message.SerializeAsString();
+
+  EXPECT_EQ(
+      PrintToString(ResultWithResponse(
+          absl::StrCat("protobuf_payload: \"", absl::CEscape(payload), "\""))),
+      absl::StrCat(kPrintedRequiredTest, " with response {protobuf_payload: \"",
+                   absl::CEscape(payload.substr(0, 200)),
+                   "...(truncated)\"} (decoded: {optional_string: \"",
+                   std::string(300, 'a'), "\"})"));
+}
+
+TEST(PrintTestResultTest, LargePayloadsAreTruncated) {
+  std::string large_payload(300, 'a');
+
+  EXPECT_EQ(
+      PrintToString(ResultWithResponse(
+          absl::StrCat("text_payload: \"", large_payload, "\""))),
+      absl::StrCat(kPrintedRequiredTest, " with response {text_payload: \"",
+                   std::string(200, 'a'), "...(truncated)\"}"));
+}
+
+// ---------------------------------------------------------------------------
 // Descriptions
 // ---------------------------------------------------------------------------
 
 TEST(MatcherDescriptionTest, EqualsTextProto) {
   EXPECT_EQ(testing::DescribeMatcher<const Message&>(
-                EqualsTextProto("optional_int32: 9")),
+                EqualsTextProto(R"pb(optional_int32: 9)pb")),
             "equals text proto \"optional_int32: 9\"");
   EXPECT_EQ(testing::DescribeMatcher<const Message&>(
-                EqualsTextProto("optional_int32: 9"), /*negation=*/true),
+                EqualsTextProto(R"pb(optional_int32: 9)pb"), /*negation=*/true),
             "doesn't equal text proto \"optional_int32: 9\"");
 }
 
@@ -185,19 +270,19 @@ TEST(MatcherDescriptionTest, FailureMatchers) {
 TEST(EqualsTextProtoTest, Success) {
   TestAllTypesProto2 message;
   message.set_optional_int32(9);
-  EXPECT_THAT(message, EqualsTextProto("optional_int32: 9"));
+  EXPECT_THAT(message, EqualsTextProto(R"pb(optional_int32: 9)pb"));
 }
 
 TEST(EqualsTextProtoTest, MatchesNan) {
   TestAllTypesProto2 message;
   message.set_optional_float(std::nanf(""));
-  EXPECT_THAT(message, EqualsTextProto("optional_float: nan"));
+  EXPECT_THAT(message, EqualsTextProto(R"pb(optional_float: nan)pb"));
 }
 
 TEST(EqualsTextProtoTest, Failure) {
   TestAllTypesProto2 message;
   message.set_optional_float(std::nanf(""));
-  auto matcher = EqualsTextProto("optional_float: 1.0");
+  auto matcher = EqualsTextProto(R"pb(optional_float: 1.0)pb");
   EXPECT_THAT(Explain(matcher, message),
               Rejects("Output was not equivalent to reference message: "
                       "modified: optional_float: 1 -> nan\n"));
@@ -208,13 +293,13 @@ TEST(EqualsTextProtoTest, WorksOnBaseMessage) {
   TestAllTypesProto2 message;
   message.set_optional_int32(9);
   const Message& base = message;
-  EXPECT_THAT(base, EqualsTextProto("optional_int32: 9"));
-  EXPECT_THAT(base, Not(EqualsTextProto("optional_int32: 8")));
+  EXPECT_THAT(base, EqualsTextProto(R"pb(optional_int32: 9)pb"));
+  EXPECT_THAT(base, Not(EqualsTextProto(R"pb(optional_int32: 8)pb")));
 }
 
 TEST(EqualsTextProtoDeathTest, ParseFailure) {
   TestAllTypesProto2 message;
-  EXPECT_DEATH((void)Explain(EqualsTextProto("unknown: 1.0"), message),
+  EXPECT_DEATH((void)Explain(EqualsTextProto(R"pb(unknown: 1.0)pb"), message),
                "Failed to parse expected text proto.*unknown: 1.0");
 }
 

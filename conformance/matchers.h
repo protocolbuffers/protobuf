@@ -10,9 +10,14 @@
 // The matchers are pure, so they compose with gMock like any other matcher.
 // The failure messages they write end up in failure lists, so each matcher
 // documents its message and keeps it stable.
+//
+// This file also defines PrintTo() for TestResult, which gtest uses to print a
+// result when a matcher on it fails.
 
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_MATCHERS_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_MATCHERS_H__
+
+#include <ostream>
 
 #include <gtest/gtest.h>
 #include "absl/strings/string_view.h"
@@ -23,11 +28,22 @@
 namespace google {
 namespace protobuf {
 namespace conformance {
+namespace internal {
+
+// Prints a TestResult in gtest failure output.  The output has the test's
+// priority and name and a short form of the response.  Long payloads are
+// truncated.  Binary payloads are also decoded as the test's message type.
+// Declared in TestResult's namespace so that gtest finds it through ADL.  It
+// lives with the matchers because their failures are where results get
+// printed.
+void PrintTo(const TestResult& result, std::ostream* os);
+
+}  // namespace internal
 
 // Matches a message equivalent to `text`, parsed as the actual message's type.
 // Messages are compared with MessageDifferencer, with NaN equal to NaN.
 //
-//   EXPECT_THAT(message, EqualsTextProto("optional_int32: 1"));
+//   EXPECT_THAT(message, EqualsTextProto(R"pb(optional_int32: 1)pb"));
 testing::Matcher<const Message&> EqualsTextProto(absl::string_view text);
 
 // Like EqualsTextProto(), but the expected message is the binary serialization
