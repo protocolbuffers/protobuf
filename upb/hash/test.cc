@@ -660,3 +660,40 @@ TEST(IntTableTest, InPlaceGrow) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(Table, StringTableCopy) {
+  upb::Arena arena;
+  upb_strtable src;
+  EXPECT_TRUE(upb_strtable_init(&src, 4, arena.ptr()));
+  EXPECT_TRUE(
+      upb_strtable_insert(&src, "key1", 4, upb_value_int32(42), arena.ptr()));
+  EXPECT_TRUE(
+      upb_strtable_insert(&src, "key2", 4, upb_value_int32(84), arena.ptr()));
+
+  upb_strtable dest;
+  EXPECT_TRUE(upb_strtable_copy(&dest, &src, arena.ptr()));
+  EXPECT_EQ(upb_strtable_count(&dest), 2);
+
+  upb_value val;
+  EXPECT_TRUE(upb_strtable_lookup2(&dest, "key1", 4, &val));
+  EXPECT_EQ(upb_value_getint32(val), 42);
+  EXPECT_TRUE(upb_strtable_lookup2(&dest, "key2", 4, &val));
+  EXPECT_EQ(upb_value_getint32(val), 84);
+
+  upb_strtable_clear(&dest);
+  EXPECT_EQ(upb_strtable_count(&dest), 0);
+  EXPECT_FALSE(upb_strtable_lookup2(&dest, "key1", 4, &val));
+}
+
+TEST(Table, TableClearEmpty) {
+  upb_inttable it;
+  memset(&it, 0, sizeof(it));
+  upb_inttable_clear(&it);
+  EXPECT_EQ(it.t.count, 0);
+
+  upb_strtable st;
+  memset(&st, 0, sizeof(st));
+  upb_strtable_clear(&st);
+  EXPECT_EQ(st.t.count, 0);
+}
+
