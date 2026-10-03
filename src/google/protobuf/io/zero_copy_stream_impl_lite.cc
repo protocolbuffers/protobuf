@@ -48,8 +48,8 @@ static const int kDefaultBlockSize = 8192;
 
 ArrayInputStream::ArrayInputStream(const void* data, int size, int block_size)
     : data_(reinterpret_cast<const uint8_t*>(data)),
-      size_(size),
-      block_size_(block_size > 0 ? block_size : size),
+      size_(std::max(0, size)),
+      block_size_(block_size > 0 ? block_size : std::max(0, size)),
       position_(0),
       last_returned_size_(0) {}
 
@@ -95,8 +95,8 @@ int64_t ArrayInputStream::ByteCount() const { return position_; }
 
 ArrayOutputStream::ArrayOutputStream(void* data, int size, int block_size)
     : data_(reinterpret_cast<uint8_t*>(data)),
-      size_(size),
-      block_size_(block_size > 0 ? block_size : size),
+      size_(std::max(0, size)),
+      block_size_(block_size > 0 ? block_size : std::max(0, size)),
       position_(0),
       last_returned_size_(0) {}
 
@@ -188,7 +188,7 @@ CopyingInputStreamAdaptor::CopyingInputStreamAdaptor(
     CopyingInputStream* copying_stream, int block_size)
     : copying_stream_(copying_stream),
       owns_copying_stream_(false),
-      failed_(false),
+      failed_(copying_stream == nullptr),
       position_(0),
       buffer_size_(block_size > 0 ? block_size : kDefaultBlockSize),
       buffer_used_(0),
@@ -201,8 +201,8 @@ CopyingInputStreamAdaptor::~CopyingInputStreamAdaptor() {
 }
 
 bool CopyingInputStreamAdaptor::Next(const void** data, int* size) {
-  if (failed_) {
-    // Already failed on a previous read.
+  if (failed_ || copying_stream_ == nullptr) {
+    // Already failed on a previous read or stream is null.
     return false;
   }
 
@@ -248,8 +248,8 @@ void CopyingInputStreamAdaptor::BackUp(int count) {
 bool CopyingInputStreamAdaptor::Skip(int count) {
   ABSL_CHECK_GE(count, 0);
 
-  if (failed_) {
-    // Already failed on a previous read.
+  if (failed_ || copying_stream_ == nullptr) {
+    // Already failed on a previous read or stream is null.
     return false;
   }
 
@@ -290,7 +290,7 @@ CopyingOutputStreamAdaptor::CopyingOutputStreamAdaptor(
     CopyingOutputStream* copying_stream, int block_size)
     : copying_stream_(copying_stream),
       owns_copying_stream_(false),
-      failed_(false),
+      failed_(copying_stream == nullptr),
       position_(0),
       buffer_size_(block_size > 0 ? block_size : kDefaultBlockSize),
       buffer_used_(0) {}
@@ -377,8 +377,8 @@ bool CopyingOutputStreamAdaptor::WriteCord(const absl::Cord& cord) {
 }
 
 bool CopyingOutputStreamAdaptor::WriteBuffer() {
-  if (failed_) {
-    // Already failed on a previous write.
+  if (failed_ || copying_stream_ == nullptr) {
+    // Already failed on a previous write or stream is null.
     return false;
   }
 
@@ -410,7 +410,8 @@ void CopyingOutputStreamAdaptor::FreeBuffer() {
 
 LimitingInputStream::LimitingInputStream(ZeroCopyInputStream* input,
                                          int64_t limit)
-    : input_(input), limit_(limit) {
+    : input_(input), limit_(std::max(int64_t{0}, limit)) {
+  ABSL_CHECK(input != nullptr);
   prior_bytes_read_ = input_->ByteCount();
 }
 
@@ -432,6 +433,7 @@ bool LimitingInputStream::Next(const void** data, int* size) {
 }
 
 void LimitingInputStream::BackUp(int count) {
+  ABSL_CHECK_GE(count, 0);
   if (limit_ < 0) {
     input_->BackUp(count - limit_);
     limit_ = count;
@@ -442,6 +444,7 @@ void LimitingInputStream::BackUp(int count) {
 }
 
 bool LimitingInputStream::Skip(int count) {
+  ABSL_CHECK_GE(count, 0);
   if (count > limit_) {
     if (limit_ < 0) return false;
     // TODO: Remove this suppression.
@@ -465,6 +468,7 @@ int64_t LimitingInputStream::ByteCount() const {
 
 bool LimitingInputStream::ReadCord(absl::Cord* cord, int count) {
   if (count <= 0) return true;
+  if (limit_ <= 0) return false;
   if (count <= limit_) {
     if (!input_->ReadCord(cord, count)) return false;
     limit_ -= count;
@@ -523,6 +527,7 @@ bool CordInputStream::Next(const void** data, int* size) {
 }
 
 void CordInputStream::BackUp(int count) {
+  ABSL_CHECK_GE(count, 0);
   // Backup is only allowed on last returned chunk from `Next()`.
   ABSL_CHECK_LE(static_cast<size_t>(count), size_ - available_);
 
@@ -531,6 +536,7 @@ void CordInputStream::BackUp(int count) {
 }
 
 bool CordInputStream::Skip(int count) {
+  ABSL_CHECK_GE(count, 0);
   // Short circuit if we stay inside the current chunk.
   if (static_cast<size_t>(count) <= available_) {
     available_ -= count;
@@ -553,6 +559,7 @@ int64_t CordInputStream::ByteCount() const {
 }
 
 bool CordInputStream::ReadCord(absl::Cord* cord, int count) {
+  if (count <= 0) return true;
   // Advance the iterator to the current position
   const size_t used = size_ - available_;
   absl::Cord::Advance(&it_, used);
