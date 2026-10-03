@@ -12,5 +12,5 @@ trap "mv ${build}.original ${build}" EXIT
 
 # Update the subdirs.
 for file in v*; do
-	add_gencode.sh "${file:1}"
+	./add_gencode.sh "${file:1}"
 done
