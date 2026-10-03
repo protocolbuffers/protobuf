@@ -1530,6 +1530,25 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
                "Field does not match message type");
 }
 
+TEST(GeneratedMessageReflectionTest, OneofForeignDescriptorCheck) {
+  unittest::TestAllTypes message1;
+  const Reflection* reflection = message1.GetReflection();
+
+  // Passing a oneof descriptor from a different message type must fail as
+  // well: the oneof-case address is computed from the oneof descriptor's
+  // index, so a foreign oneof with a higher index than the target's oneof
+  // count would address memory outside the message's oneof-case array.
+  const OneofDescriptor* foreign_oneof =
+      unittest::TestOneof2::descriptor()->oneof_decl(0);
+  EXPECT_DEATH((void)reflection->HasOneof(message1, foreign_oneof),
+               "Oneof does not match message type");
+  EXPECT_DEATH(reflection->ClearOneof(&message1, foreign_oneof),
+               "Oneof does not match message type");
+  EXPECT_DEATH(
+      (void)reflection->GetOneofFieldDescriptor(message1, foreign_oneof),
+      "Oneof does not match message type");
+}
+
 #endif  // GTEST_HAS_DEATH_TEST
 
 class GeneratedMessageReflectionCordAccessorsTest : public testing::Test {
