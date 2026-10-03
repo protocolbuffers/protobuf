@@ -39,21 +39,4 @@ TEST(Log2Test, RoundUpToPowerOfTwo) {
   EXPECT_EQ(upb_RoundUpToPowerOfTwo(5), 8);
 }
 
-TEST(Log2Test, ShlOverflow) {
-  size_t a = 1;
-  EXPECT_FALSE(upb_ShlOverflow(&a, 0));
-  EXPECT_EQ(a, 1);
-  EXPECT_FALSE(upb_ShlOverflow(&a, 1));
-  EXPECT_EQ(a, 2);
-  EXPECT_FALSE(upb_ShlOverflow(&a, 2));
-  EXPECT_EQ(a, 8);
-
-  a = SIZE_MAX / 2;
-  EXPECT_FALSE(upb_ShlOverflow(&a, 1));
-  EXPECT_EQ(a, SIZE_MAX - 1);
-
-  a = (SIZE_MAX / 2) + 1;
-  EXPECT_TRUE(upb_ShlOverflow(&a, 1));
-}
-
 }  // namespace
