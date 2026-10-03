@@ -315,6 +315,43 @@ public class CodedOutputStreamTest {
   }
 
   @Test
+  public void testNewInstanceWithArraySliceValidatesRange() throws Exception {
+    // This test exercises an array-only factory, so run it once rather than for every output type.
+    assume().that(outputType).isEqualTo(OutputType.ARRAY);
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> CodedOutputStream.newInstance(new byte[0], 2, Integer.MAX_VALUE));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> CodedOutputStream.newInstance(new byte[1], Integer.MAX_VALUE, Integer.MAX_VALUE));
+    assertThrows(
+        IllegalArgumentException.class, () -> CodedOutputStream.newInstance(new byte[1], -1, 1));
+    assertThrows(
+        IllegalArgumentException.class, () -> CodedOutputStream.newInstance(new byte[1], 0, -1));
+
+    CodedOutputStream emptyArray = CodedOutputStream.newInstance(new byte[0], 0, 0);
+    assertThat(emptyArray.spaceLeft()).isEqualTo(0);
+
+    CodedOutputStream emptySliceAtStart = CodedOutputStream.newInstance(new byte[1], 0, 0);
+    assertThat(emptySliceAtStart.spaceLeft()).isEqualTo(0);
+
+    CodedOutputStream emptySliceAtEnd = CodedOutputStream.newInstance(new byte[1], 1, 0);
+    assertThat(emptySliceAtEnd.spaceLeft()).isEqualTo(0);
+
+    byte[] sliceBytes = new byte[4];
+    CodedOutputStream slice = CodedOutputStream.newInstance(sliceBytes, 1, 2);
+    slice.writeUInt32NoTag(1);
+    assertThat(slice.spaceLeft()).isEqualTo(1);
+    assertThat(sliceBytes).isEqualTo(new byte[] {0, 1, 0, 0});
+
+    byte[] wholeArrayBytes = new byte[1];
+    CodedOutputStream wholeArray = CodedOutputStream.newInstance(wholeArrayBytes);
+    wholeArray.writeUInt32NoTag(1);
+    assertThat(wholeArrayBytes).isEqualTo(new byte[] {1});
+  }
+
+  @Test
   public void testWriteFixed32NoTag_outOfBounds_throws() throws Exception {
     for (int i = 0; i < 4; i++) {
       Coder coder = outputType.newCoder(i);
