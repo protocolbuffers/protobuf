@@ -25,12 +25,12 @@ namespace zc_sink_internal {
 class PROTOBUF_EXPORT ZeroCopyStreamByteSink {
  public:
   explicit ZeroCopyStreamByteSink(io::ZeroCopyOutputStream* stream)
-      : stream_(stream) {}
+      : stream_(stream), failed_(stream == nullptr) {}
   ZeroCopyStreamByteSink(const ZeroCopyStreamByteSink&) = delete;
   ZeroCopyStreamByteSink& operator=(const ZeroCopyStreamByteSink&) = delete;
 
   ~ZeroCopyStreamByteSink() {
-    if (buffer_size_ > 0) {
+    if (stream_ != nullptr && buffer_size_ > 0) {
       stream_->BackUp(buffer_size_);
     }
   }

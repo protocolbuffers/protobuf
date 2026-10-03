@@ -46,7 +46,7 @@ GzipInputStream::GzipInputStream(ZeroCopyInputStream* sub_stream, Format format,
   zcontext_->context.avail_in = 0;
   zcontext_->context.total_in = 0;
   zcontext_->context.msg = nullptr;
-  if (buffer_size == -1) {
+  if (buffer_size <= 0) {
     output_buffer_length_ = kDefaultBufferSize;
   } else {
     output_buffer_length_ = buffer_size;
@@ -81,6 +81,11 @@ static inline int internalInflateInit2(z_stream* zcontext,
 }
 
 int GzipInputStream::Inflate(int flush) {
+  if (sub_stream_ == nullptr) {
+    zcontext_->context.next_out = nullptr;
+    zcontext_->context.avail_out = 0;
+    return Z_STREAM_END;
+  }
   if ((zerror_ == Z_OK) && (zcontext_->context.avail_out == 0)) {
     // previous inflate filled output buffer. don't change input params yet.
   } else if (zcontext_->context.avail_in == 0) {
@@ -122,6 +127,9 @@ const char* GzipInputStream::ZlibErrorMessage() const {
 
 // implements ZeroCopyInputStream ----------------------------------
 bool GzipInputStream::Next(const void** data, int* size) {
+  if (data == nullptr || size == nullptr) {
+    return false;
+  }
   bool ok = (zerror_ == Z_OK) || (zerror_ == Z_STREAM_END) ||
             (zerror_ == Z_BUF_ERROR);
   if ((!ok) || (zcontext_->context.next_out == nullptr)) {
@@ -163,6 +171,9 @@ bool GzipInputStream::Next(const void** data, int* size) {
   return true;
 }
 void GzipInputStream::BackUp(int count) {
+  if (count <= 0) {
+    return;
+  }
   ptrdiff_t max_backup =
       static_cast<char*>(output_position_) - static_cast<char*>(output_buffer_);
   ABSL_CHECK_GE(count, 0) << "count must not be negative";
@@ -171,6 +182,9 @@ void GzipInputStream::BackUp(int count) {
   output_position_ = static_cast<char*>(output_position_) - count;
 }
 bool GzipInputStream::Skip(int count) {
+  if (count <= 0) {
+    return count == 0;
+  }
   const void* data;
   int size = 0;
   bool ok = Next(&data, &size);
@@ -215,7 +229,8 @@ void GzipOutputStream::Init(ZeroCopyOutputStream* sub_stream,
   sub_data_ = nullptr;
   sub_data_size_ = 0;
 
-  input_buffer_length_ = options.buffer_size;
+  input_buffer_length_ =
+      (options.buffer_size <= 0) ? kDefaultBufferSize : options.buffer_size;
   input_buffer_ = operator new(input_buffer_length_);
   ABSL_CHECK(input_buffer_ != nullptr);
 
@@ -250,6 +265,9 @@ GzipOutputStream::~GzipOutputStream() {
 
 // private
 int GzipOutputStream::Deflate(int flush) {
+  if (sub_stream_ == nullptr) {
+    return Z_STREAM_ERROR;
+  }
   int error = Z_OK;
   do {
     if ((sub_data_ == nullptr) || (zcontext_->context.avail_out == 0)) {
@@ -277,6 +295,9 @@ int GzipOutputStream::Deflate(int flush) {
 
 // implements ZeroCopyOutputStream ---------------------------------
 bool GzipOutputStream::Next(void** data, int* size) {
+  if (data == nullptr || size == nullptr) {
+    return false;
+  }
   if ((zerror_ != Z_OK) && (zerror_ != Z_BUF_ERROR)) {
     return false;
   }
@@ -299,6 +320,9 @@ bool GzipOutputStream::Next(void** data, int* size) {
   return true;
 }
 void GzipOutputStream::BackUp(int count) {
+  if (count <= 0) {
+    return;
+  }
   ABSL_CHECK_GE(zcontext_->context.avail_in, static_cast<uInt>(count));
   zcontext_->context.avail_in -= count;
 }

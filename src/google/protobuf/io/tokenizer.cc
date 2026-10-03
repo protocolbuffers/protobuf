@@ -201,13 +201,18 @@ Tokenizer::Tokenizer(ZeroCopyInputStream* input,
   current_.type = TYPE_START;
   previous_ = current_;
 
+  if (input_ == nullptr) {
+    read_error_ = true;
+    current_char_ = '\0';
+    return;
+  }
   Refresh();
 }
 
 Tokenizer::~Tokenizer() {
   // If we had any buffer left unread, return it to the underlying stream
   // so that someone else can read it.
-  if (buffer_size_ > buffer_pos_) {
+  if (input_ != nullptr && buffer_size_ > buffer_pos_) {
     input_->BackUp(buffer_size_ - buffer_pos_);
   }
 }
@@ -487,10 +492,12 @@ Tokenizer::TokenType Tokenizer::ConsumeNumber(bool started_with_zero,
 void Tokenizer::ConsumeSymbol() {
   // Check if the high order bit is set.
   if (current_char_ & 0x80) {
-    error_collector_->RecordError(
-        line_, column_,
-        absl::StrFormat("Interpreting non ascii codepoint %d.",
-                        static_cast<unsigned char>(current_char_)));
+    if (error_collector_ != nullptr) {
+      error_collector_->RecordError(
+          line_, column_,
+          absl::StrFormat("Interpreting non ascii codepoint %d.",
+                          static_cast<unsigned char>(current_char_)));
+    }
   }
   NextChar();
 }
@@ -546,8 +553,10 @@ void Tokenizer::ConsumeBlockComment(std::string* content) {
           "\"/*\" inside block comment.  Block comments cannot be nested.");
     } else if (current_char_ == '\0') {
       AddError("End-of-file inside block comment.");
-      error_collector_->RecordError(start_line, start_column,
-                                    "  Comment started here.");
+      if (error_collector_ != nullptr) {
+        error_collector_->RecordError(start_line, start_column,
+                                      "  Comment started here.");
+      }
       if (content != nullptr) StopRecording();
       break;
     }
@@ -677,9 +686,11 @@ bool Tokenizer::Next() {
                 current_.line == previous_.line &&
                 current_.column == previous_.end_column) {
               // We don't accept syntax like "blah.123".
-              error_collector_->RecordError(
-                  line_, column_ - 2,
-                  "Need space between identifier and decimal point.");
+              if (error_collector_ != nullptr) {
+                error_collector_->RecordError(
+                    line_, column_ - 2,
+                    "Need space between identifier and decimal point.");
+              }
             }
             current_.type = ConsumeNumber(false, true);
           } else {
