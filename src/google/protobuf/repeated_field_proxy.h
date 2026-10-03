@@ -321,9 +321,10 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithPushBack<
   }
 };
 
-// Defines `emplace_back()` for all types except `absl::string_view`. Simply
-// takes any arguments that can be passed to the constructor of `ElementType`
-// and in-place constructs the element at the end of the repeated field.
+// Defines the default `emplace_back()`. Simply takes any arguments that can be
+// passed to the constructor of `ElementType` and in-place constructs the
+// element at the end of the repeated field. Returns a reference to the newly
+// constructed element.
 template <typename ElementType, bool kOrProxy, typename Enable = void>
 class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack {
  public:
@@ -331,6 +332,23 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack {
   // a reference to the newly constructed element.
   template <typename... Args>
   auto& emplace_back(Args&&... args) const {
+    return RepeatedFieldProxyInternalPrivateAccessHelper<
+        ElementType, kOrProxy>::Emplace(this, std::forward<Args>(args)...);
+  }
+};
+
+// Defines `emplace_back()` for primitive element types, which returns by value
+// to avoid leaking references to the underlying field.
+template <typename ElementType, bool kOrProxy>
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack<
+    ElementType, kOrProxy,
+    std::enable_if_t<RepeatedElementTypeIsPrimitive<ElementType>>> {
+ public:
+  // In-place constructs an element at the end of the repeated field, returning
+  // the newly constructed element by value.
+  template <typename... Args>
+  // NOLINTNEXTLINE(readability-const-return-type)
+  const ElementType emplace_back(Args&&... args) const {
     return RepeatedFieldProxyInternalPrivateAccessHelper<
         ElementType, kOrProxy>::Emplace(this, std::forward<Args>(args)...);
   }
@@ -346,35 +364,46 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack<
  public:
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
-  absl::string_view emplace_back() const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  const absl::string_view emplace_back() const {
     return RepeatedFieldProxyInternalPrivateAccessHelper<
         ElementType, kOrProxy>::Emplace(this);
   }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
-  absl::string_view emplace_back(absl::string_view value) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  const absl::string_view emplace_back(absl::string_view value) const {
     return RepeatedFieldProxyInternalPrivateAccessHelper<
         ElementType, kOrProxy>::Emplace(this, value);
   }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
-  absl::string_view emplace_back(std::string&& value) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  const absl::string_view emplace_back(std::string&& value) const {
     return RepeatedFieldProxyInternalPrivateAccessHelper<
         ElementType, kOrProxy>::Emplace(this, std::move(value));
   }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
-  absl::string_view emplace_back(const std::string& value) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  const absl::string_view emplace_back(const std::string& value) const {
     return RepeatedFieldProxyInternalPrivateAccessHelper<
         ElementType, kOrProxy>::Emplace(this, value);
   }
 
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
-  absl::string_view emplace_back(const char* PROTOBUF_NONNULL value) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  const absl::string_view emplace_back(
+      const char* PROTOBUF_NONNULL value) const {
     return RepeatedFieldProxyInternalPrivateAccessHelper<
         ElementType, kOrProxy>::Emplace(this, value);
   }
