@@ -133,7 +133,6 @@ bool IsLegacyJsonFieldConflictEnabled(const OptionsT& options) {
   PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
-
 template <int R>
 constexpr size_t RoundUpTo(size_t n) {
   static_assert((R & (R - 1)) == 0, "Must be power of two");
@@ -2490,9 +2489,10 @@ void DescriptorPool::FindAllExtensions(
     }
 
     // Initialize tables_->extensions_ from the fallback database first
-    // (but do this only once per descriptor).
+    // (but do this only once per descriptor if the database is not dynamic).
     if (fallback_database_ != nullptr &&
-        tables_->extensions_loaded_from_db_.count(extendee) == 0) {
+        (fallback_database_->AreExtensionsDynamic() ||
+         tables_->extensions_loaded_from_db_.count(extendee) == 0)) {
       std::vector<int> numbers;
       if (fallback_database_->FindAllExtensionNumbers(
               std::string(extendee->full_name()), &numbers)) {
@@ -2502,7 +2502,9 @@ void DescriptorPool::FindAllExtensions(
                                                deferred_validation);
           }
         }
-        tables_->extensions_loaded_from_db_.insert(extendee);
+        if (!fallback_database_->AreExtensionsDynamic()) {
+          tables_->extensions_loaded_from_db_.insert(extendee);
+        }
       }
     }
 

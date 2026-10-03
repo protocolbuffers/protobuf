@@ -31,6 +31,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/parse_context.h"
@@ -64,6 +65,7 @@ bool ScopedFallbackDatabaseErrorSuppressor::IsSuppressed() {
 }  // namespace internal
 
 namespace {
+
 void RecordMessageNames(const DescriptorProto& desc_proto,
                         absl::string_view prefix,
                         absl::btree_set<std::string>* output) {
@@ -420,6 +422,67 @@ bool SimpleDescriptorDatabase::MaybeCopy(
   if (file == nullptr) return false;
   output->CopyFrom(*file);
   return true;
+}
+
+// ===================================================================
+
+ThreadSafeSimpleDescriptorDatabase::ThreadSafeSimpleDescriptorDatabase() =
+    default;
+ThreadSafeSimpleDescriptorDatabase::~ThreadSafeSimpleDescriptorDatabase() =
+    default;
+
+bool ThreadSafeSimpleDescriptorDatabase::Add(const FileDescriptorProto& file) {
+  auto new_file = std::make_unique<FileDescriptorProto>(file);
+  return AddAndOwn(new_file.release());
+}
+
+bool ThreadSafeSimpleDescriptorDatabase::AddAndOwn(
+    const FileDescriptorProto* PROTOBUF_NONNULL file) {
+  absl::MutexLock lock(mutex_);
+  return SimpleDescriptorDatabase::AddAndOwn(file);
+}
+
+bool ThreadSafeSimpleDescriptorDatabase::AddUnowned(
+    const FileDescriptorProto* PROTOBUF_NONNULL file) {
+  absl::MutexLock lock(mutex_);
+  return SimpleDescriptorDatabase::AddUnowned(file);
+}
+
+bool ThreadSafeSimpleDescriptorDatabase::FindFileByName(
+    absl::string_view filename, FileDescriptorProto* PROTOBUF_NONNULL output) {
+  absl::MutexLock lock(mutex_);
+  return SimpleDescriptorDatabase::FindFileByName(filename, output);
+}
+
+bool ThreadSafeSimpleDescriptorDatabase::FindFileContainingSymbol(
+    absl::string_view symbol_name,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
+  absl::MutexLock lock(mutex_);
+  return SimpleDescriptorDatabase::FindFileContainingSymbol(symbol_name,
+                                                            output);
+}
+
+bool ThreadSafeSimpleDescriptorDatabase::FindFileContainingExtension(
+    absl::string_view containing_type, int field_number,
+    FileDescriptorProto* PROTOBUF_NONNULL output) {
+  absl::MutexLock lock(mutex_);
+  return SimpleDescriptorDatabase::FindFileContainingExtension(
+      containing_type, field_number, output);
+}
+
+bool ThreadSafeSimpleDescriptorDatabase::FindAllExtensionNumbers(
+    absl::string_view extendee_type,
+    std::vector<int>* PROTOBUF_NONNULL output) {
+  absl::MutexLock lock(mutex_);
+  return SimpleDescriptorDatabase::FindAllExtensionNumbers(extendee_type,
+                                                           output);
+}
+
+
+bool ThreadSafeSimpleDescriptorDatabase::FindAllFileNames(
+    std::vector<std::string>* PROTOBUF_NONNULL output) {
+  absl::MutexLock lock(mutex_);
+  return SimpleDescriptorDatabase::FindAllFileNames(output);
 }
 
 // -------------------------------------------------------------------
