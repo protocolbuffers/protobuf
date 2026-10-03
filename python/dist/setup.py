@@ -90,7 +90,14 @@ setup(
             language='c',
             extra_link_args=extra_link_args,
             extra_compile_args=extra_compile_args,
+            define_macros=[("Py_LIMITED_API", "0x03100000")],
+            py_limited_api=True,
         )
     ],
     python_requires='>=3.10',
+    options={
+        "bdist_wheel": {
+            "py_limited_api": "cp310",
+        }
+    },
 )
