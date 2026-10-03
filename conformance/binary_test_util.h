@@ -19,11 +19,11 @@ namespace protobuf {
 namespace conformance {
 
 // Every field type except TYPE_GROUP (the 17 types the test messages have
-// singular, repeated, packed and unpacked fields of), in the order the legacy
-// valid-data tests ran them: DOUBLE, FLOAT, INT64, UINT64, INT32, UINT32,
-// FIXED64, FIXED32, SFIXED64, SFIXED32, BOOL, SINT32, SINT64, STRING, BYTES,
-// ENUM, MESSAGE.  This is the type axis of every test parameterized over "all
-// field types" (premature EOF, valid data, ...).
+// singular, repeated, packed and unpacked fields of), in this order: DOUBLE,
+// FLOAT, INT64, UINT64, INT32, UINT32, FIXED64, FIXED32, SFIXED64, SFIXED32,
+// BOOL, SINT32, SINT64, STRING, BYTES, ENUM, MESSAGE.  This is the type axis of
+// every test parameterized over "all field types" (premature EOF, valid data,
+// ...).
 absl::Span<const FieldDescriptor::Type> AllFieldTypesExceptGroup();
 
 // The subset of AllFieldTypesExceptGroup() that can be packed
