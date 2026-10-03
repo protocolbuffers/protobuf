@@ -37,6 +37,15 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
   end
 
+  def test_values_at
+    m = TestMessage.new
+    fill_test_msg(m)
+    assert_equal [-10, -11], m.repeated_int32.values_at(0, 1)
+    assert_equal [-11, nil], m.repeated_int32.values_at(1, 10)
+    assert_equal ['foo', 'bar'], m.repeated_string.values_at(0..1)
+    assert_equal ['bar', 'foo'], m.repeated_string.values_at(1, 0)
+  end
+
   def test_first
     m = TestMessage.new
     repeated_field_names(TestMessage).each do |field_name|
