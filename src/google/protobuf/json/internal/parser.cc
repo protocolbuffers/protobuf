@@ -900,7 +900,7 @@ absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
     switch (data[0]) {
       case '-':
         neg = true;
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case '+': {
         if (data.size() != 6) {
           return str->loc.Invalid("timestamp offset of wrong size.");
@@ -922,7 +922,7 @@ absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
         if (data.size() == 1) {
           break;
         }
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       default:
         return str->loc.Invalid("bad timezone offset");
     }

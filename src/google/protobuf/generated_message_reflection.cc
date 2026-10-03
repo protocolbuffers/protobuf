@@ -1515,7 +1515,7 @@ int Reflection::FieldSize(const Message& message,
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
           return GetRaw<RepeatedField<absl::Cord>>(message, field).size();
         }
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           const internal::MapFieldBase& map =
@@ -1793,7 +1793,7 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
               ->SwapElements(index1, index2);
           break;
         }
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
@@ -3948,9 +3948,11 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
     // This only happens once per proto file. So a global mutex to serialize
     // calls to AddDescriptors.
     static absl::Mutex mu{absl::kConstInit};
+    PROTOBUF_IGNORE_DEPRECATION_START
     mu.Lock();
     internal::AddDescriptors(table);
     mu.Unlock();
+    PROTOBUF_IGNORE_DEPRECATION_STOP
   }
   if (eager) {
     // Normally we do not want to eagerly build descriptors of our deps.
