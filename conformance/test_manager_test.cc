@@ -182,6 +182,25 @@ TEST_F(TestManagerTest, ReportNotSelected) {
   EXPECT_EQ(manager.tolerated_failures(), 0);
 }
 
+TEST_F(TestManagerTest, WasReported) {
+  CreateFailureList({});
+  TestManager manager;
+  ASSERT_THAT(manager.LoadFailureList(failure_list()), IsOk());
+  EXPECT_FALSE(manager.WasReported("success"));
+
+  EXPECT_THAT(manager.ReportSuccess("success"), IsOk());
+  EXPECT_THAT(manager.ReportFailure("failure", kP0, "abc"), Not(IsOk()));
+  EXPECT_THAT(manager.ReportSkip("skip", "reason"), IsOk());
+  manager.ReportNotSelected("not_selected");
+
+  EXPECT_TRUE(manager.WasReported("success"));
+  EXPECT_TRUE(manager.WasReported("failure"));
+  EXPECT_TRUE(manager.WasReported("skip"));
+  EXPECT_TRUE(manager.WasReported("not_selected"));
+  EXPECT_FALSE(manager.WasReported("other"));
+  EXPECT_THAT(manager.Finalize(), IsOk());
+}
+
 TEST_F(TestManagerTest, ReportExpectedFailure) {
   CreateFailureList({{"foo", "abc"}});
   TestManager manager;

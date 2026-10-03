@@ -321,6 +321,7 @@ absl::Status TestManager::ReportSkip(absl::string_view test_name,
 }
 
 void TestManager::ReportNotSelected(absl::string_view test_name) {
+  seen_tests_.emplace(test_name);
   MarkMatched(test_name);
 }
 
