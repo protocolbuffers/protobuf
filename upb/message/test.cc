@@ -1225,6 +1225,67 @@ TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
   EXPECT_GT(space_allocated_after, space_allocated_before + 297u);
 }
 
+TEST(MessageTest, ExtensionAccessors) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Scalar extension.
+  upb_Extension* int32_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(msg), upb_test_TestExtensions_optional_int32_ext_ext,
+      arena.ptr());
+  ASSERT_NE(int32_ext, nullptr);
+  EXPECT_EQ(upb_Extension_MiniTableExtension(int32_ext),
+            upb_test_TestExtensions_optional_int32_ext_ext);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 0);
+
+  upb_Extension_SetInt32(int32_ext, 42);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 42);
+  EXPECT_EQ(upb_Extension_GetValue(int32_ext).int32_val, 42);
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 42);
+
+  int32_t int32_val = 7;
+  upb_Extension_SetField(int32_ext, &int32_val);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 7);
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 7);
+
+  upb_MessageValue val;
+  val.int32_val = 123;
+  upb_Extension_SetValue(int32_ext, val);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 123);
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 123);
+
+  // Message extension.
+  upb_Extension* msg_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, arena.ptr());
+  ASSERT_NE(msg_ext, nullptr);
+  EXPECT_EQ(upb_Extension_GetMessage(msg_ext), nullptr);
+  protobuf_test_messages_proto3_TestAllTypesProto3* sub_msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  upb_Extension_SetMessage(msg_ext, UPB_UPCAST(sub_msg));
+  EXPECT_EQ(upb_Extension_GetMessage(msg_ext), UPB_UPCAST(sub_msg));
+  EXPECT_EQ(upb_Extension_GetMutableMessage(msg_ext), UPB_UPCAST(sub_msg));
+  EXPECT_EQ(upb_test_optional_msg_ext(msg), sub_msg);
+
+  // Repeated extension.
+  upb_Extension* array_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(msg), upb_test_TestExtensions_Nested_repeated_int32_ext_ext,
+      arena.ptr());
+  ASSERT_NE(array_ext, nullptr);
+  EXPECT_EQ(upb_Extension_GetArray(array_ext), nullptr);
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  ASSERT_NE(arr, nullptr);
+  upb_MessageValue elem;
+  elem.int32_val = 5;
+  ASSERT_TRUE(upb_Array_Append(arr, elem, arena.ptr()));
+  upb_Extension_SetArray(array_ext, arr);
+  EXPECT_EQ(upb_Extension_GetArray(array_ext), arr);
+  EXPECT_EQ(upb_Extension_GetMutableArray(array_ext), arr);
+  EXPECT_EQ(upb_Message_GetExtensionArray(
+                UPB_UPCAST(msg),
+                upb_test_TestExtensions_Nested_repeated_int32_ext_ext),
+            arr);
+}
+
 TEST(MessageTest, NextUnknown2AndDeleteUnknown2) {
   upb::Arena arena;
   upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
