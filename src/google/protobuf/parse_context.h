@@ -67,14 +67,14 @@ inline void WriteVarint(uint32_t num, uint64_t val, UnknownFieldSet* unknown);
 inline void WriteLengthDelimited(uint32_t num, absl::string_view val,
                                  UnknownFieldSet* unknown);
 
-// Counts the number of varints in the array, assuming that end - ptr >= 8.
+// Counts the number of varints in the array, assuming that data.size() >= 8.
 // If varints are valid only up to some point, then returns at least the number
 // of valid varints.
-int CountVarintsAssumingLargeArray(const char* ptr, const char* end);
+int CountVarintsAssumingLargeArray(absl::Span<const char> data);
 
 // Checks if each byte in the array is a valid representation for a bool, i.e.
-// 0 or 1, assuming that end - ptr >= 8. Optimized for the result being true.
-bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end);
+// 0 or 1, assuming that data.size() >= 8. Optimized for the result being true.
+bool VerifyBoolsAssumingLargeArray(absl::Span<const char> data);
 
 
 // The basic abstraction the parser is designed for is a slight modification
@@ -1573,46 +1573,58 @@ const char* EpsCopyInputStream::ReadPackedVarintArray(const char* ptr,
   return ptr;
 }
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     const char* ptr, const char* end, Arena* arena, Convert conv,
     RepeatedField<T>& out) {
   ABSL_DCHECK_EQ(arena, out.GetArena());
 
-  // If we have enough bytes, we will spend more cpu cycles growing repeated
-  // field, than parsing, so count the number of ints first and preallocate.
-  // Assume that varint are valid and just count the number of bytes with
-  // continuation bit not set. In a valid varint there is only 1 such byte.
-  if (end - ptr >= 16) {
+  // The packed-field fast path does not need the parser's slop-byte overread
+  // invariant. Keep the logical payload extent attached to the pointer so all
+  // pre-scan and one-byte operations stay within the declared field.
+  const ptrdiff_t data_size = end - ptr;
+  if (data_size >= 16) {
+    const absl::Span<const char> data(ptr, static_cast<size_t>(data_size));
+
+    // If we have enough bytes, we will spend more cpu cycles growing repeated
+    // field than parsing, so count the number of ints first and preallocate.
+    // Assume that varints are valid and just count the number of bytes with
+    // continuation bit not set. In a valid varint there is only 1 such byte.
     if constexpr (std::is_same_v<T, bool> && sizeof(bool) == sizeof(uint8_t)) {
       if (absl::bit_cast<uint8_t>(false) == 0 &&  // Not constexpr on MSVC.
           absl::bit_cast<uint8_t>(true) == 1) {
-        if (VerifyBoolsAssumingLargeArray(ptr, end)) {
+        if (VerifyBoolsAssumingLargeArray(data)) {
           // Each byte is 0 or 1.
-          const int count = end - ptr;
+          const int count = static_cast<int>(data.size());
           out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
           T* x = out.AddNAlreadyReserved(count);
           // For T being bool, conv must be equivalent to a conversion to bool
           // (zigzag encoding is not applicable), so it can be skipped.
-          std::memcpy(x, ptr, count);
+          std::memcpy(x, data.data(), data.size());
           return end;
         }
       }
     }
-    int count = CountVarintsAssumingLargeArray(ptr, end);
-    if (count == end - ptr) {
+    int count = CountVarintsAssumingLargeArray(data);
+    if (count == static_cast<int>(data.size())) {
       // We have exactly one element per byte, so avoid the costly varint
       // parsing.
       out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
       T* x = out.AddNAlreadyReserved(count);
-      for (; ptr != end; ++ptr) {
-        *x = conv(static_cast<uint8_t>(*ptr));
+      for (char byte : data) {
+        *x = conv(static_cast<uint8_t>(byte));
         ++x;
       }
+      ptr = end;
     } else {
-      // We can overread, so if the last byte has a continuation bit set,
-      // we need to account for that.
-      if (end[-1] & 0x80) count++;
+      // The remaining parser intentionally uses the slop-byte invariant. The
+      // pre-scan itself remains bounded to the declared field.
+      if (static_cast<uint8_t>(data.back()) & 0x80) count++;
       int old_size = out.size();
       out.ReserveWithArena(arena, internal::CheckedAdd(old_size, count));
       T* x = out.AddNAlreadyReserved(count);
@@ -1633,6 +1645,10 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     });
   }
 }
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintWithField(
