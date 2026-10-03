@@ -1670,6 +1670,25 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
   TestBuildFileOnNameLimits(
       proto, proto.mutable_enum_type(0)->mutable_value(0)->mutable_name(),
       kNamesImplLimit - proto.package().size() - 1, "Name too long");
+  // EnumValueDescriptor::full_name (nested in message)
+  proto = MakeFile(R"pb(name: "foo.proto"
+                        package: "Package"
+                        message_type {
+                          name: "Message"
+                          enum_type {
+                            name: "Enum"
+                            value { name: "VALUE" number: 1 }
+                          }
+                        })pb");
+  TestBuildFileOnNameLimits(proto,
+                            proto.mutable_message_type(0)
+                                ->mutable_enum_type(0)
+                                ->mutable_value(0)
+                                ->mutable_name(),
+                            kNamesImplLimit -
+                                proto.message_type(0).name().size() -
+                                proto.package().size() - 2,
+                            "Name too long");
   // ServiceDescriptor::full_name
   proto = MakeFile(R"pb(name: "foo.proto"
                         package: "Package"

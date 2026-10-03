@@ -173,6 +173,15 @@ TEST(Generated, EditionDefaults2024) {
   EXPECT_TRUE(desc->FindFieldByName("repeated_int32_field")->is_packed());
   EXPECT_EQ(desc->FindFieldByName("sub_message_field")->type(),
             FieldDescriptor::TYPE_MESSAGE);
+  EXPECT_EQ(::protobuf_editions_test::Editions2024DefaultEnum_Name(
+                ::protobuf_editions_test::EDITIONS2024_DEFAULT_ENUM_VALUE1)
+                .data(),
+            ::protobuf_editions_test::Editions2024DefaultEnum_descriptor()
+                ->FindValueByNumber(1)
+                ->name()
+                .data());
+  EXPECT_TRUE(
+      ::protobuf_editions_test::Editions2024DefaultEnum_Name(999).empty());
 }
 
 TEST(Generated, EditionDefaults2024InternalFeatures) {

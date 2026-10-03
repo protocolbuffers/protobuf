@@ -201,6 +201,12 @@ const std::string& NameOfEnum(const EnumDescriptor* PROTOBUF_NONNULL descriptor,
   return (d == nullptr ? GetEmptyString() : internal::NameOfEnumAsString(d));
 }
 
+absl::string_view NameOfEnumAsView(
+    const EnumDescriptor* PROTOBUF_NONNULL descriptor, int value) {
+  const EnumValueDescriptor* d = descriptor->FindValueByNumber(value);
+  return d == nullptr ? absl::string_view() : d->name();
+}
+
 // Internal helper routine for NameOfDenseEnum in the header file.
 // Allocates and fills a simple array of string pointers, based on
 // reflection information about the names of the enums.  This routine
