@@ -57,6 +57,9 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/message.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -225,7 +228,9 @@ bool Generator::Generate(const FileDescriptor* file,
   // TODO:  The proper thing to do would be to allocate any state on
   //   the stack and use that, so that the Generator class itself does not need
   //   to have any mutable members.  Then it is implicitly thread-safe.
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::MutexLock lock(&mutex_);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   file_ = file;
 
   std::string filename = GetFileName(file, ".py");
@@ -1524,3 +1529,5 @@ void Generator::CopyPublicDependenciesAliases(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"
