@@ -30,6 +30,7 @@
 #include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -477,16 +478,6 @@ bool MayGroupChunksForHaswordsCheck(const FieldChunk& a, const FieldChunk& b) {
   return a.has_hasbit == b.has_hasbit &&
          a.is_rarely_present == b.is_rarely_present &&
          a.should_split == b.should_split;
-}
-
-// Return the number of bits set in n, a non-negative integer.
-static int popcnt(uint32_t n) {
-  int result = 0;
-  while (n != 0) {
-    result += (n & 1);
-    n = n / 2;
-  }
-  return result;
 }
 
 // Returns true if it emits conditional check against hasbit words. This is
@@ -3427,8 +3418,8 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         // Check (up to) 8 has_bits at a time if we have more than one field in
         // this chunk.  Due to field layout ordering, we may check
         // _has_bits_[last_chunk * 8 / 32] multiple times.
-        ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-        ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+        ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
+        ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
         const int has_word_index =
             field_layout_.GetHasWordIndex(fields.front()).value();
@@ -3964,8 +3955,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
       // _has_bits_[last_chunk * 8 / 32] multiple times.
-      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+      ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
+      ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
                                  chunk_mask, fields, options_)}},
@@ -4955,8 +4946,8 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                   // than one field in this chunk.  Due to field layout
                   // ordering, we may check _has_bits_[last_chunk * 8 /
                   // 32] multiple times.
-                  ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-                  ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+                  ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
+                  ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
                   p->Emit({{"condition",
                             GenerateConditionMaybeWithProbabilityForGroup(
