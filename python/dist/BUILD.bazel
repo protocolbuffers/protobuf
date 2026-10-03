@@ -12,7 +12,6 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load(":py_proto_library.bzl", "py_proto_library")
@@ -21,7 +20,7 @@ licenses(["notice"])
 
 py_dist_module(
     name = "message_mod",
-    extension = "//python:_message_binary",
+    extension = "//python:google/_upb/_message",
     module_name = "google._upb._message",
 )
 
@@ -312,10 +311,6 @@ pkg_tar(
     package_dir = "protobuf",
     package_file_name = "protobuf.tar.gz",
     strip_prefix = ".",
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
 )
 
 sh_binary(
@@ -335,10 +330,6 @@ genrule(
         $(location :setup_wrapper) sdist
         mv protobuf/dist/*.tar.gz $@
     """,
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     tools = [":setup_wrapper"],
 )
 
@@ -381,7 +372,12 @@ py_wheel(
     # LINT.IfChange(python_tag)
     python_tag = selects.with_or({
         "//python:limited_api_3.10": "cp310",
-        "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
+        "@rules_python//python/config_settings:is_python_3.10": "cp310",
+        "@rules_python//python/config_settings:is_python_3.11": "cp311",
+        "@rules_python//python/config_settings:is_python_3.12": "cp312",
+        "@rules_python//python/config_settings:is_python_3.13": "cp313",
+        "@rules_python//python/config_settings:is_python_3.14": "cp314",
+        "//conditions:default": "cp310",
     }),
     # LINT.ThenChange(
     #    :limited_api_wheels,
@@ -391,10 +387,6 @@ py_wheel(
         "python/",
         "src/",
     ],
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":language_neutral_protos_py_pb2",
@@ -431,10 +423,6 @@ py_wheel(
         "python/",
         "src/",
     ],
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         ":language_neutral_protos_py_pb2",
@@ -457,10 +445,6 @@ py_wheel(
         "python/",
         "src/",
     ],
-    target_compatible_with = select({
-        "@system_python//:none": ["@platforms//:incompatible"],
-        "//conditions:default": [],
-    }),
     version = PROTOBUF_PYTHON_VERSION,
     deps = [
         "//:python_common_test_protos",

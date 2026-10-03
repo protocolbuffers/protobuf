@@ -1,7 +1,15 @@
 """Rules to create python distribution files and properly name them"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+
+def _get_toolchain_python_version(ctx):
+    py_toolchain = ctx.toolchains["@rules_python//python:toolchain_type"]
+    if py_toolchain != None and hasattr(py_toolchain, "py3_runtime"):
+        py_runtime = py_toolchain.py3_runtime
+        ivi = py_runtime.interpreter_version_info
+        python_version = "{}{}".format(ivi.major, ivi.minor)
+        return python_version
+    return "310"
 
 def _get_os_name(ctx):
     for name, label in ctx.attr._os_constraints.items():
@@ -31,7 +39,7 @@ def _get_suffix(ctx, limited_api, python_version):
         return ".cp{}-{}.{}".format(python_version, abi, "pyd")
 
     if python_version == "system":
-        python_version = SYSTEM_PYTHON_VERSION
+        python_version = _get_toolchain_python_version(ctx)
         if int(python_version) < 38:
             python_version += "m"
 
@@ -77,7 +85,7 @@ def _declare_module_file(ctx, module_name, python_version, limited_api):
 #
 #   py_dist_module(
 #       name = "message_mod",
-#       extension = "//python:_message_binary",
+#       extension = "//python:google/_upb/_message",
 #       module_name = "google._upb._message",
 #   )
 #
@@ -169,6 +177,12 @@ py_dist_module = rule(
             },
         ),
     },
+    toolchains = [
+        config_common.toolchain_type(
+            "@rules_python//python:toolchain_type",
+            mandatory = False,  # <-- Doesn't fail if toolchain is missing
+        ),
+    ],
 )
 
 # --------------------------------------------------------------------------------------------------
