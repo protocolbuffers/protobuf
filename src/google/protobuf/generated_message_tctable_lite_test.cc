@@ -9,17 +9,20 @@
 #include <cstdint>
 #include <cstring>
 #include <memory>
+#include <utility>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/algorithm/container.h"
+#include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -28,10 +31,12 @@
 #include "google/protobuf/generated_message_tctable_gen.h"
 #include "google/protobuf/generated_message_tctable_impl.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/test_protos/repeated_ptr_field_test.pb.h"
 #include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -47,6 +52,7 @@ namespace internal {
 
 namespace {
 
+using ::testing::AnyOf;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
 using ::testing::Not;
@@ -971,6 +977,292 @@ TEST(GeneratedMessageTctableLiteTest,
   // TODO: Remove this suppression.
   (void)proto.MergeFromString(serialized);
   EXPECT_LE(proto.vals().Capacity(), 2048);
+}
+
+// RepeatedField allocates power-of-two byte sizes for its backing storage:
+// HeapRep header (std::max(8, sizeof(Element)) bytes) +
+// sizeof(Element) * capacity.
+// Power-of-two allocations (32B, 64B, 128B, 256B, 512B, ...) correspond to
+// capacities of:
+//   - 1B elements (bool): 8 (SOO), 24, 56, ...
+//   - 4B elements (int32, fixed32, enum): 2 (SOO), 6, 14, 30, ...
+//   - 8B elements (int64, fixed64): 1 (SOO), 3, 7, 15, 31, ...
+//   - 16B elements (Cord): 0 (SOO), 1, 3, 7, 15, 31, ...
+// We choose 25 elements because it is above the minimum heap allocation clamp
+// for all element sizes (including 24 for 1B bool), falls strictly between
+// capacity boundaries (24 < 25 < 56, 14 < 25 < 30, 15 < 25 < 31), and is not
+// 8-byte aligned for 1B (25 -> 32) or 4B (25 -> 26).
+// When trimmed on an arena, the unused tail space is returned in place down
+// to the next 8-byte alignment boundary:
+//   - 1B elements: 32
+//   - 4B elements: 26
+//   - 8B elements: 25
+//   - 16B elements: 25
+proto2_unittest::RepeatedFieldTrim MakeRepeatedFieldTrimTestProto() {
+  proto2_unittest::RepeatedFieldTrim source;
+  for (int i = 0; i < 25; ++i) {
+    source.add_fast_fixed32(i);
+    source.add_fast_bool(i % 2 == 0);
+    source.add_fast_enum(proto2_unittest::RepeatedFieldTrim::LARGE_TEN);
+    source.add_fast_packed_enum(proto2_unittest::RepeatedFieldTrim::LARGE_TEN);
+    source.add_fast_small_enum(proto2_unittest::RepeatedFieldTrim::SMALL_ONE);
+    source.add_fast_packed_small_enum(
+        proto2_unittest::RepeatedFieldTrim::SMALL_ONE);
+
+    source.add_mini_fixed32(i);
+    source.add_mini_fixed64(i);
+    source.add_mini_int64(i);
+    source.add_mini_packed_int32(i);
+  }
+  return source;
+}
+
+template <typename T>
+int ExpectedHeapCapacity(int count, bool prescan = false) {
+  RepeatedField<T> field;
+  // When PROTOBUF_FORCE_SPLIT is enabled, all fields are split and use
+  // MiniParse instead of the fast path, so they do not pre-scan.
+  if (prescan && !internal::ForceSplitFieldsInProtoc()) {
+    field.Reserve(count);
+  } else {
+    while (field.Capacity() < count) {
+      field.Reserve(field.Capacity() + 1);
+    }
+  }
+  return field.Capacity();
+}
+
+TEST(GeneratedMessageTctableLiteTest, RepeatedFieldTrimmedOnArena) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  const std::string serialized =
+      MakeRepeatedFieldTrimTestProto().SerializeAsString();
+
+  // On the heap (no arena), capacity is not trimmed. Fields that do not
+  // pre-scan grow by doubling, while fields that pre-scan on the heap
+  // (fast_bool and fast_packed_small_enum) reserve 25 elements directly.
+  proto2_unittest::RepeatedFieldTrim heap_proto;
+  ASSERT_TRUE(heap_proto.ParseFromString(serialized));
+  EXPECT_EQ(heap_proto.fast_fixed32().Capacity(),
+            ExpectedHeapCapacity<uint32_t>(25));
+  EXPECT_EQ(heap_proto.fast_bool().Capacity(),
+            ExpectedHeapCapacity<bool>(25, /*prescan=*/true));
+  EXPECT_EQ(heap_proto.fast_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+  EXPECT_EQ(heap_proto.fast_packed_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+  EXPECT_EQ(heap_proto.fast_small_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+  EXPECT_EQ(heap_proto.fast_packed_small_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25, /*prescan=*/true));
+  EXPECT_EQ(heap_proto.mini_fixed32().Capacity(),
+            ExpectedHeapCapacity<uint32_t>(25));
+  EXPECT_EQ(heap_proto.mini_fixed64().Capacity(),
+            ExpectedHeapCapacity<uint64_t>(25));
+  EXPECT_EQ(heap_proto.mini_int64().Capacity(),
+            ExpectedHeapCapacity<int64_t>(25));
+  EXPECT_EQ(heap_proto.mini_packed_int32().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+
+  // On an arena, capacity is trimmed down to the 8-byte aligned number of
+  // elements. Use a large enough initial block so that no field overflows an
+  // arena block mid-growth and populates the arena's cached_blocks_ freelist
+  // (allocations served from cached_blocks_ are not at the tail of the arena
+  // and cannot be trimmed).
+  Arena arena({.start_block_size = 4096});
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+  ASSERT_TRUE(arena_proto->ParseFromString(serialized));
+  EXPECT_EQ(arena_proto->fast_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_bool().Capacity(), 32);
+  EXPECT_EQ(arena_proto->fast_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_packed_int32().Capacity(), 26);
+}
+
+// We use this input stream as a way to inspect the state of the system during
+// parsing. We can inject a callback on every byte read from the input stream.
+class IntrusiveTestZeroCopyInputStream : public io::ZeroCopyInputStream {
+ public:
+  IntrusiveTestZeroCopyInputStream(std::string str,
+                                   absl::AnyInvocable<void()> on_next)
+      : str_(std::move(str)), on_next_(std::move(on_next)) {}
+
+  bool Next(const void** buf, int* size) override {
+    on_next_();
+    if (pos_ >= str_.size()) return false;
+    *buf = str_.data() + pos_;
+    *size = 1;
+    ++pos_;
+    return true;
+  }
+
+  void BackUp(int count) override { pos_ -= count; }
+
+  bool Skip(int n) override {
+    if (str_.size() - pos_ < n) {
+      return false;
+    }
+    pos_ += n;
+    return true;
+  }
+
+  int64_t ByteCount() const override { return pos_; }
+
+ private:
+  std::string str_;
+  size_t pos_ = 0;
+  absl::AnyInvocable<void()> on_next_;
+};
+
+TEST(GeneratedMessageTctableLiteTest,
+     RepeatedFieldTrimmedOnArenaFragmentedInput) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  proto2_unittest::RepeatedFieldTrim source = MakeRepeatedFieldTrimTestProto();
+
+  Arena arena({.start_block_size = 4096});
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+
+  // We use an intrusive input stream to verify the repeated field at every step
+  // of the way.
+  // We want to make sure the capacity is not shrunk prematurely. If it is, it
+  // means we didn't loop in the parser until we saw the whole input for the
+  // field.
+  IntrusiveTestZeroCopyInputStream stream(source.SerializeAsString(), [&] {
+    EXPECT_THAT(arena_proto->fast_fixed32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_bool().Capacity(), AnyOf(8, 24, 32, 56));
+    EXPECT_THAT(arena_proto->fast_enum().Capacity(), AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_packed_enum().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_small_enum().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_packed_small_enum().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->mini_fixed32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->mini_fixed64().Capacity(),
+                AnyOf(1, 3, 7, 15, 25, 31));
+    EXPECT_THAT(arena_proto->mini_int64().Capacity(),
+                AnyOf(1, 3, 7, 15, 25, 31));
+    EXPECT_THAT(arena_proto->mini_packed_int32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+  });
+
+  // On an arena, capacity is trimmed down to the 8-byte aligned number of
+  // elements.
+  ASSERT_TRUE(arena_proto->ParseFromZeroCopyStream(&stream));
+  EXPECT_EQ(arena_proto->fast_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_bool().Capacity(), 32);
+  EXPECT_EQ(arena_proto->fast_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_packed_int32().Capacity(), 26);
+}
+
+TEST(GeneratedMessageTctableLiteTest,
+     RepeatedFieldTrimmedDiscontiguousChunksOnArena) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  Arena arena;
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+
+  // Serialize fields out of order so that mini_int64 arrives in two chunks.
+  // Chunk 1 has 5 elements, which requires a 64-byte allocation (capacity 7)
+  // and is trimmed down to 5 elements (48 bytes, a non-power-of-two size).
+  // Chunk 2 has a single int, so no allocations needed. Because no arena
+  // allocation occurred for chunk 2, chunk 1's non-power-of-two allocation
+  // remains at the tail of the arena. When chunk 3 arrives, TryGrowTail
+  // succeeds in growing chunk 1's allocation in place, which is then trimmed to
+  // the final size (6 elements).
+
+  proto2_unittest::RepeatedFieldTrim chunk1;
+  for (int i = 0; i < 5; ++i) {
+    chunk1.add_mini_int64(i);
+  }
+  ASSERT_TRUE(arena_proto->ParseFromString(chunk1.SerializeAsString()));
+
+  EXPECT_EQ(arena_proto->mini_int64().size(), 5);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 5);
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
+  const void* buf = arena_proto->mini_int64().data();
+
+  proto2_unittest::RepeatedFieldTrim chunk2;
+  chunk2.set_i32(7);
+  proto2_unittest::RepeatedFieldTrim chunk3;
+  chunk3.add_mini_int64(5);
+  ASSERT_TRUE(arena_proto->MergeFromString(
+      absl::StrCat(chunk2.SerializeAsString(), chunk3.SerializeAsString())));
+
+  // Verify that we grew in place.
+  EXPECT_EQ(buf, arena_proto->mini_int64().data());
+
+  EXPECT_EQ(arena_proto->i32(), 7);
+  EXPECT_EQ(arena_proto->mini_int64().size(), 6);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 6);
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
+}
+
+TEST(GeneratedMessageTctableLiteTest,
+     RepeatedFieldTrimmedDiscontiguousChunksWithInterveningAllocationOnArena) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  Arena arena;
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+
+  proto2_unittest::RepeatedFieldTrim chunk1;
+  for (int i = 0; i < 5; ++i) {
+    chunk1.add_mini_int64(i);
+  }
+  ASSERT_TRUE(arena_proto->ParseFromString(chunk1.SerializeAsString()));
+
+  EXPECT_EQ(arena_proto->mini_int64().size(), 5);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 5);
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
+  const void* buf = arena_proto->mini_int64().data();
+
+  // Chunk 1 parses 5 elements for mini_int64, which trims down to 5 elements
+  // (48 bytes, non-power-of-two).
+  // Chunk 2 parses a message field, which causes an allocation on the arena.
+  // When chunk 3 arrives with another mini_int64 element, chunk 1's allocation
+  // is no longer at the arena tail, so TryGrowTail fails. mini_int64 must
+  // allocate a new buffer on the arena, copy the previous elements, and then
+  // trim the new buffer at the tail down to 6 elements.
+  proto2_unittest::RepeatedFieldTrim chunk2;
+  chunk2.mutable_msg()->set_i32(7);
+  proto2_unittest::RepeatedFieldTrim chunk3;
+  chunk3.add_mini_int64(5);
+  ASSERT_TRUE(arena_proto->MergeFromString(
+      absl::StrCat(chunk2.SerializeAsString(), chunk3.SerializeAsString())));
+
+  // Verify that it had to reallocate.
+  EXPECT_NE(buf, arena_proto->mini_int64().data());
+
+  EXPECT_TRUE(arena_proto->has_msg());
+  EXPECT_EQ(arena_proto->mini_int64().size(), 6);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 6);
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
 }
 
 
