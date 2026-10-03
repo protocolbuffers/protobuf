@@ -136,9 +136,11 @@ bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-      upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+      size_t ext_size = UPB_PRIVATE(_upb_Extension_Size)(
+          upb_Extension_MiniTableExtension(msg_ext));
+      upb_Extension* dst_ext = upb_Arena_Malloc(arena, ext_size);
       if (!dst_ext) return false;
-      *dst_ext = *msg_ext;
+      memcpy(dst_ext, msg_ext, ext_size);
       dst_in->aux_data[dst_in->size++] = upb_TaggedAuxPtr_MakeExtension(
           dst_ext, upb_TaggedAuxPtr_Type(tagged_ptr));
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
