@@ -18,12 +18,15 @@
 #include "absl/memory/memory.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/field_comparator.h"
 #include "google/protobuf/util/message_differencer.h"
@@ -197,6 +200,183 @@ std::string ToShortString(const Message& message) {
   return text;
 }
 
+// The response field that a successful test with the given output format is
+// expected to populate.  Tests always ask for a concrete format.
+ConformanceResponse::ResultCase ExpectedResultCase(WireFormat format) {
+  switch (format) {
+    case ::conformance::PROTOBUF:
+      return ConformanceResponse::kProtobufPayload;
+    case ::conformance::JSON:
+      return ConformanceResponse::kJsonPayload;
+    case ::conformance::TEXT_FORMAT:
+      return ConformanceResponse::kTextPayload;
+    case ::conformance::JSPB:
+      return ConformanceResponse::kJspbPayload;
+    case ::conformance::UNSPECIFIED:
+    default:
+      google::protobuf::internal::Unreachable();
+  }
+}
+
+// The name of the format of a payload, as used in legacy failure messages.
+absl::string_view PayloadFormatName(ConformanceResponse::ResultCase result) {
+  switch (result) {
+    case ConformanceResponse::kProtobufPayload:
+      return "PROTOBUF";
+    case ConformanceResponse::kJsonPayload:
+      return "JSON";
+    case ConformanceResponse::kTextPayload:
+      return "TEXT_FORMAT";
+    case ConformanceResponse::kJspbPayload:
+      return "JSPB";
+    default:
+      google::protobuf::internal::Unreachable();
+  }
+}
+
+// The raw payload of a response, whichever format it is in.
+absl::string_view RawPayload(const ConformanceResponse& response) {
+  switch (response.result_case()) {
+    case ConformanceResponse::kProtobufPayload:
+      return response.protobuf_payload();
+    case ConformanceResponse::kJsonPayload:
+      return response.json_payload();
+    case ConformanceResponse::kTextPayload:
+      return response.text_payload();
+    case ConformanceResponse::kJspbPayload:
+      return response.jspb_payload();
+    default:
+      google::protobuf::internal::Unreachable();
+  }
+}
+
+// The legacy failure message for a payload that couldn't be parsed.
+std::string UnparseableMessage(WireFormat format) {
+  switch (format) {
+    case ::conformance::PROTOBUF:
+      return "Protobuf output we received from test was unparseable.";
+    default:
+      return absl::StrCat(WireFormat_Name(format),
+                          " output we received from test was unparseable.");
+  }
+}
+
+// Formats binary data the same way the legacy runner does in failure messages.
+std::string ToOctString(absl::string_view binary_string) {
+  std::string oct_string;
+  for (char ch : binary_string) {
+    absl::StrAppendFormat(&oct_string, "\\%03o", ch);
+  }
+  return oct_string;
+}
+
+// Base class for the matchers that look at the payload of a successful
+// response.  It handles all of the cases shared by every payload comparison
+// (no payload, an error response, the wrong output format, a skipped test) and
+// defers the actual comparison to MatchPayload().
+class PayloadMatcher {
+ public:
+  using is_gtest_matcher = void;
+
+  virtual ~PayloadMatcher() = default;
+
+  bool MatchAndExplain(const TestResult& result,
+                       testing::MatchResultListener* listener) const;
+  void DescribeTo(std::ostream* os) const {
+    DescribeInnerTo(os, /*negation=*/false);
+  }
+  void DescribeNegationTo(std::ostream* os) const {
+    DescribeInnerTo(os, /*negation=*/true);
+  }
+
+ protected:
+  PayloadMatcher() = default;
+  PayloadMatcher(const PayloadMatcher&) = default;
+  PayloadMatcher& operator=(const PayloadMatcher&) = default;
+
+  // Compares the payload of `result`, which is guaranteed to hold a payload of
+  // the format the test requested.  Returns true on a match; otherwise the
+  // explanation written to `listener` becomes the failure message recorded in
+  // the failure list.
+  virtual bool MatchPayload(const TestResult& result,
+                            testing::MatchResultListener* listener) const = 0;
+
+  // Describes the matcher (or its negation).
+  virtual void DescribeInnerTo(std::ostream* os, bool negation) const = 0;
+};
+
+bool PayloadMatcher::MatchAndExplain(
+    const TestResult& result, testing::MatchResultListener* listener) const {
+  const ConformanceResponse& response = result.response();
+  switch (response.result_case()) {
+    case ConformanceResponse::RESULT_NOT_SET:
+      *listener << "Response didn't have any field in the Response.";
+      return false;
+
+    case ConformanceResponse::kParseError:
+    case ConformanceResponse::kTimeoutError:
+    case ConformanceResponse::kRuntimeError:
+    case ConformanceResponse::kSerializeError:
+      *listener << "Failed to parse input or produce output.";
+      return false;
+
+    case ConformanceResponse::kSkipped:
+      *listener << "the testee skipped the test: " << response.skipped();
+      return false;
+
+    default:
+      break;
+  }
+
+  if (response.result_case() != ExpectedResultCase(result.format())) {
+    *listener << "Test was asked for " << WireFormat_Name(result.format())
+              << " output but provided "
+              << PayloadFormatName(response.result_case()) << " instead.";
+    return false;
+  }
+
+  return MatchPayload(result, listener);
+}
+
+// Implements RawPayload().
+class RawPayloadMatcher : public PayloadMatcher {
+ public:
+  explicit RawPayloadMatcher(std::string expected)
+      : expected_(std::move(expected)) {}
+
+ private:
+  bool MatchPayload(const TestResult& result,
+                    testing::MatchResultListener* listener) const override;
+  void DescribeInnerTo(std::ostream* os, bool negation) const override {
+    *os << "payload " << (negation ? "isn't" : "is") << " equal to \""
+        << absl::CEscape(expected_) << "\"";
+  }
+
+  std::string expected_;
+};
+
+bool RawPayloadMatcher::MatchPayload(
+    const TestResult& result, testing::MatchResultListener* listener) const {
+  // Like the legacy runner's `require_same_wire_format`, binary output must at
+  // least be parseable as the test's message type.
+  if (result.format() == ::conformance::PROTOBUF &&
+      !NewMessage(result.type())
+           ->ParseFromString(result.response().protobuf_payload())) {
+    *listener << UnparseableMessage(result.format());
+    return false;
+  }
+
+  absl::string_view actual = RawPayload(result.response());
+  if (actual == expected_) {
+    return true;
+  }
+  // TODO: b/568362905 - Point at the first differing byte instead of dumping
+  // both payloads, once the legacy runner this message mirrors is gone.
+  *listener << "Output was not equivalent to reference message: Expect: "
+            << ToOctString(expected_) << ", but got: " << ToOctString(actual);
+  return false;
+}
+
 }  // namespace
 
 namespace internal {
@@ -218,6 +398,10 @@ void PrintTo(const TestResult& result, std::ostream* os) {
 }
 
 }  // namespace internal
+
+testing::Matcher<const internal::TestResult&> RawPayload(Wire bytes) {
+  return RawPayloadMatcher(std::move(bytes).str());
+}
 
 testing::Matcher<const Message&> EqualsTextProto(absl::string_view text) {
   return EquivalentMessageMatcher(::conformance::TEXT_FORMAT,

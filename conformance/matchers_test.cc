@@ -42,7 +42,9 @@ using ::testing::NiceMock;
 using ::testing::Not;
 using ::testing::PrintToString;
 using ::testing::Return;
+using ::testing::TestParamInfo;
 using ::testing::Value;
+using ::testing::Values;
 
 // Creates a result for the leaf matcher tests by running a kP0 test with the
 // given input format and requested output format (and, for text output,
@@ -238,6 +240,16 @@ TEST(PrintTestResultTest, LargePayloadsAreTruncated) {
 // Descriptions
 // ---------------------------------------------------------------------------
 
+TEST(MatcherDescriptionTest, RawPayload) {
+  EXPECT_EQ(Describe(RawPayload(Wire("foo"))), R"(payload is equal to "foo")");
+  EXPECT_EQ(DescribeNegation(RawPayload(Wire("foo"))),
+            R"(payload isn't equal to "foo")");
+  EXPECT_EQ(Describe(RawPayload(VarintField(1, 2))),
+            R"(payload is equal to "\010\002")");
+  EXPECT_EQ(DescribeNegation(RawPayload(VarintField(1, 2))),
+            R"(payload isn't equal to "\010\002")");
+}
+
 TEST(MatcherDescriptionTest, EqualsTextProto) {
   EXPECT_EQ(testing::DescribeMatcher<const Message&>(
                 EqualsTextProto(R"pb(optional_int32: 9)pb")),
@@ -261,6 +273,133 @@ TEST(MatcherDescriptionTest, FailureMatchers) {
   EXPECT_EQ(DescribeNegation(IsParseError()), "is not a parse error");
   EXPECT_EQ(Describe(IsSerializeError()), "is a serialize error");
   EXPECT_EQ(DescribeNegation(IsSerializeError()), "is not a serialize error");
+}
+
+// ---------------------------------------------------------------------------
+// Response handling shared by the payload matchers
+// ---------------------------------------------------------------------------
+
+// These responses fail before any payload is compared, so the expected payload
+// is irrelevant.
+
+TEST(PayloadMatcherTest, EmptyResponse) {
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF, ConformanceResponse());
+
+  EXPECT_THAT(Explain(RawPayload(Wire()), result),
+              Rejects("Response didn't have any field in the Response."));
+}
+
+struct ErrorResponseCase {
+  absl::string_view name;
+  absl::string_view response;
+};
+
+class PayloadMatcherErrorResponseTest
+    : public testing::TestWithParam<ErrorResponseCase> {};
+
+TEST_P(PayloadMatcherErrorResponseTest, IsAFailureForPayload) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ResponseFromText(GetParam().response));
+
+  EXPECT_THAT(Explain(RawPayload(Wire()), result),
+              Rejects("Failed to parse input or produce output."));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ErrorResponses, PayloadMatcherErrorResponseTest,
+    Values(ErrorResponseCase{"ParseError", R"pb(parse_error: "foo")pb"},
+           ErrorResponseCase{"SerializeError", R"pb(serialize_error: "foo")pb"},
+           ErrorResponseCase{"RuntimeError", R"pb(runtime_error: "foo")pb"},
+           ErrorResponseCase{"TimeoutError", R"pb(timeout_error: "foo")pb"}),
+    [](const TestParamInfo<ErrorResponseCase>& info) {
+      return std::string(info.param.name);
+    });
+
+TEST(PayloadMatcherTest, Skipped) {
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF,
+                   ResponseFromText(R"pb(skipped: "skipped message")pb"));
+
+  EXPECT_THAT(Explain(RawPayload(Wire()), result),
+              Rejects("the testee skipped the test: skipped message"));
+}
+
+TEST(PayloadMatcherTest, WrongOutputFormat) {
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF,
+                   ResponseFromText(R"pb(json_payload: "{}")pb"));
+
+  EXPECT_THAT(
+      Explain(RawPayload(Wire()), result),
+      Rejects("Test was asked for PROTOBUF output but provided JSON instead."));
+}
+
+TEST(PayloadMatcherTest, WrongOutputFormatJspb) {
+  TestResult result =
+      CreateResult("foo", ::conformance::JSON,
+                   ResponseFromText(R"pb(jspb_payload: "[]")pb"));
+
+  EXPECT_THAT(
+      Explain(RawPayload(Wire()), result),
+      Rejects("Test was asked for JSON output but provided JSPB instead."));
+}
+
+// ---------------------------------------------------------------------------
+// RawPayload()
+// ---------------------------------------------------------------------------
+
+TEST(RawPayloadTest, MatchesBytes) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  EXPECT_TRUE(Value(result, RawPayload(VarintField(1, 2))));
+  EXPECT_THAT(Explain(RawPayload(VarintField(1, 2)), result),
+              Accepts(IsEmpty()));
+}
+
+TEST(RawPayloadTest, BytesMismatch) {
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(VarintField(1, 2)));
+
+  // Equivalent messages, but not byte-identical.  The failure message is the
+  // legacy one.
+  EXPECT_THAT(Explain(RawPayload(LongVarintField(1, 2, 1)), result),
+              Rejects("Output was not equivalent to reference message: "
+                      "Expect: \\010\\202\\000, but got: \\010\\002"));
+}
+
+TEST(RawPayloadTest, UnparseableProtobufOutputFailsEvenForTheExactBytes) {
+  // Like the legacy runner's require_same_wire_format, binary output must
+  // decode as the test's message type.
+  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
+                                   ProtobufPayload(Wire("\001")));
+
+  EXPECT_THAT(
+      Explain(RawPayload(Wire("\001")), result),
+      Rejects("Protobuf output we received from test was unparseable."));
+}
+
+TEST(RawPayloadTest, TextOutput) {
+  TestResult result = CreateResult(
+      "foo", ::conformance::TEXT_FORMAT,
+      ResponseFromText(R"pb(text_payload: "optional_int32: 9")pb"));
+
+  EXPECT_TRUE(Value(result, RawPayload(Wire("optional_int32: 9"))));
+  // Text output isn't required to be parseable.
+  EXPECT_TRUE(Value(
+      CreateResult("bar", ::conformance::TEXT_FORMAT,
+                   ResponseFromText(R"pb(text_payload: "nonsense: 1")pb")),
+      RawPayload(Wire("nonsense: 1"))));
+}
+
+TEST(RawPayloadTest, JsonOutput) {
+  // Raw payloads don't need to be decoded, so JSON works already.
+  TestResult result =
+      CreateResult("foo", ::conformance::JSON,
+                   ResponseFromText(R"pb(json_payload: "{}")pb"));
+
+  EXPECT_TRUE(Value(result, RawPayload(Wire("{}"))));
 }
 
 // ---------------------------------------------------------------------------

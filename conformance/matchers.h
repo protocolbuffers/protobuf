@@ -40,6 +40,19 @@ void PrintTo(const TestResult& result, std::ostream* os);
 
 }  // namespace internal
 
+// Matches a result whose raw payload is exactly `bytes`, whatever the output
+// format.
+//
+//   EXPECT_THAT(result, RawPayload(input));
+//
+// A mismatch fails with "Output was not equivalent to reference message:
+// Expect: <octal>, but got: <octal>".  A response that isn't a payload of the
+// requested format fails with a fixed message for that case.  That covers no
+// result, an error, a skipped test and the wrong output format.  A PROTOBUF
+// payload must also be parseable as the test's message type.  Otherwise it
+// fails with "Protobuf output we received from test was unparseable."
+testing::Matcher<const internal::TestResult&> RawPayload(Wire bytes);
+
 // Matches a message equivalent to `text`, parsed as the actual message's type.
 // Messages are compared with MessageDifferencer, with NaN equal to NaN.
 //
