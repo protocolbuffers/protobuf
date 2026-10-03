@@ -1616,6 +1616,27 @@ TEST(CordOutputStreamTest, UsesPrivateCapacityInAppendedCord) {
   EXPECT_EQ(flat, absl::StrCat(std::string(500, 'a'), std::string(1500, 'b')));
 }
 
+TEST(CordOutputStreamTest, WriteCordDoesNotRetainUnusedBufferCapacity) {
+  const absl::Cord payload(std::string(8192, 'x'));
+  const size_t payload_memory = payload.EstimatedMemoryUsage();
+
+  CordOutputStream output(6 + payload.size());
+  void* data = nullptr;
+  int size = 0;
+  ASSERT_TRUE(output.Next(&data, &size));
+  ASSERT_GT(size, 6);
+  memset(data, 'h', 6);
+  output.BackUp(size - 6);
+
+  EXPECT_TRUE(output.WriteCord(payload));
+  const absl::Cord result = output.Consume();
+
+  absl::Cord expected("hhhhhh");
+  expected.Append(payload);
+  EXPECT_EQ(result, expected);
+  EXPECT_LT(result.EstimatedMemoryUsage() - payload_memory, 256);
+}
+
 TEST(CordOutputStreamTest, CapsSizeAtHintButUsesCapacityBeyondHint) {
   // This tests verifies that when we provide a hint of 'x' bytes, that the
   // returned size from Next() will be capped at 'size_hint', but that if we

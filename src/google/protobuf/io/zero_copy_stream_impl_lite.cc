@@ -681,7 +681,15 @@ int64_t CordOutputStream::ByteCount() const {
 }
 
 bool CordOutputStream::WriteCord(const absl::Cord& cord) {
-  cord_.Append(std::move(buffer_));
+  if (cord.empty()) return true;
+  if (buffer_.capacity() - buffer_.length() > buffer_.length()) {
+    if (buffer_.length() > 0) {
+      cord_.Append(absl::string_view(buffer_.data(), buffer_.length()));
+    }
+    buffer_ = {};
+  } else {
+    cord_.Append(std::move(buffer_));
+  }
   cord_.Append(cord);
   state_ = State::kSteal;  // Attempt to utilize existing capacity in `cord'
   return true;
