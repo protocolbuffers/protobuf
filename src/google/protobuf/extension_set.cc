@@ -29,6 +29,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/bits.h"
+#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
@@ -45,6 +46,10 @@
 
 // must be last.
 #include "google/protobuf/port_def.inc"
+
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -764,15 +769,38 @@ namespace {
 // part of the total, because there is no need to allocate space for those. We
 // do include cleared extensions in the destination, though, because those are
 // already allocated and will not be going away.
-template <typename ItX, typename ItY>
-size_t SizeOfUnion(ItX it_dest, ItX end_dest, ItY it_source, ItY end_source) {
-  size_t result = std::distance(it_dest, end_dest);
-  for (; it_source != end_source; ++it_source) {
-    while (it_dest != end_dest && it_dest->first < it_source->first) {
-      ++it_dest;
+//
+// The destination is always a flat span of this set (the caller checked that
+// `this` is not large), so the destination walk is index-based on a span. The
+// element type stays a deduced template parameter because FlatItem is private
+// to ExtensionSet and this helper lives outside the class.
+template <typename T, typename U>
+size_t SizeOfUnion(absl::Span<T> dest, absl::Span<U> source) {
+  size_t result = dest.size();
+  size_t dest_idx = 0;
+  for (size_t source_idx = 0; source_idx < source.size(); ++source_idx) {
+    while (dest_idx != dest.size() &&
+           dest[dest_idx].first < source[source_idx].first) {
+      ++dest_idx;
     }
-    result += (it_dest == end_dest || it_dest->first > it_source->first) &&
-              !it_source->second.is_cleared;
+    result += (dest_idx == dest.size() ||
+               dest[dest_idx].first > source[source_idx].first) &&
+              !source[source_idx].second.is_cleared;
+  }
+  return result;
+}
+
+template <typename T, typename ItY>
+size_t SizeOfUnion(absl::Span<T> dest, ItY it_source, ItY end_source) {
+  size_t result = dest.size();
+  size_t dest_idx = 0;
+  for (; it_source != end_source; ++it_source) {
+    while (dest_idx != dest.size() && dest[dest_idx].first < it_source->first) {
+      ++dest_idx;
+    }
+    result +=
+        (dest_idx == dest.size() || dest[dest_idx].first > it_source->first) &&
+        !it_source->second.is_cleared;
   }
   return result;
 }
@@ -798,7 +826,15 @@ ABSL_ATTRIBUTE_NOINLINE void ExtensionSet::InternalReduceSmallCapacity(
   ABSL_DCHECK_GE(current_cap, current_size * 2);
   const size_t new_flat_capacity = absl::bit_ceil(current_size);
   auto* new_flat = AllocateFlatMap(arena, new_flat_capacity);
-  std::memcpy(new_flat, map_.flat, current_size * sizeof(FlatItem));
+  // map_.flat holds exactly current_size valid FlatItems (the caller checked
+  // this set is not large); copy them index-wise into the new allocation.
+  const absl::Span<FlatItem> new_flat_span =
+      absl::MakeSpan(new_flat, current_size);
+  const absl::Span<const FlatItem> old_flat_span =
+      absl::MakeSpan(map_.flat, current_size);
+  for (size_t i = 0; i < current_size; ++i) {
+    new_flat_span[i] = old_flat_span[i];
+  }
   auto* old_flat = map_.flat;
   if (arena == nullptr) {
     DeleteFlatMap(old_flat, current_cap);
@@ -821,21 +857,26 @@ void ExtensionSet::InternalMergeFromSmallToEmpty(Arena* arena,
   }
 
   PROTOBUF_ASSUME(static_cast<int16_t>(new_size) > 0);
-  FlatItem* dst_it = nullptr;
+  // The destination writes go through an index into the freshly reserved flat
+  // array of `this`; map_.flat stays stable for the whole ForEach, exactly as
+  // the raw dst_it pointer did before.
+  absl::Span<FlatItem> dst_flat;
+  uint16_t dst_index = 0;
   other.ForEach(
       [&](int number, const Extension& ext) {
         if (ext.is_cleared) {
           --new_size;
           return;
         }
-        if (dst_it == nullptr) {
+        if (dst_flat.empty()) {
           InternalReserveSmallCapacityFromEmpty(arena, new_size);
-          dst_it = map_.flat;
+          dst_flat = absl::MakeSpan(map_.flat, flat_capacity());
         }
-        dst_it->first = number;
+        dst_flat[dst_index].first = number;
         this->InternalExtensionMergeFromIntoUninitializedExtension(
-            arena, dst_it->second, extendee, number, ext, other_arena);
-        ++dst_it;
+            arena, dst_flat[dst_index].second, extendee, number, ext,
+            other_arena);
+        ++dst_index;
       },
       Prefetch{});
   if (new_size == 0) {
@@ -853,10 +894,11 @@ void ExtensionSet::InternalMergeFromSlow(Arena* arena,
                                          Arena* other_arena) {
   if (ABSL_PREDICT_TRUE(!is_large())) {
     if (ABSL_PREDICT_TRUE(!other.is_large())) {
-      GrowCapacity(arena, SizeOfUnion(flat_begin(), flat_end(),
-                                      other.flat_begin(), other.flat_end()));
+      GrowCapacity(arena, SizeOfUnion(absl::MakeSpan(map_.flat, flat_size()),
+                                      absl::MakeSpan(other.map_.flat,
+                                                     other.flat_size())));
     } else {
-      GrowCapacity(arena, SizeOfUnion(flat_begin(), flat_end(),
+      GrowCapacity(arena, SizeOfUnion(absl::MakeSpan(map_.flat, flat_size()),
                                       other.map_.large->large.begin(),
                                       other.map_.large->large.end()));
     }
@@ -1113,8 +1155,12 @@ bool ExtensionSet::IsInitialized(Arena* arena,
     }
     return true;
   }
-  for (const FlatItem* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized(this, extendee, it->first, arena)) {
+  // This set is not large (checked above): map_.flat holds exactly flat_size()
+  // valid FlatItems.
+  const absl::Span<const FlatItem> flat =
+      absl::MakeSpan(flat_begin(), flat_size());
+  for (size_t i = 0; i < flat.size(); ++i) {
+    if (!flat[i].second.IsInitialized(this, extendee, flat[i].first, arena)) {
       return false;
     }
   }
@@ -1159,12 +1205,15 @@ uint8_t* ExtensionSet::_InternalSerializeImpl(
     return _InternalSerializeImplLarge(extendee, start_field_number,
                                        end_field_number, target, stream);
   }
-  const FlatItem* end = flat_end();
-  const FlatItem* it = flat_begin();
-  while (it != end && it->first < start_field_number) ++it;
-  for (; it != end && it->first < end_field_number; ++it) {
-    target = it->second.InternalSerializeFieldWithCachedSizesToArray(
-        extendee, this, it->first, target, stream);
+  // This set is not large (checked above): map_.flat holds exactly flat_size()
+  // valid FlatItems.
+  const absl::Span<const FlatItem> flat =
+      absl::MakeSpan(flat_begin(), flat_size());
+  size_t i = 0;
+  while (i < flat.size() && flat[i].first < start_field_number) ++i;
+  for (; i < flat.size() && flat[i].first < end_field_number; ++i) {
+    target = flat[i].second.InternalSerializeFieldWithCachedSizesToArray(
+        extendee, this, flat[i].first, target, stream);
   }
   return target;
 }
@@ -1524,9 +1573,11 @@ const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (IsCompletelyEmpty()) {
     return nullptr;
   } else if (ABSL_PREDICT_TRUE(!is_large())) {
-    for (auto it = flat_begin(), end = flat_end();
-         it != end && it->first <= key; ++it) {
-      if (it->first == key) return &it->second;
+    // map_.flat holds exactly flat_size() valid FlatItems.
+    const absl::Span<const FlatItem> flat =
+        absl::MakeSpan(flat_begin(), flat_size());
+    for (size_t i = 0; i < flat.size() && flat[i].first <= key; ++i) {
+      if (flat[i].first == key) return &flat[i].second;
     }
     return nullptr;
   } else {
@@ -1579,7 +1630,9 @@ std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(Arena* arena,
   uint16_t current_size = flat_size();
   uint16_t current_cap = flat_capacity();
   uint16_t i = current_size;
-  FlatItem* flat = map_.flat;
+  // This set is not large (checked above): map_.flat is a valid array of
+  // current_cap FlatItems; only the first current_size are live elements.
+  absl::Span<FlatItem> flat = absl::MakeSpan(map_.flat, current_cap);
   // Iterating from the back to benefit the case where the keys are inserted in
   // increasing order.
   for (; i > 0; --i) {
@@ -1596,11 +1649,16 @@ std::pair<ExtensionSet::Extension*, bool> ExtensionSet::Insert(Arena* arena,
     if (ABSL_PREDICT_FALSE(is_large())) {
       return InternalInsertIntoLargeMap(key);
     }
-    flat = map_.flat;  // Reload flat pointer after GrowCapacity.
+    flat = absl::MakeSpan(map_.flat,
+                          flat_capacity());  // Reload after GrowCapacity.
     current_cap = flat_capacity();
   }
 
-  std::copy_backward(flat + i, flat + current_size, flat + current_size + 1);
+  // Shift the live elements in [i, current_size) one slot to the right; source
+  // and destination overlap, so the copy must run backwards — done index-wise.
+  for (uint16_t j = current_size; j > i; --j) {
+    flat[j] = flat[j - 1];
+  }
   flat[i].first = key;
   flat[i].second = Extension();
   set_flat_capacity_and_size(current_cap, current_size + 1);
@@ -1628,8 +1686,11 @@ void ExtensionSet::GrowCapacity(Arena* arena, size_t minimum_new_capacity) {
   if (new_flat_capacity > kMaximumFlatCapacity) {
     LargeRep* large_rep = Arena::Create<LargeRep>(arena);
     LargeMap::iterator hint = large_rep->large.begin();
-    for (const FlatItem* it = begin; it != end; ++it) {
-      hint = large_rep->large.insert(hint, {it->first, it->second});
+    // begin points at exactly current_size valid FlatItems (this set is not
+    // large, checked above).
+    const absl::Span<const FlatItem> flat = absl::MakeSpan(begin, current_size);
+    for (size_t i = 0; i < flat.size(); ++i) {
+      hint = large_rep->large.insert(hint, {flat[i].first, flat[i].second});
     }
     new_map.large = large_rep;
   } else {
@@ -1665,10 +1726,16 @@ void ExtensionSet::Erase(int key) {
   }
   uint16_t current_cap = flat_capacity();
   uint16_t current_size = flat_size();
-  FlatItem* end = flat_begin() + current_size;
-  for (FlatItem* it = flat_begin(); it != end && it->first <= key; ++it) {
-    if (it->first == key) {
-      std::copy(it + 1, end, it);
+  // This set is not large (checked above): map_.flat holds exactly
+  // current_size valid FlatItems.
+  absl::Span<FlatItem> flat = absl::MakeSpan(flat_begin(), current_size);
+  for (size_t i = 0; i < flat.size() && flat[i].first <= key; ++i) {
+    if (flat[i].first == key) {
+      // Shift the elements in [i + 1, current_size) one slot to the left;
+      // source and destination overlap exactly as the former std::copy did.
+      for (size_t j = i + 1; j < flat.size(); ++j) {
+        flat[j - 1] = flat[j];
+      }
       // We need to overwrite capacity in case we overwrote the first element.
       set_flat_capacity_and_size(current_cap, current_size - 1);
       return;
