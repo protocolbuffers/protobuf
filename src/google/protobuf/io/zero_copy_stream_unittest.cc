@@ -2090,6 +2090,34 @@ TEST(ZeroSizeArray, Output) {
   EXPECT_FALSE(output.Next(&data, &size));
 }
 
+TEST(ConcatenatingInputStreamTest, NullOrEmptyStreams) {
+  ConcatenatingInputStream empty(nullptr, 0);
+  const void* data = nullptr;
+  int size = 0;
+  EXPECT_FALSE(empty.Next(&data, &size));
+  EXPECT_TRUE(empty.Skip(0));
+  EXPECT_FALSE(empty.Skip(10));
+  EXPECT_EQ(0, empty.ByteCount());
+
+  ConcatenatingInputStream negative_count(nullptr, -1);
+  EXPECT_FALSE(negative_count.Next(&data, &size));
+  EXPECT_TRUE(negative_count.Skip(0));
+  EXPECT_FALSE(negative_count.Skip(10));
+  EXPECT_EQ(0, negative_count.ByteCount());
+}
+
+TEST(IstreamAndOstreamTest, NullStreamGuards) {
+  IstreamInputStream null_input(nullptr);
+  const void* data = nullptr;
+  int size = 0;
+  EXPECT_FALSE(null_input.Next(&data, &size));
+  EXPECT_FALSE(null_input.Skip(10));
+
+  OstreamOutputStream null_output(nullptr);
+  void* out_data = nullptr;
+  EXPECT_FALSE(null_output.Next(&out_data, &size));
+}
+
 }  // namespace
 }  // namespace io
 }  // namespace protobuf
