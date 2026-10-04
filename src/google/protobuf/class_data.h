@@ -17,7 +17,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <type_traits>
 #include <variant>
 
 #include "absl/log/absl_check.h"
@@ -48,7 +47,9 @@ struct DescriptorMethods;
 
 class MessageCreator {
  public:
-  using Func = void* (*)(const void*, void*, Arena*);
+  using Func = void* PROTOBUF_NONNULL (*PROTOBUF_NULLABLE)(
+      const void* PROTOBUF_NONNULL prototype, void* PROTOBUF_NONNULL mem,
+      Arena* PROTOBUF_NULLABLE arena);
 
   // Use -1/0/1 to be able to use <0, ==0, >0
   enum Tag : int8_t {
@@ -85,13 +86,14 @@ class MessageCreator {
 
   // Template for testing.
   template <typename MessageLite>
-  MessageLite* PlacementNew(const MessageLite* prototype_for_func,
-                            const MessageLite* prototype_for_copy, void* mem,
-                            Arena* arena) const;
+  MessageLite* PROTOBUF_NONNULL PlacementNew(
+      const MessageLite* PROTOBUF_NONNULL prototype_for_func,
+      const MessageLite* PROTOBUF_NONNULL prototype_for_copy,
+      void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
 
   // Make this a template to avoid depending on arena.h.
   template <typename Arena>
-  void* AllocateMessage(Arena* arena) const {
+  void* PROTOBUF_NONNULL AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const {
     if (arena != nullptr) {
       return arena->AllocateAligned(allocation_size_);
     } else {
@@ -118,9 +120,10 @@ class MessageCreator {
 // ClassData read-only. Extra indirection should be tolerable considering that
 // reflection isn't performance critical.
 struct PROTOBUF_EXPORT ReflectionData {
-  constexpr ReflectionData(const DescriptorMethods* descriptor_methods,
-                           const internal::DescriptorTable* descriptor_table,
-                           void (*get_metadata_tracker)())
+  constexpr ReflectionData(
+      const DescriptorMethods* PROTOBUF_NONNULL descriptor_methods,
+      const internal::DescriptorTable* PROTOBUF_NULLABLE descriptor_table,
+      void (*PROTOBUF_NULLABLE get_metadata_tracker)())
       : reflection(nullptr),
         descriptor(nullptr),
         descriptor_table(descriptor_table),
@@ -130,18 +133,18 @@ struct PROTOBUF_EXPORT ReflectionData {
   // Accesses are protected by the once_flag in `descriptor_table`. When the
   // table is null these are populated from the beginning and need to
   // protection.
-  const Reflection* reflection;
-  const Descriptor* descriptor;
+  const Reflection* PROTOBUF_NULLABLE reflection;
+  const Descriptor* PROTOBUF_NULLABLE descriptor;
 
   // Codegen types will provide a DescriptorTable to do lazy
   // registration/initialization of the reflection objects.
   // Other types, like DynamicMessage, keep the table as null but eagerly
   // populate `reflection`/`descriptor` fields.
-  const internal::DescriptorTable* descriptor_table;
-  const DescriptorMethods* descriptor_methods;
+  const internal::DescriptorTable* PROTOBUF_NULLABLE descriptor_table;
+  const DescriptorMethods* PROTOBUF_NONNULL descriptor_methods;
   // When an access tracker is installed, this function notifies the tracker
   // that GetMetadata was called.
-  void (*get_metadata_tracker)();
+  void (*PROTOBUF_NULLABLE get_metadata_tracker)();
 };
 
 // Note: The order of arguments in the functions is chosen so that it has
@@ -154,15 +157,24 @@ struct PROTOBUF_EXPORT ReflectionData {
 // have them and their offset.
 
 struct PROTOBUF_EXPORT ClassData {
-  bool (*is_initialized)(const MessageLite&);
-  void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
+  using IsInitializedFunc = bool (*PROTOBUF_NULLABLE)(const MessageLite&);
+  using MergeToFromFunc = void (*PROTOBUF_NONNULL)(MessageLite& to,
+                                                   const MessageLite& from_msg);
+  using DestroyMessageFunc = void (*PROTOBUF_NONNULL)(MessageLite& msg);
+  using ClearFunc = void (*PROTOBUF_NONNULL)(MessageLite& msg);
+  using ByteSizeLongFunc = size_t (*PROTOBUF_NONNULL)(const MessageLite&);
+  using SerializeFunc = uint8_t* PROTOBUF_NULLABLE (*PROTOBUF_NONNULL)(
+      const MessageLite& msg, uint8_t* PROTOBUF_NULLABLE ptr,
+      io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+
+  IsInitializedFunc is_initialized;
+  MergeToFromFunc merge_to_from;
   internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void (*destroy_message)(MessageLite& msg);
-  void (*clear)(MessageLite& msg);
-  size_t (*byte_size_long)(const MessageLite&);
-  uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
-                        io::EpsCopyOutputStream* stream);
+  DestroyMessageFunc destroy_message;
+  ClearFunc clear;
+  ByteSizeLongFunc byte_size_long;
+  SerializeFunc serialize;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Offset of the CachedSize member.
@@ -176,28 +188,26 @@ struct PROTOBUF_EXPORT ClassData {
   // codegen.
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr ClassData(
-      bool (*is_initialized)(const MessageLite&),
-      void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
       internal::MessageCreator message_creator, uint32_t cached_size_offset,
       std::variant<ReflectionData*, const char*> reflection_or_name)
-      : ClassData(is_initialized, merge_to_from, message_creator, nullptr,
-                  nullptr, nullptr, nullptr, cached_size_offset,
-                  reflection_or_name) {}
+      : is_initialized(is_initialized),
+        merge_to_from(merge_to_from),
+        message_creator(message_creator),
+        cached_size_offset(cached_size_offset),
+        is_lite(std::holds_alternative<const char*>(reflection_or_name)),
+        aux_data(GetAuxFromVariant(reflection_or_name)) {}
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // But we always provide the full constructor even in normal mode to make
   // helper code simpler.
   constexpr ClassData(
-      bool (*is_initialized)(const MessageLite&),
-      void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
       internal::MessageCreator message_creator,
-      [[maybe_unused]] void (*destroy_message)(MessageLite& msg),  //
-      [[maybe_unused]] void (*clear)(MessageLite& msg),
-      [[maybe_unused]] size_t (*byte_size_long)(const MessageLite&),
-      [[maybe_unused]] uint8_t* (*serialize)(const MessageLite& msg,
-                                             uint8_t* ptr,
-                                             io::EpsCopyOutputStream* stream),
-      uint32_t cached_size_offset,
+      [[maybe_unused]] DestroyMessageFunc destroy_message,
+      [[maybe_unused]] ClearFunc clear,
+      [[maybe_unused]] ByteSizeLongFunc byte_size_long,
+      [[maybe_unused]] SerializeFunc serialize, uint32_t cached_size_offset,
       std::variant<ReflectionData*, const char*> reflection_or_name)
       : is_initialized(is_initialized),
         merge_to_from(merge_to_from),
@@ -213,15 +223,16 @@ struct PROTOBUF_EXPORT ClassData {
         aux_data(GetAuxFromVariant(reflection_or_name)) {
   }
 
-  const TcParseTableBase* GetTcParseTable() const;
+  const TcParseTableBase* PROTOBUF_NONNULL GetTcParseTable() const;
 
-  const MessageLite* default_instance() const;
-
-  // Defined in message_lite.h.
-  MessageLite* New(Arena* arena) const;
+  const MessageLite* PROTOBUF_NONNULL default_instance() const;
 
   // Defined in message_lite.h.
-  MessageLite* PlacementNew(void* mem, Arena* arena) const;
+  MessageLite* PROTOBUF_NONNULL New(Arena* PROTOBUF_NULLABLE arena) const;
+
+  // Defined in message_lite.h.
+  MessageLite* PROTOBUF_NONNULL PlacementNew(
+      void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
 
   uint32_t allocation_size() const { return message_creator.allocation_size(); }
 
@@ -243,20 +254,24 @@ struct PROTOBUF_EXPORT ClassData {
   std::string DebugName() const;
 
   // Accessors for reflection related data (!LITE only).
-  const Reflection* reflection() const { return reflection_data()->reflection; }
-  const Descriptor* descriptor() const { return reflection_data()->descriptor; }
+  const Reflection* PROTOBUF_NULLABLE reflection() const {
+    return reflection_data()->reflection;
+  }
+  const Descriptor* PROTOBUF_NULLABLE descriptor() const {
+    return reflection_data()->descriptor;
+  }
 
-  void set_reflection(const Reflection* reflection) const {
+  void set_reflection(const Reflection* PROTOBUF_NULLABLE reflection) const {
     reflection_data()->reflection = reflection;
   }
-  void set_descriptor(const Descriptor* descriptor) const {
+  void set_descriptor(const Descriptor* PROTOBUF_NULLABLE descriptor) const {
     reflection_data()->descriptor = descriptor;
   }
 
-  const internal::DescriptorTable* descriptor_table() const {
+  const DescriptorTable* PROTOBUF_NULLABLE descriptor_table() const {
     return reflection_data()->descriptor_table;
   }
-  const DescriptorMethods* descriptor_methods() const {
+  const DescriptorMethods* PROTOBUF_NONNULL descriptor_methods() const {
     return reflection_data()->descriptor_methods;
   }
   bool has_get_metadata_tracker() const {
@@ -266,32 +281,36 @@ struct PROTOBUF_EXPORT ClassData {
     reflection_data()->get_metadata_tracker();
   }
 
-  ReflectionData* reflection_data() const {
+  ReflectionData* PROTOBUF_NONNULL reflection_data() const {
     ABSL_DCHECK(!is_lite);
     return aux_data.reflection_data;
   }
 
   // Accessors for type name (LITE only).
-  const char* type_name() const {
+  const char* PROTOBUF_NONNULL type_name() const {
     ABSL_DCHECK(is_lite);
     return aux_data.type_name;
   }
 
   union ReflectionDataOrTypeName {
-    constexpr ReflectionDataOrTypeName(ReflectionData* reflection_data)
+    explicit constexpr ReflectionDataOrTypeName(
+        ReflectionData* PROTOBUF_NONNULL reflection_data)
         : reflection_data(reflection_data) {}
-    constexpr ReflectionDataOrTypeName(const char* type_name)
+    explicit constexpr ReflectionDataOrTypeName(
+        const char* PROTOBUF_NONNULL type_name)
         : type_name(type_name) {}
-    ReflectionData* reflection_data;
-    const char* type_name;
+    ReflectionData* PROTOBUF_NONNULL reflection_data;
+    const char* PROTOBUF_NONNULL type_name;
   } aux_data;
 
   static constexpr ReflectionDataOrTypeName GetAuxFromVariant(
       std::variant<ReflectionData*, const char*> reflection_or_name) {
     if (std::holds_alternative<const char*>(reflection_or_name)) {
-      return std::get<const char*>(reflection_or_name);
+      return ReflectionDataOrTypeName(
+          std::get<const char*>(reflection_or_name));
     } else {
-      return std::get<ReflectionData*>(reflection_or_name);
+      return ReflectionDataOrTypeName(
+          std::get<ReflectionData*>(reflection_or_name));
     }
   }
 };
@@ -300,12 +319,23 @@ struct PROTOBUF_EXPORT ClassData {
 // does not grow with the number of descriptor methods. This avoids extra
 // costs in MessageLite.
 struct PROTOBUF_EXPORT DescriptorMethods {
-  absl::string_view (*get_type_name)(const ClassData* data);
-  std::string (*initialization_error_string)(const MessageLite&);
-  const internal::TcParseTableBase* (*get_tc_table)(const ClassData*);
-  size_t (*space_used_long)(const MessageLite&);
-  std::string (*debug_string)(const MessageLite&);
-  void (*verify_lazy_field_consistency)(const LazyField&);
+  using GetTypeNameFunc = absl::string_view (*PROTOBUF_NONNULL)(
+      const ClassData* PROTOBUF_NONNULL data);
+  using InitializationErrorMessageFunc =
+      std::string (*PROTOBUF_NONNULL)(const MessageLite&);
+  using GetTcTableFunc = const internal::TcParseTableBase* PROTOBUF_NONNULL (
+      *PROTOBUF_NONNULL)(const ClassData* PROTOBUF_NONNULL data);
+  using SpaceUsedLongFunc = size_t (*PROTOBUF_NONNULL)(const MessageLite&);
+  using DebugStringFunc = std::string (*PROTOBUF_NONNULL)(const MessageLite&);
+  using VerifyLazyFieldConsistencyFunc =
+      void (*PROTOBUF_NONNULL)(const LazyField&);
+
+  GetTypeNameFunc get_type_name;
+  InitializationErrorMessageFunc initialization_error_string;
+  GetTcTableFunc get_tc_table;
+  SpaceUsedLongFunc space_used_long;
+  DebugStringFunc debug_string;
+  VerifyLazyFieldConsistencyFunc verify_lazy_field_consistency;
 };
 
 }  // namespace internal

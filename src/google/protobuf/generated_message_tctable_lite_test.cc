@@ -20,6 +20,7 @@
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/descriptor_visitor.h"
@@ -30,6 +31,7 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_protos/tctable_long_name_test.pb.h"
@@ -90,13 +92,23 @@ T ReadAndReset(char* p) {
   return result;
 }
 
+void NoOpMergeToFrom(MessageLite& to, const MessageLite& from_msg) {}
+void NoOpDestroyMessage(MessageLite& msg) {}
+void NoOpClearFunc(MessageLite& msg) {}
+size_t NoOpByteSizeLongFunc(const MessageLite&) { return 0; }
+uint8_t* NoOpSerializeFunc(const MessageLite& msg, uint8_t* ptr,
+                           io::EpsCopyOutputStream* stream) {
+  return ptr;
+}
+
 TEST(FastVarints, NameHere) {
   constexpr uint8_t kHasBitsOffset = 4;
   constexpr uint8_t kHasBitIndex = 0;
   constexpr uint8_t kFieldOffset = 24;
 
-  const ClassData class_data(nullptr, nullptr, MessageCreator(), nullptr,
-                             nullptr, nullptr, nullptr,
+  const ClassData class_data(nullptr, &NoOpMergeToFrom, MessageCreator(),
+                             &NoOpDestroyMessage, &NoOpClearFunc,
+                             &NoOpByteSizeLongFunc, &NoOpSerializeFunc,
                              /*cached_size_offset=*/16, "type_name");
 
   const TcParseTable<0, 1, 0, 0, 2> parse_table = {
