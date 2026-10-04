@@ -11,6 +11,7 @@ __author__ = 'jieluo@google.com (Jie Luo)'
 
 import json
 import math
+import re
 import struct
 import unittest
 
@@ -1280,8 +1281,33 @@ class JsonFormatTest(JsonFormatBase):
     self.CheckError(
         '{"floatValue": "nan"}',
         "Failed to parse floatValue field: Couldn't "
-        'parse float "nan", use "NaN" instead at TestMessage.floatValue.',
+        'parse float "nan", use "NaN", "Infinity" or "-Infinity" instead '
+        'at TestMessage.floatValue.',
     )
+    # Only the exact spellings "NaN", "Infinity" and "-Infinity" are valid.
+    # Python's float() would accept all of these other spellings.
+    for bad in (
+        'NAN',
+        'Nan',
+        'nan',
+        '+nan',
+        '-nan',
+        'inf',
+        'INF',
+        'Inf',
+        '+inf',
+        '-inf',
+        '+Infinity',
+        '-INF',
+        ' NaN ',
+        'Infinity ',
+    ):
+      self.CheckError(
+          '{"floatValue": "%s"}' % bad,
+          'Failed to parse floatValue field: Couldn\'t '
+          'parse float "%s", use "NaN", "Infinity" or "-Infinity" instead '
+          'at TestMessage.floatValue.' % re.escape(bad),
+      )
     self.CheckError(
         '{"floatValue": NaN}',
         "Failed to parse floatValue field: Couldn't "
