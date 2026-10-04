@@ -72,6 +72,20 @@ TEST(TimeUtilTest, TimestampStringFormat) {
 
 TEST(TimeUtilTest, DurationStringFormat) {
   Timestamp begin, end;
+
+  // Fractional digits beyond nano-second precision cannot be represented and
+  // must be rejected: the value used to be mis-scaled and then truncated to
+  // 32 bits, silently producing a wrong (often sign-flipped) Duration.
+  {
+    Duration duration;
+    EXPECT_FALSE(TimeUtil::FromString("0.3294967297s", &duration));
+    EXPECT_FALSE(TimeUtil::FromString("-0.3294967297s", &duration));
+    EXPECT_FALSE(TimeUtil::FromString("0.4294967296s", &duration));
+    EXPECT_FALSE(TimeUtil::FromString("1.0000000001s", &duration));
+    EXPECT_FALSE(TimeUtil::FromString("0.99999999999999999999s", &duration));
+    EXPECT_TRUE(TimeUtil::FromString("0.999999999s", &duration));
+    EXPECT_EQ(999999999, duration.nanos());
+  }
   EXPECT_TRUE(TimeUtil::FromString("0001-01-01T00:00:00Z", &begin));
   EXPECT_TRUE(TimeUtil::FromString("9999-12-31T23:59:59.999999999Z", &end));
 
