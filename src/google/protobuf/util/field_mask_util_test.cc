@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 #include "absl/base/log_severity.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
@@ -101,9 +102,40 @@ TEST_F(SnakeCaseCamelCaseTest, RoundTripTest) {
 using google::protobuf::FieldMask;
 using proto2_unittest::NestedTestAllTypes;
 using proto2_unittest::TestAllTypes;
+using proto2_unittest::TestRecursiveMessage;
 using proto2_unittest::TestRequired;
 using proto2_unittest::TestRequiredMessage;
 using third_party_protobuf_util::TestTrimMessageRepeatedField;
+
+TEST(FieldMaskUtilTest, StackSafeDeepMaskPath) {
+  // A mask path may be arbitrarily deeper than any real message nesting, so
+  // every walk over the mask tree must not recurse per tree level. Walking
+  // this mask used to overflow the stack in MergeMessage() and
+  // AddRequiredFieldPath().
+  std::string path = "a";
+  for (int i = 0; i < 100000; ++i) {
+    path += ".a";
+  }
+  FieldMask mask;
+  mask.add_paths(path);
+
+  // MergeMessage() materializes a submessage per tree level in the
+  // destination. Allocate it on an arena so tearing down that very deep
+  // message chain is not itself recursive.
+  Arena arena;
+  auto* source = Arena::Create<TestRecursiveMessage>(&arena);
+  auto* destination = Arena::Create<TestRecursiveMessage>(&arena);
+  FieldMaskUtil::MergeMessageTo(*source, mask,
+                                FieldMaskUtil::MergeOptions(), destination);
+
+  // TrimMessage() with keep_required_fields() walks the same deep tree in
+  // AddRequiredFieldPath(). The message itself is empty, so only the tree is
+  // deep.
+  TestRecursiveMessage message;
+  FieldMaskUtil::TrimOptions trim_options;
+  trim_options.set_keep_required_fields(true);
+  FieldMaskUtil::TrimMessage(mask, &message, trim_options);
+}
 
 TEST(FieldMaskUtilTest, StringFormat) {
   FieldMask mask;
