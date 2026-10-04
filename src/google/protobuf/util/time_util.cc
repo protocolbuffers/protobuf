@@ -264,6 +264,13 @@ bool TimeUtil::FromString(absl::string_view value, Duration* duration) {
   if (end != nanos_part.c_str() + nanos_part.length()) {
     return false;
   }
+  // Fractional digits beyond nano-second precision cannot be represented.
+  // With more than 9 digits the exponent below would be negative, which
+  // Pow() silently treats as 0, leaving the value unscaled before it is
+  // truncated to 32 bits (e.g. "0.3294967297s" parsed as -999999999ns).
+  if (nanos_part.length() > 9) {
+    return false;
+  }
   nanos = nanos * Pow(10, static_cast<int>(9 - nanos_part.length()));
   if (negative) {
     // If a Duration is negative, both seconds and nanos should be negative.
