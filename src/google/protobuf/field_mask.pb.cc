@@ -260,7 +260,8 @@ FieldMask::~FieldMask() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldMask)
   SharedDtor(*this);
 }
-inline void FieldMask::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldMask::SharedDtor(
+    MessageLite& self) {
   FieldMask& this_ = static_cast<FieldMask&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

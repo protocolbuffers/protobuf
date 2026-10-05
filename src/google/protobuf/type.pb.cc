@@ -1115,7 +1115,8 @@ Type::~Type() {
   // @@protoc_insertion_point(destructor:google.protobuf.Type)
   SharedDtor(*this);
 }
-inline void Type::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Type::SharedDtor(
+    MessageLite& self) {
   Type& this_ = static_cast<Type&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1502,7 +1503,8 @@ Field::~Field() {
   // @@protoc_insertion_point(destructor:google.protobuf.Field)
   SharedDtor(*this);
 }
-inline void Field::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Field::SharedDtor(
+    MessageLite& self) {
   Field& this_ = static_cast<Field&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1981,7 +1983,8 @@ Enum::~Enum() {
   // @@protoc_insertion_point(destructor:google.protobuf.Enum)
   SharedDtor(*this);
 }
-inline void Enum::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Enum::SharedDtor(
+    MessageLite& self) {
   Enum& this_ = static_cast<Enum&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2323,7 +2326,8 @@ EnumValue::~EnumValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValue)
   SharedDtor(*this);
 }
-inline void EnumValue::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumValue::SharedDtor(
+    MessageLite& self) {
   EnumValue& this_ = static_cast<EnumValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -2578,7 +2582,8 @@ Option::~Option() {
   // @@protoc_insertion_point(destructor:google.protobuf.Option)
   SharedDtor(*this);
 }
-inline void Option::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Option::SharedDtor(
+    MessageLite& self) {
   Option& this_ = static_cast<Option&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

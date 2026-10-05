@@ -276,7 +276,8 @@ Any::~Any() {
   // @@protoc_insertion_point(destructor:google.protobuf.Any)
   SharedDtor(*this);
 }
-inline void Any::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Any::SharedDtor(
+    MessageLite& self) {
   Any& this_ = static_cast<Any&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

@@ -711,7 +711,8 @@ Struct::~Struct() {
   // @@protoc_insertion_point(destructor:google.protobuf.Struct)
   SharedDtor(*this);
 }
-inline void Struct::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Struct::SharedDtor(
+    MessageLite& self) {
   Struct& this_ = static_cast<Struct&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -968,7 +969,8 @@ Value::~Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Value)
   SharedDtor(*this);
 }
-inline void Value::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Value::SharedDtor(
+    MessageLite& self) {
   Value& this_ = static_cast<Value&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1312,7 +1314,8 @@ ListValue::~ListValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.ListValue)
   SharedDtor(*this);
 }
-inline void ListValue::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ListValue::SharedDtor(
+    MessageLite& self) {
   ListValue& this_ = static_cast<ListValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

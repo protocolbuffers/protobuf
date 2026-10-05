@@ -246,7 +246,8 @@ Duration::~Duration() {
   // @@protoc_insertion_point(destructor:google.protobuf.Duration)
   SharedDtor(*this);
 }
-inline void Duration::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Duration::SharedDtor(
+    MessageLite& self) {
   Duration& this_ = static_cast<Duration&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

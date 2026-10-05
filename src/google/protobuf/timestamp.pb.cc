@@ -246,7 +246,8 @@ Timestamp::~Timestamp() {
   // @@protoc_insertion_point(destructor:google.protobuf.Timestamp)
   SharedDtor(*this);
 }
-inline void Timestamp::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Timestamp::SharedDtor(
+    MessageLite& self) {
   Timestamp& this_ = static_cast<Timestamp&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

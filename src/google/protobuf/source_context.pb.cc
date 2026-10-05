@@ -248,7 +248,8 @@ SourceContext::~SourceContext() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceContext)
   SharedDtor(*this);
 }
-inline void SourceContext::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void SourceContext::SharedDtor(
+    MessageLite& self) {
   SourceContext& this_ = static_cast<SourceContext&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

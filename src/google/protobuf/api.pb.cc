@@ -742,7 +742,8 @@ Api::~Api() {
   // @@protoc_insertion_point(destructor:google.protobuf.Api)
   SharedDtor(*this);
 }
-inline void Api::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Api::SharedDtor(
+    MessageLite& self) {
   Api& this_ = static_cast<Api&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1159,7 +1160,8 @@ Method::~Method() {
   // @@protoc_insertion_point(destructor:google.protobuf.Method)
   SharedDtor(*this);
 }
-inline void Method::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Method::SharedDtor(
+    MessageLite& self) {
   Method& this_ = static_cast<Method&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1544,7 +1546,8 @@ Mixin::~Mixin() {
   // @@protoc_insertion_point(destructor:google.protobuf.Mixin)
   SharedDtor(*this);
 }
-inline void Mixin::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Mixin::SharedDtor(
+    MessageLite& self) {
   Mixin& this_ = static_cast<Mixin&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
