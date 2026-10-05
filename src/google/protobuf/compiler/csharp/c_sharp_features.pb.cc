@@ -235,7 +235,8 @@ CSharpFeatures::~CSharpFeatures() {
   // @@protoc_insertion_point(destructor:pb.CSharpFeatures)
   SharedDtor(*this);
 }
-inline void CSharpFeatures::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CSharpFeatures::SharedDtor(
+    MessageLite& self) {
   CSharpFeatures& this_ = static_cast<CSharpFeatures&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

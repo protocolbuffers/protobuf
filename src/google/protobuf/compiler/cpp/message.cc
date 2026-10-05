@@ -2790,7 +2790,8 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
           {"impl_dtor", [&] { p->Emit("this_._impl_.~Impl_();\n"); }},
       },
       R"cc(
-        inline void $Msg$::SharedDtor(MessageLite& self) {
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE void $Msg$::SharedDtor(
+            MessageLite& self) {
           $Msg$& this_ = static_cast<$Msg$&>(self);
           $has_bit_consistency$;
           this_._internal_metadata_.Delete<$unknown_fields_type$>();

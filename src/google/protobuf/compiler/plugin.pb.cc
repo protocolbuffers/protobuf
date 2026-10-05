@@ -795,7 +795,8 @@ Version::~Version() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.Version)
   SharedDtor(*this);
 }
-inline void Version::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Version::SharedDtor(
+    MessageLite& self) {
   Version& this_ = static_cast<Version&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1089,7 +1090,8 @@ CodeGeneratorRequest::~CodeGeneratorRequest() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorRequest)
   SharedDtor(*this);
 }
-inline void CodeGeneratorRequest::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CodeGeneratorRequest::SharedDtor(
+    MessageLite& self) {
   CodeGeneratorRequest& this_ = static_cast<CodeGeneratorRequest&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1400,7 +1402,8 @@ CodeGeneratorResponse_File::~CodeGeneratorResponse_File() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse.File)
   SharedDtor(*this);
 }
-inline void CodeGeneratorResponse_File::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CodeGeneratorResponse_File::SharedDtor(
+    MessageLite& self) {
   CodeGeneratorResponse_File& this_ = static_cast<CodeGeneratorResponse_File&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1677,7 +1680,8 @@ CodeGeneratorResponse::~CodeGeneratorResponse() {
   // @@protoc_insertion_point(destructor:google.protobuf.compiler.CodeGeneratorResponse)
   SharedDtor(*this);
 }
-inline void CodeGeneratorResponse::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CodeGeneratorResponse::SharedDtor(
+    MessageLite& self) {
   CodeGeneratorResponse& this_ = static_cast<CodeGeneratorResponse&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

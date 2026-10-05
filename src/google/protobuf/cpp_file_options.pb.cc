@@ -252,7 +252,8 @@ CppFileOptions::~CppFileOptions() {
   // @@protoc_insertion_point(destructor:pb.file.CppFileOptions)
   SharedDtor(*this);
 }
-inline void CppFileOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CppFileOptions::SharedDtor(
+    MessageLite& self) {
   CppFileOptions& this_ = static_cast<CppFileOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

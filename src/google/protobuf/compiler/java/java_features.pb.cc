@@ -456,7 +456,8 @@ JavaFeatures::~JavaFeatures() {
   // @@protoc_insertion_point(destructor:pb.JavaFeatures)
   SharedDtor(*this);
 }
-inline void JavaFeatures::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void JavaFeatures::SharedDtor(
+    MessageLite& self) {
   JavaFeatures& this_ = static_cast<JavaFeatures&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

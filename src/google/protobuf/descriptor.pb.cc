@@ -6503,7 +6503,8 @@ FileDescriptorSet::~FileDescriptorSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorSet)
   SharedDtor(*this);
 }
-inline void FileDescriptorSet::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileDescriptorSet::SharedDtor(
+    MessageLite& self) {
   FileDescriptorSet& this_ = static_cast<FileDescriptorSet&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -6823,7 +6824,8 @@ FileDescriptorProto::~FileDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileDescriptorProto)
   SharedDtor(*this);
 }
-inline void FileDescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileDescriptorProto::SharedDtor(
+    MessageLite& self) {
   FileDescriptorProto& this_ = static_cast<FileDescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -7358,7 +7360,8 @@ DescriptorProto_ExtensionRange::~DescriptorProto_ExtensionRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ExtensionRange)
   SharedDtor(*this);
 }
-inline void DescriptorProto_ExtensionRange::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DescriptorProto_ExtensionRange::SharedDtor(
+    MessageLite& self) {
   DescriptorProto_ExtensionRange& this_ = static_cast<DescriptorProto_ExtensionRange&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -7593,7 +7596,8 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
   SharedDtor(*this);
 }
-inline void DescriptorProto_ReservedRange::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DescriptorProto_ReservedRange::SharedDtor(
+    MessageLite& self) {
   DescriptorProto_ReservedRange& this_ = static_cast<DescriptorProto_ReservedRange&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -7907,7 +7911,8 @@ DescriptorProto::~DescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto)
   SharedDtor(*this);
 }
-inline void DescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DescriptorProto::SharedDtor(
+    MessageLite& self) {
   DescriptorProto& this_ = static_cast<DescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -8377,7 +8382,8 @@ ExtensionRangeOptions_Declaration::~ExtensionRangeOptions_Declaration() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions.Declaration)
   SharedDtor(*this);
 }
-inline void ExtensionRangeOptions_Declaration::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ExtensionRangeOptions_Declaration::SharedDtor(
+    MessageLite& self) {
   ExtensionRangeOptions_Declaration& this_ = static_cast<ExtensionRangeOptions_Declaration&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -8667,7 +8673,8 @@ ExtensionRangeOptions::~ExtensionRangeOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ExtensionRangeOptions)
   SharedDtor(*this);
 }
-inline void ExtensionRangeOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ExtensionRangeOptions::SharedDtor(
+    MessageLite& self) {
   ExtensionRangeOptions& this_ = static_cast<ExtensionRangeOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -8981,7 +8988,8 @@ FieldDescriptorProto::~FieldDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldDescriptorProto)
   SharedDtor(*this);
 }
-inline void FieldDescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldDescriptorProto::SharedDtor(
+    MessageLite& self) {
   FieldDescriptorProto& this_ = static_cast<FieldDescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -9376,7 +9384,8 @@ OneofDescriptorProto::~OneofDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofDescriptorProto)
   SharedDtor(*this);
 }
-inline void OneofDescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void OneofDescriptorProto::SharedDtor(
+    MessageLite& self) {
   OneofDescriptorProto& this_ = static_cast<OneofDescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -9592,7 +9601,8 @@ EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() 
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   SharedDtor(*this);
 }
-inline void EnumDescriptorProto_EnumReservedRange::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumDescriptorProto_EnumReservedRange::SharedDtor(
+    MessageLite& self) {
   EnumDescriptorProto_EnumReservedRange& this_ = static_cast<EnumDescriptorProto_EnumReservedRange&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -9846,7 +9856,8 @@ EnumDescriptorProto::~EnumDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto)
   SharedDtor(*this);
 }
-inline void EnumDescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumDescriptorProto::SharedDtor(
+    MessageLite& self) {
   EnumDescriptorProto& this_ = static_cast<EnumDescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -10176,7 +10187,8 @@ EnumValueDescriptorProto::~EnumValueDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueDescriptorProto)
   SharedDtor(*this);
 }
-inline void EnumValueDescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumValueDescriptorProto::SharedDtor(
+    MessageLite& self) {
   EnumValueDescriptorProto& this_ = static_cast<EnumValueDescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -10436,7 +10448,8 @@ ServiceDescriptorProto::~ServiceDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceDescriptorProto)
   SharedDtor(*this);
 }
-inline void ServiceDescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ServiceDescriptorProto::SharedDtor(
+    MessageLite& self) {
   ServiceDescriptorProto& this_ = static_cast<ServiceDescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -10705,7 +10718,8 @@ MethodDescriptorProto::~MethodDescriptorProto() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodDescriptorProto)
   SharedDtor(*this);
 }
-inline void MethodDescriptorProto::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void MethodDescriptorProto::SharedDtor(
+    MessageLite& self) {
   MethodDescriptorProto& this_ = static_cast<MethodDescriptorProto&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -11051,7 +11065,8 @@ FileOptions::~FileOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FileOptions)
   SharedDtor(*this);
 }
-inline void FileOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FileOptions::SharedDtor(
+    MessageLite& self) {
   FileOptions& this_ = static_cast<FileOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -11646,7 +11661,8 @@ MessageOptions::~MessageOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MessageOptions)
   SharedDtor(*this);
 }
-inline void MessageOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void MessageOptions::SharedDtor(
+    MessageLite& self) {
   MessageOptions& this_ = static_cast<MessageOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -11951,7 +11967,8 @@ FieldOptions_EditionDefault::~FieldOptions_EditionDefault() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions.EditionDefault)
   SharedDtor(*this);
 }
-inline void FieldOptions_EditionDefault::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldOptions_EditionDefault::SharedDtor(
+    MessageLite& self) {
   FieldOptions_EditionDefault& this_ = static_cast<FieldOptions_EditionDefault&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -12168,7 +12185,8 @@ FieldOptions_FeatureSupport::~FieldOptions_FeatureSupport() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions.FeatureSupport)
   SharedDtor(*this);
 }
-inline void FieldOptions_FeatureSupport::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldOptions_FeatureSupport::SharedDtor(
+    MessageLite& self) {
   FieldOptions_FeatureSupport& this_ = static_cast<FieldOptions_FeatureSupport&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -12492,7 +12510,8 @@ FieldOptions::~FieldOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.FieldOptions)
   SharedDtor(*this);
 }
-inline void FieldOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FieldOptions::SharedDtor(
+    MessageLite& self) {
   FieldOptions& this_ = static_cast<FieldOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -12957,7 +12976,8 @@ OneofOptions::~OneofOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.OneofOptions)
   SharedDtor(*this);
 }
-inline void OneofOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void OneofOptions::SharedDtor(
+    MessageLite& self) {
   OneofOptions& this_ = static_cast<OneofOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -13232,7 +13252,8 @@ EnumOptions::~EnumOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumOptions)
   SharedDtor(*this);
 }
-inline void EnumOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumOptions::SharedDtor(
+    MessageLite& self) {
   EnumOptions& this_ = static_cast<EnumOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -13549,7 +13570,8 @@ EnumValueOptions::~EnumValueOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumValueOptions)
   SharedDtor(*this);
 }
-inline void EnumValueOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumValueOptions::SharedDtor(
+    MessageLite& self) {
   EnumValueOptions& this_ = static_cast<EnumValueOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -13874,7 +13896,8 @@ ServiceOptions::~ServiceOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.ServiceOptions)
   SharedDtor(*this);
 }
-inline void ServiceOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ServiceOptions::SharedDtor(
+    MessageLite& self) {
   ServiceOptions& this_ = static_cast<ServiceOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -14166,7 +14189,8 @@ MethodOptions::~MethodOptions() {
   // @@protoc_insertion_point(destructor:google.protobuf.MethodOptions)
   SharedDtor(*this);
 }
-inline void MethodOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void MethodOptions::SharedDtor(
+    MessageLite& self) {
   MethodOptions& this_ = static_cast<MethodOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -14448,7 +14472,8 @@ UninterpretedOption_NamePart::~UninterpretedOption_NamePart() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption.NamePart)
   SharedDtor(*this);
 }
-inline void UninterpretedOption_NamePart::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UninterpretedOption_NamePart::SharedDtor(
+    MessageLite& self) {
   UninterpretedOption_NamePart& this_ = static_cast<UninterpretedOption_NamePart&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -14683,7 +14708,8 @@ UninterpretedOption::~UninterpretedOption() {
   // @@protoc_insertion_point(destructor:google.protobuf.UninterpretedOption)
   SharedDtor(*this);
 }
-inline void UninterpretedOption::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UninterpretedOption::SharedDtor(
+    MessageLite& self) {
   UninterpretedOption& this_ = static_cast<UninterpretedOption&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -15097,7 +15123,8 @@ FeatureSet::~FeatureSet() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSet)
   SharedDtor(*this);
 }
-inline void FeatureSet::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FeatureSet::SharedDtor(
+    MessageLite& self) {
   FeatureSet& this_ = static_cast<FeatureSet&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -15443,7 +15470,8 @@ FeatureSetDefaults_FeatureSetEditionDefault::~FeatureSetDefaults_FeatureSetEditi
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
   SharedDtor(*this);
 }
-inline void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FeatureSetDefaults_FeatureSetEditionDefault::SharedDtor(
+    MessageLite& self) {
   FeatureSetDefaults_FeatureSetEditionDefault& this_ = static_cast<FeatureSetDefaults_FeatureSetEditionDefault&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -15716,7 +15744,8 @@ FeatureSetDefaults::~FeatureSetDefaults() {
   // @@protoc_insertion_point(destructor:google.protobuf.FeatureSetDefaults)
   SharedDtor(*this);
 }
-inline void FeatureSetDefaults::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FeatureSetDefaults::SharedDtor(
+    MessageLite& self) {
   FeatureSetDefaults& this_ = static_cast<FeatureSetDefaults&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -15993,7 +16022,8 @@ SourceCodeInfo_Location::~SourceCodeInfo_Location() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo.Location)
   SharedDtor(*this);
 }
-inline void SourceCodeInfo_Location::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void SourceCodeInfo_Location::SharedDtor(
+    MessageLite& self) {
   SourceCodeInfo_Location& this_ = static_cast<SourceCodeInfo_Location&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -16292,7 +16322,8 @@ SourceCodeInfo::~SourceCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.SourceCodeInfo)
   SharedDtor(*this);
 }
-inline void SourceCodeInfo::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void SourceCodeInfo::SharedDtor(
+    MessageLite& self) {
   SourceCodeInfo& this_ = static_cast<SourceCodeInfo&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -16521,7 +16552,8 @@ GeneratedCodeInfo_Annotation::~GeneratedCodeInfo_Annotation() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo.Annotation)
   SharedDtor(*this);
 }
-inline void GeneratedCodeInfo_Annotation::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void GeneratedCodeInfo_Annotation::SharedDtor(
+    MessageLite& self) {
   GeneratedCodeInfo_Annotation& this_ = static_cast<GeneratedCodeInfo_Annotation&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -16801,7 +16833,8 @@ GeneratedCodeInfo::~GeneratedCodeInfo() {
   // @@protoc_insertion_point(destructor:google.protobuf.GeneratedCodeInfo)
   SharedDtor(*this);
 }
-inline void GeneratedCodeInfo::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void GeneratedCodeInfo::SharedDtor(
+    MessageLite& self) {
   GeneratedCodeInfo& this_ = static_cast<GeneratedCodeInfo&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();

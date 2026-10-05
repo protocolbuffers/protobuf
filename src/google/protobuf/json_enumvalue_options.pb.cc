@@ -253,7 +253,8 @@ JsonEnumValueOptions::~JsonEnumValueOptions() {
   // @@protoc_insertion_point(destructor:pb.enumvalue.JsonEnumValueOptions)
   SharedDtor(*this);
 }
-inline void JsonEnumValueOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void JsonEnumValueOptions::SharedDtor(
+    MessageLite& self) {
   JsonEnumValueOptions& this_ = static_cast<JsonEnumValueOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
