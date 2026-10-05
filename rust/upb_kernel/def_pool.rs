@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::reflection::{self, DefPool, DefPoolInitPtr, MessageDef};
+use super::upb_reflection::{self, DefPool, DefPoolInitPtr, MessageDef};
 use super::{MiniTableEnumPtr, MiniTableExtensionPtr, MiniTablePtr, THREAD_LOCAL_ARENA};
 use std::ffi::CStr;
 use std::sync::{Mutex, OnceLock};
@@ -69,8 +69,10 @@ pub unsafe fn build_def_init(
     }
 
     THREAD_LOCAL_ARENA.with(|arena| unsafe {
-        let layout = reflection::build_mini_table_file(arena, msgs, enums, exts);
-        DefPoolInit(reflection::build_def_pool_init(arena, filename, descriptor, &raw_deps, layout))
+        let layout = upb_reflection::build_mini_table_file(arena, msgs, enums, exts);
+        DefPoolInit(upb_reflection::build_def_pool_init(
+            arena, filename, descriptor, &raw_deps, layout,
+        ))
     })
 }
 
