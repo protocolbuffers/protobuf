@@ -212,11 +212,17 @@ struct UninterpretedOption_NamePartGlobalsTypeInternal : ::_pbi::MessageGlobalsB
    UninterpretedOption_NamePartGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<UninterpretedOption_NamePart>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption_NamePart>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) UninterpretedOption_NamePartGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) UninterpretedOption_NamePartGlobalsTypeInternal();
+    ::new (&_default)
+        UninterpretedOption_NamePart(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~UninterpretedOption_NamePartGlobalsTypeInternal() {}
   union {
@@ -370,11 +376,17 @@ struct SourceCodeInfo_LocationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    SourceCodeInfo_LocationGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<SourceCodeInfo_Location>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo_Location>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) SourceCodeInfo_LocationGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) SourceCodeInfo_LocationGlobalsTypeInternal();
+    ::new (&_default)
+        SourceCodeInfo_Location(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~SourceCodeInfo_LocationGlobalsTypeInternal() {}
   union {
@@ -520,11 +532,17 @@ struct GeneratedCodeInfo_AnnotationGlobalsTypeInternal : ::_pbi::MessageGlobalsB
    GeneratedCodeInfo_AnnotationGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<GeneratedCodeInfo_Annotation>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo_Annotation>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) GeneratedCodeInfo_AnnotationGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) GeneratedCodeInfo_AnnotationGlobalsTypeInternal();
+    ::new (&_default)
+        GeneratedCodeInfo_Annotation(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~GeneratedCodeInfo_AnnotationGlobalsTypeInternal() {}
   union {
@@ -670,11 +688,17 @@ struct FieldOptions_FeatureSupportGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
    FieldOptions_FeatureSupportGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FieldOptions_FeatureSupport>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_FeatureSupport>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FieldOptions_FeatureSupportGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FieldOptions_FeatureSupportGlobalsTypeInternal();
+    ::new (&_default)
+        FieldOptions_FeatureSupport(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptions_FeatureSupportGlobalsTypeInternal() {}
   union {
@@ -792,11 +816,17 @@ struct FieldOptions_EditionDefaultGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
    FieldOptions_EditionDefaultGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FieldOptions_EditionDefault>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions_EditionDefault>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FieldOptions_EditionDefaultGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FieldOptions_EditionDefaultGlobalsTypeInternal();
+    ::new (&_default)
+        FieldOptions_EditionDefault(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptions_EditionDefaultGlobalsTypeInternal() {}
   union {
@@ -887,11 +917,17 @@ struct FeatureSet_VisibilityFeatureGlobalsTypeInternal : ::_pbi::MessageGlobalsB
    FeatureSet_VisibilityFeatureGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FeatureSet_VisibilityFeature>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet_VisibilityFeature>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FeatureSet_VisibilityFeatureGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FeatureSet_VisibilityFeatureGlobalsTypeInternal();
+    ::new (&_default)
+        FeatureSet_VisibilityFeature(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSet_VisibilityFeatureGlobalsTypeInternal() {}
   union {
@@ -982,11 +1018,17 @@ struct FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal : ::_pbi::MessageGlobals
    FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FeatureSet_ProtoLimitsFeature>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet_ProtoLimitsFeature>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal();
+    ::new (&_default)
+        FeatureSet_ProtoLimitsFeature(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSet_ProtoLimitsFeatureGlobalsTypeInternal() {}
   union {
@@ -1166,11 +1208,17 @@ struct FeatureSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    FeatureSetGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FeatureSet>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSet>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FeatureSetGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FeatureSetGlobalsTypeInternal();
+    ::new (&_default)
+        FeatureSet(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetGlobalsTypeInternal() {}
   union {
@@ -1312,11 +1360,17 @@ struct ExtensionRangeOptions_DeclarationGlobalsTypeInternal : ::_pbi::MessageGlo
    ExtensionRangeOptions_DeclarationGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<ExtensionRangeOptions_Declaration>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions_Declaration>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) ExtensionRangeOptions_DeclarationGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) ExtensionRangeOptions_DeclarationGlobalsTypeInternal();
+    ::new (&_default)
+        ExtensionRangeOptions_Declaration(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ExtensionRangeOptions_DeclarationGlobalsTypeInternal() {}
   union {
@@ -1430,11 +1484,17 @@ struct EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal : ::_pbi::Messag
    EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<EnumDescriptorProto_EnumReservedRange>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto_EnumReservedRange>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal();
+    ::new (&_default)
+        EnumDescriptorProto_EnumReservedRange(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumDescriptorProto_EnumReservedRangeGlobalsTypeInternal() {}
   union {
@@ -1548,11 +1608,17 @@ struct DescriptorProto_ReservedRangeGlobalsTypeInternal : ::_pbi::MessageGlobals
    DescriptorProto_ReservedRangeGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<DescriptorProto_ReservedRange>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ReservedRange>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) DescriptorProto_ReservedRangeGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) DescriptorProto_ReservedRangeGlobalsTypeInternal();
+    ::new (&_default)
+        DescriptorProto_ReservedRange(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProto_ReservedRangeGlobalsTypeInternal() {}
   union {
@@ -1714,11 +1780,17 @@ struct UninterpretedOptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    UninterpretedOptionGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<UninterpretedOption>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<UninterpretedOption>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) UninterpretedOptionGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) UninterpretedOptionGlobalsTypeInternal();
+    ::new (&_default)
+        UninterpretedOption(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~UninterpretedOptionGlobalsTypeInternal() {}
   union {
@@ -1831,11 +1903,17 @@ struct SourceCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    SourceCodeInfoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<SourceCodeInfo>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<SourceCodeInfo>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) SourceCodeInfoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) SourceCodeInfoGlobalsTypeInternal();
+    ::new (&_default)
+        SourceCodeInfo(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~SourceCodeInfoGlobalsTypeInternal() {}
   union {
@@ -1948,11 +2026,17 @@ struct GeneratedCodeInfoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    GeneratedCodeInfoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<GeneratedCodeInfo>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<GeneratedCodeInfo>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) GeneratedCodeInfoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) GeneratedCodeInfoGlobalsTypeInternal();
+    ::new (&_default)
+        GeneratedCodeInfo(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~GeneratedCodeInfoGlobalsTypeInternal() {}
   union {
@@ -2078,11 +2162,17 @@ struct FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal : ::_pbi::
    FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FeatureSetDefaults_FeatureSetEditionDefault>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults_FeatureSetEditionDefault>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal();
+    ::new (&_default)
+        FeatureSetDefaults_FeatureSetEditionDefault(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetDefaults_FeatureSetEditionDefaultGlobalsTypeInternal() {}
   union {
@@ -2215,11 +2305,17 @@ struct ServiceOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    ServiceOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<ServiceOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) ServiceOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) ServiceOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        ServiceOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ServiceOptionsGlobalsTypeInternal() {}
   union {
@@ -2344,11 +2440,17 @@ struct OneofOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    OneofOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<OneofOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) OneofOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) OneofOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        OneofOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~OneofOptionsGlobalsTypeInternal() {}
   union {
@@ -2492,11 +2594,17 @@ struct MethodOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    MethodOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<MethodOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) MethodOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) MethodOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        MethodOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MethodOptionsGlobalsTypeInternal() {}
   union {
@@ -2649,11 +2757,17 @@ struct MessageOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    MessageOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<MessageOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<MessageOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) MessageOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) MessageOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        MessageOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MessageOptionsGlobalsTypeInternal() {}
   union {
@@ -2931,11 +3045,17 @@ struct FileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    FileOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FileOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FileOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FileOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        FileOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileOptionsGlobalsTypeInternal() {}
   union {
@@ -3146,11 +3266,17 @@ struct FieldOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    FieldOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FieldOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FieldOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FieldOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        FieldOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldOptionsGlobalsTypeInternal() {}
   union {
@@ -3275,11 +3401,17 @@ struct FeatureSetDefaultsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    FeatureSetDefaultsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FeatureSetDefaults>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FeatureSetDefaults>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FeatureSetDefaultsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FeatureSetDefaultsGlobalsTypeInternal();
+    ::new (&_default)
+        FeatureSetDefaults(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FeatureSetDefaultsGlobalsTypeInternal() {}
   union {
@@ -3425,11 +3557,17 @@ struct ExtensionRangeOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    ExtensionRangeOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<ExtensionRangeOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<ExtensionRangeOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) ExtensionRangeOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) ExtensionRangeOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        ExtensionRangeOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ExtensionRangeOptionsGlobalsTypeInternal() {}
   union {
@@ -3577,11 +3715,17 @@ struct EnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    EnumValueOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<EnumValueOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) EnumValueOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) EnumValueOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        EnumValueOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumValueOptionsGlobalsTypeInternal() {}
   union {
@@ -3725,11 +3869,17 @@ struct EnumOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    EnumOptionsGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<EnumOptions>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumOptions>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) EnumOptionsGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) EnumOptionsGlobalsTypeInternal();
+    ::new (&_default)
+        EnumOptions(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumOptionsGlobalsTypeInternal() {}
   union {
@@ -3847,11 +3997,17 @@ struct OneofDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    OneofDescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<OneofDescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<OneofDescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) OneofDescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) OneofDescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        OneofDescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~OneofDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -4003,11 +4159,17 @@ struct MethodDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    MethodDescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<MethodDescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<MethodDescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) MethodDescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) MethodDescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        MethodDescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~MethodDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -4200,11 +4362,17 @@ struct FieldDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    FieldDescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FieldDescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FieldDescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FieldDescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FieldDescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        FieldDescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FieldDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -4330,11 +4498,17 @@ struct EnumValueDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase 
    EnumValueDescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<EnumValueDescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValueDescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) EnumValueDescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) EnumValueDescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        EnumValueDescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumValueDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -4458,11 +4632,17 @@ struct DescriptorProto_ExtensionRangeGlobalsTypeInternal : ::_pbi::MessageGlobal
    DescriptorProto_ExtensionRangeGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<DescriptorProto_ExtensionRange>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto_ExtensionRange>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) DescriptorProto_ExtensionRangeGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) DescriptorProto_ExtensionRangeGlobalsTypeInternal();
+    ::new (&_default)
+        DescriptorProto_ExtensionRange(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProto_ExtensionRangeGlobalsTypeInternal() {}
   union {
@@ -4593,11 +4773,17 @@ struct ServiceDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    ServiceDescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<ServiceDescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<ServiceDescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) ServiceDescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) ServiceDescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        ServiceDescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~ServiceDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -4760,11 +4946,17 @@ struct EnumDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    EnumDescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<EnumDescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<EnumDescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) EnumDescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) EnumDescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        EnumDescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~EnumDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -4990,11 +5182,17 @@ struct DescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    DescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<DescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<DescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) DescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) DescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        DescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~DescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -5240,11 +5438,17 @@ struct FileDescriptorProtoGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    FileDescriptorProtoGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FileDescriptorProto>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorProto>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FileDescriptorProtoGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FileDescriptorProtoGlobalsTypeInternal();
+    ::new (&_default)
+        FileDescriptorProto(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileDescriptorProtoGlobalsTypeInternal() {}
   union {
@@ -5357,11 +5561,17 @@ struct FileDescriptorSetGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
    FileDescriptorSetGlobalsTypeInternal()
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FileDescriptorSet>()),
+        #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
+        #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
         _table(::_pbi::PrivateAccess::GenerateParseTable<FileDescriptorSet>(
             GetClassData())) {}
   #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-  void Init() { ::new (this) FileDescriptorSetGlobalsTypeInternal(); }
+  void Init() {
+    ::new (this) FileDescriptorSetGlobalsTypeInternal();
+    ::new (&_default)
+        FileDescriptorSet(::_pbi::ConstantInitialized{}, GetClassData());
+  }
   #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
   ~FileDescriptorSetGlobalsTypeInternal() {}
   union {
