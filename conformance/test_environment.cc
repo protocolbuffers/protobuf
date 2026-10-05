@@ -199,7 +199,7 @@ ConformanceEnvironment& ConformanceEnvironment::Install(
   // isn't registered with gtest itself: gtest only gets a forwarding proxy,
   // and the real environment intentionally lives until the process exits.
   // Only the environment object leaks, though; TearDown() releases the testee.
-  // TODO: b/410122039 - register it directly once the legacy suites are gone.
+  // TODO: register it directly once the legacy suites are gone.
   auto* environment = new ConformanceEnvironment(std::move(options));
   testing::AddGlobalTestEnvironment(new ForwardingEnvironment(environment));
   return *environment;
@@ -209,7 +209,8 @@ ConformanceEnvironment& ConformanceEnvironment::Get() {
   ABSL_CHECK(global_environment != nullptr)
       << "No ConformanceEnvironment has been installed.  Conformance test "
          "binaries must call ConformanceEnvironment::Install() before "
-         "RUN_ALL_TESTS().";
+         "RUN_ALL_TESTS(); the usual way to do that is to depend on the "
+         "test_environment_main library instead of a generic gtest main.";
   return *global_environment;
 }
 

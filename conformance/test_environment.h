@@ -10,9 +10,10 @@
 // ConformanceEnvironment is the process-global state of a conformance test
 // binary.  It owns the testee connection and the TestManager, records
 // statistics, and checks or regenerates the failure list at the end of the
-// run.  Exactly one is installed per test binary, before RUN_ALL_TESTS();
-// Install() hooks it into gtest.  Nothing in this header is meant for the
-// conformance suites themselves.
+// run.  Exactly one is installed per test binary, normally by
+// test_environment_main.cc from command-line flags (see
+// test_environment_flags.h).  Install() hooks it into gtest.  Nothing in this
+// header is meant for the conformance suites themselves.
 //
 // Everything here is single-threaded.  Use it only from gtest's main thread:
 // test bodies, fixtures and the environment hooks.  The global environment is
@@ -43,7 +44,9 @@ namespace protobuf {
 namespace conformance {
 namespace internal {
 
-// Options for a ConformanceEnvironment.
+// Options for a ConformanceEnvironment.  Normally populated from command-line
+// flags by test_environment_main.cc (see OptionsFromFlags() in
+// test_environment_flags.h).
 struct ConformanceEnvironmentOptions {
   // Exactly one of `runner`, `owned_runner` or `testee_binary` must be set.
   //
@@ -181,7 +184,7 @@ class ConformanceEnvironment : public testing::Environment {
   // makes it the process-global instance.  Must be called exactly once, before
   // RUN_ALL_TESTS():
   //
-  //   ConformanceEnvironment::Install(std::move(options));
+  //   ConformanceEnvironment::Install(OptionsFromFlags());
   //   return RUN_ALL_TESTS();
   //
   // The environment itself is never destroyed (see the class comment), but
@@ -189,7 +192,7 @@ class ConformanceEnvironment : public testing::Environment {
   static ConformanceEnvironment& Install(ConformanceEnvironmentOptions options);
 
   // Returns the process-global instance.  Check-fails if Install() hasn't been
-  // called.
+  // called, which typically means test_environment_main wasn't linked in.
   static ConformanceEnvironment& Get();
 
   // Loads the failure lists.  Any failure here is fatal, so no tests run.
