@@ -2444,7 +2444,16 @@ void GPBClearMessageAutocreator(GPBMessage *self) {
       [self setExtension:extension value:targetMessage];
       [targetMessage release];
     }
-    GPBCodedInputStream *newInput = [[GPBCodedInputStream alloc] initWithData:rawBytes];
+    // Parsing the MessageSet item payload requires a fresh CodedInputStream
+    // because the payload bytes are read into a separate buffer before the
+    // item's type-id and payload tags are correlated. Carry the parent
+    // stream's recursion depth across to the child stream so that nested
+    // MessageSet items (which would otherwise reset the depth to 0 on every
+    // hop) remain bounded by kDefaultRecursionLimit. This mirrors the
+    // depth-inheritance behavior of the C++ ParseContext spawn helper.
+    GPBCodedInputStream *newInput =
+        [[GPBCodedInputStream alloc] initWithData:rawBytes
+                             parentRecursionDepth:input->state_.recursionDepth];
     @try {
       [targetMessage mergeFromCodedInputStream:newInput
                              extensionRegistry:extensionRegistry

@@ -47,11 +47,22 @@ class PyWeakValueMap {
   // Returns a new reference to the cached value, or nullptr if not found.
   PyObject* Get(const void* key, const PyTypeObject* type);
 
-  // Removes the entry from the map. Returns true if the entry was found.
-  bool Erase(const void* key);
-
   // Removes the entry from the cache, but only if it matches the given value.
-  void EraseIfEqual(const void* key, PyObject* value);
+  //
+  // This is useful in Dealloc() functions, since Dealloc() can always race with
+  // other threads that insert a new value into the map.
+  void EraseIfEqual(const void* key, PyObject* value) {
+    (void)EraseIfEqualImpl(key, value);
+  }
+
+  // Removes the entry from the cache. Checks that the entry was present and
+  // matched the given value.
+  //
+  // This is useful in cases where the caller holds a strong reference to the
+  // value, and can guarantee that the value is still present in the map.
+  void Erase(const void* key, PyObject* value) {
+    ABSL_CHECK(EraseIfEqualImpl(key, value));
+  }
 
   // Returns true if the map is empty.
   bool IsEmpty() const;
@@ -73,6 +84,7 @@ class PyWeakValueMap {
   void ForEach(Func&& func);
 
  private:
+  bool EraseIfEqualImpl(const void* key, PyObject* value);
 #ifdef Py_GIL_DISABLED
   mutable absl::Mutex mutex_;
   absl::flat_hash_map<const void*, PyObject*> cache_ ABSL_GUARDED_BY(mutex_);
@@ -82,6 +94,8 @@ class PyWeakValueMap {
 };
 
 #ifdef Py_GIL_DISABLED
+
+#include "absl/container/inlined_vector.h"
 
 template <class Func>
 PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
@@ -102,15 +116,22 @@ PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
 
 template <typename Func>
 void PyWeakValueMap::ForEach(Func&& func) {
-  absl::MutexLock lock(&mutex_);
-  for (auto it = cache_.begin(); it != cache_.end();) {
-    if (PyUnstable_TryIncRef(it->second)) {
-      func(it->first, it->second);
-      Py_DECREF(it->second);
-      ++it;
-    } else {
-      cache_.erase(it++);
+  absl::InlinedVector<std::pair<const void*, PyObject*>, 8> items;
+  {
+    absl::MutexLock lock(&mutex_);
+    items.reserve(cache_.size());
+    for (auto it = cache_.begin(); it != cache_.end();) {
+      if (PyUnstable_TryIncRef(it->second)) {
+        items.emplace_back(it->first, it->second);
+        ++it;
+      } else {
+        cache_.erase(it++);
+      }
     }
+  }
+  for (const auto& [key, val] : items) {
+    func(key, val);
+    Py_DECREF(val);
   }
 }
 

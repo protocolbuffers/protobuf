@@ -15,6 +15,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/cpp/helpers.h"
@@ -40,6 +41,27 @@ namespace rust {
 namespace {
 
 using Sub = ::google::protobuf::io::Printer::Sub;
+
+bool HasReflectionSupport(Context& ctx, const Descriptor& msg) {
+  return !ctx.opts().force_lite_runtime &&
+         msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME;
+}
+
+bool HasExtensions(const Descriptor& msg) {
+  if (msg.extension_count() > 0) return true;
+  for (int i = 0; i < msg.nested_type_count(); ++i) {
+    if (HasExtensions(*msg.nested_type(i))) return true;
+  }
+  return false;
+}
+
+bool HasExtensions(const FileDescriptor& file) {
+  if (file.extension_count() > 0) return true;
+  for (int i = 0; i < file.message_type_count(); ++i) {
+    if (HasExtensions(*file.message_type(i))) return true;
+  }
+  return false;
+}
 
 void MessageNew(Context& ctx, const Descriptor& msg) {
   switch (ctx.opts().kernel) {
@@ -224,8 +246,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
           if (scc.GetRepresentative() == &msg) {
             for (const Descriptor* d : scc.descriptors) {
               std::string mini_descriptor =
-                  pool.FindMessageByName(d->full_name().data())
-                      .MiniDescriptorEncode();
+                  pool.FindMessageByName(d->full_name()).MiniDescriptorEncode();
               ctx.Emit({{"name", RsTypePath(ctx, *d)},
                         {"minitable_symbol_name",
                          QualifiedUpbMiniTableName(ctx, *d)},
@@ -237,8 +258,8 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
               )rs");
             }
             for (const Descriptor* d : scc.descriptors) {
-              UpbMiniTableLinking(
-                  ctx, *d, pool.FindMessageByName(d->full_name().data()), scc);
+              UpbMiniTableLinking(ctx, *d,
+                                  pool.FindMessageByName(d->full_name()), scc);
             }
           } else {
             ctx.Emit(
@@ -269,6 +290,30 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
   if (msg.options().map_entry()) {
     return;
   }
+
+    // Extensions are not generated in OSS, so neither is `def_init()` for a
+    // file that has them or imports one that does.
+    if (!ctx.opts().strip_nonfunctional_codegen &&
+        HasReflectionSupport(ctx, msg) &&
+        !FileOrImportsHaveExtensions(*msg.file())) {
+    ctx.Emit({{"full_name", msg.full_name()},
+              {"def_init", absl::StrCat(RustModule(ctx, *msg.file()),
+                                        DefInitName(*msg.file()))}},
+             R"rs(
+          unsafe impl $pbr$::UpbWithReflection for $Msg$ {
+            const FULL_NAME: &'static str = "$full_name$";
+            fn def_init() -> $pbr$::DefPoolInit {
+              $def_init$($pbi$::Private)
+            }
+            fn message_def_cached() -> &'static $pbr$::MessageDefCached {
+              static CACHED: $pbr$::MessageDefCached =
+                  $pbr$::MessageDefCached::new();
+              &CACHED
+            }
+          }
+        )rs");
+  }
+
   ctx.Emit(R"rs(
       unsafe impl $pbr$::UpbGetArena for $Msg$ {
         fn get_arena(&mut self, _private: $pbi$::Private) -> &$pbr$::Arena {
@@ -376,6 +421,14 @@ void GenerateDefaultInstanceImpl(Context& ctx, const Descriptor& msg) {
 
 }  // namespace
 
+bool FileOrImportsHaveExtensions(const FileDescriptor& file) {
+  if (HasExtensions(file)) return true;
+  for (int i = 0; i < file.dependency_count(); ++i) {
+    if (FileOrImportsHaveExtensions(*file.dependency(i))) return true;
+  }
+  return false;
+}
+
 void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
   if (ctx.is_upb()) {
     ctx.Emit({{"minitable_symbol_name", UpbMiniTableName(msg)}},
@@ -392,13 +445,15 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       // Map entry messages are an implementation detail, so we restrict their
       // visibility. The only reason we generate anything for them at all is
       // that it is useful to have map entries implement the
-      // AssociatedMiniTable trait.
+      // AssociatedMiniTable trait. They are `pub(crate)` rather than
+      // `pub(super)` because the file's `def_init()` lists every entry's
+      // MiniTable from the file module, however deeply the entry is nested.
       ctx.Emit({{"Msg", MessageRsName(msg)},
                 {"upb_generated_message_trait_impls",
                  [&] { UpbGeneratedMessageTraitImpls(ctx, msg, pool); }}},
                R"rs(
           #[allow(dead_code)]
-          pub(super) struct $Msg$;
+          pub(crate) struct $Msg$;
 
           $upb_generated_message_trait_impls$
       )rs");
@@ -406,7 +461,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
     return;
   }
 
-  upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name().data());
+  upb::MessageDefPtr upb_msg = pool.FindMessageByName(msg.full_name());
   ctx.Emit(
       {
           // There's also ${$/$}$-style begin and end tokens, but those might
@@ -711,7 +766,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
 
         impl<'msg> $pb$::AsMut for $Msg$Mut<'msg> {
           type MutProxied = $Msg$;
-          fn as_mut(&mut self) -> $Msg$Mut<'msg> {
+          fn as_mut(&mut self) -> $Msg$Mut<'_> {
             self.inner.reborrow().into()
           }
         }
@@ -869,8 +924,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       }
     )rs");
 
-    if (!ctx.opts().force_lite_runtime &&
-        msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME) {
+    if (HasReflectionSupport(ctx, msg)) {
       ctx.Emit({{"Msg", MessageRsName(msg)}},
                R"rs(
               impl $pb$::MessageDescriptorInterop for $Msg$ {
@@ -878,6 +932,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                   unsafe { $pbr$::proto2_rust_Message_get_descriptor(<$Msg$View as $std$::default::Default>::default().raw_msg()) }
                 }
               }
+              impl $pb$::WithReflection for $Msg$ {}
             )rs");
     }
   }

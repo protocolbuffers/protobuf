@@ -24,6 +24,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -652,10 +653,11 @@ struct WireFormat::MessageSetParser {
                     : reflection->MutableMessage(msg, field,
                                                  ctx->data().factory);
             const char* p;
-            // We can't use regular parse from string as we have to track
-            // proper recursion depth and descriptor pools. Spawn a new
-            // ParseContext inheriting those attributes.
-            ParseContext tmp_ctx(ParseContext::kSpawn, *ctx, &p, payload);
+            // Use Spawn to transfer all attributes for recursion.
+            // However, use Spawn<1> to decrease depth an extra time to take
+            // into account that `payload` came from a subfield.
+            ParseContext tmp_ctx(ParseContext::Spawn<1>{}, *ctx, &p, payload);
+            GOOGLE_PROTOBUF_PARSER_ASSERT(p);
             GOOGLE_PROTOBUF_PARSER_ASSERT(value->_InternalParse(p, &tmp_ctx) &&
                                            tmp_ctx.EndedAtLimit());
           }
@@ -1372,12 +1374,12 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
       } break;
 
       case FieldDescriptor::TYPE_ENUM: {
-        const EnumValueDescriptor* value =
+        int value =
             field->is_repeated()
-                ? message_reflection->GetRepeatedEnum(message, field, j)
-                : message_reflection->GetEnum(message, field);
-        target = WireFormatLite::WriteEnumToArray(field->number(),
-                                                  value->number(), target);
+                ? message_reflection->GetRepeatedEnumValue(message, field, j)
+                : message_reflection->GetEnumValue(message, field);
+        target =
+            WireFormatLite::WriteEnumToArray(field->number(), value, target);
         break;
       }
 
@@ -1711,11 +1713,11 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
       if (field->is_repeated()) {
         for (size_t j = 0; j < count; j++) {
           data_size += WireFormatLite::EnumSize(
-              message_reflection->GetRepeatedEnum(message, field, j)->number());
+              message_reflection->GetRepeatedEnumValue(message, field, j));
         }
       } else {
         data_size += WireFormatLite::EnumSize(
-            message_reflection->GetEnum(message, field)->number());
+            message_reflection->GetEnumValue(message, field));
       }
       break;
     }

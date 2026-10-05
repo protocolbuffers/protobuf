@@ -23,9 +23,11 @@ namespace google {
 namespace protobuf {
 
 class MessageLite;
+class TypeId;
 
 namespace internal {
 struct ClassData;
+TypeId TypeIdFromClassData(const ClassData* data);
 }  // namespace internal
 
 // A `std::type_info` equivalent for protobuf message types.
@@ -97,10 +99,20 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED TypeId {
   }
 
  private:
+  friend TypeId internal::TypeIdFromClassData(const internal::ClassData* data);
+
   constexpr explicit TypeId(const internal::ClassData* data) : data_(data) {}
 
   const internal::ClassData* data_;
 };
+
+namespace internal {
+
+inline TypeId TypeIdFromClassData(const ClassData* data) {
+  return TypeId(data);
+}
+
+}  // namespace internal
 
 }  // namespace protobuf
 }  // namespace google

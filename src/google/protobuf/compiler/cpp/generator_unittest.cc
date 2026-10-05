@@ -8,9 +8,11 @@
 #include "google/protobuf/compiler/cpp/generator.h"
 
 #include <memory>
+#include <string>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
+#include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/command_line_interface_tester.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/cpp_file_options.pb.h"
@@ -376,6 +378,42 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       "extensions");
 }
 
+TEST_F(CppGeneratorTest, DeprecatedEnumMessageIsNotSelfWarning) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto3";
+    message Result {
+      enum Status {
+        option deprecated = true;
+        UNSET = 0;
+        OK = 1;
+        FAILED = 2;
+      }
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  ExpectFileContentContainsSubstring(
+      "foo.pb.h",
+      "PROTOBUF_IGNORE_DEPRECATION_START\n"
+      "template <>\n"
+      "internal::EnumTraitsT<::Result_Status_internal_data_>\n"
+      "    internal::EnumTraitsImpl::value<::Result_Status>;\n"
+      "PROTOBUF_IGNORE_DEPRECATION_STOP\n");
+  ExpectFileContentContainsSubstring(
+      "foo.pb.h",
+      "PROTOBUF_IGNORE_DEPRECATION_START\n"
+      "template <>\n"
+      "struct is_proto_enum<::Result_Status> : std::true_type {};\n"
+      "template <>\n"
+      "inline const EnumDescriptor* PROTOBUF_NONNULL "
+      "GetEnumDescriptor<::Result_Status>() {\n"
+      "  return ::Result_Status_descriptor();\n"
+      "}\n"
+      "PROTOBUF_IGNORE_DEPRECATION_STOP\n");
+}
+
 TEST_F(CppGeneratorTest, DeprecatedNestedEnumValueImportIsNotSelfWarning) {
   // The class-scoped alias for a deprecated nested enum value initializes
   // itself from the deprecated enumerator, which would otherwise trigger
@@ -420,6 +458,82 @@ TEST_F(CppGeneratorTest, NonDeprecatedEnumValueImportHasNoSuppression) {
   ExpectNoErrors();
   ExpectFileContentNotContainsSubstring("foo.pb.h",
                                         "PROTOBUF_IGNORE_DEPRECATION_START");
+}
+
+TEST_F(CppGeneratorTest, MapOptionsDeterministicSerialization) {
+  CreateTempFile("map_option.proto",
+                 absl::Substitute(
+                     R"schema(
+    syntax = "proto2";
+    package test;
+    import "$0";
+
+    message MapOption {
+      map<string, string> values = 1;
+    }
+
+    extend $1 {
+      optional MapOption file_opt = 50000;
+    }
+    extend $2 {
+      optional MapOption msg_opt = 50001;
+    }
+    extend $3 {
+      optional MapOption field_opt = 50002;
+    }
+  )schema",
+                     google::protobuf::FileOptions::descriptor()->file()->name(),
+                     google::protobuf::FileOptions::descriptor()->full_name(),
+                     google::protobuf::MessageOptions::descriptor()->full_name(),
+                     google::protobuf::FieldOptions::descriptor()->full_name()));
+
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    import "map_option.proto";
+
+    option (test.file_opt) = {
+      values: [
+        { key: "a", value: "1" },
+        { key: "b", value: "2" },
+        { key: "c", value: "3" },
+        { key: "d", value: "4" }
+      ]
+    };
+
+    message Foo {
+      option (test.msg_opt) = {
+        values: [
+          { key: "x", value: "24" },
+          { key: "y", value: "25" },
+          { key: "z", value: "26" }
+        ]
+      };
+      optional int32 bar = 1 [(test.field_opt) = {
+        values: [
+          { key: "m", value: "13" },
+          { key: "n", value: "14" }
+        ]
+      }];
+    }
+  )schema");
+
+  CreateTempDir("out1");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir/out1 "
+      "foo.proto");
+  ExpectNoErrors();
+  std::string file_content1 = FileContents("out1/foo.pb.cc");
+
+  CreateTempDir("out2");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir/out2 "
+      "foo.proto");
+  ExpectNoErrors();
+  std::string file_content2 = FileContents("out2/foo.pb.cc");
+
+  EXPECT_EQ(file_content1, file_content2);
 }
 
 

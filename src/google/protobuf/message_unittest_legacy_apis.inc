@@ -79,18 +79,14 @@ TEST(MESSAGE_TEST_NAME, LegacyAddMethodsOnRepeatedStringField) {
 }
 
 
-namespace {
-template <typename T>
-static const internal::TcParseTableBase* GetTableIfAvailable(...) {
-  return nullptr;
+TEST(MESSAGE_TEST_NAME, MutableStringDoesNotLeak_b552593973) {
+  const std::string long_string(1000, 'x');
+  {
+    Arena arena;
+    auto* msg = Arena::Create<UNITTEST::TestAllTypes>(&arena);
+    msg->mutable_optional_string()->assign(long_string);
+  }
 }
-
-template <typename T>
-static const internal::TcParseTableBase* GetTableIfAvailable(
-    decltype(internal::TcParser::GetTable<T>())) {
-  return internal::TcParser::GetTable<T>();
-}
-}  // namespace
 
 }  // namespace protobuf
 }  // namespace google

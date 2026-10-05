@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -345,5 +346,164 @@ public class LazyStringArrayListTest {
     } catch (UnsupportedOperationException e) {
       // expected
     }
+  }
+
+  @Test
+  public void equals_sameInstance_returnsTrue() {
+    LazyStringArrayList list = new LazyStringArrayList();
+    list.add(STRING_A);
+    assertThat(list.equals(list)).isTrue();
+  }
+
+  @Test
+  public void equals_null_returnsFalse() {
+    LazyStringArrayList list = new LazyStringArrayList();
+    list.add(STRING_A);
+    assertThat(list.equals(null)).isFalse();
+  }
+
+  @Test
+  public void equals_nonListObject_returnsFalse() {
+    LazyStringArrayList list = new LazyStringArrayList();
+    list.add(STRING_A);
+    assertThat(list.equals(new Object())).isFalse();
+  }
+
+  @Test
+  public void equals_matchingLazyStringArrayList_returnsTrue() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    LazyStringArrayList list2 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(STRING_B);
+    list2.add(BYTE_STRING_A);
+    list2.add(BYTE_STRING_B);
+
+    assertThat(list1).isEqualTo(list2);
+    assertThat(list2).isEqualTo(list1);
+  }
+
+  @Test
+  public void equals_lazyStringArrayListWithDifferentSize_returnsFalse() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    LazyStringArrayList list2 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list2.add(STRING_A);
+    list2.add(STRING_B);
+
+    assertThat(list1).isNotEqualTo(list2);
+    assertThat(list2).isNotEqualTo(list1);
+  }
+
+  @Test
+  public void equals_lazyStringArrayListWithDifferentElements_returnsFalse() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    LazyStringArrayList list2 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(STRING_B);
+    list2.add(STRING_A);
+    list2.add(STRING_C);
+
+    assertThat(list1).isNotEqualTo(list2);
+    assertThat(list2).isNotEqualTo(list1);
+  }
+
+  @Test
+  public void equals_matchingRandomAccessList_returnsTrue() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(STRING_B);
+    List<String> list2 = new ArrayList<>();
+    list2.add(STRING_A);
+    list2.add(STRING_B);
+
+    assertThat(list1).isEqualTo(list2);
+    assertThat(list2).isEqualTo(list1);
+  }
+
+  @Test
+  public void equals_randomAccessListWithDifferentSize_returnsFalse() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    List<String> list2 = new ArrayList<>();
+    list2.add(STRING_A);
+    list2.add(STRING_B);
+
+    assertThat(list1).isNotEqualTo(list2);
+    assertThat(list2).isNotEqualTo(list1);
+  }
+
+  @Test
+  public void equals_randomAccessListWithDifferentElements_returnsFalse() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(STRING_B);
+    List<String> list2 = new ArrayList<>();
+    list2.add(STRING_A);
+    list2.add(STRING_C);
+
+    assertThat(list1).isNotEqualTo(list2);
+    assertThat(list2).isNotEqualTo(list1);
+  }
+
+  @Test
+  // LinkedList is used intentionally here as a non-RandomAccess List to test that branch in equals
+  @SuppressWarnings("JdkObsolete")
+  public void equals_matchingNonRandomAccessList_returnsTrue() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(STRING_B);
+    List<String> list2 = new LinkedList<>();
+    list2.add(STRING_A);
+    list2.add(STRING_B);
+
+    assertThat(list1).isEqualTo(list2);
+    assertThat(list2).isEqualTo(list1);
+  }
+
+  @Test
+  // LinkedList is used intentionally here as a non-RandomAccess List to test that branch in equals
+  @SuppressWarnings("JdkObsolete")
+  public void equals_nonRandomAccessListWithDifferentSize_returnsFalse() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    List<String> list2 = new LinkedList<>();
+    list2.add(STRING_A);
+    list2.add(STRING_B);
+
+    assertThat(list1).isNotEqualTo(list2);
+    assertThat(list2).isNotEqualTo(list1);
+  }
+
+  @Test
+  // LinkedList is used intentionally here as a non-RandomAccess List to test that branch in equals
+  @SuppressWarnings("JdkObsolete")
+  public void equals_nonRandomAccessListWithDifferentElements_returnsFalse() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    list1.add(STRING_A);
+    list1.add(STRING_B);
+    List<String> list2 = new LinkedList<>();
+    list2.add(STRING_A);
+    list2.add(STRING_C);
+
+    assertThat(list1).isNotEqualTo(list2);
+    assertThat(list2).isNotEqualTo(list1);
+  }
+
+  @Test
+  public void equals_lazyStringArrayListWithDifferentInvalidUtf8ByteStrings_returnsTrue() {
+    LazyStringArrayList list1 = new LazyStringArrayList();
+    LazyStringArrayList list2 = new LazyStringArrayList();
+    // 0xC0 and 0xC1 are distinct byte sequences that are both invalid UTF-8.
+    // When decoded to Java String via get(), both become the Unicode replacement
+    // character '\uFFFD'. Their raw ByteStrings are not equal, but their String
+    // representations are equal.
+    list1.add(ByteString.copyFrom(new byte[] {(byte) 0xC0}));
+    list2.add(ByteString.copyFrom(new byte[] {(byte) 0xC1}));
+
+    assertThat(list1).isEqualTo(list2);
+    assertThat(list2).isEqualTo(list1);
+
+    assertThat(list1.get(0)).isEqualTo("\uFFFD");
+    assertThat(list2.get(0)).isEqualTo("\uFFFD");
   }
 }

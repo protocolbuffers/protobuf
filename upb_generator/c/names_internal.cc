@@ -18,7 +18,14 @@ namespace generator {
 std::string CApiHeaderFilename(absl::string_view proto_filename,
                                bool bootstrap) {
   if (bootstrap) {
-    if (IsDescriptorProto(proto_filename)) {
+    if (proto_filename == "third_party/protobuf/json_enumvalue_options.proto" ||
+        proto_filename == "google/protobuf/json_enumvalue_options.proto" ||
+        proto_filename == "src/google/protobuf/json_enumvalue_options.proto") {
+      return "upb/reflection/"
+             "json_enumvalue_options_bootstrap.h";
+    } else if (proto_filename == "net/proto2/proto/descriptor.proto" ||
+               proto_filename == "google/protobuf/descriptor.proto" ||
+               proto_filename == "src/google/protobuf/descriptor.proto") {
       return "upb/reflection/descriptor_bootstrap.h";
     } else {
       return "upb_generator/plugin_bootstrap.h";

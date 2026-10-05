@@ -11,6 +11,11 @@ protos containing the messages you want to create you can just do the following:
 
 message_classes = message_factory.GetMessages(iterable_of_file_descriptors)
 my_proto_instance = message_classes['some.proto.package.MessageName']()
+
+Caution: There are inherent denial of service risks to using this behavior with
+untrusted descriptors. See
+https://github.com/protocolbuffers/protobuf/security/policy#dynamicmessage-on-untrusted-descriptors
+for details.
 """
 
 __author__ = 'matthewtoia@google.com (Matt Toia)'
@@ -35,6 +40,12 @@ def GetMessageClass(descriptor):
 
   Passing a descriptor with a fully qualified name matching a previous
   invocation will cause the same class to be returned.
+
+  This is intended to be used only with trusted descriptors. There are inherent
+  denial of service risks to using dynamic messages with untrusted descriptors
+  which cannot be hardened against. See
+  https://github.com/protocolbuffers/protobuf/security/policy#dynamicmessage-on-untrusted-descriptors
+  for details.
 
   Args:
     descriptor: The descriptor to build from.

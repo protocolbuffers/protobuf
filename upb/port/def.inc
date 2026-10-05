@@ -133,6 +133,14 @@ Error, UINTPTR_MAX is undefined
   (((SIZE_MAX - offsetof(type, member[0])) /                \
     (offsetof(type, member[1]) - offsetof(type, member[0]))) < (size_t)count)
 
+// Inverse of UPB_SIZEOF_FLEX; given the size in memory, how many elements can
+// the flexible array member store?
+#define UPB_FLEX_CAPACITY(type, member, size)   \
+  ((size) < sizeof(type)                        \
+       ? (size_t)0                              \
+       : ((size) - offsetof(type, member[0])) / \
+             (offsetof(type, member[1]) - offsetof(type, member[0])))
+
 #define UPB_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
 #define UPB_MAPTYPE_STRING 0
@@ -308,12 +316,11 @@ Error, UINTPTR_MAX is undefined
 #define UPB_NODEREF
 #endif
 
-// Will be defined properly once call sites are updated
-#if false && UPB_HAS_C_ATTRIBUTE(nodiscard)
+#if UPB_HAS_C_ATTRIBUTE(nodiscard)
 #define UPB_NODISCARD [[nodiscard]]
-#elif false && UPB_HAS_ATTRIBUTE(warn_unused_result)
+#elif UPB_HAS_ATTRIBUTE(warn_unused_result)
 #define UPB_NODISCARD __attribute__((warn_unused_result))
-#elif false && UPB_HAS_CPP_ATTRIBUTE(nodiscard)
+#elif UPB_HAS_CPP_ATTRIBUTE(nodiscard)
 #define UPB_NODISCARD [[nodiscard]]
 #else
 #define UPB_NODISCARD
@@ -499,7 +506,7 @@ Error, UINTPTR_MAX is undefined
 
 /* aarch64 supports big and little endian modes; fasttable performs multibyte
  * tag loads assumes the tag of a varint is in the low bits. */
-#if (defined(__x86_64__) || defined(__AARCH64EL__)) && \
+#if !defined(_WIN32) && (defined(__x86_64__) || defined(__AARCH64EL__)) && \
     UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
@@ -518,7 +525,11 @@ Error, UINTPTR_MAX is undefined
  * This is useful for releasing code that might be used on multiple platforms,
  * for example the PHP or Ruby C extensions. */
 #elif defined(UPB_TRY_ENABLE_FASTTABLE)
-#define UPB_FASTTABLE UPB_FASTTABLE_SUPPORTED
+#if UPB_FASTTABLE_SUPPORTED
+#define UPB_FASTTABLE 1
+#else
+#define UPB_FASTTABLE 0
+#endif
 #else
 #define UPB_FASTTABLE 0
 #endif
@@ -546,6 +557,25 @@ Error, UINTPTR_MAX is undefined
 #define UPB_DEPRECATED
 #endif
 
+#if defined(__clang__)
+#define UPB_IGNORE_DEPRECATION_START \
+  _Pragma("clang diagnostic push")   \
+      _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+#define UPB_IGNORE_DEPRECATION_STOP _Pragma("clang diagnostic pop")
+#elif defined(__GNUC__)
+#define UPB_IGNORE_DEPRECATION_START \
+  _Pragma("GCC diagnostic push")     \
+      _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#define UPB_IGNORE_DEPRECATION_STOP _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define UPB_IGNORE_DEPRECATION_START \
+  __pragma(warning(push)) __pragma(warning(disable : 4996))
+#define UPB_IGNORE_DEPRECATION_STOP __pragma(warning(pop))
+#else
+#define UPB_IGNORE_DEPRECATION_START
+#define UPB_IGNORE_DEPRECATION_STOP
+#endif
+
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
@@ -570,6 +600,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_RETAIN __attribute__((retain))
 #else
 #define UPB_RETAIN
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_HIDDEN __attribute__((visibility("hidden")))
+#else
+#define UPB_HIDDEN
 #endif
 
 // Linker arrays combine elements from multiple translation units into a single
@@ -613,37 +649,41 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("linkarr_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type) \
-  extern type __start_linkarr_##name;   \
-  extern type __stop_linkarr_##name;    \
-  UPB_LINKARR_APPEND(name)              \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name;                                         \
+  extern type __stop_linkarr_##name;                                          \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #elif defined(__MACH__)
 
-/* As described in: https://stackoverflow.com/a/22366882 */
+  /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
-#define UPB_LINKARR_DECLARE(name, type)     \
-  extern type __start_linkarr_##name __asm( \
-      "section$start$__DATA$__la_" #name);  \
-  extern type __stop_linkarr_##name __asm(  \
-      "section$end$__DATA$"                 \
-      "__la_" #name);                       \
-  UPB_LINKARR_APPEND(name)                  \
+#define UPB_LINKARR_DECLARE(name, type)                                       \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17,                              \
+                    "Linker array name too long for Mach-O (16-char limit)"); \
+  extern type __start_linkarr_##name __asm(                                   \
+      "section$start$__DATA$__la_" #name);                                    \
+  extern type __stop_linkarr_##name __asm(                                    \
+      "section$end$__DATA$"                                                   \
+      "__la_" #name);                                                         \
+  UPB_LINKARR_APPEND(name)                                                    \
   UPB_LINKARR_SENTINEL type UPB_linkarr_internal_empty_##name[1]
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #elif defined(_MSC_VER)
 
-/* See:
- *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
- *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
- *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
+  /* See:
+   *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
+   *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
+   *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
 #define UPB_STRINGIFY_INTERNAL(x) #x
 #define UPB_STRINGIFY(x) UPB_STRINGIFY_INTERNAL(x)
 #define UPB_CONCAT(a, b, c) a##b##c
@@ -652,7 +692,7 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name)                      \
   __pragma(section(UPB_LINKARR_NAME(name, $j), read)) \
       __declspec(allocate(UPB_LINKARR_NAME(name, $j)))
-// clang-format off
+  // clang-format off
 #define UPB_LINKARR_DECLARE(name, type)                          \
   __pragma(message(UPB_LINKARR_NAME(name, $j)))                  \
   __pragma(section(UPB_LINKARR_NAME(name, $a), read))            \
@@ -663,15 +703,17 @@ Error, UINTPTR_MAX is undefined
             type __stop_linkarr_##name;                          \
   UPB_LINKARR_APPEND(name)                                       \
   __declspec(selectany) type UPB_linkarr_internal_empty_##name[1] = {0}
-// clang-format on
+  // clang-format on
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #else
 
-// Linker arrays are not supported on this platform.  Make macros no-ops.
+  // Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
-#define UPB_LINKARR_DECLARE(name, type)
+#define UPB_LINKARR_DECLARE(name, type)          \
+  UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17, \
+                    "Linker array name too long for Mach-O (16-char limit)")
 #define UPB_LINKARR_START(name) (NULL)
 #define UPB_LINKARR_STOP(name) (NULL)
 
@@ -708,18 +750,20 @@ Error, UINTPTR_MAX is undefined
  * https://github.com/gcc-mirror/gcc/commit/74d6a676034b3ab20c387f12f19f5597e4f1c9fa
  * https://github.com/llvm/llvm-project/pull/127719#issuecomment-2686276305
  */
-#define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
-  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
-  __attribute__((weak, visibility("hidden"))) void UPB_PRIVATE(name)(void) { \
-    __asm__(                                                                 \
-        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"      \
-        ".dc.a %cc0\n"                                                       \
-        ".popsection\n"                                                      \
-        :                                                                    \
-        : "X"(UPB_PRIVATE(name)));                                           \
-    __VA_ARGS__                                                              \
+#define UPB_CONSTRUCTOR(name, unique_name, ...)                             \
+  _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                 \
+  __attribute__((weak, used, visibility("hidden"))) void UPB_PRIVATE(name)( \
+      void) {                                                               \
+    __asm__ volatile(                                                       \
+        ".pushsection .init_array,\"awG\",%%init_array, %cc0, comdat\n"     \
+        ".dc.a %cc0\n"                                                      \
+        ".popsection\n"                                                     \
+        :                                                                   \
+        : "X"(UPB_PRIVATE(name)));                                          \
+    __VA_ARGS__                                                             \
   }
-#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__)
+#elif defined(__ELF__) || defined(__wasm__) || defined(__MACH__) || \
+    defined(__MINGW32__)
 #define UPB_CONSTRUCTOR(name, unique_name, ...)                              \
   _UPB_CONSTRUCTOR_PLACEHOLDER(unique_name)                                  \
   __attribute__((weak, visibility("hidden"), constructor)) void UPB_PRIVATE( \
@@ -745,8 +789,13 @@ Error, UINTPTR_MAX is undefined
   static void __cdecl UPB_PRIVATE(name)(void) { __VA_ARGS__ }
 #else
 // No constructor support, nothing we can do except not break builds.
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_CONSTRUCTOR(name, unique_name, ...) \
+  static __attribute__((used)) void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#else
 #define UPB_CONSTRUCTOR(name, unique_name, ...) \
   static void UPB_PRIVATE(name)(void) { __VA_ARGS__ }
+#endif
 #endif
 
 //
@@ -784,9 +833,9 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__ELF__) || defined(__wasm__)
 
-// On ELF, weak aliases work properly, so we can have all weak MiniTables
-// point to the same empty singleton MiniTable. This reduces code size if many
-// MiniTables are tree shaken.
+  // On ELF, weak aliases work properly, so we can have all weak MiniTables
+  // point to the same empty singleton MiniTable. This reduces code size if many
+  // MiniTables are tree shaken.
 #define UPB_WEAK_SINGLETON_PLACEHOLDER_MINITABLE()               \
   __attribute__((weak))                                          \
   const upb_MiniTable kUpb_WeakSingletonPlaceholderMiniTable = { \

@@ -20,6 +20,7 @@ package proto2_unittest;
 
 option cc_enable_arenas = true;
 option optimize_for = SPEED;
+option java_string_check_utf8 = true;
 
 message TestMessageSetContainer {
   optional proto2_wireformat_unittest.TestMessageSet message_set = 1;

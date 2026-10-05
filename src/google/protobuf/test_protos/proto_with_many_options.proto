@@ -1,0 +1,71 @@
+edition = "2024";
+
+package proto2_unittest.proto_with_many_options;
+
+import "google/protobuf/descriptor.proto";
+
+message CustomFieldOption {
+  string description = 1;
+  repeated int32 priorities = 2;
+  message NestedOption {
+    string detail = 1;
+  }
+  NestedOption nested = 3;
+}
+
+extend google.protobuf.FieldOptions {
+  CustomFieldOption custom_opt = 73621234;
+}
+
+message BenchmarkMessage {
+  string field_one = 1 [(custom_opt) = {
+    description: "field 1",
+    priorities: [ 1, 2 ],
+    nested: { detail: "info 1" }
+  }];
+  string field_two = 2 [(custom_opt) = {
+    description: "field 2",
+    priorities: [ 3, 4 ],
+    nested: { detail: "info 2" }
+  }];
+  string field_three = 3 [(custom_opt) = {
+    description: "field 3",
+    priorities: [ 5, 6 ],
+    nested: { detail: "info 3" }
+  }];
+  string field_four = 4 [(custom_opt) = {
+    description: "field 4",
+    priorities: [ 7, 8 ],
+    nested: { detail: "info 4" }
+  }];
+  string field_five = 5 [(custom_opt) = {
+    description: "field 5",
+    priorities: [ 9, 10 ],
+    nested: { detail: "info 5" }
+  }];
+  string field_six = 6 [(custom_opt) = {
+    description: "field 6",
+    priorities: [ 1, 3 ],
+    nested: { detail: "info 6" }
+  }];
+  string field_seven = 7 [(custom_opt) = {
+    description: "field 7",
+    priorities: [ 2, 4 ],
+    nested: { detail: "info 7" }
+  }];
+  string field_eight = 8 [(custom_opt) = {
+    description: "field 8",
+    priorities: [ 3, 5 ],
+    nested: { detail: "info 8" }
+  }];
+  string field_nine = 9 [(custom_opt) = {
+    description: "field 9",
+    priorities: [ 4, 6 ],
+    nested: { detail: "info 9" }
+  }];
+  string field_ten = 10 [(custom_opt) = {
+    description: "field 10",
+    priorities: [ 5, 7 ],
+    nested: { detail: "info 10" }
+  }];
+}

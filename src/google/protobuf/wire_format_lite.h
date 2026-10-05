@@ -1125,23 +1125,10 @@ inline bool WireFormatLite::ReadPackedFixedSizePrimitive(
   // speed), but *must* avoid performing a very large allocation due
   // to a malicious user-supplied "length" above.  So we have a fast
   // path that pre-allocates when the "length" is less than a bound.
-  // We determine the bound by calling BytesUntilTotalBytesLimit() and
-  // BytesUntilLimit().  These return -1 to mean "no limit set".
-  // There are four cases:
-  // TotalBytesLimit  Limit
-  // -1               -1     Use slow path.
-  // -1               >= 0   Use fast path if length <= Limit.
-  // >= 0             -1     Use slow path.
-  // >= 0             >= 0   Use fast path if length <= min(both limits).
-  int64_t bytes_limit = input->BytesUntilTotalBytesLimit();
-  if (bytes_limit == -1) {
-    bytes_limit = input->BytesUntilLimit();
-  } else {
-    // parentheses around (std::min) prevents macro expansion of min(...)
-    bytes_limit =
-        (std::min)(bytes_limit, static_cast<int64_t>(input->BytesUntilLimit()));
-  }
-  if (bytes_limit >= new_bytes) {
+  const void* data;
+  int buffer_size;
+  input->GetDirectBufferPointerInline(&data, &buffer_size);
+  if (new_bytes <= buffer_size) {
     // Fast-path that pre-allocates *values to the final size.
 #if defined(ABSL_IS_LITTLE_ENDIAN)
     values->resize(old_entries + new_entries, 0);
@@ -1682,15 +1669,16 @@ bool ParseMessageSetItemImpl(io::CodedInputStream* input, MS ms) {
           state = State::kDone;
         } else if (state == State::kNoTag) {
           // We haven't seen a type_id yet.  Append this data to message_data.
-          uint32_t length;
-          if (!input->ReadVarint32(&length)) return false;
-          if (static_cast<int32_t>(length) < 0) return false;
-          uint32_t size = static_cast<uint32_t>(
-              length + io::CodedOutputStream::VarintSize32(length));
-          message_data.resize(size);
+          int length;
+          if (!input->ReadVarintSizeAsInt(&length)) return false;
+          uint32_t header_size = io::CodedOutputStream::VarintSize32(length);
+
+          std::string payload;
+          if (!input->ReadString(&payload, length)) return false;
+          message_data.resize(header_size);
           auto ptr = reinterpret_cast<uint8_t*>(&message_data[0]);
-          ptr = io::CodedOutputStream::WriteVarint32ToArray(length, ptr);
-          if (!input->ReadRaw(ptr, length)) return false;
+          (void)io::CodedOutputStream::WriteVarint32ToArray(length, ptr);
+          message_data.append(payload);
           state = State::kHasPayload;
         } else {
           if (!ms.SkipField(tag, input)) return false;

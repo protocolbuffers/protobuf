@@ -202,7 +202,7 @@ class PROTOBUF_EXPORT SerialArena {
     ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
     ABSL_DCHECK_GE(limit_, ptr());
     char* ret = ptr();
-    if (ABSL_PREDICT_FALSE(limit_ - ret < static_cast<ptrdiff_t>(n))) {
+    if (ABSL_PREDICT_FALSE(static_cast<size_t>(limit_ - ret) < n)) {
       return false;
     }
     internal::UnpoisonMemoryRegion(ret, n);
@@ -249,6 +249,44 @@ class PROTOBUF_EXPORT SerialArena {
   ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlock();
 
   std::vector<void*> PeekCleanupListForTesting();
+
+  // Attempts to grow the most recent allocation in place by `desired_growth`
+  // bytes. Succeeds only if `alloc_end` matches the current tail pointer and
+  // the current arena block has enough remaining space. Returns true if the
+  // allocation was grown in place, false otherwise.
+  bool TryGrowTail(void* alloc_end, size_t desired_growth) {
+    char* tail = ptr();
+    if (static_cast<char*>(alloc_end) != tail) {
+      return false;
+    }
+    if (static_cast<size_t>(limit_ - tail) < desired_growth) {
+      return false;
+    }
+    internal::UnpoisonMemoryRegion(tail, desired_growth);
+    set_ptr(tail + desired_growth);
+    return true;
+  }
+
+  // Attempts to trim the most recent allocation in place down to `desired_end`.
+  // Succeeds only if `alloc_end` matches the current tail pointer. Returns true
+  // if the allocation was trimmed in place, false otherwise.
+  // REQUIRES: desired_end <= alloc_end
+  // REQUIRES: desired_end is an aligned pointer within a previous allocation.
+  bool TryTrimTail(void* alloc_end, void* desired_end) {
+    ABSL_DCHECK_LE(desired_end, alloc_end);
+    ABSL_DCHECK(ArenaAlignDefault::IsAligned(desired_end));
+
+    char* tail = ptr();
+    if (static_cast<char*>(alloc_end) != tail) {
+      return false;
+    }
+
+    ABSL_DCHECK_LE(static_cast<void*>(head()), desired_end);
+    char* desired = static_cast<char*>(desired_end);
+    internal::PoisonMemoryRegion(desired, tail - desired);
+    set_ptr(desired);
+    return true;
+  }
 
  private:
   friend class ThreadSafeArena;
@@ -377,13 +415,15 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
 
-  // Repeated*Field and Arena play together to reduce memory consumption by
-  // reusing blocks. Currently, natural growth of the repeated field types makes
-  // them allocate blocks of size `8 + 2^N, N>=3`.
-  // When the repeated field grows returns the previous block and we put it in
-  // this free list.
+  // Repeated*Field/Map/etc and Arena play together to reduce memory consumption
+  // by reusing blocks. Currently, natural growth of the repeated field types
+  // makes them allocate blocks of size `8 + 2^N, N>=3`. When the repeated field
+  // grows returns the previous block and we put it in this free list.
   // `cached_blocks_[i]` points to the free list for blocks of size `8+2^(i+3)`.
   // The array of freelists is grown when needed in `ReturnArrayMemory()`.
+  // Note that this optimization somewhat conflicts with TryGrowTail because
+  // allocating from the free list means we won't be able to grow in the tail.
+  // On average, it works out because the free list tends to be mostly empty.
   uint8_t cached_block_length_ = 0;
 
   // Current prefetch positions. Data from `ptr_` up to but not including

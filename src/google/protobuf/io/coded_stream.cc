@@ -282,13 +282,7 @@ bool CodedInputStream::ReadStringFallback(std::string* buffer, int size) {
     buffer->clear();
   }
 
-  int closest_limit = std::min(current_limit_, total_bytes_limit_);
-  if (closest_limit != INT_MAX) {
-    int bytes_to_limit = closest_limit - CurrentPosition();
-    if (bytes_to_limit > 0 && size > 0 && size <= bytes_to_limit) {
-      buffer->reserve(size);
-    }
-  }
+  buffer->reserve(std::min(BufferSize(), size));
 
   int current_buffer_size;
   while ((current_buffer_size = BufferSize()) < size) {

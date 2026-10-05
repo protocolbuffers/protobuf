@@ -576,21 +576,23 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
   return ptr;
 }
 
-static char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
-                             const upb_MiniTable* layout,
-                             const upb_MapEntry* ent) {
-  const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
-  const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
+UPB_FORCEINLINE
+char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
+                      const upb_MiniTableField* key_field,
+                      const upb_MiniTableField* val_field,
+                      const upb_MapEntry* ent) {
   size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
-  size_t size;
+  UPB_ASSUME(upb_MiniTableField_Number(val_field) == 2);
   ptr = encode_scalar(ptr, e, &ent->v, val_field);
+  UPB_ASSUME(upb_MiniTableField_Number(key_field) == 1);
   ptr = encode_scalar(ptr, e, &ent->k, key_field);
-  size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
+  size_t size = upb_BackAlloc_Size(&e->alloc, ptr) - pre_len;
   ptr = encode_length(ptr, e, size);
   ptr = encode_tag(ptr, e, number, kUpb_WireType_Delimited);
   return ptr;
 }
 
+UPB_NOINLINE
 static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
                         const upb_MiniTableField* f) {
   const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
@@ -599,14 +601,20 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
   if (!map || !upb_Map_Size(map)) return ptr;
 
+  uint32_t number = upb_MiniTableField_Number(f);
+  uint32_t key_size = map->key_size;
+  uint32_t val_size = map->val_size;
+  const upb_MiniTableField* key_field = upb_MiniTable_MapKey(layout);
+  const upb_MiniTableField* val_field = upb_MiniTable_MapValue(layout);
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
-    _upb_mapsorter_pushmap(
-        &e->sorter, layout->UPB_PRIVATE(fields)[0].UPB_PRIVATE(descriptortype),
-        map, &sorted);
+    if (!_upb_mapsorter_pushmap(
+            &e->sorter, key_field->UPB_PRIVATE(descriptortype), map, &sorted)) {
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
+    }
     upb_MapEntry ent;
     while (_upb_sortedmap_next(&e->sorter, map, &sorted, &ent)) {
-      ptr = encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+      ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
@@ -616,20 +624,19 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
       upb_StringView strkey;
       while (upb_strtable_next2(&map->t.strtable, &strkey, &val, &iter)) {
         upb_MapEntry ent;
-        _upb_map_fromkey(strkey, &ent.k, map->key_size);
-        _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        _upb_map_fromkey(strkey, &ent.k, key_size);
+        _upb_map_fromvalue(val, &ent.v, val_size);
+        ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
       }
     } else {
       intptr_t iter = UPB_INTTABLE_BEGIN;
       uintptr_t intkey = 0;
       while (upb_inttable_next(&map->t.inttable, &intkey, &val, &iter)) {
         upb_MapEntry ent;
-        memcpy(&ent.k, &intkey, map->key_size);
-        _upb_map_fromvalue(val, &ent.v, map->val_size);
-        ptr =
-            encode_mapentry(ptr, e, upb_MiniTableField_Number(f), layout, &ent);
+        UPB_ASSUME(key_size != UPB_MAPTYPE_STRING);
+        memcpy(&ent.k, &intkey, key_size);
+        _upb_map_fromvalue(val, &ent.v, val_size);
+        ptr = encode_mapentry(ptr, e, number, key_field, val_field, &ent);
       }
     }
   }
@@ -638,52 +645,19 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
 
 static bool encode_shouldencode(const upb_Message* msg,
                                 const upb_MiniTableField* f) {
-  if (f->presence == 0) {
-    // Proto3 presence or map/array.
-    const void* mem = UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), void);
-    switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
-      case kUpb_FieldRep_1Byte: {
-        char ch;
-        memcpy(&ch, mem, 1);
-        return ch != 0;
-      }
-      case kUpb_FieldRep_4Byte: {
-        uint32_t u32;
-        memcpy(&u32, mem, 4);
-        return u32 != 0;
-      }
-      case kUpb_FieldRep_8Byte: {
-        uint64_t u64;
-        memcpy(&u64, mem, 8);
-        return u64 != 0;
-      }
-      case kUpb_FieldRep_StringView: {
-        const upb_StringView* str = (const upb_StringView*)mem;
-        return str->size != 0;
-      }
-      default:
-        UPB_UNREACHABLE();
-    }
-  } else if (UPB_PRIVATE(_upb_MiniTableField_HasHasbit)(f)) {
-    // Proto2 presence: hasbit.
-    return UPB_PRIVATE(_upb_Message_GetHasbit)(msg, f);
-  } else {
-    // Field is in a oneof.
-    return UPB_PRIVATE(_upb_Message_GetOneofCase)(msg, f) ==
-           upb_MiniTableField_Number(f);
-  }
+  return UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, f);
 }
 
 static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
                           const upb_MiniTableField* field) {
   switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(field)) {
+    case kUpb_FieldMode_Scalar:
+      return encode_scalar(
+          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     case kUpb_FieldMode_Array:
       return encode_array(ptr, e, msg, field);
     case kUpb_FieldMode_Map:
       return encode_map(ptr, e, msg, field);
-    case kUpb_FieldMode_Scalar:
-      return encode_scalar(
-          ptr, e, UPB_PTR_AT(msg, field->UPB_PRIVATE(offset), void), field);
     default:
       UPB_UNREACHABLE();
   }
@@ -724,8 +698,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return ptr;
 
-  /* Encode all extensions together. Unlike C++, we do not attempt to keep
-   * these in field number order relative to normal fields or even to each
+  /* Encode all canonical extensions together. Unlike C++, we do not attempt to
+   * keep these in field number order relative to normal fields or even to each
    * other. */
   uintptr_t iter = kUpb_Message_ExtensionBegin;
   const upb_MiniTableExtension* ext;
@@ -739,7 +713,7 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
   if (e->options & kUpb_EncodeOption_Deterministic) {
     _upb_sortedmap sorted;
     if (!_upb_mapsorter_pushexts(&e->sorter, in, &sorted)) {
-      // TODO: b/378744096 - handle alloc failure
+      encode_err(e, kUpb_EncodeStatus_OutOfMemory);
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
@@ -770,22 +744,26 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
     }
   }
 
-  if ((e->options & kUpb_EncodeOption_SkipUnknown) == 0) {
-    size_t unknown_size = 0;
-    uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView unknown;
-    // Need to write in reverse order, but iteration is in-order; scan to
-    // reserve capacity up front, then write in-order
-    while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-      unknown_size += unknown.size;
-    }
-    if (unknown_size != 0) {
-      ptr = encode_reserve(ptr, e, unknown_size);
-      char* tmp_ptr = ptr;
-      iter = kUpb_Message_UnknownBegin;
-      while (upb_Message_NextUnknown(msg, &unknown, &iter)) {
-        memcpy(tmp_ptr, unknown.data, unknown.size);
-        tmp_ptr += unknown.size;
+  bool skip_unknown = (e->options & kUpb_EncodeOption_SkipUnknown) != 0;
+  const upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  if (!skip_unknown && in) {
+    // Iterate backwards because the encoder builds the buffer in reverse
+    // (from end to start). This ensures that unknown fields and non-canonical
+    // extensions are emitted in their original forward order.
+    size_t i = in->size;
+    while (i > 0) {
+      i--;
+      upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
+      if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
+        const upb_StringView* unknown =
+            upb_TaggedPtrAux_StringViewRepr(tagged_ptr);
+        ptr = encode_bytes(ptr, e, unknown->data, unknown->size);
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+        const upb_Extension* ext =
+            upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        ptr = encode_ext(ptr, e, ext->ext, ext->data,
+                         UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                             kUpb_ExtMode_IsMessageSet);
       }
     }
   }
@@ -850,6 +828,12 @@ upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
   _upb_mapsorter_init(&e.sorter);
 
   return upb_Encoder_Encode(ptr, &e, msg, l, buf, size, prepend_len);
+}
+
+char* UPB_PRIVATE(_upb_Encode_FieldToBuffer)(char* ptr, upb_encstate* e,
+                                             const upb_Message* msg,
+                                             const upb_MiniTableField* field) {
+  return encode_field(ptr, e, msg, field);
 }
 
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,

@@ -476,6 +476,9 @@ typedef struct {
   zend_object std;
   zval map_field;
   size_t position;
+  // Whether the last upb_MapIterator_Next() call returned false. When true,
+  // `position` is unspecified and must not be passed back to upb.
+  bool done;
 } MapFieldIter;
 
 zend_class_entry* MapFieldIter_class_entry;
@@ -493,6 +496,7 @@ zend_object* MapFieldIter_create(zend_class_entry* class_type) {
   intern->std.handlers = &MapFieldIter_object_handlers;
   ZVAL_NULL(&intern->map_field);
   intern->position = 0;
+  intern->done = true;
   // Skip object_properties_init(), we don't allow derived classes.
   return &intern->std;
 }
@@ -550,7 +554,7 @@ PHP_METHOD(MapFieldIter, rewind) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* map_field = (MapField*)Z_OBJ_P(&intern->map_field);
   intern->position = kUpb_Map_Begin;
-  upb_MapIterator_Next(map_field->map, &intern->position);
+  intern->done = !upb_MapIterator_Next(map_field->map, &intern->position);
 }
 
 /**
@@ -561,6 +565,7 @@ PHP_METHOD(MapFieldIter, rewind) {
 PHP_METHOD(MapFieldIter, current) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
+  if (intern->done) RETURN_NULL();
   upb_MessageValue upb_val =
       upb_MapIterator_Value(field->map, intern->position);
   zval ret;
@@ -576,6 +581,7 @@ PHP_METHOD(MapFieldIter, current) {
 PHP_METHOD(MapFieldIter, key) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
+  if (intern->done) RETURN_NULL();
   upb_MessageValue upb_key = upb_MapIterator_Key(field->map, intern->position);
   zval ret;
   Convert_UpbToPhp(upb_key, &ret, KeyType(field->type), NULL);
@@ -590,7 +596,8 @@ PHP_METHOD(MapFieldIter, key) {
 PHP_METHOD(MapFieldIter, next) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
   MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
-  upb_MapIterator_Next(field->map, &intern->position);
+  if (intern->done) return;
+  intern->done = !upb_MapIterator_Next(field->map, &intern->position);
 }
 
 /**
@@ -600,9 +607,7 @@ PHP_METHOD(MapFieldIter, next) {
  */
 PHP_METHOD(MapFieldIter, valid) {
   MapFieldIter* intern = (MapFieldIter*)Z_OBJ_P(getThis());
-  MapField* field = (MapField*)Z_OBJ_P(&intern->map_field);
-  bool done = upb_MapIterator_Done(field->map, intern->position);
-  RETURN_BOOL(!done);
+  RETURN_BOOL(!intern->done);
 }
 
 // clang-format off

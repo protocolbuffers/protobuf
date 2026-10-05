@@ -248,8 +248,15 @@ final class LongArrayList extends AbstractProtobufList<Long>
     }
 
     int newSize = size + list.size;
+    // The first addAll is sized exactly, as it is common that it is used exactly once and perfect
+    // sizing saves memory. Otherwise, grow at least as much as add() would, to avoid quadratic
+    // copying when addAll() is called repeatedly with small lists.
     if (newSize > array.length) {
-      array = Arrays.copyOf(array, newSize);
+      if (size == 0) {
+        array = new long[newSize];
+      } else {
+        array = Arrays.copyOf(array, max(newSize, growSize(array.length)));
+      }
     }
 
     System.arraycopy(list.array, 0, array, size, list.size);

@@ -11,8 +11,15 @@ import java.lang.reflect.Field;
 
 /** Information for a oneof within a protobuf message. */
 // TODO: make this private once all of experimental code is migrated to protobuf.
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @ExperimentalApi
 @CheckReturnValue
+@ForLiteOnly
 final class OneofInfo {
   private final int id;
   private final Field caseField;

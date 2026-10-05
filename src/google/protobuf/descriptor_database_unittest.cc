@@ -33,6 +33,8 @@ namespace google {
 namespace protobuf {
 namespace {
 
+using testing::ElementsAre;
+
 static void AddToDatabase(SimpleDescriptorDatabase* database,
                           const char* file_text) {
   FileDescriptorProto file_proto;
@@ -439,6 +441,66 @@ TEST_P(DescriptorDatabaseTest, ConflictingTypeError) {
       "}");
 }
 
+TEST_P(DescriptorDatabaseTest, ConflictingCrossPackageTypeError) {
+  AddToDatabase(
+      "name: \"foo.proto\" "
+      "package: \"foo\" "
+      "message_type { "
+      "  name: \"Bar\" "
+      "}");
+  AddToDatabaseWithError(
+      "name: \"bar.proto\" "
+      "package: \"foo.Bar\" "
+      "message_type { "
+      "  name: \"Baz\" "
+      "}");
+
+  // Sub-symbol added before super-symbol across packages.
+  AddToDatabase(
+      "name: \"sub.proto\" "
+      "package: \"qux.Quux\" "
+      "message_type { "
+      "  name: \"Corge\" "
+      "}");
+  AddToDatabaseWithError(
+      "name: \"super.proto\" "
+      "package: \"qux\" "
+      "message_type { "
+      "  name: \"Quux\" "
+      "}");
+
+  // Non-conflicting prefix packages should succeed and be discoverable.
+  AddToDatabase(
+      "name: \"prefix1.proto\" "
+      "package: \"foo.BarBaz\" "
+      "message_type { "
+      "  name: \"Qux\" "
+      "}");
+  AddToDatabase(
+      "name: \"prefix2.proto\" "
+      "package: \"foo.bar\" "
+      "message_type { "
+      "  name: \"Baz\" "
+      "}");
+
+  FileDescriptorProto file;
+  EXPECT_TRUE(database_->FindFileContainingSymbol("foo.Bar", &file));
+  EXPECT_EQ("foo.proto", file.name());
+  EXPECT_TRUE(database_->FindFileContainingSymbol("foo.BarBaz.Qux", &file));
+  EXPECT_EQ("prefix1.proto", file.name());
+  EXPECT_TRUE(database_->FindFileContainingSymbol("foo.bar.Baz", &file));
+  EXPECT_EQ("prefix2.proto", file.name());
+
+  // After flattening (triggered by FindFileContainingSymbol), cross-package
+  // conflicts against by_symbol_flat_ are still rejected.
+  AddToDatabaseWithError(
+      "name: \"after_flat.proto\" "
+      "package: \"foo.Bar\" "
+      "message_type { "
+      "  name: \"AfterFlat\" "
+      "}");
+}
+
 TEST_P(DescriptorDatabaseTest, ConflictingExtensionError) {
   AddToDatabase(
       "name: \"foo.proto\" "
@@ -493,6 +555,70 @@ TEST(EncodedDescriptorDatabaseExtraTest, FindNameOfFileContainingSymbol) {
   EXPECT_FALSE(db.FindNameOfFileContainingSymbol("baz.Baz", &filename));
 }
 
+TEST(EncodedDescriptorDatabaseExtraTest,
+     RejectedDuplicateDoesNotShadowOriginal) {
+  // 1. Create original "Good" file.
+  FileDescriptorProto file;
+  file.set_name("app.proto");
+  file.set_package("app");
+  file.add_message_type()->set_name("Good");
+  std::string data_good = file.SerializeAsString();
+
+  EncodedDescriptorDatabase db;
+  EXPECT_TRUE(db.Add(data_good.data(), data_good.size()));
+
+  // 2. Call FindFileByName to trigger EnsureFlat() and move it to flat.
+  FileDescriptorProto found_good;
+  EXPECT_TRUE(db.FindFileByName("app.proto", &found_good));
+  EXPECT_EQ(found_good.message_type(0).name(), "Good");
+
+  // 3. Create duplicate "Evil" file with same name.
+  file.mutable_message_type(0)->set_name("Evil");
+  std::string data_evil = file.SerializeAsString();
+
+  // Adding "Evil" should fail because "app.proto" already exists.
+  EXPECT_FALSE(db.Add(data_evil.data(), data_evil.size()));
+
+  // 4. FindFileByName again. It should still return "Good".
+  FileDescriptorProto found_final;
+  EXPECT_TRUE(db.FindFileByName("app.proto", &found_final));
+  EXPECT_EQ(found_final.message_type(0).name(), "Good");
+
+  std::vector<std::string> files;
+  ASSERT_TRUE(db.FindAllFileNames(&files));
+  // The file should exist only once.
+  EXPECT_THAT(files, ElementsAre("app.proto"));
+}
+
+TEST(EncodedDescriptorDatabaseExtraTest,
+     RejectedDuplicateExtensionDoesNotShadowOriginal) {
+  FileDescriptorProto file;
+  file.set_name("good.proto");
+  file.set_package("app");
+  auto* extension = file.add_extension();
+  extension->set_name("good_ext");
+  extension->set_extendee(".app.Target");
+  extension->set_number(123);
+  std::string data_good = file.SerializeAsString();
+
+  EncodedDescriptorDatabase db;
+  EXPECT_TRUE(db.Add(data_good.data(), data_good.size()));
+
+  FileDescriptorProto found_good;
+  EXPECT_TRUE(db.FindFileContainingExtension("app.Target", 123, &found_good));
+  EXPECT_EQ(found_good.name(), "good.proto");
+
+  file.set_name("evil.proto");
+  extension->set_name("evil_ext");
+  std::string data_evil = file.SerializeAsString();
+
+  EXPECT_FALSE(db.Add(data_evil.data(), data_evil.size()));
+
+  FileDescriptorProto found_final;
+  EXPECT_TRUE(db.FindFileContainingExtension("app.Target", 123, &found_final));
+  EXPECT_EQ(found_final.name(), "good.proto");
+}
+
 TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
   FileDescriptorProto f;
   f.set_name("foo.proto");
@@ -505,7 +631,7 @@ TEST(SimpleDescriptorDatabaseExtraTest, FindAllFileNames) {
   // Test!
   std::vector<std::string> all_files;
   ASSERT_TRUE(db.FindAllFileNames(&all_files));
-  EXPECT_THAT(all_files, testing::ElementsAre("foo.proto"));
+  EXPECT_THAT(all_files, ElementsAre("foo.proto"));
 }
 
 TEST(SimpleDescriptorDatabaseExtraTest, FindAllPackageNames) {

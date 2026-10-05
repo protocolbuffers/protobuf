@@ -507,6 +507,12 @@ alias(
 )
 
 alias(
+    name = "json_enumvalue_options_proto_srcs",
+    actual = "//src/google/protobuf:json_enumvalue_options_proto_srcs",
+    visibility = ["//visibility:public"],
+)
+
+alias(
     name = "json_enumvalue_options_cc_proto",
     actual = "//src/google/protobuf:json_enumvalue_options_cc_proto",
     visibility = ["//visibility:public"],
@@ -596,7 +602,9 @@ proto_lang_toolchain(
     blacklisted_protos = [
         "//:compiler_plugin_proto",
         "//:cpp_features_proto",
+        "//:cpp_file_options_proto",
         "//:descriptor_proto",
+        "//:json_enumvalue_options_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
     plugin = "//src/google/protobuf/compiler/cpp:protoc-gen-cpp",

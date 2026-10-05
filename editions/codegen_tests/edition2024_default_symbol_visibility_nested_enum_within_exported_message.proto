@@ -1,0 +1,8 @@
+edition = "2024";
+
+export message FailNotLocal {
+  export enum NestedEnum {
+    NESTED_ENUM_UNSPECIFIED = 0;
+  }
+  reserved 1 to max;
+}

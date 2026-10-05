@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "absl/container/flat_hash_map.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/generator_common.h"
 #include "google/protobuf/io/printer.h"
 
@@ -10,18 +12,22 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace java {
+class Context;            // context.h
+class ClassNameResolver;  // name_resolver.h
 
 class ImmutableFieldGenerator : public FieldGenerator {
  public:
-  ImmutableFieldGenerator() = default;
+  explicit ImmutableFieldGenerator(const FieldDescriptor* descriptor,
+                                   int bit_index, Context* context);
   ImmutableFieldGenerator(const ImmutableFieldGenerator&) = delete;
   ImmutableFieldGenerator& operator=(const ImmutableFieldGenerator&) = delete;
   ~ImmutableFieldGenerator() override = default;
 
-  virtual int GetMessageBitIndex() const = 0;
-  virtual int GetBuilderBitIndex() const = 0;
-  virtual int GetNumBitsForMessage() const = 0;
-  virtual int GetNumBitsForBuilder() const = 0;
+  bool HasHasbit() const;
+  bool IsRealOneof() const;
+
+  int GetBitIndex() const { return bit_index_; }
+  constexpr int GetNumBits() const { return 1; }
   virtual void GenerateInterfaceMembers(io::Printer* printer) const = 0;
   virtual void GenerateMembers(io::Printer* printer) const = 0;
   virtual void GenerateBuilderMembers(io::Printer* printer) const = 0;
@@ -43,6 +49,13 @@ class ImmutableFieldGenerator : public FieldGenerator {
   virtual void GenerateHashCode(io::Printer* printer) const = 0;
 
   virtual std::string GetBoxedType() const = 0;
+
+ protected:
+  const FieldDescriptor* descriptor_;
+  int bit_index_;
+  Context* context_;
+  ClassNameResolver* name_resolver_;
+  absl::flat_hash_map<absl::string_view, std::string> variables_;
 };
 
 }  // namespace java

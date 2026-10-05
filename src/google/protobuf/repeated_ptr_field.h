@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/macros.h"
 #include "absl/base/no_destructor.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
@@ -41,11 +42,13 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/field_with_arena.h"
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -392,6 +395,21 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     };
   }
 
+  // Creates and adds an element using the given ClassData, without introducing
+  // a link-time dependency on the concrete message type. This is generally
+  // faster and should be preferred over the equivalent `AddFromPrototype()` if
+  // the caller already has or can get the `ClassData`, and especially if
+  // elements are added repeatedly.
+  //
+  // Pre-condition: `class_data` must not be nullptr.
+  template <typename TypeHandler>
+  PROTOBUF_ALWAYS_INLINE Value<TypeHandler>* AddFromClassData(
+      Arena* arena, const ClassData* class_data) {
+    using H = CommonHandler<TypeHandler>;
+    Value<TypeHandler>* result = cast<TypeHandler>(
+        AddInternal(arena, H::GetNewFromClassDataFunc(class_data)));
+    return result;
+  }
 
   template <typename TypeHandler>
   void Clear() {
@@ -431,16 +449,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
         reinterpret_cast<char*>(this), reinterpret_cast<char*>(rhs));
   }
 
-  // Returns true if there are no preallocated elements in the array.
-  PROTOBUF_FUTURE_ADD_NODISCARD bool PrepareForParse() {
-    return allocated_size() == current_size_;
-  }
-
-  // Similar to `AddAllocated` but faster.
+  // Similar to `AddAllocated` but faster when we know there are no cleared
+  // elements.
   //
-  // Pre-condition: PrepareForParse() is true.
-  void AddAllocatedForParse(void* value, Arena* arena) {
-    ABSL_DCHECK(PrepareForParse());
+  // REQUIRES: allocated_size() == size()
+  void AddAllocatedForParse(void* value, SerialArena* arena) {
+    ABSL_DCHECK_EQ(allocated_size(), size());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
       *InternalExtend(1, arena) = value;
       ++rep()->allocated_size;
@@ -543,8 +557,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   Value<TypeHandler>* AddFromCleared() {
     if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
+      auto* res =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      PROTOBUF_ASSUME(res != nullptr);
+      return res;
     } else {
       return nullptr;
     }
@@ -856,6 +872,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   //
   // Pre-condition: |extend_amount| must be > 0.
   void** InternalExtend(int extend_amount, Arena* arena);
+  void** InternalExtend(int extend_amount, SerialArena* arena);
 
   // Ensures that capacity is at least `n` elements.
   // Returns a pointer to the element directly beyond the last element.
@@ -1081,8 +1098,16 @@ class GenericTypeHandler {
   static constexpr auto GetNewFromPrototypeFunc(const Type* prototype) {
     static_assert(std::is_base_of_v<MessageLite, Type>);
     ABSL_DCHECK(prototype != nullptr);
-    return
-        [prototype](Arena* arena, void*& ptr) { ptr = prototype->New(arena); };
+    return [prototype](Arena* arena, void*& ptr) {
+      ptr = GetClassData(*prototype)->New(arena);
+    };
+  }
+  static constexpr auto GetNewFromClassDataFunc(
+      const ClassData* class_data ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    ABSL_DCHECK(class_data != nullptr);
+    return [class_data](Arena* arena, void*& ptr) {
+      ptr = class_data->New(arena);
+    };
   }
 
   static Arena* GetArena(Type* value) { return Arena::InternalGetArena(value); }
@@ -1109,8 +1134,8 @@ class GenericTypeHandler {
 
   static const Type& default_instance() {
     static_assert(has_default_instance());
-    return *static_cast<const GenericType*>(
-        MessageTraits<Type>::default_instance());
+    return *reinterpret_cast<const GenericType*>(
+        MessageTraits<Type>::class_data()->default_instance());
   }
   static constexpr bool has_default_instance() {
     return !std::is_same_v<Type, Message> && !std::is_same_v<Type, MessageLite>;
@@ -1601,10 +1626,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   void ExtractSubrangeWithArena(Arena* arena, int start, int num,
                                 Element** elements);
-
-  void AddAllocatedForParse(Element* p, Arena* arena) {
-    return RepeatedPtrFieldBase::AddAllocatedForParse(p, arena);
-  }
 };
 
 // -------------------------------------------------------------------
@@ -1850,7 +1871,7 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
       H::Delete(static_cast<Element*>(subrange[i]));
     }
   }
-  UnsafeArenaExtractSubrange(start, num, nullptr);
+  UnsafeArenaExtractSubrange(start, num, /*elements=*/nullptr);
 }
 
 template <typename Element>
@@ -2643,14 +2664,6 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
 };
 }  // namespace internal
 
-// Provides a back insert iterator for RepeatedPtrField instances,
-// similar to std::back_inserter().
-template <typename T>
-internal::RepeatedPtrFieldBackInsertIterator<T> RepeatedPtrFieldBackInserter(
-    RepeatedPtrField<T>* const mutable_field) {
-  return internal::RepeatedPtrFieldBackInsertIterator<T>(mutable_field);
-}
-
 // Special back insert iterator for RepeatedPtrField instances, just in
 // case someone wants to write generic template code that can access both
 // RepeatedFields and RepeatedPtrFields using a common name.
@@ -2658,6 +2671,15 @@ template <typename T>
 internal::RepeatedPtrFieldBackInsertIterator<T> RepeatedFieldBackInserter(
     RepeatedPtrField<T>* const mutable_field) {
   return internal::RepeatedPtrFieldBackInsertIterator<T>(mutable_field);
+}
+
+// Provides a back insert iterator for RepeatedPtrField instances,
+// similar to std::back_inserter().
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+internal::RepeatedPtrFieldBackInsertIterator<T> RepeatedPtrFieldBackInserter(
+    RepeatedPtrField<T>* const mutable_field) {
+  return RepeatedFieldBackInserter(mutable_field);
 }
 
 // Provides a back insert iterator for RepeatedPtrField instances

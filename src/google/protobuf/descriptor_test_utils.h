@@ -35,6 +35,8 @@ class MockErrorCollector : public DescriptorPool::ErrorCollector {
 
   std::string text_;
   std::string warning_text_;
+  std::vector<std::string> text_lines_;
+  std::vector<std::string> warn_lines_;
 
   // implements ErrorCollector ---------------------------------------
   void RecordError(absl::string_view filename, absl::string_view element_name,
@@ -86,6 +88,13 @@ class ValidationErrorTest : public testing::Test {
   // given error text.
   void BuildFileWithErrors(const std::string& file_text,
                            testing::Matcher<std::string> expected_errors);
+
+  // As above, but with separate errors
+  void BuildFileWithErrorList(
+      const FileDescriptorProto& file_proto,
+      testing::Matcher<std::vector<std::string>> expected_errors,
+      testing::Matcher<std::vector<std::string>> expected_warnings =
+          testing::_);
 
   // Parse a proto file and build it.  Expect errors to be produced which match
   // the given error text.

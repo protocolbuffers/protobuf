@@ -31,6 +31,10 @@ extern crate sys;
 #[path = "sys/lib.rs"]
 mod sys;
 
+#[cfg(not(bzl))]
+#[allow(dead_code)] // TODO - Remove when the public print API is implemented.
+pub mod reflection;
+
 // All sys re-exports below here intended to be burned down.
 pub use sys::base::ctype::CType;
 pub use sys::base::string_view::StringView;

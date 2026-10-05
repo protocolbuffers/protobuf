@@ -8,6 +8,7 @@
 //! UPB FFI wrapper code for use by Rust Protobuf.
 
 pub mod conversions;
+pub mod def_pool;
 pub mod extension;
 pub mod interop;
 pub mod map;
@@ -17,6 +18,7 @@ pub mod repeated;
 pub mod string;
 
 pub use conversions::*;
+pub use def_pool::*;
 pub use extension::*;
 pub use interop::*;
 pub use map::*;
@@ -45,6 +47,11 @@ extern crate upb;
 #[cfg(not(bzl))]
 use crate::upb;
 
+#[cfg(bzl)]
+extern crate reflection;
+#[cfg(not(bzl))]
+use crate::upb::reflection;
+
 pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
 pub use upb::AssociatedMiniTableEnum;
@@ -66,8 +73,9 @@ pub(crate) type RawMap = upb::RawMap;
 pub(crate) type PtrAndLen = upb::StringView;
 
 /// A trait implemented by types which are allowed as keys in maps.
-/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating point types.
-/// This trait is defined separately in cpp.rs and upb.rs to be able to set better subtrait bounds.
+/// This is all types for fields except for repeated, maps, bytes, messages, enums and floating
+/// point types. This trait is defined separately in cpp.rs and upb.rs to be able to set better
+/// subtrait bounds.
 #[doc(hidden)]
 pub trait MapKey: Proxied + EntityType + UpbTypeConversions<Self::Tag> + SealedInternal {}
 

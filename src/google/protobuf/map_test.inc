@@ -1611,6 +1611,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   const FieldDescriptor* fd_map_int32_foreign_message_value =
       fd_map_int32_foreign_message->message_type()->map_value();
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   // Get RepeatedPtrField objects for all fields of interest.
   const RepeatedPtrField<Message>& mf_int32_int32 =
       refl->GetRepeatedPtrField<Message>(message, fd_map_int32_int32);
@@ -1631,6 +1632,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   RepeatedPtrField<Message>* mmf_int32_foreign_message =
       refl->MutableRepeatedPtrField<Message>(&message,
                                              fd_map_int32_foreign_message);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Make sure we can do gets through the RepeatedPtrField objects.
   for (int i = 0; i < 10; ++i) {
@@ -2728,6 +2730,17 @@ TEST(GeneratedMapFieldTest, SerializationToArray) {
   EXPECT_EQ(size, end - start);
   EXPECT_TRUE(message2.ParseFromString(data));
   MapTestUtil::ExpectMapFieldsSet(message2);
+}
+
+TEST(GeneratedMapFieldTest, SerializeLargeString) {
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
+  UNITTEST::TestMap msg;
+  // Overflow 32-bit ints.
+  (*msg.mutable_map_string_string())[""].resize(size_t{1} << 32);
+  std::string str;
+  EXPECT_FALSE(msg.SerializeToString(&str)) << "Actual size=" << str.size();
 }
 
 // Test the generated SerializeWithCachedSizes()
@@ -4177,8 +4190,10 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   const Reflection* reflection = source.GetReflection();
   const FieldDescriptor* field_desc =
       source.GetDescriptor()->FindFieldByName("map_int32_int32");
+  PROTOBUF_IGNORE_DEPRECATION_START
   RepeatedPtrField<Message>* map_field =
       reflection->MutableRepeatedPtrField<Message>(&source, field_desc);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   RepeatedPtrField<Message>::iterator iter = map_field->begin();
 
   // Serialize message to text format, which will invalidate the previous

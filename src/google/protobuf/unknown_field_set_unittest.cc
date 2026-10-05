@@ -727,7 +727,7 @@ void CheckDeleteByNumber(const std::vector<int>& field_numbers,
   }
 }
 
-#define MAKE_VECTOR(x) std::vector<int>(x, x + ABSL_ARRAYSIZE(x))
+#define MAKE_VECTOR(x) std::vector<int>(x, x + std::size(x))
 TEST_F(UnknownFieldSetTest, DeleteByNumber) {
   CheckDeleteByNumber(std::vector<int>(), 1, std::vector<int>());
   static const int kTestFieldNumbers1[] = {1, 2, 3};

@@ -210,7 +210,6 @@ class RepeatedPtrFieldBase;
 class TcParser;
 struct TcParseTableBase;
 class WireFormatLite;
-class WeakFieldMap;
 class RustMapHelper;
 
 // We compute sizes as size_t but cache them as int.  This function converts a
@@ -248,27 +247,7 @@ PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
   return fixed_address_empty_string.get();
 }
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-struct MessageGlobalsBase {
-  template <typename T = MessageLite>
-  static const T* ToDefaultInstance(const void* globals) {
-    return reinterpret_cast<const T*>(globals);
-  }
-
-  static const MessageGlobalsBase* FromDefaultInstance(
-      const void* default_instance) {
-    return reinterpret_cast<const MessageGlobalsBase*>(default_instance);
-  }
-};
-
-template <const auto* kDefault, const auto* kClassData>
-struct GeneratedMessageTraitsT {
-  static constexpr const void* default_instance() { return kDefault; }
-  static constexpr const auto* class_data() { return kClassData->base(); }
-  static constexpr const auto* tc_table() { return class_data()->tc_table; }
-  static constexpr auto StrongPointer() { return default_instance(); }
-};
-#else
+// TODO: Remove unnecessary members, or move into ClassData.
 struct MessageGlobalsBase {
   template <size_t R, size_t KnownAlignment = 0>
   static constexpr size_t RoundUpTo(size_t n) {
@@ -299,11 +278,15 @@ struct MessageGlobalsBase {
   }
 
   static constexpr const ClassData* GetClassData(const void* globals) {
-    return static_cast<const MessageGlobalsBase*>(globals)->class_data.base();
+    return &(static_cast<const MessageGlobalsBase*>(globals)->class_data);
   }
-  constexpr const ClassData* GetClassData() const { return class_data.base(); }
+  constexpr const ClassData* GetClassData() const { return &class_data; }
 
-  explicit constexpr MessageGlobalsBase(ClassDataFull class_data)
+  static const MessageGlobalsBase* FromClassData(const void* class_data) {
+    return reinterpret_cast<const MessageGlobalsBase*>(class_data);
+  }
+
+  explicit constexpr MessageGlobalsBase(ClassData class_data)
       : class_data(class_data) {}
 
   static const TcParseTableBase* ToParseTableBase(const void* g) {
@@ -315,22 +298,14 @@ struct MessageGlobalsBase {
         RoundUpTo<8, alignof(void*)>(globals->class_data.allocation_size()));
   }
 
-  // It also aliases to ClassDataLite.
-  ClassDataFull class_data;
+  ClassData class_data;
 };
 
 template <const auto* kGlobals>
 struct GeneratedMessageTraitsT {
-  static const void* default_instance() {
-    return MessageGlobalsBase::ToDefaultInstance(kGlobals);
-  }
   static const auto* class_data() {
     return MessageGlobalsBase::GetClassData(kGlobals);
   }
-  static const auto* tc_table() {
-    return MessageGlobalsBase::ToParseTableBase(kGlobals);
-  }
-  static constexpr const auto* globals() { return kGlobals; }
   static constexpr auto StrongPointer() { return kGlobals; }
 };
 
@@ -339,22 +314,12 @@ inline const MessageLite* ClassData::default_instance() const {
   return MessageGlobalsBase::ToDefaultInstance(this);
 }
 
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-
 inline const TcParseTableBase* ClassData::GetTcParseTable() const {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   if (ABSL_PREDICT_FALSE(is_dynamic)) {
-#else
-  if (ABSL_PREDICT_FALSE(tc_table == nullptr)) {
-#endif
     ABSL_DCHECK(!is_lite);
-    return full().descriptor_methods()->get_tc_table(this);
+    return descriptor_methods()->get_tc_table(this);
   }
-#ifdef PROTOBUF_MESSAGE_GLOBALS
   return MessageGlobalsBase::ToParseTableBase(this);
-#else
-  return tc_table;
-#endif
 }
 
 }  // namespace internal
@@ -389,7 +354,9 @@ class PROTOBUF_EXPORT MessageLite {
  public:
   MessageLite(const MessageLite&) = delete;
   MessageLite& operator=(const MessageLite&) = delete;
+#if !defined(PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR)
   PROTOBUF_VIRTUAL ~MessageLite() = default;
+#endif  // !PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR
 
   // Basic Operations ------------------------------------------------
 
@@ -398,7 +365,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
-  [[nodiscard]] MessageLite* New() const { return New(nullptr); }
+  [[nodiscard]] MessageLite* New() const { return New(/*arena=*/nullptr); }
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
@@ -777,6 +744,10 @@ class PROTOBUF_EXPORT MessageLite {
       const char* ptr, internal::ParseContext* ctx);
 
  protected:
+#if defined(PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR)
+  ~MessageLite() = default;
+#endif  // PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR
+
   // Message implementations require access to internally visible API.
   static constexpr internal::InternalVisibility internal_visibility() {
     return internal::InternalVisibility{};
@@ -794,9 +765,10 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename T>
   static constexpr internal::MessageCreator GetNewImpl() {
     if constexpr (internal::EnableCustomNewFor<T>()) {
-      return T::InternalNewImpl_();
+      return T::_Internal::NewImpl();
     } else {
-      return internal::MessageCreator(&T::PlacementNew_, sizeof(T), alignof(T));
+      return internal::MessageCreator(&T::_Internal::PlacementNew, sizeof(T),
+                                      alignof(T));
     }
   }
 
@@ -965,7 +937,6 @@ class PROTOBUF_EXPORT MessageLite {
   friend struct internal::PrivateAccess;
   friend struct internal::TcParseTableBase;
   friend class internal::UntypedMapBase;
-  friend class internal::WeakFieldMap;
   friend class internal::WireFormatLite;
   friend class internal::RustMapHelper;
   template <typename Type>

@@ -24,6 +24,7 @@ enum Armor {
   ARMOR_COIF = 5 [(pb.enumvalue.json).string = ""];
   ARMOR_PAULDRON = 6 [(pb.enumvalue.json).string = "p\taul\ndron"];
   ARMOR_SHIELD = 7 [(pb.enumvalue.json).string = "true"];
+  ARMOR_HACHI_MAI_DO = 8 [(pb.enumvalue.json).string = "8"];
 }
 
 enum Helmet {

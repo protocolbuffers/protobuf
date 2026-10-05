@@ -44,7 +44,10 @@ rust_test(
         "//rust:protobuf_upb_export": "protobuf",
     },
     edition = "2024",
-    rustc_flags = ["--cfg=bzl"],
+    rustc_flags = [
+        "--cfg=bzl",
+        "--cfg=upb_kernel",
+    ],
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:unittest_upb_rust_proto",
@@ -59,7 +62,10 @@ rust_test(
         "//rust:protobuf_cpp_export": "protobuf",
     },
     edition = "2024",
-    rustc_flags = ["--cfg=bzl"],
+    rustc_flags = [
+        "--cfg=bzl",
+        "--cfg=cpp_kernel",
+    ],
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:unittest_cpp_rust_proto",
@@ -622,6 +628,8 @@ rust_test(
     deps = [
         "//rust:protobuf_cpp",
         "//rust:protobuf_gtest_matchers_cpp",
+        "//rust/test:extensions_cpp_rust_proto",
+        "//rust/test:map_unittest_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
         "//rust/test:unittest_proto3_cpp_rust_proto",
         "//rust/test:unittest_proto3_optional_cpp_rust_proto",
@@ -644,6 +652,8 @@ rust_test(
     deps = [
         "//rust:protobuf_gtest_matchers_upb",
         "//rust:protobuf_upb",
+        "//rust/test:extensions_upb_rust_proto",
+        "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",

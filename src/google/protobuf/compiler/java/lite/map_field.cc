@@ -128,15 +128,6 @@ void SetMessageVariables(
   (*variables)["deprecation"] =
       descriptor->options().deprecated() ? "@java.lang.Deprecated " : "";
 
-  if (valueJavaType == JAVATYPE_MESSAGE) {
-    variables->insert(
-        {"default_entry", absl::StrCat((*variables)["capitalized_name"],
-                                       "DefaultEntryHolder.defaultEntry")});
-  } else {
-    variables->insert(
-        {"default_entry", absl::StrCat((*variables)["name"], "DefaultEntry_",
-                                       descriptor->number(), "_")});
-  }
   // { and } variables are used as delimiters when emitting annotations.
   (*variables)["{"] = "";
   (*variables)["}"] = "";
@@ -267,30 +258,6 @@ void ImmutableMapFieldLiteGenerator::GenerateInterfaceMembers(
 void ImmutableMapFieldLiteGenerator::GenerateMembers(
     io::Printer* printer) const {
   const FieldDescriptor* value = MapValueField(descriptor_);
-  if (GetJavaType(value) == JAVATYPE_MESSAGE) {
-    printer->Print(
-        variables_,
-        "private static final class $capitalized_name$DefaultEntryHolder {\n"
-        "  static final com.google.protobuf.MapEntryLite<\n"
-        "      $type_parameters$> defaultEntry =\n"
-        "          com.google.protobuf.MapEntryLite\n"
-        "          .<$type_parameters$>newDefaultInstance(\n"
-        "              $key_wire_type$,\n"
-        "              $key_default_value$,\n"
-        "              $value_wire_type$,\n"
-        "              $value_default_value$);\n"
-        "}\n");
-  } else {
-    printer->Print(variables_,
-                   "private static final com.google.protobuf.MapEntryLite<\n"
-                   "    $type_parameters$> $default_entry$ =\n"
-                   "        com.google.protobuf.MapEntryLite\n"
-                   "        .<$type_parameters$>newDefaultInstance(\n"
-                   "            $key_wire_type$,\n"
-                   "            $key_default_value$,\n"
-                   "            $value_wire_type$,\n"
-                   "            $value_default_value$);\n");
-  }
   printer->Print(variables_,
                  "private com.google.protobuf.MapFieldLite<\n"
                  "    $type_parameters$> $name$_ =\n"
@@ -544,7 +511,12 @@ void ImmutableMapFieldLiteGenerator::GenerateFieldInfo(
                               output);
   printer->Print(variables_,
                  "\"$name$_\",\n"
-                 "$default_entry$,\n");
+                 "com.google.protobuf.MapEntryLite\n"
+                 ".<$type_parameters$>newDefaultInstance(\n"
+                 "    $key_wire_type$,\n"
+                 "    $key_default_value$,\n"
+                 "    $value_wire_type$,\n"
+                 "    $value_default_value$),\n");
   const FieldDescriptor* value = MapValueField(descriptor_);
   if (!SupportUnknownEnumValue(value) && GetJavaType(value) == JAVATYPE_ENUM) {
     PrintEnumVerifierLogic(printer, MapValueField(descriptor_), variables_,

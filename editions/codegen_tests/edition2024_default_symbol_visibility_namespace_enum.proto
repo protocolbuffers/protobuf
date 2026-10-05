@@ -1,0 +1,9 @@
+edition = "2024";
+
+local message ValidNamespaceMessage {
+  export enum Nested {
+    VAL = 0;
+  }
+
+  reserved 1 to max;
+}

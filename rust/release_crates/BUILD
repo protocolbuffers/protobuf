@@ -14,6 +14,11 @@ pkg_tar(
     name = "workspace",
     srcs = [
         ":Cargo.toml",
+        "//rust/release_crates/google_protobuf:google_protobuf_crate",
+        "//rust/release_crates/google_protobuf_codegen:google_protobuf_codegen_crate",
+        "//rust/release_crates/google_protobuf_example:google_protobuf_example_crate",
+        "//rust/release_crates/google_protobuf_macros:google_protobuf_macros_crate",
+        "//rust/release_crates/google_protobuf_well_known_types:google_protobuf_well_known_types_crate",
         "//rust/release_crates/protobuf:protobuf_crate",
         "//rust/release_crates/protobuf_codegen:protobuf_codegen_crate",
         "//rust/release_crates/protobuf_example:protobuf_example_crate",

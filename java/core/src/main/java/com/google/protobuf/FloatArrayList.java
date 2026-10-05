@@ -48,7 +48,7 @@ final class FloatArrayList extends AbstractProtobufList<Float>
   /**
    * Constructs a new mutable {@code FloatArrayList} containing the same elements as {@code other}.
    */
-  private FloatArrayList(float[] other, int size, boolean isMutable) {
+  FloatArrayList(float[] other, int size, boolean isMutable) {
     super(isMutable);
     this.array = other;
     this.size = size;
@@ -248,8 +248,15 @@ final class FloatArrayList extends AbstractProtobufList<Float>
     }
 
     int newSize = size + list.size;
+    // The first addAll is sized exactly, as it is common that it is used exactly once and perfect
+    // sizing saves memory. Otherwise, grow at least as much as add() would, to avoid quadratic
+    // copying when addAll() is called repeatedly with small lists.
     if (newSize > array.length) {
-      array = Arrays.copyOf(array, newSize);
+      if (size == 0) {
+        array = new float[newSize];
+      } else {
+        array = Arrays.copyOf(array, max(newSize, growSize(array.length)));
+      }
     }
 
     System.arraycopy(list.array, 0, array, size, list.size);

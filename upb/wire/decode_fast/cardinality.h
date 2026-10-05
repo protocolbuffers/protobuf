@@ -12,10 +12,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/string_view.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/array.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
+#include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
@@ -406,6 +408,23 @@ bool upb_DecodeFast_Unpacked(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   void* dst;
 
+  if (card == kUpb_DecodeFast_Oneof && type != kUpb_DecodeFast_Message) {
+    // Decode into a temporary and only set the oneof case once we succeed, so
+    // that if decoding fails the case still points to the previous member,
+    // which is intact.
+    union {
+      uint64_t u64;
+      upb_StringView sv;
+    } tmp;
+    if (!single(d, &p, &tmp, type, ret, ctx)) return false;
+    upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
+                                  type);
+    memcpy(dst, &tmp, upb_DecodeFast_ValueBytes(type));
+    *ptr = p;
+    _upb_Decoder_Trace(d, 'F');
+    return true;
+  }
+
   if (upb_DecodeFast_GetScalarField(d, p, msg, *data, hasbits, ret, &dst, card,
                                     type)) {
     if (!single(d, &p, dst, type, ret, ctx)) return false;
@@ -457,6 +476,7 @@ UPB_FORCEINLINE bool _upb_DecodeFast_DecodeSizeSlow(const char** pp,
 UPB_FORCEINLINE
 bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
                                upb_DecodeFastNext* next) {
+  UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), 5);
   const char* ptr = *pp;
   if ((ptr[0] & 0x80) == 0) {
     *pp = ptr + 1;
@@ -473,6 +493,27 @@ bool upb_DecodeFast_DecodeSize(upb_Decoder* d, const char** pp, int* size,
   }
 
   return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, next);
+}
+
+typedef struct {
+  const upb_MiniTable* table;
+  bool is_repeated;
+  upb_Message* msg;
+} upb_DecodeFast_MessageContext;
+
+UPB_FORCEINLINE
+const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
+                                       const char* ptr, int size, void* ctx) {
+  UPB_STATIC_ASSERT(
+      offsetof(upb_Decoder, input) == 0,
+      "EpsCopyInputStream must be pointer interconvertible with upb_Decoder");
+  upb_Decoder* d = (upb_Decoder*)st;
+  upb_DecodeFast_MessageContext* c = (upb_DecodeFast_MessageContext*)ctx;
+  ptr = _upb_Decoder_DecodeMessage(d, ptr, c->msg, c->table);
+  if (d->end_group != DECODE_NOGROUP) {
+    _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
+  }
+  return ptr;
 }
 
 UPB_FORCEINLINE
@@ -543,8 +584,8 @@ void upb_DecodeFast_InlineMemcpy(void* dst, const char* src, size_t size) {
 // Workaround for b/177688959. We need to ensure that this function never goes
 // through PLT lookup. It follows that this function may not be called by
 // any other cc_library().
-__attribute__((visibility("hidden"))) UPB_PRESERVE_MOST const char*
-upb_DecodeFast_IsDoneFallback(upb_Decoder* d, const char* ptr);
+UPB_HIDDEN UPB_PRESERVE_MOST const char* upb_DecodeFast_IsDoneFallback(
+    upb_Decoder* d, const char* ptr);
 
 UPB_FORCEINLINE
 bool upb_DecodeFast_IsDone(upb_Decoder* d, const char** ptr) {

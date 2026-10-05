@@ -26,7 +26,8 @@ size_t upb_ByteSize(const upb_Message* msg, const upb_MiniTable* mt) {
   char* buf;
   size_t res = 0;
 
-  (void)upb_Encode(msg, mt, 0, arena, &buf, &res);
+  upb_EncodeStatus status = upb_Encode(msg, mt, 0, arena, &buf, &res);
+  UPB_UNUSED(status);
 
   upb_Arena_Free(arena);
   return res;

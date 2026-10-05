@@ -276,7 +276,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.  (This is also defined in MessageLite, but is defined again here
   // for return-type covariance.)
-  [[nodiscard]] Message* New() const { return New(nullptr); }
+  [[nodiscard]] Message* New() const { return New(/*arena=*/nullptr); }
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
@@ -422,12 +422,19 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
   constexpr Message() {}
 #endif  // PROTOBUF_CUSTOM_VTABLE
+
+#if defined(PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR)
+  // Explicitly define the destructor as protected so it can't be called
+  // directly.
+  ~Message() = default;
+#endif  // PROTOBUF_PROTECTED_MESSAGE_BASE_DESTRUCTOR
+
   using MessageLite::MessageLite;
 
   // Get a struct containing the metadata for the Message, which is used in turn
   // to implement GetDescriptor() and GetReflection() above.
   Metadata GetMetadata() const;
-  static Metadata GetMetadataImpl(const internal::ClassDataFull& data);
+  static Metadata GetMetadataImpl(const internal::ClassData& data);
 
   // For CODE_SIZE types
   static bool IsInitializedImpl(const MessageLite&);
@@ -633,8 +640,10 @@ class PROTOBUF_EXPORT Reflection final {
                              const FieldDescriptor* field) const;
   [[nodiscard]] std::string GetString(const Message& message,
                                       const FieldDescriptor* field) const;
-  [[nodiscard]] const EnumValueDescriptor* GetEnum(
-      const Message& message, const FieldDescriptor* field) const;
+  [[nodiscard]] [[deprecated(
+      "Please use GetEnumValue() instead. GetEnum() will be "
+      "removed in Q1 2027.")]] const EnumValueDescriptor*
+  GetEnum(const Message& message, const FieldDescriptor* field) const;
 
   // GetEnumValue() returns an enum field's value as an integer rather than
   // an EnumValueDescriptor*. If the integer value does not correspond to a
@@ -818,8 +827,11 @@ class PROTOBUF_EXPORT Reflection final {
   [[nodiscard]] std::string GetRepeatedString(const Message& message,
                                               const FieldDescriptor* field,
                                               int index) const;
-  [[nodiscard]] const EnumValueDescriptor* GetRepeatedEnum(
-      const Message& message, const FieldDescriptor* field, int index) const;
+  [[nodiscard]] [[deprecated(
+      "Please use GetRepeatedEnumValue() instead. GetRepeatedEnum() will be "
+      "removed in Q1 2027.")]] const EnumValueDescriptor*
+  GetRepeatedEnum(const Message& message, const FieldDescriptor* field,
+                  int index) const;
   // GetRepeatedEnumValue() returns an enum field's value as an integer rather
   // than an EnumValueDescriptor*. If the integer value does not correspond to a
   // known value descriptor, a new value descriptor is created. (Such a value
@@ -1333,7 +1345,8 @@ class PROTOBUF_EXPORT Reflection final {
   template <typename Type>
   const Type& DefaultRaw(const FieldDescriptor* field) const;
 
-  const Message* GetDefaultMessageInstance(const FieldDescriptor* field) const;
+  const internal::ClassData* GetMessageClassData(
+      const FieldDescriptor* field) const;
 
   const uint32_t* GetHasBits(const Message& message) const;
   inline uint32_t* MutableHasBits(Message* message) const;
@@ -1697,7 +1710,7 @@ Reflection::GetRepeatedPtrFieldInternal<std::string>(
     const Message& message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   return *static_cast<const RepeatedPtrField<std::string>*>(
-      GetRawRepeatedString(message, field, true, intent));
+      GetRawRepeatedString(message, field, /*is_string=*/true, intent));
 }
 
 template <>
@@ -1709,7 +1722,7 @@ Reflection::MutableRepeatedPtrFieldInternal<std::string>(
     SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<std::string>*>(
-      MutableRawRepeatedString(message, field, true, intent));
+      MutableRawRepeatedString(message, field, /*is_string=*/true, intent));
 }
 
 
@@ -1719,8 +1732,9 @@ template <>
 inline const RepeatedPtrField<Message>& Reflection::GetRepeatedPtrFieldInternal(
     const Message& message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
-  return *static_cast<const RepeatedPtrField<Message>*>(GetRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
+  return *static_cast<const RepeatedPtrField<Message>*>(
+      GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
+                          /*desc=*/nullptr, intent));
 }
 
 template <>
@@ -1730,8 +1744,9 @@ inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
   if (!field->is_extension()) {
     SetHasBit(message, field);
   }
-  return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
+  return static_cast<RepeatedPtrField<Message>*>(
+      MutableRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
+                              -1, /*desc=*/nullptr, intent));
 }
 
 template <typename PB>

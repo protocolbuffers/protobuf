@@ -12,14 +12,20 @@ import java.util.Arrays;
 
 /**
  * {@code UnknownFieldSetLite} is used to keep track of fields which were seen when parsing a
- * protocol message but whose field numbers or types are unrecognized. This most frequently occurs
- * when new fields are added to a message type and then messages containing those fields are read by
- * old software that was compiled before the new types were added.
+ * protocol message but whose field numbers or types are unrecognized.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
+ * <p>This most frequently occurs when new fields are added to a message type and then messages
+ * containing those fields are read by old software that was compiled before the new types were
+ * added.
  *
  * <p>For use by generated code only.
  *
  * @author dweis@google.com (Daniel Weis)
  */
+@ForLiteOnly
 public final class UnknownFieldSetLite {
 
   // Arbitrarily chosen.

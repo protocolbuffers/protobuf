@@ -16,8 +16,11 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
+#include <variant>
 
 #include "absl/log/absl_check.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/port.h"
 
 // Must be included last.
@@ -37,14 +40,16 @@ class EpsCopyOutputStream;
 
 namespace internal {
 
-struct ClassDataFull;
 struct DescriptorTable;
 class LazyField;
 struct TcParseTableBase;
+struct DescriptorMethods;
 
 class MessageCreator {
  public:
-  using Func = void* (*)(const void*, void*, Arena*);
+  using Func = void* PROTOBUF_NONNULL (*PROTOBUF_NULLABLE)(
+      const void* PROTOBUF_NONNULL prototype, void* PROTOBUF_NONNULL mem,
+      Arena* PROTOBUF_NULLABLE arena);
 
   // Use -1/0/1 to be able to use <0, ==0, >0
   enum Tag : int8_t {
@@ -81,13 +86,14 @@ class MessageCreator {
 
   // Template for testing.
   template <typename MessageLite>
-  MessageLite* PlacementNew(const MessageLite* prototype_for_func,
-                            const MessageLite* prototype_for_copy, void* mem,
-                            Arena* arena) const;
+  MessageLite* PROTOBUF_NONNULL PlacementNew(
+      const MessageLite* PROTOBUF_NONNULL prototype_for_func,
+      const MessageLite* PROTOBUF_NONNULL prototype_for_copy,
+      void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
 
   // Make this a template to avoid depending on arena.h.
   template <typename Arena>
-  void* AllocateMessage(Arena* arena) const {
+  void* PROTOBUF_NONNULL AllocateMessage(Arena* PROTOBUF_NULLABLE arena) const {
     if (arena != nullptr) {
       return arena->AllocateAligned(allocation_size_);
     } else {
@@ -108,6 +114,39 @@ class MessageCreator {
   Func func_;
 };
 
+// ClassData* can and should be placed on read-only section to maximize sharing.
+// However, !LITE has mutable fields for lazy initialization of reflection
+// related data. We move these fields to a separate struct to keep the main
+// ClassData read-only. Extra indirection should be tolerable considering that
+// reflection isn't performance critical.
+struct PROTOBUF_EXPORT ReflectionData {
+  constexpr ReflectionData(
+      const DescriptorMethods* PROTOBUF_NONNULL descriptor_methods,
+      const internal::DescriptorTable* PROTOBUF_NULLABLE descriptor_table,
+      void (*PROTOBUF_NULLABLE get_metadata_tracker)())
+      : reflection(nullptr),
+        descriptor(nullptr),
+        descriptor_table(descriptor_table),
+        descriptor_methods(descriptor_methods),
+        get_metadata_tracker(get_metadata_tracker) {}
+
+  // Accesses are protected by the once_flag in `descriptor_table`. When the
+  // table is null these are populated from the beginning and need to
+  // protection.
+  const Reflection* PROTOBUF_NULLABLE reflection;
+  const Descriptor* PROTOBUF_NULLABLE descriptor;
+
+  // Codegen types will provide a DescriptorTable to do lazy
+  // registration/initialization of the reflection objects.
+  // Other types, like DynamicMessage, keep the table as null but eagerly
+  // populate `reflection`/`descriptor` fields.
+  const internal::DescriptorTable* PROTOBUF_NULLABLE descriptor_table;
+  const DescriptorMethods* PROTOBUF_NONNULL descriptor_methods;
+  // When an access tracker is installed, this function notifies the tracker
+  // that GetMetadata was called.
+  void (*PROTOBUF_NULLABLE get_metadata_tracker)();
+};
+
 // Note: The order of arguments in the functions is chosen so that it has
 // the same ABI as the member function that calls them. Eg the `this`
 // pointer becomes the first argument in the free function.
@@ -118,19 +157,24 @@ class MessageCreator {
 // have them and their offset.
 
 struct PROTOBUF_EXPORT ClassData {
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  const MessageLite* prototype;
-  const internal::TcParseTableBase* tc_table;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-  bool (*is_initialized)(const MessageLite&);
-  void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg);
+  using IsInitializedFunc = bool (*PROTOBUF_NULLABLE)(const MessageLite&);
+  using MergeToFromFunc = void (*PROTOBUF_NONNULL)(MessageLite& to,
+                                                   const MessageLite& from_msg);
+  using DestroyMessageFunc = void (*PROTOBUF_NONNULL)(MessageLite& msg);
+  using ClearFunc = void (*PROTOBUF_NONNULL)(MessageLite& msg);
+  using ByteSizeLongFunc = size_t (*PROTOBUF_NONNULL)(const MessageLite&);
+  using SerializeFunc = uint8_t* PROTOBUF_NULLABLE (*PROTOBUF_NONNULL)(
+      const MessageLite& msg, uint8_t* PROTOBUF_NULLABLE ptr,
+      io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+
+  IsInitializedFunc is_initialized;
+  MergeToFromFunc merge_to_from;
   internal::MessageCreator message_creator;
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-  void (*destroy_message)(MessageLite& msg);
-  void (*clear)(MessageLite& msg);
-  size_t (*byte_size_long)(const MessageLite&);
-  uint8_t* (*serialize)(const MessageLite& msg, uint8_t* ptr,
-                        io::EpsCopyOutputStream* stream);
+  DestroyMessageFunc destroy_message;
+  ClearFunc clear;
+  ByteSizeLongFunc byte_size_long;
+  SerializeFunc serialize;
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
   // Offset of the CachedSize member.
@@ -143,46 +187,29 @@ struct PROTOBUF_EXPORT ClassData {
   // In normal mode we have the small constructor to avoid the cost in
   // codegen.
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-  constexpr ClassData(const MessageLite* prototype,
-                      const internal::TcParseTableBase* tc_table,
-                      bool (*is_initialized)(const MessageLite&),
-                      void (*merge_to_from)(MessageLite& to,
-                                            const MessageLite& from_msg),
-                      internal::MessageCreator message_creator,
-                      uint32_t cached_size_offset, bool is_lite)
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        prototype(prototype),
-        tc_table(tc_table),
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-        is_initialized(is_initialized),
+  constexpr ClassData(
+      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
+      internal::MessageCreator message_creator, uint32_t cached_size_offset,
+      std::variant<ReflectionData*, const char*> reflection_or_name)
+      : is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
         cached_size_offset(cached_size_offset),
-        is_lite(is_lite) {
-  }
+        is_lite(std::holds_alternative<const char*>(reflection_or_name)),
+        aux_data(GetAuxFromVariant(reflection_or_name)) {}
 #endif  // !PROTOBUF_CUSTOM_VTABLE
 
   // But we always provide the full constructor even in normal mode to make
   // helper code simpler.
   constexpr ClassData(
-      const MessageLite* prototype, const internal::TcParseTableBase* tc_table,
-      bool (*is_initialized)(const MessageLite&),
-      void (*merge_to_from)(MessageLite& to, const MessageLite& from_msg),
+      IsInitializedFunc is_initialized, MergeToFromFunc merge_to_from,
       internal::MessageCreator message_creator,
-      [[maybe_unused]] void (*destroy_message)(MessageLite& msg),  //
-      [[maybe_unused]] void (*clear)(MessageLite& msg),
-      [[maybe_unused]] size_t (*byte_size_long)(const MessageLite&),
-      [[maybe_unused]] uint8_t* (*serialize)(const MessageLite& msg,
-                                             uint8_t* ptr,
-                                             io::EpsCopyOutputStream* stream),
-      uint32_t cached_size_offset, bool is_lite)
-      :
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        prototype(prototype),
-        tc_table(tc_table),
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-        is_initialized(is_initialized),
+      [[maybe_unused]] DestroyMessageFunc destroy_message,
+      [[maybe_unused]] ClearFunc clear,
+      [[maybe_unused]] ByteSizeLongFunc byte_size_long,
+      [[maybe_unused]] SerializeFunc serialize, uint32_t cached_size_offset,
+      std::variant<ReflectionData*, const char*> reflection_or_name)
+      : is_initialized(is_initialized),
         merge_to_from(merge_to_from),
         message_creator(message_creator),
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -192,24 +219,20 @@ struct PROTOBUF_EXPORT ClassData {
         serialize(serialize),
 #endif  // PROTOBUF_CUSTOM_VTABLE
         cached_size_offset(cached_size_offset),
-        is_lite(is_lite) {
+        is_lite(std::holds_alternative<const char*>(reflection_or_name)),
+        aux_data(GetAuxFromVariant(reflection_or_name)) {
   }
 
-  const ClassDataFull& full() const;
+  const TcParseTableBase* PROTOBUF_NONNULL GetTcParseTable() const;
 
-  const TcParseTableBase* GetTcParseTable() const;
-
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-  const MessageLite* default_instance() const { return prototype; }
-#else
-  const MessageLite* default_instance() const;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
+  const MessageLite* PROTOBUF_NONNULL default_instance() const;
 
   // Defined in message_lite.h.
-  MessageLite* New(Arena* arena) const;
+  MessageLite* PROTOBUF_NONNULL New(Arena* PROTOBUF_NULLABLE arena) const;
 
   // Defined in message_lite.h.
-  MessageLite* PlacementNew(void* mem, Arena* arena) const;
+  MessageLite* PROTOBUF_NONNULL PlacementNew(
+      void* PROTOBUF_NONNULL mem, Arena* PROTOBUF_NULLABLE arena) const;
 
   uint32_t allocation_size() const { return message_creator.allocation_size(); }
 
@@ -227,151 +250,28 @@ struct PROTOBUF_EXPORT ClassData {
         << " and " << from.GetTypeName();
     this->merge_to_from(to, from);
   }
-};
 
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-struct ClassDataLite : ClassData {
-  constexpr ClassDataLite(ClassData base, const char* type_name)
-      : ClassData(base), type_name_ptr(type_name) {}
+  std::string DebugName() const;
 
-  const char* type_name() const { return type_name_ptr; }
-  const char* type_name_ptr;
-
-  constexpr const ClassData* base() const { return this; }
-};
-#else
-using ClassDataLite = ClassDataFull;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-
-// We use a secondary vtable for descriptor based methods. This way ClassData
-// does not grow with the number of descriptor methods. This avoids extra
-// costs in MessageLite.
-struct PROTOBUF_EXPORT DescriptorMethods {
-  absl::string_view (*get_type_name)(const ClassData* data);
-  std::string (*initialization_error_string)(const MessageLite&);
-  const internal::TcParseTableBase* (*get_tc_table)(const ClassData*);
-  size_t (*space_used_long)(const MessageLite&);
-  std::string (*debug_string)(const MessageLite&);
-  void (*verify_lazy_field_consistency)(const LazyField&);
-};
-
-// ClassData* can and should be placed on read-only section to maximize sharing.
-// However, ClassDataFull has mutable fields for lazy initialization of
-// reflection related data. To keep the lazy initialization and to move the
-// ClassDataFull to the read-only section we use a secondary table. Extra
-// indirection should be tolerable considering that reflection isn't performance
-// critical.
-struct PROTOBUF_EXPORT ReflectionData {
-  constexpr ReflectionData(const DescriptorMethods* descriptor_methods,
-                           const internal::DescriptorTable* descriptor_table,
-                           void (*get_metadata_tracker)())
-      : reflection(nullptr),
-        descriptor(nullptr),
-        descriptor_table(descriptor_table),
-        descriptor_methods(descriptor_methods),
-        get_metadata_tracker(get_metadata_tracker) {}
-
-  // Accesses are protected by the once_flag in `descriptor_table`. When the
-  // table is null these are populated from the beginning and need to
-  // protection.
-  const Reflection* reflection;
-  const Descriptor* descriptor;
-
-  // Codegen types will provide a DescriptorTable to do lazy
-  // registration/initialization of the reflection objects.
-  // Other types, like DynamicMessage, keep the table as null but eagerly
-  // populate `reflection`/`descriptor` fields.
-  const internal::DescriptorTable* descriptor_table;
-  const DescriptorMethods* descriptor_methods;
-  // When an access tracker is installed, this function notifies the tracker
-  // that GetMetadata was called.
-  void (*get_metadata_tracker)();
-};
-
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-struct PROTOBUF_EXPORT ClassDataFull : ClassData {
-  constexpr ClassDataFull(ClassData base,
-                          const DescriptorMethods* descriptor_methods,
-                          const internal::DescriptorTable* descriptor_table,
-                          void (*get_metadata_tracker)())
-      : ClassData(base),
-        reflection_ptr(nullptr),
-        descriptor_ptr(nullptr),
-        descriptor_table_ptr(descriptor_table),
-        descriptor_methods_ptr(descriptor_methods),
-        get_metadata_tracker_func(get_metadata_tracker) {}
-
-  constexpr const ClassData* base() const { return this; }
-
-  // Accessors for reflection related data.
-  const Reflection* reflection() const { return reflection_ptr; }
-  const Descriptor* descriptor() const { return descriptor_ptr; }
-
-  void set_reflection(const Reflection* reflection) const {
-    reflection_ptr = reflection;
+  // Accessors for reflection related data (!LITE only).
+  const Reflection* PROTOBUF_NULLABLE reflection() const {
+    return reflection_data()->reflection;
   }
-  void set_descriptor(const Descriptor* descriptor) const {
-    descriptor_ptr = descriptor;
+  const Descriptor* PROTOBUF_NULLABLE descriptor() const {
+    return reflection_data()->descriptor;
   }
 
-  const internal::DescriptorTable* descriptor_table() const {
-    return descriptor_table_ptr;
-  }
-  const DescriptorMethods* descriptor_methods() const {
-    return descriptor_methods_ptr;
-  }
-  bool has_get_metadata_tracker() const {
-    return get_metadata_tracker_func != nullptr;
-  }
-  void get_metadata_tracker() const { get_metadata_tracker_func(); }
-
-  // Accesses are protected by the once_flag in `descriptor_table`. When the
-  // table is null these are populated from the beginning and need to
-  // protection.
-  mutable const Reflection* reflection_ptr;
-  mutable const Descriptor* descriptor_ptr;
-
-  // Codegen types will provide a DescriptorTable to do lazy
-  // registration/initialization of the reflection objects.
-  // Other types, like DynamicMessage, keep the table as null but eagerly
-  // populate `reflection`/`descriptor` fields.
-  const internal::DescriptorTable* descriptor_table_ptr;
-  const DescriptorMethods* descriptor_methods_ptr;
-  // When an access tracker is installed, this function notifies the tracker
-  // that GetMetadata was called.
-  void (*get_metadata_tracker_func)();
-};
-#else
-// TODO b/474609573 - Rename this type to reflect that is's unified to
-// ClassDataLite as well.
-struct PROTOBUF_EXPORT ClassDataFull : ClassData {
-  constexpr ClassDataFull(ClassData base, ReflectionData* reflection_data)
-      : ClassData(base), aux_data{.reflection_data = reflection_data} {
-    ABSL_DCHECK(!is_lite);
-  }
-
-  constexpr ClassDataFull(ClassData base, const char* type_name)
-      : ClassData(base), aux_data{.type_name = type_name} {
-    ABSL_DCHECK(is_lite);
-  }
-
-  constexpr const ClassData* base() const { return this; }
-
-  // Accessors for reflection related data (ClassDataFull only).
-  const Reflection* reflection() const { return reflection_data()->reflection; }
-  const Descriptor* descriptor() const { return reflection_data()->descriptor; }
-
-  void set_reflection(const Reflection* reflection) const {
+  void set_reflection(const Reflection* PROTOBUF_NULLABLE reflection) const {
     reflection_data()->reflection = reflection;
   }
-  void set_descriptor(const Descriptor* descriptor) const {
+  void set_descriptor(const Descriptor* PROTOBUF_NULLABLE descriptor) const {
     reflection_data()->descriptor = descriptor;
   }
 
-  const internal::DescriptorTable* descriptor_table() const {
+  const DescriptorTable* PROTOBUF_NULLABLE descriptor_table() const {
     return reflection_data()->descriptor_table;
   }
-  const DescriptorMethods* descriptor_methods() const {
+  const DescriptorMethods* PROTOBUF_NONNULL descriptor_methods() const {
     return reflection_data()->descriptor_methods;
   }
   bool has_get_metadata_tracker() const {
@@ -381,28 +281,62 @@ struct PROTOBUF_EXPORT ClassDataFull : ClassData {
     reflection_data()->get_metadata_tracker();
   }
 
-  ReflectionData* reflection_data() const {
+  ReflectionData* PROTOBUF_NONNULL reflection_data() const {
     ABSL_DCHECK(!is_lite);
     return aux_data.reflection_data;
   }
 
-  // Accessors for type name (ClassDataLite only).
-  const char* type_name() const {
+  // Accessors for type name (LITE only).
+  const char* PROTOBUF_NONNULL type_name() const {
     ABSL_DCHECK(is_lite);
     return aux_data.type_name;
   }
 
   union ReflectionDataOrTypeName {
-    ReflectionData* reflection_data;
-    const char* type_name;
+    explicit constexpr ReflectionDataOrTypeName(
+        ReflectionData* PROTOBUF_NONNULL reflection_data)
+        : reflection_data(reflection_data) {}
+    explicit constexpr ReflectionDataOrTypeName(
+        const char* PROTOBUF_NONNULL type_name)
+        : type_name(type_name) {}
+    ReflectionData* PROTOBUF_NONNULL reflection_data;
+    const char* PROTOBUF_NONNULL type_name;
   } aux_data;
-};
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 
-inline const ClassDataFull& ClassData::full() const {
-  ABSL_DCHECK(!is_lite);
-  return *static_cast<const ClassDataFull*>(this);
-}
+  static constexpr ReflectionDataOrTypeName GetAuxFromVariant(
+      std::variant<ReflectionData*, const char*> reflection_or_name) {
+    if (std::holds_alternative<const char*>(reflection_or_name)) {
+      return ReflectionDataOrTypeName(
+          std::get<const char*>(reflection_or_name));
+    } else {
+      return ReflectionDataOrTypeName(
+          std::get<ReflectionData*>(reflection_or_name));
+    }
+  }
+};
+
+// We use a secondary vtable for descriptor based methods. This way ClassData
+// does not grow with the number of descriptor methods. This avoids extra
+// costs in MessageLite.
+struct PROTOBUF_EXPORT DescriptorMethods {
+  using GetTypeNameFunc = absl::string_view (*PROTOBUF_NONNULL)(
+      const ClassData* PROTOBUF_NONNULL data);
+  using InitializationErrorMessageFunc =
+      std::string (*PROTOBUF_NONNULL)(const MessageLite&);
+  using GetTcTableFunc = const internal::TcParseTableBase* PROTOBUF_NONNULL (
+      *PROTOBUF_NONNULL)(const ClassData* PROTOBUF_NONNULL data);
+  using SpaceUsedLongFunc = size_t (*PROTOBUF_NONNULL)(const MessageLite&);
+  using DebugStringFunc = std::string (*PROTOBUF_NONNULL)(const MessageLite&);
+  using VerifyLazyFieldConsistencyFunc =
+      void (*PROTOBUF_NONNULL)(const LazyField&);
+
+  GetTypeNameFunc get_type_name;
+  InitializationErrorMessageFunc initialization_error_string;
+  GetTcTableFunc get_tc_table;
+  SpaceUsedLongFunc space_used_long;
+  DebugStringFunc debug_string;
+  VerifyLazyFieldConsistencyFunc verify_lazy_field_consistency;
+};
 
 }  // namespace internal
 }  // namespace protobuf

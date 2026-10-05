@@ -11,8 +11,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-/** Schema used for proto2 messages using message_set_wireformat. */
+/**
+ * Schema used for proto2 messages using message_set_wireformat.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 final class MessageSetSchema<T> implements Schema<T> {
   private final MessageLite defaultInstance;
   private final UnknownFieldSchema<?, ?> unknownFieldSchema;
@@ -360,7 +366,15 @@ final class MessageSetSchema<T> implements Schema<T> {
       if (extension != null) { // We known the type
         // TODO: Instead of reading into a temporary ByteString, maybe there is a way
         // to read directly from CodedInputStreamReader to the submessage?
-        extensionSchema.parseMessageSetItem(rawBytes, extension, extensionRegistry, extensions);
+        int remainingInputRecursionLimit = reader.getRemainingRecursionDepth();
+        if (--remainingInputRecursionLimit < 0) {
+          throw InvalidProtocolBufferException.recursionLimitExceeded();
+        }
+        CodedInputStream rawBytesInput = rawBytes.newCodedInput();
+        rawBytesInput.setRecursionLimit(remainingInputRecursionLimit);
+
+        extensionSchema.parseMessageSetItem(
+            rawBytesInput, extension, extensionRegistry, extensions);
       } else {
         unknownFieldSchema.addLengthDelimited(unknownFields, typeId, rawBytes);
       }

@@ -10,11 +10,16 @@
 // Test reflection methods for aggregate access to Repeated[Ptr]Fields.
 // This test proto2 methods on a proto2 layout.
 
+#include <cstdint>
+#include <string>
+
 #include <gtest/gtest.h>
-#include "absl/base/casts.h"
+#include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
+#include "absl/strings/str_cat.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/dynamic_message.h"
-#include "google/protobuf/port.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
 
 namespace google {
@@ -681,6 +686,23 @@ TEST(REFLECTION_TEST, RepeatedFieldRefDynamicMessage) {
   EXPECT_EQ(1234,
             refl->GetRepeatedInt32(*dynamic_message, fd_repeated_int32, 0));
 }
+
+#if GTEST_HAS_DEATH_TEST
+TEST(REFLECTION_TEST, RepeatedFieldRefAddRejectsUnrelatedMessageType) {
+  TestAllTypes m0;
+  const Reflection* refl = m0.GetReflection();
+  const Descriptor* desc = m0.GetDescriptor();
+
+  const FieldDescriptor* fd_repeated_nested_message =
+      desc->FindFieldByName("repeated_nested_message");
+  auto rf_nested_message = refl->GetMutableRepeatedFieldRef<Message>(
+      &m0, fd_repeated_nested_message);
+
+  TestAllTypes m1;
+  EXPECT_DEATH(rf_nested_message.Add(m1),
+               "Tried to copy from a message with a different type.");
+}
+#endif  // GTEST_HAS_DEATH_TEST
 
 }  // namespace
 }  // namespace protobuf

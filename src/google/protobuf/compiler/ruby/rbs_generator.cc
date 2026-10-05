@@ -811,6 +811,12 @@ bool RBSGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* generator_context,
                             std::string* error) const {
+  if (file->options().has_ruby_package()) {
+    if (!IsValidRubyPackage(file->options().ruby_package(), error)) {
+      return false;
+    }
+  }
+
   std::unique_ptr<io::ZeroCopyOutputStream> output(
       generator_context->Open(GetRBSOutputFilename(file->name())));
   io::Printer printer(output.get(), '$');

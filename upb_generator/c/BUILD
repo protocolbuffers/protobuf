@@ -48,7 +48,7 @@ bootstrap_cc_binary(
         "//upb_generator:file_layout",
         "//upb_generator:plugin",
         "//upb/reflection:descriptor_upb_proto",
-        "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,

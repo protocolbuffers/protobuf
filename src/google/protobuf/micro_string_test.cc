@@ -888,9 +888,8 @@ TEST(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
 }
 
 TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
-  if (sizeof(void*) < 8) {
-    GTEST_SKIP() << "Might not be possible to allocate that much memory on "
-                    "this platform.";
+  if (!internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
   }
 
   std::string total(1'000'000'000, 0);

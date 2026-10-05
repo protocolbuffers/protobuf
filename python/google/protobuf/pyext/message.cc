@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "absl/base/optimization.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
@@ -89,11 +90,6 @@ class MessageReflectionFriend {
       Message* lhs, Message* rhs,
       const std::vector<const FieldDescriptor*>& fields) {
     lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
-  }
-  static bool IsLazyField(const Reflection* reflection, const Message& message,
-                          const FieldDescriptor* field) {
-    return reflection->IsLazyField(field) ||
-           reflection->IsLazyExtension(message, field);
   }
   static bool ContainsMapKey(const Reflection* reflection,
                              const Message& message,
@@ -821,10 +817,15 @@ void FixupMessageAfterMerge(CMessage* self) {
   composite_fields->ForEach([&](const void* key, PyObject* value) {
     const FieldDescriptor* descriptor =
         reinterpret_cast<const FieldDescriptor*>(key);
+    if (descriptor->is_map()) {
+      reinterpret_cast<MapContainer*>(value)->version++;
+      return;
+    }
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !descriptor->is_repeated()) {
       CMessage* cmsg = reinterpret_cast<CMessage*>(value);
-      if (cmsg->state != MESSAGE_MUTABLE_DEFAULT) {
+      if (cmsg->state != MESSAGE_UNPROMOTED) {
+        FixupMessageAfterMerge(cmsg);
         return;
       }
       Message* message = AssureWritable(self);
@@ -853,17 +854,26 @@ Message* AssureWritable(CMessage* self) {
 
   switch (self->state) {
     case MESSAGE_MUTABLE:
+      if (self->has_mutable_map_ancestor) {
+        // This call to AssureWritable(self->parent) ensures we update the whole
+        // chain. It is load bearing.
+        auto* parent = AssureWritable(self->parent);
+        if (parent != nullptr && self->parent_field_descriptor != nullptr &&
+            self->parent_field_descriptor->is_map()) {
+          MakeMapFieldDirty(parent, self->parent_field_descriptor);
+        }
+      }
       return const_cast<Message*>(self->message);
     case MESSAGE_FROZEN:
       if (CheckFrozen(self, "Message is immutable.") < 0) {
         return nullptr;
       }
       return const_cast<Message*>(self->message);
-    case MESSAGE_MUTABLE_DEFAULT:
+    case MESSAGE_UNPROMOTED:
       break;
   }
 
-  // Toplevel messages are never default instances.
+  // Toplevel messages are never unpromoted instances.
   ABSL_DCHECK(self->parent);
 
   Message* parent_message = AssureWritable(self->parent);
@@ -877,14 +887,27 @@ Message* AssureWritable(CMessage* self) {
     return nullptr;
   }
 
-  // Make self->message writable.
-  const Reflection* reflection = parent_message->GetReflection();
-  Message* mutable_message = reflection->MutableMessage(
-      parent_message, self->parent_field_descriptor,
-      GetFactoryForMessage(self->parent)->message_factory);
+  Message* mutable_message;
+
+  if (self->parent_field_descriptor->is_map()) {
+    mutable_message = PromoteConstMapValueMessage(
+        parent_message, self->parent_field_descriptor, self->message);
+    self->has_mutable_map_ancestor = true;
+  } else if (self->parent_field_descriptor->is_repeated()) {
+    mutable_message = PromoteConstRepeatedMessage(
+        parent_message, self->parent_field_descriptor, self->message);
+  } else {
+    mutable_message = parent_message->GetReflection()->MutableMessage(
+        parent_message, self->parent_field_descriptor,
+        GetFactoryForMessage(self->parent)->message_factory);
+  }
+
+  self->has_mutable_map_ancestor |= self->parent->has_mutable_map_ancestor;
+
   if (mutable_message == nullptr) {
     return nullptr;
   }
+
   self->message = mutable_message;
   self->state = MESSAGE_MUTABLE;
 
@@ -1335,6 +1358,7 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->parent = nullptr;
   self->parent_field_descriptor = nullptr;
   self->state = MESSAGE_MUTABLE;
+  self->has_mutable_map_ancestor = false;
 
   // Construct the lazy unique pointers using placement new.
   new (&self->composite_fields) LazyUniquePtr<CMessage::CompositeFieldsMap>();
@@ -1345,7 +1369,7 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
 
 // The __new__ method of Message classes.
 // Creates a new C++ message and takes ownership.
-static CMessage* NewCMessage(CMessageClass* type) {
+CMessage* NewCMessage(CMessageClass* type) {
   // Retrieve the message descriptor and the default instance (=prototype).
   const Descriptor* message_descriptor = type->message_descriptor;
   if (message_descriptor == nullptr) {
@@ -1417,12 +1441,17 @@ static void Dealloc(CMessage* self) {
     if (self->parent_field_descriptor->is_repeated()) {
       CMessage::SubMessagesMap* child_submessages =
           parent->child_submessages.TryGet();
-      if (child_submessages) child_submessages->Erase(self->message);
+      if (child_submessages) {
+        child_submessages->EraseIfEqual(self->message,
+                                        reinterpret_cast<PyObject*>(self));
+      }
     } else {
       CMessage::CompositeFieldsMap* composite_fields =
           parent->composite_fields.TryGet();
-      if (composite_fields)
-        composite_fields->Erase(self->parent_field_descriptor);
+      if (composite_fields) {
+        composite_fields->EraseIfEqual(self->parent_field_descriptor,
+                                       reinterpret_cast<PyObject*>(self));
+      }
     }
     Py_CLEAR(self->parent);
   }
@@ -1635,7 +1664,8 @@ static int InternalReparentFields(
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self_child_submessages->Erase(to_release->message);
+    self_child_submessages->Erase(to_release->message,
+                                  to_release->AsPyObject());
     new_child_submessages->Set(to_release->message, to_release->AsPyObject());
   }
 
@@ -1646,7 +1676,8 @@ static int InternalReparentFields(
     Py_INCREF(new_message);
     Py_DECREF(to_release->parent);
     to_release->parent = new_message;
-    self_composite_fields->Erase(to_release->parent_field_descriptor);
+    self_composite_fields->Erase(to_release->parent_field_descriptor,
+                                 to_release->AsPyObject());
     new_composite_fields->Set(to_release->parent_field_descriptor,
                               to_release->AsPyObject());
   }
@@ -2045,16 +2076,35 @@ PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
   }
 }
 
-static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
+static PyObject* MergeFromStringImpl(CMessage* self, PyObject* arg,
+                                     bool is_cleared) {
   Py_buffer data;
   if (PyObject_GetBuffer(arg, &data, PyBUF_SIMPLE) < 0) {
     return nullptr;
   }
+  auto cleanup_data = absl::MakeCleanup([&data] { PyBuffer_Release(&data); });
 
   Message* message = AssureWritable(self);
   if (message == nullptr) {
-    PyBuffer_Release(&data);
     return nullptr;
+  }
+
+  // We parse into a temporary message first to detect oneof switches before
+  // modifying the target message. This allows us to release the wrappers
+  // for switching oneof fields in the target message before they are deleted
+  // by C++ during the merge, preventing use-after-free bugs.
+  // We use heap allocation (nullptr arena) for the temporary message so that
+  // it is collected immediately after the merge, avoiding wasting arena memory.
+  std::unique_ptr<Message> temp_message;
+  Message* merge_dst;
+
+  if (is_cleared) {
+    // Check that it is really empty.
+    ABSL_DCHECK_EQ(message->ByteSizeLong(), 0);
+    merge_dst = message;
+  } else {
+    temp_message.reset(message->New(nullptr));
+    merge_dst = temp_message.get();
   }
 
   PyMessageFactory* factory = GetFactoryForMessage(self);
@@ -2069,22 +2119,22 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
   ctx.data().pool = factory->pool->pool->get();
   ctx.data().factory = factory->message_factory;
 
-  ptr = message->_InternalParse(ptr, &ctx);
+  ptr = merge_dst->_InternalParse(ptr, &ctx);
 
-  // Child message might be lazily created before MergeFrom. Make sure they
-  // are mutable at this point if child messages are really created.
-  FixupMessageAfterMerge(self);
+  if (is_cleared) {
+    // If we merged into the final destination, fix up now before we might have
+    // an early exit.
+    FixupMessageAfterMerge(self);
+  }
 
   // Python makes distinction in error message, between a general parse failure
   // and in-correct ending on a terminating tag. Hence we need to be a bit more
   // explicit in our correctness checks.
   if (ptr == nullptr) {
-    // Parse error.
     PyErr_Format(
         DecodeError_class, "Error parsing message with type '%s'",
         std::string(self->GetMessageClass()->message_descriptor->full_name())
             .c_str());
-    PyBuffer_Release(&data);
     return nullptr;
   }
   if (ctx.BytesUntilLimit(ptr) < 0) {
@@ -2095,27 +2145,43 @@ static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
         "with type '%s'",
         std::string(self->GetMessageClass()->message_descriptor->full_name())
             .c_str());
-    PyBuffer_Release(&data);
     return nullptr;
   }
-
   // ctx has an explicit limit set (length of string_view), so we have to
   // check we ended at that limit.
   if (!ctx.EndedAtLimit()) {
     PyErr_Format(DecodeError_class,
                  "Unexpected end-group tag: Not all data was converted");
-    PyBuffer_Release(&data);
     return nullptr;
   }
-  PyBuffer_Release(&data);
+
+  if (!is_cleared) {
+    // If we are doing a real merge, fix oneofs, merge the object, then do
+    // after-merge fixup.
+
+    if (MaybeReleaseOneofBeforeMerge(self, *temp_message) < 0) {
+      return nullptr;
+    }
+
+    message->MergeFrom(*temp_message);
+
+    // Child message might be lazily created before MergeFrom. Make sure they
+    // are mutable at this point if child messages are really created.
+    FixupMessageAfterMerge(self);
+  }
+
   return PyLong_FromLong(data.len);
+}
+
+static PyObject* MergeFromString(CMessage* self, PyObject* arg) {
+  return MergeFromStringImpl(self, arg, false);
 }
 
 static PyObject* ParseFromString(CMessage* self, PyObject* arg) {
   if (ScopedPyObjectPtr(Clear(self)) == nullptr) {
     return nullptr;
   }
-  return MergeFromString(self, arg);
+  return MergeFromStringImpl(self, arg, true);
 }
 
 static PyObject* ByteSize(CMessage* self, PyObject* args) {
@@ -2356,9 +2422,9 @@ PyObject* InternalGetScalar(const Message* message,
       break;
     }
     case FieldDescriptor::CPPTYPE_ENUM: {
-      const EnumValueDescriptor* enum_value =
-          message->GetReflection()->GetEnum(*message, field_descriptor);
-      result = PyLong_FromLong(enum_value->number());
+      int enum_value =
+          message->GetReflection()->GetEnumValue(*message, field_descriptor);
+      result = PyLong_FromLong(enum_value);
       break;
     }
     default:
@@ -2391,33 +2457,10 @@ CMessage* InternalGetSubMessage(CMessage* self,
   Py_INCREF(self);
   cmsg->parent = self;
   cmsg->parent_field_descriptor = field_descriptor;
-  if (self->state == MESSAGE_FROZEN) {
-    cmsg->state = MESSAGE_FROZEN;
-    const Message& sub_message = reflection->GetMessage(
-        *self->message, field_descriptor, factory->message_factory);
-    cmsg->message = &sub_message;
-    return cmsg;
-  }
-  if (reflection->HasField(*self->message, field_descriptor)) {
-    // Force triggering MutableMessage to set the lazy message 'Dirty'
-    if (MessageReflectionFriend::IsLazyField(reflection, *self->message,
-                                             field_descriptor)) {
-      Message* mutable_self = cmessage::AssureWritable(self);
-      if (mutable_self == nullptr) {
-        return nullptr;
-      }
-      Message* sub_message = mutable_self->GetReflection()->MutableMessage(
-          mutable_self, field_descriptor, factory->message_factory);
-      cmsg->state = MESSAGE_MUTABLE;
-      cmsg->message = sub_message;
-      return cmsg;
-    }
-  } else {
-    cmsg->state = MESSAGE_MUTABLE_DEFAULT;
-  }
-  const Message& sub_message = reflection->GetMessage(
-      *self->message, field_descriptor, factory->message_factory);
-  cmsg->message = &sub_message;
+  cmsg->message = &reflection->GetMessage(*self->message, field_descriptor,
+                                          factory->message_factory);
+  cmsg->state =
+      self->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : MESSAGE_UNPROMOTED;
   return cmsg;
 }
 
@@ -2524,7 +2567,8 @@ PyObject* FromString(PyTypeObject* cls, PyObject* serialized) {
   }
   CMessage* cmsg = reinterpret_cast<CMessage*>(py_cmsg);
 
-  ScopedPyObjectPtr py_length(MergeFromString(cmsg, serialized));
+  ScopedPyObjectPtr py_length(
+      MergeFromStringImpl(cmsg, serialized, /*is_cleared=*/true));
   if (py_length == nullptr) {
     Py_DECREF(py_cmsg);
     return nullptr;
@@ -2886,7 +2930,7 @@ void ContainerBase::RemoveFromParentCache() {
   if (parent) {
     if (CMessage::CompositeFieldsMap* fields =
             parent->composite_fields.TryGet()) {
-      fields->Erase(this->parent_field_descriptor);
+      fields->EraseIfEqual(this->parent_field_descriptor, this->AsPyObject());
     }
     Py_CLEAR(parent);
   }
@@ -2894,7 +2938,7 @@ void ContainerBase::RemoveFromParentCache() {
 
 CMessage* CMessage::BuildSubMessageFromPointer(
     const FieldDescriptor* field_descriptor, const Message* sub_message,
-    CMessageClass* message_class) {
+    CMessageClass* message_class, MessageMutabilityState state) {
   if (PyObject* value =
           this->child_submessages.Get()->Get(sub_message, nullptr)) {
     return reinterpret_cast<CMessage*>(value);
@@ -2909,10 +2953,12 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   Py_INCREF(this);
   cmsg->parent = this;
   cmsg->parent_field_descriptor = field_descriptor;
-  if (this->state == MESSAGE_FROZEN) {
-    cmsg->state = MESSAGE_FROZEN;
-  }
+  cmsg->state = this->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : state;
   cmessage::SetSubmessage(this, cmsg);
+  if (state == MESSAGE_MUTABLE) {
+    cmsg->has_mutable_map_ancestor =
+        this->has_mutable_map_ancestor || field_descriptor->is_map();
+  }
   return cmsg;
 }
 
@@ -2929,8 +2975,9 @@ CMessage* CMessage::MaybeReleaseSubMessage(const Message* sub_message) {
   Py_CLEAR(released->parent);
   released->parent_field_descriptor = nullptr;
   released->state = MESSAGE_MUTABLE;
+  released->has_mutable_map_ancestor = false;
   // Delete it from the cache.
-  sub_messages->Erase(sub_message);
+  sub_messages->Erase(sub_message, released->AsPyObject());
   // child_submessages->Get returned a new reference.
   Py_DECREF(released);
   return released;

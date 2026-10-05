@@ -18,11 +18,40 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
+#include "upb/wire/encode.h"
+#include "upb/wire/encode_extension.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/reader.h"
 
 // Must be last.
 #include "upb/port/def.inc"
+
+bool upb_Message_NextWireFormatUnknown(const struct upb_Message* msg,
+                                       struct upb_Arena** arena,
+                                       upb_StringView* data, uintptr_t* iter) {
+  upb_MessageUnknown unknown;
+  if (!upb_Message_NextUnknown2(msg, &unknown, iter)) {
+    return false;
+  }
+  if (unknown.type == kUpb_MessageUnknownType_StringView) {
+    *data = unknown.value.bytes;
+    return true;
+  }
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
+  if (!*arena) {
+    *arena = upb_Arena_New();
+    if (!*arena) {
+      return false;
+    }
+  }
+  upb_EncodeStatus status =
+      upb_EncodeExtension(unknown.value.extension, *arena, data,
+                          /*encode_options=*/0);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return false;
+  }
+  return true;
+}
 
 static upb_FindUnknownRet2 upb_FindUnknownRet2_ParseError(void) {
   return (upb_FindUnknownRet2){.status = kUpb_FindUnknown_ParseError};
@@ -151,4 +180,23 @@ upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown2(
   return upb_Message_NextUnknown2(msg, data, iter)
              ? kUpb_DeleteUnknown_IterUpdated
              : kUpb_DeleteUnknown_DeletedLast;
+}
+
+upb_Message_DeleteUnknownStatus upb_Message_DeleteUnknown(
+    struct upb_Message* msg, upb_StringView* data, uintptr_t* iter,
+    struct upb_Arena* arena) {
+  upb_MessageUnknown unknown;
+  unknown.type = kUpb_MessageUnknownType_StringView;
+  unknown.value.bytes = *data;
+
+  upb_Message_DeleteUnknownStatus res =
+      upb_Message_DeleteUnknown2(msg, &unknown, iter, arena);
+  UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_StringView);
+  if (res == kUpb_DeleteUnknown_IterUpdated ||
+      res == kUpb_DeleteUnknown_DeletedLast) {
+    // the unknown data remains the same on the result of
+    // kUpb_DeleteUnknown_AllocFail.
+    *data = unknown.value.bytes;
+  }
+  return res;
 }

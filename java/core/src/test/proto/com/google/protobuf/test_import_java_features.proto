@@ -1,0 +1,11 @@
+edition = "2024";
+
+package test;
+
+import "google/protobuf/java_features.proto";
+
+message Item {
+  option features.(pb.java).nest_in_file_class = YES;
+
+  string name = 1;
+}

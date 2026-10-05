@@ -4,7 +4,9 @@ load("//bazel:proto_library.bzl", "proto_library")
 package(
     default_applicable_licenses = ["//:license"],
     default_testonly = 1,
-    default_visibility = ["//src/google/protobuf:__subpackages__"],
+    default_visibility = [
+        "//src/google/protobuf:__subpackages__",
+    ],
 )
 
 proto_library(
@@ -12,6 +14,7 @@ proto_library(
     srcs = glob(["*.proto"]),
     strip_import_prefix = "/src",
     deps = [
+        "//:descriptor_proto",
         "//src/google/protobuf:cpp_features_proto",
     ],
 )

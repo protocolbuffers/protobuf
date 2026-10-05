@@ -13,15 +13,19 @@ import static com.google.protobuf.TestUtil.TEST_REQUIRED_INITIALIZED;
 import static com.google.protobuf.TestUtil.TEST_REQUIRED_UNINITIALIZED;
 
 import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.testing.proto.TestProto3Optional;
+import map_test.MapTestProto.TestMap;
 import proto2_unittest.UnittestOptimizeFor.TestOptimizedForSize;
 import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.ForeignMessage;
 import proto2_unittest.UnittestProto.TestAllExtensions;
 import proto2_unittest.UnittestProto.TestAllTypes;
+import proto2_unittest.UnittestProto.TestOneof2;
 import proto2_unittest.UnittestProto.TestPackedTypes;
 import proto2_unittest.UnittestProto.TestRequired;
 import proto2_unittest.UnittestProto.TestRequiredForeign;
 import proto2_unittest.UnittestProto.TestUnpackedTypes;
+import proto3_unittest.UnittestProto3;
 import java.util.Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -537,6 +541,39 @@ public class AbstractMessageTest {
     assertThat(message1).isEqualTo(message2);
     assertThat(message2).isEqualTo(message1);
     assertThat(message2.hashCode()).isEqualTo(message1.hashCode());
+  }
+
+  @Test
+  public void testHashCodeMatchesGeneratedForSubclassWithoutOneofReflection() {
+    // AbstractMessageWrapper does not override hasOneof/getOneofFieldDescriptor, so this checks
+    // that AbstractMessage.hashCode() only relies on getAllFields().
+    UnittestProto3.TestAllTypes proto3Message =
+        UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalInt32(5)
+            .setOneofString("oneof")
+            .addRepeatedString("r")
+            .build();
+    assertThat(new AbstractMessageWrapper(proto3Message).hashCode())
+        .isEqualTo(proto3Message.hashCode());
+    assertThat(
+            new AbstractMessageWrapper(UnittestProto3.TestAllTypes.getDefaultInstance()).hashCode())
+        .isEqualTo(UnittestProto3.TestAllTypes.getDefaultInstance().hashCode());
+
+    TestProto3Optional proto3Optional =
+        TestProto3Optional.newBuilder()
+            .setOptionalInt32(0)
+            .setSingularInt32(0)
+            .setSingularInt64(99L)
+            .build();
+    assertThat(new AbstractMessageWrapper(proto3Optional).hashCode())
+        .isEqualTo(proto3Optional.hashCode());
+
+    TestOneof2 oneof2 =
+        TestOneof2.newBuilder().setFooInt(0).setBarString("bar").setBazInt(10).build();
+    assertThat(new AbstractMessageWrapper(oneof2).hashCode()).isEqualTo(oneof2.hashCode());
+
+    TestMap testMap = TestMap.newBuilder().putStringToInt32Field("k", 1).build();
+    assertThat(new AbstractMessageWrapper(testMap).hashCode()).isEqualTo(testMap.hashCode());
   }
 
   /**

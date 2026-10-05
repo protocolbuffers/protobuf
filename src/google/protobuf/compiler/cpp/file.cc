@@ -545,6 +545,15 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     namespace _pb = $pb$;
     namespace _pbi = $pbi$;
     namespace _fl = $pbi$::field_layout;
+    //~ When custom VTable is off, we want the static generated method helpers
+    //~ to be inlined into the public virtual non-static stubs, preventing a
+    //~ double call. Since these static helpers will not be referenced anywhere
+    //~ else, we mark them as inline so they aren't linked into the binary.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+#else
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE PROTOBUF_ALWAYS_INLINE
+#endif
   )cc");
 }
 
@@ -624,11 +633,7 @@ void FileGenerator::GenerateInternalForwardDeclarations(
         p->Emit({{"type", MsgGlobalsInstanceType(instance, options_)},
                  {"name", MsgGlobalsInstanceName(instance, options_)}},
                 R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                  extern __attribute__((weak)) $type$ $name$;
-#else
                   extern __attribute__((weak)) const $type$ $name$;
-#endif
                 )cc");
       }
     }
@@ -755,6 +760,9 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
 void FileGenerator::GenerateSource(io::Printer* p) {
   auto v = p->WithVars(FileVars(file_, options_));
 
+  p->Emit(R"cc(
+    // clang-format off
+  )cc");
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
   CrossFileReferences refs;
@@ -786,14 +794,12 @@ void FileGenerator::GenerateSource(io::Printer* p) {
             }
           }}},
         R"cc(
-#ifdef PROTOBUF_MESSAGE_GLOBALS
           namespace {
           PROTOBUF_CONSTINIT ::google::protobuf::internal::ReflectionData
               file_reflection_data[] = {
                   $reflection_data$,
           };
           }  // namespace
-#endif
         )cc");
   }
 
@@ -929,6 +935,9 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GenerateStaticInitializer(p);
 
   IncludeFile("third_party/protobuf/port_undef.inc", p);
+  p->Emit(R"cc(
+    // clang-format on
+  )cc");
 }
 
 static void GatherAllCustomOptionTypes(
@@ -1354,17 +1363,11 @@ class FileGenerator::ForwardDeclarations {
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"const",
                IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
-              {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
             struct $globals_type$;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-            $dllexport_decl $extern $globals_type$ $globals_name$;
-            $dllexport_decl $extern const $pbi$::$classdata_type$ $class$_class_data_;
-#else
             $dllexport_decl $extern $const $$globals_type$ $globals_name$;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
           )cc");
     }
 
@@ -1384,12 +1387,22 @@ class FileGenerator::ForwardDeclarations {
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({{"enum", QualifiedClassName(e.second, options)}},
-              R"cc(
-                template <>
-                internal::EnumTraitsT<$enum$_internal_data_>
-                    internal::EnumTraitsImpl::value<$enum$>;
-              )cc");
+      const bool deprecated = e.second->options().deprecated();
+      p->Emit(
+          {
+              {"enum", QualifiedClassName(e.second, options)},
+              {"IGNORE_DEPRECATION_START",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_START" : ""},
+              {"IGNORE_DEPRECATION_STOP",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_STOP" : ""},
+          },
+          R"cc(
+            $IGNORE_DEPRECATION_START$
+            template <>
+            internal::EnumTraitsT<$enum$_internal_data_>
+                internal::EnumTraitsImpl::value<$enum$>;
+            $IGNORE_DEPRECATION_STOP$
+          )cc");
     }
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {
@@ -1417,12 +1430,7 @@ class FileGenerator::ForwardDeclarations {
         if (options.dllexport_decl.empty()) {
           p->Emit(R"cc(
             template <>
-            internal::GeneratedMessageTraitsT<&$default_name$
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                                              ,
-                                              &$class$_class_data_
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-                                              >
+            internal::GeneratedMessageTraitsT<&$default_name$>
                 internal::MessageTraitsImpl::value<$class$>;
           )cc");
         }

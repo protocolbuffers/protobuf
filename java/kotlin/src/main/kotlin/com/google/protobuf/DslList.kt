@@ -30,6 +30,10 @@
 
 package com.google.protobuf.kotlin
 
+private val UNINITIALIZED_SUPPLIER: () -> Nothing = {
+  throw IllegalStateException("Should not be called")
+}
+
 /**
  * A simple wrapper around a [List] with an extra generic parameter that can be used to disambiguate
  * extension methods.
@@ -41,7 +45,42 @@ package com.google.protobuf.kotlin
 @Suppress("unused") // the unused type parameter
 class DslList<E, P : DslProxy>
 @OnlyForUseByGeneratedProtoCode
-constructor(private val delegate: List<E>) : List<E> by delegate {
+constructor(private val delegateSupplier: () -> List<E>) : List<E> {
+  @Suppress("UNCHECKED_CAST")
+  @OnlyForUseByGeneratedProtoCode
+  constructor(delegate: List<E>) : this(UNINITIALIZED_SUPPLIER as () -> List<E>) {
+    memoizedDelegate = delegate
+  }
+
+  private var memoizedDelegate: List<E>? = null
+
+  private val delegate: List<E>
+    get() {
+      var result = memoizedDelegate
+      if (result == null) {
+        result = delegateSupplier()
+        memoizedDelegate = result
+      }
+      return result
+    }
+
+  override val size: Int
+    get() = delegate.size
+
+  override fun isEmpty(): Boolean = delegate.isEmpty()
+
+  override fun contains(element: E): Boolean = delegate.contains(element)
+
+  override fun containsAll(elements: Collection<E>): Boolean = delegate.containsAll(elements)
+
+  override fun get(index: Int): E = delegate[index]
+
+  override fun indexOf(element: E): Int = delegate.indexOf(element)
+
+  override fun lastIndexOf(element: E): Int = delegate.lastIndexOf(element)
+
+  override fun subList(fromIndex: Int, toIndex: Int): List<E> = delegate.subList(fromIndex, toIndex)
+
   override fun iterator(): Iterator<E> = UnmodifiableIterator(delegate.iterator())
 
   override fun listIterator(): ListIterator<E> = UnmodifiableListIterator(delegate.listIterator())

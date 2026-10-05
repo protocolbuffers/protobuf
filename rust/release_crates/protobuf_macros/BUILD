@@ -5,7 +5,6 @@ pkg_filegroup(
     name = "protobuf_macros_crate",
     srcs = [
         ":crate_root_files",
-        "//rust/protobuf_macros:rust_protobuf_macros_src_dir",
         "//rust/release_crates:license",
     ],
     prefix = "protobuf_macros",
@@ -28,6 +27,6 @@ filegroup(
     srcs = [
         "Cargo.toml",
         "README.md",
-    ],
+    ] + glob(["src/**/*"]),
     visibility = ["//visibility:private"],
 )

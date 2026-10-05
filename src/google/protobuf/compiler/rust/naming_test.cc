@@ -9,16 +9,42 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 
 using google::protobuf::compiler::rust::CamelToSnakeCase;
-using google::protobuf::compiler::rust::RustInternalModuleName;
+using google::protobuf::compiler::rust::DefInitName;
+using google::protobuf::compiler::rust::RustModuleName;
 using google::protobuf::compiler::rust::ScreamingSnakeToUpperCamelCase;
 
 namespace {
-TEST(RustProtoNaming, RustInternalModuleName) {
-  google::protobuf::FileDescriptorProto foo_file;
-  foo_file.set_name("strong_bad/lol.proto");
-  google::protobuf::DescriptorPool pool;
-  const google::protobuf::FileDescriptor* fd = pool.BuildFile(foo_file);
-  EXPECT_EQ(RustInternalModuleName(*fd), "strong__bad_slol");
+TEST(RustProtoNaming, RustModuleName) {
+  auto get_internal_module_name = [](const std::string& name) {
+    google::protobuf::FileDescriptorProto file_proto;
+    file_proto.set_name(name);
+    google::protobuf::DescriptorPool pool;
+    return RustModuleName(*pool.BuildFile(file_proto));
+  };
+
+  EXPECT_EQ(get_internal_module_name("strong_bad/lol.proto"),
+            "strong_bad_lol_proto");
+  EXPECT_EQ(get_internal_module_name("0.1.proto"), "pb_0_1_proto");
+  EXPECT_EQ(get_internal_module_name("2fa.proto"), "pb_2fa_proto");
+  EXPECT_EQ(get_internal_module_name("_.proto"), "pb___proto");
+  EXPECT_EQ(get_internal_module_name("abc   .proto"), "abc_20__20__20__proto");
+  EXPECT_EQ(get_internal_module_name("hello (2).proto"),
+            "hello_20__28_2_29__proto");
+  EXPECT_EQ(get_internal_module_name("k8s.min.proto"), "k8s_min_proto");
+  EXPECT_EQ(get_internal_module_name("c++.proto"), "c_2b__2b__proto");
+  EXPECT_EQ(get_internal_module_name("hello,world.proto"),
+            "hello_2c_world_proto");
+  EXPECT_EQ(get_internal_module_name("hello..world.proto"),
+            "hello__world_proto");
+  EXPECT_EQ(get_internal_module_name("hello_你好.proto"),
+            "hello__e4__bd__a0__e5__a5__bd__proto");
+  // Common separators (`/`, `-`, `.`, `_`) all collapse to a single underscore,
+  // so files differing only by these separators intentionally map to the same
+  // module name (any collision surfaces as a rustc E0428 error at build time).
+  EXPECT_EQ(get_internal_module_name("my-message.proto"), "my_message_proto");
+  EXPECT_EQ(get_internal_module_name("my_message.proto"), "my_message_proto");
+  EXPECT_EQ(get_internal_module_name("foo-bar.proto"),
+            get_internal_module_name("foo_bar.proto"));
 }
 
 TEST(RustProtoNaming, CamelToSnakeCase) {
@@ -52,6 +78,23 @@ TEST(RustProtoNaming, ScreamingSnakeToUpperCamelCase) {
   EXPECT_EQ(ScreamingSnakeToUpperCamelCase("CAMEL_CASE_TRIO"), "CamelCaseTrio");
   EXPECT_EQ(ScreamingSnakeToUpperCamelCase("UNDER_IN__MIDDLE"),
             "UnderInMiddle");
+}
+
+TEST(RustProtoNaming, DefInitName) {
+  auto get_def_init_name = [](const std::string& name) {
+    google::protobuf::FileDescriptorProto file_proto;
+    file_proto.set_name(name);
+    google::protobuf::DescriptorPool pool;
+    return DefInitName(*pool.BuildFile(file_proto));
+  };
+
+  EXPECT_EQ(get_def_init_name("foo.proto"), "foo_proto_def_init");
+  EXPECT_EQ(get_def_init_name("strong_bad/lol.proto"),
+            "strong_bad_lol_proto_def_init");
+  EXPECT_EQ(get_def_init_name("my-service.proto"), "my_service_proto_def_init");
+  EXPECT_EQ(get_def_init_name("Foo/BarBaz.proto"), "Foo_BarBaz_proto_def_init");
+  EXPECT_EQ(get_def_init_name("foo.v1.proto"), "foo_v1_proto_def_init");
+  EXPECT_EQ(get_def_init_name("2fa.proto"), "pb_2fa_proto_def_init");
 }
 
 }  // namespace

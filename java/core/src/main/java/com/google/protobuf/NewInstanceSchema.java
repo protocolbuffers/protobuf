@@ -7,7 +7,14 @@
 
 package com.google.protobuf;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 interface NewInstanceSchema {
   /** Create a new message instance given the default instance of the message type. */
   Object newInstance(Object defaultInstance);

@@ -105,7 +105,7 @@ class MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type> {
     static const WireFormatLite::WireType kWireType =                          \
         MapWireFieldTypeTraits<WireFormatLite::TYPE_##FieldType,               \
                                Type>::kWireType;                               \
-    static inline int ByteSize(const MapEntryAccessorType& value);             \
+    static inline size_t ByteSize(const MapEntryAccessorType& value);          \
     static inline int GetCachedSize(const MapEntryAccessorType& value);        \
     static inline uint8_t* Write(int field, const MapEntryAccessorType& value, \
                                  uint8_t* ptr,                                 \
@@ -138,11 +138,12 @@ inline size_t MapTypeHandler<WireFormatLite::TYPE_MESSAGE, Type>::ByteSize(
   return WireFormatLite::MessageSize(value);
 }
 
-#define GOOGLE_PROTOBUF_BYTE_SIZE(FieldType, DeclaredType)                     \
-  template <typename Type>                                                     \
-  inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::ByteSize( \
-      const MapEntryAccessorType& value) {                                     \
-    return static_cast<int>(WireFormatLite::DeclaredType##Size(value));        \
+#define GOOGLE_PROTOBUF_BYTE_SIZE(FieldType, DeclaredType)          \
+  template <typename Type>                                          \
+  inline size_t                                                     \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::ByteSize( \
+      const MapEntryAccessorType& value) {                          \
+    return WireFormatLite::DeclaredType##Size(value);               \
   }
 
 GOOGLE_PROTOBUF_BYTE_SIZE(STRING, String)
@@ -157,11 +158,12 @@ GOOGLE_PROTOBUF_BYTE_SIZE(ENUM, Enum)
 
 #undef GOOGLE_PROTOBUF_BYTE_SIZE
 
-#define FIXED_BYTE_SIZE(FieldType, DeclaredType)                               \
-  template <typename Type>                                                     \
-  inline int MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::ByteSize( \
-      const MapEntryAccessorType& /* value */) {                               \
-    return WireFormatLite::k##DeclaredType##Size;                              \
+#define FIXED_BYTE_SIZE(FieldType, DeclaredType)                    \
+  template <typename Type>                                          \
+  inline size_t                                                     \
+  MapTypeHandler<WireFormatLite::TYPE_##FieldType, Type>::ByteSize( \
+      const MapEntryAccessorType& /* value */) {                    \
+    return WireFormatLite::k##DeclaredType##Size;                   \
   }
 
 FIXED_BYTE_SIZE(DOUBLE, Double)
@@ -354,8 +356,8 @@ struct MapEntryFuncs {
 
   static size_t ByteSizeLong(const Key& key, const Value& value) {
     // Tags for key and value will both be one byte (field numbers 1 and 2).
-    size_t inner_length =
-        2 + KeyTypeHandler::ByteSize(key) + ValueTypeHandler::ByteSize(value);
+    size_t inner_length = size_t{2} + KeyTypeHandler::ByteSize(key) +
+                          ValueTypeHandler::ByteSize(value);
     return inner_length + io::CodedOutputStream::VarintSize32(
                               static_cast<uint32_t>(inner_length));
   }

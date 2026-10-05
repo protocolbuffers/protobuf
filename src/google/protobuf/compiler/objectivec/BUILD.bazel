@@ -165,6 +165,18 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "generator_unittest",
+    srcs = ["generator_unittest.cc"],
+    deps = [
+        ":objectivec",
+        "//:protobuf",
+        "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 # Exposed only for the version check to ensure the ObjC Runtime and Generator
 # are in sync.
 exports_files(

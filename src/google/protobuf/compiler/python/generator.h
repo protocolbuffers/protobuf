@@ -82,7 +82,7 @@ class PROTOC_EXPORT Generator : public CodeGenerator {
  private:
   GeneratorOptions ParseParameter(absl::string_view parameter,
                                   std::string* error) const;
-  std::string ImportModuleName(absl::string_view filename) const;
+  std::string ImportModuleName(const FileDescriptor* file) const;
   void PrintImports() const;
   template <typename DescriptorT>
   std::string GetResolvedFeatures(const DescriptorT& descriptor) const;

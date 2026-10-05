@@ -1,0 +1,8 @@
+edition = "2024";
+
+local message FailRangeStart {
+  export enum NestedEnum {
+    NESTED_ENUM_UNSPECIFIED = 0;
+  }
+  reserved 2 to max;
+}

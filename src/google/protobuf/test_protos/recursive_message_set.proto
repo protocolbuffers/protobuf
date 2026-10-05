@@ -1,0 +1,13 @@
+edition = "2024";
+
+package proto2_unittest;
+
+message RecursiveMessageSet {
+  option message_set_wire_format = true;
+
+  extensions 4 to max;
+
+  extend RecursiveMessageSet {
+    RecursiveMessageSet message_set_extension = 1111;
+  }
+}

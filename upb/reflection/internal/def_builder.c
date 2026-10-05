@@ -21,6 +21,7 @@
 #include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/message/copy.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
@@ -138,7 +139,12 @@ const void* _upb_DefBuilder_ResolveAny(upb_DefBuilder* ctx,
   } else {
     // Remove components from base until we find an entry or run out.
     size_t baselen = base ? strlen(base) : 0;
-    char* tmp = upb_gmalloc(sym.size + baselen + 1);
+    size_t alloc_size;
+    if (upb_AddOverflow(sym.size, baselen + 1, &alloc_size)) {
+      _upb_DefBuilder_OomErr(ctx);
+    }
+    char* tmp = upb_gmalloc(alloc_size);
+    if (!tmp) _upb_DefBuilder_OomErr(ctx);
     while (1) {
       char* p = tmp;
       if (baselen) {

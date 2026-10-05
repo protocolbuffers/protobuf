@@ -74,14 +74,22 @@ UPB_INLINE google_protobuf_compiler_Version* google_protobuf_compiler_Version_pa
 UPB_INLINE char* google_protobuf_compiler_Version_serialize(const google_protobuf_compiler_Version* msg,
                                       upb_Arena* arena, size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__Version_msg_init, 0, arena, &ptr, len);
+  upb_EncodeStatus status =
+      upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__Version_msg_init, 0, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE char* google_protobuf_compiler_Version_serialize_ex(const google_protobuf_compiler_Version* msg,
                                          int options, upb_Arena* arena,
                                          size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__Version_msg_init, options, arena, &ptr, len);
+  upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__Version_msg_init,
+                                       options, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE void google_protobuf_compiler_Version_clear_major(google_protobuf_compiler_Version* msg) {
@@ -194,14 +202,22 @@ UPB_INLINE google_protobuf_compiler_CodeGeneratorRequest* google_protobuf_compil
 UPB_INLINE char* google_protobuf_compiler_CodeGeneratorRequest_serialize(const google_protobuf_compiler_CodeGeneratorRequest* msg,
                                       upb_Arena* arena, size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorRequest_msg_init, 0, arena, &ptr, len);
+  upb_EncodeStatus status =
+      upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorRequest_msg_init, 0, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE char* google_protobuf_compiler_CodeGeneratorRequest_serialize_ex(const google_protobuf_compiler_CodeGeneratorRequest* msg,
                                          int options, upb_Arena* arena,
                                          size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorRequest_msg_init, options, arena, &ptr, len);
+  upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorRequest_msg_init,
+                                       options, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorRequest_clear_file_to_generate(google_protobuf_compiler_CodeGeneratorRequest* msg) {
@@ -516,14 +532,22 @@ UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse* google_protobuf_compi
 UPB_INLINE char* google_protobuf_compiler_CodeGeneratorResponse_serialize(const google_protobuf_compiler_CodeGeneratorResponse* msg,
                                       upb_Arena* arena, size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse_msg_init, 0, arena, &ptr, len);
+  upb_EncodeStatus status =
+      upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse_msg_init, 0, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE char* google_protobuf_compiler_CodeGeneratorResponse_serialize_ex(const google_protobuf_compiler_CodeGeneratorResponse* msg,
                                          int options, upb_Arena* arena,
                                          size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse_msg_init, options, arena, &ptr, len);
+  upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse_msg_init,
+                                       options, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_clear_error(google_protobuf_compiler_CodeGeneratorResponse* msg) {
@@ -716,14 +740,22 @@ UPB_INLINE google_protobuf_compiler_CodeGeneratorResponse_File* google_protobuf_
 UPB_INLINE char* google_protobuf_compiler_CodeGeneratorResponse_File_serialize(const google_protobuf_compiler_CodeGeneratorResponse_File* msg,
                                       upb_Arena* arena, size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init, 0, arena, &ptr, len);
+  upb_EncodeStatus status =
+      upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init, 0, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE char* google_protobuf_compiler_CodeGeneratorResponse_File_serialize_ex(const google_protobuf_compiler_CodeGeneratorResponse_File* msg,
                                          int options, upb_Arena* arena,
                                          size_t* len) {
   char* ptr;
-  (void)upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init, options, arena, &ptr, len);
+  upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init,
+                                       options, arena, &ptr, len);
+  if (status != kUpb_EncodeStatus_Ok) {
+    return NULL;
+  }
   return ptr;
 }
 UPB_INLINE void google_protobuf_compiler_CodeGeneratorResponse_File_clear_name(google_protobuf_compiler_CodeGeneratorResponse_File* msg) {

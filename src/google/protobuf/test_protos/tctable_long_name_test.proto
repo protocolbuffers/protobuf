@@ -1,0 +1,19 @@
+edition = "2024";
+
+package proto2_unittest;
+
+option features.enforce_naming_style = STYLE_LEGACY;
+
+// Message name is 112 chars. Full name is
+// proto2_unittest.MessageNameOfSize112_... (128 chars).
+message
+MessageNameOfSize112_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA {
+  string bad_utf8 = 1;
+}
+
+message MessageWithLongFieldName {
+  // Field name is 128 chars.
+  string
+      field_name_of_size_128_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA =
+          1;
+}

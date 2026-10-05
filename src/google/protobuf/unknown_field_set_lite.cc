@@ -11,6 +11,7 @@
 #include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 
 // Must be included last.
@@ -122,6 +123,8 @@ const char* UnknownFieldParse(uint64_t tag, UnknownFieldSet* unknown,
 }
 
 }  // namespace internal
+
+
 }  // namespace protobuf
 }  // namespace google
 

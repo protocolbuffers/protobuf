@@ -19,29 +19,10 @@
 #include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_parsers.h"
-#include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/decoder.h"
 
 // Must be last.
 #include "upb/port/def.inc"
-
-typedef struct {
-  const upb_MiniTable* table;
-  bool is_repeated;
-  upb_Message* msg;
-} upb_DecodeFast_MessageContext;
-
-UPB_FORCEINLINE
-const char* upb_DecodeFast_MessageData(upb_EpsCopyInputStream* st,
-                                       const char* ptr, int size, void* ctx) {
-  upb_Decoder* d = (upb_Decoder*)st;
-  upb_DecodeFast_MessageContext* c = ctx;
-  ptr = _upb_Decoder_DecodeMessage((upb_Decoder*)st, ptr, c->msg, c->table);
-  if (d->end_group != DECODE_NOGROUP) {
-    _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_Malformed);
-  }
-  return ptr;
-}
 
 UPB_FORCEINLINE
 bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
@@ -52,6 +33,9 @@ bool upb_DecodeFast_SingleMessage(upb_Decoder* d, const char** ptr, void* dst,
 
   if (c->is_repeated || UPB_LIKELY(*submsg_dst == NULL)) {
     c->msg = *submsg_dst = _upb_Message_New(c->table, &d->arena);
+    if (c->msg == NULL) {
+      _upb_FastDecoder_ErrorJmp(d, kUpb_DecodeStatus_OutOfMemory);
+    }
   } else {
     c->msg = *submsg_dst;  // Reusing non-repeated message.
   }
@@ -77,7 +61,14 @@ void upb_DecodeFast_Message(upb_Decoder* d, const char** ptr, upb_Message* msg,
 
   if (subtablep == NULL) {
     // Unlinked messages are treated as unknown fields. Go straight to unknown
-    // decoder.
+    // decoder if the tag matches.
+    uint16_t expected = upb_DecodeFastData_GetExpectedTag(*data);
+    uint16_t actual = upb_DecodeFastData2_GetOriginalTag(data2);
+    if (UPB_UNLIKELY(!upb_DecodeFast_TagMatches(expected, actual, tagsize))) {
+      UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackMismatchedSlot, ret);
+      return;
+    }
+
 #ifndef NDEBUG
     uint16_t case_offset = upb_DecodeFastData_GetCaseOffset(*data);
     if (case_offset != 0) {

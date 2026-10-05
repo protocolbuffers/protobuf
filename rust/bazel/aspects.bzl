@@ -505,11 +505,13 @@ def _make_proto_library_aspect(is_upb):
         implementation = (_rust_upb_proto_aspect_impl if is_upb else _rust_cc_proto_aspect_impl),
         attr_aspects = ["deps", "exports"],
         requires = ([] if is_upb else [cc_proto_aspect]),
+        required_providers = [ProtoInfo],
         attrs = {
             "_cpp_thunks_deps": attr.label_list(
                 default = [
                     Label("//rust:cpp_api"),
                     Label("//src/google/protobuf"),
+                    Label("//src/google/protobuf:port"),
                     Label("//src/google/protobuf:protobuf_lite"),
                 ],
             ),

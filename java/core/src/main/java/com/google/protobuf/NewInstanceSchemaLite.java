@@ -7,7 +7,14 @@
 
 package com.google.protobuf;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @CheckReturnValue
+@ForLiteOnly
 final class NewInstanceSchemaLite implements NewInstanceSchema {
   @Override
   public Object newInstance(Object defaultInstance) {
