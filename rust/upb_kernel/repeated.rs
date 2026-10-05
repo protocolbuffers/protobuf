@@ -89,6 +89,15 @@ where
         unsafe { upb_Array_Resize(repeated.as_raw(Private), 0, repeated.raw_arena(Private)) };
     }
 
+    fn repeated_truncate(_private: Private, mut repeated: Mut<Repeated<Self>>, new_len: usize) {
+        // SAFETY:
+        // - `repeated.as_raw()` is a valid `upb_Array*`.
+        unsafe {
+            debug_assert!(new_len <= upb_Array_Size(repeated.as_raw(Private)));
+            upb_Array_Resize(repeated.as_raw(Private), new_len, repeated.raw_arena(Private));
+        }
+    }
+
     unsafe fn repeated_get_unchecked<'a>(
         _private: Private,
         repeated: View<'a, Repeated<Self>>,
@@ -191,8 +200,8 @@ pub fn empty_array<T: Singular>() -> RepeatedView<'static, T> {
     static EMPTY_REPEATED_VIEW: OnceLock<Repeated<i32>> = OnceLock::new();
 
     // SAFETY:
-    // - Because the repeated is never mutated, the repeated type is unused and
-    //   therefore valid for `T`.
+    // - Because the repeated is never mutated, the repeated type is unused and therefore valid for
+    //   `T`.
     unsafe {
         RepeatedView::from_raw(
             Private,

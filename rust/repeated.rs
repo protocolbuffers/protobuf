@@ -269,8 +269,7 @@ impl<'msg, T> Debug for RepeatedMut<'msg, T> {
 impl<'msg, T> RepeatedMut<'msg, T> {
     /// # Safety
     /// - `inner` must be valid to read and write from for `'msg`
-    /// - There must be no aliasing references or mutations on the same
-    ///   underlying object.
+    /// - There must be no aliasing references or mutations on the same underlying object.
     #[doc(hidden)]
     #[inline]
     pub unsafe fn from_inner(_private: Private, inner: InnerRepeatedMut<'msg>) -> Self {
@@ -396,6 +395,18 @@ impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     /// Clears the repeated field.
     pub fn clear(&mut self) {
         T::repeated_clear(Private, self.as_mut())
+    }
+
+    /// Shortens the repeated field, keeping the first `new_len` elements and
+    /// dropping the rest.
+    ///
+    /// If `new_len` is greater than or equal to the repeated field's current
+    /// length, this has no effect.
+    pub fn truncate(&mut self, new_len: usize) {
+        if new_len >= self.len() {
+            return;
+        }
+        T::repeated_truncate(Private, self.as_mut(), new_len)
     }
 
     /// Returns the first element of the repeated field, or `None` if it is empty.
@@ -629,7 +640,8 @@ impl<'msg, T: Message> RepeatedMut<'msg, T> {
         }
     }
 
-    /// Returns a mutable reference to the first element of the repeated field, or `None` if it is empty.
+    /// Returns a mutable reference to the first element of the repeated field, or `None` if it is
+    /// empty.
     #[inline]
     pub fn first_mut<'r>(&'r mut self) -> Option<Mut<'msg, T>>
     where
@@ -638,7 +650,8 @@ impl<'msg, T: Message> RepeatedMut<'msg, T> {
         self.get_mut(0)
     }
 
-    /// Returns a mutable reference to the last element of the repeated field, or `None` if it is empty.
+    /// Returns a mutable reference to the last element of the repeated field, or `None` if it is
+    /// empty.
     #[inline]
     pub fn last_mut<'r>(&'r mut self) -> Option<Mut<'msg, T>>
     where
@@ -763,5 +776,22 @@ mod tests {
     fn test_from_iter() {
         let r: Repeated<i32> = [10, 20, 30].into_iter().collect();
         assert_that!(r.as_view(), elements_are![eq(10), eq(20), eq(30)]);
+    }
+
+    #[gtest]
+    fn test_truncate() {
+        let mut r: Repeated<i32> = [10, 20, 30, 40].into_iter().collect();
+        r.as_mut().truncate(5);
+        expect_that!(r.as_view(), elements_are![eq(10), eq(20), eq(30), eq(40)]);
+        r.as_mut().truncate(4);
+        expect_that!(r.as_view(), elements_are![eq(10), eq(20), eq(30), eq(40)]);
+        r.as_mut().truncate(2);
+        expect_that!(r.as_view(), elements_are![eq(10), eq(20)]);
+        r.as_mut().push(50);
+        expect_that!(r.as_view(), elements_are![eq(10), eq(20), eq(50)]);
+        r.as_mut().truncate(0);
+        expect_true!(r.as_view().is_empty());
+        r.as_mut().push(60);
+        expect_that!(r.as_view(), elements_are![eq(60)]);
     }
 }
