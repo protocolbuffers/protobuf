@@ -853,6 +853,7 @@ PROTOBUF_HEADERS = [
     "map_field.h",
     "message.h",
     "metadata.h",
+    "naming_style.h",
     "option_interpreter.h",
     "reflection.h",
     "reflection_internal.h",
@@ -887,6 +888,7 @@ cc_library(
         "json_enumvalue_options.pb.cc",
         "map_field.cc",
         "message.cc",
+        "naming_style.cc",
         "option_interpreter.cc",
         "reflection_mode.cc",
         "reflection_ops.cc",
@@ -909,7 +911,6 @@ cc_library(
         ":internal_visibility",
         ":message_traits",
         ":micro_string",
-        ":naming_style",
         ":port",
         ":protobuf_lite",
         ":repeated_field_proxy",
@@ -968,17 +969,14 @@ cc_library(
 
 cc_library(
     name = "naming_style",
-    srcs = ["naming_style.cc"],
     hdrs = ["naming_style.h"],
     strip_include_prefix = "/src",
     visibility = ["//visibility:private"],
     deps = [
         ":port",
-        "@abseil-cpp//absl/algorithm:container",
-        "@abseil-cpp//absl/log:absl_check",
+        ":protobuf",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
-        "@abseil-cpp//absl/strings:charset",
     ],
 )
 
@@ -987,6 +985,8 @@ cc_test(
     srcs = ["naming_style_test.cc"],
     deps = [
         ":naming_style",
+        ":protobuf",
+        "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:status_matchers",
         "@googletest//:gtest",
         "@googletest//:gtest_main",

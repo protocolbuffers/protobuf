@@ -16,7 +16,10 @@
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/charset.h"
+#include "absl/strings/match.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 
 namespace google {
 namespace protobuf {
@@ -170,6 +173,56 @@ std::string EnumValueToPascalCase(const absl::string_view input) {
   }
 
   return result;
+}
+
+absl::Status IsValidFieldNonCollisionName(absl::string_view name,
+                                          const Descriptor* message) {
+  if (name == "descriptor") {
+    return absl::InvalidArgumentError(
+        "should not be named descriptor. This can cause collisions in "
+        "generated code.");
+  }
+
+  static constexpr absl::string_view kRestrictedFieldPrefixes[] = {
+      "has_",
+      "get_",
+      "set_",
+      "clear_",
+  };
+  static constexpr absl::string_view kRestrictedFieldSuffixes[] = {"_value"};
+
+  if (message != nullptr) {
+    for (absl::string_view prefix : kRestrictedFieldPrefixes) {
+      if (absl::StartsWith(name, prefix)) {
+        absl::string_view without_prefix = name;
+        without_prefix.remove_prefix(prefix.size());
+        if (message->FindFieldByName(without_prefix) != nullptr ||
+            message->FindOneofByName(without_prefix) != nullptr) {
+          return absl::InvalidArgumentError(
+              absl::StrCat("should not begin with ", prefix,
+                           " if a field named ", without_prefix,
+                           " exists. This can cause collisions in "
+                           "generated code."));
+        }
+      }
+    }
+    for (absl::string_view suffix : kRestrictedFieldSuffixes) {
+      if (absl::EndsWith(name, suffix)) {
+        absl::string_view without_suffix = name;
+        without_suffix.remove_suffix(suffix.size());
+        if (message->FindFieldByName(without_suffix) != nullptr ||
+            message->FindOneofByName(without_suffix) != nullptr) {
+          return absl::InvalidArgumentError(
+              absl::StrCat("should not end with ", suffix, " if a field named ",
+                           without_suffix,
+                           " exists. This can cause collisions in "
+                           "generated code."));
+        }
+      }
+    }
+  }
+
+  return absl::OkStatus();
 }
 
 }  // namespace internal

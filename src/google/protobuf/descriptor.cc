@@ -8600,63 +8600,6 @@ void internal::DescriptorBuilder::ValidateJSType(
 
 namespace {
 
-template <typename DescriptorType>
-bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
-                                  std::string* error) {
-  ABSL_CHECK(descriptor != nullptr);
-  absl::string_view name = descriptor->name();
-  const Descriptor* message = descriptor->containing_type();
-
-  static const auto& kRestrictedFieldPrefixes =
-      *new absl::flat_hash_set<absl::string_view>({
-          "has_",
-          "get_",
-          "set_",
-          "clear_",
-      });
-  static const auto& kRestrictedFieldSuffixes =
-      *new absl::flat_hash_set<absl::string_view>({"_value"});
-
-  if (message != nullptr) {
-    for (absl::string_view prefix : kRestrictedFieldPrefixes) {
-      if (absl::StartsWith(name, prefix)) {
-        absl::string_view without_prefix = name;
-        without_prefix.remove_prefix(prefix.size());
-        if ((message->FindFieldByName(without_prefix) != nullptr ||
-             message->FindOneofByName(without_prefix) != nullptr)) {
-          *error = absl::StrCat("should not begin with ", prefix,
-                                " if a field named ", without_prefix,
-                                " exists. This can cause collisions in "
-                                "generated code.");
-          return false;
-        }
-      }
-    }
-    for (absl::string_view suffix : kRestrictedFieldSuffixes) {
-      if (absl::EndsWith(name, suffix)) {
-        absl::string_view without_suffix = name;
-        without_suffix.remove_suffix(suffix.size());
-        if ((message->FindFieldByName(without_suffix) != nullptr) ||
-            (message->FindOneofByName(without_suffix) != nullptr)) {
-          *error = absl::StrCat("should not end with ", suffix,
-                                " if a field named ", without_suffix,
-                                " exists. This can cause collisions in "
-                                "generated code.");
-          return false;
-        }
-      }
-    }
-  }
-
-  if (name == "descriptor") {
-    *error =
-        "should not be named descriptor. This can cause collisions in "
-        "generated code.";
-    return false;
-  }
-  return true;
-}
-
 constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
@@ -8665,11 +8608,11 @@ constexpr absl::string_view kProtoLimitsOptOutMessage =
     " (features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS can be used "
     "to opt out of this check)";
 
-}  // namespace
-
 constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
     " (features.enforce_naming_style = STYLE2024 can be used to opt out of "
     "this check)";
+
+}  // namespace
 
 template <>
 void internal::DescriptorBuilder::ValidateNamingStyle(
@@ -8711,10 +8654,11 @@ void internal::DescriptorBuilder::ValidateNamingStyle(
     });
   }
   if (IsStyleOrGreater(oneof, FeatureSet::STYLE2026)) {
-    std::string error;
-    if (!IsValidFieldNonCollisionName(oneof, &error)) {
+    if (const absl::Status s = internal::IsValidFieldNonCollisionName(
+            oneof->name(), oneof->containing_type());
+        !s.ok()) {
       AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-        return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+        return absl::StrCat("Oneof name ", oneof->name(), " ", s.message(),
                             kNamingStyleCollisionsOptOutMessage);
       });
     }
@@ -8732,10 +8676,11 @@ void internal::DescriptorBuilder::ValidateNamingStyle(
     });
   }
   if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
-    std::string error;
-    if (!IsValidFieldNonCollisionName(field, &error)) {
+    if (const absl::Status s = internal::IsValidFieldNonCollisionName(
+            field->name(), field->containing_type());
+        !s.ok()) {
       AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-        return absl::StrCat("Field name ", field->name(), " ", error,
+        return absl::StrCat("Field name ", field->name(), " ", s.message(),
                             kNamingStyleCollisionsOptOutMessage);
       });
     }
