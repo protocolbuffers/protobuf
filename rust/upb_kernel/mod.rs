@@ -60,6 +60,7 @@ pub use upb::Arena;
 pub use upb::AssociatedMiniTable;
 pub use upb::AssociatedMiniTableEnum;
 pub use upb::MessagePtr;
+pub use upb::TextEncodeOptions;
 pub type MiniTablePtr = upb::RawMiniTable;
 pub type MiniTableEnumPtr = upb::RawMiniTableEnum;
 pub type MiniTableExtensionPtr = upb::RawMiniTableExtension;

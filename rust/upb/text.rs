@@ -5,8 +5,38 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use super::sys::text::text::upb_DebugString;
+use super::sys::text::text::{text_encode_options, upb_DebugString};
 use super::{AssociatedMiniTable, MessagePtr};
+
+/// Options for upb's text encoders.
+/// This is only used for `text_encode` for now, but it might be used for `debug_string` in the
+/// future. That's why it must be in the non-reflection crate.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct TextEncodeOptions {
+    /// Print everything on a single line.
+    pub single_line: bool,
+    /// Do not print unknown fields.
+    pub skip_unknown: bool,
+    /// Do not sort map entries. This avoids a temporary allocation.
+    pub no_sort: bool,
+}
+
+impl TextEncodeOptions {
+    /// The bitmask that upb's text encoders expect.
+    pub fn to_bits(self) -> i32 {
+        let mut bits = 0;
+        if self.single_line {
+            bits |= text_encode_options::SINGLE_LINE;
+        }
+        if self.skip_unknown {
+            bits |= text_encode_options::SKIP_UNKNOWN;
+        }
+        if self.no_sort {
+            bits |= text_encode_options::NO_SORT_MAPS;
+        }
+        bits
+    }
+}
 
 /// Returns a string of field number to value entries of a message.
 ///
