@@ -11,11 +11,9 @@
 
 #include <memory>
 #include <string>
-#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -66,6 +64,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
@@ -163,8 +162,7 @@ void CordFieldGenerator::GeneratePrivateMembers(io::Printer* p) const {
 
 void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
   auto vars = p->WithVars(variables_);
-  auto v = p->WithVars(AnnotatedAccessors(
-      field_, {"", "_internal_", "_internal_mutable_", "_internal_set_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs =
       p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
   auto va =
@@ -174,13 +172,19 @@ void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
     [[nodiscard]] $DEPRECATED$ const ::absl::Cord& $name$() const;
     $DEPRECATED$void $set_name$(const ::absl::Cord& value);
     $DEPRECATED$void $set_name$(::absl::string_view value);
+  )cc");
+}
 
-    private:
+void CordFieldGenerator::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  auto vars = p->WithVars(variables_);
+  auto v = p->WithVars(AnnotatedAccessors(
+      field_, {"_internal_", "_internal_mutable_", "_internal_set_"}));
+
+  p->Emit(R"cc(
     const ::absl::Cord& $_internal_name$() const;
     void $_internal_set_name$(const ::absl::Cord& value);
     ::absl::Cord* $nonnull$ $_internal_mutable_name$();
-
-    public:
   )cc");
 }
 

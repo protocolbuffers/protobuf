@@ -102,9 +102,8 @@ class SingularMessage : public FieldGeneratorBase {
 
   bool RequiresArena(GeneratorFunction function) const override;
 
-  void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override {}
-
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
@@ -166,12 +165,14 @@ void SingularMessage::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ void $set_allocated_name$($Submsg$* $nullable$ value);
     $DEPRECATED$ void $unsafe_arena_set_allocated_name$($Submsg$* $nullable$ value);
     $DEPRECATED$ $Submsg$* $nullable$ $unsafe_arena_release_name$();
+  )cc");
+}
 
-    private:
+void SingularMessage::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  p->Emit(R"cc(
     const $Submsg$& _internal_$name$() const;
     $Submsg$* $nonnull$ _internal_mutable_$name$();
-
-    public:
   )cc");
 }
 
@@ -718,6 +719,7 @@ class RepeatedMessage : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
@@ -749,8 +751,7 @@ void RepeatedMessage::GeneratePrivateMembers(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs = p->WithVars(
       AnnotatedAccessors(field_, {"add_"}, io::AnnotationCollector::kSet));
   auto vm = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
@@ -775,6 +776,20 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
         break;
     }
   };
+
+  p->Emit({{"decl_field_accessors", decl_field_accessors}},
+          R"cc(
+            [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
+            [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
+            $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
+            $decl_field_accessors$;
+          )cc");
+}
+
+void RepeatedMessage::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"_internal_", "_internal_mutable_"}));
   auto maybe_weak_internal_accessors = [&] {
     if (is_weak()) {
       p->Emit(R"cc(
@@ -785,20 +800,11 @@ void RepeatedMessage::GenerateAccessorDeclarations(io::Printer* p) const {
     }
   };
 
-  p->Emit({{"decl_field_accessors", decl_field_accessors},
-           {"maybe_weak_internal_accessors", maybe_weak_internal_accessors}},
+  p->Emit({{"maybe_weak_internal_accessors", maybe_weak_internal_accessors}},
           R"cc(
-            [[nodiscard]] $DEPRECATED$ const $Submsg$& $name$(int index) const;
-            [[nodiscard]] $DEPRECATED$ $Submsg$* $nonnull$ $mutable_name$(int index);
-            $DEPRECATED$ $Submsg$* $nonnull$ $add_name$();
-            $decl_field_accessors$;
-
-            private:
             const $pb$::RepeatedPtrField<$Submsg$>& $_internal_name$() const;
             $pb$::RepeatedPtrField<$Submsg$>* $nonnull$ $_internal_mutable_name$();
             $maybe_weak_internal_accessors$;
-
-            public:
           )cc");
 }
 

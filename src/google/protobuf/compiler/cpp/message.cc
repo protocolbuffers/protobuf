@@ -698,6 +698,52 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               };
             )cc");
   }
+  p->Emit(R"cc(
+    private:
+  )cc");
+  for (auto field : ordered_fields) {
+    auto name = FieldName(field);
+
+    auto v = p->WithVars(FieldVars(field, options_));
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
+    p->Emit(
+        {{"field_comment", FieldComment(field, options_)},
+         {"internal_sizer",
+          [&] {
+            if (!field->is_repeated()) return;
+            p->Emit({Sub("_internal_name_size",
+                         absl::StrCat("_internal_", name, "_size"))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      int $_internal_name_size$() const;
+                    )cc");
+          }},
+         {"internal_hazzer",
+          [&] {
+            if (!HasInternalHasMethod(field, options_)) {
+              return;
+            }
+            p->Emit(
+                {Sub("_internal_has_name", absl::StrCat("_internal_has_", name))
+                     .AnnotatedAs(field)},
+                R"cc(
+                  bool $_internal_has_name$() const;
+                )cc");
+          }},
+         {"private_accessors",
+          [&] {
+            field_generators_.get(field).GeneratePrivateAccessorDeclarations(p);
+          }}},
+        R"cc(
+          // $field_comment$
+          $internal_sizer$;
+          $internal_hazzer$;
+          $private_accessors$;
+        )cc");
+  }
+  p->Emit(R"cc(
+    public:
+  )cc");
   for (auto field : ordered_fields) {
     auto name = FieldName(field);
 
@@ -715,16 +761,6 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                     R"cc(
                       [[nodiscard]] $DEPRECATED $int $name_size$() $const_impl$;
                     )cc");
-
-                p->Emit({Sub("_internal_name_size",
-                             absl::StrCat("_internal_", name, "_size"))
-                             .AnnotatedAs(field)},
-                        R"cc(
-                          private:
-                          int $_internal_name_size$() const;
-
-                          public:
-                        )cc");
               }},
              {"hazzer",
               [&] {
@@ -735,21 +771,6 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                     R"cc(
                       [[nodiscard]] $DEPRECATED $bool $has_name$() $const_impl$;
                     )cc");
-              }},
-             {"internal_hazzer",
-              [&] {
-                if (!HasInternalHasMethod(field, options_)) {
-                  return;
-                }
-                p->Emit({Sub("_internal_has_name",
-                             absl::StrCat("_internal_has_", name))
-                             .AnnotatedAs(field)},
-                        R"cc(
-                          private:
-                          bool $_internal_has_name$() const;
-
-                          public:
-                        )cc");
               }},
              {"clearer",
               [&] {
@@ -770,7 +791,6 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               // $field_comment$
               $sizer$;
               $hazzer$;
-              $internal_hazzer$;
               $clearer$;
               $accessors$;
             )cc");

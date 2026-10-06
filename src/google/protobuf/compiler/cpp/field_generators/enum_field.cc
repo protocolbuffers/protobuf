@@ -144,6 +144,7 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
 
  private:
@@ -151,18 +152,20 @@ class SingularEnum : public FieldGeneratorBase {
 };
 
 void SingularEnum::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ $Enum$ $name$() const;
     $DEPRECATED$ void $set_name$($Enum$ value);
+  )cc");
+}
 
-    private:
+void SingularEnum::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  auto v =
+      p->WithVars(AnnotatedAccessors(field_, {"_internal_", "_internal_set_"}));
+  p->Emit(R"cc(
     $Enum$ $_internal_name$() const;
     void $_internal_set_name$($Enum$ value);
-
-    public:
   )cc");
 }
 
@@ -370,6 +373,7 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -381,8 +385,7 @@ class RepeatedEnum : public FieldGeneratorBase {
 };
 
 void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs =
       p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
   auto vm =
@@ -408,17 +411,19 @@ void RepeatedEnum::GenerateAccessorDeclarations(io::Printer* p) const {
   };
 
   p->Emit({{"decl_field_accessors", decl_field_accessors}}, R"cc(
-    public:
     [[nodiscard]] $DEPRECATED$ $Enum$ $name$(int index) const;
     $DEPRECATED$ void $set_name$(int index, $Enum$ value);
     $DEPRECATED$ void $add_name$($Enum$ value);
     $decl_field_accessors$;
+  )cc");
+}
 
-    private:
+void RepeatedEnum::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"_internal_", "_internal_mutable_"}));
+  p->Emit(R"cc(
     const $pb$::RepeatedField<int>& $_internal_name$() const;
     $pb$::RepeatedField<int>* $nonnull$ $_internal_mutable_name$();
-
-    public:
   )cc");
 }
 

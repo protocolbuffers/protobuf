@@ -1240,6 +1240,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     kNamePartFieldNumber = 1,
     kIsExtensionFieldNumber = 2,
   };
+  private:
+  // required string name_part = 1;
+  const ::std::string& _internal_name_part() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name_part();
+  // required bool is_extension = 2;
+  bool _internal_is_extension() const;
+  void _internal_set_is_extension(bool value);
+  public:
   // required string name_part = 1;
   [[nodiscard]] bool has_name_part() const;
   void clear_name_part() ;
@@ -1249,24 +1258,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   ::std::string* PROTOBUF_NONNULL mutable_name_part();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name_part();
   void set_allocated_name_part(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name_part() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name_part(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name_part();
-
-  public:
   // required bool is_extension = 2;
   [[nodiscard]] bool has_is_extension() const;
   void clear_is_extension() ;
   [[nodiscard]] bool is_extension() const;
   void set_is_extension(bool value);
-
-  private:
-  bool _internal_is_extension() const;
-  void _internal_set_is_extension(bool value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption.NamePart)
  private:
   class _Internal;
@@ -1458,12 +1454,30 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
     kLeadingCommentsFieldNumber = 3,
     kTrailingCommentsFieldNumber = 4,
   };
+  private:
+  // repeated int32 path = 1 [packed = true];
+  int _internal_path_size() const;
+  const ::google::protobuf::RepeatedField<::int32_t>& _internal_path() const;
+  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_path();
+  // repeated int32 span = 2 [packed = true];
+  int _internal_span_size() const;
+  const ::google::protobuf::RepeatedField<::int32_t>& _internal_span() const;
+  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_span();
+  // repeated string leading_detached_comments = 6;
+  int _internal_leading_detached_comments_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_leading_detached_comments() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_leading_detached_comments();
+  // optional string leading_comments = 3;
+  const ::std::string& _internal_leading_comments() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_leading_comments();
+  // optional string trailing_comments = 4;
+  const ::std::string& _internal_trailing_comments() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_trailing_comments();
+  public:
   // repeated int32 path = 1 [packed = true];
   [[nodiscard]] int path_size() const;
-  private:
-  int _internal_path_size() const;
-
-  public:
   void clear_path() ;
   [[nodiscard]] ::int32_t path(int index) const;
   void set_path(int index, ::int32_t value);
@@ -1471,18 +1485,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& path()
       const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_path();
-
-  private:
-  const ::google::protobuf::RepeatedField<::int32_t>& _internal_path() const;
-  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_path();
-
-  public:
   // repeated int32 span = 2 [packed = true];
   [[nodiscard]] int span_size() const;
-  private:
-  int _internal_span_size() const;
-
-  public:
   void clear_span() ;
   [[nodiscard]] ::int32_t span(int index) const;
   void set_span(int index, ::int32_t value);
@@ -1490,18 +1494,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& span()
       const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_span();
-
-  private:
-  const ::google::protobuf::RepeatedField<::int32_t>& _internal_span() const;
-  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_span();
-
-  public:
   // repeated string leading_detached_comments = 6;
   [[nodiscard]] int leading_detached_comments_size() const;
-  private:
-  int _internal_leading_detached_comments_size() const;
-
-  public:
   void clear_leading_detached_comments() ;
   [[nodiscard]] const ::std::string& leading_detached_comments(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_leading_detached_comments(int index);
@@ -1516,12 +1510,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
       PROTOBUF_NONNULL
       mutable_leading_detached_comments();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_leading_detached_comments() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_leading_detached_comments();
-
-  public:
   // optional string leading_comments = 3;
   [[nodiscard]] bool has_leading_comments() const;
   void clear_leading_comments() ;
@@ -1531,13 +1519,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   ::std::string* PROTOBUF_NONNULL mutable_leading_comments();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_leading_comments();
   void set_allocated_leading_comments(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_leading_comments() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_leading_comments(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_leading_comments();
-
-  public:
   // optional string trailing_comments = 4;
   [[nodiscard]] bool has_trailing_comments() const;
   void clear_trailing_comments() ;
@@ -1547,13 +1528,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   ::std::string* PROTOBUF_NONNULL mutable_trailing_comments();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_trailing_comments();
   void set_allocated_trailing_comments(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_trailing_comments() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_trailing_comments(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_trailing_comments();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo.Location)
  private:
   class _Internal;
@@ -1771,12 +1745,27 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
     kEndFieldNumber = 4,
     kSemanticFieldNumber = 5,
   };
+  private:
+  // repeated int32 path = 1 [packed = true];
+  int _internal_path_size() const;
+  const ::google::protobuf::RepeatedField<::int32_t>& _internal_path() const;
+  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_path();
+  // optional string source_file = 2;
+  const ::std::string& _internal_source_file() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_source_file();
+  // optional int32 begin = 3;
+  ::int32_t _internal_begin() const;
+  void _internal_set_begin(::int32_t value);
+  // optional int32 end = 4;
+  ::int32_t _internal_end() const;
+  void _internal_set_end(::int32_t value);
+  // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
+  ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic _internal_semantic() const;
+  void _internal_set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value);
+  public:
   // repeated int32 path = 1 [packed = true];
   [[nodiscard]] int path_size() const;
-  private:
-  int _internal_path_size() const;
-
-  public:
   void clear_path() ;
   [[nodiscard]] ::int32_t path(int index) const;
   void set_path(int index, ::int32_t value);
@@ -1784,12 +1773,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& path()
       const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_path();
-
-  private:
-  const ::google::protobuf::RepeatedField<::int32_t>& _internal_path() const;
-  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_path();
-
-  public:
   // optional string source_file = 2;
   [[nodiscard]] bool has_source_file() const;
   void clear_source_file() ;
@@ -1799,46 +1782,21 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   ::std::string* PROTOBUF_NONNULL mutable_source_file();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_source_file();
   void set_allocated_source_file(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_source_file() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_source_file(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_source_file();
-
-  public:
   // optional int32 begin = 3;
   [[nodiscard]] bool has_begin() const;
   void clear_begin() ;
   [[nodiscard]] ::int32_t begin() const;
   void set_begin(::int32_t value);
-
-  private:
-  ::int32_t _internal_begin() const;
-  void _internal_set_begin(::int32_t value);
-
-  public:
   // optional int32 end = 4;
   [[nodiscard]] bool has_end() const;
   void clear_end() ;
   [[nodiscard]] ::int32_t end() const;
   void set_end(::int32_t value);
-
-  private:
-  ::int32_t _internal_end() const;
-  void _internal_set_end(::int32_t value);
-
-  public:
   // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
   [[nodiscard]] bool has_semantic() const;
   void clear_semantic() ;
   [[nodiscard]] ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic semantic() const;
   void set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value);
-
-  private:
-  ::google::protobuf::GeneratedCodeInfo_Annotation_Semantic _internal_semantic() const;
-  void _internal_set_semantic(::google::protobuf::GeneratedCodeInfo_Annotation_Semantic value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo.Annotation)
  private:
   class _Internal;
@@ -2034,6 +1992,25 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
     kEditionDeprecatedFieldNumber = 2,
     kEditionRemovedFieldNumber = 4,
   };
+  private:
+  // optional string deprecation_warning = 3;
+  const ::std::string& _internal_deprecation_warning() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_deprecation_warning();
+  // optional string removal_error = 5;
+  const ::std::string& _internal_removal_error() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_removal_error(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_removal_error();
+  // optional .google.protobuf.Edition edition_introduced = 1;
+  ::google::protobuf::Edition _internal_edition_introduced() const;
+  void _internal_set_edition_introduced(::google::protobuf::Edition value);
+  // optional .google.protobuf.Edition edition_deprecated = 2;
+  ::google::protobuf::Edition _internal_edition_deprecated() const;
+  void _internal_set_edition_deprecated(::google::protobuf::Edition value);
+  // optional .google.protobuf.Edition edition_removed = 4;
+  ::google::protobuf::Edition _internal_edition_removed() const;
+  void _internal_set_edition_removed(::google::protobuf::Edition value);
+  public:
   // optional string deprecation_warning = 3;
   [[nodiscard]] bool has_deprecation_warning() const;
   void clear_deprecation_warning() ;
@@ -2043,13 +2020,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   ::std::string* PROTOBUF_NONNULL mutable_deprecation_warning();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_deprecation_warning();
   void set_allocated_deprecation_warning(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_deprecation_warning() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_deprecation_warning(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_deprecation_warning();
-
-  public:
   // optional string removal_error = 5;
   [[nodiscard]] bool has_removal_error() const;
   void clear_removal_error() ;
@@ -2059,46 +2029,21 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   ::std::string* PROTOBUF_NONNULL mutable_removal_error();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_removal_error();
   void set_allocated_removal_error(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_removal_error() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_removal_error(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_removal_error();
-
-  public:
   // optional .google.protobuf.Edition edition_introduced = 1;
   [[nodiscard]] bool has_edition_introduced() const;
   void clear_edition_introduced() ;
   [[nodiscard]] ::google::protobuf::Edition edition_introduced() const;
   void set_edition_introduced(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_edition_introduced() const;
-  void _internal_set_edition_introduced(::google::protobuf::Edition value);
-
-  public:
   // optional .google.protobuf.Edition edition_deprecated = 2;
   [[nodiscard]] bool has_edition_deprecated() const;
   void clear_edition_deprecated() ;
   [[nodiscard]] ::google::protobuf::Edition edition_deprecated() const;
   void set_edition_deprecated(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_edition_deprecated() const;
-  void _internal_set_edition_deprecated(::google::protobuf::Edition value);
-
-  public:
   // optional .google.protobuf.Edition edition_removed = 4;
   [[nodiscard]] bool has_edition_removed() const;
   void clear_edition_removed() ;
   [[nodiscard]] ::google::protobuf::Edition edition_removed() const;
   void set_edition_removed(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_edition_removed() const;
-  void _internal_set_edition_removed(::google::protobuf::Edition value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions.FeatureSupport)
  private:
   class _Internal;
@@ -2290,6 +2235,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
     kValueFieldNumber = 2,
     kEditionFieldNumber = 3,
   };
+  private:
+  // optional string value = 2;
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
+  // optional .google.protobuf.Edition edition = 3;
+  ::google::protobuf::Edition _internal_edition() const;
+  void _internal_set_edition(::google::protobuf::Edition value);
+  public:
   // optional string value = 2;
   [[nodiscard]] bool has_value() const;
   void clear_value() ;
@@ -2299,24 +2253,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   ::std::string* PROTOBUF_NONNULL mutable_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_value();
   void set_allocated_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
-
-  public:
   // optional .google.protobuf.Edition edition = 3;
   [[nodiscard]] bool has_edition() const;
   void clear_edition() ;
   [[nodiscard]] ::google::protobuf::Edition edition() const;
   void set_edition(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_edition() const;
-  void _internal_set_edition(::google::protobuf::Edition value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions.EditionDefault)
  private:
   class _Internal;
@@ -2483,6 +2424,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
   }
 
   // accessors -------------------------------------------------------
+  private:
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSet.VisibilityFeature)
  private:
   class _Internal;
@@ -2630,6 +2573,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLim
   }
 
   // accessors -------------------------------------------------------
+  private:
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSet.ProtoLimitsFeature)
  private:
   class _Internal;
@@ -2964,105 +2909,80 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     kDefaultSymbolVisibilityFieldNumber = 8,
     kEnforceProtoLimitsFieldNumber = 9,
   };
+  private:
+  // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::google::protobuf::FeatureSet_FieldPresence _internal_field_presence() const;
+  void _internal_set_field_presence(::google::protobuf::FeatureSet_FieldPresence value);
+  // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::google::protobuf::FeatureSet_EnumType _internal_enum_type() const;
+  void _internal_set_enum_type(::google::protobuf::FeatureSet_EnumType value);
+  // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::google::protobuf::FeatureSet_RepeatedFieldEncoding _internal_repeated_field_encoding() const;
+  void _internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value);
+  // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::google::protobuf::FeatureSet_Utf8Validation _internal_utf8_validation() const;
+  void _internal_set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value);
+  // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::google::protobuf::FeatureSet_MessageEncoding _internal_message_encoding() const;
+  void _internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value);
+  // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::google::protobuf::FeatureSet_JsonFormat _internal_json_format() const;
+  void _internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value);
+  // optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {
+  ::google::protobuf::FeatureSet_EnforceNamingStyle _internal_enforce_naming_style() const;
+  void _internal_set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value);
+  // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility _internal_default_symbol_visibility() const;
+  void _internal_set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
+  // optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
+  ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits _internal_enforce_proto_limits() const;
+  void _internal_set_enforce_proto_limits(::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value);
+  public:
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_field_presence() const;
   void clear_field_presence() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_FieldPresence field_presence() const;
   void set_field_presence(::google::protobuf::FeatureSet_FieldPresence value);
-
-  private:
-  ::google::protobuf::FeatureSet_FieldPresence _internal_field_presence() const;
-  void _internal_set_field_presence(::google::protobuf::FeatureSet_FieldPresence value);
-
-  public:
   // optional .google.protobuf.FeatureSet.EnumType enum_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_enum_type() const;
   void clear_enum_type() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_EnumType enum_type() const;
   void set_enum_type(::google::protobuf::FeatureSet_EnumType value);
-
-  private:
-  ::google::protobuf::FeatureSet_EnumType _internal_enum_type() const;
-  void _internal_set_enum_type(::google::protobuf::FeatureSet_EnumType value);
-
-  public:
   // optional .google.protobuf.FeatureSet.RepeatedFieldEncoding repeated_field_encoding = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_repeated_field_encoding() const;
   void clear_repeated_field_encoding() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_RepeatedFieldEncoding repeated_field_encoding() const;
   void set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value);
-
-  private:
-  ::google::protobuf::FeatureSet_RepeatedFieldEncoding _internal_repeated_field_encoding() const;
-  void _internal_set_repeated_field_encoding(::google::protobuf::FeatureSet_RepeatedFieldEncoding value);
-
-  public:
   // optional .google.protobuf.FeatureSet.Utf8Validation utf8_validation = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_utf8_validation() const;
   void clear_utf8_validation() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_Utf8Validation utf8_validation() const;
   void set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value);
-
-  private:
-  ::google::protobuf::FeatureSet_Utf8Validation _internal_utf8_validation() const;
-  void _internal_set_utf8_validation(::google::protobuf::FeatureSet_Utf8Validation value);
-
-  public:
   // optional .google.protobuf.FeatureSet.MessageEncoding message_encoding = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_message_encoding() const;
   void clear_message_encoding() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_MessageEncoding message_encoding() const;
   void set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value);
-
-  private:
-  ::google::protobuf::FeatureSet_MessageEncoding _internal_message_encoding() const;
-  void _internal_set_message_encoding(::google::protobuf::FeatureSet_MessageEncoding value);
-
-  public:
   // optional .google.protobuf.FeatureSet.JsonFormat json_format = 6 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_json_format() const;
   void clear_json_format() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_JsonFormat json_format() const;
   void set_json_format(::google::protobuf::FeatureSet_JsonFormat value);
-
-  private:
-  ::google::protobuf::FeatureSet_JsonFormat _internal_json_format() const;
-  void _internal_set_json_format(::google::protobuf::FeatureSet_JsonFormat value);
-
-  public:
   // optional .google.protobuf.FeatureSet.EnforceNamingStyle enforce_naming_style = 7 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, targets = TARGET_TYPE_EXTENSION_RANGE, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_ENUM_ENTRY, targets = TARGET_TYPE_SERVICE, targets = TARGET_TYPE_METHOD, edition_defaults = {
   [[nodiscard]] bool has_enforce_naming_style() const;
   void clear_enforce_naming_style() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_EnforceNamingStyle enforce_naming_style() const;
   void set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value);
-
-  private:
-  ::google::protobuf::FeatureSet_EnforceNamingStyle _internal_enforce_naming_style() const;
-  void _internal_set_enforce_naming_style(::google::protobuf::FeatureSet_EnforceNamingStyle value);
-
-  public:
   // optional .google.protobuf.FeatureSet.VisibilityFeature.DefaultSymbolVisibility default_symbol_visibility = 8 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_default_symbol_visibility() const;
   void clear_default_symbol_visibility() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility default_symbol_visibility() const;
   void set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
-
-  private:
-  ::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility _internal_default_symbol_visibility() const;
-  void _internal_set_default_symbol_visibility(::google::protobuf::FeatureSet_VisibilityFeature_DefaultSymbolVisibility value);
-
-  public:
   // optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
   [[nodiscard]] bool has_enforce_proto_limits() const;
   void clear_enforce_proto_limits() ;
   [[nodiscard]] ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits enforce_proto_limits() const;
   void set_enforce_proto_limits(::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value);
-
-  private:
-  ::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits _internal_enforce_proto_limits() const;
-  void _internal_set_enforce_proto_limits(::google::protobuf::FeatureSet_ProtoLimitsFeature_EnforceProtoLimits value);
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -3452,6 +3372,25 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     kReservedFieldNumber = 5,
     kRepeatedFieldNumber = 6,
   };
+  private:
+  // optional string full_name = 2;
+  const ::std::string& _internal_full_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_full_name();
+  // optional string type = 3;
+  const ::std::string& _internal_type() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_type();
+  // optional int32 number = 1;
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
+  // optional bool reserved = 5;
+  bool _internal_reserved() const;
+  void _internal_set_reserved(bool value);
+  // optional bool repeated = 6;
+  bool _internal_repeated() const;
+  void _internal_set_repeated(bool value);
+  public:
   // optional string full_name = 2;
   [[nodiscard]] bool has_full_name() const;
   void clear_full_name() ;
@@ -3461,13 +3400,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   ::std::string* PROTOBUF_NONNULL mutable_full_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_full_name();
   void set_allocated_full_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_full_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_full_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_full_name();
-
-  public:
   // optional string type = 3;
   [[nodiscard]] bool has_type() const;
   void clear_type() ;
@@ -3477,46 +3409,21 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   ::std::string* PROTOBUF_NONNULL mutable_type();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_type();
   void set_allocated_type(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_type() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_type(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_type();
-
-  public:
   // optional int32 number = 1;
   [[nodiscard]] bool has_number() const;
   void clear_number() ;
   [[nodiscard]] ::int32_t number() const;
   void set_number(::int32_t value);
-
-  private:
-  ::int32_t _internal_number() const;
-  void _internal_set_number(::int32_t value);
-
-  public:
   // optional bool reserved = 5;
   [[nodiscard]] bool has_reserved() const;
   void clear_reserved() ;
   [[nodiscard]] bool reserved() const;
   void set_reserved(bool value);
-
-  private:
-  bool _internal_reserved() const;
-  void _internal_set_reserved(bool value);
-
-  public:
   // optional bool repeated = 6;
   [[nodiscard]] bool has_repeated() const;
   void clear_repeated() ;
   [[nodiscard]] bool repeated() const;
   void set_repeated(bool value);
-
-  private:
-  bool _internal_repeated() const;
-  void _internal_set_repeated(bool value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions.Declaration)
  private:
   class _Internal;
@@ -3708,28 +3615,24 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     kStartFieldNumber = 1,
     kEndFieldNumber = 2,
   };
+  private:
+  // optional int32 start = 1;
+  ::int32_t _internal_start() const;
+  void _internal_set_start(::int32_t value);
+  // optional int32 end = 2;
+  ::int32_t _internal_end() const;
+  void _internal_set_end(::int32_t value);
+  public:
   // optional int32 start = 1;
   [[nodiscard]] bool has_start() const;
   void clear_start() ;
   [[nodiscard]] ::int32_t start() const;
   void set_start(::int32_t value);
-
-  private:
-  ::int32_t _internal_start() const;
-  void _internal_set_start(::int32_t value);
-
-  public:
   // optional int32 end = 2;
   [[nodiscard]] bool has_end() const;
   void clear_end() ;
   [[nodiscard]] ::int32_t end() const;
   void set_end(::int32_t value);
-
-  private:
-  ::int32_t _internal_end() const;
-  void _internal_set_end(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto.EnumReservedRange)
  private:
   class _Internal;
@@ -3918,28 +3821,24 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
     kStartFieldNumber = 1,
     kEndFieldNumber = 2,
   };
+  private:
+  // optional int32 start = 1;
+  ::int32_t _internal_start() const;
+  void _internal_set_start(::int32_t value);
+  // optional int32 end = 2;
+  ::int32_t _internal_end() const;
+  void _internal_set_end(::int32_t value);
+  public:
   // optional int32 start = 1;
   [[nodiscard]] bool has_start() const;
   void clear_start() ;
   [[nodiscard]] ::int32_t start() const;
   void set_start(::int32_t value);
-
-  private:
-  ::int32_t _internal_start() const;
-  void _internal_set_start(::int32_t value);
-
-  public:
   // optional int32 end = 2;
   [[nodiscard]] bool has_end() const;
   void clear_end() ;
   [[nodiscard]] ::int32_t end() const;
   void set_end(::int32_t value);
-
-  private:
-  ::int32_t _internal_end() const;
-  void _internal_set_end(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ReservedRange)
  private:
   class _Internal;
@@ -4139,12 +4038,35 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     kNegativeIntValueFieldNumber = 5,
     kDoubleValueFieldNumber = 6,
   };
+  private:
+  // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
+  int _internal_name_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& _internal_name() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional string identifier_value = 3;
+  const ::std::string& _internal_identifier_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_identifier_value();
+  // optional bytes string_value = 7;
+  const ::std::string& _internal_string_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
+  // optional string aggregate_value = 8;
+  const ::std::string& _internal_aggregate_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_aggregate_value();
+  // optional uint64 positive_int_value = 4;
+  ::uint64_t _internal_positive_int_value() const;
+  void _internal_set_positive_int_value(::uint64_t value);
+  // optional int64 negative_int_value = 5;
+  ::int64_t _internal_negative_int_value() const;
+  void _internal_set_negative_int_value(::int64_t value);
+  // optional double double_value = 6;
+  double _internal_double_value() const;
+  void _internal_set_double_value(double value);
+  public:
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
   [[nodiscard]] int name_size() const;
-  private:
-  int _internal_name_size() const;
-
-  public:
   void clear_name() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption_NamePart& name(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption_NamePart* PROTOBUF_NONNULL mutable_name(int index);
@@ -4153,12 +4075,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   name() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL
   mutable_name();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>& _internal_name() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption_NamePart>* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional string identifier_value = 3;
   [[nodiscard]] bool has_identifier_value() const;
   void clear_identifier_value() ;
@@ -4168,13 +4084,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   ::std::string* PROTOBUF_NONNULL mutable_identifier_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_identifier_value();
   void set_allocated_identifier_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_identifier_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_identifier_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_identifier_value();
-
-  public:
   // optional bytes string_value = 7;
   [[nodiscard]] bool has_string_value() const;
   void clear_string_value() ;
@@ -4184,13 +4093,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   ::std::string* PROTOBUF_NONNULL mutable_string_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_string_value();
   void set_allocated_string_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_string_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
-
-  public:
   // optional string aggregate_value = 8;
   [[nodiscard]] bool has_aggregate_value() const;
   void clear_aggregate_value() ;
@@ -4200,46 +4102,21 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   ::std::string* PROTOBUF_NONNULL mutable_aggregate_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_aggregate_value();
   void set_allocated_aggregate_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_aggregate_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_aggregate_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_aggregate_value();
-
-  public:
   // optional uint64 positive_int_value = 4;
   [[nodiscard]] bool has_positive_int_value() const;
   void clear_positive_int_value() ;
   [[nodiscard]] ::uint64_t positive_int_value() const;
   void set_positive_int_value(::uint64_t value);
-
-  private:
-  ::uint64_t _internal_positive_int_value() const;
-  void _internal_set_positive_int_value(::uint64_t value);
-
-  public:
   // optional int64 negative_int_value = 5;
   [[nodiscard]] bool has_negative_int_value() const;
   void clear_negative_int_value() ;
   [[nodiscard]] ::int64_t negative_int_value() const;
   void set_negative_int_value(::int64_t value);
-
-  private:
-  ::int64_t _internal_negative_int_value() const;
-  void _internal_set_negative_int_value(::int64_t value);
-
-  public:
   // optional double double_value = 6;
   [[nodiscard]] bool has_double_value() const;
   void clear_double_value() ;
   [[nodiscard]] double double_value() const;
   void set_double_value(double value);
-
-  private:
-  double _internal_double_value() const;
-  void _internal_set_double_value(double value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.UninterpretedOption)
  private:
   class _Internal;
@@ -4438,12 +4315,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   enum : int {
     kLocationFieldNumber = 1,
   };
+  private:
+  // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
+  int _internal_location_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& _internal_location() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* PROTOBUF_NONNULL _internal_mutable_location();
+  public:
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
   [[nodiscard]] int location_size() const;
-  private:
-  int _internal_location_size() const;
-
-  public:
   void clear_location() ;
   [[nodiscard]] const ::google::protobuf::SourceCodeInfo_Location& location(int index) const;
   [[nodiscard]] ::google::protobuf::SourceCodeInfo_Location* PROTOBUF_NONNULL mutable_location(int index);
@@ -4452,12 +4331,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   location() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* PROTOBUF_NONNULL
   mutable_location();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>& _internal_location() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::SourceCodeInfo_Location>* PROTOBUF_NONNULL _internal_mutable_location();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -4836,12 +4709,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   enum : int {
     kAnnotationFieldNumber = 1,
   };
+  private:
+  // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
+  int _internal_annotation_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>& _internal_annotation() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* PROTOBUF_NONNULL _internal_mutable_annotation();
+  public:
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
   [[nodiscard]] int annotation_size() const;
-  private:
-  int _internal_annotation_size() const;
-
-  public:
   void clear_annotation() ;
   [[nodiscard]] const ::google::protobuf::GeneratedCodeInfo_Annotation& annotation(int index) const;
   [[nodiscard]] ::google::protobuf::GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL mutable_annotation(int index);
@@ -4850,12 +4725,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   annotation() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* PROTOBUF_NONNULL
   mutable_annotation();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>& _internal_annotation() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::GeneratedCodeInfo_Annotation>* PROTOBUF_NONNULL _internal_mutable_annotation();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.GeneratedCodeInfo)
  private:
   class _Internal;
@@ -5049,6 +4918,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
     kFixedFeaturesFieldNumber = 5,
     kEditionFieldNumber = 3,
   };
+  private:
+  // optional .google.protobuf.FeatureSet overridable_features = 4;
+  const ::google::protobuf::FeatureSet& _internal_overridable_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_overridable_features();
+  // optional .google.protobuf.FeatureSet fixed_features = 5;
+  const ::google::protobuf::FeatureSet& _internal_fixed_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_fixed_features();
+  // optional .google.protobuf.Edition edition = 3;
+  ::google::protobuf::Edition _internal_edition() const;
+  void _internal_set_edition(::google::protobuf::Edition value);
+  public:
   // optional .google.protobuf.FeatureSet overridable_features = 4;
   [[nodiscard]] bool has_overridable_features() const;
   void clear_overridable_features() ;
@@ -5058,12 +4938,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   void set_allocated_overridable_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_overridable_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_overridable_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_overridable_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_overridable_features();
-
-  public:
   // optional .google.protobuf.FeatureSet fixed_features = 5;
   [[nodiscard]] bool has_fixed_features() const;
   void clear_fixed_features() ;
@@ -5073,23 +4947,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   void set_allocated_fixed_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_fixed_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_fixed_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_fixed_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_fixed_features();
-
-  public:
   // optional .google.protobuf.Edition edition = 3;
   [[nodiscard]] bool has_edition() const;
   void clear_edition() ;
   [[nodiscard]] ::google::protobuf::Edition edition() const;
   void set_edition(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_edition() const;
-  void _internal_set_edition(::google::protobuf::Edition value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
  private:
   class _Internal;
@@ -5285,12 +5147,20 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
     kFeaturesFieldNumber = 34,
     kDeprecatedFieldNumber = 33,
   };
+  private:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  // optional .google.protobuf.FeatureSet features = 34;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional bool deprecated = 33 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
+  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -5299,12 +5169,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   // optional .google.protobuf.FeatureSet features = 34;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -5314,23 +5178,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional bool deprecated = 33 [default = false];
   [[nodiscard]] bool has_deprecated() const;
   void clear_deprecated() ;
   [[nodiscard]] bool deprecated() const;
   void set_deprecated(bool value);
-
-  private:
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -5716,12 +5568,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 1,
   };
+  private:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  // optional .google.protobuf.FeatureSet features = 1;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -5730,12 +5587,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   // optional .google.protobuf.FeatureSet features = 1;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -5745,12 +5596,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -6158,12 +6003,23 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
     kDeprecatedFieldNumber = 33,
     kIdempotencyLevelFieldNumber = 34,
   };
+  private:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  // optional .google.protobuf.FeatureSet features = 35;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional bool deprecated = 33 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
+  // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
+  ::google::protobuf::MethodOptions_IdempotencyLevel _internal_idempotency_level() const;
+  void _internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value);
+  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -6172,12 +6028,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   // optional .google.protobuf.FeatureSet features = 35;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -6187,34 +6037,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional bool deprecated = 33 [default = false];
   [[nodiscard]] bool has_deprecated() const;
   void clear_deprecated() ;
   [[nodiscard]] bool deprecated() const;
   void set_deprecated(bool value);
-
-  private:
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
-
-  public:
   // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
   [[nodiscard]] bool has_idempotency_level() const;
   void clear_idempotency_level() ;
   [[nodiscard]] ::google::protobuf::MethodOptions_IdempotencyLevel idempotency_level() const;
   void set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value);
-
-  private:
-  ::google::protobuf::MethodOptions_IdempotencyLevel _internal_idempotency_level() const;
-  void _internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value);
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -6606,6 +6438,30 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
     kDeprecatedLegacyJsonFieldConflictsFieldNumber = 11,
     kUninterpretedOptionFieldNumber = 999,
   };
+  private:
+  // optional .google.protobuf.FeatureSet features = 12;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional bool message_set_wire_format = 1 [default = false];
+  bool _internal_message_set_wire_format() const;
+  void _internal_set_message_set_wire_format(bool value);
+  // optional bool no_standard_descriptor_accessor = 2 [default = false];
+  bool _internal_no_standard_descriptor_accessor() const;
+  void _internal_set_no_standard_descriptor_accessor(bool value);
+  // optional bool deprecated = 3 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
+  // optional bool map_entry = 7;
+  bool _internal_map_entry() const;
+  void _internal_set_map_entry(bool value);
+  // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
+  bool _internal_deprecated_legacy_json_field_conflicts() const;
+  void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
   // optional .google.protobuf.FeatureSet features = 12;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -6615,73 +6471,33 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional bool message_set_wire_format = 1 [default = false];
   [[nodiscard]] bool has_message_set_wire_format() const;
   void clear_message_set_wire_format() ;
   [[nodiscard]] bool message_set_wire_format() const;
   void set_message_set_wire_format(bool value);
-
-  private:
-  bool _internal_message_set_wire_format() const;
-  void _internal_set_message_set_wire_format(bool value);
-
-  public:
   // optional bool no_standard_descriptor_accessor = 2 [default = false];
   [[nodiscard]] bool has_no_standard_descriptor_accessor() const;
   void clear_no_standard_descriptor_accessor() ;
   [[nodiscard]] bool no_standard_descriptor_accessor() const;
   void set_no_standard_descriptor_accessor(bool value);
-
-  private:
-  bool _internal_no_standard_descriptor_accessor() const;
-  void _internal_set_no_standard_descriptor_accessor(bool value);
-
-  public:
   // optional bool deprecated = 3 [default = false];
   [[nodiscard]] bool has_deprecated() const;
   void clear_deprecated() ;
   [[nodiscard]] bool deprecated() const;
   void set_deprecated(bool value);
-
-  private:
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
-
-  public:
   // optional bool map_entry = 7;
   [[nodiscard]] bool has_map_entry() const;
   void clear_map_entry() ;
   [[nodiscard]] bool map_entry() const;
   void set_map_entry(bool value);
-
-  private:
-  bool _internal_map_entry() const;
-  void _internal_set_map_entry(bool value);
-
-  public:
   // optional bool deprecated_legacy_json_field_conflicts = 11 [deprecated = true];
   [[nodiscard]] [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
   [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
   [[nodiscard]] [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
   [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
-
-  private:
-  bool _internal_deprecated_legacy_json_field_conflicts() const;
-  void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
-
-  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -6690,12 +6506,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -7125,6 +6935,82 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
     kCcEnableArenasFieldNumber = 31,
     kUninterpretedOptionFieldNumber = 999,
   };
+  private:
+  // optional string java_package = 1;
+  const ::std::string& _internal_java_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_java_package();
+  // optional string java_outer_classname = 8;
+  const ::std::string& _internal_java_outer_classname() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_java_outer_classname();
+  // optional string go_package = 11;
+  const ::std::string& _internal_go_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_go_package();
+  // optional string objc_class_prefix = 36;
+  const ::std::string& _internal_objc_class_prefix() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_objc_class_prefix();
+  // optional string csharp_namespace = 37;
+  const ::std::string& _internal_csharp_namespace() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_csharp_namespace();
+  // optional string swift_prefix = 39;
+  const ::std::string& _internal_swift_prefix() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_swift_prefix();
+  // optional string php_class_prefix = 40;
+  const ::std::string& _internal_php_class_prefix() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_class_prefix();
+  // optional string php_namespace = 41;
+  const ::std::string& _internal_php_namespace() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_namespace();
+  // optional string php_metadata_namespace = 44;
+  const ::std::string& _internal_php_metadata_namespace() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_metadata_namespace();
+  // optional string ruby_package = 45;
+  const ::std::string& _internal_ruby_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_ruby_package();
+  // optional .google.protobuf.FeatureSet features = 50;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional bool java_multiple_files = 10 [default = false, feature_support = {
+  bool _internal_java_multiple_files() const;
+  void _internal_set_java_multiple_files(bool value);
+  // optional bool cc_generic_services = 16 [default = false];
+  bool _internal_cc_generic_services() const;
+  void _internal_set_cc_generic_services(bool value);
+  // optional bool java_generic_services = 17 [default = false];
+  bool _internal_java_generic_services() const;
+  void _internal_set_java_generic_services(bool value);
+  // optional bool py_generic_services = 18 [default = false];
+  bool _internal_py_generic_services() const;
+  void _internal_set_py_generic_services(bool value);
+  // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
+  bool _internal_java_generate_equals_and_hash() const;
+  void _internal_set_java_generate_equals_and_hash(bool value);
+  // optional bool deprecated = 23 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
+  // optional bool java_string_check_utf8 = 27 [default = false];
+  bool _internal_java_string_check_utf8() const;
+  void _internal_set_java_string_check_utf8(bool value);
+  // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
+  ::google::protobuf::FileOptions_OptimizeMode _internal_optimize_for() const;
+  void _internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
+  // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
+  bool _internal_cc_enable_arenas() const;
+  void _internal_set_cc_enable_arenas(bool value);
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
   // optional string java_package = 1;
   [[nodiscard]] bool has_java_package() const;
   void clear_java_package() ;
@@ -7134,13 +7020,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_java_package();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_java_package();
   void set_allocated_java_package(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_java_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_java_package(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_java_package();
-
-  public:
   // optional string java_outer_classname = 8;
   [[nodiscard]] bool has_java_outer_classname() const;
   void clear_java_outer_classname() ;
@@ -7150,13 +7029,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_java_outer_classname();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_java_outer_classname();
   void set_allocated_java_outer_classname(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_java_outer_classname() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_java_outer_classname(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_java_outer_classname();
-
-  public:
   // optional string go_package = 11;
   [[nodiscard]] bool has_go_package() const;
   void clear_go_package() ;
@@ -7166,13 +7038,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_go_package();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_go_package();
   void set_allocated_go_package(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_go_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_go_package(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_go_package();
-
-  public:
   // optional string objc_class_prefix = 36;
   [[nodiscard]] bool has_objc_class_prefix() const;
   void clear_objc_class_prefix() ;
@@ -7182,13 +7047,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_objc_class_prefix();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_objc_class_prefix();
   void set_allocated_objc_class_prefix(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_objc_class_prefix() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_objc_class_prefix(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_objc_class_prefix();
-
-  public:
   // optional string csharp_namespace = 37;
   [[nodiscard]] bool has_csharp_namespace() const;
   void clear_csharp_namespace() ;
@@ -7198,13 +7056,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_csharp_namespace();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_csharp_namespace();
   void set_allocated_csharp_namespace(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_csharp_namespace() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_csharp_namespace(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_csharp_namespace();
-
-  public:
   // optional string swift_prefix = 39;
   [[nodiscard]] bool has_swift_prefix() const;
   void clear_swift_prefix() ;
@@ -7214,13 +7065,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_swift_prefix();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_swift_prefix();
   void set_allocated_swift_prefix(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_swift_prefix() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_swift_prefix(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_swift_prefix();
-
-  public:
   // optional string php_class_prefix = 40;
   [[nodiscard]] bool has_php_class_prefix() const;
   void clear_php_class_prefix() ;
@@ -7230,13 +7074,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_php_class_prefix();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_php_class_prefix();
   void set_allocated_php_class_prefix(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_php_class_prefix() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_php_class_prefix(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_class_prefix();
-
-  public:
   // optional string php_namespace = 41;
   [[nodiscard]] bool has_php_namespace() const;
   void clear_php_namespace() ;
@@ -7246,13 +7083,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_php_namespace();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_php_namespace();
   void set_allocated_php_namespace(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_php_namespace() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_php_namespace(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_namespace();
-
-  public:
   // optional string php_metadata_namespace = 44;
   [[nodiscard]] bool has_php_metadata_namespace() const;
   void clear_php_metadata_namespace() ;
@@ -7262,13 +7092,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_php_metadata_namespace();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_php_metadata_namespace();
   void set_allocated_php_metadata_namespace(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_php_metadata_namespace() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_php_metadata_namespace(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_php_metadata_namespace();
-
-  public:
   // optional string ruby_package = 45;
   [[nodiscard]] bool has_ruby_package() const;
   void clear_ruby_package() ;
@@ -7278,13 +7101,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   ::std::string* PROTOBUF_NONNULL mutable_ruby_package();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_ruby_package();
   void set_allocated_ruby_package(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_ruby_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_ruby_package(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_ruby_package();
-
-  public:
   // optional .google.protobuf.FeatureSet features = 50;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -7294,117 +7110,53 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional bool java_multiple_files = 10 [default = false, feature_support = {
   [[nodiscard]] bool has_java_multiple_files() const;
   void clear_java_multiple_files() ;
   [[nodiscard]] bool java_multiple_files() const;
   void set_java_multiple_files(bool value);
-
-  private:
-  bool _internal_java_multiple_files() const;
-  void _internal_set_java_multiple_files(bool value);
-
-  public:
   // optional bool cc_generic_services = 16 [default = false];
   [[nodiscard]] bool has_cc_generic_services() const;
   void clear_cc_generic_services() ;
   [[nodiscard]] bool cc_generic_services() const;
   void set_cc_generic_services(bool value);
-
-  private:
-  bool _internal_cc_generic_services() const;
-  void _internal_set_cc_generic_services(bool value);
-
-  public:
   // optional bool java_generic_services = 17 [default = false];
   [[nodiscard]] bool has_java_generic_services() const;
   void clear_java_generic_services() ;
   [[nodiscard]] bool java_generic_services() const;
   void set_java_generic_services(bool value);
-
-  private:
-  bool _internal_java_generic_services() const;
-  void _internal_set_java_generic_services(bool value);
-
-  public:
   // optional bool py_generic_services = 18 [default = false];
   [[nodiscard]] bool has_py_generic_services() const;
   void clear_py_generic_services() ;
   [[nodiscard]] bool py_generic_services() const;
   void set_py_generic_services(bool value);
-
-  private:
-  bool _internal_py_generic_services() const;
-  void _internal_set_py_generic_services(bool value);
-
-  public:
   // optional bool java_generate_equals_and_hash = 20 [deprecated = true];
   [[nodiscard]] [[deprecated]]  bool has_java_generate_equals_and_hash() const;
   [[deprecated]]  void clear_java_generate_equals_and_hash() ;
   [[nodiscard]] [[deprecated]] bool java_generate_equals_and_hash() const;
   [[deprecated]] void set_java_generate_equals_and_hash(bool value);
-
-  private:
-  bool _internal_java_generate_equals_and_hash() const;
-  void _internal_set_java_generate_equals_and_hash(bool value);
-
-  public:
   // optional bool deprecated = 23 [default = false];
   [[nodiscard]] bool has_deprecated() const;
   void clear_deprecated() ;
   [[nodiscard]] bool deprecated() const;
   void set_deprecated(bool value);
-
-  private:
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
-
-  public:
   // optional bool java_string_check_utf8 = 27 [default = false];
   [[nodiscard]] bool has_java_string_check_utf8() const;
   void clear_java_string_check_utf8() ;
   [[nodiscard]] bool java_string_check_utf8() const;
   void set_java_string_check_utf8(bool value);
-
-  private:
-  bool _internal_java_string_check_utf8() const;
-  void _internal_set_java_string_check_utf8(bool value);
-
-  public:
   // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
   [[nodiscard]] bool has_optimize_for() const;
   void clear_optimize_for() ;
   [[nodiscard]] ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
   void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
-
-  private:
-  ::google::protobuf::FileOptions_OptimizeMode _internal_optimize_for() const;
-  void _internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
-
-  public:
   // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
   [[nodiscard]] bool has_cc_enable_arenas() const;
   void clear_cc_enable_arenas() ;
   [[nodiscard]] bool cc_enable_arenas() const;
   void set_cc_enable_arenas(bool value);
-
-  private:
-  bool _internal_cc_enable_arenas() const;
-  void _internal_set_cc_enable_arenas(bool value);
-
-  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -7413,12 +7165,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -7927,12 +7673,55 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     kRetentionFieldNumber = 17,
     kTargetsFieldNumber = 19,
   };
+  private:
+  // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
+  int _internal_edition_defaults_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& _internal_edition_defaults() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL _internal_mutable_edition_defaults();
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  // optional .google.protobuf.FeatureSet features = 21;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
+  const ::google::protobuf::FieldOptions_FeatureSupport& _internal_feature_support() const;
+  ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL _internal_mutable_feature_support();
+  // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
+  ::google::protobuf::FieldOptions_CType _internal_ctype() const;
+  void _internal_set_ctype(::google::protobuf::FieldOptions_CType value);
+  // optional bool packed = 2;
+  bool _internal_packed() const;
+  void _internal_set_packed(bool value);
+  // optional bool deprecated = 3 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
+  // optional bool lazy = 5 [default = false];
+  bool _internal_lazy() const;
+  void _internal_set_lazy(bool value);
+  // optional bool weak = 10 [default = false, deprecated = true];
+  bool _internal_weak() const;
+  void _internal_set_weak(bool value);
+  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
+  ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
+  void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
+  // optional bool unverified_lazy = 15 [default = false];
+  bool _internal_unverified_lazy() const;
+  void _internal_set_unverified_lazy(bool value);
+  // optional bool debug_redact = 16 [default = false];
+  bool _internal_debug_redact() const;
+  void _internal_set_debug_redact(bool value);
+  // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
+  ::google::protobuf::FieldOptions_OptionRetention _internal_retention() const;
+  void _internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value);
+  // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
+  int _internal_targets_size() const;
+  const ::google::protobuf::RepeatedField<int>& _internal_targets() const;
+  ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL _internal_mutable_targets();
+  public:
   // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
   [[nodiscard]] int edition_defaults_size() const;
-  private:
-  int _internal_edition_defaults_size() const;
-
-  public:
   void clear_edition_defaults() ;
   [[nodiscard]] const ::google::protobuf::FieldOptions_EditionDefault& edition_defaults(int index) const;
   [[nodiscard]] ::google::protobuf::FieldOptions_EditionDefault* PROTOBUF_NONNULL mutable_edition_defaults(int index);
@@ -7941,18 +7730,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   edition_defaults() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL
   mutable_edition_defaults();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>& _internal_edition_defaults() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldOptions_EditionDefault>* PROTOBUF_NONNULL _internal_mutable_edition_defaults();
-
-  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -7961,12 +7740,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   // optional .google.protobuf.FeatureSet features = 21;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -7976,12 +7749,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 22;
   [[nodiscard]] bool has_feature_support() const;
   void clear_feature_support() ;
@@ -7991,131 +7758,60 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value);
   ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE unsafe_arena_release_feature_support();
-
-  private:
-  const ::google::protobuf::FieldOptions_FeatureSupport& _internal_feature_support() const;
-  ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL _internal_mutable_feature_support();
-
-  public:
   // optional .google.protobuf.FieldOptions.CType ctype = 1 [default = STRING];
   [[nodiscard]] bool has_ctype() const;
   void clear_ctype() ;
   [[nodiscard]] ::google::protobuf::FieldOptions_CType ctype() const;
   void set_ctype(::google::protobuf::FieldOptions_CType value);
-
-  private:
-  ::google::protobuf::FieldOptions_CType _internal_ctype() const;
-  void _internal_set_ctype(::google::protobuf::FieldOptions_CType value);
-
-  public:
   // optional bool packed = 2;
   [[nodiscard]] bool has_packed() const;
   void clear_packed() ;
   [[nodiscard]] bool packed() const;
   void set_packed(bool value);
-
-  private:
-  bool _internal_packed() const;
-  void _internal_set_packed(bool value);
-
-  public:
   // optional bool deprecated = 3 [default = false];
   [[nodiscard]] bool has_deprecated() const;
   void clear_deprecated() ;
   [[nodiscard]] bool deprecated() const;
   void set_deprecated(bool value);
-
-  private:
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
-
-  public:
   // optional bool lazy = 5 [default = false];
   [[nodiscard]] bool has_lazy() const;
   void clear_lazy() ;
   [[nodiscard]] bool lazy() const;
   void set_lazy(bool value);
-
-  private:
-  bool _internal_lazy() const;
-  void _internal_set_lazy(bool value);
-
-  public:
   // optional bool weak = 10 [default = false, deprecated = true];
   [[nodiscard]] [[deprecated]]  bool has_weak() const;
   [[deprecated]]  void clear_weak() ;
   [[nodiscard]] [[deprecated]] bool weak() const;
   [[deprecated]] void set_weak(bool value);
-
-  private:
-  bool _internal_weak() const;
-  void _internal_set_weak(bool value);
-
-  public:
   // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
   [[nodiscard]] bool has_jstype() const;
   void clear_jstype() ;
   [[nodiscard]] ::google::protobuf::FieldOptions_JSType jstype() const;
   void set_jstype(::google::protobuf::FieldOptions_JSType value);
-
-  private:
-  ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
-  void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
-
-  public:
   // optional bool unverified_lazy = 15 [default = false];
   [[nodiscard]] bool has_unverified_lazy() const;
   void clear_unverified_lazy() ;
   [[nodiscard]] bool unverified_lazy() const;
   void set_unverified_lazy(bool value);
-
-  private:
-  bool _internal_unverified_lazy() const;
-  void _internal_set_unverified_lazy(bool value);
-
-  public:
   // optional bool debug_redact = 16 [default = false];
   [[nodiscard]] bool has_debug_redact() const;
   void clear_debug_redact() ;
   [[nodiscard]] bool debug_redact() const;
   void set_debug_redact(bool value);
-
-  private:
-  bool _internal_debug_redact() const;
-  void _internal_set_debug_redact(bool value);
-
-  public:
   // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
   [[nodiscard]] bool has_retention() const;
   void clear_retention() ;
   [[nodiscard]] ::google::protobuf::FieldOptions_OptionRetention retention() const;
   void set_retention(::google::protobuf::FieldOptions_OptionRetention value);
-
-  private:
-  ::google::protobuf::FieldOptions_OptionRetention _internal_retention() const;
-  void _internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value);
-
-  public:
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   [[nodiscard]] int targets_size() const;
-  private:
-  int _internal_targets_size() const;
-
-  public:
   void clear_targets() ;
-  public:
   [[nodiscard]] ::google::protobuf::FieldOptions_OptionTargetType targets(int index) const;
   void set_targets(int index, ::google::protobuf::FieldOptions_OptionTargetType value);
   void add_targets(::google::protobuf::FieldOptions_OptionTargetType value);
   [[nodiscard]] const ::google::protobuf::RepeatedField<int>& targets()
       const;
   [[nodiscard]] ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL mutable_targets();
-
-  private:
-  const ::google::protobuf::RepeatedField<int>& _internal_targets() const;
-  ::google::protobuf::RepeatedField<int>* PROTOBUF_NONNULL _internal_mutable_targets();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -8514,12 +8210,20 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
     kMinimumEditionFieldNumber = 4,
     kMaximumEditionFieldNumber = 5,
   };
+  private:
+  // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
+  int _internal_defaults_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& _internal_defaults() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL _internal_mutable_defaults();
+  // optional .google.protobuf.Edition minimum_edition = 4;
+  ::google::protobuf::Edition _internal_minimum_edition() const;
+  void _internal_set_minimum_edition(::google::protobuf::Edition value);
+  // optional .google.protobuf.Edition maximum_edition = 5;
+  ::google::protobuf::Edition _internal_maximum_edition() const;
+  void _internal_set_maximum_edition(::google::protobuf::Edition value);
+  public:
   // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
   [[nodiscard]] int defaults_size() const;
-  private:
-  int _internal_defaults_size() const;
-
-  public:
   void clear_defaults() ;
   [[nodiscard]] const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& defaults(int index) const;
   [[nodiscard]] ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL mutable_defaults(int index);
@@ -8528,34 +8232,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   defaults() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL
   mutable_defaults();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>& _internal_defaults() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>* PROTOBUF_NONNULL _internal_mutable_defaults();
-
-  public:
   // optional .google.protobuf.Edition minimum_edition = 4;
   [[nodiscard]] bool has_minimum_edition() const;
   void clear_minimum_edition() ;
   [[nodiscard]] ::google::protobuf::Edition minimum_edition() const;
   void set_minimum_edition(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_minimum_edition() const;
-  void _internal_set_minimum_edition(::google::protobuf::Edition value);
-
-  public:
   // optional .google.protobuf.Edition maximum_edition = 5;
   [[nodiscard]] bool has_maximum_edition() const;
   void clear_maximum_edition() ;
   [[nodiscard]] ::google::protobuf::Edition maximum_edition() const;
   void set_maximum_edition(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_maximum_edition() const;
-  void _internal_set_maximum_edition(::google::protobuf::Edition value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSetDefaults)
  private:
   class _Internal;
@@ -8773,12 +8459,24 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     kFeaturesFieldNumber = 50,
     kVerificationFieldNumber = 3,
   };
+  private:
+  // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
+  int _internal_declaration_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& _internal_declaration() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* PROTOBUF_NONNULL _internal_mutable_declaration();
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  // optional .google.protobuf.FeatureSet features = 50;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
+  ::google::protobuf::ExtensionRangeOptions_VerificationState _internal_verification() const;
+  void _internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
+  public:
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
   [[nodiscard]] int declaration_size() const;
-  private:
-  int _internal_declaration_size() const;
-
-  public:
   void clear_declaration() ;
   [[nodiscard]] const ::google::protobuf::ExtensionRangeOptions_Declaration& declaration(int index) const;
   [[nodiscard]] ::google::protobuf::ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL mutable_declaration(int index);
@@ -8787,18 +8485,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   declaration() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* PROTOBUF_NONNULL
   mutable_declaration();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>& _internal_declaration() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::ExtensionRangeOptions_Declaration>* PROTOBUF_NONNULL _internal_mutable_declaration();
-
-  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -8807,12 +8495,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   // optional .google.protobuf.FeatureSet features = 50;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -8822,23 +8504,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional .google.protobuf.ExtensionRangeOptions.VerificationState verification = 3 [default = UNVERIFIED, retention = RETENTION_SOURCE];
   [[nodiscard]] bool has_verification() const;
   void clear_verification() ;
   [[nodiscard]] ::google::protobuf::ExtensionRangeOptions_VerificationState verification() const;
   void set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
-
-  private:
-  ::google::protobuf::ExtensionRangeOptions_VerificationState _internal_verification() const;
-  void _internal_set_verification(::google::protobuf::ExtensionRangeOptions_VerificationState value);
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -9228,12 +8898,26 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
     kDeprecatedFieldNumber = 1,
     kDebugRedactFieldNumber = 3,
   };
+  private:
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  // optional .google.protobuf.FeatureSet features = 2;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 4;
+  const ::google::protobuf::FieldOptions_FeatureSupport& _internal_feature_support() const;
+  ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL _internal_mutable_feature_support();
+  // optional bool deprecated = 1 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
+  // optional bool debug_redact = 3 [default = false];
+  bool _internal_debug_redact() const;
+  void _internal_set_debug_redact(bool value);
+  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -9242,12 +8926,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   // optional .google.protobuf.FeatureSet features = 2;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -9257,12 +8935,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional .google.protobuf.FieldOptions.FeatureSupport feature_support = 4;
   [[nodiscard]] bool has_feature_support() const;
   void clear_feature_support() ;
@@ -9272,34 +8944,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   void set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_feature_support(::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE value);
   ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NULLABLE unsafe_arena_release_feature_support();
-
-  private:
-  const ::google::protobuf::FieldOptions_FeatureSupport& _internal_feature_support() const;
-  ::google::protobuf::FieldOptions_FeatureSupport* PROTOBUF_NONNULL _internal_mutable_feature_support();
-
-  public:
   // optional bool deprecated = 1 [default = false];
   [[nodiscard]] bool has_deprecated() const;
   void clear_deprecated() ;
   [[nodiscard]] bool deprecated() const;
   void set_deprecated(bool value);
-
-  private:
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
-
-  public:
   // optional bool debug_redact = 3 [default = false];
   [[nodiscard]] bool has_debug_redact() const;
   void clear_debug_redact() ;
   [[nodiscard]] bool debug_redact() const;
   void set_debug_redact(bool value);
-
-  private:
-  bool _internal_debug_redact() const;
-  void _internal_set_debug_redact(bool value);
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -9690,6 +9344,24 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
     kDeprecatedLegacyJsonFieldConflictsFieldNumber = 6,
     kUninterpretedOptionFieldNumber = 999,
   };
+  private:
+  // optional .google.protobuf.FeatureSet features = 7;
+  const ::google::protobuf::FeatureSet& _internal_features() const;
+  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
+  // optional bool allow_alias = 2;
+  bool _internal_allow_alias() const;
+  void _internal_set_allow_alias(bool value);
+  // optional bool deprecated = 3 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
+  // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
+  bool _internal_deprecated_legacy_json_field_conflicts() const;
+  void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
+  // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
+  int _internal_uninterpreted_option_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
+  public:
   // optional .google.protobuf.FeatureSet features = 7;
   [[nodiscard]] bool has_features() const;
   void clear_features() ;
@@ -9699,51 +9371,23 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-
-  private:
-  const ::google::protobuf::FeatureSet& _internal_features() const;
-  ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-
-  public:
   // optional bool allow_alias = 2;
   [[nodiscard]] bool has_allow_alias() const;
   void clear_allow_alias() ;
   [[nodiscard]] bool allow_alias() const;
   void set_allow_alias(bool value);
-
-  private:
-  bool _internal_allow_alias() const;
-  void _internal_set_allow_alias(bool value);
-
-  public:
   // optional bool deprecated = 3 [default = false];
   [[nodiscard]] bool has_deprecated() const;
   void clear_deprecated() ;
   [[nodiscard]] bool deprecated() const;
   void set_deprecated(bool value);
-
-  private:
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
-
-  public:
   // optional bool deprecated_legacy_json_field_conflicts = 6 [deprecated = true];
   [[nodiscard]] [[deprecated]]  bool has_deprecated_legacy_json_field_conflicts() const;
   [[deprecated]]  void clear_deprecated_legacy_json_field_conflicts() ;
   [[nodiscard]] [[deprecated]] bool deprecated_legacy_json_field_conflicts() const;
   [[deprecated]] void set_deprecated_legacy_json_field_conflicts(bool value);
-
-  private:
-  bool _internal_deprecated_legacy_json_field_conflicts() const;
-  void _internal_set_deprecated_legacy_json_field_conflicts(bool value);
-
-  public:
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
-  private:
-  int _internal_uninterpreted_option_size() const;
-
-  public:
   void clear_uninterpreted_option() ;
   [[nodiscard]] const ::google::protobuf::UninterpretedOption& uninterpreted_option(int index) const;
   [[nodiscard]] ::google::protobuf::UninterpretedOption* PROTOBUF_NONNULL mutable_uninterpreted_option(int index);
@@ -9752,12 +9396,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   uninterpreted_option() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL
   mutable_uninterpreted_option();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>* PROTOBUF_NONNULL _internal_mutable_uninterpreted_option();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -10145,6 +9783,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 2,
   };
+  private:
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional .google.protobuf.OneofOptions options = 2;
+  const ::google::protobuf::OneofOptions& _internal_options() const;
+  ::google::protobuf::OneofOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -10154,13 +9801,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional .google.protobuf.OneofOptions options = 2;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -10170,12 +9810,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   void set_allocated_options(::google::protobuf::OneofOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::OneofOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::OneofOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::OneofOptions& _internal_options() const;
-  ::google::protobuf::OneofOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofDescriptorProto)
  private:
   class _Internal;
@@ -10373,6 +10007,29 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
     kClientStreamingFieldNumber = 5,
     kServerStreamingFieldNumber = 6,
   };
+  private:
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional string input_type = 2;
+  const ::std::string& _internal_input_type() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_input_type();
+  // optional string output_type = 3;
+  const ::std::string& _internal_output_type() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_output_type();
+  // optional .google.protobuf.MethodOptions options = 4;
+  const ::google::protobuf::MethodOptions& _internal_options() const;
+  ::google::protobuf::MethodOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  // optional bool client_streaming = 5 [default = false];
+  bool _internal_client_streaming() const;
+  void _internal_set_client_streaming(bool value);
+  // optional bool server_streaming = 6 [default = false];
+  bool _internal_server_streaming() const;
+  void _internal_set_server_streaming(bool value);
+  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -10382,13 +10039,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional string input_type = 2;
   [[nodiscard]] bool has_input_type() const;
   void clear_input_type() ;
@@ -10398,13 +10048,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   ::std::string* PROTOBUF_NONNULL mutable_input_type();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_input_type();
   void set_allocated_input_type(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_input_type() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_input_type(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_input_type();
-
-  public:
   // optional string output_type = 3;
   [[nodiscard]] bool has_output_type() const;
   void clear_output_type() ;
@@ -10414,13 +10057,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   ::std::string* PROTOBUF_NONNULL mutable_output_type();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_output_type();
   void set_allocated_output_type(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_output_type() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_output_type(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_output_type();
-
-  public:
   // optional .google.protobuf.MethodOptions options = 4;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -10430,34 +10066,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   void set_allocated_options(::google::protobuf::MethodOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MethodOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::MethodOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::MethodOptions& _internal_options() const;
-  ::google::protobuf::MethodOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // optional bool client_streaming = 5 [default = false];
   [[nodiscard]] bool has_client_streaming() const;
   void clear_client_streaming() ;
   [[nodiscard]] bool client_streaming() const;
   void set_client_streaming(bool value);
-
-  private:
-  bool _internal_client_streaming() const;
-  void _internal_set_client_streaming(bool value);
-
-  public:
   // optional bool server_streaming = 6 [default = false];
   [[nodiscard]] bool has_server_streaming() const;
   void clear_server_streaming() ;
   [[nodiscard]] bool server_streaming() const;
   void set_server_streaming(bool value);
-
-  private:
-  bool _internal_server_streaming() const;
-  void _internal_set_server_streaming(bool value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodDescriptorProto)
  private:
   class _Internal;
@@ -10721,6 +10339,46 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
     kLabelFieldNumber = 4,
     kTypeFieldNumber = 5,
   };
+  private:
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional string extendee = 2;
+  const ::std::string& _internal_extendee() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_extendee();
+  // optional string type_name = 6;
+  const ::std::string& _internal_type_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_name();
+  // optional string default_value = 7;
+  const ::std::string& _internal_default_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_default_value();
+  // optional string json_name = 10;
+  const ::std::string& _internal_json_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_json_name();
+  // optional .google.protobuf.FieldOptions options = 8;
+  const ::google::protobuf::FieldOptions& _internal_options() const;
+  ::google::protobuf::FieldOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  // optional int32 number = 3;
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
+  // optional int32 oneof_index = 9;
+  ::int32_t _internal_oneof_index() const;
+  void _internal_set_oneof_index(::int32_t value);
+  // optional bool proto3_optional = 17;
+  bool _internal_proto3_optional() const;
+  void _internal_set_proto3_optional(bool value);
+  // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
+  ::google::protobuf::FieldDescriptorProto_Label _internal_label() const;
+  void _internal_set_label(::google::protobuf::FieldDescriptorProto_Label value);
+  // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
+  ::google::protobuf::FieldDescriptorProto_Type _internal_type() const;
+  void _internal_set_type(::google::protobuf::FieldDescriptorProto_Type value);
+  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -10730,13 +10388,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional string extendee = 2;
   [[nodiscard]] bool has_extendee() const;
   void clear_extendee() ;
@@ -10746,13 +10397,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   ::std::string* PROTOBUF_NONNULL mutable_extendee();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_extendee();
   void set_allocated_extendee(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_extendee() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_extendee(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_extendee();
-
-  public:
   // optional string type_name = 6;
   [[nodiscard]] bool has_type_name() const;
   void clear_type_name() ;
@@ -10762,13 +10406,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   ::std::string* PROTOBUF_NONNULL mutable_type_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_type_name();
   void set_allocated_type_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_type_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_type_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_name();
-
-  public:
   // optional string default_value = 7;
   [[nodiscard]] bool has_default_value() const;
   void clear_default_value() ;
@@ -10778,13 +10415,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   ::std::string* PROTOBUF_NONNULL mutable_default_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_default_value();
   void set_allocated_default_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_default_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_default_value();
-
-  public:
   // optional string json_name = 10;
   [[nodiscard]] bool has_json_name() const;
   void clear_json_name() ;
@@ -10794,13 +10424,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   ::std::string* PROTOBUF_NONNULL mutable_json_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_json_name();
   void set_allocated_json_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_json_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_json_name();
-
-  public:
   // optional .google.protobuf.FieldOptions options = 8;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -10810,67 +10433,31 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   void set_allocated_options(::google::protobuf::FieldOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FieldOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::FieldOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::FieldOptions& _internal_options() const;
-  ::google::protobuf::FieldOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // optional int32 number = 3;
   [[nodiscard]] bool has_number() const;
   void clear_number() ;
   [[nodiscard]] ::int32_t number() const;
   void set_number(::int32_t value);
-
-  private:
-  ::int32_t _internal_number() const;
-  void _internal_set_number(::int32_t value);
-
-  public:
   // optional int32 oneof_index = 9;
   [[nodiscard]] bool has_oneof_index() const;
   void clear_oneof_index() ;
   [[nodiscard]] ::int32_t oneof_index() const;
   void set_oneof_index(::int32_t value);
-
-  private:
-  ::int32_t _internal_oneof_index() const;
-  void _internal_set_oneof_index(::int32_t value);
-
-  public:
   // optional bool proto3_optional = 17;
   [[nodiscard]] bool has_proto3_optional() const;
   void clear_proto3_optional() ;
   [[nodiscard]] bool proto3_optional() const;
   void set_proto3_optional(bool value);
-
-  private:
-  bool _internal_proto3_optional() const;
-  void _internal_set_proto3_optional(bool value);
-
-  public:
   // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
   [[nodiscard]] bool has_label() const;
   void clear_label() ;
   [[nodiscard]] ::google::protobuf::FieldDescriptorProto_Label label() const;
   void set_label(::google::protobuf::FieldDescriptorProto_Label value);
-
-  private:
-  ::google::protobuf::FieldDescriptorProto_Label _internal_label() const;
-  void _internal_set_label(::google::protobuf::FieldDescriptorProto_Label value);
-
-  public:
   // optional .google.protobuf.FieldDescriptorProto.Type type = 5;
   [[nodiscard]] bool has_type() const;
   void clear_type() ;
   [[nodiscard]] ::google::protobuf::FieldDescriptorProto_Type type() const;
   void set_type(::google::protobuf::FieldDescriptorProto_Type value);
-
-  private:
-  ::google::protobuf::FieldDescriptorProto_Type _internal_type() const;
-  void _internal_set_type(::google::protobuf::FieldDescriptorProto_Type value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldDescriptorProto)
  private:
   class _Internal;
@@ -11074,6 +10661,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
     kOptionsFieldNumber = 3,
     kNumberFieldNumber = 2,
   };
+  private:
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional .google.protobuf.EnumValueOptions options = 3;
+  const ::google::protobuf::EnumValueOptions& _internal_options() const;
+  ::google::protobuf::EnumValueOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  // optional int32 number = 2;
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
+  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -11083,13 +10682,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional .google.protobuf.EnumValueOptions options = 3;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -11099,23 +10691,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   void set_allocated_options(::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::EnumValueOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::EnumValueOptions& _internal_options() const;
-  ::google::protobuf::EnumValueOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // optional int32 number = 2;
   [[nodiscard]] bool has_number() const;
   void clear_number() ;
   [[nodiscard]] ::int32_t number() const;
   void set_number(::int32_t value);
-
-  private:
-  ::int32_t _internal_number() const;
-  void _internal_set_number(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueDescriptorProto)
  private:
   class _Internal;
@@ -11311,6 +10891,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
     kStartFieldNumber = 1,
     kEndFieldNumber = 2,
   };
+  private:
+  // optional .google.protobuf.ExtensionRangeOptions options = 3;
+  const ::google::protobuf::ExtensionRangeOptions& _internal_options() const;
+  ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  // optional int32 start = 1;
+  ::int32_t _internal_start() const;
+  void _internal_set_start(::int32_t value);
+  // optional int32 end = 2;
+  ::int32_t _internal_end() const;
+  void _internal_set_end(::int32_t value);
+  public:
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -11320,34 +10911,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   void set_allocated_options(::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::ExtensionRangeOptions& _internal_options() const;
-  ::google::protobuf::ExtensionRangeOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // optional int32 start = 1;
   [[nodiscard]] bool has_start() const;
   void clear_start() ;
   [[nodiscard]] ::int32_t start() const;
   void set_start(::int32_t value);
-
-  private:
-  ::int32_t _internal_start() const;
-  void _internal_set_start(::int32_t value);
-
-  public:
   // optional int32 end = 2;
   [[nodiscard]] bool has_end() const;
   void clear_end() ;
   [[nodiscard]] ::int32_t end() const;
   void set_end(::int32_t value);
-
-  private:
-  ::int32_t _internal_end() const;
-  void _internal_set_end(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto.ExtensionRange)
  private:
   class _Internal;
@@ -11543,12 +11116,21 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
     kNameFieldNumber = 1,
     kOptionsFieldNumber = 3,
   };
+  private:
+  // repeated .google.protobuf.MethodDescriptorProto method = 2;
+  int _internal_method_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& _internal_method() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_method();
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional .google.protobuf.ServiceOptions options = 3;
+  const ::google::protobuf::ServiceOptions& _internal_options() const;
+  ::google::protobuf::ServiceOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  public:
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
   [[nodiscard]] int method_size() const;
-  private:
-  int _internal_method_size() const;
-
-  public:
   void clear_method() ;
   [[nodiscard]] const ::google::protobuf::MethodDescriptorProto& method(int index) const;
   [[nodiscard]] ::google::protobuf::MethodDescriptorProto* PROTOBUF_NONNULL mutable_method(int index);
@@ -11557,12 +11139,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   method() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL
   mutable_method();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>& _internal_method() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::MethodDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_method();
-
-  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -11572,13 +11148,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional .google.protobuf.ServiceOptions options = 3;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -11588,12 +11157,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   void set_allocated_options(::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::ServiceOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::ServiceOptions& _internal_options() const;
-  ::google::protobuf::ServiceOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceDescriptorProto)
  private:
   class _Internal;
@@ -11793,12 +11356,32 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     kOptionsFieldNumber = 3,
     kVisibilityFieldNumber = 6,
   };
+  private:
+  // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
+  int _internal_value_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& _internal_value() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_value();
+  // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
+  int _internal_reserved_range_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& _internal_reserved_range() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* PROTOBUF_NONNULL _internal_mutable_reserved_range();
+  // repeated string reserved_name = 5;
+  int _internal_reserved_name_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional .google.protobuf.EnumOptions options = 3;
+  const ::google::protobuf::EnumOptions& _internal_options() const;
+  ::google::protobuf::EnumOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  // optional .google.protobuf.SymbolVisibility visibility = 6;
+  ::google::protobuf::SymbolVisibility _internal_visibility() const;
+  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
+  public:
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
   [[nodiscard]] int value_size() const;
-  private:
-  int _internal_value_size() const;
-
-  public:
   void clear_value() ;
   [[nodiscard]] const ::google::protobuf::EnumValueDescriptorProto& value(int index) const;
   [[nodiscard]] ::google::protobuf::EnumValueDescriptorProto* PROTOBUF_NONNULL mutable_value(int index);
@@ -11807,18 +11390,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   value() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* PROTOBUF_NONNULL
   mutable_value();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>& _internal_value() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValueDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_value();
-
-  public:
   // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
   [[nodiscard]] int reserved_range_size() const;
-  private:
-  int _internal_reserved_range_size() const;
-
-  public:
   void clear_reserved_range() ;
   [[nodiscard]] const ::google::protobuf::EnumDescriptorProto_EnumReservedRange& reserved_range(int index) const;
   [[nodiscard]] ::google::protobuf::EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL mutable_reserved_range(int index);
@@ -11827,18 +11400,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   reserved_range() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* PROTOBUF_NONNULL
   mutable_reserved_range();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>& _internal_reserved_range() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto_EnumReservedRange>* PROTOBUF_NONNULL _internal_mutable_reserved_range();
-
-  public:
   // repeated string reserved_name = 5;
   [[nodiscard]] int reserved_name_size() const;
-  private:
-  int _internal_reserved_name_size() const;
-
-  public:
   void clear_reserved_name() ;
   [[nodiscard]] const ::std::string& reserved_name(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_reserved_name(int index);
@@ -11853,12 +11416,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
       PROTOBUF_NONNULL
       mutable_reserved_name();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
-
-  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -11868,13 +11425,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional .google.protobuf.EnumOptions options = 3;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -11884,23 +11434,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   void set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::EnumOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::EnumOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::EnumOptions& _internal_options() const;
-  ::google::protobuf::EnumOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // optional .google.protobuf.SymbolVisibility visibility = 6;
   [[nodiscard]] bool has_visibility() const;
   void clear_visibility() ;
   [[nodiscard]] ::google::protobuf::SymbolVisibility visibility() const;
   void set_visibility(::google::protobuf::SymbolVisibility value);
-
-  private:
-  ::google::protobuf::SymbolVisibility _internal_visibility() const;
-  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumDescriptorProto)
  private:
   class _Internal;
@@ -12109,12 +11647,52 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
     kOptionsFieldNumber = 7,
     kVisibilityFieldNumber = 11,
   };
+  private:
+  // repeated .google.protobuf.FieldDescriptorProto field = 2;
+  int _internal_field_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_field() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_field();
+  // repeated .google.protobuf.DescriptorProto nested_type = 3;
+  int _internal_nested_type_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_nested_type() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL _internal_mutable_nested_type();
+  // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
+  int _internal_enum_type_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_enum_type();
+  // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
+  int _internal_extension_range_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& _internal_extension_range() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* PROTOBUF_NONNULL _internal_mutable_extension_range();
+  // repeated .google.protobuf.FieldDescriptorProto extension = 6;
+  int _internal_extension_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_extension();
+  // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
+  int _internal_oneof_decl_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& _internal_oneof_decl() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_oneof_decl();
+  // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
+  int _internal_reserved_range_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& _internal_reserved_range() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* PROTOBUF_NONNULL _internal_mutable_reserved_range();
+  // repeated string reserved_name = 10;
+  int _internal_reserved_name_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional .google.protobuf.MessageOptions options = 7;
+  const ::google::protobuf::MessageOptions& _internal_options() const;
+  ::google::protobuf::MessageOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  // optional .google.protobuf.SymbolVisibility visibility = 11;
+  ::google::protobuf::SymbolVisibility _internal_visibility() const;
+  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
+  public:
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
   [[nodiscard]] int field_size() const;
-  private:
-  int _internal_field_size() const;
-
-  public:
   void clear_field() ;
   [[nodiscard]] const ::google::protobuf::FieldDescriptorProto& field(int index) const;
   [[nodiscard]] ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL mutable_field(int index);
@@ -12123,18 +11701,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   field() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL
   mutable_field();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_field() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_field();
-
-  public:
   // repeated .google.protobuf.DescriptorProto nested_type = 3;
   [[nodiscard]] int nested_type_size() const;
-  private:
-  int _internal_nested_type_size() const;
-
-  public:
   void clear_nested_type() ;
   [[nodiscard]] const ::google::protobuf::DescriptorProto& nested_type(int index) const;
   [[nodiscard]] ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL mutable_nested_type(int index);
@@ -12143,18 +11711,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   nested_type() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL
   mutable_nested_type();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_nested_type() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL _internal_mutable_nested_type();
-
-  public:
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
   [[nodiscard]] int enum_type_size() const;
-  private:
-  int _internal_enum_type_size() const;
-
-  public:
   void clear_enum_type() ;
   [[nodiscard]] const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
   [[nodiscard]] ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL mutable_enum_type(int index);
@@ -12163,18 +11721,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   enum_type() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL
   mutable_enum_type();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_enum_type();
-
-  public:
   // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
   [[nodiscard]] int extension_range_size() const;
-  private:
-  int _internal_extension_range_size() const;
-
-  public:
   void clear_extension_range() ;
   [[nodiscard]] const ::google::protobuf::DescriptorProto_ExtensionRange& extension_range(int index) const;
   [[nodiscard]] ::google::protobuf::DescriptorProto_ExtensionRange* PROTOBUF_NONNULL mutable_extension_range(int index);
@@ -12183,18 +11731,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   extension_range() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* PROTOBUF_NONNULL
   mutable_extension_range();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>& _internal_extension_range() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ExtensionRange>* PROTOBUF_NONNULL _internal_mutable_extension_range();
-
-  public:
   // repeated .google.protobuf.FieldDescriptorProto extension = 6;
   [[nodiscard]] int extension_size() const;
-  private:
-  int _internal_extension_size() const;
-
-  public:
   void clear_extension() ;
   [[nodiscard]] const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
   [[nodiscard]] ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL mutable_extension(int index);
@@ -12203,18 +11741,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   extension() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL
   mutable_extension();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_extension();
-
-  public:
   // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
   [[nodiscard]] int oneof_decl_size() const;
-  private:
-  int _internal_oneof_decl_size() const;
-
-  public:
   void clear_oneof_decl() ;
   [[nodiscard]] const ::google::protobuf::OneofDescriptorProto& oneof_decl(int index) const;
   [[nodiscard]] ::google::protobuf::OneofDescriptorProto* PROTOBUF_NONNULL mutable_oneof_decl(int index);
@@ -12223,18 +11751,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   oneof_decl() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* PROTOBUF_NONNULL
   mutable_oneof_decl();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>& _internal_oneof_decl() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::OneofDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_oneof_decl();
-
-  public:
   // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
   [[nodiscard]] int reserved_range_size() const;
-  private:
-  int _internal_reserved_range_size() const;
-
-  public:
   void clear_reserved_range() ;
   [[nodiscard]] const ::google::protobuf::DescriptorProto_ReservedRange& reserved_range(int index) const;
   [[nodiscard]] ::google::protobuf::DescriptorProto_ReservedRange* PROTOBUF_NONNULL mutable_reserved_range(int index);
@@ -12243,18 +11761,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   reserved_range() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* PROTOBUF_NONNULL
   mutable_reserved_range();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>& _internal_reserved_range() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto_ReservedRange>* PROTOBUF_NONNULL _internal_mutable_reserved_range();
-
-  public:
   // repeated string reserved_name = 10;
   [[nodiscard]] int reserved_name_size() const;
-  private:
-  int _internal_reserved_name_size() const;
-
-  public:
   void clear_reserved_name() ;
   [[nodiscard]] const ::std::string& reserved_name(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_reserved_name(int index);
@@ -12269,12 +11777,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
       PROTOBUF_NONNULL
       mutable_reserved_name();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_reserved_name() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_reserved_name();
-
-  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -12284,13 +11786,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional .google.protobuf.MessageOptions options = 7;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -12300,23 +11795,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   void set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::MessageOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::MessageOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::MessageOptions& _internal_options() const;
-  ::google::protobuf::MessageOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // optional .google.protobuf.SymbolVisibility visibility = 11;
   [[nodiscard]] bool has_visibility() const;
   void clear_visibility() ;
   [[nodiscard]] ::google::protobuf::SymbolVisibility visibility() const;
   void set_visibility(::google::protobuf::SymbolVisibility value);
-
-  private:
-  ::google::protobuf::SymbolVisibility _internal_visibility() const;
-  void _internal_set_visibility(::google::protobuf::SymbolVisibility value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.DescriptorProto)
  private:
   class _Internal;
@@ -12531,12 +12014,63 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
     kSourceCodeInfoFieldNumber = 9,
     kEditionFieldNumber = 14,
   };
+  private:
+  // repeated string dependency = 3;
+  int _internal_dependency_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_dependency() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_dependency();
+  // repeated .google.protobuf.DescriptorProto message_type = 4;
+  int _internal_message_type_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_message_type() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL _internal_mutable_message_type();
+  // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
+  int _internal_enum_type_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_enum_type();
+  // repeated .google.protobuf.ServiceDescriptorProto service = 6;
+  int _internal_service_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& _internal_service() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_service();
+  // repeated .google.protobuf.FieldDescriptorProto extension = 7;
+  int _internal_extension_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_extension();
+  // repeated int32 public_dependency = 10;
+  int _internal_public_dependency_size() const;
+  const ::google::protobuf::RepeatedField<::int32_t>& _internal_public_dependency() const;
+  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_public_dependency();
+  // repeated int32 weak_dependency = 11;
+  int _internal_weak_dependency_size() const;
+  const ::google::protobuf::RepeatedField<::int32_t>& _internal_weak_dependency() const;
+  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_weak_dependency();
+  // repeated string option_dependency = 15;
+  int _internal_option_dependency_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_option_dependency() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_option_dependency();
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional string package = 2;
+  const ::std::string& _internal_package() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_package();
+  // optional string syntax = 12;
+  const ::std::string& _internal_syntax() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_syntax();
+  // optional .google.protobuf.FileOptions options = 8;
+  const ::google::protobuf::FileOptions& _internal_options() const;
+  ::google::protobuf::FileOptions* PROTOBUF_NONNULL _internal_mutable_options();
+  // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
+  const ::google::protobuf::SourceCodeInfo& _internal_source_code_info() const;
+  ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL _internal_mutable_source_code_info();
+  // optional .google.protobuf.Edition edition = 14;
+  ::google::protobuf::Edition _internal_edition() const;
+  void _internal_set_edition(::google::protobuf::Edition value);
+  public:
   // repeated string dependency = 3;
   [[nodiscard]] int dependency_size() const;
-  private:
-  int _internal_dependency_size() const;
-
-  public:
   void clear_dependency() ;
   [[nodiscard]] const ::std::string& dependency(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_dependency(int index);
@@ -12551,18 +12085,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
       PROTOBUF_NONNULL
       mutable_dependency();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_dependency() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_dependency();
-
-  public:
   // repeated .google.protobuf.DescriptorProto message_type = 4;
   [[nodiscard]] int message_type_size() const;
-  private:
-  int _internal_message_type_size() const;
-
-  public:
   void clear_message_type() ;
   [[nodiscard]] const ::google::protobuf::DescriptorProto& message_type(int index) const;
   [[nodiscard]] ::google::protobuf::DescriptorProto* PROTOBUF_NONNULL mutable_message_type(int index);
@@ -12571,18 +12095,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   message_type() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL
   mutable_message_type();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>& _internal_message_type() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::DescriptorProto>* PROTOBUF_NONNULL _internal_mutable_message_type();
-
-  public:
   // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
   [[nodiscard]] int enum_type_size() const;
-  private:
-  int _internal_enum_type_size() const;
-
-  public:
   void clear_enum_type() ;
   [[nodiscard]] const ::google::protobuf::EnumDescriptorProto& enum_type(int index) const;
   [[nodiscard]] ::google::protobuf::EnumDescriptorProto* PROTOBUF_NONNULL mutable_enum_type(int index);
@@ -12591,18 +12105,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   enum_type() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL
   mutable_enum_type();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>& _internal_enum_type() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_enum_type();
-
-  public:
   // repeated .google.protobuf.ServiceDescriptorProto service = 6;
   [[nodiscard]] int service_size() const;
-  private:
-  int _internal_service_size() const;
-
-  public:
   void clear_service() ;
   [[nodiscard]] const ::google::protobuf::ServiceDescriptorProto& service(int index) const;
   [[nodiscard]] ::google::protobuf::ServiceDescriptorProto* PROTOBUF_NONNULL mutable_service(int index);
@@ -12611,18 +12115,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   service() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* PROTOBUF_NONNULL
   mutable_service();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>& _internal_service() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::ServiceDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_service();
-
-  public:
   // repeated .google.protobuf.FieldDescriptorProto extension = 7;
   [[nodiscard]] int extension_size() const;
-  private:
-  int _internal_extension_size() const;
-
-  public:
   void clear_extension() ;
   [[nodiscard]] const ::google::protobuf::FieldDescriptorProto& extension(int index) const;
   [[nodiscard]] ::google::protobuf::FieldDescriptorProto* PROTOBUF_NONNULL mutable_extension(int index);
@@ -12631,18 +12125,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   extension() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL
   mutable_extension();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>& _internal_extension() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FieldDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_extension();
-
-  public:
   // repeated int32 public_dependency = 10;
   [[nodiscard]] int public_dependency_size() const;
-  private:
-  int _internal_public_dependency_size() const;
-
-  public:
   void clear_public_dependency() ;
   [[nodiscard]] ::int32_t public_dependency(int index) const;
   void set_public_dependency(int index, ::int32_t value);
@@ -12650,18 +12134,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& public_dependency()
       const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_public_dependency();
-
-  private:
-  const ::google::protobuf::RepeatedField<::int32_t>& _internal_public_dependency() const;
-  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_public_dependency();
-
-  public:
   // repeated int32 weak_dependency = 11;
   [[nodiscard]] int weak_dependency_size() const;
-  private:
-  int _internal_weak_dependency_size() const;
-
-  public:
   void clear_weak_dependency() ;
   [[nodiscard]] ::int32_t weak_dependency(int index) const;
   void set_weak_dependency(int index, ::int32_t value);
@@ -12669,18 +12143,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   [[nodiscard]] const ::google::protobuf::RepeatedField<::int32_t>& weak_dependency()
       const;
   ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL mutable_weak_dependency();
-
-  private:
-  const ::google::protobuf::RepeatedField<::int32_t>& _internal_weak_dependency() const;
-  ::google::protobuf::RepeatedField<::int32_t>* PROTOBUF_NONNULL _internal_mutable_weak_dependency();
-
-  public:
   // repeated string option_dependency = 15;
   [[nodiscard]] int option_dependency_size() const;
-  private:
-  int _internal_option_dependency_size() const;
-
-  public:
   void clear_option_dependency() ;
   [[nodiscard]] const ::std::string& option_dependency(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_option_dependency(int index);
@@ -12695,12 +12159,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
       PROTOBUF_NONNULL
       mutable_option_dependency();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_option_dependency() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_option_dependency();
-
-  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -12710,13 +12168,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional string package = 2;
   [[nodiscard]] bool has_package() const;
   void clear_package() ;
@@ -12726,13 +12177,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   ::std::string* PROTOBUF_NONNULL mutable_package();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_package();
   void set_allocated_package(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_package() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_package(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_package();
-
-  public:
   // optional string syntax = 12;
   [[nodiscard]] bool has_syntax() const;
   void clear_syntax() ;
@@ -12742,13 +12186,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   ::std::string* PROTOBUF_NONNULL mutable_syntax();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_syntax();
   void set_allocated_syntax(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_syntax() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_syntax(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_syntax();
-
-  public:
   // optional .google.protobuf.FileOptions options = 8;
   [[nodiscard]] bool has_options() const;
   void clear_options() ;
@@ -12758,12 +12195,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   void set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_options(::google::protobuf::FileOptions* PROTOBUF_NULLABLE value);
   ::google::protobuf::FileOptions* PROTOBUF_NULLABLE unsafe_arena_release_options();
-
-  private:
-  const ::google::protobuf::FileOptions& _internal_options() const;
-  ::google::protobuf::FileOptions* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // optional .google.protobuf.SourceCodeInfo source_code_info = 9;
   [[nodiscard]] bool has_source_code_info() const;
   void clear_source_code_info() ;
@@ -12773,23 +12204,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   void set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_source_code_info(::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE value);
   ::google::protobuf::SourceCodeInfo* PROTOBUF_NULLABLE unsafe_arena_release_source_code_info();
-
-  private:
-  const ::google::protobuf::SourceCodeInfo& _internal_source_code_info() const;
-  ::google::protobuf::SourceCodeInfo* PROTOBUF_NONNULL _internal_mutable_source_code_info();
-
-  public:
   // optional .google.protobuf.Edition edition = 14;
   [[nodiscard]] bool has_edition() const;
   void clear_edition() ;
   [[nodiscard]] ::google::protobuf::Edition edition() const;
   void set_edition(::google::protobuf::Edition value);
-
-  private:
-  ::google::protobuf::Edition _internal_edition() const;
-  void _internal_set_edition(::google::protobuf::Edition value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorProto)
  private:
   class _Internal;
@@ -12994,12 +12413,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   enum : int {
     kFileFieldNumber = 1,
   };
+  private:
+  // repeated .google.protobuf.FileDescriptorProto file = 1;
+  int _internal_file_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_file() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_file();
+  public:
   // repeated .google.protobuf.FileDescriptorProto file = 1;
   [[nodiscard]] int file_size() const;
-  private:
-  int _internal_file_size() const;
-
-  public:
   void clear_file() ;
   [[nodiscard]] const ::google::protobuf::FileDescriptorProto& file(int index) const;
   [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_file(int index);
@@ -13008,12 +12429,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   file() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_file();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_file() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_file();
-
-  public:
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
