@@ -45,8 +45,12 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     # Direct library extraction for DefaultInfo
     direct_input = cc_info.linking_context.linker_inputs.to_list()[0]
 
-    # all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
-    # direct_input = all_linker_inputs[0]
+    all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
+#    if ("descriptor" in ctx.label.name and
+#            "upb" in ctx.label.name and
+#            "minitable" in ctx.label.name):
+#        print_linker_inputs(all_linker_inputs, ctx.label)
+    #direct_input = all_linker_inputs[0]
     lib = direct_input.libraries[0]
     files = _filter_none([
         lib.static_library,
