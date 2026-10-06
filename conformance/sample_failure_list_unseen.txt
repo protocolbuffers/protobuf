@@ -1,0 +1,4 @@
+# Like sample_failure_list_ok.txt, plus an entry for a test that never runs.
+Recommended.Proto3.ProtobufInput.SampleP1Failure.ProtobufOutput # Should have failed to parse, but didn't.
+Required.Proto3.ProtobufInput.SampleDeliberateFailure.ProtobufOutput     # Should have failed to parse, but didn't.
+Required.Proto3.ProtobufInput.SampleNeverRuns.ProtobufOutput             # This test doesn't exist.
