@@ -24,9 +24,11 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "conformance/failure_list.h"
 #include "conformance/fork_pipe_runner.h"
 #include "conformance/global_test_environment.h"
 #include "conformance/result_ledger.h"
+#include "conformance/result_listener.h"
 #include "conformance/test_runner.h"
 #include "conformance/testee.h"
 
@@ -112,54 +114,28 @@ class ForwardingEnvironment : public testing::Environment {
 
 }  // namespace
 
-Statistics Statistics::From(const ResultLedger& ledger) {
-  Statistics statistics;
-  statistics.skipped_tests = ledger.skipped();
-  statistics.listed_skips = ledger.listed_skips();
-  statistics.tolerated_failures = ledger.tolerated_failures();
-  statistics.expected_failures = ledger.expected_failures();
-  statistics.unexpected_failures = ledger.unexpected_failures();
-  statistics.expected_successes = ledger.expected_successes();
-  statistics.unexpected_successes = ledger.unexpected_successes();
-  return statistics;
+const FailureList& GetGlobalFailureList() {
+  return ConformanceEnvironment::Get().ledger().failure_list();
 }
 
-Statistics Statistics::operator-(const Statistics& other) const {
-  Statistics delta;
-  delta.skipped_tests = skipped_tests - other.skipped_tests;
-  delta.listed_skips = listed_skips - other.listed_skips;
-  delta.tolerated_failures = tolerated_failures - other.tolerated_failures;
-  delta.expected_failures = expected_failures - other.expected_failures;
-  delta.unexpected_failures = unexpected_failures - other.unexpected_failures;
-  delta.expected_successes = expected_successes - other.expected_successes;
-  delta.unexpected_successes =
-      unexpected_successes - other.unexpected_successes;
-  return delta;
+// The ledger's verdicts are dropped: Yields() got them from the failure list.
+void ReportSuccess(absl::string_view test_name) {
+  ConformanceEnvironment::Get().ledger().ReportSuccess(test_name).IgnoreError();
 }
 
-Statistics& Statistics::operator+=(const Statistics& other) {
-  skipped_tests += other.skipped_tests;
-  listed_skips += other.listed_skips;
-  tolerated_failures += other.tolerated_failures;
-  expected_failures += other.expected_failures;
-  unexpected_failures += other.unexpected_failures;
-  expected_successes += other.expected_successes;
-  unexpected_successes += other.unexpected_successes;
-  return *this;
+void ReportFailure(absl::string_view test_name, TestPriority priority,
+                   absl::string_view failure_message) {
+  ConformanceEnvironment::Get()
+      .ledger()
+      .ReportFailure(test_name, priority, failure_message)
+      .IgnoreError();
 }
 
-void Statistics::RecordProperties() const {
-  testing::Test::RecordProperty("skipped_tests", skipped_tests);
-  testing::Test::RecordProperty("listed_skips", listed_skips);
-  testing::Test::RecordProperty("tolerated_failures", tolerated_failures);
-  testing::Test::RecordProperty("expected_failures", expected_failures);
-  testing::Test::RecordProperty("unexpected_failures", unexpected_failures);
-  testing::Test::RecordProperty("expected_successes", expected_successes);
-  testing::Test::RecordProperty("unexpected_successes", unexpected_successes);
-}
-
-ResultLedger& GetGlobalResultLedger() {
-  return ConformanceEnvironment::Get().ledger();
+void ReportSkip(absl::string_view test_name, absl::string_view skip_reason) {
+  ConformanceEnvironment::Get()
+      .ledger()
+      .ReportSkip(test_name, skip_reason)
+      .IgnoreError();
 }
 
 ConformanceEnvironment::ConformanceEnvironment(
@@ -167,7 +143,8 @@ ConformanceEnvironment::ConformanceEnvironment(
     : options_(std::move(options)),
       owned_runner_(TakeOwnedRunner(options_)),
       testee_(std::make_unique<Testee>(
-          options_.runner != nullptr ? options_.runner : owned_runner_.get())) {
+          options_.runner != nullptr ? options_.runner : owned_runner_.get())),
+      result_listener_(new ResultListener(&ledger_)) {
   ABSL_CHECK(global_environment == nullptr)
       << "A global ConformanceEnvironment is already set.";
   global_environment = this;
@@ -176,9 +153,12 @@ ConformanceEnvironment::ConformanceEnvironment(
   // the one place the maximum edition is clamped; see the option's comment.
   options_.maximum_edition = std::max(options_.maximum_edition, EDITION_PROTO3);
   ledger_.set_enforcement_level(options_.enforcement_level);
+  testing::UnitTest::GetInstance()->listeners().Append(result_listener_);
 }
 
 ConformanceEnvironment::~ConformanceEnvironment() {
+  delete testing::UnitTest::GetInstance()->listeners().Release(
+      result_listener_);
   // ResultLedger insists on being finalized before destruction.  An installed
   // environment is never destroyed (see Install()), so this only runs for
   // environments constructed by ScopedGlobalConformanceEnvironment in unit
@@ -233,6 +213,12 @@ void ConformanceEnvironment::SetUp() {
 
 void ConformanceEnvironment::TearDown() {
   Statistics::From(ledger_).RecordProperties();
+  for (const std::string& entry : ledger_.OverexpandedWildcards()) {
+    ADD_FAILURE() << "The failure list entry " << entry << " matched more than "
+                  << kMaximumWildcardExpansions
+                  << " tests, which hides too much.  List the failing tests "
+                     "individually, or narrow the wildcard.";
+  }
   const bool partial_run = partial_run_override_.value_or(IsPartialRun());
 
   // The path the failure list was rewritten to, if --fix succeeded.
