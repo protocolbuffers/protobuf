@@ -22,6 +22,8 @@ namespace internal {
 namespace {
 
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Return;
 
 MATCHER_P(RequestEquals, expected_textproto, "") {
@@ -222,10 +224,29 @@ TEST(TesteeTest, DuplicateTestName) {
           .SerializeBinary();
 
   EXPECT_DEATH(
-      testee.CreateTest("foo", TestPriority::kP0)
+      (void)testee.CreateTest("foo", TestPriority::kP0)
           .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
           .SerializeBinary(),
       "Duplicated test name: Required.Proto2.ProtobufInput.foo.ProtobufOutput");
+}
+
+TEST(TesteeTest, RecordsTheTestsRun) {
+  MockTestRunner mock;
+  Testee testee(&mock);
+  EXPECT_CALL(mock, RunTest).WillRepeatedly(Return(std::string("\004")));
+  EXPECT_THAT(testee.tests_run(), IsEmpty());
+
+  (void)testee.CreateTest("foo", TestPriority::kP0)
+      .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+      .SerializeBinary();
+  (void)testee.CreateTest("bar", TestPriority::kP1)
+      .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+      .SerializeText();
+
+  EXPECT_THAT(
+      testee.tests_run(),
+      ElementsAre("Required.Proto2.ProtobufInput.foo.ProtobufOutput",
+                  "Recommended.Proto2.ProtobufInput.bar.TextFormatOutput"));
 }
 
 TEST(TestPriorityTest, PriorityName) {
