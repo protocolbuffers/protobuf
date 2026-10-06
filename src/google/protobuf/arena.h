@@ -859,7 +859,7 @@ struct ArenaPtrCmpBase {
 
   template <typename T>
   static auto PROTOBUF_NULLABLE
-  Unpack(const typename Arena::UniquePtr<T>& ptr) {
+  Unpack(const Arena::UniquePtr<T>& ptr) {
     return ptr.get();
   }
 
