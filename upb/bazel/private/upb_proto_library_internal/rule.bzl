@@ -1,7 +1,7 @@
 """Internal rule implementation for upb_*_proto_library() rules."""
 
-#load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
-#load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
 def _filter_none(elems):
     out = []
