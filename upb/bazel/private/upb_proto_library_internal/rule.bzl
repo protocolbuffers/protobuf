@@ -32,8 +32,12 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     # Direct library extraction for DefaultInfo
     direct_input = cc_info.linking_context.linker_inputs.to_list()[0]
 
-    # all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
-    # direct_input = all_linker_inputs[0]
+    all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
+#    if ("descriptor" in ctx.label.name and
+#            "upb" in ctx.label.name and
+#            "minitable" in ctx.label.name):
+#        print_linker_inputs(all_linker_inputs, ctx.label)
+    #direct_input = all_linker_inputs[0]
     lib = direct_input.libraries[0]
     files = _filter_none([
         lib.static_library,
@@ -41,26 +45,32 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
         lib.dynamic_library,
     ])
 
-    # # Re-wrap only the direct input with owner = ctx.label
-    # new_direct_input = cc_common.create_linker_input(
-    #     owner = ctx.label,
-    #     libraries = depset(direct_input.libraries),
-    #     user_link_flags = depset(direct_input.user_link_flags),
-    #     additional_inputs = depset(direct_input.additional_inputs),
-    # )
-    #
-    # # Preserve the rest of the transitive depset lazily without flattening
-    # linking_context = cc_common.create_linking_context(
-    #     linker_inputs = depset(
-    #         direct = [new_direct_input] + all_linker_inputs[1:],
-    #         order = "topological",
-    #     ),
-    # )
-    #
-    # cc_info = CcInfo(
-    #     compilation_context = cc_info.compilation_context,
-    #     linking_context = linking_context,
-    # )
+    # Re-wrap only the direct input with owner = ctx.label
+    new_direct_input = cc_common.create_linker_input(
+        owner = ctx.label,
+        libraries = depset(direct_input.libraries),
+        user_link_flags = depset(direct_input.user_link_flags),
+        additional_inputs = depset(direct_input.additional_inputs),
+    )
+    print('new_direct_input: {}'.format(new_direct_input))
+
+    # Preserve the rest of the transitive depset lazily without flattening
+    linking_context = cc_common.create_linking_context(
+        linker_inputs = depset(
+            direct = [new_direct_input] + all_linker_inputs[1:],
+            order = "topological",
+        ),
+    )
+
+    cc_info = CcInfo(
+        compilation_context = cc_info.compilation_context,
+        linking_context = linking_context,
+    )
+    # if ("descriptor" in ctx.label.name and
+    #         "upb" in ctx.label.name and
+    #         "minitable" in ctx.label.name):
+    #    print_linker_inputs([new_direct_input], ctx.label)
+    #    print_linker_inputs(all_linker_inputs, ctx.label)
 
     return [
         DefaultInfo(files = depset(files + srcs.hdrs + srcs.srcs)),
