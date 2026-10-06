@@ -1,0 +1,2 @@
+# Intentionally empty: every deliberate failure in sample_conformance_test is
+# unexpected with this list.

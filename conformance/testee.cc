@@ -5,6 +5,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
@@ -138,6 +139,23 @@ absl::string_view PriorityName(TestPriority priority) {
       return "P1";
   }
   return "Unknown";
+}
+
+bool AbslParseFlag(absl::string_view text, TestPriority* priority,
+                   std::string* error) {
+  int number;
+  if (!absl::SimpleAtoi(text, &number) || number < 0 ||
+      number > static_cast<int>(kLowestPriority)) {
+    *error = absl::StrCat("expected a priority number from 0 to ",
+                          static_cast<int>(kLowestPriority));
+    return false;
+  }
+  *priority = static_cast<TestPriority>(number);
+  return true;
+}
+
+std::string AbslUnparseFlag(TestPriority priority) {
+  return absl::StrCat(static_cast<int>(priority));
 }
 
 absl::string_view PriorityLevelName(TestPriority priority) {
