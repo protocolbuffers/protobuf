@@ -1003,6 +1003,7 @@ void SwapFieldHelper::SwapNonMessageNonStringField(
 
 void Reflection::SwapField(Message* message1, Message* message2,
                            const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE_TYPE(SwapField);
   if (field->is_repeated()) {
     switch (field->cpp_type()) {
 #define SWAP_ARRAYS(CPPTYPE, TYPE)                                \
@@ -1053,6 +1054,7 @@ void Reflection::SwapField(Message* message1, Message* message2,
 
 void Reflection::UnsafeShallowSwapField(Message* message1, Message* message2,
                                         const FieldDescriptor* field) const {
+  USAGE_CHECK_MESSAGE_TYPE(UnsafeShallowSwapField);
   if (!field->is_repeated()) {
     if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
       internal::SwapFieldHelper::SwapMessageField<true>(this, message1,

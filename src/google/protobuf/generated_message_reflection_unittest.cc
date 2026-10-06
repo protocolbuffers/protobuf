@@ -1530,6 +1530,33 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
                "Field does not match message type");
 }
 
+TEST(GeneratedMessageReflectionTest, SwapFieldForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+  const Reflection* reflection = message1.GetReflection();
+
+  // SwapField (singular) had the same missing ownership check as SwapFields.
+  // A foreign field descriptor causes an out-of-bounds read on the offsets
+  // array via GetFieldOffset(), leading to memory corruption.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  EXPECT_DEATH(reflection->SwapField(&message1, &message2, foreign_field),
+               "Field does not match message type");
+}
+
+TEST(GeneratedMessageReflectionTest, UnsafeShallowSwapFieldForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+  const Reflection* reflection = message1.GetReflection();
+
+  // UnsafeShallowSwapField had the same missing ownership check.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  EXPECT_DEATH(
+      reflection->UnsafeShallowSwapField(&message1, &message2, foreign_field),
+      "Field does not match message type");
+}
+
 #endif  // GTEST_HAS_DEATH_TEST
 
 class GeneratedMessageReflectionCordAccessorsTest : public testing::Test {
