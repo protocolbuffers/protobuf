@@ -18,6 +18,7 @@
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/code_generator.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor.pb.h"
 
 namespace google {
 namespace protobuf {
@@ -112,6 +113,20 @@ bool IsInCurrentlyGeneratingCrate(Context& ctx, const Descriptor& message) {
 
 bool IsInCurrentlyGeneratingCrate(Context& ctx, const EnumDescriptor& enum_) {
   return IsInCurrentlyGeneratingCrate(ctx, *enum_.file());
+}
+
+bool HasReflectionSupport(Context& ctx, const FileDescriptor& file) {
+  return !ctx.opts().force_lite_runtime &&
+         file.options().optimize_for() != FileOptions::LITE_RUNTIME;
+}
+
+bool HasReflectionSupport(Context& ctx, const Descriptor& message) {
+  return HasReflectionSupport(ctx, *message.file());
+}
+
+bool HasReflectionSupport(Context& ctx, const FieldDescriptor& extension) {
+  return HasReflectionSupport(ctx, *extension.file()) &&
+         HasReflectionSupport(ctx, *extension.containing_type());
 }
 
 }  // namespace rust

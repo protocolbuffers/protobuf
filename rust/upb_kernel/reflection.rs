@@ -12,7 +12,7 @@
 //! the message and the def to upb.
 
 use super::upb::TextEncodeOptions;
-use super::{message_def, upb_reflection, UpbGetMessagePtr, UpbWithReflection};
+use super::{global_pool, message_def, upb_reflection, UpbGetMessagePtr, UpbWithReflection};
 use crate::__internal::Private;
 use crate::WithReflection;
 
@@ -32,10 +32,14 @@ pub fn print_to_text_format<T: WithReflection>(
     let ptr = msg.get_ptr(Private);
     let def = message_def::<T>();
     let options = TextEncodeOptions { single_line, skip_unknown: hide_unknown_fields };
+
+    // Keep a read lock on the global pool for the entire duration of the following text_encode
+    // call.
+    let ext_pool = global_pool();
+
     // SAFETY:
     // - `ptr` points to a live message that `msg` keeps alive for the duration of the call.
-    // - `def` describes `T`, and `WithReflection` guarantees `kernelWithReflection`, which
-    //   guarantees `UpbGetMessagePtr<Msg = T>, therefore `ptr` is a `MessagePtr<T>`.
-    // TODO: Pass the global DefPool as `ext_pool` so that extensions are printed.
-    unsafe { upb_reflection::text_encode(ptr, def, None, options) }
+    // - `def` describes `T`, and `WithReflection` guarantees `KernelWithReflection`, which
+    //   guarantees `UpbGetMessagePtr<Msg = T>`, therefore `ptr` is a `MessagePtr<T>`.
+    unsafe { upb_reflection::text_encode(ptr, def, Some(&ext_pool.0), options) }
 }
