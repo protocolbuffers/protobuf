@@ -562,7 +562,7 @@ struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
   std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
 };
 
-static_assert(std::is_standard_layout<TcParseTable<1>>::value,
+static_assert(std::is_standard_layout_v<TcParseTable<1>>,
               "TcParseTable must be standard layout.");
 
 static_assert(offsetof(TcParseTable<1>, fast_entries) ==
