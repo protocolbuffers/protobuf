@@ -9,6 +9,7 @@
 
 #include <float.h>  // FLT_DIG and DBL_DIG
 
+#include <charconv>
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
@@ -16,6 +17,8 @@
 #include <limits>
 #include <string>
 #include <system_error>  // NOLINT(build/c++11)
+#include <type_traits>
+#include <utility>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/charconv.h"
@@ -122,6 +125,48 @@ namespace {
 constexpr int kDoubleToBufferSize = 32;
 constexpr int kFloatToBufferSize = 24;
 
+// PROTOBUF_FORCE_NO_FLOAT_TO_CHARS is a test-only override used to exercise
+// the fallback on a standard library that provides the floating-point
+// overloads.
+#if !defined(PROTOBUF_FORCE_NO_FLOAT_TO_CHARS) && \
+    defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L
+// The feature-test macro is the standard library capability signal.  The
+// expression check also protects against libraries that expose the integer
+// overloads while still omitting the floating-point overloads.
+template <typename T, typename = void>
+struct HasFloatToChars : std::false_type {};
+
+template <typename T>
+struct HasFloatToChars<
+    T, std::void_t<decltype(std::to_chars(
+           static_cast<char *>(nullptr), static_cast<char *>(nullptr),
+           std::declval<T>(), std::chars_format::general, 1))>>
+    : std::true_type {};
+
+#endif
+
+template <typename Float>
+int ToCharsGeneral(char* buffer, size_t buffer_size, Float value,
+                   int precision) {
+#if defined(PROTOBUF_FORCE_NO_FLOAT_TO_CHARS)
+  return absl::SNPrintF(buffer, buffer_size, "%.*g", precision, value);
+#elif defined(__cpp_lib_to_chars) && __cpp_lib_to_chars >= 201611L
+  if constexpr (HasFloatToChars<Float>::value) {
+    auto result = std::to_chars(buffer, buffer + buffer_size, value,
+                                std::chars_format::general, precision);
+    ABSL_DCHECK(result.ec == std::errc() &&
+                result.ptr < buffer + buffer_size);
+    if (result.ec != std::errc()) return -1;
+    *result.ptr = '\0';
+    return static_cast<int>(result.ptr - buffer);
+  } else {
+    return absl::SNPrintF(buffer, buffer_size, "%.*g", precision, value);
+  }
+#else
+  return absl::SNPrintF(buffer, buffer_size, "%.*g", precision, value);
+#endif
+}
+
 inline bool IsValidFloatChar(char c) {
   return ('0' <= c && c <= '9') || c == 'e' || c == 'E' || c == '+' || c == '-';
 }
@@ -218,12 +263,12 @@ char *DoubleToBuffer(double value, char *buffer) {
     return buffer;
   }
 
-  int snprintf_result =
-      absl::SNPrintF(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG, value);
+  int conversion_result =
+      ToCharsGeneral(buffer, kDoubleToBufferSize, value, DBL_DIG);
 
-  // The snprintf should never overflow because the buffer is significantly
+  // The conversion should never overflow because the buffer is significantly
   // larger than the precision we asked for.
-  ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
+  ABSL_DCHECK(conversion_result > 0 && conversion_result < kDoubleToBufferSize);
 
   // We need to make parsed_value volatile in order to force the compiler to
   // write it out to the stack.  Otherwise, it may keep the value in a
@@ -233,11 +278,12 @@ char *DoubleToBuffer(double value, char *buffer) {
   // truncated to a double.
   volatile double parsed_value = NoLocaleStrtod(buffer, nullptr);
   if (parsed_value != value) {
-    snprintf_result =
-        absl::SNPrintF(buffer, kDoubleToBufferSize, "%.*g", DBL_DIG + 2, value);
+    conversion_result = ToCharsGeneral(buffer, kDoubleToBufferSize, value,
+                                       DBL_DIG + 2);
 
     // Should never overflow; see above.
-    ABSL_DCHECK(snprintf_result > 0 && snprintf_result < kDoubleToBufferSize);
+    ABSL_DCHECK(conversion_result > 0 &&
+               conversion_result < kDoubleToBufferSize);
   }
 
   DelocalizeRadix(buffer);
