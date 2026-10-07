@@ -1481,6 +1481,7 @@ set(io_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/io_win32_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/printer_death_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/printer_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/io/strtod_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/test_zero_copy_stream_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/tokenizer_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_sink_test.cc
