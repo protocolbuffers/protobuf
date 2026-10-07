@@ -2451,6 +2451,54 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "json_parser_internal",
+    srcs = ["json_parser.cc"],
+    hdrs = ["json_parser_internal.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":type_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "json_conformance_unittest",
+    srcs = ["json_conformance_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":json_parser_internal",
+        ":protobuf",
+        ":protobuf_lite",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//conformance:binary_json_conformance_suite",
+        "//conformance:conformance_cc_proto",
+        "//conformance:conformance_test_lib",
+        "//conformance:test_runner",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_test(
     name = "map_field_test",
     srcs = ["map_field_test.cc"],
@@ -3123,6 +3171,7 @@ filegroup(
             "*unittest.cc",
         ],
         exclude = [
+            "json_conformance_unittest.cc",
             "lazily_build_dependencies_test.cc",
             "lite_unittest.cc",
             "lite_arena_unittest.cc",
