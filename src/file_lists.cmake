@@ -797,6 +797,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/message/internal/array.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/compare_unknown.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/extension.h
+  ${protobuf_SOURCE_DIR}/upb/message/internal/field_data.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/iterator.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map.h
   ${protobuf_SOURCE_DIR}/upb/message/internal/map_entry.h
