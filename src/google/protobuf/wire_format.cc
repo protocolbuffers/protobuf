@@ -22,6 +22,7 @@
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/class_data.h"
@@ -1142,9 +1143,9 @@ class MapKeySorter {
                                      const Reflection* reflection,
                                      const FieldDescriptor* field) {
     std::vector<MapKey> sorted_key_list;
-    for (ConstMapIterator it = reflection->ConstMapBegin(&message, field);
-         it != reflection->ConstMapEnd(&message, field); ++it) {
-      sorted_key_list.push_back(it.GetKey());
+    auto map = *reflection->GetMap(message, field);
+    for (auto entry : map) {
+      sorted_key_list.push_back(entry.key());
     }
     MapKeyComparator comparator;
     std::sort(sorted_key_list.begin(), sorted_key_list.end(), comparator);
@@ -1230,22 +1231,20 @@ uint8_t* WireFormat::InternalSerializeField(const FieldDescriptor* field,
     const MapFieldBase* map_field =
         message_reflection->GetMapData(message, field);
     if (map_field->IsMapValid()) {
+      GenericConstMapRef map = *message_reflection->GetMap(message, field);
       if (stream->IsSerializationDeterministic()) {
         std::vector<MapKey> sorted_key_list =
             MapKeySorter::SortKey(message, message_reflection, field);
         for (std::vector<MapKey>::iterator it = sorted_key_list.begin();
              it != sorted_key_list.end(); ++it) {
-          MapValueConstRef map_value;
-          message_reflection->LookupMapValue(message, field, *it, &map_value);
+          MapValueConstRef map_value = map.find(*it)->value();
           target =
               InternalSerializeMapEntry(field, *it, map_value, target, stream);
         }
       } else {
-        for (ConstMapIterator it =
-                 message_reflection->ConstMapBegin(&message, field);
-             it != message_reflection->ConstMapEnd(&message, field); ++it) {
-          target = InternalSerializeMapEntry(field, it.GetKey(),
-                                             it.GetValueRef(), target, stream);
+        for (auto entry : map) {
+          target = InternalSerializeMapEntry(field, entry.key(), entry.value(),
+                                             target, stream);
         }
       }
 
@@ -1501,7 +1500,7 @@ size_t WireFormat::FieldByteSize(const FieldDescriptor* field,
       const MapFieldBase* map_field =
           message_reflection->GetMapData(message, field);
       if (map_field->IsMapValid()) {
-        count = FromIntSize(map_field->size());
+        count = FromIntSize(map_field->GetMap().size());
       } else {
         count = FromIntSize(message_reflection->FieldSize(message, field));
       }
@@ -1622,15 +1621,13 @@ size_t WireFormat::FieldDataOnlyByteSize(const FieldDescriptor* field,
     const MapFieldBase* map_field =
         message_reflection->GetMapData(message, field);
     if (map_field->IsMapValid()) {
-      ConstMapIterator iter(&message, field);
-      ConstMapIterator end(&message, field);
       const FieldDescriptor* key_field = field->message_type()->field(0);
       const FieldDescriptor* value_field = field->message_type()->field(1);
-      for (map_field->ConstMapBegin(&iter), map_field->ConstMapEnd(&end);
-           iter != end; ++iter) {
+      auto map = *message_reflection->GetMap(message, field);
+      for (auto entry : map) {
         size_t size = kMapEntryTagByteSize;
-        size += MapKeyDataOnlyByteSize(key_field, iter.GetKey());
-        size += MapValueRefDataOnlyByteSize(value_field, iter.GetValueRef());
+        size += MapKeyDataOnlyByteSize(key_field, entry.key());
+        size += MapValueRefDataOnlyByteSize(value_field, entry.value());
         data_size += WireFormatLite::LengthDelimitedSize(size);
       }
       return data_size;
