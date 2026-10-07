@@ -303,7 +303,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       // Clone a canonical or non-canonical upb_Extension*.
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-      const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
+      const upb_MiniTableField* field =
+          upb_MiniTableExtension_ToField(msg_ext->ext);
       upb_Extension* dst_ext =
           UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
               dst, msg_ext->ext, arena, upb_TaggedAuxPtr_Type(tagged_ptr));
@@ -313,6 +314,18 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
         if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
           goto err;
         }
+      } else if (upb_MiniTableField_IsMap(field)) {
+        const upb_Map* map = msg_ext->data.map_val;
+        UPB_ASSERT(map);
+        const upb_MiniTable* map_entry =
+            upb_MiniTable_MapEntrySubMessage(field);
+        const upb_MiniTableField* key_f = upb_MiniTable_MapKey(map_entry);
+        const upb_MiniTableField* val_f = upb_MiniTable_MapValue(map_entry);
+        upb_Map* cloned_map = upb_Map_DeepClone(
+            map, upb_MiniTableField_CType(key_f),
+            upb_MiniTableField_CType(val_f), map_entry, arena);
+        if (!cloned_map) goto err;
+        dst_ext->data.map_val = cloned_map;
       } else {
         upb_Array* msg_array = (upb_Array*)msg_ext->data.array_val;
         UPB_ASSERT(msg_array);

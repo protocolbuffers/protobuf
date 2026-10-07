@@ -144,6 +144,7 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
+  if (f->UPB_PRIVATE(submsg_ofs) == kUpb_NoSub) return NULL;
   upb_MiniTableSubInternal* sub =
       UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);

@@ -302,6 +302,7 @@ cc_test(
         ":convert",
         ":convert_test_upb_minitable_proto",
         ":convert_test_upb_proto",
+        ":copy",
         ":internal",
         ":message",
         ":message_test_upb_minitable_proto",
