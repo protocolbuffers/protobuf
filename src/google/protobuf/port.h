@@ -658,7 +658,7 @@ inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
     // There is no official API for this, so we just probe.
     alignas(8) char buf[8];
     ASAN_POISON_MEMORY_REGION(buf, sizeof(buf));
-    bool res = __asan_address_is_poisoned(buf);
+    bool res = __asan_address_is_poisoned(buf) != 0;
     ASAN_UNPOISON_MEMORY_REGION(buf, sizeof(buf));
     return res;
   }();
