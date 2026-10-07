@@ -32,7 +32,7 @@ template <>
 struct FieldArenaRep<TestType> {
   using Type = FieldWithArena<TestType>;
 
-  static inline TestType* Get(Type* arena_rep) { return &arena_rep->field(); }
+  static TestType* Get(Type* arena_rep) { return &arena_rep->field(); }
 };
 
 struct TestTypeNotDestructorSkippable {
@@ -59,7 +59,7 @@ template <>
 struct FieldArenaRep<TestTypeNotDestructorSkippable> {
   using Type = FieldWithArena<TestTypeNotDestructorSkippable>;
 
-  static inline TestTypeNotDestructorSkippable* Get(Type* arena_rep) {
+  static TestTypeNotDestructorSkippable* Get(Type* arena_rep) {
     return &arena_rep->field();
   }
 };
