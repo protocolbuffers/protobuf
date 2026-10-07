@@ -194,6 +194,7 @@ cc_library(
     srcs = ["text_format_conformance_suite.cc"],
     hdrs = ["text_format_conformance_suite.h"],
     deps = [
+        ":conformance_cc_proto",
         ":conformance_test_lib",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
@@ -351,6 +352,7 @@ cc_test(
     name = "naming_test",
     srcs = ["naming_test.cc"],
     deps = [
+        ":conformance_cc_proto",
         ":naming",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
