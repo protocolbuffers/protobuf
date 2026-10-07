@@ -619,6 +619,15 @@
 //   for (int i = 0; i < public_dep->message_type_count(); ++i)
 #pragma clang diagnostic ignored "-Wshadow"
 #pragma clang diagnostic ignored "-Wextra-semi"
+#if defined(__has_warning)
+#if __has_warning("-Wlifetime-safety-intra-tu-misplaced-lifetimebound")
+#pragma clang diagnostic ignored \
+    "-Wlifetime-safety-intra-tu-misplaced-lifetimebound"
+#endif
+#if __has_warning("-Wlifetime-safety-misplaced-lifetimebound")
+#pragma clang diagnostic ignored "-Wlifetime-safety-misplaced-lifetimebound"
+#endif
+#endif
 // Ensure we don't regress nullability annotations (related: b/383569842)
 #pragma clang diagnostic error "-Wnullability-completeness"
 #endif
