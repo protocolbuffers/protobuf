@@ -657,6 +657,77 @@ cc_library(
 )
 
 cc_library(
+    name = "get_type_name",
+    testonly = 1,
+    srcs = ["get_type_name.cc"],
+    hdrs = ["get_type_name.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "get_type_name_test",
+    srcs = ["get_type_name_test.cc"],
+    deps = [
+        ":get_type_name",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "protobuf_test",
+    testonly = 1,
+    srcs = ["protobuf_test.cc"],
+    hdrs = ["protobuf_test.h"],
+    strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":get_type_name",
+        ":port",
+        ":protobuf",
+        "@abseil-cpp//absl/container:btree",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/functional:any_invocable",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/numeric:int128",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:charset",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "protobuf_test_test",
+    srcs = ["protobuf_test_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf_test",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "micro_string",
     srcs = ["micro_string.cc"],
     hdrs = ["micro_string.h"],
@@ -2894,6 +2965,7 @@ cc_test(
         ":cc_test_protos",
         ":port",
         ":protobuf",
+        ":protobuf_test",
         ":test_util",
         "//src/google/protobuf/io",
         "//src/google/protobuf/stubs",
@@ -2940,6 +3012,7 @@ cc_test(
         ":port",
         ":protobuf",
         ":protobuf_lite",
+        ":protobuf_test",
         ":test_util",
         ":test_util2",
         ":unittest_proto3_arena_cc_proto",
