@@ -50,6 +50,7 @@ struct upb_DefPool {
   void* scratch_data;
   size_t scratch_size;
   size_t bytes_loaded;
+  _upb_DefPool_ExtInitResolver* ext_init_resolver;
   bool disable_closed_enum_checking;
   bool disable_implicit_field_presence;
 };
@@ -69,6 +70,7 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->arena = upb_Arena_New();
   s->bytes_loaded = 0;
+  s->ext_init_resolver = NULL;
   s->disable_closed_enum_checking = false;
   s->disable_implicit_field_presence = false;
 
@@ -541,8 +543,22 @@ const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext) {
   upb_value v;
   bool ok = upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v);
+  // If the extension is not in the pool, fall back to load it from the
+  // extension init resolver hook.
+  if (!ok && s->ext_init_resolver) {
+    const _upb_DefPool_Init* init = s->ext_init_resolver(ext);
+    if (init) {
+      ok = _upb_DefPool_LoadDefInit((upb_DefPool*)s, init) &&
+           upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v);
+    }
+  }
   UPB_ASSERT(ok);
   return upb_value_getconstptr(v);
+}
+
+void _upb_DefPool_SetExtInitResolver(upb_DefPool* s,
+                                     _upb_DefPool_ExtInitResolver* resolver) {
+  s->ext_init_resolver = resolver;
 }
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,

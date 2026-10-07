@@ -55,6 +55,32 @@ core::arch::global_asm!(
     "#
 );
 
+// Add the extension's MiniTable and the def_init of the file that declares it to the global
+// EXTENSION_MINI_TABLE_TO_DEF_INITS registry; this is used for reflection. Registered the same way
+// as EXTENSIONS.
+pub struct ExtensionMiniTableToDefInit {
+    pub mini_table: &'static LazyLock<MiniTableExtensionInitPtr>,
+    pub def_init: fn() -> DefPoolInit,
+}
+
+#[linkme::distributed_slice]
+pub static EXTENSION_MINI_TABLE_TO_DEF_INITS: [ExtensionMiniTableToDefInit];
+
+#[cfg(all(target_family = "unix", not(target_os = "macos")))]
+core::arch::global_asm!(
+    r#"
+    .section linkme_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
+    .globl LINKME_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS
+    LINKME_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS:
+    .size   LINKME_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS, 0
+
+    .section linkm2_EXTENSION_MINI_TABLE_TO_DEF_INITS,"awR",@progbits
+    .globl LINKM2_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS
+    LINKM2_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS:
+    .size   LINKM2_SENTINEL_EXTENSION_MINI_TABLE_TO_DEF_INITS, 0
+    "#
+);
+
 pub fn generated_extension_registry() -> RawExtensionRegistry {
     static EXTENSIONS_REGISTRY: LazyLock<ExtensionRegistryInitPtr> = LazyLock::new(|| unsafe {
         let registry = upb_ExtensionRegistry_New(THREAD_LOCAL_ARENA.with(|a| a.raw()));
