@@ -198,7 +198,7 @@ size_t UntypedMapBase::SpaceUsedExcludingSelfLong() const {
   // The size of the table.
   size += sizeof(void*) * num_buckets_;
   // All the nodes.
-  size += type_info_.node_size * num_elements_;
+  size += static_cast<size_t>(type_info_.node_size) * num_elements_;
   VisitAllNodes([&](auto* key, auto* value) {
     const auto space_used = absl::Overload{
         [](const std::string* str) -> size_t {
