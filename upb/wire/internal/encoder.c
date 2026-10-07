@@ -454,9 +454,8 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
 #undef CASE
 }
 
-static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
-                          const upb_MiniTableField* f) {
-  const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
+static char* encode_array_val(char* ptr, upb_encstate* e, const upb_Array* arr,
+                              const upb_MiniTableField* f) {
   bool packed = upb_MiniTableField_IsPacked(f);
   size_t pre_len = upb_BackAlloc_Size(&e->alloc, ptr);
 
@@ -576,6 +575,12 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
   return ptr;
 }
 
+static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
+                          const upb_MiniTableField* f) {
+  const upb_Array* arr = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), upb_Array*);
+  return encode_array_val(ptr, e, arr, f);
+}
+
 UPB_FORCEINLINE
 char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
                       const upb_MiniTableField* key_field,
@@ -593,9 +598,8 @@ char* encode_mapentry(char* ptr, upb_encstate* e, uint32_t number,
 }
 
 UPB_NOINLINE
-static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
-                        const upb_MiniTableField* f) {
-  const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
+static char* encode_map_val(char* ptr, upb_encstate* e, const upb_Map* map,
+                            const upb_MiniTableField* f) {
   const upb_MiniTable* layout = upb_MiniTable_MapEntrySubMessage(f);
   UPB_ASSERT(upb_MiniTable_FieldCount(layout) == 2);
 
@@ -643,6 +647,12 @@ static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
   return ptr;
 }
 
+static char* encode_map(char* ptr, upb_encstate* e, const upb_Message* msg,
+                        const upb_MiniTableField* f) {
+  const upb_Map* map = *UPB_PTR_AT(msg, f->UPB_PRIVATE(offset), const upb_Map*);
+  return encode_map_val(ptr, e, map, f);
+}
+
 static bool encode_shouldencode(const upb_Message* msg,
                                 const upb_MiniTableField* f) {
   return UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, f);
@@ -682,12 +692,19 @@ static char* encode_ext(char* ptr, upb_encstate* e,
                         const upb_MiniTableExtension* ext,
                         upb_MessageValue ext_val, bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
-    ptr = encode_msgset_item(ptr, e, ext, ext_val);
-  } else {
-    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val),
-                       &ext->UPB_PRIVATE(field));
+    return encode_msgset_item(ptr, e, ext, ext_val);
   }
-  return ptr;
+  const upb_MiniTableField* f = upb_MiniTableExtension_ToField(ext);
+  switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
+    case kUpb_FieldMode_Scalar:
+      return encode_scalar(ptr, e, &ext_val, f);
+    case kUpb_FieldMode_Array:
+      return encode_array_val(ptr, e, ext_val.array_val, f);
+    case kUpb_FieldMode_Map:
+      return encode_map_val(ptr, e, ext_val.map_val, f);
+    default:
+      UPB_UNREACHABLE();
+  }
 }
 
 static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
@@ -761,9 +778,11 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
       } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
-        ptr = encode_ext(ptr, e, ext->ext, ext->data,
-                         UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
-                             kUpb_ExtMode_IsMessageSet);
+        bool is_message_set = upb_MiniTableField_IsExtension(
+                                  upb_MiniTableExtension_ToField(ext->ext)) &&
+                              UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
+                                  kUpb_ExtMode_IsMessageSet;
+        ptr = encode_ext(ptr, e, ext->ext, ext->data, is_message_set);
       }
     }
   }

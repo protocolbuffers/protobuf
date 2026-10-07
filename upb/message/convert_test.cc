@@ -24,6 +24,7 @@
 #include "upb/message/array.h"
 #include "upb/message/convert_test.upb.h"
 #include "upb/message/convert_test.upb_minitable.h"
+#include "upb/message/copy.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -150,7 +151,7 @@ TEST(ConvertTest, Demotion) {
       UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst, nullptr);
 
-  // Dst should have unknown field 1 with value 999.
+  // Dst should have unknown field 1 with value 999 as wire unknown bytes.
   size_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown unknown;
   ASSERT_TRUE(upb_Message_NextUnknown2(dst, &unknown, &iter));
@@ -282,12 +283,13 @@ TEST(ConvertTest, DemoteBigFieldThenSmallFieldChunked) {
       UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0, 0, arena.ptr());
   EXPECT_NE(dst, nullptr);
 
-  // The large field should be isolated in its own chunk, and the small field in
-  // its own chunk, avoiding reallocation and copying of the 2KB data.
+  // The large field should be isolated as a non-canonical extension, and the
+  // small field in its own chunk, avoiding reallocation and copying of the 2KB
+  // data.
   size_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown chunk1, chunk2;
   ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk1, &iter));
-  EXPECT_EQ(chunk1.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(chunk1.type, kUpb_MessageUnknownType_NonCanonicalExtension);
   ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk2, &iter));
   EXPECT_EQ(chunk2.type, kUpb_MessageUnknownType_StringView);
   EXPECT_FALSE(upb_Message_NextUnknown2(dst, &chunk2, &iter));
@@ -326,13 +328,13 @@ TEST(ConvertTest, DemoteSmallFieldThenBigFieldChunked) {
   EXPECT_NE(dst, nullptr);
 
   // Field 21 (first in descending order) should be in chunk 1, field 14 (large)
-  // in chunk 2, and field 1 in chunk 3.
+  // as a non-canonical extension in chunk 2, and field 1 in chunk 3.
   size_t iter = kUpb_Message_UnknownBegin;
   upb_MessageUnknown chunk1, chunk2, chunk3;
   ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk1, &iter));
   EXPECT_EQ(chunk1.type, kUpb_MessageUnknownType_StringView);
   ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk2, &iter));
-  EXPECT_EQ(chunk2.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(chunk2.type, kUpb_MessageUnknownType_NonCanonicalExtension);
   ASSERT_TRUE(upb_Message_NextUnknown2(dst, &chunk3, &iter));
   EXPECT_EQ(chunk3.type, kUpb_MessageUnknownType_StringView);
   EXPECT_FALSE(upb_Message_NextUnknown2(dst, &chunk3, &iter));
@@ -2551,21 +2553,20 @@ TEST(ConvertTest, NonCanonicalMixedToCanonical) {
   EXPECT_EQ(std::string("hello"), std::string(dst_str.data, dst_str.size));
 }
 
-TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
+TEST(ConvertTest, DroppedSubmessageNotLimitedByEncodeMaxDepth) {
   using TestMsg = protobuf_test_messages_proto3_TestAllTypesProto3;
   upb::Arena src_arena;
   TestMsg* msg =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(src_arena.ptr());
 
-  // Set a high-numbered field (oneof_uint32 = 111) so an initial
-  // upb_Message_EncodeFieldAsUnknown call succeeds and finishes its BackAlloc.
+  // A high-numbered scalar (oneof_uint32 = 111) is dropped as unknown wire
+  // bytes.
   protobuf_test_messages_proto3_TestAllTypesProto3_set_oneof_uint32(msg, 42);
 
-  // Set recursive_message (field 27) with a submessage that:
-  // 1) Has a large repeated_string (field 44, encoded first) forcing
-  //    upb_BackAlloc to allocate a standalone block.
-  // 2) Has another recursive_message (field 27, encoded after field 44)
-  //    that exceeds the max depth limit during _upb_Encode_Field.
+  // recursive_message (field 27) is nested deeper than the encoder's max depth
+  // of 2. Because dropped submessages are preserved as non-canonical extensions
+  // rather than encoded, the encoder's max depth does not apply and conversion
+  // succeeds.
   TestMsg* sub =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(src_arena.ptr());
   protobuf_test_messages_proto3_TestAllTypesProto3_set_recursive_message(msg,
@@ -2582,12 +2583,19 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
   const upb_Message* dst =
       upb_Message_Convert(UPB_UPCAST(msg), TEST_MT, empty_mt, nullptr, 0,
                           upb_EncodeOptions_MaxDepth(2), dst_arena.ptr());
-  EXPECT_EQ(dst, nullptr);
+  ASSERT_NE(dst, nullptr);
 
-  // Also verify that if a standalone BackAlloc finishes successfully on a
-  // dropped field (field 27) and a subsequent field (field 1) fails with a
-  // non-encoder error (type mismatch), upb_BackAlloc_Abort does not double-free
-  // the already-finished standalone block.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  EXPECT_EQ(unknown.value.extension->data.msg_val, UPB_UPCAST(sub));
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+
+  // A type mismatch on a field present in both schemas (field 1) still fails
+  // the conversion.
   protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 123);
   upb::Arena dst_arena2;
   const upb_MiniTable* incompatible_mt =
@@ -2596,4 +2604,468 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
       upb_Message_Convert(UPB_UPCAST(msg), TEST_MT, incompatible_mt, nullptr, 0,
                           0, dst_arena2.ptr());
   EXPECT_EQ(dst2, nullptr);
+}
+
+TEST(ConvertTest, MapDemotionAndPromotion_ScalarMap) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithMapInt32Int32* msg =
+      upb_test_convert_MessageWithMapInt32Int32_new(arena.ptr());
+
+  upb_test_convert_MessageWithMapInt32Int32_m_set(msg, 123, 456, arena.ptr());
+  upb_test_convert_MessageWithMapInt32Int32_m_set(msg, 789, 101112,
+                                                  arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithMapInt32Int32_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to empty message: the map field should be demoted into a
+  // non-canonical extension.
+  const upb_Message* empty_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(empty_msg, nullptr);
+
+  // Dst should have the map preserved as a non-canonical extension.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(empty_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  ASSERT_NE(unknown.value.extension, nullptr);
+  const upb_Map* parsed_map = unknown.value.extension->data.map_val;
+  ASSERT_NE(parsed_map, nullptr);
+  EXPECT_EQ(upb_Map_Size(parsed_map), 2);
+
+  upb_MessageValue k, v;
+  k.int32_val = 123;
+  EXPECT_TRUE(upb_Map_Get(parsed_map, k, &v));
+  EXPECT_EQ(v.int32_val, 456);
+  k.int32_val = 789;
+  EXPECT_TRUE(upb_Map_Get(parsed_map, k, &v));
+  EXPECT_EQ(v.int32_val, 101112);
+  EXPECT_FALSE(upb_Message_NextUnknown2(empty_msg, &unknown, &iter));
+
+  // Deep clone of message with non-canonical map into a separate arena.
+  upb::Arena clone_arena;
+  upb_Message* cloned_msg =
+      upb_Message_DeepClone(empty_msg, empty_mt, clone_arena.ptr());
+  ASSERT_NE(cloned_msg, nullptr);
+  iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown2(cloned_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Map* cloned_map = unknown.value.extension->data.map_val;
+  ASSERT_NE(cloned_map, nullptr);
+  EXPECT_NE(cloned_map, parsed_map);
+  EXPECT_EQ(upb_Map_Size(cloned_map), 2);
+  k.int32_val = 123;
+  EXPECT_TRUE(upb_Map_Get(cloned_map, k, &v));
+  EXPECT_EQ(v.int32_val, 456);
+
+  // Freeze message with non-canonical map.
+  upb_Message_Freeze(cloned_msg, empty_mt);
+  EXPECT_TRUE(upb_Message_IsFrozen(cloned_msg));
+  EXPECT_TRUE(upb_Map_IsFrozen(cloned_map));
+
+  // Wire encode the empty message containing the non-canonical map.
+  char* wire_buf;
+  size_t wire_size;
+  upb_EncodeStatus encode_status =
+      upb_Encode(empty_msg, empty_mt, 0, arena.ptr(), &wire_buf, &wire_size);
+  EXPECT_EQ(encode_status, kUpb_EncodeStatus_Ok);
+  EXPECT_GT(wire_size, 0);
+
+  // Decode the wire bytes into a new message with the original schema.
+  upb_test_convert_MessageWithMapInt32Int32* decoded =
+      upb_test_convert_MessageWithMapInt32Int32_new(arena.ptr());
+  EXPECT_EQ(upb_Decode(wire_buf, wire_size, UPB_UPCAST(decoded), src_mt,
+                       nullptr, 0, arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  int32_t val;
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapInt32Int32_m_get(decoded, 123, &val));
+  EXPECT_EQ(val, 456);
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapInt32Int32_m_get(decoded, 789, &val));
+  EXPECT_EQ(val, 101112);
+
+  // Convert empty_msg back to original schema (promotion without wire
+  // re-serialization).
+  const upb_Message* promoted_msg = upb_Message_Convert(
+      empty_msg, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(promoted_msg, nullptr);
+  const upb_test_convert_MessageWithMapInt32Int32* promoted =
+      (const upb_test_convert_MessageWithMapInt32Int32*)promoted_msg;
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapInt32Int32_m_get(promoted, 123, &val));
+  EXPECT_EQ(val, 456);
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapInt32Int32_m_get(promoted, 789, &val));
+  EXPECT_EQ(val, 101112);
+  iter = kUpb_Message_UnknownBegin;
+  EXPECT_FALSE(upb_Message_NextUnknown2(promoted_msg, &unknown, &iter));
+}
+
+TEST(ConvertTest, MapDemotionAndPromotion_MessageMap) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithMapMessage* msg =
+      upb_test_convert_MessageWithMapMessage_new(arena.ptr());
+
+  upb_test_convert_MessageWithInt32* val1 =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(val1, 111);
+  upb_test_convert_MessageWithMapMessage_map_msg_set(msg, 10, val1,
+                                                     arena.ptr());
+
+  upb_test_convert_MessageWithInt32* val2 =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(val2, 222);
+  upb_test_convert_MessageWithMapMessage_map_msg_set(msg, 20, val2,
+                                                     arena.ptr());
+
+  const upb_MiniTable* src_mt =
+      &upb__test__convert__MessageWithMapMessage_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to empty message.
+  const upb_Message* empty_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(empty_msg, nullptr);
+
+  // Verify unknown field.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(empty_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Map* parsed_map = unknown.value.extension->data.map_val;
+  ASSERT_NE(parsed_map, nullptr);
+  EXPECT_EQ(upb_Map_Size(parsed_map), 2);
+
+  // Deep clone.
+  upb::Arena clone_arena;
+  upb_Message* cloned_msg =
+      upb_Message_DeepClone(empty_msg, empty_mt, clone_arena.ptr());
+  ASSERT_NE(cloned_msg, nullptr);
+  iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown2(cloned_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Map* cloned_map = unknown.value.extension->data.map_val;
+  ASSERT_NE(cloned_map, nullptr);
+  EXPECT_NE(cloned_map, parsed_map);
+
+  // Submessages in cloned map should also be distinct copies.
+  upb_MessageValue k, v;
+  k.int32_val = 10;
+  EXPECT_TRUE(upb_Map_Get(cloned_map, k, &v));
+  EXPECT_NE(v.msg_val, (const upb_Message*)val1);
+  const upb_test_convert_MessageWithInt32* cloned_val1 =
+      (const upb_test_convert_MessageWithInt32*)v.msg_val;
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(cloned_val1), 111);
+
+  // Freeze.
+  upb_Message_Freeze(cloned_msg, empty_mt);
+  EXPECT_TRUE(upb_Message_IsFrozen(cloned_msg));
+  EXPECT_TRUE(upb_Map_IsFrozen(cloned_map));
+  EXPECT_TRUE(upb_Message_IsFrozen(v.msg_val));
+
+  // Promote back to MessageWithMapMessage.
+  const upb_Message* promoted_msg = upb_Message_Convert(
+      empty_msg, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(promoted_msg, nullptr);
+  const upb_test_convert_MessageWithMapMessage* promoted =
+      (const upb_test_convert_MessageWithMapMessage*)promoted_msg;
+  upb_test_convert_MessageWithInt32* pval;
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapMessage_map_msg_get(promoted, 10, &pval));
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(pval), 111);
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapMessage_map_msg_get(promoted, 20, &pval));
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(pval), 222);
+
+  // Wire encode / decode check.
+  char* wire_buf;
+  size_t wire_size;
+  upb_EncodeStatus encode_status =
+      upb_Encode(empty_msg, empty_mt, 0, arena.ptr(), &wire_buf, &wire_size);
+  EXPECT_EQ(encode_status, kUpb_EncodeStatus_Ok);
+  upb_test_convert_MessageWithMapMessage* decoded =
+      upb_test_convert_MessageWithMapMessage_new(arena.ptr());
+  EXPECT_EQ(upb_Decode(wire_buf, wire_size, UPB_UPCAST(decoded), src_mt,
+                       nullptr, 0, arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapMessage_map_msg_get(decoded, 10, &pval));
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(pval), 111);
+  EXPECT_TRUE(
+      upb_test_convert_MessageWithMapMessage_map_msg_get(decoded, 20, &pval));
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(pval), 222);
+}
+
+TEST(ConvertTest, RepeatedFieldDemotionAndPromotion) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(
+      msg, 10, arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(
+      msg, 20, arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(
+      msg, 30, arena.ptr());
+
+  const upb_MiniTable* src_mt = TEST_MT;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to empty message: repeated field should be demoted to non-canonical
+  // extension.
+  const upb_Message* empty_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(empty_msg, nullptr);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(empty_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  ASSERT_NE(unknown.value.extension, nullptr);
+  const upb_Array* parsed_arr = unknown.value.extension->data.array_val;
+  ASSERT_NE(parsed_arr, nullptr);
+  EXPECT_EQ(upb_Array_Size(parsed_arr), 3);
+  EXPECT_EQ(upb_Array_Get(parsed_arr, 0).int32_val, 10);
+  EXPECT_EQ(upb_Array_Get(parsed_arr, 1).int32_val, 20);
+  EXPECT_EQ(upb_Array_Get(parsed_arr, 2).int32_val, 30);
+
+  // Deep clone.
+  upb::Arena clone_arena;
+  upb_Message* cloned_msg =
+      upb_Message_DeepClone(empty_msg, empty_mt, clone_arena.ptr());
+  ASSERT_NE(cloned_msg, nullptr);
+  iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown2(cloned_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Array* cloned_arr = unknown.value.extension->data.array_val;
+  ASSERT_NE(cloned_arr, nullptr);
+  EXPECT_NE(cloned_arr, parsed_arr);
+  EXPECT_EQ(upb_Array_Size(cloned_arr), 3);
+  EXPECT_EQ(upb_Array_Get(cloned_arr, 0).int32_val, 10);
+
+  // Freeze.
+  upb_Message_Freeze(cloned_msg, empty_mt);
+  EXPECT_TRUE(upb_Message_IsFrozen(cloned_msg));
+  EXPECT_TRUE(upb_Array_IsFrozen(cloned_arr));
+
+  // Wire encode / decode check.
+  char* wire_buf;
+  size_t wire_size;
+  upb_EncodeStatus encode_status =
+      upb_Encode(empty_msg, empty_mt, 0, arena.ptr(), &wire_buf, &wire_size);
+  EXPECT_EQ(encode_status, kUpb_EncodeStatus_Ok);
+  protobuf_test_messages_proto3_TestAllTypesProto3* decoded =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  EXPECT_EQ(upb_Decode(wire_buf, wire_size, UPB_UPCAST(decoded), src_mt,
+                       nullptr, 0, arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  size_t count;
+  const int32_t* arr =
+      protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32(decoded,
+                                                                      &count);
+  EXPECT_EQ(count, 3);
+  EXPECT_EQ(arr[0], 10);
+  EXPECT_EQ(arr[1], 20);
+  EXPECT_EQ(arr[2], 30);
+
+  // Promote back to original schema.
+  const upb_Message* promoted_msg = upb_Message_Convert(
+      empty_msg, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(promoted_msg, nullptr);
+  const protobuf_test_messages_proto3_TestAllTypesProto3* promoted =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)promoted_msg;
+  arr = protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32(
+      promoted, &count);
+  EXPECT_EQ(count, 3);
+  EXPECT_EQ(arr[0], 10);
+  EXPECT_EQ(arr[1], 20);
+  EXPECT_EQ(arr[2], 30);
+}
+
+TEST(ConvertTest, SubmessageDemotionAndPromotion) {
+  upb::Arena arena;
+  upb_test_convert_MessageWithMsg* msg =
+      upb_test_convert_MessageWithMsg_new(arena.ptr());
+  upb_test_convert_MessageWithInt32* sub =
+      upb_test_convert_MessageWithInt32_new(arena.ptr());
+  upb_test_convert_MessageWithInt32_set_f1(sub, 987);
+  upb_test_convert_MessageWithMsg_set_msg(msg, sub);
+
+  const upb_MiniTable* src_mt = &upb__test__convert__MessageWithMsg_msg_init;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to empty message: submessage should be demoted to non-canonical
+  // extension.
+  const upb_Message* empty_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(empty_msg, nullptr);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(empty_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  ASSERT_NE(unknown.value.extension, nullptr);
+  const upb_test_convert_MessageWithInt32* parsed_sub =
+      (const upb_test_convert_MessageWithInt32*)
+          unknown.value.extension->data.msg_val;
+  ASSERT_NE(parsed_sub, nullptr);
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(parsed_sub), 987);
+
+  // Deep clone.
+  upb::Arena clone_arena;
+  upb_Message* cloned_msg =
+      upb_Message_DeepClone(empty_msg, empty_mt, clone_arena.ptr());
+  ASSERT_NE(cloned_msg, nullptr);
+  iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown2(cloned_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_test_convert_MessageWithInt32* cloned_sub =
+      (const upb_test_convert_MessageWithInt32*)
+          unknown.value.extension->data.msg_val;
+  ASSERT_NE(cloned_sub, nullptr);
+  EXPECT_NE(cloned_sub, parsed_sub);
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(cloned_sub), 987);
+
+  // Freeze.
+  upb_Message_Freeze(cloned_msg, empty_mt);
+  EXPECT_TRUE(upb_Message_IsFrozen(cloned_msg));
+  EXPECT_TRUE(upb_Message_IsFrozen((const upb_Message*)cloned_sub));
+
+  // Wire encode / decode check.
+  char* wire_buf;
+  size_t wire_size;
+  upb_EncodeStatus encode_status =
+      upb_Encode(empty_msg, empty_mt, 0, arena.ptr(), &wire_buf, &wire_size);
+  EXPECT_EQ(encode_status, kUpb_EncodeStatus_Ok);
+  upb_test_convert_MessageWithMsg* decoded =
+      upb_test_convert_MessageWithMsg_new(arena.ptr());
+  EXPECT_EQ(upb_Decode(wire_buf, wire_size, UPB_UPCAST(decoded), src_mt,
+                       nullptr, 0, arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  const upb_test_convert_MessageWithInt32* dec_sub =
+      upb_test_convert_MessageWithMsg_msg(decoded);
+  ASSERT_NE(dec_sub, nullptr);
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(dec_sub), 987);
+
+  // Promote back to original schema.
+  const upb_Message* promoted_msg = upb_Message_Convert(
+      empty_msg, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(promoted_msg, nullptr);
+  const upb_test_convert_MessageWithMsg* promoted =
+      (const upb_test_convert_MessageWithMsg*)promoted_msg;
+  const upb_test_convert_MessageWithInt32* prom_sub =
+      upb_test_convert_MessageWithMsg_msg(promoted);
+  ASSERT_NE(prom_sub, nullptr);
+  EXPECT_EQ(upb_test_convert_MessageWithInt32_f1(prom_sub), 987);
+}
+
+TEST(ConvertTest, StringDemotionAndPromotion_LongStringAliased) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  const char* long_str_data =
+      "This is a long string that is definitely larger than 12 bytes!";
+  upb_StringView orig_sv = upb_StringView_FromString(long_str_data);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(msg,
+                                                                       orig_sv);
+
+  const upb_MiniTable* src_mt = TEST_MT;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to empty message: since length >= sizeof(upb_MiniTableField),
+  // it should be aliased as a non-canonical extension without copying the
+  // string.
+  const upb_Message* empty_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(empty_msg, nullptr);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(empty_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  ASSERT_NE(unknown.value.extension, nullptr);
+  upb_StringView parsed_sv = unknown.value.extension->data.str_val;
+  EXPECT_EQ(parsed_sv.size, orig_sv.size);
+  // Pointer equality: string is ALIASED, zero copy!
+  EXPECT_EQ(parsed_sv.data, orig_sv.data);
+
+  // Promote back to original schema.
+  const upb_Message* promoted_msg = upb_Message_Convert(
+      empty_msg, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(promoted_msg, nullptr);
+  const protobuf_test_messages_proto3_TestAllTypesProto3* promoted =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)promoted_msg;
+  upb_StringView prom_sv =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(
+          promoted);
+  EXPECT_TRUE(upb_StringView_IsEqual(prom_sv, orig_sv));
+  EXPECT_EQ(prom_sv.data, orig_sv.data);
+
+  // Deep clone allocates a new copy of the string in the new arena.
+  upb::Arena clone_arena;
+  upb_Message* cloned_msg =
+      upb_Message_DeepClone(empty_msg, empty_mt, clone_arena.ptr());
+  ASSERT_NE(cloned_msg, nullptr);
+  iter = kUpb_Message_UnknownBegin;
+  ASSERT_TRUE(upb_Message_NextUnknown2(cloned_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  upb_StringView cloned_sv = unknown.value.extension->data.str_val;
+  EXPECT_TRUE(upb_StringView_IsEqual(cloned_sv, orig_sv));
+  EXPECT_NE(cloned_sv.data, orig_sv.data);
+
+  // Wire encode / decode check.
+  char* wire_buf;
+  size_t wire_size;
+  upb_EncodeStatus encode_status =
+      upb_Encode(empty_msg, empty_mt, 0, arena.ptr(), &wire_buf, &wire_size);
+  EXPECT_EQ(encode_status, kUpb_EncodeStatus_Ok);
+  protobuf_test_messages_proto3_TestAllTypesProto3* decoded =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  EXPECT_EQ(upb_Decode(wire_buf, wire_size, UPB_UPCAST(decoded), src_mt,
+                       nullptr, 0, arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  upb_StringView dec_sv =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(decoded);
+  EXPECT_TRUE(upb_StringView_IsEqual(dec_sv, orig_sv));
+}
+
+TEST(ConvertTest, StringDemotionAndPromotion_ShortStringCopied) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  // String < sizeof(upb_MiniTableField) (12 bytes)
+  const char* short_str_data = "short";
+  upb_StringView orig_sv = upb_StringView_FromString(short_str_data);
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(msg,
+                                                                       orig_sv);
+
+  const upb_MiniTable* src_mt = TEST_MT;
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+
+  // Convert to empty message: since length < sizeof(upb_MiniTableField),
+  // it should be encoded as wire unknown bytes.
+  const upb_Message* empty_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, empty_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(empty_msg, nullptr);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(empty_msg, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+
+  // Promote back to original schema.
+  const upb_Message* promoted_msg = upb_Message_Convert(
+      empty_msg, empty_mt, src_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(promoted_msg, nullptr);
+  const protobuf_test_messages_proto3_TestAllTypesProto3* promoted =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)promoted_msg;
+  upb_StringView prom_sv =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(
+          promoted);
+  EXPECT_TRUE(upb_StringView_IsEqual(prom_sv, orig_sv));
 }

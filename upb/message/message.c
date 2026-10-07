@@ -233,7 +233,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
     if (!ext) continue;
     const upb_MiniTableExtension* e = ext->ext;
-    const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
+    const upb_MiniTableField* f = upb_MiniTableExtension_ToField(e);
     const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
 
     upb_MessageValue val;
@@ -245,9 +245,15 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         if (arr) upb_Array_Freeze(arr, m2);
         break;
       }
-      case kUpb_FieldMode_Map:
-        UPB_UNREACHABLE();  // Maps cannot be extensions.
+      case kUpb_FieldMode_Map: {
+        upb_Map* map = (upb_Map*)val.map_val;
+        if (map) {
+          const upb_MiniTableField* f2 = upb_MiniTable_MapValue(m2);
+          const upb_MiniTable* m3 = upb_MiniTable_SubMessage(f2);
+          upb_Map_Freeze(map, m3);
+        }
         break;
+      }
       case kUpb_FieldMode_Scalar:
         if (upb_MiniTableField_IsSubMessage(f)) {
           upb_Message* msg2 = (upb_Message*)val.msg_val;

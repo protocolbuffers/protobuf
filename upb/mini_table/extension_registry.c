@@ -39,7 +39,7 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
                UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
       "Extension must be first-member-of-struct convertable with uint32_t");
   uint32_t fieldnum = upb_MiniTableExtension_Number(e);
-  const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
+  const upb_MiniTable* extendee = e->UPB_PRIVATE(extendee);
 
   if (upb_exttable_lookup(&r->exts, extendee, fieldnum) != NULL) {
     return kUpb_ExtensionRegistryStatus_DuplicateEntry;
@@ -66,7 +66,7 @@ failure:
   // Back out the entries previously added.
   for (end = e, e = start; e < end; e++) {
     const upb_MiniTableExtension* ext = *e;
-    upb_exttable_remove(&r->exts, upb_MiniTableExtension_Extendee(ext),
+    upb_exttable_remove(&r->exts, ext->UPB_PRIVATE(extendee),
                         upb_MiniTableExtension_Number(ext));
   }
   UPB_ASSERT(status != kUpb_ExtensionRegistryStatus_Ok);

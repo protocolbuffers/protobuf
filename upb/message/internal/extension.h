@@ -66,8 +66,8 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* ext);
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
-  switch (
-      UPB_PRIVATE(_upb_MiniTableField_Mode)(&ext->ext->UPB_PRIVATE(field))) {
+  switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(
+      upb_MiniTableExtension_ToField(ext->ext))) {
     case kUpb_FieldMode_Scalar:
       return false;
     case kUpb_FieldMode_Array:

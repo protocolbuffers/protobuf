@@ -55,6 +55,10 @@ static void _upb_ArrayDebugString(txtenc* e, const upb_Array* arr,
                                   const upb_MiniTable* mt,
                                   const upb_MiniTableExtension* ext);
 
+static void _upb_MapDebugString(txtenc* e, const upb_Map* map,
+                                const upb_MiniTableField* f,
+                                const upb_MiniTable* mt);
+
 /*
  * Unknown fields are printed by number.
  *
@@ -180,8 +184,9 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
       upb_MessageValue val_ext = ext_struct->data;
       const upb_MiniTableField* f = upb_MiniTableExtension_ToField(ext);
       const upb_MiniTable* mt = upb_MiniTableExtension_Extendee(ext);
-      UPB_ASSERT(!upb_MiniTableField_IsMap(f));
-      if (upb_MiniTableField_IsArray(f)) {
+      if (upb_MiniTableField_IsMap(f)) {
+        _upb_MapDebugString(e, val_ext.map_val, f, mt);
+      } else if (upb_MiniTableField_IsArray(f)) {
         _upb_ArrayDebugString(e, val_ext.array_val, f, mt, ext);
       } else {
         _upb_FieldDebugString(e, val_ext, f, mt, NULL, ext);
@@ -386,7 +391,7 @@ void UPB_PRIVATE(_upb_MessageDebugString)(txtenc* e, const upb_Message* msg,
   upb_MessageValue val_ext;
   iter = kUpb_Message_ExtensionBegin;
   while (upb_Message_NextExtension(msg, &ext, &val_ext, &iter)) {
-    const upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
+    const upb_MiniTableField* f = upb_MiniTableExtension_ToField(ext);
     // It is not sufficient to only pass |f| as we lose valuable information
     // about sub-messages. It is required that we pass |ext|.
     if (upb_MiniTableField_IsMap(f)) {
