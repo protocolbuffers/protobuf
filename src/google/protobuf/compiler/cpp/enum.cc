@@ -115,6 +115,9 @@ EnumGenerator::EnumGenerator(const EnumDescriptor* descriptor,
                         static_cast<size_t>(limits_.min->number());
   size_t total_values = static_cast<size_t>(enum_->value_count());
   should_cache_ = has_reflection_ &&
+                  !CppGenerator::GetResolvedSourceFeatures(*enum_)
+                       .GetExtension(::pb::cpp)
+                       .enum_name_uses_string_view() &&
                   (values_range < 16u || values_range < total_values * 2u);
 
   sorted_unique_values_.reserve(enum_->value_count());
@@ -266,13 +269,19 @@ void EnumGenerator::GenerateDefinition(io::Printer* p) {
       )cc");
     }
   } else {
-    p->Emit({{"static_assert", write_assert}}, R"cc(
-      template <typename T>
-      $nodiscard $$return_type$ $Msg_Enum$_Name(T value) {
-        $static_assert$;
-        return $pbi$::NameOfEnum($Msg_Enum$_descriptor(), value);
-      }
-    )cc");
+    p->Emit({{"static_assert", write_assert},
+             {"name_of_enum", CppGenerator::GetResolvedSourceFeatures(*enum_)
+                                      .GetExtension(::pb::cpp)
+                                      .enum_name_uses_string_view()
+                                  ? "NameOfEnumAsView"
+                                  : "NameOfEnum"}},
+            R"cc(
+              template <typename T>
+              $nodiscard $$return_type$ $Msg_Enum$_Name(T value) {
+                $static_assert$;
+                return $pbi$::$name_of_enum$($Msg_Enum$_descriptor(), value);
+              }
+            )cc");
   }
 
   if (has_reflection_) {
