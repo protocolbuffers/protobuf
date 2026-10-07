@@ -2166,6 +2166,27 @@ cc_library(
 )
 
 cc_test(
+    name = "debug_counter_noop_test",
+    srcs = ["debug_counter_test.cc"],
+    deps = [
+        ":port",
+        "@googletest//:gmock",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "debug_counter_test",
+    srcs = ["debug_counter_test.cc"],
+    defines = ["PROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS"],
+    deps = [
+        ":port",
+        "@googletest//:gmock",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "drop_unknown_fields_test",
     srcs = ["drop_unknown_fields_test.cc"],
     deps = [
@@ -2378,6 +2399,21 @@ cc_test(
 )
 
 cc_test(
+    name = "internal_message_util_unittest",
+    srcs = ["internal_message_util_unittest.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gmock",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "lite_arena_unittest",
     srcs = ["lite_arena_unittest.cc"],
     copts = COPTS + select({
@@ -2410,6 +2446,49 @@ cc_test(
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "json_parser_internal",
+    srcs = ["json_parser.cc"],
+    hdrs = ["json_parser_internal.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:private"],
+    deps = [
+        ":port",
+        ":protobuf",
+        ":protobuf_lite",
+        ":type_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "json_conformance_unittest",
+    srcs = ["json_conformance_unittest.cc"],
+    deps = [
+        ":json_parser_internal",
+        ":protobuf",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//conformance:binary_json_conformance_suite",
+        "//conformance:conformance_cc_proto",
+        "//conformance:conformance_test_lib",
+        "//conformance:test_runner",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/container:flat_hash_set",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -2670,6 +2749,18 @@ cc_test(
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/log:absl_check",
         "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "redaction_metric_test",
+    srcs = ["redaction_metric_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gmock",
         "@googletest//:gtest_main",
     ],
 )
