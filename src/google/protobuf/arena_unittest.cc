@@ -2695,7 +2695,7 @@ TEST(ArenaPtrTest, ClassIsABIEfficient) {
   // using clang.
 #if ABSL_HAVE_BUILTIN(__is_trivially_relocatable)
   struct ABSL_ATTRIBUTE_TRIVIAL_ABI Probe {
-    ~Probe() {}
+    ~Probe() = default;
     std::unique_ptr<int> p1;
     void* p2;
   };
