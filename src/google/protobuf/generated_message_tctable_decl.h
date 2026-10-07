@@ -212,50 +212,67 @@ constexpr MapTypeCard MakeMapTypeCard(int number,
                                       WireFormatLite::FieldType type) {
   switch (type) {
     case WireFormatLite::TYPE_FLOAT:
-      return {number, WireFormatLite::WIRETYPE_FIXED32, true, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED32, /*is_signed=*/true,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
     case WireFormatLite::TYPE_FIXED32:
-      return {number, WireFormatLite::WIRETYPE_FIXED32, false, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED32, /*is_signed=*/false,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
     case WireFormatLite::TYPE_SFIXED32:
-      return {number, WireFormatLite::WIRETYPE_FIXED32, true, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED32, /*is_signed=*/true,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_DOUBLE:
-      return {number, WireFormatLite::WIRETYPE_FIXED64, true, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED64, /*is_signed=*/true,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
     case WireFormatLite::TYPE_FIXED64:
-      return {number, WireFormatLite::WIRETYPE_FIXED64, false, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED64, /*is_signed=*/false,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
     case WireFormatLite::TYPE_SFIXED64:
-      return {number, WireFormatLite::WIRETYPE_FIXED64, true, false, false};
+      return {number, WireFormatLite::WIRETYPE_FIXED64, /*is_signed=*/true,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_BOOL:
-      return {number, WireFormatLite::WIRETYPE_VARINT, false, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/false,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_ENUM:
       // Enum validation is handled via `value_is_validated_enum` below.
-      return {number, WireFormatLite::WIRETYPE_VARINT, true, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/true,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
     case WireFormatLite::TYPE_INT32:
-      return {number, WireFormatLite::WIRETYPE_VARINT, true, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/true,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
     case WireFormatLite::TYPE_UINT32:
-      return {number, WireFormatLite::WIRETYPE_VARINT, false, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/false,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_INT64:
-      return {number, WireFormatLite::WIRETYPE_VARINT, true, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/true,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
     case WireFormatLite::TYPE_UINT64:
-      return {number, WireFormatLite::WIRETYPE_VARINT, false, false, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/false,
+              /*is_zigzag=*/false, /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_SINT32:
-      return {number, WireFormatLite::WIRETYPE_VARINT, true, true, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/true,
+              /*is_zigzag=*/true, /*is_utf8=*/false};
     case WireFormatLite::TYPE_SINT64:
-      return {number, WireFormatLite::WIRETYPE_VARINT, true, true, false};
+      return {number, WireFormatLite::WIRETYPE_VARINT, /*is_signed=*/true,
+              /*is_zigzag=*/true, /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_STRING:
-      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, false, false,
-              true};
+      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+              /*is_signed=*/false, /*is_zigzag=*/false,
+              /*is_utf8=*/true};
     case WireFormatLite::TYPE_BYTES:
-      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, false, false,
-              false};
+      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+              /*is_signed=*/false, /*is_zigzag=*/false,
+              /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_MESSAGE:
-      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED, false, false,
-              false};
+      return {number, WireFormatLite::WIRETYPE_LENGTH_DELIMITED,
+              /*is_signed=*/false, /*is_zigzag=*/false,
+              /*is_utf8=*/false};
 
     case WireFormatLite::TYPE_GROUP:
     default:

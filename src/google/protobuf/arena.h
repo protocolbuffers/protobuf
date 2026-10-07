@@ -626,7 +626,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
                     internal::HasDeprecatedArenaConstructor<T>()) {
         return new T();
       } else {
-        return new T(nullptr);
+        return new T(/*arena=*/nullptr);
       }
     }
 

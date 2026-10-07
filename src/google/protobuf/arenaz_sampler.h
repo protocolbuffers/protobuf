@@ -155,7 +155,7 @@ extern PROTOBUF_THREAD_LOCAL SamplingState global_sampling_state;
 // with the global sampler.
 [[nodiscard]] inline ThreadSafeArenaStatsHandle Sample() {
   if (ABSL_PREDICT_TRUE(--global_sampling_state.next_sample > 0)) {
-    return ThreadSafeArenaStatsHandle(nullptr);
+    return ThreadSafeArenaStatsHandle(/*info=*/nullptr);
   }
   return ThreadSafeArenaStatsHandle(SampleSlow(global_sampling_state));
 }

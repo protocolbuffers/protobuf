@@ -1108,7 +1108,7 @@ class RustMapHelper {
     dest->clear();
     ABSL_DCHECK_EQ(src->arena(), nullptr);
     dest->UntypedSwap(dest->arena(), *src, nullptr);
-    src->ClearTable(nullptr, /*reset=*/false);
+    src->ClearTable(/*arena=*/nullptr, /*reset=*/false);
     delete src;
   }
 };
