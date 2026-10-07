@@ -55,6 +55,31 @@ core::arch::global_asm!(
     "#
 );
 
+// Add def_init of current file to EXTENSION_DEF_INITS global registry; this is used for reflection.
+// Same format as EXTENSIONS.
+pub struct ExtensionDefInit {
+    pub extendee: &'static MessageDefCached,
+    pub def_init: fn() -> DefPoolInit,
+}
+
+#[linkme::distributed_slice]
+pub static EXTENSION_DEF_INITS: [ExtensionDefInit];
+
+#[cfg(all(target_family = "unix", not(target_os = "macos")))]
+core::arch::global_asm!(
+    r#"
+    .section linkme_EXTENSION_DEF_INITS,"awR",@progbits
+    .globl LINKME_SENTINEL_EXTENSION_DEF_INITS
+    LINKME_SENTINEL_EXTENSION_DEF_INITS:
+    .size   LINKME_SENTINEL_EXTENSION_DEF_INITS, 0
+
+    .section linkm2_EXTENSION_DEF_INITS,"awR",@progbits
+    .globl LINKM2_SENTINEL_EXTENSION_DEF_INITS
+    LINKM2_SENTINEL_EXTENSION_DEF_INITS:
+    .size   LINKM2_SENTINEL_EXTENSION_DEF_INITS, 0
+    "#
+);
+
 pub fn generated_extension_registry() -> RawExtensionRegistry {
     static EXTENSIONS_REGISTRY: LazyLock<ExtensionRegistryInitPtr> = LazyLock::new(|| unsafe {
         let registry = upb_ExtensionRegistry_New(THREAD_LOCAL_ARENA.with(|a| a.raw()));

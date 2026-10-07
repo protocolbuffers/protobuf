@@ -148,7 +148,10 @@ rust_upb_proto_library(
 proto_library(
     name = "extensions_separate_file_proto",
     testonly = True,
-    srcs = ["extensions_separate_file.proto"],
+    srcs = [
+        "extensions_separate_file.proto",
+        "extensions_separate_file2.proto",
+    ],
     deps = [":extensions_proto"],
 )
 
