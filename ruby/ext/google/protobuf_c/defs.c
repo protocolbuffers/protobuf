@@ -750,9 +750,11 @@ static FieldDescriptor* ruby_to_FieldDescriptor(VALUE val) {
  */
 static VALUE FieldDescriptor_alloc(VALUE klass) {
   FieldDescriptor* self = ALLOC(FieldDescriptor);
-  VALUE ret = TypedData_Wrap_Struct(klass, &FieldDescriptor_type, self);
+  // Ruby's .allocate bypasses initialize, so the mark callback must be safe
+  // without it.
+  self->descriptor_pool = Qnil;
   self->fielddef = NULL;
-  return ret;
+  return TypedData_Wrap_Struct(klass, &FieldDescriptor_type, self);
 }
 
 /*
