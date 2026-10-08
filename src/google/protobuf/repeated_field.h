@@ -734,7 +734,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void InternalDeallocate(ArenaProvider arena_provider) {
     ABSL_DCHECK(!is_soo());
     ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
-    const size_t bytes = Capacity(false) * sizeof(Element) + kHeapRepHeaderSize;
+    const size_t bytes =
+        Capacity(/*is_soo=*/false) * sizeof(Element) + kHeapRepHeaderSize;
     if constexpr (in_destructor &&
                   Arena::is_destructor_skippable<RepeatedField>::value) {
       // Repeated fields with destructor-skippable elements are never destroyed

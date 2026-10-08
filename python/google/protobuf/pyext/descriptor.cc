@@ -13,6 +13,7 @@
 #include <Python.h>
 #include <frameobject.h>
 
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>

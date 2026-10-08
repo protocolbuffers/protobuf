@@ -24,6 +24,11 @@ import java.util.Map;
  * An implementation of {@link Message} that can represent arbitrary types, given a {@link
  * Descriptors.Descriptor}.
  *
+ * <p>Caution: There are inherent denial of service risks to using {@code DynamicMessage} with
+ * untrusted descriptors. See <a
+ * href="https://github.com/protocolbuffers/protobuf/security/policy#dynamicmessage-on-untrusted-descriptors">the
+ * Protobuf security policy</a> for details.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public final class DynamicMessage extends AbstractMessage {

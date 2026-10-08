@@ -111,6 +111,9 @@ std::string RsSafeName(absl::string_view name);
 std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_);
 std::string RustModule(Context& ctx, const OneofDescriptor& oneof);
+std::string RustModule(Context& ctx, const FileDescriptor& file);
+std::string RustModuleForExtension(Context& ctx,
+                                   const FieldDescriptor& extension);
 
 std::string RustModuleName(const FileDescriptor& file);
 
@@ -157,6 +160,10 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
 
 // Returns the name of the generated DescriptorInfo object for the given file.
 std::string DescriptorInfoName(const FileDescriptor& file);
+
+// Returns the name of the generated function that returns the given file's
+// `upb_DefPool_Init`.
+std::string DefInitName(const FileDescriptor& file);
 
 // Describes the names and conversions for a supported map key type.
 struct MapKeyType {

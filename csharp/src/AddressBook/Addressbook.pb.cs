@@ -47,9 +47,11 @@ namespace Google.Protobuf.Examples.AddressBook {
 
   }
   #region Messages
-  /// <summary>
-  /// [START messages]
-  /// </summary>
+  /**
+   * <summary>
+   *  [START messages]
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Person : pb::IMessage<Person>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -114,9 +116,11 @@ namespace Google.Protobuf.Examples.AddressBook {
     /// <summary>Field number for the "id" field.</summary>
     public const int IdFieldNumber = 2;
     private int id_;
-    /// <summary>
-    /// Unique ID number for this person.
-    /// </summary>
+    /**
+     * <summary>
+     *  Unique ID number for this person.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Id {
@@ -646,9 +650,11 @@ namespace Google.Protobuf.Examples.AddressBook {
 
   }
 
-  /// <summary>
-  /// Our address book file is just one of these.
-  /// </summary>
+  /**
+   * <summary>
+   *  Our address book file is just one of these.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class AddressBook : pb::IMessage<AddressBook>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

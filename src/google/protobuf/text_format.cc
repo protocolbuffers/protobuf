@@ -260,7 +260,9 @@ TextFormat::ParseLocationRange TextFormat::ParseInfoTree::GetLocationRange(
 
 TextFormat::ParseLocation TextFormat::ParseInfoTree::GetLocation(
     const FieldDescriptor* field, int index) const {
+  PROTOBUF_IGNORE_DEPRECATION_START
   return GetLocationRange(field, index).start;
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 }
 
 absl::StatusOr<TextFormat::FieldLocation>
@@ -1093,7 +1095,7 @@ class TextFormat::Parser::ParserImpl {
           }
         }
 
-        SET_FIELD(Enum, enum, enum_value);
+        SET_FIELD(EnumValue, enum()->number, enum_value->number());
         break;
       }
 
@@ -2152,6 +2154,10 @@ std::string TextFormat::FieldValuePrinter::PrintEnum(
     int32_t val, const std::string& name) const {
   FORWARD_IMPL(PrintEnum, val, name);
 }
+std::string TextFormat::FieldValuePrinter::PrintEnum(
+    int32_t val, absl::string_view name) const {
+  return PrintEnum(val, std::string(name));
+}
 std::string TextFormat::FieldValuePrinter::PrintFieldName(
     const Message& message, const Reflection* reflection,
     const FieldDescriptor* field) const {
@@ -2209,6 +2215,10 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
     int32_t /*val*/, const std::string& name,
     BaseTextGenerator* generator) const {
   generator->PrintString(name);
+}
+void TextFormat::FastFieldValuePrinter::PrintEnum(
+    int32_t val, absl::string_view name, BaseTextGenerator* generator) const {
+  PrintEnum(val, std::string(name), generator);
 }
 
 namespace {
@@ -2998,8 +3008,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       const EnumValueDescriptor* enum_desc =
           field->enum_type()->FindValueByNumber(enum_value);
       if (enum_desc != nullptr) {
-        printer->PrintEnum(enum_value, internal::NameOfEnumAsString(enum_desc),
-                           generator);
+        printer->PrintEnum(enum_value, enum_desc->name(), generator);
       } else {
         // Ordinarily, enum_desc should not be null, because proto2 has the
         // invariant that set enum field values must be in-range, but with the

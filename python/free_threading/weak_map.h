@@ -60,14 +60,23 @@ bool PyUpb_WeakMap_EraseIfEqual(PyUpb_WeakMap* map, const void* key,
 // Returns a new reference to an object if it exists, otherwise returns NULL.
 PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
 
-#define PYUPB_WEAKMAP_BEGIN UPB_INTTABLE_BEGIN
+typedef struct {
+  PyUpb_WeakMap* map;
+  intptr_t iter;
+#ifdef Py_GIL_DISABLED
+  PyObject** deferred_decrefs;
+  size_t count;
+  size_t cap;
+#endif
+} PyUpb_WeakMapIter;
 
-// Iteration lifecycle: Begin locks map->mutex; End releases map->mutex.
-void PyUpb_WeakMap_Begin(PyUpb_WeakMap* map);
-void PyUpb_WeakMap_End(PyUpb_WeakMap* map, PyObject* obj);
-
-bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
-                        intptr_t* iter);
-void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter);
+// Iteration lifecycle: Begin locks map->mutex; End releases map->mutex and
+// decrefs any objects visited during iteration. Returns false and sets
+// MemoryError on allocation failure (leaving map->mutex unlocked).
+bool PyUpb_WeakMapIter_Begin(PyUpb_WeakMapIter* iter, PyUpb_WeakMap* map);
+bool PyUpb_WeakMapIter_Next(PyUpb_WeakMapIter* iter, const void** key,
+                            PyObject** obj);
+void PyUpb_WeakMapIter_Delete(PyUpb_WeakMapIter* iter);
+void PyUpb_WeakMapIter_End(PyUpb_WeakMapIter* iter);
 
 #endif  // PYUPB_FREE_THREADING_WEAK_MAP_H_

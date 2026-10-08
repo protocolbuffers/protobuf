@@ -131,7 +131,7 @@ class IoTest : public testing::Test {
 };
 
 const int IoTest::kBlockSizes[] = {-1, 1, 2, 5, 7, 10, 23, 64};
-const int IoTest::kBlockSizeCount = ABSL_ARRAYSIZE(IoTest::kBlockSizes);
+const int IoTest::kBlockSizeCount = std::size(IoTest::kBlockSizes);
 
 bool IoTest::WriteToOutput(ZeroCopyOutputStream* output, const void* data,
                            int size) {
@@ -1159,10 +1159,12 @@ TEST(CordInputStreamTest, HugeCordNodes) {
 
   std::string input_str;
   // We don't care about the bytes, so avoid the cost.
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::strings_internal::STLStringResizeUninitializedAmortized(
       &input_str,
       // Something larger than INT_MAX
       3'000'000'000);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   absl::Cord source = absl::MakeCordFromExternal(input_str, [](auto) {});
   ASSERT_EQ(source.Chunks().begin()->size(), input_str.size());
 
@@ -1787,13 +1789,13 @@ TEST_F(IoTest, NonBlockingFileIo) {
       ASSERT_EQ(fcntl(fd[1], F_SETFL, O_NONBLOCK), 0);
 
       absl::Mutex go_write;
-      go_write.Lock();
+      go_write.lock();
 
       bool done_reading = false;
 
       std::thread write_thread([this, fd, &go_write, i]() {
-        go_write.Lock();
-        go_write.Unlock();
+        go_write.lock();
+        go_write.unlock();
         FileOutputStream output(fd[1], kBlockSizes[i]);
         WriteStuff(&output);
         EXPECT_EQ(0, output.GetErrno());
@@ -1812,7 +1814,7 @@ TEST_F(IoTest, NonBlockingFileIo) {
       // reading thread waits for the data to be available before returning.
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       EXPECT_FALSE(done_reading);
-      go_write.Unlock();
+      go_write.unlock();
       write_thread.join();
       read_thread.join();
       EXPECT_TRUE(done_reading);
@@ -2032,7 +2034,7 @@ TEST_F(IoTest, ConcatenatingInputStream) {
                                     &input5, &input6, &input7};
 
   // Create the concatenating stream and read.
-  ConcatenatingInputStream input(streams, ABSL_ARRAYSIZE(streams));
+  ConcatenatingInputStream input(streams, std::size(streams));
   ReadStuff(&input);
 }
 
