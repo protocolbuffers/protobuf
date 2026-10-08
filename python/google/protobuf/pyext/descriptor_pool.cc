@@ -119,6 +119,7 @@ static PyDescriptorPool* _CreateDescriptorPool() {
   cpool->descriptor_features =
       new absl::flat_hash_map<const void*, PyObject*>();
   cpool->cache_mutex = new FreeThreadingMutex();
+  cpool->mutex = new FreeThreadingMutex();
 
   cpool->py_message_factory =
       message_factory::NewMessageFactory(&PyMessageFactory_Type, cpool);
@@ -227,6 +228,7 @@ static void Dealloc(PyObject* pself) {
   }
   delete self->descriptor_features;
   delete self->cache_mutex;
+  delete self->mutex;
   if (self->pool != nullptr) {
     delete self->pool;
   }
@@ -551,17 +553,19 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   }
 
   BuildFileErrorCollector error_collector;
-  const FileDescriptor* descriptor =
-      // Pool is mutable, we can remove the "const".
-      const_cast<DescriptorPool*>(self->pool->get())
-          ->BuildFileCollectingErrors(file_proto, &error_collector);
+  const FileDescriptor* descriptor = nullptr;
+  {
+    FreeThreadingLockGuard lock(*self->mutex);
+    // Pool is mutable, we can remove the "const".
+    descriptor = const_cast<DescriptorPool*>(self->pool->get())
+                     ->BuildFileCollectingErrors(file_proto, &error_collector);
+  }
   if (descriptor == nullptr) {
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool!\n%s",
                  error_collector.error_message.c_str());
     return nullptr;
   }
-
 
   return PyFileDescriptor_FromDescriptorWithSerializedPb(descriptor,
                                                          serialized_pb);
@@ -604,10 +608,14 @@ static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
     return nullptr;
   }
 
-  absl::Status status =
-      const_cast<DescriptorPool*>(self->pool->get())
-          ->SetFeatureSetDefaults(
-              *reinterpret_cast<const FeatureSetDefaults*>(defaults->message));
+  absl::Status status;
+  {
+    FreeThreadingLockGuard lock(*self->mutex);
+    status = const_cast<DescriptorPool*>(self->pool->get())
+                 ->SetFeatureSetDefaults(
+                     *reinterpret_cast<const FeatureSetDefaults*>(
+                         defaults->message));
+  }
   if (!status.ok()) {
     PyErr_SetString(PyExc_ValueError, std::string(status.message()).c_str());
     return nullptr;

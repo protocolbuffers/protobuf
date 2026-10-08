@@ -854,6 +854,63 @@ class FreeThreadingTest(unittest.TestCase):
 
     self.assertEqual(errors, [])
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentAddSerializedFileDataRace(self):
+    """Reproduces the data race in AddSerializedFile for not-yet-known files.
+
+    Every *_pb2 import calls Default().AddSerializedFile(). When the file is
+    not already in the C++ generated pool, the cpp implementation builds it
+    with DescriptorPool::BuildFileCollectingErrors() without holding a lock,
+    so two threads importing two different *_pb2 modules concurrently race.
+    Unlike most cases here this can only be hit once per process (a file is
+    only built once), so the test uses many distinct files instead of looping.
+    """
+    pool = descriptor_pool.Default()
+    num_threads = 10
+    files_per_thread = 20
+
+    def MakeFile(name):
+      # Each file gets its own package so the identical message names do not
+      # conflict with each other in the shared default pool.
+      f_proto = descriptor_pb2.FileDescriptorProto(
+          name=name, package=name.removesuffix('.proto').replace('/', '.')
+      )
+      f_proto.message_type.add(name='Message')
+      return f_proto.SerializeToString()
+
+    serialized = {
+        t: [
+            MakeFile(f'thread_safe_test/unlinked_{t}_{i}.proto')
+            for i in range(files_per_thread)
+        ]
+        for t in range(num_threads)
+    }
+
+    barrier = threading.Barrier(num_threads)
+    errors = []
+
+    def Worker(thread_id):
+      barrier.wait()
+      try:
+        for data in serialized[thread_id]:
+          desc = pool.AddSerializedFile(data)
+          if 'Message' not in desc.message_types_by_name:
+            errors.append(f'Unexpected file descriptor for {desc.name}')
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        errors.append(str(e))
+
+    threads = [
+        threading.Thread(target=Worker, args=(i,)) for i in range(num_threads)
+    ]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
 
 if __name__ == '__main__':
   unittest.main()
