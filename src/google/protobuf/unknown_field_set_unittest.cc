@@ -26,6 +26,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/protobuf_test.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest.pb.h"
@@ -201,57 +202,43 @@ static void PopulateUFS(UnknownFieldSet& set) {
   }
 }
 
-TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeFrom) {
+PB_TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeFrom) {
   Arena arena;
 
-  for (bool lhs_arena : {false, true}) {
-    for (bool rhs_arena : {false, true}) {
-      UnknownFieldSet lhs_stack, rhs_stack;
-      auto& lhs =
-          lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
-      auto& rhs =
-          rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
-      PopulateUFS(rhs);
-      lhs.MergeFrom(rhs);
-    }
-  }
+  const bool lhs_arena = PB_TEST_CHOOSE_VALUE({false, true}, "lhs_arena");
+  const bool rhs_arena = PB_TEST_CHOOSE_VALUE({false, true}, "rhs_arena");
+  UnknownFieldSet lhs_stack, rhs_stack;
+  auto& lhs = lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+  auto& rhs = rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+  PopulateUFS(rhs);
+  lhs.MergeFrom(rhs);
 }
 
-TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeAndDestroy) {
+PB_TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithMergeAndDestroy) {
   Arena arena;
 
-  for (bool lhs_arena : {false, true}) {
-    for (bool populate_lhs : {false, true}) {
-      for (bool rhs_arena : {false, true}) {
-        for (bool populate_rhs : {false, true}) {
-          UnknownFieldSet lhs_stack, rhs_stack;
-          auto& lhs =
-              lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
-          auto& rhs =
-              rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
-          if (populate_lhs) PopulateUFS(lhs);
-          if (populate_rhs) PopulateUFS(rhs);
-          lhs.MergeFromAndDestroy(&rhs);
-        }
-      }
-    }
-  }
+  const bool lhs_arena = PB_TEST_CHOOSE_VALUE({false, true}, "lhs_arena");
+  const bool populate_lhs = PB_TEST_CHOOSE_VALUE({false, true}, "populate_lhs");
+  const bool rhs_arena = PB_TEST_CHOOSE_VALUE({false, true}, "rhs_arena");
+  const bool populate_rhs = PB_TEST_CHOOSE_VALUE({false, true}, "populate_rhs");
+  UnknownFieldSet lhs_stack, rhs_stack;
+  auto& lhs = lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+  auto& rhs = rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+  if (populate_lhs) PopulateUFS(lhs);
+  if (populate_rhs) PopulateUFS(rhs);
+  lhs.MergeFromAndDestroy(&rhs);
 }
 
-TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithSwap) {
+PB_TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithSwap) {
   Arena arena;
 
-  for (bool lhs_arena : {false, true}) {
-    for (bool rhs_arena : {false, true}) {
-      UnknownFieldSet lhs_stack, rhs_stack;
-      auto& lhs =
-          lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
-      auto& rhs =
-          rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
-      PopulateUFS(lhs);
-      lhs.Swap(&rhs);
-    }
-  }
+  const bool lhs_arena = PB_TEST_CHOOSE_VALUE({false, true}, "lhs_arena");
+  const bool rhs_arena = PB_TEST_CHOOSE_VALUE({false, true}, "rhs_arena");
+  UnknownFieldSet lhs_stack, rhs_stack;
+  auto& lhs = lhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : lhs_stack;
+  auto& rhs = rhs_arena ? *Arena::Create<UnknownFieldSet>(&arena) : rhs_stack;
+  PopulateUFS(lhs);
+  lhs.Swap(&rhs);
 }
 
 TEST_F(UnknownFieldSetTest, ArenaSupportWorksWithClear) {
