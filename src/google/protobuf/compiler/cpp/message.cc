@@ -4479,6 +4479,7 @@ struct SerializeFieldChunk {
 using SerializeChunk =
     std::variant<SerializeFieldChunk, OneofChunk, ExtensionRangeChunk>;
 
+// TODO: b/568757368 - Make `TryMerge` a member function of the chunk types.
 bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   if (to->should_split != from.should_split ||
       to->hasword_index != from.hasword_index) {
@@ -4589,18 +4590,43 @@ double GetAbsenceProbability(const FieldDescriptor* field,
   return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
 }
 
+// TODO: b/568757368 - Make `WithFields` a member function of the chunk types.
+SerializeFieldChunk WithFields(const SerializeFieldChunk& chunk,
+                               std::vector<const FieldDescriptor*> fields) {
+  return SerializeFieldChunk{chunk.should_split, chunk.hasword_index,
+                             std::move(fields)};
+}
+
+FieldChunk WithFields(const FieldChunk& chunk,
+                      std::vector<const FieldDescriptor*> fields) {
+  FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
+  res.fields = std::move(fields);
+  return res;
+}
+
+// TODO: b/568757368 - Make `GetPartitionable` a member function of the chunk
+// types.
+const SerializeFieldChunk* GetPartitionable(const SerializeChunk& chunk) {
+  const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
+  if (field_chunk != nullptr && field_chunk->hasword_index.has_value()) {
+    return field_chunk;
+  }
+  return nullptr;
+}
+
+const FieldChunk* GetPartitionable(const FieldChunk& chunk) {
+  return chunk.has_hasbit ? &chunk : nullptr;
+}
+
 // Greedily partitions the fields sharing a hasbit word into batches to
 // minimize the expected number of branch checks executed during serialization.
-std::vector<SerializeFieldChunk> PartitionToMinimizeExpectedBranches(
-    const SerializeFieldChunk& chunk, const Options& options) {
-  std::vector<SerializeFieldChunk> result;
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
+                                                       const Options& options) {
+  std::vector<Chunk> result;
   if (chunk.fields.empty()) return result;
 
-  result.push_back(SerializeFieldChunk{
-      chunk.should_split,
-      chunk.hasword_index,
-      {chunk.fields.front()},
-  });
+  result.push_back(WithFields(chunk, {chunk.fields.front()}));
   double p_none = GetAbsenceProbability(chunk.fields.front(), options);
 
   for (size_t i = 1; i < chunk.fields.size(); ++i) {
@@ -4615,11 +4641,7 @@ std::vector<SerializeFieldChunk> PartitionToMinimizeExpectedBranches(
     // If adding this field to the current batch has a higher expected branches
     // cost than if the field were alone, start a new chunk.
     if (extended_cost > current_cost + 1.0) {
-      result.push_back(SerializeFieldChunk{
-          chunk.should_split,
-          chunk.hasword_index,
-          {field},
-      });
+      result.push_back(WithFields(chunk, {field}));
       p_none = p_field_absent;
     } else {
       result.back().fields.push_back(field);
@@ -4629,18 +4651,18 @@ std::vector<SerializeFieldChunk> PartitionToMinimizeExpectedBranches(
   return result;
 }
 
-std::vector<SerializeChunk> PartitionToMinimizeExpectedBranches(
-    std::vector<SerializeChunk> chunks, const Options& options) {
-  std::vector<SerializeChunk> result;
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(
+    std::vector<Chunk> chunks, const Options& options) {
+  std::vector<Chunk> result;
 
-  for (SerializeChunk& chunk : chunks) {
-    const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
-    if (field_chunk == nullptr || !field_chunk->hasword_index.has_value() ||
-        field_chunk->fields.size() <= 1) {
-      result.push_back(std::move(chunk));
-    } else {
-      absl::c_move(PartitionToMinimizeExpectedBranches(*field_chunk, options),
+  for (Chunk& chunk : chunks) {
+    const auto* partitionable = GetPartitionable(chunk);
+    if (partitionable != nullptr && partitionable->fields.size() > 1) {
+      absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
                    std::back_inserter(result));
+    } else {
+      result.push_back(std::move(chunk));
     }
   }
 
@@ -4961,10 +4983,10 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
   std::vector<FieldChunk> chunks =
       CollectFields(rest, options_, [&](const auto* a, const auto* b) {
         return a->is_required() == b->is_required() &&
-               field_layout_.GetHasByteIndex(a) ==
-                   field_layout_.GetHasByteIndex(b) &&
-               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_);
+               field_layout_.GetHasWordIndex(a) ==
+                   field_layout_.GetHasWordIndex(b);
       });
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   // Interleave the fixed chunks in the right place to be able to reuse
   // cached_has_bits if available. Otherwise, add them to the end.
@@ -5016,11 +5038,9 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
         continue;
       }
 
-      const bool check_has_byte =
+      const bool check_has_word =
           fields.size() > 1 &&
-          field_layout_.GetHasWordIndex(fields[0]).has_value() &&
-          !IsLikelyPresent(fields.back(), options_);
-      DebugAssertUniformLikelyPresence(fields, options_);
+          field_layout_.GetHasWordIndex(fields[0]).has_value();
       p->Emit({{"update_byte_size_for_chunk",
                 [&] {
                   // Go back and emit checks for each of the fields we
@@ -5031,12 +5051,12 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                 }},
                {"may_update_cached_has_word_index",
                 [&] {
-                  if (!check_has_byte) return;
+                  if (!check_has_word) return;
                   update_cached_has_bits(fields);
                 }},
                {"check_if_chunk_present",
                 [&] {
-                  if (!check_has_byte) {
+                  if (!check_has_word) {
                     return;
                   }
 
@@ -5044,12 +5064,9 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                   // if none are set.
                   uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
-                  // Check (up to) 8 has_bits at a time if we have more
-                  // than one field in this chunk.  Due to field layout
-                  // ordering, we may check _has_bits_[last_chunk * 8 /
-                  // 32] multiple times.
+                  // Check has_bits at a time if we have more than one field in
+                  // this chunk.
                   ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-                  ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
                   p->Emit({{"condition",
                             GenerateConditionMaybeWithProbabilityForGroup(

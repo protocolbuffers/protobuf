@@ -7053,7 +7053,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00003fffU)) {
     // repeated string dependency = 3;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (const ::google::protobuf::RepeatedPtrField<::std::string>& f = this_._impl_.dependency_;
@@ -7118,8 +7118,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
         }
       }
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
     // optional string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -8113,7 +8111,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000007ffU)) {
     // repeated .google.protobuf.FieldDescriptorProto field = 2;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1UL * this_._internal_field_size();
@@ -8173,8 +8171,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
         }
       }
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
     // optional string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -9187,7 +9183,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += static_cast<bool>(0x00000100U & cached_has_bits) * 3;
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000006ffU)) {
     // optional string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -9228,8 +9224,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
           this_._internal_oneof_index());
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000600U)) {
     // optional .google.protobuf.FieldDescriptorProto.Label label = 4;
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
       total_size += 1 +
@@ -11382,7 +11376,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += ::absl::popcount(0x000bf000U & cached_has_bits) * 3;
   total_size += static_cast<bool>(0x00000800U & cached_has_bits) * 2;
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x001407ffU)) {
     // optional string java_package = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -11423,8 +11417,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
                                       this_._internal_php_namespace());
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
     // optional string php_metadata_namespace = 44;
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       total_size += 2 + ::google::protobuf::internal::WireFormatLite::StringSize(
@@ -11440,8 +11432,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       total_size +=
           2 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.features_);
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00140000U)) {
     // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
     if (CheckHasBit(cached_has_bits, 0x00040000U)) {
       total_size += 1 +
@@ -12765,7 +12755,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   cached_has_bits = this_._impl_._has_bits_[0];
   total_size += static_cast<bool>(0x00000800U & cached_has_bits) * 3;
   total_size += ::absl::popcount(0x000005e0U & cached_has_bits) * 2;
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x0000321fU)) {
     // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 2UL * this_._internal_edition_defaults_size();
@@ -12795,8 +12785,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_ctype());
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00003200U)) {
     // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
     if (CheckHasBit(cached_has_bits, 0x00000200U)) {
       total_size += 1 +
@@ -15322,7 +15310,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000001ffU)) {
     // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 +
@@ -15363,8 +15351,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       total_size += 1 +
                     ::_pbi::WireFormatLite::EnumSize(this_._internal_default_symbol_visibility());
     }
-  }
-   {
     // optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       total_size += 1 +
