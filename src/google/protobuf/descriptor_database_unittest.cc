@@ -441,6 +441,66 @@ TEST_P(DescriptorDatabaseTest, ConflictingTypeError) {
       "}");
 }
 
+TEST_P(DescriptorDatabaseTest, ConflictingCrossPackageTypeError) {
+  AddToDatabase(
+      "name: \"foo.proto\" "
+      "package: \"foo\" "
+      "message_type { "
+      "  name: \"Bar\" "
+      "}");
+  AddToDatabaseWithError(
+      "name: \"bar.proto\" "
+      "package: \"foo.Bar\" "
+      "message_type { "
+      "  name: \"Baz\" "
+      "}");
+
+  // Sub-symbol added before super-symbol across packages.
+  AddToDatabase(
+      "name: \"sub.proto\" "
+      "package: \"qux.Quux\" "
+      "message_type { "
+      "  name: \"Corge\" "
+      "}");
+  AddToDatabaseWithError(
+      "name: \"super.proto\" "
+      "package: \"qux\" "
+      "message_type { "
+      "  name: \"Quux\" "
+      "}");
+
+  // Non-conflicting prefix packages should succeed and be discoverable.
+  AddToDatabase(
+      "name: \"prefix1.proto\" "
+      "package: \"foo.BarBaz\" "
+      "message_type { "
+      "  name: \"Qux\" "
+      "}");
+  AddToDatabase(
+      "name: \"prefix2.proto\" "
+      "package: \"foo.bar\" "
+      "message_type { "
+      "  name: \"Baz\" "
+      "}");
+
+  FileDescriptorProto file;
+  EXPECT_TRUE(database_->FindFileContainingSymbol("foo.Bar", &file));
+  EXPECT_EQ("foo.proto", file.name());
+  EXPECT_TRUE(database_->FindFileContainingSymbol("foo.BarBaz.Qux", &file));
+  EXPECT_EQ("prefix1.proto", file.name());
+  EXPECT_TRUE(database_->FindFileContainingSymbol("foo.bar.Baz", &file));
+  EXPECT_EQ("prefix2.proto", file.name());
+
+  // After flattening (triggered by FindFileContainingSymbol), cross-package
+  // conflicts against by_symbol_flat_ are still rejected.
+  AddToDatabaseWithError(
+      "name: \"after_flat.proto\" "
+      "package: \"foo.Bar\" "
+      "message_type { "
+      "  name: \"AfterFlat\" "
+      "}");
+}
+
 TEST_P(DescriptorDatabaseTest, ConflictingExtensionError) {
   AddToDatabase(
       "name: \"foo.proto\" "

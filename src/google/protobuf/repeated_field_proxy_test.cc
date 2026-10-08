@@ -742,11 +742,13 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy.get(2), StringEq("3"));
 
     if constexpr (std::is_same_v<ElementType, absl::string_view>) {
-      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy[0]), const absl::string_view>));
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy.get(0)), const absl::string_view>));
     } else {
-      static_assert(std::is_same_v<decltype(proxy[0]), ElementType&>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+      EXPECT_TRUE((std::is_same_v<decltype(proxy[0]), ElementType&>));
+      EXPECT_TRUE((std::is_same_v<decltype(proxy.get(0)), const ElementType&>));
     }
   }
 
@@ -761,11 +763,13 @@ TYPED_TEST(RepeatedStringFieldProxyTest, ArrayIndexing) {
     EXPECT_THAT(proxy.get(2), StringEq("3"));
 
     if constexpr (std::is_same_v<ElementType, absl::string_view>) {
-      static_assert(std::is_same_v<decltype(proxy[0]), absl::string_view>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), absl::string_view>);
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy[0]), const absl::string_view>));
+      EXPECT_TRUE(
+          (std::is_same_v<decltype(proxy.get(0)), const absl::string_view>));
     } else {
-      static_assert(std::is_same_v<decltype(proxy[0]), const ElementType&>);
-      static_assert(std::is_same_v<decltype(proxy.get(0)), const ElementType&>);
+      EXPECT_TRUE((std::is_same_v<decltype(proxy[0]), const ElementType&>));
+      EXPECT_TRUE((std::is_same_v<decltype(proxy.get(0)), const ElementType&>));
     }
   }
 }
@@ -2519,6 +2523,150 @@ TYPED_TEST(RepeatedFieldProxyTest, StableCSortMessage) {
   EXPECT_EQ(&field->Get(3), msg2);
 }
 
+TYPED_TEST(RepeatedNumericFieldProxyTest, RepeatedFieldBackInserter) {
+  auto field = this->MakeRepeatedFieldContainer();
+  field->Add(1);
+  field->Add(2);
+
+  auto proxy = field.MakeProxy();
+
+  auto values = {3, 4, 5};
+  std::copy(values.begin(), values.end(),
+            google::protobuf::RepeatedFieldBackInserter(proxy));
+
+  EXPECT_THAT(proxy, ElementsAre(1, 2, 3, 4, 5));
+  EXPECT_THAT(*field, ElementsAre(1, 2, 3, 4, 5));
+}
+
+TYPED_TEST(RepeatedStringFieldProxyTest, RepeatedFieldBackInserter) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field = this->MakeRepeatedFieldContainer();
+  this->Add(field, "1");
+  this->Add(field, "2");
+
+  auto proxy = field.MakeProxy();
+
+  if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+    auto values = {absl::Cord("3"), absl::Cord("4"), absl::Cord("5")};
+    std::copy(values.begin(), values.end(),
+              google::protobuf::RepeatedFieldBackInserter(proxy));
+  } else {
+    auto values = {"3", "4", "5"};
+    std::copy(values.begin(), values.end(),
+              google::protobuf::RepeatedFieldBackInserter(proxy));
+  }
+
+  EXPECT_THAT(proxy, ElementsAre(StringEq("1"), StringEq("2"), StringEq("3"),
+                                 StringEq("4"), StringEq("5")));
+  EXPECT_THAT(*field, ElementsAre(StringEq("1"), StringEq("2"), StringEq("3"),
+                                  StringEq("4"), StringEq("5")));
+}
+
+TYPED_TEST(RepeatedFieldProxyTest, RepeatedFieldBackInserterMessages) {
+  auto field = this->template MakeRepeatedFieldContainer<
+      RepeatedFieldProxyTestSimpleMessage>();
+  auto proxy = field.MakeProxy();
+  proxy.emplace_back().set_value(1);
+  proxy.emplace_back().set_value(2);
+
+  RepeatedFieldProxyTestSimpleMessage msg3;
+  msg3.set_value(3);
+  RepeatedFieldProxyTestSimpleMessage msg4;
+  msg4.set_value(4);
+  RepeatedFieldProxyTestSimpleMessage msg5;
+  msg5.set_value(5);
+  auto values = {msg3, msg4, msg5};
+  std::copy(values.begin(), values.end(),
+            google::protobuf::RepeatedFieldBackInserter(proxy));
+
+  EXPECT_THAT(proxy, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                 EqualsProto(R"pb(value: 2)pb"),
+                                 EqualsProto(R"pb(value: 3)pb"),
+                                 EqualsProto(R"pb(value: 4)pb"),
+                                 EqualsProto(R"pb(value: 5)pb")));
+  EXPECT_THAT(*field, ElementsAre(EqualsProto(R"pb(value: 1)pb"),
+                                  EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb"),
+                                  EqualsProto(R"pb(value: 4)pb"),
+                                  EqualsProto(R"pb(value: 5)pb")));
+}
+
+// Tests that the back inserter can be rebound to a different repeated field.
+TYPED_TEST(RepeatedNumericFieldProxyTest, RebindBackInserter) {
+  auto field1 = this->MakeRepeatedFieldContainer();
+  field1->Add(1);
+  auto proxy1 = field1.MakeProxy();
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  field2->Add(2);
+  auto proxy2 = field2.MakeProxy();
+
+  auto back_inserter1 = google::protobuf::RepeatedFieldBackInserter(proxy1);
+  // Reassign the back inserter to the second proxy.
+  back_inserter1 = google::protobuf::RepeatedFieldBackInserter(proxy2);
+  *back_inserter1++ = 3;
+
+  EXPECT_THAT(proxy1, ElementsAre(1));
+  EXPECT_THAT(*field1, ElementsAre(1));
+  EXPECT_THAT(proxy2, ElementsAre(2, 3));
+  EXPECT_THAT(*field2, ElementsAre(2, 3));
+}
+
+// Tests that the back inserter can be rebound to a different repeated field.
+TYPED_TEST(RepeatedStringFieldProxyTest, RebindBackInserter) {
+  using ElementType = typename TypeParam::ElementType;
+
+  auto field1 = this->MakeRepeatedFieldContainer();
+  this->Add(field1, "1");
+  auto proxy1 = field1.MakeProxy();
+
+  auto field2 = this->MakeRepeatedFieldContainer();
+  this->Add(field2, "2");
+  auto proxy2 = field2.MakeProxy();
+
+  auto back_inserter1 = google::protobuf::RepeatedFieldBackInserter(proxy1);
+  // Reassign the back inserter to the second proxy.
+  back_inserter1 = google::protobuf::RepeatedFieldBackInserter(proxy2);
+  if constexpr (std::is_same_v<ElementType, absl::Cord>) {
+    *back_inserter1++ = absl::Cord("3");
+  } else {
+    *back_inserter1++ = "3";
+  }
+
+  EXPECT_THAT(proxy1, ElementsAre(StringEq("1")));
+  EXPECT_THAT(*field1, ElementsAre(StringEq("1")));
+  EXPECT_THAT(proxy2, ElementsAre(StringEq("2"), StringEq("3")));
+  EXPECT_THAT(*field2, ElementsAre(StringEq("2"), StringEq("3")));
+}
+
+// Tests that the back inserter can be rebound to a different repeated field.
+TYPED_TEST(RepeatedFieldProxyTest, RebindBackInserter) {
+  auto field1 = this->template MakeRepeatedFieldContainer<
+      RepeatedFieldProxyTestSimpleMessage>();
+  field1->Add()->set_value(1);
+  auto proxy1 = field1.MakeProxy();
+
+  auto field2 = this->template MakeRepeatedFieldContainer<
+      RepeatedFieldProxyTestSimpleMessage>();
+  field2->Add()->set_value(2);
+  auto proxy2 = field2.MakeProxy();
+
+  auto back_inserter1 = google::protobuf::RepeatedFieldBackInserter(proxy1);
+  // Reassign the back inserter to the second proxy.
+  back_inserter1 = google::protobuf::RepeatedFieldBackInserter(proxy2);
+  RepeatedFieldProxyTestSimpleMessage msg3;
+  msg3.set_value(3);
+  *back_inserter1++ = std::move(msg3);
+
+  EXPECT_THAT(proxy1, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+  EXPECT_THAT(*field1, ElementsAre(EqualsProto(R"pb(value: 1)pb")));
+  EXPECT_THAT(proxy2, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                  EqualsProto(R"pb(value: 3)pb")));
+  EXPECT_THAT(*field2, ElementsAre(EqualsProto(R"pb(value: 2)pb"),
+                                   EqualsProto(R"pb(value: 3)pb")));
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest,
            RepeatedFieldOrProxyImplicitConversion) {
   using ElementType = typename TypeParam::ElementType;
@@ -3188,6 +3336,79 @@ TEST(RepeatedFieldProxyInterfaceTest, RepeatedStringViewProxy) {
 
   auto proxy = msg.string_views_proxy();
   EXPECT_THAT(proxy, ElementsAre("1", "2", "3"));
+}
+
+// Probe which tests whether the expression `proxy[index] = value` compiles.
+template <typename T, typename = void>
+static constexpr bool kBracketAssignmentCompiles = false;
+
+template <typename T>
+static constexpr bool kBracketAssignmentCompiles<
+    T, std::void_t<decltype(std::declval<RepeatedFieldProxy<T>>()[std::declval<
+                                size_t>()] = std::declval<T>())>> = true;
+
+TEST(RepeatedFieldProxyInterfaceTest, BracketAssignmentCompiles) {
+  EXPECT_FALSE(kBracketAssignmentCompiles<bool>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<int32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<uint32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<int64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<uint64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<float>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<double>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<absl::string_view>);
+  EXPECT_TRUE(kBracketAssignmentCompiles<std::string>);
+  EXPECT_TRUE(kBracketAssignmentCompiles<absl::Cord>);
+  EXPECT_TRUE(kBracketAssignmentCompiles<RepeatedFieldProxyTestSimpleMessage>);
+
+  EXPECT_FALSE(kBracketAssignmentCompiles<const bool>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const int32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const uint32_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const int64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const uint64_t>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const float>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const double>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const absl::string_view>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const std::string>);
+  EXPECT_FALSE(kBracketAssignmentCompiles<const absl::Cord>);
+  EXPECT_FALSE(
+      kBracketAssignmentCompiles<const RepeatedFieldProxyTestSimpleMessage>);
+}
+
+// Probe which tests whether the expression `proxy.get(index) = value` compiles.
+template <typename T, typename = void>
+static constexpr bool kGetAssignmentCompiles = false;
+
+template <typename T>
+static constexpr bool kGetAssignmentCompiles<
+    T, std::void_t<decltype(std::declval<RepeatedFieldProxy<T>>().get(
+                                std::declval<size_t>()) = std::declval<T>())>> =
+    true;
+
+TEST(RepeatedFieldProxyInterfaceTest, GetAssignmentCompiles) {
+  EXPECT_FALSE(kGetAssignmentCompiles<bool>);
+  EXPECT_FALSE(kGetAssignmentCompiles<int32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<uint32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<int64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<uint64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<float>);
+  EXPECT_FALSE(kGetAssignmentCompiles<double>);
+  EXPECT_FALSE(kGetAssignmentCompiles<absl::string_view>);
+  EXPECT_FALSE(kGetAssignmentCompiles<std::string>);
+  EXPECT_FALSE(kGetAssignmentCompiles<absl::Cord>);
+  EXPECT_FALSE(kGetAssignmentCompiles<RepeatedFieldProxyTestSimpleMessage>);
+
+  EXPECT_FALSE(kGetAssignmentCompiles<const bool>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const int32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const uint32_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const int64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const uint64_t>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const float>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const double>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const absl::string_view>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const std::string>);
+  EXPECT_FALSE(kGetAssignmentCompiles<const absl::Cord>);
+  EXPECT_FALSE(
+      kGetAssignmentCompiles<const RepeatedFieldProxyTestSimpleMessage>);
 }
 
 }  // namespace

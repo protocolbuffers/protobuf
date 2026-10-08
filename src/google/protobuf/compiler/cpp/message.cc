@@ -30,6 +30,7 @@
 #include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/match.h"
@@ -293,39 +294,23 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
                                   absl::AnyInvocable<void()> emit_body) {
   ABSL_DCHECK(field->cpp_type() == FieldDescriptor::CPPTYPE_STRING);
   ABSL_DCHECK(IsArenaStringPtr(field, opts));
+  // The merge semantic is "overwrite if present". This statement is emitted
+  // when hasbit is set and src proto field is nonpresent (i.e. an empty
+  // string). Now, the destination string can be either empty or nonempty.
+  // - If dst is empty and pointing to the default instance, allocate a new
+  // empty instance.
+  // - If dst is already pointing to a nondefault instance, do nothing.
+  // This will allow destructors and Clear() to be simpler.
   p->Emit(
       {
           {"condition", [&] { EmitNonDefaultCheck(p, prefix, field, opts); }},
           {"emit_body", [&] { emit_body(); }},
-          {"set_empty_string",
-           [&] {
-             p->Emit(
-                 {
-                     {"prefix", prefix},
-                     {"name", FieldName(field)},
-                     {"field_", FieldMemberName(field, split)},
-                 },
-                 // The merge semantic is "overwrite if present". This statement
-                 // is emitted when hasbit is set and src proto field is
-                 // nonpresent (i.e. an empty string). Now, the destination
-                 // string can be either empty or nonempty.
-                 // - If dst is empty and pointing to the default instance,
-                 //   allocate a new empty instance.
-                 // - If dst is already pointing to a nondefault instance,
-                 //   do nothing.
-                 // This will allow destructors and Clear() to be simpler.
-                 R"cc(
-                   if (_this->$field_$.IsDefault()) {
-                     _this->_internal_set_$name$("");
-                   }
-                 )cc");
-           }},
       },
       R"cc(
         if ($condition$) {
           $emit_body$;
-        } else {
-          $set_empty_string$;
+        } else if ($this_field$.IsDefault()) {
+          this_._internal_set_$name$("");
         }
       )cc");
 }
@@ -493,16 +478,6 @@ bool MayGroupChunksForHaswordsCheck(const FieldChunk& a, const FieldChunk& b) {
   return a.has_hasbit == b.has_hasbit &&
          a.is_rarely_present == b.is_rarely_present &&
          a.should_split == b.should_split;
-}
-
-// Return the number of bits set in n, a non-negative integer.
-static int popcnt(uint32_t n) {
-  int result = 0;
-  while (n != 0) {
-    result += (n & 1);
-    n = n / 2;
-  }
-  return result;
 }
 
 // Returns true if it emits conditional check against hasbit words. This is
@@ -1927,33 +1902,33 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             // virtual overrides. This reduces the number of functions in the
             // binary in both modes.
             p->Emit(R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
               private:
               static void Clear($pb$::MessageLite& msg);
               $nodiscard $static::size_t ByteSizeLong(const $pb$::MessageLite& msg);
-              $nodiscard $static $uint8$* $nonnull$ _InternalSerialize(
-                  const $pb$::MessageLite& msg, $uint8$* $nonnull$ target,
+              $nodiscard $static $uint8$* $nullable$ _InternalSerialize(
+                  const $pb$::MessageLite& msg, $uint8$* $nullable$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream);
 
               public:
+#if defined(PROTOBUF_CUSTOM_VTABLE)
               ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
                 Clear(*this);
               }
               PROTOBUF_ALWAYS_INLINE $nodiscard $::size_t ByteSizeLong() const {
                 return ByteSizeLong(*this);
               }
-              PROTOBUF_ALWAYS_INLINE $nodiscard $$uint8$* $nonnull$
-              _InternalSerialize($uint8$* $nonnull$ target,
+              PROTOBUF_ALWAYS_INLINE $nodiscard $$uint8$* $nullable$
+              _InternalSerialize($uint8$* $nullable$ target,
                                  $pb$::io::EpsCopyOutputStream* $nonnull$
                                      stream) const {
                 return _InternalSerialize(*this, target, stream);
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
-              ABSL_ATTRIBUTE_REINITIALIZES void Clear() PROTOBUF_FINAL;
+              ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
               $nodiscard $::size_t ByteSizeLong() const final;
-              $nodiscard $$uint8$* $nonnull$ _InternalSerialize(
+              $nodiscard $$uint8$* $nullable$ _InternalSerialize(
                   //~
-                  $uint8$* $nonnull$ target,
+                  $uint8$* $nullable$ target,
                   $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const final;
 #endif  // PROTOBUF_CUSTOM_VTABLE
             )cc");
@@ -2443,7 +2418,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
                             MessageLite* $nonnull$ msg,
                             const char* $nullable$ ptr,
                             ::_pbi::ParseContext* $nonnull$ ctx) {
-                          $Msg$* _this = static_cast<$Msg$*>(msg);
+                          $Msg$& this_ = *static_cast<$Msg$*>(msg);
                           $annotate_deserialize$;
                           $required$;
                           return ptr;
@@ -2815,7 +2790,8 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
           {"impl_dtor", [&] { p->Emit("this_._impl_.~Impl_();\n"); }},
       },
       R"cc(
-        inline void $Msg$::SharedDtor(MessageLite& self) {
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE void $Msg$::SharedDtor(
+            MessageLite& self) {
           $Msg$& this_ = static_cast<$Msg$&>(self);
           $has_bit_consistency$;
           this_._internal_metadata_.Delete<$unknown_fields_type$>();
@@ -2861,7 +2837,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
 
   // This code is placed inside a static method, rather than an ordinary one,
   // since that simplifies Arena's destructor list (ordinary function pointers
-  // rather than member function pointers). _this is the object being
+  // rather than member function pointers). this_ is the object being
   // destructed.
   p->Emit(
       {
@@ -2878,7 +2854,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
                       [&] { emit_field_dtors(/* split_fields= */ true); }},
                  },
                  R"cc(
-                   if (ABSL_PREDICT_FALSE(!_this->IsSplitMessageDefault())) {
+                   if (ABSL_PREDICT_FALSE(!this_.IsSplitMessageDefault())) {
                      $split_field_dtors_impl$;
                    }
                  )cc");
@@ -2894,7 +2870,7 @@ void MessageGenerator::GenerateArenaDestructorCode(io::Printer* p) {
       },
       R"cc(
         void $Msg$::ArenaDtor(void* $nonnull$ object) {
-          $Msg$* _this = reinterpret_cast<$Msg$*>(object);
+          $Msg$& this_ = *reinterpret_cast<$Msg$*>(object);
           $field_dtors$;
           $split_field_dtors$;
           $oneof_field_dtors$;
@@ -2988,9 +2964,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
                                sizeof(Impl_::$last$_));
                 )cc");
       } else {
-        p->Emit({{"field_", FieldMemberName(first, false)}},
+        p->Emit(FieldVars(first, options_),
                 R"cc(
-                  $field_$ = from.$field_$;
+                  $field_$ = $from_field$;
                 )cc");
       }
       first = nullptr;
@@ -3011,7 +2987,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   auto has_message = [&](const FieldDescriptor* field) {
     if (!field_layout_.HasHasbits()) {
-      p->Emit("from.$field_$ != nullptr");
+      p->Emit("$from_field$ != nullptr");
     } else {
       int has_bit_index = field_layout_.GetHasBitIndex(field).value();
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
@@ -3026,7 +3002,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
               $field_$ = ($has_msg$)
-                             ? Super_::CopyConstruct(arena, *from.$field_$)
+                             ? Super_::CopyConstruct(arena, *$from_field$)
                              : nullptr;
             )cc");
   };
@@ -3102,7 +3078,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
   if (ShouldSplit(descriptor_, options_)) {
     p->Emit(R"cc(
       if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
-        _Internal::MergeSplit(this, from);
+        _Internal::MergeSplit(this_, from);
       }
     )cc");
   }
@@ -3173,8 +3149,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
 #else   // PROTOBUF_CUSTOM_VTABLE
                 : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-              $Msg$* const _this = this;
-              (void)_this;
+              $Msg$& this_ [[maybe_unused]] = *this;
               _internal_metadata_.MergeFrom<$unknown_fields_type$>(
                   from._internal_metadata_);
               $copy_construct_impl$;
@@ -3444,8 +3419,8 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         // Check (up to) 8 has_bits at a time if we have more than one field in
         // this chunk.  Due to field layout ordering, we may check
         // _has_bits_[last_chunk * 8 / 32] multiple times.
-        ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-        ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+        ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
+        ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
         const int has_word_index =
             field_layout_.GetHasWordIndex(fields.front()).value();
@@ -3521,13 +3496,9 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
            }},
       },
       R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-        PROTOBUF_NOINLINE void $Msg$::Clear(MessageLite& base) {
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+        void $Msg$::Clear(MessageLite& base) {
           $Msg$& this_ = static_cast<$Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-        PROTOBUF_NOINLINE void $Msg$::Clear() {
-          $Msg$& this_ [[maybe_unused]] = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
 
           // @@protoc_insertion_point(message_clear_start:$full_name$)
           $pbi$::TSanWrite(&this_._impl_);
@@ -3539,6 +3510,9 @@ void MessageGenerator::GenerateClear(io::Printer* p) {
           $maybe_clear_hasbits$;
           this_._internal_metadata_.Clear<$unknown_fields_type$>();
         }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+        PROTOBUF_NOINLINE void $Msg$::Clear() { Clear(*this); }
+#endif  // PROTOBUF_CUSTOM_VTABLE
       )cc");
 }
 
@@ -3949,7 +3923,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
   const auto prepare_split = [&] {
     if (is_split) {
       p->Emit(R"cc(
-        _this->PrepareSplitMessageForWrite();
+        this_.PrepareSplitMessageForWrite();
       )cc");
     }
   };
@@ -3982,8 +3956,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       // Check (up to) 8 has_bits at a time if we have more than one field in
       // this chunk.  Due to field layout ordering, we may check
       // _has_bits_[last_chunk * 8 / 32] multiple times.
-      ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-      ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+      ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
+      ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
                                  chunk_mask, fields, options_)}},
@@ -3996,6 +3970,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
     // Go back and emit merging code for each of the fields we processed.
     for (const auto* field : fields) {
       const auto& generator = field_generators_.get(field);
+
+      auto field_vars = p->WithVars(FieldVars(field, options_));
 
       if (!field->is_required() && !HasHasbit(field, options_)) {
         // Merge semantics without true field presence: primitive fields are
@@ -4120,7 +4096,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           if (RequiresArena(GeneratorFunction::kMergeFrom,
                             /* is_split= */ false)) {
             p->Emit(R"cc(
-              $pb$::Arena* arena = _this->GetArena();
+              $pb$::Arena* arena = this_.GetArena();
             )cc");
           }
         }},
@@ -4134,7 +4110,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           if (!ShouldSplit(descriptor_, options_)) return;
           p->Emit(R"cc(
             if (ABSL_PREDICT_FALSE(!from.IsSplitMessageDefault())) {
-              _Internal::MergeSplit(_this, from);
+              _Internal::MergeSplit(this_, from);
             }
           )cc");
         }},
@@ -4145,11 +4121,11 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
             // Optimization to avoid a load. Assuming that most messages have
             // fewer than 32 fields, this seems useful.
             p->Emit(R"cc(
-              _this->$has_bits$[0] |= cached_has_bits;
+              this_.$has_bits$[0] |= cached_has_bits;
             )cc");
           } else if (field_layout_.HasBitsSize() >= 1) {
             p->Emit(R"cc(
-              _this->$has_bits$.Or(from.$has_bits$);
+              this_.$has_bits$.Or(from.$has_bits$);
             )cc");
           }
         }},
@@ -4183,13 +4159,13 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
                 R"cc(
                   if (const uint32_t oneof_from_case =
                           from.$oneof_case$[$index$]) {
-                    const uint32_t oneof_to_case = _this->$oneof_case$[$index$];
+                    const uint32_t oneof_to_case = this_.$oneof_case$[$index$];
                     const bool oneof_needs_init = oneof_to_case != oneof_from_case;
                     if (oneof_needs_init) {
                       if (oneof_to_case != 0) {
-                        _this->clear_$name$();
+                        this_.clear_$name$();
                       }
-                      _this->$oneof_case$[$index$] = oneof_from_case;
+                      this_.$oneof_case$[$index$] = oneof_from_case;
                     }
 
                     switch (oneof_from_case) {
@@ -4208,21 +4184,22 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           // the opportunity for tail calls.
           if (descriptor_->extension_range_count() > 0) {
             p->Emit(R"cc(
-              _this->$extensions$.MergeFrom(arena, &default_instance(),
-                                            from.$extensions$, from.GetArena());
+              this_.$extensions$.MergeFrom(arena, &default_instance(),
+                                           from.$extensions$, from.GetArena());
             )cc");
           }
         }}},
       R"cc(
         void $Msg$::MergeImpl($pb$::MessageLite& to_msg,
                               const $pb$::MessageLite& from_msg) {
-          $WeakDescriptorSelfPin$ auto* const _this = static_cast<$Msg$*>(&to_msg);
+          $WeakDescriptorSelfPin$;
+          $Msg$& this_ = static_cast<$Msg$&>(to_msg);
           auto& from = static_cast<const $Msg$&>(from_msg);
           $has_bit_consistency$;
           $get_arena$;
           $annotate_mergefrom$;
           // @@protoc_insertion_point(class_specific_merge_from_start:$full_name$)
-          $DCHK$_NE(&from, _this);
+          $DCHK$_NE(&from, &this_);
           $uint32$ cached_has_bits = 0;
           (void)cached_has_bits;
 
@@ -4231,7 +4208,7 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $merge_hasbits$;
           $merge_oneof$;
           $merge_extensions$;
-          _this->_internal_metadata_.MergeFrom<$unknown_fields_type$>(
+          this_._internal_metadata_.MergeFrom<$unknown_fields_type$>(
               from._internal_metadata_);
         }
       )cc");
@@ -4414,17 +4391,11 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
   if (descriptor_->options().message_set_wire_format()) {
     // Special-case MessageSet.
     p->Emit(R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-      $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-          const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
+      PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+      $uint8$* $nullable$ $Msg$::_InternalSerialize(
+          const $pb$::MessageLite& base, $uint8$* $nullable$ target,
           $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
         const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-      $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-          $uint8$* $nonnull$ target,
-          $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
-        const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
         $annotate_serialize$ target =
             this_.$extensions$
                 .InternalSerializeMessageSetWithCachedSizesToArray(
@@ -4433,6 +4404,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
             this_.$unknown_fields$, target, stream);
         return target;
       }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+      $uint8$* $nullable$ $Msg$::_InternalSerialize(
+          $uint8$* $nullable$ target,
+          $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
+        return _InternalSerialize(*this, target, stream);
+      }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
     )cc");
     return;
   }
@@ -4459,17 +4437,11 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
            }},
       },
       R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-        $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-            const $pb$::MessageLite& base, $uint8$* $nonnull$ target,
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+        $uint8$* $nullable$ $Msg$::_InternalSerialize(
+            const $pb$::MessageLite& base, $uint8$* $nullable$ target,
             $pb$::io::EpsCopyOutputStream* $nonnull$ stream) {
           const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-        $uint8$* $nonnull$ $Msg$::_InternalSerialize(
-            $uint8$* $nonnull$ target,
-            $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
-          const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
           $annotate_serialize$;
           $has_bit_consistency$;
           // @@protoc_insertion_point(serialize_to_array_start:$full_name$)
@@ -4477,6 +4449,13 @@ void MessageGenerator::GenerateSerializeWithCachedSizesToArray(io::Printer* p) {
           // @@protoc_insertion_point(serialize_to_array_end:$full_name$)
           return target;
         }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+        $uint8$* $nullable$ $Msg$::_InternalSerialize(
+            $uint8$* $nullable$ target,
+            $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
+          return _InternalSerialize(*this, target, stream);
+        }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
       )cc");
 }
 
@@ -4500,6 +4479,7 @@ struct SerializeFieldChunk {
 using SerializeChunk =
     std::variant<SerializeFieldChunk, OneofChunk, ExtensionRangeChunk>;
 
+// TODO: b/568757368 - Make `TryMerge` a member function of the chunk types.
 bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   if (to->should_split != from.should_split ||
       to->hasword_index != from.hasword_index) {
@@ -4535,7 +4515,7 @@ void TryAppendToBack(std::vector<SerializeChunk>& chunks, Chunk chunk) {
   chunks.push_back(std::move(chunk));
 }
 
-std::vector<SerializeChunk> CollectSerializeChunks(
+std::vector<SerializeChunk> CollectMaximalSerializeChunks(
     const Descriptor* descriptor, const FieldLayout& field_layout,
     const Options& options) {
   std::vector<const FieldDescriptor*> ordered_fields =
@@ -4584,6 +4564,110 @@ std::vector<SerializeChunk> CollectSerializeChunks(
 
   return chunks;
 }
+
+// Calculates the expected number of branch checks executed for a chunk of
+// `size` fields, where `p_none` is the probability that none of the fields
+// are present.
+//
+// For a single field (`size <= 1`), 1 branch is evaluated for its individual
+// presence check. For `size > 1`, 1 branch is evaluated for the batch presence
+// check, plus `size` subsequent individual branch checks evaluated when the
+// batch check succeeds (with probability `p_any`).
+double ExpectedNumberOfBranchesTaken(size_t size, double p_none) {
+  if (size <= 1) return 1.0;
+
+  double p_any = 1.0 - p_none;
+  return 1.0 + size * p_any;
+}
+
+double GetAbsenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  // The default value of 0.0 is chosen for two reasons:
+  // 1. We batch in other generated methods when the PdProto data isn't
+  // available and the value of 0.0f promotes batching.
+  // 2. It has shown the best performance in the protogen_micro benchmark when
+  // compared do 1.0f and 0.5f.
+  return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
+}
+
+// TODO: b/568757368 - Make `WithFields` a member function of the chunk types.
+SerializeFieldChunk WithFields(const SerializeFieldChunk& chunk,
+                               std::vector<const FieldDescriptor*> fields) {
+  return SerializeFieldChunk{chunk.should_split, chunk.hasword_index,
+                             std::move(fields)};
+}
+
+FieldChunk WithFields(const FieldChunk& chunk,
+                      std::vector<const FieldDescriptor*> fields) {
+  FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
+  res.fields = std::move(fields);
+  return res;
+}
+
+// TODO: b/568757368 - Make `GetPartitionable` a member function of the chunk
+// types.
+const SerializeFieldChunk* GetPartitionable(const SerializeChunk& chunk) {
+  const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
+  if (field_chunk != nullptr && field_chunk->hasword_index.has_value()) {
+    return field_chunk;
+  }
+  return nullptr;
+}
+
+const FieldChunk* GetPartitionable(const FieldChunk& chunk) {
+  return chunk.has_hasbit ? &chunk : nullptr;
+}
+
+// Greedily partitions the fields sharing a hasbit word into batches to
+// minimize the expected number of branch checks executed during serialization.
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
+                                                       const Options& options) {
+  std::vector<Chunk> result;
+  if (chunk.fields.empty()) return result;
+
+  result.push_back(WithFields(chunk, {chunk.fields.front()}));
+  double p_none = GetAbsenceProbability(chunk.fields.front(), options);
+
+  for (size_t i = 1; i < chunk.fields.size(); ++i) {
+    const FieldDescriptor* field = chunk.fields[i];
+    double current_cost =
+        ExpectedNumberOfBranchesTaken(result.back().fields.size(), p_none);
+    double p_field_absent = GetAbsenceProbability(field, options);
+    double new_absent = p_none * p_field_absent;
+    double extended_cost = ExpectedNumberOfBranchesTaken(
+        result.back().fields.size() + 1, new_absent);
+
+    // If adding this field to the current batch has a higher expected branches
+    // cost than if the field were alone, start a new chunk.
+    if (extended_cost > current_cost + 1.0) {
+      result.push_back(WithFields(chunk, {field}));
+      p_none = p_field_absent;
+    } else {
+      result.back().fields.push_back(field);
+      p_none = new_absent;
+    }
+  }
+  return result;
+}
+
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(
+    std::vector<Chunk> chunks, const Options& options) {
+  std::vector<Chunk> result;
+
+  for (Chunk& chunk : chunks) {
+    const auto* partitionable = GetPartitionable(chunk);
+    if (partitionable != nullptr && partitionable->fields.size() > 1) {
+      absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
+                   std::back_inserter(result));
+    } else {
+      result.push_back(std::move(chunk));
+    }
+  }
+
+  return result;
+}
 }  // namespace
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
@@ -4624,24 +4708,41 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       } else {
         CloseSplit();
       }
-      for (const auto* field : fields_chunk.fields) {
-        // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field, mg_->options_)) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
-          int has_word_index =
-              mg_->field_layout_.GetHasWordIndex(field).value();
-          if (cached_has_bit_index_ != has_word_index) {
-            // Reload.
-            cached_has_bit_index_ = has_word_index;
-            p_->Emit({{"index", cached_has_bit_index_}},
-                     R"cc(
-                       cached_has_bits = this_._impl_._has_bits_[$index$];
-                     )cc");
-          }
+
+      absl::optional<int> hasword_index = fields_chunk.hasword_index;
+      // We speculatively load the entire _has_bits_[index] contents, even
+      // if it is for only one field.
+      if (hasword_index.has_value() &&
+          cached_has_bit_index_ != *hasword_index) {
+        cached_has_bit_index_ = *hasword_index;
+        p_->Emit({{"index", cached_has_bit_index_}},
+                 R"cc(
+                   cached_has_bits = this_._impl_._has_bits_[$index$];
+                 )cc");
+      }
+
+      auto generate_serialize_fields = [&] {
+        for (const auto* field : fields_chunk.fields) {
+          mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
         }
-        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
+      };
+
+      if (fields_chunk.fields.size() > 1 && hasword_index.has_value()) {
+        uint32_t chunk_mask =
+            GenChunkMask(fields_chunk.fields, mg_->field_layout_);
+        p_->Emit(
+            {
+                {"cond", GenerateConditionMaybeWithProbabilityForGroup(
+                             chunk_mask, fields_chunk.fields, mg_->options_)},
+                {"body", generate_serialize_fields},
+            },
+            R"cc(
+              if ($cond$) {
+                $body$;
+              }
+            )cc");
+      } else {
+        generate_serialize_fields();
       }
     }
 
@@ -4675,7 +4776,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
 
   std::vector<SerializeChunk> chunks =
-      CollectSerializeChunks(descriptor_, field_layout_, options_);
+      CollectMaximalSerializeChunks(descriptor_, field_layout_, options_);
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   int num_ext_chunks = absl::c_count_if(chunks, [](const auto& chunk) {
     return std::holds_alternative<ExtensionRangeChunk>(chunk);
@@ -4881,10 +4983,10 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
   std::vector<FieldChunk> chunks =
       CollectFields(rest, options_, [&](const auto* a, const auto* b) {
         return a->is_required() == b->is_required() &&
-               field_layout_.GetHasByteIndex(a) ==
-                   field_layout_.GetHasByteIndex(b) &&
-               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_);
+               field_layout_.GetHasWordIndex(a) ==
+                   field_layout_.GetHasWordIndex(b);
       });
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   // Interleave the fixed chunks in the right place to be able to reuse
   // cached_has_bits if available. Otherwise, add them to the end.
@@ -4936,11 +5038,9 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
         continue;
       }
 
-      const bool check_has_byte =
+      const bool check_has_word =
           fields.size() > 1 &&
-          field_layout_.GetHasWordIndex(fields[0]).has_value() &&
-          !IsLikelyPresent(fields.back(), options_);
-      DebugAssertUniformLikelyPresence(fields, options_);
+          field_layout_.GetHasWordIndex(fields[0]).has_value();
       p->Emit({{"update_byte_size_for_chunk",
                 [&] {
                   // Go back and emit checks for each of the fields we
@@ -4951,12 +5051,12 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                 }},
                {"may_update_cached_has_word_index",
                 [&] {
-                  if (!check_has_byte) return;
+                  if (!check_has_word) return;
                   update_cached_has_bits(fields);
                 }},
                {"check_if_chunk_present",
                 [&] {
-                  if (!check_has_byte) {
+                  if (!check_has_word) {
                     return;
                   }
 
@@ -4964,12 +5064,9 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                   // if none are set.
                   uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
-                  // Check (up to) 8 has_bits at a time if we have more
-                  // than one field in this chunk.  Due to field layout
-                  // ordering, we may check _has_bits_[last_chunk * 8 /
-                  // 32] multiple times.
-                  ABSL_DCHECK_LE(2, popcnt(chunk_mask));
-                  ABSL_DCHECK_GE(8, popcnt(chunk_mask));
+                  // Check has_bits at a time if we have more than one field in
+                  // this chunk.
+                  ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
 
                   p->Emit({{"condition",
                             GenerateConditionMaybeWithProbabilityForGroup(
@@ -5007,13 +5104,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
     // Special-case MessageSet.
     p->Emit(
         R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+          PROTOBUF_NO_CUSTOM_VTABLE_INLINE
           ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
             const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-          ::size_t $Msg$::ByteSizeLong() const {
-            const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
             $WeakDescriptorSelfPin$;
             $annotate_bytesize$;
             // @@protoc_insertion_point(message_set_byte_size_start:$full_name$)
@@ -5025,6 +5118,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
             this_.$cached_size$.Set(::_pbi::ToCachedSize(total_size));
             return total_size;
           }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+          ::size_t $Msg$::ByteSizeLong() const { return ByteSizeLong(*this); }
+#endif  // PROTOBUF_CUSTOM_VTABLE
         )cc");
     p->Emit("\n");
     return;
@@ -5144,13 +5240,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           }
         }}},
       R"cc(
-#if defined(PROTOBUF_CUSTOM_VTABLE)
+        PROTOBUF_NO_CUSTOM_VTABLE_INLINE
         ::size_t $Msg$::ByteSizeLong(const MessageLite& base) {
           const $Msg$& this_ = static_cast<const $Msg$&>(base);
-#else   // PROTOBUF_CUSTOM_VTABLE
-        ::size_t $Msg$::ByteSizeLong() const {
-          const $Msg$& this_ = *this;
-#endif  // PROTOBUF_CUSTOM_VTABLE
           $WeakDescriptorSelfPin$;
           $annotate_bytesize$;
           // @@protoc_insertion_point(message_byte_size_start:$full_name$)
@@ -5164,6 +5256,9 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
           $handle_oneof_fields$;
           $handle_unknown_fields$;
         }
+#if !defined(PROTOBUF_CUSTOM_VTABLE)
+        ::size_t $Msg$::ByteSizeLong() const { return ByteSizeLong(*this); }
+#endif  // !PROTOBUF_CUSTOM_VTABLE
       )cc");
 }
 
@@ -5383,7 +5478,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                     if (RequiresArena(GeneratorFunction::kMergeFrom,
                                       /* is_split= */ true)) {
                       p->Emit(R"cc(
-                        $pb$::Arena* arena = _this->GetArena();
+                        $pb$::Arena* arena = this_.GetArena();
                       )cc");
                     }
                   }},
@@ -5399,7 +5494,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                     $destroy_fields$;
                     delete $cached_split_ptr$;
                   }
-                  PROTOBUF_NOINLINE static void MergeSplit($Msg$* _this, const $Msg$& from) {
+                  PROTOBUF_NOINLINE static void MergeSplit($Msg$& this_, const $Msg$& from) {
                     $get_arena_merge$;
                     ::uint32_t cached_has_bits [[maybe_unused]] = 0;
                     $merge_fields$;

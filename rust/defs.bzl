@@ -44,7 +44,10 @@ def _rust_proto_library_impl(name, deps, visibility = None, tags = None, **kwarg
     rust_upb_proto_library(
         name = name + "_upb",
         deps = deps,
-        visibility = ["//rust/test:__subpackages__"],
+        visibility = [
+            "//rust/test:__subpackages__",
+            native.package_relative_label(":__pkg__"),
+        ],
         tags = tags,
         **kwargs
     )
@@ -52,7 +55,10 @@ def _rust_proto_library_impl(name, deps, visibility = None, tags = None, **kwarg
     rust_cc_proto_library(
         name = name + "_cpp",
         deps = deps,
-        visibility = ["//rust/test:__subpackages__"],
+        visibility = [
+            "//rust/test:__subpackages__",
+            native.package_relative_label(":__pkg__"),
+        ],
         tags = tags,
         **kwargs
     )

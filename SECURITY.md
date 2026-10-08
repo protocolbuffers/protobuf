@@ -232,28 +232,52 @@ Protobuf supports encoding schemas into a Protobuf message format (e.g.
 other Protobuf type. Parsing untrusted binary-encoded `DescriptorProto` falls
 within the "primary use-case" described above.
 
-In addition to simply processing `DescriptorProto`, it is additionally possible in
-most runtimes to use a type named `DynamicMessage` which allows for using
+In addition to simply processing `DescriptorProto`, it is additionally possible
+in most runtimes to use a type named `DynamicMessage` which allows for using
 runtime-loaded descriptors instead of using generated code and to use that type
 with the reflection APIs.
 
-For use-cases sensitive to DoS risks, it is recommended to use `DynamicMessage`
-only with trusted descriptors (via trusted side channel source / config pushes).
-When using `DynamicMessage` with a descriptor sourced from an untrusted source,
-you may need to validate and sanitize them as you would user provided SQL.
+**There are inherent denial of service risks to using `DynamicMessage` (and
+other reflection-based APIs operating on runtime-loaded descriptors, including
+upb Defs and MiniTables) with untrusted descriptors which cannot be hardened
+against.**
+
+Descriptors are treated as trusted schema, and need to be handled as though they
+are source code.
+
+If you use `DynamicMessage` with descriptors from an untrusted source, Denial of
+Service avenues are inherently available to an attacker.
+
+*   **Memory amplification is inherent.** Memory use can be O(N*M) where N is "#
+    of messages observed on the wire" and M is "size of the message definition".
+    Since untrusted descriptors give an affordance for arbitrarily large message
+    definitions, using `DynamicMessage` with untrusted descriptors and untrusted
+    binary format inherently has memory amplification risks.
+*   **Invalid shapes may reach unexpected exceptions or crashes.** Descriptors
+    that do not maintain the invariants that the runtimes expect may reach
+    unexpected exceptions, panics, assertion failures, or `CHECK` failures
+    (process aborts). Examples include 'forged' well-known types (descriptors
+    using a well-known type name such as `google.protobuf.Any`,
+    `google.protobuf.Timestamp`, or `google.protobuf.Struct` but with a
+    different shape than the real type), and map entry messages which do not
+    have the intended `key`/`value` structure.
+
+Recommendation: Use `DynamicMessage` only with trusted descriptors (via trusted
+side channel source / config pushes). If your use-case requires handling
+descriptors from an untrusted source, you must validate and sanitize them as you
+would user provided SQL, and should additionally isolate that processing (such
+as by sandboxing) if it is sensitive to DoS risks.
 
 Caution: Usage of `DynamicMessage` with malicious descriptors reaching an RCE or
-information leak would still be treated as a high priority issue, and any RCE or
-information leak concerns on this surface should be reported via a
+information leak would still be treated as an important bug for us to fix as
+part of defense in depth. Any RCE or information leak concerns on this surface
+should be reported via a
 [draft GitHub Security Advisory](https://github.com/protocolbuffers/protobuf/security/advisories/new).
-However, there are inherently reachable cases of where malicious descriptors
-used with `DynamicMessage` can reach behavior which may otherwise be considered
-a Denial of Service risk under our primary threat model. For example, it will be
-reachable to hit memory use which is O(N*M) where N is "# of messages observed
-on the wire" and M is "size of the message definition". Since untrusted
-descriptors gives an affordance for arbitrarily large message definitions, using
-`DynamicMessage` with untrusted descriptors and untrusted binary format
-inherently can have memory amplification risks.
+Reports of Denial of Service (including memory amplification, uncaught or
+unexpected exceptions, and `CHECK` failures) that require an untrusted
+descriptor are not considered security vulnerabilities, and may be filed as
+[public issues](https://github.com/protocolbuffers/protobuf/issues) but may be
+closed as "Won't Fix (Infeasible)" depending on the details of the report.
 
 ### Adversarial Application Code
 
@@ -282,14 +306,14 @@ Examples:
     panic instead of risk out of bounds memory reads, but is not intended to be
     gracefully handled as a malformed-wire-bytes input would be (following C++
     idioms).
-*   In a memory-safe language like Python, if code like `msg.repeatedField[-2147483649]`
-    can reach a segfault, that is considered an important bug to fix, but it is
-    not considered to be within CVE scope.
+*   In a memory-safe language like Python, if code like
+    `msg.repeatedField[-2147483649]` can reach a segfault, that is considered an
+    important bug to fix, but it is not considered to be within CVE scope.
 
 ### Differential Parsing (Gateway propagation of original payload)
 
-Differential parsing is a risk stemming from two different libraries parsing
-the same data with different interpretations.
+Differential parsing is a risk stemming from two different libraries parsing the
+same data with different interpretations.
 
 In some contexts and for some formats differential parsing is considered a
 security-sensitive topic. The primary risk is around flows that would validate

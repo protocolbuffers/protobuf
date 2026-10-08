@@ -244,6 +244,16 @@ std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
                                      *oneof.file());
 }
 
+std::string RustModule(Context& ctx, const FileDescriptor& file) {
+  return RustModuleForContainingType(ctx, nullptr, file);
+}
+
+std::string RustModuleForExtension(Context& ctx,
+                                   const FieldDescriptor& extension) {
+  return RustModuleForContainingType(ctx, extension.extension_scope(),
+                                     *extension.file());
+}
+
 std::string RustModuleName(const FileDescriptor& file) {
   // Derive a readable and (mostly) unique Rust module name from the full
   // proto file path, e.g. `foo/bar/baz.proto` becomes `foo_bar_baz_proto`.
@@ -533,6 +543,15 @@ std::string DescriptorInfoName(const FileDescriptor& file) {
       absl::StrReplaceAll(StripProto(file.name()), {{"/", "_"}, {"-", "_"}});
   absl::AsciiStrToUpper(&name);
   return absl::StrCat(name, "_DESCRIPTOR_INFO");
+}
+
+// Returns the name of the generated function that returns the given file's
+// `upb_DefPool_Init`. For example, `foo/bar/baz.proto` becomes
+// `foo_bar_baz_proto_def_init`.
+std::string DefInitName(const FileDescriptor& file) {
+  // Reuse the module name so that every file path that yields a valid module
+  // name also yields a valid function name.
+  return absl::StrCat(RustModuleName(file), "_def_init");
 }
 
 }  // namespace rust

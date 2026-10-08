@@ -573,4 +573,37 @@ static NSData* DataForGroupsOfDepth(NSUInteger depth) {
   [self assertReadByteToEndGroupFails:testData];
 }
 
+- (void)testSkipFieldRecursionLimit {
+  // This is the same limit as within GPBCodedInputStream.
+  const NSUInteger kDefaultRecursionLimit = 100;
+
+  // That depth skips.
+  NSData* testData = DataForGroupsOfDepth(kDefaultRecursionLimit);
+  GPBCodedInputStream* input = [GPBCodedInputStream streamWithData:testData];
+  XCTAssertTrue([input skipField:[input readTag]]);
+  XCTAssertTrue([input isAtEnd]);
+
+  // One more level deep fails with a recursion error.
+  testData = DataForGroupsOfDepth(kDefaultRecursionLimit + 1);
+  input = [GPBCodedInputStream streamWithData:testData];
+  int32_t tag = [input readTag];
+  @try {
+    [input skipField:tag];
+    XCTFail(@"Should have thrown");
+  } @catch (NSException* anException) {
+    XCTAssertEqualObjects(anException.name, GPBCodedInputStreamException);
+    NSError* err = anException.userInfo[GPBCodedInputStreamUnderlyingErrorKey];
+    XCTAssertEqualObjects(err.domain, GPBCodedInputStreamErrorDomain);
+    XCTAssertEqual(err.code, GPBCodedInputStreamErrorRecursionDepthExceeded);
+  }
+
+  // Deeply nested unbalanced start groups (the stack overflow repro) must
+  // fail cleanly rather than recursing without bound.
+  NSMutableData* deep = [NSMutableData dataWithLength:80 * 1024];
+  memset(deep.mutableBytes, 35, deep.length);  // 35 -> field 4/start group
+  input = [GPBCodedInputStream streamWithData:deep];
+  tag = [input readTag];
+  XCTAssertThrowsSpecificNamed([input skipField:tag], NSException, GPBCodedInputStreamException);
+}
+
 @end

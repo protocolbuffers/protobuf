@@ -34,9 +34,10 @@ MATCHER_P2(StatusIs, status, message,
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 TEST(FailureListTrieTest, WalkDownMatchWithoutWildcard) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert("Recommended.Proto2.ProtobufInput.World"));
 
   EXPECT_THAT(root_->WalkDownMatch("Recommended.Proto2.ProtobufInput.World"),
@@ -44,7 +45,7 @@ TEST(FailureListTrieTest, WalkDownMatchWithoutWildcard) {
 }
 
 TEST(FailureListTrieTest, WalkDownMatchWithoutWildcardNoMatch) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
 
   ASSERT_OK(root_->Insert("Recommended.Proto2.JsonInput.World"));
 
@@ -53,7 +54,7 @@ TEST(FailureListTrieTest, WalkDownMatchWithoutWildcardNoMatch) {
 }
 
 TEST(FailureListTrieTest, WalkDownMatchWithWildcard) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert("Recommended.*.ProtobufInput.World"));
 
   EXPECT_THAT(root_->WalkDownMatch("Recommended.Proto2.ProtobufInput.World"),
@@ -61,7 +62,7 @@ TEST(FailureListTrieTest, WalkDownMatchWithWildcard) {
 }
 
 TEST(FailureListTrieTest, WalkDownMatchWithWildcardNoMatch) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert("Recommended.*.ProtobufInput.World"));
 
   EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.JsonInput.World"),
@@ -69,7 +70,7 @@ TEST(FailureListTrieTest, WalkDownMatchWithWildcardNoMatch) {
 }
 
 TEST(FailureListTrieTest, WalkDownMatchTestLessNumberofSectionsNoMatch) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert("Recommended.*.*.*"));
 
   EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.JsonInput"),
@@ -77,7 +78,7 @@ TEST(FailureListTrieTest, WalkDownMatchTestLessNumberofSectionsNoMatch) {
 }
 
 TEST(FailureListTrieTest, WalkDownMatchTestMoreNumberOfSectionsNoMatch) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert("*"));
 
   EXPECT_EQ(root_->WalkDownMatch("Recommended.Proto2.JsonInput.World"),
@@ -85,7 +86,7 @@ TEST(FailureListTrieTest, WalkDownMatchTestMoreNumberOfSectionsNoMatch) {
 }
 
 TEST(FailureListTrieTest, WalkDownMatchTakeMoreThanOneBranch) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert(
       "Recommended.*.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace"));
   ASSERT_OK(root_->Insert(
@@ -99,7 +100,7 @@ TEST(FailureListTrieTest, WalkDownMatchTakeMoreThanOneBranch) {
 }
 
 TEST(FailureListTrieTest, InsertWilcardedAmbiguousMatchFails) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert(
       "Recommended.*.JsonInput.TrailingCommaInAnObjectWithSpaceCommaSpace"));
 
@@ -111,7 +112,7 @@ TEST(FailureListTrieTest, InsertWilcardedAmbiguousMatchFails) {
 }
 
 TEST(FailureListTrieTest, InsertWilcardedAmbiguousMatchMutlipleWildcardsFails) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   ASSERT_OK(root_->Insert("Recommended.*.JsonInput.FieldMaskInvalidCharacter"));
 
   // Essentially a duplicated test name if inserted.
@@ -121,7 +122,7 @@ TEST(FailureListTrieTest, InsertWilcardedAmbiguousMatchMutlipleWildcardsFails) {
 }
 
 TEST(FailureListTrieTest, InsertInvalidWildcardFails) {
-  auto root_ = std::make_unique<google::protobuf::FailureListTrieNode>("dummy");
+  auto root_ = std::make_unique<FailureListTrieNode>("dummy");
   EXPECT_THAT(root_->Insert("This*Is.Not.A.Valid.Wildcard"),
               StatusIs(absl::StatusCode::kInvalidArgument,
                        HasSubstr("invalid wildcard")));
@@ -144,5 +145,6 @@ TEST(FailureListTrieTest, PrefixMarkedAsTestNameRecognizedWithWildcards) {
   EXPECT_THAT(root_->WalkDownMatch("Recommended.*.Hello"),
               Optional(Eq("Recommended.*.*")));
 }
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google

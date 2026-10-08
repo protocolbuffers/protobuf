@@ -171,7 +171,9 @@ class RepeatedFieldProxyBase {
 
   // Returns a const reference or view into the element at the given index,
   // performing bounds checking in accordance with `bounds_check_mode_*`.
-  [[nodiscard]] const_reference get(size_type index) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  [[nodiscard]] const const_reference get(size_type index) const {
     return field()[index];
   }
 
@@ -460,7 +462,9 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES MutableRepeatedFieldProxyImpl
 
   // Returns a type which references the element at the given index. Performs
   // bounds checking in accordance with `bounds_check_mode_*`.
-  [[nodiscard]] reference operator[](size_type index) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  [[nodiscard]] const reference operator[](size_type index) const {
     return field()[index];
   }
 
@@ -567,7 +571,14 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES MutableRepeatedFieldProxyImpl
  private:
   friend RepeatedFieldProxyInternalPrivateAccessHelper<ElementType, kOrProxy>;
 
-  Arena* PROTOBUF_NULLABLE const arena_;
+  // Rebinds the proxy to a different repeated field. Intentionally not exposed
+  // in the public interface.
+  void rebind(const MutableRepeatedFieldProxyImpl& other) {
+    static_cast<Base&>(*this) = static_cast<const Base&>(other);
+    arena_ = other.arena_;
+  }
+
+  Arena* PROTOBUF_NULLABLE arena_;
 };
 
 template <typename ElementType, bool kOrProxy>
@@ -603,7 +614,9 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES ConstRepeatedFieldProxyImpl
 
   // Returns a type which references the element at the given index. Performs
   // bounds checking in accordance with `bounds_check_mode_*`.
-  [[nodiscard]] const_reference operator[](size_type index) const {
+  //
+  // NOLINTNEXTLINE(readability-const-return-type)
+  [[nodiscard]] const const_reference operator[](size_type index) const {
     return field()[index];
   }
 
@@ -730,6 +743,8 @@ class RepeatedFieldProxyInternalPrivateAccessHelper {
       std::conditional_t<kOrProxy, RepeatedFieldOrProxy<ElementType>,
                          RepeatedFieldProxy<ElementType>>;
 
+  using MutableProxyImpl = MutableRepeatedFieldProxyImpl<ElementType, kOrProxy>;
+
   // Casts up to a `MutableRepeatedFieldProxyImpl<ElementType>` from a subclass
   // of `MutableRepeatedFieldProxyImpl<ElementType>`. This is used to implement
   // the CRTP pattern for `*With<MethodName>` classes.
@@ -754,6 +769,10 @@ class RepeatedFieldProxyInternalPrivateAccessHelper {
   template <typename C>
   static auto& field(const C* PROTOBUF_NONNULL proxy) {
     return ToProxyType(proxy).field();
+  }
+
+  static void rebind(MutableProxyImpl& proxy, const MutableProxyImpl& other) {
+    proxy.rebind(other);
   }
 
   template <typename C, typename... Args>
@@ -1043,6 +1062,24 @@ void c_stable_sort(internal::RepeatedFieldOrProxy<T> cont, Compare cmp) {
 template <int&..., typename T>
 void c_stable_sort(internal::RepeatedFieldOrProxy<T> cont) {
   google::protobuf::stable_sort(cont.begin(), cont.end());
+}
+
+// Provides a back insert iterator for RepeatedFieldOrProxy instances,
+// similar to std::back_inserter().
+template <typename T>
+auto RepeatedFieldBackInserter(RepeatedFieldProxy<T> field) {
+  return internal::RepeatedFieldProxyBackInsertIteratorImpl<T,
+                                                            /*kOrProxy=*/false>(
+      field);
+}
+
+// Provides a back insert iterator for RepeatedFieldOrProxy instances,
+// similar to std::back_inserter().
+template <typename T>
+auto RepeatedFieldBackInserter(internal::RepeatedFieldOrProxy<T> field) {
+  return internal::RepeatedFieldProxyBackInsertIteratorImpl<T,
+                                                            /*kOrProxy=*/true>(
+      field);
 }
 
 }  // namespace protobuf
