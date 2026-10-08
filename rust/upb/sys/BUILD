@@ -57,6 +57,7 @@ rust_library(
         ":sys",
         ":upb_c_api",
         "//upb/reflection",
+        "//upb/reflection:def_pool_init",
         "//upb/text",
     ],
 )
@@ -65,6 +66,7 @@ rust_test(
     name = "sys_reflection_test",
     crate = ":reflection",
     edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
     deps = [
         "@crate_index//:googletest",
     ],
@@ -74,6 +76,7 @@ rust_test(
     name = "sys_test",
     crate = ":sys",
     edition = "2024",
+    rustc_flags = ["--cfg=bzl"],
     deps = [
         "@crate_index//:googletest",
     ],

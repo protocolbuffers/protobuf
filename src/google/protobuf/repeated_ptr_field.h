@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/macros.h"
 #include "absl/base/no_destructor.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
@@ -47,6 +48,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/serial_arena.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -447,16 +449,12 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
         reinterpret_cast<char*>(this), reinterpret_cast<char*>(rhs));
   }
 
-  // Returns true if there are no preallocated elements in the array.
-  PROTOBUF_FUTURE_ADD_NODISCARD bool PrepareForParse() {
-    return allocated_size() == current_size_;
-  }
-
-  // Similar to `AddAllocated` but faster.
+  // Similar to `AddAllocated` but faster when we know there are no cleared
+  // elements.
   //
-  // Pre-condition: PrepareForParse() is true.
-  void AddAllocatedForParse(void* value, Arena* arena) {
-    ABSL_DCHECK(PrepareForParse());
+  // REQUIRES: allocated_size() == size()
+  void AddAllocatedForParse(void* value, SerialArena* arena) {
+    ABSL_DCHECK_EQ(allocated_size(), size());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
       *InternalExtend(1, arena) = value;
       ++rep()->allocated_size;
@@ -469,6 +467,22 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       }
     }
     ExchangeCurrentSize(current_size_ + 1);
+  }
+
+  // Trim the array if possible.
+  void TryShrinkToFit(internal::SerialArena* arena) {
+    if (using_sso() || arena == nullptr) return;
+    auto* r = rep();
+    size_t desired_capacity = r->allocated_size;
+    if constexpr (ArenaAlignDefault::Ceil(sizeof(void*)) != sizeof(void*)) {
+      desired_capacity =
+          ArenaAlignDefault::Ceil(desired_capacity * sizeof(void*)) /
+          sizeof(void*);
+    }
+    if (arena->TryTrimTail(r->elements + r->capacity,
+                           r->elements + desired_capacity)) {
+      r->capacity = desired_capacity;
+    }
   }
 
  protected:
@@ -559,8 +573,10 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   template <typename TypeHandler>
   Value<TypeHandler>* AddFromCleared() {
     if (current_size_ < allocated_size()) {
-      return cast<TypeHandler>(
-          element_at(ExchangeCurrentSize(current_size_ + 1)));
+      auto* res =
+          cast<TypeHandler>(element_at(ExchangeCurrentSize(current_size_ + 1)));
+      PROTOBUF_ASSUME(res != nullptr);
+      return res;
     } else {
       return nullptr;
     }
@@ -1626,10 +1642,6 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
 
   void ExtractSubrangeWithArena(Arena* arena, int start, int num,
                                 Element** elements);
-
-  void AddAllocatedForParse(Element* p, Arena* arena) {
-    return RepeatedPtrFieldBase::AddAllocatedForParse(p, arena);
-  }
 };
 
 // -------------------------------------------------------------------
@@ -1875,7 +1887,7 @@ inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
       H::Delete(static_cast<Element*>(subrange[i]));
     }
   }
-  UnsafeArenaExtractSubrange(start, num, nullptr);
+  UnsafeArenaExtractSubrange(start, num, /*elements=*/nullptr);
 }
 
 template <typename Element>
@@ -2668,14 +2680,6 @@ class UnsafeArenaAllocatedRepeatedPtrFieldBackInsertIterator {
 };
 }  // namespace internal
 
-// Provides a back insert iterator for RepeatedPtrField instances,
-// similar to std::back_inserter().
-template <typename T>
-internal::RepeatedPtrFieldBackInsertIterator<T> RepeatedPtrFieldBackInserter(
-    RepeatedPtrField<T>* const mutable_field) {
-  return internal::RepeatedPtrFieldBackInsertIterator<T>(mutable_field);
-}
-
 // Special back insert iterator for RepeatedPtrField instances, just in
 // case someone wants to write generic template code that can access both
 // RepeatedFields and RepeatedPtrFields using a common name.
@@ -2683,6 +2687,15 @@ template <typename T>
 internal::RepeatedPtrFieldBackInsertIterator<T> RepeatedFieldBackInserter(
     RepeatedPtrField<T>* const mutable_field) {
   return internal::RepeatedPtrFieldBackInsertIterator<T>(mutable_field);
+}
+
+// Provides a back insert iterator for RepeatedPtrField instances,
+// similar to std::back_inserter().
+template <typename T>
+PROTOBUF_DEPRECATE_AND_INLINE()
+internal::RepeatedPtrFieldBackInsertIterator<T> RepeatedPtrFieldBackInserter(
+    RepeatedPtrField<T>* const mutable_field) {
+  return RepeatedFieldBackInserter(mutable_field);
 }
 
 // Provides a back insert iterator for RepeatedPtrField instances

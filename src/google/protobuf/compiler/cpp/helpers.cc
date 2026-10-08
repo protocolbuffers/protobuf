@@ -1010,9 +1010,6 @@ std::string UniqueName(absl::string_view name, absl::string_view filename,
 std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
                                      absl::string_view name,
                                      const Options& options) {
-  if (file->package().empty()) {
-    return absl::StrCat("::", name);
-  }
   return absl::StrCat(Namespace(file), "::", name);
 }
 
@@ -2018,7 +2015,7 @@ static bool HasBootstrapProblem(const FileDescriptor* file,
   };
   static auto& bootstrap_cache = *new BootstrapGlobals();
 
-  absl::MutexLock lock(&bootstrap_cache.mutex);
+  absl::MutexLock lock(bootstrap_cache.mutex);
   if (bootstrap_cache.cached.contains(file)) return true;
   if (bootstrap_cache.non_cached.contains(file)) return false;
 

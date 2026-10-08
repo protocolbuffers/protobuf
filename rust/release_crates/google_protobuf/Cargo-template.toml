@@ -20,7 +20,7 @@ path = "src/shared.rs"
 [dependencies]
 linkme = "0.3.35"
 paste = { package = "paste-complete", version = "1.0.15"}
-protobuf-macros = { version = "{PROTOBUF_RUST_VERSION}", path = "../protobuf_macros", package = "protobuf-macros" }
+protobuf_macros = { version = "{PROTOBUF_RUST_VERSION}", path = "../google_protobuf_macros", package = "google-protobuf-macros" }
 
 [dev-dependencies]
 googletest = "0.14.2"

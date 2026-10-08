@@ -455,7 +455,7 @@ class FieldGenerator {
   // GeneratePrivateMembers().
   //
   // These go into the copy constructor's aggregate initialization of the _impl_
-  // struct and must follow the syntax `decltype($field_$){from.$field_$}` (see
+  // struct and must follow the syntax `decltype($field_$){$from_field$}` (see
   // above). Does not include `:` or `,` separators.
   void GenerateCopyAggregateInitializer(io::Printer* p) const {
     auto vars = PushVarsForCall(p);

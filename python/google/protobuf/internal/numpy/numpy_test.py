@@ -8,13 +8,13 @@
 """Test use of numpy types with repeated and non-repeated scalar fields."""
 
 from datetime import datetime
-import unittest
 
+from absl.testing import absltest
+from absl.testing import parameterized
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import testing_refleaks
 import numpy as np
 
-from absl.testing import parameterized
 from google.protobuf import unittest_pb2
 from google.protobuf import unittest_proto3_arena_pb2
 from google.protobuf.util import json_format_pb2
@@ -62,7 +62,7 @@ np_22_object_array_bool = np.array([[False, True], [False, True]], dtype=object)
 
 
 @testing_refleaks.TestCase
-class NumpyIntProtoTest(unittest.TestCase):
+class NumpyIntProtoTest(absltest.TestCase):
 
   # Assigning dim 1 ndarray of ints to repeated field should pass
   def testNumpyDim1IntArrayToRepeated_IsValid(self):
@@ -248,7 +248,7 @@ class NumpyIntProtoTest(unittest.TestCase):
 
 
 @testing_refleaks.TestCase
-class NumpyFloatProtoTest(unittest.TestCase):
+class NumpyFloatProtoTest(absltest.TestCase):
 
   # Assigning dim 1 ndarray of floats to repeated field should pass
   def testNumpyDim1FloatArrayToRepeated_IsValid(self):
@@ -316,7 +316,7 @@ class NumpyFloatProtoTest(unittest.TestCase):
 
 
 @testing_refleaks.TestCase
-class NumpyBoolProtoTest(unittest.TestCase):
+class NumpyBoolProtoTest(absltest.TestCase):
 
   # Assigning dim 1 ndarray of bool to repeated field should pass
   def testNumpyDim1BoolArrayToRepeated_IsValid(self):
@@ -370,7 +370,7 @@ class NumpyBoolProtoTest(unittest.TestCase):
 
 
 @testing_refleaks.TestCase
-class NumpyProtoIndexingTest(unittest.TestCase):
+class NumpyProtoIndexingTest(absltest.TestCase):
 
   def testNumpyIntScalarIndexing_Passes(self):
     data = unittest_pb2.TestAllTypes(repeated_int64=[0, 1, 2])
@@ -849,4 +849,4 @@ class NumpyBindingTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  unittest.main()
+  absltest.main()

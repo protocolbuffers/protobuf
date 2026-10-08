@@ -553,6 +553,25 @@ Error, UINTPTR_MAX is undefined
 #define UPB_DEPRECATED
 #endif
 
+#if defined(__clang__)
+#define UPB_IGNORE_DEPRECATION_START \
+  _Pragma("clang diagnostic push")   \
+      _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+#define UPB_IGNORE_DEPRECATION_STOP _Pragma("clang diagnostic pop")
+#elif defined(__GNUC__)
+#define UPB_IGNORE_DEPRECATION_START \
+  _Pragma("GCC diagnostic push")     \
+      _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#define UPB_IGNORE_DEPRECATION_STOP _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define UPB_IGNORE_DEPRECATION_START \
+  __pragma(warning(push)) __pragma(warning(disable : 4996))
+#define UPB_IGNORE_DEPRECATION_STOP __pragma(warning(pop))
+#else
+#define UPB_IGNORE_DEPRECATION_START
+#define UPB_IGNORE_DEPRECATION_STOP
+#endif
+
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
@@ -4437,14 +4456,6 @@ static bool streql(upb_key k1, upb_value v1, lookupkey_t k2) {
          (k1s->size == 0 || memcmp(k1s->data, k2s.data, k1s->size) == 0);
 }
 
-/** Calculates the number of entries required to hold an expected number of
- * values, within the table's load factor. */
-static size_t _upb_entries_needed_for(size_t expected_size) {
-  size_t need_entries = expected_size + 1 + expected_size / 7;
-  UPB_ASSERT(need_entries - (need_entries >> 3) >= expected_size);
-  return need_entries;
-}
-
 bool upb_strtable_init(upb_strtable* t, size_t expected_size, upb_Arena* a) {
   int size_lg2 = upb_Log2Ceiling(_upb_entries_needed_for(expected_size));
   return init(&t->t, size_lg2, a);
@@ -4457,27 +4468,32 @@ void upb_strtable_clear(upb_strtable* t) {
 }
 
 bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
+  if (t->t.entries != NULL && _upb_log2_table_size(&t->t) >= size_lg2) {
+    return true;
+  }
   upb_strtable new_table;
   if (!init(&new_table.t, size_lg2, a)) return false;
 
-  intptr_t iter = UPB_STRTABLE_BEGIN;
-  upb_StringView sv;
-  upb_value val;
-  while (upb_strtable_next2(t, &sv, &val, &iter)) {
-    // Unlike normal insert, does not copy string data or possibly reallocate
-    // the table
-    // The data pointer used in the table is guaranteed to point at a
-    // upb_SizePrefixString, we just need to back up by the size of the uint32_t
-    // length prefix.
-    const upb_SizePrefixString* keystr =
-        (const upb_SizePrefixString*)(sv.data - sizeof(uint32_t));
-    UPB_ASSERT(keystr->data == sv.data);
-    UPB_ASSERT(keystr->size == sv.size);
+  if (t->t.count > 0) {
+    intptr_t iter = UPB_STRTABLE_BEGIN;
+    upb_StringView sv;
+    upb_value val;
+    while (upb_strtable_next2(t, &sv, &val, &iter)) {
+      // Unlike normal insert, does not copy string data or possibly reallocate
+      // the table
+      // The data pointer used in the table is guaranteed to point at a
+      // upb_SizePrefixString, we just need to back up by the size of the
+      // uint32_t length prefix.
+      const upb_SizePrefixString* keystr =
+          (const upb_SizePrefixString*)(sv.data - sizeof(uint32_t));
+      UPB_ASSERT(keystr->data == sv.data);
+      UPB_ASSERT(keystr->size == sv.size);
 
-    lookupkey_t lookupkey = {.str = sv};
-    upb_key tabkey = {.str = keystr};
-    uint32_t hash = _upb_Hash_NoSeed(sv.data, sv.size);
-    insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
+      lookupkey_t lookupkey = {.str = sv};
+      upb_key tabkey = {.str = keystr};
+      uint32_t hash = _upb_Hash_NoSeed(sv.data, sv.size);
+      insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
+    }
   }
   *t = new_table;
   return true;
@@ -4865,22 +4881,34 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
   return true;
 }
 
-UPB_NOINLINE static bool upb_inttable_grow(upb_inttable* t, upb_Arena* a) {
-  size_t new_size = _upb_log2_table_size(&t->t) + 1;
-  if (upb_inttable_trygrow(t, new_size, a)) return true;
+bool upb_inttable_resize(upb_inttable* t, size_t size_lg2, upb_Arena* a) {
+  if (t->t.entries != NULL && _upb_log2_table_size(&t->t) >= size_lg2) {
+    return true;
+  }
+  if (t->t.entries != NULL && upb_inttable_trygrow(t, size_lg2, a)) {
+    return true;
+  }
 
   upb_table new_table;
-  if (!init(&new_table, new_size, a)) return false;
+  if (!init(&new_table, size_lg2, a)) return false;
 
-  for (size_t i = begin(&t->t); i < upb_table_size(&t->t); i = next(&t->t, i)) {
-    const upb_tabent* e = &t->t.entries[i];
-    insert(&new_table, intkey(e->key.num), e->key, e->val,
-           inthash(e->key, e->val), &inthash, &inteql);
+  if (t->t.count > 0) {
+    for (size_t i = begin(&t->t); i < upb_table_size(&t->t);
+         i = next(&t->t, i)) {
+      const upb_tabent* e = &t->t.entries[i];
+      insert(&new_table, intkey(e->key.num), e->key, e->val,
+             inthash(e->key, e->val), &inthash, &inteql);
+    }
   }
 
   UPB_ASSERT(t->t.count == new_table.count);
   t->t = new_table;
   return true;
+}
+
+UPB_NOINLINE static bool upb_inttable_grow(upb_inttable* t, upb_Arena* a) {
+  size_t new_size = _upb_log2_table_size(&t->t) + 1;
+  return upb_inttable_resize(t, new_size, a);
 }
 
 bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
@@ -6766,9 +6794,14 @@ static void jsonenc_enum(int32_t val, const upb_FieldDef* f, jsonenc* e) {
 }
 
 static void jsonenc_bytes(jsonenc* e, upb_StringView str) {
-  /* This is the regular base64, not the "web-safe" version. */
-  static const char base64[] =
+  /* Regular base64 (RFC 4648 section 4) by default; the URL- and filename-safe
+   * alphabet (RFC 4648 section 5) when upb_JsonEncode_WebSafeBase64 is set. */
+  static const char kBase64[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  static const char kWebSafeBase64[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const char* base64 =
+      (e->options & upb_JsonEncode_WebSafeBase64) ? kWebSafeBase64 : kBase64;
   const unsigned char* ptr = (unsigned char*)str.data;
   const unsigned char* end = UPB_PTRADD(ptr, str.size);
   char buf[4];
@@ -8954,6 +8987,7 @@ bool upb_Map_Delete(upb_Map* map, upb_MessageValue key, upb_MessageValue* val) {
 
 bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
                   upb_MessageValue* val, size_t* iter) {
+  if (_upb_Map_Size(map) == 0) return false;
   upb_value v;
   bool ret;
   if (map->UPB_PRIVATE(is_strtable)) {
@@ -8988,18 +9022,6 @@ UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
 
 bool upb_MapIterator_Next(const upb_Map* map, size_t* iter) {
   return _upb_map_next(map, iter);
-}
-
-bool upb_MapIterator_Done(const upb_Map* map, size_t iter) {
-  UPB_ASSERT(iter != kUpb_Map_Begin);
-  if (map->UPB_PRIVATE(is_strtable)) {
-    upb_strtable_iter i;
-    i.t = &map->t.strtable;
-    i.index = iter;
-    return upb_strtable_done(&i);
-  } else {
-    return upb_inttable_done(&map->t.inttable, iter);
-  }
 }
 
 // Returns the key and value for this entry of the map.
@@ -9037,7 +9059,7 @@ void upb_Map_Freeze(upb_Map* map, const upb_MiniTable* m) {
   if (upb_Map_IsFrozen(map)) return;
   UPB_PRIVATE(_upb_Map_ShallowFreeze)(map);
 
-  if (m) {
+  if (m && _upb_Map_Size(map) > 0) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
 
@@ -9053,11 +9075,10 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   upb_Map* map = upb_Arena_Malloc(a, sizeof(upb_Map));
   if (!map) return NULL;
 
+  memset(&map->t, 0, sizeof(map->t));
   if (key_size <= sizeof(uintptr_t) && key_size != UPB_MAPTYPE_STRING) {
-    if (!upb_inttable_init(&map->t.inttable, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = false;
   } else {
-    if (!upb_strtable_init(&map->t.strtable, 4, a)) return NULL;
     map->UPB_PRIVATE(is_strtable) = true;
   }
   map->key_size = key_size;
@@ -9065,6 +9086,29 @@ upb_Map* _upb_Map_New(upb_Arena* a, size_t key_size, size_t value_size) {
   map->UPB_PRIVATE(is_frozen) = false;
 
   return map;
+}
+
+bool _upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
+  UPB_ASSERT(!upb_Map_IsFrozen(map));
+  if (size == 0) return true;
+
+  size_t target = _upb_entries_needed_for(size);
+  if (target < 8) target = 8;
+  int size_lg2 = upb_Log2Ceiling(target);
+
+  if (_upb_Map_Capacity(map) >= ((size_t)1 << size_lg2)) {
+    return true;
+  }
+
+  if (map->UPB_PRIVATE(is_strtable)) {
+    return upb_strtable_resize(&map->t.strtable, size_lg2, arena);
+  } else {
+    return upb_inttable_resize(&map->t.inttable, size_lg2, arena);
+  }
+}
+
+bool upb_Map_Reserve(upb_Map* map, size_t size, upb_Arena* arena) {
+  return _upb_Map_Reserve(map, size, arena);
 }
 
 
@@ -11506,7 +11550,9 @@ static void upb_MtDecoder_AllocateSubs(upb_MtDecoder* d,
     size_t u32_ofs = ofs / kUpb_SubmsgOffsetBytes;
     UPB_ASSERT((ofs % 4) == 0);
     UPB_ASSERT((i * sizeof(upb_MiniTableField) + ofs) % ptr_size == 0);
-    if (u32_ofs > UINT16_MAX) {
+    // u32_ofs must be strictly less than UINT16_MAX: UINT16_MAX is reserved as
+    // kUpb_NoSub, the sentinel meaning "this field has no submessage".
+    if (u32_ofs >= UINT16_MAX) {
       upb_MdDecoder_ErrorJmp(&d->base, "Submessage offset overflow");
     }
     f->UPB_PRIVATE(submsg_ofs) = u32_ofs;
@@ -12092,14 +12138,10 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       if (sub_is_map) {
         if (UPB_UNLIKELY(table_is_map)) return false;
 
-        // A map field on the parent table must be repeated (or already marked
-        // as a map if SetSubMessage is called repeatedly), and cannot be in a
+        // A map field on the parent table must be repeated, and cannot be in a
         // oneof or an extension.
-        // TODO: Add this assert back once YouTube is updated to not
-        // call this function repeatedly.
-        // UPB_ASSERT(!upb_MiniTableField_IsMap(field));
-        if (UPB_UNLIKELY((!upb_MiniTableField_IsArray(field) &&
-                          !upb_MiniTableField_IsMap(field)) ||
+        UPB_ASSERT(!upb_MiniTableField_IsMap(field));
+        if (UPB_UNLIKELY(!upb_MiniTableField_IsArray(field) ||
                          upb_MiniTableField_IsInOneof(field) ||
                          upb_MiniTableField_IsExtension(field))) {
           return false;
@@ -12110,20 +12152,29 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
             kUpb_FieldMode_Map;
 
 #if UPB_FASTTABLE
-        // The fasttable decoder cannot decode maps. Unfortunately we do not
-        // know until this moment that the field is a map, so we have to
-        // overwrite the fasttable entry (if any) that we built for this field
-        // previously.
+        // Update fasttable entry with specialized map decoder function pointer
+        // and metadata.
         int size = table->UPB_PRIVATE(table_mask) == 0xff
                        ? 0
                        : ((table->UPB_PRIVATE(table_mask) >> 3) + 1);
         for (int i = 0; i < size; i++) {
           _upb_FastTable_Entry* entry = &table->UPB_PRIVATE(fasttable)[i];
-          uint32_t field_number = (((int)entry->field_data >> 3) & 0xf) |
-                                  (((int)entry->field_data >> 4) & 0x7f0);
+          uint32_t field_number =
+              upb_DecodeFastData_GetFieldNumber(entry->field_data);
           if (field_number == upb_MiniTableField_Number(field)) {
-            entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
-            entry->field_data = 0;
+            uint16_t expected_tag =
+                upb_DecodeFastData_GetExpectedTag(entry->field_data);
+            uint64_t subofs = upb_DecodeFastData_GetSubofs(entry->field_data);
+            upb_DecodeFast_TableEntry fast_entry;
+            if (upb_DecodeFast_TryFillMapEntry(field, sub, expected_tag, subofs,
+                                               &fast_entry)) {
+              entry->field_parser =
+                  upb_DecodeFast_GetFunctionPointer(fast_entry.function_idx);
+              entry->field_data = fast_entry.function_data;
+            } else {
+              entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
+              entry->field_data = 0;
+            }
           }
         }
 #endif
@@ -12146,9 +12197,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   upb_MiniTableSubInternal* table_sub =
       UPB_PTR_AT(field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);
-  // TODO: Add this assert back once YouTube is updated to not call
-  // this function repeatedly.
-  // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
+  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(field) == NULL);
   table_sub->UPB_PRIVATE(submsg) = sub;
   return true;
 }
@@ -12182,6 +12231,7 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
   upb_MiniTableSubInternal* table_sub =
       UPB_PTR_AT(field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);
+  UPB_ASSERT(upb_MiniTable_GetSubEnumTable(field) == NULL);
   *table_sub = upb_MiniTableSub_FromEnum(sub);
   return true;
 }
@@ -15526,6 +15576,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->option_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const char*, n);
   for (size_t i = 0; i < n; i++) {
     file->option_deps[i] = _strviewdup(ctx, option_deps[i]);
+    if (strlen(file->option_deps[i]) != option_deps[i].size) {
+      _upb_DefBuilder_Errf(ctx, "option_dependency contained embedded NULL");
+    }
   }
 
   // Create enums.
@@ -17585,16 +17638,12 @@ static void _upb_Decoder_Munge(const upb_MiniTableField* field, wireval* val) {
     case kUpb_FieldType_Bool:
       val->bool_val = val->uint64_val != 0;
       break;
-    case kUpb_FieldType_SInt32: {
-      uint32_t n = val->uint64_val;
-      val->uint32_val = (n >> 1) ^ -(int32_t)(n & 1);
+    case kUpb_FieldType_SInt32:
+      val->uint32_val = _upb_Decoder_ZigZagDecode32(val->uint64_val);
       break;
-    }
-    case kUpb_FieldType_SInt64: {
-      uint64_t n = val->uint64_val;
-      val->uint64_val = (n >> 1) ^ -(int64_t)(n & 1);
+    case kUpb_FieldType_SInt64:
+      val->uint64_val = _upb_Decoder_ZigZagDecode64(val->uint64_val);
       break;
-    }
     case kUpb_FieldType_Int32:
     case kUpb_FieldType_UInt32:
       _upb_Decoder_MungeInt32(val);
@@ -17877,8 +17926,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
   }
 }
 
-static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
-                                       const upb_MiniTable* entry) {
+upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
   // Maps descriptor type -> upb map size
   static const uint8_t kSizeInMap[] = {
       [0] = -1,  // invalid descriptor type
@@ -17994,6 +18042,14 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   } else if (upb_MiniTableField_IsInOneof(field)) {
     // Oneof case
     uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
+    if (op == kUpb_DecodeOp_String || op == kUpb_DecodeOp_Bytes) {
+      // Read the string before setting the oneof case, so that if the read
+      // fails the case still points to the previous member, which is intact.
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     op == kUpb_DecodeOp_String);
+      *oneof_case = field->UPB_PRIVATE(number);
+      return ptr;
+    }
     if (op == kUpb_DecodeOp_SubMessage &&
         *oneof_case != field->UPB_PRIVATE(number)) {
       memset(mem, 0, sizeof(void*));
@@ -19837,6 +19893,12 @@ upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
   return upb_Encoder_Encode(ptr, &e, msg, l, buf, size, prepend_len);
 }
 
+char* UPB_PRIVATE(_upb_Encode_FieldToBuffer)(char* ptr, upb_encstate* e,
+                                             const upb_Message* msg,
+                                             const upb_MiniTableField* field) {
+  return encode_field(ptr, e, msg, field);
+}
+
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,
                                                 const upb_Message* msg,
                                                 const upb_MiniTableField* field,
@@ -19895,7 +19957,8 @@ const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
     e->limit_ptr = e->end + e->limit;
     UPB_ASSERT(ptr < e->limit_ptr);
     e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+        e, kUpb_EpsCopyInputStream_SlopBytes);
     return new_start;
   } else {
     UPB_ASSERT(overrun > e->limit);
@@ -20032,6 +20095,8 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_MALLOC_ALIGN
 #undef UPB_TSAN
 #undef UPB_DEPRECATED
+#undef UPB_IGNORE_DEPRECATION_START
+#undef UPB_IGNORE_DEPRECATION_STOP
 #undef UPB_GNUC_MIN
 #undef UPB_CLANG_MIN
 #undef UPB_DESCRIPTOR_UPB_H_FILENAME

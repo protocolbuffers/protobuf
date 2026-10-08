@@ -1345,10 +1345,20 @@ public class JsonFormat {
     private void printField(FieldDescriptor field, Object value) throws IOException {
       if (field.isExtension() && printingFullyQualifiedExtensionNames) {
         generator.print("\"[" + field.getFullName() + "]\":" + blankOrSpace);
-      } else if (preservingProtoFieldNames) {
-        generator.print("\"" + field.getName() + "\":" + blankOrSpace);
       } else {
-        generator.print("\"" + field.getJsonName() + "\":" + blankOrSpace);
+        if (field.isExtension()) {
+          logger.warning(
+              "Extension "
+                  + field.getFullName()
+                  + " is being printed with its short name, which cannot be parsed back. "
+                  + "In a future breaking change, JsonFormat will default to printing fully"
+                  + " qualified extension names.");
+        }
+        if (preservingProtoFieldNames) {
+          generator.print("\"" + field.getName() + "\":" + blankOrSpace);
+        } else {
+          generator.print("\"" + field.getJsonName() + "\":" + blankOrSpace);
+        }
       }
       if (field.isMapField()) {
         printMapFieldValue(field, value);

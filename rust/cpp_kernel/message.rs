@@ -57,12 +57,11 @@ impl<T: Message> OwnedMessageInner<T> {
 ///
 /// The following invariants must be upheld:
 ///
-/// - No concurrent mutation for any two fields in a message: this means
-///   mutators cannot be `Send` but are `Sync`.
-/// - If there are multiple accessible `Mut` to a single message at a time, they
-///   must be different fields, and not be in the same oneof. As such, a `Mut`
-///   cannot be `Clone` but *can* reborrow itself with `.as_mut()`, which
-///   converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
+/// - No concurrent mutation for any two fields in a message: this means mutators cannot be `Send`
+///   but are `Sync`.
+/// - If there are multiple accessible `Mut` to a single message at a time, they must be different
+///   fields, and not be in the same oneof. As such, a `Mut` cannot be `Clone` but *can* reborrow
+///   itself with `.as_mut()`, which converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
 #[derive(Debug)]
 #[doc(hidden)]
 #[repr(transparent)]
@@ -295,20 +294,27 @@ impl<T: CppGetRawMessageMut> Clear for T {
 
 impl<T: CppGetRawMessageMut> ClearAndParse for T {
     fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), ParseError> {
-        unsafe { proto2_rust_Message_parse(self.get_raw_message_mut(Private), data.into()) }
-            .then_some(())
-            .ok_or(ParseError)
+        let success =
+            unsafe { proto2_rust_Message_parse(self.get_raw_message_mut(Private), data.into()) };
+        if !success {
+            Clear::clear(self);
+            return Err(ParseError);
+        }
+        Ok(())
     }
 
     fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> Result<(), ParseError> {
-        unsafe {
+        let success = unsafe {
             proto2_rust_Message_parse_dont_enforce_required(
                 self.get_raw_message_mut(Private),
                 data.into(),
             )
+        };
+        if !success {
+            Clear::clear(self);
+            return Err(ParseError);
         }
-        .then_some(())
-        .ok_or(ParseError)
+        Ok(())
     }
 }
 

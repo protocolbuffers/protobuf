@@ -369,15 +369,17 @@ namespace ProtobufTestMessages.Proto2 {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// This proto includes every type of field in both singular and repeated
-  /// forms.
-  ///
-  /// Also, crucially, all messages and enums in this file are eventually
-  /// submessages of this message.  So for example, a fuzz test of TestAllTypes
-  /// could trigger bugs that occur in any message type in this file.  We verify
-  /// this stays true in a unit test.
-  /// </summary>
+  /**
+   * <summary>
+   *  This proto includes every type of field in both singular and repeated
+   *  forms.
+   * 
+   *  Also, crucially, all messages and enums in this file are eventually
+   *  submessages of this message.  So for example, a fuzz test of TestAllTypes
+   *  could trigger bugs that occur in any message type in this file.  We verify
+   *  this stays true in a unit test.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllTypesProto2 : pb::IExtendableMessage<TestAllTypesProto2>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -592,9 +594,11 @@ namespace ProtobufTestMessages.Proto2 {
     private readonly static int OptionalInt32DefaultValue = 0;
 
     private int optionalInt32_;
-    /// <summary>
-    /// Singular
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
@@ -1140,9 +1144,11 @@ namespace ProtobufTestMessages.Proto2 {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(248);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Repeated
-    /// </summary>
+    /**
+     * <summary>
+     *  Repeated
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -1374,9 +1380,11 @@ namespace ProtobufTestMessages.Proto2 {
     private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
         = pb::FieldCodec.ForInt32(602);
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Packed
-    /// </summary>
+    /**
+     * <summary>
+     *  Packed
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> PackedInt32 {
@@ -1531,9 +1539,11 @@ namespace ProtobufTestMessages.Proto2 {
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
         = pb::FieldCodec.ForInt32(712);
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Unpacked
-    /// </summary>
+    /**
+     * <summary>
+     *  Unpacked
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> UnpackedInt32 {
@@ -1688,9 +1698,11 @@ namespace ProtobufTestMessages.Proto2 {
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 450);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
-    /// <summary>
-    /// Map
-    /// </summary>
+    /**
+     * <summary>
+     *  Map
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapInt32Int32 {
@@ -2190,9 +2202,11 @@ namespace ProtobufTestMessages.Proto2 {
     private readonly static int DefaultInt32DefaultValue = -123456789;
 
     private int defaultInt32_;
-    /// <summary>
-    /// default values
-    /// </summary>
+    /**
+     * <summary>
+     *  default values
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int DefaultInt32 {
@@ -2596,10 +2610,12 @@ namespace ProtobufTestMessages.Proto2 {
     private readonly static int Fieldname1DefaultValue = 0;
 
     private int fieldname1_;
-    /// <summary>
-    /// Test field-name-to-JSON-name convention.
-    /// (protobuf says names can be any valid C/C++ identifier.)
-    /// </summary>
+    /**
+     * <summary>
+     *  Test field-name-to-JSON-name convention.
+     *  (protobuf says names can be any valid C/C++ identifier.)
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Fieldname1 {
@@ -6039,9 +6055,11 @@ namespace ProtobufTestMessages.Proto2 {
         [pbr::OriginalName("FOO")] Foo = 0,
         [pbr::OriginalName("BAR")] Bar = 1,
         [pbr::OriginalName("BAZ")] Baz = 2,
-        /// <summary>
-        /// Intentionally negative.
-        /// </summary>
+        /**
+         * <summary>
+         *  Intentionally negative.
+         * </summary>
+         */
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
@@ -6306,9 +6324,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      /// <summary>
-      /// groups
-      /// </summary>
+      /**
+       * <summary>
+       *  groups
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Data : pb::IMessage<Data>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -6843,9 +6863,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      /// <summary>
-      /// message_set test case.
-      /// </summary>
+      /**
+       * <summary>
+       *  message_set test case.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -9945,9 +9967,11 @@ namespace ProtobufTestMessages.Proto2 {
     private readonly static int RequiredInt32DefaultValue = 0;
 
     private int requiredInt32_;
-    /// <summary>
-    /// Singular
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int RequiredInt32 {
@@ -10529,9 +10553,11 @@ namespace ProtobufTestMessages.Proto2 {
     private readonly static int DefaultInt32DefaultValue = -123456789;
 
     private int defaultInt32_;
-    /// <summary>
-    /// default values
-    /// </summary>
+    /**
+     * <summary>
+     *  default values
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int DefaultInt32 {
@@ -12079,9 +12105,11 @@ namespace ProtobufTestMessages.Proto2 {
         [pbr::OriginalName("FOO")] Foo = 0,
         [pbr::OriginalName("BAR")] Bar = 1,
         [pbr::OriginalName("BAZ")] Baz = 2,
-        /// <summary>
-        /// Intentionally negative.
-        /// </summary>
+        /**
+         * <summary>
+         *  Intentionally negative.
+         * </summary>
+         */
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
@@ -12392,9 +12420,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      /// <summary>
-      /// groups
-      /// </summary>
+      /**
+       * <summary>
+       *  groups
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class Data : pb::IMessage<Data>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -12662,9 +12692,11 @@ namespace ProtobufTestMessages.Proto2 {
 
       }
 
-      /// <summary>
-      /// message_set test case.
-      /// </summary>
+      /**
+       * <summary>
+       *  message_set test case.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class MessageSetCorrect : pb::IExtendableMessage<MessageSetCorrect>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

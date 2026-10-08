@@ -242,12 +242,14 @@ namespace ProtobufTestMessages.Editions.Proto3 {
             "KAUiFgoUTnVsbEh5cG90aGVzaXNQcm90bzMiLwoORW51bU9ubHlQcm90bzMi",
             "HQoEQm9vbBIKCgZrRmFsc2UQABIJCgVrVHJ1ZRABKkAKC0ZvcmVpZ25FbnVt",
             "Eg8KC0ZPUkVJR05fRk9PEAASDwoLRk9SRUlHTl9CQVIQARIPCgtGT1JFSUdO",
-            "X0JBWhACQk4KMWNvbS5nb29nbGUucHJvdG9idWZfdGVzdF9tZXNzYWdlcy5l",
-            "ZGl0aW9ucy5wcm90bzNIAfgBAaICDkVkaXRpb25zUHJvdG8zkgMCCAJiCGVk",
-            "aXRpb25zcOgH"));
+            "X0JBWhACKm0KDkRlcHJlY2F0ZWRFbnVtEh8KG0RFUFJFQ0FURURfRU5VTV9V",
+            "TlNQRUNJRklFRBAAEhoKFkRFUFJFQ0FURURfRU5VTV9WQUxVRTEQARIaChZE",
+            "RVBSRUNBVEVEX0VOVU1fVkFMVUUyEAIaAhgBQk4KMWNvbS5nb29nbGUucHJv",
+            "dG9idWZfdGVzdF9tZXNzYWdlcy5lZGl0aW9ucy5wcm90bzNIAfgBAaICDkVk",
+            "aXRpb25zUHJvdG8zkgMCCAJiCGVkaXRpb25zcOgH"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.AnyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.DurationReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.FieldMaskReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, },
-          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.Proto3.ForeignEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
+          new pbr::GeneratedClrTypeInfo(new[] {typeof(global::ProtobufTestMessages.Editions.Proto3.ForeignEnum), typeof(global::ProtobufTestMessages.Editions.Proto3.DeprecatedEnum), }, null, new pbr::GeneratedClrTypeInfo[] {
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3), global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Parser, new[]{ "OptionalInt32", "OptionalInt64", "OptionalUint32", "OptionalUint64", "OptionalSint32", "OptionalSint64", "OptionalFixed32", "OptionalFixed64", "OptionalSfixed32", "OptionalSfixed64", "OptionalFloat", "OptionalDouble", "OptionalBool", "OptionalString", "OptionalBytes", "OptionalNestedMessage", "OptionalForeignMessage", "OptionalNestedEnum", "OptionalForeignEnum", "OptionalAliasedEnum", "OptionalStringPiece", "OptionalCord", "RecursiveMessage", "RepeatedInt32", "RepeatedInt64", "RepeatedUint32", "RepeatedUint64", "RepeatedSint32", "RepeatedSint64", "RepeatedFixed32", "RepeatedFixed64", "RepeatedSfixed32", "RepeatedSfixed64", "RepeatedFloat", "RepeatedDouble", "RepeatedBool", "RepeatedString", "RepeatedBytes", "RepeatedNestedMessage", "RepeatedForeignMessage", "RepeatedNestedEnum", "RepeatedForeignEnum", "RepeatedStringPiece", "RepeatedCord", "PackedInt32", "PackedInt64", "PackedUint32", "PackedUint64", "PackedSint32", "PackedSint64", "PackedFixed32", "PackedFixed64", "PackedSfixed32", "PackedSfixed64", "PackedFloat", "PackedDouble", "PackedBool", "PackedNestedEnum", "UnpackedInt32", "UnpackedInt64", "UnpackedUint32", "UnpackedUint64", "UnpackedSint32", "UnpackedSint64", "UnpackedFixed32", "UnpackedFixed64", "UnpackedSfixed32", "UnpackedSfixed64", "UnpackedFloat", "UnpackedDouble", "UnpackedBool", "UnpackedNestedEnum", "MapInt32Int32", "MapInt64Int64", "MapUint32Uint32", "MapUint64Uint64", "MapSint32Sint32", "MapSint64Sint64", "MapFixed32Fixed32", "MapFixed64Fixed64", "MapSfixed32Sfixed32", "MapSfixed64Sfixed64", "MapInt32Float", "MapInt32Double", "MapBoolBool", "MapStringString", "MapStringBytes", "MapStringNestedMessage", "MapStringForeignMessage", "MapStringNestedEnum", "MapStringForeignEnum", "OneofUint32", "OneofNestedMessage", "OneofString", "OneofBytes", "OneofBool", "OneofUint64", "OneofFloat", "OneofDouble", "OneofEnum", "OneofNullValue", "OptionalBoolWrapper", "OptionalInt32Wrapper", "OptionalInt64Wrapper", "OptionalUint32Wrapper", "OptionalUint64Wrapper", "OptionalFloatWrapper", "OptionalDoubleWrapper", "OptionalStringWrapper", "OptionalBytesWrapper", "RepeatedBoolWrapper", "RepeatedInt32Wrapper", "RepeatedInt64Wrapper", "RepeatedUint32Wrapper", "RepeatedUint64Wrapper", "RepeatedFloatWrapper", "RepeatedDoubleWrapper", "RepeatedStringWrapper", "RepeatedBytesWrapper", "OptionalDuration", "OptionalTimestamp", "OptionalFieldMask", "OptionalStruct", "OptionalAny", "OptionalValue", "OptionalNullValue", "OptionalEmpty", "RepeatedDuration", "RepeatedTimestamp", "RepeatedFieldmask", "RepeatedStruct", "RepeatedAny", "RepeatedValue", "RepeatedListValue", "RepeatedEmpty", "Fieldname1", "FieldName2", "FieldName3", "FieldName4", "Field0Name5", "Field0Name6", "FieldName7", "FieldName8", "FieldName9", "FieldName10", "FIELDNAME11", "FIELDName12", "FieldName13", "FieldName14", "FieldName15", "FieldName16", "FieldName17", "FieldName18" }, new[]{ "OneofField" }, new[]{ typeof(global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedEnum), typeof(global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.AliasedEnum) }, null, new pbr::GeneratedClrTypeInfo[] { new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage), global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage.Parser, new[]{ "A", "Corecursive" }, null, null, null, null),
             null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::ProtobufTestMessages.Editions.Proto3.ForeignMessage), global::ProtobufTestMessages.Editions.Proto3.ForeignMessage.Parser, new[]{ "C" }, null, null, null, null),
@@ -265,18 +267,27 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     [pbr::OriginalName("FOREIGN_BAZ")] ForeignBaz = 2,
   }
 
+  [global::System.ObsoleteAttribute]
+  public enum DeprecatedEnum {
+    [pbr::OriginalName("DEPRECATED_ENUM_UNSPECIFIED")] Unspecified = 0,
+    [pbr::OriginalName("DEPRECATED_ENUM_VALUE1")] Value1 = 1,
+    [pbr::OriginalName("DEPRECATED_ENUM_VALUE2")] Value2 = 2,
+  }
+
   #endregion
 
   #region Messages
-  /// <summary>
-  /// This proto includes every type of field in both singular and repeated
-  /// forms.
-  ///
-  /// Also, crucially, all messages and enums in this file are eventually
-  /// submessages of this message.  So for example, a fuzz test of TestAllTypes
-  /// could trigger bugs that occur in any message type in this file.  We verify
-  /// this stays true in a unit test.
-  /// </summary>
+  /**
+   * <summary>
+   *  This proto includes every type of field in both singular and repeated
+   *  forms.
+   * 
+   *  Also, crucially, all messages and enums in this file are eventually
+   *  submessages of this message.  So for example, a fuzz test of TestAllTypes
+   *  could trigger bugs that occur in any message type in this file.  We verify
+   *  this stays true in a unit test.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -500,10 +511,12 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
     private int optionalInt32_;
-    /// <summary>
-    /// Singular
-    /// test [kotlin] comment
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     *  test [kotlin] comment
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
@@ -782,9 +795,11 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Repeated
-    /// </summary>
+    /**
+     * <summary>
+     *  Repeated
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -1016,9 +1031,11 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
         = pb::FieldCodec.ForInt32(602);
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Packed
-    /// </summary>
+    /**
+     * <summary>
+     *  Packed
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> PackedInt32 {
@@ -1173,9 +1190,11 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
         = pb::FieldCodec.ForInt32(712);
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Unpacked
-    /// </summary>
+    /**
+     * <summary>
+     *  Unpacked
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> UnpackedInt32 {
@@ -1330,9 +1349,11 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 450);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
-    /// <summary>
-    /// Map
-    /// </summary>
+    /**
+     * <summary>
+     *  Map
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapInt32Int32 {
@@ -1787,9 +1808,11 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     public const int OptionalBoolWrapperFieldNumber = 201;
     private static readonly pb::FieldCodec<bool?> _single_optionalBoolWrapper_codec = pb::FieldCodec.ForStructWrapper<bool>(1610);
     private bool? optionalBoolWrapper_;
-    /// <summary>
-    /// Well-known types
-    /// </summary>
+    /**
+     * <summary>
+     *  Well-known types
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool? OptionalBoolWrapper {
@@ -2198,10 +2221,12 @@ namespace ProtobufTestMessages.Editions.Proto3 {
     /// <summary>Field number for the "fieldname1" field.</summary>
     public const int Fieldname1FieldNumber = 401;
     private int fieldname1_;
-    /// <summary>
-    /// Test field-name-to-JSON-name convention.
-    /// (protobuf says names can be any valid C/C++ identifier.)
-    /// </summary>
+    /**
+     * <summary>
+     *  Test field-name-to-JSON-name convention.
+     *  (protobuf says names can be any valid C/C++ identifier.)
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Fieldname1 {
@@ -5642,9 +5667,11 @@ namespace ProtobufTestMessages.Editions.Proto3 {
         [pbr::OriginalName("FOO")] Foo = 0,
         [pbr::OriginalName("BAR")] Bar = 1,
         [pbr::OriginalName("BAZ")] Baz = 2,
-        /// <summary>
-        /// Intentionally negative.
-        /// </summary>
+        /**
+         * <summary>
+         *  Intentionally negative.
+         * </summary>
+         */
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 
