@@ -1708,7 +1708,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000003ffU)) {
     // repeated .google.protobuf.Option options = 9;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1UL * this_._internal_options_size();
@@ -1765,8 +1765,6 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
             this_._internal_number());
       }
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000300U)) {
     // int32 oneof_index = 7;
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       if (this_._internal_oneof_index() != 0) {
