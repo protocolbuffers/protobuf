@@ -1,6 +1,7 @@
 #include "google/protobuf/compiler/cpp/field_chunk.h"
 
 #include <cstdint>
+#include <numeric>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -10,6 +11,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/unittest.pb.h"
 
 namespace google {
@@ -179,6 +181,34 @@ TEST(GenChunkMaskTest, ValidMaskFromChunks) {
                                    {kHasbitIdxAt0, kHasbitIdxAt1});
   uint32_t mask = GenChunkMask(chunks.begin(), chunks.end(), field_layout);
   EXPECT_EQ(mask, (1 << kHasbitIdxAt0) | (1 << kHasbitIdxAt1));
+}
+
+TEST(GenChunkMaskTest, FullWordMaskWhenAllFieldsInWordPresent) {
+  const Descriptor* descriptor = TestAllTypes::GetDescriptor();
+  std::vector<const FieldDescriptor*> fields;
+  for (int i = 0; i < 36; ++i) {
+    fields.push_back(descriptor->field(i));
+  }
+
+  // First two fields have no hasbit (kNoHasbit), the rest have the bits 0..33.
+  std::vector<int> has_bit_indices(36, internal::kNoHasbit);
+  std::iota(has_bit_indices.begin() + 2, has_bit_indices.end(), 0);
+
+  auto field_layout = FieldLayout::BuildForTesting(fields, has_bit_indices);
+  ASSERT_EQ(field_layout.CountFieldsSharingHasWord(0), 32);
+  ASSERT_EQ(field_layout.CountFieldsSharingHasWord(1), 2);
+
+  auto hasbit_fields = absl::MakeSpan(fields).subspan(2);
+
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(0, 32), field_layout),
+            ~uint32_t{0});
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(0, 31), field_layout),
+            (uint32_t{1} << 31) - 1);
+
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(32, 2), field_layout),
+            ~uint32_t{0});
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(32, 1), field_layout),
+            uint32_t{1});
 }
 
 }  // namespace
