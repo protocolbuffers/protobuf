@@ -12,16 +12,17 @@
 #include <utility>
 #include <vector>
 
-#include "absl/base/const_init.h"
-
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include "google/protobuf/descriptor.pb.h"
+#include "absl/base/const_init.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_database.h"
