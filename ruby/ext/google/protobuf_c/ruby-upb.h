@@ -4458,8 +4458,8 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_ToField(
 // it wastes 15 bytes). We accept this because we expect messages to be
 // the most common extension type.
 typedef struct upb_Extension {
-  const upb_MiniTableExtension* ext;
-  upb_MessageValue data;
+  const upb_MiniTableExtension* UPB_ONLYBITS(ext);
+  upb_MessageValue UPB_ONLYBITS(data);
 } upb_Extension;
 
 #ifdef __cplusplus
@@ -4469,8 +4469,8 @@ extern "C" {
 // Returns the MiniTableExtension that describes this extension. Never NULL.
 UPB_API_INLINE const upb_MiniTableExtension* upb_Extension_MiniTableExtension(
     const upb_Extension* ext) {
-  UPB_ASSERT(ext->ext != NULL);
-  return ext->ext;
+  UPB_ASSERT(ext->UPB_ONLYBITS(ext) != NULL);
+  return ext->UPB_ONLYBITS(ext);
 }
 
 // Returns the MiniTableField that describes this extension. Prefer this over
@@ -4487,7 +4487,7 @@ UPB_API_INLINE void upb_Extension_GetField(const upb_Extension* ext,
                                            void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, &ext->data);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, &ext->UPB_ONLYBITS(data));
 }
 
 // Sets the value of `ext` from `val`, which must point to a value of the
@@ -4497,7 +4497,7 @@ UPB_API_INLINE void upb_Extension_SetField(upb_Extension* ext,
                                            const void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &ext->data, val);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &ext->UPB_ONLYBITS(data), val);
 }
 
 // Returns the value of this extension.
