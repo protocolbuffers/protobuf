@@ -289,7 +289,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
 
 // repeated string paths = 1;
 inline int FieldMask::_internal_paths_size() const {
-  return _internal_paths().size();
+  return static_cast<int>(_internal_paths().size());
 }
 inline int FieldMask::paths_size() const {
   return _internal_paths_size();
