@@ -2110,6 +2110,13 @@ static VALUE get_methoddef_obj(VALUE descriptor_pool,
 
 // Functions exposed to other modules in defs.h.
 
+VALUE EnumDescriptor_DefToObj(const upb_EnumDef* e) {
+  const upb_DefPool* symtab = upb_FileDef_Pool(upb_EnumDef_File(e));
+  VALUE pool = ObjectCache_Get(symtab);
+  PBRUBY_ASSERT(pool != Qnil);
+  return get_enumdef_obj(pool, e);
+}
+
 VALUE Descriptor_DefToClass(const upb_MessageDef* m) {
   const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(m));
   VALUE pool = ObjectCache_Get(symtab);
