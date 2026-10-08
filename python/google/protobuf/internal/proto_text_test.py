@@ -29,7 +29,7 @@ class ProtoTextTest(unittest.TestCase):
   def test_simpor_parse(self, message_module):
     text = 'optional_int32: 123'
     msg = proto_text.parse(message_module.TestAllTypes, text)
-    self.assertEqual(123, msg.optional_int32)  # pytype: disable=attribute-error
+    self.assertEqual(123, msg.optional_int32)  # pyrefly: ignore[missing-attribute]
 
 
 if __name__ == '__main__':

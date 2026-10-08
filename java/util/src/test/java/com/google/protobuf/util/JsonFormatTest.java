@@ -64,10 +64,16 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -326,6 +332,50 @@ public class JsonFormatTest {
         .hasMessageThat()
         .contains(
             "Cannot find field: extensionInt32 in message json_test_proto2.TestAllTypesProto2");
+  }
+
+  @Test
+  @SuppressWarnings("deprecation") // Need to test deprecated method.
+  public void testExtensionFields_printingDeprecatedNonConformantShortExtensionNames_logsWarning()
+      throws Exception {
+    TypeRegistry registry =
+        TypeRegistry.newBuilder().add(TestAllTypesProto2.getDescriptor()).build();
+    JsonFormat.Printer printer =
+        JsonFormat.printer()
+            .usingTypeRegistry(registry)
+            .printingDeprecatedNonConformantShortExtensionNames();
+    TestAllTypesProto2 message =
+        TestAllTypesProto2.newBuilder().setExtension(JsonTestProto2.extensionInt32, 123).build();
+
+    List<LogRecord> records = new ArrayList<>();
+    Handler handler =
+        new Handler() {
+          @Override
+          public void publish(LogRecord record) {
+            records.add(record);
+          }
+
+          @Override
+          public void flush() {}
+
+          @Override
+          public void close() {}
+        };
+
+    Logger logger = Logger.getLogger(JsonFormat.class.getName());
+    logger.addHandler(handler);
+    try {
+      String json = printer.print(message);
+      assertThat(json).isEqualTo("{\n  \"extensionInt32\": 123\n}");
+
+      assertThat(records).hasSize(1);
+      assertThat(records.get(0).getLevel()).isEqualTo(Level.WARNING);
+      assertThat(records.get(0).getMessage())
+          .contains(
+              "Extension json_test_proto2.extension_int32 is being printed with its short name");
+    } finally {
+      logger.removeHandler(handler);
+    }
   }
 
   /**
@@ -813,7 +863,7 @@ public class JsonFormatTest {
       TestAllTypes.Builder builder = TestAllTypes.newBuilder();
       try {
         mergeFromJson("{\"" + field + "\":\"" + longNumber + "\"}", builder);
-        assertWithMessage("Exception expected for " + field + " with long numeric string").fail();
+        assertWithMessage("Exception expected for %s with long numeric string", field).fail();
       } catch (InvalidProtocolBufferException expected) {
         // Expected: rejected before expensive BigDecimal construction.
       }
@@ -2337,14 +2387,9 @@ public class JsonFormatTest {
         }
 
         assertWithMessage(
-                "Consistency failed for limit="
-                    + limit
-                    + ", depth="
-                    + depth
-                    + ". Concrete failed: "
-                    + concreteFailed
-                    + ", Reflective failed: "
-                    + reflectiveFailed)
+                "Consistency failed for limit=%s, depth=%s. Concrete failed: %s, Reflective failed:"
+                    + " %s",
+                limit, depth, concreteFailed, reflectiveFailed)
             .that(concreteFailed)
             .isEqualTo(reflectiveFailed);
       }
