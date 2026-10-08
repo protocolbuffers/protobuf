@@ -131,7 +131,7 @@ class IoTest : public testing::Test {
 };
 
 const int IoTest::kBlockSizes[] = {-1, 1, 2, 5, 7, 10, 23, 64};
-const int IoTest::kBlockSizeCount = ABSL_ARRAYSIZE(IoTest::kBlockSizes);
+const int IoTest::kBlockSizeCount = std::size(IoTest::kBlockSizes);
 
 bool IoTest::WriteToOutput(ZeroCopyOutputStream* output, const void* data,
                            int size) {
@@ -2034,7 +2034,7 @@ TEST_F(IoTest, ConcatenatingInputStream) {
                                     &input5, &input6, &input7};
 
   // Create the concatenating stream and read.
-  ConcatenatingInputStream input(streams, ABSL_ARRAYSIZE(streams));
+  ConcatenatingInputStream input(streams, std::size(streams));
   ReadStuff(&input);
 }
 
