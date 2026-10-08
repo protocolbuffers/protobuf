@@ -2730,6 +2730,7 @@ TEST(ArenaPtrTest, ClassIsABIEfficient) {
 }
 
 
+
 }  // namespace protobuf
 }  // namespace google
 
