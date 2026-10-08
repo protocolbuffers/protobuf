@@ -29,6 +29,7 @@
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
@@ -435,6 +436,18 @@ const char* EpsCopyInputStream::ReadCordFallback(const char* ptr, int size,
   return ptr;
 }
 
+const char* EpsCopyInputStream::ReadStringPieceFallback(const char* ptr,
+                                                        int size,
+                                                        StringPieceField* str) {
+  str->ClearAndReserve(0);
+  if (ABSL_PREDICT_FALSE(!HasEnoughTillLimit(size, ptr))) {
+    return nullptr;
+  }
+  str->ClearAndReserve(std::min<int>(size, kSafeStringSize));
+  return AppendSize(ptr, size,
+                    [str](const char* p, int s) { str->Append(p, s); });
+}
+
 
 const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   zcis_ = zcis;
@@ -644,6 +657,50 @@ template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
 template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
     const char* ptr, int64_t size, WireFormatStringSink& sink);
 
+
+void StringPieceField::ClearAndReserve(int size) {
+  if (size > 0 && static_cast<size_t>(size) > scratch_size_) {
+    // We don't have enough memory in scratch, so reserve.
+    Arena* arena = GetArena();
+    if (arena == nullptr) {
+      std::allocator<char>().deallocate(scratch_, scratch_size_);
+    }
+    scratch_size_ = size;
+    if (arena != nullptr) {
+      scratch_ = ::google::protobuf::Arena::CreateArray<char>(arena, scratch_size_);
+    } else {
+      scratch_ = std::allocator<char>().allocate(scratch_size_);
+    }
+  }
+  // Clear
+  data_ = scratch_;
+  size_ = 0;
+}
+
+void StringPieceField::Append(const char* ptr, int chunk_size) {
+  size_t total = size_ + chunk_size;
+  if (ABSL_PREDICT_FALSE(total > scratch_size_)) {
+    size_t new_size = std::max(total, scratch_size_ * 2);
+    Arena* arena = GetArena();
+    char* new_scratch;
+    if (arena != nullptr) {
+      new_scratch = ::google::protobuf::Arena::CreateArray<char>(arena, new_size);
+    } else {
+      new_scratch = std::allocator<char>().allocate(new_size);
+    }
+    if (size_ > 0) {
+      std::memcpy(new_scratch, scratch_, size_);
+    }
+    if (arena == nullptr && scratch_ != nullptr) {
+      std::allocator<char>().deallocate(scratch_, scratch_size_);
+    }
+    scratch_ = new_scratch;
+    scratch_size_ = new_size;
+    data_ = scratch_;
+  }
+  std::memcpy(scratch_ + size_, ptr, chunk_size);
+  size_ = total;
+}
 
 template <typename T, bool sign>
 const char* VarintParser(void* object, Arena* arena, const char* ptr,

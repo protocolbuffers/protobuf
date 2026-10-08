@@ -16,7 +16,7 @@
 #include "google/protobuf/repeated_field_proxy_iterator.h"
 #include "google/protobuf/repeated_field_proxy_traits.h"
 #include "google/protobuf/repeated_ptr_field.h"
-
+#include "google/protobuf/string_piece_field_support.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -81,6 +81,22 @@ inline void SetElement(absl::Cord& element, T&& value) {
     element = absl::implicit_cast<const absl::Cord&>(std::forward<T>(value));
   } else {
     CopyToString(element, std::forward<T>(value));
+  }
+}
+
+template <typename T>
+inline void SetElement(StringPieceField& element, T&& value) {
+  if constexpr (std::is_convertible_v<T, const absl::Cord&>) {
+    const absl::Cord& cord = std::forward<T>(value);
+    element.CopyFrom(cord);
+  } else if constexpr (std::is_convertible_v<T, absl::string_view>) {
+    element.CopyFrom(value);
+  } else if constexpr (std::is_convertible_v<T, const std::string&>) {
+    element.CopyFrom(absl::implicit_cast<const std::string&>(value));
+  } else if constexpr (std::is_convertible_v<T, const char*>) {
+    element.CopyFrom(absl::implicit_cast<const char*>(value));
+  } else {
+    element.CopyFrom(std::string{value.data(), value.size()});
   }
 }
 
@@ -375,6 +391,26 @@ class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack<
   // In-place constructs an element at the end of the repeated field, returning
   // a string_view of the newly constructed element.
   absl::string_view emplace_back(const char* PROTOBUF_NONNULL value) const {
+    return RepeatedFieldProxyInternalPrivateAccessHelper<
+        ElementType, kOrProxy>::Emplace(this, value);
+  }
+};
+
+template <typename ElementType, bool kOrProxy>
+class PROTOBUF_DECLSPEC_EMPTY_BASES RepeatedFieldProxyWithEmplaceBack<
+    ElementType, kOrProxy,
+    std::enable_if_t<std::is_same_v<ElementType, StringPieceField>>> {
+ public:
+  // In-place constructs an element at the end of the repeated field, returning
+  // the newly constructed element.
+  StringPieceField& emplace_back() const {
+    return RepeatedFieldProxyInternalPrivateAccessHelper<
+        ElementType, kOrProxy>::Emplace(this);
+  }
+
+  // In-place constructs an element at the end of the repeated field, returning
+  // the newly constructed element.
+  StringPieceField& emplace_back(absl::string_view value) const {
     return RepeatedFieldProxyInternalPrivateAccessHelper<
         ElementType, kOrProxy>::Emplace(this, value);
   }

@@ -44,6 +44,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -66,6 +67,7 @@ class CodedInputStream;
 
 namespace internal {
 
+class StringPieceField;
 
 class ExtensionSet;
 

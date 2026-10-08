@@ -45,6 +45,7 @@
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/serial_arena.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/varint_shuffle.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -182,6 +183,15 @@ absl::Status TcParser::VerifyHasBitConsistency(const MessageLite* msg,
               return make_error_status();
             }
             break;
+          case field_layout::kRepSPiece: {
+            // If the has bit is off, it must match the default.
+            if (!has_bit &&
+                (RefAt<StringPieceField>(base, entry.offset).Get() !=
+                 RefAt<StringPieceField>(default_base, entry.offset).Get())) {
+              return make_error_status();
+            }
+            break;
+          }
           case field_layout::kRepIString:
             // If the has bit is off, it must match the default.
             if (!has_bit &&
@@ -1946,6 +1956,12 @@ void TcParser::InitOneof(const TcParseTableBase* table,
         RefAt<absl::Cord*>(msg, entry.offset) = field;
         break;
       }
+      case field_layout::kRepSPiece: {
+        StringPieceField* field =
+            Arena::Create<StringPieceField>(msg->GetArena());
+        RefAt<StringPieceField*>(msg, entry.offset) = field;
+        break;
+      }
       case field_layout::kRepSString:
       case field_layout::kRepIString:
       default:
@@ -2010,6 +2026,12 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
       case field_layout::kRepCord: {
         if (msg->GetArena() == nullptr) {
           delete RefAt<absl::Cord*>(msg, current_entry->offset);
+        }
+        break;
+      }
+      case field_layout::kRepSPiece: {
+        if (msg->GetArena() == nullptr) {
+          delete RefAt<StringPieceField*>(msg, current_entry->offset);
         }
         break;
       }
@@ -2573,6 +2595,19 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
       break;
     }
 
+    case field_layout::kRepSPiece: {
+      // String piece field is not split.
+      StringPieceField* field;
+      if (is_oneof) {
+        field = RefAt<StringPieceField*>(msg, entry.offset);
+      } else {
+        field = &RefAt<StringPieceField>(msg, entry.offset);
+      }
+      ptr = InlineStringPieceParser(field, ptr, ctx);
+      if (!ptr) break;
+      is_valid = MpVerifyUtf8(field->Get(), table, entry, xform_val);
+      break;
+    }
     default:
       Unreachable();
   }
@@ -2661,6 +2696,27 @@ PROTOBUF_NOINLINE const char* TcParser::MpRepeatedString(
         if (ABSL_PREDICT_FALSE(!DataAvailableForRepeatedField(ptr, ctx))) {
           goto parse_loop;
         }
+        ptr2 = ReadTag(ptr, &next_tag);
+      } while (next_tag == decoded_tag);
+      break;
+    }
+
+    case field_layout::kRepSPiece: {
+      auto& field =
+          MaybeCreateRepeatedPtrFieldRefAt<StringPieceField, is_split>(
+              base, entry.offset, msg);
+      const char* ptr2 = ptr;
+      uint32_t next_tag;
+      do {
+        ptr = ptr2;
+        StringPieceField* str = field.AddWithArena(arena);
+        ptr = InlineStringPieceParser(str, ptr, ctx);
+        if (ABSL_PREDICT_FALSE(
+                ptr == nullptr ||
+                !MpVerifyUtf8(str->Get(), table, entry, xform_val))) {
+          PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+        }
+        if (ABSL_PREDICT_FALSE(!ctx->DataAvailable(ptr))) goto parse_loop;
         ptr2 = ReadTag(ptr, &next_tag);
       } while (next_tag == decoded_tag);
       break;

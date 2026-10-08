@@ -39,6 +39,7 @@
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
@@ -262,6 +263,26 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return ReadCordFallback(ptr, size, cord);
   }
 
+  [[nodiscard]] const char* ReadStringPiece(const char* ptr, int size,
+                                            StringPieceField* s) {
+    if (CanReadFromPtr(size, ptr)) {
+      if (aliasing_ == kNoDelta) {
+        s->Set(absl::string_view(ptr, size));
+      } else if (aliasing_ > kNoDelta && buffer_end_ - ptr >= size) {
+        // !!! IMPORTANT NOTE !!!
+        // We must check again, but without the slop.
+        // `CanReadFromPtr` assumes we are reading from `ptr` which provides
+        // slop, but when `aliasing_ > kNoDelta` we read from the original input
+        // which does not have slop.
+        auto tmp = reinterpret_cast<std::uintptr_t>(ptr) + aliasing_;
+        s->Set(absl::string_view(reinterpret_cast<const char*>(tmp), size));
+      } else {
+        s->CopyFrom(absl::string_view(ptr, size));
+      }
+      return ptr + size;
+    }
+    return ReadStringPieceFallback(ptr, size, s);
+  }
 
   template <typename FuncT>
   [[nodiscard]] const char* ReadChunkAndCallback(const char* ptr, int size,
@@ -603,6 +624,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   const char* ReadStringFallback(const char* ptr, int size, std::string* str);
   const char* ReadArrayFallback(const char* ptr, absl::Span<char> out);
   const char* ReadCordFallback(const char* ptr, int size, absl::Cord* cord);
+  const char* ReadStringPieceFallback(const char* ptr, int size,
+                                      StringPieceField* str);
   static bool ParseEndsInSlopRegion(const char* begin, int overrun, int depth);
   bool StreamNext(const void** data) {
     bool res = zcis_->Next(data, &size_);
@@ -1740,6 +1763,19 @@ inline bool VerifyUTF8(const std::string* s, const char* field_name) {
   return ctx->ReadCord(ptr, size, cord);
 }
 
+
+PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
+inline bool VerifyUTF8(const StringPieceField* s, const char* field_name) {
+  return VerifyUTF8(s->Get(), field_name);
+}
+
+[[nodiscard]] inline const char* InlineStringPieceParser(StringPieceField* s,
+                                                         const char* ptr,
+                                                         ParseContext* ctx) {
+  int size = ReadSize(&ptr);
+  if (!ptr) return nullptr;
+  return ctx->ReadStringPiece(ptr, size, s);
+}
 
 template <typename T>
 [[nodiscard]] const char* FieldParser(uint64_t tag, T& field_parser,
