@@ -84,6 +84,41 @@ class TestMessageExtension(unittest.TestCase):
     test_slice(11, 3, -2)
     test_slice(11, 3, -3)
     test_slice(10, 25, 4)
+    test_slice(5, 5, 2)
+    test_slice(0, 0, 2)
+    test_slice(2, 2, 2)
+    test_slice(20, 20, 2)
+    test_slice(3, 3, -2)
+    test_slice(0, 0, -1)
+    test_slice(20, 20, -2)
+
+    empty_vals = []
+    empty_msg = unittest_pb2.TestAllTypes()
+    del empty_vals[::2]
+    del empty_msg.repeated_int32[::2]
+    self.assertEqual(empty_vals, list(empty_msg.repeated_int32))
+    del empty_vals[5:5:2]
+    del empty_msg.repeated_int32[5:5:2]
+    self.assertEqual(empty_vals, list(empty_msg.repeated_int32))
+    del empty_vals[0:0:2]
+    del empty_msg.repeated_int32[0:0:2]
+    self.assertEqual(empty_vals, list(empty_msg.repeated_int32))
+    del empty_vals[::-2]
+    del empty_msg.repeated_int32[::-2]
+    self.assertEqual(empty_vals, list(empty_msg.repeated_int32))
+    del empty_vals[2:2:-2]
+    del empty_msg.repeated_int32[2:2:-2]
+    self.assertEqual(empty_vals, list(empty_msg.repeated_int32))
+
+    empty_comp = unittest_pb2.TestAllTypes()
+    del empty_comp.repeated_nested_message[::2]
+    self.assertEqual([], list(empty_comp.repeated_nested_message))
+    del empty_comp.repeated_nested_message[5:5:2]
+    self.assertEqual([], list(empty_comp.repeated_nested_message))
+    del empty_comp.repeated_nested_message[0:0:2]
+    self.assertEqual([], list(empty_comp.repeated_nested_message))
+    del empty_comp.repeated_nested_message[::-2]
+    self.assertEqual([], list(empty_comp.repeated_nested_message))
 
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()

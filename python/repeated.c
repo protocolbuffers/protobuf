@@ -893,6 +893,8 @@ static int PyUpb_RepeatedContainer_DeleteSubscript(upb_Array* arr,
                                                    Py_ssize_t idx,
                                                    Py_ssize_t count,
                                                    Py_ssize_t step) {
+  if (count == 0) return 0;
+
   // Normalize direction: deletion is order-independent.
   Py_ssize_t start = idx;
   if (step < 0) {
