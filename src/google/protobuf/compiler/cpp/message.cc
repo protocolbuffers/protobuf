@@ -4514,7 +4514,7 @@ void TryAppendToBack(std::vector<SerializeChunk>& chunks, Chunk chunk) {
   chunks.push_back(std::move(chunk));
 }
 
-std::vector<SerializeChunk> CollectSerializeChunks(
+std::vector<SerializeChunk> CollectMaximalSerializeChunks(
     const Descriptor* descriptor, const FieldLayout& field_layout,
     const Options& options) {
   std::vector<const FieldDescriptor*> ordered_fields =
@@ -4563,6 +4563,89 @@ std::vector<SerializeChunk> CollectSerializeChunks(
 
   return chunks;
 }
+
+// Calculates the expected number of branch checks executed for a chunk of
+// `size` fields, where `p_none` is the probability that none of the fields
+// are present.
+//
+// For a single field (`size <= 1`), 1 branch is evaluated for its individual
+// presence check. For `size > 1`, 1 branch is evaluated for the batch presence
+// check, plus `size` subsequent individual branch checks evaluated when the
+// batch check succeeds (with probability `p_any`).
+double ExpectedNumberOfBranchesTaken(size_t size, double p_none) {
+  if (size <= 1) return 1.0;
+
+  double p_any = 1.0 - p_none;
+  return 1.0 + size * p_any;
+}
+
+double GetAbsenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  // The default value of 0.0 is chosen for two reasons:
+  // 1. We batch in other generated methods when the PdProto data isn't
+  // available and the value of 0.0f promotes batching.
+  // 2. It has shown the best performance in the protogen_micro benchmark when
+  // compared do 1.0f and 0.5f.
+  return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
+}
+
+// Greedily partitions the fields sharing a hasbit word into batches to
+// minimize the expected number of branch checks executed during serialization.
+std::vector<SerializeFieldChunk> PartitionToMinimizeExpectedBranches(
+    const SerializeFieldChunk& chunk, const Options& options) {
+  std::vector<SerializeFieldChunk> result;
+  if (chunk.fields.empty()) return result;
+
+  result.push_back(SerializeFieldChunk{
+      chunk.should_split,
+      chunk.hasword_index,
+      {chunk.fields.front()},
+  });
+  double p_none = GetAbsenceProbability(chunk.fields.front(), options);
+
+  for (size_t i = 1; i < chunk.fields.size(); ++i) {
+    const FieldDescriptor* field = chunk.fields[i];
+    double current_cost =
+        ExpectedNumberOfBranchesTaken(result.back().fields.size(), p_none);
+    double p_field_absent = GetAbsenceProbability(field, options);
+    double new_absent = p_none * p_field_absent;
+    double extended_cost = ExpectedNumberOfBranchesTaken(
+        result.back().fields.size() + 1, new_absent);
+
+    // If adding this field to the current batch has a higher expected branches
+    // cost than if the field were alone, start a new chunk.
+    if (extended_cost > current_cost + 1.0) {
+      result.push_back(SerializeFieldChunk{
+          chunk.should_split,
+          chunk.hasword_index,
+          {field},
+      });
+      p_none = p_field_absent;
+    } else {
+      result.back().fields.push_back(field);
+      p_none = new_absent;
+    }
+  }
+  return result;
+}
+
+std::vector<SerializeChunk> PartitionToMinimizeExpectedBranches(
+    std::vector<SerializeChunk> chunks, const Options& options) {
+  std::vector<SerializeChunk> result;
+
+  for (SerializeChunk& chunk : chunks) {
+    const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
+    if (field_chunk == nullptr || !field_chunk->hasword_index.has_value() ||
+        field_chunk->fields.size() <= 1) {
+      result.push_back(std::move(chunk));
+    } else {
+      absl::c_move(PartitionToMinimizeExpectedBranches(*field_chunk, options),
+                   std::back_inserter(result));
+    }
+  }
+
+  return result;
+}
 }  // namespace
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
@@ -4603,24 +4686,41 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       } else {
         CloseSplit();
       }
-      for (const auto* field : fields_chunk.fields) {
-        // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field, mg_->options_)) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
-          int has_word_index =
-              mg_->field_layout_.GetHasWordIndex(field).value();
-          if (cached_has_bit_index_ != has_word_index) {
-            // Reload.
-            cached_has_bit_index_ = has_word_index;
-            p_->Emit({{"index", cached_has_bit_index_}},
-                     R"cc(
-                       cached_has_bits = this_._impl_._has_bits_[$index$];
-                     )cc");
-          }
+
+      absl::optional<int> hasword_index = fields_chunk.hasword_index;
+      // We speculatively load the entire _has_bits_[index] contents, even
+      // if it is for only one field.
+      if (hasword_index.has_value() &&
+          cached_has_bit_index_ != *hasword_index) {
+        cached_has_bit_index_ = *hasword_index;
+        p_->Emit({{"index", cached_has_bit_index_}},
+                 R"cc(
+                   cached_has_bits = this_._impl_._has_bits_[$index$];
+                 )cc");
+      }
+
+      auto generate_serialize_fields = [&] {
+        for (const auto* field : fields_chunk.fields) {
+          mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
         }
-        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
+      };
+
+      if (fields_chunk.fields.size() > 1 && hasword_index.has_value()) {
+        uint32_t chunk_mask =
+            GenChunkMask(fields_chunk.fields, mg_->field_layout_);
+        p_->Emit(
+            {
+                {"cond", GenerateConditionMaybeWithProbabilityForGroup(
+                             chunk_mask, fields_chunk.fields, mg_->options_)},
+                {"body", generate_serialize_fields},
+            },
+            R"cc(
+              if ($cond$) {
+                $body$;
+              }
+            )cc");
+      } else {
+        generate_serialize_fields();
       }
     }
 
@@ -4654,7 +4754,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
 
   std::vector<SerializeChunk> chunks =
-      CollectSerializeChunks(descriptor_, field_layout_, options_);
+      CollectMaximalSerializeChunks(descriptor_, field_layout_, options_);
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   int num_ext_chunks = absl::c_count_if(chunks, [](const auto& chunk) {
     return std::holds_alternative<ExtensionRangeChunk>(chunk);
