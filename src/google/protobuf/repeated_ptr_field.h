@@ -2487,9 +2487,9 @@ RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       const_cast<const void* const*>(raw_data() + size()));
 }
 
-// Like C++20's std::erase_if, for RepeatedPtrField
-// For string containers, the predicate is called with an `absl::string_view`.
-// Otherwise, it is called with a `const T&`.
+// Like C++20's std::erase_if, for RepeatedPtrField. The order of calls to the
+// predicate is not specified. For string containers, the predicate is called
+// with an `absl::string_view`. Otherwise, it is called with a `const T&`.
 template <typename T, typename Pred>
 size_t erase_if(RepeatedPtrField<T>& cont, Pred pred) {
   // We use `partition` instead of `remove` to keep all the erased elements at
