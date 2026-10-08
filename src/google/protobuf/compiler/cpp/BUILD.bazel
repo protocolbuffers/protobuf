@@ -304,6 +304,28 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "helpers_unittest",
+    srcs = ["helpers_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":cpp",
+        ":names_internal",
+        "//:protobuf",
+        "//src/google/protobuf",
+        "//src/google/protobuf:cc_test_protos",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf:protobuf_lite",
+        "//src/google/protobuf:test_textproto",
+        "//src/google/protobuf:unittest_proto3_cc_proto",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:printer",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 proto_library(
     name = "cpp_file_options_test_proto",
     testonly = 1,
