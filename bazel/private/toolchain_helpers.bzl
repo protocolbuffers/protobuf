@@ -45,5 +45,6 @@ toolchains = struct(
     find_toolchain = _find_toolchain,
     if_legacy_toolchain = _if_legacy_toolchain,
     INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION = _incompatible_toolchain_resolution,
+    CC_TOOLCHAIN = Label("@bazel_tools//tools/cpp:toolchain_type"),
     PROTO_TOOLCHAIN = Label("//bazel/private:proto_toolchain_type"),
 )
