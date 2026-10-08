@@ -941,7 +941,6 @@ PyObject* PyUpb_Message_Get(upb_Message* u_msg, const upb_MessageDef* m,
   //    https://bugs.python.org/issue35810
   PyUpb_Message* py_msg = (void*)PyType_GenericAlloc((PyTypeObject*)cls, 0);
   if (!py_msg) {
-    Py_DECREF(ret);
     Py_DECREF(cls);
     return NULL;
   }
