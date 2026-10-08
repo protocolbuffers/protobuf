@@ -1187,67 +1187,69 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // string name = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-    if (!this_._internal_name().empty()) {
-      const ::std::string& _s = this_._internal_name();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.name");
-      target = stream->WriteStringMaybeAliased(1, _s, target);
+  if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
+    // string name = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (!this_._internal_name().empty()) {
+        const ::std::string& _s = this_._internal_name();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.name");
+        target = stream->WriteStringMaybeAliased(1, _s, target);
+      }
     }
-  }
 
-  // repeated .google.protobuf.Field fields = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (const auto& sub : this_._impl_.fields_) {
+    // repeated .google.protobuf.Field fields = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      for (const auto& sub : this_._impl_.fields_) {
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            2, sub, sub.GetCachedSize(), target, stream);
+      }
+    }
+
+    // repeated string oneofs = 3;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      for (const auto& s : this_._impl_.oneofs_) {
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.oneofs");
+        target = stream->WriteString(3, s, target);
+      }
+    }
+
+    // repeated .google.protobuf.Option options = 4;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      for (const auto& sub : this_._impl_.options_) {
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            4, sub, sub.GetCachedSize(), target, stream);
+      }
+    }
+
+    // .google.protobuf.SourceContext source_context = 5;
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          2, sub, sub.GetCachedSize(), target, stream);
+          5, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
+          stream);
     }
-  }
 
-  // repeated string oneofs = 3;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    for (const auto& s : this_._impl_.oneofs_) {
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          s.data(), static_cast<int>(s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.oneofs");
-      target = stream->WriteString(3, s, target);
+    // .google.protobuf.Syntax syntax = 6;
+    if (CheckHasBit(cached_has_bits, 0x00000040U)) {
+      if (this_._internal_syntax() != 0) {
+        target = stream->EnsureSpace(target);
+        target = ::_pbi::WireFormatLite::WriteEnumToArray(
+            6, this_._internal_syntax(), target);
+      }
     }
-  }
 
-  // repeated .google.protobuf.Option options = 4;
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    for (const auto& sub : this_._impl_.options_) {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          4, sub, sub.GetCachedSize(), target, stream);
+    // string edition = 7;
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (!this_._internal_edition().empty()) {
+        const ::std::string& _s = this_._internal_edition();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.edition");
+        target = stream->WriteStringMaybeAliased(7, _s, target);
+      }
     }
-  }
 
-  // .google.protobuf.SourceContext source_context = 5;
-  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        5, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
-        stream);
   }
-
-  // .google.protobuf.Syntax syntax = 6;
-  if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-    if (this_._internal_syntax() != 0) {
-      target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          6, this_._internal_syntax(), target);
-    }
-  }
-
-  // string edition = 7;
-  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-    if (!this_._internal_edition().empty()) {
-      const ::std::string& _s = this_._internal_edition();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Type.edition");
-      target = stream->WriteStringMaybeAliased(7, _s, target);
-    }
-  }
-
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -1585,99 +1587,101 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // .google.protobuf.Field.Kind kind = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-    if (this_._internal_kind() != 0) {
-      target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          1, this_._internal_kind(), target);
+  if (BatchCheckHasBit(cached_has_bits, 0x000003ffU)) {
+    // .google.protobuf.Field.Kind kind = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+      if (this_._internal_kind() != 0) {
+        target = stream->EnsureSpace(target);
+        target = ::_pbi::WireFormatLite::WriteEnumToArray(
+            1, this_._internal_kind(), target);
+      }
     }
-  }
 
-  // .google.protobuf.Field.Cardinality cardinality = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-    if (this_._internal_cardinality() != 0) {
-      target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          2, this_._internal_cardinality(), target);
+    // .google.protobuf.Field.Cardinality cardinality = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000040U)) {
+      if (this_._internal_cardinality() != 0) {
+        target = stream->EnsureSpace(target);
+        target = ::_pbi::WireFormatLite::WriteEnumToArray(
+            2, this_._internal_cardinality(), target);
+      }
     }
-  }
 
-  // int32 number = 3;
-  if (CheckHasBit(cached_has_bits, 0x00000080U)) {
-    if (this_._internal_number() != 0) {
-      target =
-          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
-              stream, this_._internal_number(), target);
+    // int32 number = 3;
+    if (CheckHasBit(cached_has_bits, 0x00000080U)) {
+      if (this_._internal_number() != 0) {
+        target =
+            ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<3>(
+                stream, this_._internal_number(), target);
+      }
     }
-  }
 
-  // string name = 4;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    if (!this_._internal_name().empty()) {
-      const ::std::string& _s = this_._internal_name();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.name");
-      target = stream->WriteStringMaybeAliased(4, _s, target);
+    // string name = 4;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!this_._internal_name().empty()) {
+        const ::std::string& _s = this_._internal_name();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.name");
+        target = stream->WriteStringMaybeAliased(4, _s, target);
+      }
     }
-  }
 
-  // string type_url = 6;
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    if (!this_._internal_type_url().empty()) {
-      const ::std::string& _s = this_._internal_type_url();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.type_url");
-      target = stream->WriteStringMaybeAliased(6, _s, target);
+    // string type_url = 6;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (!this_._internal_type_url().empty()) {
+        const ::std::string& _s = this_._internal_type_url();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.type_url");
+        target = stream->WriteStringMaybeAliased(6, _s, target);
+      }
     }
-  }
 
-  // int32 oneof_index = 7;
-  if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-    if (this_._internal_oneof_index() != 0) {
-      target =
-          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<7>(
-              stream, this_._internal_oneof_index(), target);
+    // int32 oneof_index = 7;
+    if (CheckHasBit(cached_has_bits, 0x00000100U)) {
+      if (this_._internal_oneof_index() != 0) {
+        target =
+            ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<7>(
+                stream, this_._internal_oneof_index(), target);
+      }
     }
-  }
 
-  // bool packed = 8;
-  if (CheckHasBit(cached_has_bits, 0x00000200U)) {
-    if (this_._internal_packed() != 0) {
-      target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteBoolToArray(
-          8, this_._internal_packed(), target);
+    // bool packed = 8;
+    if (CheckHasBit(cached_has_bits, 0x00000200U)) {
+      if (this_._internal_packed() != 0) {
+        target = stream->EnsureSpace(target);
+        target = ::_pbi::WireFormatLite::WriteBoolToArray(
+            8, this_._internal_packed(), target);
+      }
     }
-  }
 
-  // repeated .google.protobuf.Option options = 9;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (const auto& sub : this_._impl_.options_) {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          9, sub, sub.GetCachedSize(), target, stream);
+    // repeated .google.protobuf.Option options = 9;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      for (const auto& sub : this_._impl_.options_) {
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            9, sub, sub.GetCachedSize(), target, stream);
+      }
     }
-  }
 
-  // string json_name = 10;
-  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-    if (!this_._internal_json_name().empty()) {
-      const ::std::string& _s = this_._internal_json_name();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.json_name");
-      target = stream->WriteStringMaybeAliased(10, _s, target);
+    // string json_name = 10;
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (!this_._internal_json_name().empty()) {
+        const ::std::string& _s = this_._internal_json_name();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.json_name");
+        target = stream->WriteStringMaybeAliased(10, _s, target);
+      }
     }
-  }
 
-  // string default_value = 11;
-  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-    if (!this_._internal_default_value().empty()) {
-      const ::std::string& _s = this_._internal_default_value();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.default_value");
-      target = stream->WriteStringMaybeAliased(11, _s, target);
+    // string default_value = 11;
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      if (!this_._internal_default_value().empty()) {
+        const ::std::string& _s = this_._internal_default_value();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Field.default_value");
+        target = stream->WriteStringMaybeAliased(11, _s, target);
+      }
     }
-  }
 
+  }
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -2052,58 +2056,60 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // string name = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    if (!this_._internal_name().empty()) {
-      const ::std::string& _s = this_._internal_name();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.name");
-      target = stream->WriteStringMaybeAliased(1, _s, target);
+  if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
+    // string name = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (!this_._internal_name().empty()) {
+        const ::std::string& _s = this_._internal_name();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.name");
+        target = stream->WriteStringMaybeAliased(1, _s, target);
+      }
     }
-  }
 
-  // repeated .google.protobuf.EnumValue enumvalue = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (const auto& sub : this_._impl_.enumvalue_) {
+    // repeated .google.protobuf.EnumValue enumvalue = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      for (const auto& sub : this_._impl_.enumvalue_) {
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            2, sub, sub.GetCachedSize(), target, stream);
+      }
+    }
+
+    // repeated .google.protobuf.Option options = 3;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      for (const auto& sub : this_._impl_.options_) {
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            3, sub, sub.GetCachedSize(), target, stream);
+      }
+    }
+
+    // .google.protobuf.SourceContext source_context = 4;
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          2, sub, sub.GetCachedSize(), target, stream);
+          4, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
+          stream);
     }
-  }
 
-  // repeated .google.protobuf.Option options = 3;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    for (const auto& sub : this_._impl_.options_) {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          3, sub, sub.GetCachedSize(), target, stream);
+    // .google.protobuf.Syntax syntax = 5;
+    if (CheckHasBit(cached_has_bits, 0x00000020U)) {
+      if (this_._internal_syntax() != 0) {
+        target = stream->EnsureSpace(target);
+        target = ::_pbi::WireFormatLite::WriteEnumToArray(
+            5, this_._internal_syntax(), target);
+      }
     }
-  }
 
-  // .google.protobuf.SourceContext source_context = 4;
-  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        4, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
-        stream);
-  }
-
-  // .google.protobuf.Syntax syntax = 5;
-  if (CheckHasBit(cached_has_bits, 0x00000020U)) {
-    if (this_._internal_syntax() != 0) {
-      target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          5, this_._internal_syntax(), target);
+    // string edition = 6;
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      if (!this_._internal_edition().empty()) {
+        const ::std::string& _s = this_._internal_edition();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.edition");
+        target = stream->WriteStringMaybeAliased(6, _s, target);
+      }
     }
-  }
 
-  // string edition = 6;
-  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-    if (!this_._internal_edition().empty()) {
-      const ::std::string& _s = this_._internal_edition();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Enum.edition");
-      target = stream->WriteStringMaybeAliased(6, _s, target);
-    }
   }
-
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -2383,33 +2389,35 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // string name = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    if (!this_._internal_name().empty()) {
-      const ::std::string& _s = this_._internal_name();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.EnumValue.name");
-      target = stream->WriteStringMaybeAliased(1, _s, target);
+  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+    // string name = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!this_._internal_name().empty()) {
+        const ::std::string& _s = this_._internal_name();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.EnumValue.name");
+        target = stream->WriteStringMaybeAliased(1, _s, target);
+      }
     }
-  }
 
-  // int32 number = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    if (this_._internal_number() != 0) {
-      target =
-          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
-              stream, this_._internal_number(), target);
+    // int32 number = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      if (this_._internal_number() != 0) {
+        target =
+            ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
+                stream, this_._internal_number(), target);
+      }
     }
-  }
 
-  // repeated .google.protobuf.Option options = 3;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    for (const auto& sub : this_._impl_.options_) {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          3, sub, sub.GetCachedSize(), target, stream);
+    // repeated .google.protobuf.Option options = 3;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      for (const auto& sub : this_._impl_.options_) {
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            3, sub, sub.GetCachedSize(), target, stream);
+      }
     }
-  }
 
+  }
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -2640,23 +2648,25 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // string name = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    if (!this_._internal_name().empty()) {
-      const ::std::string& _s = this_._internal_name();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Option.name");
-      target = stream->WriteStringMaybeAliased(1, _s, target);
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    // string name = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (!this_._internal_name().empty()) {
+        const ::std::string& _s = this_._internal_name();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Option.name");
+        target = stream->WriteStringMaybeAliased(1, _s, target);
+      }
     }
-  }
 
-  // .google.protobuf.Any value = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-        2, *this_._impl_.value_, this_._impl_.value_->GetCachedSize(), target,
-        stream);
-  }
+    // .google.protobuf.Any value = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+          2, *this_._impl_.value_, this_._impl_.value_->GetCachedSize(), target,
+          stream);
+    }
 
+  }
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(

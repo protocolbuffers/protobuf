@@ -300,24 +300,26 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // int64 seconds = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    if (this_._internal_seconds() != 0) {
-      target =
-          ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<1>(
-              stream, this_._internal_seconds(), target);
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    // int64 seconds = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (this_._internal_seconds() != 0) {
+        target =
+            ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<1>(
+                stream, this_._internal_seconds(), target);
+      }
     }
-  }
 
-  // int32 nanos = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    if (this_._internal_nanos() != 0) {
-      target =
-          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
-              stream, this_._internal_nanos(), target);
+    // int32 nanos = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (this_._internal_nanos() != 0) {
+        target =
+            ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
+                stream, this_._internal_nanos(), target);
+      }
     }
-  }
 
+  }
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(

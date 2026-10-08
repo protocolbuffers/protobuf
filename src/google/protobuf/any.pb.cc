@@ -333,24 +333,26 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // string type_url = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    if (!this_._internal_type_url().empty()) {
-      const ::std::string& _s = this_._internal_type_url();
-      ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-          _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
-      target = stream->WriteStringMaybeAliased(1, _s, target);
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+    // string type_url = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (!this_._internal_type_url().empty()) {
+        const ::std::string& _s = this_._internal_type_url();
+        ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "google.protobuf.Any.type_url");
+        target = stream->WriteStringMaybeAliased(1, _s, target);
+      }
     }
-  }
 
-  // bytes value = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    if (!this_._internal_value().empty()) {
-      const ::std::string& _s = this_._internal_value();
-      target = stream->WriteBytesMaybeAliased(2, _s, target);
+    // bytes value = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (!this_._internal_value().empty()) {
+        const ::std::string& _s = this_._internal_value();
+        target = stream->WriteBytesMaybeAliased(2, _s, target);
+      }
     }
-  }
 
+  }
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
