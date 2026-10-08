@@ -21,6 +21,7 @@ cc_library(
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
     ],
+    alwayslink = 1,
 )
 
 rust_test(
@@ -30,6 +31,17 @@ rust_test(
     deps = [
         ":interop_test_cpp_rust_proto",
         ":test_utils",
+        "//rust:protobuf_cpp",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "message_lite_test",
+    srcs = ["message_lite_test.rs"],
+    edition = "2024",
+    deps = [
+        ":interop_test_cpp_rust_proto",
         "//rust:protobuf_cpp",
         "@crate_index//:googletest",
     ],
