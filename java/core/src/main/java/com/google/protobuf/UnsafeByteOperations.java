@@ -67,11 +67,14 @@ public final class UnsafeByteOperations {
   /**
    * An unsafe operation that returns a {@link ByteString} that is backed by the provided buffer.
    *
+   * <p>If the buffer is not backed by an accessible array (for example, a direct buffer), the
+   * contents are copied onto the heap.
+   *
    * @param buffer the Java NIO buffer to be wrapped
    * @return a {@link ByteString} backed by the provided buffer
    */
   public static ByteString unsafeWrap(ByteBuffer buffer) {
-    return ByteString.wrap(buffer);
+    return ByteString.wrap(buffer, /* copyOffHeap= */ true);
   }
 
   /**
