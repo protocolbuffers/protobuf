@@ -55,6 +55,22 @@ class UnknownFieldsTest(unittest.TestCase):
     # stdout.
     self.assertTrue(data == self.all_fields_data)
 
+  def testIndexErrorMessages(self):
+    unknown = unknown_fields.UnknownFieldSet(self.empty_message)
+    self.assertNotEqual(0, len(unknown))
+    size = len(unknown)
+    for bad_index in (-(size + 1), size, size + 1):
+      with self.assertRaises(IndexError) as ctx:
+        _ = unknown[bad_index]
+      # The message must be the formatted text, not a stray bound method.
+      if api_implementation.Type() == 'python':
+        reported = bad_index + size if bad_index < 0 else bad_index
+        self.assertEqual(
+            'index %d out of range' % reported, str(ctx.exception)
+        )
+      else:
+        self.assertIn('out of range', str(ctx.exception))
+
   def testSerializeProto3(self):
     # Verify proto3 unknown fields behavior.
     message = unittest_proto3_arena_pb2.TestEmptyMessage()
