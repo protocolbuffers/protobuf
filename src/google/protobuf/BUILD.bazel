@@ -2166,6 +2166,27 @@ cc_library(
 )
 
 cc_test(
+    name = "debug_counter_noop_test",
+    srcs = ["debug_counter_test.cc"],
+    deps = [
+        ":port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "debug_counter_test",
+    srcs = ["debug_counter_test.cc"],
+    defines = ["PROTOBUF_INTERNAL_ENABLE_DEBUG_COUNTERS"],
+    deps = [
+        ":port",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "drop_unknown_fields_test",
     srcs = ["drop_unknown_fields_test.cc"],
     deps = [
@@ -2372,6 +2393,21 @@ cc_test(
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "internal_message_util_unittest",
+    srcs = ["internal_message_util_unittest.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -2669,6 +2705,18 @@ cc_test(
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/log:absl_check",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "redaction_metric_test",
+    srcs = ["redaction_metric_test.cc"],
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
