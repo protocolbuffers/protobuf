@@ -66,6 +66,11 @@ typedef struct PyDescriptorPool {
 
   // Mutex protecting the caching maps above.
   FreeThreadingMutex* cache_mutex;
+
+  // Mutex protecting mutable pool operations (e.g. BuildFileCollectingErrors,
+  // SetFeatureSetDefaults) when the underlying C++ DescriptorPool has no
+  // internal mutex.
+  FreeThreadingMutex* mutex;
 } PyDescriptorPool;
 
 extern PyTypeObject PyDescriptorPool_Type;
