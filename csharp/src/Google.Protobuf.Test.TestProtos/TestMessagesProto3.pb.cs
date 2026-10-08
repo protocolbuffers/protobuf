@@ -269,15 +269,17 @@ namespace ProtobufTestMessages.Proto3 {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// This proto includes every type of field in both singular and repeated
-  /// forms.
-  ///
-  /// Also, crucially, all messages and enums in this file are eventually
-  /// submessages of this message.  So for example, a fuzz test of TestAllTypes
-  /// could trigger bugs that occur in any message type in this file.  We verify
-  /// this stays true in a unit test.
-  /// </summary>
+  /**
+   * <summary>
+   *  This proto includes every type of field in both singular and repeated
+   *  forms.
+   * 
+   *  Also, crucially, all messages and enums in this file are eventually
+   *  submessages of this message.  So for example, a fuzz test of TestAllTypes
+   *  could trigger bugs that occur in any message type in this file.  We verify
+   *  this stays true in a unit test.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestAllTypesProto3 : pb::IMessage<TestAllTypesProto3>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -501,10 +503,12 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "optional_int32" field.</summary>
     public const int OptionalInt32FieldNumber = 1;
     private int optionalInt32_;
-    /// <summary>
-    /// Singular
-    /// test [kotlin] comment
-    /// </summary>
+    /**
+     * <summary>
+     *  Singular
+     *  test [kotlin] comment
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OptionalInt32 {
@@ -783,9 +787,11 @@ namespace ProtobufTestMessages.Proto3 {
     private static readonly pb::FieldCodec<int> _repeated_repeatedInt32_codec
         = pb::FieldCodec.ForInt32(250);
     private readonly pbc::RepeatedField<int> repeatedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Repeated
-    /// </summary>
+    /**
+     * <summary>
+     *  Repeated
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> RepeatedInt32 {
@@ -1017,9 +1023,11 @@ namespace ProtobufTestMessages.Proto3 {
     private static readonly pb::FieldCodec<int> _repeated_packedInt32_codec
         = pb::FieldCodec.ForInt32(602);
     private readonly pbc::RepeatedField<int> packedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Packed
-    /// </summary>
+    /**
+     * <summary>
+     *  Packed
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> PackedInt32 {
@@ -1174,9 +1182,11 @@ namespace ProtobufTestMessages.Proto3 {
     private static readonly pb::FieldCodec<int> _repeated_unpackedInt32_codec
         = pb::FieldCodec.ForInt32(712);
     private readonly pbc::RepeatedField<int> unpackedInt32_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Unpacked
-    /// </summary>
+    /**
+     * <summary>
+     *  Unpacked
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> UnpackedInt32 {
@@ -1331,9 +1341,11 @@ namespace ProtobufTestMessages.Proto3 {
     private static readonly pbc::MapField<int, int>.Codec _map_mapInt32Int32_codec
         = new pbc::MapField<int, int>.Codec(pb::FieldCodec.ForInt32(8, 0), pb::FieldCodec.ForInt32(16, 0), 450);
     private readonly pbc::MapField<int, int> mapInt32Int32_ = new pbc::MapField<int, int>();
-    /// <summary>
-    /// Map
-    /// </summary>
+    /**
+     * <summary>
+     *  Map
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::MapField<int, int> MapInt32Int32 {
@@ -1788,9 +1800,11 @@ namespace ProtobufTestMessages.Proto3 {
     public const int OptionalBoolWrapperFieldNumber = 201;
     private static readonly pb::FieldCodec<bool?> _single_optionalBoolWrapper_codec = pb::FieldCodec.ForStructWrapper<bool>(1610);
     private bool? optionalBoolWrapper_;
-    /// <summary>
-    /// Well-known types
-    /// </summary>
+    /**
+     * <summary>
+     *  Well-known types
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool? OptionalBoolWrapper {
@@ -2199,10 +2213,12 @@ namespace ProtobufTestMessages.Proto3 {
     /// <summary>Field number for the "fieldname1" field.</summary>
     public const int Fieldname1FieldNumber = 401;
     private int fieldname1_;
-    /// <summary>
-    /// Test field-name-to-JSON-name convention.
-    /// (protobuf says names can be any valid C/C++ identifier.)
-    /// </summary>
+    /**
+     * <summary>
+     *  Test field-name-to-JSON-name convention.
+     *  (protobuf says names can be any valid C/C++ identifier.)
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int Fieldname1 {
@@ -5643,9 +5659,11 @@ namespace ProtobufTestMessages.Proto3 {
         [pbr::OriginalName("FOO")] Foo = 0,
         [pbr::OriginalName("BAR")] Bar = 1,
         [pbr::OriginalName("BAZ")] Baz = 2,
-        /// <summary>
-        /// Intentionally negative.
-        /// </summary>
+        /**
+         * <summary>
+         *  Intentionally negative.
+         * </summary>
+         */
         [pbr::OriginalName("NEG")] Neg = -1,
       }
 

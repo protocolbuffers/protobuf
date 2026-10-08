@@ -1972,7 +1972,7 @@ TEST_F(RepeatedPtrFieldPtrsIteratorTest, Sort) {
 
 // -----------------------------------------------------------------------------
 // Unit-tests for the insert iterators
-// `google::protobuf::RepeatedPtrFieldBackInserter`,
+// `google::protobuf::RepeatedFieldBackInserter`,
 // `google::protobuf::AllocatedRepeatedPtrFieldBackInserter`
 // Ported from util/gtl/proto-array-iterators_unittest.
 
@@ -2035,9 +2035,8 @@ TEST_F(RepeatedPtrFieldInsertionIteratorsTest, Words2) {
   words_.push_back("six");
   words_.push_back("pence");
   protobuffer_.mutable_repeated_string()->Clear();
-  std::copy(
-      words_.begin(), words_.end(),
-      RepeatedPtrFieldBackInserter(protobuffer_.mutable_repeated_string()));
+  std::copy(words_.begin(), words_.end(),
+            RepeatedFieldBackInserter(protobuffer_.mutable_repeated_string()));
   ASSERT_EQ(words_.size(), protobuffer_.repeated_string_size());
   for (size_t i = 0; i < words_.size(); ++i) {
     EXPECT_EQ(words_.at(i), protobuffer_.repeated_string(i));

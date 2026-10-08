@@ -63,6 +63,11 @@ class DescriptorPool;  // descriptor.h
 //
 // The thread safety for this class is subtle, see comments around GetPrototype
 // for details
+//
+// CAUTION: There are inherent denial of service risks when using DynamicMessage
+// with untrusted descriptors. See
+// https://github.com/protocolbuffers/protobuf/security/policy#dynamicmessage-on-untrusted-descriptors
+// for details.
 class PROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
  public:
   // Construct a DynamicMessageFactory that will search for extensions in

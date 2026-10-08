@@ -901,8 +901,6 @@ PyObject* MapReflectionFriend::GetIterator(PyObject* _self) {
 PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
   MapIterator* self = GetIter(_self);
 
-  // This won't catch mutations to the map performed by MergeFrom(); no easy way
-  // to address that.
   if (self->version != self->container->version) {
     return PyErr_Format(PyExc_RuntimeError, "Map modified during iteration.");
   }

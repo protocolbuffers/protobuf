@@ -1,6 +1,7 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 
+#include <limits>
 #include <string>
 #include <utility>
 
@@ -22,7 +23,7 @@
 //
 // Example:
 //
-// EXPECT_THAT(RequiredTest()
+// EXPECT_THAT(Testee()
 //                .ParseBinary(Wire(LengthPrefixedField(1, "foo"))
 //                .SerializeText({/*print_unknown_fields=*/true}),
 //             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
@@ -40,15 +41,38 @@
 namespace google {
 namespace protobuf {
 namespace conformance {
-namespace internal {
 
-// The strictness of a test.  Required tests will fail the test suite if they
-// fail.  Recommended tests will not fail the test suite if they fail, but will
-// be reported as a warning.
-enum class TestStrictness {
-  kRequired = 0,
-  kRecommended = 1,
-};
+// How important it is that an implementation passes a test.  kP0 is the
+// baseline every implementation must pass.  Every priority is enforced
+// unless the enforcement level (see below) leaves some out.  A failing kP1
+// test is then counted but not failed, unless it is in the failure list (see
+// matchers.h).  Test names still spell kP0 as "Required" and kP1 as
+// "Recommended" (see PriorityLevelName()).
+//
+// A suite declares its priority with ConformanceTest::DefaultPriority().  A
+// single test overrides it with Testee(priority); see test_environment.h.
+// TODO: b/564550230 - rename the levels in test names to P0/P1 once every
+// suite has been triaged.
+enum class TestPriority { kP0 = 0, kP1 = 1 };
+
+// The priorities, spelled the way suites write them: Testee(kP1).
+inline constexpr TestPriority kP0 = TestPriority::kP0;
+inline constexpr TestPriority kP1 = TestPriority::kP1;
+
+// An enforcement level is the highest priority, as an int (0 for kP0, 1 for
+// kP1), whose unlisted failures fail the run.  See TestManager in
+// test_manager.h.  kEnforceAllPriorities, the default, enforces every
+// priority, however many there are.
+inline constexpr int kEnforceAllPriorities = std::numeric_limits<int>::max();
+
+// The name of a priority: "P0" or "P1".
+absl::string_view PriorityName(TestPriority priority);
+
+// The level a priority is named with in test names, until the rename (see
+// TestPriority): "Required" for kP0, "Recommended" for kP1.
+absl::string_view PriorityLevelName(TestPriority priority);
+
+namespace internal {
 
 // The final result of a conformance test, to be processed by a matcher.
 class TestResult {
@@ -57,8 +81,10 @@ class TestResult {
   // reporting.
   absl::string_view name() const { return test_name_; }
 
-  // The strictness of the test.
-  TestStrictness strictness() const { return strictness_; }
+  // The priority of the test (see TestPriority).  Yields() tolerates a
+  // failing kP1 test only if the enforcement level leaves kP1 out and the
+  // test isn't listed.
+  TestPriority priority() const { return priority_; }
 
   // The type of the message that was tested, needed for parsing.
   const Descriptor* type() const { return type_; }
@@ -73,18 +99,18 @@ class TestResult {
   }
 
  private:
-  TestResult(absl::string_view test_name, TestStrictness strictness,
+  TestResult(absl::string_view test_name, TestPriority priority,
              const Descriptor* type, ::conformance::WireFormat format,
              ::conformance::ConformanceResponse response)
       : test_name_(test_name),
-        strictness_(strictness),
+        priority_(priority),
         type_(type),
         format_(format),
         response_(std::move(response)) {}
   friend class InMemoryMessage;
 
   std::string test_name_;
-  TestStrictness strictness_;
+  TestPriority priority_;
   const Descriptor* type_;
   ::conformance::WireFormat format_;
   ::conformance::ConformanceResponse response_;
@@ -109,11 +135,11 @@ class InMemoryMessage {
 
  private:
   InMemoryMessage(class Testee* testee, absl::string_view name,
-                  TestStrictness strictness, const Descriptor* type,
+                  TestPriority priority, const Descriptor* type,
                   ::conformance::ConformanceRequest request)
       : testee_(testee),
         name_(name),
-        strictness_(strictness),
+        priority_(priority),
         type_(type),
         request_(std::move(request)) {}
   friend class Test;
@@ -122,7 +148,7 @@ class InMemoryMessage {
 
   class Testee* testee_;
   std::string name_;
-  TestStrictness strictness_;
+  TestPriority priority_;
   const Descriptor* type_;
   ::conformance::ConformanceRequest request_;
 };
@@ -146,13 +172,13 @@ class Test {
                             JsonParseOptions options = {}) &&;
 
  private:
-  Test(class Testee* testee, absl::string_view name, TestStrictness strictness)
-      : testee_(testee), name_(name), strictness_(strictness) {}
+  Test(class Testee* testee, absl::string_view name, TestPriority priority)
+      : testee_(testee), name_(name), priority_(priority) {}
   friend class Testee;
 
   class Testee* testee_;
   std::string name_;
-  TestStrictness strictness_;
+  TestPriority priority_;
 };
 
 // This class represents an abstraction of the testee.  It is used to
@@ -161,8 +187,8 @@ class Testee {
  public:
   explicit Testee(ConformanceTestRunner* runner) : runner_(runner) {}
 
-  Test CreateTest(absl::string_view name, TestStrictness strictness) {
-    return Test(this, name, strictness);
+  Test CreateTest(absl::string_view name, TestPriority priority) {
+    return Test(this, name, priority);
   }
 
  private:

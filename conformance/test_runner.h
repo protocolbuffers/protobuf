@@ -15,6 +15,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 // Interface for the underlying test runner that runs a single conformance test.
 class ConformanceTestRunner {
@@ -33,6 +34,7 @@ class ConformanceTestRunner {
                               absl::string_view input) = 0;
 };
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

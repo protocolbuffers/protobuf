@@ -1130,10 +1130,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                     message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
                     message, descriptor->FindFieldByName("foo_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::FOO,
       reflection->GetEnum(message, descriptor->FindFieldByName("foo_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(&unittest::TestOneof2::NestedMessage::default_instance(),
             &reflection->GetMessage(
                 message, descriptor->FindFieldByName("foo_message")));
@@ -1156,10 +1158,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                 message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
                          message, descriptor->FindFieldByName("bar_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::BAR,
       reflection->GetEnum(message, descriptor->FindFieldByName("bar_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Check Set functions.
   reflection->SetInt32(&message, descriptor->FindFieldByName("foo_int"), 123);
@@ -1508,6 +1512,22 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Message type: proto2_unittest.TestAllTypes\n"
       "  Field       : proto2_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
+}
+
+TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+  const Reflection* reflection = message1.GetReflection();
+
+  // Passing a field descriptor from a different message type to SwapFields
+  // must fail. Without this check, a foreign field with a higher index than
+  // the target's field count causes an out-of-bounds read on the offsets
+  // array, leading to memory corruption.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  std::vector<const FieldDescriptor*> fields = {foreign_field};
+  EXPECT_DEATH(reflection->SwapFields(&message1, &message2, fields),
+               "Field does not match message type");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST

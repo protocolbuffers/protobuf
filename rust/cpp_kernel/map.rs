@@ -7,7 +7,7 @@ unsafe extern "C" {
     pub fn proto2_rust_map_free(m: RawMap);
     pub fn proto2_rust_map_clear(m: RawMap);
     pub fn proto2_rust_map_size(m: RawMap) -> usize;
-    pub fn proto2_rust_map_iter(m: RawMap) -> UntypedMapIterator;
+    pub fn proto2_rust_map_iter(m: RawMap, iter_mem: *mut c_void);
 }
 
 /// A trait implemented by types which are allowed as keys in maps.
@@ -519,12 +519,18 @@ where
     }
 
     fn map_iter<Key: MapKey>(_private: Private, map: MapView<Key, Self>) -> MapIter<Key, Self> {
+        // Out-param instead of a by-value return; see `proto2_rust_map_iter` in
+        // cpp_kernel/map.cc for why.
+        let mut iter = MaybeUninit::<UntypedMapIterator>::uninit();
         // SAFETY:
         // - The backing map for `map.as_raw` is valid for at least '_.
         // - A View that is live for '_ guarantees the backing map is unmodified for '_.
-        // - The `iter` function produces an iterator that is valid for the key and
+        // - The `iter` function initializes an iterator that is valid for the key and
         //   value types, and live for at least '_.
-        unsafe { MapIter::from_raw(Private, proto2_rust_map_iter(map.as_raw(Private))) }
+        unsafe {
+            proto2_rust_map_iter(map.as_raw(Private), iter.as_mut_ptr().cast());
+            MapIter::from_raw(Private, iter.assume_init())
+        }
     }
 
     fn map_iter_next<'a, Key: MapKey>(

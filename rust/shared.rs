@@ -31,8 +31,10 @@ pub use crate::extension::ExtensionId;
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 
 pub use crate::proxied::{
-    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProtoObject, ProtoObject, View,
 };
+#[allow(deprecated)]
+pub use crate::proxied::{MutProxied, Proxied};
 pub use crate::r#enum::{Enum, UnknownEnumValue};
 pub use crate::repeated::{Repeated, RepeatedIter, RepeatedMut, RepeatedView};
 pub use crate::singular::Singular;

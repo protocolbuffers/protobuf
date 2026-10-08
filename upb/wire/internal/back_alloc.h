@@ -32,13 +32,17 @@ extern char upb_BackAlloc_sentinel;
 
 char* upb_BackAlloc_Grow(upb_BackAlloc* a, char* ptr, size_t need);
 
+UPB_INLINE void _upb_BackAlloc_Reset(upb_BackAlloc* a) {
+  a->buf = &upb_BackAlloc_sentinel;
+  a->limit = &upb_BackAlloc_sentinel;
+  a->standalone = false;
+}
+
 UPB_INLINE char* upb_BackAlloc_Init(upb_BackAlloc* a, upb_Arena* arena) {
   a->arena = arena;
   // This could eagerly steal whatever's in the arena, since stealing with a
   // minimum of 0 can't fail.
-  a->buf = &upb_BackAlloc_sentinel;
-  a->limit = &upb_BackAlloc_sentinel;
-  a->standalone = false;
+  _upb_BackAlloc_Reset(a);
   return a->limit;
 }
 
@@ -48,6 +52,7 @@ UPB_INLINE void upb_BackAlloc_Abort(upb_BackAlloc* a) {
   } else if (a->limit != a->buf) {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, a->limit - a->buf);
   }
+  _upb_BackAlloc_Reset(a);
 }
 
 UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
@@ -57,7 +62,9 @@ UPB_INLINE size_t upb_BackAlloc_Finish(upb_BackAlloc* a, const char* ptr) {
   if (ptr != a->buf) {
     UPB_PRIVATE(_upb_Arena_UseBlock)(a->arena, a->buf, ptr - a->buf);
   }
-  return a->limit - ptr;
+  size_t size = a->limit - ptr;
+  _upb_BackAlloc_Reset(a);
+  return size;
 }
 
 UPB_FORCEINLINE bool upb_BackAlloc_HasBytes(const upb_BackAlloc* a,

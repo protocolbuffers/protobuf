@@ -57,6 +57,9 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
+      {"this_field", absl::StrCat("this_.", FieldMemberName(field, split))},
+      {"from_field", absl::StrCat("from.", FieldMemberName(field, split))},
+
       {"field_", FieldMemberName(field, split)},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
@@ -198,7 +201,7 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension()) << "Not supported";
   ABSL_CHECK(!field_->is_repeated()) << "Not supported";
   ABSL_CHECK(!field_->is_map()) << "Not supported";
-  p->Emit("$field_$ = from.$field_$;\n");
+  p->Emit("$field_$ = $from_field$;\n");
 }
 
 void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
@@ -223,7 +226,7 @@ void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
 void FieldGeneratorBase::GenerateCopyAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
-    decltype($field_$){from.$field_$},
+    decltype($field_$){$from_field$},
   )cc");
 }
 
@@ -232,7 +235,7 @@ void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
     // There is no copy constructor for the `Split` struct, so we need to copy
     // the value here.
     Formatter format(p, variables_);
-    format("$field_$ = from.$field_$;\n");
+    format("$field_$ = $from_field$;\n");
   }
 }
 

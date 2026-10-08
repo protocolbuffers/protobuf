@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <vector>
 
+#include "absl/status/statusor.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/proto_api.h"
@@ -67,16 +68,16 @@ PyObject* TestSumAllInt32FieldsUsingRepeatedFields(PyObject* m,
     return nullptr;
   }
 
-  const google::protobuf::Message* current_msg =
-      GetProtoApi()->GetMessagePointer(py_message);
-  if (current_msg == nullptr) {
+  absl::StatusOr<PythonConstMessagePointer> msg_ptr =
+      GetProtoApi()->GetConstMessagePointer(py_message);
+  if (!msg_ptr.ok()) {
     if (!PyErr_Occurred()) {
       PyErr_SetString(PyExc_ValueError, "Message has been released or is null");
     }
     return nullptr;
   }
 
-  int64_t total = SumInt32FieldsRecursive(*current_msg);
+  int64_t total = SumInt32FieldsRecursive(msg_ptr->get());
   return PyLong_FromLongLong(total);
 }
 

@@ -1744,12 +1744,39 @@ message OpenEnumMessage {
     BAZ = 3;
   }
 
+  enum ClosedSmallEnum {
+    option features.enum_type = CLOSED;
+
+    CLOSED_SMALL_ZERO = 0;
+    CLOSED_SMALL_ONE = 1;
+  }
+
+  enum ClosedLargeEnum {
+    option features.enum_type = CLOSED;
+
+    CLOSED_LARGE_MIN = -2147483648;
+    CLOSED_LARGE_ZERO = 0;
+    CLOSED_LARGE_MAX = 2147483647;
+  }
+
   TestEnum opt_open = 1;
 
   ForeignEnum opt_closed = 2;
   repeated TestEnum repeated_open = 3;
 
   repeated ForeignEnum repeated_closed = 4;
+
+  ClosedSmallEnum opt_closed_small = 5;
+  repeated ClosedSmallEnum repeated_closed_small = 6;
+
+  ClosedLargeEnum opt_closed_large = 7;
+  repeated ClosedLargeEnum repeated_closed_large = 8;
+
+  oneof enum_oneof {
+    TestEnum oneof_open = 9;
+    ClosedSmallEnum oneof_closed_small = 10;
+    ClosedLargeEnum oneof_closed_large = 11;
+  }
 }
 
 // Tests eager verification of a lazy message field.
