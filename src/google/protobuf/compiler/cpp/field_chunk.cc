@@ -66,6 +66,13 @@ uint32_t GenChunkMask(absl::Span<const FieldDescriptor* const> fields,
     chunk_mask |= static_cast<uint32_t>(1) << (bit_idx % 32);
   }
   ABSL_CHECK_NE(0u, chunk_mask);
+
+  // If the chunk covers all the fields sharing the same has_word, we return
+  // 0xFFFFFFFFU. This is a binary size optimization.
+  if (static_cast<int>(fields.size()) ==
+      field_layout.CountFieldsSharingHasWord(first_index_offset)) {
+    return ~uint32_t{0};
+  }
   return chunk_mask;
 }
 
