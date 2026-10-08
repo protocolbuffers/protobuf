@@ -364,7 +364,7 @@ TEST(MapTest, StaticTypeKindWorks) {
             UMB::StaticTypeKind<proto2_unittest::TestAllTypes>());
 }
 
-#if !defined(__GNUC__) || defined(__clang__) || PROTOBUF_GNUC_MIN(9, 4)
+#if PROTOBUF_GNUC_MIN(9, 4) || !defined(__GNUC__) || defined(__clang__)
 // Parameter pack expansion bug before GCC 8.2:
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=85305
 

@@ -40,6 +40,10 @@ size_t upb_inttable_count(const upb_inttable* t);
 UPB_NODISCARD bool upb_inttable_insert(upb_inttable* t, uintptr_t key,
                                        upb_value val, upb_Arena* a);
 
+// Resizes the table to 1 << size_lg2.
+UPB_NODISCARD bool upb_inttable_resize(upb_inttable* t, size_t size_lg2,
+                                       upb_Arena* a);
+
 // Copies the table without rehashing. Performing a shallow copy of entries;
 // the caller is responsible for cloning non-primitive values.
 bool upb_inttable_copy(upb_inttable* dest, const upb_inttable* src,

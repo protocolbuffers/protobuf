@@ -1298,6 +1298,7 @@ void Reflection::SwapFieldsImpl(
   absl::flat_hash_set<int> swapped_oneof;
 
   for (const auto* field : fields) {
+    USAGE_CHECK_MESSAGE_TYPE(SwapFields);
     if (field->is_extension()) {
       if constexpr (unsafe_shallow_swap) {
         MutableExtensionSet(message1)->UnsafeShallowSwapExtension(
@@ -3947,9 +3948,9 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
     // This only happens once per proto file. So a global mutex to serialize
     // calls to AddDescriptors.
     static absl::Mutex mu{absl::kConstInit};
-    mu.Lock();
+    mu.lock();
     internal::AddDescriptors(table);
-    mu.Unlock();
+    mu.unlock();
   }
   if (eager) {
     // Normally we do not want to eagerly build descriptors of our deps.

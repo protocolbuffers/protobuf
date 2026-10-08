@@ -26,6 +26,17 @@ impl InnerExtensionId {
     }
 }
 
+impl<Extendee, T: Proxied> ExtensionId<Extendee, T> {
+    /// The `upb_MiniTableExtension` this extension was built with.
+    ///
+    /// For generated code only. Forces the MiniTable to be built if it hasn't been yet; once
+    /// built it lives for the rest of the process, like every other MiniTable in the kernel.
+    #[doc(hidden)]
+    pub fn __internal_mini_table(&self, _private: Private) -> RawMiniTableExtension {
+        self.inner.mini_table()
+    }
+}
+
 #[linkme::distributed_slice]
 pub static EXTENSIONS: [LazyLock<MiniTableExtensionInitPtr>];
 

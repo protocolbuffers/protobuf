@@ -15,7 +15,6 @@
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
-#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
@@ -73,6 +72,13 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Map_Set(upb_Map* map,
 UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
                             upb_MessageValue* val);
 
+// Pre-allocates memory for at least `size` elements in the map.
+// The `size` parameter accounts for the total capacity (existing elements plus
+// additional capacity). If the map already has sufficient capacity, this is a
+// no-op.
+UPB_NODISCARD UPB_API bool upb_Map_Reserve(upb_Map* map, size_t size,
+                                           upb_Arena* arena);
+
 // Map iteration:
 //
 // size_t iter = kUpb_Map_Begin;
@@ -85,8 +91,9 @@ UPB_API bool upb_Map_Delete(upb_Map* map, upb_MessageValue key,
 
 // Advances to the next entry. Returns false if no more entries are present.
 // Otherwise returns true and populates both *key and *value.
-UPB_API bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
-                          upb_MessageValue* val, size_t* iter);
+UPB_NODISCARD UPB_API bool upb_Map_Next(const upb_Map* map,
+                                        upb_MessageValue* key,
+                                        upb_MessageValue* val, size_t* iter);
 
 // Sets the value for the entry pointed to by iter.
 // WARNING: this does not currently work for string values!
@@ -105,12 +112,10 @@ UPB_API void upb_Map_SetEntryValue(upb_Map* map, size_t iter,
  */
 
 // Advances to the next entry. Returns false if no more entries are present.
-UPB_API bool upb_MapIterator_Next(const upb_Map* map, size_t* iter);
-
-// Returns true if the iterator still points to a valid entry, or false if the
-// iterator is past the last element. It is an error to call this function with
-// kUpb_Map_Begin (you must call next() at least once first).
-UPB_API bool upb_MapIterator_Done(const upb_Map* map, size_t iter);
+// Once this returns false, the value of *iter is unspecified and it must not be
+// passed to any other iterator function.
+UPB_NODISCARD UPB_API bool upb_MapIterator_Next(const upb_Map* map,
+                                                size_t* iter);
 
 // Returns the key and value for this entry of the map.
 UPB_API upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter);

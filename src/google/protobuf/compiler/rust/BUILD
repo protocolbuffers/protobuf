@@ -217,6 +217,7 @@ bootstrap_cc_library(
         ":extension",
         ":message",
         "//upb/reflection:reflection_cc",
+        "//upb_generator:file_layout",
         "//upb_generator:plugin",
     ],
     copts = COPTS,
