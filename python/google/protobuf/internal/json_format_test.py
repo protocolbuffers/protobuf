@@ -1237,6 +1237,29 @@ class JsonFormatTest(JsonFormatBase):
         'Failed to parse int32Value field: '
         "Couldn't parse integer: 1.5 at TestMessage.int32Value.",
     )
+    # Python's int() accepts unicode digits and digit separators that no
+    # other implementation accepts; they must be rejected.
+    self.CheckError(
+        '{"int32Value": "\u0661\u0662\u0663"}',
+        'Failed to parse int32Value field: '
+        'Couldn\'t parse integer: "\u0661\u0662\u0663"'
+        ' at TestMessage.int32Value.',
+    )
+    self.CheckError(
+        '{"int32Value": "\uff11\uff12\uff13"}',
+        'Failed to parse int32Value field: '
+        'Couldn\'t parse integer: "\uff11\uff12\uff13"'
+        ' at TestMessage.int32Value.',
+    )
+    self.CheckError(
+        '{"int32Value": "1_000"}',
+        'Failed to parse int32Value field: '
+        'Couldn\'t parse integer: "1_000" at TestMessage.int32Value.',
+    )
+    # ASCII digits delivered via JSON escapes stay valid.
+    message = json_format_proto3_pb2.TestMessage()
+    json_format.Parse('{"int32Value": "\\u0031"}', message)
+    self.assertEqual(1, message.int32_value)
     self.CheckError(
         '{"int32Value": "1.5"}',
         'Failed to parse int32Value field: '
