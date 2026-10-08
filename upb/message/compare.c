@@ -205,7 +205,7 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
 
     count1++;
 
-    const upb_MessageValue val1 = ext1->data;
+    const upb_MessageValue val1 = upb_Extension_GetValue(ext1);
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* subm = upb_MiniTableField_IsSubMessage(f)
                                     ? upb_MiniTableExtension_GetSubMessage(e)

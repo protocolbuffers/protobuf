@@ -248,7 +248,7 @@ UPB_INLINE void _upb_Message_GetExtensionField(
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
 
   if (ext) {
-    UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, &ext->data);
+    upb_Extension_GetField(ext, val);
   } else {
     UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, default_val);
   }
@@ -298,8 +298,7 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetExtension(
     upb_Arena* a) {
   upb_Extension* ext = UPB_PRIVATE(_upb_Message_MutableExtension)(msg, e, a);
   if (!ext) return false;
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (&e->UPB_PRIVATE(field), &ext->data, val);
+  upb_Extension_SetField(ext, val);
   return true;
 }
 
@@ -312,8 +311,7 @@ UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
   upb_Extension* ext =
       UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(msg, e, a);
   if (!ext) return false;
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)
-  (&e->UPB_PRIVATE(field), &ext->data, val);
+  upb_Extension_SetField(ext, val);
   return true;
 }
 
@@ -909,7 +907,7 @@ UPB_API_INLINE void upb_Message_ClearExtension(
     if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       const upb_Extension* ext =
           upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-      if (ext->ext == e) {
+      if (upb_Extension_MiniTableExtension(ext) == e) {
         in->aux_data[i] = upb_TaggedAuxPtr_Null();
         return;
       }
