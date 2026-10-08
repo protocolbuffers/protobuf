@@ -659,7 +659,7 @@ void Array_ModuleInit() {
 
   h = &RepeatedField_object_handlers;
   memcpy(h, &std_object_handlers, sizeof(zend_object_handlers));
-  h->dtor_obj = RepeatedField_destructor;
+  h->free_obj = RepeatedField_destructor;
   h->compare = RepeatedField_compare_objects;
   h->clone_obj = RepeatedField_clone_obj;
   h->get_properties = RepeatedField_GetProperties;

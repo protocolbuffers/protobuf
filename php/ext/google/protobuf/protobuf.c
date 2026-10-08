@@ -56,6 +56,11 @@ ZEND_BEGIN_MODULE_GLOBALS(protobuf)
   // actually write a class entry destructor, we reference them here, to be
   // destroyed on request shutdown.
   HashTable descriptors;
+
+  // True between RINIT and RSHUTDOWN. Object free handlers can run after
+  // RSHUTDOWN has already destroyed object_cache, so they must not touch
+  // it outside this window.
+  zend_bool object_cache_live;
 ZEND_END_MODULE_GLOBALS(protobuf)
 // clang-format on
 
@@ -152,6 +157,7 @@ static PHP_RINIT_FUNCTION(protobuf) {
   }
 
   zend_hash_init(&PROTOBUF_G(object_cache), 64, NULL, NULL, 0);
+  PROTOBUF_G(object_cache_live) = true;
   zend_hash_init(&PROTOBUF_G(descriptors), 64, NULL, ZVAL_PTR_DTOR, 0);
   PROTOBUF_G(constructing_class) = NULL;
 
@@ -169,6 +175,7 @@ static PHP_RSHUTDOWN_FUNCTION(protobuf) {
     free_protobuf_globals(ZEND_MODULE_GLOBALS_BULK(protobuf));
   }
 
+  PROTOBUF_G(object_cache_live) = false;
   zend_hash_destroy(&PROTOBUF_G(object_cache));
   zend_hash_destroy(&PROTOBUF_G(descriptors));
 
@@ -189,11 +196,13 @@ void Descriptors_Add(zend_object* desc) {
 }
 
 void ObjCache_Add(const void* upb_obj, zend_object* php_obj) {
+  if (!PROTOBUF_G(object_cache_live)) return;
   zend_ulong k = (zend_ulong)upb_obj;
   zend_hash_index_add_ptr(&PROTOBUF_G(object_cache), k, php_obj);
 }
 
 void ObjCache_Delete(const void* upb_obj) {
+  if (!PROTOBUF_G(object_cache_live)) return;
   if (upb_obj) {
     zend_ulong k = (zend_ulong)upb_obj;
     int ret = zend_hash_index_del(&PROTOBUF_G(object_cache), k);
@@ -202,6 +211,10 @@ void ObjCache_Delete(const void* upb_obj) {
 }
 
 bool ObjCache_Get(const void* upb_obj, zval* val) {
+  if (!PROTOBUF_G(object_cache_live)) {
+    ZVAL_NULL(val);
+    return false;
+  }
   zend_ulong k = (zend_ulong)upb_obj;
   zend_object* obj = zend_hash_index_find_ptr(&PROTOBUF_G(object_cache), k);
 
