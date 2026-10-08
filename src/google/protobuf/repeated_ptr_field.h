@@ -2165,16 +2165,17 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.ReserveWithArena(field.GetArena(), field.size() + additional);
+    field.ReserveWithArena(field.GetArena(),
+                           internal::CheckedAdd(field.size(), additional));
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
                                size_t index) {
-    return field.at<GenericTypeHandler<MessageLite>>(index);
+    return field.at<GenericTypeHandler<MessageLite>>(static_cast<int>(index));
   }
 
   static MessageLite& At(RepeatedPtrFieldBase& field, size_t index) {
-    return field.at<GenericTypeHandler<MessageLite>>(index);
+    return field.at<GenericTypeHandler<MessageLite>>(static_cast<int>(index));
   }
 };
 
