@@ -365,7 +365,7 @@ class PROTOBUF_EXPORT MessageLite {
 
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.
-  [[nodiscard]] MessageLite* New() const { return New(nullptr); }
+  [[nodiscard]] MessageLite* New() const { return New(/*arena=*/nullptr); }
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.

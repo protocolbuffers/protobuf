@@ -92,7 +92,7 @@ class OomTest < Test::Unit::TestCase
       _val_mset2 = ext_mset2.get(mset_msg3).str
 
       mset_unknown = BasicTestProto2::TestMessageSet.decode(
-        "\x0b\x10\x01\x1a\x03foo\x0c\x0b\x10\x02\x1a\x03bar\x0c".force_encoding("ASCII-8BIT")
+        "\x0b\x10\x01\x1a\x03foo\x0c\x0b\x10\x02\x1a\x03bar\x0c".b
       )
       _mset_unknown_copy = Google::Protobuf.deep_copy(mset_unknown)
     end

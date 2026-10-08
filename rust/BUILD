@@ -95,6 +95,7 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "cpp_kernel/message.rs",
     "cpp_kernel/mod.rs",
     "cpp_kernel/raw.rs",
+    "cpp_kernel/reflection.rs",
     "cpp_kernel/repeated.rs",
     "cpp_kernel/string.rs",
     "gtest_matchers.rs",
@@ -102,12 +103,14 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "protobuf.rs",
     "protobuf_lite.rs",
     "upb_kernel/conversions.rs",
+    "upb_kernel/def_pool.rs",
     "upb_kernel/extension.rs",
     "upb_kernel/interop.rs",
     "upb_kernel/map.rs",
     "upb_kernel/message.rs",
     "upb_kernel/minitable.rs",
     "upb_kernel/mod.rs",
+    "upb_kernel/reflection.rs",
     "upb_kernel/repeated.rs",
     "upb_kernel/string.rs",
     # go/keep-sorted end
@@ -122,12 +125,14 @@ rust_library(
     name = "protobuf_upb",
     srcs = PROTOBUF_SHARED + [
         "upb_kernel/conversions.rs",
+        "upb_kernel/def_pool.rs",
         "upb_kernel/extension.rs",
         "upb_kernel/interop.rs",
         "upb_kernel/map.rs",
         "upb_kernel/message.rs",
         "upb_kernel/minitable.rs",
         "upb_kernel/mod.rs",
+        "upb_kernel/reflection.rs",
         "upb_kernel/repeated.rs",
         "upb_kernel/string.rs",
     ],
@@ -144,6 +149,7 @@ rust_library(
     visibility = [":protobuf_internal"],
     deps = [
         "//rust/upb",
+        "//rust/upb:reflection",
         "@crate_index//:linkme",
     ],
 )
@@ -198,6 +204,7 @@ rust_library(
         "cpp_kernel/message.rs",
         "cpp_kernel/mod.rs",
         "cpp_kernel/raw.rs",
+        "cpp_kernel/reflection.rs",
         "cpp_kernel/repeated.rs",
         "cpp_kernel/string.rs",
     ],
@@ -287,6 +294,26 @@ cc_library(
         "@abseil-cpp//absl/memory",
         "@abseil-cpp//absl/strings:string_view",
     ],
+)
+
+# The part of the C++ FFI implementation that needs the full C++ runtime.
+# buildifier: disable=no-hdrs-no-alwayslink
+cc_library(
+    name = "cpp_api_reflection",
+    srcs = [
+        "cpp_kernel/reflection.cc",
+    ],
+    visibility = [
+        "//rust:__subpackages__",
+        "//src/google/protobuf:__subpackages__",
+    ],
+    deps = [
+        ":cpp_api",
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+    alwayslink = 1,
 )
 
 rust_library(

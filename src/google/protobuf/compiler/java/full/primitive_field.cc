@@ -1014,14 +1014,15 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializationCode(
     // We invoke getSerializedSize in writeTo for messages that have packed
     // fields in ImmutableMessageGenerator::GenerateMessageSerializationMethods.
     // That makes it safe to rely on the memoized size here.
-    printer->Print(variables_,
-                   "if (get$capitalized_name$List().size() > 0) {\n"
-                   "  output.writeUInt32NoTag($tag$);\n"
-                   "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
-                   "}\n"
-                   "for (int i = 0; i < $name$_.size(); i++) {\n"
-                   "  output.write$capitalized_type$NoTag($repeated_get$(i));\n"
-                   "}\n");
+    printer->Print(
+        variables_,
+        "if (!$name$_.isEmpty()) {\n"
+        "  output.writeUInt32NoTag($tag$);\n"
+        "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
+        "  for (int i = 0; i < $name$_.size(); i++) {\n"
+        "    output.write$capitalized_type$NoTag($repeated_get$(i));\n"
+        "  }\n"
+        "}\n");
   } else {
     printer->Print(
         variables_,
@@ -1038,6 +1039,11 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializedSizeCode(
                  "  int dataSize = 0;\n");
   printer->Indent();
 
+  // An empty field contributes nothing to the serialized size, so we
+  // can skip the whole computation (including the tag) when it is empty.
+  printer->Print(variables_, "if (!$name$_.isEmpty()) {\n");
+  printer->Indent();
+
   if (FixedSize(GetType(descriptor_)) == -1) {
     printer->Print(
         variables_,
@@ -1046,28 +1052,27 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializedSizeCode(
         "    .compute$capitalized_type$SizeNoTag($repeated_get$(i));\n"
         "}\n");
   } else {
-    printer->Print(
-        variables_,
-        "dataSize = $fixed_size$ * get$capitalized_name$List().size();\n");
+    printer->Print(variables_, "dataSize = $fixed_size$ * $name$_.size();\n");
   }
 
   printer->Print("size += dataSize;\n");
 
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-                   "if (!get$capitalized_name$List().isEmpty()) {\n"
-                   "  size += $tag_size$;\n"
-                   "  size += com.google.protobuf.CodedOutputStream\n"
-                   "      .computeInt32SizeNoTag(dataSize);\n"
-                   "}\n");
+                   "size += $tag_size$;\n"
+                   "size += com.google.protobuf.CodedOutputStream\n"
+                   "    .computeInt32SizeNoTag(dataSize);\n");
   } else {
-    printer->Print(
-        variables_,
-        "size += $tag_size$ * get$capitalized_name$List().size();\n");
+    printer->Print(variables_, "size += $tag_size$ * $name$_.size();\n");
   }
 
-  // cache the data size for packed fields.
+  printer->Outdent();
+  printer->Print("}\n");
+
   if (descriptor_->is_packed()) {
+    // Cache the data size for packed fields. This must stay outside the
+    // emptiness check above so that an empty field memoizes 0 rather than
+    // retaining the -1 initializer.
     printer->Print(variables_, "$name$MemoizedSerializedSize = dataSize;\n");
   }
 
@@ -1077,6 +1082,9 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializedSizeCode(
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateEqualsCode(
     io::Printer* printer) const {
+  // Note: RepeatedMutablePrimitiveFieldGenerator delegates equals/hashCode to
+  // this generator, and in mutable messages the backing field is nullable, so
+  // these must go through the null-safe accessors rather than $name$_.
   printer->Print(
       variables_,
       "if (!get$capitalized_name$List()\n"

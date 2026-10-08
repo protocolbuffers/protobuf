@@ -21,6 +21,7 @@
 #include "upb/wire/decode.h"
 #include "upb/wire/encode_test.upb.h"
 #include "upb/wire/encode_test.upb_minitable.h"
+#include "upb/wire/internal/back_alloc.h"
 #include "upb/wire/internal/encoder.h"
 
 // Must be last.
@@ -37,6 +38,7 @@ static void DoEncodeFieldMaxDepthExceeded(jmp_buf err, upb_encstate& e,
     UPB_PRIVATE(_upb_Encode_Field)(&e, msg, field, &buf, &size, e.options);
     FAIL() << "Should have jumped";
   } else {
+    upb_BackAlloc_Abort(&e.alloc);
     EXPECT_EQ(e.status, kUpb_EncodeStatus_MaxDepthExceeded);
   }
 }
@@ -50,6 +52,7 @@ static void DoEncodeExtensionMaxDepthExceeded(jmp_buf err, upb_encstate& e,
                                        e.options);
     FAIL() << "Should have jumped";
   } else {
+    upb_BackAlloc_Abort(&e.alloc);
     EXPECT_EQ(e.status, kUpb_EncodeStatus_MaxDepthExceeded);
   }
 }

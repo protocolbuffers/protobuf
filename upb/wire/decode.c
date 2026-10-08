@@ -34,7 +34,6 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
-#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/eps_copy_input_stream.h"
 #include "upb/wire/internal/constants.h"
@@ -141,16 +140,12 @@ static void _upb_Decoder_Munge(const upb_MiniTableField* field, wireval* val) {
     case kUpb_FieldType_Bool:
       val->bool_val = val->uint64_val != 0;
       break;
-    case kUpb_FieldType_SInt32: {
-      uint32_t n = val->uint64_val;
-      val->uint32_val = (n >> 1) ^ -(int32_t)(n & 1);
+    case kUpb_FieldType_SInt32:
+      val->uint32_val = _upb_Decoder_ZigZagDecode32(val->uint64_val);
       break;
-    }
-    case kUpb_FieldType_SInt64: {
-      uint64_t n = val->uint64_val;
-      val->uint64_val = (n >> 1) ^ -(int64_t)(n & 1);
+    case kUpb_FieldType_SInt64:
+      val->uint64_val = _upb_Decoder_ZigZagDecode64(val->uint64_val);
       break;
-    }
     case kUpb_FieldType_Int32:
     case kUpb_FieldType_UInt32:
       _upb_Decoder_MungeInt32(val);
@@ -327,7 +322,8 @@ static const char* _upb_Decoder_DecodeEnumPacked(
           field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension
               ? d->original_msg
               : msg;
-      if (!_upb_Encoder_AddEnumValueToUnknown(unknown_msg, field,
+      if (!_upb_Encoder_AddEnumValueToUnknown(unknown_msg,
+                                              field->UPB_PRIVATE(number),
                                               elem.uint64_val, &d->arena)) {
         upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
       }
@@ -432,8 +428,7 @@ static const char* _upb_Decoder_DecodeToArray(upb_Decoder* d, const char* ptr,
   }
 }
 
-static upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d,
-                                       const upb_MiniTable* entry) {
+upb_Map* _upb_Decoder_CreateMap(upb_Decoder* d, const upb_MiniTable* entry) {
   // Maps descriptor type -> upb map size
   static const uint8_t kSizeInMap[] = {
       [0] = -1,  // invalid descriptor type
@@ -549,6 +544,14 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   } else if (upb_MiniTableField_IsInOneof(field)) {
     // Oneof case
     uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
+    if (op == kUpb_DecodeOp_String || op == kUpb_DecodeOp_Bytes) {
+      // Read the string before setting the oneof case, so that if the read
+      // fails the case still points to the previous member, which is intact.
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     op == kUpb_DecodeOp_String);
+      *oneof_case = field->UPB_PRIVATE(number);
+      return ptr;
+    }
     if (op == kUpb_DecodeOp_SubMessage &&
         *oneof_case != field->UPB_PRIVATE(number)) {
       memset(mem, 0, sizeof(void*));

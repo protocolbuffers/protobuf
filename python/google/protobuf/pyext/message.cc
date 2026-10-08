@@ -817,10 +817,15 @@ void FixupMessageAfterMerge(CMessage* self) {
   composite_fields->ForEach([&](const void* key, PyObject* value) {
     const FieldDescriptor* descriptor =
         reinterpret_cast<const FieldDescriptor*>(key);
+    if (descriptor->is_map()) {
+      reinterpret_cast<MapContainer*>(value)->version++;
+      return;
+    }
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !descriptor->is_repeated()) {
       CMessage* cmsg = reinterpret_cast<CMessage*>(value);
       if (cmsg->state != MESSAGE_UNPROMOTED) {
+        FixupMessageAfterMerge(cmsg);
         return;
       }
       Message* message = AssureWritable(self);
@@ -849,6 +854,15 @@ Message* AssureWritable(CMessage* self) {
 
   switch (self->state) {
     case MESSAGE_MUTABLE:
+      if (self->has_mutable_map_ancestor) {
+        // This call to AssureWritable(self->parent) ensures we update the whole
+        // chain. It is load bearing.
+        auto* parent = AssureWritable(self->parent);
+        if (parent != nullptr && self->parent_field_descriptor != nullptr &&
+            self->parent_field_descriptor->is_map()) {
+          MakeMapFieldDirty(parent, self->parent_field_descriptor);
+        }
+      }
       return const_cast<Message*>(self->message);
     case MESSAGE_FROZEN:
       if (CheckFrozen(self, "Message is immutable.") < 0) {
@@ -878,6 +892,7 @@ Message* AssureWritable(CMessage* self) {
   if (self->parent_field_descriptor->is_map()) {
     mutable_message = PromoteConstMapValueMessage(
         parent_message, self->parent_field_descriptor, self->message);
+    self->has_mutable_map_ancestor = true;
   } else if (self->parent_field_descriptor->is_repeated()) {
     mutable_message = PromoteConstRepeatedMessage(
         parent_message, self->parent_field_descriptor, self->message);
@@ -886,6 +901,8 @@ Message* AssureWritable(CMessage* self) {
         parent_message, self->parent_field_descriptor,
         GetFactoryForMessage(self->parent)->message_factory);
   }
+
+  self->has_mutable_map_ancestor |= self->parent->has_mutable_map_ancestor;
 
   if (mutable_message == nullptr) {
     return nullptr;
@@ -1341,6 +1358,7 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
   self->parent = nullptr;
   self->parent_field_descriptor = nullptr;
   self->state = MESSAGE_MUTABLE;
+  self->has_mutable_map_ancestor = false;
 
   // Construct the lazy unique pointers using placement new.
   new (&self->composite_fields) LazyUniquePtr<CMessage::CompositeFieldsMap>();
@@ -1351,7 +1369,7 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
 
 // The __new__ method of Message classes.
 // Creates a new C++ message and takes ownership.
-static CMessage* NewCMessage(CMessageClass* type) {
+CMessage* NewCMessage(CMessageClass* type) {
   // Retrieve the message descriptor and the default instance (=prototype).
   const Descriptor* message_descriptor = type->message_descriptor;
   if (message_descriptor == nullptr) {
@@ -2937,6 +2955,10 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   cmsg->parent_field_descriptor = field_descriptor;
   cmsg->state = this->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : state;
   cmessage::SetSubmessage(this, cmsg);
+  if (state == MESSAGE_MUTABLE) {
+    cmsg->has_mutable_map_ancestor =
+        this->has_mutable_map_ancestor || field_descriptor->is_map();
+  }
   return cmsg;
 }
 
@@ -2953,6 +2975,7 @@ CMessage* CMessage::MaybeReleaseSubMessage(const Message* sub_message) {
   Py_CLEAR(released->parent);
   released->parent_field_descriptor = nullptr;
   released->state = MESSAGE_MUTABLE;
+  released->has_mutable_map_ancestor = false;
   // Delete it from the cache.
   sub_messages->Erase(sub_message, released->AsPyObject());
   // child_submessages->Get returned a new reference.

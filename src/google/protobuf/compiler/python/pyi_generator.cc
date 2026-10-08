@@ -70,6 +70,7 @@ struct ImportModules {
   bool has_enums = false;       // _enum_type_wrapper
   bool has_extendable = false;  // _python_message
   bool has_mapping = false;     // collections.abc.Mapping
+  bool has_any = false;         // typing.Any
   bool has_optional = false;    // typing.Optional
   bool has_union = false;       // typing.Union
   bool has_callable = false;    // typing.Callable
@@ -132,6 +133,7 @@ void CheckImportModules(const Descriptor* descriptor,
       if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         import_modules->has_union = true;
         import_modules->has_mapping = true;
+        import_modules->has_any = true;
         const absl::string_view name = field->message_type()->full_name();
         if (name == "google.protobuf.Duration" ||
             name == "google.protobuf.Timestamp") {
@@ -144,6 +146,9 @@ void CheckImportModules(const Descriptor* descriptor,
     }
   }
   for (int i = 0; i < descriptor->nested_type_count(); ++i) {
+    if (descriptor->nested_type(i)->options().map_entry()) {
+      continue;
+    }
     CheckImportModules(descriptor->nested_type(i), import_modules);
   }
 }
@@ -279,7 +284,8 @@ void PyiGenerator::PrintImports() const {
     printer_->Print("\n");
   }
   printer_->Print("from typing import ");
-  if (!opensource_runtime_ && file_->service_count() > 0) {
+  if (import_modules.has_any ||
+      (!opensource_runtime_ && file_->service_count() > 0)) {
     printer_->Print("Any as _Any, ");
   }
   if (import_modules.has_callable) {
@@ -361,14 +367,21 @@ void PyiGenerator::PrintTopLevelEnums() const {
 }
 
 template <typename DescriptorT>
-void PyiGenerator::PrintExtensions(const DescriptorT& descriptor) const {
+void PyiGenerator::PrintExtensions(const DescriptorT& descriptor,
+                                   bool is_classvar) const {
   for (int i = 0; i < descriptor.extension_count(); ++i) {
     const FieldDescriptor* extension_field = descriptor.extension(i);
     std::string constant_name =
         absl::StrCat(extension_field->name(), "_FIELD_NUMBER");
     absl::AsciiStrToUpper(&constant_name);
-    printer_->Print("$constant_name$: _ClassVar[int]\n",
-                    "constant_name", constant_name);
+    // ClassVar is only a valid annotation inside a class body, so it is used
+    // for a message's nested extensions and not for a file's top-level ones.
+    if (is_classvar) {
+      printer_->Print("$constant_name$: _ClassVar[int]\n", "constant_name",
+                      constant_name);
+    } else {
+      printer_->Print("$constant_name$: int\n", "constant_name", constant_name);
+    }
     Annotate("constant_name", extension_field);
     printer_->Print("$name$: _descriptor.FieldDescriptor\n",
                     "name", extension_field->name());
@@ -478,7 +491,7 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     PrintMessage(*message_descriptor.nested_type(i), true);
   }
 
-  PrintExtensions(message_descriptor);
+  PrintExtensions(message_descriptor, /* is_classvar = */ true);
 
   // Prints field number
   for (int i = 0; i < message_descriptor.field_count(); ++i) {
@@ -558,9 +571,10 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
       if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
         const auto& extra_init_types =
             ExtraInitTypes(*field_des->message_type());
-        printer_->Print("_Union[$extra_init_types$$type_name$, _Mapping]",
-                        "extra_init_types", extra_init_types, "type_name",
-                        GetFieldType(*field_des, message_descriptor));
+        printer_->Print(
+            "_Union[$extra_init_types$$type_name$, _Mapping[_Any, _Any]]",
+            "extra_init_types", extra_init_types, "type_name",
+            GetFieldType(*field_des, message_descriptor));
       } else {
         if (field_des->cpp_type() == FieldDescriptor::CPPTYPE_ENUM) {
           printer_->Print("_Union[$type_name$, str]", "type_name",
@@ -607,7 +621,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
                             const std::string& parameter,
                             GeneratorContext* context,
                             std::string* error) const {
-  absl::MutexLock lock(&mutex_);
+  absl::MutexLock lock(mutex_);
   import_map_.clear();
   // Calculate file name.
   file_ = file;

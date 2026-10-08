@@ -41,6 +41,10 @@ struct upb_FastDecoder_Return;
 UPB_DECODEFAST_FUNCTIONS(F)
 
 UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_FallbackToMiniTable(
+    PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeGeneric(PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
@@ -67,6 +71,18 @@ struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckExtRegMiniTable(
 
 UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeLongTag(PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return upb_DecodeFast_IntMap_Tag1Byte(PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return upb_DecodeFast_IntMap_Tag2Byte(PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return upb_DecodeFast_StrMap_Tag1Byte(PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return upb_DecodeFast_StrMap_Tag2Byte(PARSE_PARAMS);
 
 #undef F
 #undef PARSE_PARAMS

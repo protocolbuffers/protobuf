@@ -7,16 +7,15 @@
 
 [package]
 name = "protobuf-macros"
+readme = "README.md"
 version = "{PROTOBUF_RUST_VERSION}"
 edition = "2021"  # The Rust edition (not to be confused with Protobuf Edition).
 license = "BSD-3-Clause"
 rust-version = "1.79"
 description = "Protobuf proc macro implementation (internal)"
-
-[lib]
-path = "src/proto_proc_macro_impl.rs"
-proc-macro = true
+# Superseded by the google-protobuf-macros crate, which this crate re-exports.
+# No new versions are published to crates.io.
+publish = false
 
 [dependencies]
-quote = "1.0.38"
-syn = { version = "2.0.98", features = ["full"] }
+google_protobuf_macros = { package = "google-protobuf-macros", version = "{PROTOBUF_RUST_VERSION}", path = "../google_protobuf_macros" }

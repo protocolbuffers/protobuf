@@ -11,13 +11,13 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_MESSAGE_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_MESSAGE_H__
 
-#include <atomic>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <cstdint>
 #include <optional>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 #include "google/protobuf/pyext/weak_value_map.h"
@@ -49,7 +49,7 @@ struct CMessageClass;
 // don't store any data, and always refer to their parent message.
 
 // Defines the mutability and promotion state of a CMessage.
-enum MessageMutabilityState {
+enum MessageMutabilityState : uint8_t {
   // Backed by a fully allocated, mutable C++ Message object whose parent
   // hierarchy is already mutable / marked dirty. Mutations on this message
   // do not require promoting the parent hierarchy.
@@ -113,6 +113,9 @@ typedef struct CMessage : public ContainerBase {
   // Indicates the mutability state of this CMessage wrapper.
   MessageMutabilityState state;
 
+  // Whether there is a map ancestor anywhere in the hierarchy.
+  bool has_mutable_map_ancestor;
+
   // A mapping indexed by field, containing weak references to contained objects
   // which need to implement the "Release" mechanism:
   // direct submessages, RepeatedCompositeContainer, RepeatedScalarContainer
@@ -134,6 +137,31 @@ typedef struct CMessage : public ContainerBase {
   // Return a *borrowed* reference to the message class.
   CMessageClass* GetMessageClass() {
     return reinterpret_cast<CMessageClass*>(Py_TYPE(this));
+  }
+
+  // Returns true if this CMessage is quiescent: either being deallocated
+  // (ob_refcnt == 0), or uniquely referenced by the current thread with no
+  // parent.
+  bool IsQuiescent() const {
+    if (Py_REFCNT(this) == 0) return true;
+#ifdef Py_GIL_DISABLED
+    if (!PyUnstable_Object_IsUniquelyReferenced(
+            reinterpret_cast<PyObject*>(const_cast<CMessage*>(this)))) {
+      return false;
+    }
+#else
+    if (Py_REFCNT(this) != 1) return false;
+#endif
+    return parent == nullptr;
+  }
+
+  // Returns the underlying mutable Message* without locking. Must ONLY be used
+  // when this CMessage is quiescent.
+  Message* GetQuiescent() const {
+    ABSL_DCHECK(IsQuiescent());
+    ABSL_DCHECK_EQ(state, MESSAGE_MUTABLE);
+    // Cast away constness is safe because of the checks above.
+    return const_cast<Message*>(message);
   }
 
   // For container containing messages, return a Python object for the given
@@ -179,6 +207,9 @@ namespace cmessage {
 // pointers to the C++ objects.
 // The caller must fill self->message, self->owner and eventually self->parent.
 CMessage* NewEmptyMessage(CMessageClass* type);
+
+// Creates a new CMessage Python object and allocates its C++ Message.
+CMessage* NewCMessage(CMessageClass* type);
 
 // Retrieves the C++ descriptor of a Python Extension descriptor.
 // On error, return NULL with an exception set.

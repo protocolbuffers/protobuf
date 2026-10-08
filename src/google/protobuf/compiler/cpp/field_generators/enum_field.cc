@@ -74,7 +74,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      this_.$field_$ = $kDefault$;
+      $this_field$ = $kDefault$;
     )cc");
   }
 
@@ -86,7 +86,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
+      $this_field$ = $from_field$;
     )cc");
   }
 
@@ -94,13 +94,13 @@ class SingularEnum : public FieldGeneratorBase {
     if (is_oneof()) return;
 
     p->Emit(R"cc(
-      swap(this_.$field_$, other->$field_$);
+      swap($field_$, other->$field_$);
     )cc");
   }
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
+      $this_field$ = $from_field$;
     )cc");
   }
 
@@ -265,9 +265,9 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+      p->Emit("$this_field$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("this_.$field_$.Clear();\n");
+      p->Emit("$this_field$.Clear();\n");
     }
   }
 
@@ -284,14 +284,14 @@ class RepeatedEnum : public FieldGeneratorBase {
     // `if (!from.empty()) { body(); }` for both split and non-split cases.
     auto body = [&] {
       p->Emit(R"cc(
-        _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+        this_._internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
     if (!should_split()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
-        if (!from.$field_$.IsDefault()) {
+        if (!$from_field$.IsDefault()) {
           $body$;
         }
       )cc");
@@ -301,14 +301,14 @@ class RepeatedEnum : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      this_.$field_$.InternalSwap(&other->$field_$);
+      $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        this_.$field_$.DeleteIfNotDefault();
+        $this_field$.DeleteIfNotDefault();
       )cc");
     }
   }
@@ -552,11 +552,8 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
                } else {
                  p->Emit(R"cc(
                    ::size_t byte_size = 0;
-                   auto count = static_cast<::size_t>(this_._internal_$name$_size());
-
-                   for (::size_t i = 0; i < count; ++i) {
-                     byte_size += ::_pbi::WireFormatLite::EnumSize(
-                         this_._internal_$name$().Get(static_cast<int>(i)));
+                   for (int v : this_._internal_$name$()) {
+                     byte_size += ::_pbi::WireFormatLite::EnumSize(v);
                    }
                  )cc");
                }
@@ -574,11 +571,9 @@ void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
     return;
   }
   p->Emit(R"cc(
-    for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
+    for (int v : this_._internal_$name$()) {
       target = stream->EnsureSpace(target);
-      target = ::_pbi::WireFormatLite::WriteEnumToArray(
-          $number$, static_cast<$Enum$>(this_._internal_$name$().Get(i)),
-          target);
+      target = ::_pbi::WireFormatLite::WriteEnumToArray($number$, v, target);
     }
   )cc");
 }

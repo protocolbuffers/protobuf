@@ -4,7 +4,7 @@ This is currently a beta release: the API is subject to change, and there may be
 some rough edges, including missing documentation and features.
 
 An example for how to use this crate can be found in the
-[protobuf_example crate](http://crates.io/crates/protobuf_example)
+[google-protobuf-example crate](http://crates.io/crates/google-protobuf-example)
 
 # Ownership and implementation change
 

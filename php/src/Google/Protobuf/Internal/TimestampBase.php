@@ -26,7 +26,14 @@ class TimestampBase extends \Google\Protobuf\Internal\Message
      */
     public function toDateTime()
     {
+        if ($this->nanos < 0 || $this->nanos > 999999999) {
+            throw new \Exception("Nanoseconds must be in the range of 0 to 999,999,999 nanoseconds.");
+        }
         $time = sprintf('%s.%06d', $this->seconds, $this->nanos / 1000);
-        return \DateTime::createFromFormat('U.u', $time);
+        $ret = \DateTime::createFromFormat('U.u', $time);
+        if ($ret === false) {
+            throw new \Exception("Cannot create DateTime.");
+        }
+        return $ret;
     }
 }

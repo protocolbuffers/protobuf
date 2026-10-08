@@ -10,11 +10,12 @@
 
 #include <string>
 
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "google/protobuf/message.h"
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 class TextFormatConformanceTestSuite : public ConformanceTestSuite {
  public:
@@ -23,10 +24,10 @@ class TextFormatConformanceTestSuite : public ConformanceTestSuite {
  private:
   void RunSuiteImpl() override;
 
-  bool ParseTextFormatResponse(const conformance::ConformanceResponse& response,
-                               const ConformanceRequestSetting& setting,
-                               Message* test_message);
-  bool ParseResponse(const conformance::ConformanceResponse& response,
+  bool ParseTextFormatResponse(
+      const ::conformance::ConformanceResponse& response,
+      const ConformanceRequestSetting& setting, Message* test_message);
+  bool ParseResponse(const ::conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
 
@@ -76,6 +77,7 @@ class TextFormatConformanceTestSuiteImpl {
   TextFormatConformanceTestSuite& suite_;
 };
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

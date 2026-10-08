@@ -1204,12 +1204,12 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-                   "if (get$capitalized_name$List().size() > 0) {\n"
+                   "if (!$name$_.isEmpty()) {\n"
                    "  output.writeUInt32NoTag($tag$);\n"
                    "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
-                   "}\n"
-                   "for (int i = 0; i < $name$_.size(); i++) {\n"
-                   "  output.writeEnumNoTag($name$_.getInt(i));\n"
+                   "  for (int i = 0; i < $name$_.size(); i++) {\n"
+                   "    output.writeEnumNoTag($name$_.getInt(i));\n"
+                   "  }\n"
                    "}\n");
   } else {
     printer->Print(variables_,
@@ -1226,6 +1226,11 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializedSizeCode(
                  "  int dataSize = 0;\n");
   printer->Indent();
 
+  // An empty field contributes nothing to the serialized size, so we
+  // can skip the whole computation (including the tag) when it is empty.
+  printer->Print(variables_, "if (!$name$_.isEmpty()) {\n");
+  printer->Indent();
+
   printer->Print(variables_,
                  "for (int i = 0; i < $name$_.size(); i++) {\n"
                  "  dataSize += com.google.protobuf.CodedOutputStream\n"
@@ -1234,17 +1239,19 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializedSizeCode(
   printer->Print("size += dataSize;\n");
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-                   "if (!get$capitalized_name$List().isEmpty()) {"
-                   "  size += $tag_size$;\n"
-                   "  size += com.google.protobuf.CodedOutputStream\n"
-                   "    .computeUInt32SizeNoTag(dataSize);\n"
-                   "}");
+                   "size += $tag_size$;\n"
+                   "size += com.google.protobuf.CodedOutputStream\n"
+                   "  .computeUInt32SizeNoTag(dataSize);\n");
   } else {
     printer->Print(variables_, "size += $tag_size$ * $name$_.size();\n");
   }
 
-  // cache the data size for packed fields.
+  printer->Outdent();
+  printer->Print("}\n");
+
   if (descriptor_->is_packed()) {
+    // Cache the data size for packed fields. This must stay outside the
+    // emptiness check above so that an empty field memoizes 0.
     printer->Print(variables_, "$name$MemoizedSerializedSize = dataSize;\n");
   }
 

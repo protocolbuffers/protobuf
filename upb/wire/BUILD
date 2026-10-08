@@ -161,6 +161,7 @@ cc_test(
     deps = [
         ":decode_test_upb_minitable_proto",
         ":decode_test_upb_proto",
+        ":reader",
         ":wire",
         "//upb/base",
         "//upb/mem",
@@ -178,6 +179,7 @@ cc_test(
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
         "//upb/wire/test_util:wire_message",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
@@ -221,6 +223,7 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,
     deps = [
+        ":back_alloc",
         ":encode_test_upb_minitable_proto",
         ":encode_test_upb_proto",
         ":encoder",

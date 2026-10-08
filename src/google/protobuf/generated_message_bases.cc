@@ -38,9 +38,7 @@ ZeroFieldsBase::~ZeroFieldsBase() {
   _internal_metadata_.Delete<UnknownFieldSet>();
 }
 
-ZeroFieldsBase::Helpers_::Helpers_() = default;
-
-void ZeroFieldsBase::Helpers_::SharedDtor(MessageLite& msg) {
+void ZeroFieldsBase::SharedDtor(MessageLite& msg) {
   static_cast<ZeroFieldsBase&>(msg)
       ._internal_metadata_.Delete<UnknownFieldSet>();
 }
@@ -79,10 +77,8 @@ void ZeroFieldsBase::CopyImpl(Message& to_param, const Message& from_param) {
   to->_internal_metadata_.MergeFrom<UnknownFieldSet>(from->_internal_metadata_);
 }
 
-void ZeroFieldsBase::Helpers_::InternalSwap(MessageLite& self,
-                                            ZeroFieldsBase* other) {
-  auto& msg = static_cast<ZeroFieldsBase&>(self);
-  msg._internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
+void ZeroFieldsBase::InternalSwap(ZeroFieldsBase* other) {
+  _internal_metadata_.Swap<UnknownFieldSet>(&other->_internal_metadata_);
 }
 
 }  // namespace internal

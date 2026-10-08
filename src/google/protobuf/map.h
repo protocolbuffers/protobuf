@@ -31,7 +31,6 @@
 #include "absl/base/attributes.h"
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
-#include "absl/container/btree_map.h"
 #include "absl/hash/hash.h"
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
@@ -1102,6 +1101,15 @@ class RustMapHelper {
   static google::protobuf::MessageLite* PlacementNew(const MessageLite* prototype,
                                            void* mem) {
     return prototype->GetClassData()->PlacementNew(mem, /* arena = */ nullptr);
+  }
+
+  template <typename Map>
+  static void DestructiveMove(Map* dest, UntypedMapBase* src) {
+    dest->clear();
+    ABSL_DCHECK_EQ(src->arena(), nullptr);
+    dest->UntypedSwap(dest->arena(), *src, nullptr);
+    src->ClearTable(nullptr, /*reset=*/false);
+    delete src;
   }
 };
 

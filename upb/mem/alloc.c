@@ -74,4 +74,4 @@ void upb_AllocationCount_FailOn(size_t n) {
 #endif
 }
 
-upb_alloc upb_alloc_global = {&upb_global_allocfunc};
+upb_alloc upb_alloc_global = {&upb_global_allocfunc, NULL};

@@ -26,6 +26,22 @@ fn test_nested_enum_values() {
 }
 
 #[gtest]
+fn test_enum_value_is_const_evaluable() {
+    // `const` bindings are evaluated at compile time, so this test stops
+    // building -- not merely stops passing -- if `number()` loses `const`.
+    const FOO: i32 = test_all_types::NestedEnum::Foo.number();
+    const NEG: i32 = test_all_types::NestedEnum::Neg.number();
+    const SPARSE_D: i32 = TestSparseEnum::SparseD.number();
+
+    assert_that!(FOO, eq(1));
+    assert_that!(NEG, eq(-1));
+    assert_that!(SPARSE_D, eq(-15));
+
+    // `number()` and the `Into<i32>` impl agree.
+    assert_that!(FOO, eq(i32::from(test_all_types::NestedEnum::Foo)));
+}
+
+#[gtest]
 fn test_isolated_nested_enum() {
     // Ensure that the enum is generated even when it's the only nested type for the
     // message.

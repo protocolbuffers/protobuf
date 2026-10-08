@@ -1,0 +1,9 @@
+edition = "2023";
+
+package proto_example;
+
+message Bar {
+  int32 int = 1;
+  repeated int32 numbers = 2;
+  string name = 3;
+}
