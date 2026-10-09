@@ -116,6 +116,7 @@ class PROTOBUF_EXPORT InlinedStringField {
            Arena* arena);
 
   void SetBytes(absl::string_view value, Arena* arena);
+  void SetBytes(const absl::Cord& value, Arena* arena);
 
   void SetBytes(std::string&& value, Arena* arena);
 
@@ -347,6 +348,11 @@ inline void InlinedStringField::Set(const char* str, size_t size,
 }
 
 inline void InlinedStringField::SetBytes(absl::string_view value,
+                                         Arena* arena) {
+  Set(value, arena);
+}
+
+inline void InlinedStringField::SetBytes(const absl::Cord& value,
                                          Arena* arena) {
   Set(value, arena);
 }

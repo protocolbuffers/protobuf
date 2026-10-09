@@ -2500,6 +2500,12 @@ TEST(MESSAGE_TEST_NAME, AllSetMethodsOnStringField) {
 
   msg.set_optional_string({'a', 'b', 'c'});
   EXPECT_EQ(msg.optional_string(), "abc");
+
+  msg.set_optional_string(absl::Cord("cord"));
+  EXPECT_EQ(msg.optional_string(), "cord");
+
+  msg.set_optional_bytes(absl::Cord("cord"));
+  EXPECT_EQ(msg.optional_bytes(), "cord");
 }
 
 TEST(MESSAGE_TEST_NAME, AllSetMethodsOnRepeatedStringField) {
