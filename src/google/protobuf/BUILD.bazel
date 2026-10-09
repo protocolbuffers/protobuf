@@ -730,6 +730,7 @@ cc_library(
         "message_lite.cc",
         "offset_ptr.cc",
         "parse_context.cc",
+        "private_access.cc",
         "raw_ptr.cc",
         "repeated_field.cc",
         "repeated_ptr_field.cc",
@@ -764,6 +765,7 @@ cc_library(
         "metadata_lite.h",
         "offset_ptr.h",
         "parse_context.h",
+        "private_access.h",
         "raw_ptr.h",
         "repeated_field.h",
         "repeated_ptr_field.h",
@@ -1057,6 +1059,9 @@ cc_library(
     name = "message_traits",
     hdrs = ["message_traits.h"],
     strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+    ],
 )
 
 cc_library(

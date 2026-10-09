@@ -11,21 +11,22 @@
 
 #include "absl/log/absl_check.h"
 #include "google/protobuf/extension_set.h"
-#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
+#include "google/protobuf/private_access.h"
 #include "rust/cpp_kernel/strings.h"
 
 static const google::protobuf::internal::ExtensionSet* GetExtensionSet(
     const google::protobuf::MessageLite* m) {
   const google::protobuf::internal::ExtensionSet* ext =
-      google::protobuf::internal::PrivateAccess::GetExtensionSet(m);
+      google::protobuf::internal::PrivateAccess::GetExtensionSet(*m);
   ABSL_DCHECK(ext != nullptr);
   return ext;
 }
 
 static google::protobuf::internal::ExtensionSet* GetExtensionSet(google::protobuf::MessageLite* m) {
   google::protobuf::internal::ExtensionSet* ext =
-      google::protobuf::internal::PrivateAccess::GetExtensionSet(m);
+      google::protobuf::internal::PrivateAccess::GetExtensionSet(*m);
   ABSL_DCHECK(ext != nullptr);
   return ext;
 }
