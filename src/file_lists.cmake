@@ -1310,6 +1310,7 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/no_field_presence_map_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/no_field_presence_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr_test.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/preserve_unknown_enum_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/proto3_arena_lite_unittest.cc
