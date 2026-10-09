@@ -846,7 +846,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 };
 
 // Sink types for AdvancePtrMaybeFlush.
-struct WireFormatStringSink {
+struct PROTOBUF_EXPORT WireFormatStringSink {
   static constexpr bool kIsLazySink = false;
   explicit WireFormatStringSink(const char* ptr) : prev(ptr) {}
 
