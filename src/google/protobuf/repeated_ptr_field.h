@@ -49,6 +49,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
+#include "google/protobuf/string_piece_field_support.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -111,6 +112,8 @@ struct InternalMetadataResolverOffsetHelper {
 // Used in the slow path. Out-of-line for lower binary size cost.
 PROTOBUF_EXPORT MessageLite* CloneSlow(Arena* arena, const MessageLite& value);
 PROTOBUF_EXPORT std::string* CloneSlow(Arena* arena, const std::string& value);
+PROTOBUF_EXPORT StringPieceField* CloneSlow(Arena* arena,
+                                            const StringPieceField& value);
 
 enum class BoundsCheckMessageType {
   kIndex,
@@ -938,6 +941,10 @@ template <>
 PROTOBUF_EXPORT void RepeatedPtrFieldBase::MergeFrom<std::string>(
     const RepeatedPtrFieldBase& from, Arena* arena);
 
+// Appends all `StringPieceField` values from `from` to this instance.
+template <>
+PROTOBUF_EXPORT void RepeatedPtrFieldBase::MergeFrom<StringPieceField>(
+    const RepeatedPtrFieldBase& from, Arena* arena);
 
 inline void* RepeatedPtrFieldBase::AddInternal(
     Arena* arena, absl::FunctionRef<ElementNewFn> factory) {
@@ -1219,6 +1226,57 @@ template <>
 class GenericTypeHandler<absl::string_view>
     : public GenericTypeHandler<std::string> {};
 
+template <>
+class GenericTypeHandler<StringPieceField> {
+ public:
+  using Type = StringPieceField;
+
+  using CopyConstructReferenceType = absl::string_view;
+
+  static constexpr auto GetNewFunc() {
+    return [](Arena* arena, void*& ptr) { ptr = Arena::Create<Type>(arena); };
+  }
+  static constexpr auto GetNewWithMoveFunc(
+      Type&& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    return [&from](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::move(from));
+    };
+  }
+  static constexpr auto GetNewWithCopyFunc(
+      const Type& from ABSL_ATTRIBUTE_LIFETIME_BOUND) {
+    return [&from](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, from);
+    };
+  }
+  template <typename... Args>
+  static constexpr auto GetNewWithEmplaceFunc(Args&&... args) {
+    return [&args...](Arena* arena, void*& ptr) {
+      ptr = Arena::Create<Type>(arena, std::forward<Args>(args)...);
+    };
+  }
+  static constexpr auto GetNewFromPrototypeFunc(const Type* /*prototype*/) {
+    return GetNewFunc();
+  }
+
+  static Arena* GetArena(Type* value) { return Arena::InternalGetArena(value); }
+
+  static void Delete(Type* value) { delete value; }
+  static void Clear(Type* value) { value->Clear(); }
+  static size_t SpaceUsedLong(const Type& value) {
+    return value.SpaceUsedLong();
+  }
+
+  static void CopyFrom(Type* elem, absl::string_view value) {
+    elem->CopyFrom(value);
+  }
+
+  static const Type& default_instance() { return Type::default_instance(); }
+  static constexpr bool has_default_instance() { return true; }
+
+  static absl::string_view ForElementCallback(const Type* ptr) {
+    return ptr->Get();
+  }
+};
 
 }  // namespace internal
 
@@ -1237,9 +1295,9 @@ class ABSL_ATTRIBUTE_WARN_UNUSED RepeatedPtrField final
                 "We do not support reference value types.");
   static constexpr PROTOBUF_ALWAYS_INLINE void StaticValidityCheck() {
     static_assert(
-        std::disjunction_v<
-            internal::is_supported_string_type<Element>,
-            internal::is_supported_message_type<Element>>,
+        std::disjunction_v<std::is_same<internal::StringPieceField, Element>,
+                           internal::is_supported_string_type<Element>,
+                           internal::is_supported_message_type<Element>>,
         "We only support string and Message types in RepeatedPtrField.");
     static_assert(alignof(Element) <= internal::ArenaAlignDefault::align,
                   "Overaligned types are not supported");

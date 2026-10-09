@@ -24,6 +24,7 @@
 #include "google/protobuf/repeated_field_proxy_iterator.h"
 #include "google/protobuf/repeated_field_proxy_traits.h"
 #include "google/protobuf/repeated_ptr_field.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/test_protos/repeated_field_proxy_import_message.pb.h"
 #include "google/protobuf/test_protos/repeated_field_proxy_test.pb.h"
 #include "google/protobuf/test_textproto.h"
@@ -66,6 +67,9 @@ auto ToStringLike(const T& val) {
   if constexpr (std::is_same_v<absl::remove_cvref_t<decltype(val)>,
                                absl::Cord>) {
     return std::string(val);
+  } else if constexpr (std::is_same_v<absl::remove_cvref_t<decltype(val)>,
+                                      StringPieceField>) {
+    return val.Get();
   } else {
     return absl::string_view(val);
   }
@@ -361,6 +365,8 @@ class RepeatedStringFieldProxyTest
       field->Add(std::string(s));
     } else if constexpr (std::is_same_v<ElementType, absl::Cord>) {
       field->Add(absl::Cord(s));
+    } else if constexpr (std::is_same_v<ElementType, StringPieceField>) {
+      field->Add()->Set(s);
     } else {
       static_assert(dependent_false_t<ElementType>, "Unsupported string type");
     }
@@ -372,6 +378,8 @@ class RepeatedStringFieldProxyTest
       return element.data();
     } else if constexpr (std::is_same_v<ElementType, absl::Cord>) {
       return &*element.char_begin();
+    } else if constexpr (std::is_same_v<ElementType, StringPieceField>) {
+      return element.Get().data();
     } else {
       static_assert(dependent_false_t<ElementType>, "Unsupported string type");
     }
@@ -390,6 +398,8 @@ struct RepeatedStringFieldProxyTestName {
       name = "StringView";
     } else if constexpr (std::is_same_v<ElementType, absl::Cord>) {
       name = "Cord";
+    } else if constexpr (std::is_same_v<ElementType, StringPieceField>) {
+      name = "StringPieceField";
     } else {
       static_assert(dependent_false_t<ElementType>, "Unsupported string type");
     }
@@ -405,6 +415,8 @@ struct RepeatedStringFieldProxyTestName {
       RepeatedFieldProxyTypedTestParams<absl::string_view, use_arena, \
                                         use_repeated_field_or_proxy>, \
       RepeatedFieldProxyTypedTestParams<absl::Cord, use_arena,        \
+                                        use_repeated_field_or_proxy>, \
+      RepeatedFieldProxyTypedTestParams<StringPieceField, use_arena,  \
                                         use_repeated_field_or_proxy>
 
 #define TEST_STRING_USE_ARENA(use_repeated_field_or_proxy)   \
@@ -1137,6 +1149,25 @@ TYPED_TEST(RepeatedFieldProxyTest, EmplaceBackCord) {
   EXPECT_THAT(*field, ElementsAre("1", "2", kLongString, kLongString));
 }
 
+TYPED_TEST(RepeatedFieldProxyTest, EmplaceBackStringPieceField) {
+  auto field = this->template MakeRepeatedFieldContainer<StringPieceField>();
+  auto proxy = field.MakeProxy();
+
+  // Tests that we can emplace_back with no arguments, which inserts and returns
+  // an empty string.
+  EXPECT_THAT(proxy.emplace_back(), StringEq(""));
+
+  // Tests that we can modify a default-constructed string.
+  proxy.emplace_back().Set("1");
+
+  // Tests that we can emplace_back with a string_view.
+  proxy.emplace_back("2");
+  proxy.emplace_back(StrAs<absl::string_view>("3"));
+
+  EXPECT_THAT(*field, ElementsAre(StringEq(""), StringEq("1"), StringEq("2"),
+                                  StringEq("3")));
+}
+
 TYPED_TEST(RepeatedNumericFieldProxyTest, Iterators) {
   auto field = this->MakeRepeatedFieldContainer();
   auto proxy = field.MakeProxy();
@@ -1513,6 +1544,7 @@ TEST(RepeatedFieldProxyIteratorTest, ProxyAndOrProxyIteratorsIncompatible) {
   EXPECT_TRUE(IteratorsIncompatible<absl::string_view>());
   EXPECT_TRUE(IteratorsIncompatible<std::string>());
   EXPECT_TRUE(IteratorsIncompatible<absl::Cord>());
+  EXPECT_TRUE(IteratorsIncompatible<StringPieceField>());
   EXPECT_TRUE(IteratorsIncompatible<RepeatedFieldProxyTestSimpleMessage>());
 }
 
@@ -2551,6 +2583,9 @@ TYPED_TEST(RepeatedStringFieldProxyTest, RepeatedFieldBackInserter) {
     auto values = {absl::Cord("3"), absl::Cord("4"), absl::Cord("5")};
     std::copy(values.begin(), values.end(),
               google::protobuf::RepeatedFieldBackInserter(proxy));
+  } else if constexpr (std::is_same_v<ElementType, StringPieceField>) {
+    GTEST_SKIP() << "Cannot insert into a repeated StringPieceField with a "
+                    "back inserter.";
   } else {
     auto values = {"3", "4", "5"};
     std::copy(values.begin(), values.end(),

@@ -1511,6 +1511,42 @@ TEST_F(RepeatedPtrFieldTest, StableSort) {
   EXPECT_TRUE(std::is_sorted(rep.begin(), rep.end()));
 }
 
+TEST_F(RepeatedPtrFieldTest, SortStringPieceFieldTest) {
+  RepeatedPtrField<StringPieceField> rep;
+
+  // Store values in decreasing order.
+  for (int i = 0; i < 5; i++) {
+    rep.Add()->CopyFrom(absl::StrFormat("%d", i));
+  }
+
+  // Sort by std::greater, which should reverse the order.
+  google::protobuf::sort(rep.begin(), rep.end(), [](auto&& a, auto&& b) {
+    static_assert(std::is_same_v<decltype(a), absl::string_view&&>);
+    static_assert(std::is_same_v<decltype(b), absl::string_view&&>);
+    return std::greater<>{}(a, b);
+  });
+  EXPECT_EQ(rep[0].Get(), "4");
+  EXPECT_EQ(rep[1].Get(), "3");
+  EXPECT_EQ(rep[2].Get(), "2");
+  EXPECT_EQ(rep[3].Get(), "1");
+  EXPECT_EQ(rep[4].Get(), "0");
+
+  // Stable sort by an even/odd predicate.
+  google::protobuf::stable_sort(rep.begin(), rep.end(), [](auto&& a, auto&& b) {
+    static_assert(std::is_same_v<decltype(a), absl::string_view&&>);
+    static_assert(std::is_same_v<decltype(b), absl::string_view&&>);
+    return std::less<>{}(static_cast<int>(a.back()) % 2,
+                         static_cast<int>(b.back()) % 2);
+  });
+  // All the evens first, in preserved order, followed by the odds in preserved
+  // order.
+  EXPECT_EQ(rep[0].Get(), "4");
+  EXPECT_EQ(rep[1].Get(), "2");
+  EXPECT_EQ(rep[2].Get(), "0");
+  EXPECT_EQ(rep[3].Get(), "3");
+  EXPECT_EQ(rep[4].Get(), "1");
+}
+
 TEST_F(RepeatedPtrFieldTest, SortWorksOnMessages) {
   RepeatedPtrField<proto2_unittest::RepFieldSortMessage> rep;
   for (int i = 0; i < 3; ++i) {

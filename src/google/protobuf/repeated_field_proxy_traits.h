@@ -8,7 +8,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
-
+#include "google/protobuf/string_piece_field_support.h"
 
 namespace google {
 namespace protobuf {
@@ -24,6 +24,7 @@ template <typename ElementType>
 static constexpr bool RepeatedElementTypeIsString =
     std::is_same_v<ElementType, std::string> ||
     std::is_same_v<ElementType, absl::string_view> ||
+    std::is_same_v<ElementType, StringPieceField> ||
     std::is_same_v<ElementType, absl::Cord>;
 
 // A type trait to determine if a repeated field element of type `ElementType`
@@ -103,6 +104,13 @@ struct RepeatedFieldTraits<absl::Cord> {
   using type = ::google::protobuf::RepeatedField<absl::Cord>;
   using const_reference = const absl::Cord&;
   using reference = absl::Cord&;
+};
+
+template <>
+struct RepeatedFieldTraits<StringPieceField> {
+  using type = ::google::protobuf::RepeatedPtrField<StringPieceField>;
+  using const_reference = const StringPieceField&;
+  using reference = StringPieceField&;
 };
 
 }  // namespace internal

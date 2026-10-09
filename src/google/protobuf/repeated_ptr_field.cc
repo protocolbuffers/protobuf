@@ -27,6 +27,7 @@
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/type_id.h"
 
 // Must be included last.
@@ -44,6 +45,9 @@ MessageLite* CloneSlow(Arena* arena, const MessageLite& value) {
 }
 std::string* CloneSlow(Arena* arena, const std::string& value) {
   return Arena::Create<std::string>(arena, value);
+}
+StringPieceField* CloneSlow(Arena* arena, const StringPieceField& value) {
+  return Arena::Create<StringPieceField>(arena, value);
 }
 
 void** RepeatedPtrFieldBase::InternalExtend(int extend_amount, Arena* arena) {
@@ -246,6 +250,16 @@ RepeatedPtrFieldBase::MergeFrom<std::string>(const RepeatedPtrFieldBase& from,
       });
 }
 
+template <>
+PROTOBUF_EXPORT_TEMPLATE_DEFINE void
+RepeatedPtrFieldBase::MergeFrom<StringPieceField>(
+    const RepeatedPtrFieldBase& from, Arena* arena) {
+  MergeFromInternal<StringPieceField>(
+      from, arena,
+      [](Arena* arena, StringPieceField* dst, const StringPieceField& src) {
+        dst->CopyFromWithArena(arena, src.Get());
+      });
+}
 
 int RepeatedPtrFieldBase::MergeIntoClearedMessages(
     const RepeatedPtrFieldBase& from) {

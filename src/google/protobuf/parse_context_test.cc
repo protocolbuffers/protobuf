@@ -22,6 +22,7 @@
 #include "absl/strings/string_view.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/string_piece_field_support.h"
 #include "google/protobuf/unittest.pb.h"
 #include "utf8_validity.h"
 
@@ -191,6 +192,15 @@ TEST(ParseContextTest, ReadCordFromMultipleFragmentsWithEmptyFragment) {
   EXPECT_EQ(out, "abcdef");
 }
 
+TEST(ParseContextTest, ReadStringPieceTooLarge) {
+  const char* ptr;
+  ParseContext ctx(kMaxLimit, false, &ptr, "hello world");
+  StringPieceField out;
+
+  ptr = ctx.ReadStringPiece(ptr, kTooLargeSize, &out);
+
+  EXPECT_EQ(ptr, nullptr);
+}
 
 template <typename DataT, typename PeekFunc>
 void TestAdvancePtrSinkingAndPeeking(
