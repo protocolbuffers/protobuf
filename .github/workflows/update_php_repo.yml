@@ -81,6 +81,6 @@ jobs:
         run: |
           git add --all
           git commit --allow-empty -m "${{ env.VERSION }} sync"
-          git push origin main
+          git push --force origin main
           git tag -a ${{ env.VERSION_TAG }} -m "Tag release ${{ env.VERSION_TAG }}"
           git push origin ${{ env.VERSION_TAG }}
