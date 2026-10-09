@@ -16,15 +16,22 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/base/nullability.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "absl/synchronization/mutex.h"
+#include "absl/types/optional.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
+#include "conformance/global_test_environment.h"
+#include "conformance/test_manager.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -40,6 +47,8 @@ namespace {
 
 using ::conformance::ConformanceResponse;
 using ::conformance::WireFormat;
+using ::google::protobuf::conformance::internal::GetGlobalTestManager;
+using ::google::protobuf::conformance::internal::TestManager;
 using ::google::protobuf::conformance::internal::TestResult;
 
 // Implements EqualsTextProto() and EqualsBinaryProto(): matches a message
@@ -472,6 +481,122 @@ bool RawPayloadMatcher::MatchPayload(
   return false;
 }
 
+// Implements Yields().  This is the single matcher that talks to the global
+// TestManager; see matchers.h for the policy it applies.
+//
+// The TestManager must only hear about each test once.  It remembers the
+// names it was told (TestManager::WasReported()), and a result it already
+// knows is not evaluated again.  gtest evaluates a failing matcher a second
+// time, through the same matcher object, to explain the failure.  The matcher
+// keeps its last failed verdict for that rerun.  Anything else that checks a
+// reported result is a test bug and fails.
+//
+// Matchers are nominally immutable.  The cache only affects how a failure
+// that has already been decided is explained, never a verdict, and copies of
+// a Matcher share one impl, so the matcher behaves the same through every
+// copy.
+class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
+ public:
+  explicit YieldsMatcherImpl(testing::Matcher<const TestResult&> inner)
+      : inner_(std::move(inner)) {}
+
+  bool MatchAndExplain(const TestResult& result,
+                       testing::MatchResultListener* listener) const override {
+    {
+      absl::MutexLock lock(&mutex_);
+      if (last_failure_.has_value() && last_failure_->result == &result &&
+          last_failure_->name == result.name()) {
+        *listener << last_failure_->explanation;
+        return false;
+      }
+    }
+    if (GetGlobalTestManager().WasReported(result.name())) {
+      *listener << "TestResult for " << result.name()
+                << " was already checked; each result may be checked exactly "
+                   "once";
+      return false;
+    }
+    absl::Status status = Evaluate(result);
+    *listener << status.message();
+    absl::MutexLock lock(&mutex_);
+    if (status.ok()) {
+      last_failure_.reset();
+    } else {
+      last_failure_ = LastFailure{&result, std::string(result.name()),
+                                  std::string(status.message())};
+    }
+    return status.ok();
+  }
+
+  void DescribeTo(std::ostream* os) const override {
+    *os << "yields a result that ";
+    inner_.DescribeTo(os);
+    *os << " (or is an expected failure)";
+  }
+
+  void DescribeNegationTo(std::ostream* os) const override {
+    *os << "doesn't yield a result that ";
+    inner_.DescribeTo(os);
+    *os << ", nor an expected failure";
+  }
+
+ private:
+  // Reports `result` to the global TestManager and returns the gtest verdict:
+  // OK if the test passes, otherwise an error whose message explains why not.
+  absl::Status Evaluate(const TestResult& result) const {
+    TestManager& manager = GetGlobalTestManager();
+    const std::string name(result.name());
+    const ConformanceResponse& response = result.response();
+
+    // A skip is decided here; the inner matcher never sees it.  The manager
+    // marks a listed entry as seen and returns an error for it, so this is the
+    // only place that reports a listed test the testee skipped.
+    if (response.result_case() == ConformanceResponse::kSkipped) {
+      absl::Status status = manager.ReportSkip(name, response.skipped());
+      ABSL_LOG(INFO) << "Skipping test " << name << ": " << response.skipped();
+      return status;
+    }
+
+    testing::StringMatchResultListener inner_listener;
+    bool matched = inner_.MatchAndExplain(result, &inner_listener);
+    std::string message = inner_listener.str();
+
+    if (matched) {
+      return manager.ReportSuccess(name);
+    }
+
+    if (message.empty()) {
+      message = absl::StrCat(
+          "which doesn't match (",
+          testing::DescribeMatcher<const TestResult&>(inner_), ")");
+    }
+
+    // The manager decides whether the failure is expected (listed), tolerated
+    // (above the enforcement level) or unexpected, and logs the first two.
+    absl::Status status =
+        manager.ReportFailure(name, result.priority(), message);
+    if (status.ok()) {
+      return status;
+    }
+    return absl::Status(status.code(),
+                        absl::StrCat(message, "\n", status.message()));
+  }
+
+  // The failure this matcher explained last, identified by the result's
+  // address and name, so that gtest's rerun gets the same explanation.  A
+  // destroyed result's address may be reused, but not its name: Testee::Run()
+  // rejects duplicate test names.
+  struct LastFailure {
+    const TestResult* result;
+    std::string name;
+    std::string explanation;
+  };
+
+  testing::Matcher<const TestResult&> inner_;
+  mutable absl::Mutex mutex_;
+  mutable absl::optional<LastFailure> last_failure_ ABSL_GUARDED_BY(mutex_);
+};
+
 }  // namespace
 
 namespace internal {
@@ -496,6 +621,11 @@ testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
     testing::Matcher<const Message&> m,
     const Descriptor* absl_nullable type_override) {
   return WhenParsedMatcher(std::move(m), type_override);
+}
+
+testing::Matcher<const TestResult&> MakeYieldsMatcher(
+    testing::Matcher<const TestResult&> inner) {
+  return testing::MakeMatcher(new YieldsMatcherImpl(std::move(inner)));
 }
 
 }  // namespace internal

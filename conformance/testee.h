@@ -12,21 +12,19 @@
 #include "conformance/test_runner.h"
 #include "google/protobuf/descriptor.h"
 
-// This file defines the APIs used by conformance tests to interact with
-// testees.  The structure of these APIs are intentionally decoupled from the
-// runner/testee protocol (which are used to implement them), in order to
-// maximize their flexibility in tests.
+// The APIs conformance tests use to interact with a testee.  They are
+// deliberately decoupled from the runner/testee protocol that implements
+// them.  That keeps them flexible for tests.
 //
-// Tests should not ever need to name any of these types directly, but will
-// obtain a Test object pointing to the global testee and pass the final
-// TestResult to one of our matchers.
+// Tests should never need to name any of these types directly.  A test
+// obtains a Test object for the global testee from Testee() (see
+// test_environment.h), chains operations on it and passes the final
+// TestResult to Yields() (see matchers.h):
 //
-// Example:
-//
-// EXPECT_THAT(Testee()
-//                .ParseBinary(Wire(LengthPrefixedField(1, "foo"))
-//                .SerializeText({/*print_unknown_fields=*/true}),
-//             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
+//   EXPECT_THAT(Testee()
+//                   .ParseBinary(TestAllTypesProto2::descriptor(), input)
+//                   .SerializeBinary(),
+//               Yields(WhenParsed(EqualsBinaryProto(input))));
 
 // TODO Possible future APIs to expand conformance coverage:
 // - Add ClearUnknownFields() to InMemoryMessage
