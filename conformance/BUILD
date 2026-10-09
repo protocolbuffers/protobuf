@@ -127,7 +127,11 @@ test_suite(
         "matchers_test",
         "naming_test",
         "recording_test_runner_test",
+        "sample_conformance_test",
+        "test_environment_flags_test",
+        "test_environment_integration_test",
         "test_environment_test",
+        "test_fixture_test",
         "test_manager_test",
         "testee_test",
     ],
@@ -557,6 +561,155 @@ cc_test(
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "test_fixture",
+    testonly = 1,
+    srcs = ["test_fixture.cc"],
+    hdrs = ["test_fixture.h"],
+    deps = [
+        ":test_environment",
+        ":testee",
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "test_fixture_test",
+    srcs = ["test_fixture_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":matchers",
+        ":mock_test_runner",
+        ":test_environment",
+        ":test_environment_testing",
+        ":test_fixture",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# Defines the global --testee_binary, --failure_list, --fix, --performance,
+# ... flags of a conformance test binary.  Only link it into binaries with a
+# test_environment_main-style main (never into conformance_test_runner, whose
+# legacy command line has flags of the same names).
+cc_library(
+    name = "test_environment_flags",
+    testonly = 1,
+    srcs = ["test_environment_flags.cc"],
+    hdrs = ["test_environment_flags.h"],
+    deps = [
+        ":test_environment",
+        ":testee",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "test_environment_flags_test",
+    srcs = ["test_environment_flags_test.cc"],
+    deps = [
+        ":test_environment",
+        ":test_environment_flags",
+        ":testee",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:reflection",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+# The main() for gtest-based conformance suites.  Depend on this instead of a
+# generic gtest main.
+cc_library(
+    name = "test_environment_main",
+    testonly = 1,
+    srcs = ["test_environment_main.cc"],
+    deps = [
+        ":test_environment",
+        ":test_environment_flags",
+        "@abseil-cpp//absl/flags:parse",  # buildcleaner: keep
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:initialize",  # buildcleaner: keep
+        "@abseil-cpp//absl/types:span",
+        "@googletest//:gtest",
+    ],
+    alwayslink = 1,
+)
+
+# A tiny conformance suite exercising the framework end to end.  It
+# deliberately contains failing tests, which the accompanying failure lists
+# account for.
+cc_test(
+    name = "sample_conformance_test",
+    srcs = ["sample_conformance_test.cc"],
+    args = [
+        "--testee_binary=$(rootpath :conformance_cpp)",
+        "--failure_list=$(rootpath sample_failure_list_ok.txt)",
+    ],
+    data = [
+        "sample_failure_list_ok.txt",
+        ":conformance_cpp",
+    ],
+    deps = [
+        ":binary_wireformat",
+        ":matchers",
+        ":test_environment_main",
+        ":test_fixture",
+        ":testee",
+        "//:test_messages_proto3_cc_proto",
+        "@googletest//:gtest",
+    ],
+)
+
+# Runs sample_conformance_test as a subprocess.  Only what needs a real test
+# process is checked here; see test_environment_test for the rest.
+cc_test(
+    name = "test_environment_integration_test",
+    srcs = ["test_environment_integration_test.cc"],
+    data = [
+        "sample_failure_list_empty.txt",
+        "sample_failure_list_ok.txt",
+        "sample_failure_list_unseen.txt",
+        ":conformance_cpp",
+        ":sample_conformance_test",
+    ],
+    env = {
+        "SAMPLE_TEST": "$(rlocationpath :sample_conformance_test)",
+        "TESTEE": "$(rlocationpath :conformance_cpp)",
+    },
+    deps = [
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:span",
+        "@bazel_tools//tools/cpp/runfiles",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
