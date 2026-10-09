@@ -15,6 +15,8 @@ use protos::*;
 use enums_rust_proto::*;
 use googletest::prelude::*;
 use protobuf::Enum;
+#[cfg(not(lite_runtime))]
+use protobuf::EnumNames;
 use unittest_rust_proto::*;
 
 #[gtest]
@@ -39,6 +41,87 @@ fn test_enum_value_is_const_evaluable() {
 
     // `number()` and the `Into<i32>` impl agree.
     assert_that!(FOO, eq(i32::from(test_all_types::NestedEnum::Foo)));
+}
+
+// Forcing the lite runtime omits value names (see `protobuf::EnumNames`).
+#[cfg(not(lite_runtime))]
+#[gtest]
+fn test_enum_name() {
+    assert_that!(test_all_types::NestedEnum::Foo.name(), some(eq("FOO")));
+    assert_that!(test_all_types::NestedEnum::Neg.name(), some(eq("NEG")));
+    assert_that!(TestSparseEnum::SparseD.name(), some(eq("SPARSE_D")));
+
+    // The .proto name, not the prefix-stripped Rust constant name.
+    assert_that!(
+        TestEnumWithNumericNames::_2021.name(),
+        some(eq("TEST_ENUM_WITH_NUMERIC_NAMES_2021"))
+    );
+
+    // Aliases: the first declared name.
+    assert_that!(TestEnumWithDupValue::Foo2.name(), some(eq("FOO1")));
+    assert_that!(
+        TestEnumWithDuplicateStrippedPrefixNames::Bar.name(),
+        some(eq("TestEnumWithDuplicateStrippedPrefixNamesBAR"))
+    );
+
+    // An open enum's unknown value has no name.
+    assert_that!(TestEnumWithDuplicateStrippedPrefixNames::from(99).name(), none());
+
+    // `name()` is a `const fn`.
+    const NAME: Option<&str> = test_all_types::NestedEnum::Bar.name();
+    assert_that!(NAME, some(eq("BAR")));
+}
+
+#[cfg(not(lite_runtime))]
+#[gtest]
+fn test_enum_from_name() {
+    assert_that!(
+        test_all_types::NestedEnum::from_name("BAZ"),
+        some(eq(test_all_types::NestedEnum::Baz))
+    );
+    assert_that!(TestSparseEnum::from_name("SPARSE_E"), some(eq(TestSparseEnum::SparseE)));
+
+    // Every alias is accepted.
+    assert_that!(TestEnumWithDupValue::from_name("FOO1"), some(eq(TestEnumWithDupValue::Foo1)));
+    assert_that!(TestEnumWithDupValue::from_name("FOO2"), some(eq(TestEnumWithDupValue::Foo1)));
+    assert_that!(
+        TestEnumWithDuplicateStrippedPrefixNames::from_name(
+            "TEST_ENUM_WITH_DUPLICATE_STRIPPED_PREFIX_NAMES_DIFFERENT_NAME_ALIAS"
+        ),
+        some(eq(TestEnumWithDuplicateStrippedPrefixNames::Bar))
+    );
+
+    // Only .proto names, matched exactly.
+    assert_that!(test_all_types::NestedEnum::from_name("Foo"), none());
+    assert_that!(test_all_types::NestedEnum::from_name("foo"), none());
+    assert_that!(test_all_types::NestedEnum::from_name(""), none());
+}
+
+#[cfg(not(lite_runtime))]
+#[gtest]
+fn test_enum_name_round_trips() {
+    for value in [TestSparseEnum::SparseA, TestSparseEnum::SparseD, TestSparseEnum::SparseF] {
+        assert_that!(value.name().and_then(TestSparseEnum::from_name), some(eq(value)));
+    }
+}
+
+#[cfg(not(lite_runtime))]
+#[gtest]
+fn test_enum_trait_names() {
+    // Generic code reaches the same conversions through `EnumNames`.
+    fn name_of<E: EnumNames>(value: E) -> Option<&'static str> {
+        value.name()
+    }
+    fn parse<E: EnumNames>(name: &str) -> Option<E> {
+        E::from_name(name)
+    }
+
+    assert_that!(name_of(TestSparseEnum::SparseD), some(eq("SPARSE_D")));
+    assert_that!(name_of(TestEnumWithDupValue::Foo2), some(eq("FOO1")));
+    assert_that!(name_of(TestEnumWithDuplicateStrippedPrefixNames::from(99)), none());
+    assert_that!(parse::<TestSparseEnum>("SPARSE_E"), some(eq(TestSparseEnum::SparseE)));
+    assert_that!(parse::<TestEnumWithDupValue>("FOO2"), some(eq(TestEnumWithDupValue::Foo1)));
+    assert_that!(parse::<test_all_types::NestedEnum>("Foo"), none());
 }
 
 #[gtest]

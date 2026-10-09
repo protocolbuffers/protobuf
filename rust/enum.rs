@@ -19,8 +19,8 @@ use crate::{Proxied, Singular};
 /// Implemented by all generated enum types.
 ///
 /// # Safety
-/// - A `RepeatedView<Self>` or `RepeatedMut<Self>` must have the same internal
-///   representation as erased enums in the runtime.
+/// - A `RepeatedView<Self>` or `RepeatedMut<Self>` must have the same internal representation as
+///   erased enums in the runtime.
 ///   - For C++, this is `proto2::RepeatedField<c_int>`
 ///   - For UPB, this is an array compatible with `int32`
 pub unsafe trait Enum:
@@ -41,6 +41,28 @@ pub unsafe trait Enum:
     /// If `Self` is a closed enum, then `TryFrom<i32>` for `value` succeeds if
     /// and only if this function returns `true`.
     fn is_known(value: i32) -> bool;
+}
+
+/// Converts the values of a generated enum to and from their names as written
+/// in the .proto file. Implemented by every generated enum except those from
+/// `optimize_for = LITE_RUNTIME` files or built with the lite runtime forced,
+/// which omit their value names so that Lite and mobile binaries don't embed
+/// them. Code that needs the names fails to compile with those enums.
+///
+/// Each implementing enum also has these as inherent functions, with `name()`
+/// a `const fn`.
+pub trait EnumNames: Enum {
+    /// Returns the name of this value as written in the .proto file (e.g.
+    /// `"FOO_BAR"`), or `None` for a number that has no declared value.
+    ///
+    /// If several names share this number (`allow_alias`), returns the first
+    /// one declared.
+    fn name(self) -> Option<&'static str>;
+
+    /// Returns the value with the given name as written in the .proto file
+    /// (e.g. `"FOO_BAR"`), or `None` if no value has that name. Accepts every
+    /// alias.
+    fn from_name(name: &str) -> Option<Self>;
 }
 
 /// An integer value wasn't known for an enum while converting.
