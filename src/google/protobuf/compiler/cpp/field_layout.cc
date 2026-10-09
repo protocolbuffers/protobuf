@@ -97,15 +97,6 @@ absl::optional<int> FieldLayout::GetHasBitIndex(
   return has_bit_indices_[index];
 }
 
-absl::optional<int> FieldLayout::GetHasByteIndex(
-    const FieldDescriptor* absl_nonnull field) const {
-  absl::optional<int> hasbit = GetHasBitIndex(field);
-  if (!hasbit.has_value()) {
-    return absl::nullopt;
-  }
-  return hasbit.value() / 8;
-}
-
 absl::optional<int> FieldLayout::GetHasWordIndex(
     const FieldDescriptor* absl_nonnull field) const {
   auto has_bit_index = GetHasBitIndex(field);
