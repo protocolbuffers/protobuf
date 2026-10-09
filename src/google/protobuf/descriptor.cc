@@ -1631,6 +1631,16 @@ class DescriptorPool::Tables {
   std::vector<Symbol> symbols_after_checkpoint_;
   std::vector<const FileDescriptor*> files_after_checkpoint_;
   std::vector<std::pair<const Descriptor*, int>> extensions_after_checkpoint_;
+
+  // Releases the peak heap capacity of the checkpoint scratch vectors when the
+  // outermost build operation completes.
+  void ShrinkCheckpointBuffersIfEmpty() {
+    if (checkpoints_.empty()) {
+      symbols_after_checkpoint_.shrink_to_fit();
+      files_after_checkpoint_.shrink_to_fit();
+      extensions_after_checkpoint_.shrink_to_fit();
+    }
+  }
 };
 
 DescriptorPool::Tables::Tables() {}
@@ -1663,6 +1673,7 @@ void DescriptorPool::Tables::ClearLastCheckpoint() {
     symbols_after_checkpoint_.clear();
     files_after_checkpoint_.clear();
     extensions_after_checkpoint_.clear();
+    ShrinkCheckpointBuffersIfEmpty();
   }
 }
 
@@ -1694,6 +1705,7 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint(
   flat_allocs_.resize(checkpoint.flat_allocations_before_checkpoint);
   misc_allocs_.resize(checkpoint.misc_allocations_before_checkpoint);
   checkpoints_.pop_back();
+  ShrinkCheckpointBuffersIfEmpty();
 }
 
 // -------------------------------------------------------------------
