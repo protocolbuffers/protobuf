@@ -9,12 +9,13 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
-#include "upb/message/value.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
@@ -161,7 +162,8 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
 
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsCheckedToEnd)(EPS(d), p, entry_end);
 
-  upb_MessageValue key_val = upb_MessageValue_Zero();
+  upb_StringView strkey = {NULL, 0};
+  uintptr_t intkey = 0;
   if (is_str_map) {
     int klen;
     if (UPB_UNLIKELY(!upb_DecodeFast_DecodeSize(d, &p, &klen, next))) {
@@ -173,8 +175,7 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
     // Note: We do not need to copy string keys here even when aliasing is
     // disabled because upb_strtable_insert() always deep-copies keys into its
     // own arena-allocated upb_SizePrefixString.
-    p = upb_EpsCopyInputStream_ReadStringAlwaysAlias(EPS(d), p, klen,
-                                                     &key_val.str_val);
+    p = upb_EpsCopyInputStream_ReadStringAlwaysAlias(EPS(d), p, klen, &strkey);
     if (UPB_UNLIKELY(p == NULL)) {
       return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, next);
     }
@@ -182,7 +183,7 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
     // a bad key and a bad value reports the same error as the MiniTable
     // decoder, which validates the key as soon as it reads it.
     if (map_ctx->key_validate_utf8 &&
-        !utf8_range_IsValid(key_val.str_val.data, key_val.str_val.size)) {
+        !utf8_range_IsValid(strkey.data, strkey.size)) {
       return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_BadUtf8, next);
     }
   } else {
@@ -217,10 +218,10 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
         UPB_UNREACHABLE();
     }
     if (upb_DecodeFastData_KeyIs32(data)) {
-      key_val.uint32_val = (uint32_t)k;
+      intkey = (uint32_t)k;
     } else {
       UPB_ASSERT(upb_DecodeFastData_GetKeySize(data) == 8);
-      key_val.uint64_val = k;
+      intkey = (uintptr_t)k;
     }
   }
 
@@ -232,7 +233,7 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
   UPB_PRIVATE(upb_EpsCopyInputStream_BoundsCheckedToEnd)(EPS(d), p, entry_end);
   UPB_PRIVATE(upb_EpsCopyInputStream_ConsumeBytes)(EPS(d), 1);
   uint8_t val_tag = *p++;
-  upb_MessageValue val = upb_MessageValue_Zero();
+  upb_value tabval = {0};
 
   uint8_t expected_val_tag = upb_DecodeFastData_GetValTag(data);
   uint8_t expected_val_wire_type = expected_val_tag & 0x7;
@@ -262,12 +263,12 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
       }
       p = p_next;
       if (upb_DecodeFastData_ValIsBool(data)) {
-        val.bool_val = (v != 0);
+        tabval.val = (v != 0);
       } else {
         if (UPB_UNLIKELY(upb_DecodeFastData_ValIsZigZag(data))) {
           v = upb_DecodeFast_MapZigZagDecode(v, val_size);
         }
-        val.uint64_val = v;
+        tabval.val = (val_size == 4) ? (uint32_t)v : v;
       }
       break;
     }
@@ -276,7 +277,7 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
         return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable,
                                    next);
       }
-      p = upb_WireReader_ReadFixed64(p, &val.uint64_val, EPS(d));
+      p = upb_WireReader_ReadFixed64(p, &tabval.val, EPS(d));
       break;
     }
     case kUpb_WireType_32Bit: {
@@ -284,7 +285,9 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
         return UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable,
                                    next);
       }
-      p = upb_WireReader_ReadFixed32(p, &val.uint32_val, EPS(d));
+      uint32_t v32;
+      p = upb_WireReader_ReadFixed32(p, &v32, EPS(d));
+      tabval.val = v32;
       break;
     }
     case kUpb_WireType_Delimited: {
@@ -316,10 +319,15 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
           }
           upb_EpsCopyInputStream_PopLimit(EPS(d), p, delta);
         }
-        val.msg_val = sub_msg;
+        tabval = upb_value_ptr(sub_msg);
       } else {
+        upb_StringView str_val;
         if (UPB_UNLIKELY(!_upb_Decoder_ReadString(
-                d, &p, vlen, &val.str_val, map_ctx->val_validate_utf8))) {
+                d, &p, vlen, &str_val, map_ctx->val_validate_utf8))) {
+          return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
+        }
+        if (UPB_UNLIKELY(!_upb_map_tovalue(&str_val, UPB_MAPTYPE_STRING,
+                                           &tabval, &d->arena))) {
           return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
         }
       }
@@ -329,9 +337,15 @@ bool upb_DecodeFast_ParseMapEntry(upb_Decoder* d, const char** ptr,
       UPB_UNREACHABLE();
   }
 
-  if (UPB_UNLIKELY(_upb_Map_Insert(map_ctx->map, &key_val, key_size, &val,
-                                   val_size, &d->arena) ==
-                   kUpb_MapInsertStatus_OutOfMemory)) {
+  bool replaced;
+  bool ok =
+      is_str_map
+          ? upb_strtable_insert_or_replace(&map_ctx->map->t.strtable,
+                                           strkey.data, strkey.size, tabval,
+                                           &replaced, &d->arena)
+          : upb_inttable_insert_or_replace(&map_ctx->map->t.inttable, intkey,
+                                           tabval, &replaced, &d->arena);
+  if (UPB_UNLIKELY(!ok)) {
     return UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_OutOfMemory, next);
   }
 

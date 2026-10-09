@@ -48,6 +48,14 @@ void upb_strtable_clear(upb_strtable* t);
 UPB_NODISCARD bool upb_strtable_insert(upb_strtable* t, const char* key,
                                        size_t len, upb_value val, upb_Arena* a);
 
+// Inserts or updates the given key with the given value. Sets *replaced to
+// true if an existing entry was updated, or false if a new entry was inserted.
+// Returns false if memory allocation failed.
+UPB_NODISCARD bool upb_strtable_insert_or_replace(upb_strtable* t,
+                                                  const char* key, size_t len,
+                                                  upb_value val, bool* replaced,
+                                                  upb_Arena* a);
+
 // Copies the table and its keys without rehashing. Performing a shallow copy of
 // entries; the caller is responsible for cloning non-primitive values.
 bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
