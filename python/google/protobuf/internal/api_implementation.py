@@ -105,12 +105,15 @@ if _implementation_type == 'upb':
 
     _c_module = _message
     del _message
-  except ImportError:
+  except ImportError as e:
     if _force_implementation:
-      raise
+      raise e
+    import traceback
+    tb_string = "".join(traceback.format_exception(type(e), e, e.__traceback__))
     warnings.warn(
         'Selected implementation upb is not available. '
-        'Falling back to the python implementation.'
+        f'Falling back to the python implementation.\n{tb_string}',
+        RuntimeWarning
     )
     _implementation_type = 'python'
     pass
