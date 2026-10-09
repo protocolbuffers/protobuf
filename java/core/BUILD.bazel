@@ -556,6 +556,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/FieldPresenceTest.java",
     "src/test/java/com/google/protobuf/ForceFieldBuildersPreRun.java",
     "src/test/java/com/google/protobuf/GeneratedMessageLazyEqualsTest.java",
+    "src/test/java/com/google/protobuf/GeneratedMessageReflectionTest.java",
     "src/test/java/com/google/protobuf/GeneratedMessageTest.java",
     "src/test/java/com/google/protobuf/GeneratorNamesTest.java",
     "src/test/java/com/google/protobuf/ImportOptionTest.java",
