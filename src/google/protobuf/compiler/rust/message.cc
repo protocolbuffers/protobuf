@@ -296,12 +296,12 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
     if (!ctx.opts().strip_nonfunctional_codegen &&
         HasReflectionSupport(ctx, msg) &&
         !FileOrImportsHaveExtensions(*msg.file())) {
-    ctx.Emit({{"full_name", msg.full_name()},
-              {"def_init", absl::StrCat(RustModule(ctx, *msg.file()),
+    ctx.Emit({{"def_init", absl::StrCat(RustModule(ctx, *msg.file()),
                                         DefInitName(*msg.file()))}},
              R"rs(
           unsafe impl $pbr$::UpbWithReflection for $Msg$ {
-            const FULL_NAME: &'static str = "$full_name$";
+            const FULL_NAME: &'static str =
+                <Self as $pb$::MessageFullName>::FULL_NAME;
             fn def_init() -> $pbr$::DefPoolInit {
               $def_init$($pbi$::Private)
             }
@@ -570,6 +570,7 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
                CppGeneratedMessageTraitImpls(ctx, msg);
              }
            }},
+          {"full_name", msg.full_name()},
           {"type_conversions_impl", [&] { TypeConversions(ctx, msg); }},
           {"unwrap_upb",
            [&] {
@@ -817,6 +818,10 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
           fn clone(&self) -> Self {
             self.as_view().to_owned()
           }
+        }
+
+        impl $pb$::MessageFullName for $Msg$ {
+          const FULL_NAME: &'static str = "$full_name$";
         }
 
         impl $pb$::AsView for $Msg$ {
