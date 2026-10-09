@@ -16,8 +16,6 @@ namespace {
 using ::hpb_unittest::protos::ChildModel1;
 using ::hpb_unittest::protos::TestModel;
 
-#if defined(NON_COMPILE_TEST)
-
 // clang-format off
 void TestConstAccessors() {
   TestModel model;
@@ -66,7 +64,5 @@ void TestConstPointerConversion() {
   hpb::Ptr<TestModel> mutable_ptr = const_ptr;
 }
 // clang-format on
-
-#endif  // NON_COMPILE_TEST
 
 }  // namespace
