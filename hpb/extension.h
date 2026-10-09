@@ -189,6 +189,25 @@ GetExtension(
   return GetExtension(Ptr(message), id);
 }
 
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>,
+          typename = hpb::internal::EnableIfMutableProto<T>,
+          typename = hpb::internal::EnableIfHpbClass<Extension>>
+absl::StatusOr<Ptr<Extension>> MutableExtension(
+    Ptr<T> message,
+    const ::hpb::internal::ExtensionIdentifier<T, Extension>& id) {
+  static_assert(!std::is_const_v<T>, "");
+  return hpb::internal::UpbExtensionTrait<Extension>::GetOrCreate(message, id);
+}
+
+template <typename T, typename Extension,
+          typename = hpb::internal::EnableIfHpbClassThatHasExtensions<T>,
+          typename = hpb::internal::EnableIfHpbClass<Extension>>
+absl::StatusOr<Ptr<Extension>> MutableExtension(
+    T* message, const ::hpb::internal::ExtensionIdentifier<T, Extension>& id) {
+  return MutableExtension(Ptr(message), id);
+}
+
 template <typename T, typename Extension>
 constexpr uint32_t ExtensionNumber(
     const internal::ExtensionIdentifier<T, Extension>& id) {

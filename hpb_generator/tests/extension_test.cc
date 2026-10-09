@@ -25,6 +25,19 @@
 #include "hpb/status.h"
 #include "upb/mem/arena.h"
 
+#ifndef ASSERT_OK_AND_ASSIGN
+#define ASSERT_OK_AND_ASSIGN_CONCAT2(x, y) x##y
+#define ASSERT_OK_AND_ASSIGN_CONCAT(x, y) ASSERT_OK_AND_ASSIGN_CONCAT2(x, y)
+
+#define ASSERT_OK_AND_ASSIGN(lhs, rexpr) \
+  ASSERT_OK_AND_ASSIGN_IMPL(lhs, rexpr, __COUNTER__)
+
+#define ASSERT_OK_AND_ASSIGN_IMPL(lhs, rexpr, id)                \
+  auto ASSERT_OK_AND_ASSIGN_CONCAT(status_or_, id) = (rexpr);    \
+  ASSERT_TRUE(ASSERT_OK_AND_ASSIGN_CONCAT(status_or_, id).ok()); \
+  lhs = std::move(*ASSERT_OK_AND_ASSIGN_CONCAT(status_or_, id))
+#endif
+
 namespace {
 using ::hpb::internal::Requires;
 
@@ -201,6 +214,30 @@ TEST(CppGeneratedCode, SetExtensionShouldNotCompileForWrongType) {
   EXPECT_TRUE(
       !canSetExtension([](auto p) -> decltype(::hpb::SetExtension(
                                       p, container_ext, extension1)) {}));
+}
+
+TEST(CppGeneratedCode, MutableExtensionShouldNotCompileForWrongType) {
+  ::hpb::Arena arena;
+  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
+  ::hpb::Ptr<const TestModel> const_model = model;
+
+  const auto canMutateExtension = [&](auto l) {
+    return Requires<decltype(model)>(l);
+  };
+  EXPECT_TRUE(canMutateExtension(
+      [](auto p) -> decltype(::hpb::MutableExtension(p, theme)) {}));
+  // Wrong extension id should fail to compile.
+  EXPECT_FALSE(canMutateExtension(
+      [](auto p) -> decltype(::hpb::MutableExtension(p, container_ext)) {}));
+  // Primitive extension should fail to compile.
+  EXPECT_FALSE(canMutateExtension(
+      [](auto p) -> decltype(::hpb::MutableExtension(p, int32_ext)) {}));
+  // Const message should fail to compile.
+  const auto canMutateConstExtension = [&](auto l) {
+    return Requires<decltype(const_model)>(l);
+  };
+  EXPECT_FALSE(canMutateConstExtension(
+      [](auto p) -> decltype(::hpb::MutableExtension(p, theme)) {}));
 }
 #endif
 
@@ -429,6 +466,81 @@ TEST(CppGeneratedCode, GetExtensionOnImmutableChild) {
   ::hpb::Ptr<const TestModel> recursive_child = model.recursive_child();
   EXPECT_EQ("Hello World",
             hpb::GetExtension(recursive_child, theme).value()->ext_name());
+}
+
+TEST(CppGeneratedCode, MutableExtension) {
+  TestModel model;
+  EXPECT_FALSE(::hpb::HasExtension(&model, theme));
+  ASSERT_OK_AND_ASSIGN(auto ext, hpb::MutableExtension(&model, theme));
+  EXPECT_TRUE(::hpb::HasExtension(&model, theme));
+  ext->set_ext_name("Hello World");
+  ASSERT_OK_AND_ASSIGN(auto get_ext, hpb::GetExtension(&model, theme));
+  EXPECT_EQ(get_ext->ext_name(), "Hello World");
+}
+
+TEST(CppGeneratedCode, MutableExtensionWithPtr) {
+  ::hpb::Arena arena;
+  ::hpb::Ptr<TestModel> model = ::hpb::CreateMessage<TestModel>(arena);
+  EXPECT_FALSE(::hpb::HasExtension(model, theme));
+  ASSERT_OK_AND_ASSIGN(auto ext, hpb::MutableExtension(model, theme));
+  EXPECT_TRUE(::hpb::HasExtension(model, theme));
+  ext->set_ext_name("Hello World");
+  ASSERT_OK_AND_ASSIGN(auto get_ext, hpb::GetExtension(model, theme));
+  EXPECT_EQ(get_ext->ext_name(), "Hello World");
+}
+
+TEST(CppGeneratedCode, MutableExtensionOnMutableChild) {
+  TestModel model;
+  ::hpb::Ptr<TestModel> mutable_recursive_child =
+      model.mutable_recursive_child();
+  EXPECT_FALSE(::hpb::HasExtension(mutable_recursive_child, theme));
+  ASSERT_OK_AND_ASSIGN(auto ext,
+                       hpb::MutableExtension(mutable_recursive_child, theme));
+  EXPECT_TRUE(::hpb::HasExtension(mutable_recursive_child, theme));
+  ext->set_ext_name("Child Hello");
+  ASSERT_OK_AND_ASSIGN(auto get_ext,
+                       hpb::GetExtension(mutable_recursive_child, theme));
+  EXPECT_EQ(get_ext->ext_name(), "Child Hello");
+  ::hpb::Ptr<const TestModel> recursive_child = model.recursive_child();
+  ASSERT_OK_AND_ASSIGN(auto get_ext_const,
+                       hpb::GetExtension(recursive_child, theme));
+  EXPECT_EQ(get_ext_const->ext_name(), "Child Hello");
+}
+
+TEST(CppGeneratedCode, MutableExtensionAlreadyPresentReturnsSame) {
+  TestModel model;
+  ASSERT_OK_AND_ASSIGN(auto ext1, hpb::MutableExtension(&model, theme));
+  ext1->set_ext_name("First");
+  void* ptr1 = hpb::interop::upb::GetMessage(ext1);
+
+  ASSERT_OK_AND_ASSIGN(auto ext2, hpb::MutableExtension(&model, theme));
+  void* ptr2 = hpb::interop::upb::GetMessage(ext2);
+  EXPECT_EQ(ptr1, ptr2);
+  EXPECT_EQ(ext2->ext_name(), "First");
+
+  ext2->set_ext_name("Updated");
+  ASSERT_OK_AND_ASSIGN(auto get_ext, hpb::GetExtension(&model, theme));
+  EXPECT_EQ(get_ext->ext_name(), "Updated");
+}
+
+TEST(CppGeneratedCode, MutableExtensionPromotesUnknown) {
+  TestModel source;
+  ASSERT_OK_AND_ASSIGN(auto ext, hpb::MutableExtension(&source, theme));
+  ext->set_ext_name("Promote me");
+
+  ::hpb::Arena arena;
+  ASSERT_OK_AND_ASSIGN(auto bytes, ::hpb::Serialize(&source, arena));
+
+  // Parse without extension registry so that theme is stored in unknown fields.
+  TestModel parsed =
+      ::hpb::Parse<TestModel>(bytes, hpb::ParseOptions{}).value();
+  ASSERT_OK_AND_ASSIGN(auto promoted_ext,
+                       hpb::MutableExtension(&parsed, theme));
+  EXPECT_EQ(promoted_ext->ext_name(), "Promote me");
+
+  promoted_ext->set_ext_name("Mutated after promote");
+  ASSERT_OK_AND_ASSIGN(auto get_ext, hpb::GetExtension(&parsed, theme));
+  EXPECT_EQ(get_ext->ext_name(), "Mutated after promote");
 }
 
 TEST(CppGeneratedCode, Parse) {
