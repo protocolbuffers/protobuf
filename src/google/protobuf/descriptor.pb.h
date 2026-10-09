@@ -37,15 +37,6 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
-#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fdescriptor_2eproto PROTOBUF_EXPORT
-
-// Internal implementation detail -- do not use these members.
-struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
-  static const ::uint32_t offsets[];
-};
-extern "C" {
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
-}  // extern "C"
 namespace google {
 namespace protobuf {
 enum Edition : int;
@@ -260,11 +251,25 @@ internal::EnumTraitsT<::google::protobuf::SymbolVisibility_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::SymbolVisibility>;
 namespace internal {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+#ifdef PROTOBUF_EXPORT
 PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();
+#else
+void InitializeFileDescriptorDefaultInstancesSlow();
+#endif
 #endif  // !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
+
+#define PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fdescriptor_2eproto PROTOBUF_EXPORT
+
+// Internal implementation detail -- do not use these members.
+struct PROTOBUF_EXPORT TableStruct_google_2fprotobuf_2fdescriptor_2eproto {
+  static const ::uint32_t offsets[];
+};
+extern "C" {
+PROTOBUF_EXPORT extern const ::google::protobuf::internal::DescriptorTable descriptor_table_google_2fprotobuf_2fdescriptor_2eproto;
+}  // extern "C"
 
 namespace google {
 namespace protobuf {
