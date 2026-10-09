@@ -13,6 +13,7 @@
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "rust/cpp_kernel/strings.h"
 
 static const google::protobuf::internal::ExtensionSet* GetExtensionSet(
@@ -45,8 +46,7 @@ void proto2_rust_Message_clear_extension(google::protobuf::MessageLite* m,
 #define DEFN_EXT_PRIMITIVE(rust_type, cpp_type)                               \
   void proto2_rust_Message_set_extension_##rust_type(                         \
       google::protobuf::MessageLite* m, int32_t number, int32_t type, cpp_type value) { \
-    GetExtensionSet(m)->Set<cpp_type>(m->GetArena(), number, type, value,     \
-                                      nullptr);                               \
+    GetExtensionSet(m)->Set<cpp_type>(*m, number, type, value, nullptr);      \
   }                                                                           \
   cpp_type proto2_rust_Message_get_extension_##rust_type(                     \
       google::protobuf::MessageLite* m, int32_t number, cpp_type default_value) {       \
@@ -66,8 +66,8 @@ DEFN_EXT_PRIMITIVE(uint64, uint64_t)
 void proto2_rust_Message_set_extension_string(google::protobuf::MessageLite* m,
                                               int32_t number, int32_t type,
                                               std::string* value) {
-  GetExtensionSet(m)->Set<std::string>(m->GetArena(), number, type,
-                                       std::move(*value), nullptr);
+  GetExtensionSet(m)->Set<std::string>(*m, number, type, std::move(*value),
+                                       nullptr);
   delete value;
 }
 
@@ -87,16 +87,15 @@ const google::protobuf::MessageLite* proto2_rust_Message_get_extension_message(
     const google::protobuf::MessageLite* m, int32_t number,
     const google::protobuf::MessageLite* default_instance) {
   const auto* class_data = google::protobuf::internal::GetClassData(*default_instance);
-  return &GetExtensionSet(m)->GetMessageByClassData(m->GetArena(), number,
-                                                    class_data);
+  return &GetExtensionSet(m)->GetMessageByClassData(*m, number, class_data);
 }
 
 google::protobuf::MessageLite* proto2_rust_Message_mutable_extension_message(
     google::protobuf::MessageLite* m, int32_t number, int32_t type,
     const google::protobuf::MessageLite* default_instance) {
   const auto* class_data = google::protobuf::internal::GetClassData(*default_instance);
-  return GetExtensionSet(m)->MutableMessageByClassData(
-      m->GetArena(), number, type, class_data, nullptr);
+  return GetExtensionSet(m)->MutableMessageByClassData(*m, number, type,
+                                                       class_data, nullptr);
 }
 
 }  // extern "C"

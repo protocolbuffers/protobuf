@@ -945,6 +945,13 @@ class PROTOBUF_EXPORT MessageLite {
   template <typename MessageT>
   friend const internal::ClassData* internal::GetClassData(const MessageT& msg);
 
+  template <typename MessageT>
+  friend internal::InternalMetadata& internal::GetInternalMetadata(
+      MessageT& msg);
+  template <typename MessageT>
+  friend const internal::InternalMetadata& internal::GetInternalMetadata(
+      const MessageT& msg);
+
   static bool CheckFieldPresence(const internal::ParseContext& ctx,
                                  const MessageLite& msg,
                                  MessageLite::ParseFlags parse_flags);

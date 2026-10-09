@@ -162,8 +162,8 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Merge the contents an UnknownFieldSet with the UnknownFieldSet in
   // *metadata, if there is one.  If *metadata doesn't have an UnknownFieldSet
   // then add one to it and make it be a copy of the first arg.
-  static void MergeToInternalMetadata(const UnknownFieldSet& other,
-                                      internal::InternalMetadata* metadata);
+  static void MergeToInternalMetadata(MessageLite& message,
+                                      const UnknownFieldSet& other);
 
   // Swaps the contents of some other UnknownFieldSet with this one.
   void Swap(UnknownFieldSet* x);

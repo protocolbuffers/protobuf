@@ -24,6 +24,7 @@ class MessageLite;
 
 namespace internal {
 
+class InternalMetadata;
 struct MessageGlobalsBase;
 struct ClassData;
 
@@ -65,6 +66,15 @@ const ClassData* GetClassData(const MessageT& msg) {
   } else {
     return MessageTraits<MessageT>::class_data();
   }
+}
+
+template <typename MessageT>
+internal::InternalMetadata& GetInternalMetadata(MessageT& msg) {
+  return msg._internal_metadata_;
+}
+template <typename MessageT>
+const internal::InternalMetadata& GetInternalMetadata(const MessageT& msg) {
+  return msg._internal_metadata_;
 }
 
 }  // namespace internal

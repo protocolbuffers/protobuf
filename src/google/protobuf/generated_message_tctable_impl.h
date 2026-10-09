@@ -933,9 +933,9 @@ class PROTOBUF_EXPORT TcParser final {
 
     ABSL_DCHECK(table->extension_offset != 0);
     return RefAt<ExtensionSet>(msg, table->extension_offset)
-        .ParseField(tag, ptr,
+        .ParseField(*msg, tag, ptr,
                     static_cast<const MessageBaseT*>(table->default_instance()),
-                    &msg->_internal_metadata_, ctx);
+                    ctx);
   }
 
   template <class MessageBaseT>
@@ -943,8 +943,8 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_NO_DATA_DECL) {
     return RefAt<ExtensionSet>(msg, table->extension_offset)
         .ParseMessageSet(
-            ptr, static_cast<const MessageBaseT*>(table->default_instance()),
-            &msg->_internal_metadata_, ctx);
+            *msg, ptr,
+            static_cast<const MessageBaseT*>(table->default_instance()), ctx);
   }
 
   // Note: `inline` is needed on template function declarations below to avoid

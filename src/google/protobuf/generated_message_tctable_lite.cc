@@ -859,7 +859,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedFixed(
   auto& field = RefAt<RepeatedField<LayoutType>>(msg, data.offset());
   int size = ReadSize(&ptr);
   // TODO: add a tailcalling variant of ReadPackedFixed.
-  return ctx->ReadPackedFixed(ptr, msg->GetArena(), size,
+  return ctx->ReadPackedFixed(*msg, ptr, size,
                               static_cast<RepeatedField<LayoutType>*>(&field));
 }
 
@@ -2188,16 +2188,15 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedFixed(PROTOBUF_TC_PARAM_DECL) {
   void* const base = MaybeGetSplitBase(msg, is_split, table);
   int size = ReadSize(&ptr);
   uint16_t rep = type_card & field_layout::kRepMask;
-  Arena* arena = msg->GetArena();
   if (rep == field_layout::kRep64Bits) {
     auto& field = MaybeCreateRepeatedFieldRefAt<uint64_t, is_split>(
         base, entry.offset, msg);
-    ptr = ctx->ReadPackedFixed(ptr, arena, size, &field);
+    ptr = ctx->ReadPackedFixed(*msg, ptr, size, &field);
   } else {
     ABSL_DCHECK_EQ(rep, static_cast<uint16_t>(field_layout::kRep32Bits));
     auto& field = MaybeCreateRepeatedFieldRefAt<uint32_t, is_split>(
         base, entry.offset, msg);
-    ptr = ctx->ReadPackedFixed(ptr, arena, size, &field);
+    ptr = ctx->ReadPackedFixed(*msg, ptr, size, &field);
   }
 
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
