@@ -58,6 +58,13 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
 
   private static final Logger logger = Logger.getLogger(GeneratedMessage.class.getName());
 
+  // Whether to use reflection for FieldAccessor
+  private static boolean forTestUseReflection = false;
+
+  static void setForTestUseReflection(boolean useReflection) {
+    forTestUseReflection = useReflection;
+  }
+
   /**
    * For testing. Allows a test to disable the optimization that avoids using field builders for
    * nested messages until they are requested. By disabling this optimization, existing tests can be
@@ -2645,6 +2652,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
 
       static MethodInvoker getMethodInvoker(ReflectionInvoker accessor) {
+        if (forTestUseReflection) {
+          return accessor;
+        }
         return accessor;
       }
 
@@ -2870,6 +2880,9 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
       }
 
       static MethodInvoker getMethodInvoker(ReflectionInvoker accessor) {
+        if (forTestUseReflection) {
+          return accessor;
+        }
         return accessor;
       }
 
