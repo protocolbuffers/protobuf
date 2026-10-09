@@ -1192,20 +1192,6 @@ bool _upb_Decoder_TryDecodeMessageFast(upb_Decoder* d, const char** ptr,
   return false;
 }
 
-UPB_FORCEINLINE
-const char* _upb_Decoder_DecodeField(upb_Decoder* d, const char* ptr,
-                                     upb_Message* msg, const upb_MiniTable* mt,
-                                     uint64_t last_field_index, uint64_t data) {
-  if (_upb_Decoder_TryDecodeMessageFast(d, &ptr, msg, mt, last_field_index,
-                                        data)) {
-    return ptr;
-  } else if (upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
-    return _upb_Decoder_EndMessage(d, ptr);
-  }
-
-  return _upb_Decoder_DecodeFieldNoFast(d, ptr, msg, mt);
-}
-
 UPB_NOINLINE
 static const char* _upb_Decoder_DecodeEmptyMessage(upb_Decoder* d,
                                                    const char* ptr,
@@ -1269,9 +1255,19 @@ const char* _upb_Decoder_DecodeMessage(upb_Decoder* d, const char* ptr,
     return _upb_Decoder_DecodeEmptyMessage(d, ptr, msg);
   }
 
-  do {
-    ptr = _upb_Decoder_DecodeField(d, ptr, msg, mt, 0, 0);
-  } while (!d->message_is_done);
+  if (UPB_LIKELY(_upb_Decoder_TryDecodeMessageFast(d, &ptr, msg, mt, 0, 0))) {
+    d->message_is_done = false;
+    return ptr;
+  }
+
+  while (!upb_EpsCopyInputStream_IsDone(EPS(d), &ptr)) {
+    ptr = _upb_Decoder_DecodeFieldNoFast(d, ptr, msg, mt);
+    if (d->message_is_done) break;
+    if (_upb_Decoder_TryDecodeMessageFast(d, &ptr, msg, mt, 0, 0)) {
+      d->message_is_done = false;
+      return ptr;
+    }
+  }
   d->message_is_done = false;
 
   return UPB_UNLIKELY(mt && mt->UPB_PRIVATE(required_count))
