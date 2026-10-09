@@ -3,12 +3,23 @@
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 
+# Suffixes of the synthetic owner labels that the upb aspects give to the linker inputs they
+# create (see `_generate_name()` in aspect.bzl).
+_ASPECT_OWNER_SUFFIXES = (".upb", ".upbdefs", ".upb_minitable")
+
 def _filter_none(elems):
     out = []
     for elem in elems:
         if elem:
             out.append(elem)
     return out
+
+def _is_aspect_owned(linker_input):
+    name = linker_input.owner.name
+    for suffix in _ASPECT_OWNER_SUFFIXES:
+        if name.endswith(suffix):
+            return True
+    return False
 
 def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     """An implementation for upb_*proto_library() rules.
@@ -30,14 +41,8 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
     cc_info = dep[cc_info_provider].cc_info
 
     # Direct library extraction for DefaultInfo
-    direct_input = cc_info.linking_context.linker_inputs.to_list()[0]
-
     all_linker_inputs = cc_info.linking_context.linker_inputs.to_list()
-#    if ("descriptor" in ctx.label.name and
-#            "upb" in ctx.label.name and
-#            "minitable" in ctx.label.name):
-#        print_linker_inputs(all_linker_inputs, ctx.label)
-    #direct_input = all_linker_inputs[0]
+    direct_input = all_linker_inputs[0]
     lib = direct_input.libraries[0]
     files = _filter_none([
         lib.static_library,
@@ -45,19 +50,32 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
         lib.dynamic_library,
     ])
 
-    # Re-wrap only the direct input with owner = ctx.label
-    new_direct_input = cc_common.create_linker_input(
-        owner = ctx.label,
-        libraries = depset(direct_input.libraries),
-        user_link_flags = depset(direct_input.user_link_flags),
-        additional_inputs = depset(direct_input.additional_inputs),
-    )
-    print('new_direct_input: {}'.format(new_direct_input))
+    # Re-wrap the direct input, and every linker input that the upb aspects created under a
+    # synthetic owner label (foo_proto.upb, foo_proto.upb_minitable, ...), so that they are owned by
+    # this rule's label.
+    #
+    # Bazel 8's builtin cc_shared_library only keeps linker inputs whose owner is a node that its
+    # graph_structure_aspect visited. That aspect does not visit proto_library targets when
+    # protobuf is the root module (it only recognizes ProtoInfo from @protobuf or
+    # @com_google_protobuf), so CcSharedLibraryHintInfo on the proto_library never takes effect,
+    # and linker inputs owned by synthetic labels are silently dropped from the link line. This
+    # rule always has CcInfo, so it is always visited.
+    new_linker_inputs = []
+    for i, linker_input in enumerate(all_linker_inputs):
+        if i == 0 or _is_aspect_owned(linker_input):
+            new_linker_inputs.append(cc_common.create_linker_input(
+                owner = ctx.label,
+                libraries = depset(linker_input.libraries),
+                user_link_flags = depset(linker_input.user_link_flags),
+                additional_inputs = depset(linker_input.additional_inputs),
+            ))
+        else:
+            new_linker_inputs.append(linker_input)
 
-    # Preserve the rest of the transitive depset lazily without flattening
+    # Keep the original (topological) order of the linker inputs.
     linking_context = cc_common.create_linking_context(
         linker_inputs = depset(
-            direct = [new_direct_input] + all_linker_inputs[1:],
+            direct = new_linker_inputs,
             order = "topological",
         ),
     )
@@ -66,11 +84,6 @@ def upb_proto_rule_impl(ctx, cc_info_provider, srcs_provider):
         compilation_context = cc_info.compilation_context,
         linking_context = linking_context,
     )
-    # if ("descriptor" in ctx.label.name and
-    #         "upb" in ctx.label.name and
-    #         "minitable" in ctx.label.name):
-    #    print_linker_inputs([new_direct_input], ctx.label)
-    #    print_linker_inputs(all_linker_inputs, ctx.label)
 
     return [
         DefaultInfo(files = depset(files + srcs.hdrs + srcs.srcs)),
