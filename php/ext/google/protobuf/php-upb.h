@@ -3768,6 +3768,16 @@ typedef struct {
 
 UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
+UPB_INLINE upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
+  return t->entries + (hash & t->mask);
+}
+
+UPB_INLINE bool upb_table_isfull(const upb_table* t) {
+  uint32_t size = upb_table_size(t);
+  // 0.875 load factor
+  return t->count == (size - (size >> 3));
+}
+
 // Internal-only functions, in .h file only out of necessity.
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->next == 0; }
@@ -3843,7 +3853,9 @@ extern "C" {
 UPB_NODISCARD bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
 
 // Returns the number of values in the table.
-size_t upb_inttable_count(const upb_inttable* t);
+UPB_INLINE size_t upb_inttable_count(const upb_inttable* t) {
+  return t->t.count;
+}
 
 // Inserts the given key into the hashtable with the given value.
 // The key must not already exist in the hash table.
@@ -3852,6 +3864,48 @@ size_t upb_inttable_count(const upb_inttable* t);
 // returned and the table is unchanged.
 UPB_NODISCARD bool upb_inttable_insert(upb_inttable* t, uintptr_t key,
                                        upb_value val, upb_Arena* a);
+
+UPB_NODISCARD bool upb_inttable_insert_or_replace_slow(upb_inttable* t,
+                                                       uintptr_t key,
+                                                       upb_value val,
+                                                       bool* replaced,
+                                                       upb_Arena* a);
+
+UPB_INLINE uint32_t upb_inthash(uintptr_t key) {
+  UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
+                    "Pointers don't fit");
+  if (sizeof(uintptr_t) == 8) {
+    return (uint32_t)key ^ (uint32_t)((uint64_t)key >> 32);
+  } else {
+    return (uint32_t)key;
+  }
+}
+
+// Inserts or updates the given key with the given value. Sets *replaced to
+// true if an existing entry was updated, or false if a new entry was inserted.
+// Returns false if a table resize was required and memory allocation failed.
+UPB_NODISCARD UPB_FORCEINLINE bool upb_inttable_insert_or_replace(
+    upb_inttable* t, uintptr_t key, upb_value val, bool* replaced,
+    upb_Arena* a) {
+  if (UPB_LIKELY(t->t.entries != NULL)) {
+    upb_tabent* e = upb_getentry(&t->t, upb_inthash(key));
+    if (UPB_LIKELY(upb_tabent_isempty(e) && !upb_table_isfull(&t->t))) {
+      t->t.count++;
+      e->key.num = key;
+      e->val = val;
+      upb_tabent_clearnext(e);
+      *replaced = false;
+      return true;
+    }
+  }
+  // Use a separate temporary so that `replaced` does not escape on the fast
+  // path above. It must be initialized because the slow path leaves it unset
+  // on allocation failure.
+  bool slow_replaced = false;
+  bool ok = upb_inttable_insert_or_replace_slow(t, key, val, &slow_replaced, a);
+  *replaced = slow_replaced;
+  return ok;
+}
 
 // Resizes the table to 1 << size_lg2.
 UPB_NODISCARD bool upb_inttable_resize(upb_inttable* t, size_t size_lg2,
@@ -3942,6 +3996,14 @@ void upb_strtable_clear(upb_strtable* t);
 // returned and the table is unchanged. */
 UPB_NODISCARD bool upb_strtable_insert(upb_strtable* t, const char* key,
                                        size_t len, upb_value val, upb_Arena* a);
+
+// Inserts or updates the given key with the given value. Sets *replaced to
+// true if an existing entry was updated, or false if a new entry was inserted.
+// Returns false if memory allocation failed.
+UPB_NODISCARD bool upb_strtable_insert_or_replace(upb_strtable* t,
+                                                  const char* key, size_t len,
+                                                  upb_value val, bool* replaced,
+                                                  upb_Arena* a);
 
 // Copies the table and its keys without rehashing. Performing a shallow copy of
 // entries; the caller is responsible for cloning non-primitive values.
@@ -4250,39 +4312,28 @@ UPB_FORCEINLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                     upb_Arena* a) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
-  if (UPB_UNLIKELY(!_upb_Map_IsInitialized(map))) {
-    // Reserving for 1 element allocates the minimum table capacity of 8
-    // (since _upb_entries_needed_for(1) <= 8 -> log2ceil 3 -> capacity 8).
-    if (!_upb_Map_Reserve(map, 1, a)) {
-      return kUpb_MapInsertStatus_OutOfMemory;
-    }
-  }
-
   // Prep the value.
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
     return kUpb_MapInsertStatus_OutOfMemory;
   }
 
-  bool removed;
+  bool replaced;
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_StringView strkey = _upb_map_tokey(key, key_size);
-    // TODO: add overwrite operation to minimize number of lookups.
-    removed =
-        upb_strtable_remove2(&map->t.strtable, strkey.data, strkey.size, NULL);
-    if (!upb_strtable_insert(&map->t.strtable, strkey.data, strkey.size, tabval,
-                             a)) {
+    if (!upb_strtable_insert_or_replace(&map->t.strtable, strkey.data,
+                                        strkey.size, tabval, &replaced, a)) {
       return kUpb_MapInsertStatus_OutOfMemory;
     }
   } else {
     uintptr_t intkey = _upb_map_tointkey(key, key_size);
-    removed = upb_inttable_remove(&map->t.inttable, intkey, NULL);
-    if (!upb_inttable_insert(&map->t.inttable, intkey, tabval, a)) {
+    if (!upb_inttable_insert_or_replace(&map->t.inttable, intkey, tabval,
+                                        &replaced, a)) {
       return kUpb_MapInsertStatus_OutOfMemory;
     }
   }
-  return removed ? kUpb_MapInsertStatus_Replaced
-                 : kUpb_MapInsertStatus_Inserted;
+  return replaced ? kUpb_MapInsertStatus_Replaced
+                  : kUpb_MapInsertStatus_Inserted;
 }
 
 // Strings/bytes are special-cased in maps.
@@ -4453,14 +4504,22 @@ UPB_API_INLINE const upb_MiniTableField* upb_MiniTableExtension_ToField(
 // enough information that we can serialize it to binary format without needing
 // to look it up in a upb_ExtensionRegistry.
 //
-// This representation allocates 16 bytes to data on 64-bit platforms.
-// This is rather wasteful for scalars (in the extreme case of bool,
-// it wastes 15 bytes). We accept this because we expect messages to be
-// the most common extension type.
+// The value is stored in the same allocation, at offset
+// kUpb_Extension_DataOffset from the start of the struct, and is sized
+// according to the extension's field representation (see _upb_Extension_Size).
+// It is only accessed through offset calculations, like the fields of a
+// upb_Message.
 typedef struct upb_Extension {
   const upb_MiniTableExtension* UPB_ONLYBITS(ext);
-  upb_MessageValue UPB_ONLYBITS(data);
 } upb_Extension;
+
+// The offset of the value from the start of the upb_Extension. Rounded up to 8
+// so that 8-byte values are naturally aligned on 32-bit platforms, where
+// sizeof(upb_Extension) is 4 (the allocation itself is always 8-byte aligned).
+enum {
+  UPB_ONLYBITS(kUpb_Extension_DataOffset) =
+      UPB_ALIGN_UP(sizeof(upb_Extension), 8),
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -4487,7 +4546,9 @@ UPB_API_INLINE void upb_Extension_GetField(const upb_Extension* ext,
                                            void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, &ext->UPB_ONLYBITS(data));
+  const void* data =
+      UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), const void);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, data);
 }
 
 // Sets the value of `ext` from `val`, which must point to a value of the
@@ -4497,7 +4558,8 @@ UPB_API_INLINE void upb_Extension_SetField(upb_Extension* ext,
                                            const void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &ext->UPB_ONLYBITS(data), val);
+  void* data = UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), void);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, data, val);
 }
 
 // Returns the value of this extension.
@@ -4769,6 +4831,49 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
       return _upb_Map_Size(upb_Extension_GetValue(ext).map_val) == 0;
   }
   UPB_UNREACHABLE();
+}
+
+// Returns the allocation size of an upb_Extension described by `f`, including
+// the value. Rounded up to kUpb_Message_Align (which the arena would do anyway)
+// so that the extension can be zeroed with _upb_Message_AlignedMemsetZero().
+UPB_NODISCARD UPB_INLINE size_t
+UPB_PRIVATE(_upb_Extension_Size)(const upb_MiniTableField* f) {
+  UPB_ASSERT(upb_MiniTableField_IsExtension(f));
+  static const uint8_t rep_sizes[] = {
+      1,                       // kUpb_FieldRep_1Byte
+      4,                       // kUpb_FieldRep_4Byte
+      sizeof(upb_StringView),  // kUpb_FieldRep_StringView
+      8,                       // kUpb_FieldRep_8Byte
+  };
+  return UPB_ALIGN_UP(UPB_ONLYBITS(kUpb_Extension_DataOffset) +
+                          rep_sizes[UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)],
+                      kUpb_Message_Align);
+}
+
+// Allocates a shallow copy of `src` on `a`, or returns NULL on allocation
+// failure.
+UPB_NODISCARD UPB_INLINE upb_Extension* UPB_PRIVATE(_upb_Extension_Clone)(
+    const upb_Extension* src, upb_Arena* a) {
+  const size_t ext_size =
+      UPB_PRIVATE(_upb_Extension_Size)(upb_Extension_MiniTableField(src));
+  enum {
+    kSmallExtSize = UPB_ALIGN_UP(UPB_ONLYBITS(kUpb_Extension_DataOffset) + 1,
+                                 kUpb_Message_Align),
+    kBigExtSize = UPB_ALIGN_UP(
+        UPB_ONLYBITS(kUpb_Extension_DataOffset) + sizeof(upb_StringView),
+        kUpb_Message_Align),
+  };
+  UPB_ASSUME(ext_size == kSmallExtSize || ext_size == kBigExtSize);
+  char* dst = (char*)upb_Arena_Malloc(a, ext_size);
+  if (UPB_UNLIKELY(!dst)) return NULL;
+  // Avoid out-of-line variable length memcpy for short length
+  memcpy(dst, src, kSmallExtSize);
+  if (ext_size != kSmallExtSize) {
+    UPB_ASSERT(ext_size == kBigExtSize);
+    memcpy(dst + kSmallExtSize, UPB_PTR_AT(src, kSmallExtSize, const char),
+           kBigExtSize - kSmallExtSize);
+  }
+  return (upb_Extension*)dst;
 }
 
 #ifdef __cplusplus
@@ -5076,6 +5181,19 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   if (UPB_UNLIKELY(!msg)) return NULL;
   _upb_Message_AlignedMemsetZero(msg, size);
   return msg;
+}
+
+// Allocates a new zero-initialized extension described by `e`, for internal
+// use.
+UPB_NODISCARD UPB_INLINE upb_Extension* UPB_PRIVATE(_upb_Extension_New)(
+    const upb_MiniTableExtension* e, upb_Arena* a) {
+  const size_t size =
+      UPB_PRIVATE(_upb_Extension_Size)(upb_MiniTableExtension_ToField(e));
+  upb_Extension* ext = (upb_Extension*)upb_Arena_Malloc(a, size);
+  if (UPB_UNLIKELY(!ext)) return NULL;
+  _upb_Message_AlignedMemsetZero(ext, size);
+  ext->UPB_ONLYBITS(ext) = e;
+  return ext;
 }
 
 // Discards the unknown fields (including non-canonical extensions) for this

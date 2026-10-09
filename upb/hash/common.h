@@ -147,6 +147,16 @@ typedef struct {
 
 UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
+UPB_INLINE upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
+  return t->entries + (hash & t->mask);
+}
+
+UPB_INLINE bool upb_table_isfull(const upb_table* t) {
+  uint32_t size = upb_table_size(t);
+  // 0.875 load factor
+  return t->count == (size - (size >> 3));
+}
+
 // Internal-only functions, in .h file only out of necessity.
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->next == 0; }

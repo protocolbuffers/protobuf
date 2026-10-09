@@ -78,6 +78,7 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/option_interpreter.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/private_access.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_mode.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_ops.cc
@@ -197,6 +198,7 @@ set(libprotobuf_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/private_access.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/reflection_internal.h
@@ -264,6 +266,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/private_access.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.cc
@@ -317,6 +320,7 @@ set(libprotobuf_lite_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_def.inc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/port_undef.inc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/private_access.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/raw_ptr.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_field.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field.h

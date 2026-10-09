@@ -842,7 +842,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               const ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_get$;
-        return _proto_TypeTraits::Get(GetArena(), id.number(), $extensions$,
+        return _proto_TypeTraits::Get(*this, id.number(), $extensions$,
                                       id.default_value());
       }
 
@@ -854,7 +854,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_mutable$;
-        return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+        return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                           &$extensions$);
       }
 
@@ -865,8 +865,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::ConstType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                               &$extensions$);
+        _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &$extensions$);
         $annotate_extension_set$;
       }
 
@@ -877,8 +876,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::MutableType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                        value, &$extensions$);
+        _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                        &$extensions$);
         $annotate_extension_set$;
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -889,7 +888,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           typename _proto_TypeTraits::Singular::MutableType value) {
         $WeakDescriptorSelfPin$;
         _proto_TypeTraits::UnsafeArenaSetAllocated(
-            GetArena(), id.number(), _field_type, value, &$extensions$);
+            *this, id.number(), _field_type, value, &$extensions$);
         $annotate_extension_set$;
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -899,7 +898,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                        $Msg$, _proto_TypeTraits, _field_type, _is_packed>& id) {
         $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
-        return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+        return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                           &$extensions$);
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -911,7 +910,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
         $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
         return _proto_TypeTraits::UnsafeArenaRelease(
-            GetArena(), id.number(), _field_type, &$extensions$);
+            *this, id.number(), _field_type, &$extensions$);
       }
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -972,7 +971,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         typename _proto_TypeTraits::Repeated::MutableType to_add =
-            _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+            _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                    &$extensions$);
         $annotate_repeated_extension_add_mutable$;
         return to_add;
@@ -985,7 +984,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Repeated::ConstType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                                value, &$extensions$);
         $annotate_repeated_extension_add$;
       }
@@ -1013,7 +1012,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
         $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_list_mutable$;
         return _proto_TypeTraits::MutableRepeated(
-            GetArena(), id.number(), _field_type, _is_packed, &$extensions$);
+            *this, id.number(), _field_type, _is_packed, &$extensions$);
       }
     )cc");
 

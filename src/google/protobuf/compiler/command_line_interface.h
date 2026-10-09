@@ -319,6 +319,10 @@ class PROTOC_EXPORT CommandLineInterface {
   bool WriteDescriptorSet(
       const std::vector<const FileDescriptor*>& parsed_files);
 
+  // Implements the --source_code_info_out option.
+  bool WriteSourceCodeInfoSet(
+      const std::vector<const FileDescriptor*>& parsed_files);
+
   // Implements the --edition_defaults_out option.
   bool WriteEditionDefaults(const DescriptorPool& pool);
 
@@ -369,6 +373,17 @@ class PROTOC_EXPORT CommandLineInterface {
       RepeatedPtrField<FileDescriptorProto>* output,
       const TransitiveDependencyOptions& options =
           TransitiveDependencyOptions()) const;
+
+  // Computes the set of already seen dependencies for descriptor set generation
+  // when transitive imports are not requested.
+  absl::flat_hash_set<const FileDescriptor*> GetDescriptorSetAlreadySeen(
+      const std::vector<const FileDescriptor*>& parsed_files) const;
+
+  // Gathers the list of FileDescriptorProtos for descriptor set output.
+  void GetDescriptorSetFiles(
+      const std::vector<const FileDescriptor*>& parsed_files,
+      const TransitiveDependencyOptions& options,
+      RepeatedPtrField<FileDescriptorProto>* output) const;
 
 
   // -----------------------------------------------------------------
@@ -485,6 +500,11 @@ class PROTOC_EXPORT CommandLineInterface {
   // If --descriptor_set_out was given, this is the filename to which the
   // FileDescriptorSet should be written.  Otherwise, empty.
   std::string descriptor_set_out_name_;
+
+  // If --source_code_info_out was given, this is the filename to which the
+  // FileDescriptorSet containing only name and SourceCodeInfo should be
+  // written. Otherwise, empty.
+  std::string source_code_info_out_name_;
 
   std::string edition_defaults_out_name_;
   Edition edition_defaults_minimum_;

@@ -3998,25 +3998,7 @@ typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
 
 /* Base table (shared code) ***************************************************/
 
-static uint32_t upb_inthash(uintptr_t key) {
-  UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
-                    "Pointers don't fit");
-  if (sizeof(uintptr_t) == 8) {
-    return (uint32_t)key ^ (uint32_t)((uint64_t)key >> 32);
-  } else {
-    return (uint32_t)key;
-  }
-}
-
-static upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
-  return t->entries + (hash & t->mask);
-}
-
-static bool isfull(upb_table* t) {
-  uint32_t size = upb_table_size(t);
-  // 0.875 load factor
-  return t->count == (size - (size >> 3));
-}
+static bool isfull(upb_table* t) { return upb_table_isfull(t); }
 
 static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
   if (size_lg2 >= 32) {
@@ -4537,8 +4519,9 @@ bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
   return true;
 }
 
-bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
-                         upb_value v, upb_Arena* a) {
+// Inserts `k`, whose hash is `hash`, which must not already be in the table.
+UPB_FORCEINLINE bool strtable_insert(upb_strtable* t, const char* k, size_t len,
+                                     upb_value v, uint32_t hash, upb_Arena* a) {
   if (isfull(&t->t)) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     if (!upb_strtable_resize(t, _upb_log2_table_size(&t->t) + 1, a)) {
@@ -4552,9 +4535,27 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
 
   lookupkey_t lookupkey = {.str = sv};
   upb_key key = {.str = size_prefix_string};
-  uint32_t hash = _upb_Hash_NoSeed(k, len);
   insert(&t->t, lookupkey, key, v, hash, &strhash, &streql);
   return true;
+}
+
+bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
+                         upb_value v, upb_Arena* a) {
+  return strtable_insert(t, k, len, v, _upb_Hash_NoSeed(k, len), a);
+}
+
+bool upb_strtable_insert_or_replace(upb_strtable* t, const char* k, size_t len,
+                                    upb_value v, bool* replaced, upb_Arena* a) {
+  uint32_t hash = _upb_Hash_NoSeed(k, len);
+  upb_tabent* e = findentry_mutable(&t->t, strkey2(k, len), hash, &streql);
+  if (e) {
+    e->val = v;
+    *replaced = true;
+    return true;
+  }
+  *replaced = false;
+  if (UPB_UNLIKELY(t->t.entries == NULL) && !init(&t->t, 3, a)) return false;
+  return strtable_insert(t, k, len, v, hash, a);
 }
 
 bool upb_strtable_lookup2(const upb_strtable* t, const char* key, size_t len,
@@ -4728,8 +4729,6 @@ static bool inteql(upb_key k1, upb_value v1, lookupkey_t k2) {
   UPB_UNUSED(v1);
   return k1.num == k2.num;
 }
-
-size_t upb_inttable_count(const upb_inttable* t) { return t->t.count; }
 
 static void check(upb_inttable* t) {
   UPB_UNUSED(t);
@@ -4920,6 +4919,23 @@ bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
   insert(&t->t, intkey(key), tabkey, val, upb_inthash(key), &inthash, &inteql);
   check(t);
   return true;
+}
+
+bool upb_inttable_insert_or_replace_slow(upb_inttable* t, uintptr_t key,
+                                         upb_value val, bool* replaced,
+                                         upb_Arena* a) {
+  upb_tabent* e =
+      findentry_mutable(&t->t, intkey(key), upb_inthash(key), &inteql);
+  if (e) {
+    e->val = val;
+    *replaced = true;
+    return true;
+  }
+  *replaced = false;
+  if (UPB_UNLIKELY(t->t.entries == NULL) && !upb_inttable_init(t, a)) {
+    return false;
+  }
+  return upb_inttable_insert(t, key, val, a);
 }
 
 bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v) {
@@ -10734,7 +10750,6 @@ bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
 
 
 #include <stdint.h>
-#include <string.h>
 
 
 // Must be last.
@@ -10776,10 +10791,8 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
   }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  upb_Extension* ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
+  upb_Extension* ext = UPB_PRIVATE(_upb_Extension_New)(e, a);
   if (!ext) return NULL;
-  memset(ext, 0, sizeof(upb_Extension));
-  ext->UPB_ONLYBITS(ext) = e;
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext, tag);
   return ext;
 }
@@ -10920,9 +10933,9 @@ bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-      upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+      upb_Extension* dst_ext =
+          UPB_PRIVATE(_upb_Extension_Clone)(msg_ext, arena);
       if (!dst_ext) return false;
-      *dst_ext = *msg_ext;
       dst_in->aux_data[dst_in->size++] = upb_TaggedAuxPtr_MakeExtension(
           dst_ext, upb_TaggedAuxPtr_Type(tagged_ptr));
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
@@ -18458,7 +18471,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
       upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }
     d->original_msg = msg;
-    msg = &ext->UPB_ONLYBITS(data).UPB_PRIVATE(ext_msg_val);
+    msg = UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), upb_Message);
   }
 
   switch (mode & kUpb_FieldMode_Mask) {

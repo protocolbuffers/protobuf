@@ -315,6 +315,19 @@ UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
   return msg;
 }
 
+// Allocates a new zero-initialized extension described by `e`, for internal
+// use.
+UPB_NODISCARD UPB_INLINE upb_Extension* UPB_PRIVATE(_upb_Extension_New)(
+    const upb_MiniTableExtension* e, upb_Arena* a) {
+  const size_t size =
+      UPB_PRIVATE(_upb_Extension_Size)(upb_MiniTableExtension_ToField(e));
+  upb_Extension* ext = (upb_Extension*)upb_Arena_Malloc(a, size);
+  if (UPB_UNLIKELY(!ext)) return NULL;
+  _upb_Message_AlignedMemsetZero(ext, size);
+  ext->UPB_ONLYBITS(ext) = e;
+  return ext;
+}
+
 // Discards the unknown fields (including non-canonical extensions) for this
 // message only.
 void _upb_Message_DiscardUnknown_shallow(struct upb_Message* msg);
