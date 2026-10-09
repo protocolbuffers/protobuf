@@ -41,9 +41,6 @@ class FieldLayout {
   absl::optional<int> GetHasBitIndex(
       const FieldDescriptor* absl_nonnull field) const;
 
-  absl::optional<int> GetHasByteIndex(
-      const FieldDescriptor* absl_nonnull field) const;
-
   // Returns the index into the _has_bits_ field that this field's hasbit
   // resides in, or absl::nullopt if the field does not have a hasbit.
   absl::optional<int> GetHasWordIndex(
