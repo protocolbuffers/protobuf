@@ -1999,7 +1999,7 @@ bool Reflection::IsEmpty(const Message& message) const {
     USAGE_MUTABLE_CHECK_ALL(Set##TYPENAME, SINGULAR, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
       return MutableExtensionSet(message)->Set<TYPE>(                          \
-          message->GetArena(), field->number(), field->type(), value, field);  \
+          *message, field->number(), field->type(), value, field);             \
     } else {                                                                   \
       SetField<TYPE>(message, field, value);                                   \
     }                                                                          \
@@ -2033,8 +2033,8 @@ bool Reflection::IsEmpty(const Message& message) const {
     USAGE_MUTABLE_CHECK_ALL(Add##TYPENAME, REPEATED, CPPTYPE);                 \
     if (field->is_extension()) {                                               \
       MutableExtensionSet(message)->Add<TYPE>(                                 \
-          message->GetArena(), field->number(), field->type(),                 \
-          field->is_packed(), value, field);                                   \
+          *message, field->number(), field->type(), field->is_packed(), value, \
+          field);                                                              \
     } else {                                                                   \
       AddField<TYPE>(message, field, value);                                   \
     }                                                                          \
@@ -2192,16 +2192,16 @@ absl::string_view Reflection::GetStringView(const Message& message,
 template <typename String>
 void Reflection::SetStringImpl(Message* message, const FieldDescriptor* field,
                                String&& value) const {
-  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     Assign(*MutableExtensionSet(message)->MutableString(
-               arena, field->number(),
+               *message, field->number(),
                field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
                                                  : FieldDescriptor::TYPE_BYTES,
                field),
            std::forward<String>(value));
     return;
   } else {
+    Arena* arena = message->GetArena();
     switch (field->cpp_string_type()) {
       case FieldDescriptor::CppStringType::kCord:
         if (schema_.InRealOneof(field)) {
@@ -2378,10 +2378,9 @@ void Reflection::SetRepeatedStringView(Message* message,
 template <typename String>
 void Reflection::AddStringImpl(Message* message, const FieldDescriptor* field,
                                String&& value) const {
-  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     Assign(*MutableExtensionSet(message)->AddString(
-               arena, field->number(),
+               *message, field->number(),
                field->requires_utf8_validation() ? FieldDescriptor::TYPE_STRING
                                                  : FieldDescriptor::TYPE_BYTES,
                field),
@@ -2466,7 +2465,7 @@ void Reflection::SetEnumValueInternal(Message* message,
                                       const FieldDescriptor* field,
                                       int value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->Set<int>(message->GetArena(), field->number(),
+    MutableExtensionSet(message)->Set<int>(*message, field->number(),
                                            field->type(), value, field);
   } else {
     SetField<int>(message, field, value);
@@ -2557,7 +2556,7 @@ void Reflection::AddEnumValueInternal(Message* message,
                                       const FieldDescriptor* field,
                                       int value) const {
   if (field->is_extension()) {
-    MutableExtensionSet(message)->Add<int>(message->GetArena(), field->number(),
+    MutableExtensionSet(message)->Add<int>(*message, field->number(),
                                            field->type(), field->is_packed(),
                                            value, field);
   } else {
@@ -2671,11 +2670,11 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     const FieldDescriptor* field) const {
   USAGE_MUTABLE_CHECK_ALL(SetAllocatedMessage, SINGULAR, MESSAGE);
 
-  Arena* arena = message->GetArena();
   if (field->is_extension()) {
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
-        arena, field->number(), field->type(), field, sub_message);
+        *message, field->number(), field->type(), field, sub_message);
   } else {
+    Arena* arena = message->GetArena();
     if (schema_.InRealOneof(field)) {
       if (sub_message == nullptr) {
         ClearOneof(message, field->containing_oneof());
@@ -2980,8 +2979,7 @@ void* Reflection::MutableRawRepeatedField(Message* message,
     ABSL_CHECK_EQ(field->message_type(), desc) << "wrong submessage type";
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
-        message->GetArena(), field->number(), field->type(), field->is_packed(),
-        field);
+        *message, field->number(), field->type(), field->is_packed(), field);
   } else {
     // Trigger transform for MapField
     if (IsMapFieldInApi(field)) {
@@ -3611,8 +3609,7 @@ void* Reflection::RepeatedFieldData(Message* message,
   }
   if (field->is_extension()) {
     return MutableExtensionSet(message)->MutableRawRepeatedField(
-        message->GetArena(), field->number(), field->type(), field->is_packed(),
-        field);
+        *message, field->number(), field->type(), field->is_packed(), field);
   } else {
     return MutableRaw<char>(message, field);
   }

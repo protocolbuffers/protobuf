@@ -327,33 +327,36 @@ bool ExtensionSet::MoveExtension(Arena* arena, int dst_number,
   return true;
 }
 
-const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
-                                     const Message* extendee,
-                                     internal::InternalMetadata* metadata,
+const char* ExtensionSet::ParseField(MessageLite& parent, uint64_t tag,
+                                     const char* ptr, const Message* extendee,
                                      internal::ParseContext* ctx) {
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
   if (!FindExtension(tag & 7, number, extendee, ctx, &extension,
                      &was_packed_on_wire)) {
-    return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<UnknownFieldSet>(), ptr, ctx);
+    return UnknownFieldParse(tag,
+                             internal::GetInternalMetadata(parent)
+                                 .mutable_unknown_fields<UnknownFieldSet>(),
+                             ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<UnknownFieldSet>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+      parent, number, was_packed_on_wire, extension, ptr, ctx);
 }
 
-const char* ExtensionSet::ParseFieldMaybeLazily(
-    uint64_t tag, const char* ptr, const Message* extendee,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseField(tag, ptr, extendee, metadata, ctx);
+const char* ExtensionSet::ParseFieldMaybeLazily(MessageLite& parent,
+                                                uint64_t tag, const char* ptr,
+                                                const Message* extendee,
+                                                internal::ParseContext* ctx) {
+  return ParseField(parent, tag, ptr, extendee, ctx);
 }
 
-const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const Message* extendee,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(ptr, extendee,
-                                                           metadata, ctx);
+const char* ExtensionSet::ParseMessageSetItem(MessageLite& parent,
+                                              const char* ptr,
+                                              const Message* extendee,
+                                              internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(parent, ptr,
+                                                           extendee, ctx);
 }
 
 int ExtensionSet::SpaceUsedExcludingSelf() const {

@@ -646,9 +646,9 @@ template const char* ParseContext::VerifyUTF8MaybeFlushFallback(
 
 
 template <typename T, bool sign>
-const char* VarintParser(void* object, Arena* arena, const char* ptr,
-                         ParseContext* ctx) {
-  return ctx->ReadPackedVarint(ptr, [object, arena](uint64_t varint) {
+inline const char* VarintParser(const MessageLite& parent, void* object,
+                                const char* ptr, ParseContext* ctx) {
+  return ctx->ReadPackedVarint(ptr, [&parent, object](uint64_t varint) {
     T val;
     if (sign) {
       if (sizeof(T) == 8) {
@@ -660,76 +660,76 @@ const char* VarintParser(void* object, Arena* arena, const char* ptr,
       val = varint;
     }
     static_cast<RepeatedField<T>*>(object)->InternalAddWithArena(
-        InternalVisibility(), arena, val);
+        InternalVisibility(), &parent, val);
   });
 }
 
-const char* PackedInt32Parser(void* object, Arena* arena, const char* ptr,
-                              ParseContext* ctx) {
-  return VarintParser<int32_t, false>(object, arena, ptr, ctx);
+const char* PackedInt32Parser(const MessageLite& parent, void* object,
+                              const char* ptr, ParseContext* ctx) {
+  return VarintParser<int32_t, false>(parent, object, ptr, ctx);
 }
-const char* PackedUInt32Parser(void* object, Arena* arena, const char* ptr,
-                               ParseContext* ctx) {
-  return VarintParser<uint32_t, false>(object, arena, ptr, ctx);
+const char* PackedUInt32Parser(const MessageLite& parent, void* object,
+                               const char* ptr, ParseContext* ctx) {
+  return VarintParser<uint32_t, false>(parent, object, ptr, ctx);
 }
-const char* PackedInt64Parser(void* object, Arena* arena, const char* ptr,
-                              ParseContext* ctx) {
-  return VarintParser<int64_t, false>(object, arena, ptr, ctx);
+const char* PackedInt64Parser(const MessageLite& parent, void* object,
+                              const char* ptr, ParseContext* ctx) {
+  return VarintParser<int64_t, false>(parent, object, ptr, ctx);
 }
-const char* PackedUInt64Parser(void* object, Arena* arena, const char* ptr,
-                               ParseContext* ctx) {
-  return VarintParser<uint64_t, false>(object, arena, ptr, ctx);
+const char* PackedUInt64Parser(const MessageLite& parent, void* object,
+                               const char* ptr, ParseContext* ctx) {
+  return VarintParser<uint64_t, false>(parent, object, ptr, ctx);
 }
-const char* PackedSInt32Parser(void* object, Arena* arena, const char* ptr,
-                               ParseContext* ctx) {
-  return VarintParser<int32_t, true>(object, arena, ptr, ctx);
+const char* PackedSInt32Parser(const MessageLite& parent, void* object,
+                               const char* ptr, ParseContext* ctx) {
+  return VarintParser<int32_t, true>(parent, object, ptr, ctx);
 }
-const char* PackedSInt64Parser(void* object, Arena* arena, const char* ptr,
-                               ParseContext* ctx) {
-  return VarintParser<int64_t, true>(object, arena, ptr, ctx);
-}
-
-const char* PackedEnumParser(void* object, Arena* arena, const char* ptr,
-                             ParseContext* ctx) {
-  return VarintParser<int, false>(object, arena, ptr, ctx);
+const char* PackedSInt64Parser(const MessageLite& parent, void* object,
+                               const char* ptr, ParseContext* ctx) {
+  return VarintParser<int64_t, true>(parent, object, ptr, ctx);
 }
 
-const char* PackedBoolParser(void* object, Arena* arena, const char* ptr,
-                             ParseContext* ctx) {
-  return VarintParser<bool, false>(object, arena, ptr, ctx);
+const char* PackedEnumParser(const MessageLite& parent, void* object,
+                             const char* ptr, ParseContext* ctx) {
+  return VarintParser<int, false>(parent, object, ptr, ctx);
+}
+
+const char* PackedBoolParser(const MessageLite& parent, void* object,
+                             const char* ptr, ParseContext* ctx) {
+  return VarintParser<bool, false>(parent, object, ptr, ctx);
 }
 
 template <typename T>
-const char* FixedParser(void* object, Arena* arena, const char* ptr,
-                        ParseContext* ctx) {
+inline const char* FixedParser(const MessageLite& parent, void* object,
+                               const char* ptr, ParseContext* ctx) {
   int size = ReadSize(&ptr);
-  return ctx->ReadPackedFixed(ptr, arena, size,
+  return ctx->ReadPackedFixed(parent, ptr, size,
                               static_cast<RepeatedField<T>*>(object));
 }
 
-const char* PackedFixed32Parser(void* object, Arena* arena, const char* ptr,
-                                ParseContext* ctx) {
-  return FixedParser<uint32_t>(object, arena, ptr, ctx);
+const char* PackedFixed32Parser(const MessageLite& parent, void* object,
+                                const char* ptr, ParseContext* ctx) {
+  return FixedParser<uint32_t>(parent, object, ptr, ctx);
 }
-const char* PackedSFixed32Parser(void* object, Arena* arena, const char* ptr,
-                                 ParseContext* ctx) {
-  return FixedParser<int32_t>(object, arena, ptr, ctx);
+const char* PackedSFixed32Parser(const MessageLite& parent, void* object,
+                                 const char* ptr, ParseContext* ctx) {
+  return FixedParser<int32_t>(parent, object, ptr, ctx);
 }
-const char* PackedFixed64Parser(void* object, Arena* arena, const char* ptr,
-                                ParseContext* ctx) {
-  return FixedParser<uint64_t>(object, arena, ptr, ctx);
+const char* PackedFixed64Parser(const MessageLite& parent, void* object,
+                                const char* ptr, ParseContext* ctx) {
+  return FixedParser<uint64_t>(parent, object, ptr, ctx);
 }
-const char* PackedSFixed64Parser(void* object, Arena* arena, const char* ptr,
-                                 ParseContext* ctx) {
-  return FixedParser<int64_t>(object, arena, ptr, ctx);
+const char* PackedSFixed64Parser(const MessageLite& parent, void* object,
+                                 const char* ptr, ParseContext* ctx) {
+  return FixedParser<int64_t>(parent, object, ptr, ctx);
 }
-const char* PackedFloatParser(void* object, Arena* arena, const char* ptr,
-                              ParseContext* ctx) {
-  return FixedParser<float>(object, arena, ptr, ctx);
+const char* PackedFloatParser(const MessageLite& parent, void* object,
+                              const char* ptr, ParseContext* ctx) {
+  return FixedParser<float>(parent, object, ptr, ctx);
 }
-const char* PackedDoubleParser(void* object, Arena* arena, const char* ptr,
-                               ParseContext* ctx) {
-  return FixedParser<double>(object, arena, ptr, ctx);
+const char* PackedDoubleParser(const MessageLite& parent, void* object,
+                               const char* ptr, ParseContext* ctx) {
+  return FixedParser<double>(parent, object, ptr, ctx);
 }
 
 class UnknownFieldLiteParserHelper {
