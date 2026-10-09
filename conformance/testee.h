@@ -3,9 +3,11 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/test_runner.h"
@@ -17,7 +19,7 @@
 //
 // Tests should never need to name any of these types directly.  A test
 // obtains a Test object for the global testee from Testee() (see
-// test_environment.h), chains operations on it and passes the final
+// test_fixture.h), chains operations on it and passes the final
 // TestResult to Yields() (see matchers.h):
 //
 //   EXPECT_THAT(Testee()
@@ -47,7 +49,7 @@ namespace conformance {
 // "Recommended" (see PriorityLevelName()).
 //
 // A suite declares its priority with ConformanceTest::DefaultPriority().  A
-// single test overrides it with Testee(priority); see test_environment.h.
+// single test overrides it with Testee(priority); see test_fixture.h.
 // TODO: b/564550230 - rename the levels in test names to P0/P1 once every
 // suite has been triaged.
 enum class TestPriority { kP0 = 0, kP1 = 1 };
@@ -56,13 +58,19 @@ enum class TestPriority { kP0 = 0, kP1 = 1 };
 inline constexpr TestPriority kP0 = TestPriority::kP0;
 inline constexpr TestPriority kP1 = TestPriority::kP1;
 
-// The lowest priority there is.  An enforcement level (see TestManager in
-// test_manager.h) is the lowest priority whose unlisted failures fail the run;
+// The lowest priority there is.  An enforcement level (see ResultLedger in
+// result_ledger.h) is the lowest priority whose unlisted failures fail the run;
 // kLowestPriority, the default, enforces every priority.
 inline constexpr TestPriority kLowestPriority = kP1;
 
 // The name of a priority: "P0" or "P1".
 absl::string_view PriorityName(TestPriority priority);
+
+// Flag support for TestPriority, as the priority's number: "0" is kP0, "1" is
+// kP1.
+bool AbslParseFlag(absl::string_view text, TestPriority* priority,
+                   std::string* error);
+std::string AbslUnparseFlag(TestPriority priority);
 
 // The level a priority is named with in test names, until the rename (see
 // TestPriority): "Required" for kP0, "Recommended" for kP1.
@@ -70,7 +78,11 @@ absl::string_view PriorityLevelName(TestPriority priority);
 
 namespace internal {
 
-// The final result of a conformance test, to be processed by a matcher.
+// The final result of a conformance test: the testee's response and what the
+// test asked of it.  Hand it to exactly one EXPECT_THAT(..., Yields(...)),
+// which records the outcome against the failure list (see matchers.h).  The
+// test environment fails a gtest test that runs a conformance test but never
+// checks its result (see Testee::tests_run()).
 class TestResult {
  public:
   // The name of the test that was run, useful for failure matching and
@@ -187,6 +199,13 @@ class Testee {
     return Test(this, name, priority);
   }
 
+  // The full names of the tests run so far, in the order they ran.  Each of
+  // them must be checked with Yields() (see matchers.h).
+  // ConformanceEnvironment (test_environment.h) compares this with the tests
+  // the ResultLedger has heard about and fails a gtest test that ran a
+  // conformance test but never checked its result.
+  absl::Span<const std::string> tests_run() const { return tests_run_; }
+
  private:
   ::conformance::ConformanceResponse Run(
       absl::string_view test_name,
@@ -195,6 +214,8 @@ class Testee {
 
   ConformanceTestRunner* runner_;
 
+  // The tests run so far, in order, and as a set for Run()'s duplicate check.
+  std::vector<std::string> tests_run_;
   absl::flat_hash_set<std::string> test_names_ran_;
 };
 

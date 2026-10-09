@@ -5,6 +5,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
@@ -54,6 +55,7 @@ std::string GetTestName(absl::string_view test_name, TestPriority priority,
     absl::string_view test_name, const ConformanceRequest& request) {
   ABSL_CHECK(test_names_ran_.emplace(test_name).second)
       << "Duplicated test name: " << test_name;
+  tests_run_.emplace_back(test_name);
 
   std::string serialized_request;
   // TODO: Remove this suppression.
@@ -138,6 +140,23 @@ absl::string_view PriorityName(TestPriority priority) {
       return "P1";
   }
   return "Unknown";
+}
+
+bool AbslParseFlag(absl::string_view text, TestPriority* priority,
+                   std::string* error) {
+  int number;
+  if (!absl::SimpleAtoi(text, &number) || number < 0 ||
+      number > static_cast<int>(kLowestPriority)) {
+    *error = absl::StrCat("expected a priority number from 0 to ",
+                          static_cast<int>(kLowestPriority));
+    return false;
+  }
+  *priority = static_cast<TestPriority>(number);
+  return true;
+}
+
+std::string AbslUnparseFlag(TestPriority priority) {
+  return absl::StrCat(static_cast<int>(priority));
 }
 
 absl::string_view PriorityLevelName(TestPriority priority) {
