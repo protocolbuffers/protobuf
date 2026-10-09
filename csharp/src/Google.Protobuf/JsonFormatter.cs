@@ -218,7 +218,9 @@ namespace Google.Protobuf {
           WriteString(writer, accessor.Descriptor.JsonName);
         }
         writer.Write(NameValueSeparator);
-        if (field.IsMap) {
+        if (field.GetOptions()?.DebugRedact == true) {
+          WriteValue(writer, "[REDACTED]", indentationLevel);
+        } else if (field.IsMap) {
           WriteDictionary(
               writer, (IDictionary)value, field.MessageType.Fields[2],
               indentationLevel);
