@@ -5424,6 +5424,25 @@ TEST_F(ValidationErrorTest, NullCharPackageName) {
                  "character.\n"));
 }
 
+TEST_F(ValidationErrorTest, NullCharDependency) {
+  pool_.AllowUnknownDependencies();
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "dependency: \"foo\\000\\001\\013.proto\"",
+      STATIC_STR("bar.proto: foo\0\x1\v.proto: IMPORT: "
+                 "\"foo\0\x1\v.proto\" contains null character.\n"));
+}
+
+TEST_F(ValidationErrorTest, NullCharOptionDependency) {
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "syntax: \"editions\" "
+      "edition: EDITION_2024 "
+      "option_dependency: \"foo\\000\\001\\013.proto\"",
+      STATIC_STR("bar.proto: foo\0\x1\v.proto: IMPORT: "
+                 "\"foo\0\x1\v.proto\" contains null character.\n"));
+}
+
 TEST_F(ValidationErrorTest, MissingFileName) {
   BuildFileWithErrors("",
 
