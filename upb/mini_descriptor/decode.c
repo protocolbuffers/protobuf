@@ -936,11 +936,27 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   f->UPB_PRIVATE(offset) = 0;
   f->presence = 0;
 
-  // In upb_MiniTableExtension, the `sub` member is a pointer-sized member that
-  // directly follows the `field` member.
-  f->UPB_PRIVATE(submsg_ofs) =
-      UPB_ALIGN_UP(sizeof(upb_MiniTableField), upb_MtDecoder_PtrSize(decoder)) /
-      kUpb_SubmsgOffsetBytes;
+  bool has_sub =
+      upb_MiniTableField_IsSubMessage(f) || upb_MiniTableField_IsClosedEnum(f);
+  if (has_sub) {
+    // The sub is stored immediately after the upb_MiniTableExtension, whose
+    // layout is `field` followed by the pointer-sized `extendee`. Compute the
+    // offset for the target platform, since the generator emits it into
+    // generated code for both 32-bit and 64-bit builds.
+    size_t ptr_size = upb_MtDecoder_PtrSize(decoder);
+    size_t sub_ofs =
+        UPB_ALIGN_UP(sizeof(upb_MiniTableField), ptr_size) + ptr_size;
+    f->UPB_PRIVATE(submsg_ofs) = sub_ofs / kUpb_SubmsgOffsetBytes;
+    // Tables built for a non-native platform are only used to compute layouts
+    // for code generation; their in-memory layout does not match the target,
+    // so we must not write the sub at the target offset.
+    if (ptr_size == sizeof(void*)) {
+      UPB_ASSERT(sub_ofs == sizeof(upb_MiniTableExtension));
+      *UPB_PTR_AT(f, sub_ofs, upb_MiniTableSubInternal) = sub;
+    }
+  } else {
+    f->UPB_PRIVATE(submsg_ofs) = kUpb_NoSub;
+  }
 
   if (extendee->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMessageSet) {
     // Extensions of MessageSet must be messages.
@@ -951,7 +967,6 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   }
 
   ext->UPB_PRIVATE(extendee) = extendee;
-  ext->UPB_PRIVATE(sub) = sub;
 
   return ret;
 }
@@ -987,13 +1002,20 @@ upb_MiniTableExtension* _upb_MiniTableExtension_Build(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
     upb_Status* status) {
-  upb_MiniTableExtension* ext =
-      upb_Arena_Malloc(arena, sizeof(upb_MiniTableExtension));
+  upb_MiniTableExtension* ext = upb_Arena_Malloc(
+      arena, sizeof(upb_MiniTableExtension) + sizeof(upb_MiniTableSubInternal));
   if (UPB_UNLIKELY(!ext)) return NULL;
 
   const char* ptr = _upb_MiniTableExtension_Init(data, len, ext, extendee, sub,
                                                  platform, status);
   if (UPB_UNLIKELY(!ptr)) return NULL;
+
+  if (ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) == kUpb_NoSub) {
+    upb_Arena_ShrinkLast(
+        arena, ext,
+        sizeof(upb_MiniTableExtension) + sizeof(upb_MiniTableSubInternal),
+        sizeof(upb_MiniTableExtension));
+  }
 
   return ext;
 }

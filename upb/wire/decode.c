@@ -954,7 +954,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
       upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }
     d->original_msg = msg;
-    msg = &ext->UPB_ONLYBITS(data).UPB_PRIVATE(ext_msg_val);
+    msg = UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), upb_Message);
   }
 
   switch (mode & kUpb_FieldMode_Mask) {

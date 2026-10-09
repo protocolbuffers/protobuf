@@ -949,9 +949,10 @@ static void resolve_extension(upb_DefBuilder* ctx, const char* prefix,
 
 void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
                                            const upb_FieldDef* f) {
-  const upb_MiniTableExtension* ext = upb_FieldDef_MiniTableExtension(f);
+  const upb_MiniTableExtension* ext;
 
   if (ctx->layout) {
+    ext = upb_FieldDef_MiniTableExtension(f);
     UPB_ASSERT(upb_FieldDef_Number(f) == upb_MiniTableExtension_Number(ext));
   } else {
     upb_StringView desc;
@@ -959,7 +960,6 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
       _upb_DefBuilder_OomErr(ctx);
     }
 
-    upb_MiniTableExtension* mut_ext = (upb_MiniTableExtension*)ext;
     upb_MiniTableSub sub = {NULL};
     if (upb_FieldDef_IsSubMessage(f)) {
       const upb_MiniTable* submsg = upb_MessageDef_MiniTable(f->sub.msgdef);
@@ -968,10 +968,13 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
       const upb_MiniTableEnum* subenum = _upb_EnumDef_MiniTable(f->sub.enumdef);
       sub = upb_MiniTableSub_FromEnum(subenum);
     }
-    bool ok2 = _upb_MiniTableExtension_Init(desc.data, desc.size, mut_ext,
-                                            upb_MessageDef_MiniTable(f->msgdef),
-                                            sub, ctx->platform, ctx->status);
-    if (!ok2) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");
+    // _upb_MiniTableExtension_Build() sizes the allocation according to
+    // whether the decoded extension needs trailing sub storage.
+    ext = _upb_MiniTableExtension_Build(
+        desc.data, desc.size, upb_MessageDef_MiniTable(f->msgdef), sub,
+        ctx->platform, ctx->arena, ctx->status);
+    if (!ext) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");
+    _upb_FileDef_SetExtensionMiniTable(ctx->file, f->layout_index, ext);
   }
 
   bool ok = _upb_DefPool_InsertExt(ctx->symtab, ext, f);

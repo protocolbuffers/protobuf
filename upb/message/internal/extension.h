@@ -25,6 +25,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
+#include "upb/mini_table/internal/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -33,14 +34,22 @@
 // enough information that we can serialize it to binary format without needing
 // to look it up in a upb_ExtensionRegistry.
 //
-// This representation allocates 16 bytes to data on 64-bit platforms.
-// This is rather wasteful for scalars (in the extreme case of bool,
-// it wastes 15 bytes). We accept this because we expect messages to be
-// the most common extension type.
+// The value is stored in the same allocation, at offset
+// kUpb_Extension_DataOffset from the start of the struct, and is sized
+// according to the extension's field representation (see _upb_Extension_Size).
+// It is only accessed through offset calculations, like the fields of a
+// upb_Message.
 typedef struct upb_Extension {
   const upb_MiniTableExtension* UPB_ONLYBITS(ext);
-  upb_MessageValue UPB_ONLYBITS(data);
 } upb_Extension;
+
+// The offset of the value from the start of the upb_Extension. Rounded up to 8
+// so that 8-byte values are naturally aligned on 32-bit platforms, where
+// sizeof(upb_Extension) is 4 (the allocation itself is always 8-byte aligned).
+enum {
+  UPB_ONLYBITS(kUpb_Extension_DataOffset) =
+      UPB_ALIGN_UP(sizeof(upb_Extension), 8),
+};
 
 #ifdef __cplusplus
 extern "C" {
@@ -67,7 +76,9 @@ UPB_API_INLINE void upb_Extension_GetField(const upb_Extension* ext,
                                            void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, &ext->UPB_ONLYBITS(data));
+  const void* data =
+      UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), const void);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, data);
 }
 
 // Sets the value of `ext` from `val`, which must point to a value of the
@@ -77,7 +88,8 @@ UPB_API_INLINE void upb_Extension_SetField(upb_Extension* ext,
                                            const void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, &ext->UPB_ONLYBITS(data), val);
+  void* data = UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), void);
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, data, val);
 }
 
 // Returns the value of this extension.
@@ -349,6 +361,49 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
       return _upb_Map_Size(upb_Extension_GetValue(ext).map_val) == 0;
   }
   UPB_UNREACHABLE();
+}
+
+// Returns the allocation size of an upb_Extension described by `f`, including
+// the value. Rounded up to kUpb_Message_Align (which the arena would do anyway)
+// so that the extension can be zeroed with _upb_Message_AlignedMemsetZero().
+UPB_NODISCARD UPB_INLINE size_t
+UPB_PRIVATE(_upb_Extension_Size)(const upb_MiniTableField* f) {
+  UPB_ASSERT(upb_MiniTableField_IsExtension(f));
+  static const uint8_t rep_sizes[] = {
+      1,                       // kUpb_FieldRep_1Byte
+      4,                       // kUpb_FieldRep_4Byte
+      sizeof(upb_StringView),  // kUpb_FieldRep_StringView
+      8,                       // kUpb_FieldRep_8Byte
+  };
+  return UPB_ALIGN_UP(UPB_ONLYBITS(kUpb_Extension_DataOffset) +
+                          rep_sizes[UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)],
+                      kUpb_Message_Align);
+}
+
+// Allocates a shallow copy of `src` on `a`, or returns NULL on allocation
+// failure.
+UPB_NODISCARD UPB_INLINE upb_Extension* UPB_PRIVATE(_upb_Extension_Clone)(
+    const upb_Extension* src, upb_Arena* a) {
+  const size_t ext_size =
+      UPB_PRIVATE(_upb_Extension_Size)(upb_Extension_MiniTableField(src));
+  enum {
+    kSmallExtSize = UPB_ALIGN_UP(UPB_ONLYBITS(kUpb_Extension_DataOffset) + 1,
+                                 kUpb_Message_Align),
+    kBigExtSize = UPB_ALIGN_UP(
+        UPB_ONLYBITS(kUpb_Extension_DataOffset) + sizeof(upb_StringView),
+        kUpb_Message_Align),
+  };
+  UPB_ASSUME(ext_size == kSmallExtSize || ext_size == kBigExtSize);
+  char* dst = (char*)upb_Arena_Malloc(a, ext_size);
+  if (UPB_UNLIKELY(!dst)) return NULL;
+  // Avoid out-of-line variable length memcpy for short length
+  memcpy(dst, src, kSmallExtSize);
+  if (ext_size != kSmallExtSize) {
+    UPB_ASSERT(ext_size == kBigExtSize);
+    memcpy(dst + kSmallExtSize, UPB_PTR_AT(src, kSmallExtSize, const char),
+           kBigExtSize - kSmallExtSize);
+  }
+  return (upb_Extension*)dst;
 }
 
 #ifdef __cplusplus
