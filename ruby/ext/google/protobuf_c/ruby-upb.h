@@ -3768,6 +3768,16 @@ typedef struct {
 
 UPB_INLINE size_t upb_table_size(const upb_table* t) { return t->mask + 1; }
 
+UPB_INLINE upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
+  return t->entries + (hash & t->mask);
+}
+
+UPB_INLINE bool upb_table_isfull(const upb_table* t) {
+  uint32_t size = upb_table_size(t);
+  // 0.875 load factor
+  return t->count == (size - (size >> 3));
+}
+
 // Internal-only functions, in .h file only out of necessity.
 
 UPB_INLINE bool upb_tabent_isempty(const upb_tabent* e) { return e->next == 0; }
@@ -3843,7 +3853,9 @@ extern "C" {
 UPB_NODISCARD bool upb_inttable_init(upb_inttable* table, upb_Arena* a);
 
 // Returns the number of values in the table.
-size_t upb_inttable_count(const upb_inttable* t);
+UPB_INLINE size_t upb_inttable_count(const upb_inttable* t) {
+  return t->t.count;
+}
 
 // Inserts the given key into the hashtable with the given value.
 // The key must not already exist in the hash table.
@@ -3852,6 +3864,48 @@ size_t upb_inttable_count(const upb_inttable* t);
 // returned and the table is unchanged.
 UPB_NODISCARD bool upb_inttable_insert(upb_inttable* t, uintptr_t key,
                                        upb_value val, upb_Arena* a);
+
+UPB_NODISCARD bool upb_inttable_insert_or_replace_slow(upb_inttable* t,
+                                                       uintptr_t key,
+                                                       upb_value val,
+                                                       bool* replaced,
+                                                       upb_Arena* a);
+
+UPB_INLINE uint32_t upb_inthash(uintptr_t key) {
+  UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
+                    "Pointers don't fit");
+  if (sizeof(uintptr_t) == 8) {
+    return (uint32_t)key ^ (uint32_t)((uint64_t)key >> 32);
+  } else {
+    return (uint32_t)key;
+  }
+}
+
+// Inserts or updates the given key with the given value. Sets *replaced to
+// true if an existing entry was updated, or false if a new entry was inserted.
+// Returns false if a table resize was required and memory allocation failed.
+UPB_NODISCARD UPB_FORCEINLINE bool upb_inttable_insert_or_replace(
+    upb_inttable* t, uintptr_t key, upb_value val, bool* replaced,
+    upb_Arena* a) {
+  if (UPB_LIKELY(t->t.entries != NULL)) {
+    upb_tabent* e = upb_getentry(&t->t, upb_inthash(key));
+    if (UPB_LIKELY(upb_tabent_isempty(e) && !upb_table_isfull(&t->t))) {
+      t->t.count++;
+      e->key.num = key;
+      e->val = val;
+      upb_tabent_clearnext(e);
+      *replaced = false;
+      return true;
+    }
+  }
+  // Use a separate temporary so that `replaced` does not escape on the fast
+  // path above. It must be initialized because the slow path leaves it unset
+  // on allocation failure.
+  bool slow_replaced = false;
+  bool ok = upb_inttable_insert_or_replace_slow(t, key, val, &slow_replaced, a);
+  *replaced = slow_replaced;
+  return ok;
+}
 
 // Resizes the table to 1 << size_lg2.
 UPB_NODISCARD bool upb_inttable_resize(upb_inttable* t, size_t size_lg2,
@@ -3942,6 +3996,14 @@ void upb_strtable_clear(upb_strtable* t);
 // returned and the table is unchanged. */
 UPB_NODISCARD bool upb_strtable_insert(upb_strtable* t, const char* key,
                                        size_t len, upb_value val, upb_Arena* a);
+
+// Inserts or updates the given key with the given value. Sets *replaced to
+// true if an existing entry was updated, or false if a new entry was inserted.
+// Returns false if memory allocation failed.
+UPB_NODISCARD bool upb_strtable_insert_or_replace(upb_strtable* t,
+                                                  const char* key, size_t len,
+                                                  upb_value val, bool* replaced,
+                                                  upb_Arena* a);
 
 // Copies the table and its keys without rehashing. Performing a shallow copy of
 // entries; the caller is responsible for cloning non-primitive values.
@@ -4250,39 +4312,28 @@ UPB_FORCEINLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                     upb_Arena* a) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
-  if (UPB_UNLIKELY(!_upb_Map_IsInitialized(map))) {
-    // Reserving for 1 element allocates the minimum table capacity of 8
-    // (since _upb_entries_needed_for(1) <= 8 -> log2ceil 3 -> capacity 8).
-    if (!_upb_Map_Reserve(map, 1, a)) {
-      return kUpb_MapInsertStatus_OutOfMemory;
-    }
-  }
-
   // Prep the value.
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
     return kUpb_MapInsertStatus_OutOfMemory;
   }
 
-  bool removed;
+  bool replaced;
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_StringView strkey = _upb_map_tokey(key, key_size);
-    // TODO: add overwrite operation to minimize number of lookups.
-    removed =
-        upb_strtable_remove2(&map->t.strtable, strkey.data, strkey.size, NULL);
-    if (!upb_strtable_insert(&map->t.strtable, strkey.data, strkey.size, tabval,
-                             a)) {
+    if (!upb_strtable_insert_or_replace(&map->t.strtable, strkey.data,
+                                        strkey.size, tabval, &replaced, a)) {
       return kUpb_MapInsertStatus_OutOfMemory;
     }
   } else {
     uintptr_t intkey = _upb_map_tointkey(key, key_size);
-    removed = upb_inttable_remove(&map->t.inttable, intkey, NULL);
-    if (!upb_inttable_insert(&map->t.inttable, intkey, tabval, a)) {
+    if (!upb_inttable_insert_or_replace(&map->t.inttable, intkey, tabval,
+                                        &replaced, a)) {
       return kUpb_MapInsertStatus_OutOfMemory;
     }
   }
-  return removed ? kUpb_MapInsertStatus_Replaced
-                 : kUpb_MapInsertStatus_Inserted;
+  return replaced ? kUpb_MapInsertStatus_Replaced
+                  : kUpb_MapInsertStatus_Inserted;
 }
 
 // Strings/bytes are special-cased in maps.
