@@ -54,11 +54,31 @@ def main():
             '*.c', '*.h', '*.inc', 'LICENSE', 'README.md'
         ])
 
-    # Copy root LICENSE if not already copied from ext_src_dir
-    root_license = os.path.join(src_root, 'LICENSE')
-    if os.path.exists(root_license) and not os.path.exists(os.path.join(dst_root, 'LICENSE')):
-        shutil.copy2(root_license, os.path.join(dst_root, 'LICENSE'))
-        print(f"Copied: {root_license} -> {os.path.join(dst_root, 'LICENSE')}")
+    # Copy root LICENSE and CONTRIBUTING.md if not already copied from ext_src_dir
+    for root_doc in ['LICENSE', 'CONTRIBUTING.md']:
+        src_doc = os.path.join(src_root, root_doc)
+        dst_doc = os.path.join(dst_root, root_doc)
+        if os.path.exists(src_doc) and not os.path.exists(dst_doc):
+            shutil.copy2(src_doc, dst_doc)
+            print(f"Copied: {src_doc} -> {dst_doc}")
+
+    # Ensure amalgamated upb files include the license header
+    license_header = (
+        "// Protocol Buffers - Google's data interchange format\n"
+        "// Copyright 2023 Google LLC.  All rights reserved.\n"
+        "//\n"
+        "// Use of this source code is governed by a BSD-style\n"
+        "// license that can be found in the LICENSE file or at\n"
+        "// https://developers.google.com/open-source/licenses/bsd\n\n"
+    )
+    for upb_file in ['php-upb.c', 'php-upb.h']:
+        upb_path = os.path.join(dst_root, upb_file)
+        if os.path.exists(upb_path):
+            with open(upb_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            if not content.startswith('// Protocol Buffers'):
+                with open(upb_path, 'w', encoding='utf-8') as f:
+                    f.write(license_header + content)
 
     print("Sync completed successfully.")
 
