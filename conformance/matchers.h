@@ -17,27 +17,36 @@
 //       Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb"))));
 //
 // The leaf matchers (WhenParsed, RawPayload, IsParseError, ...) only look at
-// the TestResult, so they compose with other gMock matchers:
-// Yields(AnyOf(IsParseError(), WhenParsed(m))) works as expected.
+// the result, so they compose with other gMock matchers:
+// Yields(AnyOf(IsParseError(), WhenParsed(m))) works as expected.  They match
+// the YieldedResult that Yields() hands them rather than the TestResult, so a
+// leaf matcher applied to a TestResult without Yields() does not compile.
 // EqualsTextProto() and EqualsBinaryProto() match a `const Message&` and are
 // meant to be used inside WhenParsed().
 //
-// Yields() is the one matcher that talks to the global TestManager.  It
-// records the outcome of the test and turns the failure list into the gtest
-// verdict:
+// Yields() is the one matcher that reads the global failure list (see
+// GetGlobalFailureList() in global_test_environment.h).  It turns the failure
+// list into the gtest verdict:
 //
 //   - A failure that is in the failure list passes.  A listed test that
 //     succeeds fails.
 //   - A failure of a test above the enforcement level is tolerated unless
 //     the test is listed.  kP0 failures always count (see TestPriority).
-//   - A test the testee skipped passes unless it is listed.  The TestManager
-//     counts it in ListedSkips().
+//   - A test the testee skipped passes unless it is listed.  The test
+//     environment counts it as a listed skip.
+//
+// Yields() changes nothing in the process.  It records the outcome of the
+// test as a gtest success in the running test, whose message carries an
+// internal::ResultRecord (see ResultRecordMessage() in result_record.h).  The
+// test environment picks the records up as gtest reports them, tallies them in
+// its ResultLedger and reports each test's outcome as a property of the gtest
+// test (see test_environment.h).
 //
 // The failure messages of the leaf matchers end up in failure lists, so each
 // matcher documents its message and keeps it stable.  Messages that come from
 // an inner matcher use gMock's wording, which can change between versions.
 // Failure list entries for those should only use a prefix of the message (see
-// TestManager::ReportFailure()).
+// ResultLedger::VerdictOnFailure()).
 //
 // This file also defines PrintTo() for TestResult, which gtest uses to print a
 // result when a matcher on it fails.
@@ -62,6 +71,26 @@ namespace protobuf {
 namespace conformance {
 namespace internal {
 
+// The view of a TestResult that Yields() hands to its inner matcher.  The
+// leaf matchers match this rather than the TestResult itself, which is what
+// makes a forgotten Yields() a compile error:
+//
+//   EXPECT_THAT(Testee().ParseBinary(type, input).SerializeBinary(),
+//               IsParseError());  // error: TestResult isn't a YieldedResult
+//
+// It is a view: the result must outlive it.  Only Yields() and the tests of
+// the leaf matchers construct one.
+class YieldedResult {
+ public:
+  explicit YieldedResult(const TestResult& result) : result_(&result) {}
+  YieldedResult(TestResult&&) = delete;
+
+  const TestResult& result() const { return *result_; }
+
+ private:
+  const TestResult* absl_nonnull result_;
+};
+
 // Prints a TestResult in gtest failure output.  The output has the test's
 // priority and name and a short form of the response.  Long payloads are
 // truncated.  Binary payloads are also decoded as the test's message type.
@@ -73,13 +102,20 @@ void PrintTo(const TestResult& result, std::ostream* absl_nonnull os);
 // Implements WhenParsed() and WhenParsedAs() below.  The payload is
 // decoded as `type_override` if it is non-null, and as the test's message type
 // otherwise.
-testing::Matcher<const TestResult&> MakeWhenParsedMatcher(
+testing::Matcher<const YieldedResult&> MakeWhenParsedMatcher(
     testing::Matcher<const Message&> m,
     const Descriptor* absl_nullable type_override = nullptr);
 
 // Implements Yields(): see the function below for the semantics.
 testing::Matcher<const TestResult&> MakeYieldsMatcher(
-    testing::Matcher<const TestResult&> inner);
+    testing::Matcher<const YieldedResult&> inner);
+
+// The gtest result that a test part result reported now goes to: the running
+// test's, else (in SetUpTestSuite() or TearDownTestSuite()) the current test
+// suite's ad hoc result, else the whole run's.  Yields() records what it
+// learns about each conformance test as a success there, and finds there what
+// an earlier check of the same test recorded.
+const testing::TestResult& CurrentGtestResult();
 
 }  // namespace internal
 
@@ -96,7 +132,7 @@ testing::Matcher<const TestResult&> MakeYieldsMatcher(
 // JSON output can't be decoded yet (b/410122158) and fails with a message
 // saying so.  Use RawPayload() for it.
 template <typename M>
-testing::Matcher<const internal::TestResult&> WhenParsed(M m) {
+testing::Matcher<const internal::YieldedResult&> WhenParsed(M m) {
   return internal::MakeWhenParsedMatcher(
       testing::SafeMatcherCast<const Message&>(std::move(m)));
 }
@@ -112,7 +148,7 @@ testing::Matcher<const internal::TestResult&> WhenParsed(M m) {
 //
 // Failure messages are the same as WhenParsed()'s.
 template <typename T, typename M>
-testing::Matcher<const internal::TestResult&> WhenParsedAs(M m) {
+testing::Matcher<const internal::YieldedResult&> WhenParsedAs(M m) {
   return internal::MakeWhenParsedMatcher(
       testing::SafeMatcherCast<const Message&>(std::move(m)), T::descriptor());
 }
@@ -129,7 +165,7 @@ testing::Matcher<const internal::TestResult&> WhenParsedAs(M m) {
 // result, an error, a skipped test and the wrong output format.  A PROTOBUF
 // payload must also be parseable as the test's message type.  Otherwise it
 // fails with "Protobuf output we received from test was unparseable."
-testing::Matcher<const internal::TestResult&> RawPayload(Wire bytes);
+testing::Matcher<const internal::YieldedResult&> RawPayload(Wire bytes);
 
 // Matches a message equivalent to `text`, parsed as the actual message's type.
 // Messages are compared with MessageDifferencer, with NaN equal to NaN.
@@ -157,7 +193,7 @@ testing::Matcher<const Message&> EqualsBinaryProto(Wire bytes);
 // Any other response fails with "Should have failed to parse, but didn't."  A
 // runtime error fails with "Should have failed to parse, but raised an error
 // instead."
-testing::Matcher<const internal::TestResult&> IsParseError();
+testing::Matcher<const internal::YieldedResult&> IsParseError();
 
 // Matches a response that reports a serialize error.
 //
@@ -166,28 +202,33 @@ testing::Matcher<const internal::TestResult&> IsParseError();
 //
 // Any other response fails like it does for IsParseError(), with the
 // corresponding "Should have failed to serialize, ..." messages.
-testing::Matcher<const internal::TestResult&> IsSerializeError();
+testing::Matcher<const internal::YieldedResult&> IsSerializeError();
 
 // Wraps the matcher of every conformance test's EXPECT_THAT.
 //
 //   EXPECT_THAT(Testee().ParseBinary(type, input).SerializeBinary(),
 //               Yields(WhenParsed(EqualsBinaryProto(input))));
 //
-// Yields() evaluates `inner` against the TestResult, reports the outcome to
-// the global TestManager and applies the failure list and priority rules
-// described at the top of this file.  Its verdict is not simply `inner`'s: an
-// expected failure passes and an unexpected success fails.  Do not wrap
-// Yields() in Not() or other combinators.  Compose `inner` instead.
+// Yields() evaluates `inner` against the result, wrapped in an
+// internal::YieldedResult (which is what the leaf matchers match), records
+// the outcome in the running gtest test and applies the failure list and
+// priority rules described at the top of this file.  Its verdict is not
+// simply `inner`'s: an expected failure passes and an unexpected success
+// fails.  Do not wrap Yields() in Not() or other combinators.  Compose `inner`
+// instead.
 //
-// Each test may be checked exactly once.  The first evaluation reports the
-// result to the TestManager, which remembers the test's name.  gtest
-// evaluates a failing matcher a second time to explain the failure; Yields()
-// replays its own failed verdict for that.  Any other check of a result the
-// TestManager has already heard about fails with "already checked".
+// Each result is meant to be checked once.  gtest evaluates a failing matcher
+// a second time to explain the failure, so a second check is allowed as long
+// as it reaches the same outcome, which it then only repeats.  A check that
+// reaches a different outcome than the one recorded is a test bug and fails
+// with "already checked".  A gtest test that runs a conformance test but
+// never checks its result fails too (see ConformanceEnvironment in
+// test_environment.h).
 template <typename M>
 testing::Matcher<const internal::TestResult&> Yields(M inner) {
   return internal::MakeYieldsMatcher(
-      testing::SafeMatcherCast<const internal::TestResult&>(std::move(inner)));
+      testing::SafeMatcherCast<const internal::YieldedResult&>(
+          std::move(inner)));
 }
 
 }  // namespace conformance
