@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-// Declares the process-wide state that the Yields() matcher depends on (see
+// Declares the process-wide state that the Yields() matcher reads (see
 // matchers.h).  The definition is deliberately not provided here.  It is the
 // link-time seam between the matchers and the process that hosts them.  The
 // conformance test binary provides it from its global test environment,
@@ -15,18 +15,20 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_GLOBAL_TEST_ENVIRONMENT_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_GLOBAL_TEST_ENVIRONMENT_H__
 
-#include "conformance/test_manager.h"
+#include "conformance/failure_list.h"
 
 namespace google {
 namespace protobuf {
 namespace conformance {
 namespace internal {
 
-// Returns the process-wide TestManager that records test results against the
-// expected-failure list.  Yields() reports the outcome of every test here.
-// That lets the failure list be validated and regenerated, and the enforcement
-// level be applied (see TestManager::set_enforcement_level()).
-TestManager& GetGlobalTestManager();
+// Returns the process-wide expected-failure list.  Yields() asks it for the
+// verdict on every test, which applies the failure list and the enforcement
+// level (see FailureList::set_enforcement_level()).  The test environment,
+// which owns the list as part of its ResultLedger, is what tallies the
+// outcomes (see ConformanceEnvironment in test_environment.h); the matchers
+// never change anything.
+const FailureList& GetGlobalFailureList();
 
 }  // namespace internal
 }  // namespace conformance
