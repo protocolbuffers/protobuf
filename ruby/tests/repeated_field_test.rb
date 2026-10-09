@@ -1,6 +1,7 @@
 #!/usr/bin/ruby
 
 require 'google/protobuf'
+require 'google/protobuf/well_known_types'
 require 'repeated_field_test_pb'
 require 'test/unit'
 
@@ -328,6 +329,82 @@ class RepeatedFieldTest < Test::Unit::TestCase
     end
     m.repeated_int32[index] = 42
     assert_equal [0, 0, 0, 0, 0, 42], m.repeated_int32.to_a
+  end
+
+  def test_index_range_accessor_clears_field
+    omit "NATIVE reads Range internals directly, so the accessor cannot run" if Google::Protobuf::IMPLEMENTATION == :NATIVE
+    # Regression: RepeatedField#[] read the length before calling the range's
+    # begin/end accessors, which a Range subclass can override to clear the
+    # field. The stale count then let subarray read past the end of the upb
+    # array and return elements of the cleared field.
+    m = TestMessage.new
+    m.repeated_string += %w[a b c]
+    range = Class.new(Range) do
+      def initialize(field, *args)
+        @field = field
+        super(*args)
+      end
+      def begin
+        @field.clear
+        super
+      end
+    end.new(m.repeated_string, 0, 2)
+    assert_equal [], m.repeated_string[range]
+  end
+
+  def test_array_settor_value_conversion_clears_field
+    omit "NATIVE only converts built-in numerics" if Google::Protobuf::IMPLEMENTATION == :NATIVE
+    # Regression: RepeatedField#[]= resized and filled before converting the
+    # value, and that conversion calls to_i, which can clear the field. The
+    # value was then written past the end of the upb array instead of
+    # extending the field.
+    m = TestMessage.new
+    m.repeated_int32 += [1]
+    value = Class.new(Numeric) do
+      def initialize(field)
+        @field = field
+      end
+      def to_i
+        @field.clear
+        42
+      end
+      def to_f
+        42.0
+      end
+      def coerce(other)
+        [self, other]
+      end
+      def <=>(other)
+        0
+      end
+    end.new(m.repeated_int32)
+    m.repeated_int32[3] = value
+    assert_equal [0, 0, 0, 42], m.repeated_int32.to_a
+  end
+
+  def test_push_value_conversion_freezes_field
+    # Regression: a value conversion that freezes the field mid-push must not
+    # let the element land on the frozen upb array.
+    field = Google::Protobuf::RepeatedField.new(:message, Google::Protobuf::Duration)
+    value = Class.new(Numeric) do
+      def initialize(field)
+        @field = field
+      end
+      def to_f
+        @field.freeze
+        1.5
+      end
+      def to_i
+        1
+      end
+      def coerce(other)
+        [self, other]
+      end
+      def <=>(other)
+        0
+      end
+    end.new(field)
+    assert_raises(FrozenError) { field.push(value) }
   end
 
   def test_push
