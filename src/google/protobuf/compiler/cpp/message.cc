@@ -4479,8 +4479,7 @@ struct SerializeFieldChunk {
 using SerializeChunk =
     std::variant<SerializeFieldChunk, OneofChunk, ExtensionRangeChunk>;
 
-// TODO: b/568757368 - Make `TryMerge` a member function of the chunk types.
-bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
+bool TryMergeChunks(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   if (to->should_split != from.should_split ||
       to->hasword_index != from.hasword_index) {
     return false;
@@ -4489,7 +4488,7 @@ bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   return true;
 }
 
-bool TryMerge(OneofChunk* to, const OneofChunk& from) {
+bool TryMergeChunks(OneofChunk* to, const OneofChunk& from) {
   if (to->fields.front()->containing_oneof() !=
       from.fields.front()->containing_oneof()) {
     return false;
@@ -4498,7 +4497,7 @@ bool TryMerge(OneofChunk* to, const OneofChunk& from) {
   return true;
 }
 
-bool TryMerge(ExtensionRangeChunk* to, const ExtensionRangeChunk& from) {
+bool TryMergeChunks(ExtensionRangeChunk* to, const ExtensionRangeChunk& from) {
   to->start = std::min(to->start, from.start);
   to->end = std::max(to->end, from.end);
   return true;
@@ -4508,7 +4507,7 @@ template <typename Chunk>
 void TryAppendToBack(std::vector<SerializeChunk>& chunks, Chunk chunk) {
   if (!chunks.empty()) {
     auto* back = std::get_if<Chunk>(&chunks.back());
-    if (back != nullptr && TryMerge(back, chunk)) {
+    if (back != nullptr && TryMergeChunks(back, chunk)) {
       return;
     }
   }
@@ -4590,23 +4589,21 @@ double GetAbsenceProbability(const FieldDescriptor* field,
   return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
 }
 
-// TODO: b/568757368 - Make `WithFields` a member function of the chunk types.
-SerializeFieldChunk WithFields(const SerializeFieldChunk& chunk,
-                               std::vector<const FieldDescriptor*> fields) {
+SerializeFieldChunk ChunkWithFields(
+    const SerializeFieldChunk& chunk,
+    std::vector<const FieldDescriptor*> fields) {
   return SerializeFieldChunk{chunk.should_split, chunk.hasword_index,
                              std::move(fields)};
 }
 
-FieldChunk WithFields(const FieldChunk& chunk,
-                      std::vector<const FieldDescriptor*> fields) {
+FieldChunk ChunkWithFields(const FieldChunk& chunk,
+                           std::vector<const FieldDescriptor*> fields) {
   FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
   res.fields = std::move(fields);
   return res;
 }
 
-// TODO: b/568757368 - Make `GetPartitionable` a member function of the chunk
-// types.
-const SerializeFieldChunk* GetPartitionable(const SerializeChunk& chunk) {
+const SerializeFieldChunk* GetPartitionableChunk(const SerializeChunk& chunk) {
   const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
   if (field_chunk != nullptr && field_chunk->hasword_index.has_value()) {
     return field_chunk;
@@ -4614,7 +4611,7 @@ const SerializeFieldChunk* GetPartitionable(const SerializeChunk& chunk) {
   return nullptr;
 }
 
-const FieldChunk* GetPartitionable(const FieldChunk& chunk) {
+const FieldChunk* GetPartitionableChunk(const FieldChunk& chunk) {
   return chunk.has_hasbit ? &chunk : nullptr;
 }
 
@@ -4626,7 +4623,7 @@ std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
   std::vector<Chunk> result;
   if (chunk.fields.empty()) return result;
 
-  result.push_back(WithFields(chunk, {chunk.fields.front()}));
+  result.push_back(ChunkWithFields(chunk, {chunk.fields.front()}));
   double p_none = GetAbsenceProbability(chunk.fields.front(), options);
 
   for (size_t i = 1; i < chunk.fields.size(); ++i) {
@@ -4641,7 +4638,7 @@ std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
     // If adding this field to the current batch has a higher expected branches
     // cost than if the field were alone, start a new chunk.
     if (extended_cost > current_cost + 1.0) {
-      result.push_back(WithFields(chunk, {field}));
+      result.push_back(ChunkWithFields(chunk, {field}));
       p_none = p_field_absent;
     } else {
       result.back().fields.push_back(field);
@@ -4657,7 +4654,7 @@ std::vector<Chunk> PartitionToMinimizeExpectedBranches(
   std::vector<Chunk> result;
 
   for (Chunk& chunk : chunks) {
-    const auto* partitionable = GetPartitionable(chunk);
+    const auto* partitionable = GetPartitionableChunk(chunk);
     if (partitionable != nullptr && partitionable->fields.size() > 1) {
       absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
                    std::back_inserter(result));
