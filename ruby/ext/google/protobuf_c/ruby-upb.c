@@ -16453,10 +16453,16 @@ static upb_StringView default_string(upb_ToProto_Context* ctx,
       return printf_dup(ctx, "%" PRId32, d.int32_val);
     case kUpb_CType_UInt32:
       return printf_dup(ctx, "%" PRIu32, d.uint32_val);
-    case kUpb_CType_Float:
-      return printf_dup(ctx, "%.9g", d.float_val);
-    case kUpb_CType_Double:
-      return printf_dup(ctx, "%.17g", d.double_val);
+    case kUpb_CType_Float: {
+      char buf[kUpb_RoundTripBufferSize];
+      _upb_EncodeRoundTripFloat(d.float_val, buf, sizeof(buf));
+      return strviewdup(ctx, buf);
+    }
+    case kUpb_CType_Double: {
+      char buf[kUpb_RoundTripBufferSize];
+      _upb_EncodeRoundTripDouble(d.double_val, buf, sizeof(buf));
+      return strviewdup(ctx, buf);
+    }
     case kUpb_CType_String:
       return strviewdup2(ctx, d.str_val);
     case kUpb_CType_Bytes:
