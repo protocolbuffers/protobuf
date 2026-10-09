@@ -1281,7 +1281,7 @@ TEST_F(YieldsTest, ListedSuccessViaWildcardNamesTheWildcard) {
 }
 
 TEST_F(YieldsTest, P1FailureIsToleratedWhenNotEnforced) {
-  test_manager_.set_enforcement_level(0);
+  test_manager_.set_enforcement_level(kP0);
   absl::ScopedMockLog log;
   EXPECT_CALL(log, Log).Times(AnyNumber());
   EXPECT_CALL(
@@ -1306,7 +1306,7 @@ TEST_F(YieldsTest, P1FailureIsToleratedWhenNotEnforced) {
 }
 
 TEST_F(YieldsTest, P1FailureFailsWhenEnforced) {
-  test_manager_.set_enforcement_level(1);
+  test_manager_.set_enforcement_level(kP1);
 
   EXPECT_NONFATAL_FAILURE(
       EXPECT_THAT(Run(kPayload2, TestPriority::kP1), Yields(IsParseError())),
@@ -1322,7 +1322,7 @@ TEST_F(YieldsTest, P1FailureFailsWhenEnforced) {
 TEST_F(YieldsTest, ListedP1FailureIsTrackedEvenWhenNotEnforced) {
   // A kP1 test that's already in the failure list keeps being tracked
   // there, so that the list can't go stale unnoticed.
-  test_manager_.set_enforcement_level(0);
+  test_manager_.set_enforcement_level(kP0);
   AddToFailureList(kP1Foo, kNotAParseError);
 
   EXPECT_THAT(Run(kPayload2, TestPriority::kP1), Yields(IsParseError()));
@@ -1333,7 +1333,7 @@ TEST_F(YieldsTest, ListedP1FailureIsTrackedEvenWhenNotEnforced) {
 
 TEST_F(YieldsTest,
        ListedP1FailureWithDifferentMessageFailsEvenWhenNotEnforced) {
-  test_manager_.set_enforcement_level(0);
+  test_manager_.set_enforcement_level(kP0);
   AddToFailureList(kP1Foo, "Some other message");
 
   EXPECT_NONFATAL_FAILURE(
@@ -1346,7 +1346,7 @@ TEST_F(YieldsTest,
 }
 
 TEST_F(YieldsTest, P1SuccessPasses) {
-  test_manager_.set_enforcement_level(0);
+  test_manager_.set_enforcement_level(kP0);
 
   EXPECT_THAT(Run(kParseError, TestPriority::kP1), Yields(IsParseError()));
   EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/1}));

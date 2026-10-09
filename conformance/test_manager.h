@@ -45,11 +45,11 @@ class TestManager {
   TestManager() : expected_failure_list_("root") {}
   ~TestManager();
 
-  // The highest priority level whose failures fail the suite, 0 for kP0 or 1
-  // for kP1 (see TestPriority in testee.h).  ReportFailure() tolerates a
-  // failing test above this level unless it is in the failure list.  Defaults
-  // to kEnforceAllPriorities.
-  void set_enforcement_level(int level) { enforcement_level_ = level; }
+  // The lowest priority whose failures fail the suite (see TestPriority in
+  // testee.h).  ReportFailure() tolerates a failing test of a lower priority
+  // unless it is in the failure list.  Defaults to kLowestPriority, which
+  // enforces every priority.
+  void set_enforcement_level(TestPriority level) { enforcement_level_ = level; }
 
   // Loads a failure list from disk and adds its entries to the ones loaded so
   // far.  Each line that isn't blank or a comment names one expected failure,
@@ -221,7 +221,7 @@ class TestManager {
   int expected_successes_ = 0;
   int unexpected_successes_ = 0;
   bool finalized_ = false;
-  int enforcement_level_ = kEnforceAllPriorities;
+  TestPriority enforcement_level_ = kLowestPriority;
 };
 
 }  // namespace internal

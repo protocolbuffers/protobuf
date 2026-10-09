@@ -644,7 +644,7 @@ TEST_F(TestManagerTest, EveryPriorityIsEnforcedByDefault) {
 TEST_F(TestManagerTest, EnforcementLevelZeroToleratesP1) {
   // Only kP0 is enforced: an unlisted kP1 failure is tolerated.
   TestManager manager;
-  manager.set_enforcement_level(0);
+  manager.set_enforcement_level(kP0);
   EXPECT_THAT(manager.ReportFailure("p0", kP0, "abc"), Not(IsOk()));
   EXPECT_THAT(manager.ReportFailure("p1", kP1, "abc"), IsOk());
   EXPECT_EQ(manager.unexpected_failures(), 1);
@@ -655,7 +655,7 @@ TEST_F(TestManagerTest, EnforcementLevelZeroToleratesP1) {
 TEST_F(TestManagerTest, ToleratedFailure) {
   CreateFailureList({{"listed", "abc"}});
   TestManager manager;
-  manager.set_enforcement_level(0);
+  manager.set_enforcement_level(kP0);
   ASSERT_THAT(manager.LoadFailureList(failure_list()), IsOk());
 
   ASSERT_THAT(manager.ReportFailure("foo", kP1, "abc"), IsOk());
@@ -686,7 +686,7 @@ TEST_F(TestManagerTest, ToleratedFailure) {
 
 TEST_F(TestManagerTest, ToleratedFailureIsCountedOnceAcrossKinds) {
   TestManager manager;
-  manager.set_enforcement_level(0);
+  manager.set_enforcement_level(kP0);
   // The same test name can only be counted under one outcome.
   ASSERT_THAT(manager.ReportSuccess("foo"), IsOk());
   ASSERT_THAT(manager.ReportFailure("foo", kP1, "abc"), IsOk());
@@ -701,7 +701,7 @@ TEST_F(TestManagerTest, ListedFailureIsCheckedWhateverItsPriority) {
   // unnoticed.
   CreateFailureList({{"foo", "abc"}, {"bar", "abc"}});
   TestManager manager;
-  manager.set_enforcement_level(0);
+  manager.set_enforcement_level(kP0);
   ASSERT_THAT(manager.LoadFailureList(failure_list()), IsOk());
 
   EXPECT_THAT(manager.ReportFailure("foo", kP1, "abc"), IsOk());

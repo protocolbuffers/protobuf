@@ -1,7 +1,6 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 
-#include <limits>
 #include <string>
 #include <utility>
 
@@ -57,11 +56,10 @@ enum class TestPriority { kP0 = 0, kP1 = 1 };
 inline constexpr TestPriority kP0 = TestPriority::kP0;
 inline constexpr TestPriority kP1 = TestPriority::kP1;
 
-// An enforcement level is the highest priority, as an int (0 for kP0, 1 for
-// kP1), whose unlisted failures fail the run.  See TestManager in
-// test_manager.h.  kEnforceAllPriorities, the default, enforces every
-// priority, however many there are.
-inline constexpr int kEnforceAllPriorities = std::numeric_limits<int>::max();
+// The lowest priority there is.  An enforcement level (see TestManager in
+// test_manager.h) is the lowest priority whose unlisted failures fail the run;
+// kLowestPriority, the default, enforces every priority.
+inline constexpr TestPriority kLowestPriority = kP1;
 
 // The name of a priority: "P0" or "P1".
 absl::string_view PriorityName(TestPriority priority);
