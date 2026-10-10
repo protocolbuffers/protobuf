@@ -266,7 +266,26 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   Value<TypeHandler>* Add(Arena* arena) {
+#if defined(__aarch64__)
+    if (!using_sso()) {
+      Rep* r = rep();
+      if (current_size_ < r->allocated_size) {
+        return cast<TypeHandler>(
+            r->elements[ExchangeCurrentSize(current_size_ + 1)]);
+      }
+    }
+    using T = Value<TypeHandler>;
+    using RefType = typename TypeHandler::CopyConstructReferenceType;
+    if constexpr (std::is_same_v<RefType, const T&>) {
+      return cast<TypeHandler>(
+          AddWithCreator(arena, &Arena::DefaultConstruct<T>));
+    } else {
+      return cast<TypeHandler>(AddWithCreator(
+          arena, [](Arena* a) -> void* { return Arena::Create<T>(a); }));
+    }
+#else
     return cast<TypeHandler>(AddInternal(arena, TypeHandler::GetNewFunc()));
+#endif
   }
 
   template <typename TypeHandler>
@@ -770,6 +789,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // can have the inlined call into the out of line copy function(s) simply pass
   // the address of `Arena::CopyConstruct` 'as is'.
   using CopyFn = void* (*)(Arena*, const void*);
+  using CreateElementFn = void* (*)(Arena* arena);
 
   struct Rep {
     // The size of the elements array, in number of elements.
@@ -882,6 +902,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // provided `copy_fn` copy function to copy existing messages.
   void MergeFromConcreteMessage(const RepeatedPtrFieldBase& from, Arena* arena,
                                 CopyFn copy_fn);
+
+  PROTOBUF_NOINLINE void* AddWithCreator(Arena* arena,
+                                         CreateElementFn create_fn);
 
   // Extends capacity by at least |extend_amount|. Returns a pointer to the
   // next available element slot.
