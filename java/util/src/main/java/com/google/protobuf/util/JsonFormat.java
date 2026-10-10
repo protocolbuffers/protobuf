@@ -660,6 +660,11 @@ public class JsonFormat {
       return new Builder();
     }
 
+    public static TypeRegistry forDescriptorResolver(
+        com.google.protobuf.DescriptorResolver resolver) {
+      return new TypeRegistry(resolver);
+    }
+
     /**
      * Find a type by its full name. Returns null if it cannot be found in this {@link
      * TypeRegistry}.
@@ -671,13 +676,23 @@ public class JsonFormat {
 
     @Nullable
     Descriptor getDescriptorForTypeUrl(String typeUrl) throws InvalidProtocolBufferException {
+      if (resolver != null) {
+        return resolver.getDescriptorForTypeUrl(typeUrl);
+      }
       return find(getTypeName(typeUrl));
     }
 
     private final Map<String, Descriptor> types;
+    @Nullable private final com.google.protobuf.DescriptorResolver resolver;
 
     private TypeRegistry(Map<String, Descriptor> types) {
       this.types = types;
+      this.resolver = null;
+    }
+
+    private TypeRegistry(com.google.protobuf.DescriptorResolver resolver) {
+      this.types = Collections.emptyMap();
+      this.resolver = resolver;
     }
 
     /** A Builder is used to build {@link TypeRegistry}. */
