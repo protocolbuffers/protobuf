@@ -532,9 +532,14 @@ bool upb_strtable_init(upb_strtable* t, size_t expected_size, upb_Arena* a) {
 }
 
 void upb_strtable_clear(upb_strtable* t) {
-  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+  size_t bytes;
+  if (upb_MulOverflow(upb_table_size(&t->t), sizeof(upb_tabent), &bytes)) {
+    return;
+  }
   t->t.count = 0;
-  memset((char*)t->t.entries, 0, bytes);
+  if (t->t.entries) {
+    memset((char*)t->t.entries, 0, bytes);
+  }
 }
 
 bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
@@ -574,10 +579,13 @@ bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
   if (src->t.count == 0) {
     return upb_strtable_init(dest, 0, a);
   }
+  size_t bytes;
+  if (upb_MulOverflow(upb_table_size(&src->t), sizeof(upb_tabent), &bytes)) {
+    return false;
+  }
   dest->t.count = src->t.count;
   dest->t.mask = src->t.mask;
-  dest->t.entries =
-      upb_Arena_Malloc(a, upb_table_size(&src->t) * sizeof(upb_tabent));
+  dest->t.entries = upb_Arena_Malloc(a, bytes);
   if (!dest->t.entries) return false;
   upb_tabent* restrict dest_entries = dest->t.entries;
   const upb_tabent* restrict src_entries = src->t.entries;
@@ -742,9 +750,14 @@ bool upb_exttable_init(upb_exttable* t, size_t expected_size, upb_Arena* a) {
 }
 
 void upb_exttable_clear(upb_exttable* t) {
-  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+  size_t bytes;
+  if (upb_MulOverflow(upb_table_size(&t->t), sizeof(upb_tabent), &bytes)) {
+    return;
+  }
   t->t.count = 0;
-  memset((char*)t->t.entries, 0, bytes);
+  if (t->t.entries) {
+    memset((char*)t->t.entries, 0, bytes);
+  }
 }
 
 bool upb_exttable_resize(upb_exttable* t, size_t size_lg2, upb_Arena* a) {
@@ -892,9 +905,15 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
     return false;
   }
   size_t old_size = upb_table_size(&t->t);
-  size_t old_bytes = old_size * sizeof(upb_tabent);
+  size_t old_bytes;
+  if (upb_MulOverflow(old_size, sizeof(upb_tabent), &old_bytes)) {
+    return false;
+  }
   size_t new_size = (size_t)1 << size_lg2;
-  size_t new_bytes = new_size * sizeof(upb_tabent);
+  size_t new_bytes;
+  if (upb_MulOverflow(new_size, sizeof(upb_tabent), &new_bytes)) {
+    return false;
+  }
   if (new_bytes <= old_bytes || !t->t.entries) {
     return false;
   }
@@ -904,8 +923,7 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
   }
 
   // Zero out the newly extended region of the table buffer.
-  memset(t->t.entries + old_size, 0,
-         (new_size - old_size) * sizeof(upb_tabent));
+  memset(t->t.entries + old_size, 0, new_bytes - old_bytes);
 
   // This one-past-the-end pointer is guaranteed to be distinct from NULL and
   // any valid internal collision chain pointer in the entire table.
@@ -1045,9 +1063,14 @@ bool upb_inttable_remove(upb_inttable* t, uintptr_t key, upb_value* val) {
 }
 
 void upb_inttable_clear(upb_inttable* t) {
-  size_t bytes = upb_table_size(&t->t) * sizeof(upb_tabent);
+  size_t bytes;
+  if (upb_MulOverflow(upb_table_size(&t->t), sizeof(upb_tabent), &bytes)) {
+    return;
+  }
   t->t.count = 0;
-  memset((char*)t->t.entries, 0, bytes);
+  if (t->t.entries) {
+    memset((char*)t->t.entries, 0, bytes);
+  }
 }
 
 bool upb_inttable_next(const upb_inttable* t, uintptr_t* key, upb_value* val,
