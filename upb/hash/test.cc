@@ -660,3 +660,73 @@ TEST(IntTableTest, InPlaceGrow) {
 
   upb_Arena_Free(arena);
 }
+
+TEST(Table, StringTableCopy) {
+  upb::Arena arena;
+  upb_strtable src;
+  EXPECT_TRUE(upb_strtable_init(&src, 4, arena.ptr()));
+  EXPECT_TRUE(
+      upb_strtable_insert(&src, "key1", 4, upb_value_int32(42), arena.ptr()));
+  EXPECT_TRUE(
+      upb_strtable_insert(&src, "key2", 4, upb_value_int32(84), arena.ptr()));
+
+  upb_strtable dest;
+  EXPECT_TRUE(upb_strtable_copy(&dest, &src, arena.ptr()));
+  EXPECT_EQ(upb_strtable_count(&dest), 2);
+
+  upb_value val;
+  EXPECT_TRUE(upb_strtable_lookup2(&dest, "key1", 4, &val));
+  EXPECT_EQ(upb_value_getint32(val), 42);
+  EXPECT_TRUE(upb_strtable_lookup2(&dest, "key2", 4, &val));
+  EXPECT_EQ(upb_value_getint32(val), 84);
+
+  upb_strtable_clear(&dest);
+  EXPECT_EQ(upb_strtable_count(&dest), 0);
+  EXPECT_FALSE(upb_strtable_lookup2(&dest, "key1", 4, &val));
+
+  upb_strtable empty_src;
+  EXPECT_TRUE(upb_strtable_init(&empty_src, 0, arena.ptr()));
+  upb_strtable empty_dest;
+  EXPECT_TRUE(upb_strtable_copy(&empty_dest, &empty_src, arena.ptr()));
+  EXPECT_EQ(upb_strtable_count(&empty_dest), 0);
+}
+
+TEST(Table, IntTableCopy) {
+  upb::Arena arena;
+  upb_inttable src;
+  EXPECT_TRUE(upb_inttable_init(&src, arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&src, 1, upb_value_int32(42), arena.ptr()));
+  EXPECT_TRUE(upb_inttable_insert(&src, 2, upb_value_int32(84), arena.ptr()));
+
+  upb_inttable dest;
+  EXPECT_TRUE(upb_inttable_copy(&dest, &src, arena.ptr()));
+  EXPECT_EQ(upb_inttable_count(&dest), 2);
+
+  upb_value val;
+  EXPECT_TRUE(upb_inttable_lookup(&dest, 1, &val));
+  EXPECT_EQ(upb_value_getint32(val), 42);
+  EXPECT_TRUE(upb_inttable_lookup(&dest, 2, &val));
+  EXPECT_EQ(upb_value_getint32(val), 84);
+
+  upb_inttable_clear(&dest);
+  EXPECT_EQ(upb_inttable_count(&dest), 0);
+  EXPECT_FALSE(upb_inttable_lookup(&dest, 1, &val));
+}
+
+TEST(Table, IntTableResizeOverflow) {
+  upb::Arena arena;
+  upb_inttable t;
+  ASSERT_TRUE(upb_inttable_init(&t, arena.ptr()));
+  ASSERT_TRUE(upb_inttable_insert(&t, 1, upb_value_int32(42), arena.ptr()));
+
+  // On any platform where ((size_t)1 << size_lg2) * sizeof(upb_tabent) overflows
+  // size_t, or where size_lg2 >= 32, upb_inttable_resize must safely return false.
+  EXPECT_FALSE(upb_inttable_resize(&t, (sizeof(size_t) * 8) - 1, arena.ptr()));
+  EXPECT_FALSE(upb_inttable_resize(&t, static_cast<size_t>(-1), arena.ptr()));
+
+  // Existing table entries remain accessible after rejected resize requests.
+  EXPECT_EQ(upb_inttable_count(&t), 1);
+  upb_value val;
+  EXPECT_TRUE(upb_inttable_lookup(&t, 1, &val));
+  EXPECT_EQ(upb_value_getint32(val), 42);
+}
