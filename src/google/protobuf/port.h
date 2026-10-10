@@ -624,7 +624,7 @@ inline void PrefetchToLocalCache(const void* ptr) {}
 #elif ABSL_HAVE_BUILTIN(__builtin_FILE) && ABSL_HAVE_BUILTIN(__builtin_LINE)
 [[noreturn]] ABSL_ATTRIBUTE_COLD inline void Unreachable(
     const char* file = __builtin_FILE(), int line = __builtin_LINE()) {
-  protobuf_assumption_failed("Unreachable", file, line);
+  protobuf_assumption_failed(/*pred=*/"Unreachable", file, line);
 }
 #else
 [[noreturn]] ABSL_ATTRIBUTE_COLD inline void Unreachable() {
@@ -808,7 +808,7 @@ class PROTOBUF_EXPORT RealDebugCounter {
  public:
   static constexpr size_t kNumBuckets = 64;
   explicit RealDebugCounter(absl::string_view name) { Register(name); }
-  void Inc() { IncBucket(0); }
+  void Inc() { IncBucket(/*b=*/0); }
   void IncLog(uint64_t value) { IncBucket(absl::bit_width(value)); }
   void IncBucket(size_t b) {
     // clamp to prevent UB if IncBucket is called out of range.

@@ -1194,7 +1194,7 @@ static const char* VarintParseSlowArm(const char* p, uint64_t* out,
 // The caller must ensure that p points to at least 10 valid bytes.
 template <typename T>
 [[nodiscard]] const char* VarintParse(const char* p, T* out) {
-  AssertBytesAreReadable(p, 10);
+  AssertBytesAreReadable(p, /*n=*/10);
 #if defined(__aarch64__) && defined(ABSL_IS_LITTLE_ENDIAN) && !defined(_MSC_VER)
   // This optimization is not supported in big endian mode
   uint64_t first8;
@@ -1308,7 +1308,7 @@ PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
             *out = 0;
             return nullptr;
           }
-          *out = static_cast<uint32_t>(RotateLeft(res, 28));
+          *out = static_cast<uint32_t>(RotateLeft(res, /*s=*/28));
 #if defined(__GNUC__)
           // Note: this asm statement prevents the compiler from
           // trying to share the "return ptr + constant" among all
@@ -1317,13 +1317,13 @@ PROTOBUF_ALWAYS_INLINE const char* ReadTagInlined(const char* ptr,
 #endif
           return ptr + 5;
         }
-        *out = static_cast<uint32_t>(RotateLeft(res, 21));
+        *out = static_cast<uint32_t>(RotateLeft(res, /*s=*/21));
         return ptr + 4;
       }
-      *out = static_cast<uint32_t>(RotateLeft(res, 14));
+      *out = static_cast<uint32_t>(RotateLeft(res, /*s=*/14));
       return ptr + 3;
     }
-    *out = static_cast<uint32_t>(RotateLeft(res, 7));
+    *out = static_cast<uint32_t>(RotateLeft(res, /*s=*/7));
     return ptr + 2;
   }
   *out = static_cast<uint32_t>(res);

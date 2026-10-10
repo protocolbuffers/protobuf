@@ -181,7 +181,7 @@ class PROTOBUF_EXPORT MicroString {
   // Does not necessarily release any memory.
   void Clear() {
     if (is_inline()) {
-      set_inline_size(0);
+      set_inline_size(/*size=*/0);
       return;
     }
     ClearSlow();
@@ -548,7 +548,7 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
   if (arena == nullptr) Destroy();
 
   if (size <= inline_capacity) {
-    set_inline_size(0);
+    set_inline_size(/*size=*/0);
     do_inline();
   } else if (size <= kMaxMicroRepCapacity) {
     do_micro(AllocateMicroRep(size, arena));
