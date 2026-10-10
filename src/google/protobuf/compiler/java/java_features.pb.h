@@ -290,6 +290,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   }
 
   // accessors -------------------------------------------------------
+  private:
+  public:
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures.NestInFileClassFeature)
  private:
   class _Internal;
@@ -486,61 +488,48 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     kUseOldOuterClassnameDefaultFieldNumber = 4,
     kNestInFileClassFieldNumber = 5,
   };
+  private:
+  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::pb::JavaFeatures_Utf8Validation _internal_utf8_validation() const;
+  void _internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
+  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_legacy_closed_enum() const;
+  void _internal_set_legacy_closed_enum(bool value);
+  // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_large_enum() const;
+  void _internal_set_large_enum(bool value);
+  // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_use_old_outer_classname_default() const;
+  void _internal_set_use_old_outer_classname_default(bool value);
+  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass _internal_nest_in_file_class() const;
+  void _internal_set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
+  public:
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_utf8_validation() const;
   void clear_utf8_validation() ;
   [[nodiscard]] ::pb::JavaFeatures_Utf8Validation utf8_validation() const;
   void set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
-
-  private:
-  ::pb::JavaFeatures_Utf8Validation _internal_utf8_validation() const;
-  void _internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
-
-  public:
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
   [[nodiscard]] bool legacy_closed_enum() const;
   void set_legacy_closed_enum(bool value);
-
-  private:
-  bool _internal_legacy_closed_enum() const;
-  void _internal_set_legacy_closed_enum(bool value);
-
-  public:
   // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_large_enum() const;
   void clear_large_enum() ;
   [[nodiscard]] bool large_enum() const;
   void set_large_enum(bool value);
-
-  private:
-  bool _internal_large_enum() const;
-  void _internal_set_large_enum(bool value);
-
-  public:
   // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_use_old_outer_classname_default() const;
   void clear_use_old_outer_classname_default() ;
   [[nodiscard]] bool use_old_outer_classname_default() const;
   void set_use_old_outer_classname_default(bool value);
-
-  private:
-  bool _internal_use_old_outer_classname_default() const;
-  void _internal_set_use_old_outer_classname_default(bool value);
-
-  public:
   // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
   [[nodiscard]] bool has_nest_in_file_class() const;
   void clear_nest_in_file_class() ;
   [[nodiscard]] ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass nest_in_file_class() const;
   void set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
-
-  private:
-  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass _internal_nest_in_file_class() const;
-  void _internal_set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
-
-  public:
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures)
  private:
   class _Internal;

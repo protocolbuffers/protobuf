@@ -5,15 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -21,7 +18,6 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -174,6 +170,7 @@ class Map : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -202,19 +199,21 @@ void Map::GeneratePrivateMembers(io::Printer* p) const {
 }
 
 void Map::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v1 = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto v2 = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ const $Map$& $name$() const;
     [[nodiscard]] $DEPRECATED$ $Map$* $nonnull$ $mutable_name$();
+  )cc");
+}
 
-    private:
+void Map::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  auto v1 = p->WithVars(
+      AnnotatedAccessors(field_, {"_internal_", "_internal_mutable_"}));
+  p->Emit(R"cc(
     const $Map$& $_internal_name$() const;
     $Map$* $nonnull$ $_internal_mutable_name$();
-
-    public:
   )cc");
 }
 
