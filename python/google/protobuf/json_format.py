@@ -26,6 +26,7 @@ from operator import methodcaller
 import re
 
 from google.protobuf import descriptor
+from google.protobuf import descriptor_pb2  # pylint: disable=unused-import
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
