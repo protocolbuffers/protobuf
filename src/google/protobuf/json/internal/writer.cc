@@ -16,9 +16,14 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/charset.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
 
 namespace google {
 namespace protobuf {
@@ -43,42 +48,44 @@ void JsonWriter::WriteBase64(absl::string_view str) {
   // This is the regular base64, not the "web-safe" version.
   constexpr absl::string_view kBase64 =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-  const char* ptr = str.data();
-  const char* end = ptr + str.size();
+  absl::Span<const char> input(str);
 
-  // Reads the `n`th character off of `ptr` while gracefully avoiding
-  // sign extension due to implicit conversions
-  auto read = [&](size_t n) {
-    return static_cast<size_t>(static_cast<uint8_t>(ptr[n]));
+  // Reads the `n`th character of the input starting at `offset`, while
+  // gracefully avoiding sign extension due to implicit conversions.
+  auto read = [&](size_t offset, size_t n) {
+    return static_cast<size_t>(static_cast<uint8_t>(input[offset + n]));
   };
 
   char buf[4];
   absl::string_view view(buf, sizeof(buf));
   Write("\"");
 
-  while (end - ptr >= 3) {
-    buf[0] = kBase64[read(0) >> 2];
-    buf[1] = kBase64[((read(0) & 0x3) << 4) | (read(1) >> 4)];
-    buf[2] = kBase64[((read(1) & 0xf) << 2) | (read(2) >> 6)];
-    buf[3] = kBase64[read(2) & 0x3f];
+  size_t offset = 0;
+  while (input.size() - offset >= 3) {
+    buf[0] = kBase64[read(offset, 0) >> 2];
+    buf[1] = kBase64[((read(offset, 0) & 0x3) << 4) | (read(offset, 1) >> 4)];
+    buf[2] = kBase64[((read(offset, 1) & 0xf) << 2) | (read(offset, 2) >> 6)];
+    buf[3] = kBase64[read(offset, 2) & 0x3f];
     Write(view);
-    ptr += 3;
+    offset += 3;
   }
 
-  switch (end - ptr) {
+  switch (input.size() - offset) {
     case 2:
-      buf[0] = kBase64[read(0) >> 2];
-      buf[1] = kBase64[((read(0) & 0x3) << 4) | (read(1) >> 4)];
-      buf[2] = kBase64[(read(1) & 0xf) << 2];
+      buf[0] = kBase64[read(offset, 0) >> 2];
+      buf[1] = kBase64[((read(offset, 0) & 0x3) << 4) | (read(offset, 1) >> 4)];
+      buf[2] = kBase64[(read(offset, 1) & 0xf) << 2];
       buf[3] = '=';
       Write(view);
       break;
     case 1:
-      buf[0] = kBase64[read(0) >> 2];
-      buf[1] = kBase64[((read(0) & 0x3) << 4)];
+      buf[0] = kBase64[read(offset, 0) >> 2];
+      buf[1] = kBase64[((read(offset, 0) & 0x3) << 4)];
       buf[2] = '=';
       buf[3] = '=';
       Write(view);
+      break;
+    case 0:
       break;
   }
 
