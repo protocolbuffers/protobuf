@@ -250,6 +250,50 @@ module BasicTestProto2
       assert_equal expected_result, m.to_h
     end
 
+    def test_to_h_emit_defaults
+      m = TestMessage.new
+      expected_result = {
+        :repeated_int32 => [],
+        :repeated_int64 => [],
+        :repeated_uint32 => [],
+        :repeated_uint64 => [],
+        :repeated_bool => [],
+        :repeated_float => [],
+        :repeated_double => [],
+        :repeated_string => [],
+        :repeated_bytes => [],
+        :repeated_msg => [],
+        :repeated_enum => [],
+      }
+      assert_equal expected_result, m.to_h(emit_defaults: true)
+
+      m = TestMessage.new(:optional_bool => true, :optional_double => -10.100001, :optional_string => 'foo', :repeated_string => ['bar1', 'bar2'])
+      expected_result = {
+        :optional_bool => true,
+        :optional_double => -10.100001,
+        :optional_string => 'foo',
+        :repeated_int32 => [],
+        :repeated_int64 => [],
+        :repeated_uint32 => [],
+        :repeated_uint64 => [],
+        :repeated_bool => [],
+        :repeated_float => [],
+        :repeated_double => [],
+        :repeated_string => ['bar1', 'bar2'],
+        :repeated_bytes => [],
+        :repeated_msg => [],
+        :repeated_enum => [],
+      }
+      assert_equal expected_result, m.to_h(emit_defaults: true)
+
+      # oneof members have presence: an unset oneof is never restored.
+      m = OneofMessage.new
+      assert_equal({}, m.to_h(emit_defaults: true))
+
+      m = OneofMessage.new(:a => "foo")
+      assert_equal m.to_h, m.to_h(emit_defaults: true)
+    end
+
     def test_respond_to
       # This test fails with JRuby 1.7.23, likely because of an old JRuby bug.
       return if RUBY_PLATFORM == "java"

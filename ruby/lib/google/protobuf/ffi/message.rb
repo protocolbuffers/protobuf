@@ -137,8 +137,16 @@ module Google
             encoding.read(:pointer).read_string(size_ptr.read(:size_t)).hash
           end
 
-          def to_h
-            to_h_internal @msg, self.class.descriptor
+          ##
+          # call-seq:
+          #     Message.to_h(emit_defaults: false) => hash
+          #
+          # Returns the message as a Ruby Hash object, with keys as symbols. With
+          # emit_defaults: true, fields that have no presence are also included with
+          # their default values. Fields that have presence (message fields, oneof
+          # fields and fields with explicit presence) are included only when set.
+          def to_h(emit_defaults: false)
+            to_h_internal @msg, self.class.descriptor, emit_defaults
           end
 
           ##

@@ -47,12 +47,15 @@ import com.google.protobuf.util.JsonFormat;
 import java.nio.ByteBuffer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.jruby.*;
 import org.jruby.anno.JRubyMethod;
 import org.jruby.exceptions.RaiseException;
+import org.jruby.internal.runtime.methods.DynamicMethod;
 import org.jruby.runtime.Block;
 import org.jruby.runtime.Helpers;
 import org.jruby.runtime.ThreadContext;
@@ -675,7 +678,8 @@ public class RubyMessage extends RubyObject {
    * Encodes the given message object into its serialized JSON representation.
    * @param options [Hash] options for the decoder
    *  preserve_proto_fieldnames: set true to use original fieldnames (default is to camelCase)
-   *  emit_defaults: set true to emit 0/false values (default is to omit them)
+   *  emit_defaults: set true to also emit fields that have no presence, with their default values
+   *  (default is to omit them). Fields that have presence are emitted only when set.
    *  format_enums_as_integers: set true to emit enum values as integer (default is string)
    */
   @JRubyMethod(name = "encode_json", required = 1, optional = 1, meta = true)
@@ -782,13 +786,76 @@ public class RubyMessage extends RubyObject {
     return ret;
   }
 
-  @JRubyMethod(name = "to_h")
-  public IRubyObject toHash(ThreadContext context) {
+  /*
+   * call-seq:
+   *     Message.to_h(emit_defaults: false) => hash
+   *
+   * Returns the message as a Ruby Hash object, with keys as symbols. With
+   * emit_defaults: true, fields that have no presence are also included with their
+   * default values. Fields that have presence (message fields, oneof fields and
+   * fields with explicit presence) are included only when set.
+   */
+  @JRubyMethod(name = "to_h", optional = 1)
+  public IRubyObject toHash(ThreadContext context, IRubyObject[] args) {
+    boolean emitDefaults = false;
+
+    if (args.length > 0 && !args[0].isNil()) {
+      RubyHash opts = args[0].convertToHash();
+      IRubyObject value = opts.fastARef(context.runtime.newSymbol("emit_defaults"));
+      emitDefaults = value != null && value.isTrue();
+    }
+
+    return toHashInternal(context, emitDefaults);
+  }
+
+  static IRubyObject invokeToHash(ThreadContext context, IRubyObject receiver, IRubyObject[] args) {
+    if (args.length == 0 || !toHashAcceptsOptions(context, receiver)) {
+      return Helpers.invoke(context, receiver, "to_h");
+    }
+
+    context.callInfo = ThreadContext.CALL_KEYWORD;
+    try {
+      return Helpers.invoke(context, receiver, "to_h", args);
+    } finally {
+      context.callInfo = 0;
+    }
+  }
+
+  // A user-supplied `to_h` override may take no arguments at all; passing it
+  // the options would raise ArgumentError. Fall back to a plain `to_h` call for
+  // those, so that overriding `to_h` keeps working. The subtree it returns then
+  // carries no defaults, which is also what the CRuby and FFI backends produce.
+  private static boolean toHashAcceptsOptions(ThreadContext context, IRubyObject receiver) {
+    DynamicMethod method = receiver.getMetaClass().searchMethod("to_h");
+    return method != null && !method.isUndefined() && !method.getSignature().isNoArguments();
+  }
+
+  private IRubyObject toHashInternal(ThreadContext context, boolean emitDefaults) {
     Ruby runtime = context.runtime;
     RubyHash ret = RubyHash.newHash(runtime);
     build(context, 0, SINK_MAXIMUM_NESTING); // Sync Ruby data to the Builder object.
-    for (Map.Entry<FieldDescriptor, Object> field : builder.getAllFields().entrySet()) {
-      FieldDescriptor fdef = field.getKey();
+    IRubyObject[] toHArgs =
+        emitDefaults
+            ? new IRubyObject[] {
+              RubyHash.newKwargs(runtime, "emit_defaults", runtime.getTrue())
+            }
+            : IRubyObject.NULL_ARRAY;
+
+    Collection<FieldDescriptor> fieldsToEmit;
+    if (emitDefaults) {
+      List<FieldDescriptor> present = new ArrayList<FieldDescriptor>();
+      for (FieldDescriptor fdef : descriptor.getFields()) {
+        if (fdef.hasPresence() && !builder.hasField(fdef)) {
+          continue;
+        }
+        present.add(fdef);
+      }
+      fieldsToEmit = present;
+    } else {
+      fieldsToEmit = builder.getAllFields().keySet();
+    }
+
+    for (FieldDescriptor fdef : fieldsToEmit) {
       IRubyObject value = getFieldInternal(context, fdef, !fdef.hasPresence());
 
       if (fdef.isRepeated() && !fdef.isMapField()) {
@@ -797,14 +864,20 @@ public class RubyMessage extends RubyObject {
         } else {
           RubyArray ary = value.convertToArray();
           for (int i = 0; i < ary.size(); i++) {
-            IRubyObject submsg = Helpers.invoke(context, ary.eltInternal(i), "to_h");
+            IRubyObject submsg =
+                invokeToHash(context, ary.eltInternal(i), toHArgs);
             ary.eltInternalSet(i, submsg);
           }
 
           value = ary.to_ary();
         }
+      } else if (emitDefaults && value instanceof RubyMap) {
+        // Map#to_h takes no options, so recurse into it directly rather than
+        // dispatching -- otherwise the messages stored as map values would be
+        // converted without the option.
+        value = ((RubyMap) value).toHashInternal(context, true);
       } else if (value.respondsTo("to_h")) {
-        value = Helpers.invoke(context, value, "to_h");
+        value = invokeToHash(context, value, toHArgs);
       } else if (value.respondsTo("to_a")) {
         value = Helpers.invoke(context, value, "to_a");
       }
