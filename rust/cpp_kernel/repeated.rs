@@ -22,6 +22,7 @@ unsafe extern "C" {
         prototype: RawMessage,
     ) -> RawMessage;
     pub fn proto2_rust_RepeatedField_Message_clear(field: RawRepeatedField);
+    pub fn proto2_rust_RepeatedField_Message_truncate(field: RawRepeatedField, new_len: usize);
     pub fn proto2_rust_RepeatedField_Message_copy_from(
         dst: RawRepeatedField,
         src: RawRepeatedField,
@@ -46,8 +47,7 @@ impl InnerRepeated {
     }
 
     /// # Safety
-    /// - `raw` must be a valid `proto2::RepeatedField*` or
-    ///   `proto2::RepeatedPtrField*`.
+    /// - `raw` must be a valid `proto2::RepeatedField*` or `proto2::RepeatedPtrField*`.
     pub unsafe fn from_raw(raw: RawRepeatedField) -> Self {
         Self { raw }
     }
@@ -203,6 +203,12 @@ where
         unsafe { proto2_rust_RepeatedField_Message_clear(f.as_raw(Private)) };
     }
 
+    fn repeated_truncate(_private: Private, mut f: Mut<Repeated<Self>>, new_len: usize) {
+        // SAFETY:
+        // - `f.as_raw()` is a valid `RepeatedPtrField*`.
+        unsafe { proto2_rust_RepeatedField_Message_truncate(f.as_raw(Private), new_len) };
+    }
+
     fn repeated_push(_private: Private, mut f: Mut<Repeated<Self>>, v: impl IntoProxied<Self>) {
         // SAFETY:
         // - `f.as_raw()` is a valid `RepeatedPtrField*`.
@@ -247,6 +253,7 @@ macro_rules! impl_repeated_primitives {
         $get_thunk:ident,
         $set_thunk:ident,
         $clear_thunk:ident,
+        $truncate_thunk:ident,
         $copy_from_thunk:ident,
         $reserve_thunk:ident $(,)?
     ]),* $(,)?) => {
@@ -264,6 +271,7 @@ macro_rules! impl_repeated_primitives {
                     i: usize,
                     v: <$t as CppTypeConversions>::InsertElemType);
                 fn $clear_thunk(f: RawRepeatedField);
+                fn $truncate_thunk(f: RawRepeatedField, new_len: usize);
                 fn $copy_from_thunk(src: RawRepeatedField, dst: RawRepeatedField);
                 fn $reserve_thunk(
                     f: RawRepeatedField,
@@ -294,6 +302,10 @@ macro_rules! impl_repeated_primitives {
                 #[inline]
                 fn repeated_clear(_private: Private, mut f: Mut<Repeated<$t>>) {
                     unsafe { $clear_thunk(f.as_raw(Private)) }
+                }
+                #[inline]
+                fn repeated_truncate(_private: Private, mut f: Mut<Repeated<$t>>, new_len: usize) {
+                    unsafe { $truncate_thunk(f.as_raw(Private), new_len) }
                 }
                 #[inline]
                 unsafe fn repeated_get_unchecked(_private: Private, f: View<Repeated<$t>>, i: usize) -> View<$t> {
@@ -328,6 +340,7 @@ macro_rules! impl_repeated_primitives {
                     [< proto2_rust_RepeatedField_ $t _get >],
                     [< proto2_rust_RepeatedField_ $t _set >],
                     [< proto2_rust_RepeatedField_ $t _clear >],
+                    [< proto2_rust_RepeatedField_ $t _truncate >],
                     [< proto2_rust_RepeatedField_ $t _copy_from >],
                     [< proto2_rust_RepeatedField_ $t _reserve >],
                 ],
@@ -377,8 +390,7 @@ pub fn new_enum_repeated<E: Enum>() -> Repeated<E> {
 /// Cast a `RepeatedMut<SomeEnum>` to `RepeatedMut<c_int>` and call
 /// repeated_free.
 /// # Safety
-/// - The passed in `&mut Repeated<E>` must not be used after this function is
-///   called.
+/// - The passed in `&mut Repeated<E>` must not be used after this function is called.
 pub unsafe fn free_enum_repeated<E: Enum>(repeated: &mut Repeated<E>) {
     unsafe {
         let mut int_r: Repeated<c_int> =

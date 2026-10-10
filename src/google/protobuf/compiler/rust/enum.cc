@@ -345,6 +345,14 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
           $pbr$::cast_enum_repeated_mut(r).clear()
         }
 
+        fn repeated_truncate(
+            _private: $pbi$::Private,
+            r: $pb$::Mut<$pb$::Repeated<Self>>,
+            new_len: usize,
+        ) {
+          $pbr$::cast_enum_repeated_mut(r).truncate(new_len)
+        }
+
         unsafe fn repeated_get_unchecked(
             _private: $pbi$::Private,
             r: $pb$::View<$pb$::Repeated<Self>>,
