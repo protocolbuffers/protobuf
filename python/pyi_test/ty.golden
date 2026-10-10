@@ -1,0 +1,26 @@
+python/pyi_test/typing_test.py:33:13: info[revealed-type] Revealed type: `bool`
+python/pyi_test/typing_test.py:34:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:35:13: info[revealed-type] Revealed type: `bytes`
+python/pyi_test/typing_test.py:36:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:37:13: info[revealed-type] Revealed type: `State`
+python/pyi_test/typing_test.py:38:13: info[revealed-type] Revealed type: `Literal["detail"] | None`
+python/pyi_test/typing_test.py:39:13: info[revealed-type] Revealed type: `Literal["ok", "error"] | None`
+python/pyi_test/typing_test.py:40:13: info[revealed-type] Revealed type: `Literal["ok", "error"] | None`
+python/pyi_test/typing_test.py:42:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:43:13: info[revealed-type] Revealed type: `Literal["started", "finished"] | None`
+python/pyi_test/typing_test.py:45:13: info[revealed-type] Revealed type: `Literal["from", "class"] | None`
+python/pyi_test/typing_test.py:47:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:50:13: info[revealed-type] Revealed type: `Literal["a", "b"] | None`
+python/pyi_test/typing_test.py:52:17: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:54:17: info[revealed-type] Revealed type: `int`
+python/pyi_test/typing_test.py:65:13: info[revealed-type] Revealed type: `int`
+python/pyi_test/typing_test.py:66:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:67:13: info[revealed-type] Revealed type: `str`
+python/pyi_test/typing_test.py:69:18: error[invalid-argument-type] Argument to `Step.__init__` is incorrect: Expected `bytes | None`, found `Literal["not bytes"]`
+python/pyi_test/typing_test.py:70:1: error[invalid-assignment] Object of type `Literal["not bytes"]` is not assignable to attribute `payload` of type `bytes`
+python/pyi_test/typing_test.py:71:18: error[unknown-argument] Argument `not_a_field` does not match any known parameter of `Step.__init__`
+python/pyi_test/typing_test.py:72:1: error[no-matching-overload] No overload of bound method `Step.WhichOneof` matches arguments
+python/pyi_test/typing_test.py:73:1: error[no-matching-overload] No overload of bound method `Step.WhichOneof` matches arguments
+python/pyi_test/typing_test.py:74:24: error[invalid-argument-type] Argument to bound method `SelfFields.WhichOneof` is incorrect: Expected `Never`, found `Literal["not_a_oneof"]`
+python/pyi_test/typing_test.py:81:5: error[type-assertion-failure] Type `Literal["b"]` is not equivalent to `Never`
+Found 25 diagnostics

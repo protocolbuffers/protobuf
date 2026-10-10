@@ -1,0 +1,34 @@
+python/pyi_test/typing_test.py:33: note: Revealed type is "bool"
+python/pyi_test/typing_test.py:34: note: Revealed type is "str"
+python/pyi_test/typing_test.py:35: note: Revealed type is "bytes"
+python/pyi_test/typing_test.py:36: note: Revealed type is "str"
+python/pyi_test/typing_test.py:37: note: Revealed type is "python.pyi_test.fixture_pb2.State"
+python/pyi_test/typing_test.py:38: note: Revealed type is "Literal['detail'] | None"
+python/pyi_test/typing_test.py:39: note: Revealed type is "Literal['ok'] | Literal['error'] | None"
+python/pyi_test/typing_test.py:40: note: Revealed type is "Literal['ok'] | Literal['error'] | None"
+python/pyi_test/typing_test.py:42: note: Revealed type is "str"
+python/pyi_test/typing_test.py:43: note: Revealed type is "Literal['started'] | Literal['finished'] | None"
+python/pyi_test/typing_test.py:45: note: Revealed type is "Literal['from'] | Literal['class'] | None"
+python/pyi_test/typing_test.py:47: note: Revealed type is "str"
+python/pyi_test/typing_test.py:50: note: Revealed type is "Literal['a'] | Literal['b'] | None"
+python/pyi_test/typing_test.py:52: note: Revealed type is "str"
+python/pyi_test/typing_test.py:54: note: Revealed type is "int"
+python/pyi_test/typing_test.py:65: note: Revealed type is "int"
+python/pyi_test/typing_test.py:66: note: Revealed type is "str"
+python/pyi_test/typing_test.py:67: note: Revealed type is "str"
+python/pyi_test/typing_test.py:69: error: Argument "payload" to "Step" has incompatible type "str"; expected "bytes | None"  [arg-type]
+python/pyi_test/typing_test.py:70: error: Incompatible types in assignment (expression has type "str", variable has type "bytes")  [assignment]
+python/pyi_test/typing_test.py:71: error: Unexpected keyword argument "not_a_field" for "Step"  [call-arg]
+python/pyi_test/typing_test.py:71: note: "Step" defined in "python.pyi_test.fixture_pb2"
+python/pyi_test/typing_test.py:72: error: No overload variant of "WhichOneof" of "Step" matches argument type "str"  [call-overload]
+python/pyi_test/typing_test.py:72: note: Possible overload variants:
+python/pyi_test/typing_test.py:72: note:     def WhichOneof(self, Literal['action', b'action'], /) -> Literal['a', 'b'] | None
+python/pyi_test/typing_test.py:72: note:     def WhichOneof(self, Literal['result', b'result'], /) -> Literal['ok', 'error'] | None
+python/pyi_test/typing_test.py:72: note:     def WhichOneof(self, Literal['_detail', b'_detail'], /) -> Literal['detail'] | None
+python/pyi_test/typing_test.py:73: error: No overload variant of "WhichOneof" of "Step" matches argument type "str"  [call-overload]
+python/pyi_test/typing_test.py:73: note: Possible overload variants:
+python/pyi_test/typing_test.py:73: note:     def WhichOneof(self, Literal['action', b'action'], /) -> Literal['a', 'b'] | None
+python/pyi_test/typing_test.py:73: note:     def WhichOneof(self, Literal['result', b'result'], /) -> Literal['ok', 'error'] | None
+python/pyi_test/typing_test.py:73: note:     def WhichOneof(self, Literal['_detail', b'_detail'], /) -> Literal['detail'] | None
+python/pyi_test/typing_test.py:74: error: Argument 1 to "WhichOneof" of "SelfFields" has incompatible type "str"; expected "Never"  [arg-type]
+python/pyi_test/typing_test.py:81: error: Argument 1 to "assert_never" has incompatible type "Literal['b']"; expected "Never"  [arg-type]

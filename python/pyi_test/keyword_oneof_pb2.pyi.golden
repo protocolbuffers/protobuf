@@ -1,0 +1,20 @@
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
+from typing import ClassVar as _ClassVar, Literal as _Literal, Optional as _Optional
+
+DESCRIPTOR: _descriptor.FileDescriptor
+
+class KeywordOneof(_message.Message):
+    __slots__ = ()
+    FROM_FIELD_NUMBER: _ClassVar[int]
+    CLASS_FIELD_NUMBER: _ClassVar[int]
+    def __init__(self, **kwargs) -> None: ...
+    def WhichOneof(self, oneof_group: _Literal["choice", b"choice"], /) -> _Optional[_Literal["from", "class"]]: ...
+
+class ShadowedOneof(_message.Message):
+    __slots__ = ("WhichOneof", "a")
+    WHICHONEOF_FIELD_NUMBER: _ClassVar[int]
+    A_FIELD_NUMBER: _ClassVar[int]
+    WhichOneof: str
+    a: str
+    def __init__(self, WhichOneof: _Optional[str] = ..., a: _Optional[str] = ...) -> None: ...
