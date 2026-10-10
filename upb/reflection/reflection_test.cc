@@ -1,5 +1,6 @@
 
 #include <cstring>
+#include <clocale>
 #include <string>
 #include <string_view>
 
@@ -128,6 +129,48 @@ TEST(ReflectionTest, EnumDefault) {
                           .value();
   upb::EnumDefPtr e = pool.FindEnumByName("FooEnum");
   EXPECT_EQ(e.default_value(), 1);
+}
+
+TEST(ReflectionTest, FloatingPointDefaultsIgnoreNumericLocale) {
+  const char* current_locale = std::setlocale(LC_NUMERIC, nullptr);
+  const std::string saved_locale = current_locale ? current_locale : "C";
+
+  if (std::setlocale(LC_NUMERIC, "en_DK.utf8") == nullptr) {
+    GTEST_SKIP() << "en_DK.utf8 locale unavailable";
+  }
+
+  absl::StatusOr<upb::DefPool> pool = LoadDescriptorProto(
+      R"pb(
+        syntax: "proto2"
+        name: "F"
+        message_type {
+          name: "FloatingPointDefaults"
+          field {
+            name: "double_value"
+            number: 1
+            type: TYPE_DOUBLE
+            default_value: "0.9995"
+          }
+          field {
+            name: "float_value"
+            number: 2
+            type: TYPE_FLOAT
+            default_value: "0.9995"
+          }
+        }
+      )pb");
+
+  std::setlocale(LC_NUMERIC, saved_locale.c_str());
+  ASSERT_TRUE(pool.ok()) << pool.status();
+
+  upb::MessageDefPtr message = pool->FindMessageByName("FloatingPointDefaults");
+  ASSERT_TRUE(message);
+  upb::FieldDefPtr double_field = message.FindFieldByName("double_value");
+  ASSERT_TRUE(double_field);
+  upb::FieldDefPtr float_field = message.FindFieldByName("float_value");
+  ASSERT_TRUE(float_field);
+  EXPECT_DOUBLE_EQ(double_field.default_value().double_val, 0.9995);
+  EXPECT_FLOAT_EQ(float_field.default_value().float_val, 0.9995f);
 }
 
 TEST(ReflectionTest, ImplicitPresenceWithDefault) {
