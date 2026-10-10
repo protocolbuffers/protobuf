@@ -21,6 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -451,6 +452,20 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    */
   public static ByteString copyFrom(byte[] bytes) {
     return copyFrom(bytes, 0, bytes.length);
+  }
+
+  /** Wraps the given message within a {@code ByteString}. */
+  static ByteString wrap(MessageLite msg) {
+    return new MessageByteString(msg);
+  }
+
+  /** For Protobuf internal experimental use only. */
+  static CachingStringByteString withStringCached(ByteString bytes) {
+    if (bytes instanceof CachingStringByteString) {
+      // Don't wrap the same instance, we already have the cached string available.
+      return (CachingStringByteString) bytes;
+    }
+    return new CachingStringByteString(bytes);
   }
 
   /**
@@ -1866,6 +1881,352 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
       throw new InvalidObjectException(
           "BoundedByteStream instances are not to be serialized directly");
+    }
+  }
+
+  static final class MessageByteString extends ByteString.LeafByteString {
+    private final MessageLite msg;
+    // Cache an allocated version of the ByteString to ensure we can fulfill our API,
+    // but the implementation tries to avoid doing the allocation as much as it can.
+    volatile ByteString allocated = null;
+
+    MessageByteString(MessageLite msg) {
+      checkNotNull(msg, "msg");
+      this.msg = msg;
+    }
+
+    // =================================================================
+    // Serializable
+
+    /** Magic method that lets us override serialization behavior. */
+    private Object writeReplace() {
+      return allocate();
+    }
+
+    /** Magic method that lets us override deserialization behavior. */
+    private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
+      throw new InvalidObjectException(
+          "MessageByteString instances are not to be serialized directly");
+    }
+
+    // =================================================================
+
+    private ByteString allocate() {
+      ByteString allocated = this.allocated;
+      // no need to synchronize, it's OK to recreate a new one in a race.
+      if (allocated == null) {
+        allocated = msg.toByteString();
+        this.allocated = allocated;
+      }
+      return allocated;
+    }
+
+    @Override
+    public byte byteAt(int index) {
+      return allocate().byteAt(index);
+    }
+
+    @Override
+    public byte internalByteAt(int index) {
+      return byteAt(index);
+    }
+
+    @Override
+    public int size() {
+      return msg.getSerializedSize();
+    }
+
+    @Override
+    public ByteString substring(int beginIndex, int endIndex) {
+      if (beginIndex == endIndex) {
+        return EMPTY;
+      }
+      if (beginIndex != 0 || endIndex != size()) {
+        return allocate().substring(beginIndex, endIndex);
+      }
+      return this;
+    }
+
+    @Override
+    public ByteString substringNoCopy(int beginIndex, int endIndex) {
+      if (beginIndex == endIndex) {
+        return EMPTY;
+      }
+      if (beginIndex != 0 || endIndex != size()) {
+        return allocate().substringNoCopy(beginIndex, endIndex);
+      }
+      return this;
+    }
+
+    @Override
+    protected void copyToInternal(
+        byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
+      if (sourceOffset != 0 || numberToCopy != size()) {
+        allocate().copyToInternal(target, sourceOffset, targetOffset, numberToCopy);
+        return;
+      }
+      try {
+        msg.writeTo(CodedOutputStream.newInstance(target, targetOffset, numberToCopy));
+      } catch (IOException e) {
+        // Should be impossible since we're writing to a byte[].
+        throw new AssertionError(e);
+      }
+    }
+
+    @Override
+    public void copyTo(ByteBuffer target) {
+      CodedOutputStream out = CodedOutputStream.newInstance(target);
+      try {
+        msg.writeTo(out);
+        out.flush();
+      } catch (CodedOutputStream.OutOfSpaceException e) {
+        BufferOverflowException ex = new BufferOverflowException();
+        ex.initCause(e);
+        throw ex;
+      } catch (IOException e) {
+        // Should be impossible since we're writing to a buffer.
+        throw new AssertionError(e);
+      }
+    }
+
+    @Override
+    public void writeTo(OutputStream out) throws IOException {
+      CodedOutputStream cout = CodedOutputStream.newInstance(out);
+      msg.writeTo(cout);
+      cout.flush();
+    }
+
+    @Override
+    void writeTo(ByteOutput output) throws IOException {
+      if (output instanceof CodedOutputStream) {
+        msg.writeTo((CodedOutputStream) output);
+      } else {
+        allocate().writeTo(output);
+      }
+    }
+
+    @Override
+    boolean equalsRange(ByteString other, int offset, int length) {
+      if (offset != 0
+          || length != size()
+          || !(other instanceof MessageByteString)) {
+        return ((LeafByteString) allocate()).equalsRange(other, offset, length);
+      }
+      return msg.equals(((MessageByteString) other).msg);
+    }
+
+    @Override
+    void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite) throws IOException {
+      if (sourceOffset != 0 || numberToWrite != size()) {
+        allocate().writeToInternal(out, sourceOffset, numberToWrite);
+        return;
+      }
+      msg.writeTo(out);
+    }
+
+    @Override
+    public ByteBuffer asReadOnlyByteBuffer() {
+      return allocate().asReadOnlyByteBuffer();
+    }
+
+    @Override
+    public List<ByteBuffer> asReadOnlyByteBufferList() {
+      return Collections.singletonList(asReadOnlyByteBuffer());
+    }
+
+    @Override
+    protected String toStringInternal(Charset charset) {
+      return allocate().toString(charset);
+    }
+
+    @Override
+    public boolean isValidUtf8() {
+      return allocate().isValidUtf8();
+    }
+
+    @Override
+    public boolean equalsInternal(ByteString other) {
+      // Returns true only if the other side is another MessageByteString backed by the exact same
+      // message instance. It's unsafe to use `equals` because messages with different types can
+      // have the same binary representation. Additionally, `equals` on messages with extensions
+      // compares unknown fields and extension fields separately, meaning that the same extension
+      // field of the same message can exist in either unknown fields or extension fields, making
+      // them not equal even if they have the same serialized bytes.
+      if (other instanceof MessageByteString && msg == ((MessageByteString) other).msg) {
+        return true;
+      }
+      return allocate().equals(other);
+    }
+
+    @Override
+    protected int partialHash(int h, int offset, int length) {
+      return allocate().partialHash(h, offset, length);
+    }
+
+    @Override
+    public InputStream newInput() {
+      return allocate().newInput();
+    }
+
+    @Override
+    public CodedInputStream newCodedInput() {
+      return allocate().newCodedInput();
+    }
+  }
+
+  /**
+   * For Protobuf internal experimental use only.
+   *
+   * <p>An experimental ByteString implementation that caches String representations from UTF-8.
+   * This class is to be removed at anytime.
+   */
+  // TODO: We can probably make {@link #copyFrom(String, Charset)} method to store the String
+  // representation as well.
+  static final class CachingStringByteString extends ByteString {
+    volatile String cache = null;
+    volatile Boolean validUtf8 = null;
+    ByteString internal = null;
+
+    CachingStringByteString(ByteString byteString) {
+      checkNotNull(byteString, "byteString");
+      this.internal = byteString;
+    }
+
+    @Override
+    public byte byteAt(int index) {
+      return internal.byteAt(index);
+    }
+
+    @Override
+    public byte internalByteAt(int index) {
+      return byteAt(index);
+    }
+
+    @Override
+    public int size() {
+      return internal.size();
+    }
+
+    @Override
+    public ByteString substring(int beginIndex, int endIndex) {
+      return internal.substring(beginIndex, endIndex);
+    }
+
+    @Override
+    public ByteString substringNoCopy(int beginIndex, int endIndex) {
+      return internal.substringNoCopy(beginIndex, endIndex);
+    }
+
+    @Override
+    protected void copyToInternal(
+        byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
+      internal.copyToInternal(target, sourceOffset, targetOffset, numberToCopy);
+    }
+
+    @Override
+    public void copyTo(ByteBuffer target) {
+      internal.copyTo(target);
+    }
+
+    @Override
+    public void writeTo(OutputStream out) throws IOException {
+      internal.writeTo(out);
+    }
+
+    @Override
+    void writeTo(ByteOutput output) throws IOException {
+      internal.writeTo(output);
+    }
+
+    @Override
+    void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite) throws IOException {
+      internal.writeToInternal(out, sourceOffset, numberToWrite);
+    }
+
+    @Override
+    public ByteBuffer asReadOnlyByteBuffer() {
+      return internal.asReadOnlyByteBuffer();
+    }
+
+    @Override
+    public List<ByteBuffer> asReadOnlyByteBufferList() {
+      return Collections.singletonList(asReadOnlyByteBuffer());
+    }
+
+    @Override
+    protected String toStringInternal(Charset charset) {
+      if (!charset.equals(StandardCharsets.UTF_8)) {
+        return internal.toString(charset);
+      }
+      if (cache == null) {
+        cache = internal.toString(charset);
+      }
+      return cache;
+    }
+
+    @Override
+    public boolean isValidUtf8() {
+      if (validUtf8 == null) {
+        String s = toStringInternal(StandardCharsets.UTF_8);
+        if (s.indexOf('\uFFFD') < 0) {
+          // fast path: check replacement character.
+          validUtf8 = true;
+        } else {
+          // slow path: check the entire string.
+          validUtf8 = internal.isValidUtf8();
+        }
+      }
+      return validUtf8;
+    }
+
+    @Override
+    @SuppressWarnings("ReferenceEquality")
+    protected boolean equalsInternal(ByteString other) {
+      // The outer equals() already checked a number of fail-fast properties including reference
+      // identity. We don't have to drop back to equals() to recheck most of them when delegating
+      // to `internal` but we do want to fast path the inner reference equality here in case we're
+      // just comparing against the ByteString that we wrapped.
+      if (internal == other) {
+        return true;
+      }
+
+      // Note: by flipping the order to other.equalsInternal(internal), this will be better in the
+      // case of comparing two CachingStringByteString instances to eachother. We strip off the
+      // wrapper from `this`, switching order means if the other side is also a
+      // CachingStringByteString it will also immediately strip off its caching wrapper too, and we
+      // can better hit any special cased hot paths that check `instanceof LiteralByteString`
+      // instead of potentially a slower path due to the instanceof check seeing the wrapper type.
+      return other.equalsInternal(internal);
+    }
+
+    @Override
+    protected int partialHash(int h, int offset, int length) {
+      return internal.partialHash(h, offset, length);
+    }
+
+    @Override
+    public InputStream newInput() {
+      return internal.newInput();
+    }
+
+    @Override
+    public CodedInputStream newCodedInput() {
+      return internal.newCodedInput();
+    }
+
+    @Override
+    protected final int getTreeDepth() {
+      return internal.getTreeDepth();
+    }
+
+    @Override
+    protected final boolean isBalanced() {
+      return internal.isBalanced();
+    }
+
+    @Override
+    void writeToReverse(ByteOutput byteOutput) throws IOException {
+      internal.writeToReverse(byteOutput);
     }
   }
 }
