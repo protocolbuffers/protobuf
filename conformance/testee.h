@@ -17,7 +17,7 @@
 //
 // Tests should never need to name any of these types directly.  A test
 // obtains a Test object for the global testee from Testee() (see
-// test_environment.h), chains operations on it and passes the final
+// test_fixture.h), chains operations on it and passes the final
 // TestResult to Yields() (see matchers.h):
 //
 //   EXPECT_THAT(Testee()
@@ -47,7 +47,7 @@ namespace conformance {
 // "Recommended" (see PriorityLevelName()).
 //
 // A suite declares its priority with ConformanceTest::DefaultPriority().  A
-// single test overrides it with Testee(priority); see test_environment.h.
+// single test overrides it with Testee(priority); see test_fixture.h.
 // TODO: b/564550230 - rename the levels in test names to P0/P1 once every
 // suite has been triaged.
 enum class TestPriority { kP0 = 0, kP1 = 1 };
