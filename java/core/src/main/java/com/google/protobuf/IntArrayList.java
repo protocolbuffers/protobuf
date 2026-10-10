@@ -64,6 +64,17 @@ final class IntArrayList extends AbstractProtobufList<Integer>
         isMutable);
   }
 
+  /**
+   * Returns a new mutable list that takes ownership of {@code array} and contains all of its
+   * elements.
+   *
+   * <p>The array is used directly as the backing store, without copying. The caller must not read
+   * or write {@code array} after passing it in.
+   */
+  static IntArrayList unsafeWrap(int[] array) {
+    return new IntArrayList(array, array.length, /* isMutable= */ true);
+  }
+
   @Override
   protected void removeRange(int fromIndex, int toIndex) {
     ensureIsMutable();
