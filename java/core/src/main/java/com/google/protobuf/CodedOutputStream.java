@@ -1061,7 +1061,7 @@ public abstract class CodedOutputStream extends ByteOutput {
       if (buffer == null) {
         throw new NullPointerException("buffer");
       }
-      if ((offset | length | (buffer.length - (offset + length))) < 0) {
+      if (offset < 0 || length < 0 || offset > buffer.length - length) {
         throw new IllegalArgumentException(
             String.format(
                 Locale.US,
