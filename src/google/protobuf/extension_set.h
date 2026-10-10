@@ -382,15 +382,17 @@ class PROTOBUF_EXPORT ExtensionSet {
   // Adds the given message to the ExtensionSet, taking ownership of the
   // message object. Existing message with the same number will be deleted.
   // If "message" is nullptr, this is equivalent to "ClearExtension(number)".
-  void SetAllocatedMessage(Arena* arena, int number, FieldType type,
-                           const FieldDescriptor* descriptor,
+  void SetAllocatedMessage(const MessageLite& parent, int number,
+                           FieldType type, const FieldDescriptor* descriptor,
                            MessageLite* message);
-  void UnsafeArenaSetAllocatedMessage(Arena* arena, int number, FieldType type,
+  void UnsafeArenaSetAllocatedMessage(const MessageLite& parent, int number,
+                                      FieldType type,
                                       const FieldDescriptor* descriptor,
                                       MessageLite* message);
-  [[nodiscard]] MessageLite* ReleaseMessage(Arena* arena, int number,
+  [[nodiscard]] MessageLite* ReleaseMessage(const MessageLite& parent,
+                                            int number,
                                             const ClassData* class_data);
-  MessageLite* UnsafeArenaReleaseMessage(Arena* arena, int number,
+  MessageLite* UnsafeArenaReleaseMessage(const MessageLite& parent, int number,
                                          const ClassData* class_data);
 
   [[nodiscard]] MessageLite* ReleaseMessage(Arena* arena,
@@ -1687,27 +1689,26 @@ class MessageTypeTraits {
   static void SetAllocated(const MessageLite& parent, int number,
                            FieldType field_type, MutableType message,
                            ExtensionSet* set) {
-    set->SetAllocatedMessage(parent.GetArena(), number, field_type, nullptr,
-                             message);
+    set->SetAllocatedMessage(parent, number, field_type, nullptr, message);
   }
   static void UnsafeArenaSetAllocated(const MessageLite& parent, int number,
                                       FieldType field_type, MutableType message,
                                       ExtensionSet* set) {
-    set->UnsafeArenaSetAllocatedMessage(parent.GetArena(), number, field_type,
-                                        nullptr, message);
+    set->UnsafeArenaSetAllocatedMessage(parent, number, field_type, nullptr,
+                                        message);
   }
   [[nodiscard]] static MutableType Release(const MessageLite& parent,
                                            int number,
                                            FieldType /* field_type */,
                                            ExtensionSet* set) {
     return static_cast<Type*>(
-        set->ReleaseMessage(parent.GetArena(), number, class_data()));
+        set->ReleaseMessage(parent, number, class_data()));
   }
   static MutableType UnsafeArenaRelease(const MessageLite& parent, int number,
                                         FieldType /* field_type */,
                                         ExtensionSet* set) {
-    return static_cast<Type*>(set->UnsafeArenaReleaseMessage(
-        parent.GetArena(), number, class_data()));
+    return static_cast<Type*>(
+        set->UnsafeArenaReleaseMessage(parent, number, class_data()));
   }
 };
 

@@ -495,13 +495,15 @@ MessageLite* ExtensionSet::MutableMessageByClassData(
 //                                           const Descriptor* message_type,
 //                                           MessageFactory* factory)
 
-void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
+void ExtensionSet::SetAllocatedMessage(const MessageLite& parent, int number,
+                                       FieldType type,
                                        const FieldDescriptor* descriptor,
                                        MessageLite* message) {
   if (message == nullptr) {
     ClearExtension(number);
     return;
   }
+  Arena* const arena = parent.GetArena();
   Arena* const message_arena = message->GetArena();
   ABSL_DCHECK(message_arena == nullptr || message_arena == arena);
 
@@ -544,13 +546,14 @@ void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
 }
 
 void ExtensionSet::UnsafeArenaSetAllocatedMessage(
-    Arena* arena, int number, FieldType type, const FieldDescriptor* descriptor,
-    MessageLite* message) {
+    const MessageLite& parent, int number, FieldType type,
+    const FieldDescriptor* descriptor, MessageLite* message) {
   if (message == nullptr) {
     ClearExtension(number);
     return;
   }
   Extension* extension;
+  Arena* const arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -572,34 +575,35 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
   extension->is_cleared = false;
 }
 
-MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
+MessageLite* ExtensionSet::ReleaseMessage(const MessageLite& parent, int number,
                                           const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
     return nullptr;
-  } else {
-    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
-    MessageLite* ret = nullptr;
-    if (extension->is_lazy) {
-      Unreachable();
-    } else {
-      if (arena == nullptr) {
-        ret = extension->ptr.message_value;
-      } else {
-        // ReleaseMessage() always returns a heap-allocated message, and we are
-        // on an arena, so we need to make a copy of this message to return.
-        ret = extension->ptr.message_value->New();
-        ret->CheckTypeAndMergeFrom(*extension->ptr.message_value);
-      }
-    }
-    Erase(number);
-    return ret;
   }
+
+  ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+  MessageLite* ret = nullptr;
+  Arena* arena = parent.GetArena();
+  if (extension->is_lazy) {
+    Unreachable();
+  } else {
+    if (arena == nullptr) {
+      ret = extension->ptr.message_value;
+    } else {
+      // ReleaseMessage() always returns a heap-allocated message, and we are
+      // on an arena, so we need to make a copy of this message to return.
+      ret = extension->ptr.message_value->New();
+      ret->CheckTypeAndMergeFrom(*extension->ptr.message_value);
+    }
+  }
+  Erase(number);
+  return ret;
 }
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
-    Arena* arena, int number, const ClassData* class_data) {
+    const MessageLite& parent, int number, const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -607,6 +611,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
+    Arena* arena = parent.GetArena();
     if (extension->is_lazy) {
       Unreachable();
     } else {
@@ -618,7 +623,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
 }
 
 // Defined in extension_set_heavy.cc.
-// MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
+// MessageLite* ExtensionSet::ReleaseMessage(const MessageLite& parent,
 //                                           const FieldDescriptor* descriptor,
 //                                           MessageFactory* factory);
 
