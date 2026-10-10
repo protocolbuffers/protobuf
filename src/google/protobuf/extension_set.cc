@@ -1115,20 +1115,20 @@ void ExtensionSet::UnsafeShallowSwapExtension(Arena* arena, ExtensionSet* other,
   }
 }
 
-bool ExtensionSet::IsInitialized(Arena* arena,
+bool ExtensionSet::IsInitialized(const MessageLite& parent,
                                  const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
   if (ABSL_PREDICT_FALSE(is_large())) {
     for (const auto& kv : map_.large->large) {
-      if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
+      if (!kv.second.IsInitialized(this, extendee, kv.first, parent)) {
         return false;
       }
     }
     return true;
   }
   for (const FlatItem* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized(this, extendee, it->first, arena)) {
+    if (!it->second.IsInitialized(this, extendee, it->first, parent)) {
       return false;
     }
   }
@@ -1517,7 +1517,8 @@ void ExtensionSet::Extension::Free() {
 
 bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
                                             const MessageLite* extendee,
-                                            int number, Arena* arena) const {
+                                            int number,
+                                            const MessageLite& parent) const {
   if (cpp_type(type) != WireFormatLite::CPPTYPE_MESSAGE) return true;
 
   if (is_repeated) {

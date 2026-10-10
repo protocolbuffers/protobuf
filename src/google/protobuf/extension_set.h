@@ -499,7 +499,8 @@ class PROTOBUF_EXPORT ExtensionSet {
                      ExtensionSet* other, Arena* other_arena, int number);
   void UnsafeShallowSwapExtension(Arena* arena, ExtensionSet* other,
                                   int number);
-  bool IsInitialized(Arena* arena, const MessageLite* extendee) const;
+  bool IsInitialized(const MessageLite& parent,
+                     const MessageLite* extendee) const;
 
   // Lite parser
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ParseField(
@@ -725,7 +726,7 @@ class PROTOBUF_EXPORT ExtensionSet {
     bool IsSet() const { return is_repeated ? GetSize() > 0 : !is_cleared; }
     size_t SpaceUsedExcludingSelfLong() const;
     bool IsInitialized(const ExtensionSet* ext_set, const MessageLite* extendee,
-                       int number, Arena* arena) const;
+                       int number, const MessageLite& parent) const;
     const void* PrefetchPtr() const {
       ABSL_DCHECK_EQ(is_pointer, is_repeated || FieldTypeIsPointer(type));
       // We don't want to prefetch invalid/null pointers so if there isn't a

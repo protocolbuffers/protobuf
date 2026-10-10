@@ -5329,7 +5329,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              if (descriptor_->extension_range_count() == 0) return;
              p->Emit(R"cc(
-               if (!this_.$extensions$.IsInitialized(this_.GetArena(),
+               if (!this_.$extensions$.IsInitialized(this_,
                                                      &default_instance())) {
                  return false;
                }
