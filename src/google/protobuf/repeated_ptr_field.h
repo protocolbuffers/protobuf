@@ -456,7 +456,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void AddAllocatedForParse(void* value, SerialArena* arena) {
     ABSL_DCHECK_EQ(allocated_size(), size());
     if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
-      *InternalExtend(1, arena) = value;
+      *InternalExtend(/*extend_amount=*/1, arena) = value;
       ++rep()->allocated_size;
     } else {
       if (using_sso()) {
@@ -491,7 +491,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
 
   template <typename TypeHandler>
   void RemoveLast() {
-    internal::RuntimeAssertInBoundsGE(current_size_, 1);
+    internal::RuntimeAssertInBoundsGE(current_size_, /*limit=*/1);
     ExchangeCurrentSize(current_size_ - 1);
     using H = CommonHandler<TypeHandler>;
     H::Clear(cast<H>(element_at(current_size_)));
@@ -611,7 +611,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     // Make room for the new pointer.
     if (SizeAtCapacity()) {
       // The array is completely full with no cleared objects, so grow it.
-      InternalExtend(1, arena);
+      InternalExtend(/*extend_amount=*/1, arena);
       ++rep()->allocated_size;
     } else if (AllocatedSizeAtCapacity()) {
       // There is no more space in the pointer array because it contains some
@@ -655,7 +655,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // arena.
   template <typename TypeHandler>
   Value<TypeHandler>* UnsafeArenaReleaseLast() {
-    internal::RuntimeAssertInBounds(0, size());
+    internal::RuntimeAssertInBounds(/*index=*/0, size());
     ExchangeCurrentSize(current_size_ - 1);
     auto* result = cast<TypeHandler>(element_at(current_size_));
     if (using_sso()) {
@@ -866,7 +866,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     do {
       TypeHandler::Clear(cast<TypeHandler>(elems[i++]));
     } while (i < n);
-    ExchangeCurrentSize(0);
+    ExchangeCurrentSize(/*new_size=*/0);
   }
 
   // Merges messages from `from` into available, cleared messages sitting in the
@@ -943,26 +943,26 @@ inline void* RepeatedPtrFieldBase::AddInternal(
     Arena* arena, absl::FunctionRef<ElementNewFn> factory) {
   ABSL_DCHECK_EQ(arena, GetArena());
   if (tagged_rep_or_elem_ == nullptr) {
-    ExchangeCurrentSize(1);
+    ExchangeCurrentSize(/*new_size=*/1);
     factory(arena, tagged_rep_or_elem_);
     return tagged_rep_or_elem_;
   }
   absl::PrefetchToLocalCache(tagged_rep_or_elem_);
   if (using_sso()) {
     if (current_size_ == 0) {
-      ExchangeCurrentSize(1);
+      ExchangeCurrentSize(/*new_size=*/1);
       return tagged_rep_or_elem_;
     }
-    void*& result = *InternalExtend(1, arena);
+    void*& result = *InternalExtend(/*extend_amount=*/1, arena);
     factory(arena, result);
     Rep* r = rep();
     r->allocated_size = 2;
-    ExchangeCurrentSize(2);
+    ExchangeCurrentSize(/*new_size=*/2);
     return result;
   }
   Rep* r = rep();
   if (ABSL_PREDICT_FALSE(SizeAtCapacity())) {
-    InternalExtend(1, arena);
+    InternalExtend(/*extend_amount=*/1, arena);
     r = rep();
   } else {
     if (ClearedCount() > 0) {
@@ -1047,7 +1047,7 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
 
 template <typename TypeHandler, typename AddOne>
 void RepeatedPtrFieldBase::ResizeImpl(int new_size, AddOne add_one) {
-  internal::RuntimeAssertInBoundsGE(new_size, 0);
+  internal::RuntimeAssertInBoundsGE(new_size, /*limit=*/0);
   int diff = new_size - size();
   if (diff > 0) {
     // We need to add.
@@ -1877,8 +1877,8 @@ inline void RepeatedPtrField<Element>::RemoveLast() {
 
 template <typename Element>
 inline void RepeatedPtrField<Element>::DeleteSubrange(int start, int num) {
-  internal::RuntimeAssertInBoundsGE(start, 0);
-  internal::RuntimeAssertInBoundsGE(num, 0);
+  internal::RuntimeAssertInBoundsGE(start, /*limit=*/0);
+  internal::RuntimeAssertInBoundsGE(num, /*limit=*/0);
   internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
   void** subrange = raw_mutable_data() + start;
   if (GetArena() == nullptr) {
@@ -1900,8 +1900,8 @@ template <typename Element>
 inline void RepeatedPtrField<Element>::ExtractSubrangeWithArena(
     Arena* arena, int start, int num, Element** elements) {
   ABSL_DCHECK_EQ(arena, GetArena());
-  internal::RuntimeAssertInBoundsGE(start, 0);
-  internal::RuntimeAssertInBoundsGE(num, 0);
+  internal::RuntimeAssertInBoundsGE(start, /*limit=*/0);
+  internal::RuntimeAssertInBoundsGE(num, /*limit=*/0);
   internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
 
   if (num == 0) return;
@@ -1939,8 +1939,8 @@ inline void RepeatedPtrField<Element>::ExtractSubrangeWithArena(
 template <typename Element>
 inline void RepeatedPtrField<Element>::UnsafeArenaExtractSubrange(
     int start, int num, Element** elements) {
-  internal::RuntimeAssertInBoundsGE(start, 0);
-  internal::RuntimeAssertInBoundsGE(num, 0);
+  internal::RuntimeAssertInBoundsGE(start, /*limit=*/0);
+  internal::RuntimeAssertInBoundsGE(num, /*limit=*/0);
   internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num, size());
 
   if (num > 0) {

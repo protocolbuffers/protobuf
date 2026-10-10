@@ -1732,9 +1732,9 @@ template <>
 inline const RepeatedPtrField<Message>& Reflection::GetRepeatedPtrFieldInternal(
     const Message& message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
-  return *static_cast<const RepeatedPtrField<Message>*>(
-      GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
-                          /*desc=*/nullptr, intent));
+  return *static_cast<const RepeatedPtrField<Message>*>(GetRawRepeatedField(
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, /*ctype=*/-1,
+      /*desc=*/nullptr, intent));
 }
 
 template <>
@@ -1746,16 +1746,16 @@ inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
   }
   return static_cast<RepeatedPtrField<Message>*>(
       MutableRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
-                              -1, /*desc=*/nullptr, intent));
+                              /*ctype=*/-1, /*desc=*/nullptr, intent));
 }
 
 template <typename PB>
 inline const RepeatedPtrField<PB>& Reflection::GetRepeatedPtrFieldInternal(
     const Message& message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
-  return *static_cast<const RepeatedPtrField<PB>*>(
-      GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
-                          PB::default_instance().GetDescriptor(), intent));
+  return *static_cast<const RepeatedPtrField<PB>*>(GetRawRepeatedField(
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, /*ctype=*/-1,
+      PB::default_instance().GetDescriptor(), intent));
 }
 
 template <typename PB>
@@ -1766,7 +1766,7 @@ inline RepeatedPtrField<PB>* Reflection::MutableRepeatedPtrFieldInternal(
     SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<PB>*>(MutableRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
+      message, field, FieldDescriptor::CPPTYPE_MESSAGE, /*ctype=*/-1,
       PB::default_instance().GetDescriptor(), intent));
 }
 

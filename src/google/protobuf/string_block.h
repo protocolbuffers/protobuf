@@ -166,7 +166,7 @@ ABSL_ATTRIBUTE_RETURNS_NONNULL inline std::string* StringBlock::AtOffset(
 }
 
 ABSL_ATTRIBUTE_RETURNS_NONNULL inline std::string* StringBlock::begin() {
-  return AtOffset(0);
+  return AtOffset(/*offset=*/0);
 }
 
 ABSL_ATTRIBUTE_RETURNS_NONNULL inline std::string* StringBlock::end() {

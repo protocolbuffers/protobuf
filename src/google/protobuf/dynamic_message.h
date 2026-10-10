@@ -167,7 +167,7 @@ class PROTOBUF_EXPORT DynamicMapSorter {
    public:
     explicit MapEntryMessageComparator(
         const Descriptor* PROTOBUF_NONNULL descriptor)
-        : field_(descriptor->field(0)) {}
+        : field_(descriptor->field(/*index=*/0)) {}
 
     bool operator()(const Message* PROTOBUF_NONNULL a,
                     const Message* PROTOBUF_NONNULL b) {

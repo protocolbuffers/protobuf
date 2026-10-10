@@ -787,7 +787,7 @@ constexpr RepeatedField<Element>::RepeatedField() {
   StaticValidityCheck();
 #ifdef __cpp_lib_is_constant_evaluated
   if (!std::is_constant_evaluated()) {
-    AnnotateSize(kSooCapacityElements, 0);
+    AnnotateSize(kSooCapacityElements, /*new_size=*/0);
   }
 #endif  // __cpp_lib_is_constant_evaluated
 }
@@ -805,7 +805,7 @@ constexpr RepeatedField<Element>::RepeatedField(
   StaticValidityCheck();
 #ifdef __cpp_lib_is_constant_evaluated
   if (!std::is_constant_evaluated()) {
-    AnnotateSize(kSooCapacityElements, 0);
+    AnnotateSize(kSooCapacityElements, /*new_size=*/0);
   }
 #endif  // __cpp_lib_is_constant_evaluated
 }
@@ -817,7 +817,7 @@ inline RepeatedField<Element>::RepeatedField(
     : RepeatedField(offset) {
   StaticValidityCheck();
   ABSL_DCHECK_EQ(arena, GetArena());
-  AnnotateSize(kSooCapacityElements, 0);
+  AnnotateSize(kSooCapacityElements, /*new_size=*/0);
   if (auto size = rhs.size()) {
     bool is_soo = true;
     if (size > kSooCapacityElements) {
@@ -834,7 +834,7 @@ template <typename Element>
 template <typename Iter, typename>
 RepeatedField<Element>::RepeatedField(Iter begin, Iter end) {
   StaticValidityCheck();
-  AnnotateSize(kSooCapacityElements, 0);
+  AnnotateSize(kSooCapacityElements, /*new_size=*/0);
   Add(begin, end);
 }
 
@@ -935,7 +935,7 @@ inline Element* RepeatedField<Element>::AddAlreadyReserved()
 template <typename Element>
 inline Element* RepeatedField<Element>::AddNAlreadyReserved(int n)
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  internal::RuntimeAssertInBoundsGE(n, 0);
+  internal::RuntimeAssertInBoundsGE(n, /*limit=*/0);
   const bool is_soo = this->is_soo();
   const int old_size = size();
   [[maybe_unused]] const int capacity = Capacity(is_soo);
@@ -1036,7 +1036,8 @@ inline void* RepeatedField<Element>::AddUninitializedWithArena(
   bool is_soo = this->is_soo();
   const int old_size = size();
   if (ABSL_PREDICT_FALSE(old_size == Capacity(is_soo))) {
-    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
+    Grow(arena_provider, is_soo, old_size,
+         internal::CheckedAdd(old_size, /*b=*/1));
     is_soo = false;
   }
   return unsafe_elements(is_soo) + ExchangeCurrentSize(old_size + 1);
@@ -1065,7 +1066,8 @@ inline auto RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
   int capacity = Capacity(is_soo);
   Element* elem = unsafe_elements(is_soo);
   if (ABSL_PREDICT_FALSE(old_size == capacity)) {
-    Grow(arena_provider, is_soo, old_size, internal::CheckedAdd(old_size, 1));
+    Grow(arena_provider, is_soo, old_size,
+         internal::CheckedAdd(old_size, /*b=*/1));
     is_soo = false;
     capacity = Capacity(is_soo);
     elem = unsafe_elements(is_soo);
@@ -1163,7 +1165,7 @@ inline void RepeatedField<Element>::AddInputIterator(
     if (ABSL_PREDICT_FALSE(first == last)) {
       size = first - elem;
       GrowNoAnnotate(arena_provider, is_soo, size,
-                     internal::CheckedAdd(size, 1));
+                     internal::CheckedAdd(size, /*b=*/1));
       is_soo = false;
       elem = unsafe_elements(is_soo);
       capacity = Capacity(is_soo);
@@ -1219,8 +1221,8 @@ inline void RepeatedField<Element>::RemoveLast() {
 template <typename Element>
 void RepeatedField<Element>::ExtractSubrange(int start, int num,
                                              Element* elements) {
-  internal::RuntimeAssertInBoundsGE(start, 0);
-  internal::RuntimeAssertInBoundsGE(num, 0);
+  internal::RuntimeAssertInBoundsGE(start, /*limit=*/0);
+  internal::RuntimeAssertInBoundsGE(num, /*limit=*/0);
   const bool is_soo = this->is_soo();
   const int old_size = size();
   internal::RuntimeAssertInBoundsLE(static_cast<int64_t>(start) + num,
@@ -1245,7 +1247,7 @@ inline void RepeatedField<Element>::Clear() {
   const bool is_soo = this->is_soo();
   Element* elem = unsafe_elements(is_soo);
   Destroy(elem, elem + size());
-  ExchangeCurrentSize(0);
+  ExchangeCurrentSize(/*new_size=*/0);
 }
 
 template <typename Element>

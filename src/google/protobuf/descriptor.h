@@ -285,22 +285,22 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
   // We don't need a special offset for them.
   // NOTE: the sizes don't include the null terminator, so add +1 to the offset.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view name() const {
-    return get(get_size(0) + 1, get_size(0));
+    return get(get_size(/*index=*/0) + 1, get_size(/*index=*/0));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view full_name() const {
-    return get(get_size(1) + 1, get_size(1));
+    return get(get_size(/*index=*/1) + 1, get_size(/*index=*/1));
   }
 
   // Only available for `FieldDescriptor`. This is not checked at runtime.
   // NOTE: The offsets here already take into account the null terminator.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view lowercase_name() const {
-    return get(get_size(2), get_size(3));
+    return get(get_size(/*index=*/2), get_size(/*index=*/3));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view camelcase_name() const {
-    return get(get_size(4), get_size(5));
+    return get(get_size(/*index=*/4), get_size(/*index=*/5));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view json_name() const {
-    return get(get_size(6), get_size(7));
+    return get(get_size(/*index=*/6), get_size(/*index=*/7));
   }
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static constexpr size_t
@@ -3120,7 +3120,7 @@ inline const OneofDescriptor* FieldDescriptor::containing_oneof() const {
 
 inline int FieldDescriptor::index_in_oneof() const {
   ABSL_DCHECK(is_oneof_);
-  return static_cast<int>(this - scope_.containing_oneof->field(0));
+  return static_cast<int>(this - scope_.containing_oneof->field(/*index=*/0));
 }
 
 inline const Descriptor* FieldDescriptor::extension_scope() const {
@@ -3195,7 +3195,7 @@ inline int OneofDescriptor::index() const {
 }
 
 inline bool OneofDescriptor::is_synthetic() const {
-  return field_count() == 1 && field(0)->proto3_optional_;
+  return field_count() == 1 && field(/*index=*/0)->proto3_optional_;
 }
 
 inline int EnumDescriptor::index() const {
@@ -3444,7 +3444,7 @@ auto VisitDescriptorsInFileOrder(const Descriptor* desc, F& f)
 // value right away. Otherwise returns `{}` after visiting all types.
 template <typename F>
 auto VisitDescriptorsInFileOrder(const FileDescriptor* file, F f)
-    -> decltype(f(file->message_type(0))) {
+    -> decltype(f(file->message_type(/*index=*/0))) {
   for (int i = 0; i < file->message_type_count(); i++) {
     if (auto res = VisitDescriptorsInFileOrder(file->message_type(i), f)) {
       return res;
