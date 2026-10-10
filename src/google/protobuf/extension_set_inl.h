@@ -14,8 +14,11 @@
 
 #include "absl/base/optimization.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
@@ -25,9 +28,9 @@ namespace internal {
 
 template <typename T>
 const char* ExtensionSet::ParseFieldWithExtensionInfo(
-    int number, bool was_packed_on_wire, const ExtensionInfo& info,
-    InternalMetadata* metadata, const char* ptr, internal::ParseContext* ctx) {
-  Arena* const arena = metadata->arena();
+    MessageLite& parent, int number, bool was_packed_on_wire,
+    const ExtensionInfo& info, const char* ptr, internal::ParseContext* ctx) {
+  Arena* const arena = parent.GetArena();
   if (was_packed_on_wire) {
     switch (info.type) {
 #define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                             \
@@ -53,9 +56,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 
       case WireFormatLite::TYPE_ENUM:
         return internal::PackedEnumParserArg<T>(
+            parent,
             MutableRawRepeatedField(arena, number, info.type, info.is_packed,
                                     info.descriptor),
-            ptr, ctx, info.enum_validity_check, metadata, number);
+            ptr, ctx, info.enum_validity_check, number);
       case WireFormatLite::TYPE_STRING:
       case WireFormatLite::TYPE_BYTES:
       case WireFormatLite::TYPE_GROUP:
@@ -131,7 +135,9 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
         int value = tmp;
 
         if (!info.enum_validity_check.IsValid(value)) {
-          WriteVarint(number, value, metadata->mutable_unknown_fields<T>());
+          WriteVarint(number, value,
+                      PrivateAccess::GetInternalMetadata(parent)
+                          .mutable_unknown_fields<T>());
         } else if (info.is_repeated) {
           Add<int>(arena, number, WireFormatLite::TYPE_ENUM, info.is_packed,
                    value, info.descriptor);
@@ -191,14 +197,15 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
 }
 
 template <typename Msg, typename T>
-const char* ExtensionSet::ParseMessageSetItemTmpl(
-    const char* ptr, const Msg* extendee, internal::InternalMetadata* metadata,
-    internal::ParseContext* ctx) {
+const char* ExtensionSet::ParseMessageSetItemTmpl(MessageLite& parent,
+                                                  const char* ptr,
+                                                  const Msg* extendee,
+                                                  internal::ParseContext* ctx) {
   std::string payload;
   uint32_t type_id = 0;
   enum class State { kNoTag, kHasType, kHasPayload, kDone };
   State state = State::kNoTag;
-  Arena* const arena = metadata->arena();
+  Arena* const arena = parent.GetArena();
 
   while (!ctx->Done(&ptr)) {
     uint32_t tag = static_cast<uint8_t>(*ptr++);
@@ -218,7 +225,8 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
         if (!FindExtension(2, type_id, extendee, ctx, &extension,
                            &was_packed_on_wire)) {
           WriteLengthDelimited(type_id, payload,
-                               metadata->mutable_unknown_fields<T>());
+                               PrivateAccess::GetInternalMetadata(parent)
+                                   .mutable_unknown_fields<T>());
         } else {
           MessageLite* value =
               extension.is_repeated
@@ -243,8 +251,8 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
       }
     } else if (tag == WireFormatLite::kMessageSetMessageTag) {
       if (state == State::kHasType) {
-        ptr = ParseFieldMaybeLazily(static_cast<uint64_t>(type_id) * 8 + 2, ptr,
-                                    extendee, metadata, ctx);
+        ptr = ParseFieldMaybeLazily(
+            parent, static_cast<uint64_t>(type_id) * 8 + 2, ptr, extendee, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr != nullptr);
         state = State::kDone;
       } else {
@@ -264,7 +272,7 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(
         ctx->SetLastTag(tag);
         return ptr;
       }
-      ptr = ParseField(tag, ptr, extendee, metadata, ctx);
+      ptr = ParseField(parent, tag, ptr, extendee, ctx);
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
     }
   }

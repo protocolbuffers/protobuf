@@ -30,6 +30,11 @@ struct PrivateAccess {
     return msg._lazy_internal_mutable(std::integral_constant<int, number>{});
   }
 
+  template <typename MessageT>
+  static auto& GetInternalMetadata(MessageT& msg) {
+    return msg._internal_metadata_;
+  }
+
   template <typename T>
   static auto& GetExtensionSet(T& msg) {
     return msg._impl_._extensions_;

@@ -1121,9 +1121,9 @@ bool ExtensionSet::IsInitialized(Arena* arena,
   return true;
 }
 
-const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
+const char* ExtensionSet::ParseField(MessageLite& parent, uint64_t tag,
+                                     const char* ptr,
                                      const MessageLite* extendee,
-                                     internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(extendee);
   int number = tag >> 3;
@@ -1132,17 +1132,19 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
     return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
+        tag, parent._internal_metadata_.mutable_unknown_fields<std::string>(),
+        ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<std::string>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+      parent, number, was_packed_on_wire, extension, ptr, ctx);
 }
 
-const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const MessageLite* extendee,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, extendee,
-                                                           metadata, ctx);
+const char* ExtensionSet::ParseMessageSetItem(MessageLite& parent,
+                                              const char* ptr,
+                                              const MessageLite* extendee,
+                                              internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<MessageLite, std::string>(parent, ptr,
+                                                           extendee, ctx);
 }
 
 bool ExtensionSet::FieldTypeIsPointer(FieldType type) {

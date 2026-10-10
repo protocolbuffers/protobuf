@@ -34,9 +34,11 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -1838,17 +1840,19 @@ template <typename T>
                                                            ParseContext* ctx);
 
 template <typename T, typename Validator>
-[[nodiscard]] const char* PackedEnumParserArg(void* object, const char* ptr,
+[[nodiscard]] const char* PackedEnumParserArg(MessageLite& parent, void* object,
+                                              const char* ptr,
                                               ParseContext* ctx,
                                               Validator validator,
-                                              InternalMetadata* metadata,
                                               int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, validator, metadata, field_num](int32_t val) {
+      ptr, [&parent, object, validator, field_num](int32_t val) {
         if (validator.IsValid(val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {
-          WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
+          WriteVarint(field_num, val,
+                      PrivateAccess::GetInternalMetadata(parent)
+                          .mutable_unknown_fields<T>());
         }
       });
 }

@@ -499,15 +499,15 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // Lite parser
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ParseField(
-      uint64_t tag, const char* ptr, const MessageLite* extendee,
-      internal::InternalMetadata* metadata, internal::ParseContext* ctx);
+      MessageLite& parent, uint64_t tag, const char* ptr,
+      const MessageLite* extendee, internal::ParseContext* ctx);
   // Full parser
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ParseField(
-      uint64_t tag, const char* ptr, const Message* extendee,
-      internal::InternalMetadata* metadata, internal::ParseContext* ctx);
+      MessageLite& parent, uint64_t tag, const char* ptr,
+      const Message* extendee, internal::ParseContext* ctx);
   template <typename Msg>
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const char* ParseMessageSet(
-      const char* ptr, const Msg* extendee, InternalMetadata* metadata,
+      MessageLite& parent, const char* ptr, const Msg* extendee,
       internal::ParseContext* ctx) {
     while (!ctx->Done(&ptr)) {
       uint32_t tag;
@@ -515,7 +515,7 @@ class PROTOBUF_EXPORT ExtensionSet {
       GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       if (tag == WireFormatLite::kMessageSetItemStartTag) {
         ptr = ctx->ParseGroupInlined(ptr, tag, [&](const char* ptr) {
-          return ParseMessageSetItem(ptr, extendee, metadata, ctx);
+          return ParseMessageSetItem(parent, ptr, extendee, ctx);
         });
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       } else {
@@ -523,7 +523,7 @@ class PROTOBUF_EXPORT ExtensionSet {
           ctx->SetLastTag(tag);
           return ptr;
         }
-        ptr = ParseField(tag, ptr, extendee, metadata, ctx);
+        ptr = ParseField(parent, tag, ptr, extendee, ctx);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
       }
     }
@@ -1178,35 +1178,34 @@ class PROTOBUF_EXPORT ExtensionSet {
                             const internal::ParseContext* ctx,
                             ExtensionInfo* extension, bool* was_packed_on_wire);
   // Used for MessageSet only
-  const char* ParseFieldMaybeLazily(uint64_t tag, const char* ptr,
+  const char* ParseFieldMaybeLazily(MessageLite& parent, uint64_t tag,
+                                    const char* ptr,
                                     const MessageLite* extendee,
-                                    internal::InternalMetadata* metadata,
                                     internal::ParseContext* ctx) {
     // Lite MessageSet doesn't implement lazy.
-    return ParseField(tag, ptr, extendee, metadata, ctx);
+    return ParseField(parent, tag, ptr, extendee, ctx);
   }
-  const char* ParseFieldMaybeLazily(uint64_t tag, const char* ptr,
-                                    const Message* extendee,
-                                    internal::InternalMetadata* metadata,
+  const char* ParseFieldMaybeLazily(MessageLite& parent, uint64_t tag,
+                                    const char* ptr, const Message* extendee,
                                     internal::ParseContext* ctx);
-  const char* ParseMessageSetItem(const char* ptr, const MessageLite* extendee,
-                                  internal::InternalMetadata* metadata,
+  const char* ParseMessageSetItem(MessageLite& parent, const char* ptr,
+                                  const MessageLite* extendee,
                                   internal::ParseContext* ctx);
-  const char* ParseMessageSetItem(const char* ptr, const Message* extendee,
-                                  internal::InternalMetadata* metadata,
+  const char* ParseMessageSetItem(MessageLite& parent, const char* ptr,
+                                  const Message* extendee,
                                   internal::ParseContext* ctx);
 
   // Implemented in extension_set_inl.h to keep code out of the header file.
   template <typename T>
-  const char* ParseFieldWithExtensionInfo(int number, bool was_packed_on_wire,
+  const char* ParseFieldWithExtensionInfo(MessageLite& parent, int number,
+                                          bool was_packed_on_wire,
                                           const ExtensionInfo& info,
-                                          internal::InternalMetadata* metadata,
                                           const char* ptr,
                                           internal::ParseContext* ctx);
 
   template <typename Msg, typename T>
-  const char* ParseMessageSetItemTmpl(const char* ptr, const Msg* extendee,
-                                      internal::InternalMetadata* metadata,
+  const char* ParseMessageSetItemTmpl(MessageLite& parent, const char* ptr,
+                                      const Msg* extendee,
                                       internal::ParseContext* ctx);
 
   // Hack:  RepeatedPtrFieldBase declares ExtensionSet as a friend.  This
