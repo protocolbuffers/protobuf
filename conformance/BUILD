@@ -59,6 +59,7 @@ cc_library(
     hdrs = [
         "conformance_test.h",
     ],
+    visibility = ["//src/google/protobuf:__pkg__"],
     deps = [
         ":conformance_cc_proto",
         ":failure_list_trie_node",
@@ -138,6 +139,7 @@ cc_library(
     testonly = 1,
     srcs = ["binary_json_conformance_suite.cc"],
     hdrs = ["binary_json_conformance_suite.h"],
+    visibility = ["//src/google/protobuf:__pkg__"],
     deps = [
         ":binary_wireformat",
         ":conformance_cc_proto",
@@ -577,6 +579,9 @@ proto_library(
 
 cc_proto_library(
     name = "conformance_cc_proto",
+    visibility = [
+        "//src/google/protobuf:__pkg__",
+    ],
     deps = [":conformance_proto"],
 )
 
