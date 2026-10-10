@@ -40,6 +40,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -300,10 +301,12 @@ const void* ExtensionSet::GetRawRepeatedField(int number,
   return extension->raw_ptr();
 }
 
-void* ExtensionSet::MutableRawRepeatedField(Arena* arena, int number,
-                                            FieldType field_type, bool packed,
+void* ExtensionSet::MutableRawRepeatedField(const MessageLite& parent,
+                                            int number, FieldType field_type,
+                                            bool packed,
                                             const FieldDescriptor* desc) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
 
   // We instantiate an empty Repeated{,Ptr}Field if one doesn't exist for this
   // extension.
@@ -398,10 +401,11 @@ uint8_t* ExtensionSet::InternalSerializeMessage(
 // -------------------------------------------------------------------
 // Strings
 
-std::string* ExtensionSet::MutableString(Arena* arena, int number,
+std::string* ExtensionSet::MutableString(const MessageLite& parent, int number,
                                          FieldType type,
                                          const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
@@ -422,9 +426,11 @@ std::string* ExtensionSet::MutableRepeatedString(int number, int index) {
   return extension->ptr.repeated_string_value->Mutable(index);
 }
 
-std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
+std::string* ExtensionSet::AddString(const MessageLite& parent, int number,
+                                     FieldType type,
                                      const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
@@ -444,7 +450,7 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 // Messages
 
 const MessageLite& ExtensionSet::GetMessageByClassData(
-    Arena* arena, int number, const ClassData* class_data) const {
+    const MessageLite& parent, int number, const ClassData* class_data) const {
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
@@ -462,9 +468,10 @@ const MessageLite& ExtensionSet::GetMessageByClassData(
 //                                             MessageFactory* factory) const
 
 MessageLite* ExtensionSet::MutableMessageByClassData(
-    Arena* arena, int number, FieldType type, const ClassData* class_data,
-    const FieldDescriptor* descriptor) {
+    const MessageLite& parent, int number, FieldType type,
+    const ClassData* class_data, const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -630,10 +637,12 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
   return extension->ptr.repeated_message_value->Mutable(index);
 }
 
-MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
+MessageLite* ExtensionSet::AddMessage(const MessageLite& parent, int number,
+                                      FieldType type,
                                       const ClassData* class_data,
                                       const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -1233,10 +1242,11 @@ bool ExtensionSet::MaybeNewExtension(Arena* arena, int number,
 }
 
 ExtensionSet::Extension& ExtensionSet::FindOrCreate(
-    Arena* arena, int number, FieldType type, bool repeated, bool packed,
-    const FieldDescriptor* descriptor,
+    const MessageLite& parent, int number, FieldType type, bool repeated,
+    bool packed, const FieldDescriptor* descriptor,
     Extension& (*pointer_creator)(Extension& ext, Arena* arena)) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     extension->is_repeated = repeated;

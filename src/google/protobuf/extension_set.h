@@ -349,20 +349,20 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
 
   template <typename T, typename U>
-  void Set(Arena* arena, int number, FieldType type, U&& value,
+  void Set(const MessageLite& parent, int number, FieldType type, U&& value,
            const FieldDescriptor* descriptor) {
     if constexpr (Extension::kUsesPointer<T>) {
-      Extension& extension = FindOrCreate(arena, number, type, false, false,
+      Extension& extension = FindOrCreate(parent, number, type, false, false,
                                           descriptor, CreateImpl<T>);
       *extension.Mutable<T>() = std::forward<U>(value);
     } else {
-      FindOrCreate(arena, number, type, false, false, descriptor, nullptr)
+      FindOrCreate(parent, number, type, false, false, descriptor, nullptr)
           .Mutable<T>() = std::forward<U>(value);
     }
   }
 
   [[nodiscard]] const MessageLite& GetMessageByClassData(
-      Arena* arena, int number, const ClassData* class_data) const;
+      const MessageLite& parent, int number, const ClassData* class_data) const;
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD const MessageLite& GetMessage(
       Arena* arena, int number, const Descriptor* message_type,
       MessageFactory* factory) const;
@@ -371,9 +371,10 @@ class PROTOBUF_EXPORT ExtensionSet {
   // the extension lives in the same pool as the descriptor for the containing
   // type.
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
-  std::string* MutableString(Arena* arena, int number, FieldType type, desc);
+  std::string* MutableString(const MessageLite& parent, int number,
+                             FieldType type, desc);
 
-  MessageLite* MutableMessageByClassData(Arena* arena, int number,
+  MessageLite* MutableMessageByClassData(const MessageLite& parent, int number,
                                          FieldType type,
                                          const ClassData* class_data, desc);
   MessageLite* MutableMessage(Arena* arena, const FieldDescriptor* descriptor,
@@ -411,7 +412,7 @@ class PROTOBUF_EXPORT ExtensionSet {
   // instantiating one if none exists. Similar to above, user should not use
   // this directly; it underlies MutableRepeatedExtension().
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD void* MutableRawRepeatedField(
-      Arena* arena, int number, FieldType field_type, bool packed,
+      const MessageLite& parent, int number, FieldType field_type, bool packed,
       const FieldDescriptor* desc);
 
   // This is an overload of MutableRawRepeatedField to maintain compatibility
@@ -436,21 +437,21 @@ class PROTOBUF_EXPORT ExtensionSet {
   }
 
   template <typename T>
-  auto& Add(Arena* arena, int number, FieldType type,
+  auto& Add(const MessageLite& parent, int number, FieldType type,
             const FieldDescriptor* descriptor) {
     static_assert(std::is_class_v<T>);
-    Extension& ext = FindOrCreate(arena, number, type, true, false, descriptor,
+    Extension& ext = FindOrCreate(parent, number, type, true, false, descriptor,
                                   &CreateImpl<RepFor<T>>);
     return *ext.Mutable<RepFor<T>>()->Add();
   }
 
   template <typename T>
-  void Add(Arena* arena, int number, FieldType type, bool packed, T value,
-           const FieldDescriptor* descriptor) {
+  void Add(const MessageLite& parent, int number, FieldType type, bool packed,
+           T value, const FieldDescriptor* descriptor) {
     static_assert(std::is_arithmetic_v<T>,
                   "Only arithmetic types take `packed`");
-    Extension& ext = FindOrCreate(arena, number, type, true, packed, descriptor,
-                                  &CreateImpl<RepFor<T>>);
+    Extension& ext = FindOrCreate(parent, number, type, true, packed,
+                                  descriptor, &CreateImpl<RepFor<T>>);
     ext.Mutable<RepFor<T>>()->Add(value);
   }
 
@@ -462,8 +463,9 @@ class PROTOBUF_EXPORT ExtensionSet {
       int number, int index);
 
 #define desc const FieldDescriptor* descriptor  // avoid line wrapping
-  std::string* AddString(Arena* arena, int number, FieldType type, desc);
-  MessageLite* AddMessage(Arena* arena, int number, FieldType type,
+  std::string* AddString(const MessageLite& parent, int number, FieldType type,
+                         desc);
+  MessageLite* AddMessage(const MessageLite& parent, int number, FieldType type,
                           const ClassData* class_data, desc);
   MessageLite* AddMessage(Arena* arena, const FieldDescriptor* descriptor,
                           MessageFactory* factory);
@@ -1152,7 +1154,7 @@ class PROTOBUF_EXPORT ExtensionSet {
 
   // If the extension exists, return it. Otherwise, create it first.
   // If `pointer_creator` is not null, it is called on creation.
-  Extension& FindOrCreate(Arena* arena, int number, FieldType type,
+  Extension& FindOrCreate(const MessageLite& parent, int number, FieldType type,
                           bool repeated, bool packed,
                           const FieldDescriptor* descriptor,
                           Extension& (*pointer_creator)(Extension& ext,
@@ -1353,7 +1355,7 @@ class PrimitiveTypeTraits {
   }
   static void Set(const MessageLite& parent, int number, FieldType field_type,
                   ConstType value, ExtensionSet* set) {
-    set->Set<Type>(parent.GetArena(), number, field_type, value, nullptr);
+    set->Set<Type>(parent, number, field_type, value, nullptr);
   }
 };
 
@@ -1384,8 +1386,7 @@ class RepeatedPrimitiveTypeTraits {
   }
   static void Add(const MessageLite& parent, int number, FieldType field_type,
                   bool is_packed, Type value, ExtensionSet* set) {
-    set->Add<Type>(parent.GetArena(), number, field_type, is_packed, value,
-                   nullptr);
+    set->Add<Type>(parent, number, field_type, is_packed, value, nullptr);
   }
 
   [[nodiscard]] static const RepeatedField<ConstType>& GetRepeated(
@@ -1437,8 +1438,8 @@ class PROTOBUF_EXPORT RepeatedPrimitiveDefaults {
       const MessageLite& parent, int number, FieldType field_type,             \
       bool is_packed, ExtensionSet* set) {                                     \
     return reinterpret_cast<RepeatedField<TYPE>*>(                             \
-        set->MutableRawRepeatedField(parent.GetArena(), number, field_type,    \
-                                     is_packed, nullptr));                     \
+        set->MutableRawRepeatedField(parent, number, field_type, is_packed,    \
+                                     nullptr));                                \
   }
 
 PROTOBUF_DEFINE_PRIMITIVE_TYPE(int32_t, Int32)
@@ -1477,12 +1478,11 @@ class PROTOBUF_EXPORT StringTypeTraits {
   }
   static void Set(const MessageLite& parent, int number, FieldType field_type,
                   const std::string& value, ExtensionSet* set) {
-    set->Set<std::string>(parent.GetArena(), number, field_type, value,
-                          nullptr);
+    set->Set<std::string>(parent, number, field_type, value, nullptr);
   }
   static std::string* Mutable(const MessageLite& parent, int number,
                               FieldType field_type, ExtensionSet* set) {
-    return set->MutableString(parent.GetArena(), number, field_type, nullptr);
+    return set->MutableString(parent, number, field_type, nullptr);
   }
 };
 
@@ -1522,13 +1522,11 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
   static void Add(const MessageLite& parent, int number, FieldType field_type,
                   bool /*is_packed*/, const std::string& value,
                   ExtensionSet* set) {
-    set->Add<std::string>(parent.GetArena(), number, field_type, nullptr) =
-        value;
+    set->Add<std::string>(parent, number, field_type, nullptr) = value;
   }
   static std::string* Add(const MessageLite& parent, int number,
                           FieldType field_type, ExtensionSet* set) {
-    return &set->Add<std::string>(parent.GetArena(), number, field_type,
-                                  nullptr);
+    return &set->Add<std::string>(parent, number, field_type, nullptr);
   }
 
   [[nodiscard]] static const RepeatedPtrField<std::string>& GetRepeated(
@@ -1541,8 +1539,8 @@ class PROTOBUF_EXPORT RepeatedStringTypeTraits {
       const MessageLite& parent, int number, FieldType field_type,
       bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedPtrField<std::string>*>(
-        set->MutableRawRepeatedField(parent.GetArena(), number, field_type,
-                                     is_packed, nullptr));
+        set->MutableRawRepeatedField(parent, number, field_type, is_packed,
+                                     nullptr));
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField();
@@ -1580,7 +1578,7 @@ class EnumTypeTraits {
                   ConstType value, ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
-    set->Set<int>(parent.GetArena(), number, field_type, value, nullptr);
+    set->Set<int>(parent, number, field_type, value, nullptr);
   }
 };
 
@@ -1614,8 +1612,7 @@ class RepeatedEnumTypeTraits {
                   bool is_packed, ConstType value, ExtensionSet* set) {
     ABSL_DCHECK(
         internal::ValidateEnum(value, EnumTraits<Type>::validation_data()));
-    set->Add<int>(parent.GetArena(), number, field_type, is_packed, value,
-                  nullptr);
+    set->Add<int>(parent, number, field_type, is_packed, value, nullptr);
   }
   [[nodiscard]] static const RepeatedField<Type>& GetRepeated(
       int number, const ExtensionSet& set) {
@@ -1634,7 +1631,7 @@ class RepeatedEnumTypeTraits {
       const MessageLite& parent, int number, FieldType field_type,
       bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedField<Type>*>(set->MutableRawRepeatedField(
-        parent.GetArena(), number, field_type, is_packed, nullptr));
+        parent, number, field_type, is_packed, nullptr));
   }
 
   [[nodiscard]] static const RepeatedFieldType* GetDefaultRepeatedField() {
@@ -1674,7 +1671,7 @@ class MessageTypeTraits {
                                      const ExtensionSet& set,
                                      ConstType /* default_value */) {
     return static_cast<const Type&>(
-        set.GetMessageByClassData(parent.GetArena(), number, class_data()));
+        set.GetMessageByClassData(parent, number, class_data()));
   }
   [[nodiscard]] static std::nullptr_t GetPtr(int /* number */,
                                              const ExtensionSet& /* set */,
@@ -1685,7 +1682,7 @@ class MessageTypeTraits {
   static MutableType Mutable(const MessageLite& parent, int number,
                              FieldType field_type, ExtensionSet* set) {
     return static_cast<Type*>(set->MutableMessageByClassData(
-        parent.GetArena(), number, field_type, class_data(), nullptr));
+        parent, number, field_type, class_data(), nullptr));
   }
   static void SetAllocated(const MessageLite& parent, int number,
                            FieldType field_type, MutableType message,
@@ -1756,9 +1753,9 @@ class RepeatedMessageTypeTraits {
   }
   static MutableType Add(const MessageLite& parent, int number,
                          FieldType field_type, ExtensionSet* set) {
-    return static_cast<Type*>(
-        set->AddMessage(parent.GetArena(), number, field_type,
-                        MessageTraits<Type>::class_data(), nullptr));
+    return static_cast<Type*>(set->AddMessage(parent, number, field_type,
+                                              MessageTraits<Type>::class_data(),
+                                              nullptr));
   }
   [[nodiscard]] static const RepeatedPtrField<Type>& GetRepeated(
       int number, const ExtensionSet& set) {
@@ -1774,8 +1771,8 @@ class RepeatedMessageTypeTraits {
       const MessageLite& parent, int number, FieldType field_type,
       bool is_packed, ExtensionSet* set) {
     return reinterpret_cast<RepeatedPtrField<Type>*>(
-        set->MutableRawRepeatedField(parent.GetArena(), number, field_type,
-                                     is_packed, nullptr));
+        set->MutableRawRepeatedField(parent, number, field_type, is_packed,
+                                     nullptr));
   }
 
   static const RepeatedFieldType* GetDefaultRepeatedField();

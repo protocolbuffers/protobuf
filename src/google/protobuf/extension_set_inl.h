@@ -30,15 +30,15 @@ template <typename T>
 const char* ExtensionSet::ParseFieldWithExtensionInfo(
     MessageLite& parent, int number, bool was_packed_on_wire,
     const ExtensionInfo& info, const char* ptr, internal::ParseContext* ctx) {
-  Arena* const arena = parent.GetArena();
   if (was_packed_on_wire) {
     switch (info.type) {
-#define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                             \
-  case WireFormatLite::TYPE_##UPPERCASE:                                  \
-    return internal::Packed##CPP_CAMELCASE##Parser(                       \
-        MutableRawRepeatedField(arena, number, info.type, info.is_packed, \
-                                info.descriptor),                         \
-        arena, ptr, ctx);
+#define HANDLE_TYPE(UPPERCASE, CPP_CAMELCASE)                              \
+  case WireFormatLite::TYPE_##UPPERCASE:                                   \
+    return internal::Packed##CPP_CAMELCASE##Parser(                        \
+        parent,                                                            \
+        MutableRawRepeatedField(parent, number, info.type, info.is_packed, \
+                                info.descriptor),                          \
+        ptr, ctx);
       HANDLE_TYPE(INT32, Int32);
       HANDLE_TYPE(INT64, Int64);
       HANDLE_TYPE(UINT32, UInt32);
@@ -57,7 +57,7 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       case WireFormatLite::TYPE_ENUM:
         return internal::PackedEnumParserArg<T>(
             parent,
-            MutableRawRepeatedField(arena, number, info.type, info.is_packed,
+            MutableRawRepeatedField(parent, number, info.type, info.is_packed,
                                     info.descriptor),
             ptr, ctx, info.enum_validity_check, number);
       case WireFormatLite::TYPE_STRING:
@@ -69,18 +69,18 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
     }
   } else {
     switch (info.type) {
-#define HANDLE_VARINT_TYPE(UPPERCASE, CPPTYPE)                             \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                 \
-    uint64_t value;                                                        \
-    ptr = VarintParse(ptr, &value);                                        \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                   \
-    if (info.is_repeated) {                                                \
-      Add<CPPTYPE>(arena, number, WireFormatLite::TYPE_##UPPERCASE,        \
-                   info.is_packed, value, info.descriptor);                \
-    } else {                                                               \
-      Set<CPPTYPE>(arena, number, WireFormatLite::TYPE_##UPPERCASE, value, \
-                   info.descriptor);                                       \
-    }                                                                      \
+#define HANDLE_VARINT_TYPE(UPPERCASE, CPPTYPE)                              \
+  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
+    uint64_t value;                                                         \
+    ptr = VarintParse(ptr, &value);                                         \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                    \
+    if (info.is_repeated) {                                                 \
+      Add<CPPTYPE>(parent, number, WireFormatLite::TYPE_##UPPERCASE,        \
+                   info.is_packed, value, info.descriptor);                 \
+    } else {                                                                \
+      Set<CPPTYPE>(parent, number, WireFormatLite::TYPE_##UPPERCASE, value, \
+                   info.descriptor);                                        \
+    }                                                                       \
   } break
 
       HANDLE_VARINT_TYPE(INT32, int32_t);
@@ -89,35 +89,35 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       HANDLE_VARINT_TYPE(UINT64, uint64_t);
       HANDLE_VARINT_TYPE(BOOL, bool);
 #undef HANDLE_VARINT_TYPE
-#define HANDLE_SVARINT_TYPE(UPPERCASE, Type, SIZE)                      \
-  case WireFormatLite::TYPE_##UPPERCASE: {                              \
-    uint64_t val;                                                       \
-    ptr = VarintParse(ptr, &val);                                       \
-    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                \
-    auto value = WireFormatLite::ZigZagDecode##SIZE(val);               \
-    if (info.is_repeated) {                                             \
-      Add<Type>(arena, number, WireFormatLite::TYPE_##UPPERCASE,        \
-                info.is_packed, value, info.descriptor);                \
-    } else {                                                            \
-      Set<Type>(arena, number, WireFormatLite::TYPE_##UPPERCASE, value, \
-                info.descriptor);                                       \
-    }                                                                   \
+#define HANDLE_SVARINT_TYPE(UPPERCASE, Type, SIZE)                       \
+  case WireFormatLite::TYPE_##UPPERCASE: {                               \
+    uint64_t val;                                                        \
+    ptr = VarintParse(ptr, &val);                                        \
+    GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);                                 \
+    auto value = WireFormatLite::ZigZagDecode##SIZE(val);                \
+    if (info.is_repeated) {                                              \
+      Add<Type>(parent, number, WireFormatLite::TYPE_##UPPERCASE,        \
+                info.is_packed, value, info.descriptor);                 \
+    } else {                                                             \
+      Set<Type>(parent, number, WireFormatLite::TYPE_##UPPERCASE, value, \
+                info.descriptor);                                        \
+    }                                                                    \
   } break
 
       HANDLE_SVARINT_TYPE(SINT32, int32_t, 32);
       HANDLE_SVARINT_TYPE(SINT64, int64_t, 64);
 #undef HANDLE_SVARINT_TYPE
-#define HANDLE_FIXED_TYPE(UPPERCASE, CPPTYPE)                              \
-  case WireFormatLite::TYPE_##UPPERCASE: {                                 \
-    auto value = UnalignedLoad<CPPTYPE>(ptr);                              \
-    ptr += sizeof(CPPTYPE);                                                \
-    if (info.is_repeated) {                                                \
-      Add<CPPTYPE>(arena, number, WireFormatLite::TYPE_##UPPERCASE,        \
-                   info.is_packed, value, info.descriptor);                \
-    } else {                                                               \
-      Set<CPPTYPE>(arena, number, WireFormatLite::TYPE_##UPPERCASE, value, \
-                   info.descriptor);                                       \
-    }                                                                      \
+#define HANDLE_FIXED_TYPE(UPPERCASE, CPPTYPE)                               \
+  case WireFormatLite::TYPE_##UPPERCASE: {                                  \
+    auto value = UnalignedLoad<CPPTYPE>(ptr);                               \
+    ptr += sizeof(CPPTYPE);                                                 \
+    if (info.is_repeated) {                                                 \
+      Add<CPPTYPE>(parent, number, WireFormatLite::TYPE_##UPPERCASE,        \
+                   info.is_packed, value, info.descriptor);                 \
+    } else {                                                                \
+      Set<CPPTYPE>(parent, number, WireFormatLite::TYPE_##UPPERCASE, value, \
+                   info.descriptor);                                        \
+    }                                                                       \
   } break
 
       HANDLE_FIXED_TYPE(FIXED32, uint32_t);
@@ -139,10 +139,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
                       PrivateAccess::GetInternalMetadata(parent)
                           .mutable_unknown_fields<T>());
         } else if (info.is_repeated) {
-          Add<int>(arena, number, WireFormatLite::TYPE_ENUM, info.is_packed,
+          Add<int>(parent, number, WireFormatLite::TYPE_ENUM, info.is_packed,
                    value, info.descriptor);
         } else {
-          Set<int>(arena, number, WireFormatLite::TYPE_ENUM, value,
+          Set<int>(parent, number, WireFormatLite::TYPE_ENUM, value,
                    info.descriptor);
         }
         break;
@@ -152,9 +152,9 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       case WireFormatLite::TYPE_STRING: {
         std::string* value =
             info.is_repeated
-                ? AddString(arena, number, WireFormatLite::TYPE_STRING,
+                ? AddString(parent, number, WireFormatLite::TYPE_STRING,
                             info.descriptor)
-                : MutableString(arena, number, WireFormatLite::TYPE_STRING,
+                : MutableString(parent, number, WireFormatLite::TYPE_STRING,
                                 info.descriptor);
         int size = ReadSize(&ptr);
         GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
@@ -172,10 +172,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       case WireFormatLite::TYPE_GROUP: {
         MessageLite* value =
             info.is_repeated
-                ? AddMessage(arena, number, WireFormatLite::TYPE_GROUP,
+                ? AddMessage(parent, number, WireFormatLite::TYPE_GROUP,
                              info.message_info.class_data, info.descriptor)
                 : MutableMessageByClassData(
-                      arena, number, WireFormatLite::TYPE_GROUP,
+                      parent, number, WireFormatLite::TYPE_GROUP,
                       info.message_info.class_data, info.descriptor);
         uint32_t tag = (number << 3) + WireFormatLite::WIRETYPE_START_GROUP;
         return ctx->ParseGroup(value, ptr, tag);
@@ -184,10 +184,10 @@ const char* ExtensionSet::ParseFieldWithExtensionInfo(
       case WireFormatLite::TYPE_MESSAGE: {
         MessageLite* value =
             info.is_repeated
-                ? AddMessage(arena, number, WireFormatLite::TYPE_MESSAGE,
+                ? AddMessage(parent, number, WireFormatLite::TYPE_MESSAGE,
                              info.message_info.class_data, info.descriptor)
                 : MutableMessageByClassData(
-                      arena, number, WireFormatLite::TYPE_MESSAGE,
+                      parent, number, WireFormatLite::TYPE_MESSAGE,
                       info.message_info.class_data, info.descriptor);
         return ctx->ParseMessage(value, ptr);
       }
@@ -205,7 +205,6 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(MessageLite& parent,
   uint32_t type_id = 0;
   enum class State { kNoTag, kHasType, kHasPayload, kDone };
   State state = State::kNoTag;
-  Arena* const arena = parent.GetArena();
 
   while (!ctx->Done(&ptr)) {
     uint32_t tag = static_cast<uint8_t>(*ptr++);
@@ -230,10 +229,10 @@ const char* ExtensionSet::ParseMessageSetItemTmpl(MessageLite& parent,
         } else {
           MessageLite* value =
               extension.is_repeated
-                  ? AddMessage(arena, type_id, WireFormatLite::TYPE_MESSAGE,
+                  ? AddMessage(parent, type_id, WireFormatLite::TYPE_MESSAGE,
                                extension.message_info.class_data,
                                extension.descriptor)
-                  : MutableMessageByClassData(arena, type_id,
+                  : MutableMessageByClassData(parent, type_id,
                                               WireFormatLite::TYPE_MESSAGE,
                                               extension.message_info.class_data,
                                               extension.descriptor);
