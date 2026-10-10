@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "upb/base/internal/log2.h"
 #include "upb/mem/arena.h"
 
 // Must be last.
@@ -102,46 +103,58 @@ UPB_API_INLINE void* upb_Array_MutableDataPtr(struct upb_Array* array) {
 UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
     _upb_Array_NewMaybeAllowSlow)(upb_Arena* arena, size_t init_capacity,
                                   int elem_size_lg2, bool allow_slow) {
-  UPB_ASSERT(elem_size_lg2 != 1);
-  UPB_ASSERT(elem_size_lg2 <= 4);
+  UPB_ASSUME(elem_size_lg2 >= 0 && elem_size_lg2 <= 4 && elem_size_lg2 != 1);
 
-  const size_t elem_bytes = init_capacity << elem_size_lg2;
+  size_t elem_bytes = init_capacity;
+  if (upb_ShlOverflow(&elem_bytes, (unsigned int)elem_size_lg2)) return NULL;
 
   // Try to obtain a recycled backing buffer from the arena pool first.
+  struct upb_Array* array;
+  void* data = NULL;
+  size_t capacity;
   if (init_capacity > 0) {
     const size_t pool_bytes = upb_RoundUpToPowerOfTwo(
         UPB_MAX(elem_bytes, UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize)));
     if (pool_bytes != SIZE_MAX) {
-      void* data = upb_Arena_TryAllocPool(arena, pool_bytes);
+      data = upb_Arena_TryAllocPool(arena, pool_bytes);
       if (data) {
-        struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(
-            arena, sizeof(struct upb_Array));
+        array = (struct upb_Array*)upb_Arena_Malloc(arena,
+                                                    sizeof(struct upb_Array));
         if (!array) {
           upb_Arena_FreePool(arena, data, pool_bytes);
           return NULL;
         }
-        UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, data,
-                                             (size_t)elem_size_lg2);
-        array->UPB_ONLYBITS(size) = 0;
-        array->UPB_PRIVATE(capacity) = pool_bytes >> elem_size_lg2;
-        return array;
+        capacity = pool_bytes >> elem_size_lg2;
       }
     }
   }
 
-  // Pool miss: perform contiguous single allocation for header + initial data.
-  const size_t array_size =
-      UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-  if (init_capacity > (SIZE_MAX - array_size) >> elem_size_lg2) return NULL;
-  const size_t bytes = array_size + elem_bytes;
-  size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
-  if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
-  struct upb_Array* array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
-  if (!array) return NULL;
-  UPB_PRIVATE(_upb_Array_SetTaggedPtr)
-  (array, UPB_PTR_AT(array, array_size, void), (size_t)elem_size_lg2);
+  if (!data) {
+    // Pool miss: perform contiguous single allocation for header + initial
+    // data.
+    const size_t array_size =
+        UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+    if (init_capacity > (SIZE_MAX - array_size) >> elem_size_lg2) return NULL;
+    const size_t bytes = array_size + elem_bytes;
+    size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
+    if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
+    array = (struct upb_Array*)upb_Arena_Malloc(arena, bytes);
+    if (!array) return NULL;
+    data = UPB_PTR_AT(array, array_size, void);
+    capacity = init_capacity;
+  }
+
+  // Both paths initialize the array here, so that the compiler merges their
+  // stores (and doesn't, say, materialize the constant size and capacity of
+  // the second path as a vector).
+  //
+  // The array holds at least `init_capacity` elements (the pool block is at
+  // least `elem_bytes` long), so callers can resize it up to that without
+  // growing it.
+  UPB_ASSUME(capacity >= init_capacity);
+  UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, data, (size_t)elem_size_lg2);
   array->UPB_ONLYBITS(size) = 0;
-  array->UPB_PRIVATE(capacity) = init_capacity;
+  array->UPB_PRIVATE(capacity) = capacity;
   return array;
 }
 
@@ -207,7 +220,9 @@ UPB_INLINE void UPB_PRIVATE(_upb_Array_Set)(struct upb_Array* array, size_t i,
 }
 
 UPB_API_INLINE size_t upb_Array_Size(const struct upb_Array* arr) {
-  return arr->UPB_ONLYBITS(size);
+  const size_t size = arr->UPB_ONLYBITS(size);
+  UPB_ASSUME(size <= (SIZE_MAX >> UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr)));
+  return size;
 }
 
 UPB_API_INLINE size_t upb_Array_Capacity(const struct upb_Array* arr) {
