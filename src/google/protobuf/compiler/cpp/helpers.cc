@@ -238,7 +238,96 @@ std::string IntTypeName(const Options& options, absl::string_view type) {
   return absl::StrCat("::", type, "_t");
 }
 
+// Returns true if LazyField is enabled. It is disabled for:
+// --opensource, Lite runtime, repeated fields, non-messages.
+// This check is common to both eagerly and lazily verified LazyField.
+inline bool IsLazyFieldEnabled(const FieldDescriptor* field,
+                               const Options& options) {
+  return !options.opensource_runtime &&
+         GetOptimizeFor(field->file(), options) != FileOptions::LITE_RUNTIME &&
+         !field->is_repeated() &&
+         field->type() == FieldDescriptor::TYPE_MESSAGE;
+}
 
+inline bool IsLazyEnabled(const Options& options) {
+  // Eagerly-verified Lazy is enabled by default except OSS.
+  return !options.opensource_runtime;
+}
+
+
+// Describes different approaches to detect non-canonical int32 encoding. Only
+// kNever or kAlways is eligible for *simple* verification methods.
+enum class VerifyInt32Type {
+  kCustom,  // Only check if field number matches.
+  kNever,   // Do not check.
+  kAlways,  // Always check.
+};
+
+inline VerifySimpleType VerifyInt32TypeToVerifyCustom(VerifyInt32Type t) {
+  static VerifySimpleType kCustomTypes[] = {
+      VerifySimpleType::kCustom, VerifySimpleType::kCustomInt32Never,
+      VerifySimpleType::kCustomInt32Always};
+  return kCustomTypes[static_cast<int32_t>(t) -
+                      static_cast<int32_t>(VerifyInt32Type::kCustom)];
+}
+
+// Returns one of int32 verification types: kNever, kCustom, kAlways.
+//
+// We need to verify int32 encoding to detect non-canonical encoding (5B for
+// negative int32) and fallback to eager parsing.
+//
+// kNever skips int32 check  because there is no int32 field. kAlways
+// unconditionally verifies int32 encoding because all or almost varint fields
+// are int32. Otherwise, kCustom verifies int32 encoding only on exact field
+// number match. Note the following tweaks:
+// --uint32 very likely causes false positives. Having one requires kCustom.
+// --kCustom may be cheap enough if all int32 fields fit into a bitmask.
+// --Otherwise, try always check if X% of varint fields are int32.
+VerifyInt32Type ShouldVerifyInt32(const Descriptor* descriptor) {
+  int num_int32 = 0;
+  int num_int32_big_number = 0;
+  int num_uint32 = 0;
+  int num_other_varint = 0;
+
+  for (const auto* field : internal::FieldRange(descriptor)) {
+    switch (field->type()) {
+      case FieldDescriptor::TYPE_INT32:
+        ++num_int32;
+        if (field->number() > 64) ++num_int32_big_number;
+        break;
+      case FieldDescriptor::TYPE_UINT32:
+        ++num_uint32;
+        ++num_other_varint;
+        break;
+      default:
+        if (internal::WireFormat::WireTypeForFieldType(field->type()) ==
+            internal::WireFormatLite::WIRETYPE_VARINT) {
+          ++num_other_varint;
+        }
+        break;
+    }
+  }
+
+  // If there is no int32 fields, no need to check int32 encoding.
+  if (num_int32 == 0) return VerifyInt32Type::kNever;
+
+  // If all varint fields are int32, *always* check int32 encoding.
+  if (num_other_varint == 0) return VerifyInt32Type::kAlways;
+
+  // Negative uint32 encoding will cause fallback eager parsing as it appears
+  // non-canonical encoding. Also, if all int32 fields fit into a 64 bit mask,
+  // checking bitmask is affordable. Try exact match in these cases.
+  if (num_uint32 > 0 || num_int32_big_number == 0) {
+    return VerifyInt32Type::kCustom;
+  }
+
+  // If a given varint is likely int32, we should just always check. Let's use
+  // an arbitrary threshold of 75% (#int32 / #varints).
+  constexpr int kLikelyInt32Pct = 75;
+  return (100 * num_int32) / (num_int32 + num_other_varint) >= kLikelyInt32Pct
+             ? VerifyInt32Type::kAlways
+             : VerifyInt32Type::kCustom;
+}
 
 }  // namespace
 
@@ -256,12 +345,26 @@ inline bool IsLazyByProfile(const FieldDescriptor* field,
 
 bool IsEagerlyVerifiedLazy(const FieldDescriptor* field,
                            const Options& options) {
-  return false;
+  if (!IsLazyEnabled(options) || !IsLazyFieldEnabled(field, options) ||
+      field->options().unverified_lazy()) {
+    return false;
+  }
+
+  // User annotated LazyField ([lazy=true]) is eagerly verified.
+  if (field->options().lazy()) {
+    return true;
+  }
+
+  return IsLazyByProfile(field, options);
 }
 
 bool IsLazilyVerifiedLazy(const FieldDescriptor* field,
                           const Options& options) {
-  return false;
+  if (!IsLazyFieldEnabled(field, options)) return false;
+
+  // Only unverified LazyField ([unverified_lazy=true]) is lazily verified
+  // (go/verified-lazy).
+  return field->options().unverified_lazy();
 }
 
 internal::field_layout::TransformValidation GetLazyStyle(
@@ -1179,25 +1282,77 @@ bool IsArenaStringPtr(const FieldDescriptor* field, const Options& opts) {
 }
 
 bool ShouldVerify(const Descriptor* descriptor, const Options& options) {
-  (void)descriptor;
-  (void)options;
-  return false;
+  // Transitively having a weak field disables a message from being
+  // eagerly-verified LazyField. (See IsEagerlyVerifiedLazyEnabledForField). If
+  // that's the case, verification is not needed.
+  return IsLazyEnabled(options) &&
+         !options.scc_analyzer->HasWeakField(descriptor) &&
+         HasDescriptorMethods(descriptor->file(), options);
 }
 
 bool ShouldVerify(const FileDescriptor* file, const Options& options) {
-  (void)file;
-  (void)options;
+  if (!IsLazyEnabled(options)) return false;
+
+  for (int i = 0; i < file->message_type_count(); i++) {
+    const Descriptor* descriptor = file->message_type(i);
+    if (ShouldVerify(descriptor, options)) {
+      return true;
+    }
+    for (int j = 0; j < descriptor->nested_type_count(); j++) {
+      if (ShouldVerify(descriptor->nested_type(j), options)) {
+        return true;
+      }
+    }
+  }
+  for (int field_idx = 0; field_idx < file->extension_count(); field_idx++) {
+    const FieldDescriptor* field = file->extension(field_idx);
+    if (field->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+      continue;
+    }
+    if (ShouldVerify(field->message_type(), options)) {
+      return true;
+    }
+  }
   return false;
 }
 
 bool ShouldVerifyRecursively(const FieldDescriptor* field) {
-  (void)field;
-  return false;
+  // A field needs to be recursively verified in the following cases:
+  // --verifiable messagees (i.e. neither unverified nor weak) and groups!
+  // --UTF8 string (proto3)
+  // --packed repeated field
+  PROTOBUF_IGNORE_DEPRECATION_START
+  bool is_verifiable_message_or_group =
+      field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
+      !field->options().unverified_lazy() && !field->options().weak();
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  bool is_packed_repeated = field->is_repeated() && field->is_packed();
+  return is_verifiable_message_or_group || field->requires_utf8_validation() ||
+         is_packed_repeated;
 }
 
 VerifySimpleType ShouldVerifySimple(const Descriptor* descriptor) {
-  (void)descriptor;
-  return VerifySimpleType::kCustom;
+  VerifyInt32Type verify_int32_type = ShouldVerifyInt32(descriptor);
+
+  // Keep this in sync with MessageGenerator::GenerateVerify.
+  if (descriptor->extension_range_count() > 0 ||
+      descriptor->options().message_set_wire_format()) {
+    return VerifyInt32TypeToVerifyCustom(verify_int32_type);
+  }
+  for (const auto* field : internal::FieldRange(descriptor)) {
+    if (ShouldVerifyRecursively(field) || field->is_required()) {
+      return VerifyInt32TypeToVerifyCustom(verify_int32_type);
+    }
+  }
+  switch (verify_int32_type) {
+    case VerifyInt32Type::kNever:
+      return VerifySimpleType::kSimpleInt32Never;
+    case VerifyInt32Type::kAlways:
+      return VerifySimpleType::kSimpleInt32Always;
+    case VerifyInt32Type::kCustom:
+      return VerifySimpleType::kCustom;
+  }
+  ABSL_LOG(FATAL) << "unreachable";
 }
 
 bool ShouldSplit(const Descriptor*, const Options&) { return false; }
@@ -1205,8 +1360,31 @@ bool ShouldSplit(const FieldDescriptor*, const Options&) { return false; }
 
 bool ShouldForceAllocationOnConstruction(const Descriptor* desc,
                                          const Options& options) {
-  (void)desc;
-  (void)options;
+  if (options.bootstrap || options.opensource_runtime) {
+    return false;
+  }
+  if (!UseUnknownFieldSet(desc->file(), options)) {
+    return false;
+  }
+  // Force allocation on construction can expose undefined behaviors, but it
+  // costs more memory and may make some large unit test forge-oom. So we limit
+  // the scope to only where the message contains "normal" fields. Message with
+  // only extension fields is excluded because the bug can be cause by the
+  // actual message that extends it. Message with singular strings is excluded
+  // because `DebugHardenForceCopyDefaultString` already forces an allocation
+  // for string in constructors, which is enough to expose the UBs.
+  for (auto field : internal::FieldRange(desc)) {
+    if (IsWeak(field, options) || field->is_extension()) {
+      continue;
+    }
+    if (!field->is_repeated() &&
+        field->cpp_type() == FieldDescriptor::CPPTYPE_STRING &&
+        (field->cpp_string_type() == FieldDescriptor::CppStringType::kString ||
+         field->cpp_string_type() == FieldDescriptor::CppStringType::kView)) {
+      return false;
+    }
+    return true;
+  }
   return false;
 }
 
@@ -2145,13 +2323,19 @@ bool HasOnDeserializeTracker(const Descriptor* descriptor,
               .contains("deserialize");
 }
 
+bool HasRequiredFields(const Descriptor* descriptor) {
+  for (const auto* f : internal::FieldRange(descriptor)) {
+    if (f->is_required()) return true;
+  }
+  return false;
+}
 
 bool NeedsPostLoopHandler(const Descriptor* descriptor,
                           const Options& options) {
   if (HasOnDeserializeTracker(descriptor, options)) {
     return true;
   }
-  return false;
+  return HasRequiredFields(descriptor) && !options.opensource_runtime;
 }
 
 }  // namespace cpp
