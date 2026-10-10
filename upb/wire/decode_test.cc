@@ -2800,6 +2800,27 @@ TEST(DecodeTest, DecodeMapBadUtf8KeyWithMalformedValueMatchesMiniTableDecoder) {
   ExpectFastMatchesMiniTable(mt, payload);
 }
 
+TEST(DecodeTest, DecodeOversizeLengthIsMalformed) {
+  Arena mt_arena;
+  const upb_MiniTable* mt =
+      MiniTable::MakeSingleFieldTable<field_types::String>(
+          1, kUpb_DecodeFast_Scalar, mt_arena.ptr())
+          .first;
+
+  // Field 1, wire type 2, followed by the length varint 2^32. The fifth byte
+  // sets bits above bit 31, so the length is out of range and must be
+  // rejected rather than read back as a truncated value.
+  const std::string payload("\x0a\x80\x80\x80\x80\x10", 6);
+  for (int options : GetDecodeOptionsToTest()) {
+    SCOPED_TRACE(options);
+    Arena arena;
+    upb_Message* msg = upb_Message_New(mt, arena.ptr());
+    EXPECT_EQ(upb_Decode(payload.data(), payload.size(), msg, mt, nullptr,
+                         options, arena.ptr()),
+              kUpb_DecodeStatus_Malformed);
+  }
+}
+
 // Builds a message whose fields 1..N have the given types and are all members
 // of a single oneof.
 const upb_MiniTable* MakeOneofTable(std::initializer_list<upb_FieldType> types,
