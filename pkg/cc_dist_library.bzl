@@ -4,6 +4,7 @@ load("@rules_cc//cc:action_names.bzl", cc_action_names = "ACTION_NAMES")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@rules_cc//cc/common:cc_common.bzl", "cc_common")
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
+load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 ################################################################################
 # Archive/linking support
@@ -65,6 +66,7 @@ def _create_archive_action(
 
     ctx.actions.run(
         executable = archiver_path,
+        toolchain = toolchains.CC_TOOLCHAIN,
         arguments = [args],
         env = env,
         inputs = depset(
@@ -434,7 +436,7 @@ Example:
     },
     toolchains = [
         # C++ toolchain after https://github.com/bazelbuild/bazel/issues/7260:
-        "@bazel_tools//tools/cpp:toolchain_type",
+        toolchains.CC_TOOLCHAIN,
     ],
     fragments = ["cpp"],
 )
