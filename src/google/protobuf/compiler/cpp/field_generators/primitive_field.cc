@@ -106,7 +106,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $this_field$ = $kDefault$;
+      $this_mutable_field$ = $kDefault$;
     )cc");
   }
 
@@ -118,7 +118,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $this_field$ = $from_field$;
+      $this_mutable_field$ = $from_field$;
     )cc");
   }
 
@@ -136,7 +136,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateCopyConstructorCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $this_field$ = $from_field$;
+      $this_mutable_field$ = $from_field$;
     )cc");
   }
 
@@ -298,9 +298,9 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$this_field$.ClearIfNotDefault();\n");
+      p->Emit("$this_mutable_field$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("$this_field$.Clear();\n");
+      p->Emit("$this_mutable_field$.Clear();\n");
     }
   }
 
@@ -341,7 +341,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        $this_field$.DeleteIfNotDefault();
+        $this_mutable_field$.DeleteIfNotDefault();
       )cc");
     }
   }

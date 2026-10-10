@@ -319,7 +319,7 @@ void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit(
       R"cc(
         $DCHK$($this_field$ != nullptr);
-        $this_field$->Clear();
+        $this_mutable_field$->Clear();
       )cc");
 }
 
@@ -335,10 +335,10 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
   if (is_weak()) {
     p->Emit(
         R"cc(
-          if ($this_field$ == nullptr) {
-            $this_field$ = $from_field$->New(arena);
+          if (auto*& sub = $this_mutable_field$; true) {
+            if (sub == nullptr) sub = $from_field$->New(arena);
+            sub->CheckTypeAndMergeFrom(*$from_field$);
           }
-          $this_field$->CheckTypeAndMergeFrom(*$from_field$);
         )cc");
   } else if (should_split()) {
     p->Emit(
@@ -354,10 +354,12 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     // TODO enforces this as undefined behavior in debug builds.
     p->Emit(R"cc(
       $DCHK$($from_field$ != nullptr);
-      if ($this_field$ == nullptr) {
-        $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
-      } else {
-        $this_field$->MergeFrom(*$from_field$);
+      if (auto*& sub = $this_mutable_field$; true) {
+        if (sub == nullptr) {
+          sub = Super_::CopyConstruct(arena, *$from_field$);
+        } else {
+          sub->MergeFrom(*$from_field$);
+        }
       }
     )cc");
   }
@@ -374,7 +376,7 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
     )cc");
   } else {
     p->Emit(R"cc(
-      delete $this_field$;
+      delete $this_mutable_field$;
     )cc");
   }
 }
@@ -383,7 +385,7 @@ void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
   p->Emit(R"cc(
     if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
-      $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
+      $this_mutable_field$ = Super_::CopyConstruct(arena, *$from_field$);
     }
   )cc");
 }
@@ -392,9 +394,10 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!is_group()) {
     p->Emit(R"cc(
-      target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
-          $number$, *$this_field$, $this_field$->GetCachedSize(), target,
-          stream);
+      if (auto* sub = $this_field$; true) {
+        target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
+            $number$, *sub, sub->GetCachedSize(), target, stream);
+      }
     )cc");
   } else {
     p->Emit(R"cc(
@@ -663,7 +666,7 @@ void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
   ABSL_CHECK(!has_hasbit_);
   p->Emit(R"cc(
     if (from._internal_has_$name$()) {
-      $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
+      $this_mutable_field$ = Super_::CopyConstruct(arena, *$from_field$);
     }
   )cc");
 }
@@ -686,9 +689,9 @@ void OneofMessage::GenerateMergingCode(io::Printer* p) const {
                 : "MergeFrom"}},
           R"cc(
             if (oneof_needs_init) {
-              $this_field$ = Super_::CopyConstruct(arena, *$from_field$);
+              $this_mutable_field$ = Super_::CopyConstruct(arena, *$from_field$);
             } else {
-              $this_field$->$merge$(*$from_field$);
+              $this_mutable_field$->$merge$(*$from_field$);
             }
           )cc");
 }
@@ -947,9 +950,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
   if (should_split()) {
-    p->Emit("$this_field$.ClearIfNotDefault();\n");
+    p->Emit("$this_mutable_field$.ClearIfNotDefault();\n");
   } else {
-    p->Emit("$this_field$.Clear();\n");
+    p->Emit("$this_mutable_field$.Clear();\n");
   }
 }
 
@@ -1006,7 +1009,7 @@ void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {
   if (should_split()) {
     p->Emit(R"cc(
-      $this_field$.DeleteIfNotDefault();
+      $this_mutable_field$.DeleteIfNotDefault();
     )cc");
   }
 }

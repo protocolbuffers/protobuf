@@ -34,6 +34,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
 
 namespace google {
@@ -46,6 +47,13 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
+  const auto add_as_const = [](auto str) {
+    // We want to make sure `this_field` is used correctly but we don't want ot
+    // generate the bloat in normal mode.
+    return google::protobuf::internal::EnableStableExperiments()
+               ? absl::StrFormat("::std::as_const(%s)", str)
+               : str;
+  };
   std::vector<Sub> vars = {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
@@ -57,7 +65,10 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
-      {"this_field", absl::StrCat("this_.", FieldMemberName(field, split))},
+      {"this_field",
+       add_as_const(absl::StrCat("this_.", FieldMemberName(field, split)))},
+      {"this_mutable_field",
+       absl::StrCat("this_.", FieldMemberName(field, split))},
       {"from_field", absl::StrCat("from.", FieldMemberName(field, split))},
 
       {"field_", FieldMemberName(field, split)},
