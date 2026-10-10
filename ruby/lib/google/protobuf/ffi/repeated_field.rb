@@ -95,6 +95,11 @@ module Google
           end_of_range = range.respond_to?(:end) ? range.end : range.last
           index_of_last = end_of_range.nil? ? -1 : end_of_range
 
+          # The range accessors above can run Ruby code (a Range subclass may
+          # override begin/end), so re-read the length: a cached count would
+          # let subarray read past the end of a cleared or shrunk field.
+          count = length
+
           if index_of_last < 0
             index_of_last += count
           end
@@ -141,6 +146,11 @@ module Google
 
       def []=(index, value)
         raise FrozenError if frozen?
+        # Convert first: the conversion can run Ruby code (to_i/to_f on a
+        # Numeric subclass) that clears, shrinks or freezes the field, so the
+        # count must be read only after it, and the frozen check re-run.
+        msgval = convert_ruby_to_upb(value, arena, type, descriptor)
+        raise FrozenError if frozen?
         count = length
         index += count if index < 0
         return nil if index < 0
@@ -151,7 +161,7 @@ module Google
             Google::Protobuf::FFI.array_set(array, i, empty_message_value)
           end
         end
-        Google::Protobuf::FFI.array_set(array, index, convert_ruby_to_upb(value, arena, type, descriptor))
+        Google::Protobuf::FFI.array_set(array, index, msgval)
         nil
       end
 
@@ -296,7 +306,11 @@ module Google
 
       def internal_push(*elements)
         elements.each do |element|
-          append_msg_val convert_ruby_to_upb(element, arena, type, descriptor)
+          msgval = convert_ruby_to_upb(element, arena, type, descriptor)
+          # The conversion can run Ruby code that freezes the field; do not
+          # append to a frozen array.
+          raise FrozenError if frozen?
+          append_msg_val msgval
         end
         self
       end
