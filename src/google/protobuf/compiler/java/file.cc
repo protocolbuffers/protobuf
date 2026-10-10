@@ -579,12 +579,15 @@ void FileGenerator::GenerateDescriptorInitializationCodeForImmutable(
   CollectExtensions(*file_, options_, &extensions, &optional_extensions);
 
   // Force descriptor initialization of all dependencies.
+  int dep_index = 0;
   for (int i = 0; i < file_->dependency_count(); i++) {
     if (ShouldIncludeDependency(file_->dependency(i), true)) {
       std::string dependency =
           name_resolver_->GetImmutableClassName(file_->dependency(i));
-      printer->Print("$dependency$.getDescriptor();\n", "dependency",
-                     dependency);
+      printer->Print(
+          "com.google.protobuf.Descriptors.FileDescriptor unused$index$ =\n"
+          "    $dependency$.getDescriptor();\n",
+          "index", absl::StrCat(dep_index++), "dependency", dependency);
     }
   }
 
