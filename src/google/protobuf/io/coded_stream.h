@@ -758,7 +758,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
                                                            const absl::Cord& s,
                                                            uint8_t* ptr) {
     ptr = EnsureSpace(ptr);
-    ptr = WriteTag(num, 2, ptr);
+    ptr = WriteTag(num, /*wt=*/2, ptr);
     return WriteCordOutline(s, ptr);
   }
 
@@ -899,7 +899,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   PROTOBUF_ALWAYS_INLINE uint8_t* WriteLengthDelim(int num, uint32_t size,
                                                    uint8_t* ptr) {
-    ptr = WriteTag(num, 2, ptr);
+    ptr = WriteTag(num, /*wt=*/2, ptr);
     return UnsafeWriteSize(size, ptr);
   }
 
@@ -1367,7 +1367,7 @@ inline bool CodedInputStream::ReadVarint32(uint32_t* value) {
     v = *buffer_;
     if (v < 0x80) {
       *value = v;
-      Advance(1);
+      Advance(/*amount=*/1);
       return true;
     }
   }
@@ -1379,7 +1379,7 @@ inline bool CodedInputStream::ReadVarint32(uint32_t* value) {
 inline bool CodedInputStream::ReadVarint64(uint64_t* value) {
   if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_) && *buffer_ < 0x80) {
     *value = *buffer_;
-    Advance(1);
+    Advance(/*amount=*/1);
     return true;
   }
   std::pair<uint64_t, bool> p = ReadVarint64Fallback();
@@ -1392,7 +1392,7 @@ inline bool CodedInputStream::ReadVarintSizeAsInt(int* value) {
     int v = *buffer_;
     if (v < 0x80) {
       *value = v;
-      Advance(1);
+      Advance(/*amount=*/1);
       return true;
     }
   }
@@ -1464,7 +1464,7 @@ inline uint32_t CodedInputStream::ReadTagNoLastTag() {
   if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_)) {
     v = *buffer_;
     if (v < 0x80) {
-      Advance(1);
+      Advance(/*amount=*/1);
       return v;
     }
   }
@@ -1486,7 +1486,7 @@ inline std::pair<uint32_t, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
     if (static_cast<int8_t>(buffer_[0]) > 0) {
       const uint32_t kMax1ByteVarint = 0x7f;
       uint32_t tag = buffer_[0];
-      Advance(1);
+      Advance(/*amount=*/1);
       return std::make_pair(tag, cutoff >= kMax1ByteVarint || tag <= cutoff);
     }
     // Other hot case: cutoff >= 0x80, buffer_ has at least two bytes available,
@@ -1496,7 +1496,7 @@ inline std::pair<uint32_t, bool> CodedInputStream::ReadTagWithCutoffNoLastTag(
         ABSL_PREDICT_TRUE((buffer_[0] & ~buffer_[1]) >= 0x80)) {
       const uint32_t kMax2ByteVarint = (0x7f << 7) + 0x7f;
       uint32_t tag = (1u << 7) * buffer_[1] + (buffer_[0] - 0x80);
-      Advance(2);
+      Advance(/*amount=*/2);
       // It might make sense to test for tag == 0 now, but it is so rare that
       // that we don't bother.  A varint-encoded 0 should be one byte unless
       // the encoder lost its mind.  The second part of the return value of
@@ -1523,7 +1523,7 @@ inline bool CodedInputStream::ConsumedEntireMessage() {
 inline bool CodedInputStream::ExpectTag(uint32_t expected) {
   if (expected < (1 << 7)) {
     if (ABSL_PREDICT_TRUE(buffer_ < buffer_end_) && buffer_[0] == expected) {
-      Advance(1);
+      Advance(/*amount=*/1);
       return true;
     } else {
       return false;
@@ -1532,7 +1532,7 @@ inline bool CodedInputStream::ExpectTag(uint32_t expected) {
     if (ABSL_PREDICT_TRUE(BufferSize() >= 2) &&
         buffer_[0] == static_cast<uint8_t>(expected | 0x80) &&
         buffer_[1] == static_cast<uint8_t>(expected >> 7)) {
-      Advance(2);
+      Advance(/*amount=*/2);
       return true;
     } else {
       return false;
