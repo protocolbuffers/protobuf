@@ -23,7 +23,10 @@ use reflection::def_pool::{
 use reflection::message_def::RawMessageDef;
 use reflection::upb_TextEncode;
 
-use upb::{Arena, MessagePtr, RawMiniTable, RawMiniTableEnum, RawMiniTableExtension, StringView};
+use upb::{
+    Arena, MessagePtr, RawMiniTable, RawMiniTableEnum, RawMiniTableExtension, StringView,
+    TextEncodeOptions,
+};
 
 pub use reflection::def_pool::upb_DefPool_Init;
 pub use reflection::def_pool::RawDefPoolInit as DefPoolInitPtr;
@@ -125,11 +128,12 @@ pub unsafe fn text_encode<'pool, T>(
     msg: MessagePtr<T>,
     def: MessageDef<'pool>,
     ext_pool: Option<&DefPool>,
-    options: u32,
+    options: TextEncodeOptions,
 ) -> String {
     let msg = msg.raw();
     let def_raw = def.raw();
     let ext_pool_raw = ext_pool.map(|p| p.raw());
+    let options = options.to_bits();
 
     // Only find out the length first to then allocate a buffer of the minimum size
     // needed.
@@ -138,9 +142,8 @@ pub unsafe fn text_encode<'pool, T>(
     // - `def` is valid per safety requirements of this function.
     // - `ext_pool` is valid per safety requirements of this function.
     // - `buf` is null and `size` is 0.
-    let min_len = unsafe {
-        upb_TextEncode(msg, def_raw, ext_pool_raw, options as i32, core::ptr::null_mut(), 0)
-    };
+    let min_len =
+        unsafe { upb_TextEncode(msg, def_raw, ext_pool_raw, options, core::ptr::null_mut(), 0) };
     assert!(min_len < isize::MAX as usize);
 
     // +1 for the trailing NULL
@@ -149,9 +152,8 @@ pub unsafe fn text_encode<'pool, T>(
     // SAFETY:
     // - `msg`, `def`, `ext_pool` are valid per safety requirements of this function.
     // - `buf` is legally writable for `buf.len()` bytes.
-    let written_len = unsafe {
-        upb_TextEncode(msg, def_raw, ext_pool_raw, options as i32, buf.as_mut_ptr(), buf.len())
-    };
+    let written_len =
+        unsafe { upb_TextEncode(msg, def_raw, ext_pool_raw, options, buf.as_mut_ptr(), buf.len()) };
     assert_eq!(min_len, written_len);
 
     // Drop the trailing NULL written by `upb_TextEncode`.

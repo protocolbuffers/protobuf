@@ -11,6 +11,7 @@
 //! the message's `MessageDef` in the process-wide `DefPool` (see `def_pool.rs`), then hands both
 //! the message and the def to upb.
 
+use super::upb::TextEncodeOptions;
 use super::{message_def, upb_reflection, UpbGetMessagePtr, UpbWithReflection};
 use crate::__internal::Private;
 use crate::WithReflection;
@@ -22,8 +23,16 @@ use crate::WithReflection;
 pub trait KernelWithReflection: UpbWithReflection + UpbGetMessagePtr<Msg = Self> {}
 impl<T: UpbWithReflection + UpbGetMessagePtr<Msg = T>> KernelWithReflection for T {}
 
-/// Returns the protobuf TextFormat representation of `msg`.
+/// Returns the protobuf TextFormat representation of `msg` with the default [`TextEncodeOptions`].
 pub fn print_to_text_format<T: WithReflection>(msg: &T) -> String {
+    print_to_text_format_with_options(msg, TextEncodeOptions::default())
+}
+
+/// Returns the protobuf TextFormat representation of `msg`, formatted according to `options`.
+pub fn print_to_text_format_with_options<T: WithReflection>(
+    msg: &T,
+    options: TextEncodeOptions,
+) -> String {
     let ptr = msg.get_ptr(Private);
     let def = message_def::<T>();
     // SAFETY:
@@ -31,6 +40,5 @@ pub fn print_to_text_format<T: WithReflection>(msg: &T) -> String {
     // - `def` describes `T`, and `WithReflection` guarantees `kernelWithReflection`, which
     //   guarantees `UpbGetMessagePtr<Msg = T>, therefore `ptr` is a `MessagePtr<T>`.
     // TODO: Pass the global DefPool as `ext_pool` so that extensions are printed.
-    // TODO: Support configuring options.
-    unsafe { upb_reflection::text_encode(ptr, def, None, 0) }
+    unsafe { upb_reflection::text_encode(ptr, def, None, options) }
 }

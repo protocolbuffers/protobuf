@@ -17,10 +17,8 @@ unsafe extern "C" {
     /// to hold the `msg`s debug string.
     ///
     /// SAFETY:
-    /// - `msg` is pointing at a valid upb_Message with associated minitable
-    ///   `mt`
-    /// - `buf` is legally writable for `size` bytes (`buf` may be nullptr if
-    ///   `size` is 0)
+    /// - `msg` is pointing at a valid upb_Message with associated minitable `mt`
+    /// - `buf` is legally writable for `size` bytes (`buf` may be nullptr if `size` is 0)
     pub fn upb_DebugString(
         msg: RawMessage,
         mt: RawMiniTable,
@@ -31,7 +29,6 @@ unsafe extern "C" {
 }
 
 /// Encoding options.
-#[allow(dead_code)]
 pub mod text_encode_options {
     /// When set, prints everything on a single line.
     pub const SINGLE_LINE: i32 = 1;
