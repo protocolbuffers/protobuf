@@ -42,11 +42,6 @@ namespace {
 
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-bool HasReflectionSupport(Context& ctx, const Descriptor& msg) {
-  return !ctx.opts().force_lite_runtime &&
-         msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME;
-}
-
 bool HasExtensions(const Descriptor& msg) {
   if (msg.extension_count() > 0) return true;
   for (int i = 0; i < msg.nested_type_count(); ++i) {
@@ -302,13 +297,13 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
              R"rs(
           unsafe impl $pbr$::UpbWithReflection for $Msg$ {
             const FULL_NAME: &'static str = "$full_name$";
-            fn def_init() -> $pbr$::DefPoolInit {
-              $def_init$($pbi$::Private)
-            }
-            fn message_def_cached() -> &'static $pbr$::MessageDefCached {
+            const MESSAGE_DEF_CACHED: &'static $pbr$::MessageDefCached = {
               static CACHED: $pbr$::MessageDefCached =
                   $pbr$::MessageDefCached::new();
               &CACHED
+            };
+            fn def_init() -> $pbr$::DefPoolInit {
+              $def_init$($pbi$::Private)
             }
           }
           impl $pb$::WithReflection for $Msg$ {}
