@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -309,10 +310,15 @@ Subprocess::~Subprocess() {
 
 namespace {
 char* portable_strdup(const char* s) {
-  char* ns = (char*)malloc(strlen(s) + 1);
-  if (ns != nullptr) {
-    strcpy(ns, s);
-  }
+  if (s == nullptr) return nullptr;
+
+  const size_t len = strlen(s);
+  if (len > SIZE_MAX-1) return nullptr;
+
+  char* ns = (char*)malloc(len + 1);
+  if (ns == nullptr) return nullptr;
+
+  memcpy(ns, s, len + 1);
   return ns;
 }
 }  // namespace
