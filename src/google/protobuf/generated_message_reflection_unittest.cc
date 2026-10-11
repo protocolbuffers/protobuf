@@ -24,6 +24,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -47,10 +48,20 @@
 #include "google/protobuf/unittest_import_option.pb.h"
 #include "google/protobuf/unittest_mset.pb.h"
 #include "google/protobuf/unittest_mset_wire_format.pb.h"
+#include "google/protobuf/unittest_no_package.pb.h"
 #include "google/protobuf/unittest_proto3.pb.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+
+// Define ::ExtendMessage, ::ExtendMessage_NestedMessage,
+// ::TestRepeatedMessage, and ::TestEnum in the global namespace to verify that
+// unittest_no_package.proto.h only generates symbols inside ::cpp::no_package
+// and does not emit them into the global namespace.
+struct ExtendMessage {};
+struct ExtendMessage_NestedMessage {};
+struct TestRepeatedMessage {};
+struct TestEnum {};
 
 namespace google {
 namespace protobuf {
@@ -1119,10 +1130,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                     message, descriptor->FindFieldByName("foo_string_piece")));
   EXPECT_EQ("", reflection->GetString(
                     message, descriptor->FindFieldByName("foo_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::FOO,
       reflection->GetEnum(message, descriptor->FindFieldByName("foo_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(&unittest::TestOneof2::NestedMessage::default_instance(),
             &reflection->GetMessage(
                 message, descriptor->FindFieldByName("foo_message")));
@@ -1145,10 +1158,12 @@ TEST(GeneratedMessageReflectionTest, Oneof) {
                 message, descriptor->FindFieldByName("bar_string_piece")));
   EXPECT_EQ("BYTES", reflection->GetString(
                          message, descriptor->FindFieldByName("bar_bytes")));
+  PROTOBUF_IGNORE_DEPRECATION_START
   EXPECT_EQ(
       unittest::TestOneof2::BAR,
       reflection->GetEnum(message, descriptor->FindFieldByName("bar_enum"))
           ->number());
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Check Set functions.
   reflection->SetInt32(&message, descriptor->FindFieldByName("foo_int"), 123);
@@ -1497,6 +1512,22 @@ TEST(GeneratedMessageReflectionTest, UsageErrors) {
       "  Message type: proto2_unittest.TestAllTypes\n"
       "  Field       : proto2_unittest.ForeignMessage.c\n"
       "  Problem     : Field does not match message type.");
+}
+
+TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+  const Reflection* reflection = message1.GetReflection();
+
+  // Passing a field descriptor from a different message type to SwapFields
+  // must fail. Without this check, a foreign field with a higher index than
+  // the target's field count causes an out-of-bounds read on the offsets
+  // array, leading to memory corruption.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  std::vector<const FieldDescriptor*> fields = {foreign_field};
+  EXPECT_DEATH(reflection->SwapFields(&message1, &message2, fields),
+               "Field does not match message type");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
@@ -2041,6 +2072,40 @@ TEST(CppNamespaceOption, NewNamespaceSymbolSameProtoName) {
 
   EXPECT_EQ(new_message.GetDescriptor()->file()->package(),
             "cpp.file.options.test");
+}
+
+TEST(CppNamespaceOption, EmptyPackageWithCcNamespace) {
+  cpp::no_package::ExtendMessage extend_message;
+  cpp::no_package::TestRepeatedMessage* repeated_message =
+      extend_message.add_repeated_msg();
+  extend_message.set_d(cpp::no_package::TEST_ENUM_VALUE);
+  extend_message.mutable_e()->set_a(10);
+  extend_message.SetExtension(cpp::no_package::ext_field, 42);
+
+  EXPECT_EQ(extend_message.GetTypeName(), "ExtendMessage");
+  EXPECT_EQ(extend_message.e().GetTypeName(), "ExtendMessage.NestedMessage");
+  EXPECT_EQ(repeated_message->GetTypeName(), "TestRepeatedMessage");
+  EXPECT_EQ(extend_message.d(), cpp::no_package::TEST_ENUM_VALUE);
+  EXPECT_EQ(extend_message.e().a(), 10);
+  EXPECT_EQ(extend_message.GetExtension(cpp::no_package::ext_field), 42);
+  EXPECT_THAT(extend_message.GetDescriptor()->file()->package(), IsEmpty());
+
+  EXPECT_TRUE(
+      (std::is_base_of_v<google::protobuf::Message, ::cpp::no_package::ExtendMessage>));
+  EXPECT_TRUE(
+      (std::is_base_of_v<google::protobuf::Message,
+                         ::cpp::no_package::ExtendMessage::NestedMessage>));
+  EXPECT_TRUE(
+      (std::is_base_of_v<google::protobuf::Message,
+                         ::cpp::no_package::ExtendMessage_NestedMessage>));
+  EXPECT_TRUE((std::is_base_of_v<google::protobuf::Message,
+                                 ::cpp::no_package::TestRepeatedMessage>));
+  EXPECT_TRUE((google::protobuf::is_proto_enum<::cpp::no_package::TestEnum>::value));
+  EXPECT_FALSE((std::is_base_of_v<google::protobuf::Message, ::ExtendMessage>));
+  EXPECT_FALSE(
+      (std::is_base_of_v<google::protobuf::Message, ::ExtendMessage_NestedMessage>));
+  EXPECT_FALSE((std::is_base_of_v<google::protobuf::Message, ::TestRepeatedMessage>));
+  EXPECT_FALSE((google::protobuf::is_proto_enum<::TestEnum>::value));
 }
 
 }  // namespace

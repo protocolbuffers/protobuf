@@ -12,6 +12,9 @@ message MessageWithExtension {
 extend MessageWithExtension {
   optional int32 ext_field_int32 = 1000;
   repeated MessageWithInt32 ext_field_repeated_msg = 1001;
+  repeated int32 ext_repeated_int32 = 1003;
+  optional string ext_string = 1004;
+  repeated string ext_repeated_string = 1005;
 }
 
 message MessageWithMapMessage {
@@ -24,6 +27,18 @@ message MessageWithMapMessageClone {
 
 message MessageWithKnown {
   optional int32 known_field_int32 = 1000;
+}
+
+message MessageWithKnownRepeatedInt32 {
+  repeated int32 known_repeated_int32 = 1003;
+}
+
+message MessageWithKnownString {
+  optional string known_string = 1004;
+}
+
+message MessageWithKnownRepeatedString {
+  repeated string known_repeated_string = 1005;
 }
 
 message MessageWithKnownInt64 {
@@ -112,6 +127,7 @@ message AnotherMessageWithExtension {
 
 extend AnotherMessageWithExtension {
   optional int32 another_ext_field_int32 = 1000;
+  optional MessageWithInt32Clone another_ext_field_msg = 1002;
 }
 
 message SrcWithOneof {

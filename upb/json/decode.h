@@ -22,7 +22,19 @@
 extern "C" {
 #endif
 
-enum { upb_JsonDecode_IgnoreUnknown = 1 };
+enum {
+  upb_JsonDecode_IgnoreUnknown = 1 << 0,
+
+  // Controls whether the decoder performs UTF-8 validation on the JSON input.
+  // Under Enforce, it will fail with a decode error if the provided input is
+  // not well-formed UTF-8.
+  // Callers must not set both upb_JsonDecode_ValidateUtf8_Disable and
+  // upb_JsonDecode_ValidateUtf8_Enforce.
+  // The default behavior (when neither is set) is to warn on invalid UTF-8,
+  // but this will become Enforce in an upcoming breaking change.
+  upb_JsonDecode_ValidateUtf8_Disable = 1 << 1,
+  upb_JsonDecode_ValidateUtf8_Enforce = 2 << 1,
+};
 
 enum {
   kUpb_JsonDecodeResult_Ok = 0,

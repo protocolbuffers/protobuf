@@ -227,9 +227,14 @@ static void jsonenc_enum(int32_t val, const upb_FieldDef* f, jsonenc* e) {
 }
 
 static void jsonenc_bytes(jsonenc* e, upb_StringView str) {
-  /* This is the regular base64, not the "web-safe" version. */
-  static const char base64[] =
+  /* Regular base64 (RFC 4648 section 4) by default; the URL- and filename-safe
+   * alphabet (RFC 4648 section 5) when upb_JsonEncode_WebSafeBase64 is set. */
+  static const char kBase64[] =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  static const char kWebSafeBase64[] =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+  const char* base64 =
+      (e->options & upb_JsonEncode_WebSafeBase64) ? kWebSafeBase64 : kBase64;
   const unsigned char* ptr = (unsigned char*)str.data;
   const unsigned char* end = UPB_PTRADD(ptr, str.size);
   char buf[4];
@@ -265,43 +270,47 @@ static void jsonenc_bytes(jsonenc* e, upb_StringView str) {
   jsonenc_putstr(e, "\"");
 }
 
+static void jsonenc_put_escaped_char(jsonenc* e, char ch) {
+  switch (ch) {
+    case '\n':
+      jsonenc_putstr(e, "\\n");
+      break;
+    case '\r':
+      jsonenc_putstr(e, "\\r");
+      break;
+    case '\t':
+      jsonenc_putstr(e, "\\t");
+      break;
+    case '\"':
+      jsonenc_putstr(e, "\\\"");
+      break;
+    case '\f':
+      jsonenc_putstr(e, "\\f");
+      break;
+    case '\b':
+      jsonenc_putstr(e, "\\b");
+      break;
+    case '\\':
+      jsonenc_putstr(e, "\\\\");
+      break;
+    default:
+      if ((uint8_t)ch < 0x20) {
+        jsonenc_printf(e, "\\u%04x", (int)(uint8_t)ch);
+      } else {
+        /* This could be a non-ASCII byte.  We rely on the string being valid
+         * UTF-8. */
+        jsonenc_putbytes(e, &ch, 1);
+      }
+      break;
+  }
+}
+
 static void jsonenc_stringbody(jsonenc* e, upb_StringView str) {
   const char* ptr = str.data;
   const char* end = UPB_PTRADD(ptr, str.size);
 
   while (ptr < end) {
-    switch (*ptr) {
-      case '\n':
-        jsonenc_putstr(e, "\\n");
-        break;
-      case '\r':
-        jsonenc_putstr(e, "\\r");
-        break;
-      case '\t':
-        jsonenc_putstr(e, "\\t");
-        break;
-      case '\"':
-        jsonenc_putstr(e, "\\\"");
-        break;
-      case '\f':
-        jsonenc_putstr(e, "\\f");
-        break;
-      case '\b':
-        jsonenc_putstr(e, "\\b");
-        break;
-      case '\\':
-        jsonenc_putstr(e, "\\\\");
-        break;
-      default:
-        if ((uint8_t)*ptr < 0x20) {
-          jsonenc_printf(e, "\\u%04x", (int)(uint8_t)*ptr);
-        } else {
-          /* This could be a non-ASCII byte.  We rely on the string being valid
-           * UTF-8. */
-          jsonenc_putbytes(e, ptr, 1);
-        }
-        break;
-    }
+    jsonenc_put_escaped_char(e, *ptr);
     ptr++;
   }
 }
@@ -449,7 +458,7 @@ static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
       ch = *++ptr - 32;
     }
 
-    jsonenc_putbytes(e, &ch, 1);
+    jsonenc_put_escaped_char(e, ch);
     ptr++;
   }
 }

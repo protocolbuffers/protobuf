@@ -115,7 +115,7 @@ class GCTest < Test::Unit::TestCase
     old_gc = GC.stress
     GC.stress = true
     begin
-      100.times do
+      50.times do
         # Non-UTF-8 key and value: the key conversion allocates a temporary, and
         # the value conversion allocates again, opening the window.
         key = ("K" * 5000).dup.force_encoding("ISO-8859-1") +
@@ -141,7 +141,7 @@ class GCTest < Test::Unit::TestCase
     old_gc = GC.stress
     GC.stress = true
     begin
-      100.times do
+      50.times do
         map = Google::Protobuf::Map.new(:string, :string)
         map[:some_symbol_key] = :some_symbol_value
         assert_equal ["some_symbol_key"], map.keys

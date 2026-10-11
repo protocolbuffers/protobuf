@@ -112,7 +112,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     auto vars = p->WithVars(variables_);
     p->Emit(R"cc(
-      $field_$ = $pb$::Arena::Create<absl::Cord>(arena, *from.$field_$);
+      $field_$ = $pb$::Arena::Create<absl::Cord>(arena, *$from_field$);
     )cc");
   }
 };
@@ -172,12 +172,12 @@ void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
 
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ const ::absl::Cord& $name$() const;
-    $DEPRECATED$void $set_name$(const ::absl::Cord& value);
+    $DEPRECATED$void $set_name$(::absl::Cord value);
     $DEPRECATED$void $set_name$(::absl::string_view value);
 
     private:
     const ::absl::Cord& $_internal_name$() const;
-    void $_internal_set_name$(const ::absl::Cord& value);
+    void $_internal_set_name$(::absl::Cord value);
     ::absl::Cord* $nonnull$ $_internal_mutable_name$();
 
     public:
@@ -202,16 +202,15 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::_internal_set_$name_internal$(
-        const ::absl::Cord& value) {
-      $set_hasbit$;
-      $field_$ = value;
+    inline void $Msg$::_internal_set_$name_internal$(::absl::Cord value) {
+      $field_$ = ::std::move(value);
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::set_$name$(const ::absl::Cord& value) {
+    inline void $Msg$::set_$name$(::absl::Cord value) {
       $WeakDescriptorSelfPin$;
-      _internal_set_$name_internal$(value);
+      $set_hasbit$;
+      _internal_set_$name_internal$(::std::move(value));
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$full_name$)
     }
@@ -227,7 +226,6 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
   )cc");
   p->Emit(R"cc(
     inline ::absl::Cord* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
-      $set_hasbit$;
       return &$field_$;
     }
   )cc");
@@ -250,11 +248,11 @@ void CordFieldGenerator::GenerateMessageClearingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   if (field_->default_value_string().empty()) {
     p->Emit(R"cc(
-      this_.$field_$.Clear();
+      $this_field$.Clear();
     )cc");
   } else {
     p->Emit(R"cc(
-      this_.$field_$ = ::absl::string_view($default$, $default_length$);
+      $this_field$ = ::absl::string_view($default$, $default_length$);
     )cc");
   }
 }
@@ -262,7 +260,7 @@ void CordFieldGenerator::GenerateMessageClearingCode(io::Printer* p) const {
 void CordFieldGenerator::GenerateMergingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    _this->_internal_set_$name$(from._internal_$name$());
+    this_._internal_set_$name$(from._internal_$name$());
   )cc");
 }
 
@@ -275,9 +273,9 @@ void CordFieldGenerator::GenerateSwappingCode(io::Printer* p) const {
 
 void CordFieldGenerator::GenerateArenaDestructorCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
-  // _this is the object being destructed (we are inside a static method here).
+  // this_ is the object being destructed (we are inside a static method here).
   p->Emit(R"cc(
-    _this->$field_$.::absl::Cord::~Cord();
+    $this_field$.::absl::Cord::~Cord();
   )cc");
 }
 
@@ -379,14 +377,14 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::set_$name$(const ::absl::Cord& value) {
+    inline void $Msg$::set_$name$(::absl::Cord value) {
       $WeakDescriptorSelfPin$;
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
         $field_$ = $pb$::Arena::Create<::absl::Cord>(GetArena());
       }
-      *$field_$ = value;
+      *$field_$ = ::std::move(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$full_name$)
     }
@@ -459,9 +457,9 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
 void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* p) const {
   p->Emit(R"cc(
     if (oneof_needs_init) {
-      _this->$field_$ = $pb$::Arena::Create<absl::Cord>(arena);
+      $this_field$ = $pb$::Arena::Create<absl::Cord>(arena);
     }
-    *_this->$field_$ = *from.$field_$;
+    *$this_field$ = *$from_field$;
   )cc");
 }
 

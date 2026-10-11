@@ -1343,8 +1343,10 @@ void MapReflectionTester::ExpectMapFieldsSetViaReflection(
             &reflection->GetRepeatedMessage(message, F("map_int32_enum"), i);
         int32_t key = sub_message->GetReflection()->GetInt32(
             *sub_message, map_int32_enum_key_);
+        PROTOBUF_IGNORE_DEPRECATION_START
         const EnumValueDescriptor* val = sub_message->GetReflection()->GetEnum(
             *sub_message, map_int32_enum_val_);
+        PROTOBUF_IGNORE_DEPRECATION_STOP
         EXPECT_EQ(map[key], val);
       } else {
         // Check with Map Reflection

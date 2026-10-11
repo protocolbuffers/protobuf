@@ -31,6 +31,11 @@ import java.util.List;
  * reading encoded protocol messages, you should use the former methods, but if you are reading some
  * other format of your own design, use the latter.
  *
+ * <p>Critical note on Exceptions: If any method throws an exception (such as an {@link
+ * java.io.IOException} or {@link InvalidProtocolBufferException}), it can desynchronize the
+ * instance and leave its internal state unspecified. The instance should not be used further and
+ * must be discarded.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public abstract class CodedInputStream {
@@ -604,7 +609,7 @@ public abstract class CodedInputStream {
   @CanIgnoreReturnValue
   public abstract int pushLimit(int byteLimit) throws InvalidProtocolBufferException;
 
-  final int pushLimitBeforeMessage() throws IOException {
+  public final int pushLimitBeforeMessage() throws IOException {
     final int length = readRawVarint32();
     checkRecursionLimit();
     final int oldLimit = pushLimit(length);
@@ -619,7 +624,7 @@ public abstract class CodedInputStream {
    */
   public abstract void popLimit(final int oldLimit);
 
-  final void popLimitAfterMessage(int oldLimit) throws IOException {
+  public final void popLimitAfterMessage(int oldLimit) throws IOException {
     checkLastTagWas(0);
     --messageDepth;
     if (getBytesUntilLimit() != 0) {
@@ -635,11 +640,11 @@ public abstract class CodedInputStream {
   public abstract int getBytesUntilLimit();
 
   /**
-   * Returns true if the stream has reached the end of the input. This is the case if either the end
-   * of the underlying input source has been reached or if the stream has reached a limit created
-   * using {@link #pushLimit(int)}. This function may get blocked when using StreamDecoder as it
-   * invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which will try to read
-   * bytes from input.
+   * Returns true if the stream has reached the end of the input. This is the case if the current
+   * position is at the exact end of the underlying input source or at a limit created using {@link
+   * #pushLimit(int)}, without passing over the limit. This function may get blocked when using
+   * StreamDecoder as it invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which
+   * will try to read bytes from input.
    */
   public abstract boolean isAtEnd() throws IOException;
 
@@ -1438,19 +1443,47 @@ public abstract class CodedInputStream {
 
     @Override
     public int countPackedVarints(int length) {
-      if (length < 0 || length > limit - pos) {
+      if (length <= 0 || length > limit - pos) {
         return 0;
       }
-      int count = 0;
+      if (Android.isOnAndroidDevice()) {
+        return countPackedVarintsSimple(length);
+      } else {
+        return countPackedVarintsFast(length);
+      }
+    }
 
-      // Counts of terminating bytes to determine how many varints are in the packed field.
+    private int countPackedVarintsSimple(int length) {
       final int end = pos + length;
+      int count = length;
       for (int i = pos; i < end; i++) {
-        if (buffer[i] >= 0) {
-          count++;
+        if (buffer[i] < 0) {
+          --count;
         }
       }
       return count;
+    }
+
+    private int countPackedVarintsFast(int length) {
+      final int end = pos + length;
+      int i = pos;
+      int numVarints = length;
+      final int limit8 = end - 8;
+      if (limit8 >= i) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+        while (i <= limit8) {
+          long word = byteBuffer.getLong(i);
+          numVarints -= Long.bitCount(word & 0x8080808080808080L);
+          i += 8;
+        }
+      }
+      while (i < end) {
+        if (buffer[i] < 0) {
+          numVarints--;
+        }
+        i++;
+      }
+      return numVarints;
     }
 
     @Override
@@ -1524,10 +1557,9 @@ public abstract class CodedInputStream {
     private int lastTag;
 
     /**
-     * The total number of bytes read before the current buffer. The total bytes read up to the
-     * current position can be computed as {@code totalBytesRetired + pos}. This value may be
-     * negative if reading started in the middle of the current buffer (e.g. if the constructor that
-     * takes a byte array and an offset was used).
+     * The total number of bytes read before the current buffer since the last call to {@link
+     * #resetSizeCounter()}. The total bytes read up to the current position can be computed as
+     * {@code totalBytesRetired + pos}. This value is always non-negative.
      */
     private int totalBytesRetired;
 
@@ -2145,7 +2177,15 @@ public abstract class CodedInputStream {
 
     @Override
     public void resetSizeCounter() {
-      totalBytesRetired = -pos;
+      if (pos > 0) {
+        int remaining = bufferSize - pos;
+        if (remaining > 0) {
+          System.arraycopy(buffer, pos, buffer, 0, remaining);
+        }
+        bufferSize = remaining;
+        pos = 0;
+      }
+      totalBytesRetired = 0;
     }
 
     @Override
@@ -2231,8 +2271,8 @@ public abstract class CodedInputStream {
     private void refillBuffer(int n) throws IOException {
       if (!tryRefillBuffer(n)) {
         // We have to distinguish the exception between sizeLimitExceeded and truncatedMessage. So
-        // we just throw an sizeLimitExceeded exception here if it exceeds the sizeLimit
-        if (n > sizeLimit - totalBytesRetired - pos) {
+        // we just throw a sizeLimitExceeded exception here if it exceeds the sizeLimit
+        if (isBeyondLimit(totalBytesRetired + pos, n, sizeLimit)) {
           throw InvalidProtocolBufferException.sizeLimitExceeded();
         } else {
           throw InvalidProtocolBufferException.truncatedMessage();
@@ -2279,30 +2319,29 @@ public abstract class CodedInputStream {
       }
 
       // Here we should refill the buffer as many bytes as possible.
-      int bytesRead =
-          read(
-              input,
-              buffer,
-              bufferSize,
-              Math.min(
-                  //  the size of allocated but unused bytes in the buffer
-                  buffer.length - bufferSize,
-                  //  do not exceed the total bytes limit
-                  sizeLimit - totalBytesRetired - bufferSize));
-      if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
-        throw new IllegalStateException(
-            input.getClass()
-                + "#read(byte[]) returned invalid result: "
-                + bytesRead
-                + "\nThe InputStream implementation is buggy.");
-      }
-      if (bytesRead > 0) {
+      while (bufferSize < n) {
+        int remainingUnderSizeLimit = sizeLimit - totalBytesRetired - bufferSize;
+        if (remainingUnderSizeLimit <= 0) {
+          return false;
+        }
+        int bytesToRead = Math.min(buffer.length - bufferSize, remainingUnderSizeLimit);
+
+        int bytesRead = read(input, buffer, bufferSize, bytesToRead);
+        if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
+          throw new IllegalStateException(
+              input.getClass()
+                  + "#read(byte[]) returned invalid result: "
+                  + bytesRead
+                  + "\nThe InputStream implementation is buggy.");
+        }
+        if (bytesRead <= 0) {
+          return false;
+        }
         bufferSize += bytesRead;
         recomputeBufferSizeAfterLimit();
-        return (bufferSize >= n) || tryRefillBuffer(n);
       }
 
-      return false;
+      return true;
     }
 
     @Override
@@ -2340,10 +2379,12 @@ public abstract class CodedInputStream {
       }
 
       // Read into the caller-provided buffer
-      int bytesToRead = Math.min(length, currentLimit - totalBytesRetired - pos);
-      if (bytesToRead <= 0) {
+      int rawPos = totalBytesRetired + pos;
+      int maxAvailable = Math.min(currentLimit, sizeLimit) - rawPos;
+      if (maxAvailable <= 0) {
         return -1;
       }
+      int bytesToRead = Math.min(length, maxAvailable);
       int bytesRead = read(input, bytes, offset, bytesToRead);
       if (bytesRead != -1) {
         totalBytesRetired += bytesRead;

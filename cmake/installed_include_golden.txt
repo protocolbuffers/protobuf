@@ -120,6 +120,7 @@ google/protobuf/parse_context.h
 google/protobuf/port.h
 google/protobuf/port_def.inc
 google/protobuf/port_undef.inc
+google/protobuf/private_access.h
 google/protobuf/raw_ptr.h
 google/protobuf/reflection.h
 google/protobuf/reflection_mode.h
@@ -214,6 +215,7 @@ upb/mini_table/message.h
 upb/mini_table/sub.h
 upb/port/atomic.h
 upb/port/def.inc
+upb/port/overflow.h
 upb/port/sanitizers.h
 upb/port/undef.inc
 upb/port/vsnprintf_compat.h

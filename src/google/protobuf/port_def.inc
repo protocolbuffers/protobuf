@@ -161,16 +161,6 @@
 #define PROTOBUF_ALWAYS_INLINE inline
 #endif
 
-#ifdef PROTOBUF_ALWAYS_INLINE_NODEBUG
-#error PROTOBUF_ALWAYS_INLINE_NODEBUG was previously defined
-#endif
-// For functions we want to force inline and omit debug info for.
-#if ABSL_HAVE_CPP_ATTRIBUTE(gnu::nodebug)
-#define PROTOBUF_ALWAYS_INLINE_NODEBUG [[gnu::nodebug]] PROTOBUF_ALWAYS_INLINE
-#else
-#define PROTOBUF_ALWAYS_INLINE_NODEBUG PROTOBUF_ALWAYS_INLINE
-#endif
-
 #ifdef PROTOBUF_ALWAYS_INLINE_CALL
 #error PROTOBUF_ALWAYS_INLINE_CALL was previously defined
 #endif
@@ -179,8 +169,8 @@
 // This is useful for lambdas where it is not easy to specify ALWAYS_INLINE.
 // Use like:
 //   PROTOBUF_ALWAYS_INLINE_CALL res = SomeFunc(args...);
-#if defined(__clang__) && !defined(PROTOBUF_NO_INLINE_CALL) && \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline)
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline) && defined(__clang__) && \
+    !defined(PROTOBUF_NO_INLINE_CALL)
 #define PROTOBUF_ALWAYS_INLINE_CALL [[clang::always_inline]]
 #else
 #define PROTOBUF_ALWAYS_INLINE_CALL
@@ -591,11 +581,6 @@
 #define PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED
 #endif
 
-// TODO: Enable the feature by default and remove this flag.
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-#error PROTOBUF_PREFETCH_PARSE_TABLE was previously defined
-#endif
-
 #ifdef PROTOBUF_PREFETCH_WITH_OFFSET
 #error PROTOBUF_PREFETCH_WITH_OFFSET was previously defined
 #endif
@@ -825,7 +810,6 @@ namespace internal {
 #endif
 // TODO: Clean up these macros
 #define PROTOBUF_MESSAGE_GLOBALS
-#define PROTOBUF_MESSAGE_GLOBALS_CONST const
 
 #if !defined(PROTOBUF_MESSAGE_GLOBALS_SECTION)
 #define PROTOBUF_MESSAGE_GLOBALS_SECTION(x)

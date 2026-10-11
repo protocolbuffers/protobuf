@@ -17,6 +17,7 @@ use Foo\TestStringValue;
 use Foo\TestBytesValue;
 use Foo\TestAny;
 use Foo\TestEnum;
+use Foo\TestFieldMask;
 use Foo\TestLargeFieldNumber;
 use Foo\TestMessage;
 use Foo\TestMessage\Sub;
@@ -2443,5 +2444,18 @@ class EncodeDecodeTest extends TestBase
         $this->assertInstanceOf('\Google\Protobuf\EnumValueDescriptor', $val1);
         $this->assertSame('SHIELD_BUCKLER', $val1->getName());
         $this->assertSame(1, $val1->getNumber());
+    }
+
+    public function testFieldMaskJsonEscaping()
+    {
+        $badpath = 'a","a":true,"z":"b';
+        $m = new TestFieldMask();
+        $m->setMask(new FieldMask(['paths' => [$badpath]]));
+        $json = $m->serializeToJsonString();
+
+        $m2 = new TestFieldMask();
+        $m2->mergeFromJsonString($json);
+        $this->assertFalse($m2->getA());
+        $this->assertEquals('', $m2->getZ());
     }
 }

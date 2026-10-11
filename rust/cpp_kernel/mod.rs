@@ -12,6 +12,8 @@ pub mod interop;
 pub mod map;
 pub mod message;
 pub mod raw;
+#[cfg(not(lite_runtime))]
+pub mod reflection;
 pub mod repeated;
 pub mod string;
 
@@ -20,6 +22,8 @@ pub use interop::*;
 pub use map::*;
 pub use message::*;
 pub use raw::*;
+#[cfg(not(lite_runtime))]
+pub use reflection::*;
 pub use repeated::*;
 pub use string::*;
 

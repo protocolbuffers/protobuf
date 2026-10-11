@@ -26,6 +26,7 @@ cc_library(
     features = UPB_DEFAULT_FEATURES,
     visibility = ["//visibility:public"],
     deps = [
+        "//third_party/utf8_range",
         "//upb/base",
         "//upb/lex",
         "//upb/mem",

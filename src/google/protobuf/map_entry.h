@@ -100,8 +100,6 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapEntry : public Message {
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
 
-  struct _Internal;
-
  protected:
   friend class google::protobuf::Arena;
 
@@ -121,13 +119,6 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MapEntry : public Message {
     KeyOnMemory key_{KeyTypeHandler::Constinit()};
     ValueOnMemory value_{ValueTypeHandler::Constinit()};
   } _impl_;
-};
-
-template <typename Key, typename Value, WireFormatLite::FieldType kKeyFieldType,
-          WireFormatLite::FieldType kValueFieldType>
-struct MapEntry<Key, Value, kKeyFieldType, kValueFieldType>::_Internal {
-  static constexpr ::int32_t kHasBitsOffset =
-      8 * PROTOBUF_FIELD_OFFSET(MapEntry, _impl_._has_bits_);
 };
 
 }  // namespace internal

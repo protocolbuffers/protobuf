@@ -25,11 +25,11 @@ impl InnerProtoString {
 
 impl From<&[u8]> for InnerProtoString {
     fn from(val: &[u8]) -> InnerProtoString {
-        let arena = Arena::new();
+        let arena = Arena::new_sized(val.len());
         let in_arena_copy = arena.copy_slice_in(val).unwrap();
         // SAFETY:
-        // - `in_arena_copy` is valid slice that will live for `arena`'s lifetime and
-        //   this is the only reference in the program to it.
+        // - `in_arena_copy` is valid slice that will live for `arena`'s lifetime and this is the
+        //   only reference in the program to it.
         // - `in_arena_copy` is a pointer into an allocation on `arena`
         InnerProtoString(unsafe { OwnedArenaBox::new(Into::into(in_arena_copy), arena) })
     }
