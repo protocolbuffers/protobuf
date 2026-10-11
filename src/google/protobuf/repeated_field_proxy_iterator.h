@@ -9,10 +9,17 @@
 
 namespace google {
 namespace protobuf {
+
+template <typename T>
+class RepeatedFieldProxy;
+
 namespace internal {
 
 template <typename ElementType, bool kOrProxy>
 class MutableRepeatedFieldProxyImpl;
+
+template <typename ElementType, bool kOrProxy>
+class RepeatedFieldProxyInternalPrivateAccessHelper;
 
 template <typename ElementType>
 class RepeatedFieldProxyIteratorInternalPrivateAccessHelper;
@@ -49,6 +56,11 @@ class RepeatedFieldProxyIteratorImpl {
  private:
   static constexpr bool kReturnByValue = !std::is_reference_v<reference>;
 
+  struct ArrowProxy {
+    value_type view;
+    const value_type* operator->() const { return &view; }
+  };
+
  public:
   // When returning elements by value, this iterator does not satisfy the
   // pre-C++20 requirement that "If i and j are both dereferenceable, then i ==
@@ -63,13 +75,6 @@ class RepeatedFieldProxyIteratorImpl {
   // value-returning and reference-returning iterators.
   using iterator_concept = std::random_access_iterator_tag;
 
- private:
-  struct ArrowProxy {
-    value_type view;
-    const value_type* operator->() const { return &view; }
-  };
-
- public:
   explicit RepeatedFieldProxyIteratorImpl(InternalIterator it) : it_(it) {}
 
   template <typename E = ElementType,
@@ -184,6 +189,76 @@ class RepeatedFieldProxyIteratorInternalPrivateAccessHelper {
           it) {
     return it.it_;
   }
+};
+
+template <typename ElementType, bool kOrProxy>
+class RepeatedFieldProxyBackInsertIteratorImpl {
+  using Proxy = MutableRepeatedFieldProxyImpl<ElementType, kOrProxy>;
+
+ public:
+  using iterator_category = std::output_iterator_tag;
+  using value_type = std::remove_const_t<ElementType>;
+  using pointer = void;
+  using reference = void;
+  using difference_type = std::ptrdiff_t;
+
+  explicit RepeatedFieldProxyBackInsertIteratorImpl(Proxy proxy)
+      : proxy_(proxy) {}
+
+  RepeatedFieldProxyBackInsertIteratorImpl(
+      const RepeatedFieldProxyBackInsertIteratorImpl&) = default;
+  RepeatedFieldProxyBackInsertIteratorImpl(
+      RepeatedFieldProxyBackInsertIteratorImpl&&) = default;
+
+  // Since operator= is deleted for mutable proxies, we have to manually copy
+  // the iterator.
+  RepeatedFieldProxyBackInsertIteratorImpl& operator=(
+      const RepeatedFieldProxyBackInsertIteratorImpl& other) {
+    RepeatedFieldProxyInternalPrivateAccessHelper<
+        ElementType, kOrProxy>::rebind(proxy_, other.proxy_);
+    return *this;
+  }
+  RepeatedFieldProxyBackInsertIteratorImpl& operator=(
+      RepeatedFieldProxyBackInsertIteratorImpl&& other) {
+    RepeatedFieldProxyInternalPrivateAccessHelper<
+        ElementType, kOrProxy>::rebind(proxy_, other.proxy_);
+    return *this;
+  }
+
+  template <typename T = ElementType,
+            typename = std::enable_if_t<RepeatedElementTypeIsPrimitive<T>>>
+  RepeatedFieldProxyBackInsertIteratorImpl& operator=(ElementType value) {
+    proxy_.push_back(value);
+    return *this;
+  }
+
+  template <typename T = ElementType,
+            typename = std::enable_if_t<RepeatedElementTypeIsMessage<T>>>
+  RepeatedFieldProxyBackInsertIteratorImpl& operator=(
+      const ElementType& value) {
+    proxy_.push_back(value);
+    return *this;
+  }
+  template <typename T = ElementType,
+            typename = std::enable_if_t<RepeatedElementTypeIsMessage<T>>>
+  RepeatedFieldProxyBackInsertIteratorImpl& operator=(ElementType&& value) {
+    proxy_.push_back(std::move(value));
+    return *this;
+  }
+
+  template <typename U, typename T = ElementType,
+            typename = std::enable_if_t<RepeatedElementTypeIsString<T>>>
+  RepeatedFieldProxyBackInsertIteratorImpl& operator=(U&& value) {
+    proxy_.push_back(std::forward<U>(value));
+    return *this;
+  }
+
+  RepeatedFieldProxyBackInsertIteratorImpl& operator*() { return *this; }
+  RepeatedFieldProxyBackInsertIteratorImpl& operator++() { return *this; }
+  RepeatedFieldProxyBackInsertIteratorImpl& operator++(int) { return *this; }
+
+ private:
+  Proxy proxy_;
 };
 
 }  // namespace internal

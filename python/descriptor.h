@@ -30,7 +30,7 @@ typedef enum {
 
 // Given a descriptor object |desc|, returns a Python message class object for
 // the msgdef |m|, which must be from the same pool.
-PyObject* PyUpb_Descriptor_GetClass(const upb_MessageDef* m);
+PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m);
 
 // Set the message descriptor's meta class.
 void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta);
@@ -38,22 +38,26 @@ void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta);
 // Returns a Python wrapper object for the given def. This will return an
 // existing object if one already exists, otherwise a new object will be
 // created.  The caller always owns a ref on the returned object.
-PyObject* PyUpb_Descriptor_Get(const upb_MessageDef* msgdef);
-PyObject* PyUpb_EnumDescriptor_Get(const upb_EnumDef* enumdef);
-PyObject* PyUpb_FieldDescriptor_Get(const upb_FieldDef* field);
-PyObject* PyUpb_FileDescriptor_Get(const upb_FileDef* file);
-PyObject* PyUpb_OneofDescriptor_Get(const upb_OneofDef* oneof);
-PyObject* PyUpb_EnumValueDescriptor_Get(const upb_EnumValueDef* enumval);
+// Returns the DescriptorPool object for the given descriptor.
+
+PyObject* PyUpb_Descriptor_Get(PyObject* pool, const upb_MessageDef* msgdef);
+PyObject* PyUpb_EnumDescriptor_Get(PyObject* pool, const upb_EnumDef* enumdef);
+PyObject* PyUpb_FieldDescriptor_Get(PyObject* pool, const upb_FieldDef* field);
+PyObject* PyUpb_FileDescriptor_Get(PyObject* pool, const upb_FileDef* file);
+PyObject* PyUpb_OneofDescriptor_Get(PyObject* pool, const upb_OneofDef* oneof);
+PyObject* PyUpb_EnumValueDescriptor_Get(PyObject* pool,
+                                        const upb_EnumValueDef* ev);
 PyObject* PyUpb_Descriptor_GetOrCreateWrapper(const upb_MessageDef* msg);
-PyObject* PyUpb_ServiceDescriptor_Get(const upb_ServiceDef* s);
-PyObject* PyUpb_MethodDescriptor_Get(const upb_MethodDef* s);
+PyObject* PyUpb_ServiceDescriptor_Get(PyObject* pool, const upb_ServiceDef* s);
+PyObject* PyUpb_MethodDescriptor_Get(PyObject* pool, const upb_MethodDef* s);
 
 // Returns the underlying |def| for a given wrapper object. The caller must
 // have already verified that the given Python object is of the expected type.
 const upb_FileDef* PyUpb_FileDescriptor_GetDef(PyObject* file);
 const upb_FieldDef* PyUpb_FieldDescriptor_GetDef(PyObject* file);
 const upb_MessageDef* PyUpb_Descriptor_GetDef(PyObject* _self);
-const void* PyUpb_AnyDescriptor_GetDef(PyObject* _self);
+const void* PyUpb_AnyDescriptor_GetDef(PyObject* desc);
+PyObject* PyUpb_AnyDescriptor_GetPool(PyObject* desc);
 
 // Returns the underlying |def| for a given wrapper object. The caller must
 // have already verified that the given Python object is of the expected type.

@@ -228,6 +228,25 @@ UPB_INLINE upb_DecodeFast_Type upb_DecodeFast_GetType(uint32_t function_idx) {
 // or an unknown.
 #define kUpb_DecodeFast_ExtensionOrUnknown (UINT32_MAX - 2)
 
+// Special values for function_idx for map decoders.
+#define kUpb_DecodeFast_IntMap_Tag1Byte (UINT32_MAX - 3)
+#define kUpb_DecodeFast_IntMap_Tag2Byte (UINT32_MAX - 4)
+#define kUpb_DecodeFast_StrMap_Tag1Byte (UINT32_MAX - 5)
+#define kUpb_DecodeFast_StrMap_Tag2Byte (UINT32_MAX - 6)
+
+// Returns true if we should use the fast decoders for map fields.
+//
+// The map parsers use out-of-band function indices (see above), so they are not
+// covered by UPB_DECODEFAST_DISABLE_FUNCTIONS_ABOVE.  Define
+// UPB_DECODEFAST_DISABLE_MAPS to route all map fields through the MiniTable
+// decoder instead, which is useful for bisecting a test failure to determine
+// whether the map parsers are implicated.
+#ifdef UPB_DECODEFAST_DISABLE_MAPS
+#define UPB_DECODEFAST_MAP_ISENABLED() false
+#else
+#define UPB_DECODEFAST_MAP_ISENABLED() true
+#endif
+
 #include "upb/port/undef.inc"
 
 #endif  // UPB_WIRE_INTERNAL_DECODE_FAST_COMBINATIONS_H_

@@ -142,6 +142,7 @@ cc_library(
         "internal/accessors.h",
         "internal/array.h",
         "internal/extension.h",
+        "internal/field_data.h",
         "internal/map.h",
         "internal/map_sorter.h",
         "internal/message.h",
@@ -275,10 +276,8 @@ cc_library(
         "convert.h",
     ],
     copts = UPB_DEFAULT_COPTS,
-    visibility = [
-        "//upb:__pkg__",
-        "//upb:friends",
-    ],
+    features = UPB_DEFAULT_FEATURES,
+    visibility = ["//upb:friends"],
     deps = [
         ":compare",
         ":internal",
@@ -495,6 +494,7 @@ cc_test(
     name = "map_test",
     srcs = ["map_test.cc"],
     deps = [
+        ":internal",
         ":message",
         "//upb/base",
         "//upb/mem",
