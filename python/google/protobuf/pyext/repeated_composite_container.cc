@@ -431,21 +431,6 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
 // ---------------------------------------------------------------------
 // reverse()
 
-// Returns 0 if successful; returns -1 and sets an exception if
-// unsuccessful.
-static int ReversePythonMessages(RepeatedCompositeContainer* self) {
-  ScopedPyObjectPtr child_list(
-      PySequence_List(reinterpret_cast<PyObject*>(self)));
-  if (child_list == nullptr) {
-    return -1;
-  }
-  if (ScopedPyObjectPtr(
-          PyObject_CallMethod(child_list.get(), "reverse", nullptr)) == nullptr)
-    return -1;
-  ReorderAttached(self, child_list.get());
-  return 0;
-}
-
 static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
@@ -459,8 +444,13 @@ static PyObject* Reverse(PyObject* pself) {
     Py_RETURN_NONE;
   }
 
-  if (ReversePythonMessages(self) < 0) {
-    return nullptr;
+  Message* message = cmessage::AssureWritable(self->parent);
+  if (message == nullptr) return nullptr;
+  const Reflection* reflection = message->GetReflection();
+  const FieldDescriptor* descriptor = self->parent_field_descriptor;
+  Py_ssize_t length = reflection->FieldSize(*message, descriptor);
+  for (Py_ssize_t i = 0; i < length / 2; ++i) {
+    reflection->SwapElements(message, descriptor, i, length - 1 - i);
   }
   Py_RETURN_NONE;
 }

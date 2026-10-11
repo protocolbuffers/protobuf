@@ -91,7 +91,6 @@ build:clang --host_per_file_copt=external/.*@-w
 build:linux --config=clang
 
 build:macos --config=clang
-common:macos --xcode_version_config=@com_google_protobuf//.github:host_xcodes
 
 build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --crosstool_top=@local_config_apple_cc//:toolchain
@@ -112,3 +111,8 @@ build:msvc-cl --extra_execution_platforms=//build_defs:x64_windows-msvc-cl --hos
 build:windows --config=clang-cl
 # Set BAZEL_SH, this is needed for bazel 8.6.0 WORKSPACE on windows
 build:windows --action_env=BAZEL_SH="C:/Program Files/Git/bin/bash.exe"
+
+# ==============================================================================
+# CI CONFIG
+# ==============================================================================
+common:ci --xcode_version_config=@com_google_protobuf//.github:host_xcodes

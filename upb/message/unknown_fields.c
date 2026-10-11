@@ -18,6 +18,7 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 #include "upb/wire/encode.h"
 #include "upb/wire/encode_extension.h"
 #include "upb/wire/eps_copy_input_stream.h"
@@ -92,8 +93,8 @@ upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
       }
     } else if (ret.unknown.type ==
                kUpb_MessageUnknownType_NonCanonicalExtension) {
-      uint32_t ext_field_number =
-          upb_MiniTableExtension_Number(ret.unknown.value.extension->ext);
+      uint32_t ext_field_number = upb_MiniTableField_Number(
+          upb_Extension_MiniTableField(ret.unknown.value.extension));
       if (ext_field_number == field_number) {
         ret.status = kUpb_FindUnknown_Ok;
         return ret;

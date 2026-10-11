@@ -103,16 +103,6 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
 
   std::string basename = StripProto(file->name());
 
-  auto generate_reserved_static_reflection_header = [&basename,
-                                                     &generator_context]() {
-    auto output = absl::WrapUnique(generator_context->Open(
-        absl::StrCat(basename, ".proto.static_reflection.h")));
-    io::Printer(output.get()).Emit(R"cc(
-      // Reserved for future use.
-    )cc");
-  };
-  // Suppress maybe unused warning.
-  (void)generate_reserved_static_reflection_header;
 
   if (MaybeBootstrap(file_options, generator_context, file_options.bootstrap,
                      &basename)) {

@@ -155,11 +155,71 @@ public abstract class AbstractMessage
   public int hashCode() {
     int hash = memoizedHashCode;
     if (hash == 0) {
+      Descriptors.Descriptor descriptor = getDescriptorForType();
       hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
-      hash = hashFields(hash, getAllFields());
+      hash = (19 * hash) + descriptor.hashCode();
+      hash = hashFieldsInGeneratedOrder(hash, descriptor, getAllFields());
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
+    }
+    return hash;
+  }
+
+  /**
+   * Hashes {@code allFields} in the same order and with the same default handling as the generated
+   * {@code hashCode()} of {@code descriptor}, so that a reflection-based message hashes the same as
+   * the equivalent generated message.
+   *
+   * <p>Only depends on {@code allFields} and {@code descriptor} (not on oneof reflection methods),
+   * so it remains consistent with {@link #equals} for any subclass.
+   */
+  private static int hashFieldsInGeneratedOrder(
+      int hash, Descriptors.Descriptor descriptor, Map<FieldDescriptor, Object> allFields) {
+    // Non-oneof fields in declaration order. Singular implicit-presence fields are always hashed
+    // (using the default value when unset), matching gencode.
+    int fieldCount = descriptor.getFieldCount();
+    for (int i = 0; i < fieldCount; i++) {
+      FieldDescriptor field = descriptor.getField(i);
+      if (field.getRealContainingOneof() != null) {
+        continue;
+      }
+      Object value = allFields.get(field);
+      if (field.hasPresence()) {
+        if (value != null) {
+          hash = hashField(hash, field, value);
+        }
+      } else if (field.isRepeated()) {
+        if (value != null && !((List<?>) value).isEmpty()) {
+          hash = hashField(hash, field, value);
+        }
+      } else {
+        hash = hashField(hash, field, value != null ? value : field.getDefaultValue());
+      }
+    }
+
+    // Real oneofs in oneof declaration order.
+    int realOneofCount = descriptor.getRealOneofCount();
+    for (int i = 0; i < realOneofCount; i++) {
+      OneofDescriptor oneof = descriptor.getRealOneof(i);
+      int oneofFieldCount = oneof.getFieldCount();
+      for (int j = 0; j < oneofFieldCount; j++) {
+        FieldDescriptor field = oneof.getField(j);
+        Object value = allFields.get(field);
+        if (value != null) {
+          hash = hashField(hash, field, value);
+          break;
+        }
+      }
+    }
+
+    // Extensions, in the map's iteration order (field number order for all runtime maps).
+    if (descriptor.isExtendable()) {
+      for (Map.Entry<FieldDescriptor, Object> entry : allFields.entrySet()) {
+        FieldDescriptor field = entry.getKey();
+        if (field.isExtension()) {
+          hash = hashField(hash, field, entry.getValue());
+        }
+      }
     }
     return hash;
   }
@@ -275,22 +335,26 @@ public abstract class AbstractMessage
   }
 
   /** Get a hash code for given fields and values, using the given seed. */
-  @SuppressWarnings("unchecked")
   protected static int hashFields(int hash, Map<FieldDescriptor, Object> map) {
     for (Map.Entry<FieldDescriptor, Object> entry : map.entrySet()) {
-      FieldDescriptor field = entry.getKey();
-      Object value = entry.getValue();
-      hash = (37 * hash) + field.getNumber();
-      if (field.isMapField()) {
-        hash = (53 * hash) + hashMapField(value);
-      } else if (field.getType() != FieldDescriptor.Type.ENUM) {
-        hash = (53 * hash) + value.hashCode();
-      } else if (field.isRepeated()) {
-        List<? extends EnumLite> list = (List<? extends EnumLite>) value;
-        hash = (53 * hash) + Internal.hashEnumList(list);
-      } else {
-        hash = (53 * hash) + Internal.hashEnum((EnumLite) value);
-      }
+      hash = hashField(hash, entry.getKey(), entry.getValue());
+    }
+    return hash;
+  }
+
+  /** Get a hash code for a given field and value, using the given seed. */
+  @SuppressWarnings("unchecked")
+  private static int hashField(int hash, FieldDescriptor field, Object value) {
+    hash = (37 * hash) + field.getNumber();
+    if (field.isMapField()) {
+      hash = (53 * hash) + hashMapField(value);
+    } else if (field.getType() != FieldDescriptor.Type.ENUM) {
+      hash = (53 * hash) + value.hashCode();
+    } else if (field.isRepeated()) {
+      List<? extends EnumLite> list = (List<? extends EnumLite>) value;
+      hash = (53 * hash) + Internal.hashEnumList(list);
+    } else {
+      hash = (53 * hash) + Internal.hashEnum((EnumLite) value);
     }
     return hash;
   }

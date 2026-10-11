@@ -13,14 +13,16 @@
 // a 3-byte request is exactly 7 bytes on the wire.
 
 // TODO: b/418427266 - add Windows coverage; these tests drive the testee with
-// /bin/sh.
+// /bin/sh and inspect process groups.
 #ifndef _WIN32
 
 #include "conformance/fork_pipe_runner.h"
 
+#include <poll.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 #include <cerrno>
 #include <cstddef>
@@ -37,6 +39,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/time/clock.h"
 #include "absl/time/time.h"
+#include "absl/types/optional.h"
 #include "conformance/conformance.pb.h"
 
 namespace google {
@@ -82,6 +85,51 @@ ForkPipeRunnerOptions WithReadTimeout(absl::Duration read_timeout) {
   EXPECT_TRUE(response.ParseFromString(serialized));
   return response;
 }
+
+// A pipe that nobody writes to, whose write end is inherited by the testee and
+// by everything the testee forks.  Its read end therefore reports EOF exactly
+// when every process holding the write end has died, which detects a leaked
+// grandchild without depending on who reaps it or on pid reuse.
+class InheritedPipe {
+ public:
+  InheritedPipe() {
+    int fds[2];
+    ABSL_PCHECK(pipe(fds) == 0);
+    read_fd_ = fds[0];
+    write_fd_ = fds[1];
+  }
+  ~InheritedPipe() {
+    CloseWriteEnd();
+    close(read_fd_);
+  }
+
+  // To be called once the testee has been spawned, so that this process no
+  // longer holds the write end open itself.
+  void CloseWriteEnd() {
+    if (write_fd_.has_value()) {
+      close(*write_fd_);
+      write_fd_.reset();
+    }
+  }
+
+  // True iff every process holding the write end has died within `timeout`.
+  bool WritersAreGone(absl::Duration timeout) const {
+    pollfd pfd = {};
+    pfd.fd = read_fd_;
+    pfd.events = POLLIN;
+    if (poll(&pfd, 1, static_cast<int>(absl::ToInt64Milliseconds(timeout))) <=
+        0) {
+      return false;
+    }
+    char c;
+    return read(read_fd_, &c, 1) == 0;
+  }
+
+ private:
+  int read_fd_;
+  // nullopt once CloseWriteEnd() has closed it.
+  absl::optional<int> write_fd_;
+};
 
 // Destroys `runner` and returns how long that took.
 absl::Duration TimeDestruction(std::unique_ptr<ForkPipeRunner> runner) {
@@ -177,6 +225,71 @@ TEST(ForkPipeRunnerTest, StubbornTesteeIsKilled) {
   const absl::Duration elapsed = TimeDestruction(std::move(runner));
   EXPECT_GE(elapsed, kGrace);
   EXPECT_LT(elapsed, kGrace + absl::Seconds(5));
+  EXPECT_TRUE(NoChildRemains());
+}
+
+TEST(ForkPipeRunnerTest, StubbornTesteesGrandchildIsKilledToo) {
+  InheritedPipe pipe;
+  // Forks a grandchild that lives forever, answers one request, then ignores
+  // EOF itself.  The grandchild is a wrapper script's real testee stand-in;
+  // it is in the testee's process group but is not our child.
+  constexpr absl::Duration kGrace = absl::Milliseconds(100);
+  auto runner = MakeRunner("sleep 1000 & cat; exec sleep 1000",
+                           WithShutdownGracePeriod(kGrace));
+  EXPECT_EQ(runner->RunTest("t", "abc"), "abc");
+  pipe.CloseWriteEnd();
+  ASSERT_FALSE(pipe.WritersAreGone(absl::ZeroDuration()))
+      << "the testee should be holding the pipe open";
+
+  runner.reset();
+
+  // Killing only the direct child would leave `sleep 1000 &` running (and
+  // holding the pipe's write end), so EOF here proves the whole process group
+  // was killed.
+  EXPECT_TRUE(pipe.WritersAreGone(absl::Seconds(5)))
+      << "grandchild outlived Shutdown()";
+  EXPECT_TRUE(NoChildRemains());
+}
+
+TEST(ForkPipeRunnerTest, CooperativeTesteesGrandchildIsKilledToo) {
+  InheritedPipe pipe;
+  // Forks a grandchild that lives forever, answers one request, and exits on
+  // EOF like a well-behaved testee, leaving the grandchild behind (a wrapper
+  // script that backgrounds the real testee and exits on EOF does this).
+  auto runner = MakeRunner("sleep 1000 & cat");
+  EXPECT_EQ(runner->RunTest("t", "abc"), "abc");
+  pipe.CloseWriteEnd();
+  ASSERT_FALSE(pipe.WritersAreGone(absl::ZeroDuration()))
+      << "the testee should be holding the pipe open";
+
+  // The direct child exits at once, so the grace period is not waited out;
+  // the grandchild is only gone if the process group was swept after that.
+  EXPECT_LT(TimeDestruction(std::move(runner)), absl::Seconds(5));
+  EXPECT_TRUE(pipe.WritersAreGone(absl::Seconds(5)))
+      << "grandchild outlived Shutdown()";
+  EXPECT_TRUE(NoChildRemains());
+}
+
+TEST(ForkPipeRunnerTest, CrashedTesteesGrandchildIsKilledToo) {
+  InheritedPipe pipe;
+  // Forks a grandchild that lives forever (with its stdout pointed away from
+  // the pipe, so that the runner sees EOF as soon as the testee exits), then
+  // consumes the request and exits with status 3 without answering.
+  auto runner =
+      MakeRunner("sleep 1000 >/dev/null & head -c 7 >/dev/null; exit 3");
+
+  ::conformance::ConformanceResponse response =
+      ParseResponse(runner->RunTest("t", "abc"));
+  pipe.CloseWriteEnd();
+  EXPECT_THAT(response.runtime_error(), HasSubstr("exited with status=3"));
+  EXPECT_FALSE(response.has_timeout_error());
+  // The crash path shut the testee down (it had exited already, so the grace
+  // period wasn't waited out) and must have swept its process group as well.
+  EXPECT_TRUE(pipe.WritersAreGone(absl::Seconds(5)))
+      << "grandchild outlived the crash path";
+  EXPECT_TRUE(NoChildRemains());
+
+  runner.reset();
   EXPECT_TRUE(NoChildRemains());
 }
 

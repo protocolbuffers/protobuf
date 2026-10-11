@@ -17,6 +17,7 @@
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/types.h"
+#include "upb/mini_table/internal/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -136,9 +137,9 @@ bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-      upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+      upb_Extension* dst_ext =
+          UPB_PRIVATE(_upb_Extension_Clone)(msg_ext, arena);
       if (!dst_ext) return false;
-      *dst_ext = *msg_ext;
       dst_in->aux_data[dst_in->size++] = upb_TaggedAuxPtr_MakeExtension(
           dst_ext, upb_TaggedAuxPtr_Type(tagged_ptr));
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {

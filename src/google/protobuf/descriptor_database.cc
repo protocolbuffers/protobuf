@@ -505,12 +505,61 @@ class EncodedDescriptorDatabase::DescriptorIndex {
     int data_offset;
     String encoded_symbol;
 
+    // Represents a symbol name as up to two parts separated by an implicit '.'
+    // iff `!second.empty()`.
+    struct Parts {
+      absl::string_view first;
+      absl::string_view second;
+
+      bool IsSubSymbolOf(Parts super) const {
+        Parts sub = *this;
+        sub.MaybeConsumePrefix(super);
+        super.MaybeConsumePrefix(sub);
+        if (sub.second.empty()) {
+          return IsSubSymbol(sub.first, super.first);
+        }
+        return sub.first == super.first && !super.second.empty() &&
+               IsSubSymbol(sub.second, super.second);
+      }
+
+      friend bool operator<(Parts lhs, Parts rhs) {
+        // If one `first` is a prefix of the other up to a '.' boundary (e.g.
+        // {"foo", "Bar"} vs {"foo.Bar", "Baz"}), consume the shared `first.`
+        // prefix from both so the remaining parts can be compared as pairs.
+        lhs.MaybeConsumePrefix(rhs);
+        rhs.MaybeConsumePrefix(lhs);
+
+        // Since '.' sorts before all other characters that are valid in symbol
+        // names, any remaining case where one `first` is a prefix of the other
+        // orders the shorter `first` first, matching pair comparison.
+        return std::tie(lhs.first, lhs.second) <
+               std::tie(rhs.first, rhs.second);
+      }
+
+     private:
+      // If `*this` is `first.second` and `other.first` starts with `first.`,
+      // consume the shared `first.` prefix from both.
+      void MaybeConsumePrefix(Parts& other) {
+        if (!second.empty() && first.size() < other.first.size() &&
+            IsSubSymbol(first, other.first)) {
+          other.first.remove_prefix(first.size() + 1);
+          *this = {second, ""};
+        }
+      }
+    };
+
     absl::string_view package(const DescriptorIndex& index) const {
       return index.DecodeString(index.all_values_[data_offset].encoded_package,
                                 data_offset);
     }
     absl::string_view symbol(const DescriptorIndex& index) const {
       return index.DecodeString(encoded_symbol, data_offset);
+    }
+
+    Parts parts(const DescriptorIndex& index) const {
+      auto p = package(index);
+      if (p.empty()) return {symbol(index), ""};
+      return {p, symbol(index)};
     }
 
     std::string AsString(const DescriptorIndex& index) const {
@@ -520,62 +569,24 @@ class EncodedDescriptorDatabase::DescriptorIndex {
 
     bool IsSubSymbolOf(const DescriptorIndex& index,
                        absl::string_view super_symbol) const {
-      const auto consume_part = [&](absl::string_view part) {
-        if (!absl::ConsumePrefix(&super_symbol, part)) return false;
-        return super_symbol.empty() || absl::ConsumePrefix(&super_symbol, ".");
-      };
-      if (auto p = package(index); !p.empty()) {
-        if (!consume_part(p)) return false;
-      }
-      return consume_part(symbol(index));
+      return parts(index).IsSubSymbolOf({super_symbol, ""});
+    }
+
+    bool IsSubSymbolOf(const DescriptorIndex& index,
+                       const SymbolEntry& super_symbol) const {
+      return parts(index).IsSubSymbolOf(super_symbol.parts(index));
     }
   };
 
   struct SymbolCompare {
     const DescriptorIndex& index;
 
-    std::string AsString(const SymbolEntry& entry) const {
-      return entry.AsString(index);
-    }
-
-    std::pair<absl::string_view, absl::string_view> GetParts(
-        const SymbolEntry& entry) const {
-      auto package = entry.package(index);
-      if (package.empty()) return {entry.symbol(index), absl::string_view{}};
-      return {package, entry.symbol(index)};
-    }
-
     bool operator()(const SymbolEntry& lhs, const SymbolEntry& rhs) const {
-      auto lhs_parts = GetParts(lhs);
-      auto rhs_parts = GetParts(rhs);
-
-      // Fast path to avoid making the whole string for common cases.
-      if (int res =
-              lhs_parts.first.substr(0, rhs_parts.first.size())
-                  .compare(rhs_parts.first.substr(0, lhs_parts.first.size()))) {
-        // If the packages already differ, exit early.
-        return res < 0;
-      } else if (lhs_parts.first.size() == rhs_parts.first.size()) {
-        return lhs_parts.second < rhs_parts.second;
-      }
-      return AsString(lhs) < AsString(rhs);
+      return lhs.parts(index) < rhs.parts(index);
     }
 
     bool operator()(absl::string_view lhs, const SymbolEntry& rhs) const {
-      auto p = rhs.package(index);
-      if (!p.empty()) {
-        absl::string_view lhs_part = lhs.substr(0, p.size());
-        lhs.remove_prefix(lhs_part.size());
-        if (int res = lhs_part.compare(p); res != 0) return res < 0;
-        // If compare returned 0 is because we consumed all of `p` and it
-        // matched.
-
-        // Compare the implicit `.`
-        if (lhs.empty() || lhs[0] < '.') return true;
-        if (lhs[0] > '.') return false;
-        lhs.remove_prefix(1);
-      }
-      return lhs < rhs.symbol(index);
+      return SymbolEntry::Parts{lhs, ""} < rhs.parts(index);
     }
   };
   absl::btree_set<SymbolEntry, SymbolCompare> by_symbol_{SymbolCompare{*this}};
@@ -722,12 +733,13 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddFile(const FileProto& file,
   return true;
 }
 
-template <typename Iter, typename Iter2, typename Index>
-static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
-                                     Iter2 end, const Index& index) {
+template <typename SymbolEntry, typename Iter, typename Iter2, typename Index>
+static bool CheckForMutualSubsymbols(const SymbolEntry& symbol_entry,
+                                     Iter* iter, Iter2 end,
+                                     const Index& index) {
   if (*iter != end) {
-    if (IsSubSymbol((*iter)->AsString(index), symbol_name)) {
-      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+    if ((*iter)->IsSubSymbolOf(index, symbol_entry)) {
+      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_entry.AsString(index)
                       << "\" conflicts with the existing symbol \""
                       << (*iter)->AsString(index) << "\".";
       return false;
@@ -740,8 +752,8 @@ static bool CheckForMutualSubsymbols(absl::string_view symbol_name, Iter* iter,
     // to increment it.
     ++*iter;
 
-    if (*iter != end && IsSubSymbol(symbol_name, (*iter)->AsString(index))) {
-      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_name
+    if (*iter != end && symbol_entry.IsSubSymbolOf(index, **iter)) {
+      ABSL_LOG(ERROR) << "Symbol name \"" << symbol_entry.AsString(index)
                       << "\" conflicts with the existing symbol \""
                       << (*iter)->AsString(index) << "\".";
       return false;
@@ -754,7 +766,6 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
     absl::string_view symbol) {
   SymbolEntry entry = {static_cast<int>(all_values_.size() - 1),
                        EncodeString(symbol)};
-  std::string entry_as_string = entry.AsString(*this);
 
   // We need to make sure not to violate our map invariant.
 
@@ -762,21 +773,20 @@ bool EncodedDescriptorDatabase::DescriptorIndex::AddSymbol(
   // relies on the fact that '.' sorts before all other characters that are
   // valid in symbol names).
   if (!ValidateSymbolName(symbol)) {
-    ABSL_LOG(ERROR) << "Invalid symbol name: " << entry_as_string;
+    ABSL_LOG(ERROR) << "Invalid symbol name: " << entry.AsString(*this);
     return false;
   }
 
   auto iter = FindLastLessOrEqual(&by_symbol_, entry);
-  if (!CheckForMutualSubsymbols(entry_as_string, &iter, by_symbol_.end(),
-                                *this)) {
+  if (!CheckForMutualSubsymbols(entry, &iter, by_symbol_.end(), *this)) {
     return false;
   }
 
   // Same, but on by_symbol_flat_
   auto flat_iter =
       FindLastLessOrEqual(&by_symbol_flat_, entry, by_symbol_.key_comp());
-  if (!CheckForMutualSubsymbols(entry_as_string, &flat_iter,
-                                by_symbol_flat_.end(), *this)) {
+  if (!CheckForMutualSubsymbols(entry, &flat_iter, by_symbol_flat_.end(),
+                                *this)) {
     return false;
   }
 

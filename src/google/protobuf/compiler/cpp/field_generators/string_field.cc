@@ -97,13 +97,13 @@ class SingularString : public FieldGeneratorBase {
     if (is_oneof()) {
       p->Emit(R"cc(
         if (oneof_needs_init) {
-          _this->$field_$.InitDefault();
+          $this_field$.InitDefault();
         }
-        _this->$field_$.Set(from._internal_$name$(), arena);
+        $this_field$.Set(from._internal_$name$(), arena);
       )cc");
     } else {
       p->Emit(R"cc(
-        _this->_internal_set_$name$(from._internal_$name$());
+        this_._internal_set_$name$(from._internal_$name$());
       )cc");
     }
   }
@@ -162,10 +162,10 @@ class SingularString : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     if (is_inlined() || EmptyDefault()) {
-      p->Emit("new (&$field_$) decltype($field_$){arena, from.$field_$};\n");
+      p->Emit("new (&$field_$) decltype($field_$){arena, $from_field$};\n");
     } else {
       p->Emit(
-          "new (&$field_$) decltype($field_$){arena, from.$field_$,"
+          "new (&$field_$) decltype($field_$){arena, $from_field$,"
           " $default_variable_field$};\n");
     }
   }
@@ -481,7 +481,7 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
 void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      this_.$field_$.Destroy();
+      $this_field$.Destroy();
     )cc");
     return;
   }
@@ -505,7 +505,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // For non-inlined strings, we distinguish from non-default by comparing
     // instances, rather than contents.
     p->Emit(R"cc(
-      $DCHK$(!this_.$field_$.IsDefault());
+      $DCHK$(!$this_field$.IsDefault());
     )cc");
   }
 
@@ -513,7 +513,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      this_.$field_$.ClearToDefault($lazy_var$, this_.GetArena());
+      $this_field$.ClearToDefault($lazy_var$, this_.GetArena());
     )cc");
     return;
   }
@@ -521,7 +521,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit({{"Clear", HasHasbit(field_, options_) ? "ClearNonDefaultToEmpty"
                                                  : "ClearToEmpty"}},
           R"cc(
-            this_.$field_$.$Clear$();
+            $this_field$.$Clear$();
           )cc");
 }
 
@@ -563,7 +563,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
 
   if (is_inlined()) {
     p->Emit(R"cc(
-      new (&_this->$field_$)::_pbi::InlinedStringField;
+      new (&$this_field$)::_pbi::InlinedStringField;
     )cc");
   }
 
@@ -578,7 +578,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
         }}},
       R"cc(
         if ($hazzer$) {
-          _this->$field_$.Set(from._internal_$name$(), _this->GetArena());
+          $this_field$.Set(from._internal_$name$(), this_.GetArena());
         }
       )cc");
 }
@@ -597,7 +597,7 @@ void SingularString::GenerateDestructorCode(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    this_.$field_$.Destroy();
+    $this_field$.Destroy();
   )cc");
 }
 
@@ -673,9 +673,9 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+      p->Emit("$this_field$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("this_.$field_$.Clear();\n");
+      p->Emit("$this_field$.Clear();\n");
     }
   }
 
@@ -700,7 +700,7 @@ class RepeatedString : public FieldGeneratorBase {
     // `if (!from.empty()) { body(); }` for both split and non-split cases.
     auto body = [&] {
       p->Emit(R"cc(
-        _this->_internal_mutable_$name$()->InternalMergeFromWithArena(
+        this_._internal_mutable_$name$()->InternalMergeFromWithArena(
             $pb$::MessageLite::internal_visibility(), arena,
             from._internal_$name$());
       )cc");
@@ -709,7 +709,7 @@ class RepeatedString : public FieldGeneratorBase {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
-        if (!from.$field_$.IsDefault()) {
+        if (!$from_field$.IsDefault()) {
           $body$;
         }
       )cc");
@@ -726,7 +726,7 @@ class RepeatedString : public FieldGeneratorBase {
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        this_.$field_$.DeleteIfNotDefault();
+        $this_field$.DeleteIfNotDefault();
       )cc");
     }
   }
@@ -745,7 +745,7 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      if (const $pb$::RepeatedPtrField<::std::string>& f = this_.$field_$;
+      if (const $pb$::RepeatedPtrField<::std::string>& f = $this_field$;
           !f.empty()) {
         total_size += $kTagBytes$ * $pbi$::FromIntSize(f.size());
         for (const auto& v : f) {
@@ -976,7 +976,7 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
                   "s.data(), static_cast<int>(s.length()),");
             }}},
           R"cc(
-            for (const auto& s : this_.$field_$) {
+            for (const auto& s : $this_field$) {
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }

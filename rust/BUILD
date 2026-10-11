@@ -103,12 +103,14 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "protobuf.rs",
     "protobuf_lite.rs",
     "upb_kernel/conversions.rs",
+    "upb_kernel/def_pool.rs",
     "upb_kernel/extension.rs",
     "upb_kernel/interop.rs",
     "upb_kernel/map.rs",
     "upb_kernel/message.rs",
     "upb_kernel/minitable.rs",
     "upb_kernel/mod.rs",
+    "upb_kernel/reflection.rs",
     "upb_kernel/repeated.rs",
     "upb_kernel/string.rs",
     # go/keep-sorted end
@@ -130,6 +132,7 @@ rust_library(
         "upb_kernel/message.rs",
         "upb_kernel/minitable.rs",
         "upb_kernel/mod.rs",
+        "upb_kernel/reflection.rs",
         "upb_kernel/repeated.rs",
         "upb_kernel/string.rs",
     ],
@@ -282,6 +285,7 @@ cc_library(
     deps = [
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
         "//src/google/protobuf",
+        "//src/google/protobuf:message_traits",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/util:differencer",

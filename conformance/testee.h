@@ -11,21 +11,19 @@
 #include "conformance/test_runner.h"
 #include "google/protobuf/descriptor.h"
 
-// This file defines the APIs used by conformance tests to interact with
-// testees.  The structure of these APIs are intentionally decoupled from the
-// runner/testee protocol (which are used to implement them), in order to
-// maximize their flexibility in tests.
+// The APIs conformance tests use to interact with a testee.  They are
+// deliberately decoupled from the runner/testee protocol that implements
+// them.  That keeps them flexible for tests.
 //
-// Tests should not ever need to name any of these types directly, but will
-// obtain a Test object pointing to the global testee and pass the final
-// TestResult to one of our matchers.
+// Tests should never need to name any of these types directly.  A test
+// obtains a Test object for the global testee from Testee() (see
+// test_fixture.h), chains operations on it and passes the final
+// TestResult to Yields() (see matchers.h):
 //
-// Example:
-//
-// EXPECT_THAT(Testee()
-//                .ParseBinary(Wire(LengthPrefixedField(1, "foo"))
-//                .SerializeText({/*print_unknown_fields=*/true}),
-//             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
+//   EXPECT_THAT(Testee()
+//                   .ParseBinary(TestAllTypesProto2::descriptor(), input)
+//                   .SerializeBinary(),
+//               Yields(WhenParsed(EqualsBinaryProto(input))));
 
 // TODO Possible future APIs to expand conformance coverage:
 // - Add ClearUnknownFields() to InMemoryMessage
@@ -42,13 +40,14 @@ namespace protobuf {
 namespace conformance {
 
 // How important it is that an implementation passes a test.  kP0 is the
-// baseline every implementation must pass.  A kP1 failure is counted but not
-// failed, unless the enforcement level includes kP1 (--enforce_recommended)
-// or the test is in the failure list (see matchers.h).  Test names still
-// spell kP0 as "Required" and kP1 as "Recommended" (see PriorityLevelName()).
+// baseline every implementation must pass.  Every priority is enforced
+// unless the enforcement level (see below) leaves some out.  A failing kP1
+// test is then counted but not failed, unless it is in the failure list (see
+// matchers.h).  Test names still spell kP0 as "Required" and kP1 as
+// "Recommended" (see PriorityLevelName()).
 //
 // A suite declares its priority with ConformanceTest::DefaultPriority().  A
-// single test overrides it with Testee(priority); see test_environment.h.
+// single test overrides it with Testee(priority); see test_fixture.h.
 // TODO: b/564550230 - rename the levels in test names to P0/P1 once every
 // suite has been triaged.
 enum class TestPriority { kP0 = 0, kP1 = 1 };
@@ -56,6 +55,11 @@ enum class TestPriority { kP0 = 0, kP1 = 1 };
 // The priorities, spelled the way suites write them: Testee(kP1).
 inline constexpr TestPriority kP0 = TestPriority::kP0;
 inline constexpr TestPriority kP1 = TestPriority::kP1;
+
+// The lowest priority there is.  An enforcement level (see TestManager in
+// test_manager.h) is the lowest priority whose unlisted failures fail the run;
+// kLowestPriority, the default, enforces every priority.
+inline constexpr TestPriority kLowestPriority = kP1;
 
 // The name of a priority: "P0" or "P1".
 absl::string_view PriorityName(TestPriority priority);
@@ -74,8 +78,8 @@ class TestResult {
   absl::string_view name() const { return test_name_; }
 
   // The priority of the test (see TestPriority).  Yields() tolerates a
-  // failing kP1 test unless the enforcement level includes kP1 or the test is
-  // listed.
+  // failing kP1 test only if the enforcement level leaves kP1 out and the
+  // test isn't listed.
   TestPriority priority() const { return priority_; }
 
   // The type of the message that was tested, needed for parsing.

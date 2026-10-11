@@ -817,10 +817,15 @@ void FixupMessageAfterMerge(CMessage* self) {
   composite_fields->ForEach([&](const void* key, PyObject* value) {
     const FieldDescriptor* descriptor =
         reinterpret_cast<const FieldDescriptor*>(key);
+    if (descriptor->is_map()) {
+      reinterpret_cast<MapContainer*>(value)->version++;
+      return;
+    }
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !descriptor->is_repeated()) {
       CMessage* cmsg = reinterpret_cast<CMessage*>(value);
       if (cmsg->state != MESSAGE_UNPROMOTED) {
+        FixupMessageAfterMerge(cmsg);
         return;
       }
       Message* message = AssureWritable(self);

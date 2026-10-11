@@ -13,6 +13,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -234,8 +235,7 @@ JsonEnumValueOptions::JsonEnumValueOptions(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  JsonEnumValueOptions* const _this = this;
-  (void)_this;
+  JsonEnumValueOptions& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -254,7 +254,8 @@ JsonEnumValueOptions::~JsonEnumValueOptions() {
   // @@protoc_insertion_point(destructor:pb.enumvalue.JsonEnumValueOptions)
   SharedDtor(*this);
 }
-inline void JsonEnumValueOptions::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void JsonEnumValueOptions::SharedDtor(
+    MessageLite& self) {
   JsonEnumValueOptions& this_ = static_cast<JsonEnumValueOptions&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -292,8 +293,8 @@ PROTOBUF_NOINLINE void JsonEnumValueOptions::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL JsonEnumValueOptions::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE JsonEnumValueOptions::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const JsonEnumValueOptions& this_ = static_cast<const JsonEnumValueOptions&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -321,8 +322,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL JsonEnumValueOptions::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE JsonEnumValueOptions::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
@@ -353,22 +354,22 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void JsonEnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<JsonEnumValueOptions*>(&to_msg);
+  JsonEnumValueOptions& this_ = static_cast<JsonEnumValueOptions&>(to_msg);
   auto& from = static_cast<const JsonEnumValueOptions&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:pb.enumvalue.JsonEnumValueOptions)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _this->_internal_set_string(from._internal_string());
+    this_._internal_set_string(from._internal_string());
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 

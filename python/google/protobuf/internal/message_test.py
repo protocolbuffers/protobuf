@@ -796,9 +796,6 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       msg.payload.repeated_string[:] = [1, 2, 3]
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python', 'python has different behavior'
-  )
   def testAssignRepeatedFieldSliceWithStep(self, message_module):
     msg = message_module.NestedTestAllTypes()
     arr = [1, 2, 3, 4]
@@ -815,9 +812,19 @@ class MessageTest(unittest.TestCase):
     arr[::2] = [100, 200]
     self.assertEqual(arr, msg.payload.repeated_int32)
 
+    # Check negative step
+    msg.payload.repeated_int32[::-1] = [5, 6, 7, 8]
+    arr[::-1] = [5, 6, 7, 8]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
     # Check size mismatch raises ValueError
     with self.assertRaises(ValueError):
       msg.payload.repeated_int32[::2] = [1, 2, 3]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+    # Check element type is still validated
+    with self.assertRaises(TypeError):
+      msg.payload.repeated_int32[::2] = ['a', 'b']
 
   def testAssignRepeatedFieldAllRangesArray(self, message_module):
     msg = message_module.NestedTestAllTypes()
@@ -962,6 +969,23 @@ class MessageTest(unittest.TestCase):
     self.assertEqual(len(msg.repeated_nested_message), 0)
     sub = msg.repeated_nested_message.add(bb=7)
     self.assertEqual(sub.bb, 7)
+
+  def testRepeatedCompositeReverse(self, message_module):
+    msg = message_module.TestAllTypes()
+    for i in [1, 2, 3, 4]:
+      msg.repeated_nested_message.add(bb=i)
+    first = msg.repeated_nested_message[0]
+    last = msg.repeated_nested_message[3]
+    msg.repeated_nested_message.reverse()
+    self.assertEqual([m.bb for m in msg.repeated_nested_message], [4, 3, 2, 1])
+    self.assertIs(msg.repeated_nested_message[0], last)
+    self.assertIs(msg.repeated_nested_message[3], first)
+
+    parsed = message_module.TestAllTypes.FromString(msg.SerializeToString())
+    parsed.repeated_nested_message.reverse()
+    self.assertEqual(
+        [m.bb for m in parsed.repeated_nested_message], [1, 2, 3, 4]
+    )
 
   def testRepeatedContains(self, message_module):
     msg = message_module.TestAllTypes()
@@ -3493,6 +3517,85 @@ class Proto3Test(unittest.TestCase):
     msg.map_string_string.clear()
     with self.assertRaises(RuntimeError):
       next(it)
+
+  def test_map_merge_during_iteration(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['a'] = '1'
+    it = iter(msg.map_string_string)
+    next(it)
+
+    other = map_unittest_pb2.TestMap()
+    other.map_string_string['b'] = '2'
+    msg.MergeFrom(other)
+    with self.assertRaises(RuntimeError):
+      next(it)
+
+    # Also test a map inside an already-mutable submessage.
+    parent = map_unittest_pb2.TestMapSubmessage()
+    parent.test_map.map_string_string['a'] = '1'
+    sub_it = iter(parent.test_map.map_string_string)
+    next(sub_it)
+
+    other_parent = map_unittest_pb2.TestMapSubmessage()
+    other_parent.test_map.map_string_string['b'] = '2'
+    parent.MergeFrom(other_parent)
+    with self.assertRaises(RuntimeError):
+      next(sub_it)
+
+  def test_merge_promotes_unpromoted_child_of_mutable_submessage(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.child.payload.optional_int32 = 1
+    grandchild = msg.child.child
+    self.assertEqual(grandchild.payload.optional_int32, 0)
+
+    other = unittest_pb2.NestedTestAllTypes()
+    other.child.child.payload.optional_int32 = 42
+    msg.MergeFrom(other)
+    self.assertEqual(grandchild.payload.optional_int32, 42)
+
+    # Also test when the intermediate Python wrapper (`msg.child`) is dropped
+    # while a deeper unpromoted stub (`msg.child.child.child`) is still held.
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.child.child.payload.optional_int32 = 1
+    great_grandchild = msg.child.child.child
+    self.assertEqual(great_grandchild.payload.optional_int32, 0)
+
+    other = unittest_pb2.NestedTestAllTypes()
+    other.child.child.child.payload.optional_int32 = 99
+    msg.MergeFrom(other)
+    self.assertEqual(great_grandchild.payload.optional_int32, 99)
+
+  def test_repeated_iteration_across_mutation_and_merge(self):
+    # Repeated fields use index-based sequence iteration across all backends:
+    # appending or merging during iteration does not invalidate the iterator,
+    # and the iterator continues into newly added elements.
+    msg = unittest_pb2.TestAllTypes()
+    msg.repeated_int32.append(10)
+    it = iter(msg.repeated_int32)
+    self.assertEqual(next(it), 10)
+
+    msg.repeated_int32.append(20)
+    self.assertEqual(next(it), 20)
+
+    other = unittest_pb2.TestAllTypes()
+    other.repeated_int32.extend([30, 40])
+    msg.MergeFrom(other)
+    self.assertEqual(list(it), [30, 40])
+
+    # An iterator created on an initially-empty repeated field (including inside
+    # an unpromoted or mutable submessage) sees elements added by MergeFrom.
+    nested = unittest_pb2.NestedTestAllTypes()
+    nested.child.payload.optional_int32 = 1
+    scalar_it = iter(nested.child.payload.repeated_int32)
+    composite_it = iter(nested.child.payload.repeated_nested_message)
+
+    other_nested = unittest_pb2.NestedTestAllTypes()
+    other_nested.child.payload.repeated_int32.extend([5, 6])
+    other_nested.child.payload.repeated_nested_message.add(bb=7)
+    nested.MergeFrom(other_nested)
+
+    self.assertEqual(list(scalar_it), [5, 6])
+    self.assertEqual([m.bb for m in composite_it], [7])
 
   def testSubmessageMap(self):
     msg = map_unittest_pb2.TestMap()

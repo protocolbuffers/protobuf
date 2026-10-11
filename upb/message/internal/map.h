@@ -93,6 +93,7 @@ UPB_INLINE upb_StringView _upb_map_tokey(const void* key, size_t size) {
   if (size == UPB_MAPTYPE_STRING) {
     return *(upb_StringView*)key;
   } else {
+    UPB_ASSUME(size > sizeof(uintptr_t));
     return upb_StringView_FromDataAndSize((const char*)key, size);
   }
 }
@@ -148,7 +149,8 @@ UPB_INLINE void _upb_map_fromvalue(upb_value val, void* out, size_t size) {
   }
 }
 
-UPB_INLINE bool _upb_map_next(const struct upb_Map* map, size_t* iter) {
+UPB_NODISCARD UPB_INLINE bool _upb_map_next(const struct upb_Map* map,
+                                            size_t* iter) {
   if (_upb_Map_Size(map) == 0) return false;
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_strtable_iter it;
@@ -220,39 +222,28 @@ UPB_FORCEINLINE upb_MapInsertStatus _upb_Map_Insert(struct upb_Map* map,
                                                     upb_Arena* a) {
   UPB_ASSERT(!upb_Map_IsFrozen(map));
 
-  if (UPB_UNLIKELY(!_upb_Map_IsInitialized(map))) {
-    // Reserving for 1 element allocates the minimum table capacity of 8
-    // (since _upb_entries_needed_for(1) <= 8 -> log2ceil 3 -> capacity 8).
-    if (!_upb_Map_Reserve(map, 1, a)) {
-      return kUpb_MapInsertStatus_OutOfMemory;
-    }
-  }
-
   // Prep the value.
   upb_value tabval = {0};
   if (!_upb_map_tovalue(val, val_size, &tabval, a)) {
     return kUpb_MapInsertStatus_OutOfMemory;
   }
 
-  bool removed;
+  bool replaced;
   if (map->UPB_PRIVATE(is_strtable)) {
     upb_StringView strkey = _upb_map_tokey(key, key_size);
-    // TODO: add overwrite operation to minimize number of lookups.
-    removed =
-        upb_strtable_remove2(&map->t.strtable, strkey.data, strkey.size, NULL);
-    if (!upb_strtable_insert(&map->t.strtable, strkey.data, strkey.size, tabval,
-                             a)) {
+    if (!upb_strtable_insert_or_replace(&map->t.strtable, strkey.data,
+                                        strkey.size, tabval, &replaced, a)) {
       return kUpb_MapInsertStatus_OutOfMemory;
     }
   } else {
     uintptr_t intkey = _upb_map_tointkey(key, key_size);
-    removed = upb_inttable_remove(&map->t.inttable, intkey, NULL);
-    if (!upb_inttable_insert(&map->t.inttable, intkey, tabval, a)) {
+    if (!upb_inttable_insert_or_replace(&map->t.inttable, intkey, tabval,
+                                        &replaced, a)) {
       return kUpb_MapInsertStatus_OutOfMemory;
     }
   }
-  return removed ? kUpb_MapInsertStatus_Replaced
-                 : kUpb_MapInsertStatus_Inserted;
+  return replaced ? kUpb_MapInsertStatus_Replaced
+                  : kUpb_MapInsertStatus_Inserted;
 }
 
 // Strings/bytes are special-cased in maps.

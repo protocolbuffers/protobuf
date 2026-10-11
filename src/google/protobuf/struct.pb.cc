@@ -13,6 +13,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -688,8 +689,7 @@ Struct::Struct(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Struct* const _this = this;
-  (void)_this;
+  Struct& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -712,7 +712,8 @@ Struct::~Struct() {
   // @@protoc_insertion_point(destructor:google.protobuf.Struct)
   SharedDtor(*this);
 }
-inline void Struct::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Struct::SharedDtor(
+    MessageLite& self) {
   Struct& this_ = static_cast<Struct&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -749,8 +750,8 @@ PROTOBUF_NOINLINE void Struct::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL Struct::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE Struct::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Struct& this_ = static_cast<const Struct&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -799,8 +800,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Struct::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE Struct::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
@@ -837,22 +838,22 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void Struct::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<Struct*>(&to_msg);
+  Struct& this_ = static_cast<Struct&>(to_msg);
   auto& from = static_cast<const Struct&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Struct)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _this->_impl_.fields_.MergeFrom(from._impl_.fields_);
+    this_._impl_.fields_.MergeFrom(from._impl_.fields_);
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -927,8 +928,7 @@ Value::Value(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Value* const _this = this;
-  (void)_this;
+  Value& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -970,7 +970,8 @@ Value::~Value() {
   // @@protoc_insertion_point(destructor:google.protobuf.Value)
   SharedDtor(*this);
 }
-inline void Value::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Value::SharedDtor(
+    MessageLite& self) {
   Value& this_ = static_cast<Value&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1050,8 +1051,8 @@ PROTOBUF_NOINLINE void Value::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL Value::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE Value::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const Value& this_ = static_cast<const Value&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -1111,8 +1112,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL Value::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE Value::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
@@ -1151,14 +1152,14 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // .google.protobuf.Struct struct_value = 5;
     case kStructValue: {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.struct_value_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.struct_value_);
       break;
     }
     // .google.protobuf.ListValue list_value = 6;
     case kListValue: {
-      total_size += 1 +
-                    ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.list_value_);
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.kind_.list_value_);
       break;
     }
     case KIND_NOT_SET: {
@@ -1174,61 +1175,61 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<Value*>(&to_msg);
+  Value& this_ = static_cast<Value&>(to_msg);
   auto& from = static_cast<const Value&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Value)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   if (const uint32_t oneof_from_case =
           from._impl_._oneof_case_[0]) {
-    const uint32_t oneof_to_case = _this->_impl_._oneof_case_[0];
+    const uint32_t oneof_to_case = this_._impl_._oneof_case_[0];
     const bool oneof_needs_init = oneof_to_case != oneof_from_case;
     if (oneof_needs_init) {
       if (oneof_to_case != 0) {
-        _this->clear_kind();
+        this_.clear_kind();
       }
-      _this->_impl_._oneof_case_[0] = oneof_from_case;
+      this_._impl_._oneof_case_[0] = oneof_from_case;
     }
 
     switch (oneof_from_case) {
       case kNullValue: {
-        _this->_impl_.kind_.null_value_ = from._impl_.kind_.null_value_;
+        this_._impl_.kind_.null_value_ = from._impl_.kind_.null_value_;
         break;
       }
       case kNumberValue: {
-        _this->_impl_.kind_.number_value_ = from._impl_.kind_.number_value_;
+        this_._impl_.kind_.number_value_ = from._impl_.kind_.number_value_;
         break;
       }
       case kStringValue: {
         if (oneof_needs_init) {
-          _this->_impl_.kind_.string_value_.InitDefault();
+          this_._impl_.kind_.string_value_.InitDefault();
         }
-        _this->_impl_.kind_.string_value_.Set(from._internal_string_value(), arena);
+        this_._impl_.kind_.string_value_.Set(from._internal_string_value(), arena);
         break;
       }
       case kBoolValue: {
-        _this->_impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
+        this_._impl_.kind_.bool_value_ = from._impl_.kind_.bool_value_;
         break;
       }
       case kStructValue: {
         if (oneof_needs_init) {
-          _this->_impl_.kind_.struct_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
+          this_._impl_.kind_.struct_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.struct_value_);
         } else {
-          _this->_impl_.kind_.struct_value_->MergeFrom(*from._impl_.kind_.struct_value_);
+          this_._impl_.kind_.struct_value_->MergeFrom(*from._impl_.kind_.struct_value_);
         }
         break;
       }
       case kListValue: {
         if (oneof_needs_init) {
-          _this->_impl_.kind_.list_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.list_value_);
+          this_._impl_.kind_.list_value_ = Super_::CopyConstruct(arena, *from._impl_.kind_.list_value_);
         } else {
-          _this->_impl_.kind_.list_value_->MergeFrom(*from._impl_.kind_.list_value_);
+          this_._impl_.kind_.list_value_->MergeFrom(*from._impl_.kind_.list_value_);
         }
         break;
       }
@@ -1236,7 +1237,7 @@ void Value::MergeImpl(::google::protobuf::MessageLite& to_msg,
         break;
     }
   }
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
@@ -1291,8 +1292,7 @@ ListValue::ListValue(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  ListValue* const _this = this;
-  (void)_this;
+  ListValue& this_ [[maybe_unused]] = *this;
   _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
@@ -1315,7 +1315,8 @@ ListValue::~ListValue() {
   // @@protoc_insertion_point(destructor:google.protobuf.ListValue)
   SharedDtor(*this);
 }
-inline void ListValue::SharedDtor(MessageLite& self) {
+PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ListValue::SharedDtor(
+    MessageLite& self) {
   ListValue& this_ = static_cast<ListValue&>(self);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     this_.CheckHasBitConsistency();
@@ -1352,8 +1353,8 @@ PROTOBUF_NOINLINE void ListValue::Clear() { Clear(*this); }
 #endif  // PROTOBUF_CUSTOM_VTABLE
 
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
-::uint8_t* PROTOBUF_NONNULL ListValue::_InternalSerialize(
-    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE ListValue::_InternalSerialize(
+    const ::google::protobuf::MessageLite& base, ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) {
   const ListValue& this_ = static_cast<const ListValue&>(base);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
@@ -1381,8 +1382,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   return target;
 }
 #if !defined(PROTOBUF_CUSTOM_VTABLE)
-::uint8_t* PROTOBUF_NONNULL ListValue::_InternalSerialize(
-    ::uint8_t* PROTOBUF_NONNULL target,
+::uint8_t* PROTOBUF_NULLABLE ListValue::_InternalSerialize(
+    ::uint8_t* PROTOBUF_NULLABLE target,
     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
   return _InternalSerialize(*this, target, stream);
 }
@@ -1416,25 +1417,25 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
 void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
                       const ::google::protobuf::MessageLite& from_msg) {
-   auto* const _this = static_cast<ListValue*>(&to_msg);
+  ListValue& this_ = static_cast<ListValue&>(to_msg);
   auto& from = static_cast<const ListValue&>(from_msg);
   if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
     from.CheckHasBitConsistency();
   }
-  ::google::protobuf::Arena* arena = _this->GetArena();
+  ::google::protobuf::Arena* arena = this_.GetArena();
   // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.ListValue)
-  ABSL_DCHECK_NE(&from, _this);
+  ABSL_DCHECK_NE(&from, &this_);
   ::uint32_t cached_has_bits = 0;
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    _this->_internal_mutable_values()->InternalMergeFromWithArena(
+    this_._internal_mutable_values()->InternalMergeFromWithArena(
         ::google::protobuf::MessageLite::internal_visibility(), arena,
         from._internal_values());
   }
-  _this->_impl_._has_bits_[0] |= cached_has_bits;
-  _this->_internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  this_._impl_._has_bits_[0] |= cached_has_bits;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 }
 
