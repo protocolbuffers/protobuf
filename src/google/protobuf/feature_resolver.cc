@@ -194,6 +194,7 @@ absl::Status ValidateExtension(const Descriptor& feature_set,
         extension->full_name());
   }
 
+  // Nested extensions on feature extension messages are forbidden.
   if (extension->message_type()->extension_count() > 0 ||
       extension->message_type()->extension_range_count() > 0) {
     return Error("Nested extensions in feature extension ",

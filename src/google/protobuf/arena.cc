@@ -57,11 +57,20 @@ inline size_t AllocationSize(size_t last_size, size_t start_size,
   return std::min(2 * last_size, max_size);
 }
 
+[[noreturn]]
+PROTOBUF_PRESERVE_ALL PROTOBUF_NOINLINE void
+MemoryAllocationFailure() noexcept {
+  ABSL_LOG(FATAL) << "Failed to allocate memory.";
+}
+
 SizedPtr AllocateMemory(const AllocationPolicy& policy, size_t size) {
-  if (policy.block_alloc == nullptr) {
-    return AllocateAtLeast(size);
+  auto result = policy.block_alloc == nullptr
+                    ? AllocateAtLeast(size)
+                    : SizedPtr{policy.block_alloc(size), size};
+  if (ABSL_PREDICT_FALSE(result.p == nullptr)) {
+    MemoryAllocationFailure();
   }
-  return {policy.block_alloc(size), size};
+  return result;
 }
 
 SizedPtr AllocateBlock(const AllocationPolicy* policy_ptr, size_t last_size,
@@ -700,7 +709,7 @@ void ThreadSafeArena::AddSerialArena(void* id, SerialArena* serial) {
   }
 
   // Slow path with acquiring mutex.
-  absl::MutexLock lock(&mutex_);
+  absl::MutexLock lock(mutex_);
 
   // Refetch and if someone else installed a new head, try allocating on that!
   SerialArenaChunk* new_head = head_.load(std::memory_order_acquire);

@@ -16,12 +16,13 @@
 
 #include "absl/strings/string_view.h"
 #include "json/json.h"
-#include "conformance_test.h"
+#include "conformance/conformance_test.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/util/type_resolver.h"
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 
 class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
  public:
@@ -29,9 +30,9 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
 
  private:
   void RunSuiteImpl() override;
-  bool ParseJsonResponse(const conformance::ConformanceResponse& response,
+  bool ParseJsonResponse(const ::conformance::ConformanceResponse& response,
                          Message* test_message);
-  bool ParseResponse(const conformance::ConformanceResponse& response,
+  bool ParseResponse(const ::conformance::ConformanceResponse& response,
                      const ConformanceRequestSetting& setting,
                      Message* test_message) override;
   void SetTypeUrl(absl::string_view type_url) {
@@ -60,9 +61,34 @@ class BinaryAndJsonConformanceSuite : public ConformanceTestSuite {
                                   const std::string& test_name,
                                   ConformanceLevel level);
 
+  template <typename MessageType>
+  void RunValidJsonTest(const std::string& test_name, ConformanceLevel level,
+                        const std::string& input_json,
+                        const std::string& equivalent_text_format);
+
+  void RunValidJsonTestWithMessage(const std::string& test_name,
+                                   ConformanceLevel level,
+                                   const std::string& input_json,
+                                   const std::string& equivalent_text_format,
+                                   const Message& prototype);
+
+  template <typename MessageType>
+  void ExpectParseFailureForJson(const std::string& test_name,
+                                 ConformanceLevel level,
+                                 const std::string& input_json);
+
+  typedef std::function<bool(const Json::Value&)> Validator;
+  template <typename MessageType>
+  void RunValidJsonTestWithValidator(const std::string& test_name,
+                                     ConformanceLevel level,
+                                     const std::string& input_json,
+                                     const Validator& validator);
+
   void RunDelimitedFieldTests();
 
   void RunUnstableTests();
+
+  void RunEdition2026Tests();
 
   void RunUtf8ValidationTests();
 
@@ -147,6 +173,9 @@ class BinaryAndJsonConformanceSuiteImpl {
   void ExpectParseFailureForJson(const std::string& test_name,
                                  ConformanceLevel level,
                                  const std::string& input_json);
+  void RunValidJsonTestOrParseFailure(
+      const std::string& test_name, ConformanceLevel level,
+      const std::string& input_json, const std::string& equivalent_text_format);
   void ExpectSerializeFailureForJson(const std::string& test_name,
                                      ConformanceLevel level,
                                      const std::string& text_format);
@@ -161,6 +190,7 @@ class BinaryAndJsonConformanceSuiteImpl {
                                       ConformanceLevel level);
   void TestPrematureEOFForType(google::protobuf::FieldDescriptor::Type type);
   void TestIllegalTags();
+  void TestIllegalLengths();
   void TestUnmatchedGroup();
   void TestUnknownWireType();
   void TestInvalidUtf8String();
@@ -173,6 +203,10 @@ class BinaryAndJsonConformanceSuiteImpl {
   void TestValidDataForRepeatedScalarMessage();
   void TestValidDataForMapType(google::protobuf::FieldDescriptor::Type,
                                google::protobuf::FieldDescriptor::Type);
+  void TestMapEntryWireTypeMismatch(google::protobuf::FieldDescriptor::Type,
+                                    google::protobuf::FieldDescriptor::Type);
+  void RunMapEntryWireTypeMismatchTest(const std::string& test_name,
+                                       const std::string& proto);
   void TestValidDataForOneofType(google::protobuf::FieldDescriptor::Type);
   void TestMergeOneofMessage();
   void TestOverwriteMessageValueMap();
@@ -200,6 +234,7 @@ class BinaryAndJsonConformanceSuiteImpl {
   bool run_proto3_tests_;
 };
 
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 

@@ -11,11 +11,16 @@ import com.google.protobuf.ArrayDecoders.Registers;
 import java.io.IOException;
 
 /**
- * A runtime schema for a single protobuf message. A schema provides operations on message instances
- * such as serialization/deserialization.
+ * A runtime schema for a single protobuf message.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
+ * <p>A schema provides operations on message instances such as serialization/deserialization.
  */
 @ExperimentalApi
 @CheckReturnValue
+@ForLiteOnly
 interface Schema<T> {
   /** Writes the given message to the target {@link CodedOutputStreamWriter}. */
   void writeTo(T message, CodedOutputStreamWriter writer) throws IOException;

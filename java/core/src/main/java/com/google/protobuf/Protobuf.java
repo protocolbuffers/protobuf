@@ -13,8 +13,15 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+/**
+ * This class is for Lite runtime use only.
+ *
+ * <p>For details on what this means regarding performance and security characteristics, see {@link
+ * ForLiteOnly}.
+ */
 @ExperimentalApi
 @CheckReturnValue
+@ForLiteOnly
 final class Protobuf {
   private static final Protobuf INSTANCE = new Protobuf();
 

@@ -28,7 +28,7 @@ std::string MiniTableHeaderFilename(absl::string_view proto_filename,
                                     bool bootstrap) {
   std::string base;
   if (bootstrap) {
-    if (IsDescriptorProto(proto_filename)) {
+    if (IsReflectionBootstrapProto(proto_filename)) {
       base = "upb/reflection/stage1/";
     } else {
       base = "upb_generator/stage1/";

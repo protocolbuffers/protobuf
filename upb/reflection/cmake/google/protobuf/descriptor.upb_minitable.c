@@ -1620,7 +1620,7 @@ const upb_MiniTableEnum google__protobuf__SymbolVisibility_enum_init = {
     },
 };
 
-static const upb_MiniTable *messages_layout[35] = {
+static const upb_MiniTable *messages_layout_google_protobuf_descriptor_proto_upb_file_layout[35] = {
   &google__protobuf__FileDescriptorSet_msg_init,
   &google__protobuf__FileDescriptorProto_msg_init,
   &google__protobuf__DescriptorProto_msg_init,
@@ -1658,7 +1658,7 @@ static const upb_MiniTable *messages_layout[35] = {
   &google__protobuf__GeneratedCodeInfo__Annotation_msg_init,
 };
 
-static const upb_MiniTableEnum *enums_layout[21] = {
+static const upb_MiniTableEnum *enums_layout_google_protobuf_descriptor_proto_upb_file_layout[21] = {
   &google__protobuf__Edition_enum_init,
   &google__protobuf__ExtensionRangeOptions__VerificationState_enum_init,
   &google__protobuf__FeatureSet__EnforceNamingStyle_enum_init,
@@ -1683,8 +1683,8 @@ static const upb_MiniTableEnum *enums_layout[21] = {
 };
 
 const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout = {
-  messages_layout,
-  enums_layout,
+  messages_layout_google_protobuf_descriptor_proto_upb_file_layout,
+  enums_layout_google_protobuf_descriptor_proto_upb_file_layout,
   NULL,
   35,
   21,

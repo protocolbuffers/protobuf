@@ -808,12 +808,18 @@ absl::Status WriteAny(JsonWriter& writer, const Msg<Traits>& msg,
               bool first = false;
               if (ClassifyMessage(Traits::TypeName(any_desc)) !=
                   MessageType::kNotWellKnown) {
-                writer.WriteComma(first);
-                writer.NewLine();
-                writer.Write("\"value\":");
-                writer.Whitespace(" ");
-                RETURN_IF_ERROR(
-                    WriteMessage<Traits>(writer, unerased, any_desc));
+                if (ClassifyMessage(Traits::TypeName(any_desc)) ==
+                        MessageType::kValue &&
+                    IsEmpty<Traits>(unerased, any_desc)) {
+                  // Omit "value" field for empty Value.
+                } else {
+                  writer.WriteComma(first);
+                  writer.NewLine();
+                  writer.Write("\"value\":");
+                  writer.Whitespace(" ");
+                  RETURN_IF_ERROR(
+                      WriteMessage<Traits>(writer, unerased, any_desc));
+                }
               } else {
                 RETURN_IF_ERROR(
                     WriteFields<Traits>(writer, unerased, any_desc, first));

@@ -35,7 +35,7 @@ class DslMapTest {
   @Test
   fun dslMapIsNotMutable() {
     val dslMap = DslMap<Int, Int, DummyProxy>(mutableMapOf(1 to -1))
-    assertThat(dslMap is MutableMap<*, *>).isFalse()
+    assertThat((dslMap as Any) is MutableMap<*, *>).isFalse()
   }
 
   @Test

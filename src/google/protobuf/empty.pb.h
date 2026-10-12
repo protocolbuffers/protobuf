@@ -49,12 +49,7 @@ namespace google {
 namespace protobuf {
 class Empty;
 struct EmptyGlobalsTypeInternal;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-PROTOBUF_EXPORT extern EmptyGlobalsTypeInternal Empty_globals_;
-PROTOBUF_EXPORT extern const ::google::protobuf::internal::ClassDataFull Empty_class_data_;
-#else
 PROTOBUF_EXPORT extern const EmptyGlobalsTypeInternal Empty_globals_;
-#endif  // PROTOBUF_MESSAGE_GLOBALS
 }  // namespace protobuf
 }  // namespace google
 
@@ -71,7 +66,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   using Super_ = ::google::protobuf::internal::ZeroFieldsBase;
 
  public:
-  inline Empty() : Empty(nullptr) {}
+  Empty() : Empty(nullptr) {}
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   void operator delete(Empty* PROTOBUF_NONNULL msg, ::std::destroying_delete_t) {
@@ -85,13 +80,13 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
                            const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
                                class_data);
 
-  inline Empty(const Empty& from) : Empty(nullptr, from) {}
-  inline Empty(Empty&& from) noexcept : Empty(nullptr, ::std::move(from)) {}
-  inline Empty& operator=(const Empty& from) {
+  Empty(const Empty& from) : Empty(nullptr, from) {}
+  Empty(Empty&& from) noexcept : Empty(nullptr, ::std::move(from)) {}
+  Empty& operator=(const Empty& from) {
     CopyFrom(from);
     return *this;
   }
-  inline Empty& operator=(Empty&& from) noexcept {
+  Empty& operator=(Empty&& from) noexcept {
     if (this == &from) return *this;
     if (::google::protobuf::internal::CanMoveWithInternalSwap(GetArena(), from.GetArena())) {
       InternalSwap(&from);
@@ -101,12 +96,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     return *this;
   }
 
-  [[nodiscard]] inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const
+  [[nodiscard]] const ::google::protobuf::UnknownFieldSet& unknown_fields() const
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.unknown_fields<::google::protobuf::UnknownFieldSet>(::google::protobuf::UnknownFieldSet::default_instance);
   }
-  [[nodiscard]] inline ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL
-  mutable_unknown_fields() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  [[nodiscard]] ::google::protobuf::UnknownFieldSet* PROTOBUF_NONNULL mutable_unknown_fields()
+      ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
@@ -125,7 +120,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   }
   static constexpr int kIndexInFileMessages = 0;
   friend void swap(Empty& a, Empty& b) { a.Swap(&b); }
-  inline void Swap(Empty* PROTOBUF_NONNULL other) {
+  void Swap(Empty* PROTOBUF_NONNULL other) {
     if (other == this) return;
     if (::google::protobuf::internal::CanUseInternalSwap(GetArena(), other->GetArena())) {
       InternalSwap(other);
@@ -146,7 +141,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     return Super_::DefaultConstruct<Empty>(arena);
   }
   using Super_::CopyFrom;
-  inline void CopyFrom(const Empty& from) { Super_::CopyImpl(*this, from); }
+  void CopyFrom(const Empty& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const Empty& from) { Super_::MergeImpl(*this, from); }
 
@@ -154,6 +149,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   [[nodiscard]] bool IsInitialized() const {
     return true;
   }
+
  private:
   static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
 
@@ -165,15 +161,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     *this = ::std::move(from);
   }
   const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-  static void* PROTOBUF_NONNULL PlacementNew_(
-      const void* PROTOBUF_NONNULL, void* PROTOBUF_NONNULL mem,
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static constexpr auto InternalNewImpl_();
 
  public:
-  static constexpr auto InternalGenerateClassData_(
-      const MessageLite& prototype,
-      const ::google::protobuf::internal::TcParseTableBase* PROTOBUF_NULLABLE tc_table = nullptr);
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -186,12 +175,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
       ::google::protobuf::internal::TcParseTable<0, 0,
                           0, 0,
                           2>;
-  static constexpr ParseTableT_ InternalGenerateParseTable_(
-      const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
-  friend class ::google::protobuf::internal::TcParser;
-  #ifndef PROTOBUF_MESSAGE_GLOBALS
-  static const ParseTableT_ _table_;
-  #endif
 
   friend class ::google::protobuf::MessageLite;
   friend class ::google::protobuf::Arena;

@@ -24,6 +24,6 @@ bool UPB_PRIVATE(_upb_Message_NextBaseField)(const upb_Message* msg,
                                              const upb_MiniTable* m,
                                              const upb_MiniTableField** out_f,
                                              upb_MessageValue* out_v,
-                                             uintptr_t* iter);
+                                             size_t* iter);
 
 #endif  // GOOGLE_UPB_UPB_MESSAGE_INTERNAL_ITERATOR_H__

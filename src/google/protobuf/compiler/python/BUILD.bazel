@@ -28,6 +28,22 @@ cc_binary(
 )
 
 cc_library(
+    name = "names",
+    srcs = ["names.cc"],
+    hdrs = ["names.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:code_generator",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
     name = "python",
     srcs = [
         "generator.cc",
@@ -47,6 +63,7 @@ cc_library(
         "@com_github_grpc_grpc//tools/distrib/python/grpcio_tools:__subpackages__",
     ],
     deps = [
+        ":names",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "//src/google/protobuf/compiler:code_generator",

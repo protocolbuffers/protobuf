@@ -24,6 +24,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 
 namespace google {
@@ -170,7 +171,6 @@ TEST_F(ImporterTest, ImportNotFound) {
 
   EXPECT_TRUE(importer_.Import("foo.proto") == nullptr);
   EXPECT_EQ(
-      "bar.proto:-1:0: File not found.\n"
       "foo.proto:1:0: Import \"bar.proto\" was not found or had errors.\n",
       error_collector_.text_);
 }
@@ -583,6 +583,43 @@ TEST_F(SourceTreeDescriptorDatabaseTest, ExtensionDeclarations) {
     EXPECT_EQ(declaration.full_name(), ".proto2_unittest.foo_extension2");
     EXPECT_EQ(declaration.type(), ".proto2_unittest.Message2");
   }
+}
+
+TEST_F(SourceTreeDescriptorDatabaseTest,
+       ExtensionDeclarationsFromFallbackDatabase) {
+  SimpleDescriptorDatabase fallback_db;
+  FileDescriptorProto fallback_file;
+  fallback_file.set_name("bar.proto");
+  auto* message = fallback_file.add_message_type();
+  message->set_name("Bar");
+  auto* range = message->add_extension_range();
+  range->set_start(1);
+  range->set_end(10);
+  fallback_db.Add(fallback_file);
+
+  source_tree_.AddFile("extension_declarations.txtpb", R"pb(
+    declaration {
+      number: 1
+      full_name: ".proto2_unittest.bar_extension"
+      type: ".proto2_unittest.Message"
+    }
+  )pb");
+
+  SourceTreeDescriptorDatabase database(&source_tree_, &fallback_db);
+  database.AddExtensionDeclarationsFile("bar.proto", "Bar",
+                                        "extension_declarations.txtpb");
+
+  FileDescriptorProto file_proto;
+  ASSERT_TRUE(database.FindFileByName("bar.proto", &file_proto));
+  ASSERT_EQ(file_proto.message_type_size(), 1);
+  const DescriptorProto& descriptor = file_proto.message_type(0);
+  ASSERT_EQ(descriptor.extension_range_size(), 1);
+  ASSERT_EQ(descriptor.extension_range(0).options().declaration_size(), 1);
+  EXPECT_EQ(descriptor.extension_range(0).options().declaration(0).number(), 1);
+  EXPECT_EQ(descriptor.extension_range(0).options().declaration(0).full_name(),
+            ".proto2_unittest.bar_extension");
+  EXPECT_EQ(descriptor.extension_range(0).options().declaration(0).type(),
+            ".proto2_unittest.Message");
 }
 
 TEST_F(SourceTreeDescriptorDatabaseTest, ExtensionDeclarationsMissing) {

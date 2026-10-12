@@ -10,8 +10,10 @@
 
 #include <stddef.h>
 
+#include "upb/base/status.h"
+#include "upb/message/array.h"
+#include "upb/message/message.h"
 #include "upb/reflection/def.h"
-#include "upb/reflection/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -65,7 +67,7 @@ size_t upb_FieldPath_ToText(upb_FieldPathEntry** path, char* buf, size_t size);
 // freeing this array.
 bool upb_util_HasUnsetRequired(const upb_Message* msg, const upb_MessageDef* m,
                                const upb_DefPool* ext_pool,
-                               upb_FieldPathEntry** fields);
+                               upb_FieldPathEntry** fields, upb_Status* status);
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -9,13 +9,16 @@ package com.google.protobuf;
 
 import static java.lang.Math.max;
 
-import com.google.protobuf.Internal.ProtobufList;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.RandomAccess;
 
 /** Implements {@link ProtobufList} for non-primitive and {@link String} types. */
-final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements RandomAccess {
+final class ProtobufArrayList<E> extends AbstractProtobufList<E>
+    implements RandomAccess
+{
 
   private static final Object[] EMPTY_ARRAY = new Object[0];
 
@@ -72,8 +75,8 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E> implements Rand
   }
 
   private static int growSize(int previousSize) {
-    // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
-    return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
+    // Resize to 1.5x the size.
+    return ((previousSize * 3) / 2) + 1;
   }
 
   @Override

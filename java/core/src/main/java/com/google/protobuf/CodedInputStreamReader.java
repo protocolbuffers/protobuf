@@ -46,6 +46,11 @@ final class CodedInputStreamReader {
     this.input.wrapper = this;
   }
 
+  /** Returns the remaining recursion budget for this CodedInputStream. */
+  int getRemainingRecursionDepth() {
+    return input.getRemainingRecursionDepth();
+  }
+
   public boolean shouldDiscardUnknownFields() {
     return input.shouldDiscardUnknownFields();
   }
@@ -168,17 +173,9 @@ final class CodedInputStreamReader {
 
   private <T> void mergeMessageFieldInternal(
       T target, Schema<T> schema, ExtensionRegistryLite extensionRegistry) throws IOException {
-    int size = input.readUInt32();
-    input.checkRecursionLimit();
-
-    // Push the new limit.
-    final int prevLimit = input.pushLimit(size);
-    ++input.messageDepth;
+    final int prevLimit = input.pushLimitBeforeMessage();
     schema.mergeFrom(target, this, extensionRegistry);
-    input.checkLastTagWas(0);
-    --input.messageDepth;
-    // Restore the previous limit.
-    input.popLimit(prevLimit);
+    input.popLimitAfterMessage(prevLimit);
   }
 
   // Should have the same semantics of CodedInputStream#readMessage()
@@ -266,9 +263,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addDouble(input.readDouble());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED64:
           while (true) {
@@ -292,9 +290,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readDouble());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED64:
           while (true) {
@@ -323,9 +322,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addFloat(input.readFloat());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED32:
           while (true) {
@@ -349,9 +349,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readFloat());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED32:
           while (true) {
@@ -379,9 +380,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addLong(input.readUInt64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -405,9 +406,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readUInt64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -436,9 +437,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addLong(input.readInt64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -462,9 +463,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readInt64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -493,9 +494,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addInt(input.readInt32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -519,9 +520,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readInt32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -551,9 +552,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addLong(input.readFixed64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED64:
           while (true) {
@@ -577,9 +579,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readFixed64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED64:
           while (true) {
@@ -608,9 +611,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addInt(input.readFixed32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED32:
           while (true) {
@@ -634,9 +638,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readFixed32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED32:
           while (true) {
@@ -664,9 +669,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addBoolean(input.readBool());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -690,9 +695,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readBool());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -843,9 +848,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addInt(input.readUInt32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -869,9 +874,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readUInt32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -900,9 +905,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addInt(input.readEnum());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -926,9 +931,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readEnum());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -958,9 +963,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addInt(input.readSFixed32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED32:
           while (true) {
@@ -984,9 +990,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed32Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readSFixed32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED32:
           while (true) {
@@ -1015,9 +1022,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addLong(input.readSFixed64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED64:
           while (true) {
@@ -1041,9 +1049,10 @@ final class CodedInputStreamReader {
           final int bytes = input.readUInt32();
           verifyPackedFixed64Length(bytes);
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readSFixed64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
+          requirePosition(endPos);
           break;
         case WIRETYPE_FIXED64:
           while (true) {
@@ -1071,9 +1080,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addInt(input.readSInt32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -1097,9 +1106,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readSInt32());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -1128,9 +1137,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             plist.addLong(input.readSInt64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -1154,9 +1163,9 @@ final class CodedInputStreamReader {
         case WIRETYPE_LENGTH_DELIMITED:
           final int bytes = input.readUInt32();
           int endPos = input.getTotalBytesRead() + bytes;
-          do {
+          while (input.getTotalBytesRead() < endPos) {
             target.add(input.readSInt64());
-          } while (input.getTotalBytesRead() < endPos);
+          }
           requirePosition(endPos);
           break;
         case WIRETYPE_VARINT:
@@ -1227,6 +1236,9 @@ final class CodedInputStreamReader {
         }
       }
       target.put(key, value);
+      if (input.getBytesUntilLimit() != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
     } finally {
       // Restore the previous limit.
       input.popLimit(prevLimit);

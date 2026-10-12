@@ -187,10 +187,10 @@ class GPBJsonWire
                 }
                 $enum_value_desc = $enum_desc->getValueByNumber($value);
                 if (!is_null($enum_value_desc)) {
-                    $str_value = $enum_value_desc->getName();
-                    $output->writeRaw("\"", 1);
+                    $str_value = json_encode(
+                        self::formatEnumValueName($enum_value_desc),
+                        JSON_UNESCAPED_UNICODE);
                     $output->writeRaw($str_value, strlen($str_value));
-                    $output->writeRaw("\"", 1);
                 } else {
                     $str_value = strval($value);
                     $output->writeRaw($str_value, strlen($str_value));
@@ -233,6 +233,13 @@ class GPBJsonWire
             return $field->getName();
         }
         return $field->getJsonName();
+    }
+
+    public static function formatEnumValueName($enum_value_desc)
+    {
+        $custom_name = $enum_value_desc->getCustomJsonName();
+        return $custom_name !== null
+            ? $custom_name : $enum_value_desc->getName();
     }
 
     // Used for escaping control chars in strings.

@@ -20,6 +20,7 @@
 #include "upb/mem/arena.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_table/file.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/common.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
@@ -110,10 +111,11 @@ UPB_INLINE void* _upb_DefBuilder_Alloc(upb_DefBuilder* ctx, size_t bytes) {
 UPB_INLINE void* _upb_DefBuilder_AllocCounted(upb_DefBuilder* ctx, size_t size,
                                               size_t count) {
   if (count == 0) return NULL;
-  if (SIZE_MAX / size < count) {
+  size_t total_bytes;
+  if (upb_MulOverflow(size, count, &total_bytes)) {
     _upb_DefBuilder_OomErr(ctx);
   }
-  return _upb_DefBuilder_Alloc(ctx, size * count);
+  return _upb_DefBuilder_Alloc(ctx, total_bytes);
 }
 
 #define UPB_DEFBUILDER_ALLOCARRAY(ctx, type, count) \

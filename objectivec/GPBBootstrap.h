@@ -6,7 +6,7 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 // For int32_t in GPB_ENUM/GPB_ENUM_FWD_DECLARE below.
-#import <stdint.h>
+#include <stdint.h>
 
 /**
  * The Objective C runtime has complete enough info that most protos don’t end

@@ -43,6 +43,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -91,6 +92,16 @@ using google::protobuf::io::win32::write;
 #if !defined(GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN)
 
 namespace {
+
+#ifndef _WIN32
+constexpr absl::string_view kPathSeparator = ":";
+#else
+constexpr absl::string_view kPathSeparator = ";";
+#endif
+
+std::string JoinPaths(absl::Span<const absl::string_view> paths) {
+  return absl::StrJoin(paths, kPathSeparator);
+}
 
 std::string CreatePluginArg() {
   std::string plugin_path;
@@ -681,7 +692,6 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
                  "echo wrapped > \"%~dp0wrapper_invoked.txt\"\r\n"
                  "\"%~1\"\r\n"
                  "exit /b %errorlevel%\r\n");
-  const char path_separator = ';';
 #else
   const std::string wrapper_basename = "plugin_wrapper_searchpath.sh";
   CreateTempFile(wrapper_basename,
@@ -691,15 +701,13 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
   ASSERT_EQ(0,
             chmod(absl::StrCat(temp_directory(), "/", wrapper_basename).c_str(),
                   0777));
-  const char path_separator = ':';
 #endif
 
   // Prepend the temp directory to PATH so the wrapper can be located by
   // basename only (Subprocess uses execvp / SEARCH_PATH for the prefix).
   const char* old_path_cstr = getenv("PATH");
   const std::string old_path = old_path_cstr ? old_path_cstr : "";
-  const std::string new_path =
-      absl::StrCat(temp_directory(), std::string(1, path_separator), old_path);
+  const std::string new_path = JoinPaths({temp_directory(), old_path});
 #ifdef _WIN32
   _putenv_s("PATH", new_path.c_str());
 #else
@@ -1862,7 +1870,8 @@ TEST_F(CommandLineInterfaceTest, ImportOptions_MissingImport) {
 
   Run("protocol_compiler --proto_path=$tmpdir --test_out=$tmpdir foo.proto "
       "--experimental_editions");
-  ExpectErrorSubstring("options.proto: File not found");
+  ExpectErrorSubstring(
+      "foo.proto:3:21: Import \"options.proto\" was not found or had errors.");
 }
 
 TEST_F(CommandLineInterfaceTest, ValidateFeatureSupportError) {
@@ -3680,14 +3689,66 @@ TEST_F(CommandLineInterfaceTest, ImportOption_DescriptorSetIn_MissingImport) {
       "--descriptor_set_out=$tmpdir/descriptor_set "
       "--descriptor_set_in=$tmpdir/foo.bin foo.proto");
 
-  ExpectErrorSubstring("bar.proto: File not found");
-  ExpectErrorSubstring(
-      "google/protobuf/cpp_features.proto: File not found");
   ExpectErrorSubstring(
       "foo.proto:3:7: Import \"bar.proto\" was not found or had errors");
   ExpectErrorSubstring(
       "foo.proto:4:7: Import \"google/protobuf/cpp_features.proto\" was "
       "not found or had errors");
+}
+
+TEST_F(CommandLineInterfaceTest,
+       ImportOption_DescriptorSetInAndProtoPath_MissingOptionDependency) {
+  FileDescriptorSet file_descriptor_set;
+
+  FileDescriptorProto::descriptor()->file()->CopyTo(
+      file_descriptor_set.add_file());
+  FileDescriptorProto* file = file_descriptor_set.add_file();
+  file->set_syntax("editions");
+  file->set_edition(Edition::EDITION_2024);
+  file->add_dependency(file_descriptor_set.file(0).name());
+  file->add_option_dependency(pb::CppFeatures::descriptor()->file()->name());
+  file->set_name("foo.proto");
+  DescriptorProto* message = file->add_message_type();
+  message->set_name("Foo");
+  FieldDescriptorProto* field = message->add_extension();
+  field->set_type(FieldDescriptorProto::TYPE_STRING);
+  field->set_name("ext");
+  field->set_number(1234567);
+  field->set_extendee(".google.protobuf.FileOptions");
+  field->mutable_options()
+      ->mutable_features()
+      ->MutableExtension(pb::cpp)
+      ->set_string_type(pb::CppFeatures::VIEW);
+
+  CreateTempFile("bar.proto",
+                 R"schema(
+      edition = "2024";
+      import option "foo.proto";
+      option (Foo.ext) = "hello";
+    )schema");
+
+  WriteDescriptorSet("foo.bin", &file_descriptor_set);
+  Run("protocol_compiler --test_out=$tmpdir --proto_path=$tmpdir "
+      "--descriptor_set_out=$tmpdir/descriptor_set "
+      "--descriptor_set_in=$tmpdir/foo.bin bar.proto");
+
+  ExpectNoErrors();
+
+  FileDescriptorSet descriptor_set;
+  ReadDescriptorSet("descriptor_set", &descriptor_set);
+  ASSERT_FALSE(HasFatalFailure());
+  ASSERT_EQ(descriptor_set.file_size(), 1);
+  EXPECT_EQ(descriptor_set.file(0).name(), "bar.proto");
+  ASSERT_EQ(descriptor_set.file(0).options().unknown_fields().field_count(), 1);
+  // Descriptor set should have custom options set.
+  EXPECT_EQ(descriptor_set.file(0)
+                .options()
+                .unknown_fields()
+                .field(0)
+                .length_delimited(),
+            "hello");
+  EXPECT_EQ(descriptor_set.file(0).options().unknown_fields().field(0).number(),
+            1234567);
 }
 
 TEST_F(CommandLineInterfaceTest, WriteDescriptorSetWithDuplicates) {
@@ -3816,6 +3877,165 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
 }
 
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_SingleFileWithSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  Run("protocol_compiler "
+      "--descriptor_set_in=$tmpdir/foo-with-sci.proto.bin "
+      "--descriptor_set_out=$tmpdir/foo_desc "
+      "--include_source_info foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_TRUE(foo_set.file(0).has_source_code_info());
+  EXPECT_GT(foo_set.file(0).source_code_info().location_size(), 0);
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_FullOverlap) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet single_set;
+  ReadDescriptorSet("foo-with-sci.proto.bin", &single_set);
+  ASSERT_EQ(1, single_set.file_size());
+  int expected_locations =
+      single_set.file(0).source_code_info().location_size();
+  EXPECT_GT(expected_locations, 0);
+
+  // Full overlap: two identical files containing both core descriptor schema
+  // and source_code_info.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths(
+          {"$tmpdir/foo-with-sci.proto.bin", "$tmpdir/foo-with-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_EQ(expected_locations,
+            foo_set.file(0).source_code_info().location_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_PartialOverlap_AdditionalSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-desc.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet single_set;
+  ReadDescriptorSet("foo-with-sci.proto.bin", &single_set);
+  ASSERT_EQ(1, single_set.file_size());
+  int expected_locations =
+      single_set.file(0).source_code_info().location_size();
+
+  // Partial overlap where subsequent file contains matching core schema plus
+  // additional source_code_info.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths(
+          {"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-with-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_EQ(expected_locations,
+            foo_set.file(0).source_code_info().location_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_ConflictingCoreDescriptorSchema) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo { optional int32 a = 1; }\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo1.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo { optional int32 b = 2; }\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo2.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar {}\n");
+
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo1.proto.bin", "$tmpdir/foo2.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/bar_desc --proto_path=$tmpdir "
+      "bar.proto"));
+  // TODO - Remove this branch for release v38.0 once conflicting
+  // descriptors are an unconditional error.
+  ExpectWarningSubstring(
+      "foo2.proto.bin: FileDescriptorProto for \"foo.proto\" in "
+      "--descriptor_set_in has conflicting core descriptor schema with");
+}
+
+TEST_F(CommandLineInterfaceTest, SourceCodeInfoOut_SourceCodeInfoOnly) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--source_code_info_out=$tmpdir/out-source_code_info.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  // TODO - Remove this branch for release v38.0 once
+  // --source_code_info_out is supported in OSS.
+  ExpectErrorText("--source_code_info_out not yet supported.\n");
+}
+
+
 TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
   CreateTempFile("google/protobuf/descriptor.proto",
                  google::protobuf::DescriptorProto::descriptor()->file()->DebugString());
@@ -3857,9 +4077,9 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
     std::swap(descriptor_set.mutable_file()->mutable_data()[0],
               descriptor_set.mutable_file()->mutable_data()[1]);
   }
-  EXPECT_EQ("foo.proto", descriptor_set.file(0).name());
-  EXPECT_EQ("google/protobuf/descriptor.proto", descriptor_set.file(1).name());
-  EXPECT_EQ("custom_option.proto", descriptor_set.file(2).name());
+  EXPECT_EQ("google/protobuf/descriptor.proto", descriptor_set.file(0).name());
+  EXPECT_EQ("custom_option.proto", descriptor_set.file(1).name());
+  EXPECT_EQ("foo.proto", descriptor_set.file(2).name());
   EXPECT_EQ("bar.proto", descriptor_set.file(3).name());
 }
 
@@ -4411,6 +4631,15 @@ TEST_F(CommandLineInterfaceTest, MissingInputError) {
   ExpectErrorText("Missing input file.\n");
 }
 
+TEST_F(CommandLineInterfaceTest, MissingInputFileError) {
+  // Test that we get an error if no inputs are found.
+
+  Run("protocol_compiler --test_out=$tmpdir "
+      "--proto_path=$tmpdir foo.proto");
+
+  ExpectErrorSubstring("foo.proto: No such file or directory");
+}
+
 TEST_F(CommandLineInterfaceTest, MissingOutputError) {
   CreateTempFile("foo.proto",
                  "syntax = \"proto2\";\n"
@@ -4636,13 +4865,54 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
   // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring("no_such_file: program not found or is not executable");
 
+  // The plugin was registered with an explicit path (--plugin=name=path), so
+  // it is run by exact name and the PATH is never consulted. The suggestion
+  // must not point at the PATH, which would be misleading here.
+  ExpectErrorSubstring(
+      "Please specify a program using an absolute path or a path "
+      "relative to the current working directory");
+
+  // Error written by parent process when child fails.
+  ExpectErrorSubstring(
+      "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+#endif
+}
+
+TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFoundInPath) {
+  // Test the error when a plugin run via the PATH (SEARCH_PATH mode) isn't
+  // found. No --plugin is given, so protoc derives the plugin executable name
+  // from the output directive and looks for it on the PATH.
+
+  CreateTempFile("error.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --no_such_plugin_out=TestParameter:$tmpdir "
+      "--proto_path=$tmpdir error.proto");
+
+#ifdef _WIN32
+  // On Windows a PATH-searched plugin is launched through `cmd.exe /c`, which
+  // starts successfully and then fails to find the plugin, exiting nonzero.
+  // cmd.exe's own "not recognized" message is locale dependent, so assert on
+  // the stable status-code line protoc emits for the failed child.
+  ExpectErrorSubstring(
+      "--no_such_plugin_out: prefix-gen-no_such_plugin: Plugin failed with "
+      "status code");
+#else
+  // Error written to stdout by child process after exec() fails.
+  ExpectErrorSubstring(
+      "prefix-gen-no_such_plugin: program not found or is not executable");
+
+  // Here the plugin really is looked up on the PATH, so suggesting it is
+  // correct.
   ExpectErrorSubstring(
       "Please specify a program using absolute path or make sure "
       "the program is available in your PATH system variable");
 
   // Error written by parent process when child fails.
   ExpectErrorSubstring(
-      "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+      "--no_such_plugin_out: prefix-gen-no_such_plugin: Plugin failed with "
+      "status code 1.");
 #endif
 }
 
@@ -5996,6 +6266,17 @@ TEST_P(EncodeDecodeTest, Partial) {
   EXPECT_TRUE(
       Run("google/protobuf/unittest.proto"
           " --encode=proto2_unittest.TestRequired"));
+  ExpectStdoutMatchesText("");
+  ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
+}
+
+TEST_P(EncodeDecodeTest, PartialWithFatalWarnings) {
+  RedirectStdinFromText("");
+  // With --fatal_warnings, the missing-required-fields warning must make protoc
+  // exit non-zero, while still emitting the warning and the output.
+  EXPECT_FALSE(
+      Run("google/protobuf/unittest.proto"
+          " --encode=proto2_unittest.TestRequired --fatal_warnings"));
   ExpectStdoutMatchesText("");
   ExpectWarning("warning:  Input message is missing required fields:  a, b, c");
 }

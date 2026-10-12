@@ -23,12 +23,14 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
+#include "upb/base/descriptor_constants.h"
 #include "upb/base/status.h"
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/json/decode.h"
 #include "upb/json/encode.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
@@ -181,6 +183,18 @@ TEST(MessageTest, ExtensionsDeterministic) {
   ASSERT_EQ(deterministic_size, size);
 }
 
+TEST(MessageTest, ExtensionsSkipUnknownDeterministic) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 123, arena.ptr());
+
+  size_t deterministic_size;
+  char* deterministic_serialized = upb_test_TestExtensions_serialize_ex(
+      ext_msg, kUpb_EncodeOption_Deterministic | kUpb_EncodeOption_SkipUnknown,
+      arena.ptr(), &deterministic_size);
+  ASSERT_TRUE(deterministic_serialized != nullptr);
+}
+
 TEST(MessageTest, ExtensionsEmpty) {
   upb::Arena arena;
 
@@ -230,6 +244,35 @@ TEST(MessageTest, ExtensionsEmpty) {
     // serialized output.
     ASSERT_EQ(size_with_empty, size);
   }
+}
+
+TEST(MessageTest, DecodeErrorInRepeatedExtensionLeavesMessageValid) {
+  upb::Arena arena;
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(defpool.ptr()));
+  ASSERT_TRUE(m.ptr() != nullptr);
+
+  // Field 1001 (`repeated int32 repeated_int32_ext`) as a packed (LEN) field
+  // whose payload is an over-long, malformed varint. The decoder creates the
+  // extension's array before it hits the error.
+  const char data[] =
+      "\xca\x3e\x0b\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_DecodeStatus status =
+      upb_Decode(data, sizeof(data) - 1, UPB_UPCAST(msg),
+                 &upb_0test__TestExtensions_msg_init,
+                 upb_DefPool_ExtensionRegistry(defpool.ptr()), 0, arena.ptr());
+  EXPECT_NE(status, kUpb_DecodeStatus_Ok);
+
+  // The partially-decoded message must still be safe to inspect.
+  const upb_MiniTableExtension* e;
+  upb_MessageValue v;
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  while (upb_Message_NextExtension(UPB_UPCAST(msg), &e, &v, &iter)) {
+  }
+  size_t size;
+  EXPECT_NE(upb_test_TestExtensions_serialize(msg, arena.ptr(), &size),
+            nullptr);
 }
 
 void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
@@ -777,11 +820,12 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
                    kUpb_DecodeOption_AliasString, arena.ptr());
     ASSERT_EQ(status, kUpb_DecodeStatus_Ok);
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    upb_StringView data;
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region, data.data);
-    EXPECT_EQ(sizeof(region), data.size);
-    EXPECT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    upb_MessageUnknown data;
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region, data.value.bytes.data);
+    EXPECT_EQ(sizeof(region), data.value.bytes.size);
+    EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
   }
 
   upb_Message_Clear(msg, table);
@@ -798,18 +842,21 @@ TEST(MessageTest, AdjacentAliasedUnknown) {
     EXPECT_EQ(kUpb_DecodeStatus_Ok,
               upb_Decode(region + 600, 300, msg, table, nullptr,
                          kUpb_DecodeOption_AliasString, arena.ptr()));
-    upb_StringView data;
+    upb_MessageUnknown data;
     uintptr_t iter = kUpb_Message_UnknownBegin;
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region + 300, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_TRUE(upb_Message_NextUnknown(msg, &data, &iter));
-    EXPECT_EQ(region + 600, data.data);
-    EXPECT_EQ(300u, data.size);
-    ASSERT_FALSE(upb_Message_NextUnknown(msg, &data, &iter));
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region + 300, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg, &data, &iter));
+    ASSERT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+    EXPECT_EQ(region + 600, data.value.bytes.data);
+    EXPECT_EQ(300u, data.value.bytes.size);
+    ASSERT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
   }
 }
 
@@ -906,6 +953,194 @@ TEST(MessageTest, Freeze) {
     upb_Message_Freeze(msg, &upb_0test__TestExtensions_msg_init);
     ASSERT_TRUE(upb_Message_IsFrozen(msg));
     ASSERT_TRUE(upb_Message_IsFrozen(submsg_upcast));
+  }
+}
+
+TEST(MessageTest, FreezeNonCanonicalExtensions) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Create sub-message
+  protobuf_test_messages_proto3_TestAllTypesProto3* ext_submsg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
+      ext_submsg, 456);
+
+  // Attach as non-canonical extension
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg,
+      arena.ptr()));
+
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(ext_submsg)));
+
+  // Freeze the parent message
+  upb_Message_Freeze(UPB_UPCAST(msg), &upb_0test__TestExtensions_msg_init);
+
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+  // The non-canonical extension sub-message must be recursively frozen too!
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(ext_submsg)));
+}
+
+TEST(MessageTest, DiscardUnknownsNonCanonicalExtensions) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Create sub-message
+  protobuf_test_messages_proto3_TestAllTypesProto3* ext_submsg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+
+  // Attach as non-canonical extension
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, &ext_submsg,
+      arena.ptr()));
+
+  // Add a canonical extension
+  upb_test_TestExtensions_set_optional_int32_ext(msg, 123, arena.ptr());
+
+  // Add some standard raw unknown bytes
+  char raw_unknown[] = "\x08\x96\x01";  // tag 1 = 150
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), raw_unknown, sizeof(raw_unknown) - 1, arena.ptr(),
+      kUpb_AddUnknown_Copy));
+
+  // Verify both are present initially
+  {
+    upb_MessageUnknown data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    bool has_non_canonical = false;
+    bool has_bytes = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+      if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        has_non_canonical = true;
+      } else if (data.type == kUpb_MessageUnknownType_StringView) {
+        has_bytes = true;
+      }
+    }
+    EXPECT_TRUE(has_non_canonical);
+    EXPECT_TRUE(has_bytes);
+  }
+
+  // Discard unknown fields on the message
+  _upb_Message_DiscardUnknown_shallow(UPB_UPCAST(msg));
+
+  // Verify both non-canonical extension and raw unknown bytes are discarded!
+  {
+    upb_MessageUnknown data;
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    bool has_non_canonical = false;
+    bool has_bytes = false;
+    while (upb_Message_NextUnknown2(UPB_UPCAST(msg), &data, &iter)) {
+      if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        has_non_canonical = true;
+      } else if (data.type == kUpb_MessageUnknownType_StringView) {
+        has_bytes = true;
+      }
+    }
+    EXPECT_FALSE(has_non_canonical);
+    EXPECT_FALSE(has_bytes);
+  }
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 123);
+}
+
+TEST(MessageTest, AppendNonCanonicalExtensionDuplicates) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  int32_t val2 = 43;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val2, arena.ptr()));
+
+  // Count non-canonical extensions
+  int count = 0;
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+    if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+      if (upb_Extension_MiniTableExtension(unknown.value.extension) ==
+          upb_test_TestExtensions_optional_int32_ext_ext) {
+        count++;
+      }
+    }
+  }
+  EXPECT_EQ(count, 2);
+}
+
+TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtension) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  // 1. Set as Non-Canonical
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  // 2. Set as Canonical
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 43, arena.ptr());
+
+  // Verify Canonical accessor sees 43
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(ext_msg), 43);
+
+  // Verify Non-Canonical iterator sees 42
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found = false;
+    while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        if (upb_Extension_MiniTableExtension(unknown.value.extension) ==
+            upb_test_TestExtensions_optional_int32_ext_ext) {
+          EXPECT_EQ(upb_Extension_GetInt32(unknown.value.extension), 42);
+          found = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+}
+
+TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtensionReverse) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  // 1. Set as Canonical
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 43, arena.ptr());
+
+  // 2. Set as Non-Canonical
+  int32_t val1 = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_TestExtensions_optional_int32_ext_ext, &val1, arena.ptr()));
+
+  // Verify Canonical accessor sees 43
+  EXPECT_TRUE(upb_test_TestExtensions_has_optional_int32_ext(ext_msg));
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(ext_msg), 43);
+
+  // Verify Non-Canonical iterator sees 42
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    bool found = false;
+    while (upb_Message_NextUnknown2(msg, &unknown, &iter)) {
+      if (unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
+        if (upb_Extension_MiniTableExtension(unknown.value.extension) ==
+            upb_test_TestExtensions_optional_int32_ext_ext) {
+          EXPECT_EQ(upb_Extension_GetInt32(unknown.value.extension), 42);
+          found = true;
+          break;
+        }
+      }
+    }
+    EXPECT_TRUE(found);
   }
 }
 
@@ -1018,6 +1253,71 @@ TEST(MessageTest, ArenaSpaceAllocatedAfterDecode) {
   EXPECT_GT(space_allocated_after, space_allocated_before + 297u);
 }
 
+TEST(MessageTest, ExtensionAccessors) {
+  upb::Arena arena;
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+
+  // Scalar extension.
+  upb_Extension* int32_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(msg), upb_test_TestExtensions_optional_int32_ext_ext,
+      arena.ptr());
+  ASSERT_NE(int32_ext, nullptr);
+  EXPECT_EQ(upb_Extension_MiniTableExtension(int32_ext),
+            upb_test_TestExtensions_optional_int32_ext_ext);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 0);
+
+  upb_Extension_SetInt32(int32_ext, 42);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 42);
+  EXPECT_EQ(upb_Extension_GetValue(int32_ext).int32_val, 42);
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 42);
+
+  int32_t int32_val = 7;
+  upb_Extension_SetField(int32_ext, &int32_val);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 7);
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 7);
+
+  upb_MessageValue val;
+  val.int32_val = 123;
+  upb_Extension_SetValue(int32_ext, val);
+  EXPECT_EQ(upb_Extension_GetInt32(int32_ext), 123);
+  EXPECT_EQ(upb_test_TestExtensions_optional_int32_ext(msg), 123);
+
+  int32_t got_val = 0;
+  upb_Extension_GetField(int32_ext, &got_val);
+  EXPECT_EQ(got_val, 123);
+
+  // Message extension.
+  upb_Extension* msg_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(msg), upb_test_optional_msg_ext_ext, arena.ptr());
+  ASSERT_NE(msg_ext, nullptr);
+  EXPECT_EQ(upb_Extension_GetMessage(msg_ext), nullptr);
+  protobuf_test_messages_proto3_TestAllTypesProto3* sub_msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  upb_Extension_SetMessage(msg_ext, UPB_UPCAST(sub_msg));
+  EXPECT_EQ(upb_Extension_GetMessage(msg_ext), UPB_UPCAST(sub_msg));
+  EXPECT_EQ(upb_Extension_GetMutableMessage(msg_ext), UPB_UPCAST(sub_msg));
+  EXPECT_EQ(upb_test_optional_msg_ext(msg), sub_msg);
+
+  // Repeated extension.
+  upb_Extension* array_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+      UPB_UPCAST(msg), upb_test_TestExtensions_Nested_repeated_int32_ext_ext,
+      arena.ptr());
+  ASSERT_NE(array_ext, nullptr);
+  EXPECT_EQ(upb_Extension_GetArray(array_ext), nullptr);
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  ASSERT_NE(arr, nullptr);
+  upb_MessageValue elem;
+  elem.int32_val = 5;
+  ASSERT_TRUE(upb_Array_Append(arr, elem, arena.ptr()));
+  upb_Extension_SetArray(array_ext, arr);
+  EXPECT_EQ(upb_Extension_GetArray(array_ext), arr);
+  EXPECT_EQ(upb_Extension_GetMutableArray(array_ext), arr);
+  EXPECT_EQ(upb_Message_GetExtensionArray(
+                UPB_UPCAST(msg),
+                upb_test_TestExtensions_Nested_repeated_int32_ext_ext),
+            arr);
+}
+
 TEST(MessageTest, NextUnknown2AndDeleteUnknown2) {
   upb::Arena arena;
   upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
@@ -1073,8 +1373,9 @@ TEST(MessageTest, NextUnknown2AndDeleteUnknown2) {
         found_ext = true;
         const upb_Extension* ext =
             (const upb_Extension*)unknown.value.extension;
-        EXPECT_EQ(ext->ext, upb_test_TestExtensions_optional_int32_ext_ext);
-        EXPECT_EQ(ext->data.int32_val, 42);
+        EXPECT_EQ(upb_Extension_MiniTableExtension(ext),
+                  upb_test_TestExtensions_optional_int32_ext_ext);
+        EXPECT_EQ(upb_Extension_GetInt32(ext), 42);
       } else {
         FAIL() << "Unexpected unknown type: " << (int)unknown.type;
       }
@@ -1277,4 +1578,298 @@ TEST(MessageTest, DeleteUnknown2Partial) {
     EXPECT_EQ(unknown.value.bytes.size, 8u);
     EXPECT_EQ(memcmp(unknown.value.bytes.data, region, 8), 0);
   }
+}
+
+TEST(MessageTest, NextSerializableField) {
+  upb::Arena arena;
+  upb_test_TestRequiredFields* test_msg =
+      upb_test_TestRequiredFields_new(arena.ptr());
+
+  const upb_MiniTable* mt = &upb_0test__TestRequiredFields_msg_init;
+  const upb_MiniTableField* f = nullptr;
+  uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+
+  // 1. When no fields are set, iteration should return false immediately.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 2. Set one field. Iteration should find exactly this field.
+  upb_test_TestRequiredFields_set_required_int32(test_msg, 42);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1u);  // required_int32 is field 1
+
+  // Next step should return false.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 3. Set another field. Iteration should find both.
+  upb_test_TestRequiredFields_set_required_int64(test_msg, 100);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+
+  // First field: field 1
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1u);
+
+  // Second field: field 3 (required_int64 is field 3)
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 3u);
+
+  // End of iteration
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(test_msg), mt, &f, &iter));
+
+  // 4. Proto2 presence for default values (0):
+  // Setting an optional field to 0 sets its hasbit, so it is included.
+  upb_test_TestRequiredFields* google_protobuf_msg =
+      upb_test_TestRequiredFields_new(arena.ptr());
+  upb_test_TestRequiredFields_set_optional_int32(google_protobuf_msg, 0);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(google_protobuf_msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 2u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(google_protobuf_msg), mt, &f, &iter));
+
+  // 5. Repeated fields and map fields (NULL vs allocated):
+  const upb_MiniTable* freeze_mt = &upb_0test__TestFreeze_msg_init;
+
+  // - Repeated field:
+  //   * NULL repeated field (default) is ignored.
+  upb_test_TestFreeze* msg_arr = upb_test_TestFreeze_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated repeated field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  upb_test_TestFreeze_resize_array_int(msg_arr, 0, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), freeze_mt,
+                                                &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 20u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated non-empty repeated field (size > 0) is yielded.
+  upb_test_TestFreeze* msg_arr_nonempty = upb_test_TestFreeze_new(arena.ptr());
+  upb_test_TestFreeze_resize_array_int(msg_arr_nonempty, 3, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                freeze_mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 20u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                 freeze_mt, &f, &iter));
+
+  // - Map field:
+  //   * NULL map field (default) is ignored.
+  upb_test_TestFreeze* msg_map = upb_test_TestFreeze_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated map field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  upb_test_TestFreeze_map_int_set(msg_map, 1, 2, arena.ptr());
+  upb_test_TestFreeze_map_int_delete(msg_map, 1);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map), freeze_mt,
+                                                &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 10u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map), freeze_mt,
+                                                 &f, &iter));
+  //   * Allocated non-empty map field (size > 0) is yielded.
+  upb_test_TestFreeze* msg_map_nonempty = upb_test_TestFreeze_new(arena.ptr());
+  upb_test_TestFreeze_map_int_set(msg_map_nonempty, 1, 2, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                freeze_mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 10u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                 freeze_mt, &f, &iter));
+
+  // 6. Submessages (NULL vs allocated):
+  // - NULL submessage (default) is ignored.
+  upb_test_TestRequiredFields* msg_sub =
+      upb_test_TestRequiredFields_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  // - Allocated submessage is included.
+  upb_test_TestRequiredFields_set_optional_message(
+      msg_sub, upb_test_TestRequiredFields_new(arena.ptr()));
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 4u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+}
+
+extern "C" const upb_MiniTable
+    protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+TEST(MessageTest, NextSerializableFieldProto3) {
+  upb::Arena arena;
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+
+  const upb_MiniTableField* f = nullptr;
+  uintptr_t iter = kUpb_Message_SerializableFieldBegin;
+
+  // 1. When no fields are set, iteration should return false immediately.
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 2. The field at MiniTable index 0: optional_int32 (number 1, index 0).
+  // Non-default value (123) should be serializable.
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(msg, 123);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 1u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 3. Proto3 scalar fields set to default (0, empty string) vs non-default:
+  // - Setting a field to 0 or empty string should be ignored (skipped).
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_int32(
+      msg, 0);  // Reset
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_optional_string(
+      msg, upb_StringView_FromString(""));  // Set to empty string
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg), mt, &f, &iter));
+
+  // 4. Repeated fields and map fields (NULL vs allocated):
+  // - Repeated field:
+  //   * NULL repeated field (default) is ignored.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_arr =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), mt, &f, &iter));
+  //   * Allocated repeated field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  protobuf_test_messages_proto3_TestAllTypesProto3_resize_repeated_int32(
+      msg_arr, 0, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 31u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_arr), mt, &f, &iter));
+  //   * Allocated non-empty repeated field (size > 0) is yielded.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_arr_nonempty =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_int32(
+      msg_arr_nonempty, 99, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 31u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_arr_nonempty),
+                                                 mt, &f, &iter));
+
+  // - Map field:
+  //   * NULL map field (default) is ignored.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_map =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_map), mt, &f, &iter));
+  //   * Allocated map field (even if empty with size = 0) has a
+  //     non-NULL pointer and is considered set by NextSerializableField.
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
+      msg_map, 1, 2, arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_delete(
+      msg_map, 1);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_map), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 56u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_map), mt, &f, &iter));
+  //   * Allocated non-empty map field (size > 0) is yielded.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_map_nonempty =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_map_int32_int32_set(
+      msg_map_nonempty, 1, 2, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 56u);
+  EXPECT_FALSE(upb_Message_NextSerializableField(UPB_UPCAST(msg_map_nonempty),
+                                                 mt, &f, &iter));
+
+  // 5. Fields in oneofs (presence test for default values):
+  // Since oneofs have presence, setting a oneof scalar to its default value (0)
+  // should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_oneof =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_set_oneof_uint32(msg_oneof,
+                                                                    0);
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_oneof), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 111u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_oneof), mt, &f, &iter));
+
+  // 6. Submessages (NULL vs allocated):
+  // - NULL submessage (default) should be ignored.
+  protobuf_test_messages_proto3_TestAllTypesProto3* msg_sub =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  // - Allocated submessage should be included.
+  protobuf_test_messages_proto3_TestAllTypesProto3_mutable_optional_nested_message(
+      msg_sub, arena.ptr());
+  f = nullptr;
+  iter = kUpb_Message_SerializableFieldBegin;
+  EXPECT_TRUE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+  ASSERT_NE(f, nullptr);
+  EXPECT_EQ(upb_MiniTableField_Number(f), 18u);
+  EXPECT_FALSE(
+      upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
 }

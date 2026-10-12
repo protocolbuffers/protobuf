@@ -89,13 +89,15 @@ void WriteDescriptor(upb::FileDefPtr file, Context& ctx) {
       file_proto, arena.ptr(), &serialized_size);
   absl::string_view file_data(serialized, serialized_size);
 
-  ctx.Emit({{"serialized_size", file_data.size()},
-            {"contents", [&] { WriteStringArray(file_data, ctx); }}},
-           R"cc(
-             static const char descriptor[$serialized_size$] = {
-                 $contents$,
-             };
-           )cc");
+  ctx.Emit(
+      {{"serialized_size", file_data.size()},
+       {"defpool_init_name", ReflectionFileSymbol(file.name())},
+       {"contents", [&] { WriteStringArray(file_data, ctx); }}},
+      R"cc(
+        static const char descriptor_$defpool_init_name$[$serialized_size$] = {
+            $contents$,
+        };
+      )cc");
   ctx.Emit("\n");
 }
 
@@ -112,9 +114,10 @@ void WriteDependencies(upb::FileDefPtr file, Context& ctx) {
   };
 
   ctx.Emit({{"dep_count", file.dependency_count() + 1},
+            {"defpool_init_name", ReflectionFileSymbol(file.name())},
             {google::protobuf::io::Printer::Sub("deps", write_deps).WithSuffix(",")}},
            R"cc(
-             static _upb_DefPool_Init *deps[$dep_count$] = {
+             static _upb_DefPool_Init* deps_$defpool_init_name$[$dep_count$] = {
                  $deps$,
                  NULL,
              };
@@ -131,10 +134,11 @@ void WriteDefPoolInitStruct(upb::FileDefPtr file, Context& ctx) {
       },
       R"cc(
         _upb_DefPool_Init $defpool_init_name$ = {
-            deps,
+            deps_$defpool_init_name$,
             &$mini_table_file_var_name$,
             "$file_name$",
-            UPB_STRINGVIEW_INIT(descriptor, sizeof(descriptor)),
+            UPB_STRINGVIEW_INIT(descriptor_$defpool_init_name$,
+                                sizeof(descriptor_$defpool_init_name$)),
         };
       )cc");
 }

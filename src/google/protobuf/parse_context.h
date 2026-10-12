@@ -34,9 +34,11 @@
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/micro_string.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -183,7 +185,12 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
     return LimitToken(old_limit - limit);
   }
 
-  [[nodiscard]] bool PopLimit(LimitToken delta) {
+  // Takes the token by rvalue reference rather than by value. LimitToken uses
+  // ASan memory poisoning, and a by-value parameter can share a stack slot with
+  // the moved-from caller token; the move then poisons the slot the parameter
+  // occupies, and reading it here trips a use-after-poison. Binding directly to
+  // the caller's token avoids the extra copy and the shared-slot hazard.
+  [[nodiscard]] bool PopLimit(LimitToken&& delta) {
     // We must update the limit first before the early return. Otherwise, we can
     // end up with an invalid limit and it can lead to integer overflows.
     int old_limit = limit_ + std::move(delta).token();
@@ -274,8 +281,9 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
                                               RepeatedField<T>* out);
 
   template <typename T>
-  [[nodiscard]] const char* ReadPackedFixed(const char* ptr, Arena* arena,
-                                            int size, RepeatedField<T>* out);
+  [[nodiscard]] const char* ReadPackedFixed(const MessageLite& parent,
+                                            const char* ptr, int size,
+                                            RepeatedField<T>* out);
   // Helpers for ReadPackedVarint and ReadPackedVarintWithField.
   template <typename Add>
   static const char* ReadPackedVarintArray(const char* ptr, const char* end,
@@ -698,20 +706,27 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
     *start = InitFrom(std::forward<T>(args)...);
   }
 
+  template <int kReduction>
   struct Spawn {};
-  static constexpr Spawn kSpawn = {};
+  static constexpr Spawn<0> kSpawn = {};
 
   // Creates a new context from a given "ctx" to inherit a few attributes to
   // emulate continued parsing. For example, recursion depth or descriptor pools
   // must be passed down to a new "spawned" context to maintain the same parse
   // context. Note that the spawned context always disables aliasing (different
   // input).
-  template <typename... T>
-  ParseContext(Spawn, const ParseContext& ctx, const char** start, T&&... args)
+  template <int kDepthReduction, typename... T>
+  ParseContext(Spawn<kDepthReduction>, const ParseContext& ctx,
+               const char** start, T&&... args)
       : EpsCopyInputStream(false),
-        depth_(ctx.depth_),
+        depth_(ctx.depth_ - kDepthReduction),
         data_(ctx.data_)
   {
+    if (kDepthReduction != 0 && depth_ < 0) {
+      // Fail right away.
+      *start = nullptr;
+      return;
+    }
     *start = InitFrom(std::forward<T>(args)...);
   }
 
@@ -834,7 +849,7 @@ class PROTOBUF_EXPORT ParseContext : public EpsCopyInputStream {
 };
 
 // Sink types for AdvancePtrMaybeFlush.
-struct WireFormatStringSink {
+struct PROTOBUF_EXPORT WireFormatStringSink {
   static constexpr bool kIsLazySink = false;
   explicit WireFormatStringSink(const char* ptr) : prev(ptr) {}
 
@@ -1374,9 +1389,14 @@ PROTOBUF_FUTURE_ADD_EARLY_NODISCARD
 inline uint32_t ReadSize(const char** pp) {
   auto p = *pp;
   uint32_t res = static_cast<uint8_t>(p[0]);
-  if (res < 128) {
+  if (ABSL_PREDICT_TRUE(res < 128)) {
     *pp = p + 1;
     return res;
+  }
+  uint32_t b1 = static_cast<uint8_t>(p[1]);
+  if (ABSL_PREDICT_TRUE(b1 < 128)) {
+    *pp = p + 2;
+    return (res & 0x7F) | (b1 << 7);
   }
   auto x = ReadSizeFallback(p, res);
   *pp = x.first;
@@ -1506,16 +1526,16 @@ const char* EpsCopyInputStream::ReadRepeatedFixed(const char* ptr, Arena* arena,
   GOOGLE_PROTOBUF_ASSERT_RETURN(predicate, nullptr)
 
 template <typename T>
-const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
-                                                int size,
+const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
+                                                const char* ptr, int size,
                                                 RepeatedField<T>* out) {
-  ABSL_DCHECK_EQ(arena, out->GetArena());
+  ABSL_DCHECK_EQ(parent.GetArena(), out->GetArena());
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int nbytes = BytesAvailable(ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
-    out->ReserveWithArena(arena, old_entries + num);
+    out->ReserveWithArena(&parent, old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
@@ -1535,7 +1555,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const char* ptr, Arena* arena,
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
-  out->ReserveWithArena(arena, old_entries + num);
+  out->ReserveWithArena(&parent, old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
@@ -1578,7 +1598,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
         if (VerifyBoolsAssumingLargeArray(ptr, end)) {
           // Each byte is 0 or 1.
           const int count = end - ptr;
-          out.ReserveWithArena(arena, out.size() + count);
+          out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
           T* x = out.AddNAlreadyReserved(count);
           // For T being bool, conv must be equivalent to a conversion to bool
           // (zigzag encoding is not applicable), so it can be skipped.
@@ -1591,7 +1611,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
     if (count == end - ptr) {
       // We have exactly one element per byte, so avoid the costly varint
       // parsing.
-      out.ReserveWithArena(arena, out.size() + count);
+      out.ReserveWithArena(arena, internal::CheckedAdd(out.size(), count));
       T* x = out.AddNAlreadyReserved(count);
       for (; ptr != end; ++ptr) {
         *x = conv(static_cast<uint8_t>(*ptr));
@@ -1602,7 +1622,7 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
       // we need to account for that.
       if (end[-1] & 0x80) count++;
       int old_size = out.size();
-      out.ReserveWithArena(arena, old_size + count);
+      out.ReserveWithArena(arena, internal::CheckedAdd(old_size, count));
       T* x = out.AddNAlreadyReserved(count);
       ptr = ReadPackedVarintArray(ptr, end, [&](uint64_t varint) {
         *x = conv(varint);
@@ -1791,71 +1811,67 @@ template <typename T>
 // corresponding field
 
 // These are packed varints
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedInt32Parser(void* object,
-                                                            Arena* arena,
-                                                            const char* ptr,
-                                                            ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt32Parser(void* object,
-                                                             Arena* arena,
-                                                             const char* ptr,
-                                                             ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedInt64Parser(void* object,
-                                                            Arena* arena,
-                                                            const char* ptr,
-                                                            ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt64Parser(void* object,
-                                                             Arena* arena,
-                                                             const char* ptr,
-                                                             ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt32Parser(void* object,
-                                                             Arena* arena,
-                                                             const char* ptr,
-                                                             ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt64Parser(void* object,
-                                                             Arena* arena,
-                                                             const char* ptr,
-                                                             ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedEnumParser(void* object,
-                                                           Arena* arena,
-                                                           const char* ptr,
-                                                           ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedInt32Parser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt32Parser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedInt64Parser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedUInt64Parser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt32Parser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedSInt64Parser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedEnumParser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
 
 template <typename T, typename Validator>
-[[nodiscard]] const char* PackedEnumParserArg(void* object, const char* ptr,
+[[nodiscard]] const char* PackedEnumParserArg(MessageLite& parent, void* object,
+                                              const char* ptr,
                                               ParseContext* ctx,
                                               Validator validator,
-                                              InternalMetadata* metadata,
                                               int field_num) {
   return ctx->ReadPackedVarint(
-      ptr, [object, validator, metadata, field_num](int32_t val) {
+      ptr, [&parent, object, validator, field_num](int32_t val) {
         if (validator.IsValid(val)) {
           static_cast<RepeatedField<int>*>(object)->Add(val);
         } else {
-          WriteVarint(field_num, val, metadata->mutable_unknown_fields<T>());
+          WriteVarint(field_num, val,
+                      PrivateAccess::GetInternalMetadata(parent)
+                          .mutable_unknown_fields<T>());
         }
       });
 }
 
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedBoolParser(void* object,
-                                                           Arena* arena,
-                                                           const char* ptr,
-                                                           ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedBoolParser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedFixed32Parser(
-    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedSFixed32Parser(
-    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedFixed64Parser(
-    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
 [[nodiscard]] PROTOBUF_EXPORT const char* PackedSFixed64Parser(
-    void* object, Arena* arena, const char* ptr, ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedFloatParser(void* object,
-                                                            Arena* arena,
-                                                            const char* ptr,
-                                                            ParseContext* ctx);
-[[nodiscard]] PROTOBUF_EXPORT const char* PackedDoubleParser(void* object,
-                                                             Arena* arena,
-                                                             const char* ptr,
-                                                             ParseContext* ctx);
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedFloatParser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
+[[nodiscard]] PROTOBUF_EXPORT const char* PackedDoubleParser(
+    const MessageLite& parent, void* object, const char* ptr,
+    ParseContext* ctx);
 
 // This is the only recursive parser.
 [[nodiscard]] PROTOBUF_EXPORT const char* UnknownGroupLiteParse(

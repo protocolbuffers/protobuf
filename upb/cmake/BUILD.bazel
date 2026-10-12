@@ -26,11 +26,16 @@ genrule(
     srcs = [
         "//src/google/protobuf:descriptor_upb_c_proto",
         "//src/google/protobuf:descriptor_upb_minitable_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_c_proto",
+        "//src/google/protobuf:json_enumvalue_options_upb_minitable_proto",
     ],
     outs = [
         "generated-in/google/protobuf/descriptor.upb.h",
         "generated-in/google/protobuf/descriptor.upb_minitable.c",
         "generated-in/google/protobuf/descriptor.upb_minitable.h",
+        "generated-in/google/protobuf/json_enumvalue_options.upb.h",
+        "generated-in/google/protobuf/json_enumvalue_options.upb_minitable.c",
+        "generated-in/google/protobuf/json_enumvalue_options.upb_minitable.h",
     ],
     cmd = "cp $(SRCS) $(@D)/generated-in/google/protobuf",
 )

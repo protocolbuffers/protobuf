@@ -166,6 +166,35 @@ TEST_F(HpbMetadataTest, AnnotatesStringSemantics) {
                                   });
 }
 
+constexpr absl::string_view kExtensionTestFile = R"schema(
+    syntax = "proto2";
+    package foo;
+    message Message {
+      extensions 100 to 199;
+    }
+    extend Message {
+      optional string ext_field = 101;
+    }
+)schema";
+
+TEST_F(HpbMetadataTest, AnnotatesExtensionSemantics) {
+  FileDescriptorProto file;
+  GeneratedCodeInfo info;
+  std::string hpb_h;
+  atu::AddFile("test.proto", kExtensionTestFile);
+  EXPECT_TRUE(CaptureMetadata("test.proto", file, hpb_h, info));
+
+  // Check annotations for `ext_field`.
+  std::vector<int> field_path{
+      FileDescriptorProto::kExtensionFieldNumber,
+      0,
+  };
+  ExpectAnnotationsForPathContain(info, "test.proto", hpb_h, field_path,
+                                  {
+                                      {"ext_field", Annotation::NONE},
+                                  });
+}
+
 TEST_F(HpbMetadataTest, GeneratesMetadataPragma) {
   FileDescriptorProto file;
   GeneratedCodeInfo info;

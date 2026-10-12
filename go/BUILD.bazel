@@ -3,7 +3,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 filegroup(
     name = "go_features_proto_srcs",
     srcs = ["google/protobuf/go_features.proto"],
-    visibility = ["//:__subpackages__"],
+    visibility = ["//src/google/protobuf:__pkg__"],
 )
 
 proto_library(

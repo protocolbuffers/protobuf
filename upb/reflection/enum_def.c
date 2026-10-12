@@ -54,6 +54,28 @@ struct upb_EnumDef {
   bool is_sorted;  // Whether all of the values are defined in ascending order.
 };
 
+// We store both regular proto enum names and custom JSON enum names in the
+// same strtable (ntoi). This is safe because protoc enforces that custom JSON
+// enum names never conflict with default enum names across different enum
+// values (or are identical, in which case we leave the entry untagged). Because
+// upb_EnumValueDef pointers are arena-aligned to at least 4 bytes (bit 0 is
+// always 0 for untagged pointers), we set bit 0 to tag custom JSON-only names
+// so that regular name lookups can ignore them.
+static const uintptr_t kUpb_EnumDef_JsonOnlyTag = 1ULL;
+
+static upb_value _upb_EnumDef_TagJsonOnly(upb_value v) {
+  v.val |= kUpb_EnumDef_JsonOnlyTag;
+  return v;
+}
+
+static bool _upb_EnumDef_IsJsonOnly(upb_value v) {
+  return (v.val & kUpb_EnumDef_JsonOnlyTag) != 0;
+}
+
+static const upb_EnumValueDef* _upb_EnumDef_Untag(upb_value v) {
+  return (const upb_EnumValueDef*)(v.val & ~kUpb_EnumDef_JsonOnlyTag);
+}
+
 upb_EnumDef* _upb_EnumDef_At(const upb_EnumDef* e, int i) {
   return (upb_EnumDef*)&e[i];
 }
@@ -62,18 +84,43 @@ const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e) {
   return e->layout;
 }
 
-bool _upb_EnumDef_Insert(upb_EnumDef* e, upb_EnumValueDef* v, upb_Arena* a) {
+void _upb_EnumDef_Insert(upb_DefBuilder* ctx, upb_EnumDef* e,
+                         upb_EnumValueDef* v) {
   const char* name = upb_EnumValueDef_Name(v);
   const upb_value val = upb_value_constptr(v);
-  bool ok = upb_strtable_insert(&e->ntoi, name, strlen(name), val, a);
-  if (!ok) return false;
+  bool ok = upb_strtable_insert(&e->ntoi, name, strlen(name), val, ctx->arena);
+  if (!ok) _upb_DefBuilder_OomErr(ctx);
 
-  // Multiple enumerators can have the same number, first one wins.
+  // Aliased enum values can share the same custom JSON name, first one wins.
+  const char* json_name = upb_EnumValueDef_JsonName(v);
+  size_t json_len = strlen(json_name);
+  if (strcmp(json_name, name) != 0) {
+    upb_value existing_value;
+    if (upb_strtable_lookup2(&e->ntoi, json_name, json_len, &existing_value)) {
+      const upb_EnumValueDef* enumval = _upb_EnumDef_Untag(existing_value);
+      if (upb_EnumValueDef_Number(enumval) != upb_EnumValueDef_Number(v)) {
+        // If the custom JSON name exists, but points to a value with a
+        // different number, then this is a parse/conflict error.
+        _upb_DefBuilder_Errf(ctx,
+                             "duplicate custom json_name (%s) in enum (%s)",
+                             json_name, upb_EnumDef_FullName(e));
+      }
+    } else {
+      upb_value json_val = _upb_EnumDef_TagJsonOnly(val);
+      if (!upb_strtable_insert(&e->ntoi, json_name, json_len, json_val,
+                               ctx->arena)) {
+        _upb_DefBuilder_OomErr(ctx);
+      }
+    }
+  }
+
+  // Multiple enum values can have the same number, first one wins.
   const int number = upb_EnumValueDef_Number(v);
   if (!upb_inttable_lookup(&e->iton, number, NULL)) {
-    return upb_inttable_insert(&e->iton, number, val, a);
+    if (!upb_inttable_insert(&e->iton, number, val, ctx->arena)) {
+      _upb_DefBuilder_OomErr(ctx);
+    }
   }
-  return true;
 }
 
 const google_protobuf_EnumOptions* upb_EnumDef_Options(const upb_EnumDef* e) {
@@ -130,6 +177,16 @@ upb_StringView upb_EnumDef_ReservedName(const upb_EnumDef* e, int i) {
 
 int upb_EnumDef_ValueCount(const upb_EnumDef* e) { return e->value_count; }
 
+const upb_EnumValueDef* upb_EnumDef_FindByJsonNameWithSize(const upb_EnumDef* e,
+                                                           const char* name,
+                                                           size_t size) {
+  upb_value v;
+  if (!upb_strtable_lookup2(&e->ntoi, name, size, &v)) {
+    return NULL;
+  }
+  return _upb_EnumDef_Untag(v);
+}
+
 const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
                                                     const char* name) {
   return upb_EnumDef_FindValueByNameWithSize(e, name, strlen(name));
@@ -138,9 +195,13 @@ const upb_EnumValueDef* upb_EnumDef_FindValueByName(const upb_EnumDef* e,
 const upb_EnumValueDef* upb_EnumDef_FindValueByNameWithSize(
     const upb_EnumDef* e, const char* name, size_t size) {
   upb_value v;
-  return upb_strtable_lookup2(&e->ntoi, name, size, &v)
-             ? upb_value_getconstptr(v)
-             : NULL;
+  if (!upb_strtable_lookup2(&e->ntoi, name, size, &v)) {
+    return NULL;
+  }
+  if (_upb_EnumDef_IsJsonOnly(v)) {
+    return NULL;
+  }
+  return upb_value_getconstptr(v);
 }
 
 const upb_EnumValueDef* upb_EnumDef_FindValueByNumber(const upb_EnumDef* e,
@@ -281,7 +342,7 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
                          upb_EnumDef_FullName(e));
   }
 
-  bool ok = upb_strtable_init(&e->ntoi, n_value, ctx->arena);
+  bool ok = upb_strtable_init(&e->ntoi, n_value * 2, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   ok = upb_inttable_init(&e->iton, ctx->arena);

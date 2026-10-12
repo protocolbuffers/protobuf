@@ -43,6 +43,9 @@ class DebugInfoTest extends TestBase
 
     public function testVarDumpOutput()
     {
+        if (extension_loaded('xdebug')) {
+            $this->markTestSkipped('please disable the xdebug extension to run this test');
+        }
         $m = new DoubleValue();
         $m->setValue(1.5);
         var_dump($m);

@@ -240,7 +240,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                   (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                        {{&$extendee_table$, $extendee_index$}}, $preregister$)
                        ? ::_pbi::ExtensionSet::RegisterEnumExtension(
-                             ::_pbi::GetPrototypeForWeakDescriptor(
+                             ::_pbi::GetClassDataForWeakDescriptor(
                                  &$extendee_table$, $extendee_index$, true),
                              $number$, $field_type$, $repeated$, $packed$,
                              $enum_name$_internal_data_)
@@ -250,8 +250,9 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
         p->Emit({{"enum_name", ClassName(descriptor_->enum_type(), true)}},
                 R"cc(
                   ::_pbi::ExtensionSet::RegisterEnumExtension(
-                      &$extendee$::default_instance(), $number$, $field_type$,
-                      $repeated$, $packed$, $enum_name$_internal_data_),
+                      ::_pbi::MessageTraits<$extendee$>::class_data(), $number$,
+                      $field_type$, $repeated$, $packed$,
+                      $enum_name$_internal_data_),
                 )cc");
       }
 
@@ -282,10 +283,10 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
                         {&$extension_table$, $extension_index$}},
                        $preregister$)
                        ? ::_pbi::ExtensionSet::RegisterMessageExtension(
-                             ::_pbi::GetPrototypeForWeakDescriptor(
+                             ::_pbi::GetClassDataForWeakDescriptor(
                                  &$extendee_table$, $extendee_index$, true),
                              $number$, $field_type$, $repeated$, $packed$,
-                             ::_pbi::GetPrototypeForWeakDescriptor(
+                             ::_pbi::GetClassDataForWeakDescriptor(
                                  &$extension_table$, $extension_index$, true),
                              $verify_funcs$, ::_pbi::LazyAnnotation::$lazy$)
                        : (void)0),
@@ -294,8 +295,9 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
         p->Emit({{"verify_funcs", [&] { EmitVerifyFuncArgs(p, options_); }}},
                 R"cc(
                   ::_pbi::ExtensionSet::RegisterMessageExtension(
-                      &$extendee$::default_instance(), $number$, $field_type$,
-                      $repeated$, $packed$, &$message_type$::default_instance(),
+                      ::_pbi::MessageTraits<$extendee$>::class_data(), $number$,
+                      $field_type$, $repeated$, $packed$,
+                      ::_pbi::MessageTraits<$message_type$>::class_data(),
                       $verify_funcs$, ::_pbi::LazyAnnotation::$lazy$),
                 )cc");
       }
@@ -308,7 +310,7 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
           (::_pbi::ExtensionSet::ShouldRegisterAtThisTime(
                {{&$extendee_table$, $extendee_index$}}, $preregister$)
                ? ::_pbi::ExtensionSet::RegisterExtension(
-                     ::_pbi::GetPrototypeForWeakDescriptor(
+                     ::_pbi::GetClassDataForWeakDescriptor(
                          &$extendee_table$, $extendee_index$, true),
                      $number$, $field_type$, $repeated$, $packed$)
                : (void)0),
@@ -317,8 +319,8 @@ void ExtensionGenerator::GenerateRegistration(io::Printer* p,
         p->Emit(
             R"cc(
               ::_pbi::ExtensionSet::RegisterExtension(
-                  &$extendee$::default_instance(), $number$, $field_type$,
-                  $repeated$, $packed$, $is_utf8$),
+                  ::_pbi::MessageTraits<$extendee$>::class_data(), $number$,
+                  $field_type$, $repeated$, $packed$, $is_utf8$),
             )cc");
       }
 

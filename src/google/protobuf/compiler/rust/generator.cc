@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/rust/generator.h"
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,6 +16,7 @@
 #include "absl/algorithm/container.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/log/absl_check.h"
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
@@ -40,6 +42,7 @@
 #include "google/protobuf/io/printer.h"
 #include "upb/mem/arena.hpp"
 #include "upb/reflection/def.hpp"
+#include "upb_generator/file_layout.h"
 #include "upb_generator/plugin.h"
 
 namespace google {
@@ -112,6 +115,152 @@ void EmitPublicImports(const RustGeneratorContext& rust_generator_context,
   }
 }
 
+// Checks whether any two files in the crate export symbols that would collide
+// at the crate root when re-exported via `pub use <file_mod>::*;`.
+//
+// Return true if there is at least one collision in this crate.
+bool CrateHasSymbolCollision(const std::vector<const FileDescriptor*>& files) {
+  absl::flat_hash_set<std::string> type_names;
+  absl::flat_hash_set<std::string> value_names;
+
+  // Returns true if `symbol` was already contributed by an earlier symbol.
+  auto collides = [](absl::flat_hash_set<std::string>& names,
+                     const std::string& symbol) {
+    return !names.insert(symbol).second;
+  };
+
+  for (const FileDescriptor* file : files) {
+    for (int i = 0; i < file->message_type_count(); ++i) {
+      const Descriptor* msg = file->message_type(i);
+      std::string name = MessageRsName(*msg);
+      // A top-level message is emitted as 'Msg, MsgView, MsgMut'
+      if (collides(type_names, name) ||
+          collides(type_names, absl::StrCat(name, "View")) ||
+          collides(type_names, absl::StrCat(name, "Mut"))) {
+        return true;
+      }
+
+      // A submodule is emitted if the message has nested messages, enums,
+      // extensions, or oneofs.
+      if (msg->nested_type_count() > 0 || msg->enum_type_count() > 0 ||
+          msg->extension_count() > 0 || msg->real_oneof_decl_count() > 0) {
+        if (collides(type_names, RsSafeName(CamelToSnakeCase(msg->name())))) {
+          return true;
+        }
+      }
+    }
+
+    // Enums
+    for (int i = 0; i < file->enum_type_count(); ++i) {
+      if (collides(type_names, EnumRsName(*file->enum_type(i)))) {
+        return true;
+      }
+    }
+
+    // Extensions are emitted as `pub const <ext>`.
+    for (int i = 0; i < file->extension_count(); ++i) {
+      if (collides(value_names, ExtensionRsName(*file->extension(i)))) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+// Emits `def_init()` for the given file.
+void EmitDefInit(Context& ctx, const FileDescriptor& file,
+                 const upb::DefPool& pool) {
+  // DescriptorInfo lives in generated.rs, i.e. the crate root.
+  std::string crate_root;
+  for (size_t i = 0; i < ctx.GetModuleDepth(); ++i) {
+    absl::StrAppend(&crate_root, "super::");
+  }
+
+  upb::FileDefPtr upb_file = pool.FindFileByName(file.name());
+  ABSL_CHECK(upb_file);
+  const DescriptorPool& desc_pool = *file.pool();
+
+  ctx.Emit(
+      {{"def_init", DefInitName(file)},
+       {"file_name", absl::CHexEscape(file.name())},
+       {"descriptor_info",
+        absl::StrCat(crate_root, "__unstable::", DescriptorInfoName(file))},
+       {"deps",
+        [&] {
+          for (int i = 0; i < file.dependency_count(); ++i) {
+            const FileDescriptor& dep = *file.dependency(i);
+            ctx.Emit({{"mod", RustModule(ctx, dep)},
+                      {"dep_def_init", DefInitName(dep)}},
+                     "$mod$$dep_def_init$($pbi$::Private),\n");
+          }
+        }},
+       {"msgs",
+        [&] {
+          for (upb::MessageDefPtr m :
+               upb::generator::SortedMessages(upb_file)) {
+            const Descriptor* msg =
+                desc_pool.FindMessageTypeByName(m.full_name());
+            ABSL_CHECK(msg != nullptr) << m.full_name();
+            ctx.Emit({{"type", RsTypePath(ctx, *msg)}},
+                     "<$type$ as $pbr$::AssociatedMiniTable>::mini_table(),\n");
+          }
+        }},
+       {"enums",
+        [&] {
+          for (upb::EnumDefPtr e : upb::generator::SortedEnums(
+                   upb_file, upb::generator::kClosedEnums)) {
+            const EnumDescriptor* enum_ =
+                desc_pool.FindEnumTypeByName(e.full_name());
+            ABSL_CHECK(enum_ != nullptr) << e.full_name();
+            ctx.Emit(
+                {{"type", RsTypePath(ctx, *enum_)}},
+                "<$type$ as $pbr$::AssociatedMiniTableEnum>::mini_table(),\n");
+          }
+        }},
+       {"exts",
+        [&] {
+          for (upb::FieldDefPtr f :
+               upb::generator::SortedExtensions(upb_file)) {
+            const FieldDescriptor* ext =
+                desc_pool.FindExtensionByName(f.full_name());
+            ABSL_CHECK(ext != nullptr) << f.full_name();
+            ctx.Emit({{"mod", RustModuleForExtension(ctx, *ext)},
+                      {"ext", ExtensionRsName(*ext)}},
+                     "$mod$$ext$.__internal_mini_table($pbi$::Private),\n");
+          }
+        }}},
+      R"rs(
+        #[doc(hidden)]
+        pub fn $def_init$(_private: $pbi$::Private) -> $pbr$::DefPoolInit {
+          static INIT: $std$::sync::OnceLock<$pbr$::DefPoolInit> =
+              $std$::sync::OnceLock::new();
+          *INIT.get_or_init(|| {
+            // SAFETY: This is the file's own name and descriptor, the inits of
+            // the files it imports, and its own MiniTables in upb's layout order.
+            unsafe {
+              $pbr$::build_def_init(
+                c"$file_name$",
+                $descriptor_info$.descriptor,
+                &[
+                  $deps$
+                ],
+                &[
+                  $msgs$
+                ],
+                &[
+                  $enums$
+                ],
+                &[
+                  $exts$
+                ],
+              )
+            }
+          })
+        }
+      )rs");
+}
+
 void EmitEntryPointRsFile(GeneratorContext* generator_context,
                           Context& ctx_without_printer,
                           const std::vector<const FileDescriptor*>& files) {
@@ -125,28 +274,50 @@ void EmitEntryPointRsFile(GeneratorContext* generator_context,
   io::Printer printer(outfile.get());
   Context ctx = ctx_without_printer.WithPrinter(&printer);
 
-  // Declare the submodules for all of the the generated code and pub re-export
-  // all of them into a flat namespace.
+  // Declare the submodules for all of the generated code and, where safe,
+  // pub re-export all of them into a flat namespace.
   RelativePath primary_relpath(entry_point_rs_file_path);
+  const bool has_collision = CrateHasSymbolCollision(files);
+
   for (const FileDescriptor* file : files) {
     std::string non_primary_file_path = GetRsFile(ctx, *file);
     std::string relative_mod_path =
         primary_relpath.Relative(RelativePath(non_primary_file_path));
-    // Temporarily emit these re-exported mods as pub to avoid issues with
-    // Crubit. In a future change we should change these back to be private
-    // mods.
-    ctx.Emit({{"file_path", relative_mod_path},
-              {"mod_name", RustInternalModuleName(*file)}},
+    std::string mod_name = RustModuleName(*file);
+
+    // Expose each generated .proto file as a public module named after its
+    // (flattened) file path, providing a fully-qualified path to every type
+    // (e.g. `my_crate::google_network_api_proto::Config`). See
+    // RustModuleName for how the module name is derived from the path.
+    //
+    // The flat `pub use` re-export into the crate root is conditionally emitted
+    ctx.Emit({{"file_path", relative_mod_path}, {"mod_name", mod_name}},
              R"rs(
               #[path="$file_path$"]
-              #[allow(nonstandard_style, unused, unreachable_pub)]
-              #[doc(hidden)]
-              mod internal_do_not_use_$mod_name$;
-
               #[allow(nonstandard_style, unused)]
-              #[doc(inline)]
-              pub use internal_do_not_use_$mod_name$::*;
+              pub mod $mod_name$;
             )rs");
+
+    if (!has_collision) {
+      ctx.Emit({{"mod_name", mod_name}},
+               R"rs(
+                #[allow(nonstandard_style, unused)]
+                #[doc(inline)]
+                pub use $mod_name$::*;
+              )rs");
+    }
+  }
+
+  // When the crate has cross-file symbol collisions, the flat `pub use`
+  // re-exports above are omitted for every file. Emit a single breadcrumb (not
+  // one per file) explaining why, so consumers know to use fully-qualified
+  // paths.
+  if (has_collision) {
+    ctx.Emit(R"rs(
+            // Crate-root re-exports (`pub use <mod>::*`) are disabled because
+            // this crate contains symbol name collisions across file modules.
+            // Use fully-qualified paths, e.g. `<crate>::<module>::YourType`.
+          )rs");
   }
 
   auto v = ctx.printer().WithVars({
@@ -214,7 +385,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
                                               &*import_path_to_crate_name);
 
   std::vector<std::string> modules;
-  modules.emplace_back(RustInternalModuleName(*file));
+  modules.emplace_back(RustModuleName(*file));
   Context ctx_without_printer(&*opts, &rust_generator_context, nullptr,
                               std::move(modules));
 
@@ -294,6 +465,10 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 #include "google/protobuf/repeated_ptr_field.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
+          // Must be included last.
+#include "google/protobuf/port_def.inc"
+
+              PROTOBUF_IGNORE_DEPRECATION_START
         )cc");
   }
 
@@ -323,8 +498,7 @@ bool RustGenerator::Generate(const FileDescriptor* file,
 
   for (int i = 0; i < file->enum_type_count(); ++i) {
     auto& enum_ = *file->enum_type(i);
-    GenerateEnumDefinition(ctx, enum_,
-                           pool.FindEnumByName(enum_.full_name().data()));
+    GenerateEnumDefinition(ctx, enum_, pool.FindEnumByName(enum_.full_name()));
     ctx.printer().PrintRaw("\n");
 
     if (ctx.is_cpp()) {
@@ -352,6 +526,20 @@ bool RustGenerator::Generate(const FileDescriptor* file,
       auto thunks_ctx = ctx.WithPrinter(thunks_printer.get());
       GenerateThunksCc(thunks_ctx, extension);
     }
+  }
+
+  if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen) {
+    if (!FileOrImportsHaveExtensions(*file)) {
+      EmitDefInit(ctx, *file, pool);
+    }
+  }
+
+  if (ctx.is_cpp()) {
+    thunks_printer->Emit(R"cc(
+      PROTOBUF_IGNORE_DEPRECATION_STOP
+
+#include "google/protobuf/port_undef.inc"
+    )cc");
   }
 
   return true;

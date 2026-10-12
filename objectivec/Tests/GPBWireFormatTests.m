@@ -428,4 +428,81 @@ const int kUnknownTypeId2 = 1550056;
   }
 }
 
+static NSData* MessageSetDataWithLayers(NSUInteger layers) {
+  MSetMessage* innermost = [MSetMessage message];
+  MSetMessageExtension1* innermostExt = [MSetMessageExtension1 message];
+  innermostExt.i = 1;
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  [innermost setExtension:MSetMessageExtension1_extension_MessageSetExtension() value:innermostExt];
+#else
+  [innermost setExtension:[MSetMessageExtension1 messageSetExtension] value:innermostExt];
+#endif
+
+  MSetMessage* current = innermost;
+  for (NSUInteger i = 1; i < layers; ++i) {
+    MSetMessageExtension1* ext = [MSetMessageExtension1 message];
+    ext.recursive = current;
+    MSetMessage* parent = [MSetMessage message];
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+    [parent setExtension:MSetMessageExtension1_extension_MessageSetExtension() value:ext];
+#else
+    [parent setExtension:[MSetMessageExtension1 messageSetExtension] value:ext];
+#endif
+    current = parent;
+  }
+  return [current data];
+}
+
+- (void)testParseMessageSetRecursionDepthCarriedFromParent {
+  // Each MSetMessage carries a single MSetMessageExtension1, whose
+  // `recursive` field is again a MSetMessage. Chaining N of these produces
+  // a MessageSet-of-MessageSet payload nested N levels deep. The parser
+  // for each MessageSet item allocates a fresh CodedInputStream, so depth
+  // tracking has to be inherited across those streams for the documented
+  // kDefaultRecursionLimit (100) to actually apply.
+  //
+  // Each layer increases recursion depth by 2 (+1 for the child CodedInputStream
+  // in parseMessageSet:, +1 for the `recursive` message field in readMessage:).
+  // 50 layers reaches depth 100 (kDefaultRecursionLimit), which must parse successfully.
+  // 51 layers attempts to reach depth 101 (kDefaultRecursionLimit + 1), which must fail
+  // with GPBCodedInputStreamErrorRecursionDepthExceeded rather than silently parsing.
+  const NSUInteger kPassLayers = 50;
+  NSData* passData = MessageSetDataWithLayers(kPassLayers);
+  XCTAssertNotNil(passData);
+
+  NSError* error = nil;
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  MSetMessage* passParsed =
+      [MSetMessage parseFromData:passData
+               extensionRegistry:MSet_Objc_Protobuf_Tests_Mset_MSetUnittestMsetRoot_Registry()
+                           error:&error];
+#else
+  MSetMessage* passParsed = [MSetMessage parseFromData:passData
+                                     extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                                 error:&error];
+#endif
+  XCTAssertNotNil(passParsed);
+  XCTAssertNil(error);
+
+  const NSUInteger kFailLayers = 51;
+  NSData* failData = MessageSetDataWithLayers(kFailLayers);
+  XCTAssertNotNil(failData);
+
+  error = nil;
+#if defined(GPB_UNITTEST_USE_C_FUNCTION_FOR_EXTENSIONS)
+  MSetMessage* failParsed =
+      [MSetMessage parseFromData:failData
+               extensionRegistry:MSet_Objc_Protobuf_Tests_Mset_MSetUnittestMsetRoot_Registry()
+                           error:&error];
+#else
+  MSetMessage* failParsed = [MSetMessage parseFromData:failData
+                                     extensionRegistry:[MSetUnittestMsetRoot extensionRegistry]
+                                                 error:&error];
+#endif
+  XCTAssertNil(failParsed);
+  XCTAssertNotNil(error);
+  XCTAssertEqualObjects(error.domain, GPBCodedInputStreamErrorDomain);
+  XCTAssertEqual(error.code, GPBCodedInputStreamErrorRecursionDepthExceeded);
+}
+
 @end

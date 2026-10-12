@@ -1,6 +1,6 @@
 #region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
-// Copyright 2015 Google Inc.  All rights reserved.
+// Copyright 2015 Google LLC.  All rights reserved.
 //
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file or at
@@ -218,11 +218,53 @@ namespace Google.Protobuf {
           WriteString(writer, accessor.Descriptor.JsonName);
         }
         writer.Write(NameValueSeparator);
-        WriteValue(writer, value, indentationLevel);
+        if (field.IsMap) {
+          WriteDictionary(
+              writer, (IDictionary)value, field.MessageType.Fields[2],
+              indentationLevel);
+        } else if (field.IsRepeated) {
+          WriteList(writer, (IList)value, field, indentationLevel);
+        } else if (field.FieldType == FieldType.Enum) {
+          WriteEnumValue(writer, field, value);
+        } else {
+          WriteValue(writer, value, indentationLevel);
+        }
 
         first = false;
       }
       return !first;
+    }
+
+    private static string GetJsonName(EnumValueDescriptor enumVal) {
+      var jsonOptions = enumVal.GetOptions()?.GetExtension(
+          Pb.Enumvalue.JsonEnumvalueOptionsExtensions.Json);
+      if (jsonOptions != null && jsonOptions.HasString) {
+        return jsonOptions.String;
+      }
+      return enumVal.Name;
+    }
+
+    private void WriteEnumValue(
+        TextWriter writer, FieldDescriptor field, object value) {
+      if (value is NullValue || field.EnumType?.ClrType == typeof(NullValue)) {
+        WriteNull(writer);
+        return;
+      }
+      if (settings.FormatEnumsAsIntegers) {
+        WriteValue(writer, (int)value);
+      } else {
+        var enumVal = field.EnumType?.FindValueByNumber((int)value);
+        if (enumVal != null) {
+          WriteString(writer, GetJsonName(enumVal));
+        } else {
+          string name = OriginalEnumValueHelper.GetOriginalName(value);
+          if (name != null) {
+            WriteString(writer, name);
+          } else {
+            WriteValue(writer, (int)value);
+          }
+        }
+      }
     }
 
     private void MaybeWriteValueSeparator(TextWriter writer, bool first) {
@@ -576,14 +618,23 @@ namespace Google.Protobuf {
       }
     }
 
-    internal void WriteList(TextWriter writer, IList list, int indentationLevel = 0) {
+    internal void WriteList(TextWriter writer, IList list, int indentationLevel = 0) =>
+        WriteList(writer, list, null, indentationLevel);
+
+    internal void WriteList(
+        TextWriter writer, IList list, FieldDescriptor field,
+        int indentationLevel) {
       WriteBracketOpen(writer, ListBracketOpen);
 
       bool first = true;
       foreach (var value in list) {
         MaybeWriteValueSeparator(writer, first);
         MaybeWriteValueWhitespace(writer, indentationLevel + 1);
-        WriteValue(writer, value, indentationLevel + 1);
+        if (field != null && field.FieldType == FieldType.Enum) {
+          WriteEnumValue(writer, field, value);
+        } else {
+          WriteValue(writer, value, indentationLevel + 1);
+        }
         first = false;
       }
 
@@ -591,7 +642,12 @@ namespace Google.Protobuf {
     }
 
     internal void WriteDictionary(TextWriter writer, IDictionary dictionary,
-                                  int indentationLevel = 0) {
+                                  int indentationLevel = 0) =>
+        WriteDictionary(writer, dictionary, null, indentationLevel);
+
+    internal void WriteDictionary(
+        TextWriter writer, IDictionary dictionary,
+        FieldDescriptor valueField, int indentationLevel) {
       WriteBracketOpen(writer, ObjectOpenBracket);
 
       bool first = true;
@@ -616,7 +672,11 @@ namespace Google.Protobuf {
         MaybeWriteValueWhitespace(writer, indentationLevel + 1);
         WriteString(writer, keyText);
         writer.Write(NameValueSeparator);
-        WriteValue(writer, pair.Value, indentationLevel + 1);
+        if (valueField != null && valueField.FieldType == FieldType.Enum) {
+          WriteEnumValue(writer, valueField, pair.Value);
+        } else {
+          WriteValue(writer, pair.Value, indentationLevel + 1);
+        }
         first = false;
       }
 
@@ -912,12 +972,11 @@ namespace Google.Protobuf {
                         true)
             .ToDictionary(
                 f => f.GetValue(null),
-                f =>
-                    f.GetCustomAttributes<OriginalNameAttribute>()
-                        .FirstOrDefault()
-                        // If the attribute hasn't been applied, fall back to the name of the field.
-                        ?.Name ??
-                    f.Name);
+                f => f.GetCustomAttributes<OriginalNameAttribute>()
+                         .FirstOrDefault()
+                         // If the attribute hasn't been applied, fall back to the name of the field.
+                         ?.Name ??
+                     f.Name);
       }
     }
   }

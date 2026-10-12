@@ -1,5 +1,6 @@
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_list_flag")
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
+load("//bazel/private:compat_flag.bzl", "compat_label_flag", "compat_string_list_flag")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -8,9 +9,10 @@ package(
 
 exports_files(["BUILD"])
 
-label_flag(
+compat_label_flag(
     name = "proto_toolchain_for_cc",
     build_setting_default = "@bazel_tools//tools/proto:cc_toolchain",
+    fragment_field = "proto_toolchain_for_cc",
 )
 
 alias(
@@ -19,14 +21,16 @@ alias(
     deprecation = "Use //bazel/flags:protocopt instead.",
 )
 
-string_list_flag(
+compat_string_list_flag(
     name = "cc_proto_library_header_suffixes",
     build_setting_default = [".pb.h"],
+    fragment_field = "cc_proto_library_header_suffixes",
     scope = "universal",
 )
 
-string_list_flag(
+compat_string_list_flag(
     name = "cc_proto_library_source_suffixes",
     build_setting_default = [".pb.cc"],
+    fragment_field = "cc_proto_library_source_suffixes",
     scope = "universal",
 )

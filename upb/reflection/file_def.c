@@ -423,6 +423,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   file->option_deps = UPB_DEFBUILDER_ALLOCARRAY(ctx, const char*, n);
   for (size_t i = 0; i < n; i++) {
     file->option_deps[i] = _strviewdup(ctx, option_deps[i]);
+    if (strlen(file->option_deps[i]) != option_deps[i].size) {
+      _upb_DefBuilder_Errf(ctx, "option_dependency contained embedded NULL");
+    }
   }
 
   // Create enums.

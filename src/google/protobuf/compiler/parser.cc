@@ -739,6 +739,9 @@ bool Parser::ParseSyntaxIdentifier(const FileDescriptorProto* file,
 
 bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
                                     const LocationRecorder& root_location) {
+  // Maximum depth allowed by the DescriptorPool.
+  recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
+
   if (TryConsumeEndOfDeclaration(";", nullptr)) {
     // empty statement; ignore
     return true;
@@ -753,8 +756,6 @@ bool Parser::ParseTopLevelStatement(FileDescriptorProto* file,
     LocationRecorder location(root_location,
                               FileDescriptorProto::kMessageTypeFieldNumber,
                               file->message_type_size());
-    // Maximum depth allowed by the DescriptorPool.
-    recursion_depth_ = internal::cpp::MaxMessageDeclarationNestingDepth();
     return ParseMessageDefinition(file->add_message_type(), visibility,
                                   location, file);
   } else if (LookingAt("enum")) {
@@ -1145,6 +1146,17 @@ bool Parser::ParseMessageFieldNoLabel(
 
     field->set_type_name(group->name());
     if (LookingAt("{")) {
+      const auto undo_depth = absl::MakeCleanup([&] {
+        if (limit_group_nesting_) ++recursion_depth_;
+      });
+
+      if (limit_group_nesting_) {
+        if (--recursion_depth_ <= 0) {
+          RecordError("Reached maximum recursion limit for nested messages.");
+          return false;
+        }
+      }
+
       DO(ParseMessageBlock(group, group_location, containing_file));
     } else {
       RecordError("Missing group body.");

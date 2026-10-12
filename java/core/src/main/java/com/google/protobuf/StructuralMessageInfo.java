@@ -14,11 +14,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Information for the layout of a protobuf message class. This describes all of the fields
- * contained within a message.
+ * Information for the layout of a protobuf message class.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
+ * <p>This describes all of the fields contained within a message.
  */
 @ExperimentalApi
 @CheckReturnValue
+@ForLiteOnly
 final class StructuralMessageInfo implements MessageInfo {
   private final ProtoSyntax syntax;
   private final boolean messageSetWireFormat;

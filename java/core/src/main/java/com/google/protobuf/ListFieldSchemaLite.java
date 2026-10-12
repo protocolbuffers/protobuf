@@ -12,7 +12,11 @@ import java.util.List;
 
 /**
  * Utility class that aids in properly manipulating list fields for either the lite or full runtime.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
  */
+@ForLiteOnly
 final class ListFieldSchemaLite implements ListFieldSchema {
 
   @Override

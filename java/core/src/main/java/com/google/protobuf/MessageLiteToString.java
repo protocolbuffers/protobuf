@@ -19,7 +19,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-/** Helps generate {@link String} representations of {@link MessageLite} protos. */
+/**
+ * Helps generate {@link String} representations of {@link MessageLite} protos.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ */
+@ForLiteOnly
 final class MessageLiteToString {
 
   private static final String LIST_SUFFIX = "List";

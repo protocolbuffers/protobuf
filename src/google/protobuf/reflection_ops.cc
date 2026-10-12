@@ -102,7 +102,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
           HANDLE_TYPE(DOUBLE, Double);
           HANDLE_TYPE(BOOL, Bool);
           HANDLE_TYPE(STRING, String);
-          HANDLE_TYPE(ENUM, Enum);
+          HANDLE_TYPE(ENUM, EnumValue);
 #undef HANDLE_TYPE
 
           case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -135,7 +135,7 @@ void ReflectionOps::Merge(const Message& from, Message* to) {
         HANDLE_TYPE(DOUBLE, Double);
         HANDLE_TYPE(BOOL, Bool);
         HANDLE_TYPE(STRING, String);
-        HANDLE_TYPE(ENUM, Enum);
+        HANDLE_TYPE(ENUM, EnumValue);
 #undef HANDLE_TYPE
 
         case FieldDescriptor::CPPTYPE_MESSAGE:
@@ -240,7 +240,7 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
     // referenced.
     const Message* extendee =
         MessageFactory::generated_factory()->GetPrototype(descriptor);
-    if (!reflection->GetExtensionSet(message).IsInitialized(message.GetArena(),
+    if (!reflection->GetExtensionSet(message).IsInitialized(message,
                                                             extendee)) {
       return false;
     }

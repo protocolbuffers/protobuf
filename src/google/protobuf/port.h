@@ -320,6 +320,14 @@ constexpr bool HasAnySanitizer() {
 #endif
 }
 
+constexpr bool RunLargeMemoryTests() {
+  // For tests that need a lot of memory, we check that we have a 64-bit
+  // platform.
+  // And we also check we are not using sanitizers. They increase memory
+  // requirements and can be too slow for those tests.
+  return sizeof(void*) == 8 && !HasAnySanitizer();
+}
+
 constexpr bool PerformDebugChecks() {
   if (HasAnySanitizer()) return true;
 #if defined(NDEBUG)
@@ -488,7 +496,7 @@ struct PrefetchOpts {
 
 // NOTE: Enable prefetching with Clang only: various problems with other
 // compilers, especially old ones.
-#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#if ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 namespace detail {
 
@@ -599,7 +607,7 @@ inline void PrefetchToLocalCache(const void* ptr) {
   Prefetch<kOpts>(ptr);
 }
 
-#else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#else  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 template <const PrefetchOpts& kOpts, typename T, typename U>
 PROTOBUF_ALWAYS_INLINE void Prefetch(const void*) {}
@@ -607,9 +615,9 @@ PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {}
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {}
 inline void PrefetchToLocalCache(const void* ptr) {}
 
-#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#endif  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
-#if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
+#if ABSL_HAVE_BUILTIN(__builtin_unreachable) && defined(NDEBUG)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();
 }
@@ -650,7 +658,7 @@ inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
     // There is no official API for this, so we just probe.
     alignas(8) char buf[8];
     ASAN_POISON_MEMORY_REGION(buf, sizeof(buf));
-    bool res = __asan_address_is_poisoned(buf);
+    bool res = __asan_address_is_poisoned(buf) != 0;
     ASAN_UNPOISON_MEMORY_REGION(buf, sizeof(buf));
     return res;
   }();
@@ -911,11 +919,11 @@ using GlobalEmptyString = std::conditional_t<
 
 PROTOBUF_EXPORT extern GlobalEmptyString fixed_address_empty_string;
 
-PROTOBUF_EXPORT ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void
-HandleAddOverflow(absl::int128 a, absl::int128 b);
+[[noreturn]] PROTOBUF_EXPORT PROTOBUF_NOINLINE void HandleAddOverflow(
+    absl::int128 a, absl::int128 b);
 
 template <typename T, typename U>
-ABSL_ATTRIBUTE_NORETURN PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
+[[noreturn]] PROTOBUF_NOINLINE void HandleAddOverflow(T a, U b) {
   HandleAddOverflow(absl::int128(a), absl::int128(b));
 }
 
@@ -958,14 +966,7 @@ inline int CheckedAdd(ScalarType1 a, ScalarType2 b) {
 enum class BoundsCheckMode { kNoEnforcement, kReturnDefault, kAbort };
 
 PROTOBUF_EXPORT constexpr BoundsCheckMode GetBoundsCheckMode() {
-#if defined(PROTO2_OPENSOURCE) || \
-    defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
   return BoundsCheckMode::kAbort;
-#elif defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_RETURN_DEFAULT)
-  return BoundsCheckMode::kReturnDefault;
-#else
-  return BoundsCheckMode::kNoEnforcement;
-#endif
 }
 
 

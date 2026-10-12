@@ -103,6 +103,16 @@ _Deprecated.count = 100
 _internal_create_key = object()
 
 
+def _CheckCopyToProtoType(proto, proto_type_name):
+  """Ensures CopyToProto receives the matching descriptor proto type."""
+  # pylint: disable=g-import-not-at-top
+  from google.protobuf import descriptor_pb2
+
+  proto_type = getattr(descriptor_pb2, proto_type_name)
+  if getattr(proto, 'DESCRIPTOR', None) is not proto_type.DESCRIPTOR:
+    raise TypeError('Not a %s message' % proto_type.DESCRIPTOR.full_name)
+
+
 class DescriptorBase(metaclass=DescriptorMetaclass):
   """Descriptors base class.
 
@@ -520,6 +530,7 @@ class Descriptor(_NestedDescriptorBase):
       proto: An empty descriptor_pb2.DescriptorProto.
     """
     # This function is overridden to give a better doc comment.
+    _CheckCopyToProtoType(proto, 'DescriptorProto')
     super(Descriptor, self).CopyToProto(proto)
 
 
@@ -998,6 +1009,7 @@ class EnumDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.EnumDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
+    _CheckCopyToProtoType(proto, 'EnumDescriptorProto')
     super(EnumDescriptor, self).CopyToProto(proto)
 
 
@@ -1225,6 +1237,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
       proto (descriptor_pb2.ServiceDescriptorProto): An empty descriptor proto.
     """
     # This function is overridden to give a better doc comment.
+    _CheckCopyToProtoType(proto, 'ServiceDescriptorProto')
     super(ServiceDescriptor, self).CopyToProto(proto)
 
 
@@ -1319,6 +1332,7 @@ class MethodDescriptor(DescriptorBase):
       Error: If self couldn't be serialized, due to too few constructor
         arguments.
     """
+    _CheckCopyToProtoType(proto, 'MethodDescriptorProto')
     if self.containing_service is not None:
       from google.protobuf import descriptor_pb2
 
@@ -1435,6 +1449,7 @@ class FileDescriptor(DescriptorBase):
     Args:
       proto: An empty descriptor_pb2.FileDescriptorProto.
     """
+    _CheckCopyToProtoType(proto, 'FileDescriptorProto')
     proto.ParseFromString(self.serialized_pb)
 
   @property

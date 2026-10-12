@@ -583,3 +583,33 @@ about your project (name and website) so we can add an entry for you.
 
     *   Website: https://motif.io
     *   Extensions: 1309
+
+1.  Teleport
+
+    *   Website: https://goteleport.com
+    *   Extensions: 1310
+
+1.  proto2mcp
+
+    *   Website: https://github.com/protocgen/proto2mcp
+    *   Extensions: 1311-1313
+
+1.  ProtoWire
+
+    *   Website: https://protowire.org
+    *   Extensions: 1314-1363
+
+1.  Flyte
+
+    *   Website: https://github.com/flyteorg/flyte
+    *   Extensions: 1364-1373
+
+1.  durable
+
+    *   Website: https://github.com/dangra/durable
+    *   Extensions: 1374-1375
+
+1.  firestore-proto-codec
+
+    *   Website: https://github.com/willbinge/firestore-proto-codec
+    *   Extensions: 1376-1380

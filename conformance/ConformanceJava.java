@@ -7,7 +7,6 @@
 
 import com.google.protobuf.AbstractMessage;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.ExtensionRegistry;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Parser;
@@ -19,6 +18,8 @@ import com.google.protobuf_test_messages.edition2023.TestAllTypesEdition2023;
 import com.google.protobuf_test_messages.edition2023.TestMessagesEdition2023;
 import com.google.protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable;
 import com.google.protobuf_test_messages.edition_unstable.TestMessagesEditionUnstableProto;
+import com.google.protobuf_test_messages.editions.TestAllTypesEdition2026;
+import com.google.protobuf_test_messages.editions.TestMessagesEdition2026Proto;
 import com.google.protobuf_test_messages.editions.proto2.TestMessagesProto2Editions;
 import com.google.protobuf_test_messages.editions.proto3.TestMessagesProto3Editions;
 import com.google.protobuf_test_messages.proto2.TestMessagesProto2;
@@ -73,11 +74,8 @@ class ConformanceJava {
 
   private enum BinaryDecoderType {
     BYTE_STRING_DECODER,
-    BYTE_ARRAY_DECODER,
     ARRAY_BYTE_BUFFER_DECODER,
-    READONLY_ARRAY_BYTE_BUFFER_DECODER,
     DIRECT_BYTE_BUFFER_DECODER,
-    READONLY_DIRECT_BYTE_BUFFER_DECODER,
     INPUT_STREAM_DECODER;
   }
 
@@ -87,34 +85,20 @@ class ConformanceJava {
         throws InvalidProtocolBufferException {
       switch (type) {
         case BYTE_STRING_DECODER:
-        case BYTE_ARRAY_DECODER:
           return parser.parseFrom(bytes, extensions);
         case ARRAY_BYTE_BUFFER_DECODER:
           {
             ByteBuffer buffer = ByteBuffer.allocate(bytes.size());
             bytes.copyTo(buffer);
             buffer.flip();
-            return parser.parseFrom(CodedInputStream.newInstance(buffer), extensions);
-          }
-        case READONLY_ARRAY_BYTE_BUFFER_DECODER:
-          {
-            return parser.parseFrom(
-                CodedInputStream.newInstance(bytes.asReadOnlyByteBuffer()), extensions);
+            return parser.parseFrom(buffer, extensions);
           }
         case DIRECT_BYTE_BUFFER_DECODER:
           {
             ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
             bytes.copyTo(buffer);
             buffer.flip();
-            return parser.parseFrom(CodedInputStream.newInstance(buffer), extensions);
-          }
-        case READONLY_DIRECT_BYTE_BUFFER_DECODER:
-          {
-            ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.size());
-            bytes.copyTo(buffer);
-            buffer.flip();
-            return parser.parseFrom(
-                CodedInputStream.newInstance(buffer.asReadOnlyBuffer()), extensions);
+            return parser.parseFrom(buffer, extensions);
           }
         case INPUT_STREAM_DECODER:
           {
@@ -219,6 +203,8 @@ class ConformanceJava {
         return TestAllTypesProto2.class;
       case "protobuf_test_messages.editions.TestAllTypesEdition2023":
         return TestAllTypesEdition2023.class;
+      case "protobuf_test_messages.editions.TestAllTypesEdition2026":
+        return TestAllTypesEdition2026.class;
       case "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable":
         return TestAllTypesEditionUnstable.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":
@@ -239,6 +225,8 @@ class ConformanceJava {
         return TestMessagesProto2.class;
       case "protobuf_test_messages.editions.TestAllTypesEdition2023":
         return TestMessagesEdition2023.class;
+      case "protobuf_test_messages.editions.TestAllTypesEdition2026":
+        return TestMessagesEdition2026Proto.class;
       case "protobuf_test_messages.edition_unstable.TestAllTypesEditionUnstable":
         return TestMessagesEditionUnstableProto.class;
       case "protobuf_test_messages.editions.proto3.TestAllTypesProto3":

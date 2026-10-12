@@ -31,6 +31,11 @@ import java.util.List;
  * reading encoded protocol messages, you should use the former methods, but if you are reading some
  * other format of your own design, use the latter.
  *
+ * <p>Critical note on Exceptions: If any method throws an exception (such as an {@link
+ * java.io.IOException} or {@link InvalidProtocolBufferException}), it can desynchronize the
+ * instance and leave its internal state unspecified. The instance should not be used further and
+ * must be discarded.
+ *
  * @author kenton@google.com Kenton Varda
  */
 public abstract class CodedInputStream {
@@ -115,30 +120,10 @@ public abstract class CodedInputStream {
     NEW_TAGS_LENGTHS_UNSIGNED_ONLY
   }
 
-  @SuppressWarnings("NonFinalStaticField")
-  private static VarintExperiment varintExperiment = VarintExperiment.NEW_ALL_CASES;
-
-  /** Method to enable new varint experiment. Only for Search to use for evaluation. */
-  static void setVarintExperiment(VarintExperiment experiment) {
-    varintExperiment = experiment;
-  }
-
   /** Create a new CodedInputStream wrapping the given byte array slice. */
   static CodedInputStream newInstance(
       final byte[] buf, final int off, final int len, final boolean bufferIsImmutable) {
-    final ArrayDecoder result;
-    switch (varintExperiment) {
-      case NEW_ALL_CASES:
-        result = new ArrayDecoderNewVarintAllCases(buf, off, len, bufferIsImmutable);
-        break;
-      case NEW_TAGS_LENGTHS_UNSIGNED_ONLY:
-        result = new ArrayDecoderNewVarintTagsLengthsOnly(buf, off, len, bufferIsImmutable);
-        break;
-      case CONTROL:
-      default:
-        result = new ArrayDecoderOldVarint(buf, off, len, bufferIsImmutable);
-        break;
-    }
+    final ArrayDecoder result = new ArrayDecoder(buf, off, len, bufferIsImmutable);
 
     try {
       // Some uses of CodedInputStream can be more efficient if they know
@@ -538,6 +523,17 @@ public abstract class CodedInputStream {
   }
 
   /**
+   * Returns the remaining recursion depth for the current input stream, taking into account the
+   * current message and group depths.
+   *
+   * <p>This method is intended for internal use only, and is currently only used for message set
+   * parsing.
+   */
+  final int getRemainingRecursionDepth() {
+    return recursionLimit - messageDepth - groupDepth;
+  }
+
+  /**
    * Only valid for {@link InputStream}-backed streams.
    *
    * <p>Set the maximum message size. In order to prevent malicious messages from exhausting memory
@@ -613,12 +609,29 @@ public abstract class CodedInputStream {
   @CanIgnoreReturnValue
   public abstract int pushLimit(int byteLimit) throws InvalidProtocolBufferException;
 
+  public final int pushLimitBeforeMessage() throws IOException {
+    final int length = readRawVarint32();
+    checkRecursionLimit();
+    final int oldLimit = pushLimit(length);
+    ++messageDepth;
+    return oldLimit;
+  }
+
   /**
    * Discards the current limit, returning to the previous limit.
    *
    * @param oldLimit The old limit, as returned by {@code pushLimit}.
    */
   public abstract void popLimit(final int oldLimit);
+
+  public final void popLimitAfterMessage(int oldLimit) throws IOException {
+    checkLastTagWas(0);
+    --messageDepth;
+    if (getBytesUntilLimit() != 0) {
+      throw InvalidProtocolBufferException.truncatedMessage();
+    }
+    popLimit(oldLimit);
+  }
 
   /**
    * Returns the number of bytes to be read before the current limit. If no limit is set, returns
@@ -627,11 +640,11 @@ public abstract class CodedInputStream {
   public abstract int getBytesUntilLimit();
 
   /**
-   * Returns true if the stream has reached the end of the input. This is the case if either the end
-   * of the underlying input source has been reached or if the stream has reached a limit created
-   * using {@link #pushLimit(int)}. This function may get blocked when using StreamDecoder as it
-   * invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which will try to read
-   * bytes from input.
+   * Returns true if the stream has reached the end of the input. This is the case if the current
+   * position is at the exact end of the underlying input source or at a limit created using {@link
+   * #pushLimit(int)}, without passing over the limit. This function may get blocked when using
+   * StreamDecoder as it invokes {@link StreamDecoder#tryRefillBuffer(int)} in this function which
+   * will try to read bytes from input.
    */
   public abstract boolean isAtEnd() throws IOException;
 
@@ -653,6 +666,35 @@ public abstract class CodedInputStream {
    * @return The exact number if possible, otherwise a safe estimate.
    */
   public abstract int countPackedVarints(int length);
+
+  /*
+   * Packed repeated field readers.
+   *
+   * Each reads the varint length prefix and then the payload of a packed repeated field, and
+   * returns a new mutable list holding the decoded values, which the caller owns. For use by
+   * generated code only.
+   */
+
+  /**
+   * Reads a packed repeated {@code int32} or {@code uint32} payload. For use by generated code
+   * only.
+   */
+  abstract Internal.IntList readPackedInt32() throws IOException;
+
+  /**
+   * Reads a packed repeated {@code int64} or {@code uint64} payload. For use by generated code
+   * only.
+   */
+  abstract Internal.LongList readPackedInt64() throws IOException;
+
+  /** Reads a packed repeated {@code bool} payload. For use by generated code only. */
+  abstract Internal.BooleanList readPackedBool() throws IOException;
+
+  /** Reads a packed repeated {@code float} payload. For use by generated code only. */
+  abstract Internal.FloatList readPackedFloat() throws IOException;
+
+  /** Reads a packed repeated {@code double} payload. For use by generated code only. */
+  abstract Internal.DoubleList readPackedDouble() throws IOException;
 
   /**
    * Read one byte from the input.
@@ -770,59 +812,8 @@ public abstract class CodedInputStream {
     return readRawVarint32(firstByte, input);
   }
 
-  private static final class ArrayDecoderNewVarintAllCases extends ArrayDecoder {
-    private ArrayDecoderNewVarintAllCases(
-        final byte[] buffer, final int offset, final int len, boolean immutable) {
-      super(buffer, offset, len, immutable);
-    }
-
-    @Override
-    protected int readRawVarint32Expected5BytesMax() throws IOException {
-      return super.readRawVarint32New();
-    }
-
-    @Override
-    protected int readRawVarint32Expected10BytesMax() throws IOException {
-      return super.readRawVarint32New();
-    }
-  }
-
-  private static final class ArrayDecoderNewVarintTagsLengthsOnly extends ArrayDecoder {
-    private ArrayDecoderNewVarintTagsLengthsOnly(
-        final byte[] buffer, final int offset, final int len, boolean immutable) {
-      super(buffer, offset, len, immutable);
-    }
-
-    @Override
-    protected int readRawVarint32Expected5BytesMax() throws IOException {
-      return super.readRawVarint32New();
-    }
-
-    @Override
-    protected int readRawVarint32Expected10BytesMax() throws IOException {
-      return super.readRawVarint32Old();
-    }
-  }
-
-  private static final class ArrayDecoderOldVarint extends ArrayDecoder {
-    private ArrayDecoderOldVarint(
-        final byte[] buffer, final int offset, final int len, boolean immutable) {
-      super(buffer, offset, len, immutable);
-    }
-
-    @Override
-    protected int readRawVarint32Expected5BytesMax() throws IOException {
-      return super.readRawVarint32Old();
-    }
-
-    @Override
-    protected int readRawVarint32Expected10BytesMax() throws IOException {
-      return super.readRawVarint32Old();
-    }
-  }
-
   /** A {@link CodedInputStream} implementation that uses a backing array as the input. */
-  private abstract static class ArrayDecoder extends CodedInputStream {
+  private static final class ArrayDecoder extends CodedInputStream {
     private final byte[] buffer;
 
     /**
@@ -871,7 +862,7 @@ public abstract class CodedInputStream {
         return 0;
       }
 
-      lastTag = readRawVarint32Expected5BytesMax();
+      lastTag = readRawVarint32();
       if (WireFormat.getTagFieldNumber(lastTag) == 0) {
         // If we actually read zero (or any tag number corresponding to field
         // number zero), that's not a valid tag.
@@ -902,7 +893,7 @@ public abstract class CodedInputStream {
           skipRawBytes(FIXED64_SIZE);
           return true;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          skipRawBytes(readRawVarint32Expected5BytesMax());
+          skipRawBytes(readRawVarint32());
           return true;
         case WireFormat.WIRETYPE_START_GROUP:
           skipMessage();
@@ -996,7 +987,7 @@ public abstract class CodedInputStream {
 
     @Override
     public int readInt32() throws IOException {
-      return readRawVarint32Expected10BytesMax();
+      return readRawVarint32();
     }
 
     @Override
@@ -1016,7 +1007,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readString() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -1036,7 +1027,7 @@ public abstract class CodedInputStream {
 
     @Override
     public String readStringRequireUtf8() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         String result = Utf8.decodeUtf8(buffer, pos, size);
         pos += size;
@@ -1104,25 +1095,8 @@ public abstract class CodedInputStream {
       return result;
     }
 
-    private int pushLimitBeforeMessage() throws IOException {
-      final int length = readRawVarint32Expected5BytesMax();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
-      return oldLimit;
-    }
-
-    private void popLimitAfterMessage(int oldLimit) throws IOException {
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
-    }
-
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path:  We already have the bytes in a contiguous buffer, so
         //   just copy directly from it.
@@ -1147,13 +1121,13 @@ public abstract class CodedInputStream {
 
     @Override
     public byte[] readByteArray() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       return readRawBytes(size);
     }
 
     @Override
     public ByteBuffer readByteBuffer() throws IOException {
-      final int size = readRawVarint32Expected5BytesMax();
+      final int size = readRawVarint32();
       if (size > 0 && size <= (limit - pos)) {
         // Fast path: We already have the bytes in a contiguous buffer.
         // When aliasing is enabled, we can return a ByteBuffer pointing directly
@@ -1180,12 +1154,12 @@ public abstract class CodedInputStream {
 
     @Override
     public int readUInt32() throws IOException {
-      return readRawVarint32Expected5BytesMax();
+      return readRawVarint32();
     }
 
     @Override
     public int readEnum() throws IOException {
-      return readRawVarint32Expected10BytesMax();
+      return readRawVarint32();
     }
 
     @Override
@@ -1200,7 +1174,7 @@ public abstract class CodedInputStream {
 
     @Override
     public int readSInt32() throws IOException {
-      return decodeZigZag32(readRawVarint32Expected5BytesMax());
+      return decodeZigZag32(readRawVarint32());
     }
 
     @Override
@@ -1210,74 +1184,10 @@ public abstract class CodedInputStream {
 
     // =================================================================
 
-    /**
-     * Temporary shim to enable new varint experiment.
-     *
-     * <p>Same as readRawVarint32 but for callers where the varint being longer than 5 bytes should
-     * never happen in practice (eg tags and lengths).
-     */
-    @SuppressWarnings("EffectivelyPrivate") // Overridden by sibling classes above.
-    protected abstract int readRawVarint32Expected5BytesMax() throws IOException;
-
-    /**
-     * Temporary shim to enable new varint experiment.
-     *
-     * <p>Same as readRawVarint32 but for callers where a 10-byte varint is 'normal' (eg int32
-     * fields where negative values will be 10 bytes).
-     */
-    @SuppressWarnings("EffectivelyPrivate") // Overridden by sibling classes above.
-    protected abstract int readRawVarint32Expected10BytesMax() throws IOException;
-
     @Override
     public int readRawVarint32() throws IOException {
-      return readRawVarint32Expected10BytesMax();
-    }
-
-    protected int readRawVarint32Old() throws IOException {
-      // See implementation notes for readRawVarint64
-      fastpath:
-      {
-        int tempPos = pos;
-
-        if (limit == tempPos) {
-          break fastpath;
-        }
-
-        final byte[] buffer = this.buffer;
-        int x;
-        if ((x = buffer[tempPos++]) >= 0) {
-          pos = tempPos;
-          return x;
-        } else if (limit - tempPos < 9) {
-          break fastpath;
-        } else if ((x ^= (buffer[tempPos++] << 7)) < 0) {
-          x ^= (~0 << 7);
-        } else if ((x ^= (buffer[tempPos++] << 14)) >= 0) {
-          x ^= (~0 << 7) ^ (~0 << 14);
-        } else if ((x ^= (buffer[tempPos++] << 21)) < 0) {
-          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
-        } else {
-          int y = buffer[tempPos++];
-          x ^= y << 28;
-          x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
-          if (y < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0
-              && buffer[tempPos++] < 0) {
-            break fastpath; // Will throw malformedVarint()
-          }
-        }
-        pos = tempPos;
-        return x;
-      }
-      return (int) readRawVarint64SlowPath();
-    }
-
-    protected int readRawVarint32New() throws IOException {
       try {
-        int x = readRawVarint32NewFast();
+        int x = readRawVarint32Fast();
         if (pos > limit) {
           throw InvalidProtocolBufferException.truncatedMessage();
         }
@@ -1298,7 +1208,7 @@ public abstract class CodedInputStream {
      * Fast case: the limit is not checked here, this may read in the buffer past the limit, and may
      * throw an IndexOutOfBoundsException if the varint runs off the end of the buffer.
      */
-    private int readRawVarint32NewFast() throws IOException {
+    private int readRawVarint32Fast() throws IOException {
       int tempPos = pos;
 
       final byte[] buffer = this.buffer;
@@ -1413,7 +1323,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-        } else if ((x ^= ((long) buffer[tempPos++] << 63)) >= 0L) {
+        } else if ((x ^= ((long) buffer[tempPos] << 63)) >= 0L && buffer[tempPos++] >= 0) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)
@@ -1562,19 +1472,308 @@ public abstract class CodedInputStream {
 
     @Override
     public int countPackedVarints(int length) {
-      if (length < 0 || length > limit - pos) {
+      if (length <= 0 || length > limit - pos) {
         return 0;
       }
-      int count = 0;
+      if (Android.isOnAndroidDevice()) {
+        return countPackedVarintsSimple(length);
+      } else {
+        return countPackedVarintsFast(length);
+      }
+    }
 
-      // Counts of terminating bytes to determine how many varints are in the packed field.
+    private int countPackedVarintsSimple(int length) {
       final int end = pos + length;
+      int count = length;
       for (int i = pos; i < end; i++) {
-        if (buffer[i] >= 0) {
-          count++;
+        if (buffer[i] < 0) {
+          --count;
         }
       }
       return count;
+    }
+
+    private int countPackedVarintsFast(int length) {
+      final int end = pos + length;
+      int i = pos;
+      int numVarints = length;
+      final int limit8 = end - 8;
+      if (limit8 >= i) {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(buffer);
+        while (i <= limit8) {
+          long word = byteBuffer.getLong(i);
+          numVarints -= Long.bitCount(word & 0x8080808080808080L);
+          i += 8;
+        }
+      }
+      while (i < end) {
+        if (buffer[i] < 0) {
+          numVarints--;
+        }
+        i++;
+      }
+      return numVarints;
+    }
+
+    /**
+     * Validates the length of a packed varint payload and returns the number of varints in it. The
+     * count is 0 only for an empty payload.
+     */
+    private int checkPackedVarintPayload(int length) throws InvalidProtocolBufferException {
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      if (length > limit - pos) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      // countPackedVarints is the number of terminating bytes in the payload. The decoders below
+      // decode exactly that many varints, each stopping at its first terminating byte (or throwing
+      // after 10 bytes), so they never read past the end of the payload; a trailing unterminated
+      // varint leaves the position short of the end and is rejected.
+      final int count = countPackedVarints(length);
+      if (count == 0 && length != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      return count;
+    }
+
+    /** Validates the length of a packed fixed-width payload of {@code width}-byte elements. */
+    private void checkPackedFixedPayload(int length, int width)
+        throws InvalidProtocolBufferException {
+      if (length < 0) {
+        throw InvalidProtocolBufferException.negativeSize();
+      }
+      if (length > limit - pos || length % width != 0) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+    }
+
+    /** Decodes a packed payload of varints truncated to 32 bits (int32 and uint32). */
+    private int[] decodePackedVarint32(int length) throws IOException {
+      final int count = checkPackedVarintPayload(length);
+      final int[] values = new int[count];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      final int end = p + length;
+      if (count == length) {
+        // Every varint is 1 byte long, so no need to varint decode.
+        for (int i = 0; i < values.length; ++i) {
+          values[i] = buffer[p + i];
+        }
+        p = end;
+      } else {
+        // Same decoding as readRawVarint32Fast, on a local position.
+        for (int i = 0; i < values.length; ++i) {
+          int x = buffer[p++];
+          if (x >= 0) {
+          } else if ((x ^= (buffer[p++] << 7)) < 0) {
+            x ^= (~0 << 7);
+          } else if ((x ^= (buffer[p++] << 14)) >= 0) {
+            x ^= (~0 << 7) ^ (~0 << 14);
+          } else if ((x ^= (buffer[p++] << 21)) < 0) {
+            x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21);
+          } else {
+            int y = buffer[p++];
+            x ^= y << 28;
+            x ^= (~0 << 7) ^ (~0 << 14) ^ (~0 << 21) ^ (~0 << 28);
+            if (y < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0
+                && buffer[p++] < 0) {
+              throw InvalidProtocolBufferException.malformedVarint();
+            }
+          }
+          values[i] = x;
+        }
+      }
+      if (p != end) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      pos = p;
+      return values;
+    }
+
+    /** Decodes a packed payload of 64-bit varints (int64 and uint64). */
+    private long[] decodePackedVarint64(int length) throws IOException {
+      final int count = checkPackedVarintPayload(length);
+      final long[] values = new long[count];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      final int end = p + length;
+      if (count == length) {
+        // Every varint is 1 byte long, so no need to varint decode.
+        for (int i = 0; i < values.length; ++i) {
+          values[i] = buffer[p + i];
+        }
+        p = end;
+      } else {
+        // Same decoding as readRawVarint64, on a local position.
+        for (int i = 0; i < values.length; ++i) {
+          long x;
+          int y;
+          if ((y = buffer[p++]) >= 0) {
+            x = y;
+          } else if ((y ^= (buffer[p++] << 7)) < 0) {
+            x = y ^ (~0 << 7);
+          } else if ((y ^= (buffer[p++] << 14)) >= 0) {
+            x = y ^ ((~0 << 7) ^ (~0 << 14));
+          } else if ((y ^= (buffer[p++] << 21)) < 0) {
+            x = y ^ ((~0 << 7) ^ (~0 << 14) ^ (~0 << 21));
+          } else if ((x = y ^ ((long) buffer[p++] << 28)) >= 0L) {
+            x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28);
+          } else if ((x ^= ((long) buffer[p++] << 35)) < 0L) {
+            x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35);
+          } else if ((x ^= ((long) buffer[p++] << 42)) >= 0L) {
+            x ^= (~0L << 7) ^ (~0L << 14) ^ (~0L << 21) ^ (~0L << 28) ^ (~0L << 35) ^ (~0L << 42);
+          } else if ((x ^= ((long) buffer[p++] << 49)) < 0L) {
+            x ^=
+                (~0L << 7)
+                    ^ (~0L << 14)
+                    ^ (~0L << 21)
+                    ^ (~0L << 28)
+                    ^ (~0L << 35)
+                    ^ (~0L << 42)
+                    ^ (~0L << 49);
+          } else if ((x ^= ((long) buffer[p++] << 56)) >= 0L) {
+            x ^=
+                (~0L << 7)
+                    ^ (~0L << 14)
+                    ^ (~0L << 21)
+                    ^ (~0L << 28)
+                    ^ (~0L << 35)
+                    ^ (~0L << 42)
+                    ^ (~0L << 49)
+                    ^ (~0L << 56);
+          } else {
+            // Tenth byte: must terminate, and only its low bit is kept (as in the slow path).
+            final int b = buffer[p++];
+            if (b < 0) {
+              throw InvalidProtocolBufferException.malformedVarint();
+            }
+            x ^= (long) b << 63;
+            x ^=
+                (~0L << 7)
+                    ^ (~0L << 14)
+                    ^ (~0L << 21)
+                    ^ (~0L << 28)
+                    ^ (~0L << 35)
+                    ^ (~0L << 42)
+                    ^ (~0L << 49)
+                    ^ (~0L << 56)
+                    ^ (~0L << 63);
+          }
+          values[i] = x;
+        }
+      }
+      if (p != end) {
+        throw InvalidProtocolBufferException.truncatedMessage();
+      }
+      pos = p;
+      return values;
+    }
+
+    @Override
+    Internal.IntList readPackedInt32() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return IntArrayList.emptyList();
+      }
+      final int[] values = decodePackedVarint32(length);
+      return IntArrayList.unsafeWrap(values);
+    }
+
+    @Override
+    Internal.LongList readPackedInt64() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return LongArrayList.emptyList();
+      }
+      final long[] values = decodePackedVarint64(length);
+      return LongArrayList.unsafeWrap(values);
+    }
+
+    @Override
+    Internal.BooleanList readPackedBool() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return BooleanArrayList.emptyList();
+      }
+      final int count = checkPackedVarintPayload(length);
+      if (count != length) {
+        // Some bool is encoded in more than one byte, which writers essentially never produce.
+        return readPackedBoolSlow(length);
+      }
+      final boolean[] values = new boolean[count];
+      final byte[] buffer = this.buffer;
+      final int p = pos;
+      for (int i = 0; i < values.length; ++i) {
+        values[i] = buffer[p + i] != 0;
+      }
+      pos = p + length;
+      return BooleanArrayList.unsafeWrap(values);
+    }
+
+    /** A more 'naive' implementation which handles multi-byte varint bools. */
+    private Internal.BooleanList readPackedBoolSlow(int length) throws IOException {
+      final BooleanArrayList list = new BooleanArrayList();
+      final int oldLimit = pushLimit(length);
+      while (getBytesUntilLimit() > 0) {
+        list.addBoolean(readBool());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.FloatList readPackedFloat() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return FloatArrayList.emptyList();
+      }
+      checkPackedFixedPayload(length, FIXED32_SIZE);
+      final float[] values = new float[length / FIXED32_SIZE];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      for (int i = 0; i < values.length; ++i) {
+        values[i] =
+            Float.intBitsToFloat(
+                (buffer[p] & 0xff)
+                    | ((buffer[p + 1] & 0xff) << 8)
+                    | ((buffer[p + 2] & 0xff) << 16)
+                    | ((buffer[p + 3] & 0xff) << 24));
+        p += FIXED32_SIZE;
+      }
+      pos = p;
+      return FloatArrayList.unsafeWrap(values);
+    }
+
+    @Override
+    Internal.DoubleList readPackedDouble() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return DoubleArrayList.emptyList();
+      }
+      checkPackedFixedPayload(length, FIXED64_SIZE);
+      final double[] values = new double[length / FIXED64_SIZE];
+      final byte[] buffer = this.buffer;
+      int p = pos;
+      for (int i = 0; i < values.length; ++i) {
+        values[i] =
+            Double.longBitsToDouble(
+                (buffer[p] & 0xffL)
+                    | ((buffer[p + 1] & 0xffL) << 8)
+                    | ((buffer[p + 2] & 0xffL) << 16)
+                    | ((buffer[p + 3] & 0xffL) << 24)
+                    | ((buffer[p + 4] & 0xffL) << 32)
+                    | ((buffer[p + 5] & 0xffL) << 40)
+                    | ((buffer[p + 6] & 0xffL) << 48)
+                    | ((buffer[p + 7] & 0xffL) << 56));
+        p += FIXED64_SIZE;
+      }
+      pos = p;
+      return DoubleArrayList.unsafeWrap(values);
     }
 
     @Override
@@ -1648,10 +1847,9 @@ public abstract class CodedInputStream {
     private int lastTag;
 
     /**
-     * The total number of bytes read before the current buffer. The total bytes read up to the
-     * current position can be computed as {@code totalBytesRetired + pos}. This value may be
-     * negative if reading started in the middle of the current buffer (e.g. if the constructor that
-     * takes a byte array and an offset was used).
+     * The total number of bytes read before the current buffer since the last call to {@link
+     * #resetSizeCounter()}. The total bytes read up to the current position can be computed as
+     * {@code totalBytesRetired + pos}. This value is always non-negative.
      */
     private int totalBytesRetired;
 
@@ -1965,23 +2163,6 @@ public abstract class CodedInputStream {
       return result;
     }
 
-    private int pushLimitBeforeMessage() throws IOException {
-      final int length = readRawVarint32();
-      checkRecursionLimit();
-      final int oldLimit = pushLimit(length);
-      ++messageDepth;
-      return oldLimit;
-    }
-
-    private void popLimitAfterMessage(int oldLimit) throws IOException {
-      checkLastTagWas(0);
-      --messageDepth;
-      if (getBytesUntilLimit() != 0) {
-        throw InvalidProtocolBufferException.truncatedMessage();
-      }
-      popLimit(oldLimit);
-    }
-
     private ByteString readBytesInternal(boolean requireUtf8) throws IOException {
       final int size = readRawVarint32();
       if (size <= (bufferSize - pos) && size > 0) {
@@ -2206,7 +2387,7 @@ public abstract class CodedInputStream {
                   ^ (~0L << 42)
                   ^ (~0L << 49)
                   ^ (~0L << 56);
-        } else if ((x ^= ((long) buffer[tempPos++] << 63)) >= 0L) {
+        } else if ((x ^= ((long) buffer[tempPos] << 63)) >= 0L && buffer[tempPos++] >= 0) {
           x ^=
               (~0L << 7)
                   ^ (~0L << 14)
@@ -2286,7 +2467,15 @@ public abstract class CodedInputStream {
 
     @Override
     public void resetSizeCounter() {
-      totalBytesRetired = -pos;
+      if (pos > 0) {
+        int remaining = bufferSize - pos;
+        if (remaining > 0) {
+          System.arraycopy(buffer, pos, buffer, 0, remaining);
+        }
+        bufferSize = remaining;
+        pos = 0;
+      }
+      totalBytesRetired = 0;
     }
 
     @Override
@@ -2361,6 +2550,88 @@ public abstract class CodedInputStream {
       return Math.min(length / 5, 4096);
     }
 
+    @Override
+    Internal.IntList readPackedInt32() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return IntArrayList.emptyList();
+      }
+      // Since we are in the stream decoder, we may not have the complete packed array
+      // available to be able to do a hot loop the same way that we do in the ArrayDecoder. We could
+      // fast scan for the bytes we do have available, but err on the side of simplicity here.
+      final IntArrayList list = new IntArrayList();
+      final int oldLimit = pushLimit(length);
+      while (getBytesUntilLimit() > 0) {
+        list.addInt(readInt32());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.LongList readPackedInt64() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return LongArrayList.emptyList();
+      }
+      // 'Naive' implementation: see comment in readPackedInt32.
+      final LongArrayList list = new LongArrayList();
+      final int oldLimit = pushLimit(length);
+      while (getBytesUntilLimit() > 0) {
+        list.addLong(readInt64());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.BooleanList readPackedBool() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return BooleanArrayList.emptyList();
+      }
+      // 'Naive' implementation: see comment in readPackedInt32.
+      final BooleanArrayList list = new BooleanArrayList();
+      final int oldLimit = pushLimit(length);
+      while (getBytesUntilLimit() > 0) {
+        list.addBoolean(readBool());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.FloatList readPackedFloat() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return FloatArrayList.emptyList();
+      }
+      // 'Naive' implementation: see comment in readPackedInt32.
+      final FloatArrayList list = new FloatArrayList();
+      final int oldLimit = pushLimit(length);
+      while (getBytesUntilLimit() > 0) {
+        list.addFloat(readFloat());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
+    @Override
+    Internal.DoubleList readPackedDouble() throws IOException {
+      final int length = readRawVarint32();
+      if (length == 0) {
+        return DoubleArrayList.emptyList();
+      }
+      // 'Naive' implementation: see comment in readPackedInt32.
+      final DoubleArrayList list = new DoubleArrayList();
+      final int oldLimit = pushLimit(length);
+      while (getBytesUntilLimit() > 0) {
+        list.addDouble(readDouble());
+      }
+      popLimit(oldLimit);
+      return list;
+    }
+
     /**
      * Reads more bytes from the input, making at least {@code n} bytes available in the buffer.
      * Caller must ensure that the requested space is not yet available, and that the requested
@@ -2372,8 +2643,8 @@ public abstract class CodedInputStream {
     private void refillBuffer(int n) throws IOException {
       if (!tryRefillBuffer(n)) {
         // We have to distinguish the exception between sizeLimitExceeded and truncatedMessage. So
-        // we just throw an sizeLimitExceeded exception here if it exceeds the sizeLimit
-        if (n > sizeLimit - totalBytesRetired - pos) {
+        // we just throw a sizeLimitExceeded exception here if it exceeds the sizeLimit
+        if (isBeyondLimit(totalBytesRetired + pos, n, sizeLimit)) {
           throw InvalidProtocolBufferException.sizeLimitExceeded();
         } else {
           throw InvalidProtocolBufferException.truncatedMessage();
@@ -2420,30 +2691,29 @@ public abstract class CodedInputStream {
       }
 
       // Here we should refill the buffer as many bytes as possible.
-      int bytesRead =
-          read(
-              input,
-              buffer,
-              bufferSize,
-              Math.min(
-                  //  the size of allocated but unused bytes in the buffer
-                  buffer.length - bufferSize,
-                  //  do not exceed the total bytes limit
-                  sizeLimit - totalBytesRetired - bufferSize));
-      if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
-        throw new IllegalStateException(
-            input.getClass()
-                + "#read(byte[]) returned invalid result: "
-                + bytesRead
-                + "\nThe InputStream implementation is buggy.");
-      }
-      if (bytesRead > 0) {
+      while (bufferSize < n) {
+        int remainingUnderSizeLimit = sizeLimit - totalBytesRetired - bufferSize;
+        if (remainingUnderSizeLimit <= 0) {
+          return false;
+        }
+        int bytesToRead = Math.min(buffer.length - bufferSize, remainingUnderSizeLimit);
+
+        int bytesRead = read(input, buffer, bufferSize, bytesToRead);
+        if (bytesRead == 0 || bytesRead < -1 || bytesRead > buffer.length) {
+          throw new IllegalStateException(
+              input.getClass()
+                  + "#read(byte[]) returned invalid result: "
+                  + bytesRead
+                  + "\nThe InputStream implementation is buggy.");
+        }
+        if (bytesRead <= 0) {
+          return false;
+        }
         bufferSize += bytesRead;
         recomputeBufferSizeAfterLimit();
-        return (bufferSize >= n) || tryRefillBuffer(n);
       }
 
-      return false;
+      return true;
     }
 
     @Override
@@ -2481,10 +2751,12 @@ public abstract class CodedInputStream {
       }
 
       // Read into the caller-provided buffer
-      int bytesToRead = Math.min(length, currentLimit - totalBytesRetired - pos);
-      if (bytesToRead <= 0) {
+      int rawPos = totalBytesRetired + pos;
+      int maxAvailable = Math.min(currentLimit, sizeLimit) - rawPos;
+      if (maxAvailable <= 0) {
         return -1;
       }
+      int bytesToRead = Math.min(length, maxAvailable);
       int bytesRead = read(input, bytes, offset, bytesToRead);
       if (bytesRead != -1) {
         totalBytesRetired += bytesRead;

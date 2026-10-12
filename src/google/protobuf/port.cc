@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "absl/base/attributes.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_log.h"
 #include "absl/numeric/int128.h"
 #include "absl/strings/numbers.h"
@@ -30,16 +31,6 @@
 // Must be included last
 #include "google/protobuf/port_def.inc"
 
-#if !defined(PROTO2_OPENSOURCE)
-#if defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
-extern "C" {
-#if ABSL_HAVE_ATTRIBUTE(used) && ABSL_HAVE_ATTRIBUTE(retain)
-__attribute__((used, retain))
-#endif  // ABSL_HAVE_ATTRIBUTE(used) && ABSL_HAVE_ATTRIBUTE(retain)
-bool kVersionStampBuildHasHardeningProtobuf = true;
-}
-#endif  // defined(PROTOBUF_INTERNAL_BOUNDS_CHECK_MODE_ABORT)
-#endif  // !defined(PROTO2_OPENSOURCE)
 
 namespace google {
 namespace protobuf {
@@ -72,8 +63,7 @@ static auto& CounterMap() {
       std::map<std::variant<int64_t, absl::string_view>,
                std::array<std::atomic<size_t>, RealDebugCounter::kNumBuckets>>>;
   static auto* counter_map = new Map{};
-  static bool dummy = std::atexit(PrintAllCounters);
-  (void)dummy;
+  static auto print [[maybe_unused]] = absl::Cleanup(PrintAllCounters);
   return *counter_map;
 }
 

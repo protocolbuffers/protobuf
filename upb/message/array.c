@@ -17,6 +17,7 @@
 #include "upb/message/internal/types.h"
 #include "upb/message/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -91,8 +92,8 @@ bool upb_Array_AppendAll(upb_Array* dst, const upb_Array* src,
   size_t src_len = upb_Array_Size(src);
   if (src_len == 0) return true;
   size_t dst_len = upb_Array_Size(dst);
-  size_t len = dst_len + src_len;
-  if (UPB_UNLIKELY(len < dst_len)) return false;
+  size_t len;
+  if (UPB_UNLIKELY(upb_AddOverflow(dst_len, src_len, &len))) return false;
   if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(dst, len, arena)) {
     return false;
   }
@@ -118,10 +119,11 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
   UPB_ASSERT(arena);
   UPB_ASSERT(i <= arr->UPB_PRIVATE(size));
-  UPB_ASSERT(count + arr->UPB_PRIVATE(size) >= count);
+  size_t new_size;
+  const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
+  UPB_ASSERT(ok);
   const size_t oldsize = arr->UPB_PRIVATE(size);
-  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(
-          arr, arr->UPB_PRIVATE(size) + count, arena)) {
+  if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
     return false;
   }
   upb_Array_Move(arr, i + count, i, oldsize - i);
@@ -134,8 +136,9 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
  */
 void upb_Array_Delete(upb_Array* arr, size_t i, size_t count) {
   UPB_ASSERT(!upb_Array_IsFrozen(arr));
-  const size_t end = i + count;
-  UPB_ASSERT(i <= end);
+  size_t end;
+  const bool ok = !upb_AddOverflow(i, count, &end);
+  UPB_ASSERT(ok);
   UPB_ASSERT(end <= arr->UPB_PRIVATE(size));
   upb_Array_Move(arr, i, end, arr->UPB_PRIVATE(size) - end);
   arr->UPB_PRIVATE(size) -= count;
@@ -159,32 +162,43 @@ bool upb_Array_Resize(upb_Array* arr, size_t size, upb_Arena* arena) {
 
 bool UPB_PRIVATE(_upb_Array_Realloc)(upb_Array* array, size_t min_capacity,
                                      upb_Arena* arena) {
-  size_t new_capacity = UPB_MAX(array->UPB_PRIVATE(capacity), 4);
+  size_t target_capacity = UPB_MAX(min_capacity, 4);
+  size_t new_capacity = upb_RoundUpToPowerOfTwo(target_capacity);
+  if (new_capacity == SIZE_MAX) return false;
+
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);
   size_t old_bytes = array->UPB_PRIVATE(capacity) << lg2;
   void* ptr = upb_Array_MutableDataPtr(array);
-
-  // Log2 ceiling of size.
-  while (new_capacity < min_capacity) {
-    if (upb_ShlOverflow(&new_capacity, 1)) {
-      new_capacity = SIZE_MAX;
-      break;
-    }
-  }
-
-  // If capacity doubling overflowed to SIZE_MAX, fail. No valid array can hold
-  // SIZE_MAX elements, and downstream size calculations would overflow.
-  if (new_capacity == SIZE_MAX) return false;
+  UPB_ASSERT(ptr);
 
   size_t new_bytes = new_capacity;
   if (upb_ShlOverflow(&new_bytes, lg2)) {
     return false;
   }
-  ptr = upb_Arena_Realloc(arena, ptr, old_bytes, new_bytes);
-  if (!ptr) return false;
+  if (upb_Arena_TryExtend(arena, ptr, old_bytes, new_bytes)) {
+    array->UPB_PRIVATE(capacity) = new_capacity;
+  } else {
+    size_t pool_bytes =
+        UPB_MAX(new_bytes, UPB_PRIVATE(kUpb_Arena_MinPoolBlockSize));
 
-  UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, ptr, lg2);
-  array->UPB_PRIVATE(capacity) = new_capacity;
+    void* new_ptr = upb_Arena_AllocPool(arena, pool_bytes);
+    if (!new_ptr) return false;
+
+    if (old_bytes > 0) {
+      memcpy(new_ptr, ptr, old_bytes);
+    }
+
+    const size_t array_size =
+        UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+    bool is_contiguous = (ptr == UPB_PTR_AT(array, array_size, void));
+    if (!is_contiguous) {
+      UPB_PRIVATE(_upb_Arena_Harvest)(arena, ptr, old_bytes);
+    }
+
+    ptr = new_ptr;
+    UPB_PRIVATE(_upb_Array_SetTaggedPtr)(array, ptr, lg2);
+    array->UPB_PRIVATE(capacity) = pool_bytes >> lg2;
+  }
   return true;
 }
 

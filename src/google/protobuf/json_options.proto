@@ -12,3 +12,5 @@ edition = "2024";
 package pb;
 
 import public "google/protobuf/json_enumvalue_options.proto";
+
+option java_package = "com.google.protobuf.util";

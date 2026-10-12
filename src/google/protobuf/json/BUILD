@@ -111,7 +111,6 @@ cc_library(
         "//src/google/protobuf/stubs",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
-        "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:statusor",
         "@abseil-cpp//absl/strings",
@@ -293,7 +292,6 @@ cc_library(
         "//src/google/protobuf/io:zero_copy_sink",
         "//src/google/protobuf/stubs",
         "//src/google/protobuf/util:type_resolver",
-        "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/log:absl_log",
         "@abseil-cpp//absl/status",
@@ -319,6 +317,7 @@ proto_library(
     visibility = [
         "//:__subpackages__",
         "//src/google/protobuf:__subpackages__",
+        "//upb:__subpackages__",
     ],
     deps = ["//src/google/protobuf:json_options_proto"],
 )

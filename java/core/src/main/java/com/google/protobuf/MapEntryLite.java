@@ -14,11 +14,15 @@ import java.util.Map;
 /**
  * Implements the lite version of map entry messages.
  *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
+ *
  * <p>This class serves as an utility class to help do serialization/parsing of map entries. It's
  * used in generated code and also in the full version MapEntry message.
  *
  * <p>Protobuf internal. Users shouldn't use.
  */
+@ForLiteOnly
 public class MapEntryLite<K, V> {
 
   static class Metadata<K, V> {
@@ -101,9 +105,7 @@ public class MapEntryLite<K, V> {
       throws IOException {
     switch (type) {
       case MESSAGE:
-        MessageLite.Builder subBuilder = ((MessageLite) value).toBuilder();
-        input.readMessage(subBuilder, extensionRegistry);
-        return (T) subBuilder.buildPartial();
+        throw new IllegalArgumentException("Message type is unexpected.");
       case ENUM:
         return (T) (java.lang.Integer) input.readEnum();
       case GROUP:
@@ -145,11 +147,13 @@ public class MapEntryLite<K, V> {
     return parseEntry(bytes.newCodedInput(), metadata, extensionRegistry);
   }
 
+  @SuppressWarnings("unchecked") // for buildPartial() cast
   static <K, V> Map.Entry<K, V> parseEntry(
       CodedInputStream input, Metadata<K, V> metadata, ExtensionRegistryLite extensionRegistry)
       throws IOException {
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
+    MessageLite.Builder valueBuilder = null;
     while (true) {
       int tag = input.readTag();
       if (tag == 0) {
@@ -158,12 +162,22 @@ public class MapEntryLite<K, V> {
       if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
         key = parseField(input, extensionRegistry, metadata.keyType, key);
       } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
-        value = parseField(input, extensionRegistry, metadata.valueType, value);
+        if (metadata.valueType == WireFormat.FieldType.MESSAGE) {
+          if (valueBuilder == null) {
+            valueBuilder = ((MessageLite) value).toBuilder();
+          }
+          input.readMessage(valueBuilder, extensionRegistry);
+        } else {
+          value = parseField(input, extensionRegistry, metadata.valueType, value);
+        }
       } else {
         if (!input.skipField(tag)) {
           break;
         }
       }
+    }
+    if (valueBuilder != null) {
+      value = (V) valueBuilder.buildPartial();
     }
     return new AbstractMap.SimpleImmutableEntry<K, V>(key, value);
   }
@@ -172,6 +186,7 @@ public class MapEntryLite<K, V> {
    * Parses an entry off of the input into the map. This helper avoids allocation of a {@link
    * MapEntryLite} by parsing directly into the provided {@link MapFieldLite}.
    */
+  @SuppressWarnings("unchecked") // for buildPartial() cast
   public void parseInto(
       MapFieldLite<K, V> map, CodedInputStream input, ExtensionRegistryLite extensionRegistry)
       throws IOException {
@@ -180,6 +195,7 @@ public class MapEntryLite<K, V> {
     K key = metadata.defaultKey;
     V value = metadata.defaultValue;
 
+    MessageLite.Builder valueBuilder = null;
     while (true) {
       int tag = input.readTag();
       if (tag == 0) {
@@ -188,7 +204,14 @@ public class MapEntryLite<K, V> {
       if (tag == WireFormat.makeTag(KEY_FIELD_NUMBER, metadata.keyType.getWireType())) {
         key = parseField(input, extensionRegistry, metadata.keyType, key);
       } else if (tag == WireFormat.makeTag(VALUE_FIELD_NUMBER, metadata.valueType.getWireType())) {
-        value = parseField(input, extensionRegistry, metadata.valueType, value);
+        if (metadata.valueType == WireFormat.FieldType.MESSAGE) {
+          if (valueBuilder == null) {
+            valueBuilder = ((MessageLite) value).toBuilder();
+          }
+          input.readMessage(valueBuilder, extensionRegistry);
+        } else {
+          value = parseField(input, extensionRegistry, metadata.valueType, value);
+        }
       } else {
         if (!input.skipField(tag)) {
           break;
@@ -198,6 +221,9 @@ public class MapEntryLite<K, V> {
 
     input.checkLastTagWas(0);
     input.popLimit(oldLimit);
+    if (valueBuilder != null) {
+      value = (V) valueBuilder.buildPartial();
+    }
     map.put(key, value);
   }
 

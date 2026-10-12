@@ -12,6 +12,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"

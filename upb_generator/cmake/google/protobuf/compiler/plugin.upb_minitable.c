@@ -212,20 +212,20 @@ const upb_MiniTableEnum google__protobuf__compiler__CodeGeneratorResponse__Featu
     },
 };
 
-static const upb_MiniTable *messages_layout[4] = {
+static const upb_MiniTable *messages_layout_google_protobuf_compiler_plugin_proto_upb_file_layout[4] = {
   &google__protobuf__compiler__Version_msg_init,
   &google__protobuf__compiler__CodeGeneratorRequest_msg_init,
   &google__protobuf__compiler__CodeGeneratorResponse_msg_init,
   &google__protobuf__compiler__CodeGeneratorResponse__File_msg_init,
 };
 
-static const upb_MiniTableEnum *enums_layout[1] = {
+static const upb_MiniTableEnum *enums_layout_google_protobuf_compiler_plugin_proto_upb_file_layout[1] = {
   &google__protobuf__compiler__CodeGeneratorResponse__Feature_enum_init,
 };
 
 const upb_MiniTableFile google_protobuf_compiler_plugin_proto_upb_file_layout = {
-  messages_layout,
-  enums_layout,
+  messages_layout_google_protobuf_compiler_plugin_proto_upb_file_layout,
+  enums_layout_google_protobuf_compiler_plugin_proto_upb_file_layout,
   NULL,
   4,
   1,

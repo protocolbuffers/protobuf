@@ -10,8 +10,12 @@ package com.google.protobuf;
 /**
  * RawMessageInfo stores the same amount of information as {@link MessageInfo} but in a more compact
  * format.
+ *
+ * <p>This class is for Lite runtime use only. For details on what this means regarding performance
+ * and security characteristics, see {@link ForLiteOnly}.
  */
 @CheckReturnValue
+@ForLiteOnly
 final class RawMessageInfo implements MessageInfo {
   private static final int IS_PROTO2_BIT = 0x1;
   private static final int IS_EDITION_BIT = 0x4;

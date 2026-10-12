@@ -206,14 +206,17 @@ static std::string RustModuleForContainingType(
     parent = parent->containing_type();
   }
 
-  // Reverse the vector to get submodules in outer-to-inner order).
+  // Reverse the vector to get submodules in outer-to-inner order.
   std::reverse(modules.begin(), modules.end());
 
-  // If there are any modules at all, push an empty string on the end so that
-  // we get the trailing ::
-  if (!modules.empty()) {
-    modules.push_back("");
-  }
+  // Every type is defined inside its file's mod. References becomes the
+  // canonical `super::<file_mod>::<type_mod>` path instead of relying on the
+  // crate-root re-export, which will be disabled soon.
+  modules.insert(modules.begin(), RustModuleName(file));
+
+  // Push an empty string on the end so that we get the trailing :: to connect
+  // to the type mod name.
+  modules.push_back("");
 
   std::string crate_relative = absl::StrJoin(modules, "::");
 
@@ -241,13 +244,46 @@ std::string RustModule(Context& ctx, const OneofDescriptor& oneof) {
                                      *oneof.file());
 }
 
-std::string RustInternalModuleName(const FileDescriptor& file) {
-  return RsSafeName(
-      absl::StrReplaceAll(StripProto(file.name()), {
-                                                       {"_", "__"},
-                                                       {"/", "_s"},
-                                                       {"-", "__"},
-                                                   }));
+std::string RustModule(Context& ctx, const FileDescriptor& file) {
+  return RustModuleForContainingType(ctx, nullptr, file);
+}
+
+std::string RustModuleForExtension(Context& ctx,
+                                   const FieldDescriptor& extension) {
+  return RustModuleForContainingType(ctx, extension.extension_scope(),
+                                     *extension.file());
+}
+
+std::string RustModuleName(const FileDescriptor& file) {
+  // Derive a readable and (mostly) unique Rust module name from the full
+  // proto file path, e.g. `foo/bar/baz.proto` becomes `foo_bar_baz_proto`.
+  absl::string_view name = file.name();
+  absl::string_view prefix = "pb_";
+
+  std::string result;
+  result.reserve(name.size() + prefix.size());
+
+  // Rust identifiers must start with a letter or underscore. If the path begins
+  // with anything else (e.g. a digit), prepend `pb_` so the result is valid.
+  if (name.empty() || !absl::ascii_isalpha(name[0])) {
+    result += prefix;
+  }
+
+  for (char c : name) {
+    // Common path/file separators (`/`, `-`, `.`, and `_`) all collapse to a
+    // single underscore for better readability.
+    if (c == '/' || c == '-' || c == '.' || c == '_') {
+      result += '_';
+    } else if (absl::ascii_isalnum(c)) {
+      result += c;
+    } else {
+      // Escape any other characters that aren't valid in Rust identifiers
+      // by substituting them with an underscore followed by their hex value
+      // and another underscore.
+      absl::StrAppendFormat(&result, "_%02x_", static_cast<unsigned char>(c));
+    }
+  }
+  return RsSafeName(result);
 }
 
 std::string FieldInfoComment(Context& ctx, const FieldDescriptor& field) {
@@ -273,6 +309,13 @@ static constexpr absl::string_view kAccessorSuffixes[] = {"_mut", "_opt"};
 std::string FieldNameWithCollisionAvoidance(const FieldDescriptor& field) {
   absl::string_view name = field.name();
   const Descriptor& msg = *field.containing_type();
+
+  // `as_mut` and `as_view` are inherent methods on every generated message, so
+  // a field named `as` (which generates `<field>_mut`) or `as_mut` / `as_view`
+  // would collide with those inherent methods.
+  if (name == "as" || name == "as_mut" || name == "as_view") {
+    return absl::StrCat(name, "_", field.number());
+  }
 
   for (absl::string_view prefix : kAccessorPrefixes) {
     if (absl::StartsWith(name, prefix)) {
@@ -363,6 +406,10 @@ std::string EnumRsName(const EnumDescriptor& desc) {
     absl::StrAppend(&name, "_");
   }
   return name;
+}
+
+std::string ExtensionRsName(const FieldDescriptor& extension) {
+  return absl::AsciiStrToUpper(extension.name());
 }
 
 std::string EnumValueRsName(const EnumValueDescriptor& value) {
@@ -496,6 +543,15 @@ std::string DescriptorInfoName(const FileDescriptor& file) {
       absl::StrReplaceAll(StripProto(file.name()), {{"/", "_"}, {"-", "_"}});
   absl::AsciiStrToUpper(&name);
   return absl::StrCat(name, "_DESCRIPTOR_INFO");
+}
+
+// Returns the name of the generated function that returns the given file's
+// `upb_DefPool_Init`. For example, `foo/bar/baz.proto` becomes
+// `foo_bar_baz_proto_def_init`.
+std::string DefInitName(const FileDescriptor& file) {
+  // Reuse the module name so that every file path that yields a valid module
+  // name also yields a valid function name.
+  return absl::StrCat(RustModuleName(file), "_def_init");
 }
 
 }  // namespace rust

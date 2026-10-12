@@ -39,7 +39,7 @@ bootstrap_cc_library(
         "common.h",
     ],
     bootstrap_deps = [
-        "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,
@@ -64,6 +64,7 @@ bootstrap_cc_library(
     bootstrap_deps = [
         ":common",
         "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
         "//upb/reflection:descriptor_upb_proto",
     ],
     copts = UPB_DEFAULT_CPPOPTS,
@@ -90,7 +91,7 @@ bootstrap_cc_library(
     bootstrap_deps = [
         ":plugin_upb_proto",
         "//upb/reflection:descriptor_upb_proto",
-        "//upb/reflection:reflection",
+        "//upb/reflection:reflection_cc",
         "//upb_generator:file_layout",
     ],
     copts = UPB_DEFAULT_CPPOPTS,

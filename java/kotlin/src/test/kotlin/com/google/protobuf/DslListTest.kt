@@ -36,7 +36,7 @@ class DslListTest {
   @Test
   fun dslListIsNotMutable() {
     val dslList = DslList<Int, DummyProxy>(mutableListOf(1, 2, 3))
-    assertThat(dslList is MutableList<*>).isFalse()
+    assertThat((dslList as Any) is MutableList<*>).isFalse()
   }
 
   @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "UNCHECKED_CAST")
@@ -85,13 +85,59 @@ class DslListTest {
   @Test
   fun equality() {
     EqualsTester()
-      .addEqualityGroup(DslList<Int, DummyProxy>(listOf(1, 2)), listOf(1, 2))
-      .addEqualityGroup(DslList<Int, DummyProxy>(listOf(2, 2)), listOf(2, 2))
+      .addEqualityGroup(
+        DslList<Int, DummyProxy>(listOf(1, 2)),
+        DslList<Int, DummyProxy> { listOf(1, 2) },
+        listOf(1, 2),
+      )
+      .addEqualityGroup(
+        DslList<Int, DummyProxy>(listOf(2, 2)),
+        DslList<Int, DummyProxy> { listOf(2, 2) },
+        listOf(2, 2),
+      )
       .addEqualityGroup(
         DslList<Int, DummyProxy>(emptyList()),
         DslList<String, DummyProxy>(emptyList()),
+        DslList<Int, DummyProxy> { emptyList() },
+        DslList<String, DummyProxy> { emptyList() },
         emptyList<Int>(),
       )
       .testEquals()
+  }
+
+  @Test
+  fun supplierNotInvokedOnConstruction() {
+    var supplierCalled = false
+    val dslList = DslList<Int, DummyProxy> {
+      supplierCalled = true
+      listOf(1, 2, 3)
+    }
+    assertThat(supplierCalled).isFalse()
+    assertThat(dslList).containsExactly(1, 2, 3).inOrder()
+    assertThat(supplierCalled).isTrue()
+  }
+
+  @Test
+  fun supplierEvaluatedOnlyOnFirstReadOperation() {
+    var callCount = 0
+    val dslList = DslList<Int, DummyProxy> {
+      callCount++
+      listOf(1, 2, 1)
+    }
+    assertThat(callCount).isEqualTo(0)
+    assertThat(dslList.size).isEqualTo(3)
+    assertThat(callCount).isEqualTo(1)
+    assertThat(dslList[0]).isEqualTo(1)
+    assertThat(callCount).isEqualTo(1)
+    assertThat(dslList.isEmpty()).isFalse()
+    assertThat(dslList.contains(2)).isTrue()
+    assertThat(dslList.containsAll(listOf(1, 2))).isTrue()
+    assertThat(dslList.indexOf(1)).isEqualTo(0)
+    assertThat(dslList.lastIndexOf(1)).isEqualTo(2)
+    assertThat(dslList.subList(0, 2)).containsExactly(1, 2).inOrder()
+    assertThat(dslList.iterator().hasNext()).isTrue()
+    assertThat(dslList.listIterator().hasNext()).isTrue()
+    assertThat(dslList.listIterator(1).next()).isEqualTo(2)
+    assertThat(callCount).isEqualTo(1)
   }
 }

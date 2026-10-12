@@ -67,7 +67,7 @@ bool PushParse(ChunkStreamer chunk_stream) {
     memmove(buffer, end, 16);
   }
   overrun = YieldFunc(buffer + overrun, buffer + 16);
-  return overrun = 0;
+  return overrun == 0;
 }
 
 TEST(EpsCopyInputStreamTest, ZeroSize) {

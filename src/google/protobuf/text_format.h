@@ -15,7 +15,6 @@
 #ifndef GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 #define GOOGLE_PROTOBUF_TEXT_FORMAT_H__
 
-#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -26,7 +25,6 @@
 #include "absl/status/statusor.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
-#include "absl/types/optional.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
@@ -53,7 +51,7 @@ PROTOBUF_EXPORT int64_t GetRedactedFieldCount();
 // formats. A higher-level API must correspond to a greater number than any
 // lower-level APIs it calls under the hood (e.g kDebugString >
 // kMemberPrintToString > kPrintWithStream).
-enum class PROTOBUF_EXPORT FieldReporterLevel {
+enum class FieldReporterLevel {
   kNoReport = 0,
   kPrintMessage = 1,
   kPrintWithGenerator = 2,
@@ -85,7 +83,7 @@ class PythonFieldValuePrinter;
 
 namespace internal {
 // Enum used to set printing options for StringifyMessage.
-PROTOBUF_EXPORT enum class Option;
+enum class Option;
 
 // Converts a protobuf message to a string. Sensitive fields are redacted, and a
 // per-process randomized prefix is inserted.
@@ -221,6 +219,8 @@ class PROTOBUF_EXPORT TextFormat {
                             BaseTextGenerator* generator) const;
     virtual void PrintEnum(int32_t val, const std::string& name,
                            BaseTextGenerator* generator) const;
+    void PrintEnum(int32_t val, absl::string_view name,
+                   BaseTextGenerator* generator) const;
     virtual void PrintFieldName(const Message& message, int field_index,
                                 int field_count, const Reflection* reflection,
                                 const FieldDescriptor* field,
@@ -262,6 +262,7 @@ class PROTOBUF_EXPORT TextFormat {
     virtual std::string PrintString(const std::string& val) const;
     virtual std::string PrintBytes(const std::string& val) const;
     virtual std::string PrintEnum(int32_t val, const std::string& name) const;
+    std::string PrintEnum(int32_t val, absl::string_view name) const;
     virtual std::string PrintFieldName(const Message& message,
                                        const Reflection* reflection,
                                        const FieldDescriptor* field) const;
@@ -862,6 +863,9 @@ class PROTOBUF_EXPORT TextFormat {
     // Forward declaration of an internal class used to parse text
     // representations (see text_format.cc for implementation).
     class ParserImpl;
+
+    template <typename T>
+    bool CheckParseInputSize(T& input, Message* output) const;
 
     // Like TextFormat::Merge().  The provided implementation is used
     // to do the parsing.
