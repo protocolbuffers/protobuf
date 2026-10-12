@@ -22,11 +22,13 @@
 #include <iterator>
 #include <limits>
 #include <memory>
+#include <numeric>
 #include <random>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/algorithm/container.h"
 #include "absl/base/optimization.h"
 #include "absl/cleanup/cleanup.h"
 #include "absl/container/btree_set.h"
@@ -60,6 +62,7 @@
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/reflection_mode.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
@@ -2656,114 +2659,77 @@ void TextFormat::Printer::PrintFieldValueToString(const Message& message,
   PrintFieldValue(message, message.GetReflection(), field, index, &generator);
 }
 
-class MapEntryMessageComparator {
- public:
-  explicit MapEntryMessageComparator(const Descriptor* descriptor)
-      : field_(descriptor->field(0)) {}
+void GetMapPrintOrder(const RepeatedPtrField<Message>* repeated_field,
+                      std::vector<int>& result) {
+  absl::c_stable_sort(result, [&](int i, int j) {
+    const Message& m_i = repeated_field->at(i);
+    const Reflection* r_i = m_i.GetReflection();
+    const Message& m_j = repeated_field->at(j);
+    const Reflection* r_j = m_j.GetReflection();
 
-  bool operator()(const Message* a, const Message* b) {
-    const Reflection* reflection = a->GetReflection();
-    switch (field_->cpp_type()) {
-      case FieldDescriptor::CPPTYPE_BOOL: {
-        bool first = reflection->GetBool(*a, field_);
-        bool second = reflection->GetBool(*b, field_);
-        return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_INT32: {
-        int32_t first = reflection->GetInt32(*a, field_);
-        int32_t second = reflection->GetInt32(*b, field_);
-        return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_INT64: {
-        int64_t first = reflection->GetInt64(*a, field_);
-        int64_t second = reflection->GetInt64(*b, field_);
-        return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_UINT32: {
-        uint32_t first = reflection->GetUInt32(*a, field_);
-        uint32_t second = reflection->GetUInt32(*b, field_);
-        return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_UINT64: {
-        uint64_t first = reflection->GetUInt64(*a, field_);
-        uint64_t second = reflection->GetUInt64(*b, field_);
-        return first < second;
-      }
-      case FieldDescriptor::CPPTYPE_STRING: {
-        std::string first = reflection->GetString(*a, field_);
-        std::string second = reflection->GetString(*b, field_);
-        return first < second;
-      }
+    const FieldDescriptor* key = m_i.GetDescriptor()->map_key();
+    switch (key->cpp_type()) {
+      case FieldDescriptor::CPPTYPE_STRING:
+        return r_i->GetString(m_i, key) < r_j->GetString(m_j, key);
+      case FieldDescriptor::CPPTYPE_INT64:
+        return r_i->GetInt64(m_i, key) < r_j->GetInt64(m_j, key);
+      case FieldDescriptor::CPPTYPE_INT32:
+        return r_i->GetInt32(m_i, key) < r_j->GetInt32(m_j, key);
+      case FieldDescriptor::CPPTYPE_UINT64:
+        return r_i->GetUInt64(m_i, key) < r_j->GetUInt64(m_j, key);
+      case FieldDescriptor::CPPTYPE_UINT32:
+        return r_i->GetUInt32(m_i, key) < r_j->GetUInt32(m_j, key);
+      case FieldDescriptor::CPPTYPE_BOOL:
+        return r_i->GetBool(m_i, key) < r_j->GetBool(m_j, key);
+
       default:
-        ABSL_DLOG(FATAL) << "Invalid key for map field.";
-        return true;
+        internal::Unreachable();
     }
-  }
-
- private:
-  const FieldDescriptor* field_;
-};
+  });
+}
 
 namespace internal {
-
-struct MapEntries {
-  std::vector<std::unique_ptr<const Message>> owned_entries;
-  std::vector<const Message*> all_entries;
-};
-
 class MapFieldPrinterHelper {
  public:
-  // DynamicMapSorter::Sort cannot be used because it enforces syncing with
-  // repeated field.
-  static MapEntries SortMap(const Message& message,
-                            const Reflection* reflection,
-                            const FieldDescriptor* field);
+  Arena::UniquePtr<google::protobuf::RepeatedPtrField<google::protobuf::Message>> map_data_clone_;
+  const RepeatedPtrField<Message>* repeated_field_ = nullptr;
+
+  MapFieldPrinterHelper(const Message& message, const Reflection* reflection,
+                        const FieldDescriptor* field);
+
   static void CopyKey(const MapKey& key, Message* message,
                       const FieldDescriptor* field_desc);
   static void CopyValue(const MapValueConstRef& value, Message* message,
                         const FieldDescriptor* field_desc);
 };
 
-MapEntries MapFieldPrinterHelper::SortMap(const Message& message,
-                                          const Reflection* reflection,
-                                          const FieldDescriptor* field) {
-  const MapFieldBase& base = *reflection->GetMapData(message, field);
+MapFieldPrinterHelper::MapFieldPrinterHelper(const Message& message,
+                                             const Reflection* reflection,
+                                             const FieldDescriptor* field) {
+  if (!field->is_map()) return;
 
-  std::vector<const Message*> all_entries;
-  std::vector<std::unique_ptr<const Message>> owned_entries;
+  const internal::MapFieldBase& base = *reflection->GetMapData(message, field);
   if (base.IsRepeatedFieldValid()) {
-    const RepeatedPtrField<Message>& map_field =
-        reflection->GetRepeatedPtrFieldInternal<Message>(
-            message, field,
-            Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
-    all_entries.reserve(map_field.size());
-    for (int i = 0; i < map_field.size(); ++i) {
-      all_entries.push_back(
-          const_cast<RepeatedPtrField<Message>*>(&map_field)->Mutable(i));
-    }
+    repeated_field_ = &reflection->GetRepeatedPtrFieldInternal<Message>(
+        message, field, Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
   } else {
-    // TODO: For performance, instead of creating map entry message
-    // for each element, just store map keys and sort them.
+    Arena* arena = message.GetArena();
+    map_data_clone_ = Arena::MakeUnique<RepeatedPtrField<Message>>(arena);
+    map_data_clone_->Reserve(reflection->MapSize(message, field));
+    repeated_field_ = map_data_clone_.get();
+
     const Descriptor* map_entry_desc = field->message_type();
     const Message* prototype =
         reflection->GetMessageFactory()->GetPrototype(map_entry_desc);
-    all_entries.reserve(reflection->MapSize(message, field));
-    owned_entries.reserve(reflection->MapSize(message, field));
     for (ConstMapIterator iter = reflection->ConstMapBegin(&message, field);
          iter != reflection->ConstMapEnd(&message, field); ++iter) {
-      std::unique_ptr<Message> map_entry_message =
-          absl::WrapUnique(prototype->New());
-      CopyKey(iter.GetKey(), map_entry_message.get(), map_entry_desc->field(0));
-      CopyValue(iter.GetValueRef(), map_entry_message.get(),
+      Message* map_entry_message = prototype->New(arena);
+      CopyKey(iter.GetKey(), map_entry_message, map_entry_desc->field(0));
+      CopyValue(iter.GetValueRef(), map_entry_message,
                 map_entry_desc->field(1));
-      all_entries.push_back(map_entry_message.get());
-      owned_entries.push_back(std::move(map_entry_message));
+      map_data_clone_->AddAllocated(map_entry_message);
     }
   }
-
-  std::stable_sort(all_entries.begin(), all_entries.end(),
-                   MapEntryMessageComparator(field->message_type()));
-  return {std::move(owned_entries), std::move(all_entries)};
 }
 
 void MapFieldPrinterHelper::CopyKey(const MapKey& key, Message* message,
@@ -2862,13 +2828,18 @@ void TextFormat::Printer::PrintField(const Message& message,
   }
 
   if (generator->failed()) return;
-  bool is_map = field->is_map();
-  const internal::MapEntries map_entries =
-      is_map
-          ? internal::MapFieldPrinterHelper::SortMap(message, reflection, field)
-          : internal::MapEntries();
 
-  for (int j = 0; j < count; ++j) {
+  internal::MapFieldPrinterHelper printer_helper(message, reflection, field);
+
+  std::vector<int> order(count);
+  std::iota(order.begin(), order.end(), 0);
+
+  std::vector<ConstMapIterator> map_items;
+  if (field->is_map()) {
+    GetMapPrintOrder(printer_helper.repeated_field_, order);
+  }
+
+  for (int j : order) {
     if (generator->failed()) return;
     const int field_index = field->is_repeated() ? j : -1;
 
@@ -2881,9 +2852,9 @@ void TextFormat::Printer::PrintField(const Message& message,
       }
       const FastFieldValuePrinter* printer = GetFieldPrinter(field);
       const Message& sub_message =
-          field->is_repeated()
-              ? (is_map ? *map_entries.all_entries[j]
-                        : reflection->GetRepeatedMessage(message, field, j))
+          field->is_map() ? printer_helper.repeated_field_->at(j)
+          : field->is_repeated()
+              ? reflection->GetRepeatedMessage(message, field, j)
               : reflection->GetMessage(message, field);
       printer->PrintMessageStart(sub_message, field_index, count,
                                  single_line_mode_, generator);
