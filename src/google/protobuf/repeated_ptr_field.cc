@@ -263,9 +263,15 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
 
 void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     const RepeatedPtrFieldBase& from, Arena* arena, CopyFn copy_fn) {
-  Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
   ABSL_DCHECK_NE(&from, this);
+  if (ABSL_PREDICT_TRUE(current_size_ == 0 && from.current_size_ == 1 &&
+                        using_sso() && tagged_rep_or_elem_ == nullptr)) {
+    tagged_rep_or_elem_ = copy_fn(arena, *from.elements());
+    ExchangeCurrentSize(1);
+    return;
+  }
+  Prefetch5LinesFrom1Line(&from);
   int new_size = internal::CheckedAdd(current_size_, from.current_size_);
   void** dst = InternalReserve(new_size, arena);
   const void* const* src = from.elements();

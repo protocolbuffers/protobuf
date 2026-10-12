@@ -600,7 +600,7 @@ bool WireFormatLite::VerifyUtf8String(const char* data, int size, Operation op,
 // this code is deliberately written such that clang makes it into really
 // efficient SSE code.
 template <bool ZigZag, bool SignExtended, typename T>
-static size_t VarintSize(const T* data, const int n) {
+PROTOBUF_NOINLINE static size_t VarintSize(const T* data, const int n) {
   static_assert(sizeof(T) == 4, "This routine only works for 32 bit integers");
   // is_unsigned<T> => !ZigZag
   static_assert((std::is_unsigned_v<T> ^ ZigZag) || std::is_signed_v<T>,

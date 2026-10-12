@@ -1014,20 +1014,22 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularVarint(
   // clang isn't smart enough to be able to only conditionally save
   // registers to the stack, so we turn the integer-greater-than-128
   // case into a separate routine.
-  if (ABSL_PREDICT_FALSE(static_cast<int8_t>(*ptr) < 0)) {
-    PROTOBUF_MUSTTAIL return SingularVarBigint<FieldType, TagType, zigzag>(
+  uint8_t v = sizeof(TagType) == 1 ? static_cast<uint8_t>(data.data >> 8)
+                                   : static_cast<uint8_t>(*ptr);
+  if (ABSL_PREDICT_FALSE(static_cast<int8_t>(v) < 0)) {
+    PROTOBUF_MUSTTAIL return SingularVarBigint<FieldType, uint8_t, zigzag>(
         PROTOBUF_TC_PARAM_PASS);
   }
-
+  ++ptr;
   RefAt<FieldType>(msg, data.offset()) =
-      ZigZagDecodeHelper<FieldType, zigzag>(static_cast<uint8_t>(*ptr++));
+      ZigZagDecodeHelper<FieldType, zigzag>(v);
   PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 template <typename FieldType, typename TagType, bool zigzag>
 PROTOBUF_NOINLINE const char* TcParser::SingularVarBigint(
     PROTOBUF_TC_PARAM_DECL) {
-  uint64_t tmp;
+  std::conditional_t<sizeof(FieldType) == 4, uint32_t, uint64_t> tmp;
   PROTOBUF_ASSUME(static_cast<int8_t>(*ptr) < 0);
   ptr = ParseVarint(ptr, &tmp);
 
