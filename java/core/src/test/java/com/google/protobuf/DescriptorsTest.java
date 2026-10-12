@@ -1398,6 +1398,62 @@ public class DescriptorsTest {
     }
 
     @Test
+    public void testLegacyDescriptorsUtil() throws Exception {
+      FileDescriptor proto2File =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder()
+                  .setName("proto2.proto")
+                  .setSyntax("proto2")
+                  .addMessageType(
+                      DescriptorProto.newBuilder()
+                          .setName("Foo")
+                          .addField(
+                              FieldDescriptorProto.newBuilder()
+                                  .setName("opt")
+                                  .setNumber(1)
+                                  .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                                  .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                                  .build())
+                          .addField(
+                              FieldDescriptorProto.newBuilder()
+                                  .setName("rep")
+                                  .setNumber(2)
+                                  .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                                  .setLabel(FieldDescriptorProto.Label.LABEL_REPEATED)
+                                  .build())
+                          .build())
+                  .build(),
+              new FileDescriptor[0]);
+      FileDescriptor proto3File =
+          FileDescriptor.buildFrom(
+              FileDescriptorProto.newBuilder().setName("proto3.proto").setSyntax("proto3").build(),
+              new FileDescriptor[0]);
+      assertThat(LegacyDescriptorsUtil.LegacyFileDescriptor.getSyntax(proto2File))
+          .isEqualTo(LegacyDescriptorsUtil.LegacyFileDescriptor.Syntax.PROTO2);
+      assertThat(LegacyDescriptorsUtil.LegacyFileDescriptor.getSyntax(proto3File))
+          .isEqualTo(LegacyDescriptorsUtil.LegacyFileDescriptor.Syntax.PROTO3);
+      assertThat(
+              LegacyDescriptorsUtil.LegacyFileDescriptor.getSyntax(
+                  UnittestLegacyFeatures.getDescriptor()))
+          .isEqualTo(LegacyDescriptorsUtil.LegacyFileDescriptor.Syntax.EDITIONS);
+
+      Descriptor foo = proto2File.findMessageTypeByName("Foo");
+      assertThat(
+              LegacyDescriptorsUtil.LegacyFieldDescriptor.hasOptionalKeyword(
+                  foo.findFieldByName("opt")))
+          .isTrue();
+      assertThat(
+              LegacyDescriptorsUtil.LegacyFieldDescriptor.hasOptionalKeyword(
+                  foo.findFieldByName("rep")))
+          .isFalse();
+
+      assertThat(
+              LegacyDescriptorsUtil.LegacyOneofDescriptor.isSynthetic(
+                  TestAllTypes.getDescriptor().getOneofs().get(0)))
+          .isFalse();
+    }
+
+    @Test
     public void testLegacyInferRequired() throws Exception {
       FileDescriptor file =
           FileDescriptor.buildFrom(
