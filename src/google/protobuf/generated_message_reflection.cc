@@ -1515,7 +1515,7 @@ int Reflection::FieldSize(const Message& message,
         if (field->cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
           return GetRaw<RepeatedField<absl::Cord>>(message, field).size();
         }
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           const internal::MapFieldBase& map =
@@ -1793,7 +1793,7 @@ void Reflection::SwapElements(Message* message, const FieldDescriptor* field,
               ->SwapElements(index1, index2);
           break;
         }
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case FieldDescriptor::CPPTYPE_MESSAGE:
         if (IsMapFieldInApi(field)) {
           MutableRaw<MapFieldBase>(message, field)
