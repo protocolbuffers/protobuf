@@ -22,6 +22,8 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.InvalidMarkException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
@@ -456,32 +458,33 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
   /**
    * Wraps the given bytes into a {@code ByteString}. Intended for internal usage within the
    * library.
+   *
+   * <p>Array-backed buffers are aliased; other buffers (direct or read-only) are copied onto the
+   * heap.
    */
   static ByteString wrap(ByteBuffer buffer) {
-    try {
-      return wrap(buffer, /* requireUtf8= */ false);
-    } catch (InvalidProtocolBufferException e) {
-      throw new AssertionError(
-          "Expected no InvalidProtocolBufferException as data UTF8 validity is not checked.", e);
-    }
+    return wrap(buffer, /* copyOffHeap= */ true);
   }
 
-  static ByteString wrap(ByteBuffer buffer, boolean requireUtf8)
-      throws InvalidProtocolBufferException {
+  /**
+   * Wraps the given bytes into a {@code ByteString}. Array-backed buffers are aliased. If {@code
+   * copyOffHeap} is true then buffers without an accessible array (direct or read-only) are copied
+   * onto the heap, otherwise they are also aliased.
+   */
+  static ByteString wrap(ByteBuffer buffer, boolean copyOffHeap) {
     if (buffer.remaining() == 0) {
       return EMPTY;
-    }
-    if (requireUtf8 && !Utf8.isValidUtf8(buffer)) {
-      throw InvalidProtocolBufferException.invalidUtf8();
     }
     if (buffer.hasArray()) {
       final int offset = buffer.arrayOffset();
       return ByteString.wrap(buffer.array(), offset + buffer.position(), buffer.remaining());
-    } else {
+    } else if (copyOffHeap) {
       ByteBuffer slice = buffer.slice();
       byte[] bytes = new byte[slice.remaining()];
       slice.get(bytes);
       return new LiteralByteString(bytes);
+    } else {
+      return new NonArrayBackedByteString(buffer);
     }
   }
 
@@ -1866,6 +1869,241 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
       throw new InvalidObjectException(
           "BoundedByteStream instances are not to be serialized directly");
+    }
+  }
+
+  /**
+   * A {@link ByteString} that aliases a {@link ByteBuffer} which is not backed by an accessible
+   * array, such as a direct buffer or a read-only heap buffer. Array-backed buffers should be
+   * wrapped as a {@link BoundedByteString} instead.
+   */
+  // Keep this class private to avoid deadlocks in classloading across threads as ByteString's
+  // static initializer loads LiteralByteString and another thread loads BoundedByteString.
+  private static final class NonArrayBackedByteString extends ByteString.LeafByteString {
+    /** Max chunk size used when parsing from the buffer via a stream decoder. */
+    private static final int STREAM_BUFFER_SIZE = 4096;
+
+    private final ByteBuffer buffer;
+
+    NonArrayBackedByteString(ByteBuffer buffer) {
+      checkNotNull(buffer, "buffer");
+      if (buffer.hasArray()) {
+        throw new IllegalArgumentException(
+            "NonArrayBackedByteString requires a buffer without an accessible backing array");
+      }
+
+      // Use native byte order for fast fixed32/64 operations.
+      this.buffer = buffer.slice().order(ByteOrder.nativeOrder());
+    }
+
+    // =================================================================
+    // Serializable
+
+    /** Magic method that lets us override serialization behavior. */
+    private Object writeReplace() {
+      return ByteString.copyFrom(buffer.slice());
+    }
+
+    /** Magic method that lets us override deserialization behavior. */
+    private void readObject(@SuppressWarnings("unused") ObjectInputStream in) throws IOException {
+      throw new InvalidObjectException(
+          "NonArrayBackedByteString instances are not to be serialized directly");
+    }
+
+    // =================================================================
+
+    @Override
+    public byte byteAt(int index) {
+      try {
+        return buffer.get(index);
+      } catch (ArrayIndexOutOfBoundsException e) {
+        throw e;
+      } catch (IndexOutOfBoundsException e) {
+        throw new ArrayIndexOutOfBoundsException(e.getMessage());
+      }
+    }
+
+    @Override
+    public byte internalByteAt(int index) {
+      return byteAt(index);
+    }
+
+    @Override
+    public int size() {
+      return buffer.remaining();
+    }
+
+    @Override
+    public ByteString substring(int beginIndex, int endIndex) {
+      try {
+        ByteBuffer slice = slice(beginIndex, endIndex);
+        return new NonArrayBackedByteString(slice);
+      } catch (ArrayIndexOutOfBoundsException e) {
+        throw e;
+      } catch (IndexOutOfBoundsException e) {
+        throw new ArrayIndexOutOfBoundsException(e.getMessage());
+      }
+    }
+
+    @Override
+    public ByteString substringNoCopy(int beginIndex, int endIndex) {
+      return substring(beginIndex, endIndex);
+    }
+
+    @Override
+    protected void copyToInternal(
+        byte[] target, int sourceOffset, int targetOffset, int numberToCopy) {
+      ByteBuffer slice = buffer.slice();
+      Java8Compatibility.position(slice, sourceOffset);
+      slice.get(target, targetOffset, numberToCopy);
+    }
+
+    @Override
+    public void copyTo(ByteBuffer target) {
+      target.put(buffer.slice());
+    }
+
+    @Override
+    public void writeTo(OutputStream out) throws IOException {
+      out.write(toByteArray());
+    }
+
+    @Override
+    boolean equalsRange(ByteString other, int offset, int length) {
+      return substring(0, length).equals(other.substring(offset, offset + length));
+    }
+
+    @Override
+    void writeToInternal(OutputStream out, int sourceOffset, int numberToWrite) throws IOException {
+      byte[] bytes = new byte[numberToWrite];
+      copyToInternal(bytes, sourceOffset, 0, numberToWrite);
+      out.write(bytes);
+    }
+
+    @Override
+    void writeTo(ByteOutput output) throws IOException {
+      output.writeLazy(buffer.slice());
+    }
+
+    @Override
+    public ByteBuffer asReadOnlyByteBuffer() {
+      return buffer.asReadOnlyBuffer();
+    }
+
+    @Override
+    public List<ByteBuffer> asReadOnlyByteBufferList() {
+      return Collections.singletonList(asReadOnlyByteBuffer());
+    }
+
+    @Override
+    protected String toStringInternal(Charset charset) {
+      return new String(toByteArray(), charset);
+    }
+
+    @Override
+    public boolean isValidUtf8() {
+      return Utf8.isValidUtf8(buffer);
+    }
+
+    @Override
+    public boolean equalsInternal(ByteString other) {
+      if (other instanceof NonArrayBackedByteString) {
+        return buffer.equals(((NonArrayBackedByteString) other).buffer);
+      }
+      if (other instanceof RopeByteString) {
+        return other.equalsInternal(this);
+      }
+      return buffer.equals(other.asReadOnlyByteBuffer());
+    }
+
+    @Override
+    protected int partialHash(int h, int offset, int length) {
+      for (int i = offset; i < offset + length; i++) {
+        h = h * 31 + buffer.get(i);
+      }
+      return h;
+    }
+
+    @Override
+    public InputStream newInput() {
+      return new InputStream() {
+        private final ByteBuffer buf = buffer.slice();
+
+        @Override
+        public void mark(int readlimit) {
+          Java8Compatibility.mark(buf);
+        }
+
+        @Override
+        public boolean markSupported() {
+          return true;
+        }
+
+        @Override
+        public void reset() throws IOException {
+          try {
+            Java8Compatibility.reset(buf);
+          } catch (InvalidMarkException e) {
+            throw new IOException(e);
+          }
+        }
+
+        @Override
+        public int available() throws IOException {
+          return buf.remaining();
+        }
+
+        @Override
+        public int read() throws IOException {
+          if (!buf.hasRemaining()) {
+            return -1;
+          }
+          return buf.get() & 0xFF;
+        }
+
+        @Override
+        public int read(byte[] bytes, int off, int len) throws IOException {
+          if (!buf.hasRemaining()) {
+            return -1;
+          }
+
+          len = Math.min(len, buf.remaining());
+          buf.get(bytes, off, len);
+          return len;
+        }
+      };
+    }
+
+    @Override
+    public CodedInputStream newCodedInput() {
+      int size = size();
+      if (size <= STREAM_BUFFER_SIZE) {
+        // The whole payload fits in a single chunk, so copy it once and use the array decoder.
+        // The copy is private to the decoder, so it may be treated as immutable.
+        return CodedInputStream.newInstance(toByteArray(), 0, size, /* bufferIsImmutable= */ true);
+      }
+      // Stream from the buffer in chunks rather than copying the whole buffer onto the heap up
+      // front.
+      return CodedInputStream.newInstance(newInput(), STREAM_BUFFER_SIZE);
+    }
+
+    /**
+     * Creates a slice of a range of this buffer.
+     *
+     * @param beginIndex the beginning index of the slice (inclusive).
+     * @param endIndex the end index of the slice (exclusive).
+     * @return the requested slice.
+     */
+    private ByteBuffer slice(int beginIndex, int endIndex) {
+      if (beginIndex < buffer.position() || endIndex > buffer.limit() || beginIndex > endIndex) {
+        throw new IllegalArgumentException(
+            String.format("Invalid indices [%d, %d]", beginIndex, endIndex));
+      }
+
+      ByteBuffer slice = buffer.slice();
+      Java8Compatibility.position(slice, beginIndex - buffer.position());
+      Java8Compatibility.limit(slice, endIndex - buffer.position());
+      return slice;
     }
   }
 }

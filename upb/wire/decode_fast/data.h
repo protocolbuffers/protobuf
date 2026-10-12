@@ -49,11 +49,13 @@ UPB_INLINE bool upb_DecodeFast_MakeData(uint64_t offset, uint64_t case_offset,
 //
 //                  48                32                16                 0
 // |--------|--------|--------|--------|--------|--------|--------|--------|
-// |   offset (16)   |--B3|vsz|ksz|*|*|*|*|-|vwt|kwt|subofs (8)| exp. tag (16) |
+// |   offset (16)   |V3MB3|vsz|ksz|*|*|*|*|UV|UK|vwt|kwt|subofs (8)| exp. tag
+// (16) |
 // |--------|--------|--------|--------|--------|--------|--------|--------|
 //
 // - `offset` (bits 48-63) is the offset of the upb_Map pointer in the message.
-// - bits 46-47 are unused.
+// - bit 47 is `val_is_32` (true if the map value is 4 bytes wide).
+// - bit 46 is `val_is_message` (true if the map value is a submessage).
 // - bit 45 is `val_is_bool` (true if the map value is a bool).
 // - bit 44 is `key_is_32` (true if the integer key is 4 bytes wide).
 // - `val_size` (bits 40-43) is upb_Map::val_size for this map.
@@ -62,7 +64,8 @@ UPB_INLINE bool upb_DecodeFast_MakeData(uint64_t offset, uint64_t case_offset,
 // - bit 33 is `val_is_zigzag` (true if integer value uses sint32/sint64).
 // - bit 34 is `is_tag2` (true if the map field wire tag is 2 bytes).
 // - bit 35 is `is_str_map` (true if map has string/bytes keys).
-// - bits 30-31 are unused.
+// - bit 30 is `key_validate_utf8` (true if string key requires UTF-8 check).
+// - bit 31 is `val_validate_utf8` (true if string value requires UTF-8 check).
 // - `val_wire_type` (bits 27-29) is the wire type that the map entry's value
 //   (field 2) must have in order to match the schema.
 // - `key_wire_type` (bits 24-26) is the wire type that the map entry's key
@@ -78,16 +81,19 @@ UPB_INLINE bool upb_DecodeFast_MakeData(uint64_t offset, uint64_t case_offset,
 // that, so those entries have to fall back.
 //
 // `key_size`/`val_size` mirror the upb_Map fields of the same name, and
-// `key_is_32`/`val_is_bool` are redundant encodings of `key_size == 4` and
-// `val_size == 1`. They are baked in here so that the map entry loop can test
-// them without loading from the upb_Map on every entry; on aarch64 each becomes
-// a single tbz/tbnz or ubfx against a register.
+// `key_is_32`/`val_is_bool`/`val_is_32` are redundant encodings of
+// `key_size == 4`, `val_size == 1`, and `val_size == 4`. They are baked in here
+// so that the map entry loop can test them without loading from the upb_Map on
+// every entry; on aarch64 each becomes a single tbz/tbnz or ubfx against a
+// register.
 
 enum {
   kUpb_DecodeFastMap_KeyWireTypeShift = 24,
   kUpb_DecodeFastMap_ValWireTypeShift = 27,
   kUpb_DecodeFastMap_WireTypeMask = 0x7,
 
+  kUpb_DecodeFastMap_KeyValidateUtf8 = 1ULL << 30,
+  kUpb_DecodeFastMap_ValValidateUtf8 = 1ULL << 31,
   kUpb_DecodeFastMap_KeyIsZigZag = 1ULL << 32,
   kUpb_DecodeFastMap_ValIsZigZag = 1ULL << 33,
   kUpb_DecodeFastMap_IsTag2 = 1ULL << 34,
@@ -98,13 +104,16 @@ enum {
   kUpb_DecodeFastMap_SizeMask = 0xf,
   kUpb_DecodeFastMap_KeyIs32 = 1ULL << 44,
   kUpb_DecodeFastMap_ValIsBool = 1ULL << 45,
+  kUpb_DecodeFastMap_ValIsMessage = 1ULL << 46,
+  kUpb_DecodeFastMap_ValIs32 = 1ULL << 47,
 };
 
 // `key_size` and `val_size` are upb_Map::key_size / upb_Map::val_size, i.e. the
 // kSizeInMap[] values from decode.c (UPB_MAPTYPE_STRING for string/bytes).
 UPB_INLINE bool upb_DecodeFast_MakeMapData(
     uint64_t offset, bool key_is_zigzag, bool val_is_zigzag, bool is_tag2,
-    bool is_str_map, uint64_t key_wire_type, uint64_t val_wire_type,
+    bool is_str_map, bool key_validate_utf8, bool val_validate_utf8,
+    bool val_is_message, uint64_t key_wire_type, uint64_t val_wire_type,
     uint64_t key_size, uint64_t val_size, uint64_t subofs,
     uint64_t expected_tag, uint64_t* out_data) {
   if (offset > 0xffff || subofs > 0xff || expected_tag > 0xffff ||
@@ -116,18 +125,30 @@ UPB_INLINE bool upb_DecodeFast_MakeMapData(
   }
 
   uint64_t flags =
+      (key_validate_utf8 ? (uint64_t)kUpb_DecodeFastMap_KeyValidateUtf8 : 0) |
+      (val_validate_utf8 ? (uint64_t)kUpb_DecodeFastMap_ValValidateUtf8 : 0) |
       (key_is_zigzag ? (uint64_t)kUpb_DecodeFastMap_KeyIsZigZag : 0) |
       (val_is_zigzag ? (uint64_t)kUpb_DecodeFastMap_ValIsZigZag : 0) |
       (is_tag2 ? (uint64_t)kUpb_DecodeFastMap_IsTag2 : 0) |
       (is_str_map ? (uint64_t)kUpb_DecodeFastMap_IsStrMap : 0) |
       (key_size == 4 ? (uint64_t)kUpb_DecodeFastMap_KeyIs32 : 0) |
       (val_size == 1 ? (uint64_t)kUpb_DecodeFastMap_ValIsBool : 0) |
+      (val_is_message ? (uint64_t)kUpb_DecodeFastMap_ValIsMessage : 0) |
+      (val_size == 4 ? (uint64_t)kUpb_DecodeFastMap_ValIs32 : 0) |
       (key_size << kUpb_DecodeFastMap_KeySizeShift) |
       (val_size << kUpb_DecodeFastMap_ValSizeShift) |
       (key_wire_type << kUpb_DecodeFastMap_KeyWireTypeShift) |
       (val_wire_type << kUpb_DecodeFastMap_ValWireTypeShift);
   *out_data = (offset << 48) | flags | (subofs << 16) | expected_tag;
   return true;
+}
+
+UPB_INLINE bool upb_DecodeFastData_KeyValidateUtf8(uint64_t data) {
+  return (data & kUpb_DecodeFastMap_KeyValidateUtf8) != 0;
+}
+
+UPB_INLINE bool upb_DecodeFastData_ValValidateUtf8(uint64_t data) {
+  return (data & kUpb_DecodeFastMap_ValValidateUtf8) != 0;
 }
 
 UPB_INLINE bool upb_DecodeFastData_KeyIsZigZag(uint64_t data) {
@@ -166,6 +187,16 @@ UPB_INLINE bool upb_DecodeFastData_KeyIs32(uint64_t data) {
 // test.
 UPB_INLINE bool upb_DecodeFastData_ValIsBool(uint64_t data) {
   return (data & kUpb_DecodeFastMap_ValIsBool) != 0;
+}
+
+UPB_INLINE bool upb_DecodeFastData_ValIsMessage(uint64_t data) {
+  return (data & kUpb_DecodeFastMap_ValIsMessage) != 0;
+}
+
+// Equivalent to upb_DecodeFastData_GetValSize(data) == 4, but a single-bit
+// test.
+UPB_INLINE bool upb_DecodeFastData_ValIs32(uint64_t data) {
+  return (data & kUpb_DecodeFastMap_ValIs32) != 0;
 }
 
 // Returns the complete tag (field number 1 + wire type) that the map entry's

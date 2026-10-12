@@ -1,7 +1,6 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_TESTEE_H__
 
-#include <limits>
 #include <string>
 #include <utility>
 
@@ -12,21 +11,19 @@
 #include "conformance/test_runner.h"
 #include "google/protobuf/descriptor.h"
 
-// This file defines the APIs used by conformance tests to interact with
-// testees.  The structure of these APIs are intentionally decoupled from the
-// runner/testee protocol (which are used to implement them), in order to
-// maximize their flexibility in tests.
+// The APIs conformance tests use to interact with a testee.  They are
+// deliberately decoupled from the runner/testee protocol that implements
+// them.  That keeps them flexible for tests.
 //
-// Tests should not ever need to name any of these types directly, but will
-// obtain a Test object pointing to the global testee and pass the final
-// TestResult to one of our matchers.
+// Tests should never need to name any of these types directly.  A test
+// obtains a Test object for the global testee from Testee() (see
+// test_fixture.h), chains operations on it and passes the final
+// TestResult to Yields() (see matchers.h):
 //
-// Example:
-//
-// EXPECT_THAT(Testee()
-//                .ParseBinary(Wire(LengthPrefixedField(1, "foo"))
-//                .SerializeText({/*print_unknown_fields=*/true}),
-//             ParsedPayload(EqualsProto("pb(1: "foo")pb")));
+//   EXPECT_THAT(Testee()
+//                   .ParseBinary(TestAllTypesProto2::descriptor(), input)
+//                   .SerializeBinary(),
+//               Yields(WhenParsed(EqualsBinaryProto(input))));
 
 // TODO Possible future APIs to expand conformance coverage:
 // - Add ClearUnknownFields() to InMemoryMessage
@@ -50,7 +47,7 @@ namespace conformance {
 // "Recommended" (see PriorityLevelName()).
 //
 // A suite declares its priority with ConformanceTest::DefaultPriority().  A
-// single test overrides it with Testee(priority); see test_environment.h.
+// single test overrides it with Testee(priority); see test_fixture.h.
 // TODO: b/564550230 - rename the levels in test names to P0/P1 once every
 // suite has been triaged.
 enum class TestPriority { kP0 = 0, kP1 = 1 };
@@ -59,11 +56,10 @@ enum class TestPriority { kP0 = 0, kP1 = 1 };
 inline constexpr TestPriority kP0 = TestPriority::kP0;
 inline constexpr TestPriority kP1 = TestPriority::kP1;
 
-// An enforcement level is the highest priority, as an int (0 for kP0, 1 for
-// kP1), whose unlisted failures fail the run.  See TestManager in
-// test_manager.h.  kEnforceAllPriorities, the default, enforces every
-// priority, however many there are.
-inline constexpr int kEnforceAllPriorities = std::numeric_limits<int>::max();
+// The lowest priority there is.  An enforcement level (see TestManager in
+// test_manager.h) is the lowest priority whose unlisted failures fail the run;
+// kLowestPriority, the default, enforces every priority.
+inline constexpr TestPriority kLowestPriority = kP1;
 
 // The name of a priority: "P0" or "P1".
 absl::string_view PriorityName(TestPriority priority);

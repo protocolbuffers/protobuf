@@ -659,7 +659,7 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
   ASSERT_NE(ext_found, nullptr);
 
   const upb_test_ModelExtension1* cloned_ext =
-      (const upb_test_ModelExtension1*)ext_found->data.msg_val;
+      (const upb_test_ModelExtension1*)upb_Extension_GetMessage(ext_found);
   EXPECT_TRUE(
       upb_StringView_IsEqual(upb_test_ModelExtension1_str(cloned_ext),
                              upb_StringView_FromString("LifecycleValue")));
