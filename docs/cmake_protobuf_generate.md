@@ -163,4 +163,10 @@ Multi-value arguments:
     `${PROTOC_OUT_DIR}/helloworld/helloworld.pb.cc`.
 -   `GENERATE_EXTENSIONS` — If LANGUAGE is omitted then this must be set to the
     extensions that protoc generates.
--   `PROTOC_OPTIONS` — Additional arguments that are forwarded to protoc.
+-   `PROTOC_OPTIONS` — Additional arguments that are forwarded to protoc. Don't
+    use it for flags that `protobuf_generate` sets from its own arguments:
+    import paths (`-I`/`--proto_path`; use `IMPORT_DIRS` or `APPEND_PATH`), the
+    output directory and generator options (`--<lang>_out`; use
+    `PROTOC_OUT_DIR` and `PLUGIN_OPTIONS`) or plugins (`--plugin`; use
+    `PLUGIN`). The generated file names are worked out from those arguments,
+    so flags passed here aren't taken into account.
