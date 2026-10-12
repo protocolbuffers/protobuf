@@ -141,6 +141,10 @@ message MapMessage {
   map<string, TestEnum> map_string_enum = 3;
 }
 
+message MapOfSingularFields {
+  map<string, TestSingularFields> map_string_singular = 1;
+}
+
 message MapMessageWireEquiv {
   repeated MapMessageWireEquiv_entry1 map_string_int32 = 1;
   repeated MapMessageWireEquiv_entry2 map_string_msg = 2;
