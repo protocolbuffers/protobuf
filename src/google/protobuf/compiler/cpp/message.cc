@@ -102,21 +102,6 @@ std::string ConditionalToCheckBitmasks(
   return result + (return_success ? " == 0" : " != 0");
 }
 
-template <typename PredicateT>
-void DebugAssertUniform(const std::vector<const FieldDescriptor*>& fields,
-                        const Options& options, PredicateT&& pred) {
-  ABSL_DCHECK(!fields.empty() && absl::c_all_of(fields, [&](const auto* f) {
-    return pred(f) == pred(fields.front());
-  }));
-}
-
-void DebugAssertUniformLikelyPresence(
-    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
-  DebugAssertUniform(fields, options, [&](const FieldDescriptor* f) {
-    return IsLikelyPresent(f, options);
-  });
-}
-
 // Generates a condition that checks presence of a field. If probability is
 // provided, the condition will be wrapped with
 // PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY.
@@ -482,7 +467,7 @@ bool MayGroupChunksForHaswordsCheck(const FieldChunk& a, const FieldChunk& b) {
 
 // Returns true if it emits conditional check against hasbit words. This is
 // useful to skip multiple fields that are unlikely present based on profile
-// (go/pdproto). Assumes that each chunk is limited to one has "byte".
+// (go/pdproto). Assumes that each chunk is limited to one has "word".
 bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
                             const Options& options,
                             const FieldLayout& field_layout,
@@ -552,6 +537,93 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
           )cc");
   p->Indent();
   return true;
+}
+
+// Calculates the expected number of branch checks executed for a chunk of
+// `size` fields, where `p_none` is the probability that none of the fields
+// are present.
+//
+// For a single field (`size <= 1`), 1 branch is evaluated for its individual
+// presence check. For `size > 1`, 1 branch is evaluated for the batch presence
+// check, plus `size` subsequent individual branch checks evaluated when the
+// batch check succeeds (with probability `p_any`).
+double ExpectedNumberOfBranchesTaken(size_t size, double p_none) {
+  if (size <= 1) return 1.0;
+
+  double p_any = 1.0 - p_none;
+  return 1.0 + size * p_any;
+}
+
+double GetAbsenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  // The default value of 0.0 is chosen for two reasons:
+  // 1. We batch in other generated methods when the PdProto data isn't
+  // available and the value of 0.0f promotes batching.
+  // 2. It has shown the best performance in the protogen_micro benchmark when
+  // compared do 1.0f and 0.5f.
+  return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
+}
+
+FieldChunk ChunkWithFields(const FieldChunk& chunk,
+                           std::vector<const FieldDescriptor*> fields) {
+  FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
+  res.fields = std::move(fields);
+  return res;
+}
+
+const FieldChunk* GetPartitionableChunk(const FieldChunk& chunk) {
+  return chunk.has_hasbit ? &chunk : nullptr;
+}
+
+// Greedily partitions the fields sharing a hasbit word into batches to
+// minimize the expected number of branch checks executed.
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
+                                                       const Options& options) {
+  std::vector<Chunk> result;
+  if (chunk.fields.empty()) return result;
+
+  result.push_back(ChunkWithFields(chunk, {chunk.fields.front()}));
+  double p_none = GetAbsenceProbability(chunk.fields.front(), options);
+
+  for (size_t i = 1; i < chunk.fields.size(); ++i) {
+    const FieldDescriptor* field = chunk.fields[i];
+    double current_cost =
+        ExpectedNumberOfBranchesTaken(result.back().fields.size(), p_none);
+    double p_field_absent = GetAbsenceProbability(field, options);
+    double new_absent = p_none * p_field_absent;
+    double extended_cost = ExpectedNumberOfBranchesTaken(
+        result.back().fields.size() + 1, new_absent);
+
+    // If adding this field to the current batch has a higher expected branches
+    // cost than if the field were alone, start a new chunk.
+    if (extended_cost > current_cost + 1.0) {
+      result.push_back(ChunkWithFields(chunk, {field}));
+      p_none = p_field_absent;
+    } else {
+      result.back().fields.push_back(field);
+      p_none = new_absent;
+    }
+  }
+  return result;
+}
+
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(
+    std::vector<Chunk> chunks, const Options& options) {
+  std::vector<Chunk> result;
+
+  for (Chunk& chunk : chunks) {
+    const auto* partitionable = GetPartitionableChunk(chunk);
+    if (partitionable != nullptr && partitionable->fields.size() > 1) {
+      absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
+                   std::back_inserter(result));
+    } else {
+      result.push_back(std::move(chunk));
+    }
+  }
+
+  return result;
 }
 
 using Sub = ::google::protobuf::io::Printer::Sub;
@@ -3296,15 +3368,15 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         // This predicate guarantees that there is only a single zero-init
         // (memset) per chunk, and if present it will be at the beginning.
         bool same =
-            field_layout_.GetHasByteIndex(a) ==
-                field_layout_.GetHasByteIndex(b) &&
-            IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
+            field_layout_.GetHasWordIndex(a) ==
+                field_layout_.GetHasWordIndex(b) &&
             (CanClearByZeroing(a) == CanClearByZeroing(b) ||
              (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
         if (!same) chunk_count = 0;
         return same;
       },
       [&](auto* f) { return ShouldSplit(f, options_) == is_split; });
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   auto it = chunks.begin();
   auto end = chunks.end();
@@ -3404,20 +3476,14 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
       // We can omit the if() for chunk size 1, or if our fields do not have
       // hasbits. I don't understand the rationale for the last part of the
       // condition, but it matches the old logic.
-      const bool check_has_byte =
+      const bool check_has_word =
           field_layout_.GetHasBitIndex(fields.front()).has_value() &&
-          fields.size() > 1 && !IsLikelyPresent(fields.back(), options_) &&
-          (memset_end != fields.back() || merge_zero_init);
+          fields.size() > 1 && (memset_end != fields.back() || merge_zero_init);
 
-      DebugAssertUniformLikelyPresence(fields, options_);
-
-      if (check_has_byte) {
+      if (check_has_word) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
-        // Check (up to) 8 has_bits at a time if we have more than one field in
-        // this chunk.  Due to field layout ordering, we may check
-        // _has_bits_[last_chunk * 8 / 32] multiple times.
         ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
 
         const int has_word_index =
@@ -3934,10 +4000,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
     const absl::optional<int> has_word_index =
         field_layout_.GetHasWordIndex(fields.front());
     const bool cache_has_bits = has_word_index.has_value();
-    const bool check_has_byte = cache_has_bits && fields.size() > 1 &&
-                                !IsLikelyPresent(fields.back(), options_);
-
-    DebugAssertUniformLikelyPresence(fields, options_);
+    const bool check_has_word = cache_has_bits && fields.size() > 1;
 
     if (cache_has_bits && cached_has_word_index != has_word_index.value()) {
       cached_has_word_index = has_word_index.value();
@@ -3947,13 +4010,10 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
               )cc");
     }
 
-    if (check_has_byte) {
+    if (check_has_word) {
       // Emit an if() that will let us skip the whole chunk if none are set.
       uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
-      // Check (up to) 8 has_bits at a time if we have more than one field in
-      // this chunk.  Due to field layout ordering, we may check
-      // _has_bits_[last_chunk * 8 / 32] multiple times.
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
@@ -4019,7 +4079,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
                 } else {
                   ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
                               HasbitMode::kTrueHasbit);
-                  if (check_has_byte && IsPOD(field)) {
+                  if (check_has_word && IsPOD(field)) {
                     generator.GenerateCopyConstructorCode(p);
                   } else {
                     generator.GenerateMergingCode(p);
@@ -4034,7 +4094,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       }
     }
 
-    if (check_has_byte) {
+    if (check_has_word) {
       p->Outdent();
       p->Emit(R"cc(
         }
@@ -4045,11 +4105,11 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
   std::vector<FieldChunk> chunks = CollectFields(
       field_layout_.optimized_order(), options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
-        return field_layout_.GetHasByteIndex(a) ==
-                   field_layout_.GetHasByteIndex(b) &&
-               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_);
+        return field_layout_.GetHasWordIndex(a) ==
+               field_layout_.GetHasWordIndex(b);
       },
       [&](const auto* f) { return ShouldSplit(f, options_) == is_split; });
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   auto it = chunks.begin();
   auto end = chunks.end();
@@ -4561,43 +4621,11 @@ std::vector<SerializeChunk> CollectMaximalSerializeChunks(
   return chunks;
 }
 
-// Calculates the expected number of branch checks executed for a chunk of
-// `size` fields, where `p_none` is the probability that none of the fields
-// are present.
-//
-// For a single field (`size <= 1`), 1 branch is evaluated for its individual
-// presence check. For `size > 1`, 1 branch is evaluated for the batch presence
-// check, plus `size` subsequent individual branch checks evaluated when the
-// batch check succeeds (with probability `p_any`).
-double ExpectedNumberOfBranchesTaken(size_t size, double p_none) {
-  if (size <= 1) return 1.0;
-
-  double p_any = 1.0 - p_none;
-  return 1.0 + size * p_any;
-}
-
-double GetAbsenceProbability(const FieldDescriptor* field,
-                             const Options& options) {
-  // The default value of 0.0 is chosen for two reasons:
-  // 1. We batch in other generated methods when the PdProto data isn't
-  // available and the value of 0.0f promotes batching.
-  // 2. It has shown the best performance in the protogen_micro benchmark when
-  // compared do 1.0f and 0.5f.
-  return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
-}
-
 SerializeFieldChunk ChunkWithFields(
     const SerializeFieldChunk& chunk,
     std::vector<const FieldDescriptor*> fields) {
   return SerializeFieldChunk{chunk.should_split, chunk.hasword_index,
                              std::move(fields)};
-}
-
-FieldChunk ChunkWithFields(const FieldChunk& chunk,
-                           std::vector<const FieldDescriptor*> fields) {
-  FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
-  res.fields = std::move(fields);
-  return res;
 }
 
 const SerializeFieldChunk* GetPartitionableChunk(const SerializeChunk& chunk) {
@@ -4606,61 +4634,6 @@ const SerializeFieldChunk* GetPartitionableChunk(const SerializeChunk& chunk) {
     return field_chunk;
   }
   return nullptr;
-}
-
-const FieldChunk* GetPartitionableChunk(const FieldChunk& chunk) {
-  return chunk.has_hasbit ? &chunk : nullptr;
-}
-
-// Greedily partitions the fields sharing a hasbit word into batches to
-// minimize the expected number of branch checks executed during serialization.
-template <typename Chunk>
-std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
-                                                       const Options& options) {
-  std::vector<Chunk> result;
-  if (chunk.fields.empty()) return result;
-
-  result.push_back(ChunkWithFields(chunk, {chunk.fields.front()}));
-  double p_none = GetAbsenceProbability(chunk.fields.front(), options);
-
-  for (size_t i = 1; i < chunk.fields.size(); ++i) {
-    const FieldDescriptor* field = chunk.fields[i];
-    double current_cost =
-        ExpectedNumberOfBranchesTaken(result.back().fields.size(), p_none);
-    double p_field_absent = GetAbsenceProbability(field, options);
-    double new_absent = p_none * p_field_absent;
-    double extended_cost = ExpectedNumberOfBranchesTaken(
-        result.back().fields.size() + 1, new_absent);
-
-    // If adding this field to the current batch has a higher expected branches
-    // cost than if the field were alone, start a new chunk.
-    if (extended_cost > current_cost + 1.0) {
-      result.push_back(ChunkWithFields(chunk, {field}));
-      p_none = p_field_absent;
-    } else {
-      result.back().fields.push_back(field);
-      p_none = new_absent;
-    }
-  }
-  return result;
-}
-
-template <typename Chunk>
-std::vector<Chunk> PartitionToMinimizeExpectedBranches(
-    std::vector<Chunk> chunks, const Options& options) {
-  std::vector<Chunk> result;
-
-  for (Chunk& chunk : chunks) {
-    const auto* partitionable = GetPartitionableChunk(chunk);
-    if (partitionable != nullptr && partitionable->fields.size() > 1) {
-      absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
-                   std::back_inserter(result));
-    } else {
-      result.push_back(std::move(chunk));
-    }
-  }
-
-  return result;
 }
 }  // namespace
 

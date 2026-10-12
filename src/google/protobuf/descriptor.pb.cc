@@ -6857,7 +6857,7 @@ void FileDescriptorProto::Clear(MessageLite& base) {
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00001fffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._impl_.dependency_.Clear();
     }
@@ -6882,8 +6882,6 @@ void FileDescriptorProto::Clear(MessageLite& base) {
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       this_._impl_.option_dependency_.Clear();
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00001f00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -7171,7 +7169,7 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._internal_mutable_dependency()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
@@ -7208,8 +7206,6 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_option_dependency());
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._internal_set_name(from._internal_name());
     }
@@ -7945,7 +7941,7 @@ void DescriptorProto::Clear(MessageLite& base) {
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000003ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._impl_.field_.Clear();
     }
@@ -7970,8 +7966,6 @@ void DescriptorProto::Clear(MessageLite& base) {
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       this_._impl_.reserved_name_.Clear();
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000300U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._impl_.name_.ClearNonDefaultToEmpty();
     }
@@ -8209,7 +8203,7 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._internal_mutable_field()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
@@ -8250,8 +8244,6 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
           ::google::protobuf::MessageLite::internal_visibility(), arena,
           from._internal_reserved_name());
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._internal_set_name(from._internal_name());
     }
@@ -9051,15 +9043,12 @@ void FieldDescriptorProto::Clear(MessageLite& base) {
       this_._impl_.options_->Clear();
     }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x000000c0U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000007c0U)) {
     ::memset(&this_._impl_.number_, 0,
              static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.oneof_index_) -
+                 reinterpret_cast<char*>(&this_._impl_.proto3_optional_) -
                  reinterpret_cast<char*>(&this_._impl_.number_)) +
-                 sizeof(_impl_.oneof_index_));
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
-    this_._impl_.proto3_optional_ = false;
+                 sizeof(_impl_.proto3_optional_));
     this_._impl_.label_ = 1;
     this_._impl_.type_ = 1;
   }
@@ -9257,7 +9246,7 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._internal_set_name(from._internal_name());
     }
@@ -9287,8 +9276,6 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       this_._impl_.oneof_index_ = from._impl_.oneof_index_;
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._impl_.proto3_optional_ = from._impl_.proto3_optional_;
     }
@@ -11125,7 +11112,7 @@ void FileOptions::Clear(MessageLite& base) {
 
   this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000007ffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._impl_.java_package_.ClearNonDefaultToEmpty();
     }
@@ -11150,8 +11137,6 @@ void FileOptions::Clear(MessageLite& base) {
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       this_._impl_.php_namespace_.ClearNonDefaultToEmpty();
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000700U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._impl_.php_metadata_namespace_.ClearNonDefaultToEmpty();
     }
@@ -11163,18 +11148,11 @@ void FileOptions::Clear(MessageLite& base) {
       this_._impl_.features_->Clear();
     }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x0000f800U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x001ff800U)) {
     ::memset(&this_._impl_.java_multiple_files_, 0,
              static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.java_generate_equals_and_hash_) -
-                 reinterpret_cast<char*>(&this_._impl_.java_multiple_files_)) +
-                 sizeof(_impl_.java_generate_equals_and_hash_));
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x001f0000U)) {
-    ::memset(&this_._impl_.deprecated_, 0,
-             static_cast<::size_t>(
                  reinterpret_cast<char*>(&this_._impl_.java_string_check_utf8_) -
-                 reinterpret_cast<char*>(&this_._impl_.deprecated_)) +
+                 reinterpret_cast<char*>(&this_._impl_.java_multiple_files_)) +
                  sizeof(_impl_.java_string_check_utf8_));
     this_._impl_.optimize_for_ = 1;
     this_._impl_.cc_enable_arenas_ = true;
@@ -11467,7 +11445,7 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._internal_set_java_package(from._internal_java_package());
     }
@@ -11492,8 +11470,6 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       this_._internal_set_php_namespace(from._internal_php_namespace());
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x0000ff00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._internal_set_php_metadata_namespace(from._internal_php_metadata_namespace());
     }
@@ -11523,8 +11499,6 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00008000U)) {
       this_._impl_.java_generate_equals_and_hash_ = from._impl_.java_generate_equals_and_hash_;
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x001f0000U)) {
     if (CheckHasBit(cached_has_bits, 0x00010000U)) {
       this_._impl_.deprecated_ = from._impl_.deprecated_;
     }
@@ -12581,18 +12555,11 @@ void FieldOptions::Clear(MessageLite& base) {
       this_._impl_.feature_support_->Clear();
     }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x000000f0U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x00003ff0U)) {
     ::memset(&this_._impl_.ctype_, 0,
              static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.lazy_) -
-                 reinterpret_cast<char*>(&this_._impl_.ctype_)) +
-                 sizeof(_impl_.lazy_));
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
-    ::memset(&this_._impl_.weak_, 0,
-             static_cast<::size_t>(
                  reinterpret_cast<char*>(&this_._impl_.retention_) -
-                 reinterpret_cast<char*>(&this_._impl_.weak_)) +
+                 reinterpret_cast<char*>(&this_._impl_.ctype_)) +
                  sizeof(_impl_.retention_));
     if (CheckHasBit(cached_has_bits, 0x00002000U)) {
       this_._impl_.targets_.Clear();
@@ -12826,7 +12793,7 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._internal_mutable_edition_defaults()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
@@ -12865,8 +12832,6 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       this_._impl_.lazy_ = from._impl_.lazy_;
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00003f00U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       this_._impl_.weak_ = from._impl_.weak_;
     }
@@ -15188,14 +15153,13 @@ void FeatureSet::Clear(MessageLite& base) {
 
   this_._impl_._extensions_.Clear();
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     ::memset(&this_._impl_.field_presence_, 0,
              static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.default_symbol_visibility_) -
+                 reinterpret_cast<char*>(&this_._impl_.enforce_proto_limits_) -
                  reinterpret_cast<char*>(&this_._impl_.field_presence_)) +
-                 sizeof(_impl_.default_symbol_visibility_));
+                 sizeof(_impl_.enforce_proto_limits_));
   }
-  this_._impl_.enforce_proto_limits_ = 0;
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -15379,7 +15343,7 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._impl_.field_presence_ = from._impl_.field_presence_;
     }
@@ -15404,9 +15368,9 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       this_._impl_.default_symbol_visibility_ = from._impl_.default_symbol_visibility_;
     }
-  }
-  if (CheckHasBit(cached_has_bits, 0x00000100U)) {
-    this_._impl_.enforce_proto_limits_ = from._impl_.enforce_proto_limits_;
+    if (CheckHasBit(cached_has_bits, 0x00000100U)) {
+      this_._impl_.enforce_proto_limits_ = from._impl_.enforce_proto_limits_;
+    }
   }
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._impl_._extensions_.MergeFrom(arena, &default_instance(),
