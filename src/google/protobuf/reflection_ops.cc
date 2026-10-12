@@ -240,7 +240,7 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
     // referenced.
     const Message* extendee =
         MessageFactory::generated_factory()->GetPrototype(descriptor);
-    if (!reflection->GetExtensionSet(message).IsInitialized(message.GetArena(),
+    if (!reflection->GetExtensionSet(message).IsInitialized(message,
                                                             extendee)) {
       return false;
     }

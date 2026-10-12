@@ -246,6 +246,35 @@ TEST(MessageTest, ExtensionsEmpty) {
   }
 }
 
+TEST(MessageTest, DecodeErrorInRepeatedExtensionLeavesMessageValid) {
+  upb::Arena arena;
+  upb::DefPool defpool;
+  upb::MessageDefPtr m(upb_test_TestExtensions_getmsgdef(defpool.ptr()));
+  ASSERT_TRUE(m.ptr() != nullptr);
+
+  // Field 1001 (`repeated int32 repeated_int32_ext`) as a packed (LEN) field
+  // whose payload is an over-long, malformed varint. The decoder creates the
+  // extension's array before it hits the error.
+  const char data[] =
+      "\xca\x3e\x0b\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff";
+  upb_test_TestExtensions* msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_DecodeStatus status =
+      upb_Decode(data, sizeof(data) - 1, UPB_UPCAST(msg),
+                 &upb_0test__TestExtensions_msg_init,
+                 upb_DefPool_ExtensionRegistry(defpool.ptr()), 0, arena.ptr());
+  EXPECT_NE(status, kUpb_DecodeStatus_Ok);
+
+  // The partially-decoded message must still be safe to inspect.
+  const upb_MiniTableExtension* e;
+  upb_MessageValue v;
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  while (upb_Message_NextExtension(UPB_UPCAST(msg), &e, &v, &iter)) {
+  }
+  size_t size;
+  EXPECT_NE(upb_test_TestExtensions_serialize(msg, arena.ptr(), &size),
+            nullptr);
+}
+
 void VerifyMessageSet(const upb_test_TestMessageSet* mset_msg) {
   ASSERT_TRUE(mset_msg != nullptr);
   bool has = upb_test_MessageSetMember_has_message_set_extension(mset_msg);

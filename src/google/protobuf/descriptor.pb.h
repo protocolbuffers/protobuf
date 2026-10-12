@@ -3108,7 +3108,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FeatureSet, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -3118,7 +3118,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -3128,8 +3128,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -3138,8 +3137,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -3148,14 +3147,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FeatureSet, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -3165,7 +3164,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -3217,7 +3216,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -3228,7 +3227,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
       const ::google::protobuf::internal::ExtensionIdentifier<FeatureSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -3251,7 +3250,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.FeatureSet)
  private:
@@ -4503,7 +4502,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    SourceCodeInfo, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -4513,7 +4512,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -4523,8 +4522,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -4533,8 +4531,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -4543,14 +4541,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    SourceCodeInfo, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -4560,7 +4558,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -4612,7 +4610,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -4623,7 +4621,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
       const ::google::protobuf::internal::ExtensionIdentifier<SourceCodeInfo, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -4646,7 +4644,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceCodeInfo)
  private:
@@ -5376,7 +5374,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -5386,7 +5384,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -5396,8 +5394,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5406,8 +5403,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -5416,14 +5413,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    ServiceOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5433,7 +5430,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5485,7 +5482,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -5496,7 +5493,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<ServiceOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -5519,7 +5516,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.ServiceOptions)
  private:
@@ -5796,7 +5793,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -5806,7 +5803,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -5816,8 +5813,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5826,8 +5822,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -5836,14 +5832,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    OneofOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5853,7 +5849,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -5905,7 +5901,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -5916,7 +5912,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<OneofOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -5939,7 +5935,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.OneofOptions)
  private:
@@ -6260,7 +6256,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -6270,7 +6266,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -6280,8 +6276,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6290,8 +6285,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -6300,14 +6295,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    MethodOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6317,7 +6312,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6369,7 +6364,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -6380,7 +6375,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
       const ::google::protobuf::internal::ExtensionIdentifier<MethodOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -6403,7 +6398,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.MethodOptions)
  private:
@@ -6741,7 +6736,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -6751,7 +6746,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -6761,8 +6756,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6771,8 +6765,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -6781,14 +6775,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    MessageOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6798,7 +6792,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -6850,7 +6844,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -6861,7 +6855,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
       const ::google::protobuf::internal::ExtensionIdentifier<MessageOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -6884,7 +6878,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.MessageOptions)
  private:
@@ -7464,7 +7458,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -7474,7 +7468,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -7484,8 +7478,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -7494,8 +7487,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -7504,14 +7497,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FileOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -7521,7 +7514,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -7573,7 +7566,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -7584,7 +7577,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<FileOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -7607,7 +7600,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.FileOptions)
  private:
@@ -8161,7 +8154,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -8171,7 +8164,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -8181,8 +8174,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8191,8 +8183,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -8201,14 +8193,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FieldOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8218,7 +8210,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8270,7 +8262,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -8281,7 +8273,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
       const ::google::protobuf::internal::ExtensionIdentifier<FieldOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -8304,7 +8296,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldOptions)
  private:
@@ -8884,7 +8876,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -8894,7 +8886,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -8904,8 +8896,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8914,8 +8905,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -8924,14 +8915,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    ExtensionRangeOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8941,7 +8932,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -8993,7 +8984,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -9004,7 +8995,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
       const ::google::protobuf::internal::ExtensionIdentifier<ExtensionRangeOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -9027,7 +9018,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.ExtensionRangeOptions)
  private:
@@ -9345,7 +9336,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -9355,7 +9346,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -9365,8 +9356,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -9375,8 +9365,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -9385,14 +9375,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    EnumValueOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -9402,7 +9392,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -9454,7 +9444,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -9465,7 +9455,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
       const ::google::protobuf::internal::ExtensionIdentifier<EnumValueOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -9488,7 +9478,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumValueOptions)
  private:
@@ -9803,7 +9793,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -9813,7 +9803,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -9823,8 +9813,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -9833,8 +9822,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -9843,14 +9832,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    EnumOptions, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -9860,7 +9849,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -9912,7 +9901,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -9923,7 +9912,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
       const ::google::protobuf::internal::ExtensionIdentifier<EnumOptions, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -9946,7 +9935,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.EnumOptions)
  private:
@@ -13059,7 +13048,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
       GetExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FileDescriptorSet, _proto_TypeTraits, _field_type, _is_packed>& id)
           const ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Get(GetArena(), id.number(), _impl_._extensions_,
+    return _proto_TypeTraits::Get(*this, id.number(), _impl_._extensions_,
                                   id.default_value());
   }
 
@@ -13069,7 +13058,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
-    return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
 
@@ -13079,8 +13068,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::ConstType value) {
-    _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                           &_impl_._extensions_);
+    _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -13089,8 +13077,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
-    _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                    value, &_impl_._extensions_);
+    _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                    &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
@@ -13099,14 +13087,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Singular::MutableType value) {
     _proto_TypeTraits::UnsafeArenaSetAllocated(
-        GetArena(), id.number(), _field_type, value, &_impl_._extensions_);
+        *this, id.number(), _field_type, value, &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed>
   [[nodiscard]] inline typename _proto_TypeTraits::Singular::MutableType
   ReleaseExtension(const ::google::protobuf::internal::ExtensionIdentifier<
                    FileDescriptorSet, _proto_TypeTraits, _field_type, _is_packed>& id) {
-    return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+    return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                       &_impl_._extensions_);
   }
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -13116,7 +13104,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id) {
     return _proto_TypeTraits::UnsafeArenaRelease(
-        GetArena(), id.number(), _field_type, &_impl_._extensions_);
+        *this, id.number(), _field_type, &_impl_._extensions_);
   }
 
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
@@ -13168,7 +13156,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     typename _proto_TypeTraits::Repeated::MutableType to_add =
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                &_impl_._extensions_);
     return to_add;
   }
@@ -13179,7 +13167,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
       const ::google::protobuf::internal::ExtensionIdentifier<FileDescriptorSet, _proto_TypeTraits,
                                        _field_type, _is_packed>& id,
       typename _proto_TypeTraits::Repeated::ConstType value) {
-    _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+    _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                            value, &_impl_._extensions_);
   }
 
@@ -13202,7 +13190,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
                                        _field_type, _is_packed>& id)
       ABSL_ATTRIBUTE_LIFETIME_BOUND {
     return _proto_TypeTraits::MutableRepeated(
-        GetArena(), id.number(), _field_type, _is_packed, &_impl_._extensions_);
+        *this, id.number(), _field_type, _is_packed, &_impl_._extensions_);
   }
   // @@protoc_insertion_point(class_scope:google.protobuf.FileDescriptorSet)
  private:
@@ -13257,7 +13245,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
 
 // repeated .google.protobuf.FileDescriptorProto file = 1;
 inline int FileDescriptorSet::_internal_file_size() const {
-  return _internal_file().size();
+  return static_cast<int>(_internal_file().size());
 }
 inline int FileDescriptorSet::file_size() const {
   return _internal_file_size();
@@ -13452,7 +13440,7 @@ inline void FileDescriptorProto::set_allocated_package(::std::string* PROTOBUF_N
 
 // repeated string dependency = 3;
 inline int FileDescriptorProto::_internal_dependency_size() const {
-  return _internal_dependency().size();
+  return static_cast<int>(_internal_dependency().size());
 }
 inline int FileDescriptorProto::dependency_size() const {
   return _internal_dependency_size();
@@ -13524,7 +13512,7 @@ FileDescriptorProto::_internal_mutable_dependency() {
 
 // repeated int32 public_dependency = 10;
 inline int FileDescriptorProto::_internal_public_dependency_size() const {
-  return _internal_public_dependency().size();
+  return static_cast<int>(_internal_public_dependency().size());
 }
 inline int FileDescriptorProto::public_dependency_size() const {
   return _internal_public_dependency_size();
@@ -13575,7 +13563,7 @@ FileDescriptorProto::_internal_mutable_public_dependency() {
 
 // repeated int32 weak_dependency = 11;
 inline int FileDescriptorProto::_internal_weak_dependency_size() const {
-  return _internal_weak_dependency().size();
+  return static_cast<int>(_internal_weak_dependency().size());
 }
 inline int FileDescriptorProto::weak_dependency_size() const {
   return _internal_weak_dependency_size();
@@ -13626,7 +13614,7 @@ FileDescriptorProto::_internal_mutable_weak_dependency() {
 
 // repeated string option_dependency = 15;
 inline int FileDescriptorProto::_internal_option_dependency_size() const {
-  return _internal_option_dependency().size();
+  return static_cast<int>(_internal_option_dependency().size());
 }
 inline int FileDescriptorProto::option_dependency_size() const {
   return _internal_option_dependency_size();
@@ -13698,7 +13686,7 @@ FileDescriptorProto::_internal_mutable_option_dependency() {
 
 // repeated .google.protobuf.DescriptorProto message_type = 4;
 inline int FileDescriptorProto::_internal_message_type_size() const {
-  return _internal_message_type().size();
+  return static_cast<int>(_internal_message_type().size());
 }
 inline int FileDescriptorProto::message_type_size() const {
   return _internal_message_type_size();
@@ -13753,7 +13741,7 @@ FileDescriptorProto::_internal_mutable_message_type() {
 
 // repeated .google.protobuf.EnumDescriptorProto enum_type = 5;
 inline int FileDescriptorProto::_internal_enum_type_size() const {
-  return _internal_enum_type().size();
+  return static_cast<int>(_internal_enum_type().size());
 }
 inline int FileDescriptorProto::enum_type_size() const {
   return _internal_enum_type_size();
@@ -13808,7 +13796,7 @@ FileDescriptorProto::_internal_mutable_enum_type() {
 
 // repeated .google.protobuf.ServiceDescriptorProto service = 6;
 inline int FileDescriptorProto::_internal_service_size() const {
-  return _internal_service().size();
+  return static_cast<int>(_internal_service().size());
 }
 inline int FileDescriptorProto::service_size() const {
   return _internal_service_size();
@@ -13863,7 +13851,7 @@ FileDescriptorProto::_internal_mutable_service() {
 
 // repeated .google.protobuf.FieldDescriptorProto extension = 7;
 inline int FileDescriptorProto::_internal_extension_size() const {
-  return _internal_extension().size();
+  return static_cast<int>(_internal_extension().size());
 }
 inline int FileDescriptorProto::extension_size() const {
   return _internal_extension_size();
@@ -14503,7 +14491,7 @@ inline void DescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE
 
 // repeated .google.protobuf.FieldDescriptorProto field = 2;
 inline int DescriptorProto::_internal_field_size() const {
-  return _internal_field().size();
+  return static_cast<int>(_internal_field().size());
 }
 inline int DescriptorProto::field_size() const {
   return _internal_field_size();
@@ -14558,7 +14546,7 @@ DescriptorProto::_internal_mutable_field() {
 
 // repeated .google.protobuf.FieldDescriptorProto extension = 6;
 inline int DescriptorProto::_internal_extension_size() const {
-  return _internal_extension().size();
+  return static_cast<int>(_internal_extension().size());
 }
 inline int DescriptorProto::extension_size() const {
   return _internal_extension_size();
@@ -14613,7 +14601,7 @@ DescriptorProto::_internal_mutable_extension() {
 
 // repeated .google.protobuf.DescriptorProto nested_type = 3;
 inline int DescriptorProto::_internal_nested_type_size() const {
-  return _internal_nested_type().size();
+  return static_cast<int>(_internal_nested_type().size());
 }
 inline int DescriptorProto::nested_type_size() const {
   return _internal_nested_type_size();
@@ -14668,7 +14656,7 @@ DescriptorProto::_internal_mutable_nested_type() {
 
 // repeated .google.protobuf.EnumDescriptorProto enum_type = 4;
 inline int DescriptorProto::_internal_enum_type_size() const {
-  return _internal_enum_type().size();
+  return static_cast<int>(_internal_enum_type().size());
 }
 inline int DescriptorProto::enum_type_size() const {
   return _internal_enum_type_size();
@@ -14723,7 +14711,7 @@ DescriptorProto::_internal_mutable_enum_type() {
 
 // repeated .google.protobuf.DescriptorProto.ExtensionRange extension_range = 5;
 inline int DescriptorProto::_internal_extension_range_size() const {
-  return _internal_extension_range().size();
+  return static_cast<int>(_internal_extension_range().size());
 }
 inline int DescriptorProto::extension_range_size() const {
   return _internal_extension_range_size();
@@ -14778,7 +14766,7 @@ DescriptorProto::_internal_mutable_extension_range() {
 
 // repeated .google.protobuf.OneofDescriptorProto oneof_decl = 8;
 inline int DescriptorProto::_internal_oneof_decl_size() const {
-  return _internal_oneof_decl().size();
+  return static_cast<int>(_internal_oneof_decl().size());
 }
 inline int DescriptorProto::oneof_decl_size() const {
   return _internal_oneof_decl_size();
@@ -14931,7 +14919,7 @@ inline void DescriptorProto::set_allocated_options(::google::protobuf::MessageOp
 
 // repeated .google.protobuf.DescriptorProto.ReservedRange reserved_range = 9;
 inline int DescriptorProto::_internal_reserved_range_size() const {
-  return _internal_reserved_range().size();
+  return static_cast<int>(_internal_reserved_range().size());
 }
 inline int DescriptorProto::reserved_range_size() const {
   return _internal_reserved_range_size();
@@ -14986,7 +14974,7 @@ DescriptorProto::_internal_mutable_reserved_range() {
 
 // repeated string reserved_name = 10;
 inline int DescriptorProto::_internal_reserved_name_size() const {
-  return _internal_reserved_name().size();
+  return static_cast<int>(_internal_reserved_name().size());
 }
 inline int DescriptorProto::reserved_name_size() const {
   return _internal_reserved_name_size();
@@ -15317,7 +15305,7 @@ inline void ExtensionRangeOptions_Declaration::_internal_set_repeated(bool value
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int ExtensionRangeOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int ExtensionRangeOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -15372,7 +15360,7 @@ ExtensionRangeOptions::_internal_mutable_uninterpreted_option() {
 
 // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
 inline int ExtensionRangeOptions::_internal_declaration_size() const {
-  return _internal_declaration().size();
+  return static_cast<int>(_internal_declaration().size());
 }
 inline int ExtensionRangeOptions::declaration_size() const {
   return _internal_declaration_size();
@@ -16446,7 +16434,7 @@ inline void EnumDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULL
 
 // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
 inline int EnumDescriptorProto::_internal_value_size() const {
-  return _internal_value().size();
+  return static_cast<int>(_internal_value().size());
 }
 inline int EnumDescriptorProto::value_size() const {
   return _internal_value_size();
@@ -16599,7 +16587,7 @@ inline void EnumDescriptorProto::set_allocated_options(::google::protobuf::EnumO
 
 // repeated .google.protobuf.EnumDescriptorProto.EnumReservedRange reserved_range = 4;
 inline int EnumDescriptorProto::_internal_reserved_range_size() const {
-  return _internal_reserved_range().size();
+  return static_cast<int>(_internal_reserved_range().size());
 }
 inline int EnumDescriptorProto::reserved_range_size() const {
   return _internal_reserved_range_size();
@@ -16654,7 +16642,7 @@ EnumDescriptorProto::_internal_mutable_reserved_range() {
 
 // repeated string reserved_name = 5;
 inline int EnumDescriptorProto::_internal_reserved_name_size() const {
-  return _internal_reserved_name().size();
+  return static_cast<int>(_internal_reserved_name().size());
 }
 inline int EnumDescriptorProto::reserved_name_size() const {
   return _internal_reserved_name_size();
@@ -17027,7 +17015,7 @@ inline void ServiceDescriptorProto::set_allocated_name(::std::string* PROTOBUF_N
 
 // repeated .google.protobuf.MethodDescriptorProto method = 2;
 inline int ServiceDescriptorProto::_internal_method_size() const {
-  return _internal_method().size();
+  return static_cast<int>(_internal_method().size());
 }
 inline int ServiceDescriptorProto::method_size() const {
   return _internal_method_size();
@@ -18579,7 +18567,7 @@ inline void FileOptions::set_allocated_features(::google::protobuf::FeatureSet* 
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int FileOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int FileOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -18876,7 +18864,7 @@ inline void MessageOptions::set_allocated_features(::google::protobuf::FeatureSe
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int MessageOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int MessageOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -19532,7 +19520,7 @@ inline void FieldOptions::_internal_set_retention(::google::protobuf::FieldOptio
 
 // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
 inline int FieldOptions::_internal_targets_size() const {
-  return _internal_targets().size();
+  return static_cast<int>(_internal_targets().size());
 }
 inline int FieldOptions::targets_size() const {
   return _internal_targets_size();
@@ -19589,7 +19577,7 @@ FieldOptions::_internal_mutable_targets() {
 
 // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
 inline int FieldOptions::_internal_edition_defaults_size() const {
-  return _internal_edition_defaults().size();
+  return static_cast<int>(_internal_edition_defaults().size());
 }
 inline int FieldOptions::edition_defaults_size() const {
   return _internal_edition_defaults_size();
@@ -19840,7 +19828,7 @@ inline void FieldOptions::set_allocated_feature_support(::google::protobuf::Fiel
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int FieldOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int FieldOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -19997,7 +19985,7 @@ inline void OneofOptions::set_allocated_features(::google::protobuf::FeatureSet*
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int OneofOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int OneofOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -20238,7 +20226,7 @@ inline void EnumOptions::set_allocated_features(::google::protobuf::FeatureSet* 
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int EnumOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int EnumOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -20549,7 +20537,7 @@ inline void EnumValueOptions::set_allocated_feature_support(::google::protobuf::
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int EnumValueOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int EnumValueOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -20734,7 +20722,7 @@ inline void ServiceOptions::_internal_set_deprecated(bool value) {
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int ServiceOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int ServiceOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -20950,7 +20938,7 @@ inline void MethodOptions::set_allocated_features(::google::protobuf::FeatureSet
 
 // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
 inline int MethodOptions::_internal_uninterpreted_option_size() const {
-  return _internal_uninterpreted_option().size();
+  return static_cast<int>(_internal_uninterpreted_option().size());
 }
 inline int MethodOptions::uninterpreted_option_size() const {
   return _internal_uninterpreted_option_size();
@@ -21109,7 +21097,7 @@ inline void UninterpretedOption_NamePart::_internal_set_is_extension(bool value)
 
 // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
 inline int UninterpretedOption::_internal_name_size() const {
-  return _internal_name().size();
+  return static_cast<int>(_internal_name().size());
 }
 inline int UninterpretedOption::name_size() const {
   return _internal_name_size();
@@ -21978,7 +21966,7 @@ inline void FeatureSetDefaults_FeatureSetEditionDefault::set_allocated_fixed_fea
 
 // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
 inline int FeatureSetDefaults::_internal_defaults_size() const {
-  return _internal_defaults().size();
+  return static_cast<int>(_internal_defaults().size());
 }
 inline int FeatureSetDefaults::defaults_size() const {
   return _internal_defaults_size();
@@ -22099,7 +22087,7 @@ inline void FeatureSetDefaults::_internal_set_maximum_edition(::google::protobuf
 
 // repeated int32 path = 1 [packed = true];
 inline int SourceCodeInfo_Location::_internal_path_size() const {
-  return _internal_path().size();
+  return static_cast<int>(_internal_path().size());
 }
 inline int SourceCodeInfo_Location::path_size() const {
   return _internal_path_size();
@@ -22150,7 +22138,7 @@ SourceCodeInfo_Location::_internal_mutable_path() {
 
 // repeated int32 span = 2 [packed = true];
 inline int SourceCodeInfo_Location::_internal_span_size() const {
-  return _internal_span().size();
+  return static_cast<int>(_internal_span().size());
 }
 inline int SourceCodeInfo_Location::span_size() const {
   return _internal_span_size();
@@ -22337,7 +22325,7 @@ inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::stri
 
 // repeated string leading_detached_comments = 6;
 inline int SourceCodeInfo_Location::_internal_leading_detached_comments_size() const {
-  return _internal_leading_detached_comments().size();
+  return static_cast<int>(_internal_leading_detached_comments().size());
 }
 inline int SourceCodeInfo_Location::leading_detached_comments_size() const {
   return _internal_leading_detached_comments_size();
@@ -22413,7 +22401,7 @@ SourceCodeInfo_Location::_internal_mutable_leading_detached_comments() {
 
 // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
 inline int SourceCodeInfo::_internal_location_size() const {
-  return _internal_location().size();
+  return static_cast<int>(_internal_location().size());
 }
 inline int SourceCodeInfo::location_size() const {
   return _internal_location_size();
@@ -22472,7 +22460,7 @@ SourceCodeInfo::_internal_mutable_location() {
 
 // repeated int32 path = 1 [packed = true];
 inline int GeneratedCodeInfo_Annotation::_internal_path_size() const {
-  return _internal_path().size();
+  return static_cast<int>(_internal_path().size());
 }
 inline int GeneratedCodeInfo_Annotation::path_size() const {
   return _internal_path_size();
@@ -22682,7 +22670,7 @@ inline void GeneratedCodeInfo_Annotation::_internal_set_semantic(::google::proto
 
 // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
 inline int GeneratedCodeInfo::_internal_annotation_size() const {
-  return _internal_annotation().size();
+  return static_cast<int>(_internal_annotation().size());
 }
 inline int GeneratedCodeInfo::annotation_size() const {
   return _internal_annotation_size();

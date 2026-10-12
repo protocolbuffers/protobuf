@@ -8,18 +8,29 @@
 #include "conformance/matchers.h"
 
 #include <cmath>
+#include <fstream>
+#include <iterator>
+#include <ostream>
 #include <string>
 #include <utility>
 
 #include <gmock/gmock.h>
+#include <gtest/gtest-spi.h>
 #include <gtest/gtest.h>
+#include "absl/base/log_severity.h"
 #include "absl/log/absl_check.h"
+#include "absl/log/scoped_mock_log.h"
+#include "absl/status/status_matchers.h"
+#include "absl/strings/ascii.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
+#include "conformance/global_test_environment.h"
 #include "conformance/mock_test_runner.h"
+#include "conformance/test_manager.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -29,23 +40,50 @@
 namespace google {
 namespace protobuf {
 namespace conformance {
+namespace internal {
 namespace {
 
+// Backing state for the mocked-out global environment below.  In the real
+// conformance binary this would be populated from CLI flags and the failure
+// list on disk, but we don't want to drag that in for a unit test.
+TestManager* global_test_manager = nullptr;
+
+}  // namespace
+
+TestManager& GetGlobalTestManager() {
+  ABSL_CHECK(global_test_manager != nullptr);
+  return *global_test_manager;
+}
+
+}  // namespace internal
+
+namespace {
+
+using ::absl_testing::IsOk;
 using ::conformance::ConformanceResponse;
 using ::conformance::WireFormat;
 using ::google::protobuf::conformance::TestPriority;
+using ::google::protobuf::conformance::internal::TestManager;
 using ::google::protobuf::conformance::internal::TestResult;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto2::UnknownToTestAllTypes;
 using ::testing::_;
 using ::testing::AllOf;
+using ::testing::AnyNumber;
 using ::testing::AnyOf;
+using ::testing::ElementsAre;
+using ::testing::Eq;
+using ::testing::FieldsAre;
+using ::testing::HasSubstr;
 using ::testing::IsEmpty;
 using ::testing::NiceMock;
 using ::testing::Not;
+using ::testing::Optional;
+using ::testing::Pair;
 using ::testing::PrintToString;
 using ::testing::Return;
 using ::testing::TestParamInfo;
+using ::testing::Truly;
 using ::testing::Value;
 using ::testing::Values;
 
@@ -54,6 +92,10 @@ using ::testing::Values;
 // whether unknown fields are to be printed) against a testee that answers
 // `response`.  The matchers never look at the input payload itself, only at
 // its format, so the input is empty.
+//
+// The leaf matchers never touch the TestManager; the tests make sure of it by
+// not installing one at all while they run.  Only YieldsTest below installs
+// one.
 TestResult CreateResult(absl::string_view test_name, WireFormat input_format,
                         WireFormat output_format,
                         ConformanceResponse response) {
@@ -291,6 +333,18 @@ TEST(MatcherDescriptionTest, FailureMatchers) {
   EXPECT_EQ(DescribeNegation(IsParseError()), "is not a parse error");
   EXPECT_EQ(Describe(IsSerializeError()), "is a serialize error");
   EXPECT_EQ(DescribeNegation(IsSerializeError()), "is not a serialize error");
+}
+
+TEST(MatcherDescriptionTest, Yields) {
+  EXPECT_EQ(
+      Describe(Yields(IsParseError())),
+      "yields a result that is a parse error (or is an expected failure)");
+  EXPECT_EQ(DescribeNegation(Yields(IsParseError())),
+            "doesn't yield a result that is a parse error, nor an expected "
+            "failure");
+  EXPECT_EQ(Describe(Yields(AnyOf(IsParseError(), WhenParsed(_)))),
+            "yields a result that (is a parse error) or (when parsed, is "
+            "anything) (or is an expected failure)");
 }
 
 // ---------------------------------------------------------------------------
@@ -870,6 +924,633 @@ TEST(FailureMatcherTest, ComposesWithGMock) {
   EXPECT_TRUE(Value(result, Not(IsSerializeError())));
   EXPECT_TRUE(Value(result, AnyOf(IsSerializeError(), IsParseError())));
   EXPECT_FALSE(Value(result, AllOf(IsSerializeError(), IsParseError())));
+}
+
+// ---------------------------------------------------------------------------
+// Yields()
+// ---------------------------------------------------------------------------
+
+// A snapshot of the TestManager counters, for concise assertions.
+struct Counts {
+  int expected_successes = 0;
+  int expected_failures = 0;
+  int unexpected_successes = 0;
+  int unexpected_failures = 0;
+  int skipped = 0;
+  int listed_skips = 0;
+  int tolerated_failures = 0;
+
+  bool operator==(const Counts& other) const {
+    return expected_successes == other.expected_successes &&
+           expected_failures == other.expected_failures &&
+           unexpected_successes == other.unexpected_successes &&
+           unexpected_failures == other.unexpected_failures &&
+           skipped == other.skipped && listed_skips == other.listed_skips &&
+           tolerated_failures == other.tolerated_failures;
+  }
+
+  friend void PrintTo(const Counts& counts, std::ostream* os) {
+    *os << "{expected_successes: " << counts.expected_successes
+        << ", expected_failures: " << counts.expected_failures
+        << ", unexpected_successes: " << counts.unexpected_successes
+        << ", unexpected_failures: " << counts.unexpected_failures
+        << ", skipped: " << counts.skipped
+        << ", listed_skips: " << counts.listed_skips
+        << ", tolerated_failures: " << counts.tolerated_failures << "}";
+  }
+};
+
+Counts GetCounts(const TestManager& manager) {
+  return Counts{
+      /*expected_successes=*/manager.expected_successes(),
+      /*expected_failures=*/manager.expected_failures(),
+      /*unexpected_successes=*/manager.unexpected_successes(),
+      /*unexpected_failures=*/manager.unexpected_failures(),
+      /*skipped=*/manager.skipped(),
+      /*listed_skips=*/manager.listed_skips(),
+      /*tolerated_failures=*/
+      manager.tolerated_failures(),
+  };
+}
+
+// The names Run() below produces for the test named "foo".
+constexpr absl::string_view kP0Foo =
+    "Required.Proto2.ProtobufInput.foo.ProtobufOutput";
+constexpr absl::string_view kP1Foo =
+    "Recommended.Proto2.ProtobufInput.foo.ProtobufOutput";
+
+// Canned testee responses.
+constexpr absl::string_view kPayload2 = R"pb(protobuf_payload: "\010\002")pb";
+constexpr absl::string_view kParseError = R"pb(parse_error: "bad input")pb";
+constexpr absl::string_view kSerializeError =
+    R"pb(serialize_error: "can't serialize")pb";
+constexpr absl::string_view kRuntimeError = R"pb(runtime_error: "crashed")pb";
+constexpr absl::string_view kSkipped = R"pb(skipped: "not supported")pb";
+
+// The legacy failure messages the canned responses lead to.
+constexpr absl::string_view kMismatch1 =
+    "Output was not equivalent to reference message: "
+    "modified: optional_int32: 1 -> 2\n";
+constexpr absl::string_view kNotAParseError =
+    "Should have failed to parse, but didn't.";
+
+// Writes `content` to a fresh file under the test's temporary directory and
+// returns its path.
+std::string WriteTempFile(absl::string_view name, absl::string_view content) {
+  const std::string path = absl::StrCat(
+      testing::TempDir(), "/",
+      testing::UnitTest::GetInstance()->current_test_info()->name(), ".", name);
+  std::ofstream file(path);
+  file << content;
+  file.close();
+  ABSL_CHECK(file.good()) << path;
+  return path;
+}
+
+std::string ReadFile(absl::string_view path) {
+  std::ifstream file{std::string(path)};
+  ABSL_CHECK(file.is_open()) << path;
+  return std::string(std::istreambuf_iterator<char>(file), {});
+}
+
+class YieldsTest : public testing::Test {
+ protected:
+  YieldsTest() { internal::global_test_manager = &test_manager_; }
+  ~YieldsTest() override {
+    test_manager_.Finalize().IgnoreError();
+    internal::global_test_manager = nullptr;
+  }
+
+  // Makes the testee answer every test with `response`.
+  void RespondWith(absl::string_view response) {
+    ON_CALL(runner_, RunTest)
+        .WillByDefault(Return(ResponseFromText(response).SerializeAsString()));
+  }
+
+  // Runs the binary-to-binary test `name` (of the given priority) against a
+  // testee answering `response`.
+  TestResult Run(absl::string_view response,
+                 TestPriority priority = TestPriority::kP0,
+                 absl::string_view name = "foo") {
+    RespondWith(response);
+    return testee_.CreateTest(name, priority)
+        .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+        .SerializeBinary();
+  }
+
+  // Like Run(), but asks for text format output.
+  TestResult RunText(absl::string_view response,
+                     TestPriority priority = TestPriority::kP0,
+                     absl::string_view name = "foo") {
+    RespondWith(response);
+    return testee_.CreateTest(name, priority)
+        .ParseBinary(TestAllTypesProto2::descriptor(), Wire("wire"))
+        .SerializeText();
+  }
+
+  // Lists `test_name` in the failure list with `message`, as a line of a
+  // failure list file would.
+  void AddToFailureList(absl::string_view test_name,
+                        absl::string_view message) {
+    ASSERT_THAT(test_manager_.LoadFailureList(WriteTempFile(
+                    absl::StrCat("failure_list_", ++failure_lists_, ".txt"),
+                    absl::StrCat(test_name, " # ", message, "\n"))),
+                IsOk());
+  }
+
+  TestManager test_manager_;
+  NiceMock<MockTestRunner> runner_;
+  internal::Testee testee_{&runner_};
+  int failure_lists_ = 0;
+};
+
+TEST_F(YieldsTest, UnlistedSuccessPasses) {
+  auto matcher =
+      Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")));
+
+  EXPECT_THAT(Explain(matcher, Run(kPayload2)), Accepts(IsEmpty()));
+  EXPECT_THAT(Run(kPayload2, TestPriority::kP0, "other"), matcher);
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/2}));
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, UnlistedFailureFails) {
+  auto matcher =
+      Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")));
+  TestResult result = Run(kPayload2);
+
+  EXPECT_THAT(Explain(matcher, result),
+              Rejects(absl::StrCat(kMismatch1,
+                                   "\nUnexpected failure for test: ", kP0Foo)));
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher),
+                          "modified: optional_int32: 1 -> 2");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+  // The recorded message is the legacy one, as the failure list would get it.
+  EXPECT_THAT(test_manager_.UnexpectedFailures(),
+              ElementsAre(FieldsAre(kP0Foo,
+                                    "Output was not equivalent to reference "
+                                    "message: modified: optional_int32: 1 -> 2",
+                                    absl::nullopt)));
+}
+
+TEST_F(YieldsTest, UnlistedFailureIsCountedOnceDespiteGtestRetrying) {
+  // gtest evaluates a matcher a second time to explain a failed assertion.
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(Run(kPayload2), Yields(IsParseError())),
+                          "Should have failed to parse, but didn't.");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+  EXPECT_THAT(test_manager_.UnexpectedFailures(),
+              ElementsAre(FieldsAre(kP0Foo, kNotAParseError, absl::nullopt)));
+}
+
+TEST_F(YieldsTest, StaleVerdictIsNeverReplayedForAnotherResult) {
+  // A long-lived matcher that checked a result which has since been destroyed
+  // must not replay that verdict for a different result, even one that reuses
+  // the same address: the replay is keyed to the result's name as well.
+  auto first_matcher = Yields(IsParseError());
+  {
+    TestResult first = Run(kPayload2, TestPriority::kP0, "first");
+    EXPECT_NONFATAL_FAILURE(EXPECT_THAT(first, first_matcher),
+                            "Should have failed to parse, but didn't.");
+  }
+  TestResult second = Run(kParseError, TestPriority::kP0, "second");
+  EXPECT_THAT(second, Yields(IsParseError()));
+
+  EXPECT_THAT(Explain(first_matcher, second),
+              Rejects(HasSubstr("was already checked")));
+  EXPECT_EQ(GetCounts(test_manager_),
+            (Counts{/*expected_successes=*/1, /*expected_failures=*/0,
+                    /*unexpected_successes=*/0, /*unexpected_failures=*/1}));
+}
+
+TEST_F(YieldsTest, PayloadBytesMismatchRecordsTheLegacyOctalMessage) {
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(Run(kPayload2), Yields(RawPayload(VarintField(1, 1)))),
+      "Output was not equivalent to reference message: "
+      "Expect: \\010\\001, but got: \\010\\002");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+  EXPECT_THAT(
+      test_manager_.UnexpectedFailures(),
+      ElementsAre(FieldsAre(kP0Foo,
+                            "Output was not equivalent to reference message: "
+                            "Expect: \\010\\001, but got: \\010\\002",
+                            absl::nullopt)));
+}
+
+TEST_F(YieldsTest, TextFormatOutput) {
+  constexpr absl::string_view kText2 =
+      R"pb(text_payload: "optional_int32: 2")pb";
+
+  EXPECT_THAT(RunText(kText2),
+              Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb"))));
+  EXPECT_THAT(RunText(kText2, TestPriority::kP0, "raw"),
+              Yields(RawPayload(Wire("optional_int32: 2"))));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/2}));
+
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(
+          RunText(kText2, TestPriority::kP0, "mismatch"),
+          Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")))),
+      "modified: optional_int32: 1 -> 2");
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(RunText(R"pb(text_payload: "nonsense: 1")pb",
+                          TestPriority::kP0, "unparseable"),
+                  Yields(WhenParsed(_))),
+      "TEXT_FORMAT output we received from test was unparseable.");
+  EXPECT_EQ(GetCounts(test_manager_),
+            (Counts{/*expected_successes=*/2, /*expected_failures=*/0,
+                    /*unexpected_successes=*/0, /*unexpected_failures=*/2}));
+  EXPECT_THAT(
+      test_manager_.UnexpectedFailures(),
+      ElementsAre(
+          FieldsAre("Required.Proto2.ProtobufInput.mismatch.TextFormatOutput",
+                    "Output was not equivalent to reference message: "
+                    "modified: optional_int32: 1 -> 2",
+                    absl::nullopt),
+          FieldsAre(
+              "Required.Proto2.ProtobufInput.unparseable.TextFormatOutput",
+              "TEXT_FORMAT output we received from test was unparseable.",
+              absl::nullopt)));
+}
+
+TEST_F(YieldsTest, ListedFailureWithMatchingMessagePasses) {
+  AddToFailureList(kP0Foo, kMismatch1);
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log, Log).Times(AnyNumber());
+  // (The message is logged without its trailing newline.)
+  EXPECT_CALL(
+      log,
+      Log(absl::LogSeverity::kInfo, _,
+          Eq(absl::StrCat("Ignoring expected failure for test ", kP0Foo, ": ",
+                          absl::StripTrailingAsciiWhitespace(kMismatch1)))))
+      .Times(1);
+  log.StartCapturingLogs();
+
+  auto matcher =
+      Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb")));
+  TestResult result = Run(kPayload2);
+
+  EXPECT_THAT(Explain(matcher, result), Accepts(IsEmpty()));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/1}));
+  EXPECT_THAT(test_manager_.UnexpectedFailures(), IsEmpty());
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, ListedFailureWithMessagePrefixPasses) {
+  AddToFailureList(kP0Foo, "Output was not equivalent to reference");
+
+  EXPECT_THAT(Run(kPayload2),
+              Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 1)pb"))));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/1}));
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, ListedFailureViaWildcardPasses) {
+  AddToFailureList("Required.*.ProtobufInput.foo.ProtobufOutput",
+                   kNotAParseError);
+
+  EXPECT_THAT(Run(kPayload2), Yields(IsParseError()));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/1}));
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, ListedFailureWithDifferentMessageFails) {
+  AddToFailureList(kP0Foo, "Some other message");
+  auto matcher = Yields(IsParseError());
+  TestResult result = Run(kPayload2);
+
+  EXPECT_THAT(
+      Explain(matcher, result),
+      Rejects(absl::StrCat(
+          kNotAParseError, "\nUnexpected failure message for test: ", kP0Foo,
+          " expected: Some other message actual: ", kNotAParseError)));
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher),
+                          "Unexpected failure message for test");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+  EXPECT_THAT(test_manager_.UnexpectedFailures(),
+              ElementsAre(FieldsAre(kP0Foo, kNotAParseError, absl::nullopt)));
+}
+
+TEST_F(YieldsTest, ListedSuccessFails) {
+  AddToFailureList(kP0Foo, kNotAParseError);
+  auto matcher =
+      Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 2)pb")));
+  TestResult result = Run(kPayload2);
+
+  // The legacy runner's wording, including the matched entry.
+  EXPECT_THAT(
+      Explain(matcher, result),
+      Rejects(absl::StrCat("test ", kP0Foo, " (matched to ", kP0Foo,
+                           ") is in the failure list, but test succeeded.  "
+                           "Remove its match from the failure list.")));
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher),
+                          "is in the failure list, but test succeeded");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/1}));
+  EXPECT_THAT(
+      test_manager_.UnexpectedSuccesses(),
+      ElementsAre(FieldsAre(kP0Foo, kNotAParseError, Optional(kP0Foo))));
+}
+
+TEST_F(YieldsTest, ListedSuccessViaWildcardNamesTheWildcard) {
+  AddToFailureList("Required.*.ProtobufInput.foo.ProtobufOutput", "");
+
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(Run(kParseError), Yields(IsParseError())),
+      "test Required.Proto2.ProtobufInput.foo.ProtobufOutput (matched to "
+      "Required.*.ProtobufInput.foo.ProtobufOutput) is in the failure list, "
+      "but test succeeded.  Remove its match from the failure list.");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/1}));
+}
+
+TEST_F(YieldsTest, P1FailureIsToleratedWhenNotEnforced) {
+  test_manager_.set_enforcement_level(kP0);
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log, Log).Times(AnyNumber());
+  EXPECT_CALL(
+      log,
+      Log(absl::LogSeverity::kWarning, _,
+          Eq(absl::StrCat("WARNING, test=", kP1Foo, ": ", kNotAParseError))))
+      .Times(1);
+  log.StartCapturingLogs();
+
+  auto matcher = Yields(IsParseError());
+  TestResult result = Run(kPayload2, TestPriority::kP1);
+
+  EXPECT_THAT(Explain(matcher, result), Accepts(IsEmpty()));
+  // It's neither a skip nor a failure.
+  EXPECT_EQ(GetCounts(test_manager_),
+            (Counts{/*expected_successes=*/0, /*expected_failures=*/0,
+                    /*unexpected_successes=*/0, /*unexpected_failures=*/0,
+                    /*skipped=*/0, /*listed_skips=*/0,
+                    /*tolerated_failures=*/1}));
+  EXPECT_THAT(test_manager_.UnexpectedFailures(), IsEmpty());
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, P1FailureFailsWhenEnforced) {
+  test_manager_.set_enforcement_level(kP1);
+
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(Run(kPayload2, TestPriority::kP1), Yields(IsParseError())),
+      "Should have failed to parse, but didn't.");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+  EXPECT_THAT(test_manager_.UnexpectedFailures(),
+              ElementsAre(FieldsAre(kP1Foo, kNotAParseError, absl::nullopt)));
+}
+
+TEST_F(YieldsTest, ListedP1FailureIsTrackedEvenWhenNotEnforced) {
+  // A kP1 test that's already in the failure list keeps being tracked
+  // there, so that the list can't go stale unnoticed.
+  test_manager_.set_enforcement_level(kP0);
+  AddToFailureList(kP1Foo, kNotAParseError);
+
+  EXPECT_THAT(Run(kPayload2, TestPriority::kP1), Yields(IsParseError()));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/1}));
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest,
+       ListedP1FailureWithDifferentMessageFailsEvenWhenNotEnforced) {
+  test_manager_.set_enforcement_level(kP0);
+  AddToFailureList(kP1Foo, "Some other message");
+
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(Run(kPayload2, TestPriority::kP1), Yields(IsParseError())),
+      "Unexpected failure message for test");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+}
+
+TEST_F(YieldsTest, P1SuccessPasses) {
+  test_manager_.set_enforcement_level(kP0);
+
+  EXPECT_THAT(Run(kParseError, TestPriority::kP1), Yields(IsParseError()));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/1}));
+}
+
+TEST_F(YieldsTest, UnlistedSkipPasses) {
+  absl::ScopedMockLog log;
+  EXPECT_CALL(log, Log).Times(AnyNumber());
+  EXPECT_CALL(
+      log, Log(absl::LogSeverity::kInfo, _,
+               Eq(absl::StrCat("Skipping test ", kP0Foo, ": not supported"))))
+      .Times(1);
+  log.StartCapturingLogs();
+
+  // The inner matcher never gets to see a skipped result.
+  bool inner_called = false;
+  auto matcher = Yields(Truly([&](const TestResult&) {
+    inner_called = true;
+    return false;
+  }));
+  TestResult result = Run(kSkipped);
+
+  EXPECT_THAT(Explain(matcher, result), Accepts(IsEmpty()));
+  EXPECT_FALSE(inner_called);
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/0,
+                                              /*skipped=*/1}));
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, ListedSkipFailsOnce) {
+  // Deliberately stricter than the legacy runner, which passed this case: a
+  // listed test the testee skips fails, but only here.  The entry counts as
+  // seen (a skip says nothing about whether it is still needed), so Finalize()
+  // doesn't report it a second time and --fix keeps it.
+  ASSERT_THAT(test_manager_.LoadFailureList(WriteTempFile(
+                  "failure_list.txt", absl::StrCat(kP0Foo, " # abc\n"))),
+              IsOk());
+  auto matcher = Yields(IsParseError());
+  TestResult result = Run(kSkipped);
+
+  // The failure names the matched entry and the remedy, like an unexpected
+  // success does.
+  EXPECT_THAT(Explain(matcher, result),
+              Rejects(absl::StrCat(
+                  "test ", kP0Foo, " (matched to ", kP0Foo,
+                  ") is in the failure list but was skipped by the testee: "
+                  "not supported.  Remove its match from the failure list.")));
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher),
+                          "is in the failure list but was skipped");
+  // The manager records it as a listed skip, not as an unexpected failure.
+  EXPECT_EQ(GetCounts(test_manager_),
+            (Counts{/*expected_successes=*/0, /*expected_failures=*/0,
+                    /*unexpected_successes=*/0, /*unexpected_failures=*/0,
+                    /*skipped=*/1, /*listed_skips=*/1}));
+  EXPECT_THAT(test_manager_.ListedSkips(), ElementsAre(Pair(kP0Foo, kP0Foo)));
+  EXPECT_THAT(test_manager_.UnexpectedFailures(), IsEmpty());
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+
+  const std::string fixed = WriteTempFile("fixed.txt", "");
+  ASSERT_THAT(test_manager_.SaveFailureList(fixed), IsOk());
+  EXPECT_EQ(ReadFile(fixed), absl::StrCat(kP0Foo, " # abc\n"));
+}
+
+TEST_F(YieldsTest, RuntimeErrorKeepsTheInnerMatchersFailureMessage) {
+  // The legacy runner reports a runtime error where a parse error was expected
+  // with a dedicated message, which the failure lists rely on.
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(Run(kRuntimeError), Yields(IsParseError())),
+      "Should have failed to parse, but raised an error instead.");
+  EXPECT_THAT(
+      test_manager_.UnexpectedFailures(),
+      ElementsAre(FieldsAre(
+          kP0Foo, "Should have failed to parse, but raised an error instead.",
+          absl::nullopt)));
+}
+
+TEST_F(YieldsTest, ListedRuntimeErrorIsAnExpectedFailure) {
+  AddToFailureList(kP0Foo,
+                   "Should have failed to parse, but raised an error instead.");
+
+  EXPECT_THAT(Run(kRuntimeError), Yields(IsParseError()));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/1}));
+  EXPECT_THAT(test_manager_.Finalize(), IsOk());
+}
+
+TEST_F(YieldsTest, AnyOfMatchesEitherLeg) {
+  auto matcher = Yields(
+      AnyOf(IsParseError(), WhenParsed(EqualsBinaryProto(VarintField(1, 2)))));
+
+  EXPECT_THAT(Run(kParseError, TestPriority::kP0, "first"), matcher);
+  EXPECT_THAT(Run(kPayload2, TestPriority::kP0, "second"), matcher);
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/2}));
+}
+
+TEST_F(YieldsTest, AnyOfFailsWhenNoLegMatches) {
+  auto matcher = Yields(
+      AnyOf(IsParseError(), WhenParsed(EqualsBinaryProto(VarintField(1, 2)))));
+  TestResult result = Run(kSerializeError);
+
+  EXPECT_THAT(
+      Explain(matcher, result),
+      Rejects(AllOf(
+          HasSubstr("Should have failed to parse, but didn't."),
+          HasSubstr("Failed to parse input or produce output."),
+          HasSubstr(absl::StrCat("Unexpected failure for test: ", kP0Foo)))));
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher), "Unexpected failure");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+}
+
+TEST_F(YieldsTest, NotComposes) {
+  EXPECT_THAT(Run(kPayload2, TestPriority::kP0, "first"),
+              Yields(Not(IsParseError())));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/1}));
+
+  auto matcher = Yields(Not(IsParseError()));
+  TestResult result = Run(kParseError, TestPriority::kP0, "second");
+  // Not() has no explanation of its own, so the description is used.
+  EXPECT_THAT(Explain(matcher, result),
+              Rejects(absl::StrCat(
+                  "which doesn't match (is not a parse error)",
+                  "\nUnexpected failure for test: ",
+                  "Required.Proto2.ProtobufInput.second.ProtobufOutput")));
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher),
+                          "which doesn't match (is not a parse error)");
+  EXPECT_EQ(GetCounts(test_manager_),
+            (Counts{/*expected_successes=*/1, /*expected_failures=*/0,
+                    /*unexpected_successes=*/0, /*unexpected_failures=*/1}));
+}
+
+TEST_F(YieldsTest, CheckingAPassedResultAgainFails) {
+  // Whatever the second matcher is, including the very same object.
+  auto matcher = Yields(IsParseError());
+  TestResult result = Run(kParseError);
+  EXPECT_THAT(result, matcher);
+
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(result, matcher),
+      "TestResult for Required.Proto2.ProtobufInput.foo.ProtobufOutput was "
+      "already checked; each result may be checked exactly once");
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, Yields(IsParseError())),
+                          "was already checked");
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, Yields(Not(IsParseError()))),
+                          "was already checked");
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/1}));
+}
+
+TEST_F(YieldsTest, CheckingAFailedResultAgainReplaysTheFailure) {
+  // gtest re-evaluates a failing matcher, through the same matcher object, to
+  // explain the failure.  The matcher replays its own failed verdict, so the
+  // manager hears about the test only once.  Any other matcher finds the
+  // result already checked.
+  auto matcher = Yields(IsParseError());
+  TestResult result = Run(kPayload2);
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(result, matcher),
+                          "Should have failed to parse, but didn't.");
+
+  EXPECT_THAT(Explain(matcher, result),
+              Rejects(absl::StrCat(kNotAParseError,
+                                   "\nUnexpected failure for test: ", kP0Foo)));
+  EXPECT_THAT(Explain(Yields(IsParseError()), result),
+              Rejects(HasSubstr("was already checked")));
+  EXPECT_THAT(Explain(Yields(WhenParsed(_)), result),
+              Rejects(HasSubstr("was already checked")));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+  EXPECT_THAT(test_manager_.UnexpectedFailures(),
+              ElementsAre(FieldsAre(kP0Foo, kNotAParseError, absl::nullopt)));
+}
+
+TEST_F(YieldsTest, ACopyOfACheckedResultIsAlreadyChecked) {
+  TestResult original = Run(kPayload2);
+  EXPECT_NONFATAL_FAILURE(EXPECT_THAT(original, Yields(IsParseError())),
+                          "Should have failed to parse, but didn't.");
+
+  // The manager knows the test by name, so a copy of the result is checked
+  // too and the manager hears nothing more.
+  TestResult copy = original;
+  EXPECT_THAT(Explain(Yields(IsParseError()), copy),
+              Rejects(HasSubstr("was already checked")));
+  EXPECT_EQ(GetCounts(test_manager_), (Counts{/*expected_successes=*/0,
+                                              /*expected_failures=*/0,
+                                              /*unexpected_successes=*/0,
+                                              /*unexpected_failures=*/1}));
+}
+
+TEST_F(YieldsTest, SameMatcherCanCheckSeveralResults) {
+  auto matcher = Yields(IsParseError());
+  EXPECT_THAT(Run(kParseError, TestPriority::kP0, "first"), matcher);
+  EXPECT_THAT(Run(kParseError, TestPriority::kP0, "second"), matcher);
+  EXPECT_NONFATAL_FAILURE(
+      EXPECT_THAT(Run(kPayload2, TestPriority::kP0, "third"), matcher),
+      "Should have failed to parse, but didn't.");
+  EXPECT_EQ(GetCounts(test_manager_),
+            (Counts{/*expected_successes=*/2, /*expected_failures=*/0,
+                    /*unexpected_successes=*/0, /*unexpected_failures=*/1}));
 }
 
 }  // namespace

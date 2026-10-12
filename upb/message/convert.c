@@ -625,7 +625,7 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
     if (!msg_ext) {
       upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
     }
-    msg_ext->data = val;
+    upb_Extension_SetValue(msg_ext, val);
     return;
   }
 
@@ -839,8 +839,9 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
     } else {
       UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
       const upb_Extension* ext = unknown.value.extension;
-      upb_Message_ConvertExtension(c, dst, dst_mt, ext->ext, ext->data, extreg,
-                                   depth);
+      upb_Message_ConvertExtension(c, dst, dst_mt,
+                                   upb_Extension_MiniTableExtension(ext),
+                                   upb_Extension_GetValue(ext), extreg, depth);
     }
   }
 }

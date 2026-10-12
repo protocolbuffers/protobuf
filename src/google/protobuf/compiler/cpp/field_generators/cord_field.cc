@@ -172,12 +172,12 @@ void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
 
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ const ::absl::Cord& $name$() const;
-    $DEPRECATED$void $set_name$(const ::absl::Cord& value);
+    $DEPRECATED$void $set_name$(::absl::Cord value);
     $DEPRECATED$void $set_name$(::absl::string_view value);
 
     private:
     const ::absl::Cord& $_internal_name$() const;
-    void $_internal_set_name$(const ::absl::Cord& value);
+    void $_internal_set_name$(::absl::Cord value);
     ::absl::Cord* $nonnull$ $_internal_mutable_name$();
 
     public:
@@ -202,16 +202,15 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::_internal_set_$name_internal$(
-        const ::absl::Cord& value) {
-      $field_$ = value;
+    inline void $Msg$::_internal_set_$name_internal$(::absl::Cord value) {
+      $field_$ = ::std::move(value);
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::set_$name$(const ::absl::Cord& value) {
+    inline void $Msg$::set_$name$(::absl::Cord value) {
       $WeakDescriptorSelfPin$;
       $set_hasbit$;
-      _internal_set_$name_internal$(value);
+      _internal_set_$name_internal$(::std::move(value));
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$full_name$)
     }
@@ -378,14 +377,14 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   p->Emit(R"cc(
-    inline void $Msg$::set_$name$(const ::absl::Cord& value) {
+    inline void $Msg$::set_$name$(::absl::Cord value) {
       $WeakDescriptorSelfPin$;
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
         $field_$ = $pb$::Arena::Create<::absl::Cord>(GetArena());
       }
-      *$field_$ = value;
+      *$field_$ = ::std::move(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$full_name$)
     }

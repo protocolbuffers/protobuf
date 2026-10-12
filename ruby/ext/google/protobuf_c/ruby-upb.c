@@ -2751,25 +2751,7 @@ typedef bool eqlfunc_t(upb_key k1, upb_value v1, lookupkey_t k2);
 
 /* Base table (shared code) ***************************************************/
 
-static uint32_t upb_inthash(uintptr_t key) {
-  UPB_STATIC_ASSERT(sizeof(uintptr_t) == 4 || sizeof(uintptr_t) == 8,
-                    "Pointers don't fit");
-  if (sizeof(uintptr_t) == 8) {
-    return (uint32_t)key ^ (uint32_t)((uint64_t)key >> 32);
-  } else {
-    return (uint32_t)key;
-  }
-}
-
-static upb_tabent* upb_getentry(const upb_table* t, uint32_t hash) {
-  return t->entries + (hash & t->mask);
-}
-
-static bool isfull(upb_table* t) {
-  uint32_t size = upb_table_size(t);
-  // 0.875 load factor
-  return t->count == (size - (size >> 3));
-}
+static bool isfull(upb_table* t) { return upb_table_isfull(t); }
 
 static bool init(upb_table* t, uint8_t size_lg2, upb_Arena* a) {
   if (size_lg2 >= 32) {
@@ -3290,8 +3272,9 @@ bool upb_strtable_copy(upb_strtable* dest, const upb_strtable* src,
   return true;
 }
 
-bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
-                         upb_value v, upb_Arena* a) {
+// Inserts `k`, whose hash is `hash`, which must not already be in the table.
+UPB_FORCEINLINE bool strtable_insert(upb_strtable* t, const char* k, size_t len,
+                                     upb_value v, uint32_t hash, upb_Arena* a) {
   if (isfull(&t->t)) {
     /* Need to resize.  New table of double the size, add old elements to it. */
     if (!upb_strtable_resize(t, _upb_log2_table_size(&t->t) + 1, a)) {
@@ -3305,9 +3288,27 @@ bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
 
   lookupkey_t lookupkey = {.str = sv};
   upb_key key = {.str = size_prefix_string};
-  uint32_t hash = _upb_Hash_NoSeed(k, len);
   insert(&t->t, lookupkey, key, v, hash, &strhash, &streql);
   return true;
+}
+
+bool upb_strtable_insert(upb_strtable* t, const char* k, size_t len,
+                         upb_value v, upb_Arena* a) {
+  return strtable_insert(t, k, len, v, _upb_Hash_NoSeed(k, len), a);
+}
+
+bool upb_strtable_insert_or_replace(upb_strtable* t, const char* k, size_t len,
+                                    upb_value v, bool* replaced, upb_Arena* a) {
+  uint32_t hash = _upb_Hash_NoSeed(k, len);
+  upb_tabent* e = findentry_mutable(&t->t, strkey2(k, len), hash, &streql);
+  if (e) {
+    e->val = v;
+    *replaced = true;
+    return true;
+  }
+  *replaced = false;
+  if (UPB_UNLIKELY(t->t.entries == NULL) && !init(&t->t, 3, a)) return false;
+  return strtable_insert(t, k, len, v, hash, a);
 }
 
 bool upb_strtable_lookup2(const upb_strtable* t, const char* key, size_t len,
@@ -3481,8 +3482,6 @@ static bool inteql(upb_key k1, upb_value v1, lookupkey_t k2) {
   UPB_UNUSED(v1);
   return k1.num == k2.num;
 }
-
-size_t upb_inttable_count(const upb_inttable* t) { return t->t.count; }
 
 static void check(upb_inttable* t) {
   UPB_UNUSED(t);
@@ -3673,6 +3672,23 @@ bool upb_inttable_insert(upb_inttable* t, uintptr_t key, upb_value val,
   insert(&t->t, intkey(key), tabkey, val, upb_inthash(key), &inthash, &inteql);
   check(t);
   return true;
+}
+
+bool upb_inttable_insert_or_replace_slow(upb_inttable* t, uintptr_t key,
+                                         upb_value val, bool* replaced,
+                                         upb_Arena* a) {
+  upb_tabent* e =
+      findentry_mutable(&t->t, intkey(key), upb_inthash(key), &inteql);
+  if (e) {
+    e->val = val;
+    *replaced = true;
+    return true;
+  }
+  *replaced = false;
+  if (UPB_UNLIKELY(t->t.entries == NULL) && !upb_inttable_init(t, a)) {
+    return false;
+  }
+  return upb_inttable_insert(t, key, val, a);
 }
 
 bool upb_inttable_lookup(const upb_inttable* t, uintptr_t key, upb_value* v) {
@@ -8004,8 +8020,8 @@ bool _upb_mapsorter_pushmap(_upb_mapsorter* s, upb_FieldType key_type,
 static int _upb_mapsorter_cmpext(const void* _a, const void* _b) {
   const upb_Extension* const* a = _a;
   const upb_Extension* const* b = _b;
-  uint32_t a_num = upb_MiniTableExtension_Number((*a)->ext);
-  uint32_t b_num = upb_MiniTableExtension_Number((*b)->ext);
+  uint32_t a_num = upb_MiniTableField_Number(upb_Extension_MiniTableField(*a));
+  uint32_t b_num = upb_MiniTableField_Number(upb_Extension_MiniTableField(*b));
   UPB_ASSERT(a_num != b_num);
   return a_num < b_num ? -1 : 1;
 }
@@ -8241,12 +8257,10 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
     const upb_Extension* ext =
         upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
     if (!ext) continue;
-    const upb_MiniTableExtension* e = ext->ext;
-    const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
-    const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
+    const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
+    const upb_MiniTable* m2 = upb_MiniTable_SubMessage(f);
 
-    upb_MessageValue val;
-    memcpy(&val, &(ext->data), sizeof(upb_MessageValue));
+    upb_MessageValue val = upb_Extension_GetValue(ext);
 
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array: {
@@ -8360,8 +8374,8 @@ upb_FindUnknownRet2 upb_Message_FindUnknown2(const struct upb_Message* msg,
       }
     } else if (ret.unknown.type ==
                kUpb_MessageUnknownType_NonCanonicalExtension) {
-      uint32_t ext_field_number =
-          upb_MiniTableExtension_Number(ret.unknown.value.extension->ext);
+      uint32_t ext_field_number = upb_MiniTableField_Number(
+          upb_Extension_MiniTableField(ret.unknown.value.extension));
       if (ext_field_number == field_number) {
         ret.status = kUpb_FindUnknown_Ok;
         return ret;
@@ -8654,7 +8668,7 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
 
     count1++;
 
-    const upb_MessageValue val1 = ext1->data;
+    const upb_MessageValue val1 = upb_Extension_GetValue(ext1);
     const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
     const upb_MiniTable* subm = upb_MiniTableField_IsSubMessage(f)
                                     ? upb_MiniTableExtension_GetSubMessage(e)
@@ -8977,11 +8991,14 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
       // Encode non-canonical extension to buffer.
       const upb_Extension* ext = (const upb_Extension*)data.value.extension;
       bool is_message_set = false;
-      const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext->ext);
+      const upb_MiniTableExtension* ext_mt =
+          upb_Extension_MiniTableExtension(ext);
+      const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext_mt);
       if (extendee) {
         is_message_set = upb_MiniTable_IsMessageSet(extendee);
       }
-      UPB_PRIVATE(_upb_Encode_Extension)(&ctx->encoder, ext->ext, ext->data,
+      UPB_PRIVATE(_upb_Encode_Extension)(&ctx->encoder, ext_mt,
+                                         upb_Extension_GetValue(ext),
                                          is_message_set, &enc_buf, &size,
                                          /*options=*/0);
       ptr = enc_buf;
@@ -9301,13 +9318,16 @@ static bool upb_Message_Array_DeepClone(const upb_Array* array,
   return true;
 }
 
-static bool upb_Clone_ExtensionValue(
-    const upb_MiniTableExtension* mini_table_ext, const upb_Extension* source,
-    upb_Extension* dest, upb_Arena* arena) {
-  dest->data = source->data;
-  return upb_Clone_MessageValue(
-      &dest->data, upb_MiniTableExtension_CType(mini_table_ext),
-      upb_MiniTableExtension_GetSubMessage(mini_table_ext), arena);
+static bool upb_Clone_ExtensionValue(const upb_MiniTableField* field,
+                                     const upb_Extension* source,
+                                     upb_Extension* dest, upb_Arena* arena) {
+  upb_MessageValue val = upb_Extension_GetValue(source);
+  if (!upb_Clone_MessageValue(&val, upb_MiniTableField_CType(field),
+                              upb_MiniTable_SubMessage(field), arena)) {
+    return false;
+  }
+  upb_Extension_SetValue(dest, val);
+  return true;
 }
 
 upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
@@ -9376,25 +9396,26 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       // Clone a canonical or non-canonical upb_Extension*.
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-      const upb_MiniTableField* field = &msg_ext->ext->UPB_PRIVATE(field);
+      const upb_MiniTableField* field = upb_Extension_MiniTableField(msg_ext);
       upb_Extension* dst_ext =
           UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-              dst, msg_ext->ext, arena, upb_TaggedAuxPtr_Type(tagged_ptr));
+              dst, upb_Extension_MiniTableExtension(msg_ext), arena,
+              upb_TaggedAuxPtr_Type(tagged_ptr));
       if (!dst_ext) goto err;
 
       if (upb_MiniTableField_IsScalar(field)) {
-        if (!upb_Clone_ExtensionValue(msg_ext->ext, msg_ext, dst_ext, arena)) {
+        if (!upb_Clone_ExtensionValue(field, msg_ext, dst_ext, arena)) {
           goto err;
         }
       } else {
-        upb_Array* msg_array = (upb_Array*)msg_ext->data.array_val;
+        const upb_Array* msg_array = upb_Extension_GetArray(msg_ext);
         UPB_ASSERT(msg_array);
-        upb_Array* cloned_array = upb_Array_DeepClone(
-            msg_array, upb_MiniTableField_CType(field),
-            upb_MiniTableExtension_GetSubMessage(msg_ext->ext), arena);
+        upb_Array* cloned_array =
+            upb_Array_DeepClone(msg_array, upb_MiniTableField_CType(field),
+                                upb_MiniTable_SubMessage(field), arena);
         if (!cloned_array) goto err;
 
-        dst_ext->data.array_val = cloned_array;
+        upb_Extension_SetArray(dst_ext, cloned_array);
       }
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
       // Clone an aliased or non-aliased unknown upb_StringView.
@@ -9482,7 +9503,6 @@ bool upb_Message_MergeFrom(upb_Message* dst, const upb_Message* src,
 
 
 #include <stdint.h>
-#include <string.h>
 
 
 // Must be last.
@@ -9497,7 +9517,7 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       const upb_Extension* ext =
           upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-      if (ext->ext == e) {
+      if (upb_Extension_MiniTableExtension(ext) == e) {
         return ext;
       }
     }
@@ -9524,10 +9544,8 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
   }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  upb_Extension* ext = upb_Arena_Malloc(a, sizeof(upb_Extension));
+  upb_Extension* ext = UPB_PRIVATE(_upb_Extension_New)(e, a);
   if (!ext) return NULL;
-  memset(ext, 0, sizeof(upb_Extension));
-  ext->ext = e;
   in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(ext, tag);
   return ext;
 }
@@ -9668,9 +9686,9 @@ bool UPB_PRIVATE(_upb_Message_CopyInternal)(struct upb_Message* dst,
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
       const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
-      upb_Extension* dst_ext = upb_Arena_Malloc(arena, sizeof(upb_Extension));
+      upb_Extension* dst_ext =
+          UPB_PRIVATE(_upb_Extension_Clone)(msg_ext, arena);
       if (!dst_ext) return false;
-      *dst_ext = *msg_ext;
       dst_in->aux_data[dst_in->size++] = upb_TaggedAuxPtr_MakeExtension(
           dst_ext, upb_TaggedAuxPtr_Type(tagged_ptr));
     } else if (upb_TaggedAuxPtr_IsUnknownStringView(tagged_ptr)) {
@@ -14985,8 +15003,9 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
       if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-        memcpy(out_val, &ext->data, sizeof(*out_val));
-        *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
+        *out_val = upb_Extension_GetValue(ext);
+        *out_f = upb_DefPool_FindExtensionByMiniTable(
+            ext_pool, upb_Extension_MiniTableExtension(ext));
         *iter = i;
         return true;
       }
@@ -16447,10 +16466,16 @@ static upb_StringView default_string(upb_ToProto_Context* ctx,
       return printf_dup(ctx, "%" PRId32, d.int32_val);
     case kUpb_CType_UInt32:
       return printf_dup(ctx, "%" PRIu32, d.uint32_val);
-    case kUpb_CType_Float:
-      return printf_dup(ctx, "%.9g", d.float_val);
-    case kUpb_CType_Double:
-      return printf_dup(ctx, "%.17g", d.double_val);
+    case kUpb_CType_Float: {
+      char buf[kUpb_RoundTripBufferSize];
+      _upb_EncodeRoundTripFloat(d.float_val, buf, sizeof(buf));
+      return strviewdup(ctx, buf);
+    }
+    case kUpb_CType_Double: {
+      char buf[kUpb_RoundTripBufferSize];
+      _upb_EncodeRoundTripDouble(d.double_val, buf, sizeof(buf));
+      return strviewdup(ctx, buf);
+    }
     case kUpb_CType_String:
       return strviewdup2(ctx, d.str_val);
     case kUpb_CType_Bytes:
@@ -17570,10 +17595,11 @@ static void upb_Decoder_AddKnownMessageSetItem(
   if (UPB_UNLIKELY(!ext)) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
-  upb_Message** submsgp = (upb_Message**)&ext->data.msg_val;
-  upb_Message* submsg = _upb_Decoder_NewSubMessage2(
-      d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
-      &ext->ext->UPB_PRIVATE(field), submsgp);
+  upb_Message* submsg = upb_Extension_GetMutableMessage(ext);
+  submsg = _upb_Decoder_NewSubMessage2(
+      d, upb_MiniTableExtension_GetSubMessage(item_mt),
+      &item_mt->UPB_PRIVATE(field), &submsg);
+  upb_Extension_SetMessage(ext, submsg);
   // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
   if (d->depth <= 1) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
@@ -17914,7 +17940,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
       upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }
     d->original_msg = msg;
-    msg = &ext->data.UPB_PRIVATE(ext_msg_val);
+    msg = UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), upb_Message);
   }
 
   switch (mode & kUpb_FieldMode_Mask) {
@@ -18412,9 +18438,10 @@ static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
   if (UPB_SETJMP(*encoder->err) == 0) {
     char* buf = ptr;
     size_t size = 0;
-    UPB_PRIVATE(_upb_Encode_Extension)(encoder, ext->ext, ext->data,
-                                       is_message_set, &buf, &size,
-                                       encode_options);
+    UPB_PRIVATE(_upb_Encode_Extension)(
+        encoder, upb_Extension_MiniTableExtension(ext),
+        upb_Extension_GetValue(ext), is_message_set, &buf, &size,
+        encode_options);
     view->data = buf;
     view->size = size;
   } else {
@@ -18430,7 +18457,8 @@ static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
 upb_EncodeStatus upb_EncodeExtension(const struct upb_Extension* ext,
                                      struct upb_Arena* arena,
                                      upb_StringView* view, int encode_options) {
-  const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext->ext);
+  const upb_MiniTable* extendee =
+      upb_MiniTableExtension_Extendee(upb_Extension_MiniTableExtension(ext));
   bool is_message_set =
       extendee != NULL && upb_MiniTable_IsMessageSet(extendee);
   upb_encstate e;
@@ -19243,7 +19271,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-      ptr = encode_ext(ptr, e, ext->ext, ext->data,
+      ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+                       upb_Extension_GetValue(ext),
                        UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                            kUpb_ExtMode_IsMessageSet);
     }
@@ -19287,7 +19316,8 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
       } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
-        ptr = encode_ext(ptr, e, ext->ext, ext->data,
+        ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+                         upb_Extension_GetValue(ext),
                          UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                              kUpb_ExtMode_IsMessageSet);
       }
