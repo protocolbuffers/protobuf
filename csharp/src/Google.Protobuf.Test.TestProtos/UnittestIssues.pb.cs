@@ -136,10 +136,12 @@ namespace UnitTest.Issues.TestProtos {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// Issue 307: when generating doubly-nested types, any references
-  /// should be of the form A.Types.B.Types.C.
-  /// </summary>
+  /**
+   * <summary>
+   *  Issue 307: when generating doubly-nested types, any references
+   *  should be of the form A.Types.B.Types.C.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class Issue307 : pb::IMessage<Issue307>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1424,9 +1426,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
-  /// </summary>
+  /**
+   * <summary>
+   *  Issue 45: http://code.google.com/p/protobuf-csharp-port/issues/detail?id=45
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ItemField : pb::IMessage<ItemField>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1863,9 +1867,11 @@ namespace UnitTest.Issues.TestProtos {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// Force a nested type called Types
-      /// </summary>
+      /**
+       * <summary>
+       *  Force a nested type called Types
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class SomeNestedType : pb::IMessage<SomeNestedType>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -2032,18 +2038,20 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// These fields are deliberately not declared in numeric
-  /// order, and the oneof fields aren't contiguous either.
-  /// This allows for reasonably robust tests of JSON output
-  /// ordering.
-  /// TestFieldOrderings in unittest_proto3.proto is similar,
-  /// but doesn't include oneofs.
-  /// TODO: Consider adding oneofs to TestFieldOrderings, although
-  /// that will require fixing other tests in multiple platforms.
-  /// Alternatively, consider just adding this to
-  /// unittest_proto3.proto if multiple platforms want it.
-  /// </summary>
+  /**
+   * <summary>
+   *  These fields are deliberately not declared in numeric
+   *  order, and the oneof fields aren't contiguous either.
+   *  This allows for reasonably robust tests of JSON output
+   *  ordering.
+   *  TestFieldOrderings in unittest_proto3.proto is similar,
+   *  but doesn't include oneofs.
+   *  TODO: Consider adding oneofs to TestFieldOrderings, although
+   *  that will require fixing other tests in multiple platforms.
+   *  Alternatively, consider just adding this to
+   *  unittest_proto3.proto if multiple platforms want it.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestJsonFieldOrdering : pb::IMessage<TestJsonFieldOrdering>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -2599,9 +2607,11 @@ namespace UnitTest.Issues.TestProtos {
     /// <summary>Field number for the "name" field.</summary>
     public const int NameFieldNumber = 1;
     private string name_ = "";
-    /// <summary>
-    /// Message for testing the effects for of the json_name option
-    /// </summary>
+    /**
+     * <summary>
+     *  Message for testing the effects for of the json_name option
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Name {
@@ -2824,11 +2834,13 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// Issue 3200: When merging two messages which use the same
-  /// oneof case, which is itself a message type, the submessages should
-  /// be merged.
-  /// </summary>
+  /**
+   * <summary>
+   *  Issue 3200: When merging two messages which use the same
+   *  oneof case, which is itself a message type, the submessages should
+   *  be merged.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofMerging : pb::IMessage<OneofMerging>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -4704,9 +4716,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// Issue 8810
-  /// </summary>
+  /**
+   * <summary>
+   *  Issue 8810
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DisambiguateCommonMembers : pb::IMessage<DisambiguateCommonMembers>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -5584,9 +5598,11 @@ namespace UnitTest.Issues.TestProtos {
 
   }
 
-  /// <summary>
-  /// Issue 26391
-  /// </summary>
+  /**
+   * <summary>
+   *  Issue 26391
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestPresenceBits : pb::IMessage<TestPresenceBits>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

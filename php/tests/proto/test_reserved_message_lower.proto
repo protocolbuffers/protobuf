@@ -13,9 +13,8 @@ message break {}
 message callable {}
 message case {}
 message catch {}
-message class {
-} message clone {
-}
+message class {}
+message clone {}
 message const {}
 message continue {}
 message declare {}
@@ -23,8 +22,7 @@ message default {}
 message die {}
 message do {}
 message echo {}
-message else {
-}
+message else {}
 message elseif {}
 message empty {}
 message enddeclare {}
@@ -53,9 +51,8 @@ message include_once {}
 message instanceof {}
 message insteadof {}
 message int {}
-message interface {
-} message isset {
-}
+message interface {}
+message isset {}
 message iterable {}
 message list {}
 message match {}

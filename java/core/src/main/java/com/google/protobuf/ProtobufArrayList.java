@@ -75,8 +75,8 @@ final class ProtobufArrayList<E> extends AbstractProtobufList<E>
   }
 
   private static int growSize(int previousSize) {
-    // Resize to 1.5x the size, rounding up to DEFAULT_CAPACITY.
-    return max(((previousSize * 3) / 2) + 1, DEFAULT_CAPACITY);
+    // Resize to 1.5x the size.
+    return ((previousSize * 3) / 2) + 1;
   }
 
   @Override

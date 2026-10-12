@@ -40,6 +40,7 @@
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/repeated_field.h"
+#include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
 
 
@@ -135,50 +136,39 @@ bool GeneratedExtensionFinder::Find(int number, ExtensionInfo* output) {
   }
 }
 
-void ExtensionSet::RegisterExtension(const MessageLite* extendee, int number,
+void ExtensionSet::RegisterExtension(const ClassData* extendee, int number,
                                      FieldType type, bool is_repeated,
                                      bool is_packed, bool is_utf8) {
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_ENUM);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_MESSAGE);
   ABSL_CHECK_NE(type, WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed, is_utf8);
+  ExtensionInfo info(extendee->default_instance(), number, type, is_repeated,
+                     is_packed, is_utf8);
   Register(info);
 }
 
-void ExtensionSet::RegisterEnumExtension(const MessageLite* extendee,
-                                         int number, FieldType type,
-                                         bool is_repeated, bool is_packed,
+void ExtensionSet::RegisterEnumExtension(const ClassData* extendee, int number,
+                                         FieldType type, bool is_repeated,
+                                         bool is_packed,
                                          const uint32_t* validation_data) {
   ABSL_CHECK_EQ(type, WireFormatLite::TYPE_ENUM);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     /*is_utf8=*/false);
-  info.enum_validity_check.func = nullptr;
-  info.enum_validity_check.arg = validation_data;
+  ExtensionInfo info(extendee->default_instance(), number, type, is_repeated,
+                     is_packed, /*is_utf8=*/false);
+  info.enum_validity_check.enum_data = validation_data;
   Register(info);
 }
 
-void ExtensionSet::RegisterMessageExtension(const MessageLite* extendee,
+void ExtensionSet::RegisterMessageExtension(const ClassData* extendee,
                                             int number, FieldType type,
                                             bool is_repeated, bool is_packed,
-                                            const MessageLite* prototype,
+                                            const ClassData* inner_data,
                                             LazyEagerVerifyFnType verify_func,
                                             LazyAnnotation is_lazy) {
   ABSL_CHECK(type == WireFormatLite::TYPE_MESSAGE ||
              type == WireFormatLite::TYPE_GROUP);
-  ExtensionInfo info(extendee, number, type, is_repeated, is_packed,
-                     verify_func, is_lazy);
-  info.message_info = {
-#ifdef PROTOBUF_MESSAGE_GLOBALS
-      internal::MessageGlobalsBase::FromDefaultInstance(prototype),
-#else   // PROTOBUF_MESSAGE_GLOBALS
-      prototype,
-#endif  // PROTOBUF_MESSAGE_GLOBALS
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-      prototype->GetTcParseTable()
-#else
-      nullptr
-#endif
-  };
+  ExtensionInfo info(extendee->default_instance(), number, type, is_repeated,
+                     is_packed, verify_func, is_lazy);
+  info.message_info = {inner_data};
   Register(info);
 }
 
@@ -311,10 +301,12 @@ const void* ExtensionSet::GetRawRepeatedField(int number,
   return extension->raw_ptr();
 }
 
-void* ExtensionSet::MutableRawRepeatedField(Arena* arena, int number,
-                                            FieldType field_type, bool packed,
+void* ExtensionSet::MutableRawRepeatedField(const MessageLite& parent,
+                                            int number, FieldType field_type,
+                                            bool packed,
                                             const FieldDescriptor* desc) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
 
   // We instantiate an empty Repeated{,Ptr}Field if one doesn't exist for this
   // extension.
@@ -393,7 +385,7 @@ size_t ExtensionSet::GetMessageByteSizeLong(int number) const {
 }
 
 uint8_t* ExtensionSet::InternalSerializeMessage(
-    int number, const MessageLite* prototype, uint8_t* target,
+    int number, const ClassData* class_data, uint8_t* target,
     io::EpsCopyOutputStream* stream) const {
   const Extension* extension = FindOrNull(number);
   ABSL_CHECK(extension != nullptr) << "not present";
@@ -409,10 +401,11 @@ uint8_t* ExtensionSet::InternalSerializeMessage(
 // -------------------------------------------------------------------
 // Strings
 
-std::string* ExtensionSet::MutableString(Arena* arena, int number,
+std::string* ExtensionSet::MutableString(const MessageLite& parent, int number,
                                          FieldType type,
                                          const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
@@ -433,9 +426,11 @@ std::string* ExtensionSet::MutableRepeatedString(int number, int index) {
   return extension->ptr.repeated_string_value->Mutable(index);
 }
 
-std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
+std::string* ExtensionSet::AddString(const MessageLite& parent, int number,
+                                     FieldType type,
                                      const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_STRING);
@@ -455,7 +450,7 @@ std::string* ExtensionSet::AddString(Arena* arena, int number, FieldType type,
 // Messages
 
 const MessageLite& ExtensionSet::GetMessageByClassData(
-    Arena* arena, int number, const ClassData* class_data) const {
+    const MessageLite& parent, int number, const ClassData* class_data) const {
   const Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return the default value.
@@ -473,9 +468,10 @@ const MessageLite& ExtensionSet::GetMessageByClassData(
 //                                             MessageFactory* factory) const
 
 MessageLite* ExtensionSet::MutableMessageByClassData(
-    Arena* arena, int number, FieldType type, const ClassData* class_data,
-    const FieldDescriptor* descriptor) {
+    const MessageLite& parent, int number, FieldType type,
+    const ClassData* class_data, const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -499,13 +495,15 @@ MessageLite* ExtensionSet::MutableMessageByClassData(
 //                                           const Descriptor* message_type,
 //                                           MessageFactory* factory)
 
-void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
+void ExtensionSet::SetAllocatedMessage(const MessageLite& parent, int number,
+                                       FieldType type,
                                        const FieldDescriptor* descriptor,
                                        MessageLite* message) {
   if (message == nullptr) {
     ClearExtension(number);
     return;
   }
+  Arena* const arena = parent.GetArena();
   Arena* const message_arena = message->GetArena();
   ABSL_DCHECK(message_arena == nullptr || message_arena == arena);
 
@@ -548,13 +546,14 @@ void ExtensionSet::SetAllocatedMessage(Arena* arena, int number, FieldType type,
 }
 
 void ExtensionSet::UnsafeArenaSetAllocatedMessage(
-    Arena* arena, int number, FieldType type, const FieldDescriptor* descriptor,
-    MessageLite* message) {
+    const MessageLite& parent, int number, FieldType type,
+    const FieldDescriptor* descriptor, MessageLite* message) {
   if (message == nullptr) {
     ClearExtension(number);
     return;
   }
   Extension* extension;
+  Arena* const arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -576,34 +575,35 @@ void ExtensionSet::UnsafeArenaSetAllocatedMessage(
   extension->is_cleared = false;
 }
 
-MessageLite* ExtensionSet::ReleaseMessage(Arena* arena, int number,
+MessageLite* ExtensionSet::ReleaseMessage(const MessageLite& parent, int number,
                                           const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
     return nullptr;
-  } else {
-    ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
-    MessageLite* ret = nullptr;
-    if (extension->is_lazy) {
-      Unreachable();
-    } else {
-      if (arena == nullptr) {
-        ret = extension->ptr.message_value;
-      } else {
-        // ReleaseMessage() always returns a heap-allocated message, and we are
-        // on an arena, so we need to make a copy of this message to return.
-        ret = extension->ptr.message_value->New();
-        ret->CheckTypeAndMergeFrom(*extension->ptr.message_value);
-      }
-    }
-    Erase(number);
-    return ret;
   }
+
+  ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
+  MessageLite* ret = nullptr;
+  Arena* arena = parent.GetArena();
+  if (extension->is_lazy) {
+    Unreachable();
+  } else {
+    if (arena == nullptr) {
+      ret = extension->ptr.message_value;
+    } else {
+      // ReleaseMessage() always returns a heap-allocated message, and we are
+      // on an arena, so we need to make a copy of this message to return.
+      ret = extension->ptr.message_value->New();
+      ret->CheckTypeAndMergeFrom(*extension->ptr.message_value);
+    }
+  }
+  Erase(number);
+  return ret;
 }
 
 MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
-    Arena* arena, int number, const ClassData* class_data) {
+    const MessageLite& parent, int number, const ClassData* class_data) {
   Extension* extension = FindOrNull(number);
   if (extension == nullptr) {
     // Not present.  Return nullptr.
@@ -611,6 +611,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
+    Arena* arena = parent.GetArena();
     if (extension->is_lazy) {
       Unreachable();
     } else {
@@ -622,7 +623,7 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
 }
 
 // Defined in extension_set_heavy.cc.
-// MessageLite* ExtensionSet::ReleaseMessage(Arena* arena,
+// MessageLite* ExtensionSet::ReleaseMessage(const MessageLite& parent,
 //                                           const FieldDescriptor* descriptor,
 //                                           MessageFactory* factory);
 
@@ -641,10 +642,12 @@ MessageLite* ExtensionSet::MutableRepeatedMessage(int number, int index) {
   return extension->ptr.repeated_message_value->Mutable(index);
 }
 
-MessageLite* ExtensionSet::AddMessage(Arena* arena, int number, FieldType type,
+MessageLite* ExtensionSet::AddMessage(const MessageLite& parent, int number,
+                                      FieldType type,
                                       const ClassData* class_data,
                                       const FieldDescriptor* descriptor) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     ABSL_DCHECK_EQ(cpp_type(extension->type), WireFormatLite::CPPTYPE_MESSAGE);
@@ -1112,29 +1115,29 @@ void ExtensionSet::UnsafeShallowSwapExtension(Arena* arena, ExtensionSet* other,
   }
 }
 
-bool ExtensionSet::IsInitialized(Arena* arena,
+bool ExtensionSet::IsInitialized(const MessageLite& parent,
                                  const MessageLite* extendee) const {
   // Extensions are never required.  However, we need to check that all
   // embedded messages are initialized.
   if (ABSL_PREDICT_FALSE(is_large())) {
     for (const auto& kv : map_.large->large) {
-      if (!kv.second.IsInitialized(this, extendee, kv.first, arena)) {
+      if (!kv.second.IsInitialized(this, extendee, kv.first, parent)) {
         return false;
       }
     }
     return true;
   }
   for (const FlatItem* it = flat_begin(); it != flat_end(); ++it) {
-    if (!it->second.IsInitialized(this, extendee, it->first, arena)) {
+    if (!it->second.IsInitialized(this, extendee, it->first, parent)) {
       return false;
     }
   }
   return true;
 }
 
-const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
+const char* ExtensionSet::ParseField(MessageLite& parent, uint64_t tag,
+                                     const char* ptr,
                                      const MessageLite* extendee,
-                                     internal::InternalMetadata* metadata,
                                      internal::ParseContext* ctx) {
   GeneratedExtensionFinder finder(extendee);
   int number = tag >> 3;
@@ -1143,17 +1146,19 @@ const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
   if (!FindExtensionInfoFromFieldNumber(tag & 7, number, &finder, &extension,
                                         &was_packed_on_wire)) {
     return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<std::string>(), ptr, ctx);
+        tag, parent._internal_metadata_.mutable_unknown_fields<std::string>(),
+        ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<std::string>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+      parent, number, was_packed_on_wire, extension, ptr, ctx);
 }
 
-const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const MessageLite* extendee,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl<MessageLite, std::string>(ptr, extendee,
-                                                           metadata, ctx);
+const char* ExtensionSet::ParseMessageSetItem(MessageLite& parent,
+                                              const char* ptr,
+                                              const MessageLite* extendee,
+                                              internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<MessageLite, std::string>(parent, ptr,
+                                                           extendee, ctx);
 }
 
 bool ExtensionSet::FieldTypeIsPointer(FieldType type) {
@@ -1242,10 +1247,11 @@ bool ExtensionSet::MaybeNewExtension(Arena* arena, int number,
 }
 
 ExtensionSet::Extension& ExtensionSet::FindOrCreate(
-    Arena* arena, int number, FieldType type, bool repeated, bool packed,
-    const FieldDescriptor* descriptor,
+    const MessageLite& parent, int number, FieldType type, bool repeated,
+    bool packed, const FieldDescriptor* descriptor,
     Extension& (*pointer_creator)(Extension& ext, Arena* arena)) {
   Extension* extension;
+  Arena* arena = parent.GetArena();
   if (MaybeNewExtension(arena, number, descriptor, &extension)) {
     extension->type = type;
     extension->is_repeated = repeated;
@@ -1511,7 +1517,8 @@ void ExtensionSet::Extension::Free() {
 
 bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
                                             const MessageLite* extendee,
-                                            int number, Arena* arena) const {
+                                            int number,
+                                            const MessageLite& parent) const {
   if (cpp_type(type) != WireFormatLite::CPPTYPE_MESSAGE) return true;
 
   if (is_repeated) {
@@ -1846,7 +1853,7 @@ uint8_t* ExtensionSet::Extension::InternalSerializeFieldWithCachedSizesToArray(
   return target;
 }
 
-const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
+const ClassData* ExtensionSet::GetClassDataForLazyMessage(
     const MessageLite* extendee, int number) {
   GeneratedExtensionFinder finder(extendee);
   bool was_packed_on_wire = false;
@@ -1856,7 +1863,7 @@ const MessageLite* ExtensionSet::GetPrototypeForLazyMessage(
           &extension_info, &was_packed_on_wire)) {
     return nullptr;
   }
-  return extension_info.message_info.GetPrototype();
+  return extension_info.message_info.class_data;
 }
 
 uint8_t*

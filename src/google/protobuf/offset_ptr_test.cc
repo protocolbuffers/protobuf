@@ -102,6 +102,7 @@ TEST(BasePtrTest, OutOfScopeFails) {
 }
 
 TEST(OffsetPtrTest, Basic) {
+  // Collocate the pointer and the pointee in the same block of memory.
   struct Object {
     int array[10];
     OffsetPtr<int, false> ptr;
@@ -113,17 +114,21 @@ TEST(OffsetPtrTest, Basic) {
 
 TEST(OffsetProtoPtr, Basic) {
   using P = proto2_unittest::TestAllTypes;
-  OffsetProtoPtr<const P> p;
 
-  p = nullptr;
-  EXPECT_EQ(&P::default_instance(), p);
+  // Collocate the pointer and the pointee in the same block of memory.
+  struct Object {
+    OffsetProtoPtr<const P> p;
+    P msg;
+  } object;
 
-  P msg;
-  p = &msg;
-  EXPECT_EQ(&msg, p);
+  object.p = nullptr;
+  EXPECT_EQ(&P::default_instance(), object.p);
 
-  p = &P::default_instance();
-  EXPECT_EQ(&P::default_instance(), p);
+  object.p = &object.msg;
+  EXPECT_EQ(&object.msg, object.p);
+
+  object.p = &P::default_instance();
+  EXPECT_EQ(&P::default_instance(), object.p);
 }
 
 }  // namespace

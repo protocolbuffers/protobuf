@@ -24,6 +24,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/dynamic_message.h"
@@ -835,16 +836,15 @@ const char* WireFormat::_InternalParseAndMergeField(
       WireTypeForFieldType(field->type())) {
     if (field->is_packable() && WireFormatLite::GetTagWireType(tag) ==
                                     WireFormatLite::WIRETYPE_LENGTH_DELIMITED) {
-      Arena* arena = msg->GetArena();
-
       switch (field->type()) {
 #define HANDLE_PACKED_TYPE(TYPE, CPPTYPE, CPPTYPE_METHOD)           \
   case FieldDescriptor::TYPE_##TYPE: {                              \
     ptr = internal::Packed##CPPTYPE_METHOD##Parser(                 \
+        *msg,                                                       \
         reflection->MutableRepeatedFieldInternal<CPPTYPE>(          \
             msg, field,                                             \
             Reflection::GetRepeatedFieldIntent::kHiddenOrInternal), \
-        arena, ptr, ctx);                                           \
+        ptr, ctx);                                                  \
     return ptr;                                                     \
   }
 
@@ -871,12 +871,12 @@ const char* WireFormat::_InternalParseAndMergeField(
               msg, field,
               Reflection::GetRepeatedFieldIntent::kHiddenOrInternal);
           if (!field->legacy_enum_field_treated_as_closed()) {
-            ptr = internal::PackedEnumParser(rep_enum, arena, ptr, ctx);
+            ptr = internal::PackedEnumParser(*msg, rep_enum, ptr, ctx);
           } else {
             return ctx->ReadPackedVarint(
-                ptr, [rep_enum, field, reflection, msg, arena](int32_t val) {
+                ptr, [rep_enum, field, reflection, msg](int32_t val) {
                   if (field->enum_type()->FindValueByNumber(val) != nullptr) {
-                    rep_enum->AddWithArena(arena, val);
+                    rep_enum->AddWithArena(msg, val);
                   } else {
                     WriteVarint(field->number(), val,
                                 reflection->MutableUnknownFields(msg));

@@ -78,6 +78,7 @@
 #include "google/protobuf/descriptor_visitor.h"
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/feature_resolver.h"
+#include "google/protobuf/generated_enum_util.h"
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/internal_feature_helper.h"
 #include "google/protobuf/io/coded_stream.h"
@@ -1714,7 +1715,7 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 absl::string_view name) {
   if (pool->mutex_ != nullptr) {
     // Fast path: the Symbol is already cached.  This is just a hash lookup.
-    absl::ReaderMutexLock lock(pool->mutex_);
+    absl::ReaderMutexLock lock(*pool->mutex_);
     if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
       Symbol result = FindSymbol(name);
       if (!result.IsNull()) return result;
@@ -1870,7 +1871,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
 
   // Second try, with reader lock held on unknown enum values: common case.
   {
-    absl::ReaderMutexLock l(&unknown_enum_values_mu_);
+    absl::ReaderMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
       return *it;
@@ -1879,7 +1880,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
   // If not found, try again with writer lock held, and create new descriptor if
   // necessary.
   {
-    absl::WriterMutexLock l(&unknown_enum_values_mu_);
+    absl::WriterMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
       return *it;
@@ -2398,7 +2399,7 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
   // A faster path to reduce lock contention in finding extensions, assuming
   // most extensions will be cache hit.
   if (mutex_ != nullptr) {
-    absl::ReaderMutexLock lock(mutex_);
+    absl::ReaderMutexLock lock(*mutex_);
     const FieldDescriptor* result = tables_->FindExtension(extendee, number);
     if (result != nullptr) {
       return result;
@@ -2614,6 +2615,24 @@ const FieldDescriptor* Descriptor::map_value() const {
   if (!options().map_entry()) return nullptr;
   ABSL_DCHECK_EQ(field_count(), 2);
   return field(1);
+}
+
+static std::vector<uint32_t> MakeEnumValidatorData(const EnumDescriptor* desc) {
+  std::vector<int> numbers;
+  numbers.reserve(desc->value_count());
+  for (int i = 0; i < desc->value_count(); ++i) {
+    numbers.push_back(desc->value(i)->number());
+  }
+
+  absl::c_sort(numbers);
+  numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
+  return internal::GenerateEnumData(numbers);
+}
+
+const uint32_t* EnumDescriptor::GetEnumValidationData() const {
+  return DescriptorPool::MemoizeProjection(
+             this, [](auto* e) { return MakeEnumValidatorData(e); })
+      .data();
 }
 
 const EnumValueDescriptor* EnumDescriptor::FindValueByName(
@@ -4804,7 +4823,8 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       // kMaxNumber + 1 because ExtensionRange::end is exclusive.
       placeholder_message->extension_ranges_[0].end_ =
           FieldDescriptor::kMaxNumber + 1;
-      placeholder_message->extension_ranges_[0].options_ = nullptr;
+      placeholder_message->extension_ranges_[0].options_ =
+          &ExtensionRangeOptions::default_instance();
       placeholder_message->extension_ranges_[0].proto_features_ =
           &FeatureSet::default_instance();
       placeholder_message->extension_ranges_[0].merged_features_ =
@@ -6437,7 +6457,7 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
                    DescriptorPool::ErrorCollector::DEFAULT_VALUE,
                    "Messages can't have default values.");
           result->has_default_value_ = false;
-          result->default_generated_instance_ = nullptr;
+          result->generated_class_data_ = nullptr;
           break;
       }
 
@@ -6485,7 +6505,7 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
           result->default_value_string_ = &internal::GetEmptyString();
           break;
         case FieldDescriptor::CPPTYPE_MESSAGE:
-          result->default_generated_instance_ = nullptr;
+          result->generated_class_data_ = nullptr;
           break;
       }
     }
@@ -7111,6 +7131,17 @@ void internal::DescriptorBuilder::CrossLinkMessage(
                proto.oneof_decl(i), DescriptorPool::ErrorCollector::NAME,
                "Oneof must have at least one field.");
     }
+  }
+
+  // Reject map_entry messages with fewer than 2 fields. This catches orphaned
+  // map_entry descriptors (not referenced by any parent field) that bypass
+  // ValidateMapEntry and would cause null dereferences in
+  // TextFormat::PrintMessage. We only check field_count < 2 here;
+  // extra fields (field_count > 2) are caught by ValidateMapEntry when a
+  // parent field references this message.
+  if (message->options().map_entry() && message->field_count() < 2) {
+    AddError(message->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Messages with map_entry set must have at least 2 fields.");
   }
 
   for (int i = 0; i < message->field_count(); i++) {
@@ -8580,63 +8611,6 @@ void internal::DescriptorBuilder::ValidateJSType(
 
 namespace {
 
-template <typename DescriptorType>
-bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
-                                  std::string* error) {
-  ABSL_CHECK(descriptor != nullptr);
-  absl::string_view name = descriptor->name();
-  const Descriptor* message = descriptor->containing_type();
-
-  static const auto& kRestrictedFieldPrefixes =
-      *new absl::flat_hash_set<absl::string_view>({
-          "has_",
-          "get_",
-          "set_",
-          "clear_",
-      });
-  static const auto& kRestrictedFieldSuffixes =
-      *new absl::flat_hash_set<absl::string_view>({"_value"});
-
-  if (message != nullptr) {
-    for (absl::string_view prefix : kRestrictedFieldPrefixes) {
-      if (absl::StartsWith(name, prefix)) {
-        absl::string_view without_prefix = name;
-        without_prefix.remove_prefix(prefix.size());
-        if ((message->FindFieldByName(without_prefix) != nullptr ||
-             message->FindOneofByName(without_prefix) != nullptr)) {
-          *error = absl::StrCat("should not begin with ", prefix,
-                                " if a field named ", without_prefix,
-                                " exists. This can cause collisions in "
-                                "generated code.");
-          return false;
-        }
-      }
-    }
-    for (absl::string_view suffix : kRestrictedFieldSuffixes) {
-      if (absl::EndsWith(name, suffix)) {
-        absl::string_view without_suffix = name;
-        without_suffix.remove_suffix(suffix.size());
-        if ((message->FindFieldByName(without_suffix) != nullptr) ||
-            (message->FindOneofByName(without_suffix) != nullptr)) {
-          *error = absl::StrCat("should not end with ", suffix,
-                                " if a field named ", without_suffix,
-                                " exists. This can cause collisions in "
-                                "generated code.");
-          return false;
-        }
-      }
-    }
-  }
-
-  if (name == "descriptor") {
-    *error =
-        "should not be named descriptor. This can cause collisions in "
-        "generated code.";
-    return false;
-  }
-  return true;
-}
-
 constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
@@ -8645,11 +8619,11 @@ constexpr absl::string_view kProtoLimitsOptOutMessage =
     " (features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS can be used "
     "to opt out of this check)";
 
-}  // namespace
-
 constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
     " (features.enforce_naming_style = STYLE2024 can be used to opt out of "
     "this check)";
+
+}  // namespace
 
 template <>
 void internal::DescriptorBuilder::ValidateNamingStyle(
@@ -8691,10 +8665,11 @@ void internal::DescriptorBuilder::ValidateNamingStyle(
     });
   }
   if (IsStyleOrGreater(oneof, FeatureSet::STYLE2026)) {
-    std::string error;
-    if (!IsValidFieldNonCollisionName(oneof, &error)) {
+    if (const absl::Status s = internal::IsValidFieldNonCollisionName(
+            oneof->name(), oneof->containing_type());
+        !s.ok()) {
       AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-        return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+        return absl::StrCat("Oneof name ", oneof->name(), " ", s.message(),
                             kNamingStyleCollisionsOptOutMessage);
       });
     }
@@ -8712,10 +8687,11 @@ void internal::DescriptorBuilder::ValidateNamingStyle(
     });
   }
   if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
-    std::string error;
-    if (!IsValidFieldNonCollisionName(field, &error)) {
+    if (const absl::Status s = internal::IsValidFieldNonCollisionName(
+            field->name(), field->containing_type());
+        !s.ok()) {
       AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-        return absl::StrCat("Field name ", field->name(), " ", error,
+        return absl::StrCat("Field name ", field->name(), " ", s.message(),
                             kNamingStyleCollisionsOptOutMessage);
       });
     }

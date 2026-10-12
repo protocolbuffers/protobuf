@@ -32,3 +32,11 @@ message TestNestedLazyNested {
 message TestNestedLazy {
   optional TestNestedLazyNested nested = 1 [lazy = true];
 }
+
+message TestNestedEagerNested {
+  optional LazyTestAllExtensions submessage = 1;
+}
+
+message TestNestedEager {
+  optional TestNestedEagerNested nested = 1;
+}

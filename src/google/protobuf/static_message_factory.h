@@ -36,7 +36,7 @@ class ByTemplate {
   // instance (only `Get()` needs the default instance). Rather than pass the
   // default instance down just for it to not be used, we allow omitting the
   // default instance.
-  explicit ByTemplate() : ByTemplate(nullptr) {}
+  explicit ByTemplate() : ByTemplate(/*default_instance=*/nullptr) {}
   explicit ByTemplate(const MessageType* default_instance)
       : default_instance_(default_instance) {}
 

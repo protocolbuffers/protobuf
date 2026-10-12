@@ -7,6 +7,7 @@
 
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
 load(
     "//upb/bazel:copts.bzl",
@@ -82,6 +83,13 @@ upb_minitable_proto_library(
 
 upb_c_proto_library(
     name = "test_upb_proto",
+    testonly = 1,
+    visibility = ["//upb:__subpackages__"],
+    deps = [":test_proto"],
+)
+
+cc_proto_library(
+    name = "test_cc_proto",
     testonly = 1,
     visibility = ["//upb:__subpackages__"],
     deps = [":test_proto"],

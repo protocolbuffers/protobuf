@@ -1,4 +1,4 @@
-#include "binary_wireformat.h"
+#include "conformance/binary_wireformat.h"
 
 #include <cassert>
 #include <cstdint>

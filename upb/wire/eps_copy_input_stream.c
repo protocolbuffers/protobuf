@@ -38,7 +38,8 @@ const char* UPB_PRIVATE(upb_EpsCopyInputStream_IsDoneFallback)(
     e->limit_ptr = e->end + e->limit;
     UPB_ASSERT(ptr < e->limit_ptr);
     e->input_delta = (uintptr_t)old_end - (uintptr_t)new_start;
-    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(e);
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(
+        e, kUpb_EpsCopyInputStream_SlopBytes);
     return new_start;
   } else {
     UPB_ASSERT(overrun > e->limit);

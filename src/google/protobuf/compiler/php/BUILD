@@ -77,6 +77,7 @@ cc_test(
         ":php_generator",
         "//:protobuf",
         "//src/google/protobuf/compiler:command_line_interface_tester",
+        "@abseil-cpp//absl/strings",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

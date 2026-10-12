@@ -9,8 +9,12 @@
 
 namespace Google\Protobuf;
 
+use Google\Protobuf\Internal\GetPublicDescriptorTrait;
+
 class EnumDescriptor
 {
+    use GetPublicDescriptorTrait;
+
     private $internal_desc;
 
     /**
@@ -43,7 +47,9 @@ class EnumDescriptor
      */
     public function getValue($index)
     {
-        return $this->internal_desc->getValueDescriptorByIndex($index);
+        return $this->getPublicDescriptor(
+            $this->internal_desc->getValueDescriptorByIndex($index)
+        );
     }
 
     /**

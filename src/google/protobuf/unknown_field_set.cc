@@ -26,7 +26,9 @@
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format.h"
 
 // Must be included last.
@@ -64,9 +66,11 @@ void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
   }
 }
 
-void UnknownFieldSet::MergeToInternalMetadata(
-    const UnknownFieldSet& other, internal::InternalMetadata* metadata) {
-  metadata->mutable_unknown_fields<UnknownFieldSet>()->MergeFrom(other);
+void UnknownFieldSet::MergeToInternalMetadata(MessageLite& message,
+                                              const UnknownFieldSet& other) {
+  internal::PrivateAccess::GetInternalMetadata(message)
+      .mutable_unknown_fields<UnknownFieldSet>()
+      ->MergeFrom(other);
 }
 
 size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
@@ -188,10 +192,12 @@ bool UnknownFieldSet::ParseFromString(const absl::string_view data) {
 bool UnknownFieldSet::SerializeToString(std::string* output) const {
   const size_t size =
       google::protobuf::internal::WireFormat::ComputeUnknownFieldsSize(*this);
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::strings_internal::STLStringResizeUninitializedAmortized(output, size);
-  // TODO: Remove this suppression.
-  (void)google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
-      *this, reinterpret_cast<uint8_t*>(const_cast<char*>(output->data())));
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+      // TODO: Remove this suppression.
+      (void) google::protobuf::internal::WireFormat::SerializeUnknownFieldsToArray(
+          *this, reinterpret_cast<uint8_t*>(const_cast<char*>(output->data())));
   return true;
 }
 
@@ -258,7 +264,6 @@ uint8_t* UnknownField::InternalSerializeLengthDelimitedNoTag(
   target = stream->WriteRaw(data.data(), data.size(), target);
   return target;
 }
-
 
 }  // namespace protobuf
 }  // namespace google

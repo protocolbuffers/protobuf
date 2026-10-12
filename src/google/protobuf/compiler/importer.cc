@@ -136,7 +136,7 @@ bool SourceTreeDescriptorDatabase::FindFileByName(absl::string_view filename,
   if (input == nullptr) {
     if (fallback_database_ != nullptr &&
         fallback_database_->FindFileByName(filename, output)) {
-      return true;
+      return ReadExtensionDeclarations(filename, output);
     }
     if (error_collector_ != nullptr &&
         !internal::ScopedFallbackDatabaseErrorSuppressor::IsSuppressed()) {

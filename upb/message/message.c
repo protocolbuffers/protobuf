@@ -26,6 +26,7 @@
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -57,8 +58,8 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
           // represents the end of that allocation.
           size_t prev_alloc_size =
               (existing->data + existing->size) - (char*)existing;
-          if (SIZE_MAX - prev_alloc_size >= len) {
-            size_t new_alloc_size = prev_alloc_size + len;
+          size_t new_alloc_size;
+          if (!upb_AddOverflow(prev_alloc_size, len, &new_alloc_size)) {
             if (upb_Arena_TryExtend(arena, existing, prev_alloc_size,
                                     new_alloc_size)) {
               memcpy(UPB_PTR_AT(existing, prev_alloc_size, void), data, len);
@@ -81,8 +82,9 @@ UPB_NOINLINE bool UPB_PRIVATE(_upb_Message_AddUnknownSlowPath)(upb_Message* msg,
     if (!view) return false;
     view->data = data;
   } else {
-    if (SIZE_MAX - sizeof(upb_StringView) < len) return false;
-    view = upb_Arena_Malloc(arena, sizeof(upb_StringView) + len);
+    size_t total_size;
+    if (upb_AddOverflow(sizeof(upb_StringView), len, &total_size)) return false;
+    view = upb_Arena_Malloc(arena, total_size);
     if (!view) return false;
     char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
     memcpy(copy, data, len);
@@ -104,10 +106,9 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
   UPB_ASSERT(count > 0);
   size_t total_len = 0;
   for (size_t i = 0; i < count; i++) {
-    if (SIZE_MAX - total_len < data[i].size) {
+    if (upb_AddOverflow(total_len, data[i].size, &total_len)) {
       return false;
     }
-    total_len += data[i].size;
   }
 
   {
@@ -119,8 +120,8 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
         if (!upb_TaggedAuxPtr_IsUnknownAliased(ptr)) {
           size_t prev_alloc_size =
               (existing->data + existing->size) - (char*)existing;
-          if (SIZE_MAX - prev_alloc_size >= total_len) {
-            size_t new_alloc_size = prev_alloc_size + total_len;
+          size_t new_alloc_size;
+          if (!upb_AddOverflow(prev_alloc_size, total_len, &new_alloc_size)) {
             if (upb_Arena_TryExtend(arena, existing, prev_alloc_size,
                                     new_alloc_size)) {
               char* copy = UPB_PTR_AT(existing, prev_alloc_size, char);
@@ -137,11 +138,13 @@ bool UPB_PRIVATE(_upb_Message_AddUnknownV)(struct upb_Message* msg,
     }
   }
 
-  if (SIZE_MAX - sizeof(upb_StringView) < total_len) return false;
+  size_t total_size;
+  if (upb_AddOverflow(sizeof(upb_StringView), total_len, &total_size)) {
+    return false;
+  }
   if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, arena)) return false;
 
-  upb_StringView* view =
-      upb_Arena_Malloc(arena, sizeof(upb_StringView) + total_len);
+  upb_StringView* view = upb_Arena_Malloc(arena, total_size);
   if (!view) return false;
   char* copy = UPB_PTR_AT(view, sizeof(upb_StringView), char);
   view->data = copy;
@@ -229,12 +232,10 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
     const upb_Extension* ext =
         upb_TaggedAuxPtr_TryGetExtension(in->aux_data[i]);
     if (!ext) continue;
-    const upb_MiniTableExtension* e = ext->ext;
-    const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
-    const upb_MiniTable* m2 = upb_MiniTableExtension_GetSubMessage(e);
+    const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
+    const upb_MiniTable* m2 = upb_MiniTable_SubMessage(f);
 
-    upb_MessageValue val;
-    memcpy(&val, &(ext->data), sizeof(upb_MessageValue));
+    upb_MessageValue val = upb_Extension_GetValue(ext);
 
     switch (UPB_PRIVATE(_upb_MiniTableField_Mode)(f)) {
       case kUpb_FieldMode_Array: {
@@ -253,4 +254,23 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         break;
     }
   }
+}
+
+bool upb_Message_NextSerializableField(const upb_Message* msg,
+                                       const upb_MiniTable* mt,
+                                       const upb_MiniTableField** f,
+                                       uintptr_t* iter) {
+  const size_t field_count = upb_MiniTable_FieldCount(mt);
+  uintptr_t i = *iter;
+  while (i < field_count) {
+    const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(mt, i);
+    if (UPB_PRIVATE(_upb_Message_FieldIsSet)(msg, field)) {
+      *f = field;
+      *iter = i + 1;
+      return true;
+    }
+    i++;
+  }
+  *iter = i;
+  return false;
 }

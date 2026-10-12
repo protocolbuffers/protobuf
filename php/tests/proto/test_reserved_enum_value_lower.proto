@@ -40,14 +40,12 @@ enum NotAllowed {
   finally = 32;
   float = 33;
   fn = 34;
-  for
-    = 35;
+  for = 35;
   foreach = 36;
   function = 37;
   global = 38;
   goto = 39;
-  if
-    = 40;
+  if = 40;
   implements = 41;
   include = 42;
   include_once = 43;
@@ -68,12 +66,9 @@ enum NotAllowed {
   or = 58;
   parent = 59;
   print = 60;
- private
-  = 61;
- protected
-  = 62;
- public
-  = 63;
+  private = 61;
+  protected = 62;
+  public = 63;
   readonly = 64;
   require = 65;
   require_once = 66;
@@ -81,19 +76,16 @@ enum NotAllowed {
   self = 68;
   static = 69;
   string = 70;
-  switch
-    = 71;
+  switch = 71;
   throw = 72;
   trait = 73;
   true = 74;
-  try
-    = 75;
+  try = 75;
   unset = 76;
   use = 77;
   var = 78;
   void = 79;
-  while
-    = 80;
+  while = 80;
   xor = 81;
   yield = 82;
   // END RESERVED NAMES

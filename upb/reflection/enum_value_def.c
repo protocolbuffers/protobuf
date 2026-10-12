@@ -13,6 +13,7 @@
 
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
+#include "upb/port/overflow.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
@@ -47,10 +48,10 @@ static int _upb_EnumValueDef_Compare(const void* p1, const void* p2) {
 
 const upb_EnumValueDef** _upb_EnumValueDefs_Sorted(const upb_EnumValueDef* v,
                                                    size_t n, upb_Arena* a) {
-  if (SIZE_MAX / sizeof(void*) < n) return NULL;
+  size_t bytes;
+  if (upb_MulOverflow(n, sizeof(void*), &bytes)) return NULL;
   // TODO: Try to replace this arena alloc with a persistent scratch buffer.
-  upb_EnumValueDef** out =
-      (upb_EnumValueDef**)upb_Arena_Malloc(a, n * sizeof(void*));
+  upb_EnumValueDef** out = (upb_EnumValueDef**)upb_Arena_Malloc(a, bytes);
   if (!out) return NULL;
 
   for (size_t i = 0; i < n; i++) {
