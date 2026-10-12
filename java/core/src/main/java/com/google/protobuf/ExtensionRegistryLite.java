@@ -154,6 +154,37 @@ public class ExtensionRegistryLite {
     return result;
   }
 
+  private static volatile ExtensionRegistryLite generatedRegistry;
+
+  /**
+   * Get the unmodifiable singleton instance for all the generated protobuf messages loadable in the
+   * classpath.
+   */
+  public static ExtensionRegistryLite getGeneratedRegistry() {
+    ExtensionRegistryLite result = generatedRegistry;
+    if (result != null) {
+      return result;
+    }
+
+    synchronized (ExtensionRegistryLite.class) {
+      result = generatedRegistry;
+      if (result != null) {
+        return result;
+      }
+
+      result =
+          Android.assumeLiteRuntime
+              ? loadGeneratedRegistry()
+              : ExtensionRegistryFactory.loadGeneratedRegistry();
+      generatedRegistry = result;
+      return result;
+    }
+  }
+
+  static ExtensionRegistryLite loadGeneratedRegistry() {
+    return GeneratedExtensionRegistryLoader.load(ExtensionRegistryLite.class);
+  }
+
   /** Returns an unmodifiable view of the registry. */
   public ExtensionRegistryLite getUnmodifiable() {
     return new ExtensionRegistryLite(this);

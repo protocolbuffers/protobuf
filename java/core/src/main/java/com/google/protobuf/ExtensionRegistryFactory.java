@@ -47,6 +47,18 @@ final class ExtensionRegistryFactory {
     return result != null ? result : EMPTY_REGISTRY_LITE;
   }
 
+  static ExtensionRegistryLite loadGeneratedRegistry() {
+    ExtensionRegistryLite result = invokeSubclassFactory("loadGeneratedRegistry");
+
+    if (result != null) {
+      return result;
+    }
+
+    result = ExtensionRegistryLite.loadGeneratedRegistry();
+
+    return result != null ? result : createEmpty();
+  }
+
   static boolean isFullRegistry(ExtensionRegistryLite registry) {
     return !Android.assumeLiteRuntime
         && EXTENSION_REGISTRY_CLASS != null
