@@ -138,8 +138,9 @@ struct TimestampGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Timestamp>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
+                GetClassData())) {}
   ~TimestampGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Timestamp _default;

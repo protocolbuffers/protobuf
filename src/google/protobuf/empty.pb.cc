@@ -115,8 +115,9 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Empty>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Empty>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Empty>(
+                GetClassData())) {}
   ~EmptyGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Empty _default;

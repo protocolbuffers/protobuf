@@ -153,8 +153,9 @@ struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Option>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Option>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Option>(
+                GetClassData())) {}
   ~OptionGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Option _default;
@@ -347,8 +348,9 @@ struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Field>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Field>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Field>(
+                GetClassData())) {}
   ~FieldGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Field _default;
@@ -478,8 +480,9 @@ struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<EnumValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<EnumValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<EnumValue>(
+                GetClassData())) {}
   ~EnumValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) EnumValue _default;
@@ -651,8 +654,9 @@ struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Type>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Type>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Type>(
+                GetClassData())) {}
   ~TypeGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Type _default;
@@ -813,8 +817,9 @@ struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Enum>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Enum>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Enum>(
+                GetClassData())) {}
   ~EnumGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Enum _default;

@@ -143,8 +143,9 @@ struct ListValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<ListValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<ListValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<ListValue>(
+                GetClassData())) {}
   ~ListValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) ListValue _default;
@@ -261,8 +262,9 @@ struct StructGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Struct>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Struct>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Struct>(
+                GetClassData())) {}
   ~StructGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Struct _default;
@@ -404,8 +406,9 @@ struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Struct_FieldsEntry_DoNotUse>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Struct_FieldsEntry_DoNotUse>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Struct_FieldsEntry_DoNotUse>(
+                GetClassData())) {}
   ~Struct_FieldsEntry_DoNotUseGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Struct_FieldsEntry_DoNotUse _default;
@@ -528,8 +531,9 @@ struct ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Value>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Value>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Value>(
+                GetClassData())) {}
   ~ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Value _default;

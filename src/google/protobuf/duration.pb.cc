@@ -138,8 +138,9 @@ struct DurationGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Duration>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Duration>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Duration>(
+                GetClassData())) {}
   ~DurationGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Duration _default;
