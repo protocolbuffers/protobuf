@@ -31,6 +31,7 @@
 #include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 
@@ -995,8 +996,9 @@ TEST(ConvertTest, ConvertExtensionToNonExtendable) {
   EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
   const upb_Extension* ext_found =
       static_cast<const upb_Extension*>(unknown.value.extension);
-  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found->ext), 1000);
-  EXPECT_EQ(ext_found->data.int32_val, 123);
+  EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found)),
+            1000);
+  EXPECT_EQ(upb_Extension_GetInt32(ext_found), 123);
   EXPECT_FALSE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
 }
 
@@ -1031,8 +1033,9 @@ TEST(ConvertTest, ConvertExtensionToExtendableButUnknown) {
   EXPECT_EQ(unknown2.type, kUpb_MessageUnknownType_NonCanonicalExtension);
   const upb_Extension* ext_found2 =
       static_cast<const upb_Extension*>(unknown2.value.extension);
-  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found2->ext), 1000);
-  EXPECT_EQ(ext_found2->data.int32_val, 123);
+  EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found2)),
+            1000);
+  EXPECT_EQ(upb_Extension_GetInt32(ext_found2), 123);
   EXPECT_FALSE(upb_Message_NextUnknown2(dst_msg, &unknown2, &iter2));
 }
 
@@ -1068,8 +1071,9 @@ TEST(ConvertTest, NonCanonicalToNonCanonical) {
   EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
   const upb_Extension* ext_found =
       static_cast<const upb_Extension*>(unknown.value.extension);
-  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found->ext), 1000);
-  EXPECT_EQ(ext_found->data.int32_val, 123);
+  EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found)),
+            1000);
+  EXPECT_EQ(upb_Extension_GetInt32(ext_found), 123);
   EXPECT_FALSE(upb_Message_NextUnknown2(converted, &unknown, &iter));
 }
 
@@ -2176,10 +2180,12 @@ TEST(ConvertTest, NonCanonicalMessageToNonCanonical) {
   EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
   const upb_Extension* ext_found =
       static_cast<const upb_Extension*>(unknown.value.extension);
-  EXPECT_EQ(upb_MiniTableExtension_Number(ext_found->ext), 1002);
+  EXPECT_EQ(upb_MiniTableField_Number(upb_Extension_MiniTableField(ext_found)),
+            1002);
 
   const upb_test_convert_MessageWithInt32* converted_sub =
-      (const upb_test_convert_MessageWithInt32*)ext_found->data.msg_val;
+      (const upb_test_convert_MessageWithInt32*)upb_Extension_GetMessage(
+          ext_found);
   EXPECT_EQ(123, upb_test_convert_MessageWithInt32_f1(converted_sub));
 
   EXPECT_FALSE(upb_Message_NextUnknown2(converted, &unknown, &iter));
