@@ -1089,15 +1089,19 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       break;
     }
     case kStructValue: {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          5, *this_._impl_.kind_.struct_value_, this_._impl_.kind_.struct_value_->GetCachedSize(), target,
-          stream);
+      {
+        auto* sub = this_._impl_.kind_.struct_value_;
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            5, *sub, sub->GetCachedSize(), target, stream);
+      }
       break;
     }
     case kListValue: {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          6, *this_._impl_.kind_.list_value_, this_._impl_.kind_.list_value_->GetCachedSize(), target,
-          stream);
+      {
+        auto* sub = this_._impl_.kind_.list_value_;
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            6, *sub, sub->GetCachedSize(), target, stream);
+      }
       break;
     }
     default:

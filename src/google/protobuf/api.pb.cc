@@ -858,9 +858,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
     // .google.protobuf.SourceContext source_context = 5;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          5, *this_._impl_.source_context_, this_._impl_.source_context_->GetCachedSize(), target,
-          stream);
+      {
+        auto* sub = this_._impl_.source_context_;
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            5, *sub, sub->GetCachedSize(), target, stream);
+      }
     }
 
     // repeated .google.protobuf.Mixin mixins = 6;
@@ -1033,10 +1035,13 @@ void Api::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       ABSL_DCHECK(from._impl_.source_context_ != nullptr);
-      if (this_._impl_.source_context_ == nullptr) {
-        this_._impl_.source_context_ = Super_::CopyConstruct(arena, *from._impl_.source_context_);
-      } else {
-        this_._impl_.source_context_->MergeFrom(*from._impl_.source_context_);
+      {
+        auto*& sub = this_._impl_.source_context_;
+        if (sub == nullptr) {
+          sub = Super_::CopyConstruct(arena, *from._impl_.source_context_);
+        } else {
+          sub->MergeFrom(*from._impl_.source_context_);
+        }
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
