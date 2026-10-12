@@ -46,7 +46,8 @@ struct Metadata;
 
 namespace io {
 class CodedOutputStream;
-}
+}  // namespace io
+
 }  // namespace protobuf
 }  // namespace google
 
@@ -55,6 +56,7 @@ namespace protobuf {
 namespace internal {
 class DefaultEmptyOneof;
 struct MessageGlobalsBase;
+struct ClassData;
 // Defined in other files.
 class ExtensionSet;  // extension_set.h
 
@@ -320,12 +322,12 @@ struct PROTOBUF_EXPORT AddDescriptorsRunner {
   explicit AddDescriptorsRunner(const DescriptorTable* table);
 };
 
-// Retrieves the existing prototype out of a descriptor table.
+// Retrieves the existing ClassData out of a descriptor table.
 // If it doesn't exist:
 //  - If force_build is true, asks the generated message factory for one.
 //  - Otherwise, return null
-const Message* GetPrototypeForWeakDescriptor(const DescriptorTable* table,
-                                             int index, bool force_build);
+const ClassData* GetClassDataForWeakDescriptor(const DescriptorTable* table,
+                                               int index, bool force_build);
 
 struct DenseEnumCacheInfo {
   absl::once_flag loaded;

@@ -52,7 +52,6 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/log/log.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
@@ -1647,6 +1646,9 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   const FeatureSet& features() const { return *merged_features_; }
   friend class internal::InternalFeatureHelper;
 
+  // Returns the enum validation data used by `internal::ValidateEnum`.
+  const uint32_t* GetEnumValidationData() const;
+
   // Looks up a value by number.  If the value does not exist, dynamically
   // creates a new EnumValueDescriptor for that value, assuming that it was
   // unknown. If a new descriptor is created, this is done in a thread-safe way,
@@ -1715,6 +1717,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   friend class FileDescriptor;
   friend class DescriptorPool;
   friend class Reflection;
+  friend internal::DescriptorPoolExtensionFinder;
 };
 
 PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(EnumDescriptor, 64);
@@ -2776,7 +2779,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     }
     auto key = std::pair<const void*, const void*>(descriptor, secondary_key);
     {
-      absl::ReaderMutexLock lock(&pool->field_memo_table_mutex_);
+      absl::ReaderMutexLock lock(pool->field_memo_table_mutex_);
       auto it = pool->field_memo_table_->find(key);
       if (it != pool->field_memo_table_->end()) {
         return internal::DownCast<const MemoData<ResultT>&>(*it->second).value;
@@ -2785,7 +2788,7 @@ class PROTOBUF_EXPORT DescriptorPool {
     auto result = std::make_unique<MemoData<ResultT>>();
     result->value = func(descriptor);
     {
-      absl::MutexLock lock(&pool->field_memo_table_mutex_);
+      absl::MutexLock lock(pool->field_memo_table_mutex_);
       auto insert_result =
           pool->field_memo_table_->insert({key, std::move(result)});
       auto it = insert_result.first;

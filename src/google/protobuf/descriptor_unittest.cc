@@ -4086,6 +4086,31 @@ TEST_P(AllowUnknownDependenciesTest, UnknownExtendee) {
 }
 
 
+TEST_P(AllowUnknownDependenciesTest, PlaceholderExtensionRangeDebugString) {
+  // Regression test: placeholder extendable messages previously had
+  // extension_ranges_[0].options_ = nullptr, which caused a null pointer
+  // dereference when DebugString() was called. The options_ field should
+  // use the default instance, consistent with all other placeholder options.
+
+  FileDescriptorProto extension_proto;
+
+  ASSERT_TRUE(TextFormat::ParseFromString(
+      "name: 'extension.proto'"
+      "extension { extendee: 'UnknownType' name:'some_extension' number:123"
+      "            label:LABEL_OPTIONAL type:TYPE_INT32 }",
+      &extension_proto));
+  const FileDescriptor* file = BuildFile(extension_proto);
+
+  ASSERT_TRUE(file != nullptr);
+  ASSERT_EQ(1, file->extension_count());
+  const Descriptor* extendee = file->extension(0)->containing_type();
+  EXPECT_TRUE(extendee->is_placeholder());
+  ASSERT_EQ(1, extendee->extension_range_count());
+
+  // This must not crash. Previously dereferenced nullptr via options().
+  EXPECT_FALSE(extendee->DebugString().empty());
+}
+
 TEST_P(AllowUnknownDependenciesTest, CustomOption) {
   // Test that we can use a custom option without having parsed
   // descriptor.proto.
@@ -8869,6 +8894,37 @@ TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
       "instead.\n");
 }
 
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithZeroFields) {
+  // A map_entry message with 0 fields and no parent field referencing it.
+  // ValidateMapEntry only runs when a parent field references the map entry,
+  // so the field count check in CrossLinkMessage is needed to catch this.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
+  // A map_entry message with only 1 field (missing value field).
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "  field { "
+      "    name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "  } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -9305,7 +9361,10 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
         }
       )pb",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: map_entry should not be set explicitly. "
+      "Use map<KeyType, ValueType> instead.\n");
 }
 
 // Test for the scenario:

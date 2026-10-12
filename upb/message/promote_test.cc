@@ -82,6 +82,7 @@ TEST(GeneratedCode, FindUnknown) {
       upb_test_EmptyMessageWithExtensions_parse(serialized, serialized_size,
                                                 arena);
 
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet result = upb_Message_FindUnknown(
       UPB_UPCAST(base_msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
@@ -90,6 +91,7 @@ TEST(GeneratedCode, FindUnknown) {
   result = upb_Message_FindUnknown(
       UPB_UPCAST(base_msg),
       upb_MiniTableExtension_Number(upb_test_ModelExtension2_model_ext_ext), 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, result.status);
 
   upb_Arena_Free(arena);
@@ -134,9 +136,11 @@ TEST(GeneratedCode, PromoteFromMultiple) {
   upb_StringView field = upb_test_ModelExtension1_str(parsed_ex);
   EXPECT_EQ(absl::string_view(field.data, field.size), "Everyone");
 
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(
       UPB_UPCAST(parsed),
       upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext), 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 
   upb_Arena_Free(arena);
@@ -372,7 +376,9 @@ TEST(GeneratedCode, PromoteUnknownMessageOld) {
   int32_t val = upb_Message_GetInt32(
       msg, upb_MiniTable_FindFieldByNumber(mini_table, 4), 0);
   EXPECT_EQ(val, 11);
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 5, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
   // Update mini table and promote unknown to a message.
   EXPECT_TRUE(upb_MiniTable_SetSubMessage(
@@ -421,7 +427,9 @@ TEST(GeneratedCode, PromoteUnknownRepeatedMessageOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have repeated field data in an unknown.
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 6, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -481,7 +489,9 @@ TEST(GeneratedCode, PromoteUnknownToMapOld) {
   EXPECT_EQ(val, 123);
 
   // Check that we have map data in an unknown.
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet unknown = upb_Message_FindUnknown(msg, 3, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(unknown.status, kUpb_FindUnknown_Ok);
 
   // Update mini table and promote unknown to a message.
@@ -535,12 +545,13 @@ TEST(GeneratedCode, PromoteNonCanonicalExtension) {
   val_str.str_val = upb_StringView_FromString("World");
   const upb_MiniTableField* custom_f =
       upb_MiniTable_GetFieldByIndex(custom_sub_table, 0);
-  upb_Message_SetString(extension1, custom_f, val_str.str_val, arena.ptr());
+  EXPECT_TRUE(upb_Message_SetString(extension1, custom_f, val_str.str_val,
+                                    arena.ptr()));
 
   // 4. Attach custom parsed submessage "World" to msg as a non-canonical
   // extension under the different custom mini-table layout.
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr());
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr()));
 
   // 5. Promote the extension using standard compiled mini-table ModelExtension1
   upb_MessageValue val;
@@ -579,7 +590,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtension) {
 
   // 8. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 
@@ -592,9 +605,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithSameMinitable) {
   upb_test_ModelExtension1_set_str(extension1,
                                    upb_StringView_FromString("World"));
 
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
       UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext,
-      (upb_Message**)&extension1, arena.ptr());
+      (upb_Message**)&extension1, arena.ptr()));
 
   upb_MessageValue val;
   upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
@@ -613,7 +626,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithSameMinitable) {
                                         &ext_iter));
   EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
                                          &ext_iter));
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 
@@ -660,11 +675,11 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
   upb_Message* extension1 = _upb_Message_New(custom_sub_table_ext, arena.ptr());
   const upb_MiniTableField* custom_f =
       upb_MiniTable_GetFieldByIndex(custom_sub_table_ext, 0);
-  upb_Message_SetInt32(extension1, custom_f, 42, arena.ptr());
+  EXPECT_TRUE(upb_Message_SetInt32(extension1, custom_f, 42, arena.ptr()));
 
   // 7. Attach it as a non-canonical extension to msg using field 1547
-  UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr());
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), &custom_ext, &extension1, arena.ptr()));
 
   // 8. Run extension promotion using targeting target_ext layout
   upb_MessageValue val;
@@ -704,7 +719,9 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
 
   // 11. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
+  UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
+  UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
 }  // namespace

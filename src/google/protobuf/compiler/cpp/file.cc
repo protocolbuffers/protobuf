@@ -486,6 +486,7 @@ void FileGenerator::GenerateSourceIncludes(io::Printer* p) {
   // TODO This is to include parse_context.h, we need a better way
   IncludeFile("third_party/protobuf/extension_set.h", p);
   IncludeFile("third_party/protobuf/generated_message_util.h", p);
+  IncludeFile("third_party/protobuf/private_access.h", p);
   IncludeFile("third_party/protobuf/wire_format_lite.h", p);
 
   if (ShouldVerify(file_, options_)) {
@@ -545,6 +546,15 @@ void FileGenerator::GenerateSourcePrelude(io::Printer* p) {
     namespace _pb = $pb$;
     namespace _pbi = $pbi$;
     namespace _fl = $pbi$::field_layout;
+    //~ When custom VTable is off, we want the static generated method helpers
+    //~ to be inlined into the public virtual non-static stubs, preventing a
+    //~ double call. Since these static helpers will not be referenced anywhere
+    //~ else, we mark them as inline so they aren't linked into the binary.
+#if defined(PROTOBUF_CUSTOM_VTABLE)
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE
+#else
+#define PROTOBUF_NO_CUSTOM_VTABLE_INLINE PROTOBUF_ALWAYS_INLINE
+#endif
   )cc");
 }
 
@@ -751,6 +761,9 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) {
 void FileGenerator::GenerateSource(io::Printer* p) {
   auto v = p->WithVars(FileVars(file_, options_));
 
+  p->Emit(R"cc(
+    // clang-format off
+  )cc");
   GenerateSourceIncludes(p);
   GenerateSourcePrelude(p);
   CrossFileReferences refs;
@@ -923,6 +936,9 @@ void FileGenerator::GenerateSource(io::Printer* p) {
   GenerateStaticInitializer(p);
 
   IncludeFile("third_party/protobuf/port_undef.inc", p);
+  p->Emit(R"cc(
+    // clang-format on
+  )cc");
 }
 
 static void GatherAllCustomOptionTypes(
@@ -1348,7 +1364,6 @@ class FileGenerator::ForwardDeclarations {
               {"globals_name", MsgGlobalsInstanceName(desc, options)},
               {"const",
                IsFileDescriptorProto(desc->file(), options) ? "" : "const"},
-              {"classdata_type", ClassDataType(desc, options)},
           },
           R"cc(
             class $class$;
@@ -1373,12 +1388,22 @@ class FileGenerator::ForwardDeclarations {
 
   void PrintTopLevelDecl(io::Printer* p, const Options& options) const {
     for (const auto& e : enums_) {
-      p->Emit({{"enum", QualifiedClassName(e.second, options)}},
-              R"cc(
-                template <>
-                internal::EnumTraitsT<$enum$_internal_data_>
-                    internal::EnumTraitsImpl::value<$enum$>;
-              )cc");
+      const bool deprecated = e.second->options().deprecated();
+      p->Emit(
+          {
+              {"enum", QualifiedClassName(e.second, options)},
+              {"IGNORE_DEPRECATION_START",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_START" : ""},
+              {"IGNORE_DEPRECATION_STOP",
+               deprecated ? "PROTOBUF_IGNORE_DEPRECATION_STOP" : ""},
+          },
+          R"cc(
+            $IGNORE_DEPRECATION_START$
+            template <>
+            internal::EnumTraitsT<$enum$_internal_data_>
+                internal::EnumTraitsImpl::value<$enum$>;
+            $IGNORE_DEPRECATION_STOP$
+          )cc");
     }
     if (ShouldGenerateExternSpecializations(options)) {
       for (const auto& c : classes_) {

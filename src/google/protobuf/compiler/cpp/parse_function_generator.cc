@@ -151,14 +151,6 @@ void ParseFunctionGenerator::GenerateAliasParseTableType(io::Printer* p) {
       )cc");
 }
 
-void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
-  auto v = p->WithVars(variables_);
-  // TODO: Remove this once we remove TcParser::GetTable.
-  p->Emit(R"cc(
-    friend class $pbi$::TcParser;
-  )cc");
-}
-
 static std::string TcParseFunctionName(internal::TcParseFunction func) {
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
   static constexpr absl::string_view kNames[] = {
@@ -243,26 +235,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
               p->Emit("nullptr,  // post_loop_handler\n");
             }
           }},
-         {"fallback", TcParseFunctionName(tc_table_info_->fallback_function)},
-         {"to_prefetch",
-          [&] {
-            std::vector<const FieldDescriptor*> subtable_fields;
-            for (const auto& aux : tc_table_info_->aux_entries) {
-              if (aux.type == internal::TailCallTableInfo::kClassData) {
-                subtable_fields.push_back(aux.field);
-              }
-            }
-            const auto* hottest = FindHottestField(subtable_fields, options_);
-            p->Emit(
-                {{"hot_type", QualifiedClassName(hottest == nullptr
-                                                     ? descriptor_
-                                                     : hottest->message_type(),
-                                                 options_)}},
-                R"cc(
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-                  ::_pbi::TcParser::GetTable<$hot_type$>(),  // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE)cc");
-          }}},
+         {"fallback", TcParseFunctionName(tc_table_info_->fallback_function)}},
         // clang-format off
         R"cc(
         $has_bits_offset$,
@@ -277,7 +250,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         class_data,
         $post_loop_handler$,
         $fallback$,  // fallback
-        $to_prefetch$)cc"
+        )cc"
         // clang-format on
     );
   };
@@ -461,7 +434,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
       // clang-format off
 R"cc(
-constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr $Msg$::ParseTableT_ $Msg$::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       $table_base$

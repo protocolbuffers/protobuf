@@ -87,6 +87,9 @@ class ModuleFileFunctions(object):
   def register_toolchains(self, *args, **kwargs):
     pass
 
+  def flag_alias(self, *args, **kwargs):
+    pass
+
   def use_repo(self, *args, **kwargs):
     pass
 
