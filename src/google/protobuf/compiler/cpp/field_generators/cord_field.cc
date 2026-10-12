@@ -248,11 +248,11 @@ void CordFieldGenerator::GenerateMessageClearingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   if (field_->default_value_string().empty()) {
     p->Emit(R"cc(
-      $this_field$.Clear();
+      $this_mutable_field$.Clear();
     )cc");
   } else {
     p->Emit(R"cc(
-      $this_field$ = ::absl::string_view($default$, $default_length$);
+      $this_mutable_field$ = ::absl::string_view($default$, $default_length$);
     )cc");
   }
 }
@@ -275,7 +275,7 @@ void CordFieldGenerator::GenerateArenaDestructorCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   // this_ is the object being destructed (we are inside a static method here).
   p->Emit(R"cc(
-    $this_field$.::absl::Cord::~Cord();
+    $this_mutable_field$.::absl::Cord::~Cord();
   )cc");
 }
 
@@ -457,9 +457,9 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
 void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* p) const {
   p->Emit(R"cc(
     if (oneof_needs_init) {
-      $this_field$ = $pb$::Arena::Create<absl::Cord>(arena);
+      $this_mutable_field$ = $pb$::Arena::Create<absl::Cord>(arena);
     }
-    *$this_field$ = *$from_field$;
+    *$this_mutable_field$ = *$from_field$;
   )cc");
 }
 

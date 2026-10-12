@@ -1176,9 +1176,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          3, *this_._impl_.compiler_version_, this_._impl_.compiler_version_->GetCachedSize(), target,
-          stream);
+      {
+        auto* sub = this_._impl_.compiler_version_;
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            3, *sub, sub->GetCachedSize(), target, stream);
+      }
     }
 
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
@@ -1297,10 +1299,13 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.compiler_version_ != nullptr);
-      if (this_._impl_.compiler_version_ == nullptr) {
-        this_._impl_.compiler_version_ = Super_::CopyConstruct(arena, *from._impl_.compiler_version_);
-      } else {
-        this_._impl_.compiler_version_->MergeFrom(*from._impl_.compiler_version_);
+      {
+        auto*& sub = this_._impl_.compiler_version_;
+        if (sub == nullptr) {
+          sub = Super_::CopyConstruct(arena, *from._impl_.compiler_version_);
+        } else {
+          sub->MergeFrom(*from._impl_.compiler_version_);
+        }
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
@@ -1494,9 +1499,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          16, *this_._impl_.generated_code_info_, this_._impl_.generated_code_info_->GetCachedSize(), target,
-          stream);
+      {
+        auto* sub = this_._impl_.generated_code_info_;
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            16, *sub, sub->GetCachedSize(), target, stream);
+      }
     }
 
   }
@@ -1581,10 +1588,13 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_m
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.generated_code_info_ != nullptr);
-      if (this_._impl_.generated_code_info_ == nullptr) {
-        this_._impl_.generated_code_info_ = Super_::CopyConstruct(arena, *from._impl_.generated_code_info_);
-      } else {
-        this_._impl_.generated_code_info_->MergeFrom(*from._impl_.generated_code_info_);
+      {
+        auto*& sub = this_._impl_.generated_code_info_;
+        if (sub == nullptr) {
+          sub = Super_::CopyConstruct(arena, *from._impl_.generated_code_info_);
+        } else {
+          sub->MergeFrom(*from._impl_.generated_code_info_);
+        }
       }
     }
   }
