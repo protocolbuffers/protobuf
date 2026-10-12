@@ -67,7 +67,6 @@ upb_FileDef_Name [const upb_FileDef *] const char *
 upb_FileDef_Pool [const upb_FileDef *] const upb_DefPool *
 upb_JsonDecodeDetectingNonconformance [const char *, size_t, upb_Message *, const upb_MessageDef *, const upb_DefPool *, int, upb_Arena *, upb_Status *] int
 upb_JsonEncode [const upb_Message *, const upb_MessageDef *, const upb_DefPool *, int, char *, size_t, upb_Status *] size_t
-upb_MapIterator_Done [const upb_Map *, size_t] _Bool
 upb_MapIterator_Key [const upb_Map *, size_t] upb_MessageValue
 upb_MapIterator_Next [const upb_Map *, size_t *] _Bool
 upb_MapIterator_Value [const upb_Map *, size_t] upb_MessageValue

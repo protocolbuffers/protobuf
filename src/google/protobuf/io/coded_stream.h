@@ -660,12 +660,15 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
       : end_(static_cast<uint8_t*>(data) + size),
         buffer_end_(nullptr),
         stream_(nullptr),
-        is_serialization_deterministic_(deterministic) {}
+        is_serialization_deterministic_(deterministic) {
+    ABSL_DCHECK(data != nullptr || size == 0);
+  }
 
   // Initialize from stream but with the first buffer already given (eager).
   EpsCopyOutputStream(void* data, int size, ZeroCopyOutputStream* stream,
                       bool deterministic, uint8_t** pp)
       : stream_(stream), is_serialization_deterministic_(deterministic) {
+    ABSL_DCHECK(data != nullptr || size == 0);
     *pp = SetInitialBuffer(data, size);
   }
 

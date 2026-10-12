@@ -135,10 +135,10 @@ public class FieldMaskTreeTest {
     assertThat(result.toString()).isEqualTo("bar.baz,bar.quz,foo");
   }
 
-  @Test
+  @Test(timeout = 5000)
   public void testGetFieldPaths_excessivelyDeepTree() {
     StringBuilder sb = new StringBuilder("a");
-    for (int i = 0; i < 100000; i++) {
+    for (int i = 0; i < 250000; i++) {
       sb.append(".a");
     }
     String deepPath = sb.toString();

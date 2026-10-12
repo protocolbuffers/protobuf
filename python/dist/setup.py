@@ -47,7 +47,7 @@ fasttable_decoder_enabled = False
 
 srcs = (
     glob.glob('google/protobuf/*.c')
-    + glob.glob('python/*.c')
+    + glob.glob('python/**/*.c', recursive=True)
     + glob.glob('upb/**/*.c', recursive=True)
     + glob.glob('utf8_range/*.c')
 )

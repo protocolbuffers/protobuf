@@ -795,8 +795,9 @@ static int lupb_DefPool_addset(lua_State* L) {
 
   files = google_protobuf_FileDescriptorSet_file(set, &n);
   for (i = 0; i < n; i++) {
-    upb_DefPool_AddFile(s, files[i], &status);
-    lupb_checkstatus(L, &status);
+    if (!upb_DefPool_AddFile(s, files[i], &status)) {
+      lupb_checkstatus(L, &status);
+    }
   }
 
   return 0;

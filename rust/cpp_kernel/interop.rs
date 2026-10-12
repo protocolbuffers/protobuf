@@ -9,13 +9,20 @@
 //!
 //! These traits are deliberately not available on the prelude, as they should
 //! be used rarely and with great care.
+//!
+//! The raw pointers vended and accepted by these traits are only guaranteed to
+//! point to a `proto2::MessageLite`. The pointer is only guaranteed to be a full `proto2::Message*`
+//! if the Rust type also implements the `WithReflection` trait. Casting a pointer to
+//! `proto2::Message*` for a type that does not implement `WithReflection` is
+//! undefined behavior.
 
 use super::*;
 
 /// Methods for converting to and from a raw, owned C++ message pointer.
 pub trait OwnedMessageInterop: SealedInternal {
     /// Drops `self` and returns an underlying pointer that it was wrapping
-    /// without deleting it.
+    /// without deleting it. The pointer is a `MessageLite*` in C++ (and only a
+    /// `Message*` if `Self` implements `WithReflection`, see the module docs).
     ///
     /// The caller is responsible for ensuring the returned pointer is
     /// subsequently deleted (eg by moving it into a std::unique_ptr in
@@ -26,8 +33,8 @@ pub trait OwnedMessageInterop: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The pointer passed in must not be used by the caller after being
-    ///     passed here (must not be read, written, or deleted)
+    ///   - The pointer passed in must not be used by the caller after being passed here (must not
+    ///     be read, written, or deleted)
     unsafe fn __unstable_take_ownership_of_raw_message(raw_message: *mut std::ffi::c_void) -> Self;
 }
 
@@ -37,9 +44,10 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
     ///
     /// Note that the returned Value must be used under the same constraints
     /// as though it were a borrow of `self`: it should be treated as a
-    /// `const Message*` in C++, and not be mutated in any way, and any
-    /// mutation to the parent message may invalidate it, and it
-    /// must not be deleted.
+    /// `const MessageLite*` in C++ (and only as a `const Message*` if `Self`
+    /// implements `WithReflection`, see the module docs), and not be mutated
+    /// in any way, and any mutation to the parent message may invalidate it,
+    /// and it must not be deleted.
     fn __unstable_as_raw_message(&self) -> *const std::ffi::c_void;
 
     /// Wraps the provided pointer as a MessageView.
@@ -58,8 +66,7 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for 'msg and not mutated
-    ///     while the wrapper is live.
+    ///   - The underlying message must be alive for 'msg and not mutated while the wrapper is live.
     unsafe fn __unstable_wrap_raw_message(raw: &'msg *const std::ffi::c_void) -> Self;
 
     /// Wraps the provided pointer as a MessageView.
@@ -74,10 +81,60 @@ pub trait MessageViewInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for the caller-chosen 'msg
-    ///     and not mutated while the wrapper is live.
+    ///   - The underlying message must be alive for the caller-chosen 'msg and not mutated while
+    ///     the wrapper is live.
     unsafe fn __unstable_wrap_raw_message_unchecked_lifetime(raw: *const std::ffi::c_void) -> Self;
+
+    /// Converts this view into a reference to the underlying C++ `proto2::MessageLite`.
+    ///
+    /// This is most commonly used to pass messages to C++ functions which accept
+    /// `const proto2::MessageLite&` or `const proto2::MessageLite*`.
+    ///
+    /// The returned `T` is the Rust binding for `proto2::MessageLite` (see
+    /// [`CppMessageLiteType`]). It is normally inferred from the parameter type
+    /// of the C++ function being called.
+    ///
+    /// To get a mutable reference, see [`MessageMutInterop::as_cpp_message_lite_mut`].
+    #[allow(clippy::wrong_self_convention)]
+    fn as_cpp_message_lite<T: CppMessageLiteType>(self) -> &'msg T
+    where
+        Self: Sized,
+    {
+        // SAFETY: `self` is a view, so the message is live and not mutated, other than through
+        // C++ `mutable` members, for `'msg`. With the C++ kernel, the raw message pointer is a
+        // `proto2::MessageLite*`, so we can reinterpret it as a `&'msg proto2::MessageLite`.
+        unsafe { &*(self.__unstable_as_raw_message() as *const T) }
+    }
 }
+
+// TODO: Add an equivalent `CppMessageType` and
+// `as_cpp_message{,_mut}` (bounded on `WithReflection`) once `proto2::Message`
+// has Crubit bindings.
+/// A trait to be implemented exclusively by the Rust binding for the C++ `proto2::MessageLite`
+/// class (and not subclasses).
+///
+/// This trait is used to allow [`MessageViewInterop::as_cpp_message_lite`] and
+/// [`MessageMutInterop::as_cpp_message_lite_mut`] to cast views and muts to the underlying C++
+/// `proto2::MessageLite` type without creating a build-time dependency from this crate on the
+/// `proto2` bindings.
+///
+/// There is not yet an equivalent for `proto2::Message` (which does not yet
+/// have Crubit bindings, and would require a `WithReflection` bound since
+/// messages using the lite runtime are not `proto2::Message`s). C++ APIs that
+/// need reflection can take a `proto2::MessageLite` and use
+/// `proto2::DynamicCastMessage<proto2::Message>`.
+///
+/// # Safety
+///
+/// This trait must only be implemented by the Crubit-generated Rust binding for
+/// `proto2::MessageLite` so that `as_cpp_message_lite{,_mut}` can reinterpret the
+/// `proto2::MessageLite*` of any message borrowed by a view or mut as a `&Self` or
+/// `Pin<&mut Self>`.
+///
+/// Additionally, the Crubit binding of `proto2::MessageLite` must continue to meet these
+/// requirements: it has the same layout as the C++ class, is `!Unpin`, and
+/// only contains `Cell<MaybeUninit<u8>>` storage.
+pub unsafe trait CppMessageLiteType {}
 
 /// Methods for converting to and from a raw, mutable C++ message pointer.
 pub trait MessageMutInterop<'msg>: SealedInternal {
@@ -85,8 +142,9 @@ pub trait MessageMutInterop<'msg>: SealedInternal {
     ///
     /// Note that the returned Value must be used under the same constraints
     /// as though it were a mut borrow of `self`: it should be treated as a
-    /// non-owned `Message*` in C++. And any mutation to the parent message
-    /// may invalidate it, and it must not be deleted.
+    /// non-owned `MessageLite*` in C++ (and only as a `Message*` if `Self`
+    /// implements `WithReflection`, see the module docs). And any mutation to
+    /// the parent message may invalidate it, and it must not be deleted.
     fn __unstable_as_raw_message_mut(&mut self) -> *mut std::ffi::c_void;
 
     /// Wraps the provided C++ pointer as a MessageMut.
@@ -105,8 +163,8 @@ pub trait MessageMutInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for 'msg and not read or
-    ///     mutated while the wrapper is live.
+    ///   - The underlying message must be alive for 'msg and not read or mutated while the wrapper
+    ///     is live.
     unsafe fn __unstable_wrap_raw_message_mut(raw: &'msg mut *mut std::ffi::c_void) -> Self;
 
     /// Wraps the provided pointer as a MessageMut.
@@ -121,11 +179,37 @@ pub trait MessageMutInterop<'msg>: SealedInternal {
     ///
     /// # Safety
     ///   - The underlying message must be for the same type as `Self`
-    ///   - The underlying message must be alive for the caller-chosen 'msg
-    ///     and not mutated while the wrapper is live.
+    ///   - The underlying message must be alive for the caller-chosen 'msg and not mutated while
+    ///     the wrapper is live.
     unsafe fn __unstable_wrap_raw_message_mut_unchecked_lifetime(
         raw: *mut std::ffi::c_void,
     ) -> Self;
+
+    /// Converts this mut into a mutable reference to the underlying C++ `proto2::MessageLite`.
+    ///
+    /// This is most commonly used to pass messages to C++ functions which accept
+    /// `proto2::MessageLite&` or `proto2::MessageLite*`.
+    ///
+    /// The returned `T` is the Rust binding for `proto2::MessageLite` (see
+    /// [`CppMessageLiteType`]). It is normally inferred from the parameter type
+    /// of the C++ function being called.
+    ///
+    /// To get a shared reference, see [`MessageViewInterop::as_cpp_message_lite`].
+    #[allow(clippy::wrong_self_convention)]
+    fn as_cpp_message_lite_mut<T: CppMessageLiteType>(mut self) -> std::pin::Pin<&'msg mut T>
+    where
+        Self: Sized,
+    {
+        // SAFETY: `self` is mut, so the message is live and exclusively borrowed for `'msg`.
+        //
+        // With the C++ kernel, the raw message pointer is a
+        // `proto2::MessageLite*`, which `T: CppMessageLiteType` allows
+        // reinterpreting as a `Pin<&'msg mut T>` under these conditions. The
+        // message is a C++ object that Rust never moves, so pinning it is sound.
+        unsafe {
+            std::pin::Pin::new_unchecked(&mut *(self.__unstable_as_raw_message_mut() as *mut T))
+        }
+    }
 }
 
 /// Note that this is only implemented for the types implementing `proto2::Message`.

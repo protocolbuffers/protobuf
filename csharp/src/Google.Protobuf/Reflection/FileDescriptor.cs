@@ -14,6 +14,7 @@
 using Google.Protobuf.Collections;
 using Google.Protobuf.WellKnownTypes;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -68,7 +69,7 @@ namespace Google.Protobuf.Reflection
 
         private readonly Lazy<Dictionary<IDescriptor, DescriptorDeclaration>> declarations;
 
-        private static readonly Dictionary<string, List<Extension>> allDependedExtensionsCache = new();
+        private static readonly ConcurrentDictionary<string, List<Extension>> allDependedExtensionsCache = new();
         private static bool extensionCachingEnabled = true;
 
         /// <summary>

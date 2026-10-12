@@ -28,14 +28,13 @@ impl<T: ?Sized + 'static> OwnedArenaBox<T> {
     /// Construct `OwnedArenaBox` from raw pointers and its owning arena.
     ///
     /// # Safety
-    /// - `data` must satisfy the safety constraints of pointer::as_mut::<'a>()
-    ///   where 'a is the passed arena's lifetime (`data` should be valid and
-    ///   not mutated while this struct is live).
-    /// - `data` should be a pointer into a block from a previous allocation on
-    ///   `arena`, or to another arena fused to it, or should be pointing at
-    ///   'static data (and if it is pointing at any struct like upb_Message,
-    ///   all data transitively reachable should similarly be kept live by
-    ///   `arena` or be 'static).
+    /// - `data` must satisfy the safety constraints of pointer::as_mut::<'a>() where 'a is the
+    ///   passed arena's lifetime (`data` should be valid and not mutated while this struct is
+    ///   live).
+    /// - `data` should be a pointer into a block from a previous allocation on `arena`, or to
+    ///   another arena fused to it, or should be pointing at 'static data (and if it is pointing at
+    ///   any struct like upb_Message, all data transitively reachable should similarly be kept live
+    ///   by `arena` or be 'static).
     pub unsafe fn new(data: NonNull<T>, arena: Arena) -> Self {
         OwnedArenaBox { arena, data }
     }
@@ -88,12 +87,13 @@ impl<T: Debug + 'static> Debug for OwnedArenaBox<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use core::mem;
     use core::str;
     use googletest::gtest;
 
     #[gtest]
     fn test_byte_slice_pointer_roundtrip() {
-        let arena = Arena::new();
+        let arena = Arena::new_sized(0);
         let original_data: &'static [u8] = b"Hello world";
         let owned_data = unsafe { OwnedArenaBox::new(original_data.into(), arena) };
         assert_eq!(&*owned_data, b"Hello world");
@@ -101,8 +101,8 @@ mod tests {
 
     #[gtest]
     fn test_alloc_str_roundtrip() {
-        let arena = Arena::new();
         let s: &str = "Hello";
+        let arena = Arena::new_sized(s.len());
         let arena_alloc_str: NonNull<str> = arena.copy_str_in(s).unwrap().into();
         let owned_data = unsafe { OwnedArenaBox::new(arena_alloc_str, arena) };
         assert_eq!(&*owned_data, s);
@@ -110,7 +110,7 @@ mod tests {
 
     #[gtest]
     fn test_sized_type_roundtrip() {
-        let arena = Arena::new();
+        let arena = Arena::new_sized(mem::size_of::<u32>());
         let arena_alloc_u32: NonNull<u32> = arena.copy_in(&7u32).unwrap().into();
         let mut owned_data = unsafe { OwnedArenaBox::new(arena_alloc_u32, arena) };
         assert_eq!(*owned_data, 7);

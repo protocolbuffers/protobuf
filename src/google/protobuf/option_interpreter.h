@@ -159,6 +159,15 @@ class OptionInterpreter {
                                       const SourceCodePath& uninterpreted_path,
                                       SourceCodePath& dest_path);
 
+  // Checks if the given message is an Any message and, if so, collects the
+  // source locations for the type_url and value fields.
+  // Returns true if the message is an Any message, false otherwise.
+  // This is a special case of CollectAggregateFieldLocations, as the Any
+  // message needs to be unpacked before its fields can be accessed.
+  bool MaybeCollectAnyFieldInAggregateOption(
+      const Message& message, const TextFormat::ParseInfoTree& tree,
+      const SourceCodePath& uninterpreted_path, SourceCodePath& dest_path);
+
   // Determines the appropriate UninterpretedOption value field number (e.g.,
   // kPositiveIntValueFieldNumber, kStringValueFieldNumber) for a given field.
   int GetValueMarker(const FieldDescriptor* field, const Message& message,
