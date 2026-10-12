@@ -116,8 +116,9 @@ struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal : ::_pbi::MessageG
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<JavaFeatures_NestInFileClassFeature>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures_NestInFileClassFeature>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures_NestInFileClassFeature>(
+                GetClassData())) {}
   ~JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) JavaFeatures_NestInFileClassFeature _default;
@@ -255,8 +256,9 @@ struct JavaFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<JavaFeatures>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures>(
+                GetClassData())) {}
   ~JavaFeaturesGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) JavaFeatures _default;

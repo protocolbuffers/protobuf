@@ -136,8 +136,9 @@ struct CppFileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<CppFileOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
+                GetClassData())) {}
   ~CppFileOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CppFileOptions _default;

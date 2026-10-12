@@ -136,8 +136,9 @@ struct JsonEnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<JsonEnumValueOptions>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<JsonEnumValueOptions>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<JsonEnumValueOptions>(
+                GetClassData())) {}
   ~JsonEnumValueOptionsGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) JsonEnumValueOptions _default;

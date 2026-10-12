@@ -161,8 +161,9 @@ struct VersionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Version>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Version>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Version>(
+                GetClassData())) {}
   ~VersionGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Version _default;
@@ -295,8 +296,9 @@ struct CodeGeneratorResponse_FileGlobalsTypeInternal : ::_pbi::MessageGlobalsBas
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse_File>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
+                GetClassData())) {}
   ~CodeGeneratorResponse_FileGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse_File _default;
@@ -439,8 +441,9 @@ struct CodeGeneratorResponseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
+                GetClassData())) {}
   ~CodeGeneratorResponseGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse _default;
@@ -590,8 +593,9 @@ struct CodeGeneratorRequestGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorRequest>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
+                GetClassData())) {}
   ~CodeGeneratorRequestGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorRequest _default;
