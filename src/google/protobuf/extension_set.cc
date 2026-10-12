@@ -611,7 +611,6 @@ MessageLite* ExtensionSet::UnsafeArenaReleaseMessage(
   } else {
     ABSL_DCHECK_TYPE(*extension, OPTIONAL_FIELD, MESSAGE);
     MessageLite* ret = nullptr;
-    Arena* arena = parent.GetArena();
     if (extension->is_lazy) {
       Unreachable();
     } else {
