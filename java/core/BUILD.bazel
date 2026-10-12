@@ -437,6 +437,7 @@ junit_tests(
         exclude = [
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/SilentMarkerPrintingTest.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
@@ -478,6 +479,22 @@ junit_tests(
     deps = [
         ":core",
         "@protobuf_maven_dev//:com_google_guava_guava",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
+    ],
+)
+
+junit_tests(
+    name = "silent_marker_printing_test",
+    size = "small",
+    srcs = [
+        "src/test/java/com/google/protobuf/SilentMarkerPrintingTest.java",
+    ],
+    env = {"SILENT_MARKER_INSERTION_ENABLED": "true"},
+    deps = [
+        ":core",
+        ":generic_test_protos_java_proto",
+        ":java_test_protos_java_proto",
         "@protobuf_maven_dev//:com_google_truth_truth",
         "@protobuf_maven_dev//:junit_junit",
     ],
@@ -578,6 +595,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/ProtobufToStringOutputTest.java",
     "src/test/java/com/google/protobuf/RepeatedFieldBuilderTest.java",
     "src/test/java/com/google/protobuf/ServiceTest.java",
+    "src/test/java/com/google/protobuf/SilentMarkerPrintingTest.java",
     "src/test/java/com/google/protobuf/SingleFieldBuilderTest.java",
     "src/test/java/com/google/protobuf/TestBadIdentifiers.java",
     "src/test/java/com/google/protobuf/TextFormatParseInfoTreeTest.java",
@@ -658,6 +676,7 @@ junit_tests(
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/SilentMarkerPrintingTest.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
@@ -722,6 +741,7 @@ junit_tests(
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/SilentMarkerPrintingTest.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
