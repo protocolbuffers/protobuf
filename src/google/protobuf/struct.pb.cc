@@ -13,6 +13,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -142,8 +143,9 @@ struct ListValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<ListValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<ListValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<ListValue>(
+                GetClassData())) {}
   ~ListValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) ListValue _default;
@@ -260,8 +262,9 @@ struct StructGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Struct>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Struct>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Struct>(
+                GetClassData())) {}
   ~StructGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Struct _default;
@@ -403,8 +406,9 @@ struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Struct_FieldsEntry_DoNotUse>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Struct_FieldsEntry_DoNotUse>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Struct_FieldsEntry_DoNotUse>(
+                GetClassData())) {}
   ~Struct_FieldsEntry_DoNotUseGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Struct_FieldsEntry_DoNotUse _default;
@@ -527,8 +531,9 @@ struct ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Value>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Value>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Value>(
+                GetClassData())) {}
   ~ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Value _default;
@@ -1088,15 +1093,19 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
       break;
     }
     case kStructValue: {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          5, *this_._impl_.kind_.struct_value_, this_._impl_.kind_.struct_value_->GetCachedSize(), target,
-          stream);
+      {
+        auto* sub = this_._impl_.kind_.struct_value_;
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            5, *sub, sub->GetCachedSize(), target, stream);
+      }
       break;
     }
     case kListValue: {
-      target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
-          6, *this_._impl_.kind_.list_value_, this_._impl_.kind_.list_value_->GetCachedSize(), target,
-          stream);
+      {
+        auto* sub = this_._impl_.kind_.list_value_;
+        target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
+            6, *sub, sub->GetCachedSize(), target, stream);
+      }
       break;
     }
     default:

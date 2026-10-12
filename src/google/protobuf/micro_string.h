@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -77,18 +76,18 @@ class PROTOBUF_EXPORT MicroString {
 
     absl::string_view view() const { return {payload, size}; }
     char* owned_head() {
-      ABSL_DCHECK_GE(capacity, (unsigned)kOwned);
+      ABSL_DCHECK_GE(capacity, static_cast<uint32_t>(kOwned));
       return reinterpret_cast<char*>(this + 1);
     }
 
     void SetExternalBuffer(absl::string_view buffer) {
       payload = const_cast<char*>(buffer.data());
-      size = buffer.size();
+      size = static_cast<uint32_t>(buffer.size());
     }
 
     void SetInitialSize(size_t size) {
       PoisonMemoryRegion(owned_head() + size, capacity - size);
-      this->size = size;
+      this->size = static_cast<uint32_t>(size);
     }
 
     void Unpoison() { UnpoisonMemoryRegion(owned_head(), capacity); }
@@ -96,7 +95,7 @@ class PROTOBUF_EXPORT MicroString {
     void ChangeSize(size_t new_size) {
       PoisonMemoryRegion(owned_head() + new_size, capacity - new_size);
       UnpoisonMemoryRegion(owned_head(), new_size);
-      size = new_size;
+      size = static_cast<uint32_t>(new_size);
     }
   };
 
@@ -420,11 +419,12 @@ class PROTOBUF_EXPORT MicroString {
   MicroString(FromOtherTag, const Self& other, Arena* arena) {
     if (other.is_inline()) {
       static_cast<Self&>(*this) = other;
-      return;
+    } else if (other.is_large_rep() && other.large_rep_kind() == kUnowned) {
+      rep_ = other.rep_;
+    } else {
+      InitDefault();
+      SetImpl(other.Get(), arena, Self::kInlineCapacity);
     }
-    // Init as empty and run the slow path.
-    InitDefault();
-    SetFromOtherSlow(other, arena, Self::kInlineCapacity);
   }
 
   template <typename Self>

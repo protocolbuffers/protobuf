@@ -13,6 +13,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -115,8 +116,9 @@ struct JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal : ::_pbi::MessageG
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<JavaFeatures_NestInFileClassFeature>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures_NestInFileClassFeature>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures_NestInFileClassFeature>(
+                GetClassData())) {}
   ~JavaFeatures_NestInFileClassFeatureGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) JavaFeatures_NestInFileClassFeature _default;
@@ -254,8 +256,9 @@ struct JavaFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<JavaFeatures>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<JavaFeatures>(
+                GetClassData())) {}
   ~JavaFeaturesGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) JavaFeatures _default;
@@ -483,7 +486,7 @@ void JavaFeatures::Clear(MessageLite& base) {
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     ::memset(&this_._impl_.utf8_validation_, 0,
              static_cast<::size_t>(
                  reinterpret_cast<char*>(&this_._impl_.nest_in_file_class_) -
@@ -510,41 +513,43 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        1, this_._internal_legacy_closed_enum(), target);
-  }
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
+    // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteBoolToArray(
+          1, this_._internal_legacy_closed_enum(), target);
+    }
 
-  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        2, this_._internal_utf8_validation(), target);
-  }
+    // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteEnumToArray(
+          2, this_._internal_utf8_validation(), target);
+    }
 
-  // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        3, this_._internal_large_enum(), target);
-  }
+    // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteBoolToArray(
+          3, this_._internal_large_enum(), target);
+    }
 
-  // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-  if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(
-        4, this_._internal_use_old_outer_classname_default(), target);
-  }
+    // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteBoolToArray(
+          4, this_._internal_use_old_outer_classname_default(), target);
+    }
 
-  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-  if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteEnumToArray(
-        5, this_._internal_nest_in_file_class(), target);
-  }
+    // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+      target = stream->EnsureSpace(target);
+      target = ::_pbi::WireFormatLite::WriteEnumToArray(
+          5, this_._internal_nest_in_file_class(), target);
+    }
 
+  }
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -604,7 +609,7 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }

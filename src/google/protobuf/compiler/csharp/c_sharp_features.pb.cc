@@ -13,6 +13,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -129,8 +130,9 @@ struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<CSharpFeatures>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
+                GetClassData())) {}
   ~CSharpFeaturesGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) CSharpFeatures _default;

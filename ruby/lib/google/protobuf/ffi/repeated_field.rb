@@ -67,8 +67,14 @@ module Google
       # also includes Enumerable; combined with this method, the repeated field thus
       # acts like an ordinary Ruby sequence.
       def each &block
-        each_msg_val do |element|
+        # The length is re-read every iteration: the block can clear or shrink
+        # the field, and a cached length would then read past the end of the
+        # upb array.
+        i = 0
+        while i < length
+          element = Google::Protobuf::FFI.get_msgval_at(array, i)
           yield(convert_upb_to_ruby(element, type, descriptor, arena))
+          i += 1
         end
         self
       end

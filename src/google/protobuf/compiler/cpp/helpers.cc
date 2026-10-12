@@ -1760,31 +1760,16 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
         result.contains_weak = true;
       }
       switch (field->type()) {
-        case FieldDescriptor::TYPE_STRING:
-        case FieldDescriptor::TYPE_BYTES: {
-          if (field->cpp_string_type() ==
-              FieldDescriptor::CppStringType::kCord) {
-            result.contains_cord = true;
-          }
-          break;
-        }
         case FieldDescriptor::TYPE_GROUP:
         case FieldDescriptor::TYPE_MESSAGE: {
           const SCC* child = analyzer_.GetSCC(field->message_type());
           if (child != scc) {
             MessageAnalysis analysis = GetSCCAnalysis(child);
-            result.contains_cord |= analysis.contains_cord;
             result.contains_extension |= analysis.contains_extension;
             if (!ShouldIgnoreRequiredFieldCheck(field, options_)) {
               result.contains_required |= analysis.contains_required;
             }
             result.contains_weak |= analysis.contains_weak;
-          } else {
-            // This field points back into the same SCC hence the messages
-            // in the SCC are recursive. Note if SCC contains more than two
-            // nodes it has to be recursive, however this test also works for
-            // a single node that is recursive.
-            result.is_recursive = true;
           }
           break;
         }

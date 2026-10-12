@@ -102,21 +102,6 @@ std::string ConditionalToCheckBitmasks(
   return result + (return_success ? " == 0" : " != 0");
 }
 
-template <typename PredicateT>
-void DebugAssertUniform(const std::vector<const FieldDescriptor*>& fields,
-                        const Options& options, PredicateT&& pred) {
-  ABSL_DCHECK(!fields.empty() && absl::c_all_of(fields, [&](const auto* f) {
-    return pred(f) == pred(fields.front());
-  }));
-}
-
-void DebugAssertUniformLikelyPresence(
-    const std::vector<const FieldDescriptor*>& fields, const Options& options) {
-  DebugAssertUniform(fields, options, [&](const FieldDescriptor* f) {
-    return IsLikelyPresent(f, options);
-  });
-}
-
 // Generates a condition that checks presence of a field. If probability is
 // provided, the condition will be wrapped with
 // PROTOBUF_EXPECT_TRUE_WITH_PROBABILITY.
@@ -482,7 +467,7 @@ bool MayGroupChunksForHaswordsCheck(const FieldChunk& a, const FieldChunk& b) {
 
 // Returns true if it emits conditional check against hasbit words. This is
 // useful to skip multiple fields that are unlikely present based on profile
-// (go/pdproto). Assumes that each chunk is limited to one has "byte".
+// (go/pdproto). Assumes that each chunk is limited to one has "word".
 bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
                             const Options& options,
                             const FieldLayout& field_layout,
@@ -552,6 +537,93 @@ bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
           )cc");
   p->Indent();
   return true;
+}
+
+// Calculates the expected number of branch checks executed for a chunk of
+// `size` fields, where `p_none` is the probability that none of the fields
+// are present.
+//
+// For a single field (`size <= 1`), 1 branch is evaluated for its individual
+// presence check. For `size > 1`, 1 branch is evaluated for the batch presence
+// check, plus `size` subsequent individual branch checks evaluated when the
+// batch check succeeds (with probability `p_any`).
+double ExpectedNumberOfBranchesTaken(size_t size, double p_none) {
+  if (size <= 1) return 1.0;
+
+  double p_any = 1.0 - p_none;
+  return 1.0 + size * p_any;
+}
+
+double GetAbsenceProbability(const FieldDescriptor* field,
+                             const Options& options) {
+  // The default value of 0.0 is chosen for two reasons:
+  // 1. We batch in other generated methods when the PdProto data isn't
+  // available and the value of 0.0f promotes batching.
+  // 2. It has shown the best performance in the protogen_micro benchmark when
+  // compared do 1.0f and 0.5f.
+  return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
+}
+
+FieldChunk ChunkWithFields(const FieldChunk& chunk,
+                           std::vector<const FieldDescriptor*> fields) {
+  FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
+  res.fields = std::move(fields);
+  return res;
+}
+
+const FieldChunk* GetPartitionableChunk(const FieldChunk& chunk) {
+  return chunk.has_hasbit ? &chunk : nullptr;
+}
+
+// Greedily partitions the fields sharing a hasbit word into batches to
+// minimize the expected number of branch checks executed.
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
+                                                       const Options& options) {
+  std::vector<Chunk> result;
+  if (chunk.fields.empty()) return result;
+
+  result.push_back(ChunkWithFields(chunk, {chunk.fields.front()}));
+  double p_none = GetAbsenceProbability(chunk.fields.front(), options);
+
+  for (size_t i = 1; i < chunk.fields.size(); ++i) {
+    const FieldDescriptor* field = chunk.fields[i];
+    double current_cost =
+        ExpectedNumberOfBranchesTaken(result.back().fields.size(), p_none);
+    double p_field_absent = GetAbsenceProbability(field, options);
+    double new_absent = p_none * p_field_absent;
+    double extended_cost = ExpectedNumberOfBranchesTaken(
+        result.back().fields.size() + 1, new_absent);
+
+    // If adding this field to the current batch has a higher expected branches
+    // cost than if the field were alone, start a new chunk.
+    if (extended_cost > current_cost + 1.0) {
+      result.push_back(ChunkWithFields(chunk, {field}));
+      p_none = p_field_absent;
+    } else {
+      result.back().fields.push_back(field);
+      p_none = new_absent;
+    }
+  }
+  return result;
+}
+
+template <typename Chunk>
+std::vector<Chunk> PartitionToMinimizeExpectedBranches(
+    std::vector<Chunk> chunks, const Options& options) {
+  std::vector<Chunk> result;
+
+  for (Chunk& chunk : chunks) {
+    const auto* partitionable = GetPartitionableChunk(chunk);
+    if (partitionable != nullptr && partitionable->fields.size() > 1) {
+      absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
+                   std::back_inserter(result));
+    } else {
+      result.push_back(std::move(chunk));
+    }
+  }
+
+  return result;
 }
 
 using Sub = ::google::protobuf::io::Printer::Sub;
@@ -842,7 +914,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               const ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_get$;
-        return _proto_TypeTraits::Get(GetArena(), id.number(), $extensions$,
+        return _proto_TypeTraits::Get(*this, id.number(), $extensions$,
                                       id.default_value());
       }
 
@@ -854,7 +926,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_mutable$;
-        return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+        return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                           &$extensions$);
       }
 
@@ -865,8 +937,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::ConstType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                               &$extensions$);
+        _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &$extensions$);
         $annotate_extension_set$;
       }
 
@@ -877,8 +948,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::MutableType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                        value, &$extensions$);
+        _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                        &$extensions$);
         $annotate_extension_set$;
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -889,7 +960,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           typename _proto_TypeTraits::Singular::MutableType value) {
         $WeakDescriptorSelfPin$;
         _proto_TypeTraits::UnsafeArenaSetAllocated(
-            GetArena(), id.number(), _field_type, value, &$extensions$);
+            *this, id.number(), _field_type, value, &$extensions$);
         $annotate_extension_set$;
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -899,7 +970,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                        $Msg$, _proto_TypeTraits, _field_type, _is_packed>& id) {
         $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
-        return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+        return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                           &$extensions$);
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -911,7 +982,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
         $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
         return _proto_TypeTraits::UnsafeArenaRelease(
-            GetArena(), id.number(), _field_type, &$extensions$);
+            *this, id.number(), _field_type, &$extensions$);
       }
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -972,7 +1043,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         typename _proto_TypeTraits::Repeated::MutableType to_add =
-            _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+            _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                    &$extensions$);
         $annotate_repeated_extension_add_mutable$;
         return to_add;
@@ -985,7 +1056,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Repeated::ConstType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                                value, &$extensions$);
         $annotate_repeated_extension_add$;
       }
@@ -1013,7 +1084,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
         $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_list_mutable$;
         return _proto_TypeTraits::MutableRepeated(
-            GetArena(), id.number(), _field_type, _is_packed, &$extensions$);
+            *this, id.number(), _field_type, _is_packed, &$extensions$);
       }
     )cc");
 
@@ -1327,7 +1398,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     if (field->is_repeated()) {
       p->Emit(R"cc(
         inline int $Msg$::_internal_$name_internal$_size() const {
-          return _internal_$name_internal$().size();
+          return static_cast<int>(_internal_$name_internal$().size());
         }
         inline int $Msg$::$name$_size() const {
           $WeakDescriptorSelfPin$;
@@ -3297,15 +3368,15 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         // This predicate guarantees that there is only a single zero-init
         // (memset) per chunk, and if present it will be at the beginning.
         bool same =
-            field_layout_.GetHasByteIndex(a) ==
-                field_layout_.GetHasByteIndex(b) &&
-            IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_) &&
+            field_layout_.GetHasWordIndex(a) ==
+                field_layout_.GetHasWordIndex(b) &&
             (CanClearByZeroing(a) == CanClearByZeroing(b) ||
              (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
         if (!same) chunk_count = 0;
         return same;
       },
       [&](auto* f) { return ShouldSplit(f, options_) == is_split; });
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   auto it = chunks.begin();
   auto end = chunks.end();
@@ -3405,22 +3476,15 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
       // We can omit the if() for chunk size 1, or if our fields do not have
       // hasbits. I don't understand the rationale for the last part of the
       // condition, but it matches the old logic.
-      const bool check_has_byte =
+      const bool check_has_word =
           field_layout_.GetHasBitIndex(fields.front()).has_value() &&
-          fields.size() > 1 && !IsLikelyPresent(fields.back(), options_) &&
-          (memset_end != fields.back() || merge_zero_init);
+          fields.size() > 1 && (memset_end != fields.back() || merge_zero_init);
 
-      DebugAssertUniformLikelyPresence(fields, options_);
-
-      if (check_has_byte) {
+      if (check_has_word) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
-        // Check (up to) 8 has_bits at a time if we have more than one field in
-        // this chunk.  Due to field layout ordering, we may check
-        // _has_bits_[last_chunk * 8 / 32] multiple times.
         ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-        ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
         const int has_word_index =
             field_layout_.GetHasWordIndex(fields.front()).value();
@@ -3936,10 +4000,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
     const absl::optional<int> has_word_index =
         field_layout_.GetHasWordIndex(fields.front());
     const bool cache_has_bits = has_word_index.has_value();
-    const bool check_has_byte = cache_has_bits && fields.size() > 1 &&
-                                !IsLikelyPresent(fields.back(), options_);
-
-    DebugAssertUniformLikelyPresence(fields, options_);
+    const bool check_has_word = cache_has_bits && fields.size() > 1;
 
     if (cache_has_bits && cached_has_word_index != has_word_index.value()) {
       cached_has_word_index = has_word_index.value();
@@ -3949,15 +4010,11 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
               )cc");
     }
 
-    if (check_has_byte) {
+    if (check_has_word) {
       // Emit an if() that will let us skip the whole chunk if none are set.
       uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
-      // Check (up to) 8 has_bits at a time if we have more than one field in
-      // this chunk.  Due to field layout ordering, we may check
-      // _has_bits_[last_chunk * 8 / 32] multiple times.
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-      ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
                                  chunk_mask, fields, options_)}},
@@ -4022,7 +4079,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
                 } else {
                   ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
                               HasbitMode::kTrueHasbit);
-                  if (check_has_byte && IsPOD(field)) {
+                  if (check_has_word && IsPOD(field)) {
                     generator.GenerateCopyConstructorCode(p);
                   } else {
                     generator.GenerateMergingCode(p);
@@ -4037,7 +4094,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       }
     }
 
-    if (check_has_byte) {
+    if (check_has_word) {
       p->Outdent();
       p->Emit(R"cc(
         }
@@ -4048,11 +4105,11 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
   std::vector<FieldChunk> chunks = CollectFields(
       field_layout_.optimized_order(), options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
-        return field_layout_.GetHasByteIndex(a) ==
-                   field_layout_.GetHasByteIndex(b) &&
-               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_);
+        return field_layout_.GetHasWordIndex(a) ==
+               field_layout_.GetHasWordIndex(b);
       },
       [&](const auto* f) { return ShouldSplit(f, options_) == is_split; });
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   auto it = chunks.begin();
   auto end = chunks.end();
@@ -4479,7 +4536,7 @@ struct SerializeFieldChunk {
 using SerializeChunk =
     std::variant<SerializeFieldChunk, OneofChunk, ExtensionRangeChunk>;
 
-bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
+bool TryMergeChunks(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   if (to->should_split != from.should_split ||
       to->hasword_index != from.hasword_index) {
     return false;
@@ -4488,7 +4545,7 @@ bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   return true;
 }
 
-bool TryMerge(OneofChunk* to, const OneofChunk& from) {
+bool TryMergeChunks(OneofChunk* to, const OneofChunk& from) {
   if (to->fields.front()->containing_oneof() !=
       from.fields.front()->containing_oneof()) {
     return false;
@@ -4497,7 +4554,7 @@ bool TryMerge(OneofChunk* to, const OneofChunk& from) {
   return true;
 }
 
-bool TryMerge(ExtensionRangeChunk* to, const ExtensionRangeChunk& from) {
+bool TryMergeChunks(ExtensionRangeChunk* to, const ExtensionRangeChunk& from) {
   to->start = std::min(to->start, from.start);
   to->end = std::max(to->end, from.end);
   return true;
@@ -4507,14 +4564,14 @@ template <typename Chunk>
 void TryAppendToBack(std::vector<SerializeChunk>& chunks, Chunk chunk) {
   if (!chunks.empty()) {
     auto* back = std::get_if<Chunk>(&chunks.back());
-    if (back != nullptr && TryMerge(back, chunk)) {
+    if (back != nullptr && TryMergeChunks(back, chunk)) {
       return;
     }
   }
   chunks.push_back(std::move(chunk));
 }
 
-std::vector<SerializeChunk> CollectSerializeChunks(
+std::vector<SerializeChunk> CollectMaximalSerializeChunks(
     const Descriptor* descriptor, const FieldLayout& field_layout,
     const Options& options) {
   std::vector<const FieldDescriptor*> ordered_fields =
@@ -4563,6 +4620,21 @@ std::vector<SerializeChunk> CollectSerializeChunks(
 
   return chunks;
 }
+
+SerializeFieldChunk ChunkWithFields(
+    const SerializeFieldChunk& chunk,
+    std::vector<const FieldDescriptor*> fields) {
+  return SerializeFieldChunk{chunk.should_split, chunk.hasword_index,
+                             std::move(fields)};
+}
+
+const SerializeFieldChunk* GetPartitionableChunk(const SerializeChunk& chunk) {
+  const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
+  if (field_chunk != nullptr && field_chunk->hasword_index.has_value()) {
+    return field_chunk;
+  }
+  return nullptr;
+}
 }  // namespace
 
 void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
@@ -4603,24 +4675,41 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
       } else {
         CloseSplit();
       }
-      for (const auto* field : fields_chunk.fields) {
-        // TODO: Defer non-oneof fields similarly to oneof fields.
-        if (HasHasbit(field, mg_->options_)) {
-          // We speculatively load the entire _has_bits_[index] contents, even
-          // if it is for only one field.  Deferring non-oneof emitting would
-          // allow us to determine whether this is going to be useful.
-          int has_word_index =
-              mg_->field_layout_.GetHasWordIndex(field).value();
-          if (cached_has_bit_index_ != has_word_index) {
-            // Reload.
-            cached_has_bit_index_ = has_word_index;
-            p_->Emit({{"index", cached_has_bit_index_}},
-                     R"cc(
-                       cached_has_bits = this_._impl_._has_bits_[$index$];
-                     )cc");
-          }
+
+      absl::optional<int> hasword_index = fields_chunk.hasword_index;
+      // We speculatively load the entire _has_bits_[index] contents, even
+      // if it is for only one field.
+      if (hasword_index.has_value() &&
+          cached_has_bit_index_ != *hasword_index) {
+        cached_has_bit_index_ = *hasword_index;
+        p_->Emit({{"index", cached_has_bit_index_}},
+                 R"cc(
+                   cached_has_bits = this_._impl_._has_bits_[$index$];
+                 )cc");
+      }
+
+      auto generate_serialize_fields = [&] {
+        for (const auto* field : fields_chunk.fields) {
+          mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
         }
-        mg_->GenerateSerializeOneField(p_, field, cached_has_bit_index_);
+      };
+
+      if (fields_chunk.fields.size() > 1 && hasword_index.has_value()) {
+        uint32_t chunk_mask =
+            GenChunkMask(fields_chunk.fields, mg_->field_layout_);
+        p_->Emit(
+            {
+                {"cond", GenerateConditionMaybeWithProbabilityForGroup(
+                             chunk_mask, fields_chunk.fields, mg_->options_)},
+                {"body", generate_serialize_fields},
+            },
+            R"cc(
+              if ($cond$) {
+                $body$;
+              }
+            )cc");
+      } else {
+        generate_serialize_fields();
       }
     }
 
@@ -4654,7 +4743,8 @@ void MessageGenerator::GenerateSerializeWithCachedSizesBody(io::Printer* p) {
   if (HasSimpleBaseClass(descriptor_, options_)) return;
 
   std::vector<SerializeChunk> chunks =
-      CollectSerializeChunks(descriptor_, field_layout_, options_);
+      CollectMaximalSerializeChunks(descriptor_, field_layout_, options_);
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   int num_ext_chunks = absl::c_count_if(chunks, [](const auto& chunk) {
     return std::holds_alternative<ExtensionRangeChunk>(chunk);
@@ -4860,10 +4950,10 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
   std::vector<FieldChunk> chunks =
       CollectFields(rest, options_, [&](const auto* a, const auto* b) {
         return a->is_required() == b->is_required() &&
-               field_layout_.GetHasByteIndex(a) ==
-                   field_layout_.GetHasByteIndex(b) &&
-               IsLikelyPresent(a, options_) == IsLikelyPresent(b, options_);
+               field_layout_.GetHasWordIndex(a) ==
+                   field_layout_.GetHasWordIndex(b);
       });
+  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   // Interleave the fixed chunks in the right place to be able to reuse
   // cached_has_bits if available. Otherwise, add them to the end.
@@ -4902,7 +4992,15 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
       // approach for it.
       if (absl::optional<int> fsize = FixedSize(fields[0])) {
         update_cached_has_bits(fields);
-        uint32_t mask = GenChunkMask(fields, field_layout_);
+        // When a single field is the only field in its has_word, `GenChunkMask`
+        // returns ~0u, which would fail the `absl::has_single_bit(mask)` check
+        // below, emitting `::absl::popcount` instead of `static_cast<bool>`.
+        // Therefore we process the single-field case separately.
+        uint32_t mask =
+            fields.size() == 1
+                ? uint32_t{1}
+                      << (field_layout_.GetHasBitIndex(fields[0]).value() % 32)
+                : GenChunkMask(fields, field_layout_);
         p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
                  {"popcount", absl::has_single_bit(mask) ? "static_cast<bool>"
                                                          : "::absl::popcount"},
@@ -4915,11 +5013,9 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
         continue;
       }
 
-      const bool check_has_byte =
+      const bool check_has_word =
           fields.size() > 1 &&
-          field_layout_.GetHasWordIndex(fields[0]).has_value() &&
-          !IsLikelyPresent(fields.back(), options_);
-      DebugAssertUniformLikelyPresence(fields, options_);
+          field_layout_.GetHasWordIndex(fields[0]).has_value();
       p->Emit({{"update_byte_size_for_chunk",
                 [&] {
                   // Go back and emit checks for each of the fields we
@@ -4930,12 +5026,12 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                 }},
                {"may_update_cached_has_word_index",
                 [&] {
-                  if (!check_has_byte) return;
+                  if (!check_has_word) return;
                   update_cached_has_bits(fields);
                 }},
                {"check_if_chunk_present",
                 [&] {
-                  if (!check_has_byte) {
+                  if (!check_has_word) {
                     return;
                   }
 
@@ -4943,12 +5039,9 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                   // if none are set.
                   uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
-                  // Check (up to) 8 has_bits at a time if we have more
-                  // than one field in this chunk.  Due to field layout
-                  // ordering, we may check _has_bits_[last_chunk * 8 /
-                  // 32] multiple times.
+                  // Check has_bits at a time if we have more than one field in
+                  // this chunk.
                   ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-                  ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
                   p->Emit({{"condition",
                             GenerateConditionMaybeWithProbabilityForGroup(
@@ -5215,7 +5308,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              if (descriptor_->extension_range_count() == 0) return;
              p->Emit(R"cc(
-               if (!this_.$extensions$.IsInitialized(this_.GetArena(),
+               if (!this_.$extensions$.IsInitialized(this_,
                                                      &default_instance())) {
                  return false;
                }
@@ -5486,12 +5579,31 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                )cc");
              }
            }},
+          {"default_init",
+           [&] {
+             if (!is_file_descriptor_proto) {
+               p->Emit(R"cc(
+                 _default(::_pbi::ConstantInitialized{}, GetClassData()),
+               )cc");
+               return;
+             }
+             // Without constant initialization the default instance is built
+             // by Init() alone, which may run before or after this constructor.
+             p->Emit(R"cc(
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+               _default(::_pbi::ConstantInitialized{}, GetClassData()),
+#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+             )cc");
+           }},
           {"file_descriptor_proto_init",
            [&] {
              if (!is_file_descriptor_proto) return;
              p->Emit(R"cc(
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-               void Init() { ::new (this) $globals_type$(); }
+               void Init() {
+                 ::new (this) $globals_type$();
+                 ::new (&_default) $Msg$(::_pbi::ConstantInitialized{}, GetClassData());
+               }
 #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
              )cc");
            }},
@@ -5534,9 +5646,9 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
           $constexpr$ $globals_type$()
               : MessageGlobalsBase(
                     ::_pbi::PrivateAccess::GenerateClassData<$Msg$>()),
-                _default(::_pbi::ConstantInitialized{}, GetClassData()),
-                _table(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
-                    GetClassData())) {}
+                $default_init$ _table(
+                    ::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
+                        GetClassData())) {}
           //~ File descriptor proto only initializer.
           $file_descriptor_proto_init$;
           ~$globals_type$() {}

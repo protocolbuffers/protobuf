@@ -13,6 +13,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -146,8 +147,9 @@ struct UInt64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<UInt64Value>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<UInt64Value>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<UInt64Value>(
+                GetClassData())) {}
   ~UInt64ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) UInt64Value _default;
@@ -251,8 +253,9 @@ struct UInt32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<UInt32Value>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<UInt32Value>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<UInt32Value>(
+                GetClassData())) {}
   ~UInt32ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) UInt32Value _default;
@@ -361,8 +364,9 @@ struct StringValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<StringValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<StringValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<StringValue>(
+                GetClassData())) {}
   ~StringValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) StringValue _default;
@@ -466,8 +470,9 @@ struct Int64ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Int64Value>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Int64Value>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Int64Value>(
+                GetClassData())) {}
   ~Int64ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Int64Value _default;
@@ -571,8 +576,9 @@ struct Int32ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Int32Value>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Int32Value>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Int32Value>(
+                GetClassData())) {}
   ~Int32ValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Int32Value _default;
@@ -676,8 +682,9 @@ struct FloatValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<FloatValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<FloatValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<FloatValue>(
+                GetClassData())) {}
   ~FloatValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) FloatValue _default;
@@ -781,8 +788,9 @@ struct DoubleValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<DoubleValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<DoubleValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<DoubleValue>(
+                GetClassData())) {}
   ~DoubleValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) DoubleValue _default;
@@ -888,8 +896,9 @@ struct BytesValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<BytesValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<BytesValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<BytesValue>(
+                GetClassData())) {}
   ~BytesValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) BytesValue _default;
@@ -993,8 +1002,9 @@ struct BoolValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<BoolValue>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<BoolValue>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<BoolValue>(
+                GetClassData())) {}
   ~BoolValueGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) BoolValue _default;

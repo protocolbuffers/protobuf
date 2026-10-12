@@ -4221,7 +4221,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
 }
 
 // arena support =================================================
-TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
+TEST(ArenaMapTest, ParsingAndSerializingNoHeapAllocation) {
   // Allocate a large initial block to avoid mallocs during hooked test.
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
@@ -4246,7 +4246,7 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
   }
 }
 
-TEST(ArenaTest, SubmessageOnSameArena) {
+TEST(ArenaMapTest, SubmessageOnSameArena) {
   Arena arena;
   for (Arena* arena_to_use : {&arena, static_cast<Arena*>(nullptr)}) {
     ArenaHolder<UNITTEST::TestArenaMap> m(arena_to_use);
@@ -4256,7 +4256,7 @@ TEST(ArenaTest, SubmessageOnSameArena) {
 }
 
 // Use text format parsing and serializing to test reflection api.
-TEST(ArenaTest, ReflectionInTextFormat) {
+TEST(ArenaMapTest, ReflectionInTextFormat) {
   Arena arena;
   std::string data;
 
@@ -4274,7 +4274,7 @@ TEST(ArenaTest, ReflectionInTextFormat) {
 }
 
 // Make sure the memory allocated for string in map is deallocated.
-TEST(ArenaTest, StringMapNoLeak) {
+TEST(ArenaMapTest, StringMapNoLeak) {
   Arena arena;
   UNITTEST::TestArenaMap* message =
       Arena::Create<UNITTEST::TestArenaMap>(&arena);
@@ -4296,7 +4296,7 @@ TEST(ArenaTest, StringMapNoLeak) {
   value.append("a");
 }
 
-TEST(ArenaTest, IsInitialized) {
+TEST(ArenaMapTest, IsInitialized) {
   // Allocate a large initial polluted block.
   std::vector<char> arena_block(128 * 1024);
   std::fill(arena_block.begin(), arena_block.end(), '\xff');
@@ -4311,7 +4311,7 @@ TEST(ArenaTest, IsInitialized) {
   EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
 
-TEST(ArenaTest, DynamicMapFieldOnArena) {
+TEST(ArenaMapTest, DynamicMapFieldOnArena) {
   Arena arena;
   UNITTEST::TestMap message2;
 
@@ -4326,7 +4326,7 @@ TEST(ArenaTest, DynamicMapFieldOnArena) {
   MapTestUtil::ExpectMapFieldsSet(message2);
 }
 
-TEST(ArenaTest, DynamicMapFieldOnArenaMemoryLeak) {
+TEST(ArenaMapTest, DynamicMapFieldOnArenaMemoryLeak) {
   auto* desc = UNITTEST::TestMap::descriptor();
   auto* field = desc->FindFieldByName("map_int32_int32");
 

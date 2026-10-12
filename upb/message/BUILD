@@ -142,6 +142,7 @@ cc_library(
         "internal/accessors.h",
         "internal/array.h",
         "internal/extension.h",
+        "internal/field_data.h",
         "internal/map.h",
         "internal/map_sorter.h",
         "internal/message.h",

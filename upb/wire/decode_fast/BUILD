@@ -66,6 +66,7 @@ cc_library(
         "//third_party/utf8_range",
         "//upb/base",
         "//upb/base:internal",
+        "//upb/hash",
         "//upb/message",
         "//upb/message:internal",
         "//upb/message:types",

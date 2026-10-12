@@ -13,6 +13,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/extension_set.h"
 #include "google/protobuf/generated_message_util.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/wire_format_lite.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/generated_message_reflection.h"
@@ -137,8 +138,9 @@ struct TimestampGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
       : MessageGlobalsBase(
             ::_pbi::PrivateAccess::GenerateClassData<Timestamp>()),
         _default(::_pbi::ConstantInitialized{}, GetClassData()),
-        _table(::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
-            GetClassData())) {}
+         _table(
+            ::_pbi::PrivateAccess::GenerateParseTable<Timestamp>(
+                GetClassData())) {}
   ~TimestampGlobalsTypeInternal() {}
   union {
     alignas(::_pbi::kMaxMessageAlignment) Timestamp _default;
@@ -273,7 +275,7 @@ void Timestamp::Clear(MessageLite& base) {
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     ::memset(&this_._impl_.seconds_, 0,
              static_cast<::size_t>(
                  reinterpret_cast<char*>(&this_._impl_.nanos_) -
@@ -300,24 +302,26 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  // int64 seconds = 1;
-  if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    if (this_._internal_seconds() != 0) {
-      target =
-          ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<1>(
-              stream, this_._internal_seconds(), target);
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
+    // int64 seconds = 1;
+    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
+      if (this_._internal_seconds() != 0) {
+        target =
+            ::google::protobuf::internal::WireFormatLite::WriteInt64ToArrayWithField<1>(
+                stream, this_._internal_seconds(), target);
+      }
     }
-  }
 
-  // int32 nanos = 2;
-  if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-    if (this_._internal_nanos() != 0) {
-      target =
-          ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
-              stream, this_._internal_nanos(), target);
+    // int32 nanos = 2;
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+      if (this_._internal_nanos() != 0) {
+        target =
+            ::google::protobuf::internal::WireFormatLite::WriteInt32ToArrayWithField<2>(
+                stream, this_._internal_nanos(), target);
+      }
     }
-  }
 
+  }
   if (ABSL_PREDICT_FALSE(this_._internal_metadata_.have_unknown_fields())) {
     target =
         ::_pbi::WireFormat::InternalSerializeUnknownFieldsToArray(
@@ -344,7 +348,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // int64 seconds = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (this_._internal_seconds() != 0) {
@@ -380,7 +384,7 @@ void Timestamp::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (from._internal_seconds() != 0) {
         this_._impl_.seconds_ = from._impl_.seconds_;
