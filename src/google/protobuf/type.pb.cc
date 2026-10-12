@@ -1554,18 +1554,11 @@ void Field::Clear(MessageLite& base) {
       this_._impl_.default_value_.ClearNonDefaultToEmpty();
     }
   }
-  if (BatchCheckHasBit(cached_has_bits, 0x000000e0U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0x000003e0U)) {
     ::memset(&this_._impl_.kind_, 0,
              static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.number_) -
-                 reinterpret_cast<char*>(&this_._impl_.kind_)) +
-                 sizeof(_impl_.number_));
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000300U)) {
-    ::memset(&this_._impl_.oneof_index_, 0,
-             static_cast<::size_t>(
                  reinterpret_cast<char*>(&this_._impl_.packed_) -
-                 reinterpret_cast<char*>(&this_._impl_.oneof_index_)) +
+                 reinterpret_cast<char*>(&this_._impl_.kind_)) +
                  sizeof(_impl_.packed_));
   }
   this_._impl_._has_bits_.Clear();
@@ -1801,7 +1794,7 @@ void Field::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x000000ffU)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._internal_mutable_options()->InternalMergeFromWithArena(
           ::google::protobuf::MessageLite::internal_visibility(), arena,
@@ -1850,8 +1843,6 @@ void Field::MergeImpl(::google::protobuf::MessageLite& to_msg,
         this_._impl_.number_ = from._impl_.number_;
       }
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x00000300U)) {
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       if (from._internal_oneof_index() != 0) {
         this_._impl_.oneof_index_ = from._impl_.oneof_index_;
