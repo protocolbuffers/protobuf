@@ -1253,20 +1253,36 @@ inline void RepeatedField<Element>::MergeFrom(const RepeatedField& other) {
   if (ABSL_PREDICT_FALSE(&other == this)) {
     PROTOBUF_NO_MERGE internal::LogSelfMergeAndAbort();
   }
-  const bool other_is_soo = other.is_soo();
   if (auto other_size = other.size()) {
     const int old_size = size();
     const int new_size = internal::CheckedAdd(old_size, other_size);
     Reserve(new_size);
     const bool is_soo = this->is_soo();
     Element* dst = elements(is_soo) + ExchangeCurrentSize(new_size);
-    UninitializedCopyN(other.elements(other_is_soo), other_size, dst);
+    UninitializedCopyN(other.elements(other.is_soo()), other_size, dst);
   }
 }
 
 template <typename Element>
 inline void RepeatedField<Element>::CopyFrom(const RepeatedField& other) {
   if (&other == this) return;
+  if constexpr (std::is_trivially_copyable_v<Element>) {
+    const int other_size = other.size();
+    if (other_size == 0) {
+      ExchangeCurrentSize(0);
+      return;
+    }
+    bool was_soo = is_soo();
+    if (ABSL_PREDICT_FALSE(other_size > Capacity(was_soo))) {
+      ExchangeCurrentSize(0);
+      Grow(SelfArena{}, was_soo, 0, other_size);
+      was_soo = false;
+    }
+    ExchangeCurrentSize(other_size);
+    UninitializedCopyN(other.unsafe_elements(other.is_soo()), other_size,
+                       unsafe_elements(was_soo));
+    return;
+  }
   Clear();
   MergeFrom(other);
 }
@@ -1411,10 +1427,8 @@ RepeatedField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 
 template <typename Element>
 inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
-  const int capacity = Capacity();
-  return capacity > kSooCapacityElements
-             ? capacity * sizeof(Element) + kHeapRepHeaderSize
-             : 0;
+  return is_soo() ? 0
+                  : soo_rep_.capacity() * sizeof(Element) + kHeapRepHeaderSize;
 }
 
 // Like C++20's std::erase_if, for RepeatedField. The order of calls to the
