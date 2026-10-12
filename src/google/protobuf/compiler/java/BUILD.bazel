@@ -296,6 +296,26 @@ cc_test(
 )
 
 cc_test(
+    name = "enum_unittest",
+    srcs = ["enum_unittest.cc"],
+    data = [
+        "enum_unittest.proto",
+        "//src/google/protobuf:testdata",
+    ],
+    deps = [
+        ":java",
+        "//src/google/protobuf:test_util2",
+        "//src/google/protobuf/compiler:command_line_interface",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "plugin_unittest",
     srcs = ["plugin_unittest.cc"],
     deps = [

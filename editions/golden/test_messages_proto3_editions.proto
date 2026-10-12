@@ -314,3 +314,11 @@ message EnumOnlyProto3 {
     kTrue = 1;
   }
 }
+
+enum DeprecatedEnum {
+  option deprecated = true;
+
+  DEPRECATED_ENUM_UNSPECIFIED = 0;
+  DEPRECATED_ENUM_VALUE1 = 1;
+  DEPRECATED_ENUM_VALUE2 = 2;
+}

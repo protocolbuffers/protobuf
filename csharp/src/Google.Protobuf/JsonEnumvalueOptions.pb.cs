@@ -97,16 +97,18 @@ namespace Pb.Enumvalue {
     private readonly static string StringDefaultValue = "";
 
     private string string_;
-    /// <summary>
-    /// Allows user to specify a custom string to use when serializing an enum
-    /// value to JSON.
-    ///
-    /// Sample usage:
-    /// enum Foo {
-    ///   ...
-    ///   FOO_BAR = 42 [(pb.enumvalue.json).string = "my_custom_name"];
-    /// }
-    /// </summary>
+    /**
+     * <summary>
+     *  Allows user to specify a custom string to use when serializing an enum
+     *  value to JSON.
+     * 
+     *  Sample usage:
+     *  enum Foo {
+     *    ...
+     *    FOO_BAR = 42 [(pb.enumvalue.json).string = "my_custom_name"];
+     *  }
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string String {

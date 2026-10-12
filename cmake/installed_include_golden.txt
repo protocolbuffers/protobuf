@@ -120,6 +120,7 @@ google/protobuf/parse_context.h
 google/protobuf/port.h
 google/protobuf/port_def.inc
 google/protobuf/port_undef.inc
+google/protobuf/private_access.h
 google/protobuf/raw_ptr.h
 google/protobuf/reflection.h
 google/protobuf/reflection_mode.h

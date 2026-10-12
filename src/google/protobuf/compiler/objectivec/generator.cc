@@ -357,16 +357,26 @@ bool ObjectiveCGenerator::GenerateAll(
 
   // This is a way to turn off these warnings, the intent is that if you find
   // this then you also did as asked and filed an issue so the need for the
-  // generation option is known. But it allows you to keep your builds quiet
-  // after opening the issue. The value of the environment variable should be
-  // a comma separated list of the names of the options to suppress their usage
-  // warning.
+  // generation option or language support is known. But it allows you to keep
+  // your builds quiet after opening the issue. The value of the environment
+  // variable should be a comma separated list of the names of the options to
+  // suppress their usage warning (or "dropping_objc_support" to suppress the
+  // deprecation of Objective-C support).
   char* options_warnings_suppressions_cstr =
       getenv("GPB_OBJC_SUPPRESS_DEPRECATED_OPTIONS_WARNINGS");
   const absl::string_view options_warnings_suppressions =
       options_warnings_suppressions_cstr != nullptr
           ? options_warnings_suppressions_cstr
           : "";
+  if (!absl::StrContains(options_warnings_suppressions,
+                         "dropping_objc_support")) {
+    std::cerr
+        << "warning: Objective-C support is deprecated and will be dropped "
+           "in Q1 2027. If you have questions or concerns, please file an "
+           "issue at https://github.com/protocolbuffers/protobuf/issues."
+        << std::endl;
+    std::cerr.flush();
+  }
   if (generation_options.headers_use_forward_declarations &&
       !absl::StrContains(options_warnings_suppressions,
                          "headers_use_forward_declarations")) {
