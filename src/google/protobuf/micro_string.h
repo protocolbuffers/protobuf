@@ -12,7 +12,6 @@
 #include <cstdint>
 #include <type_traits>
 
-#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -420,11 +419,12 @@ class PROTOBUF_EXPORT MicroString {
   MicroString(FromOtherTag, const Self& other, Arena* arena) {
     if (other.is_inline()) {
       static_cast<Self&>(*this) = other;
-      return;
+    } else if (other.is_large_rep() && other.large_rep_kind() == kUnowned) {
+      rep_ = other.rep_;
+    } else {
+      InitDefault();
+      SetImpl(other.Get(), arena, Self::kInlineCapacity);
     }
-    // Init as empty and run the slow path.
-    InitDefault();
-    SetFromOtherSlow(other, arena, Self::kInlineCapacity);
   }
 
   template <typename Self>
