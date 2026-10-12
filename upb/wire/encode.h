@@ -57,21 +57,23 @@ typedef enum {
 } upb_EncodeStatus;
 // LINT.ThenChange(//depot/google3/third_party/upb/rust/sys/wire/wire.rs:encode_status)
 
-UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
+UPB_NODISCARD UPB_INLINE uint32_t upb_EncodeOptions_MaxDepth(uint16_t depth) {
   return (uint32_t)depth << 16;
 }
-
-UPB_INLINE uint16_t upb_EncodeOptions_GetMaxDepth(uint32_t options) {
+UPB_NODISCARD UPB_INLINE uint16_t
+upb_EncodeOptions_GetMaxDepth(uint32_t options) {
   return options >> 16;
 }
 
-UPB_INLINE uint16_t upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options) {
+UPB_NODISCARD UPB_INLINE uint16_t
+upb_EncodeOptions_GetEffectiveMaxDepth(uint32_t options) {
   uint16_t max_depth = upb_EncodeOptions_GetMaxDepth(options);
   return max_depth ? max_depth : kUpb_WireFormat_DefaultDepthLimit;
 }
 
 // Enforce an upper bound on recursion depth.
-UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options, uint32_t limit) {
+UPB_NODISCARD UPB_INLINE int upb_Encode_LimitDepth(uint32_t encode_options,
+                                                   uint32_t limit) {
   uint32_t max_depth = upb_EncodeOptions_GetEffectiveMaxDepth(encode_options);
   if (max_depth > limit) max_depth = limit;
   return (int)(upb_EncodeOptions_MaxDepth(max_depth) |
@@ -89,7 +91,8 @@ UPB_NODISCARD UPB_API upb_EncodeStatus upb_EncodeLengthPrefixed(
     upb_Arena* arena, char** buf, size_t* size);
 // Utility function for wrapper languages to get an error string from a
 // upb_EncodeStatus.
-UPB_API const char* upb_EncodeStatus_String(upb_EncodeStatus status);
+UPB_NODISCARD UPB_API const char* upb_EncodeStatus_String(
+    upb_EncodeStatus status);
 
 #ifdef __cplusplus
 } /* extern "C" */

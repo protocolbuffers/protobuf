@@ -95,6 +95,8 @@ class PyWeakValueMap {
 
 #ifdef Py_GIL_DISABLED
 
+#include "absl/container/inlined_vector.h"
+
 template <class Func>
 PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
                                       Func&& func) {
@@ -114,15 +116,22 @@ PyObject* PyWeakValueMap::GetOrInsert(const void* key, const PyTypeObject* type,
 
 template <typename Func>
 void PyWeakValueMap::ForEach(Func&& func) {
-  absl::MutexLock lock(&mutex_);
-  for (auto it = cache_.begin(); it != cache_.end();) {
-    if (PyUnstable_TryIncRef(it->second)) {
-      func(it->first, it->second);
-      Py_DECREF(it->second);
-      ++it;
-    } else {
-      cache_.erase(it++);
+  absl::InlinedVector<std::pair<const void*, PyObject*>, 8> items;
+  {
+    absl::MutexLock lock(&mutex_);
+    items.reserve(cache_.size());
+    for (auto it = cache_.begin(); it != cache_.end();) {
+      if (PyUnstable_TryIncRef(it->second)) {
+        items.emplace_back(it->first, it->second);
+        ++it;
+      } else {
+        cache_.erase(it++);
+      }
     }
+  }
+  for (const auto& [key, val] : items) {
+    func(key, val);
+    Py_DECREF(val);
   }
 }
 

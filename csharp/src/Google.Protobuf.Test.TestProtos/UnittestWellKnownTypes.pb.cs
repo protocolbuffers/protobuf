@@ -173,11 +173,13 @@ namespace Google.Protobuf.TestProtos {
 
   }
   #region Messages
-  /// <summary>
-  /// Test that we can include all well-known types.
-  /// Each wrapper type is included separately, as languages
-  /// map handle different wrappers in different ways.
-  /// </summary>
+  /**
+   * <summary>
+   *  Test that we can include all well-known types.
+   *  Each wrapper type is included separately, as languages
+   *  map handle different wrappers in different ways.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class TestWellKnownTypes : pb::IMessage<TestWellKnownTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -478,9 +480,11 @@ namespace Google.Protobuf.TestProtos {
     /// <summary>Field number for the "value_field" field.</summary>
     public const int ValueFieldFieldNumber = 19;
     private global::Google.Protobuf.WellKnownTypes.Value valueField_;
-    /// <summary>
-    /// Part of struct, but useful to be able to test separately
-    /// </summary>
+    /**
+     * <summary>
+     *  Part of struct, but useful to be able to test separately
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.WellKnownTypes.Value ValueField {
@@ -1207,9 +1211,11 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
-  /// <summary>
-  /// A repeated field for each well-known type.
-  /// </summary>
+  /**
+   * <summary>
+   *  A repeated field for each well-known type.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class RepeatedWellKnownTypes : pb::IMessage<RepeatedWellKnownTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1376,9 +1382,11 @@ namespace Google.Protobuf.TestProtos {
     private static readonly pb::FieldCodec<double?> _repeated_doubleField_codec
         = pb::FieldCodec.ForStructWrapper<double>(82);
     private readonly pbc::RepeatedField<double?> doubleField_ = new pbc::RepeatedField<double?>();
-    /// <summary>
-    /// These don't actually make a lot of sense, but they're not prohibited...
-    /// </summary>
+    /**
+     * <summary>
+     *  These don't actually make a lot of sense, but they're not prohibited...
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<double?> DoubleField {
@@ -2858,11 +2866,13 @@ namespace Google.Protobuf.TestProtos {
 
   }
 
-  /// <summary>
-  /// A map field for each well-known type. We only
-  /// need to worry about the value part of the map being the
-  /// well-known types, as messages can't be map keys.
-  /// </summary>
+  /**
+   * <summary>
+   *  A map field for each well-known type. We only
+   *  need to worry about the value part of the map being the
+   *  well-known types, as messages can't be map keys.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MapWellKnownTypes : pb::IMessage<MapWellKnownTypes>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE

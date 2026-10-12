@@ -19,6 +19,9 @@
 
 namespace google {
 namespace protobuf {
+
+class Descriptor;
+
 namespace internal {
 
 PROTOBUF_EXPORT bool ContainsBadUnderscores(absl::string_view name);
@@ -26,6 +29,13 @@ PROTOBUF_EXPORT bool ContainsBadUnderscores(absl::string_view name);
 // Non-OK Statuses contain a simple message describing the error that does not
 // contain the failing element's name. The caller is expected to assemble a
 // fuller message if needed.
+
+// Validates that a field or oneof name does not collide with other names in the
+// message, according to the rules introduced in Edition 2026. If `message` is
+// nullptr, only global reserved names (such as "descriptor") are validated.
+PROTOBUF_EXPORT absl::Status IsValidFieldNonCollisionName(
+    absl::string_view name, const Descriptor* message);
+
 PROTOBUF_EXPORT absl::Status IsValidTitleCaseName(absl::string_view name);
 PROTOBUF_EXPORT absl::Status IsValidLowerSnakeCaseName(absl::string_view name);
 PROTOBUF_EXPORT absl::Status IsValidUpperSnakeCaseName(absl::string_view name);

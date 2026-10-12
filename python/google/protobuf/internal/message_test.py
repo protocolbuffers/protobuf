@@ -78,6 +78,8 @@ class MessageTest(unittest.TestCase):
       msg2 = message_module.TestAllTypes()
       msg2.ParseFromString(serialized)
       msg3 = message_module.TestAllTypes()
+      _ = msg3.optional_nested_message
+      _ = msg3.optional_import_message
       msg3.MergeFrom(msg2)
       _ = msg3.optional_string
       _ = msg3.optional_bytes
@@ -89,6 +91,8 @@ class MessageTest(unittest.TestCase):
 
       msg4 = message_module.TestAllTypes()
       msg4.CopyFrom(msg3)
+      _ = msg4.optional_nested_message
+      msg4.Clear()
 
       # Try deepcopy
       _ = copy.deepcopy(msg3)
@@ -792,9 +796,6 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       msg.payload.repeated_string[:] = [1, 2, 3]
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python', 'python has different behavior'
-  )
   def testAssignRepeatedFieldSliceWithStep(self, message_module):
     msg = message_module.NestedTestAllTypes()
     arr = [1, 2, 3, 4]
@@ -811,9 +812,19 @@ class MessageTest(unittest.TestCase):
     arr[::2] = [100, 200]
     self.assertEqual(arr, msg.payload.repeated_int32)
 
+    # Check negative step
+    msg.payload.repeated_int32[::-1] = [5, 6, 7, 8]
+    arr[::-1] = [5, 6, 7, 8]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
     # Check size mismatch raises ValueError
     with self.assertRaises(ValueError):
       msg.payload.repeated_int32[::2] = [1, 2, 3]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+    # Check element type is still validated
+    with self.assertRaises(TypeError):
+      msg.payload.repeated_int32[::2] = ['a', 'b']
 
   def testAssignRepeatedFieldAllRangesArray(self, message_module):
     msg = message_module.NestedTestAllTypes()
@@ -872,6 +883,13 @@ class MessageTest(unittest.TestCase):
     req = more_messages_pb2.RequiredField()
     more_messages_pb2.RequiredWrapper(request=req)
 
+  def testByteSizeWithMissingRequiredField(self, message_module):
+    del message_module  # Unused.
+    req = more_messages_pb2.RequiredField()
+    self.assertFalse(req.IsInitialized())
+    # Should not raise EncodeError
+    self.assertEqual(req.ByteSize(), 0)
+
   def testMergeFromMissingRequiredField(self, message_module):
     msg = more_messages_pb2.RequiredField()
     message = more_messages_pb2.RequiredField()
@@ -923,6 +941,51 @@ class MessageTest(unittest.TestCase):
     except ValueError:
       pass
     self.assertEqual(len(msg.repeated_nested_message), 0)
+
+  def testAddRepeatedNestedFieldReentrantFailure(self, message_module):
+    msg = message_module.TestAllTypes()
+
+    class ClearOnIndex:
+
+      def __index__(self):
+        msg.repeated_nested_message.clear()
+        raise ValueError('clear during add')
+
+    with self.assertRaises(ValueError):
+      msg.repeated_nested_message.add(bb=ClearOnIndex())
+    self.assertEqual(len(msg.repeated_nested_message), 0)
+
+    leaked = []
+
+    class LeakOnIndex:
+
+      def __index__(self):
+        leaked.append(list(msg.repeated_nested_message))
+        raise ValueError('leak during add')
+
+    with self.assertRaises(ValueError):
+      msg.repeated_nested_message.add(bb=LeakOnIndex())
+    self.assertEqual(leaked, [[]])
+    self.assertEqual(len(msg.repeated_nested_message), 0)
+    sub = msg.repeated_nested_message.add(bb=7)
+    self.assertEqual(sub.bb, 7)
+
+  def testRepeatedCompositeReverse(self, message_module):
+    msg = message_module.TestAllTypes()
+    for i in [1, 2, 3, 4]:
+      msg.repeated_nested_message.add(bb=i)
+    first = msg.repeated_nested_message[0]
+    last = msg.repeated_nested_message[3]
+    msg.repeated_nested_message.reverse()
+    self.assertEqual([m.bb for m in msg.repeated_nested_message], [4, 3, 2, 1])
+    self.assertIs(msg.repeated_nested_message[0], last)
+    self.assertIs(msg.repeated_nested_message[3], first)
+
+    parsed = message_module.TestAllTypes.FromString(msg.SerializeToString())
+    parsed.repeated_nested_message.reverse()
+    self.assertEqual(
+        [m.bb for m in parsed.repeated_nested_message], [1, 2, 3, 4]
+    )
 
   def testRepeatedContains(self, message_module):
     msg = message_module.TestAllTypes()
@@ -3326,6 +3389,76 @@ class Proto3Test(unittest.TestCase):
     msg2.ParseFromString(serialized)
     self.assertEqual(msg, msg2)
 
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testDirectSubmessageMutationAfterSync(self):
+    msg = map_unittest_pb2.TestMapSubmessage()
+    submsg = msg.test_map.map_int32_foreign_message[1]
+    submsg.c = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+    submsg.c = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 6
+    )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testDeepSubmessageMutationAfterSync(self):
+    msg = map_unittest_pb2.TestMap()
+    submsg = msg.map_int32_all_types[1]
+    submsg.optional_nested_message.bb = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+    submsg.optional_nested_message.bb = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 6
+    )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testMultipleMapsInParentChainMutationAfterSync(self):
+    msg = more_messages_pb2.TestRecursiveMapMessage()
+    submsg = msg.map_field[1].map_field[2]
+    submsg.i = 7
+
+    from google.protobuf.pyext import _map_test_helper
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 10
+    )
+
+    submsg.i = 5
+
+    self.assertEqual(
+        _map_test_helper.TestSumAllInt32FieldsUsingRepeatedFields(msg), 8
+    )
+
+  def testDeleteMapItemAndMutateReleasedSubmessage(self):
+    msg = map_unittest_pb2.TestMap()
+    submsg = msg.map_int32_foreign_message[1]
+    submsg.c = 7
+    del msg.map_int32_foreign_message[1]
+    submsg.c = 5
+
   def testModifyMapWhileIterating(self):
     msg = map_unittest_pb2.TestMap()
 
@@ -3384,6 +3517,85 @@ class Proto3Test(unittest.TestCase):
     msg.map_string_string.clear()
     with self.assertRaises(RuntimeError):
       next(it)
+
+  def test_map_merge_during_iteration(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['a'] = '1'
+    it = iter(msg.map_string_string)
+    next(it)
+
+    other = map_unittest_pb2.TestMap()
+    other.map_string_string['b'] = '2'
+    msg.MergeFrom(other)
+    with self.assertRaises(RuntimeError):
+      next(it)
+
+    # Also test a map inside an already-mutable submessage.
+    parent = map_unittest_pb2.TestMapSubmessage()
+    parent.test_map.map_string_string['a'] = '1'
+    sub_it = iter(parent.test_map.map_string_string)
+    next(sub_it)
+
+    other_parent = map_unittest_pb2.TestMapSubmessage()
+    other_parent.test_map.map_string_string['b'] = '2'
+    parent.MergeFrom(other_parent)
+    with self.assertRaises(RuntimeError):
+      next(sub_it)
+
+  def test_merge_promotes_unpromoted_child_of_mutable_submessage(self):
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.child.payload.optional_int32 = 1
+    grandchild = msg.child.child
+    self.assertEqual(grandchild.payload.optional_int32, 0)
+
+    other = unittest_pb2.NestedTestAllTypes()
+    other.child.child.payload.optional_int32 = 42
+    msg.MergeFrom(other)
+    self.assertEqual(grandchild.payload.optional_int32, 42)
+
+    # Also test when the intermediate Python wrapper (`msg.child`) is dropped
+    # while a deeper unpromoted stub (`msg.child.child.child`) is still held.
+    msg = unittest_pb2.NestedTestAllTypes()
+    msg.child.child.payload.optional_int32 = 1
+    great_grandchild = msg.child.child.child
+    self.assertEqual(great_grandchild.payload.optional_int32, 0)
+
+    other = unittest_pb2.NestedTestAllTypes()
+    other.child.child.child.payload.optional_int32 = 99
+    msg.MergeFrom(other)
+    self.assertEqual(great_grandchild.payload.optional_int32, 99)
+
+  def test_repeated_iteration_across_mutation_and_merge(self):
+    # Repeated fields use index-based sequence iteration across all backends:
+    # appending or merging during iteration does not invalidate the iterator,
+    # and the iterator continues into newly added elements.
+    msg = unittest_pb2.TestAllTypes()
+    msg.repeated_int32.append(10)
+    it = iter(msg.repeated_int32)
+    self.assertEqual(next(it), 10)
+
+    msg.repeated_int32.append(20)
+    self.assertEqual(next(it), 20)
+
+    other = unittest_pb2.TestAllTypes()
+    other.repeated_int32.extend([30, 40])
+    msg.MergeFrom(other)
+    self.assertEqual(list(it), [30, 40])
+
+    # An iterator created on an initially-empty repeated field (including inside
+    # an unpromoted or mutable submessage) sees elements added by MergeFrom.
+    nested = unittest_pb2.NestedTestAllTypes()
+    nested.child.payload.optional_int32 = 1
+    scalar_it = iter(nested.child.payload.repeated_int32)
+    composite_it = iter(nested.child.payload.repeated_nested_message)
+
+    other_nested = unittest_pb2.NestedTestAllTypes()
+    other_nested.child.payload.repeated_int32.extend([5, 6])
+    other_nested.child.payload.repeated_nested_message.add(bb=7)
+    nested.MergeFrom(other_nested)
+
+    self.assertEqual(list(scalar_it), [5, 6])
+    self.assertEqual([m.bb for m in composite_it], [7])
 
   def testSubmessageMap(self):
     msg = map_unittest_pb2.TestMap()
@@ -3862,12 +4074,7 @@ class OversizeProtosTest(unittest.TestCase):
     decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
   def testRecursionMap(self):
-    if api_implementation.Type() == 'python':
-      # pure python need a smaller depth limit to avoid test timeout
-      depth = 10
-      decoder.SetRecursionLimit(depth * 2)
-    else:
-      depth = 50
+    depth = 50
     msg = more_messages_pb2.TestRecursiveMapMessage()
     sub = msg
     for _ in range(depth):
@@ -3881,8 +4088,6 @@ class OversizeProtosTest(unittest.TestCase):
     with self.assertRaises(message.DecodeError) as context:
       parsed_msg.ParseFromString(msg.SerializeToString())
     self.assertIn('Error parsing message', str(context.exception))
-    if api_implementation.Type() == 'python':
-      decoder.SetRecursionLimit(decoder.DEFAULT_RECURSION_LIMIT)
 
   def testRecisionMessageSet(self):
     msg = message_set_extensions_pb2.TestMessageSet()
