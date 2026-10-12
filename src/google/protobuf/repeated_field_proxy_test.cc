@@ -1008,6 +1008,8 @@ TYPED_TEST(RepeatedStringFieldProxyTest, PushBack) {
 }
 
 TYPED_TEST(RepeatedNumericFieldProxyTest, EmplaceBack) {
+  using ElementType = typename TypeParam::ElementType;
+
   auto field = this->MakeRepeatedFieldContainer();
   auto proxy = field.MakeProxy();
   proxy.emplace_back(1);
@@ -1016,6 +1018,9 @@ TYPED_TEST(RepeatedNumericFieldProxyTest, EmplaceBack) {
 
   EXPECT_THAT(proxy, ElementsAre(1, 2, 3));
   EXPECT_THAT(*field, ElementsAre(1, 2, 3));
+
+  // Verify that emplace_back returns by value for primitive types.
+  EXPECT_TRUE((std::is_same_v<decltype(proxy.emplace_back(1)), ElementType>));
 }
 
 TYPED_TEST(RepeatedFieldProxyTest, EmplaceBackMessageLvalueCopies) {
@@ -1117,8 +1122,8 @@ TYPED_TEST(RepeatedFieldProxyTest, EmplaceBackStringView) {
   TestEmplaceBackVanillaString(field, proxy);
 
   // Check that we don't leak an `std::string` through the `emplace_back` API.
-  static_assert(
-      std::is_same_v<decltype(proxy.emplace_back("1")), absl::string_view>);
+  EXPECT_TRUE((std::is_same_v<decltype(proxy.emplace_back("1")),
+                              const absl::string_view>));
 }
 
 TYPED_TEST(RepeatedFieldProxyTest, EmplaceBackCord) {
@@ -3409,6 +3414,32 @@ TEST(RepeatedFieldProxyInterfaceTest, GetAssignmentCompiles) {
   EXPECT_FALSE(kGetAssignmentCompiles<const absl::Cord>);
   EXPECT_FALSE(
       kGetAssignmentCompiles<const RepeatedFieldProxyTestSimpleMessage>);
+}
+
+// Probe which tests whether the expression `proxy.emplace_back(t) = value`
+// compiles.
+template <typename T, typename = void>
+static constexpr bool kEmplaceBackAssignmentCompiles = false;
+
+template <typename T>
+static constexpr bool kEmplaceBackAssignmentCompiles<
+    T, std::void_t<decltype(std::declval<RepeatedFieldProxy<T>>().emplace_back(
+                                std::declval<T>()) = std::declval<T>())>> =
+    true;
+
+TEST(RepeatedFieldProxyInterfaceTest, EmplaceBackAssignmentCompiles) {
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<bool>);
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<int32_t>);
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<uint32_t>);
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<int64_t>);
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<uint64_t>);
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<float>);
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<double>);
+  EXPECT_FALSE(kEmplaceBackAssignmentCompiles<absl::string_view>);
+  EXPECT_TRUE(kEmplaceBackAssignmentCompiles<std::string>);
+  EXPECT_TRUE(kEmplaceBackAssignmentCompiles<absl::Cord>);
+  EXPECT_TRUE(
+      kEmplaceBackAssignmentCompiles<RepeatedFieldProxyTestSimpleMessage>);
 }
 
 }  // namespace

@@ -182,8 +182,9 @@ bool upb_Message_Next(const upb_Message* msg, const upb_MessageDef* m,
       if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-        memcpy(out_val, &ext->data, sizeof(*out_val));
-        *out_f = upb_DefPool_FindExtensionByMiniTable(ext_pool, ext->ext);
+        *out_val = upb_Extension_GetValue(ext);
+        *out_f = upb_DefPool_FindExtensionByMiniTable(
+            ext_pool, upb_Extension_MiniTableExtension(ext));
         *iter = i;
         return true;
       }

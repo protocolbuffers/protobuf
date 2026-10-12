@@ -842,7 +842,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               const ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_get$;
-        return _proto_TypeTraits::Get(GetArena(), id.number(), $extensions$,
+        return _proto_TypeTraits::Get(*this, id.number(), $extensions$,
                                       id.default_value());
       }
 
@@ -854,7 +854,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         $annotate_extension_mutable$;
-        return _proto_TypeTraits::Mutable(GetArena(), id.number(), _field_type,
+        return _proto_TypeTraits::Mutable(*this, id.number(), _field_type,
                                           &$extensions$);
       }
 
@@ -865,8 +865,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::ConstType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::Set(GetArena(), id.number(), _field_type, value,
-                               &$extensions$);
+        _proto_TypeTraits::Set(*this, id.number(), _field_type, value, &$extensions$);
         $annotate_extension_set$;
       }
 
@@ -877,8 +876,8 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Singular::MutableType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::SetAllocated(GetArena(), id.number(), _field_type,
-                                        value, &$extensions$);
+        _proto_TypeTraits::SetAllocated(*this, id.number(), _field_type, value,
+                                        &$extensions$);
         $annotate_extension_set$;
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -889,7 +888,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           typename _proto_TypeTraits::Singular::MutableType value) {
         $WeakDescriptorSelfPin$;
         _proto_TypeTraits::UnsafeArenaSetAllocated(
-            GetArena(), id.number(), _field_type, value, &$extensions$);
+            *this, id.number(), _field_type, value, &$extensions$);
         $annotate_extension_set$;
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -899,7 +898,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                        $Msg$, _proto_TypeTraits, _field_type, _is_packed>& id) {
         $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
-        return _proto_TypeTraits::Release(GetArena(), id.number(), _field_type,
+        return _proto_TypeTraits::Release(*this, id.number(), _field_type,
                                           &$extensions$);
       }
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -911,7 +910,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
         $WeakDescriptorSelfPin$;
         $annotate_extension_release$;
         return _proto_TypeTraits::UnsafeArenaRelease(
-            GetArena(), id.number(), _field_type, &$extensions$);
+            *this, id.number(), _field_type, &$extensions$);
       }
 
       template <typename _proto_TypeTraits, $pbi$::FieldType _field_type,
@@ -972,7 +971,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
           ABSL_ATTRIBUTE_LIFETIME_BOUND {
         $WeakDescriptorSelfPin$;
         typename _proto_TypeTraits::Repeated::MutableType to_add =
-            _proto_TypeTraits::Add(GetArena(), id.number(), _field_type,
+            _proto_TypeTraits::Add(*this, id.number(), _field_type,
                                    &$extensions$);
         $annotate_repeated_extension_add_mutable$;
         return to_add;
@@ -985,7 +984,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
                                            _field_type, _is_packed>& id,
           typename _proto_TypeTraits::Repeated::ConstType value) {
         $WeakDescriptorSelfPin$;
-        _proto_TypeTraits::Add(GetArena(), id.number(), _field_type, _is_packed,
+        _proto_TypeTraits::Add(*this, id.number(), _field_type, _is_packed,
                                value, &$extensions$);
         $annotate_repeated_extension_add$;
       }
@@ -1013,7 +1012,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
         $WeakDescriptorSelfPin$;
         $annotate_repeated_extension_list_mutable$;
         return _proto_TypeTraits::MutableRepeated(
-            GetArena(), id.number(), _field_type, _is_packed, &$extensions$);
+            *this, id.number(), _field_type, _is_packed, &$extensions$);
       }
     )cc");
 
@@ -1327,7 +1326,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     if (field->is_repeated()) {
       p->Emit(R"cc(
         inline int $Msg$::_internal_$name_internal$_size() const {
-          return _internal_$name_internal$().size();
+          return static_cast<int>(_internal_$name_internal$().size());
         }
         inline int $Msg$::$name$_size() const {
           $WeakDescriptorSelfPin$;
@@ -3420,7 +3419,6 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         // this chunk.  Due to field layout ordering, we may check
         // _has_bits_[last_chunk * 8 / 32] multiple times.
         ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-        ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
         const int has_word_index =
             field_layout_.GetHasWordIndex(fields.front()).value();
@@ -3957,7 +3955,6 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       // this chunk.  Due to field layout ordering, we may check
       // _has_bits_[last_chunk * 8 / 32] multiple times.
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-      ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
                                  chunk_mask, fields, options_)}},
@@ -4479,8 +4476,7 @@ struct SerializeFieldChunk {
 using SerializeChunk =
     std::variant<SerializeFieldChunk, OneofChunk, ExtensionRangeChunk>;
 
-// TODO: b/568757368 - Make `TryMerge` a member function of the chunk types.
-bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
+bool TryMergeChunks(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   if (to->should_split != from.should_split ||
       to->hasword_index != from.hasword_index) {
     return false;
@@ -4489,7 +4485,7 @@ bool TryMerge(SerializeFieldChunk* to, const SerializeFieldChunk& from) {
   return true;
 }
 
-bool TryMerge(OneofChunk* to, const OneofChunk& from) {
+bool TryMergeChunks(OneofChunk* to, const OneofChunk& from) {
   if (to->fields.front()->containing_oneof() !=
       from.fields.front()->containing_oneof()) {
     return false;
@@ -4498,7 +4494,7 @@ bool TryMerge(OneofChunk* to, const OneofChunk& from) {
   return true;
 }
 
-bool TryMerge(ExtensionRangeChunk* to, const ExtensionRangeChunk& from) {
+bool TryMergeChunks(ExtensionRangeChunk* to, const ExtensionRangeChunk& from) {
   to->start = std::min(to->start, from.start);
   to->end = std::max(to->end, from.end);
   return true;
@@ -4508,7 +4504,7 @@ template <typename Chunk>
 void TryAppendToBack(std::vector<SerializeChunk>& chunks, Chunk chunk) {
   if (!chunks.empty()) {
     auto* back = std::get_if<Chunk>(&chunks.back());
-    if (back != nullptr && TryMerge(back, chunk)) {
+    if (back != nullptr && TryMergeChunks(back, chunk)) {
       return;
     }
   }
@@ -4590,23 +4586,21 @@ double GetAbsenceProbability(const FieldDescriptor* field,
   return 1.0 - GetPresenceProbability(field, options).value_or(0.0f);
 }
 
-// TODO: b/568757368 - Make `WithFields` a member function of the chunk types.
-SerializeFieldChunk WithFields(const SerializeFieldChunk& chunk,
-                               std::vector<const FieldDescriptor*> fields) {
+SerializeFieldChunk ChunkWithFields(
+    const SerializeFieldChunk& chunk,
+    std::vector<const FieldDescriptor*> fields) {
   return SerializeFieldChunk{chunk.should_split, chunk.hasword_index,
                              std::move(fields)};
 }
 
-FieldChunk WithFields(const FieldChunk& chunk,
-                      std::vector<const FieldDescriptor*> fields) {
+FieldChunk ChunkWithFields(const FieldChunk& chunk,
+                           std::vector<const FieldDescriptor*> fields) {
   FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
   res.fields = std::move(fields);
   return res;
 }
 
-// TODO: b/568757368 - Make `GetPartitionable` a member function of the chunk
-// types.
-const SerializeFieldChunk* GetPartitionable(const SerializeChunk& chunk) {
+const SerializeFieldChunk* GetPartitionableChunk(const SerializeChunk& chunk) {
   const auto* field_chunk = std::get_if<SerializeFieldChunk>(&chunk);
   if (field_chunk != nullptr && field_chunk->hasword_index.has_value()) {
     return field_chunk;
@@ -4614,7 +4608,7 @@ const SerializeFieldChunk* GetPartitionable(const SerializeChunk& chunk) {
   return nullptr;
 }
 
-const FieldChunk* GetPartitionable(const FieldChunk& chunk) {
+const FieldChunk* GetPartitionableChunk(const FieldChunk& chunk) {
   return chunk.has_hasbit ? &chunk : nullptr;
 }
 
@@ -4626,7 +4620,7 @@ std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
   std::vector<Chunk> result;
   if (chunk.fields.empty()) return result;
 
-  result.push_back(WithFields(chunk, {chunk.fields.front()}));
+  result.push_back(ChunkWithFields(chunk, {chunk.fields.front()}));
   double p_none = GetAbsenceProbability(chunk.fields.front(), options);
 
   for (size_t i = 1; i < chunk.fields.size(); ++i) {
@@ -4641,7 +4635,7 @@ std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
     // If adding this field to the current batch has a higher expected branches
     // cost than if the field were alone, start a new chunk.
     if (extended_cost > current_cost + 1.0) {
-      result.push_back(WithFields(chunk, {field}));
+      result.push_back(ChunkWithFields(chunk, {field}));
       p_none = p_field_absent;
     } else {
       result.back().fields.push_back(field);
@@ -4657,7 +4651,7 @@ std::vector<Chunk> PartitionToMinimizeExpectedBranches(
   std::vector<Chunk> result;
 
   for (Chunk& chunk : chunks) {
-    const auto* partitionable = GetPartitionable(chunk);
+    const auto* partitionable = GetPartitionableChunk(chunk);
     if (partitionable != nullptr && partitionable->fields.size() > 1) {
       absl::c_move(PartitionToMinimizeExpectedBranches(*partitionable, options),
                    std::back_inserter(result));
@@ -5025,7 +5019,15 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
       // approach for it.
       if (absl::optional<int> fsize = FixedSize(fields[0])) {
         update_cached_has_bits(fields);
-        uint32_t mask = GenChunkMask(fields, field_layout_);
+        // When a single field is the only field in its has_word, `GenChunkMask`
+        // returns ~0u, which would fail the `absl::has_single_bit(mask)` check
+        // below, emitting `::absl::popcount` instead of `static_cast<bool>`.
+        // Therefore we process the single-field case separately.
+        uint32_t mask =
+            fields.size() == 1
+                ? uint32_t{1}
+                      << (field_layout_.GetHasBitIndex(fields[0]).value() % 32)
+                : GenChunkMask(fields, field_layout_);
         p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
                  {"popcount", absl::has_single_bit(mask) ? "static_cast<bool>"
                                                          : "::absl::popcount"},
@@ -5333,7 +5335,7 @@ void MessageGenerator::GenerateIsInitialized(io::Printer* p) {
            [&] {
              if (descriptor_->extension_range_count() == 0) return;
              p->Emit(R"cc(
-               if (!this_.$extensions$.IsInitialized(this_.GetArena(),
+               if (!this_.$extensions$.IsInitialized(this_,
                                                      &default_instance())) {
                  return false;
                }

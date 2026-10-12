@@ -16,18 +16,12 @@
 #include <cstdint>
 #include <cstring>
 #include <initializer_list>
-#include <string>
 #include <utility>
 #include <variant>
 #include <vector>
 
 #include "absl/base/attributes.h"
-#include "absl/base/optimization.h"
-#include "absl/container/fixed_array.h"
 #include "absl/log/absl_check.h"
-#include "absl/log/absl_log.h"
-#include "absl/strings/string_view.h"
-#include "absl/types/span.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
@@ -43,6 +37,7 @@
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unknown_field_set.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -327,33 +322,36 @@ bool ExtensionSet::MoveExtension(Arena* arena, int dst_number,
   return true;
 }
 
-const char* ExtensionSet::ParseField(uint64_t tag, const char* ptr,
-                                     const Message* extendee,
-                                     internal::InternalMetadata* metadata,
+const char* ExtensionSet::ParseField(MessageLite& parent, uint64_t tag,
+                                     const char* ptr, const Message* extendee,
                                      internal::ParseContext* ctx) {
   int number = tag >> 3;
   bool was_packed_on_wire;
   ExtensionInfo extension;
   if (!FindExtension(tag & 7, number, extendee, ctx, &extension,
                      &was_packed_on_wire)) {
-    return UnknownFieldParse(
-        tag, metadata->mutable_unknown_fields<UnknownFieldSet>(), ptr, ctx);
+    return UnknownFieldParse(tag,
+                             PrivateAccess::GetInternalMetadata(parent)
+                                 .mutable_unknown_fields<UnknownFieldSet>(),
+                             ptr, ctx);
   }
   return ParseFieldWithExtensionInfo<UnknownFieldSet>(
-      number, was_packed_on_wire, extension, metadata, ptr, ctx);
+      parent, number, was_packed_on_wire, extension, ptr, ctx);
 }
 
-const char* ExtensionSet::ParseFieldMaybeLazily(
-    uint64_t tag, const char* ptr, const Message* extendee,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseField(tag, ptr, extendee, metadata, ctx);
+const char* ExtensionSet::ParseFieldMaybeLazily(MessageLite& parent,
+                                                uint64_t tag, const char* ptr,
+                                                const Message* extendee,
+                                                internal::ParseContext* ctx) {
+  return ParseField(parent, tag, ptr, extendee, ctx);
 }
 
-const char* ExtensionSet::ParseMessageSetItem(
-    const char* ptr, const Message* extendee,
-    internal::InternalMetadata* metadata, internal::ParseContext* ctx) {
-  return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(ptr, extendee,
-                                                           metadata, ctx);
+const char* ExtensionSet::ParseMessageSetItem(MessageLite& parent,
+                                              const char* ptr,
+                                              const Message* extendee,
+                                              internal::ParseContext* ctx) {
+  return ParseMessageSetItemTmpl<Message, UnknownFieldSet>(parent, ptr,
+                                                           extendee, ctx);
 }
 
 int ExtensionSet::SpaceUsedExcludingSelf() const {

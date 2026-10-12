@@ -1215,6 +1215,20 @@ GetSerialArena(const MessageLite* PROTOBUF_NONNULL elem) {
   return GetSerialArena(dependent_elem->GetArena());
 }
 
+inline Arena* PROTOBUF_NULLABLE GetArena(Arena* PROTOBUF_NULLABLE arena) {
+  return arena;
+}
+
+// Using a template to make member access type dependent and delay it until
+// instantiation when `MessageLite` will be complete.
+// Not really a generic function.
+template <auto... delay>
+inline Arena* PROTOBUF_NULLABLE
+GetArena(const MessageLite* PROTOBUF_NONNULL elem) {
+  const auto* dependent_elem = (delay, ..., elem);
+  return dependent_elem->GetArena();
+}
+
 // This class is used to define `DestructorSkippable_` for some containing type
 // if and only if `T` is destructor-skippable.
 template <typename T,
