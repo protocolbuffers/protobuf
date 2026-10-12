@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "absl/base/nullability.h"
+#include "absl/log/absl_check.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/options.h"
@@ -34,7 +35,7 @@ class FieldLayout {
   bool HasHasbits() const;
 
   // Returns the number of 32-bit words needed for the _has_bits_ field.
-  int HasBitsSize() const;
+  int HasBitsSize() const { return (has_bit_count_ + 31) / 32; }
 
   // Returns the index of the hasbit for the given field, or absl::nullopt if
   // the field does not have a hasbit.
@@ -61,12 +62,24 @@ class FieldLayout {
   void PrintHasBitIndicesForSchema(io::Printer* absl_nonnull p,
                                    size_t& entries) const;
 
+  // Returns the number of fields with hasbits assigned to the 32-bit hasbit
+  // word at word_index.
+  int CountFieldsSharingHasWord(int word_index) const {
+    ABSL_DCHECK_GE(word_index, 0);
+    ABSL_DCHECK_LT(word_index, HasBitsSize());
+    int next_bit_index = (word_index + 1) * 32;
+    if (next_bit_index <= has_bit_count_) {
+      return 32;
+    }
+    return has_bit_count_ % 32;
+  }
+
  private:
-  FieldLayout(std::vector<int> has_bit_indices, int max_has_bit_index,
+  FieldLayout(std::vector<int> has_bit_indices, int has_bit_count,
               std::vector<const FieldDescriptor* absl_nonnull> fields);
 
   std::vector<int> has_bit_indices_;
-  int max_has_bit_index_;
+  int has_bit_count_;
 
   std::vector<const FieldDescriptor* absl_nonnull> fields_;
 };

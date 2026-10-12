@@ -3419,7 +3419,6 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
         // this chunk.  Due to field layout ordering, we may check
         // _has_bits_[last_chunk * 8 / 32] multiple times.
         ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-        ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
         const int has_word_index =
             field_layout_.GetHasWordIndex(fields.front()).value();
@@ -3956,7 +3955,6 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       // this chunk.  Due to field layout ordering, we may check
       // _has_bits_[last_chunk * 8 / 32] multiple times.
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-      ABSL_DCHECK_LE(absl::popcount(chunk_mask), 8);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
                                  chunk_mask, fields, options_)}},
@@ -5021,7 +5019,15 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
       // approach for it.
       if (absl::optional<int> fsize = FixedSize(fields[0])) {
         update_cached_has_bits(fields);
-        uint32_t mask = GenChunkMask(fields, field_layout_);
+        // When a single field is the only field in its has_word, `GenChunkMask`
+        // returns ~0u, which would fail the `absl::has_single_bit(mask)` check
+        // below, emitting `::absl::popcount` instead of `static_cast<bool>`.
+        // Therefore we process the single-field case separately.
+        uint32_t mask =
+            fields.size() == 1
+                ? uint32_t{1}
+                      << (field_layout_.GetHasBitIndex(fields[0]).value() % 32)
+                : GenChunkMask(fields, field_layout_);
         p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
                  {"popcount", absl::has_single_bit(mask) ? "static_cast<bool>"
                                                          : "::absl::popcount"},
