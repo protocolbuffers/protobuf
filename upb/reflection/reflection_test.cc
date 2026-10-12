@@ -395,6 +395,35 @@ TEST(ReflectionTest, NegativePublicDependencyIndex) {
   EXPECT_THAT(std::string(status.message()), HasSubstr("out of range"));
 }
 
+TEST(ReflectionTest, RepeatedRequiredField) {
+  // A repeated field marked LEGACY_REQUIRED is rejected rather than producing a
+  // field that is both required and repeated.  Such a field has no presence,
+  // which violates the invariant that every required field has presence and
+  // would cause an out-of-bounds read when upb_FieldPath_ToText() formats the
+  // missing-required-field path.  protoc and the C++ DescriptorPool reject this
+  // for the same reason.
+  absl::Status status =
+      LoadDescriptorProto(
+          R"pb(
+            name: "test.proto"
+            syntax: "editions"
+            edition: EDITION_2023
+            message_type {
+              name: "M"
+              field {
+                name: "r"
+                number: 1
+                label: LABEL_REPEATED
+                type: TYPE_INT32
+                options { features { field_presence: LEGACY_REQUIRED } }
+              }
+            }
+          )pb")
+          .status();
+  EXPECT_FALSE(status.ok());
+  EXPECT_THAT(std::string(status.message()), HasSubstr("cannot be required"));
+}
+
 TEST(ReflectionTest, NegativeWeakDependencyIndex) {
   absl::Status status = LoadDescriptorProto(
                             R"pb(
