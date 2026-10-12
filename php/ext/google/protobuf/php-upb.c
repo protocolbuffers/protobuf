@@ -3833,7 +3833,7 @@ const upb_MiniTableFile google_protobuf_json_enumvalue_options_proto_upb_file_la
 
 extern _upb_DefPool_Init google_protobuf_descriptor_proto_upbdefinit;
 
-static const char descriptor_google_protobuf_json_enumvalue_options_proto_upbdefinit[285] = {
+static const char descriptor_google_protobuf_json_enumvalue_options_proto_upbdefinit[333] = {
     '\n', ',', 'g', 'o', 'o', 'g', 'l', 'e', '/', 'p', 'r', 'o',
     't', 'o', 'b', 'u', 'f', '/', 'j', 's', 'o', 'n', '_', 'e',
     'n', 'u', 'm', 'v', 'a', 'l', 'u', 'e', '_', 'o', 'p', 't',
@@ -3854,9 +3854,13 @@ static const char descriptor_google_protobuf_json_enumvalue_options_proto_upbdef
     'v', 'a', 'l', 'u', 'e', '.', 'J', 's', 'o', 'n', 'E', 'n',
     'u', 'm', 'V', 'a', 'l', 'u', 'e', 'O', 'p', 't', 'i', 'o',
     'n', 's', 'B', '\006', '\262', '\001', '\003', '\010', '\352', '\007', 'R', '\004',
-    'j', 's', 'o', 'n', 'B', '\032', '\n', '\030', 'c', 'o', 'm', '.',
+    'j', 's', 'o', 'n', 'B', 'J', '\n', '\030', 'c', 'o', 'm', '.',
     'g', 'o', 'o', 'g', 'l', 'e', '.', 'p', 'r', 'o', 't', 'o',
-    'b', 'u', 'f', '.', 'u', 't', 'i', 'l', 'b', '\010', 'e', 'd',
+    'b', 'u', 'f', '.', 'u', 't', 'i', 'l', 'Z', '.', 'g', 'o',
+    'o', 'g', 'l', 'e', '.', 'g', 'o', 'l', 'a', 'n', 'g', '.',
+    'o', 'r', 'g', '/', 'p', 'r', 'o', 't', 'o', 'b', 'u', 'f',
+    '/', 't', 'y', 'p', 'e', 's', '/', 'j', 's', 'o', 'n', 'o',
+    'p', 't', 'i', 'o', 'n', 's', 'p', 'b', 'b', '\010', 'e', 'd',
     'i', 't', 'i', 'o', 'n', 's', 'p', '\351', '\007',
 };
 
