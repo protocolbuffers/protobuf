@@ -306,7 +306,7 @@ void Any::Clear(MessageLite& base) {
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       this_._impl_.type_url_.ClearNonDefaultToEmpty();
     }
@@ -334,7 +334,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   (void)cached_has_bits;
 
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // string type_url = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_type_url().empty()) {
@@ -380,7 +380,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // string type_url = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_type_url().empty()) {
@@ -416,7 +416,7 @@ void Any::MergeImpl(::google::protobuf::MessageLite& to_msg,
   (void)cached_has_bits;
 
   cached_has_bits = from._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
+  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!from._internal_type_url().empty()) {
         this_._internal_set_type_url(from._internal_type_url());
