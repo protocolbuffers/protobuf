@@ -84,6 +84,19 @@
 #define UPB_HAS_BUILTIN(x) 0
 #endif
 
+// UPB_MEMCPY_INLINE(dst, src, n): memcpy() of a compile-time constant number
+// of bytes `n`, which the compiler never turns into a call to the library
+// memcpy(). A plain memcpy() of a constant size is usually inlined as loads and
+// stores too, but the compiler can merge such copies of different sizes (e.g.
+// the cases of a switch on the size) into one copy of a variable size, which
+// it then can't inline; the merge can even happen before the compiler uses the
+// UPB_ASSUME()s about the size.
+#if UPB_HAS_BUILTIN(__builtin_memcpy_inline)
+#define UPB_MEMCPY_INLINE(dst, src, n) __builtin_memcpy_inline(dst, src, n)
+#else
+#define UPB_MEMCPY_INLINE(dst, src, n) memcpy(dst, src, n)
+#endif
+
 #ifdef __has_extension
 #define UPB_HAS_EXTENSION(x) __has_extension(x)
 #else
@@ -8736,7 +8749,7 @@ upb_MessageValue upb_Array_Get(const upb_Array* arr, size_t i) {
   upb_MessageValue ret;
   const char* data = upb_Array_DataPtr(arr);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
-  memcpy(&ret, data + (i << lg2), 1 << lg2);
+  UPB_PRIVATE(_upb_Array_CopyElem)(&ret, data + (i << lg2), lg2);
   return ret;
 }
 
@@ -8756,7 +8769,7 @@ void upb_Array_Set(upb_Array* arr, size_t i, upb_MessageValue val) {
   UPB_ASSERT(i < upb_Array_Size(arr));
   char* data = upb_Array_MutableDataPtr(arr);
   const int lg2 = UPB_PRIVATE(_upb_Array_ElemSizeLg2)(arr);
-  memcpy(data + (i << lg2), &val, 1 << lg2);
+  UPB_PRIVATE(_upb_Array_CopyElem)(data + (i << lg2), &val, lg2);
 }
 
 bool upb_Array_Append(upb_Array* arr, upb_MessageValue val, upb_Arena* arena) {
@@ -9020,7 +9033,7 @@ bool upb_Map_Next(const upb_Map* map, upb_MessageValue* key,
     uintptr_t intkey;
     ret = upb_inttable_next(&map->t.inttable, &intkey, &v, (intptr_t*)iter);
     if (ret) {
-      memcpy(key, &intkey, map->key_size);
+      _upb_map_memcpy(key, &intkey, map->key_size);
     }
   }
   if (ret) {
@@ -9054,7 +9067,7 @@ upb_MessageValue upb_MapIterator_Key(const upb_Map* map, size_t iter) {
     _upb_map_fromkey(upb_strtable_iter_key(&i), &ret, map->key_size);
   } else {
     uintptr_t intkey = upb_inttable_iter_key(&map->t.inttable, iter);
-    memcpy(&ret, &intkey, map->key_size);
+    _upb_map_memcpy(&ret, &intkey, map->key_size);
   }
   return ret;
 }
@@ -20140,6 +20153,7 @@ const char* UPB_PRIVATE(_upb_WireReader_SkipGroup)(
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN
+#undef UPB_MEMCPY_INLINE
 #undef UPB_HAS_EXTENSION
 #undef UPB_HAS_FEATURE
 #undef UPB_XSAN_MEMBER

@@ -83,6 +83,19 @@
 #define UPB_HAS_BUILTIN(x) 0
 #endif
 
+// UPB_MEMCPY_INLINE(dst, src, n): memcpy() of a compile-time constant number
+// of bytes `n`, which the compiler never turns into a call to the library
+// memcpy(). A plain memcpy() of a constant size is usually inlined as loads and
+// stores too, but the compiler can merge such copies of different sizes (e.g.
+// the cases of a switch on the size) into one copy of a variable size, which
+// it then can't inline; the merge can even happen before the compiler uses the
+// UPB_ASSUME()s about the size.
+#if UPB_HAS_BUILTIN(__builtin_memcpy_inline)
+#define UPB_MEMCPY_INLINE(dst, src, n) __builtin_memcpy_inline(dst, src, n)
+#else
+#define UPB_MEMCPY_INLINE(dst, src, n) memcpy(dst, src, n)
+#endif
+
 #ifdef __has_extension
 #define UPB_HAS_EXTENSION(x) __has_extension(x)
 #else
@@ -2120,6 +2133,27 @@ UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
   return lg2;
 }
 
+// Copies an element of 1 << lg2 bytes (see _upb_Array_ElemSizeLg2()), without
+// calling the library memcpy() for its variable size.
+UPB_INLINE void UPB_PRIVATE(_upb_Array_CopyElem)(void* to, const void* from,
+                                                 size_t lg2) {
+  switch (lg2) {
+    case 0:
+      UPB_MEMCPY_INLINE(to, from, 1);
+      return;
+    case 2:
+      UPB_MEMCPY_INLINE(to, from, 4);
+      return;
+    case 3:
+      UPB_MEMCPY_INLINE(to, from, 8);
+      return;
+    case 4:
+      UPB_MEMCPY_INLINE(to, from, 16);
+      return;
+  }
+  UPB_UNREACHABLE();
+}
+
 UPB_API_INLINE const void* upb_Array_DataPtr(const struct upb_Array* array) {
   UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
   return (void*)(array->UPB_ONLYBITS(data) & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
@@ -3563,16 +3597,16 @@ UPB_INLINE_IF_NOT_GCC void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
     const upb_MiniTableField* f, void* to, const void* from) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
     case kUpb_FieldRep_1Byte:
-      memcpy(to, from, 1);
+      UPB_MEMCPY_INLINE(to, from, 1);
       return;
     case kUpb_FieldRep_4Byte:
-      memcpy(to, from, 4);
+      UPB_MEMCPY_INLINE(to, from, 4);
       return;
     case kUpb_FieldRep_8Byte:
-      memcpy(to, from, 8);
+      UPB_MEMCPY_INLINE(to, from, 8);
       return;
     case kUpb_FieldRep_StringView: {
-      memcpy(to, from, sizeof(upb_StringView));
+      UPB_MEMCPY_INLINE(to, from, sizeof(upb_StringView));
       return;
     }
   }
@@ -4189,15 +4223,19 @@ UPB_INLINE upb_StringView _upb_map_tokey(const void* key, size_t size) {
 }
 
 // Avoid emitting an out-of-line memcpy call when the size is not a compile-time
-// constant
-UPB_FORCEINLINE void* _upb_map_memcpy(void* dst, const void* src, size_t size) {
+// constant (UPB_MEMCPY_INLINE() keeps the compiler from merging the cases back
+// into one memcpy() of a variable size).
+UPB_FORCEINLINE void _upb_map_memcpy(void* dst, const void* src, size_t size) {
   switch (size) {
     case 1:
-      return memcpy(dst, src, 1);
+      UPB_MEMCPY_INLINE(dst, src, 1);
+      return;
     case 4:
-      return memcpy(dst, src, 4);
+      UPB_MEMCPY_INLINE(dst, src, 4);
+      return;
     case 8:
-      return memcpy(dst, src, 8);
+      UPB_MEMCPY_INLINE(dst, src, 8);
+      return;
     default:
       UPB_UNREACHABLE();
   }
@@ -5614,9 +5652,13 @@ UPB_API_INLINE void upb_Message_SetBaseField(struct upb_Message* msg,
                                              const void* val) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);
+  // Copy the value before setting the presence: the compiler can't tell that
+  // the store to the presence bits of `msg` doesn't modify `f`, so it would
+  // read `f` again after it, without what it knows (e.g. from UPB_ASSUME()s)
+  // about its representation.
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), val);
+  UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);
 }
 
 // Returns the extension `e` of `msg` so that its value can be set, creating it
@@ -20676,6 +20718,7 @@ UPB_PRIVATE(upb_WireWriter_VarintUnusedSizeFromLeadingZeros64)(uint64_t clz) {
 #undef UPB_HAS_ATTRIBUTE
 #undef UPB_HAS_CPP_ATTRIBUTE
 #undef UPB_HAS_BUILTIN
+#undef UPB_MEMCPY_INLINE
 #undef UPB_HAS_EXTENSION
 #undef UPB_HAS_FEATURE
 #undef UPB_XSAN_MEMBER
