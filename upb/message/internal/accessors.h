@@ -874,12 +874,9 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Message_SetUInt64(
 UPB_API_INLINE void upb_Message_Clear(struct upb_Message* msg,
                                       const upb_MiniTable* m) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
-  memset(msg, 0, m->UPB_PRIVATE(size));
-  if (in) {
-    // Reset the internal buffer to empty.
-    in->size = 0;
-  }
+  // This also clears the pointer to the internal data (unknown fields and
+  // extensions), which stays in the arena unreferenced.
+  _upb_Message_AlignedMemsetZero(msg, m->UPB_PRIVATE(size));
 }
 
 UPB_API_INLINE void upb_Message_ClearBaseField(struct upb_Message* msg,
