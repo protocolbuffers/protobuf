@@ -1393,7 +1393,7 @@ def _AddMergeFromStringMethod(message_descriptor, cls):
         if field_number == 0:
           raise message_mod.DecodeError('Field number 0 is illegal.')
         data, new_pos = decoder._DecodeUnknownField(
-            buffer, new_pos, end, field_number, wire_type
+            buffer, new_pos, end, field_number, wire_type, current_depth
         )  # pylint: disable=protected-access
         if new_pos == -1:
           return pos
