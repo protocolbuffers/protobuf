@@ -861,8 +861,8 @@ class PROTOBUF_EXPORT MessageDifferencer {
   bool IsMatch(const FieldDescriptor* repeated_field,
                const MapKeyComparator* key_comparator, const Message* message1,
                const Message* message2, int unpacked_any,
-               const std::vector<SpecificField>& parent_fields,
-               Reporter* reporter, int index1, int index2);
+               std::vector<SpecificField>* parent_fields, Reporter* reporter,
+               int index1, int index2);
 
   // Returns true when this repeated field has been configured to be treated
   // as a Set / SmartSet / SmartList.
@@ -907,12 +907,13 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // This method returns false if the match failed. However, it doesn't mean
   // that the comparison succeeds when this method returns true (you need to
   // double-check in this case).
-  bool MatchRepeatedFieldIndices(
-      const Message& message1, const Message& message2, int unpacked_any,
-      const FieldDescriptor* repeated_field,
-      const MapKeyComparator* key_comparator,
-      const std::vector<SpecificField>& parent_fields,
-      std::vector<int>* match_list1, std::vector<int>* match_list2);
+  bool MatchRepeatedFieldIndices(const Message& message1,
+                                 const Message& message2, int unpacked_any,
+                                 const FieldDescriptor* repeated_field,
+                                 const MapKeyComparator* key_comparator,
+                                 std::vector<SpecificField>* parent_fields,
+                                 std::vector<int>* match_list1,
+                                 std::vector<int>* match_list2);
 
   // Checks if index is equal to new_index in all the specific fields.
   static bool CheckPathChanged(const std::vector<SpecificField>& parent_fields);
@@ -931,6 +932,36 @@ class PROTOBUF_EXPORT MessageDifferencer {
   // We move this code out of line to reduce stack cost of the caller.
   // The map lookups and string copies are costly in stack space.
   PROTOBUF_NOINLINE void ForceCompareField(const FieldDescriptor* field);
+  static PROTOBUF_NOINLINE SpecificField& PushSpecificField(
+      std::vector<SpecificField>* fields);
+
+  class ScopedCompareDepth {
+   public:
+    explicit ScopedCompareDepth(MessageDifferencer* differencer)
+        : differencer_(differencer) {
+      ++differencer_->compare_depth_;
+    }
+    ~ScopedCompareDepth();
+
+   private:
+    MessageDifferencer* differencer_;
+  };
+
+  class ScopedIntList {
+   public:
+    ScopedIntList(MessageDifferencer* differencer, std::vector<int>* list)
+        : differencer_(differencer), list_(list) {}
+    ~ScopedIntList() { differencer_->ReleaseIntList(std::move(*list_)); }
+
+   private:
+    MessageDifferencer* differencer_;
+    std::vector<int>* list_;
+  };
+
+  std::vector<const FieldDescriptor*> AcquireFieldList(size_t reserve_size);
+  void ReleaseFieldList(std::vector<const FieldDescriptor*> list);
+  std::vector<int> AcquireIntList();
+  void ReleaseIntList(std::vector<int> list);
 
   Reporter* reporter_;
   DefaultFieldComparator default_field_comparator_;
@@ -975,6 +1006,16 @@ class PROTOBUF_EXPORT MessageDifferencer {
       match_indices_for_smart_list_callback_;
 
   MessageDifferencer::UnpackAnyField unpack_any_field_;
+
+  static constexpr int kInlineParentFields = 8;
+  static constexpr int kMaxScratchFieldLists = 8;
+  static constexpr int kMaxScratchIntLists = 4;
+  std::vector<const FieldDescriptor*>
+      scratch_field_lists_[kMaxScratchFieldLists];
+  int num_scratch_field_lists_ = 0;
+  std::vector<int> scratch_int_lists_[kMaxScratchIntLists];
+  int num_scratch_int_lists_ = 0;
+  int compare_depth_ = 0;
 };
 
 // This class provides extra information to the FieldComparator::Compare

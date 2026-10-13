@@ -4336,6 +4336,110 @@ TEST(Anytest, TreatAsSet_DifferentType) {
   EXPECT_TRUE(message_differencer.Compare(m1, m2));
 }
 
+class ParentPathRecordingFieldComparator : public util::SimpleFieldComparator {
+ public:
+  ComparisonResult Compare(const Message& message1, const Message& message2,
+                           const FieldDescriptor* field, int index1, int index2,
+                           const util::FieldContext* field_context) override {
+    EXPECT_NE(field_context, nullptr);
+    if (field_context != nullptr && field_context->parent_fields() != nullptr) {
+      std::vector<std::string> path;
+      path.reserve(field_context->parent_fields()->size() + 1);
+      for (const auto& sf : *field_context->parent_fields()) {
+        path.push_back(sf.field != nullptr ? std::string(sf.field->name())
+                                           : "");
+      }
+      path.push_back(std::string(field->name()));
+      recorded_paths_.push_back(path);
+    } else {
+      saw_null_parent_fields_ = true;
+    }
+    return SimpleCompare(message1, message2, field, index1, index2,
+                         field_context);
+  }
+
+  const std::vector<std::vector<std::string>>& recorded_paths() const {
+    return recorded_paths_;
+  }
+  bool saw_null_parent_fields() const { return saw_null_parent_fields_; }
+
+ private:
+  std::vector<std::vector<std::string>> recorded_paths_;
+  bool saw_null_parent_fields_ = false;
+};
+
+TEST(MessageDifferencerTest,
+     CustomComparatorAndExternalDefaultComparatorReceiveParentFieldsPath) {
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  auto* item1 = msg1.add_item();
+  item1->set_a(10);
+  (*item1->mutable_mp())["alpha"] = 100;
+  auto* item2 = msg2.add_item();
+  item2->set_a(10);
+  (*item2->mutable_mp())["alpha"] = 100;
+
+  ParentPathRecordingFieldComparator comparator;
+  std::string diff_report;
+  util::MessageDifferencer differencer;
+  differencer.set_field_comparator(&comparator);
+  differencer.TreatAsMap(GetFieldDescriptor(msg1, "item"),
+                         GetFieldDescriptor(msg1, "item.a"));
+  differencer.ReportDifferencesToString(&diff_report);
+
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+  EXPECT_FALSE(comparator.saw_null_parent_fields());
+  EXPECT_THAT(comparator.recorded_paths(),
+              testing::Contains(testing::ElementsAre("item", "a")));
+  EXPECT_THAT(comparator.recorded_paths(),
+              testing::Contains(testing::ElementsAre("item", "mp", "key")));
+
+  util::DefaultFieldComparator external_default_comparator;
+  differencer.set_field_comparator(&external_default_comparator);
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+}
+
+TEST(MessageDifferencerTest,
+     DeepMapComparisonBeyondInlineParentFieldsCapacity) {
+  constexpr int kNestingDepth = 12;
+  proto2_unittest::TestDiffMessage msg1;
+  proto2_unittest::TestDiffMessage msg2;
+  auto* item1 = msg1.add_item();
+  auto* item2 = msg2.add_item();
+  item1->set_a(1);
+  item2->set_a(1);
+
+  proto2_unittest::TestField* node1 = item1->mutable_m();
+  proto2_unittest::TestField* node2 = item2->mutable_m();
+  for (int depth = 0; depth < kNestingDepth; ++depth) {
+    node1->set_a(depth);
+    node2->set_a(depth);
+    auto* elem1 = node1->add_rm();
+    auto* elem2 = node2->add_rm();
+    elem1->set_a(depth * 10);
+    elem2->set_a(depth * 10);
+    node1 = node1->mutable_m();
+    node2 = node2->mutable_m();
+  }
+  node1->set_a(999);
+  node2->set_a(999);
+
+  util::MessageDifferencer differencer;
+  differencer.TreatAsMap(GetFieldDescriptor(msg1, "item"),
+                         GetFieldDescriptor(msg1, "item.a"));
+  differencer.TreatAsMap(
+      proto2_unittest::TestField::descriptor()->FindFieldByName("rm"),
+      proto2_unittest::TestField::descriptor()->FindFieldByName("a"));
+
+  EXPECT_TRUE(differencer.Compare(msg1, msg2));
+
+  node2->set_a(1000);
+  std::string diff_report;
+  differencer.ReportDifferencesToString(&diff_report);
+  EXPECT_FALSE(differencer.Compare(msg1, msg2));
+  EXPECT_THAT(diff_report, testing::HasSubstr("modified: item[0].m.m.m.m.m.m"));
+}
+
 
 }  // namespace
 }  // namespace protobuf
