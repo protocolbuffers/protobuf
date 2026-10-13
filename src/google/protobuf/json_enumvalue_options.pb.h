@@ -216,18 +216,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
   enum : int {
     kStringFieldNumber = 1,
   };
+  private:
+  // string string = 1;
+  ::absl::string_view _internal_string() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string(::absl::string_view value);
+  public:
   // string string = 1;
   [[nodiscard]] bool has_string() const;
   void clear_string() ;
   [[nodiscard]] ::absl::string_view string() const;
   template <typename Arg_ = ::std::string&&>
   void set_string(Arg_&& arg);
-
-  private:
-  ::absl::string_view _internal_string() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_string(::absl::string_view value);
-
-  public:
   // @@protoc_insertion_point(class_scope:pb.enumvalue.JsonEnumValueOptions)
  private:
   class _Internal;

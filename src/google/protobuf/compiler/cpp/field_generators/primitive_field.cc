@@ -159,6 +159,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -168,18 +169,21 @@ class SingularPrimitive final : public FieldGeneratorBase {
 };
 
 void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ $Type$ $name$() const;
     $DEPRECATED$ void $set_name$($Type$ value);
+  )cc");
+}
 
-    private:
+void SingularPrimitive::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  auto v =
+      p->WithVars(AnnotatedAccessors(field_, {"_internal_", "_internal_set_"}));
+  p->Emit(R"cc(
     $Type$ $_internal_name$() const;
     void $_internal_set_name$($Type$ value);
-
-    public:
   )cc");
 }
 
@@ -407,6 +411,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateSecondaryPrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -455,8 +460,7 @@ void RepeatedPrimitive::GenerateSecondaryPrivateMembers(io::Printer* p) const {
 }
 
 void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs =
       p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
   auto va =
@@ -487,13 +491,17 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
             $DEPRECATED$ void $set_name$(int index, $Type$ value);
             $DEPRECATED$ void $add_name$($Type$ value);
             $decl_field_accessors$;
-
-            private:
-            const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
-            $pb$::RepeatedField<$Type$>* $nonnull$ $_internal_mutable_name$();
-
-            public:
           )cc");
+}
+
+void RepeatedPrimitive::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"_internal_", "_internal_mutable_"}));
+  p->Emit(R"cc(
+    const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
+    $pb$::RepeatedField<$Type$>* $nonnull$ $_internal_mutable_name$();
+  )cc");
 }
 
 void RepeatedPrimitive::GenerateInlineAccessorDefinitions(

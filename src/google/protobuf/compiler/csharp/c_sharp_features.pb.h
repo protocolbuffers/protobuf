@@ -220,17 +220,16 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
   enum : int {
     kNullableReferenceTypesFieldNumber = 1,
   };
+  private:
+  // optional bool nullable_reference_types = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_nullable_reference_types() const;
+  void _internal_set_nullable_reference_types(bool value);
+  public:
   // optional bool nullable_reference_types = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_nullable_reference_types() const;
   void clear_nullable_reference_types() ;
   [[nodiscard]] bool nullable_reference_types() const;
   void set_nullable_reference_types(bool value);
-
-  private:
-  bool _internal_nullable_reference_types() const;
-  void _internal_set_nullable_reference_types(bool value);
-
-  public:
   // @@protoc_insertion_point(class_scope:pb.CSharpFeatures)
  private:
   class _Internal;

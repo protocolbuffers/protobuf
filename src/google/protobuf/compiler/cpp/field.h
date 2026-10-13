@@ -126,6 +126,8 @@ class FieldGeneratorBase {
 
   virtual void GenerateAccessorDeclarations(io::Printer* p) const = 0;
 
+  virtual void GeneratePrivateAccessorDeclarations(io::Printer* p) const = 0;
+
   virtual void GenerateInlineAccessorDefinitions(io::Printer* p) const = 0;
 
   virtual void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {}
@@ -336,6 +338,10 @@ class FieldGenerator {
   void GenerateAccessorDeclarations(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateAccessorDeclarations(p);
+  }
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GeneratePrivateAccessorDeclarations(p);
   }
 
   // Generates inline definitions of accessor functions for this field.

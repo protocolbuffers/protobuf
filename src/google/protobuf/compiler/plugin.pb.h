@@ -278,6 +278,21 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     kMinorFieldNumber = 2,
     kPatchFieldNumber = 3,
   };
+  private:
+  // optional string suffix = 4;
+  const ::std::string& _internal_suffix() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_suffix();
+  // optional int32 major = 1;
+  ::int32_t _internal_major() const;
+  void _internal_set_major(::int32_t value);
+  // optional int32 minor = 2;
+  ::int32_t _internal_minor() const;
+  void _internal_set_minor(::int32_t value);
+  // optional int32 patch = 3;
+  ::int32_t _internal_patch() const;
+  void _internal_set_patch(::int32_t value);
+  public:
   // optional string suffix = 4;
   [[nodiscard]] bool has_suffix() const;
   void clear_suffix() ;
@@ -287,46 +302,21 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   ::std::string* PROTOBUF_NONNULL mutable_suffix();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_suffix();
   void set_allocated_suffix(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_suffix() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_suffix(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_suffix();
-
-  public:
   // optional int32 major = 1;
   [[nodiscard]] bool has_major() const;
   void clear_major() ;
   [[nodiscard]] ::int32_t major() const;
   void set_major(::int32_t value);
-
-  private:
-  ::int32_t _internal_major() const;
-  void _internal_set_major(::int32_t value);
-
-  public:
   // optional int32 minor = 2;
   [[nodiscard]] bool has_minor() const;
   void clear_minor() ;
   [[nodiscard]] ::int32_t minor() const;
   void set_minor(::int32_t value);
-
-  private:
-  ::int32_t _internal_minor() const;
-  void _internal_set_minor(::int32_t value);
-
-  public:
   // optional int32 patch = 3;
   [[nodiscard]] bool has_patch() const;
   void clear_patch() ;
   [[nodiscard]] ::int32_t patch() const;
   void set_patch(::int32_t value);
-
-  private:
-  ::int32_t _internal_patch() const;
-  void _internal_set_patch(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.Version)
  private:
   class _Internal;
@@ -519,6 +509,23 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     kContentFieldNumber = 15,
     kGeneratedCodeInfoFieldNumber = 16,
   };
+  private:
+  // optional string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // optional string insertion_point = 2;
+  const ::std::string& _internal_insertion_point() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_insertion_point();
+  // optional string content = 15;
+  const ::std::string& _internal_content() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_content(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_content();
+  // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
+  const ::google::protobuf::GeneratedCodeInfo& _internal_generated_code_info() const;
+  ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL _internal_mutable_generated_code_info();
+  public:
   // optional string name = 1;
   [[nodiscard]] bool has_name() const;
   void clear_name() ;
@@ -528,13 +535,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // optional string insertion_point = 2;
   [[nodiscard]] bool has_insertion_point() const;
   void clear_insertion_point() ;
@@ -544,13 +544,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   ::std::string* PROTOBUF_NONNULL mutable_insertion_point();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_insertion_point();
   void set_allocated_insertion_point(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_insertion_point() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_insertion_point(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_insertion_point();
-
-  public:
   // optional string content = 15;
   [[nodiscard]] bool has_content() const;
   void clear_content() ;
@@ -560,13 +553,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   ::std::string* PROTOBUF_NONNULL mutable_content();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_content();
   void set_allocated_content(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_content() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_content(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_content();
-
-  public:
   // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
   [[nodiscard]] bool has_generated_code_info() const;
   void clear_generated_code_info() ;
@@ -576,12 +562,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   void set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value);
   ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE unsafe_arena_release_generated_code_info();
-
-  private:
-  const ::google::protobuf::GeneratedCodeInfo& _internal_generated_code_info() const;
-  ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL _internal_mutable_generated_code_info();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
   class _Internal;
@@ -797,12 +777,27 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     kMinimumEditionFieldNumber = 3,
     kMaximumEditionFieldNumber = 4,
   };
+  private:
+  // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
+  int _internal_file_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& _internal_file() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL _internal_mutable_file();
+  // optional string error = 1;
+  const ::std::string& _internal_error() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_error(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_error();
+  // optional uint64 supported_features = 2;
+  ::uint64_t _internal_supported_features() const;
+  void _internal_set_supported_features(::uint64_t value);
+  // optional int32 minimum_edition = 3;
+  ::int32_t _internal_minimum_edition() const;
+  void _internal_set_minimum_edition(::int32_t value);
+  // optional int32 maximum_edition = 4;
+  ::int32_t _internal_maximum_edition() const;
+  void _internal_set_maximum_edition(::int32_t value);
+  public:
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
   [[nodiscard]] int file_size() const;
-  private:
-  int _internal_file_size() const;
-
-  public:
   void clear_file() ;
   [[nodiscard]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& file(int index) const;
   [[nodiscard]] ::google::protobuf::compiler::CodeGeneratorResponse_File* PROTOBUF_NONNULL mutable_file(int index);
@@ -811,12 +806,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   file() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL
   mutable_file();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>& _internal_file() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::compiler::CodeGeneratorResponse_File>* PROTOBUF_NONNULL _internal_mutable_file();
-
-  public:
   // optional string error = 1;
   [[nodiscard]] bool has_error() const;
   void clear_error() ;
@@ -826,46 +815,21 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   ::std::string* PROTOBUF_NONNULL mutable_error();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_error();
   void set_allocated_error(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_error() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_error(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_error();
-
-  public:
   // optional uint64 supported_features = 2;
   [[nodiscard]] bool has_supported_features() const;
   void clear_supported_features() ;
   [[nodiscard]] ::uint64_t supported_features() const;
   void set_supported_features(::uint64_t value);
-
-  private:
-  ::uint64_t _internal_supported_features() const;
-  void _internal_set_supported_features(::uint64_t value);
-
-  public:
   // optional int32 minimum_edition = 3;
   [[nodiscard]] bool has_minimum_edition() const;
   void clear_minimum_edition() ;
   [[nodiscard]] ::int32_t minimum_edition() const;
   void set_minimum_edition(::int32_t value);
-
-  private:
-  ::int32_t _internal_minimum_edition() const;
-  void _internal_set_minimum_edition(::int32_t value);
-
-  public:
   // optional int32 maximum_edition = 4;
   [[nodiscard]] bool has_maximum_edition() const;
   void clear_maximum_edition() ;
   [[nodiscard]] ::int32_t maximum_edition() const;
   void set_maximum_edition(::int32_t value);
-
-  private:
-  ::int32_t _internal_maximum_edition() const;
-  void _internal_set_maximum_edition(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
   class _Internal;
@@ -1065,12 +1029,29 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     kCompilerVersionFieldNumber = 3,
     kSourceFileDescriptorsFieldNumber = 17,
   };
+  private:
+  // repeated string file_to_generate = 1;
+  int _internal_file_to_generate_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_file_to_generate() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_file_to_generate();
+  // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
+  int _internal_proto_file_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_proto_file() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_proto_file();
+  // optional string parameter = 2;
+  const ::std::string& _internal_parameter() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_parameter();
+  // optional .google.protobuf.compiler.Version compiler_version = 3;
+  const ::google::protobuf::compiler::Version& _internal_compiler_version() const;
+  ::google::protobuf::compiler::Version* PROTOBUF_NONNULL _internal_mutable_compiler_version();
+  // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
+  int _internal_source_file_descriptors_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
+  public:
   // repeated string file_to_generate = 1;
   [[nodiscard]] int file_to_generate_size() const;
-  private:
-  int _internal_file_to_generate_size() const;
-
-  public:
   void clear_file_to_generate() ;
   [[nodiscard]] const ::std::string& file_to_generate(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_file_to_generate(int index);
@@ -1085,18 +1066,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
       PROTOBUF_NONNULL
       mutable_file_to_generate();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_file_to_generate() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_file_to_generate();
-
-  public:
   // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
   [[nodiscard]] int proto_file_size() const;
-  private:
-  int _internal_proto_file_size() const;
-
-  public:
   void clear_proto_file() ;
   [[nodiscard]] const ::google::protobuf::FileDescriptorProto& proto_file(int index) const;
   [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_proto_file(int index);
@@ -1105,12 +1076,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   proto_file() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_proto_file();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_proto_file() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_proto_file();
-
-  public:
   // optional string parameter = 2;
   [[nodiscard]] bool has_parameter() const;
   void clear_parameter() ;
@@ -1120,13 +1085,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   ::std::string* PROTOBUF_NONNULL mutable_parameter();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_parameter();
   void set_allocated_parameter(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_parameter() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_parameter(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_parameter();
-
-  public:
   // optional .google.protobuf.compiler.Version compiler_version = 3;
   [[nodiscard]] bool has_compiler_version() const;
   void clear_compiler_version() ;
@@ -1136,18 +1094,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   void set_allocated_compiler_version(::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_compiler_version(::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value);
   ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE unsafe_arena_release_compiler_version();
-
-  private:
-  const ::google::protobuf::compiler::Version& _internal_compiler_version() const;
-  ::google::protobuf::compiler::Version* PROTOBUF_NONNULL _internal_mutable_compiler_version();
-
-  public:
   // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
   [[nodiscard]] int source_file_descriptors_size() const;
-  private:
-  int _internal_source_file_descriptors_size() const;
-
-  public:
   void clear_source_file_descriptors() ;
   [[nodiscard]] const ::google::protobuf::FileDescriptorProto& source_file_descriptors(int index) const;
   [[nodiscard]] ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL mutable_source_file_descriptors(int index);
@@ -1156,12 +1104,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   source_file_descriptors() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_source_file_descriptors();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& _internal_source_file_descriptors() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL _internal_mutable_source_file_descriptors();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
   class _Internal;

@@ -74,9 +74,14 @@
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Java)
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Go)
 @@ @@
-   enum : int {
      kInt32FieldFieldNumber = 1,
    };
+   private:
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+   public:
 -  // optional int32 int32_field = 1;
 +  // int32 int32_field = 1;
    [[nodiscard]] bool has_int32_field() const;
@@ -94,9 +99,14 @@
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Go)
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Java)
 @@ @@
-   enum : int {
      kInt32FieldFieldNumber = 1,
    };
+   private:
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+   public:
 -  // optional int32 int32_field = 1;
 +  // int32 int32_field = 1;
    [[nodiscard]] bool has_int32_field() const;

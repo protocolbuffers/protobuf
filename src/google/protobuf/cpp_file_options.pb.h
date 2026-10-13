@@ -216,18 +216,17 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   enum : int {
     kNamespaceFieldNumber = 1,
   };
+  private:
+  // string namespace = 1;
+  ::absl::string_view _internal_namespace_() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_namespace_(::absl::string_view value);
+  public:
   // string namespace = 1;
   [[nodiscard]] bool has_namespace_() const;
   void clear_namespace_() ;
   [[nodiscard]] ::absl::string_view namespace_() const;
   template <typename Arg_ = ::std::string&&>
   void set_namespace_(Arg_&& arg);
-
-  private:
-  ::absl::string_view _internal_namespace_() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_namespace_(::absl::string_view value);
-
-  public:
   // @@protoc_insertion_point(class_scope:pb.file.CppFileOptions)
  private:
   class _Internal;
