@@ -276,16 +276,33 @@ bool ObjectiveCGenerator::GenerateAll(
       // This is an experimental option, and could be removed or change at any
       // time; it is not documented in the README.md for that reason.
       //
-      // Enables a mode where each ObjC class (messages and roots) generates to
-      // a unique .m file; this is to explore impacts on code size when not
+      // Enables a mode where the generated source is split across multiple .m
+      // files; this is to explore impacts on code size when not
       // compiling/linking with `-ObjC` as then only linker visible needs should
-      // be pulled into the builds.
-      if (!StringToBool(
-              options[i].second,
-              &generation_options.experimental_multi_source_generation)) {
+      // be pulled into the builds. The available options are:
+      //   "all": Each ObjC class (messages and roots) generates to a unique .m
+      //     file. In the C function extension modes ("c_function" and
+      //     "migration"), each extension descriptor function also generates to
+      //     a unique .m file.
+      //   "extensions_only": The messages and enums of a file generate to one
+      //     .m file (the same code as without multi source generation). The
+      //     root class/extension registry function, and each extension
+      //     descriptor function in the C function extension modes, generate to
+      //     their own .m files. This keeps the classes of a file together, so
+      //     not linking with `-ObjC` (or `alwayslink`) only changes which
+      //     extensions get linked.
+      // Without this option, each .proto file generates a single .m file.
+      if (options[i].second == "all") {
+        generation_options.experimental_multi_source_generation =
+            MultiSourceGenerationMode::kAll;
+      } else if (options[i].second == "extensions_only") {
+        generation_options.experimental_multi_source_generation =
+            MultiSourceGenerationMode::kExtensionsOnly;
+      } else {
         *error = absl::StrCat(
-            "error: Unknown value for experimental_multi_source_generation: ",
-            options[i].second);
+            "error: Unknown value for experimental_multi_source_generation. "
+            "Expected one of 'all' or 'extensions_only'. Got: '",
+            options[i].second, "'");
         return false;
       }
     } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
@@ -342,7 +359,7 @@ bool ObjectiveCGenerator::GenerateAll(
   // Multi source generation forces:
   // - off the use of fwd decls in favor of imports
   // - on the minimal imports support
-  if (generation_options.experimental_multi_source_generation) {
+  if (generation_options.IsMultiSourceGeneration()) {
     generation_options.headers_use_forward_declarations = false;
     generation_options.generate_minimal_imports = true;
   }
@@ -479,10 +496,13 @@ bool ObjectiveCGenerator::GenerateAll(
 
     // Generate m file(s).
     if (!headers_only && skip_impls.count(file->name()) == 0) {
-      if (generation_options.experimental_multi_source_generation) {
+      if (generation_options.IsMultiSourceGeneration()) {
         int file_number = 0;
 
-        // Generate the Root and FileDescriptor (if needed).
+        // Generate the Root and/or the file's extension registry function.
+        // This is always its own file so that referencing a message or enum
+        // of the file does not also pull in the registry (and through it every
+        // extension of the file and of its imports).
         {
           std::unique_ptr<io::ZeroCopyOutputStream> output(
               context->Open(NumberedObjCMFileName(filepath, file_number++)));
@@ -496,31 +516,74 @@ bool ObjectiveCGenerator::GenerateAll(
           }
         }
 
-        // Enums only generate C functions, so they can all go in one file as
-        // dead stripping anything not used.
-        if (file_generator.NumEnums() > 0) {
-          std::unique_ptr<io::ZeroCopyOutputStream> output(
-              context->Open(NumberedObjCMFileName(filepath, file_number++)));
-          io::Printer printer(output.get());
-          file_generator.GenerateSourceForEnums(&printer);
-          if (printer.failed()) {
-            *error = absl::StrCat(
-                "error: internal error generating an enum implementation(s):",
-                file->name());
-            return false;
+        if (generation_options.experimental_multi_source_generation ==
+            MultiSourceGenerationMode::kExtensionsOnly) {
+          // The messages and enums (and the FileDescriptor) stay together in
+          // one file, the same as without multi source generation.
+          if (file_generator.NumEnums() > 0 ||
+              file_generator.NumMessages() > 0) {
+            std::unique_ptr<io::ZeroCopyOutputStream> output(
+                context->Open(NumberedObjCMFileName(filepath, file_number++)));
+            io::Printer printer(output.get());
+            file_generator.GenerateSourceForMessagesAndEnums(&printer);
+            if (printer.failed()) {
+              *error = absl::StrCat(
+                  "error: internal error generating a message/enum "
+                  "implementation(s):",
+                  file->name());
+              return false;
+            }
+          }
+        } else {
+          // Enums only generate C functions, so they can all go in one file
+          // as dead stripping anything not used.
+          if (file_generator.NumEnums() > 0) {
+            std::unique_ptr<io::ZeroCopyOutputStream> output(
+                context->Open(NumberedObjCMFileName(filepath, file_number++)));
+            io::Printer printer(output.get());
+            file_generator.GenerateSourceForEnums(&printer);
+            if (printer.failed()) {
+              *error = absl::StrCat(
+                  "error: internal error generating an enum "
+                  "implementation(s):",
+                  file->name());
+              return false;
+            }
+          }
+
+          for (size_t i = 0; i < file_generator.NumMessages(); ++i) {
+            std::unique_ptr<io::ZeroCopyOutputStream> output(
+                context->Open(NumberedObjCMFileName(filepath, file_number++)));
+            io::Printer printer(output.get());
+            file_generator.GenerateSourceForMessage(i, &printer);
+            if (printer.failed()) {
+              *error = absl::StrCat(
+                  "error: internal error generating an message "
+                  "implementation:",
+                  file->name(), "::", i);
+              return false;
+            }
           }
         }
 
-        for (size_t i = 0; i < file_generator.NumMessages(); ++i) {
-          std::unique_ptr<io::ZeroCopyOutputStream> output(
-              context->Open(NumberedObjCMFileName(filepath, file_number++)));
-          io::Printer printer(output.get());
-          file_generator.GenerateSourceForMessage(i, &printer);
-          if (printer.failed()) {
-            *error = absl::StrCat(
-                "error: internal error generating an message implementation:",
-                file->name(), "::", i);
-            return false;
+        // In the C function extension modes, emit a separate numbered
+        // `.pbobjc.m` shard for each extension (both file-scoped and
+        // message-scoped) so each extension can be independently dead-stripped
+        // by the linker unless its C accessor function is explicitly
+        // referenced. This is done in both multi source generation modes.
+        if (generation_options.EmitCFunctionExtensions()) {
+          for (size_t i = 0; i < file_generator.NumExtensions(); ++i) {
+            std::unique_ptr<io::ZeroCopyOutputStream> output(
+                context->Open(NumberedObjCMFileName(filepath, file_number++)));
+            io::Printer printer(output.get());
+            file_generator.GenerateSourceForExtension(i, &printer);
+            if (printer.failed()) {
+              *error = absl::StrCat(
+                  "error: internal error generating an extension "
+                  "implementation:",
+                  file->name(), "::", i);
+              return false;
+            }
           }
         }
       } else {
