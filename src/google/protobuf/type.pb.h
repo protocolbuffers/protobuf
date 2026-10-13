@@ -1967,7 +1967,7 @@ inline const ::google::protobuf::SourceContext& Type::source_context() const ABS
 inline void Type::unsafe_arena_set_allocated_source_context(
     ::google::protobuf::SourceContext* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
+  if (!::google::protobuf::internal::HasArena(*this)) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_context_);
   }
   _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(value);
@@ -1987,11 +1987,11 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Type::release_source
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
     auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete old;
     }
   } else {
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       released = ::google::protobuf::internal::DuplicateIfNonNull(released);
     }
   }
@@ -2761,7 +2761,7 @@ inline const ::google::protobuf::SourceContext& Enum::source_context() const ABS
 inline void Enum::unsafe_arena_set_allocated_source_context(
     ::google::protobuf::SourceContext* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
+  if (!::google::protobuf::internal::HasArena(*this)) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_context_);
   }
   _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(value);
@@ -2781,11 +2781,11 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Enum::release_source
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
     auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete old;
     }
   } else {
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       released = ::google::protobuf::internal::DuplicateIfNonNull(released);
     }
   }
@@ -3157,7 +3157,7 @@ inline const ::google::protobuf::Any& Option::value() const ABSL_ATTRIBUTE_LIFET
 inline void Option::unsafe_arena_set_allocated_value(
     ::google::protobuf::Any* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
+  if (!::google::protobuf::internal::HasArena(*this)) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.value_);
   }
   _impl_.value_ = reinterpret_cast<::google::protobuf::Any*>(value);
@@ -3177,11 +3177,11 @@ inline ::google::protobuf::Any* PROTOBUF_NULLABLE Option::release_value() {
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
     auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete old;
     }
   } else {
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       released = ::google::protobuf::internal::DuplicateIfNonNull(released);
     }
   }

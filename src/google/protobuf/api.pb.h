@@ -1192,7 +1192,7 @@ inline const ::google::protobuf::SourceContext& Api::source_context() const ABSL
 inline void Api::unsafe_arena_set_allocated_source_context(
     ::google::protobuf::SourceContext* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
+  if (!::google::protobuf::internal::HasArena(*this)) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.source_context_);
   }
   _impl_.source_context_ = reinterpret_cast<::google::protobuf::SourceContext*>(value);
@@ -1212,11 +1212,11 @@ inline ::google::protobuf::SourceContext* PROTOBUF_NULLABLE Api::release_source_
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
     auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete old;
     }
   } else {
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       released = ::google::protobuf::internal::DuplicateIfNonNull(released);
     }
   }

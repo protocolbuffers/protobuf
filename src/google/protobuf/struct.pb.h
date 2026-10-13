@@ -1078,7 +1078,7 @@ inline void Value::set_has_struct_value() {
 inline void Value::clear_struct_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kStructValue) {
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete _impl_.kind_.struct_value_;
     } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
       ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.kind_.struct_value_);
@@ -1091,7 +1091,7 @@ inline ::google::protobuf::Struct* PROTOBUF_NULLABLE Value::release_struct_value
   if (kind_case() == kStructValue) {
     clear_has_kind();
     auto* temp = _impl_.kind_.struct_value_;
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
     _impl_.kind_.struct_value_ = nullptr;
@@ -1159,7 +1159,7 @@ inline void Value::set_has_list_value() {
 inline void Value::clear_list_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (kind_case() == kListValue) {
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete _impl_.kind_.list_value_;
     } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
       ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.kind_.list_value_);
@@ -1172,7 +1172,7 @@ inline ::google::protobuf::ListValue* PROTOBUF_NULLABLE Value::release_list_valu
   if (kind_case() == kListValue) {
     clear_has_kind();
     auto* temp = _impl_.kind_.list_value_;
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       temp = ::google::protobuf::internal::DuplicateIfNonNull(temp);
     }
     _impl_.kind_.list_value_ = nullptr;
