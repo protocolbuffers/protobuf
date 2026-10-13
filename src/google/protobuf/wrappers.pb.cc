@@ -1174,7 +1174,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DoubleValue::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -1346,7 +1346,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void FloatValue::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -1518,7 +1518,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int64Value::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -1691,7 +1691,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt64Value::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -1864,7 +1864,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Int32Value::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -2037,7 +2037,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void UInt32Value::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -2210,7 +2210,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BoolValue::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -2393,7 +2393,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void StringValue::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
 }
@@ -2586,7 +2586,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void BytesValue::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.value_.Destroy();
   this_._impl_.~Impl_();
 }

@@ -426,7 +426,7 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 void GenericSwap(Message* lhs, Message* rhs) {
   if (!internal::DebugHardenForceCopyInSwap()) {
     ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
-    ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
+    ABSL_DCHECK(internal::HasArena(*lhs) || internal::HasArena(*rhs));
   }
   // At least one of these must have an arena, so make `rhs` point to it.
   Arena* arena = rhs->GetArena();

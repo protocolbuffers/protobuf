@@ -1635,7 +1635,7 @@ inline const ::google::protobuf::compiler::Version& CodeGeneratorRequest::compil
 inline void CodeGeneratorRequest::unsafe_arena_set_allocated_compiler_version(
     ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
+  if (!::google::protobuf::internal::HasArena(*this)) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.compiler_version_);
   }
   _impl_.compiler_version_ = reinterpret_cast<::google::protobuf::compiler::Version*>(value);
@@ -1655,11 +1655,11 @@ inline ::google::protobuf::compiler::Version* PROTOBUF_NULLABLE CodeGeneratorReq
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
     auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete old;
     }
   } else {
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       released = ::google::protobuf::internal::DuplicateIfNonNull(released);
     }
   }
@@ -1936,7 +1936,7 @@ inline const ::google::protobuf::GeneratedCodeInfo& CodeGeneratorResponse_File::
 inline void CodeGeneratorResponse_File::unsafe_arena_set_allocated_generated_code_info(
     ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (GetArena() == nullptr) {
+  if (!::google::protobuf::internal::HasArena(*this)) {
     delete reinterpret_cast<::google::protobuf::MessageLite*>(_impl_.generated_code_info_);
   }
   _impl_.generated_code_info_ = reinterpret_cast<::google::protobuf::GeneratedCodeInfo*>(value);
@@ -1956,11 +1956,11 @@ inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorRes
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
     auto* old = reinterpret_cast<::google::protobuf::MessageLite*>(released);
     released = ::google::protobuf::internal::DuplicateIfNonNull(released);
-    if (GetArena() == nullptr) {
+    if (!::google::protobuf::internal::HasArena(*this)) {
       delete old;
     }
   } else {
-    if (GetArena() != nullptr) {
+    if (::google::protobuf::internal::HasArena(*this)) {
       released = ::google::protobuf::internal::DuplicateIfNonNull(released);
     }
   }

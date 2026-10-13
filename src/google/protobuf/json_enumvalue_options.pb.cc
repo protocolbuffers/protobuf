@@ -263,7 +263,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void JsonEnumValueOptions::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.string_.Destroy();
   this_._impl_.~Impl_();
 }

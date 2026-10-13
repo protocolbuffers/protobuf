@@ -723,7 +723,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Struct::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 
@@ -981,7 +981,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Value::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   if (this_.has_kind()) {
     this_.clear_kind();
   }
@@ -1009,7 +1009,7 @@ void Value::clear_kind() {
       break;
     }
     case kStructValue: {
-      if (GetArena() == nullptr) {
+      if (!::google::protobuf::internal::HasArena(*this)) {
         delete _impl_.kind_.struct_value_;
       } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
         ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.kind_.struct_value_);
@@ -1017,7 +1017,7 @@ void Value::clear_kind() {
       break;
     }
     case kListValue: {
-      if (GetArena() == nullptr) {
+      if (!::google::protobuf::internal::HasArena(*this)) {
         delete _impl_.kind_.list_value_;
       } else if (::google::protobuf::internal::DebugHardenClearOneofMessageOnArena()) {
         ::google::protobuf::internal::MaybePoisonAfterClear(_impl_.kind_.list_value_);
@@ -1330,7 +1330,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void ListValue::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.~Impl_();
 }
 

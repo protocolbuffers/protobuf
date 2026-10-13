@@ -1452,7 +1452,7 @@ void Reflection::MaybePoisonAfterClear(Message& root) const {
     uint32_t size;
   };
 
-  bool heap_alloc = root.GetArena() == nullptr;
+  bool heap_alloc = !internal::HasArena(root);
   std::vector<MemBlock> nodes;
 
   nodes.emplace_back(root);
@@ -1464,7 +1464,7 @@ void Reflection::MaybePoisonAfterClear(Message& root) const {
     Message* curr = queue.front();
     queue.pop();
     internal::VisitMutableMessageFields(*curr, [&](Message& msg) {
-      if (msg.GetArena() == nullptr) {
+      if (!internal::HasArena(msg)) {
         heap_alloc = true;
         return;
       }
@@ -2701,7 +2701,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
 
 void Reflection::SetAllocatedMessage(Message* message, Message* sub_message,
                                      const FieldDescriptor* field) const {
-  ABSL_DCHECK(sub_message == nullptr || sub_message->GetArena() == nullptr ||
+  ABSL_DCHECK(sub_message == nullptr || !internal::HasArena(*sub_message) ||
               sub_message->GetArena() == message->GetArena());
 
   if (sub_message == nullptr) {
@@ -2772,7 +2772,7 @@ Message* Reflection::ReleaseMessage(Message* message,
   if (internal::DebugHardenForceCopyInRelease()) {
     released = MaybeForceCopy(message->GetArena(), released);
   }
-  if (message->GetArena() != nullptr && released != nullptr) {
+  if (internal::HasArena(*message) && released != nullptr) {
     Message* copy_from_arena = released->New();
     copy_from_arena->CopyFrom(*released);
     released = copy_from_arena;
@@ -3410,7 +3410,7 @@ void Reflection::ClearOneof(Message* message,
   uint32_t oneof_case = GetOneofCase(*message, oneof_descriptor);
   if (oneof_case > 0) {
     const FieldDescriptor* field = descriptor_->FindFieldByNumber(oneof_case);
-    if (message->GetArena() == nullptr) {
+    if (!internal::HasArena(*message)) {
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
           switch (field->cpp_string_type()) {
@@ -3554,8 +3554,7 @@ Type* Reflection::MutableRepeatedField(Message* message,
 template <typename Type>
 void Reflection::AddField(Message* message, const FieldDescriptor* field,
                           const Type& value) const {
-  MutableRaw<RepeatedField<Type>>(message, field)
-      ->AddWithArena(message->GetArena(), value);
+  MutableRaw<RepeatedField<Type>>(message, field)->AddWithArena(message, value);
   SetHasBit(message, field);
 }
 

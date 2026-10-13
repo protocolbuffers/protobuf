@@ -323,7 +323,7 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     if (use_micro_string()) {
       p->Emit(R"cc(
-        if (GetArena() == nullptr) $field_$.Destroy();
+        if (!$pbi$::HasArena(*this)) $field_$.Destroy();
       )cc");
       return;
     }

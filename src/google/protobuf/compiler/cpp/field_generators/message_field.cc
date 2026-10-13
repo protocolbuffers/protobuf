@@ -212,7 +212,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $PrepareSplitMessageForWrite$;
       //~ If we're not on an arena, free whatever we were holding before.
       //~ (If we are on arena, we can just forget the earlier pointer.)
-      if (GetArena() == nullptr) {
+      if (!$pbi$::HasArena(*this)) {
         delete reinterpret_cast<$pb$::MessageLite*>($field_$);
       }
       $field_$ = reinterpret_cast<$MemberType$*>(value);
@@ -233,11 +233,11 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($pbi$::DebugHardenForceCopyInRelease()) {
         auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
         released = $pbi$::DuplicateIfNonNull(released);
-        if (GetArena() == nullptr) {
+        if (!$pbi$::HasArena(*this)) {
           delete old;
         }
       } else {
-        if (GetArena() != nullptr) {
+        if ($pbi$::HasArena(*this)) {
           released = $pbi$::DuplicateIfNonNull(released);
         }
       }
@@ -552,7 +552,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($has_field$) {
         clear_has_$oneof_name$();
         auto* temp = $cast_field_$;
-        if (GetArena() != nullptr) {
+        if ($pbi$::HasArena(*this)) {
           temp = $pbi$::DuplicateIfNonNull(temp);
         }
         $field_$ = nullptr;
@@ -648,7 +648,7 @@ void OneofMessage::GenerateClearingCode(io::Printer* p) const {
               }
             }}},
           R"cc(
-            if (GetArena() == nullptr) {
+            if (!$pbi$::HasArena(*this)) {
               delete $field_$;
             } else if ($pbi$::DebugHardenClearOneofMessageOnArena()) {
               $poison_or_clear$;

@@ -753,7 +753,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Api::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.version_.Destroy();
   this_._impl_.edition_.Destroy();
@@ -1178,7 +1178,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Method::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.request_type_url_.Destroy();
   this_._impl_.response_type_url_.Destroy();
@@ -1566,7 +1566,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void Mixin::SharedDtor(
     this_.CheckHasBitConsistency();
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(this_.GetArena() == nullptr);
+  ABSL_DCHECK(!::_pbi::HasArena(this_));
   this_._impl_.name_.Destroy();
   this_._impl_.root_.Destroy();
   this_._impl_.~Impl_();

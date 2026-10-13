@@ -1395,7 +1395,7 @@ TEST_F(ArenaTest, ArenaOneofReflection) {
   EXPECT_TRUE(refl->HasOneof(*message, oneof));
   submsg = refl->ReleaseMessage(message, msg_field);
   EXPECT_FALSE(refl->HasOneof(*message, oneof));
-  EXPECT_TRUE(submsg->GetArena() == nullptr);
+  EXPECT_FALSE(internal::HasArena(*submsg));
   delete submsg;
 }
 
