@@ -9,7 +9,7 @@ pkg_filegroup(
     ],
     prefix = "protobuf_codegen",
     tags = ["manual"],
-    visibility = ["//rust:__subpackages__"],
+    visibility = ["//visibility:private"],
 )
 
 pkg_files(
