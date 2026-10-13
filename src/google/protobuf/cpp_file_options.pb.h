@@ -216,11 +216,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   enum : int {
     kNamespaceFieldNumber = 1,
   };
-  private:
-  // string namespace = 1;
-  ::absl::string_view _internal_namespace_() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_namespace_(::absl::string_view value);
-  public:
   // string namespace = 1;
   [[nodiscard]] bool has_namespace_() const;
   void clear_namespace_() ;
@@ -242,6 +237,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // string namespace = 1;
+  ::absl::string_view _internal_namespace_() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_namespace_(::absl::string_view value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

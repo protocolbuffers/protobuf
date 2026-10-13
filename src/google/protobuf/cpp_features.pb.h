@@ -354,20 +354,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     kEnumNameUsesStringViewFieldNumber = 3,
     kRepeatedTypeFieldNumber = 4,
   };
-  private:
-  // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  ::pb::CppFeatures_StringType _internal_string_type() const;
-  void _internal_set_string_type(::pb::CppFeatures_StringType value);
-  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool _internal_legacy_closed_enum() const;
-  void _internal_set_legacy_closed_enum(bool value);
-  // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool _internal_enum_name_uses_string_view() const;
-  void _internal_set_enum_name_uses_string_view(bool value);
-  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  ::pb::CppFeatures_RepeatedType _internal_repeated_type() const;
-  void _internal_set_repeated_type(::pb::CppFeatures_RepeatedType value);
-  public:
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_string_type() const;
   void clear_string_type() ;
@@ -403,6 +389,20 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::pb::CppFeatures_StringType _internal_string_type() const;
+  void _internal_set_string_type(::pb::CppFeatures_StringType value);
+  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_legacy_closed_enum() const;
+  void _internal_set_legacy_closed_enum(bool value);
+  // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_enum_name_uses_string_view() const;
+  void _internal_set_enum_name_uses_string_view(bool value);
+  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::pb::CppFeatures_RepeatedType _internal_repeated_type() const;
+  void _internal_set_repeated_type(::pb::CppFeatures_RepeatedType value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

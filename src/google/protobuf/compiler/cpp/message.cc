@@ -728,9 +728,7 @@ void MessageGenerator::AddGenerators(
   }
 }
 
-void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
-  auto v = p->WithVars(MessageVars(descriptor_));
-
+std::vector<const FieldDescriptor*> MessageGenerator::AllFields() const {
   // optimized_fields_ does not contain fields where
   //    field->real_containing_oneof()
   // so we need to iterate over those as well.
@@ -749,6 +747,12 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
       ordered_fields.push_back(field);
     }
   }
+  return ordered_fields;
+}
+
+void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
+  auto v = p->WithVars(MessageVars(descriptor_));
+  std::vector<const FieldDescriptor*> ordered_fields = AllFields();
 
   if (!ordered_fields.empty()) {
     p->Emit({{
@@ -770,52 +774,7 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               };
             )cc");
   }
-  p->Emit(R"cc(
-    private:
-  )cc");
-  for (auto field : ordered_fields) {
-    auto name = FieldName(field);
 
-    auto v = p->WithVars(FieldVars(field, options_));
-    auto t = p->WithVars(MakeTrackerCalls(field, options_));
-    p->Emit(
-        {{"field_comment", FieldComment(field, options_)},
-         {"internal_sizer",
-          [&] {
-            if (!field->is_repeated()) return;
-            p->Emit({Sub("_internal_name_size",
-                         absl::StrCat("_internal_", name, "_size"))
-                         .AnnotatedAs(field)},
-                    R"cc(
-                      int $_internal_name_size$() const;
-                    )cc");
-          }},
-         {"internal_hazzer",
-          [&] {
-            if (!HasInternalHasMethod(field, options_)) {
-              return;
-            }
-            p->Emit(
-                {Sub("_internal_has_name", absl::StrCat("_internal_has_", name))
-                     .AnnotatedAs(field)},
-                R"cc(
-                  bool $_internal_has_name$() const;
-                )cc");
-          }},
-         {"private_accessors",
-          [&] {
-            field_generators_.get(field).GeneratePrivateAccessorDeclarations(p);
-          }}},
-        R"cc(
-          // $field_comment$
-          $internal_sizer$;
-          $internal_hazzer$;
-          $private_accessors$;
-        )cc");
-  }
-  p->Emit(R"cc(
-    public:
-  )cc");
   for (auto field : ordered_fields) {
     auto name = FieldName(field);
 
@@ -1129,6 +1088,52 @@ void MessageGenerator::GenerateFieldAccessorDeclarations(io::Printer* p) {
               void $clear_oneof_name$();
               $OneOfName$Case $oneof_name$_case() const;
             )cc");
+  }
+}
+
+void MessageGenerator::GenerateFieldAccessorPrivateHelpers(io::Printer* p) {
+  auto v = p->WithVars(MessageVars(descriptor_));
+  std::vector<const FieldDescriptor*> ordered_fields = AllFields();
+
+  for (auto* field : ordered_fields) {
+    auto name = FieldName(field);
+
+    auto v = p->WithVars(FieldVars(field, options_));
+    auto t = p->WithVars(MakeTrackerCalls(field, options_));
+    p->Emit(
+        {{"field_comment", FieldComment(field, options_)},
+         {"internal_sizer",
+          [&] {
+            if (!field->is_repeated()) return;
+            p->Emit({Sub("_internal_name_size",
+                         absl::StrCat("_internal_", name, "_size"))
+                         .AnnotatedAs(field)},
+                    R"cc(
+                      int $_internal_name_size$() const;
+                    )cc");
+          }},
+         {"internal_hazzer",
+          [&] {
+            if (!HasInternalHasMethod(field, options_)) {
+              return;
+            }
+            p->Emit(
+                {Sub("_internal_has_name", absl::StrCat("_internal_has_", name))
+                     .AnnotatedAs(field)},
+                R"cc(
+                  bool $_internal_has_name$() const;
+                )cc");
+          }},
+         {"private_accessors",
+          [&] {
+            field_generators_.get(field).GeneratePrivateAccessorDeclarations(p);
+          }}},
+        R"cc(
+          // $field_comment$
+          $internal_sizer$;
+          $internal_hazzer$;
+          $private_accessors$;
+        )cc");
   }
 }
 
@@ -2121,6 +2126,11 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           // Generate accessor methods for all fields.
           GenerateFieldAccessorDeclarations(p);
         }},
+       {"decl_field_accessors_private_helpers",
+        [&] {
+          // Generate private helper methods for all fields.
+          GenerateFieldAccessorPrivateHelpers(p);
+        }},
        {"decl_extension_ids",
         [&] {
           // Declare extension identifiers.
@@ -2308,6 +2318,9 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           friend class $pb$::Arena::InternalHelper;
           using InternalArenaConstructable_ = void;
           using DestructorSkippable_ = void;
+
+          $decl_field_accessors_private_helpers$;
+
           $decl_impl$;
           $split_friend$;
           //~ The TableStruct struct needs access to the private parts, in

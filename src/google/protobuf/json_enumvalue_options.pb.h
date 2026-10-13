@@ -216,11 +216,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
   enum : int {
     kStringFieldNumber = 1,
   };
-  private:
-  // string string = 1;
-  ::absl::string_view _internal_string() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_string(::absl::string_view value);
-  public:
   // string string = 1;
   [[nodiscard]] bool has_string() const;
   void clear_string() ;
@@ -242,6 +237,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // string string = 1;
+  ::absl::string_view _internal_string() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string(::absl::string_view value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

@@ -290,8 +290,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   }
 
   // accessors -------------------------------------------------------
-  private:
-  public:
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures.NestInFileClassFeature)
  private:
   class _Internal;
@@ -307,6 +305,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+
   friend struct ::TableStruct_google_2fprotobuf_2fcompiler_2fjava_2fjava_5ffeatures_2eproto;
 };
 // -------------------------------------------------------------------
@@ -488,23 +488,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     kUseOldOuterClassnameDefaultFieldNumber = 4,
     kNestInFileClassFieldNumber = 5,
   };
-  private:
-  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  ::pb::JavaFeatures_Utf8Validation _internal_utf8_validation() const;
-  void _internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
-  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool _internal_legacy_closed_enum() const;
-  void _internal_set_legacy_closed_enum(bool value);
-  // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool _internal_large_enum() const;
-  void _internal_set_large_enum(bool value);
-  // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-  bool _internal_use_old_outer_classname_default() const;
-  void _internal_set_use_old_outer_classname_default(bool value);
-  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass _internal_nest_in_file_class() const;
-  void _internal_set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
-  public:
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_utf8_validation() const;
   void clear_utf8_validation() ;
@@ -545,6 +528,23 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::pb::JavaFeatures_Utf8Validation _internal_utf8_validation() const;
+  void _internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
+  // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_legacy_closed_enum() const;
+  void _internal_set_legacy_closed_enum(bool value);
+  // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_large_enum() const;
+  void _internal_set_large_enum(bool value);
+  // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
+  bool _internal_use_old_outer_classname_default() const;
+  void _internal_set_use_old_outer_classname_default(bool value);
+  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass _internal_nest_in_file_class() const;
+  void _internal_set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
