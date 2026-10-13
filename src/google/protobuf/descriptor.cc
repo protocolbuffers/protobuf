@@ -1616,26 +1616,29 @@ class DescriptorPool::Tables {
           misc_allocations_before_checkpoint(
               static_cast<int>(tables->misc_allocs_.size())),
           pending_symbols_before_checkpoint(
-              tables->symbols_after_checkpoint_.size()),
+              tables->checkpoint_data_->symbols_after_checkpoint.size()),
           pending_files_before_checkpoint(
-              tables->files_after_checkpoint_.size()),
+              tables->checkpoint_data_->files_after_checkpoint.size()),
           pending_extensions_before_checkpoint(
-              tables->extensions_after_checkpoint_.size()) {}
+              tables->checkpoint_data_->extensions_after_checkpoint.size()) {}
     int flat_allocations_before_checkpoint;
     int misc_allocations_before_checkpoint;
     int pending_symbols_before_checkpoint;
     int pending_files_before_checkpoint;
     int pending_extensions_before_checkpoint;
   };
-  std::vector<CheckPoint> checkpoints_;
-  std::vector<Symbol> symbols_after_checkpoint_;
-  std::vector<const FileDescriptor*> files_after_checkpoint_;
-  std::vector<std::pair<const Descriptor*, int>> extensions_after_checkpoint_;
+  struct CheckpointData {
+    std::vector<CheckPoint> checkpoints;
+    std::vector<Symbol> symbols_after_checkpoint;
+    std::vector<const FileDescriptor*> files_after_checkpoint;
+    std::vector<std::pair<const Descriptor*, int>> extensions_after_checkpoint;
+  };
+  std::unique_ptr<CheckpointData> checkpoint_data_;
 };
 
 DescriptorPool::Tables::Tables() {}
 
-DescriptorPool::Tables::~Tables() { ABSL_DCHECK(checkpoints_.empty()); }
+DescriptorPool::Tables::~Tables() { ABSL_DCHECK(checkpoint_data_ == nullptr); }
 
 FileDescriptorTables::FileDescriptorTables() = default;
 
@@ -1651,49 +1654,54 @@ inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
 }
 
 void DescriptorPool::Tables::AddCheckpoint() {
-  checkpoints_.emplace_back(this);
+  if (checkpoint_data_ == nullptr) {
+    checkpoint_data_ = std::make_unique<CheckpointData>();
+  }
+  checkpoint_data_->checkpoints.emplace_back(this);
 }
 
 void DescriptorPool::Tables::ClearLastCheckpoint() {
-  ABSL_DCHECK(!checkpoints_.empty());
-  checkpoints_.pop_back();
-  if (checkpoints_.empty()) {
+  ABSL_DCHECK(checkpoint_data_ != nullptr);
+  ABSL_DCHECK(!checkpoint_data_->checkpoints.empty());
+  checkpoint_data_->checkpoints.pop_back();
+  if (checkpoint_data_->checkpoints.empty()) {
     // All checkpoints have been cleared: we can now commit all of the pending
     // data.
-    symbols_after_checkpoint_.clear();
-    files_after_checkpoint_.clear();
-    extensions_after_checkpoint_.clear();
+    checkpoint_data_.reset();
   }
 }
 
 void DescriptorPool::Tables::RollbackToLastCheckpoint(
     DeferredValidation& deferred_validation) {
-  ABSL_DCHECK(!checkpoints_.empty());
-  const CheckPoint& checkpoint = checkpoints_.back();
+  ABSL_DCHECK(checkpoint_data_ != nullptr);
+  ABSL_DCHECK(!checkpoint_data_->checkpoints.empty());
+  const CheckPoint& checkpoint = checkpoint_data_->checkpoints.back();
 
   for (size_t i = checkpoint.pending_symbols_before_checkpoint;
-       i < symbols_after_checkpoint_.size(); i++) {
-    symbols_by_name_.erase(symbols_after_checkpoint_[i]);
+       i < checkpoint_data_->symbols_after_checkpoint.size(); i++) {
+    symbols_by_name_.erase(checkpoint_data_->symbols_after_checkpoint[i]);
   }
   for (size_t i = checkpoint.pending_files_before_checkpoint;
-       i < files_after_checkpoint_.size(); i++) {
-    deferred_validation.RollbackFile(files_after_checkpoint_[i]);
-    files_by_name_.erase(files_after_checkpoint_[i]);
+       i < checkpoint_data_->files_after_checkpoint.size(); i++) {
+    deferred_validation.RollbackFile(
+        checkpoint_data_->files_after_checkpoint[i]);
+    files_by_name_.erase(checkpoint_data_->files_after_checkpoint[i]);
   }
   for (size_t i = checkpoint.pending_extensions_before_checkpoint;
-       i < extensions_after_checkpoint_.size(); i++) {
-    extensions_.erase(extensions_after_checkpoint_[i]);
+       i < checkpoint_data_->extensions_after_checkpoint.size(); i++) {
+    extensions_.erase(checkpoint_data_->extensions_after_checkpoint[i]);
   }
 
-  symbols_after_checkpoint_.resize(
+  checkpoint_data_->symbols_after_checkpoint.resize(
       checkpoint.pending_symbols_before_checkpoint);
-  files_after_checkpoint_.resize(checkpoint.pending_files_before_checkpoint);
-  extensions_after_checkpoint_.resize(
+  checkpoint_data_->files_after_checkpoint.resize(
+      checkpoint.pending_files_before_checkpoint);
+  checkpoint_data_->extensions_after_checkpoint.resize(
       checkpoint.pending_extensions_before_checkpoint);
 
   flat_allocs_.resize(checkpoint.flat_allocations_before_checkpoint);
   misc_allocs_.resize(checkpoint.misc_allocations_before_checkpoint);
-  checkpoints_.pop_back();
+  ClearLastCheckpoint();
 }
 
 // -------------------------------------------------------------------
@@ -1938,7 +1946,8 @@ bool DescriptorPool::Tables::AddSymbol(absl::string_view full_name,
                                        Symbol symbol) {
   ABSL_DCHECK_EQ(full_name, symbol.full_name());
   if (symbols_by_name_.insert(symbol).second) {
-    symbols_after_checkpoint_.push_back(symbol);
+    ABSL_DCHECK(checkpoint_data_ != nullptr);
+    checkpoint_data_->symbols_after_checkpoint.push_back(symbol);
     return true;
   } else {
     return false;
@@ -1958,7 +1967,8 @@ bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
 
 bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
   if (files_by_name_.insert(file).second) {
-    files_after_checkpoint_.push_back(file);
+    ABSL_DCHECK(checkpoint_data_ != nullptr);
+    checkpoint_data_->files_after_checkpoint.push_back(file);
     return true;
   } else {
     return false;
@@ -2003,7 +2013,9 @@ bool DescriptorPool::Tables::AddExtension(const FieldDescriptor* field) {
   auto it_inserted =
       extensions_.insert({{field->containing_type(), field->number()}, field});
   if (it_inserted.second) {
-    extensions_after_checkpoint_.push_back(it_inserted.first->first);
+    ABSL_DCHECK(checkpoint_data_ != nullptr);
+    checkpoint_data_->extensions_after_checkpoint.push_back(
+        it_inserted.first->first);
     return true;
   } else {
     return false;
