@@ -887,6 +887,7 @@ static PyType_Spec PyUpb_ByNumberMap_Spec = {
 
 bool PyUpb_InitDescriptorContainers(PyObject* m) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_GetFromModule(m);
+  if (!s) return false;
 
   s->by_name_map_type = PyUpb_AddClass(m, &PyUpb_ByNameMap_Spec);
   s->by_number_map_type = PyUpb_AddClass(m, &PyUpb_ByNumberMap_Spec);

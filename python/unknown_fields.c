@@ -351,6 +351,7 @@ done:
 
 bool PyUpb_UnknownFields_Init(PyObject* m) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_GetFromModule(m);
+  if (!s) return false;
 
   s->unknown_fields_type = PyUpb_AddClass(m, &PyUpb_UnknownFieldSet_Spec);
   s->unknown_field_type = PyUpb_UnknownFieldSet_CreateNamedTuple();

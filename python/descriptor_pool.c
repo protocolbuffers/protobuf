@@ -824,6 +824,7 @@ static PyType_Spec PyUpb_DescriptorPool_Spec = {
 
 bool PyUpb_InitDescriptorPool(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  if (!state) return false;
   state->obj_cache = PyUpb_WeakMap_New();
   if (!state->obj_cache) return false;
 

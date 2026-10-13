@@ -239,6 +239,7 @@ static PyType_Spec PyUpb_ExtensionIterator_Spec = {
 
 bool PyUpb_InitExtensionDict(PyObject* m) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_GetFromModule(m);
+  if (!s) return false;
 
   s->extension_dict_type = PyUpb_AddClass(m, &PyUpb_ExtensionDict_Spec);
   s->extension_iterator_type = PyUpb_AddClass(m, &PyUpb_ExtensionIterator_Spec);

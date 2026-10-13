@@ -606,6 +606,7 @@ static PyObject* GetMutableMappingBase(void) {
 
 bool PyUpb_Map_Init(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
+  if (!state) return false;
   PyObject* base = GetMutableMappingBase();
   if (!base) return false;
 
