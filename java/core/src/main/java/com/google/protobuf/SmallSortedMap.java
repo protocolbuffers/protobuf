@@ -347,11 +347,18 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
    *     {@link java.util.Arrays#binarySearch()}.
    */
   private int binarySearch(K key) {
-    int low = 0;
     int high = size - 1;
-    while (low <= high) {
+    if (high < 0) {
+      return -1; // empty map, key not found.
+    }
+    final Object[] currentEntries = entries;
+    int low = 0;
+    do {
       int mid = (low + high) >>> 1;
-      K midKey = ((Entry) entries[mid]).getKey();
+      K midKey = ((Entry) currentEntries[mid]).key;
+      if (midKey == key) {
+        return mid;
+      }
       int cmp = midKey.compareTo(key);
       if (cmp < 0) {
         low = mid + 1;
@@ -360,7 +367,7 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
       } else {
         return mid; // key found
       }
-    }
+    } while (low <= high);
     return -(low + 1); // key not found.
   }
 
