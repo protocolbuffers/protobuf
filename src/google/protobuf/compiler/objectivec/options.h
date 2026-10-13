@@ -33,6 +33,21 @@ enum class ExtensionGenerationMode {
   kCFunction,
 };
 
+// The experimental multi source generation modes. This is an experiment that is
+// not officially supported; it can change in behavior or go away at any time.
+enum class MultiSourceGenerationMode {
+  // Each .proto file generates a single .pbobjc.m file. This is the default.
+  kNone,
+
+  // Each ObjC class (messages and roots) generates to a unique .m file.
+  kAll,
+
+  // Messages and enums are generated into one .m file (the same code as single
+  // source generation), and only the extension registry/root and the extension
+  // descriptor functions are split into their own .m files.
+  kExtensionsOnly,
+};
+
 // Generation options, documented within generator.cc.
 struct GenerationOptions {
   std::string generate_for_named_framework;
@@ -45,8 +60,10 @@ struct GenerationOptions {
 
   // These are experiments that are not officially supported. They can change
   // in behavior or go away at any time.
-  bool experimental_multi_source_generation = false;
+  MultiSourceGenerationMode experimental_multi_source_generation =
+      MultiSourceGenerationMode::kNone;
   bool experimental_strip_nonfunctional_codegen = false;
+  bool experimental_global_extension_registry = false;
 
   // The name of the pragma that will be used to indicate the start of the
   // metadata annotations. Must be set (along with `annotation_guard_name`) for
@@ -69,6 +86,11 @@ struct GenerationOptions {
   bool EmitCFunctionExtensions() const {
     return extension_generation_mode == ExtensionGenerationMode::kCFunction ||
            extension_generation_mode == ExtensionGenerationMode::kMigration;
+  }
+
+  bool IsMultiSourceGeneration() const {
+    return experimental_multi_source_generation !=
+           MultiSourceGenerationMode::kNone;
   }
 };
 
