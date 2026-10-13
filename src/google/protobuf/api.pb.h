@@ -220,16 +220,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
     kNameFieldNumber = 1,
     kRootFieldNumber = 2,
   };
-  private:
-  // string name = 1;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // string root = 2;
-  const ::std::string& _internal_root() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_root(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_root();
-  public:
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -261,6 +251,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string root = 2;
+  const ::std::string& _internal_root() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_root(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_root();
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -440,37 +440,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     kResponseStreamingFieldNumber = 5,
     kSyntaxFieldNumber = 7,
   };
-  private:
-  // repeated .google.protobuf.Option options = 6;
-  int _internal_options_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-  // string name = 1;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // string request_type_url = 2;
-  const ::std::string& _internal_request_type_url() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_request_type_url();
-  // string response_type_url = 4;
-  const ::std::string& _internal_response_type_url() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_response_type_url();
-  // string edition = 8 [deprecated = true];
-  const ::std::string& _internal_edition() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
-  // bool request_streaming = 3;
-  bool _internal_request_streaming() const;
-  void _internal_set_request_streaming(bool value);
-  // bool response_streaming = 5;
-  bool _internal_response_streaming() const;
-  void _internal_set_response_streaming(bool value);
-  // .google.protobuf.Syntax syntax = 7 [deprecated = true];
-  ::google::protobuf::Syntax _internal_syntax() const;
-  void _internal_set_syntax(::google::protobuf::Syntax value);
-  public:
   // repeated .google.protobuf.Option options = 6;
   [[nodiscard]] int options_size() const;
   void clear_options() ;
@@ -540,6 +509,37 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated .google.protobuf.Option options = 6;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string request_type_url = 2;
+  const ::std::string& _internal_request_type_url() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_request_type_url();
+  // string response_type_url = 4;
+  const ::std::string& _internal_response_type_url() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_response_type_url();
+  // string edition = 8 [deprecated = true];
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+  // bool request_streaming = 3;
+  bool _internal_request_streaming() const;
+  void _internal_set_request_streaming(bool value);
+  // bool response_streaming = 5;
+  bool _internal_response_streaming() const;
+  void _internal_set_response_streaming(bool value);
+  // .google.protobuf.Syntax syntax = 7 [deprecated = true];
+  ::google::protobuf::Syntax _internal_syntax() const;
+  void _internal_set_syntax(::google::protobuf::Syntax value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -725,38 +725,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     kSourceContextFieldNumber = 5,
     kSyntaxFieldNumber = 7,
   };
-  private:
-  // repeated .google.protobuf.Method methods = 2;
-  int _internal_methods_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL _internal_mutable_methods();
-  // repeated .google.protobuf.Option options = 3;
-  int _internal_options_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-  // repeated .google.protobuf.Mixin mixins = 6;
-  int _internal_mixins_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL _internal_mutable_mixins();
-  // string name = 1;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // string version = 4;
-  const ::std::string& _internal_version() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_version(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_version();
-  // string edition = 8;
-  const ::std::string& _internal_edition() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
-  // .google.protobuf.SourceContext source_context = 5;
-  const ::google::protobuf::SourceContext& _internal_source_context() const;
-  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
-  // .google.protobuf.Syntax syntax = 7;
-  ::google::protobuf::Syntax _internal_syntax() const;
-  void _internal_set_syntax(::google::protobuf::Syntax value);
-  public:
   // repeated .google.protobuf.Method methods = 2;
   [[nodiscard]] int methods_size() const;
   void clear_methods() ;
@@ -839,6 +807,38 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated .google.protobuf.Method methods = 2;
+  int _internal_methods_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL _internal_mutable_methods();
+  // repeated .google.protobuf.Option options = 3;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // repeated .google.protobuf.Mixin mixins = 6;
+  int _internal_mixins_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL _internal_mutable_mixins();
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string version = 4;
+  const ::std::string& _internal_version() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_version(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_version();
+  // string edition = 8;
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+  // .google.protobuf.SourceContext source_context = 5;
+  const ::google::protobuf::SourceContext& _internal_source_context() const;
+  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
+  // .google.protobuf.Syntax syntax = 7;
+  ::google::protobuf::Syntax _internal_syntax() const;
+  void _internal_set_syntax(::google::protobuf::Syntax value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

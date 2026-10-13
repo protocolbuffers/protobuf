@@ -211,12 +211,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   enum : int {
     kPathsFieldNumber = 1,
   };
-  private:
-  // repeated string paths = 1;
-  int _internal_paths_size() const;
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_paths();
-  public:
   // repeated string paths = 1;
   [[nodiscard]] int paths_size() const;
   void clear_paths() ;
@@ -248,6 +242,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated string paths = 1;
+  int _internal_paths_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_paths();
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

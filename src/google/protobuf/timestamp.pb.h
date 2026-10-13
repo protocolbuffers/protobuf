@@ -212,14 +212,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
     kSecondsFieldNumber = 1,
     kNanosFieldNumber = 2,
   };
-  private:
-  // int64 seconds = 1;
-  ::int64_t _internal_seconds() const;
-  void _internal_set_seconds(::int64_t value);
-  // int32 nanos = 2;
-  ::int32_t _internal_nanos() const;
-  void _internal_set_nanos(::int32_t value);
-  public:
   // int64 seconds = 1;
   void clear_seconds() ;
   [[nodiscard]] ::int64_t seconds() const;
@@ -243,6 +235,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // int64 seconds = 1;
+  ::int64_t _internal_seconds() const;
+  void _internal_set_seconds(::int64_t value);
+  // int32 nanos = 2;
+  ::int32_t _internal_nanos() const;
+  void _internal_set_nanos(::int32_t value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

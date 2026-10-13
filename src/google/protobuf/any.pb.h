@@ -271,16 +271,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
     kTypeUrlFieldNumber = 1,
     kValueFieldNumber = 2,
   };
-  private:
-  // string type_url = 1;
-  const ::std::string& _internal_type_url() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_url();
-  // bytes value = 2;
-  const ::std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
-  public:
   // string type_url = 1;
   void clear_type_url() ;
   [[nodiscard]] const ::std::string& type_url() const;
@@ -312,6 +302,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // string type_url = 1;
+  const ::std::string& _internal_type_url() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_url();
+  // bytes value = 2;
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

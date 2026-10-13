@@ -168,8 +168,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
-  private:
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Empty)
  private:
   class _Internal;
@@ -185,6 +183,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
 };
 

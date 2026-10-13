@@ -271,12 +271,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
   enum : int {
     kValuesFieldNumber = 1,
   };
-  private:
-  // repeated .google.protobuf.Value values = 1;
-  int _internal_values_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_values();
-  public:
   // repeated .google.protobuf.Value values = 1;
   [[nodiscard]] int values_size() const;
   void clear_values() ;
@@ -302,6 +296,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ListValue final : p
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated .google.protobuf.Value values = 1;
+  int _internal_values_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>& _internal_values() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_values();
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -473,12 +473,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
   enum : int {
     kFieldsFieldNumber = 1,
   };
-  private:
-  // map<string, .google.protobuf.Value> fields = 1;
-  int _internal_fields_size() const;
-  const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& _internal_fields() const;
-  ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_fields();
-  public:
   // map<string, .google.protobuf.Value> fields = 1;
   [[nodiscard]] int fields_size() const;
   void clear_fields() ;
@@ -499,6 +493,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Struct final : publ
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // map<string, .google.protobuf.Value> fields = 1;
+  int _internal_fields_size() const;
+  const ::google::protobuf::Map<::std::string, ::google::protobuf::Value>& _internal_fields() const;
+  ::google::protobuf::Map<::std::string, ::google::protobuf::Value>* PROTOBUF_NONNULL _internal_mutable_fields();
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -686,29 +686,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
     kStructValueFieldNumber = 5,
     kListValueFieldNumber = 6,
   };
-  private:
-  // .google.protobuf.NullValue null_value = 1;
-  ::google::protobuf::NullValue _internal_null_value() const;
-  void _internal_set_null_value(::google::protobuf::NullValue value);
-  // double number_value = 2;
-  double _internal_number_value() const;
-  void _internal_set_number_value(double value);
-  // string string_value = 3;
-  const ::std::string& _internal_string_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
-  // bool bool_value = 4;
-  bool _internal_bool_value() const;
-  void _internal_set_bool_value(bool value);
-  // .google.protobuf.Struct struct_value = 5;
-  bool _internal_has_struct_value() const;
-  const ::google::protobuf::Struct& _internal_struct_value() const;
-  ::google::protobuf::Struct* PROTOBUF_NONNULL _internal_mutable_struct_value();
-  // .google.protobuf.ListValue list_value = 6;
-  bool _internal_has_list_value() const;
-  const ::google::protobuf::ListValue& _internal_list_value() const;
-  ::google::protobuf::ListValue* PROTOBUF_NONNULL _internal_mutable_list_value();
-  public:
   // .google.protobuf.NullValue null_value = 1;
   [[nodiscard]] bool has_null_value() const;
   void clear_null_value() ;
@@ -776,6 +753,29 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Value final : publi
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // .google.protobuf.NullValue null_value = 1;
+  ::google::protobuf::NullValue _internal_null_value() const;
+  void _internal_set_null_value(::google::protobuf::NullValue value);
+  // double number_value = 2;
+  double _internal_number_value() const;
+  void _internal_set_number_value(double value);
+  // string string_value = 3;
+  const ::std::string& _internal_string_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_string_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_string_value();
+  // bool bool_value = 4;
+  bool _internal_bool_value() const;
+  void _internal_set_bool_value(bool value);
+  // .google.protobuf.Struct struct_value = 5;
+  bool _internal_has_struct_value() const;
+  const ::google::protobuf::Struct& _internal_struct_value() const;
+  ::google::protobuf::Struct* PROTOBUF_NONNULL _internal_mutable_struct_value();
+  // .google.protobuf.ListValue list_value = 6;
+  bool _internal_has_list_value() const;
+  const ::google::protobuf::ListValue& _internal_list_value() const;
+  ::google::protobuf::ListValue* PROTOBUF_NONNULL _internal_mutable_list_value();
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;

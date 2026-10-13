@@ -384,15 +384,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
     kNameFieldNumber = 1,
     kValueFieldNumber = 2,
   };
-  private:
-  // string name = 1;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // .google.protobuf.Any value = 2;
-  const ::google::protobuf::Any& _internal_value() const;
-  ::google::protobuf::Any* PROTOBUF_NONNULL _internal_mutable_value();
-  public:
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -425,6 +416,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Option final : publ
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // .google.protobuf.Any value = 2;
+  const ::google::protobuf::Any& _internal_value() const;
+  ::google::protobuf::Any* PROTOBUF_NONNULL _internal_mutable_value();
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -665,43 +665,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
     kOneofIndexFieldNumber = 7,
     kPackedFieldNumber = 8,
   };
-  private:
-  // repeated .google.protobuf.Option options = 9;
-  int _internal_options_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-  // string name = 4;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // string type_url = 6;
-  const ::std::string& _internal_type_url() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_url();
-  // string json_name = 10;
-  const ::std::string& _internal_json_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_json_name();
-  // string default_value = 11;
-  const ::std::string& _internal_default_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_default_value();
-  // .google.protobuf.Field.Kind kind = 1;
-  ::google::protobuf::Field_Kind _internal_kind() const;
-  void _internal_set_kind(::google::protobuf::Field_Kind value);
-  // .google.protobuf.Field.Cardinality cardinality = 2;
-  ::google::protobuf::Field_Cardinality _internal_cardinality() const;
-  void _internal_set_cardinality(::google::protobuf::Field_Cardinality value);
-  // int32 number = 3;
-  ::int32_t _internal_number() const;
-  void _internal_set_number(::int32_t value);
-  // int32 oneof_index = 7;
-  ::int32_t _internal_oneof_index() const;
-  void _internal_set_oneof_index(::int32_t value);
-  // bool packed = 8;
-  bool _internal_packed() const;
-  void _internal_set_packed(bool value);
-  public:
   // repeated .google.protobuf.Option options = 9;
   [[nodiscard]] int options_size() const;
   void clear_options() ;
@@ -779,6 +742,43 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Field final : publi
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated .google.protobuf.Option options = 9;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // string name = 4;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string type_url = 6;
+  const ::std::string& _internal_type_url() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_url();
+  // string json_name = 10;
+  const ::std::string& _internal_json_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_json_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_json_name();
+  // string default_value = 11;
+  const ::std::string& _internal_default_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_default_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_default_value();
+  // .google.protobuf.Field.Kind kind = 1;
+  ::google::protobuf::Field_Kind _internal_kind() const;
+  void _internal_set_kind(::google::protobuf::Field_Kind value);
+  // .google.protobuf.Field.Cardinality cardinality = 2;
+  ::google::protobuf::Field_Cardinality _internal_cardinality() const;
+  void _internal_set_cardinality(::google::protobuf::Field_Cardinality value);
+  // int32 number = 3;
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
+  // int32 oneof_index = 7;
+  ::int32_t _internal_oneof_index() const;
+  void _internal_set_oneof_index(::int32_t value);
+  // bool packed = 8;
+  bool _internal_packed() const;
+  void _internal_set_packed(bool value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -961,19 +961,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
     kNameFieldNumber = 1,
     kNumberFieldNumber = 2,
   };
-  private:
-  // repeated .google.protobuf.Option options = 3;
-  int _internal_options_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-  // string name = 1;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // int32 number = 2;
-  ::int32_t _internal_number() const;
-  void _internal_set_number(::int32_t value);
-  public:
   // repeated .google.protobuf.Option options = 3;
   [[nodiscard]] int options_size() const;
   void clear_options() ;
@@ -1011,6 +998,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValue final : p
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated .google.protobuf.Option options = 3;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // int32 number = 2;
+  ::int32_t _internal_number() const;
+  void _internal_set_number(::int32_t value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -1190,34 +1190,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
     kSourceContextFieldNumber = 5,
     kSyntaxFieldNumber = 6,
   };
-  private:
-  // repeated .google.protobuf.Field fields = 2;
-  int _internal_fields_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& _internal_fields() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL _internal_mutable_fields();
-  // repeated string oneofs = 3;
-  int _internal_oneofs_size() const;
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_oneofs() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_oneofs();
-  // repeated .google.protobuf.Option options = 4;
-  int _internal_options_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-  // string name = 1;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // string edition = 7;
-  const ::std::string& _internal_edition() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
-  // .google.protobuf.SourceContext source_context = 5;
-  const ::google::protobuf::SourceContext& _internal_source_context() const;
-  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
-  // .google.protobuf.Syntax syntax = 6;
-  ::google::protobuf::Syntax _internal_syntax() const;
-  void _internal_set_syntax(::google::protobuf::Syntax value);
-  public:
   // repeated .google.protobuf.Field fields = 2;
   [[nodiscard]] int fields_size() const;
   void clear_fields() ;
@@ -1298,6 +1270,34 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Type final : public
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated .google.protobuf.Field fields = 2;
+  int _internal_fields_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>& _internal_fields() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Field>* PROTOBUF_NONNULL _internal_mutable_fields();
+  // repeated string oneofs = 3;
+  int _internal_oneofs_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_oneofs() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_oneofs();
+  // repeated .google.protobuf.Option options = 4;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string edition = 7;
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+  // .google.protobuf.SourceContext source_context = 5;
+  const ::google::protobuf::SourceContext& _internal_source_context() const;
+  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
+  // .google.protobuf.Syntax syntax = 6;
+  ::google::protobuf::Syntax _internal_syntax() const;
+  void _internal_set_syntax(::google::protobuf::Syntax value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
@@ -1480,30 +1480,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
     kSourceContextFieldNumber = 4,
     kSyntaxFieldNumber = 5,
   };
-  private:
-  // repeated .google.protobuf.EnumValue enumvalue = 2;
-  int _internal_enumvalue_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& _internal_enumvalue() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL _internal_mutable_enumvalue();
-  // repeated .google.protobuf.Option options = 3;
-  int _internal_options_size() const;
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-  // string name = 1;
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-  // string edition = 6;
-  const ::std::string& _internal_edition() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
-  // .google.protobuf.SourceContext source_context = 4;
-  const ::google::protobuf::SourceContext& _internal_source_context() const;
-  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
-  // .google.protobuf.Syntax syntax = 5;
-  ::google::protobuf::Syntax _internal_syntax() const;
-  void _internal_set_syntax(::google::protobuf::Syntax value);
-  public:
   // repeated .google.protobuf.EnumValue enumvalue = 2;
   [[nodiscard]] int enumvalue_size() const;
   void clear_enumvalue() ;
@@ -1568,6 +1544,30 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Enum final : public
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  // repeated .google.protobuf.EnumValue enumvalue = 2;
+  int _internal_enumvalue_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>& _internal_enumvalue() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::EnumValue>* PROTOBUF_NONNULL _internal_mutable_enumvalue();
+  // repeated .google.protobuf.Option options = 3;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string edition = 6;
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+  // .google.protobuf.SourceContext source_context = 4;
+  const ::google::protobuf::SourceContext& _internal_source_context() const;
+  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
+  // .google.protobuf.Syntax syntax = 5;
+  ::google::protobuf::Syntax _internal_syntax() const;
+  void _internal_set_syntax(::google::protobuf::Syntax value);
+
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
                                     ::google::protobuf::internal::ConstantInitialized) noexcept;
