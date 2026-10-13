@@ -438,7 +438,7 @@ bool CordOneofFieldGenerator::RequiresArena(GeneratorFunction func) const {
 void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    if (GetArena() == nullptr) {
+    if (!$pbi$::HasArena(*this)) {
       delete $field_$;
     }
   )cc");

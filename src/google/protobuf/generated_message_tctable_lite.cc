@@ -2002,13 +2002,13 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
         break;
       }
       case field_layout::kRepMString: {
-        if (msg->GetArena() == nullptr) {
+        if (!internal::HasArena(*msg)) {
           RefAt<MicroString>(msg, current_entry->offset).Destroy();
         }
         break;
       }
       case field_layout::kRepCord: {
-        if (msg->GetArena() == nullptr) {
+        if (!internal::HasArena(*msg)) {
           delete RefAt<absl::Cord*>(msg, current_entry->offset);
         }
         break;
@@ -2024,7 +2024,7 @@ void TcParser::ChangeOneof(const TcParseTableBase* table,
       case field_layout::kRepMessage:
       case field_layout::kRepGroup: {
         auto& field = RefAt<MessageLite*>(msg, current_entry->offset);
-        if (!msg->GetArena()) {
+        if (!internal::HasArena(*msg)) {
           delete field;
         }
         break;

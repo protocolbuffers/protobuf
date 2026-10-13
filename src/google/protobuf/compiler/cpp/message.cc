@@ -2866,7 +2866,7 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
           $Msg$& this_ = static_cast<$Msg$&>(self);
           $has_bit_consistency$;
           this_._internal_metadata_.Delete<$unknown_fields_type$>();
-          $DCHK$(this_.GetArena() == nullptr);
+          $DCHK$(!::_pbi::HasArena(this_));
           $WeakDescriptorSelfPin$;
           $field_dtors$;
           $split_field_dtors$;
