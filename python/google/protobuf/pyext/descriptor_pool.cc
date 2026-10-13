@@ -271,15 +271,14 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
-  const Descriptor* message_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)
-          ->pool->get()
-          ->FindMessageTypeByName(absl::string_view(name, name_size));
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  const Descriptor* message_descriptor = InvokeWithGILReleased(py_pool, [&] {
+    return py_pool->pool->get()->FindMessageTypeByName(
+        absl::string_view(name, name_size));
+  });
 
   if (message_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "message");
+    return SetErrorFromCollector(py_pool->error_collector, arg, "message");
   }
 
 
@@ -295,8 +294,10 @@ static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
   }
 
   PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
-  const FileDescriptor* file_descriptor =
-      py_pool->pool->get()->FindFileByName(absl::string_view(name, name_size));
+  const FileDescriptor* file_descriptor = InvokeWithGILReleased(py_pool, [&] {
+    return py_pool->pool->get()->FindFileByName(
+        absl::string_view(name, name_size));
+  });
 
   if (file_descriptor == nullptr) {
     return SetErrorFromCollector(py_pool->error_collector, arg, "file");
@@ -311,8 +312,10 @@ PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
-  const FieldDescriptor* field_descriptor =
-      self->pool->get()->FindFieldByName(absl::string_view(name, name_size));
+  const FieldDescriptor* field_descriptor = InvokeWithGILReleased(self, [&] {
+    return self->pool->get()->FindFieldByName(
+        absl::string_view(name, name_size));
+  });
   if (field_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "field");
   }
@@ -332,9 +335,10 @@ PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
-  const FieldDescriptor* field_descriptor =
-      self->pool->get()->FindExtensionByName(
-          absl::string_view(name, name_size));
+  const FieldDescriptor* field_descriptor = InvokeWithGILReleased(self, [&] {
+    return self->pool->get()->FindExtensionByName(
+        absl::string_view(name, name_size));
+  });
   if (field_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "extension field");
   }
@@ -354,8 +358,10 @@ PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
-  const EnumDescriptor* enum_descriptor =
-      self->pool->get()->FindEnumTypeByName(absl::string_view(name, name_size));
+  const EnumDescriptor* enum_descriptor = InvokeWithGILReleased(self, [&] {
+    return self->pool->get()->FindEnumTypeByName(
+        absl::string_view(name, name_size));
+  });
   if (enum_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "enum");
   }
@@ -375,8 +381,10 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
-  const OneofDescriptor* oneof_descriptor =
-      self->pool->get()->FindOneofByName(absl::string_view(name, name_size));
+  const OneofDescriptor* oneof_descriptor = InvokeWithGILReleased(self, [&] {
+    return self->pool->get()->FindOneofByName(
+        absl::string_view(name, name_size));
+  });
   if (oneof_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "oneof");
   }
@@ -396,13 +404,14 @@ static PyObject* FindServiceByName(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
   const ServiceDescriptor* service_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindServiceByName(
-          absl::string_view(name, name_size));
+      InvokeWithGILReleased(py_pool, [&] {
+        return py_pool->pool->get()->FindServiceByName(
+            absl::string_view(name, name_size));
+      });
   if (service_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "service");
+    return SetErrorFromCollector(py_pool->error_collector, arg, "service");
   }
 
 
@@ -416,13 +425,14 @@ static PyObject* FindMethodByName(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
   const MethodDescriptor* method_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindMethodByName(
-          absl::string_view(name, name_size));
+      InvokeWithGILReleased(py_pool, [&] {
+        return py_pool->pool->get()->FindMethodByName(
+            absl::string_view(name, name_size));
+      });
   if (method_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "method");
+    return SetErrorFromCollector(py_pool->error_collector, arg, "method");
   }
 
 
@@ -436,14 +446,13 @@ static PyObject* FindFileContainingSymbol(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
-  const FileDescriptor* file_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)
-          ->pool->get()
-          ->FindFileContainingSymbol(absl::string_view(name, name_size));
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  const FileDescriptor* file_descriptor = InvokeWithGILReleased(py_pool, [&] {
+    return py_pool->pool->get()->FindFileContainingSymbol(
+        absl::string_view(name, name_size));
+  });
   if (file_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "symbol");
+    return SetErrorFromCollector(py_pool->error_collector, arg, "symbol");
   }
 
 
@@ -462,14 +471,14 @@ static PyObject* FindExtensionByNumber(PyObject* self, PyObject* args) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
   const FieldDescriptor* extension_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)
-          ->pool->get()
-          ->FindExtensionByNumber(descriptor, number);
+      InvokeWithGILReleased(py_pool, [&] {
+        return py_pool->pool->get()->FindExtensionByNumber(descriptor, number);
+      });
   if (extension_descriptor == nullptr) {
     BuildFileErrorCollector* error_collector =
-        reinterpret_cast<BuildFileErrorCollector*>(
-            reinterpret_cast<PyDescriptorPool*>(self)->error_collector);
+        reinterpret_cast<BuildFileErrorCollector*>(py_pool->error_collector);
     if (error_collector && !error_collector->error_message.empty()) {
       PyErr_Format(PyExc_KeyError, "Couldn't build file for Extension %.d\n%s",
                    number, error_collector->error_message.c_str());
@@ -490,9 +499,11 @@ static PyObject* FindAllExtensions(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
   std::vector<const FieldDescriptor*> extensions;
-  reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindAllExtensions(
-      descriptor, &extensions);
+  InvokeWithGILReleased(py_pool, [&] {
+    py_pool->pool->get()->FindAllExtensions(descriptor, &extensions);
+  });
 
   ScopedPyObjectPtr result(PyList_New(extensions.size()));
   if (result == nullptr) {

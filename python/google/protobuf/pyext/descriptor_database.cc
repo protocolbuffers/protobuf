@@ -26,13 +26,33 @@
 namespace google {
 namespace protobuf {
 namespace python {
+namespace {
+
+// Ensures the current thread holds the Python GIL for the duration of the
+// scope, allowing C++ DescriptorDatabase callbacks to safely invoke Python C
+// API functions even when called with the GIL released.
+class [[nodiscard]] ScopedPyGILState {
+ public:
+  ScopedPyGILState() : state_(PyGILState_Ensure()) {}
+  ScopedPyGILState(const ScopedPyGILState&) = delete;
+  ScopedPyGILState& operator=(const ScopedPyGILState&) = delete;
+  ~ScopedPyGILState() { PyGILState_Release(state_); }
+
+ private:
+  PyGILState_STATE state_;
+};
+
+}  // namespace
 
 PyDescriptorDatabase::PyDescriptorDatabase(PyObject* py_database)
     : py_database_(py_database) {
   Py_INCREF(py_database_);
 }
 
-PyDescriptorDatabase::~PyDescriptorDatabase() { Py_DECREF(py_database_); }
+PyDescriptorDatabase::~PyDescriptorDatabase() {
+  ScopedPyGILState gil;
+  Py_DECREF(py_database_);
+}
 
 // Convert a Python object to a FileDescriptorProto pointer.
 // Handles all kinds of Python errors, which are simply logged.
@@ -94,6 +114,7 @@ static bool GetFileDescriptorProto(PyObject* py_descriptor,
 // Find a file by file name.
 bool PyDescriptorDatabase::FindFileByName(absl::string_view filename,
                                           FileDescriptorProto* output) {
+  ScopedPyGILState gil;
   ScopedPyObjectPtr py_descriptor(PyObject_CallMethod(
       py_database_, "FindFileByName", "s#", filename.data(), filename.size()));
   return GetFileDescriptorProto(py_descriptor.get(), output);
@@ -102,6 +123,7 @@ bool PyDescriptorDatabase::FindFileByName(absl::string_view filename,
 // Find the file that declares the given fully-qualified symbol name.
 bool PyDescriptorDatabase::FindFileContainingSymbol(
     absl::string_view symbol_name, FileDescriptorProto* output) {
+  ScopedPyGILState gil;
   ScopedPyObjectPtr py_descriptor(
       PyObject_CallMethod(py_database_, "FindFileContainingSymbol", "s#",
                           symbol_name.data(), symbol_name.size()));
@@ -114,6 +136,7 @@ bool PyDescriptorDatabase::FindFileContainingSymbol(
 bool PyDescriptorDatabase::FindFileContainingExtension(
     absl::string_view containing_type, int field_number,
     FileDescriptorProto* output) {
+  ScopedPyGILState gil;
   ScopedPyObjectPtr py_method(
       PyObject_GetAttrString(py_database_, "FindFileContainingExtension"));
   if (py_method == nullptr) {
@@ -133,6 +156,7 @@ bool PyDescriptorDatabase::FindFileContainingExtension(
 // Python DescriptorDatabases are not required to implement this method.
 bool PyDescriptorDatabase::FindAllExtensionNumbers(
     absl::string_view containing_type, std::vector<int>* output) {
+  ScopedPyGILState gil;
   ScopedPyObjectPtr py_method(
       PyObject_GetAttrString(py_database_, "FindAllExtensionNumbers"));
   if (py_method == nullptr) {

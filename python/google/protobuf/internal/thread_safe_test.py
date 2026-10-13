@@ -7,11 +7,13 @@
 
 """Unittest for thread safe"""
 
+import sys
 import threading
 import time
 import timeit
 import unittest
 
+from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
@@ -418,6 +420,106 @@ class FreeThreadingTest(unittest.TestCase):
       t.start()
     for t in threads:
       t.join()
+
+  @unittest.skipIf(
+      hasattr(sys, '_is_gil_enabled')
+      and not sys._is_gil_enabled(),  # pylint: disable=protected-access
+      'Free-threading is not yet supported for this case.',
+  )
+  def testConcurrentDescriptorDatabaseLookupFindsDescriptorsAndRaisesKeyError(
+      self,
+  ):
+    db = descriptor_database.DescriptorDatabase()
+    num_threads = 10
+    num_files = 200
+    for i in range(num_files):
+      pkg = f'pkg_{i}'
+      f_proto = descriptor_pb2.FileDescriptorProto(
+          name=f'test_{i}.proto', package=pkg
+      )
+      msg = f_proto.message_type.add(name='TestMessage')
+      msg.field.add(
+          name='val',
+          number=1,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          oneof_index=0,
+      )
+      msg.oneof_decl.add(name='my_oneof')
+      msg.extension_range.add(start=100, end=200)
+      enum = f_proto.enum_type.add(name='MyEnum')
+      enum.value.add(name='ZERO', number=0)
+      f_proto.extension.add(
+          name='my_ext',
+          number=100,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          extendee=f'.{pkg}.TestMessage',
+      )
+      service = f_proto.service.add(name='MyService')
+      service.method.add(
+          name='MyMethod',
+          input_type=f'.{pkg}.TestMessage',
+          output_type=f'.{pkg}.TestMessage',
+      )
+      db.Add(f_proto)
+
+    pool = descriptor_pool.DescriptorPool(db)
+    barrier = threading.Barrier(num_threads)
+    errors = []
+
+    def Worker(thread_id):
+      barrier.wait()
+      try:
+        for i in range(num_files):
+          idx = (thread_id * 20 + i) % num_files
+          pkg = f'pkg_{idx}'
+          file_desc = pool.FindFileByName(f'test_{idx}.proto')
+          self.assertEqual(file_desc.name, f'test_{idx}.proto')
+          self.assertEqual(
+              pool.FindFileContainingSymbol(f'{pkg}.TestMessage'), file_desc
+          )
+          msg_desc = pool.FindMessageTypeByName(f'{pkg}.TestMessage')
+          self.assertEqual(msg_desc.name, 'TestMessage')
+          self.assertEqual(
+              pool.FindFieldByName(f'{pkg}.TestMessage.val').name, 'val'
+          )
+          self.assertEqual(
+              pool.FindOneofByName(f'{pkg}.TestMessage.my_oneof').name,
+              'my_oneof',
+          )
+          self.assertEqual(
+              pool.FindEnumTypeByName(f'{pkg}.MyEnum').name, 'MyEnum'
+          )
+          ext_desc = pool.FindExtensionByName(f'{pkg}.my_ext')
+          self.assertEqual(ext_desc.name, 'my_ext')
+          self.assertEqual(pool.FindExtensionByNumber(msg_desc, 100), ext_desc)
+          self.assertIn(ext_desc, pool.FindAllExtensions(msg_desc))
+          self.assertEqual(
+              pool.FindServiceByName(f'{pkg}.MyService').name, 'MyService'
+          )
+          self.assertEqual(
+              pool.FindMethodByName(f'{pkg}.MyService.MyMethod').name,
+              'MyMethod',
+          )
+
+          with self.assertRaises(KeyError):
+            pool.FindFileByName(f'missing_{idx}.proto')
+          with self.assertRaises(KeyError):
+            pool.FindMessageTypeByName(f'{pkg}.MissingMessage')
+          with self.assertRaises(KeyError):
+            pool.FindExtensionByNumber(msg_desc, 199)
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        errors.append(e)
+
+    threads = [
+        threading.Thread(target=Worker, args=(i,)) for i in range(num_threads)
+    ]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
 
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""

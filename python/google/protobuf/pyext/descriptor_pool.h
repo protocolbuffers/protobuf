@@ -12,6 +12,7 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/pyext/free_threading_mutex.h"
@@ -71,6 +72,21 @@ typedef struct PyDescriptorPool {
 extern PyTypeObject PyDescriptorPool_Type;
 
 namespace cdescriptor_pool {
+
+// Releases the GIL during C++ DescriptorPool lookups when backed by a
+// DescriptorDatabase, avoiding lock order inversion between the Python GIL and
+// the C++ DescriptorPool mutex.
+template <typename F>
+auto InvokeWithGILReleased(PyDescriptorPool* pool, F f) {
+  PyThreadState* thread_state =
+      pool->database != nullptr ? PyEval_SaveThread() : nullptr;
+  absl::Cleanup cleanup = [thread_state] {
+    if (thread_state != nullptr) {
+      PyEval_RestoreThread(thread_state);
+    }
+  };
+  return f();
+}
 
 
 // The functions below are also exposed as methods of the DescriptorPool type.

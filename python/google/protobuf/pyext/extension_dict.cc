@@ -239,17 +239,20 @@ PyObject* _FindExtensionByName(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->get()->FindExtensionByName(
-          absl::string_view(name, name_size));
-  if (message_extension == nullptr) {
-    // Is is the name of a message set extension?
-    const Descriptor* message_descriptor =
-        pool->pool->get()->FindMessageTypeByName(
+      cdescriptor_pool::InvokeWithGILReleased(pool, [&] {
+        const FieldDescriptor* ext = pool->pool->get()->FindExtensionByName(
             absl::string_view(name, name_size));
-    if (message_descriptor) {
-      message_extension = FindMessageSetExtension(message_descriptor);
-    }
-  }
+        if (ext == nullptr) {
+          // Is is the name of a message set extension?
+          const Descriptor* message_descriptor =
+              pool->pool->get()->FindMessageTypeByName(
+                  absl::string_view(name, name_size));
+          if (message_descriptor) {
+            ext = FindMessageSetExtension(message_descriptor);
+          }
+        }
+        return ext;
+      });
   if (message_extension == nullptr) {
     Py_RETURN_NONE;
   }
@@ -265,8 +268,10 @@ PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->get()->FindExtensionByNumber(
-          self->parent->message->GetDescriptor(), number);
+      cdescriptor_pool::InvokeWithGILReleased(pool, [&] {
+        return pool->pool->get()->FindExtensionByNumber(
+            self->parent->message->GetDescriptor(), number);
+      });
   if (message_extension == nullptr) {
     Py_RETURN_NONE;
   }
