@@ -262,18 +262,19 @@ public class ExtensionRegistry extends ExtensionRegistryLite {
     this.mutableExtensionsByNumber = Collections.unmodifiableMap(other.mutableExtensionsByNumber);
   }
 
-  private final Map<String, ExtensionInfo> immutableExtensionsByName;
-  private final Map<String, ExtensionInfo> mutableExtensionsByName;
-  private final Map<DescriptorIntPair, ExtensionInfo> immutableExtensionsByNumber;
-  private final Map<DescriptorIntPair, ExtensionInfo> mutableExtensionsByNumber;
-
-  ExtensionRegistry(boolean empty) {
+  // Public so that generated extension registries can invoke super(true).
+  public ExtensionRegistry(boolean empty) {
     super(EMPTY_REGISTRY_LITE);
     this.immutableExtensionsByName = Collections.<String, ExtensionInfo>emptyMap();
     this.mutableExtensionsByName = Collections.<String, ExtensionInfo>emptyMap();
     this.immutableExtensionsByNumber = Collections.<DescriptorIntPair, ExtensionInfo>emptyMap();
     this.mutableExtensionsByNumber = Collections.<DescriptorIntPair, ExtensionInfo>emptyMap();
   }
+
+  private final Map<String, ExtensionInfo> immutableExtensionsByName;
+  private final Map<String, ExtensionInfo> mutableExtensionsByName;
+  private final Map<DescriptorIntPair, ExtensionInfo> immutableExtensionsByNumber;
+  private final Map<DescriptorIntPair, ExtensionInfo> mutableExtensionsByNumber;
 
   static final ExtensionRegistry EMPTY_REGISTRY = new ExtensionRegistry(true);
 
