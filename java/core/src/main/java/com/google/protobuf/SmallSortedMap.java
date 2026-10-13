@@ -374,10 +374,11 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
   @Override
   public Set<Map.Entry<K, Object>> entrySet() {
     ensureSortedAndDeduplicated();
-    if (lazyEntrySet == null) {
-      lazyEntrySet = new EntrySet();
+    EntrySet result = lazyEntrySet;
+    if (result == null) {
+      lazyEntrySet = result = new EntrySet();
     }
-    return lazyEntrySet;
+    return result;
   }
 
   /**
@@ -463,7 +464,6 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
 
     @Override
     public Iterator<Map.Entry<K, Object>> iterator() {
-      ensureSortedAndDeduplicated();
       return new EntryIterator();
     }
 
@@ -505,10 +505,12 @@ class SmallSortedMap<K extends FieldSet.FieldDescriptorLite<K>> extends Abstract
     @SuppressWarnings("unchecked") // entries is known to contain Entry objects.
     public Map.Entry<K, Object> next() {
       ensureSortedAndDeduplicated();
-      if (!hasNext()) {
+      int nextPos = pos + 1;
+      if (nextPos >= size) {
         throw new NoSuchElementException();
       }
-      return (Entry) entries[++pos];
+      pos = nextPos;
+      return (Entry) entries[nextPos];
     }
   }
 
