@@ -168,6 +168,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   // nested types ----------------------------------------------------
 
   // accessors -------------------------------------------------------
+  private:
+  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Empty)
  private:
   class _Internal;

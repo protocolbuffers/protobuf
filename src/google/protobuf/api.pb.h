@@ -220,6 +220,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
     kNameFieldNumber = 1,
     kRootFieldNumber = 2,
   };
+  private:
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string root = 2;
+  const ::std::string& _internal_root() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_root(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_root();
+  public:
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -228,13 +238,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // string root = 2;
   void clear_root() ;
   [[nodiscard]] const ::std::string& root() const;
@@ -243,13 +246,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Mixin final : publi
   ::std::string* PROTOBUF_NONNULL mutable_root();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_root();
   void set_allocated_root(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_root() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_root(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_root();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Mixin)
  private:
   class _Internal;
@@ -444,12 +440,39 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
     kResponseStreamingFieldNumber = 5,
     kSyntaxFieldNumber = 7,
   };
+  private:
+  // repeated .google.protobuf.Option options = 6;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string request_type_url = 2;
+  const ::std::string& _internal_request_type_url() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_request_type_url();
+  // string response_type_url = 4;
+  const ::std::string& _internal_response_type_url() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_response_type_url();
+  // string edition = 8 [deprecated = true];
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+  // bool request_streaming = 3;
+  bool _internal_request_streaming() const;
+  void _internal_set_request_streaming(bool value);
+  // bool response_streaming = 5;
+  bool _internal_response_streaming() const;
+  void _internal_set_response_streaming(bool value);
+  // .google.protobuf.Syntax syntax = 7 [deprecated = true];
+  ::google::protobuf::Syntax _internal_syntax() const;
+  void _internal_set_syntax(::google::protobuf::Syntax value);
+  public:
   // repeated .google.protobuf.Option options = 6;
   [[nodiscard]] int options_size() const;
-  private:
-  int _internal_options_size() const;
-
-  public:
   void clear_options() ;
   [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
@@ -458,12 +481,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -472,13 +489,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // string request_type_url = 2;
   void clear_request_type_url() ;
   [[nodiscard]] const ::std::string& request_type_url() const;
@@ -487,13 +497,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   ::std::string* PROTOBUF_NONNULL mutable_request_type_url();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_request_type_url();
   void set_allocated_request_type_url(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_request_type_url() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_request_type_url(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_request_type_url();
-
-  public:
   // string response_type_url = 4;
   void clear_response_type_url() ;
   [[nodiscard]] const ::std::string& response_type_url() const;
@@ -502,13 +505,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   ::std::string* PROTOBUF_NONNULL mutable_response_type_url();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_response_type_url();
   void set_allocated_response_type_url(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_response_type_url() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_response_type_url(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_response_type_url();
-
-  public:
   // string edition = 8 [deprecated = true];
   [[deprecated]]  void clear_edition() ;
   [[nodiscard]] [[deprecated]] const ::std::string& edition() const;
@@ -517,43 +513,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Method final : publ
   [[deprecated]] ::std::string* PROTOBUF_NONNULL mutable_edition();
   [[deprecated]] [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_edition();
   [[deprecated]] void set_allocated_edition(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_edition() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
-
-  public:
   // bool request_streaming = 3;
   void clear_request_streaming() ;
   [[nodiscard]] bool request_streaming() const;
   void set_request_streaming(bool value);
-
-  private:
-  bool _internal_request_streaming() const;
-  void _internal_set_request_streaming(bool value);
-
-  public:
   // bool response_streaming = 5;
   void clear_response_streaming() ;
   [[nodiscard]] bool response_streaming() const;
   void set_response_streaming(bool value);
-
-  private:
-  bool _internal_response_streaming() const;
-  void _internal_set_response_streaming(bool value);
-
-  public:
   // .google.protobuf.Syntax syntax = 7 [deprecated = true];
   [[deprecated]]  void clear_syntax() ;
   [[nodiscard]] [[deprecated]] ::google::protobuf::Syntax syntax() const;
   [[deprecated]] void set_syntax(::google::protobuf::Syntax value);
-
-  private:
-  ::google::protobuf::Syntax _internal_syntax() const;
-  void _internal_set_syntax(::google::protobuf::Syntax value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Method)
  private:
   class _Internal;
@@ -754,12 +725,40 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
     kSourceContextFieldNumber = 5,
     kSyntaxFieldNumber = 7,
   };
+  private:
+  // repeated .google.protobuf.Method methods = 2;
+  int _internal_methods_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL _internal_mutable_methods();
+  // repeated .google.protobuf.Option options = 3;
+  int _internal_options_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
+  // repeated .google.protobuf.Mixin mixins = 6;
+  int _internal_mixins_size() const;
+  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;
+  ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL _internal_mutable_mixins();
+  // string name = 1;
+  const ::std::string& _internal_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
+  // string version = 4;
+  const ::std::string& _internal_version() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_version(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_version();
+  // string edition = 8;
+  const ::std::string& _internal_edition() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
+  // .google.protobuf.SourceContext source_context = 5;
+  const ::google::protobuf::SourceContext& _internal_source_context() const;
+  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
+  // .google.protobuf.Syntax syntax = 7;
+  ::google::protobuf::Syntax _internal_syntax() const;
+  void _internal_set_syntax(::google::protobuf::Syntax value);
+  public:
   // repeated .google.protobuf.Method methods = 2;
   [[nodiscard]] int methods_size() const;
-  private:
-  int _internal_methods_size() const;
-
-  public:
   void clear_methods() ;
   [[nodiscard]] const ::google::protobuf::Method& methods(int index) const;
   [[nodiscard]] ::google::protobuf::Method* PROTOBUF_NONNULL mutable_methods(int index);
@@ -768,18 +767,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   methods() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL
   mutable_methods();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>& _internal_methods() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Method>* PROTOBUF_NONNULL _internal_mutable_methods();
-
-  public:
   // repeated .google.protobuf.Option options = 3;
   [[nodiscard]] int options_size() const;
-  private:
-  int _internal_options_size() const;
-
-  public:
   void clear_options() ;
   [[nodiscard]] const ::google::protobuf::Option& options(int index) const;
   [[nodiscard]] ::google::protobuf::Option* PROTOBUF_NONNULL mutable_options(int index);
@@ -788,18 +777,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   options() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL
   mutable_options();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>& _internal_options() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Option>* PROTOBUF_NONNULL _internal_mutable_options();
-
-  public:
   // repeated .google.protobuf.Mixin mixins = 6;
   [[nodiscard]] int mixins_size() const;
-  private:
-  int _internal_mixins_size() const;
-
-  public:
   void clear_mixins() ;
   [[nodiscard]] const ::google::protobuf::Mixin& mixins(int index) const;
   [[nodiscard]] ::google::protobuf::Mixin* PROTOBUF_NONNULL mutable_mixins(int index);
@@ -808,12 +787,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   mixins() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL
   mutable_mixins();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>& _internal_mixins() const;
-  ::google::protobuf::RepeatedPtrField<::google::protobuf::Mixin>* PROTOBUF_NONNULL _internal_mutable_mixins();
-
-  public:
   // string name = 1;
   void clear_name() ;
   [[nodiscard]] const ::std::string& name() const;
@@ -822,13 +795,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   ::std::string* PROTOBUF_NONNULL mutable_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_name();
   void set_allocated_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_name();
-
-  public:
   // string version = 4;
   void clear_version() ;
   [[nodiscard]] const ::std::string& version() const;
@@ -837,13 +803,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   ::std::string* PROTOBUF_NONNULL mutable_version();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_version();
   void set_allocated_version(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_version() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_version(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_version();
-
-  public:
   // string edition = 8;
   void clear_edition() ;
   [[nodiscard]] const ::std::string& edition() const;
@@ -852,13 +811,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   ::std::string* PROTOBUF_NONNULL mutable_edition();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_edition();
   void set_allocated_edition(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_edition() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_edition(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_edition();
-
-  public:
   // .google.protobuf.SourceContext source_context = 5;
   [[nodiscard]] bool has_source_context() const;
   void clear_source_context() ;
@@ -868,22 +820,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Api final : public 
   void set_allocated_source_context(::google::protobuf::SourceContext* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_source_context(::google::protobuf::SourceContext* PROTOBUF_NULLABLE value);
   ::google::protobuf::SourceContext* PROTOBUF_NULLABLE unsafe_arena_release_source_context();
-
-  private:
-  const ::google::protobuf::SourceContext& _internal_source_context() const;
-  ::google::protobuf::SourceContext* PROTOBUF_NONNULL _internal_mutable_source_context();
-
-  public:
   // .google.protobuf.Syntax syntax = 7;
   void clear_syntax() ;
   [[nodiscard]] ::google::protobuf::Syntax syntax() const;
   void set_syntax(::google::protobuf::Syntax value);
-
-  private:
-  ::google::protobuf::Syntax _internal_syntax() const;
-  void _internal_set_syntax(::google::protobuf::Syntax value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Api)
  private:
   class _Internal;

@@ -211,12 +211,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   enum : int {
     kPathsFieldNumber = 1,
   };
+  private:
+  // repeated string paths = 1;
+  int _internal_paths_size() const;
+  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;
+  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_paths();
+  public:
   // repeated string paths = 1;
   [[nodiscard]] int paths_size() const;
-  private:
-  int _internal_paths_size() const;
-
-  public:
   void clear_paths() ;
   [[nodiscard]] const ::std::string& paths(int index) const;
   ::std::string* PROTOBUF_NONNULL mutable_paths(int index);
@@ -231,12 +233,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldMask final : p
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::std::string>*
       PROTOBUF_NONNULL
       mutable_paths();
-
-  private:
-  const ::google::protobuf::RepeatedPtrField<::std::string>& _internal_paths() const;
-  ::google::protobuf::RepeatedPtrField<::std::string>* PROTOBUF_NONNULL _internal_mutable_paths();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FieldMask)
  private:
   class _Internal;

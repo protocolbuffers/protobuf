@@ -211,6 +211,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
   enum : int {
     kFileNameFieldNumber = 1,
   };
+  private:
+  // string file_name = 1;
+  const ::std::string& _internal_file_name() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_file_name(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_file_name();
+  public:
   // string file_name = 1;
   void clear_file_name() ;
   [[nodiscard]] const ::std::string& file_name() const;
@@ -219,13 +225,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceContext final
   ::std::string* PROTOBUF_NONNULL mutable_file_name();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_file_name();
   void set_allocated_file_name(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_file_name() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_file_name(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_file_name();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.SourceContext)
  private:
   class _Internal;

@@ -235,16 +235,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt64Value final :
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // uint64 value = 1;
+  ::uint64_t _internal_value() const;
+  void _internal_set_value(::uint64_t value);
+  public:
   // uint64 value = 1;
   void clear_value() ;
   [[nodiscard]] ::uint64_t value() const;
   void set_value(::uint64_t value);
-
-  private:
-  ::uint64_t _internal_value() const;
-  void _internal_set_value(::uint64_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt64Value)
  private:
   class _Internal;
@@ -431,16 +430,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UInt32Value final :
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // uint32 value = 1;
+  ::uint32_t _internal_value() const;
+  void _internal_set_value(::uint32_t value);
+  public:
   // uint32 value = 1;
   void clear_value() ;
   [[nodiscard]] ::uint32_t value() const;
   void set_value(::uint32_t value);
-
-  private:
-  ::uint32_t _internal_value() const;
-  void _internal_set_value(::uint32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.UInt32Value)
  private:
   class _Internal;
@@ -627,6 +625,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // string value = 1;
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
+  public:
   // string value = 1;
   void clear_value() ;
   [[nodiscard]] const ::std::string& value() const;
@@ -635,13 +639,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED StringValue final :
   ::std::string* PROTOBUF_NONNULL mutable_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_value();
   void set_allocated_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.StringValue)
  private:
   class _Internal;
@@ -828,16 +825,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int64Value final : 
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // int64 value = 1;
+  ::int64_t _internal_value() const;
+  void _internal_set_value(::int64_t value);
+  public:
   // int64 value = 1;
   void clear_value() ;
   [[nodiscard]] ::int64_t value() const;
   void set_value(::int64_t value);
-
-  private:
-  ::int64_t _internal_value() const;
-  void _internal_set_value(::int64_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Int64Value)
  private:
   class _Internal;
@@ -1024,16 +1020,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Int32Value final : 
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // int32 value = 1;
+  ::int32_t _internal_value() const;
+  void _internal_set_value(::int32_t value);
+  public:
   // int32 value = 1;
   void clear_value() ;
   [[nodiscard]] ::int32_t value() const;
   void set_value(::int32_t value);
-
-  private:
-  ::int32_t _internal_value() const;
-  void _internal_set_value(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Int32Value)
  private:
   class _Internal;
@@ -1220,16 +1215,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FloatValue final : 
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // float value = 1;
+  float _internal_value() const;
+  void _internal_set_value(float value);
+  public:
   // float value = 1;
   void clear_value() ;
   [[nodiscard]] float value() const;
   void set_value(float value);
-
-  private:
-  float _internal_value() const;
-  void _internal_set_value(float value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.FloatValue)
  private:
   class _Internal;
@@ -1416,16 +1410,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DoubleValue final :
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // double value = 1;
+  double _internal_value() const;
+  void _internal_set_value(double value);
+  public:
   // double value = 1;
   void clear_value() ;
   [[nodiscard]] double value() const;
   void set_value(double value);
-
-  private:
-  double _internal_value() const;
-  void _internal_set_value(double value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.DoubleValue)
  private:
   class _Internal;
@@ -1612,6 +1605,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // bytes value = 1;
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
+  public:
   // bytes value = 1;
   void clear_value() ;
   [[nodiscard]] const ::std::string& value() const;
@@ -1620,13 +1619,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BytesValue final : 
   ::std::string* PROTOBUF_NONNULL mutable_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_value();
   void set_allocated_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.BytesValue)
  private:
   class _Internal;
@@ -1813,16 +1805,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED BoolValue final : p
   enum : int {
     kValueFieldNumber = 1,
   };
+  private:
+  // bool value = 1;
+  bool _internal_value() const;
+  void _internal_set_value(bool value);
+  public:
   // bool value = 1;
   void clear_value() ;
   [[nodiscard]] bool value() const;
   void set_value(bool value);
-
-  private:
-  bool _internal_value() const;
-  void _internal_set_value(bool value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.BoolValue)
  private:
   class _Internal;

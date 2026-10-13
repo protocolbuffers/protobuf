@@ -271,6 +271,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
     kTypeUrlFieldNumber = 1,
     kValueFieldNumber = 2,
   };
+  private:
+  // string type_url = 1;
+  const ::std::string& _internal_type_url() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_url();
+  // bytes value = 2;
+  const ::std::string& _internal_value() const;
+  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
+  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
+  public:
   // string type_url = 1;
   void clear_type_url() ;
   [[nodiscard]] const ::std::string& type_url() const;
@@ -279,13 +289,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
   ::std::string* PROTOBUF_NONNULL mutable_type_url();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_type_url();
   void set_allocated_type_url(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_type_url() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_type_url(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_type_url();
-
-  public:
   // bytes value = 2;
   void clear_value() ;
   [[nodiscard]] const ::std::string& value() const;
@@ -294,13 +297,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Any final : public 
   ::std::string* PROTOBUF_NONNULL mutable_value();
   [[nodiscard]] ::std::string* PROTOBUF_NULLABLE release_value();
   void set_allocated_value(::std::string* PROTOBUF_NULLABLE value);
-
-  private:
-  const ::std::string& _internal_value() const;
-  PROTOBUF_ALWAYS_INLINE void _internal_set_value(const ::std::string& value);
-  ::std::string* PROTOBUF_NONNULL _internal_mutable_value();
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Any)
  private:
   class _Internal;

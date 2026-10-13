@@ -212,26 +212,22 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Timestamp final : p
     kSecondsFieldNumber = 1,
     kNanosFieldNumber = 2,
   };
+  private:
+  // int64 seconds = 1;
+  ::int64_t _internal_seconds() const;
+  void _internal_set_seconds(::int64_t value);
+  // int32 nanos = 2;
+  ::int32_t _internal_nanos() const;
+  void _internal_set_nanos(::int32_t value);
+  public:
   // int64 seconds = 1;
   void clear_seconds() ;
   [[nodiscard]] ::int64_t seconds() const;
   void set_seconds(::int64_t value);
-
-  private:
-  ::int64_t _internal_seconds() const;
-  void _internal_set_seconds(::int64_t value);
-
-  public:
   // int32 nanos = 2;
   void clear_nanos() ;
   [[nodiscard]] ::int32_t nanos() const;
   void set_nanos(::int32_t value);
-
-  private:
-  ::int32_t _internal_nanos() const;
-  void _internal_set_nanos(::int32_t value);
-
-  public:
   // @@protoc_insertion_point(class_scope:google.protobuf.Timestamp)
  private:
   class _Internal;
