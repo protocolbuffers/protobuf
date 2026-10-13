@@ -41,16 +41,16 @@ UPB_INLINE_IF_NOT_GCC void UPB_PRIVATE(_upb_MiniTableField_DataCopy)(
     const upb_MiniTableField* f, void* to, const void* from) {
   switch (UPB_PRIVATE(_upb_MiniTableField_GetRep)(f)) {
     case kUpb_FieldRep_1Byte:
-      memcpy(to, from, 1);
+      UPB_MEMCPY_INLINE(to, from, 1);
       return;
     case kUpb_FieldRep_4Byte:
-      memcpy(to, from, 4);
+      UPB_MEMCPY_INLINE(to, from, 4);
       return;
     case kUpb_FieldRep_8Byte:
-      memcpy(to, from, 8);
+      UPB_MEMCPY_INLINE(to, from, 8);
       return;
     case kUpb_FieldRep_StringView: {
-      memcpy(to, from, sizeof(upb_StringView));
+      UPB_MEMCPY_INLINE(to, from, sizeof(upb_StringView));
       return;
     }
   }

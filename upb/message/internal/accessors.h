@@ -277,9 +277,13 @@ UPB_API_INLINE void upb_Message_SetBaseField(struct upb_Message* msg,
                                              const void* val) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   UPB_ASSUME(!upb_MiniTableField_IsExtension(f));
-  UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);
+  // Copy the value before setting the presence: the compiler can't tell that
+  // the store to the presence bits of `msg` doesn't modify `f`, so it would
+  // read `f` again after it, without what it knows (e.g. from UPB_ASSUME()s)
+  // about its representation.
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)
   (f, UPB_PRIVATE(_upb_Message_MutableDataPtr)(msg, f), val);
+  UPB_PRIVATE(_upb_Message_SetPresence)(msg, f);
 }
 
 // Returns the extension `e` of `msg` so that its value can be set, creating it
