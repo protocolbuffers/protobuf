@@ -290,7 +290,7 @@ template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void SourceContext::set_file_name(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  _impl_.file_name_.Set(static_cast<Arg_&&>(arg), args..., *this);
   // @@protoc_insertion_point(field_set:google.protobuf.SourceContext.file_name)
 }
 inline ::std::string* PROTOBUF_NONNULL SourceContext::mutable_file_name()
@@ -306,11 +306,11 @@ inline const ::std::string& SourceContext::_internal_file_name() const {
 }
 inline void SourceContext::_internal_set_file_name(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.file_name_.Set(value, GetArena());
+  _impl_.file_name_.Set(value, *this);
 }
 inline ::std::string* PROTOBUF_NONNULL SourceContext::_internal_mutable_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.file_name_.Mutable( GetArena());
+  return _impl_.file_name_.Mutable( *this);
 }
 inline ::std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -321,7 +321,7 @@ inline ::std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   auto* released = _impl_.file_name_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.file_name_.Set("", GetArena());
+    _impl_.file_name_.Set("", *this);
   }
   return released;
 }
@@ -334,7 +334,7 @@ inline void SourceContext::set_allocated_file_name(::std::string* PROTOBUF_NULLA
   }
   _impl_.file_name_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.file_name_.IsDefault()) {
-    _impl_.file_name_.Set("", GetArena());
+    _impl_.file_name_.Set("", *this);
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }

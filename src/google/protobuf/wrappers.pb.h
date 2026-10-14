@@ -2075,7 +2075,7 @@ template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void StringValue::set_value(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  _impl_.value_.Set(static_cast<Arg_&&>(arg), args..., *this);
   // @@protoc_insertion_point(field_set:google.protobuf.StringValue.value)
 }
 inline ::std::string* PROTOBUF_NONNULL StringValue::mutable_value()
@@ -2091,11 +2091,11 @@ inline const ::std::string& StringValue::_internal_value() const {
 }
 inline void StringValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.value_.Set(value, GetArena());
+  _impl_.value_.Set(value, *this);
 }
 inline ::std::string* PROTOBUF_NONNULL StringValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.value_.Mutable( GetArena());
+  return _impl_.value_.Mutable( *this);
 }
 inline ::std::string* PROTOBUF_NULLABLE StringValue::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2106,7 +2106,7 @@ inline ::std::string* PROTOBUF_NULLABLE StringValue::release_value() {
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   auto* released = _impl_.value_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.value_.Set("", GetArena());
+    _impl_.value_.Set("", *this);
   }
   return released;
 }
@@ -2119,7 +2119,7 @@ inline void StringValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE va
   }
   _impl_.value_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
-    _impl_.value_.Set("", GetArena());
+    _impl_.value_.Set("", *this);
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.StringValue.value)
 }
@@ -2143,7 +2143,7 @@ template <typename Arg_, typename... Args_>
 PROTOBUF_ALWAYS_INLINE void BytesValue::set_value(Arg_&& arg, Args_... args) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., GetArena());
+  _impl_.value_.SetBytes(static_cast<Arg_&&>(arg), args..., *this);
   // @@protoc_insertion_point(field_set:google.protobuf.BytesValue.value)
 }
 inline ::std::string* PROTOBUF_NONNULL BytesValue::mutable_value()
@@ -2159,11 +2159,11 @@ inline const ::std::string& BytesValue::_internal_value() const {
 }
 inline void BytesValue::_internal_set_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.value_.Set(value, GetArena());
+  _impl_.value_.Set(value, *this);
 }
 inline ::std::string* PROTOBUF_NONNULL BytesValue::_internal_mutable_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.value_.Mutable( GetArena());
+  return _impl_.value_.Mutable( *this);
 }
 inline ::std::string* PROTOBUF_NULLABLE BytesValue::release_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -2174,7 +2174,7 @@ inline ::std::string* PROTOBUF_NULLABLE BytesValue::release_value() {
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   auto* released = _impl_.value_.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.value_.Set("", GetArena());
+    _impl_.value_.Set("", *this);
   }
   return released;
 }
@@ -2187,7 +2187,7 @@ inline void BytesValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE val
   }
   _impl_.value_.SetAllocated(value, GetArena());
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
-    _impl_.value_.Set("", GetArena());
+    _impl_.value_.Set("", *this);
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.BytesValue.value)
 }

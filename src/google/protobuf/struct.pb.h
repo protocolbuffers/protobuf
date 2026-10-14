@@ -951,7 +951,7 @@ PROTOBUF_ALWAYS_INLINE void Value::set_string_value(Arg_&& arg, Args_... args) {
     set_has_string_value();
     _impl_.kind_.string_value_.InitDefault();
   }
-  _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  _impl_.kind_.string_value_.Set(static_cast<Arg_&&>(arg), args..., *this);
   // @@protoc_insertion_point(field_set:google.protobuf.Value.string_value)
 }
 inline ::std::string* PROTOBUF_NONNULL Value::mutable_string_value()
@@ -975,11 +975,11 @@ inline const ::std::string& Value::_internal_string_value() const {
 }
 inline void Value::_internal_set_string_value(const ::std::string& value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.kind_.string_value_.Set(value, GetArena());
+  _impl_.kind_.string_value_.Set(value, *this);
 }
 inline ::std::string* PROTOBUF_NONNULL Value::_internal_mutable_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  return _impl_.kind_.string_value_.Mutable( GetArena());
+  return _impl_.kind_.string_value_.Mutable( *this);
 }
 inline ::std::string* PROTOBUF_NULLABLE Value::release_string_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
