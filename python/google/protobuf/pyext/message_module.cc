@@ -362,12 +362,12 @@ struct ApiImplementation : google::protobuf::python::PyProto_API {
   }
 
   const google::protobuf::DescriptorPool* GetDefaultDescriptorPool() const override {
-    return google::protobuf::python::GetDefaultDescriptorPool()->pool->get();
+    return google::protobuf::python::GetDefaultDescriptorPool()->pool();
   }
 
   google::protobuf::MessageFactory* GetDefaultMessageFactory() const override {
     return google::protobuf::python::GetDefaultDescriptorPool()
-        ->py_message_factory->message_factory;
+        ->message_factory();
   }
   PyObject* NewMessage(const google::protobuf::Descriptor* descriptor,
                        PyObject* py_message_factory) const override {

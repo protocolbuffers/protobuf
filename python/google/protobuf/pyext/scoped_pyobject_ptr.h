@@ -12,6 +12,9 @@
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+
+#include <cstddef>
+
 namespace google {
 namespace protobuf {
 namespace python {
@@ -21,12 +24,23 @@ namespace python {
 template <typename PyObjectStruct>
 class ScopedPythonPtr {
  public:
+  constexpr ScopedPythonPtr(std::nullptr_t = nullptr) noexcept
+      : ptr_(nullptr) {}
+
   // Takes the ownership of the specified object to ScopedPythonPtr.
   // The reference count of the specified py_object is not incremented.
-  explicit ScopedPythonPtr(PyObjectStruct* py_object = nullptr)
-      : ptr_(py_object) {}
-  ScopedPythonPtr(const ScopedPythonPtr&) = delete;
-  ScopedPythonPtr& operator=(const ScopedPythonPtr&) = delete;
+  explicit ScopedPythonPtr(PyObjectStruct* py_object) : ptr_(py_object) {}
+
+  ScopedPythonPtr(const ScopedPythonPtr& other) : ptr_(other.ptr_) {
+    Py_XINCREF(ptr_);
+  }
+
+  ScopedPythonPtr& operator=(const ScopedPythonPtr& other) {
+    Py_XINCREF(other.ptr_);
+    Py_XDECREF(ptr_);
+    ptr_ = other.ptr_;
+    return *this;
+  }
 
   ScopedPythonPtr(ScopedPythonPtr&& other) noexcept : ptr_(other.ptr_) {
     other.ptr_ = nullptr;
@@ -82,6 +96,20 @@ class ScopedPythonPtr {
 };
 
 typedef ScopedPythonPtr<PyObject> ScopedPyObjectPtr;
+
+// Destroys a C++ object embedded in a PyObject and frees its Python memory.
+// Suitable for use in or as a tp_dealloc slot.
+template <typename T>
+void DeallocPyObject(PyObject* pself) {
+  auto* py_type = Py_TYPE(pself);
+  if (PyType_HasFeature(py_type, Py_TPFLAGS_HAVE_GC)) {
+    PyObject_GC_UnTrack(pself);
+  }
+  PyObject ob_base = *pself;
+  reinterpret_cast<T*>(pself)->~T();
+  *pself = ob_base;
+  py_type->tp_free(pself);
+}
 
 }  // namespace python
 }  // namespace protobuf
