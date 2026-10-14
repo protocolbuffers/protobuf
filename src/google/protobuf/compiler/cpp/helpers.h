@@ -570,7 +570,7 @@ bool IsStringOrMessage(const FieldDescriptor* field);
 // Note that this returns false for map fields, even though they use a
 // `RepeatedPtrField` internally for some reflection API methods. This method is
 // mainly used to inform how a field's constructor should be invoked.
-bool IsRepeatedPtrField(const FieldDescriptor* field);
+PROTOC_EXPORT bool IsRepeatedPtrField(const FieldDescriptor* field);
 
 std::string UnderscoresToCamelCase(absl::string_view input,
                                    bool cap_next_letter);
@@ -654,9 +654,9 @@ inline std::string IncludeGuard(const FileDescriptor* file,
 // bool if has_opt_codesize_extension is non-null. If this status bool is true
 // it means this file contains an extension that itself is defined as
 // optimized_for = CODE_SIZE.
-FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
-                                        const Options& options,
-                                        bool* has_opt_codesize_extension);
+PROTOC_EXPORT FileOptions_OptimizeMode
+GetOptimizeFor(const FileDescriptor* file, const Options& options,
+               bool* has_opt_codesize_extension);
 inline FileOptions_OptimizeMode GetOptimizeFor(const FileDescriptor* file,
                                                const Options& options) {
   return GetOptimizeFor(file, options, nullptr);
@@ -842,8 +842,8 @@ void ListAllTypesForServices(const FileDescriptor* fd,
 // For services, the TU unconditionally pins the request/response objects.
 // This is the status quo for simplicity to avoid modifying the RPC layer. It
 // might be improved in the future.
-bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
-                                 const Options& options);
+PROTOC_EXPORT bool UsingImplicitWeakDescriptor(const FileDescriptor* file,
+                                               const Options& options);
 
 // Generates a strong reference to the message in `desc`, as a statement.
 std::string StrongReferenceToType(const Descriptor* desc,
@@ -1132,7 +1132,8 @@ void GenerateUtf8CheckCodeForCord(io::Printer* p, const FieldDescriptor* field,
                                   const Options& options, bool for_parse,
                                   absl::string_view parameters);
 
-bool IsStrictUtf8String(const FieldDescriptor* field, const Options& options);
+PROTOC_EXPORT bool IsStrictUtf8String(const FieldDescriptor* field,
+                                      const Options& options);
 
 inline bool ShouldGenerateExternSpecializations(const Options& options) {
   // For OSS we omit the specializations to reduce codegen size.
