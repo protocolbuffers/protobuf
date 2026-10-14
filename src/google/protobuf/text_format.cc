@@ -3278,6 +3278,11 @@ TextFormat::RedactionState TextFormat::GetRedactionState(
     const FieldDescriptor* field) {
   auto options = field->options();
   auto state = TextFormat::RedactionState{options.debug_redact(), false};
+  if (field->containing_type() != nullptr &&
+      field->containing_type()->full_name() == internal::kAnyFullTypeName &&
+      field->number() == 2) {
+    state.redact = true;
+  }
   std::vector<const FieldDescriptor*> field_options;
   const Reflection* reflection = options.GetReflection();
   reflection->ListFields(options, &field_options);
