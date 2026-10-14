@@ -258,7 +258,9 @@ public final class Timestamps {
       sdf.setLenient(true);
       date = sdf.parse(secondValue);
       logger.warning(
-          "Invalid timestamp detected: " + value + ". This will become an error in 2027.");
+          "Invalid timestamp detected: "
+              + value
+              + ". This will become an error in a future release.");
     } finally {
       sdf.setLenient(wasLenient);
     }

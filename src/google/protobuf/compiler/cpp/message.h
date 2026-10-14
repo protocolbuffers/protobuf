@@ -90,8 +90,11 @@ class MessageGenerator {
   using GeneratorFunction = FieldGeneratorBase::GeneratorFunction;
   enum class InitType { kConstexpr, kArena, kArenaCopy };
 
+  std::vector<const FieldDescriptor*> AllFields() const;
+
   // Generate declarations and definitions of accessors for fields.
   void GenerateFieldAccessorDeclarations(io::Printer* p);
+  void GenerateFieldAccessorPrivateHelpers(io::Printer* p);
   void GenerateFieldAccessorDefinitions(io::Printer* p);
 
   // Generate constructors and destructor.

@@ -13,15 +13,12 @@ build --@rules_rust//rust/settings:experimental_use_cc_common_link=True
 # upcoming breaking changes in Bazel. This list was generated for Bazel 6 by
 # running bazelisk with the --migrate flag and filtering out all flags that
 # default to true or are deprecated.
-build --incompatible_check_sharding_support
 build --incompatible_config_setting_private_default_visibility
 build --incompatible_default_to_explicit_init_py
-build --incompatible_disable_native_android_rules
 build --incompatible_disable_starlark_host_transitions
 build --incompatible_disable_target_provider_fields
 build --incompatible_disallow_empty_glob
 build --incompatible_dont_use_javasourceinfoprovider
-build --incompatible_enable_android_toolchain_resolution
 build --incompatible_enable_apple_toolchain_resolution
 build --incompatible_exclusive_test_sandboxed
 build --incompatible_top_level_aspects_require_providers
@@ -85,7 +82,7 @@ build:ubsan --copt=-fno-sanitize=nonnull-attribute
 build:clang --cxxopt=-std=c++17 --host_cxxopt=-std=c++17
 build:clang --cxxopt="-Woverloaded-virtual"
 build:clang --copt="-Wpointer-arith"
-build:clang --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion" --copt="-Wno-deprecated-declarations"
+build:clang --copt="-Werror" --copt="-Wno-sign-compare" --copt="-Wno-sign-conversion" --copt="-Wno-error=sign-conversion"
 
 # Suppress all compiler warnings in external dependencies
 build:clang --per_file_copt=external/.*@-w
@@ -94,7 +91,6 @@ build:clang --host_per_file_copt=external/.*@-w
 build:linux --config=clang
 
 build:macos --config=clang
-common:macos --xcode_version_config=@com_google_protobuf//.github:host_xcodes
 
 build:macos --apple_crosstool_top=@local_config_apple_cc//:toolchain
 build:macos --crosstool_top=@local_config_apple_cc//:toolchain
@@ -115,3 +111,8 @@ build:msvc-cl --extra_execution_platforms=//build_defs:x64_windows-msvc-cl --hos
 build:windows --config=clang-cl
 # Set BAZEL_SH, this is needed for bazel 8.6.0 WORKSPACE on windows
 build:windows --action_env=BAZEL_SH="C:/Program Files/Git/bin/bash.exe"
+
+# ==============================================================================
+# CI CONFIG
+# ==============================================================================
+common:ci --xcode_version_config=@com_google_protobuf//.github:host_xcodes

@@ -14,7 +14,7 @@ mod associated_mini_table;
 pub use associated_mini_table::{AssociatedMiniTable, AssociatedMiniTableEnum};
 
 mod text;
-pub use text::debug_string;
+pub use text::{debug_string, TextEncodeOptions};
 
 mod message;
 pub use message::MessagePtr;
@@ -30,6 +30,9 @@ extern crate sys;
 #[cfg(not(bzl))]
 #[path = "sys/lib.rs"]
 mod sys;
+
+#[cfg(not(bzl))]
+pub mod reflection;
 
 // All sys re-exports below here intended to be burned down.
 pub use sys::base::ctype::CType;

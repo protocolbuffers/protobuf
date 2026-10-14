@@ -282,10 +282,8 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
         "message");
   }
 
-
   return PyMessageDescriptor_FromDescriptor(message_descriptor);
 }
-
 
 static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
   Py_ssize_t name_size;
@@ -317,7 +315,6 @@ PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* arg) {
     return SetErrorFromCollector(self->error_collector, arg, "field");
   }
 
-
   return PyFieldDescriptor_FromDescriptor(field_descriptor);
 }
 
@@ -339,7 +336,6 @@ PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
     return SetErrorFromCollector(self->error_collector, arg, "extension field");
   }
 
-
   return PyFieldDescriptor_FromDescriptor(field_descriptor);
 }
 
@@ -360,7 +356,6 @@ PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg) {
     return SetErrorFromCollector(self->error_collector, arg, "enum");
   }
 
-
   return PyEnumDescriptor_FromDescriptor(enum_descriptor);
 }
 
@@ -380,7 +375,6 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
   if (oneof_descriptor == nullptr) {
     return SetErrorFromCollector(self->error_collector, arg, "oneof");
   }
-
 
   return PyOneofDescriptor_FromDescriptor(oneof_descriptor);
 }
@@ -405,7 +399,6 @@ static PyObject* FindServiceByName(PyObject* self, PyObject* arg) {
         "service");
   }
 
-
   return PyServiceDescriptor_FromDescriptor(service_descriptor);
 }
 
@@ -424,7 +417,6 @@ static PyObject* FindMethodByName(PyObject* self, PyObject* arg) {
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
         "method");
   }
-
 
   return PyMethodDescriptor_FromDescriptor(method_descriptor);
 }
@@ -445,7 +437,6 @@ static PyObject* FindFileContainingSymbol(PyObject* self, PyObject* arg) {
         reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
         "symbol");
   }
-
 
   return PyFileDescriptor_FromDescriptor(file_descriptor);
 }
@@ -479,7 +470,6 @@ static PyObject* FindExtensionByNumber(PyObject* self, PyObject* args) {
     PyErr_Format(PyExc_KeyError, "Couldn't find Extension %d", number);
     return nullptr;
   }
-
 
   return PyFieldDescriptor_FromDescriptor(extension_descriptor);
 }

@@ -206,8 +206,6 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     """Sets the item on the specified position."""
     self._AssureWritable()
     if isinstance(key, slice):
-      if key.step is not None:
-        raise ValueError('Extended slices not supported')
       self._values[key] = map(self._type_checker.CheckValue, value)
       self._message_listener.Modified()
     else:

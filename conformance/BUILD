@@ -63,6 +63,7 @@ cc_library(
         ":conformance_cc_proto",
         ":failure_list_trie_node",
         ":fork_pipe_runner",
+        ":recording_test_runner",
         ":test_runner",
         "//src/google/protobuf",
         "//src/google/protobuf:descriptor_legacy",
@@ -75,6 +76,7 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -119,9 +121,14 @@ cc_test(
 test_suite(
     name = "conformance_framework_tests",
     tests = [
+        "binary_test_util_test",
         "binary_wireformat_test",
         "failure_list_trie_node_test",
+        "matchers_test",
         "naming_test",
+        "recording_test_runner_test",
+        "test_environment_test",
+        "test_fixture_test",
         "test_manager_test",
         "testee_test",
     ],
@@ -139,6 +146,7 @@ cc_library(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -158,6 +166,30 @@ cc_library(
     ],
 )
 
+# Helpers shared by the gtest-based binary conformance tests (the field-type
+# tables the tests are parameterized over).
+cc_library(
+    name = "binary_test_util",
+    testonly = 1,
+    srcs = ["binary_test_util.cc"],
+    hdrs = ["binary_test_util.h"],
+    deps = [
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "binary_test_util_test",
+    srcs = ["binary_test_util_test.cc"],
+    deps = [
+        ":binary_test_util",
+        "//src/google/protobuf",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "text_format_conformance_suite",
     testonly = 1,
@@ -168,6 +200,7 @@ cc_library(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -182,21 +215,90 @@ cc_library(
 cc_library(
     name = "test_runner",
     hdrs = ["test_runner.h"],
+    visibility = ["//src/google/protobuf:__pkg__"],
     deps = ["@abseil-cpp//absl/strings:string_view"],
 )
 
 cc_library(
+    name = "mock_test_runner",
+    testonly = True,
+    hdrs = ["mock_test_runner.h"],
+    deps = [
+        ":test_runner",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "fork_pipe_runner",
-    srcs = ["fork_pipe_runner.cc"],
+    srcs = [
+        "fork_pipe_runner.cc",
+        "fork_pipe_runner_posix.cc",
+        "fork_pipe_runner_win32.cc",
+    ],
     hdrs = ["fork_pipe_runner.h"],
     deps = [
         ":conformance_cc_proto",
         ":test_runner",
         "//src/google/protobuf:endian",
         "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",  # fork_pipe_runner_win32.cc
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
+    ],
+)
+
+cc_test(
+    name = "fork_pipe_runner_test",
+    srcs = ["fork_pipe_runner_test.cc"],
+    deps = [
+        ":conformance_cc_proto",
+        ":fork_pipe_runner",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/time",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "recording_test_runner",
+    srcs = ["recording_test_runner.cc"],
+    hdrs = ["recording_test_runner.h"],
+    deps = [
+        ":conformance_cc_proto",
+        ":test_runner",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/crc:crc32c",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+    ],
+)
+
+cc_test(
+    name = "recording_test_runner_test",
+    srcs = ["recording_test_runner_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":mock_test_runner",
+        ":recording_test_runner",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/crc:crc32c",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
 
@@ -205,6 +307,7 @@ cc_library(
     testonly = 1,
     srcs = ["binary_wireformat.cc"],
     hdrs = ["binary_wireformat.h"],
+    visibility = ["//upb/conformance:__pkg__"],
     deps = [
         "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
@@ -220,7 +323,8 @@ cc_library(
     deps = [
         ":conformance_cc_proto",
         ":failure_list_trie_node",
-        "//src/google/protobuf/stubs",
+        ":testee",
+        "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/container:btree",
         "@abseil-cpp//absl/container:flat_hash_map",
         "@abseil-cpp//absl/container:flat_hash_set",
@@ -229,6 +333,7 @@ cc_library(
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
     ],
 )
 
@@ -252,6 +357,7 @@ cc_test(
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -284,7 +390,8 @@ cc_test(
     srcs = ["testee_test.cc"],
     deps = [
         ":binary_wireformat",
-        ":test_runner",
+        ":conformance_cc_proto",
+        ":mock_test_runner",
         ":testee",
         "//:test_messages_proto2_cc_proto",
         "//:test_messages_proto3_cc_proto",
@@ -303,12 +410,80 @@ cc_test(
     srcs = ["test_manager_test.cc"],
     deps = [
         ":test_manager",
+        ":testee",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/status",
         "@abseil-cpp//absl/status:status_matchers",
         "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "global_test_environment",
+    testonly = 1,
+    hdrs = ["global_test_environment.h"],
+    deps = [":test_manager"],
+)
+
+# gMock matchers for conformance TestResults.
+#
+# NOTE: Consumers must link a definition of GetGlobalTestManager(), declared in
+# global_test_environment.h.  The conformance test environment provides it in
+# the real test binary; matchers_test provides an in-memory stand-in.
+cc_library(
+    name = "matchers",
+    testonly = 1,
+    srcs = ["matchers.cc"],
+    hdrs = ["matchers.h"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":global_test_environment",
+        ":test_manager",
+        ":testee",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/util:differencer",
+        "@abseil-cpp//absl/base:core_headers",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/memory",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "matchers_test",
+    srcs = ["matchers_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":global_test_environment",
+        ":matchers",
+        ":mock_test_runner",
+        ":test_manager",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/base:log_severity",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:scoped_mock_log",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -319,6 +494,111 @@ cc_test(
     srcs = ["binary_wireformat_test.cc"],
     deps = [
         ":binary_wireformat",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "test_environment",
+    testonly = 1,
+    srcs = ["test_environment.cc"],
+    hdrs = ["test_environment.h"],
+    deps = [
+        ":fork_pipe_runner",
+        ":global_test_environment",
+        ":test_manager",
+        ":test_runner",
+        ":testee",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
+    name = "test_environment_testing",
+    testonly = 1,
+    srcs = ["test_environment_testing.cc"],
+    hdrs = ["test_environment_testing.h"],
+    deps = [
+        ":test_environment",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/log:absl_check",
+    ],
+)
+
+cc_test(
+    name = "test_environment_test",
+    srcs = ["test_environment_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":global_test_environment",
+        ":matchers",
+        ":mock_test_runner",
+        ":test_environment",
+        ":test_environment_testing",
+        ":test_manager",
+        ":testee",
+        "//:test_messages_proto3_cc_proto",
+        "//src/google/protobuf",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "test_fixture",
+    testonly = 1,
+    srcs = ["test_fixture.cc"],
+    hdrs = ["test_fixture.h"],
+    deps = [
+        ":test_environment",
+        ":testee",
+        "//src/google/protobuf",
+        "//src/google/protobuf:descriptor_legacy",
+        "@abseil-cpp//absl/base:nullability",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/strings:string_view",
+        "@googletest//:gtest",
+    ],
+)
+
+cc_test(
+    name = "test_fixture_test",
+    srcs = ["test_fixture_test.cc"],
+    deps = [
+        ":binary_wireformat",
+        ":conformance_cc_proto",
+        ":matchers",
+        ":mock_test_runner",
+        ":test_environment",
+        ":test_environment_testing",
+        ":test_fixture",
+        ":testee",
+        "//:test_messages_proto2_cc_proto",
+        "//:test_messages_proto3_cc_proto",
+        "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
+        "//src/google/protobuf",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:string_view",
         "@googletest//:gtest",
@@ -445,6 +725,7 @@ cc_binary(
         "//:type_cc_proto",
         "//:wrappers_cc_proto",
         "//conformance/test_protos:test_messages_edition2023_cc_proto",
+        "//conformance/test_protos:test_messages_edition2026_cc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_cc_proto",
         "//editions:test_messages_proto2_editions_cc_proto",
         "//editions:test_messages_proto3_editions_cc_proto",
@@ -478,6 +759,7 @@ java_binary(
         "//:test_messages_proto2_java_proto",
         "//:test_messages_proto3_java_proto",
         "//conformance/test_protos:test_messages_edition2023_java_proto",
+        "//conformance/test_protos:test_messages_edition2026_java_proto",
         "//conformance/test_protos:test_messages_edition_unstable_java_proto",
         "//editions:test_messages_proto2_editions_java_proto",
         "//editions:test_messages_proto3_editions_java_proto",
@@ -499,6 +781,7 @@ java_binary(
         "//:test_messages_proto2_java_proto_lite",
         "//:test_messages_proto3_java_proto_lite",
         "//conformance/test_protos:test_messages_edition2023_java_proto_lite",
+        "//conformance/test_protos:test_messages_edition2026_java_proto_lite",
         "//conformance/test_protos:test_messages_edition_unstable_java_proto_lite",
         "//editions:test_messages_proto2_editions_java_proto_lite",
         "//editions:test_messages_proto3_editions_java_proto_lite",
@@ -519,6 +802,7 @@ py_binary(
         ":conformance_py_proto",
         "//:protobuf_python",
         "//conformance/test_protos:test_messages_edition2023_py_pb2",
+        "//conformance/test_protos:test_messages_edition2026_py_pb2",
         "//conformance/test_protos:test_messages_edition_unstable_py_pb2",
         "//editions:test_messages_proto2_editions_py_pb2",
         "//editions:test_messages_proto3_editions_py_pb2",
@@ -540,7 +824,7 @@ inline_sh_binary(
         "conformance_php.php",
     ],
     cmd = """
-        php -d include_path=php/generated:conformance:src/google/protobuf:editions/golden \\
+        php -d include_path=php/generated:conformance:conformance/test_protos:src/google/protobuf:editions/golden \\
             -d auto_prepend_file=$(rootpath autoload.php) \\
             $(rootpath conformance_php.php)
     """,
@@ -548,6 +832,8 @@ inline_sh_binary(
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//conformance/test_protos:json_enumvalue_options_php_proto",
+        "//conformance/test_protos:test_messages_edition2026_php_proto",
         "//editions:test_messages_proto3_editions_php_proto",
         "//php:source_files",
     ],
@@ -562,13 +848,15 @@ inline_sh_binary(
     ],
     cmd = """
         php -dextension=$(rootpath //php:extension) \\
-            -d include_path=conformance:src/google/protobuf:editions/golden \\
+            -d include_path=conformance:conformance/test_protos:src/google/protobuf:editions/golden \\
             $(rootpath conformance_php.php)
     """,
     visibility = ["//php:__subpackages__"],
     deps = [
         ":conformance_php_proto",
         "//:test_messages_proto3_php_proto",
+        "//conformance/test_protos:json_enumvalue_options_php_proto",
+        "//conformance/test_protos:test_messages_edition2026_php_proto",
         "//editions:test_messages_proto3_editions_php_proto",
     ],
 )
@@ -581,6 +869,7 @@ inline_sh_binary(
     visibility = ["//csharp:__subpackages__"],
     deps = [
         "//conformance/test_protos:test_messages_edition2023_csharp_proto",
+        "//conformance/test_protos:test_messages_edition2026_csharp_proto",
         "//conformance/test_protos:test_messages_edition_unstable_csharp_proto",
         "//csharp/src/Google.Protobuf.Conformance:conformance_runfiles",
     ],
@@ -597,6 +886,7 @@ objc_library(
         "//:test_messages_proto2_objc_proto",
         "//:test_messages_proto3_objc_proto",
         "//conformance/test_protos:test_messages_edition2023_objc_proto",
+        "//conformance/test_protos:test_messages_edition2026_objc_proto",
         "//conformance/test_protos:test_messages_edition_unstable_objc_proto",
         "//editions:test_messages_proto2_editions_objc_proto",
         "//editions:test_messages_proto3_editions_objc_proto",

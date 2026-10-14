@@ -370,7 +370,7 @@ static char ParseSimpleEscape(char c, bool allow_legacy_syntax) {
       if (allow_legacy_syntax) {
         return '\'';
       }
-      ABSL_FALLTHROUGH_INTENDED;
+      [[fallthrough]];
     default:
       return 0;
   }

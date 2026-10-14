@@ -67,8 +67,14 @@ module Google
       # also includes Enumerable; combined with this method, the repeated field thus
       # acts like an ordinary Ruby sequence.
       def each &block
-        each_msg_val do |element|
+        # The length is re-read every iteration: the block can clear or shrink
+        # the field, and a cached length would then read past the end of the
+        # upb array.
+        i = 0
+        while i < length
+          element = Google::Protobuf::FFI.get_msgval_at(array, i)
           yield(convert_upb_to_ruby(element, type, descriptor, arena))
+          i += 1
         end
         self
       end
@@ -222,6 +228,8 @@ module Google
         return true if other.object_id == object_id
         if other.is_a? RepeatedField
           return false unless other.length == length
+          return true if length == 0
+          return false if type != other.send(:type) or descriptor != other.send(:descriptor)
           each_msg_val_with_index do |msg_val, i|
             other_msg_val = Google::Protobuf::FFI.get_msgval_at(other.send(:array), i)
             unless Google::Protobuf::FFI.message_value_equal(msg_val, other_msg_val, type, descriptor)

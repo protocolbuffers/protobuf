@@ -1,0 +1,9 @@
+edition = "2024";
+
+package protobuf.kotlin.test.diamond;
+
+option java_package = "com.google.protobuf.kotlin.diamond";
+
+message LeafMessage {
+  string value = 1;
+}

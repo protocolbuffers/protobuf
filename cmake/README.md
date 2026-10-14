@@ -105,7 +105,7 @@ If ZLib is installed in a non-standard location, you can help CMake find it by
 setting:
 
 *   `-DZLIB_INCLUDE_DIR=/path/to/zlib/headers`
-*   `-DZLIB_LIBRARIES=/path/to/zlib/library.lib`
+*   `-DZLIB_LIBRARY=/path/to/zlib/library.lib`
 
 ## Build Options
 

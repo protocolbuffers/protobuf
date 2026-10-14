@@ -72,7 +72,6 @@ extern PyTypeObject PyDescriptorPool_Type;
 
 namespace cdescriptor_pool {
 
-
 // The functions below are also exposed as methods of the DescriptorPool type.
 
 // Looks up a field by name. Returns a PyFieldDescriptor corresponding to

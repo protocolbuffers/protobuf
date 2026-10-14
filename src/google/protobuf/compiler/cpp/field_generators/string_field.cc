@@ -97,13 +97,13 @@ class SingularString : public FieldGeneratorBase {
     if (is_oneof()) {
       p->Emit(R"cc(
         if (oneof_needs_init) {
-          _this->$field_$.InitDefault();
+          $this_mutable_field$.InitDefault();
         }
-        _this->$field_$.Set(from._internal_$name$(), arena);
+        $this_mutable_field$.Set(from._internal_$name$(), arena);
       )cc");
     } else {
       p->Emit(R"cc(
-        _this->_internal_set_$name$(from._internal_$name$());
+        this_._internal_set_$name$(from._internal_$name$());
       )cc");
     }
   }
@@ -162,16 +162,17 @@ class SingularString : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     if (is_inlined() || EmptyDefault()) {
-      p->Emit("new (&$field_$) decltype($field_$){arena, from.$field_$};\n");
+      p->Emit("new (&$field_$) decltype($field_$){arena, $from_field$};\n");
     } else {
       p->Emit(
-          "new (&$field_$) decltype($field_$){arena, from.$field_$,"
+          "new (&$field_$) decltype($field_$){arena, $from_field$,"
           " $default_variable_field$};\n");
     }
   }
 
   void GenerateStaticMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
@@ -184,6 +185,7 @@ class SingularString : public FieldGeneratorBase {
 
  private:
   bool EmptyDefault() const { return field_->default_value_string().empty(); }
+  void GenerateAccessorDeclarationsImpl(io::Printer* p) const;
   void ReleaseImpl(io::Printer* p) const;
   void SetAllocatedImpl(io::Printer* p) const;
 
@@ -198,29 +200,7 @@ void SingularString::GenerateStaticMembers(io::Printer* p) const {
   }
 }
 
-void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
-  // If we're using SingularString for a field with a ctype, it's
-  // because that ctype isn't actually implemented.  In particular, this is
-  // true of ctype=CORD and ctype=STRING_PIECE in the open source release.
-  // We aren't releasing Cord because it has too many Google-specific
-  // dependencies and we aren't releasing StringPiece because it's hardly
-  // useful outside of Google and because it would get confusing to have
-  // multiple instances of the StringPiece class in different libraries (PCRE
-  // already includes it for their C++ bindings, which came from Google).
-  //
-  // In any case, we make all the accessors private while still actually
-  // using a string to represent the field internally.  This way, we can
-  // guarantee that if we do ever implement the ctype, it won't break any
-  // existing users who might be -- for whatever reason -- already using .proto
-  // files that applied the ctype.  The field can still be accessed via the
-  // reflection interface since the reflection interface is independent of
-  // the string's underlying representation.
-  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field_)) {
-    p->Emit(R"cc(
-      private:  // Hidden due to unknown ctype option.
-    )cc");
-  }
-
+void SingularString::GenerateAccessorDeclarationsImpl(io::Printer* p) const {
   auto vars = AnnotatedAccessors(field_, {"", "set_allocated_"});
   vars.push_back(Sub{
       "release_name",
@@ -244,13 +224,43 @@ void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
     $DEPRECATED$ ::std::string* $nonnull$ $mutable_name$();
     $DEPRECATED$ [[nodiscard]] ::std::string* $nullable$ $release_name$();
     $DEPRECATED$ void $set_allocated_name$(::std::string* $nullable$ value);
+  )cc");
+}
 
-    private:
+void SingularString::GenerateAccessorDeclarations(io::Printer* p) const {
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field_)) {
+    return;
+  }
+  GenerateAccessorDeclarationsImpl(p);
+}
+
+void SingularString::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  // If we're using SingularString for a field with a ctype, it's
+  // because that ctype isn't actually implemented.  In particular, this is
+  // true of ctype=CORD and ctype=STRING_PIECE in the open source release.
+  // We aren't releasing Cord because it has too many Google-specific
+  // dependencies and we aren't releasing StringPiece because it's hardly
+  // useful outside of Google and because it would get confusing to have
+  // multiple instances of the StringPiece class in different libraries (PCRE
+  // already includes it for their C++ bindings, which came from Google).
+  //
+  // In any case, we make all the accessors private while still actually
+  // using a string to represent the field internally.  This way, we can
+  // guarantee that if we do ever implement the ctype, it won't break any
+  // existing users who might be -- for whatever reason -- already using .proto
+  // files that applied the ctype.  The field can still be accessed via the
+  // reflection interface since the reflection interface is independent of
+  // the string's underlying representation.
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field_)) {
+    p->Emit(R"cc(
+      // Hidden due to unknown ctype option.
+    )cc");
+    GenerateAccessorDeclarationsImpl(p);
+  }
+  p->Emit(R"cc(
     const ::std::string& _internal_$name$() const;
     PROTOBUF_ALWAYS_INLINE void _internal_set_$name$(const ::std::string& value);
     ::std::string* $nonnull$ _internal_mutable_$name$();
-
-    public:
   )cc");
 }
 
@@ -320,7 +330,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
   p->Emit(R"cc(
     auto* released = $field_$.Release();
     if ($pbi$::DebugHardenForceCopyDefaultString()) {
-      $field_$.Set("", GetArena());
+      $field_$.Set("", *this);
     }
     return released;
   )cc");
@@ -361,7 +371,7 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
   if (EmptyDefault()) {
     p->Emit(R"cc(
       if ($pbi$::DebugHardenForceCopyDefaultString() && $field_$.IsDefault()) {
-        $field_$.Set("", GetArena());
+        $field_$.Set("", *this);
       }
     )cc");
   }
@@ -409,7 +419,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
       $update_hasbit$;
-      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., GetArena());
+      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., *this);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
@@ -432,11 +442,11 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       //~ Don't use $Set$ here; we always want the std::string variant
       //~ regardless of whether this is a `bytes` field.
-      $field_$.Set(value, GetArena());
+      $field_$.Set(value, *this);
     }
     inline ::std::string* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
-      return $field_$.Mutable($lazy_args$, GetArena());
+      return $field_$.Mutable($lazy_args$, *this);
     }
     inline ::std::string* $nullable$ $Msg$::$release_name$() {
       $WeakDescriptorSelfPin$;
@@ -474,14 +484,14 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
 
   ABSL_DCHECK(!is_inlined());
   p->Emit(R"cc(
-    $field_$.ClearToDefault($lazy_var$, GetArena());
+    $field_$.ClearToDefault($lazy_var$, *this);
   )cc");
 }
 
 void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
-      this_.$field_$.Destroy();
+      $this_mutable_field$.Destroy();
     )cc");
     return;
   }
@@ -505,7 +515,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // For non-inlined strings, we distinguish from non-default by comparing
     // instances, rather than contents.
     p->Emit(R"cc(
-      $DCHK$(!this_.$field_$.IsDefault());
+      $DCHK$(!$this_field$.IsDefault());
     )cc");
   }
 
@@ -513,7 +523,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      this_.$field_$.ClearToDefault($lazy_var$, this_.GetArena());
+      $this_mutable_field$.ClearToDefault($lazy_var$, this_);
     )cc");
     return;
   }
@@ -521,7 +531,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
   p->Emit({{"Clear", HasHasbit(field_, options_) ? "ClearNonDefaultToEmpty"
                                                  : "ClearToEmpty"}},
           R"cc(
-            this_.$field_$.$Clear$();
+            $this_mutable_field$.$Clear$();
           )cc");
 }
 
@@ -533,14 +543,13 @@ void SingularString::GenerateSwappingCode(io::Printer* p) const {
 
   if (!is_inlined()) {
     p->Emit(R"cc(
-      ::_pbi::ArenaStringPtr::InternalSwap(&this_.$field_$, &other->$field_$,
-                                           arena);
+      ::_pbi::ArenaStringPtr::InternalSwap(&$field_$, &other->$field_$, arena);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    ::_pbi::InlinedStringField::InternalSwap(&this_.$field_$, &other->$field_$,
+    ::_pbi::InlinedStringField::InternalSwap(&$field_$, &other->$field_$,
                                              arena);
   )cc");
 }
@@ -556,7 +565,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
     if (IsString(field_) && EmptyDefault()) {
       p->Emit(R"cc(
         if ($pbi$::DebugHardenForceCopyDefaultString()) {
-          $field_$.Set("", GetArena());
+          $field_$.Set("", *this);
         }
       )cc");
     }
@@ -564,7 +573,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
 
   if (is_inlined()) {
     p->Emit(R"cc(
-      new (&_this->$field_$)::_pbi::InlinedStringField;
+      new (&$this_mutable_field$)::_pbi::InlinedStringField;
     )cc");
   }
 
@@ -579,7 +588,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
         }}},
       R"cc(
         if ($hazzer$) {
-          _this->$field_$.Set(from._internal_$name$(), _this->GetArena());
+          $this_mutable_field$.Set(from._internal_$name$(), this_);
         }
       )cc");
 }
@@ -598,7 +607,7 @@ void SingularString::GenerateDestructorCode(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    this_.$field_$.Destroy();
+    $this_mutable_field$.Destroy();
   )cc");
 }
 
@@ -674,9 +683,9 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+      p->Emit("$this_mutable_field$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("this_.$field_$.Clear();\n");
+      p->Emit("$this_mutable_field$.Clear();\n");
     }
   }
 
@@ -701,7 +710,7 @@ class RepeatedString : public FieldGeneratorBase {
     // `if (!from.empty()) { body(); }` for both split and non-split cases.
     auto body = [&] {
       p->Emit(R"cc(
-        _this->_internal_mutable_$name$()->InternalMergeFromWithArena(
+        this_._internal_mutable_$name$()->InternalMergeFromWithArena(
             $pb$::MessageLite::internal_visibility(), arena,
             from._internal_$name$());
       )cc");
@@ -710,7 +719,7 @@ class RepeatedString : public FieldGeneratorBase {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
-        if (!from.$field_$.IsDefault()) {
+        if (!$from_field$.IsDefault()) {
           $body$;
         }
       )cc");
@@ -720,14 +729,14 @@ class RepeatedString : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      this_.$field_$.InternalSwap(&other->$field_$);
+      $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        this_.$field_$.DeleteIfNotDefault();
+        $this_mutable_field$.DeleteIfNotDefault();
       )cc");
     }
   }
@@ -746,32 +755,30 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size +=
-          $kTagBytes$ * $pbi$::FromIntSize(this_._internal_$name$().size());
-      for (int i = 0, n = this_._internal_$name$().size(); i < n; ++i) {
-        total_size += $pbi$::WireFormatLite::$DeclaredType$Size(
-            this_._internal_$name$().Get(i));
+      if (const $pb$::RepeatedPtrField<::std::string>& f = $this_field$;
+          !f.empty()) {
+        total_size += $kTagBytes$ * $pbi$::FromIntSize(f.size());
+        for (const auto& v : f) {
+          total_size += $pbi$::WireFormatLite::$DeclaredType$Size(v);
+        }
       }
     )cc");
   }
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
 
  private:
+  void GenerateAccessorDeclarationsImpl(io::Printer* p) const;
+
   const Options* opts_;
   FieldDescriptor::CppRepeatedType cpp_repeated_type_;
 };
 
-void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
-  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field_)) {
-    p->Emit(R"cc(
-      private:  // Hidden due to unknown ctype option.
-    )cc");
-  }
-
-  auto v1 = p->WithVars(AnnotatedAccessors(field_, {"", "_internal_"}));
+void RepeatedString::GenerateAccessorDeclarationsImpl(io::Printer* p) const {
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto v2 = p->WithVars(
       AnnotatedAccessors(field_, {"set_", "add_"}, AnnotationCollector::kSet));
   auto v3 = p->WithVars(
@@ -810,12 +817,27 @@ void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
     template <typename Arg_ = const ::std::string&, typename... Args_>
     $DEPRECATED$ void $add_name$(Arg_&& value, Args_... args);
     $decl_field_accessors$;
+  )cc");
+}
 
-    private:
+void RepeatedString::GenerateAccessorDeclarations(io::Printer* p) const {
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field_)) {
+    return;
+  }
+  GenerateAccessorDeclarationsImpl(p);
+}
+
+void RepeatedString::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  if (internal::cpp::IsStringFieldWithPrivatizedAccessors(*field_)) {
+    p->Emit(R"cc(
+      // Hidden due to unknown ctype option.
+    )cc");
+    GenerateAccessorDeclarationsImpl(p);
+  }
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {"_internal_"}));
+  p->Emit(R"cc(
     const $pb$::RepeatedPtrField<::std::string>& _internal_$name$() const;
     $pb$::RepeatedPtrField<::std::string>* $nonnull$ _internal_mutable_$name$();
-
-    public:
   )cc");
 }
 
@@ -976,8 +998,7 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
                   "s.data(), static_cast<int>(s.length()),");
             }}},
           R"cc(
-            for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
-              const auto& s = this_._internal_$name$().Get(i);
+            for (const auto& s : $this_field$) {
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }

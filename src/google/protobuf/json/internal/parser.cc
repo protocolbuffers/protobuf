@@ -900,7 +900,7 @@ absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
     switch (data[0]) {
       case '-':
         neg = true;
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       case '+': {
         if (data.size() != 6) {
           return str->loc.Invalid("timestamp offset of wrong size.");
@@ -922,7 +922,7 @@ absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
         if (data.size() == 1) {
           break;
         }
-        ABSL_FALLTHROUGH_INTENDED;
+        [[fallthrough]];
       default:
         return str->loc.Invalid("bad timezone offset");
     }
@@ -1054,7 +1054,8 @@ absl::Status ParseAny(JsonLexer& lex, const Desc<Traits>& desc,
       }));
 
   // Build a new lexer over the skipped object.
-  absl::string_view any_text = mark.value.UpToUnread();
+  MaybeOwnedString any_text_storage = mark.value.UpToUnread();
+  absl::string_view any_text = any_text_storage.AsView();
   io::ArrayInputStream in(any_text.data(), any_text.size());
   // Copying lex.options() is important; it inherits the recursion
   // limit.
