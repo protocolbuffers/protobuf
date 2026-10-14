@@ -183,7 +183,10 @@ cc_library(
     hdrs = ["internal/def_pool_init.h"],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
-    visibility = ["//rust/upb:__subpackages__"],
+    visibility = [
+        "//rust/upb:__subpackages__",
+        "//upb:__pkg__",
+    ],
     deps = [
         ":internal",
         "//upb/base",

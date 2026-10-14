@@ -126,6 +126,8 @@ class FieldGeneratorBase {
 
   virtual void GenerateAccessorDeclarations(io::Printer* p) const = 0;
 
+  virtual void GeneratePrivateAccessorDeclarations(io::Printer* p) const = 0;
+
   virtual void GenerateInlineAccessorDefinitions(io::Printer* p) const = 0;
 
   virtual void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {}
@@ -337,6 +339,10 @@ class FieldGenerator {
     auto vars = PushVarsForCall(p);
     impl_->GenerateAccessorDeclarations(p);
   }
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GeneratePrivateAccessorDeclarations(p);
+  }
 
   // Generates inline definitions of accessor functions for this field.
   //
@@ -455,7 +461,7 @@ class FieldGenerator {
   // GeneratePrivateMembers().
   //
   // These go into the copy constructor's aggregate initialization of the _impl_
-  // struct and must follow the syntax `decltype($field_$){from.$field_$}` (see
+  // struct and must follow the syntax `decltype($field_$){$from_field$}` (see
   // above). Does not include `:` or `,` separators.
   void GenerateCopyAggregateInitializer(io::Printer* p) const {
     auto vars = PushVarsForCall(p);

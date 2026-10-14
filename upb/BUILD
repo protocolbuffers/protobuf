@@ -186,6 +186,8 @@ upb_amalgamation(
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:json_enumvalue_options_upb_proto",
         "//upb/reflection:internal",
+        "//upb/reflection:def_pool_init",
+        "//upb/text",
         "//upb/text:debug",
         "//upb/text:internal",
         "//upb/wire",

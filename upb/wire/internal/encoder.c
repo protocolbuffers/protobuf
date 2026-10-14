@@ -717,7 +717,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-      ptr = encode_ext(ptr, e, ext->ext, ext->data,
+      ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+                       upb_Extension_GetValue(ext),
                        UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                            kUpb_ExtMode_IsMessageSet);
     }
@@ -761,7 +762,8 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
       } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
-        ptr = encode_ext(ptr, e, ext->ext, ext->data,
+        ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+                         upb_Extension_GetValue(ext),
                          UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                              kUpb_ExtMode_IsMessageSet);
       }
@@ -828,6 +830,12 @@ upb_EncodeStatus _upb_Encode(const upb_Message* msg, const upb_MiniTable* l,
   _upb_mapsorter_init(&e.sorter);
 
   return upb_Encoder_Encode(ptr, &e, msg, l, buf, size, prepend_len);
+}
+
+char* UPB_PRIVATE(_upb_Encode_FieldToBuffer)(char* ptr, upb_encstate* e,
+                                             const upb_Message* msg,
+                                             const upb_MiniTableField* field) {
+  return encode_field(ptr, e, msg, field);
 }
 
 upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Field)(upb_encstate* e,

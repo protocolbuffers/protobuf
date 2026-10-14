@@ -47,6 +47,12 @@ class RawPtr {
   T* operator->() const { return Get(); }
   T& operator*() const { return *Get(); }
 
+  // For simplicity of codegen, we provide forwarding APIs
+  operator const T&() const { return *Get(); }  // NOLINT
+  operator T&() { return *Get(); }              // NOLINT
+  auto begin() const { return Get()->begin(); }
+  auto end() const { return Get()->end(); }
+
  private:
   void* p_;
 };

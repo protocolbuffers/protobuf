@@ -119,11 +119,11 @@ PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
  * If `map` is NULL, a new map is allocated, otherwise the wrapper will be
  * attached to the provided `arr`.
  *
- * If `subobj_map` and `iter` are non-NULL, the wrapper is assumed to be in the
- * unset state, and the entry for `iter` is removed from `subobj_map`.
+ * If `iter` is non-NULL, the wrapper is assumed to be in the unset state, and
+ * the entry for `iter` is removed from the map.
  */
 upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
-                                  PyUpb_WeakMap* subobj_map, intptr_t* iter) {
+                                  PyUpb_WeakMapIter* iter) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   assert(PyUpb_MapContainer_IsStub(self));
   if (!map) {
@@ -139,8 +139,8 @@ upb_Map* PyUpb_MapContainer_Reify(PyObject* _self, upb_Map* map,
       return NULL;
     }
   }
-  if (subobj_map) {
-    PyUpb_WeakMap_DeleteIter(subobj_map, iter);
+  if (iter) {
+    PyUpb_WeakMapIter_Delete(iter);
   } else {
     const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
     upb_MessageValue msgval = {.map_val = map};
@@ -183,7 +183,7 @@ upb_Map* PyUpb_MapContainer_AssureWritable(PyObject* _self) {
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   if (map) return map;  // Already writable.
 
-  return PyUpb_MapContainer_Reify((PyObject*)self, NULL, NULL, 0);
+  return PyUpb_MapContainer_Reify((PyObject*)self, NULL, NULL);
 }
 
 static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,

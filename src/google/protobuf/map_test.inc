@@ -1611,6 +1611,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   const FieldDescriptor* fd_map_int32_foreign_message_value =
       fd_map_int32_foreign_message->message_type()->map_value();
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   // Get RepeatedPtrField objects for all fields of interest.
   const RepeatedPtrField<Message>& mf_int32_int32 =
       refl->GetRepeatedPtrField<Message>(message, fd_map_int32_int32);
@@ -1631,6 +1632,7 @@ TEST_F(MapFieldReflectionTest, RegularFields) {
   RepeatedPtrField<Message>* mmf_int32_foreign_message =
       refl->MutableRepeatedPtrField<Message>(&message,
                                              fd_map_int32_foreign_message);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
 
   // Make sure we can do gets through the RepeatedPtrField objects.
   for (int i = 0; i < 10; ++i) {
@@ -2239,7 +2241,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
   // TODO: After supporting arena agnostic delete or let map entry
   // handle heap allocation, this could be removed.
-  if (message.GetArena() != nullptr) {
+  if (internal::HasArena(message)) {
     entry_int32_int32.release();
     entry_int32_double.release();
     entry_string_string.release();
@@ -4188,8 +4190,10 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
   const Reflection* reflection = source.GetReflection();
   const FieldDescriptor* field_desc =
       source.GetDescriptor()->FindFieldByName("map_int32_int32");
+  PROTOBUF_IGNORE_DEPRECATION_START
   RepeatedPtrField<Message>* map_field =
       reflection->MutableRepeatedPtrField<Message>(&source, field_desc);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   RepeatedPtrField<Message>::iterator iter = map_field->begin();
 
   // Serialize message to text format, which will invalidate the previous
@@ -4217,7 +4221,7 @@ TEST(TextFormatMapTest, NoDisableReflectionIterator) {
 }
 
 // arena support =================================================
-TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
+TEST(ArenaMapTest, ParsingAndSerializingNoHeapAllocation) {
   // Allocate a large initial block to avoid mallocs during hooked test.
   std::vector<char> arena_block(128 * 1024);
   ArenaOptions options;
@@ -4242,7 +4246,7 @@ TEST(ArenaTest, ParsingAndSerializingNoHeapAllocation) {
   }
 }
 
-TEST(ArenaTest, SubmessageOnSameArena) {
+TEST(ArenaMapTest, SubmessageOnSameArena) {
   Arena arena;
   for (Arena* arena_to_use : {&arena, static_cast<Arena*>(nullptr)}) {
     ArenaHolder<UNITTEST::TestArenaMap> m(arena_to_use);
@@ -4252,7 +4256,7 @@ TEST(ArenaTest, SubmessageOnSameArena) {
 }
 
 // Use text format parsing and serializing to test reflection api.
-TEST(ArenaTest, ReflectionInTextFormat) {
+TEST(ArenaMapTest, ReflectionInTextFormat) {
   Arena arena;
   std::string data;
 
@@ -4270,7 +4274,7 @@ TEST(ArenaTest, ReflectionInTextFormat) {
 }
 
 // Make sure the memory allocated for string in map is deallocated.
-TEST(ArenaTest, StringMapNoLeak) {
+TEST(ArenaMapTest, StringMapNoLeak) {
   Arena arena;
   UNITTEST::TestArenaMap* message =
       Arena::Create<UNITTEST::TestArenaMap>(&arena);
@@ -4292,7 +4296,7 @@ TEST(ArenaTest, StringMapNoLeak) {
   value.append("a");
 }
 
-TEST(ArenaTest, IsInitialized) {
+TEST(ArenaMapTest, IsInitialized) {
   // Allocate a large initial polluted block.
   std::vector<char> arena_block(128 * 1024);
   std::fill(arena_block.begin(), arena_block.end(), '\xff');
@@ -4307,7 +4311,7 @@ TEST(ArenaTest, IsInitialized) {
   EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
 }
 
-TEST(ArenaTest, DynamicMapFieldOnArena) {
+TEST(ArenaMapTest, DynamicMapFieldOnArena) {
   Arena arena;
   UNITTEST::TestMap message2;
 
@@ -4322,7 +4326,7 @@ TEST(ArenaTest, DynamicMapFieldOnArena) {
   MapTestUtil::ExpectMapFieldsSet(message2);
 }
 
-TEST(ArenaTest, DynamicMapFieldOnArenaMemoryLeak) {
+TEST(ArenaMapTest, DynamicMapFieldOnArenaMemoryLeak) {
   auto* desc = UNITTEST::TestMap::descriptor();
   auto* field = desc->FindFieldByName("map_int32_int32");
 

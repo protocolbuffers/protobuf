@@ -327,10 +327,13 @@ bool upb_DecodeFast_TryFillMapEntry(const upb_MiniTableField* field,
   }
 
   uint64_t offset = UPB_PRIVATE(_upb_MiniTableField_Offset)(field);
-  return upb_DecodeFast_MakeMapData(offset, key_is_zigzag, val_is_zigzag,
-                                    is_tag2, is_string_key, key_wire_type,
-                                    val_wire_type, key_size, val_size, subofs,
-                                    tag, &entry->function_data);
+  bool key_validate_utf8 = (ktype == kUpb_FieldType_String);
+  bool val_validate_utf8 = (vtype == kUpb_FieldType_String);
+  bool val_is_message = (vtype == kUpb_FieldType_Message);
+  return upb_DecodeFast_MakeMapData(
+      offset, key_is_zigzag, val_is_zigzag, is_tag2, is_string_key,
+      key_validate_utf8, val_validate_utf8, val_is_message, key_wire_type,
+      val_wire_type, key_size, val_size, subofs, tag, &entry->function_data);
 }
 
 UPB_NODISCARD

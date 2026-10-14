@@ -933,9 +933,9 @@ class PROTOBUF_EXPORT TcParser final {
 
     ABSL_DCHECK(table->extension_offset != 0);
     return RefAt<ExtensionSet>(msg, table->extension_offset)
-        .ParseField(tag, ptr,
+        .ParseField(*msg, tag, ptr,
                     static_cast<const MessageBaseT*>(table->default_instance()),
-                    &msg->_internal_metadata_, ctx);
+                    ctx);
   }
 
   template <class MessageBaseT>
@@ -943,8 +943,8 @@ class PROTOBUF_EXPORT TcParser final {
       PROTOBUF_TC_PARAM_NO_DATA_DECL) {
     return RefAt<ExtensionSet>(msg, table->extension_offset)
         .ParseMessageSet(
-            ptr, static_cast<const MessageBaseT*>(table->default_instance()),
-            &msg->_internal_metadata_, ctx);
+            *msg, ptr,
+            static_cast<const MessageBaseT*>(table->default_instance()), ctx);
   }
 
   // Note: `inline` is needed on template function declarations below to avoid
@@ -996,6 +996,13 @@ class PROTOBUF_EXPORT TcParser final {
   PROTOBUF_CC static inline const char* RepeatedString(PROTOBUF_TC_PARAM_DECL);
   template <typename TagType, Utf8Type utf8>
   PROTOBUF_CC static inline const char* RepeatedCord(PROTOBUF_TC_PARAM_DECL);
+
+  // For certain repeated fields we want to keep going as long as we continue
+  // seeing the same tag. This reduces dispatching and increases the efficiency
+  // of container shrinking.
+  // We use this function as a way to annotate intention on the call sites.
+  static bool DataAvailableForRepeatedField(const char*& ptr,
+                                            ParseContext* ctx);
 
   static inline std::string* ParseRepeatedStringOnce(
       const char*& ptr, SerialArena* serial_arena, ParseContext* ctx,

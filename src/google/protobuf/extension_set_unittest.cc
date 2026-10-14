@@ -147,10 +147,21 @@ namespace {
 
 using TestUtil::EqualsToSerialized;
 
+class ExtensionSetTest : public ::testing::Test {
+ protected:
+  ExtensionSetTest()
+      : heap_message_(std::make_unique<unittest::TestAllExtensions>()) {}
+
+  const MessageLite& HeapMessage() const { return *heap_message_; }
+
+ private:
+  std::unique_ptr<unittest::TestAllExtensions> heap_message_;
+};
+
 // This test closely mirrors google/protobuf/compiler/cpp/unittest.cc
 // except that it uses extensions rather than regular fields.
 
-TEST(ExtensionSetTest, Defaults) {
+TEST_F(ExtensionSetTest, Defaults) {
   // Check that all default values are set correctly in the initial message.
   unittest::TestAllExtensions message;
 
@@ -170,7 +181,7 @@ TEST(ExtensionSetTest, Defaults) {
             &message.GetExtension(unittest::optional_import_message_extension));
 }
 
-TEST(ExtensionSetTest, Accessors) {
+TEST_F(ExtensionSetTest, Accessors) {
   // Set every field to a unique value then go back and check all those
   // values.
   unittest::TestAllExtensions message;
@@ -182,7 +193,7 @@ TEST(ExtensionSetTest, Accessors) {
   TestUtil::ExpectRepeatedExtensionsModified(message);
 }
 
-TEST(ExtensionSetTest, Clear) {
+TEST_F(ExtensionSetTest, Clear) {
   // Set every field to a unique value, clear the message, then check that
   // it is cleared.
   unittest::TestAllExtensions message;
@@ -197,7 +208,7 @@ TEST(ExtensionSetTest, Clear) {
   TestUtil::ExpectAllExtensionsSet(message);
 }
 
-TEST(ExtensionSetTest, ClearOneField) {
+TEST_F(ExtensionSetTest, ClearOneField) {
   // Set every field to a unique value, then clear one value and insure that
   // only that one value is cleared.
   unittest::TestAllExtensions message;
@@ -220,7 +231,7 @@ TEST(ExtensionSetTest, ClearOneField) {
   TestUtil::ExpectAllExtensionsSet(message);
 }
 
-TEST(ExtensionSetTest, SetAllocatedExtension) {
+TEST_F(ExtensionSetTest, SetAllocatedExtension) {
   unittest::TestAllExtensions message;
   EXPECT_FALSE(
       message.HasExtension(unittest::optional_foreign_message_extension));
@@ -247,7 +258,7 @@ TEST(ExtensionSetTest, SetAllocatedExtension) {
       message.HasExtension(unittest::optional_foreign_message_extension));
 }
 
-TEST(ExtensionSetTest, ReleaseExtension) {
+TEST_F(ExtensionSetTest, ReleaseExtension) {
   proto2_wireformat_unittest::TestMessageSet message;
   EXPECT_FALSE(message.HasExtension(
       unittest::TestMessageSetExtension1::message_set_extension));
@@ -278,7 +289,7 @@ TEST(ExtensionSetTest, ReleaseExtension) {
   delete released_extension;
 }
 
-TEST(ExtensionSetTest, ArenaUnsafeArenaSetAllocatedAndRelease) {
+TEST_F(ExtensionSetTest, ArenaUnsafeArenaSetAllocatedAndRelease) {
   Arena arena;
   unittest::TestAllExtensions* message =
       Arena::Create<unittest::TestAllExtensions>(&arena);
@@ -302,7 +313,7 @@ TEST(ExtensionSetTest, ArenaUnsafeArenaSetAllocatedAndRelease) {
       unittest::optional_foreign_message_extension, &extension);
 }
 
-TEST(ExtensionSetTest, UnsafeArenaSetAllocatedAndRelease) {
+TEST_F(ExtensionSetTest, UnsafeArenaSetAllocatedAndRelease) {
   unittest::TestAllExtensions message;
   unittest::ForeignMessage* extension = new unittest::ForeignMessage();
   message.UnsafeArenaSetAllocatedExtension(
@@ -324,7 +335,7 @@ TEST(ExtensionSetTest, UnsafeArenaSetAllocatedAndRelease) {
       unittest::optional_foreign_message_extension, extension);
 }
 
-TEST(ExtensionSetTest, ArenaUnsafeArenaReleaseOfHeapAlloc) {
+TEST_F(ExtensionSetTest, ArenaUnsafeArenaReleaseOfHeapAlloc) {
   Arena arena;
   unittest::TestAllExtensions* message =
       Arena::Create<unittest::TestAllExtensions>(&arena);
@@ -342,7 +353,7 @@ TEST(ExtensionSetTest, ArenaUnsafeArenaReleaseOfHeapAlloc) {
 }
 
 
-TEST(ExtensionSetTest, CopyFrom) {
+TEST_F(ExtensionSetTest, CopyFrom) {
   unittest::TestAllExtensions message1, message2;
 
   TestUtil::SetAllExtensions(&message1);
@@ -352,7 +363,7 @@ TEST(ExtensionSetTest, CopyFrom) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
-TEST(ExtensionSetTest, CopyFromPacked) {
+TEST_F(ExtensionSetTest, CopyFromPacked) {
   unittest::TestPackedExtensions message1, message2;
 
   TestUtil::SetPackedExtensions(&message1);
@@ -362,7 +373,7 @@ TEST(ExtensionSetTest, CopyFromPacked) {
   TestUtil::ExpectPackedExtensionsSet(message2);
 }
 
-TEST(ExtensionSetTest, CopyFromUpcasted) {
+TEST_F(ExtensionSetTest, CopyFromUpcasted) {
   unittest::TestAllExtensions message1, message2;
   const Message& upcasted_message = message1;
 
@@ -374,7 +385,7 @@ TEST(ExtensionSetTest, CopyFromUpcasted) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
-TEST(ExtensionSetTest, SwapWithEmpty) {
+TEST_F(ExtensionSetTest, SwapWithEmpty) {
   unittest::TestAllExtensions message1, message2;
   TestUtil::SetAllExtensions(&message1);
 
@@ -385,7 +396,7 @@ TEST(ExtensionSetTest, SwapWithEmpty) {
   TestUtil::ExpectExtensionsClear(message1);
 }
 
-TEST(ExtensionSetTest, SwapWithSelf) {
+TEST_F(ExtensionSetTest, SwapWithSelf) {
   unittest::TestAllExtensions message;
   TestUtil::SetAllExtensions(&message);
 
@@ -394,7 +405,7 @@ TEST(ExtensionSetTest, SwapWithSelf) {
   TestUtil::ExpectAllExtensionsSet(message);
 }
 
-TEST(ExtensionSetTest, SwapExtension) {
+TEST_F(ExtensionSetTest, SwapExtension) {
   unittest::TestAllExtensions message1;
   unittest::TestAllExtensions message2;
 
@@ -421,7 +432,7 @@ TEST(ExtensionSetTest, SwapExtension) {
   EXPECT_TRUE(message2.HasExtension(unittest::optional_cord_extension));
 }
 
-TEST(ExtensionSetTest, SwapExtensionWithEmpty) {
+TEST_F(ExtensionSetTest, SwapExtensionWithEmpty) {
   unittest::TestAllExtensions message1;
   unittest::TestAllExtensions message2;
   unittest::TestAllExtensions message3;
@@ -438,7 +449,7 @@ TEST(ExtensionSetTest, SwapExtensionWithEmpty) {
   TestUtil::ExpectExtensionsClear(message2);
 }
 
-TEST(ExtensionSetTest, SwapExtensionBothFull) {
+TEST_F(ExtensionSetTest, SwapExtensionBothFull) {
   unittest::TestAllExtensions message1;
   unittest::TestAllExtensions message2;
 
@@ -455,7 +466,7 @@ TEST(ExtensionSetTest, SwapExtensionBothFull) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
-TEST(ExtensionSetTest, ArenaSetAllExtension) {
+TEST_F(ExtensionSetTest, ArenaSetAllExtension) {
   Arena arena1;
   unittest::TestAllExtensions* message1 =
       Arena::Create<unittest::TestAllExtensions>(&arena1);
@@ -463,7 +474,7 @@ TEST(ExtensionSetTest, ArenaSetAllExtension) {
   TestUtil::ExpectAllExtensionsSet(*message1);
 }
 
-TEST(ExtensionSetTest, ArenaCopyConstructor) {
+TEST_F(ExtensionSetTest, ArenaCopyConstructor) {
   Arena arena1;
   unittest::TestAllExtensions* message1 =
       Arena::Create<unittest::TestAllExtensions>(&arena1);
@@ -473,7 +484,7 @@ TEST(ExtensionSetTest, ArenaCopyConstructor) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
-TEST(ExtensionSetTest, ArenaMergeFrom) {
+TEST_F(ExtensionSetTest, ArenaMergeFrom) {
   Arena arena1;
   unittest::TestAllExtensions* message1 =
       Arena::Create<unittest::TestAllExtensions>(&arena1);
@@ -484,7 +495,7 @@ TEST(ExtensionSetTest, ArenaMergeFrom) {
   TestUtil::ExpectAllExtensionsSet(message2);
 }
 
-TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
+TEST_F(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
   Arena arena;
   {
     auto* message1 = Arena::Create<unittest::TestAllExtensions>(&arena);
@@ -524,7 +535,7 @@ TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensions) {
   }
 }
 
-TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
+TEST_F(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
   if (!internal::RunLargeMemoryTests()) {
     GTEST_SKIP() << "Not enough memory for this test.";
   }
@@ -559,7 +570,7 @@ TEST(ExtensionSetTest, ArenaMergeFromWithClearedExtensionsReduceCapacity) {
                 kConstantOverhead);
 }
 
-TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
+TEST_F(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
   Arena arena;
   unittest::TestAllExtensions* message =
       Arena::Create<unittest::TestAllExtensions>(&arena);
@@ -581,7 +592,7 @@ TEST(ExtensionSetTest, ArenaSetAllocatedMessageAndRelease) {
       message->HasExtension(unittest::optional_foreign_message_extension));
 }
 
-TEST(ExtensionSetTest, SwapExtensionBothFullWithArena) {
+TEST_F(ExtensionSetTest, SwapExtensionBothFullWithArena) {
   Arena arena1;
   std::unique_ptr<Arena> arena2 = std::make_unique<Arena>();
 
@@ -617,7 +628,7 @@ TEST(ExtensionSetTest, SwapExtensionBothFullWithArena) {
   TestUtil::ExpectAllExtensionsSet(*message4);
 }
 
-TEST(ExtensionSetTest, SwapFieldsOfExtensionBothFullWithArena) {
+TEST_F(ExtensionSetTest, SwapFieldsOfExtensionBothFullWithArena) {
   Arena arena1;
   Arena* arena2 = new Arena();
 
@@ -639,7 +650,7 @@ TEST(ExtensionSetTest, SwapFieldsOfExtensionBothFullWithArena) {
   TestUtil::ExpectAllExtensionsSet(*message1);
 }
 
-TEST(ExtensionSetTest, SwapExtensionWithSelf) {
+TEST_F(ExtensionSetTest, SwapExtensionWithSelf) {
   unittest::TestAllExtensions message1;
 
   TestUtil::SetAllExtensions(&message1);
@@ -652,7 +663,7 @@ TEST(ExtensionSetTest, SwapExtensionWithSelf) {
   TestUtil::ExpectAllExtensionsSet(message1);
 }
 
-TEST(ExtensionSetTest, SerializationToArray) {
+TEST_F(ExtensionSetTest, SerializationToArray) {
   // Serialize as TestAllExtensions and parse as TestAllTypes to insure wire
   // compatibility of extensions.
   //
@@ -672,7 +683,7 @@ TEST(ExtensionSetTest, SerializationToArray) {
   TestUtil::ExpectAllFieldsSet(destination);
 }
 
-TEST(ExtensionSetTest, SerializationToStream) {
+TEST_F(ExtensionSetTest, SerializationToStream) {
   // Serialize as TestAllExtensions and parse as TestAllTypes to insure wire
   // compatibility of extensions.
   //
@@ -696,7 +707,7 @@ TEST(ExtensionSetTest, SerializationToStream) {
   TestUtil::ExpectAllFieldsSet(destination);
 }
 
-TEST(ExtensionSetTest, PackedSerializationToArray) {
+TEST_F(ExtensionSetTest, PackedSerializationToArray) {
   // Serialize as TestPackedExtensions and parse as TestPackedTypes to insure
   // wire compatibility of extensions.
   //
@@ -716,7 +727,7 @@ TEST(ExtensionSetTest, PackedSerializationToArray) {
   TestUtil::ExpectPackedFieldsSet(destination);
 }
 
-TEST(ExtensionSetTest, PackedSerializationToStream) {
+TEST_F(ExtensionSetTest, PackedSerializationToStream) {
   // Serialize as TestPackedExtensions and parse as TestPackedTypes to insure
   // wire compatibility of extensions.
   //
@@ -740,7 +751,7 @@ TEST(ExtensionSetTest, PackedSerializationToStream) {
   TestUtil::ExpectPackedFieldsSet(destination);
 }
 
-TEST(ExtensionSetTest, NestedExtensionGroup) {
+TEST_F(ExtensionSetTest, NestedExtensionGroup) {
   // Serialize as TestGroup and parse as TestGroupExtension.
   unittest::TestGroup source;
   unittest::TestGroupExtension destination;
@@ -766,7 +777,7 @@ TEST(ExtensionSetTest, NestedExtensionGroup) {
           unittest::TestNestedExtension::optional_foreign_enum_extension));
 }
 
-TEST(ExtensionSetTest, Parsing) {
+TEST_F(ExtensionSetTest, Parsing) {
   // Serialize as TestAllTypes and parse as TestAllExtensions.
   unittest::TestAllTypes source;
   unittest::TestAllExtensions destination;
@@ -779,7 +790,7 @@ TEST(ExtensionSetTest, Parsing) {
   TestUtil::ExpectAllExtensionsSet(destination);
 }
 
-TEST(ExtensionSetTest, PackedParsing) {
+TEST_F(ExtensionSetTest, PackedParsing) {
   // Serialize as TestPackedTypes and parse as TestPackedExtensions.
   unittest::TestPackedTypes source;
   unittest::TestPackedExtensions destination;
@@ -791,7 +802,7 @@ TEST(ExtensionSetTest, PackedParsing) {
   TestUtil::ExpectPackedExtensionsSet(destination);
 }
 
-TEST(ExtensionSetTest, PackedToUnpackedParsing) {
+TEST_F(ExtensionSetTest, PackedToUnpackedParsing) {
   unittest::TestPackedTypes source;
   unittest::TestUnpackedExtensions destination;
   std::string data;
@@ -815,7 +826,7 @@ TEST(ExtensionSetTest, PackedToUnpackedParsing) {
                            proto2_unittest::FOREIGN_BAR);
 }
 
-TEST(ExtensionSetTest, UnpackedToPackedParsing) {
+TEST_F(ExtensionSetTest, UnpackedToPackedParsing) {
   unittest::TestUnpackedTypes source;
   unittest::TestPackedExtensions destination;
   std::string data;
@@ -839,7 +850,7 @@ TEST(ExtensionSetTest, UnpackedToPackedParsing) {
                            proto2_unittest::FOREIGN_BAR);
 }
 
-TEST(ExtensionSetTest, IsInitialized) {
+TEST_F(ExtensionSetTest, IsInitialized) {
   // Test that IsInitialized() returns false if required fields in nested
   // extensions are missing.
   unittest::TestAllExtensions message;
@@ -867,7 +878,7 @@ TEST(ExtensionSetTest, IsInitialized) {
   EXPECT_TRUE(message.IsInitialized());
 }
 
-TEST(ExtensionSetTest, MutableString) {
+TEST_F(ExtensionSetTest, MutableString) {
   // Test the mutable string accessors.
   unittest::TestAllExtensions message;
 
@@ -881,7 +892,7 @@ TEST(ExtensionSetTest, MutableString) {
             message.GetExtension(unittest::repeated_string_extension, 0));
 }
 
-TEST(ExtensionSetTest, SpaceUsedExcludingSelf) {
+TEST_F(ExtensionSetTest, SpaceUsedExcludingSelf) {
   // Scalar primitive extensions should increase the extension set size by a
   // minimum of the size of the primitive type.
 #define TEST_SCALAR_EXTENSIONS_SPACE_USED(type, value)                       \
@@ -1068,7 +1079,7 @@ inline void IncAllExtensions(M* message, ID extension, T val) {
   }
 }
 
-TEST(ExtensionSetTest, RepeatedFields) {
+TEST_F(ExtensionSetTest, RepeatedFields) {
   unittest::TestAllExtensions message;
 
   // Test empty repeated-field case (b/12926163)
@@ -1292,7 +1303,7 @@ TEST(ExtensionSetTest, RepeatedFields) {
 }
 
 // From b/12926163
-TEST(ExtensionSetTest, AbsentExtension) {
+TEST_F(ExtensionSetTest, AbsentExtension) {
   unittest::TestAllExtensions message;
   message.MutableRepeatedExtension(unittest::repeated_nested_message_extension)
       ->Add()
@@ -1306,7 +1317,7 @@ TEST(ExtensionSetTest, AbsentExtension) {
 
 #if GTEST_HAS_DEATH_TEST
 
-TEST(ExtensionSetTest, InvalidEnumDeath) {
+TEST_F(ExtensionSetTest, InvalidEnumDeath) {
   unittest::TestAllExtensions message;
   EXPECT_DEBUG_DEATH(
       message.SetExtension(unittest::optional_foreign_enum_extension,
@@ -1316,7 +1327,7 @@ TEST(ExtensionSetTest, InvalidEnumDeath) {
 
 #endif  // GTEST_HAS_DEATH_TEST
 
-TEST(ExtensionSetTest, DynamicExtensions) {
+TEST_F(ExtensionSetTest, DynamicExtensions) {
   // Test adding a dynamic extension to a compiled-in message object.
 
   FileDescriptorProto dynamic_proto;
@@ -1476,7 +1487,7 @@ TEST(ExtensionSetTest, DynamicExtensions) {
   }
 }
 
-TEST(ExtensionSetTest, Proto3PackedDynamicExtensions) {
+TEST_F(ExtensionSetTest, Proto3PackedDynamicExtensions) {
   // Regression test for b/271121265. This test case verifies that
   // packed-by-default repeated custom options in proto3 are correctly
   // serialized in packed form when dynamic extensions are used.
@@ -1524,7 +1535,7 @@ TEST(ExtensionSetTest, Proto3PackedDynamicExtensions) {
   EXPECT_EQ(reserialized_options, "\xca\xb5\x18\x01\x01");
 }
 
-TEST(ExtensionSetTest, Proto3ExtensionPresenceSingular) {
+TEST_F(ExtensionSetTest, Proto3ExtensionPresenceSingular) {
   using protobuf_unittest::Proto3FileExtensions;
   FileDescriptorProto file;
 
@@ -1537,31 +1548,31 @@ TEST(ExtensionSetTest, Proto3ExtensionPresenceSingular) {
   EXPECT_EQ(file.options().GetExtension(Proto3FileExtensions::singular_int), 1);
 }
 
-TEST(ExtensionSetTest, BoolExtension) {
+TEST_F(ExtensionSetTest, BoolExtension) {
   unittest::TestAllExtensions msg;
   uint8_t wire_bytes[2] = {13 * 8, 42 /* out of bounds payload for bool */};
   EXPECT_TRUE(msg.ParseFromArray(wire_bytes, 2));
   EXPECT_TRUE(msg.GetExtension(proto2_unittest::optional_bool_extension));
 }
 
-TEST(ExtensionSetTest, ConstInit) {
+TEST_F(ExtensionSetTest, ConstInit) {
   PROTOBUF_CONSTINIT static ExtensionSet set{};
   EXPECT_EQ(set.NumExtensions(), 0);
 }
 
 // Make sure that is_cleared is set correctly for repeated fields.
-TEST(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
+TEST_F(ExtensionSetTest, NumExtensionsWithRepeatedFields) {
   ExtensionSet set;
   const auto* desc =
       unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
           "repeated_int32_extension");
   ASSERT_NE(desc, nullptr);
-  (void)set.MutableRawRepeatedField(/*arena=*/nullptr, desc->number(),
+  (void)set.MutableRawRepeatedField(/*parent=*/HeapMessage(), desc->number(),
                                     WireFormatLite::TYPE_INT32, false, desc);
   EXPECT_EQ(set.NumExtensions(), 1);
 }
 
-TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
+TEST_F(ExtensionSetTest, ExtensionSetSpaceUsed) {
   unittest::TestAllExtensions msg;
   size_t l = msg.SpaceUsedLong();
   msg.SetExtension(unittest::optional_int32_extension, 100);
@@ -1573,7 +1584,7 @@ TEST(ExtensionSetTest, ExtensionSetSpaceUsed) {
   EXPECT_TRUE((l2 - l) > (l3 - l));
 }
 
-TEST(ExtensionSetTest, Descriptor) {
+TEST_F(ExtensionSetTest, Descriptor) {
   EXPECT_EQ(
       GetExtensionReflection(unittest::optional_int32_extension),
       unittest::TestAllExtensions::descriptor()->file()->FindExtensionByName(
@@ -1585,7 +1596,7 @@ TEST(ExtensionSetTest, Descriptor) {
   EXPECT_NE(GetExtensionReflection(pb::cpp), nullptr);
 }
 
-TEST(ExtensionSetTest, MoveExtension) {
+TEST_F(ExtensionSetTest, MoveExtension) {
   unittest::TestAllExtensions src;
   src.SetExtension(unittest::optional_int32_extension, 101);
   src.SetExtension(unittest::optional_string_extension, "123");
@@ -1659,7 +1670,7 @@ TEST(ExtensionSetTest, MoveExtension) {
   EXPECT_EQ(src.GetExtension(unittest::optional_string_extension), "123");
 }
 
-TEST(ExtensionSetTest, MoveExtensionWithArena) {
+TEST_F(ExtensionSetTest, MoveExtensionWithArena) {
   Arena arena;
   auto* src = Arena::Create<unittest::TestAllExtensions>(&arena);
   src->SetExtension(unittest::optional_int32_extension, 101);
@@ -1741,7 +1752,7 @@ auto MakeExtensionWithLazyRep(int value) {
   return out;
 }
 
-TEST(ExtensionSetTest, MoveLazyMessageExtension) {
+TEST_F(ExtensionSetTest, MoveLazyMessageExtension) {
   proto2_unittest::TestAllExtensions src = MakeExtensionWithLazyRep(1234);
   proto2_unittest::TestAllExtensions dst = MakeExtensionWithLazyRep(5678);
 
@@ -1765,7 +1776,7 @@ TEST(ExtensionSetTest, MoveLazyMessageExtension) {
   EXPECT_EQ(dst.GetExtension(unittest::optional_int32_extension), 1234);
 }
 
-TEST(ExtensionSetTest, MoveExtensionWithGeneratedDescriptor) {
+TEST_F(ExtensionSetTest, MoveExtensionWithGeneratedDescriptor) {
   unittest::TestAllExtensions src;
   const FieldDescriptor* fd =
       GetExtensionReflection(unittest::optional_int32_extension);
@@ -1784,7 +1795,7 @@ TEST(ExtensionSetTest, MoveExtensionWithGeneratedDescriptor) {
   EXPECT_FALSE(dst.HasExtension(unittest::optional_int32_extension));
 }
 
-TEST(ExtensionSetTest, MoveExtensionWithDynamicDescriptor) {
+TEST_F(ExtensionSetTest, MoveExtensionWithDynamicDescriptor) {
   // Define a dynamic extension.
   FileDescriptorProto file_descriptor_proto;
   file_descriptor_proto.set_name("my_dynamic_extensions.proto");
@@ -2063,7 +2074,7 @@ TEST(ExtensionSet, BytesWithInvalidUTF8Succeeds) {
               )pb"));
 }
 
-TEST(ExtensionSetTest, MessageSetRecursionLimitIsConsistent) {
+TEST_F(ExtensionSetTest, MessageSetRecursionLimitIsConsistent) {
   DynamicMessageFactory factory;
   const Descriptor* desc =
       DescriptorPool::generated_pool()->FindMessageTypeByName(
@@ -2112,12 +2123,12 @@ TEST(ExtensionSetTest, MessageSetRecursionLimitIsConsistent) {
   }
 }
 
-TEST(ExtensionSetTest, MergeLargeExtensionSetToEmpty) {
+TEST_F(ExtensionSetTest, MergeLargeExtensionSetToEmpty) {
   ExtensionSet src;
   ExtensionSet dst;
   constexpr int kNumExtensions = 70000;  // > 2**16 (65536)
   for (int i = 1; i <= kNumExtensions; ++i) {
-    src.Set<int32_t>(/*arena=*/nullptr, i, WireFormatLite::TYPE_INT32, i,
+    src.Set<int32_t>(/*parent=*/HeapMessage(), i, WireFormatLite::TYPE_INT32, i,
                      /*descriptor=*/nullptr);
   }
   dst.MergeFrom(/*arena=*/nullptr, /*extendee=*/nullptr, src,

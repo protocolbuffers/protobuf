@@ -58,6 +58,9 @@ void NameMap_ExitConstructor(zend_class_entry* ce);
 // is ending.
 void Descriptors_Add(zend_object* desc);
 
+// Throws a PHP Out of memory exception and returns NULL.
+void* OutOfMemory(void);
+
 // We need our own assert() because PHP takes control of NDEBUG in its headers.
 #ifdef PBPHP_ENABLE_ASSERTS
 #define PBPHP_ASSERT(x)                                                    \

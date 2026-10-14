@@ -1616,26 +1616,29 @@ class DescriptorPool::Tables {
           misc_allocations_before_checkpoint(
               static_cast<int>(tables->misc_allocs_.size())),
           pending_symbols_before_checkpoint(
-              tables->symbols_after_checkpoint_.size()),
+              tables->checkpoint_data_->symbols_after_checkpoint.size()),
           pending_files_before_checkpoint(
-              tables->files_after_checkpoint_.size()),
+              tables->checkpoint_data_->files_after_checkpoint.size()),
           pending_extensions_before_checkpoint(
-              tables->extensions_after_checkpoint_.size()) {}
+              tables->checkpoint_data_->extensions_after_checkpoint.size()) {}
     int flat_allocations_before_checkpoint;
     int misc_allocations_before_checkpoint;
     int pending_symbols_before_checkpoint;
     int pending_files_before_checkpoint;
     int pending_extensions_before_checkpoint;
   };
-  std::vector<CheckPoint> checkpoints_;
-  std::vector<Symbol> symbols_after_checkpoint_;
-  std::vector<const FileDescriptor*> files_after_checkpoint_;
-  std::vector<std::pair<const Descriptor*, int>> extensions_after_checkpoint_;
+  struct CheckpointData {
+    std::vector<CheckPoint> checkpoints;
+    std::vector<Symbol> symbols_after_checkpoint;
+    std::vector<const FileDescriptor*> files_after_checkpoint;
+    std::vector<std::pair<const Descriptor*, int>> extensions_after_checkpoint;
+  };
+  std::unique_ptr<CheckpointData> checkpoint_data_;
 };
 
 DescriptorPool::Tables::Tables() {}
 
-DescriptorPool::Tables::~Tables() { ABSL_DCHECK(checkpoints_.empty()); }
+DescriptorPool::Tables::~Tables() { ABSL_DCHECK(checkpoint_data_ == nullptr); }
 
 FileDescriptorTables::FileDescriptorTables() = default;
 
@@ -1651,49 +1654,54 @@ inline const FileDescriptorTables& FileDescriptorTables::GetEmptyInstance() {
 }
 
 void DescriptorPool::Tables::AddCheckpoint() {
-  checkpoints_.emplace_back(this);
+  if (checkpoint_data_ == nullptr) {
+    checkpoint_data_ = std::make_unique<CheckpointData>();
+  }
+  checkpoint_data_->checkpoints.emplace_back(this);
 }
 
 void DescriptorPool::Tables::ClearLastCheckpoint() {
-  ABSL_DCHECK(!checkpoints_.empty());
-  checkpoints_.pop_back();
-  if (checkpoints_.empty()) {
+  ABSL_DCHECK(checkpoint_data_ != nullptr);
+  ABSL_DCHECK(!checkpoint_data_->checkpoints.empty());
+  checkpoint_data_->checkpoints.pop_back();
+  if (checkpoint_data_->checkpoints.empty()) {
     // All checkpoints have been cleared: we can now commit all of the pending
     // data.
-    symbols_after_checkpoint_.clear();
-    files_after_checkpoint_.clear();
-    extensions_after_checkpoint_.clear();
+    checkpoint_data_.reset();
   }
 }
 
 void DescriptorPool::Tables::RollbackToLastCheckpoint(
     DeferredValidation& deferred_validation) {
-  ABSL_DCHECK(!checkpoints_.empty());
-  const CheckPoint& checkpoint = checkpoints_.back();
+  ABSL_DCHECK(checkpoint_data_ != nullptr);
+  ABSL_DCHECK(!checkpoint_data_->checkpoints.empty());
+  const CheckPoint& checkpoint = checkpoint_data_->checkpoints.back();
 
   for (size_t i = checkpoint.pending_symbols_before_checkpoint;
-       i < symbols_after_checkpoint_.size(); i++) {
-    symbols_by_name_.erase(symbols_after_checkpoint_[i]);
+       i < checkpoint_data_->symbols_after_checkpoint.size(); i++) {
+    symbols_by_name_.erase(checkpoint_data_->symbols_after_checkpoint[i]);
   }
   for (size_t i = checkpoint.pending_files_before_checkpoint;
-       i < files_after_checkpoint_.size(); i++) {
-    deferred_validation.RollbackFile(files_after_checkpoint_[i]);
-    files_by_name_.erase(files_after_checkpoint_[i]);
+       i < checkpoint_data_->files_after_checkpoint.size(); i++) {
+    deferred_validation.RollbackFile(
+        checkpoint_data_->files_after_checkpoint[i]);
+    files_by_name_.erase(checkpoint_data_->files_after_checkpoint[i]);
   }
   for (size_t i = checkpoint.pending_extensions_before_checkpoint;
-       i < extensions_after_checkpoint_.size(); i++) {
-    extensions_.erase(extensions_after_checkpoint_[i]);
+       i < checkpoint_data_->extensions_after_checkpoint.size(); i++) {
+    extensions_.erase(checkpoint_data_->extensions_after_checkpoint[i]);
   }
 
-  symbols_after_checkpoint_.resize(
+  checkpoint_data_->symbols_after_checkpoint.resize(
       checkpoint.pending_symbols_before_checkpoint);
-  files_after_checkpoint_.resize(checkpoint.pending_files_before_checkpoint);
-  extensions_after_checkpoint_.resize(
+  checkpoint_data_->files_after_checkpoint.resize(
+      checkpoint.pending_files_before_checkpoint);
+  checkpoint_data_->extensions_after_checkpoint.resize(
       checkpoint.pending_extensions_before_checkpoint);
 
   flat_allocs_.resize(checkpoint.flat_allocations_before_checkpoint);
   misc_allocs_.resize(checkpoint.misc_allocations_before_checkpoint);
-  checkpoints_.pop_back();
+  ClearLastCheckpoint();
 }
 
 // -------------------------------------------------------------------
@@ -1715,7 +1723,7 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
                                                 absl::string_view name) {
   if (pool->mutex_ != nullptr) {
     // Fast path: the Symbol is already cached.  This is just a hash lookup.
-    absl::ReaderMutexLock lock(pool->mutex_);
+    absl::ReaderMutexLock lock(*pool->mutex_);
     if (known_bad_symbols_.empty() && known_bad_files_.empty()) {
       Symbol result = FindSymbol(name);
       if (!result.IsNull()) return result;
@@ -1871,7 +1879,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
 
   // Second try, with reader lock held on unknown enum values: common case.
   {
-    absl::ReaderMutexLock l(&unknown_enum_values_mu_);
+    absl::ReaderMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
       return *it;
@@ -1880,7 +1888,7 @@ FileDescriptorTables::FindEnumValueByNumberCreatingIfUnknown(
   // If not found, try again with writer lock held, and create new descriptor if
   // necessary.
   {
-    absl::WriterMutexLock l(&unknown_enum_values_mu_);
+    absl::WriterMutexLock l(unknown_enum_values_mu_);
     auto it = unknown_enum_values_by_number_.find(query);
     if (it != unknown_enum_values_by_number_.end()) {
       return *it;
@@ -1938,7 +1946,8 @@ bool DescriptorPool::Tables::AddSymbol(absl::string_view full_name,
                                        Symbol symbol) {
   ABSL_DCHECK_EQ(full_name, symbol.full_name());
   if (symbols_by_name_.insert(symbol).second) {
-    symbols_after_checkpoint_.push_back(symbol);
+    ABSL_DCHECK(checkpoint_data_ != nullptr);
+    checkpoint_data_->symbols_after_checkpoint.push_back(symbol);
     return true;
   } else {
     return false;
@@ -1958,7 +1967,8 @@ bool FileDescriptorTables::AddAliasUnderParent(const void* parent,
 
 bool DescriptorPool::Tables::AddFile(const FileDescriptor* file) {
   if (files_by_name_.insert(file).second) {
-    files_after_checkpoint_.push_back(file);
+    ABSL_DCHECK(checkpoint_data_ != nullptr);
+    checkpoint_data_->files_after_checkpoint.push_back(file);
     return true;
   } else {
     return false;
@@ -2003,7 +2013,9 @@ bool DescriptorPool::Tables::AddExtension(const FieldDescriptor* field) {
   auto it_inserted =
       extensions_.insert({{field->containing_type(), field->number()}, field});
   if (it_inserted.second) {
-    extensions_after_checkpoint_.push_back(it_inserted.first->first);
+    ABSL_DCHECK(checkpoint_data_ != nullptr);
+    checkpoint_data_->extensions_after_checkpoint.push_back(
+        it_inserted.first->first);
     return true;
   } else {
     return false;
@@ -2399,7 +2411,7 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
   // A faster path to reduce lock contention in finding extensions, assuming
   // most extensions will be cache hit.
   if (mutex_ != nullptr) {
-    absl::ReaderMutexLock lock(mutex_);
+    absl::ReaderMutexLock lock(*mutex_);
     const FieldDescriptor* result = tables_->FindExtension(extendee, number);
     if (result != nullptr) {
       return result;
@@ -4823,7 +4835,8 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
       // kMaxNumber + 1 because ExtensionRange::end is exclusive.
       placeholder_message->extension_ranges_[0].end_ =
           FieldDescriptor::kMaxNumber + 1;
-      placeholder_message->extension_ranges_[0].options_ = nullptr;
+      placeholder_message->extension_ranges_[0].options_ =
+          &ExtensionRangeOptions::default_instance();
       placeholder_message->extension_ranges_[0].proto_features_ =
           &FeatureSet::default_instance();
       placeholder_message->extension_ranges_[0].merged_features_ =
@@ -7132,6 +7145,17 @@ void internal::DescriptorBuilder::CrossLinkMessage(
     }
   }
 
+  // Reject map_entry messages with fewer than 2 fields. This catches orphaned
+  // map_entry descriptors (not referenced by any parent field) that bypass
+  // ValidateMapEntry and would cause null dereferences in
+  // TextFormat::PrintMessage. We only check field_count < 2 here;
+  // extra fields (field_count > 2) are caught by ValidateMapEntry when a
+  // parent field references this message.
+  if (message->options().map_entry() && message->field_count() < 2) {
+    AddError(message->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
+             "Messages with map_entry set must have at least 2 fields.");
+  }
+
   for (int i = 0; i < message->field_count(); i++) {
     const FieldDescriptor* field = message->field(i);
     if (field->proto3_optional_) {
@@ -8599,63 +8623,6 @@ void internal::DescriptorBuilder::ValidateJSType(
 
 namespace {
 
-template <typename DescriptorType>
-bool IsValidFieldNonCollisionName(const DescriptorType* descriptor,
-                                  std::string* error) {
-  ABSL_CHECK(descriptor != nullptr);
-  absl::string_view name = descriptor->name();
-  const Descriptor* message = descriptor->containing_type();
-
-  static const auto& kRestrictedFieldPrefixes =
-      *new absl::flat_hash_set<absl::string_view>({
-          "has_",
-          "get_",
-          "set_",
-          "clear_",
-      });
-  static const auto& kRestrictedFieldSuffixes =
-      *new absl::flat_hash_set<absl::string_view>({"_value"});
-
-  if (message != nullptr) {
-    for (absl::string_view prefix : kRestrictedFieldPrefixes) {
-      if (absl::StartsWith(name, prefix)) {
-        absl::string_view without_prefix = name;
-        without_prefix.remove_prefix(prefix.size());
-        if ((message->FindFieldByName(without_prefix) != nullptr ||
-             message->FindOneofByName(without_prefix) != nullptr)) {
-          *error = absl::StrCat("should not begin with ", prefix,
-                                " if a field named ", without_prefix,
-                                " exists. This can cause collisions in "
-                                "generated code.");
-          return false;
-        }
-      }
-    }
-    for (absl::string_view suffix : kRestrictedFieldSuffixes) {
-      if (absl::EndsWith(name, suffix)) {
-        absl::string_view without_suffix = name;
-        without_suffix.remove_suffix(suffix.size());
-        if ((message->FindFieldByName(without_suffix) != nullptr) ||
-            (message->FindOneofByName(without_suffix) != nullptr)) {
-          *error = absl::StrCat("should not end with ", suffix,
-                                " if a field named ", without_suffix,
-                                " exists. This can cause collisions in "
-                                "generated code.");
-          return false;
-        }
-      }
-    }
-  }
-
-  if (name == "descriptor") {
-    *error =
-        "should not be named descriptor. This can cause collisions in "
-        "generated code.";
-    return false;
-  }
-  return true;
-}
-
 constexpr absl::string_view kNamingStyleOptOutMessage =
     " (features.enforce_naming_style = STYLE_LEGACY can be used to opt out of "
     "this check)";
@@ -8664,11 +8631,11 @@ constexpr absl::string_view kProtoLimitsOptOutMessage =
     " (features.enforce_proto_limits = LEGACY_NO_EXPLICIT_LIMITS can be used "
     "to opt out of this check)";
 
-}  // namespace
-
 constexpr absl::string_view kNamingStyleCollisionsOptOutMessage =
     " (features.enforce_naming_style = STYLE2024 can be used to opt out of "
     "this check)";
+
+}  // namespace
 
 template <>
 void internal::DescriptorBuilder::ValidateNamingStyle(
@@ -8710,10 +8677,11 @@ void internal::DescriptorBuilder::ValidateNamingStyle(
     });
   }
   if (IsStyleOrGreater(oneof, FeatureSet::STYLE2026)) {
-    std::string error;
-    if (!IsValidFieldNonCollisionName(oneof, &error)) {
+    if (const absl::Status s = internal::IsValidFieldNonCollisionName(
+            oneof->name(), oneof->containing_type());
+        !s.ok()) {
       AddError(oneof->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-        return absl::StrCat("Oneof name ", oneof->name(), " ", error,
+        return absl::StrCat("Oneof name ", oneof->name(), " ", s.message(),
                             kNamingStyleCollisionsOptOutMessage);
       });
     }
@@ -8731,10 +8699,11 @@ void internal::DescriptorBuilder::ValidateNamingStyle(
     });
   }
   if (IsStyleOrGreater(field, FeatureSet::STYLE2026)) {
-    std::string error;
-    if (!IsValidFieldNonCollisionName(field, &error)) {
+    if (const absl::Status s = internal::IsValidFieldNonCollisionName(
+            field->name(), field->containing_type());
+        !s.ok()) {
       AddError(field->name(), proto, DescriptorPool::ErrorCollector::NAME, [&] {
-        return absl::StrCat("Field name ", field->name(), " ", error,
+        return absl::StrCat("Field name ", field->name(), " ", s.message(),
                             kNamingStyleCollisionsOptOutMessage);
       });
     }

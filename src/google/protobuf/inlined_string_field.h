@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <utility>
 
@@ -17,7 +18,6 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arenastring.h"
-#include "google/protobuf/explicitly_constructed.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 
@@ -100,32 +100,32 @@ class PROTOBUF_EXPORT InlinedStringField {
   }
 
   // Lvalue Set.
-  void Set(absl::string_view value, Arena* arena);
-  void Set(const absl::Cord& value, Arena* arena);
+  void Set(absl::string_view value, const MessageLite& parent);
+  void Set(const absl::Cord& value, const MessageLite& parent);
 
   // Rvalue Set. If this field is donated, this method might undonate this
   // field.
-  void Set(std::string&& value, Arena* arena);
+  void Set(std::string&& value, const MessageLite& parent);
 
-  void Set(const char* str, Arena* arena);
+  void Set(const char* str, const MessageLite& parent);
 
-  void Set(const char* str, size_t size, Arena* arena);
+  void Set(const char* str, size_t size, const MessageLite& parent);
 
   template <typename RefWrappedType>
   void Set(std::reference_wrapper<RefWrappedType> const_string_ref,
-           Arena* arena);
+           const MessageLite& parent);
 
-  void SetBytes(absl::string_view value, Arena* arena);
+  void SetBytes(absl::string_view value, const MessageLite& parent);
 
-  void SetBytes(std::string&& value, Arena* arena);
+  void SetBytes(std::string&& value, const MessageLite& parent);
 
-  void SetBytes(const char* str, Arena* arena);
+  void SetBytes(const char* str, const MessageLite& parent);
 
-  void SetBytes(const void* p, size_t size, Arena* arena);
+  void SetBytes(const void* p, size_t size, const MessageLite& parent);
 
   template <typename RefWrappedType>
   void SetBytes(std::reference_wrapper<RefWrappedType> const_string_ref,
-                Arena* arena);
+                const MessageLite& parent);
 
   PROTOBUF_NDEBUG_INLINE void SetNoArena(absl::string_view value);
   PROTOBUF_NDEBUG_INLINE void SetNoArena(std::string&& value);
@@ -137,7 +137,7 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Mutable returns a std::string* instance that is heap-allocated. If this
   // field is donated, this method undonates this field and copies the content
   // of the original string to the returning string.
-  std::string* Mutable(Arena* arena);
+  std::string* Mutable(const MessageLite& parent);
 
   // Mutable(nullptr_t) is an overload to explicitly support Mutable(nullptr)
   // calls used by the internal parser logic. This provides API equivalence with
@@ -187,8 +187,8 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Clears content, but keeps allocated std::string if arena != nullptr, to
   // avoid the overhead of heap operations. After this returns, the content (as
   // seen by the user) will always be equal to |default_value|.
-  void ClearToDefault(const LazyString& default_value, Arena* arena,
-                      bool donated);
+  void ClearToDefault(const LazyString& default_value,
+                      const MessageLite& parent, bool donated);
 
   // Generated code / reflection only! Returns a mutable pointer to the string.
   PROTOBUF_NDEBUG_INLINE std::string* UnsafeMutablePointer();
@@ -322,58 +322,66 @@ PROTOBUF_NDEBUG_INLINE void InlinedStringField::InternalSwap(
 #endif
 }
 
-inline void InlinedStringField::Set(absl::string_view value, Arena* arena) {
+inline void InlinedStringField::Set(absl::string_view value,
+                                    const MessageLite& parent) {
+  Arena* arena = parent.GetArena();
   if (arena != nullptr) {
     MaybeRegisterForDestruction(arena, get_mutable());
   }
   SetNoArena(value);
 }
 
-inline void InlinedStringField::Set(const absl::Cord& value, Arena* arena) {
+inline void InlinedStringField::Set(const absl::Cord& value,
+                                    const MessageLite& parent) {
   if (auto flat = value.TryFlat(); flat.has_value()) {
-    Set(*flat, arena);
+    Set(*flat, parent);
   } else {
-    Set(std::string(value), arena);
+    Set(std::string(value), parent);
   }
 }
 
-inline void InlinedStringField::Set(const char* str, Arena* arena) {
-  Set(absl::string_view(str), arena);
+inline void InlinedStringField::Set(const char* str,
+                                    const MessageLite& parent) {
+  Set(absl::string_view(str), parent);
 }
 
 inline void InlinedStringField::Set(const char* str, size_t size,
-                                    Arena* arena) {
-  Set(absl::string_view{str, size}, arena);
+                                    const MessageLite& parent) {
+  Set(absl::string_view{str, size}, parent);
 }
 
 inline void InlinedStringField::SetBytes(absl::string_view value,
-                                         Arena* arena) {
-  Set(value, arena);
+                                         const MessageLite& parent) {
+  Set(value, parent);
 }
 
-inline void InlinedStringField::SetBytes(std::string&& value, Arena* arena) {
-  Set(std::move(value), arena);
+inline void InlinedStringField::SetBytes(std::string&& value,
+                                         const MessageLite& parent) {
+  Set(std::move(value), parent);
 }
 
-inline void InlinedStringField::SetBytes(const char* str, Arena* arena) {
-  Set(str, arena);
+inline void InlinedStringField::SetBytes(const char* str,
+                                         const MessageLite& parent) {
+  Set(str, parent);
 }
 
 inline void InlinedStringField::SetBytes(const void* p, size_t size,
-                                         Arena* arena) {
-  Set(static_cast<const char*>(p), size, arena);
+                                         const MessageLite& parent) {
+  Set(static_cast<const char*>(p), size, parent);
 }
 
 template <typename RefWrappedType>
 inline void InlinedStringField::Set(
-    std::reference_wrapper<RefWrappedType> const_string_ref, Arena* arena) {
-  Set(const_string_ref.get(), arena);
+    std::reference_wrapper<RefWrappedType> const_string_ref,
+    const MessageLite& parent) {
+  Set(const_string_ref.get(), parent);
 }
 
 template <typename RefWrappedType>
 inline void InlinedStringField::SetBytes(
-    std::reference_wrapper<RefWrappedType> const_string_ref, Arena* arena) {
-  Set(const_string_ref.get(), arena);
+    std::reference_wrapper<RefWrappedType> const_string_ref,
+    const MessageLite& parent) {
+  Set(const_string_ref.get(), parent);
 }
 
 inline std::string* InlinedStringField::UnsafeMutablePointer() {

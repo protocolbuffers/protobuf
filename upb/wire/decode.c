@@ -17,6 +17,7 @@
 #include "upb/base/error_handler.h"
 #include "upb/base/internal/endian.h"
 #include "upb/base/string_view.h"
+#include "upb/hash/common.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
@@ -543,6 +544,14 @@ static const char* _upb_Decoder_DecodeToSubMessage(
   } else if (upb_MiniTableField_IsInOneof(field)) {
     // Oneof case
     uint32_t* oneof_case = UPB_PRIVATE(_upb_Message_OneofCasePtr)(msg, field);
+    if (op == kUpb_DecodeOp_String || op == kUpb_DecodeOp_Bytes) {
+      // Read the string before setting the oneof case, so that if the read
+      // fails the case still points to the previous member, which is intact.
+      ptr = _upb_Decoder_ReadString2(d, ptr, val->size, mem,
+                                     op == kUpb_DecodeOp_String);
+      *oneof_case = field->UPB_PRIVATE(number);
+      return ptr;
+    }
     if (op == kUpb_DecodeOp_SubMessage &&
         *oneof_case != field->UPB_PRIVATE(number)) {
       memset(mem, 0, sizeof(void*));
@@ -600,10 +609,11 @@ static void upb_Decoder_AddKnownMessageSetItem(
   if (UPB_UNLIKELY(!ext)) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
   }
-  upb_Message** submsgp = (upb_Message**)&ext->data.msg_val;
-  upb_Message* submsg = _upb_Decoder_NewSubMessage2(
-      d, ext->ext->UPB_PRIVATE(sub).UPB_PRIVATE(submsg),
-      &ext->ext->UPB_PRIVATE(field), submsgp);
+  upb_Message* submsg = upb_Extension_GetMutableMessage(ext);
+  submsg = _upb_Decoder_NewSubMessage2(
+      d, upb_MiniTableExtension_GetSubMessage(item_mt),
+      &item_mt->UPB_PRIVATE(field), &submsg);
+  upb_Extension_SetMessage(ext, submsg);
   // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
   if (d->depth <= 1) {
     upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_MaxDepthExceeded);
@@ -944,7 +954,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
       upb_ErrorHandler_ThrowError(d->err, kUpb_DecodeStatus_OutOfMemory);
     }
     d->original_msg = msg;
-    msg = &ext->data.UPB_PRIVATE(ext_msg_val);
+    msg = UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), upb_Message);
   }
 
   switch (mode & kUpb_FieldMode_Mask) {

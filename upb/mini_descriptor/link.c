@@ -55,14 +55,10 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       if (sub_is_map) {
         if (UPB_UNLIKELY(table_is_map)) return false;
 
-        // A map field on the parent table must be repeated (or already marked
-        // as a map if SetSubMessage is called repeatedly), and cannot be in a
+        // A map field on the parent table must be repeated, and cannot be in a
         // oneof or an extension.
-        // TODO: Add this assert back once YouTube is updated to not
-        // call this function repeatedly.
-        // UPB_ASSERT(!upb_MiniTableField_IsMap(field));
-        if (UPB_UNLIKELY((!upb_MiniTableField_IsArray(field) &&
-                          !upb_MiniTableField_IsMap(field)) ||
+        UPB_ASSERT(!upb_MiniTableField_IsMap(field));
+        if (UPB_UNLIKELY(!upb_MiniTableField_IsArray(field) ||
                          upb_MiniTableField_IsInOneof(field) ||
                          upb_MiniTableField_IsExtension(field))) {
           return false;
@@ -118,9 +114,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   upb_MiniTableSubInternal* table_sub =
       UPB_PTR_AT(field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);
-  // TODO: Add this assert back once YouTube is updated to not
-  // call this function repeatedly.
-  // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
+  UPB_ASSERT(upb_MiniTable_GetSubMessageTable(field) == NULL);
   table_sub->UPB_PRIVATE(submsg) = sub;
   return true;
 }
@@ -154,6 +148,7 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
   upb_MiniTableSubInternal* table_sub =
       UPB_PTR_AT(field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
                  upb_MiniTableSubInternal);
+  UPB_ASSERT(upb_MiniTable_GetSubEnumTable(field) == NULL);
   *table_sub = upb_MiniTableSub_FromEnum(sub);
   return true;
 }

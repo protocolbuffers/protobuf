@@ -626,6 +626,123 @@ TEST_F(RustGeneratorTest, AvoidsInherentAsMutAccessorCollision) {
   EXPECT_THAT(rs, HasSubstr("pub fn as_1_mut("));
 }
 
+TEST_F(RustGeneratorTest, EmitsDefInit) {
+  CreateTempFile("foo.proto", R"schema(
+    edition = "2023";
+    package foo;
+    message Outer {
+      message Inner {}
+      enum InnerEnum {
+        option features.enum_type = CLOSED;
+        INNER_ZERO = 0;
+      }
+      map<int32, int32> m = 1;
+    }
+    message Other {}
+    enum Open {
+      OPEN_ZERO = 0;
+    }
+    enum Closed {
+      option features.enum_type = CLOSED;
+      CLOSED_ZERO = 0;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=upb "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string rs = FileContents("foo.u.pb.rs");
+  size_t start = rs.find("pub fn foo_proto_def_init(");
+  ASSERT_NE(start, std::string::npos);
+  std::string def_init = rs.substr(start);
+  EXPECT_THAT(def_init, HasSubstr("c\"foo.proto\""));
+  EXPECT_THAT(def_init,
+              HasSubstr("super::__unstable::FOO_DESCRIPTOR_INFO.descriptor"));
+
+  // Messages, including the map entry synthesized for `m`, then closed enums.
+  size_t outer = def_init.find("<super::foo_proto::Outer as");
+  size_t inner = def_init.find("<super::foo_proto::outer::Inner as");
+  size_t entry = def_init.find("<super::foo_proto::outer::MEntry as");
+  size_t other = def_init.find("<super::foo_proto::Other as");
+  size_t closed = def_init.find("<super::foo_proto::Closed as");
+  size_t inner_enum = def_init.find("<super::foo_proto::outer::InnerEnum as");
+  EXPECT_LT(outer, inner);
+  EXPECT_LT(inner, entry);
+  EXPECT_LT(entry, other);
+  EXPECT_LT(other, closed);
+  EXPECT_LT(closed, inner_enum);
+  EXPECT_NE(inner_enum, std::string::npos);
+  EXPECT_THAT(def_init, Not(HasSubstr("<super::foo_proto::Open as")));
+
+  std::string entry_point = FileContents("generated.rs");
+  EXPECT_THAT(entry_point, HasSubstr("pub static FOO_DESCRIPTOR_INFO"));
+  EXPECT_THAT(entry_point, Not(HasSubstr("def_init")));
+}
+
+TEST_F(RustGeneratorTest, EmitsDefInitWithExtensions) {
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    message Target {
+      extensions 100 to 200;
+    }
+    message Outer {
+      extend Target {
+        optional int32 nested_ext = 101;
+      }
+    }
+    extend Target {
+      optional int32 top_ext = 100;
+    })schema");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=upb "
+      "foo.proto");
+  ExpectNoErrors();
+
+  std::string rs = FileContents("foo.u.pb.rs");
+  // Extensions are not generated in OSS, so neither is `def_init()`.
+  EXPECT_THAT(rs, Not(HasSubstr("def_init")));
+}
+
+TEST_F(RustGeneratorTest, DefInitCallsDepDefInits) {
+  CreateTempFile("same_crate.proto", R"schema(
+    syntax = "proto2";
+    package dep;
+    message SameCrate {})schema");
+  CreateTempFile("other_crate.proto", R"schema(
+    syntax = "proto2";
+    package dep;
+    message OtherCrate {})schema");
+  CreateTempFile("foo.proto", R"schema(
+    syntax = "proto2";
+    package foo;
+    import "same_crate.proto";
+    import "other_crate.proto";
+    message Foo {
+      optional dep.SameCrate same = 1;
+      optional dep.OtherCrate other = 2;
+    })schema");
+  CreateTempFile("mapping.txt", "other_crate\n1\nother_crate.proto\n");
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--rust_out=$tmpdir "
+      "--rust_opt=experimental-codegen=enabled,kernel=upb,"
+      "crate_mapping=$tmpdir/mapping.txt "
+      "foo.proto same_crate.proto");
+  ExpectNoErrors();
+
+  std::string rs = FileContents("foo.u.pb.rs");
+  EXPECT_THAT(rs,
+              HasSubstr("super::same_crate_proto::same_crate_proto_def_init("));
+  EXPECT_THAT(
+      rs, HasSubstr(
+              "::other_crate::other_crate_proto::other_crate_proto_def_init("));
+}
+
 }  // namespace
 }  // namespace rust
 }  // namespace compiler

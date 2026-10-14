@@ -132,12 +132,14 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   PyUpb_GetCachedArgs* args = _args;
   PyObject* py_arena = NULL;
 
-  // Load descriptors protos if they are not loaded already. We have to do
-  // this lazily, otherwise, it would lead to circular imports.
-  PyObject* mod =
-      PyImport_ImportModuleLevel(PYUPB_DESCRIPTOR_MODULE, NULL, NULL, NULL, 0);
-  if (mod == NULL) return NULL;
-  Py_DECREF(mod);
+  // Load descriptor protos if they are not loaded already. This is kept here as
+  // a fallback. We cannot import descriptor_pb2 when _message is initialized,
+  // as that would lead to circular imports.
+  //
+  // Normally this just costs a sys.modules lookup, since DescriptorPool has
+  // already eagerly imported descriptor_pb2 for every file except
+  // descriptor.proto.
+  if (!PyUpb_ImportDescriptorModule()) return NULL;
 
   // Find the correct options message.
   PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();

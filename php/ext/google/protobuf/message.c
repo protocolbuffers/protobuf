@@ -137,9 +137,19 @@ static void Message_get(Message* intern, const upb_FieldDef* f, zval* rv) {
 
   if (upb_FieldDef_IsMap(f)) {
     upb_MutableMessageValue msgval = upb_Message_Mutable(intern->msg, f, arena);
+    if (!msgval.map) {
+      OutOfMemory();
+      ZVAL_NULL(rv);
+      return;
+    }
     MapField_GetPhpWrapper(rv, msgval.map, MapType_Get(f), &intern->arena);
   } else if (upb_FieldDef_IsRepeated(f)) {
     upb_MutableMessageValue msgval = upb_Message_Mutable(intern->msg, f, arena);
+    if (!msgval.array) {
+      OutOfMemory();
+      ZVAL_NULL(rv);
+      return;
+    }
     RepeatedField_GetPhpWrapper(rv, msgval.array, TypeInfo_Get(f),
                                 &intern->arena);
   } else {
@@ -170,7 +180,10 @@ static bool Message_set(Message* intern, const upb_FieldDef* f, zval* val) {
     if (!Convert_PhpToUpb(val, &msgval, TypeInfo_Get(f), arena)) return false;
   }
 
-  upb_Message_SetFieldByDef(intern->msg, f, msgval, arena);
+  if (!upb_Message_SetFieldByDef(intern->msg, f, msgval, arena)) {
+    OutOfMemory();
+    return false;
+  }
   return true;
 }
 
@@ -393,6 +406,10 @@ static zend_object* Message_clone_obj(zend_object* object) {
   const upb_MiniTable* t = upb_MessageDef_MiniTable(intern->desc->msgdef);
   upb_Message* clone =
       upb_Message_ShallowClone(intern->msg, t, Arena_Get(&intern->arena));
+  if (!clone) {
+    OutOfMemory();
+    return Message_create(object->ce);
+  }
   zval ret;
   Message_GetPhpWrapper(&ret, intern->desc, clone, &intern->arena);
   return Z_OBJ_P(&ret);
@@ -553,18 +570,29 @@ bool Message_InitFromPhp(upb_Message* msg, const upb_MessageDef* m, zval* init,
       }
     }
 
-    upb_Message_SetFieldByDef(msg, f, msgval, arena);
+    if (!upb_Message_SetFieldByDef(msg, f, msgval, arena)) {
+      OutOfMemory();
+      zval_ptr_dtor(&key);
+      return false;
+    }
     zend_hash_move_forward_ex(table, &pos);
     zval_ptr_dtor(&key);
   }
 }
 
-static void Message_Initialize(Message* intern, const Descriptor* desc) {
+static bool Message_Initialize(Message* intern, const Descriptor* desc) {
   intern->desc = desc;
   const upb_MiniTable* t = upb_MessageDef_MiniTable(desc->msgdef);
-  Arena_Init(&intern->arena);
+  if (!Arena_Init(&intern->arena)) {
+    return false;
+  }
   intern->msg = upb_Message_New(t, Arena_Get(&intern->arena));
+  if (!intern->msg) {
+    OutOfMemory();
+    return false;
+  }
   ObjCache_Add(intern->msg, &intern->std);
+  return true;
 }
 
 /**
@@ -598,7 +626,9 @@ PHP_METHOD(Message, __construct) {
     return;
   }
 
-  Message_Initialize(intern, desc);
+  if (!Message_Initialize(intern, desc)) {
+    return;
+  }
 
   if (zend_parse_parameters(ZEND_NUM_ARGS(), "|a!", &init_arr) == FAILURE) {
     return;
@@ -636,7 +666,7 @@ static bool Message_checkEncodeStatus(upb_EncodeStatus status) {
     case kUpb_EncodeStatus_Ok:
       return true;
     case kUpb_EncodeStatus_OutOfMemory:
-      zend_throw_exception_ex(NULL, 0, "Out of memory");
+      OutOfMemory();
       return false;
     case kUpb_EncodeStatus_MaxDepthExceeded:
       zend_throw_exception_ex(NULL, 0, "Max nesting exceeded");
@@ -664,7 +694,6 @@ PHP_METHOD(Message, mergeFrom) {
   zval* value;
   char* pb;
   size_t size;
-  bool ok;
 
   if (zend_parse_parameters(ZEND_NUM_ARGS(), "O", &value,
                             intern->desc->class_entry) == FAILURE) {
@@ -681,9 +710,13 @@ PHP_METHOD(Message, mergeFrom) {
   upb_EncodeStatus status = upb_Encode(from->msg, l, 0, arena, &pb, &size);
   if (!Message_checkEncodeStatus(status)) return;
 
-  ok = upb_Decode(pb, size, intern->msg, l, NULL, 0, arena) ==
-       kUpb_DecodeStatus_Ok;
-  PBPHP_ASSERT(ok);
+  upb_DecodeStatus decode_status =
+      upb_Decode(pb, size, intern->msg, l, NULL, 0, arena);
+  if (decode_status == kUpb_DecodeStatus_OutOfMemory) {
+    OutOfMemory();
+    return;
+  }
+  PBPHP_ASSERT(decode_status == kUpb_DecodeStatus_Ok);
 }
 
 /**
@@ -715,8 +748,13 @@ PHP_METHOD(Message, mergeFromString) {
     options = upb_DecodeOptions_MaxDepth((uint16_t)recursion_limit);
   }
 
-  if (upb_Decode(data, data_len, intern->msg, l, NULL, options, arena) !=
-      kUpb_DecodeStatus_Ok) {
+  upb_DecodeStatus status =
+      upb_Decode(data, data_len, intern->msg, l, NULL, options, arena);
+  if (status == kUpb_DecodeStatus_OutOfMemory) {
+    OutOfMemory();
+    return;
+  }
+  if (status != kUpb_DecodeStatus_Ok) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
     return;
   }
@@ -751,6 +789,10 @@ PHP_METHOD(Message, serializeToString) {
   }
 
   upb_Arena* tmp_arena = upb_Arena_New();
+  if (!tmp_arena) {
+    OutOfMemory();
+    return;
+  }
   upb_EncodeStatus status =
       upb_Encode(intern->msg, l, options, tmp_arena, &data, &size);
   if (!Message_checkEncodeStatus(status)) {
@@ -967,7 +1009,10 @@ PHP_METHOD(Message, writeWrapperValue) {
     }
 
     wrapper = upb_Message_Mutable(intern->msg, f, arena).msg;
-    upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena);
+    if (!wrapper || !upb_Message_SetFieldByDef(wrapper, val_f, msgval, arena)) {
+      OutOfMemory();
+      return;
+    }
   }
 }
 
@@ -1123,7 +1168,9 @@ PHP_METHOD(Message, writeOneof) {
     return;
   }
 
-  upb_Message_SetFieldByDef(intern->msg, f, msgval, arena);
+  if (!upb_Message_SetFieldByDef(intern->msg, f, msgval, arena)) {
+    OutOfMemory();
+  }
 }
 
 // clang-format off
@@ -1193,12 +1240,17 @@ static upb_MessageValue Message_getval(Message* intern,
   return upb_Message_GetFieldByDef(intern->msg, f);
 }
 
-static void Message_setval(Message* intern, const char* field_name,
+static bool Message_setval(Message* intern, const char* field_name,
                            upb_MessageValue val) {
   const upb_FieldDef* f =
       upb_MessageDef_FindFieldByName(intern->desc->msgdef, field_name);
   PBPHP_ASSERT(f);
-  upb_Message_SetFieldByDef(intern->msg, f, val, Arena_Get(&intern->arena));
+  if (!upb_Message_SetFieldByDef(intern->msg, f, val,
+                                 Arena_Get(&intern->arena))) {
+    OutOfMemory();
+    return false;
+  }
+  return true;
 }
 
 static upb_MessageValue StringVal(upb_StringView view) {
@@ -1252,13 +1304,23 @@ PHP_METHOD(google_protobuf_Any, unpack) {
   PBPHP_ASSERT(desc->class_entry->create_object == Message_create);
   zend_object* obj = Message_create(desc->class_entry);
   Message* msg = (Message*)obj;
-  Message_Initialize(msg, desc);
   ZVAL_OBJ(&ret, obj);
+  if (!Message_Initialize(msg, desc)) {
+    zval_dtor(&ret);
+    return;
+  }
 
   // Get value.
-  if (upb_Decode(value.data, value.size, msg->msg,
+  upb_DecodeStatus status =
+      upb_Decode(value.data, value.size, msg->msg,
                  upb_MessageDef_MiniTable(desc->msgdef), NULL, 0,
-                 Arena_Get(&msg->arena)) != kUpb_DecodeStatus_Ok) {
+                 Arena_Get(&msg->arena));
+  if (status == kUpb_DecodeStatus_OutOfMemory) {
+    OutOfMemory();
+    zval_dtor(&ret);
+    return;
+  }
+  if (status != kUpb_DecodeStatus_Ok) {
     zend_throw_exception_ex(NULL, 0, "Error occurred during parsing");
     zval_dtor(&ret);
     return;
@@ -1298,12 +1360,16 @@ PHP_METHOD(google_protobuf_Any, pack) {
                  arena, &pb, &value.size);
   if (!Message_checkEncodeStatus(status)) return;
   value.data = pb;
-  Message_setval(intern, "value", StringVal(value));
+  if (!Message_setval(intern, "value", StringVal(value))) return;
 
   // Set type url: type_url_prefix + fully_qualified_name
   full_name = upb_MessageDef_FullName(msg->desc->msgdef);
   type_url.size = strlen(TYPE_URL_PREFIX) + strlen(full_name);
   buf = upb_Arena_Malloc(arena, type_url.size + 1);
+  if (!buf) {
+    OutOfMemory();
+    return;
+  }
   memcpy(buf, TYPE_URL_PREFIX, strlen(TYPE_URL_PREFIX));
   memcpy(buf + strlen(TYPE_URL_PREFIX), full_name, strlen(full_name));
   type_url.data = buf;
@@ -1398,8 +1464,10 @@ PHP_METHOD(google_protobuf_Timestamp, fromDateTime) {
     zval_dtor(&format_string);
   }
 
-  Message_setval(intern, "seconds", timestamp_seconds);
-  Message_setval(intern, "nanos", timestamp_nanos);
+  if (!Message_setval(intern, "seconds", timestamp_seconds) ||
+      !Message_setval(intern, "nanos", timestamp_nanos)) {
+    return;
+  }
 
   RETURN_NULL();
 }
@@ -1409,6 +1477,13 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
   upb_MessageValue seconds = Message_getval(intern, "seconds");
   upb_MessageValue nanos = Message_getval(intern, "nanos");
 
+  if (nanos.int32_val < 0 || nanos.int32_val > 999999999) {
+    zend_throw_exception(
+        NULL,
+        "Nanoseconds must be in the range of 0 to 999,999,999 nanoseconds.", 0);
+    return;
+  }
+
   // Get formatted time string.
   char formatted_time[32];
   snprintf(formatted_time, sizeof(formatted_time), "%" PRId64 ".%06" PRId32,
@@ -1416,6 +1491,7 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
 
   // Create Datetime object.
   zval datetime;
+  ZVAL_UNDEF(&datetime);
   zval function_name;
   zval format_string;
   zval formatted_time_php;
@@ -1429,17 +1505,20 @@ PHP_METHOD(google_protobuf_Timestamp, toDateTime) {
       formatted_time_php,
   };
 
-  if (call_user_function(EG(function_table), NULL, &function_name, &datetime, 2,
-                         params) == FAILURE) {
-    zend_error(E_ERROR, "Cannot create DateTime.");
-    return;
-  }
+  int res = call_user_function(EG(function_table), NULL, &function_name,
+                               &datetime, 2, params);
 
   zval_dtor(&function_name);
   zval_dtor(&format_string);
   zval_dtor(&formatted_time_php);
 
-  ZVAL_OBJ(return_value, Z_OBJ(datetime));
+  if (res == FAILURE || Z_TYPE(datetime) != IS_OBJECT) {
+    zval_ptr_dtor(&datetime);
+    zend_throw_exception(NULL, "Cannot create DateTime.", 0);
+    return;
+  }
+
+  ZVAL_COPY_VALUE(return_value, &datetime);
 }
 
 #include "wkt.inc"

@@ -223,6 +223,7 @@ cc_test(
     copts = UPB_DEFAULT_CPPOPTS,
     features = UPB_DEFAULT_FEATURES,
     deps = [
+        ":back_alloc",
         ":encode_test_upb_minitable_proto",
         ":encode_test_upb_proto",
         ":encoder",

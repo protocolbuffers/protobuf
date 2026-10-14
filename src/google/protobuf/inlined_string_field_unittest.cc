@@ -8,6 +8,7 @@
 #include "google/protobuf/inlined_string_field.h"
 
 #include <algorithm>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
@@ -23,6 +24,8 @@
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/parse_context.h"
+#include "google/protobuf/unittest.pb.h"
 
 
 // Must be included last.
@@ -32,6 +35,7 @@ namespace google {
 namespace protobuf {
 
 using internal::InlinedStringField;
+using proto2_unittest::TestEmptyMessage;
 
 namespace {
 }  // namespace

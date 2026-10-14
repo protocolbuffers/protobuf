@@ -1,1 +1,3 @@
 _build/
+# Built standalone from its own directory (see .github/workflows/test_bazel.yml).
+examples/

@@ -233,6 +233,33 @@ class ThreadSafeTest(unittest.TestCase):
     for thread in threads:
       thread.join()
 
+  def testConcurrentMergeFromAndContainerDealloc(self):
+    msg = test_proto2_pb2.TestProto2()
+    other = test_proto2_pb2.TestProto2(optional_int32=1)
+    lock = threading.Lock()
+
+    def MergeLoop():
+      for _ in range(1000):
+        with lock:
+          msg.MergeFrom(other)
+
+    def AccessAndDropLoop():
+      for _ in range(1000):
+        with lock:
+          containers = (
+              msg.repeated_int32,
+              msg.repeated_nested_message,
+          )
+        del containers
+
+    threads = [threading.Thread(target=MergeLoop)]
+    for _ in range(4):
+      threads.append(threading.Thread(target=AccessAndDropLoop))
+    for thread in threads:
+      thread.start()
+    for thread in threads:
+      thread.join()
+
 
 class FreeThreadingTest(unittest.TestCase):
 

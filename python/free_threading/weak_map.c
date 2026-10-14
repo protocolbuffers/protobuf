@@ -9,7 +9,13 @@
 
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdlib.h>
 
+#include "python/free_threading/mutex.h"
+#include "upb/hash/common.h"
+#include "upb/hash/int_table.h"
+#include "upb/mem/alloc.h"
 #include "upb/mem/arena.h"
 
 // Must be last.
@@ -151,32 +157,54 @@ bool PyUpb_WeakMap_EraseIfEqual(PyUpb_WeakMap* map, const void* key,
   return ret;
 }
 
-void PyUpb_WeakMap_Begin(PyUpb_WeakMap* map) { PyUpb_Mutex_Lock(&map->mutex); }
-
-void PyUpb_WeakMap_End(PyUpb_WeakMap* map, PyObject* obj) {
-  PyUpb_Mutex_Unlock(&map->mutex);
+bool PyUpb_WeakMapIter_Begin(PyUpb_WeakMapIter* iter, PyUpb_WeakMap* map) {
+  PyUpb_Mutex_Lock(&map->mutex);
+  iter->map = map;
+  iter->iter = UPB_INTTABLE_BEGIN;
 #ifdef Py_GIL_DISABLED
-  Py_XDECREF(obj);
+  size_t cap = PyUpb_WeakMap_Count(map);
+  if (cap > 0) {
+    iter->deferred_decrefs = upb_gmalloc(cap * sizeof(PyObject*));
+    if (!iter->deferred_decrefs) {
+      PyUpb_Mutex_Unlock(&map->mutex);
+      PyErr_SetNone(PyExc_MemoryError);
+      return false;
+    }
+  } else {
+    iter->deferred_decrefs = NULL;
+  }
+  iter->count = 0;
+  iter->cap = cap;
+#endif
+  return true;
+}
+
+void PyUpb_WeakMapIter_End(PyUpb_WeakMapIter* iter) {
+  PyUpb_Mutex_Unlock(&iter->map->mutex);
+#ifdef Py_GIL_DISABLED
+  for (size_t i = 0; i < iter->count; i++) {
+    Py_DECREF(iter->deferred_decrefs[i]);
+  }
+  upb_gfree(iter->deferred_decrefs);
 #endif
 }
 
-bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
-                        intptr_t* iter) {
+bool PyUpb_WeakMapIter_Next(PyUpb_WeakMapIter* iter, const void** key,
+                            PyObject** obj) {
+  PyUpb_WeakMap* map = iter->map;
   UPB_ASSERT(PyUpb_Mutex_IsLocked(&map->mutex));
-#ifdef Py_GIL_DISABLED
-  Py_XDECREF(*obj);
-  *obj = NULL;
-#endif
   uintptr_t u_key;
   upb_value val;
-  while (upb_inttable_next(&map->table, &u_key, &val, iter)) {
+  while (upb_inttable_next(&map->table, &u_key, &val, &iter->iter)) {
     PyObject* py_obj = upb_value_getptr(val);
 #ifdef Py_GIL_DISABLED
     if (!PyUnstable_TryIncRef(py_obj)) {
       // Object is being destroyed, remove it from the map and try again.
-      upb_inttable_removeiter(&map->table, iter);
+      upb_inttable_removeiter(&map->table, &iter->iter);
       continue;
     }
+    assert(iter->count < iter->cap);
+    iter->deferred_decrefs[iter->count++] = py_obj;
 #endif
     *key = (const void*)(u_key << PyUpb_PtrShift);
     *obj = py_obj;
@@ -185,6 +213,6 @@ bool PyUpb_WeakMap_Next(PyUpb_WeakMap* map, const void** key, PyObject** obj,
   return false;
 }
 
-void PyUpb_WeakMap_DeleteIter(PyUpb_WeakMap* map, intptr_t* iter) {
-  upb_inttable_removeiter(&map->table, iter);
+void PyUpb_WeakMapIter_Delete(PyUpb_WeakMapIter* iter) {
+  upb_inttable_removeiter(&iter->map->table, &iter->iter);
 }

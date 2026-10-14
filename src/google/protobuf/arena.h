@@ -84,6 +84,14 @@ SerialArena* PROTOBUF_NULLABLE GetSerialArena(Arena* PROTOBUF_NULLABLE);
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
 
+// Returns true if the message is on an arena. As a free function, we can call
+// it in contexts where `MessageLite` is incomplete. Use this instead of
+// `message.GetArena() == nullptr`.
+bool HasArena(const MessageLite& message);
+
+// Defined in message_lite.h
+Arena* PROTOBUF_NULLABLE GetArena(const MessageLite& message);
+
 // This struct maps field types to the types that we will use to represent them
 // when allocated on an arena. This is necessary because fields no longer own an
 // arena pointer, but can be allocated directly on an arena. In this case, we
@@ -1213,6 +1221,20 @@ inline SerialArena* PROTOBUF_NULLABLE
 GetSerialArena(const MessageLite* PROTOBUF_NONNULL elem) {
   const auto* dependent_elem = (delay, ..., elem);
   return GetSerialArena(dependent_elem->GetArena());
+}
+
+inline Arena* PROTOBUF_NULLABLE GetArena(Arena* PROTOBUF_NULLABLE arena) {
+  return arena;
+}
+
+// Using a template to make member access type dependent and delay it until
+// instantiation when `MessageLite` will be complete.
+// Not really a generic function.
+template <auto... delay>
+inline Arena* PROTOBUF_NULLABLE
+GetArena(const MessageLite* PROTOBUF_NONNULL elem) {
+  const auto* dependent_elem = (delay, ..., elem);
+  return dependent_elem->GetArena();
 }
 
 // This class is used to define `DestructorSkippable_` for some containing type
