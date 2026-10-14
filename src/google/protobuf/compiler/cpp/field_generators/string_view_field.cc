@@ -306,7 +306,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
           $TsanDetectConcurrentMutation$;
           $PrepareSplitMessageForWrite$;
           $update_hasbit$;
-          $field_$.Set(static_cast<Arg_&&>(arg), GetArena());
+          $field_$.Set(static_cast<Arg_&&>(arg), *this);
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
@@ -317,7 +317,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
         }
         inline void $Msg$::_internal_set_$name_internal$(::absl::string_view value) {
           $TsanDetectConcurrentMutation$;
-          $field_$.Set(value, GetArena());
+          $field_$.Set(value, *this);
         }
       )cc");
 }
@@ -351,7 +351,7 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
 
   ABSL_DCHECK(!is_inlined());
   p->Emit(R"cc(
-    $field_$.ClearToDefault($lazy_var$, GetArena());
+    $field_$.ClearToDefault($lazy_var$, *this);
   )cc");
 }
 
@@ -382,7 +382,7 @@ void SingularStringView::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $this_mutable_field$.ClearToDefault($lazy_var$, this_.GetArena());
+      $this_mutable_field$.ClearToDefault($lazy_var$, this_);
     )cc");
     return;
   }
@@ -438,7 +438,7 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
     if (EmptyDefault()) {
       p->Emit(R"cc(
         if ($pbi$::DebugHardenForceCopyDefaultString()) {
-          $field_$.Set("", GetArena());
+          $field_$.Set("", *this);
         }
       )cc");
     }
@@ -461,7 +461,7 @@ void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
         }}},
       R"cc(
         if ($hazzer$) {
-          $this_mutable_field$.Set(from._internal_$name$(), this_.GetArena());
+          $this_mutable_field$.Set(from._internal_$name$(), this_);
         }
       )cc");
 }

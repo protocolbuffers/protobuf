@@ -23,6 +23,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
+#include "google/protobuf/port.h"
 
 
 // clang-format off
@@ -43,8 +44,9 @@ class InlinedStringField::ScopedCheckInvariants {
 #endif  // NDEBUG || !GOOGLE_PROTOBUF_INTERNAL_DONATE_STEAL_INLINE
 
 
-std::string* InlinedStringField::Mutable(Arena* arena) {
+std::string* InlinedStringField::Mutable(const MessageLite& parent) {
   ScopedCheckInvariants invariants(this);
+  Arena* arena = parent.GetArena();
   if (arena == nullptr) {
     return UnsafeMutablePointer();
   }
@@ -121,7 +123,8 @@ void InlinedStringField::SetAllocated(std::string* value, Arena* arena) {
   SetAllocatedNoArena(value);
 }
 
-void InlinedStringField::Set(std::string&& value, Arena* arena) {
+void InlinedStringField::Set(std::string&& value, const MessageLite& parent) {
+  Arena* arena = parent.GetArena();
   if (arena != nullptr) {
     MaybeRegisterForDestruction(arena, get_mutable());
   }
@@ -144,7 +147,8 @@ std::string* InlinedStringField::Release(Arena* arena) {
 }
 
 void InlinedStringField::ClearToDefault(const LazyString& default_value,
-                                        Arena* arena, bool) {
+                                        const MessageLite& parent, bool) {
+  Arena* arena = parent.GetArena();
   if (arena != nullptr) {
     MaybeRegisterForDestruction(arena, get_mutable());
   }

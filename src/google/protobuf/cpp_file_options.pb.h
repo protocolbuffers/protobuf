@@ -299,7 +299,7 @@ template <typename Arg_>
 PROTOBUF_ALWAYS_INLINE void CppFileOptions::set_namespace_(Arg_&& arg) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  _impl_.namespace__.Set(static_cast<Arg_&&>(arg), GetArena());
+  _impl_.namespace__.Set(static_cast<Arg_&&>(arg), *this);
   // @@protoc_insertion_point(field_set:pb.file.CppFileOptions.namespace)
 }
 inline ::absl::string_view CppFileOptions::_internal_namespace_() const {
@@ -308,7 +308,7 @@ inline ::absl::string_view CppFileOptions::_internal_namespace_() const {
 }
 inline void CppFileOptions::_internal_set_namespace_(::absl::string_view value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.namespace__.Set(value, GetArena());
+  _impl_.namespace__.Set(value, *this);
 }
 
 #ifdef __GNUC__

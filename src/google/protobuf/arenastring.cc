@@ -20,6 +20,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
@@ -102,13 +103,19 @@ TaggedStringPtr TaggedStringPtr::ForceCopy(Arena* arena) const {
                           : CreateString(*Get());
 }
 
-void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
+void ArenaStringPtr::SetFromDefault(absl::string_view value, Arena* arena) {
+  ABSL_DCHECK(IsDefault());
+  // If we're not on an arena, skip straight to a true string to avoid
+  // possible copy cost later.
+  tagged_ptr_ =
+      arena != nullptr ? CreateArenaString(*arena, value) : CreateString(value);
+}
+
+void ArenaStringPtr::Set(absl::string_view value, const MessageLite& parent) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
+  Arena* arena = parent.GetArena();
   if (IsDefault()) {
-    // If we're not on an arena, skip straight to a true string to avoid
-    // possible copy cost later.
-    tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
-                                   : CreateString(value);
+    SetFromDefault(value, arena);
   } else {
     if (internal::DebugHardenForceCopyDefaultString()) {
       if (arena == nullptr) {
@@ -126,14 +133,10 @@ void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
   }
 }
 
-template <>
-void ArenaStringPtr::Set(const std::string& value, Arena* arena) {
+void ArenaStringPtr::Set(absl::string_view value, Arena* arena) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (IsDefault()) {
-    // If we're not on an arena, skip straight to a true string to avoid
-    // possible copy cost later.
-    tagged_ptr_ = arena != nullptr ? CreateArenaString(*arena, value)
-                                   : CreateString(value);
+    SetFromDefault(value, arena);
   } else {
     if (internal::DebugHardenForceCopyDefaultString()) {
       if (arena == nullptr) {
@@ -151,8 +154,14 @@ void ArenaStringPtr::Set(const std::string& value, Arena* arena) {
   }
 }
 
-void ArenaStringPtr::Set(std::string&& value, Arena* arena) {
+template <>
+void ArenaStringPtr::Set(const std::string& value, const MessageLite& parent) {
+  PROTOBUF_ALWAYS_INLINE_CALL Set(value, parent.GetArena());
+}
+
+void ArenaStringPtr::Set(std::string&& value, const MessageLite& parent) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
+  Arena* arena = parent.GetArena();
   if (IsDefault()) {
     NewString(arena, std::move(value));
   } else if (IsFixedSizeArena()) {
@@ -166,27 +175,28 @@ void ArenaStringPtr::Set(std::string&& value, Arena* arena) {
   }
 }
 
-std::string* ArenaStringPtr::Mutable(Arena* arena) {
+std::string* ArenaStringPtr::Mutable(const MessageLite& parent) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (tagged_ptr_.IsMutable()) {
     return tagged_ptr_.Get();
   } else {
-    return MutableSlow(arena);
+    return MutableSlow(parent);
   }
 }
 
 std::string* ArenaStringPtr::Mutable(const LazyString& default_value,
-                                     Arena* arena) {
+                                     const MessageLite& parent) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   if (tagged_ptr_.IsMutable()) {
     return tagged_ptr_.Get();
   } else {
-    return MutableSlow(arena, default_value);
+    return MutableSlow(parent, default_value);
   }
 }
 
-std::string* ArenaStringPtr::MutableNoCopy(Arena* arena) {
+std::string* ArenaStringPtr::MutableNoCopy(const MessageLite& parent) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
+  Arena* arena = parent.GetArena();
   if (tagged_ptr_.IsMutable()) {
     return tagged_ptr_.Get();
   } else {
@@ -197,8 +207,9 @@ std::string* ArenaStringPtr::MutableNoCopy(Arena* arena) {
 }
 
 template <typename... Lazy>
-std::string* ArenaStringPtr::MutableSlow(::google::protobuf::Arena* arena,
+std::string* ArenaStringPtr::MutableSlow(const MessageLite& parent,
                                          const Lazy&... lazy_default) {
+  Arena* arena = parent.GetArena();
   ABSL_DCHECK(IsDefault());
 
   // For empty defaults, this ends up calling the default constructor which is
@@ -257,9 +268,9 @@ void ArenaStringPtr::ClearToEmpty() {
 }
 
 void ArenaStringPtr::ClearToDefault(const LazyString& default_value,
-                                    ::google::protobuf::Arena* arena) {
+                                    const MessageLite& parent) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
-  (void)arena;
+  (void)parent;
   if (IsDefault()) {
     // Already set to default -- do nothing.
   } else {

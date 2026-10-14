@@ -299,7 +299,7 @@ template <typename Arg_>
 PROTOBUF_ALWAYS_INLINE void JsonEnumValueOptions::set_string(Arg_&& arg) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   SetHasBit(_impl_._has_bits_[0], 0x00000001U);
-  _impl_.string_.Set(static_cast<Arg_&&>(arg), GetArena());
+  _impl_.string_.Set(static_cast<Arg_&&>(arg), *this);
   // @@protoc_insertion_point(field_set:pb.enumvalue.JsonEnumValueOptions.string)
 }
 inline ::absl::string_view JsonEnumValueOptions::_internal_string() const {
@@ -308,7 +308,7 @@ inline ::absl::string_view JsonEnumValueOptions::_internal_string() const {
 }
 inline void JsonEnumValueOptions::_internal_set_string(::absl::string_view value) {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  _impl_.string_.Set(value, GetArena());
+  _impl_.string_.Set(value, *this);
 }
 
 #ifdef __GNUC__

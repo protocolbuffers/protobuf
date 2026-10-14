@@ -89,6 +89,9 @@ class GenericTypeHandler;  // defined in repeated_field.h
 // `message.GetArena() == nullptr`.
 bool HasArena(const MessageLite& message);
 
+// Defined in message_lite.h
+Arena* PROTOBUF_NULLABLE GetArena(const MessageLite& message);
+
 // This struct maps field types to the types that we will use to represent them
 // when allocated on an arena. This is necessary because fields no longer own an
 // arena pointer, but can be allocated directly on an arena. In this case, we

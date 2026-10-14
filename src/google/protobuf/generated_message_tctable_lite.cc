@@ -1685,20 +1685,18 @@ namespace {
 // Here are overloads of ReadStringIntoArena, ReadStringNoArena and IsValidUTF8
 // for every string class for which we provide fast-table parser support.
 
-PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(const char* ptr,
-                                                       ParseContext* ctx,
-                                                       TcFieldData,
-                                                       ArenaStringPtr& field,
-                                                       Arena* arena) {
-  return ctx->ReadArenaString(ptr, &field, arena);
-}
-
-PROTOBUF_ALWAYS_INLINE
-const char* ReadStringNoArena(const char* ptr, ParseContext* ctx, TcFieldData,
-                              ArenaStringPtr& field) {
-  int size = ReadSize(&ptr);
-  if (!ptr) return nullptr;
-  return ctx->ReadString(ptr, size, field.MutableNoCopy(nullptr));
+PROTOBUF_ALWAYS_INLINE const char* ReadString(const char* ptr,
+                                              ParseContext* ctx, TcFieldData,
+                                              ArenaStringPtr& field,
+                                              const MessageLite& parent) {
+  Arena* arena = parent.GetArena();
+  if (arena == nullptr) {
+    int size = ReadSize(&ptr);
+    if (!ptr) return nullptr;
+    return ctx->ReadString(ptr, size, field.MutableNoCopy(parent));
+  } else {
+    return ctx->ReadArenaString(ptr, &field, arena);
+  }
 }
 
 PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
@@ -1706,19 +1704,12 @@ PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(ArenaStringPtr& field) {
 }
 
 
-PROTOBUF_ALWAYS_INLINE const char* ReadStringIntoArena(const char* ptr,
-                                                       ParseContext* ctx,
-                                                       TcFieldData data,
-                                                       MicroString& field,
-                                                       Arena* arena) {
-  return ctx->ReadMicroString(ptr, field, data.aux_idx(), arena);
-}
-
-PROTOBUF_ALWAYS_INLINE const char* ReadStringNoArena(const char* ptr,
-                                                     ParseContext* ctx,
-                                                     TcFieldData data,
-                                                     MicroString& field) {
-  return ctx->ReadMicroString(ptr, field, data.aux_idx(), nullptr);
+PROTOBUF_ALWAYS_INLINE const char* ReadString(const char* ptr,
+                                              ParseContext* ctx,
+                                              TcFieldData data,
+                                              MicroString& field,
+                                              const MessageLite& parent) {
+  return ctx->ReadMicroString(ptr, field, data.aux_idx(), parent);
 }
 
 PROTOBUF_ALWAYS_INLINE bool IsValidUTF8(const MicroString& field) {
@@ -1731,7 +1722,7 @@ void EnsureArenaStringIsNotDefault(const MessageLite* msg,
   // already set the has bit which breaks the message invariants. We must make
   // it consistent again. We do that by guaranteeing the string always exists.
   if (field->IsDefault()) {
-    field->Set("", msg->GetArena());
+    field->Set("", *msg);
   }
 }
 // The rest do nothing.
@@ -1750,12 +1741,7 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::SingularString(
   ptr += sizeof(TagType);
   SetCachedHasBit(hasbits, data.hasbit_idx());
   auto& field = RefAt<FieldType>(msg, data.offset());
-  auto arena = msg->GetArena();
-  if (arena) {
-    ptr = ReadStringIntoArena(ptr, ctx, data, field, arena);
-  } else {
-    ptr = ReadStringNoArena(ptr, ctx, data, field);
-  }
+  ptr = ReadString(ptr, ctx, data, field, *msg);
   if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
     EnsureArenaStringIsNotDefault(msg, &field);
     PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
@@ -2540,7 +2526,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
       if (arena) {
         ptr = ctx->ReadArenaString(ptr, &field, arena);
       } else {
-        std::string* str = field.MutableNoCopy(nullptr);
+        std::string* str = field.MutableNoCopy(*msg);
         ptr = InlineGreedyStringParser(str, ptr, ctx);
       }
       if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
@@ -2553,7 +2539,7 @@ PROTOBUF_NOINLINE const char* TcParser::MpString(PROTOBUF_TC_PARAM_DECL) {
 
     case field_layout::kRepMString: {
       auto& field = RefAt<MicroString>(base, entry.offset);
-      ptr = ctx->ReadMicroString(ptr, field, entry.aux_idx, msg->GetArena());
+      ptr = ctx->ReadMicroString(ptr, field, entry.aux_idx, *msg);
       is_valid = MpVerifyUtf8(field.Get(), table, entry, xform_val);
       break;
     }

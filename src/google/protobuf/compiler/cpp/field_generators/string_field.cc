@@ -330,7 +330,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
   p->Emit(R"cc(
     auto* released = $field_$.Release();
     if ($pbi$::DebugHardenForceCopyDefaultString()) {
-      $field_$.Set("", GetArena());
+      $field_$.Set("", *this);
     }
     return released;
   )cc");
@@ -371,7 +371,7 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
   if (EmptyDefault()) {
     p->Emit(R"cc(
       if ($pbi$::DebugHardenForceCopyDefaultString() && $field_$.IsDefault()) {
-        $field_$.Set("", GetArena());
+        $field_$.Set("", *this);
       }
     )cc");
   }
@@ -419,7 +419,7 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $PrepareSplitMessageForWrite$;
       $update_hasbit$;
-      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., GetArena());
+      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., *this);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
@@ -442,11 +442,11 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       //~ Don't use $Set$ here; we always want the std::string variant
       //~ regardless of whether this is a `bytes` field.
-      $field_$.Set(value, GetArena());
+      $field_$.Set(value, *this);
     }
     inline ::std::string* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
-      return $field_$.Mutable($lazy_args$, GetArena());
+      return $field_$.Mutable($lazy_args$, *this);
     }
     inline ::std::string* $nullable$ $Msg$::$release_name$() {
       $WeakDescriptorSelfPin$;
@@ -484,7 +484,7 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
 
   ABSL_DCHECK(!is_inlined());
   p->Emit(R"cc(
-    $field_$.ClearToDefault($lazy_var$, GetArena());
+    $field_$.ClearToDefault($lazy_var$, *this);
   )cc");
 }
 
@@ -523,7 +523,7 @@ void SingularString::GenerateMessageClearingCode(io::Printer* p) const {
     // Clear to a non-empty default is more involved, as we try to use the
     // Arena if one is present and may need to reallocate the string.
     p->Emit(R"cc(
-      $this_mutable_field$.ClearToDefault($lazy_var$, this_.GetArena());
+      $this_mutable_field$.ClearToDefault($lazy_var$, this_);
     )cc");
     return;
   }
@@ -565,7 +565,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
     if (IsString(field_) && EmptyDefault()) {
       p->Emit(R"cc(
         if ($pbi$::DebugHardenForceCopyDefaultString()) {
-          $field_$.Set("", GetArena());
+          $field_$.Set("", *this);
         }
       )cc");
     }
@@ -588,7 +588,7 @@ void SingularString::GenerateCopyConstructorCode(io::Printer* p) const {
         }}},
       R"cc(
         if ($hazzer$) {
-          $this_mutable_field$.Set(from._internal_$name$(), this_.GetArena());
+          $this_mutable_field$.Set(from._internal_$name$(), this_);
         }
       )cc");
 }

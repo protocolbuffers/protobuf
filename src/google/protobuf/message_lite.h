@@ -1227,6 +1227,10 @@ inline bool HasArena(const MessageLite& message) {
   return message.GetArena() != nullptr;
 }
 
+inline Arena* GetArena(const MessageLite& message) {
+  return message.GetArena();
+}
+
 // Takes either a `const char*` string literal as the `To` type name, or a
 // pointer to a message prototype that we can call `GetTypeName()` on. This is
 // done to minimize code bloat in the caller, since dynamic casts are inlined.
