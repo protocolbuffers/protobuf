@@ -76,7 +76,6 @@ class FieldSkipper;     // wire_format_lite.h
 class ReflectionVisit;  // message_reflection_util.h
 class WireFormat;
 struct DynamicExtensionInfoHelper;
-void InitializeLazyExtensionSet();
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
@@ -224,14 +223,6 @@ class PROTOBUF_EXPORT DescriptorPoolExtensionFinder {
   MessageFactory* factory_;
   const Descriptor* containing_type_;
 };
-
-// Turn on direct LazyField access.
-// Use PROTOBUF_ENABLE_STABLE_EXPERIMENTS to turn on the old code for now.
-#if !defined(                                                                 \
-    PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET_TEMPORARY_OPTOUT) && \
-    !defined(PROTOBUF_ENABLE_STABLE_EXPERIMENTS)
-#define PROTOBUF_INTERNAL_DIRECT_LAZY_FIELD_IN_EXTENSION_SET
-#endif
 
 // This is an internal helper class intended for use within the protocol buffer
 // library and generated classes.  Clients should not use it directly.  Instead,
@@ -657,7 +648,6 @@ class PROTOBUF_EXPORT ExtensionSet {
   friend struct google::protobuf::internal::DynamicExtensionInfoHelper;
   friend class google::protobuf::internal::WireFormat;
 
-  friend void internal::InitializeLazyExtensionSet();
   friend PROTOBUF_EXPORT bool internal::IsDescendant(const Message& root,
                                                      const Message& message);
   friend class google::protobuf::internal::FindExtensionTest;
@@ -691,7 +681,6 @@ class PROTOBUF_EXPORT ExtensionSet {
                                        int start_field_number,
                                        int end_field_number, uint8_t* target,
                                        io::EpsCopyOutputStream* stream) const;
-  // Interface of a lazily parsed singular message extension.
 
   // We can't directly use std::atomic for Extension::cached_size because
   // Extension needs to be trivially copyable.
