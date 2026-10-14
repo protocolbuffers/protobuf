@@ -332,7 +332,7 @@ inline void SourceContext::set_allocated_file_name(::std::string* PROTOBUF_NULLA
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.file_name_.SetAllocated(value, GetArena());
+  _impl_.file_name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.file_name_.IsDefault()) {
     _impl_.file_name_.Set("", *this);
   }

@@ -1665,7 +1665,7 @@ inline void Type::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -2028,7 +2028,7 @@ inline void Type::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) 
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
   }
-  _impl_.edition_.SetAllocated(value, GetArena());
+  _impl_.edition_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.edition_.IsDefault()) {
     _impl_.edition_.Set("", *this);
   }
@@ -2168,7 +2168,7 @@ inline void Field::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -2232,7 +2232,7 @@ inline void Field::set_allocated_type_url(::std::string* PROTOBUF_NULLABLE value
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.type_url_.SetAllocated(value, GetArena());
+  _impl_.type_url_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_url_.IsDefault()) {
     _impl_.type_url_.Set("", *this);
   }
@@ -2399,7 +2399,7 @@ inline void Field::set_allocated_json_name(::std::string* PROTOBUF_NULLABLE valu
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.json_name_.SetAllocated(value, GetArena());
+  _impl_.json_name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.json_name_.IsDefault()) {
     _impl_.json_name_.Set("", *this);
   }
@@ -2463,7 +2463,7 @@ inline void Field::set_allocated_default_value(::std::string* PROTOBUF_NULLABLE 
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
   }
-  _impl_.default_value_.SetAllocated(value, GetArena());
+  _impl_.default_value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.default_value_.IsDefault()) {
     _impl_.default_value_.Set("", *this);
   }
@@ -2531,7 +2531,7 @@ inline void Enum::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -2822,7 +2822,7 @@ inline void Enum::set_allocated_edition(::std::string* PROTOBUF_NULLABLE value) 
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.edition_.SetAllocated(value, GetArena());
+  _impl_.edition_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.edition_.IsDefault()) {
     _impl_.edition_.Set("", *this);
   }
@@ -2890,7 +2890,7 @@ inline void EnumValue::set_allocated_name(::std::string* PROTOBUF_NULLABLE value
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -3037,7 +3037,7 @@ inline void Option::set_allocated_name(::std::string* PROTOBUF_NULLABLE value) {
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }

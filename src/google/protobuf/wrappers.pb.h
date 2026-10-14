@@ -2117,7 +2117,7 @@ inline void StringValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE va
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.value_.SetAllocated(value, GetArena());
+  _impl_.value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
     _impl_.value_.Set("", *this);
   }
@@ -2185,7 +2185,7 @@ inline void BytesValue::set_allocated_value(::std::string* PROTOBUF_NULLABLE val
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.value_.SetAllocated(value, GetArena());
+  _impl_.value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
     _impl_.value_.Set("", *this);
   }

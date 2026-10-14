@@ -997,7 +997,7 @@ inline void Value::set_allocated_string_value(::std::string* PROTOBUF_NULLABLE v
   }
   if (value != nullptr) {
     set_has_string_value();
-    _impl_.kind_.string_value_.InitAllocated(value, GetArena());
+    _impl_.kind_.string_value_.InitAllocated(value, *this);
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Value.string_value)
 }

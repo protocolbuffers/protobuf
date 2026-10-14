@@ -405,7 +405,7 @@ inline void Any::set_allocated_type_url(::std::string* PROTOBUF_NULLABLE value) 
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.type_url_.SetAllocated(value, GetArena());
+  _impl_.type_url_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_url_.IsDefault()) {
     _impl_.type_url_.Set("", *this);
   }
@@ -469,7 +469,7 @@ inline void Any::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.value_.SetAllocated(value, GetArena());
+  _impl_.value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
     _impl_.value_.Set("", *this);
   }
