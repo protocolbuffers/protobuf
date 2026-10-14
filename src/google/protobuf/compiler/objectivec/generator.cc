@@ -276,16 +276,21 @@ bool ObjectiveCGenerator::GenerateAll(
       // This is an experimental option, and could be removed or change at any
       // time; it is not documented in the README.md for that reason.
       //
-      // Enables a mode where each ObjC class (messages and roots) generates to
-      // a unique .m file; this is to explore impacts on code size when not
+      // Enables a mode where the generated source is split across multiple .m
+      // files; this is to explore impacts on code size when not
       // compiling/linking with `-ObjC` as then only linker visible needs should
-      // be pulled into the builds.
-      if (!StringToBool(
-              options[i].second,
-              &generation_options.experimental_multi_source_generation)) {
+      // be pulled into the builds. The available options are:
+      //   "all": Each ObjC class (messages and roots) generates to a unique .m
+      //     file.
+      // Without this option, each .proto file generates a single .m file.
+      if (options[i].second == "all") {
+        generation_options.experimental_multi_source_generation =
+            MultiSourceGenerationMode::kAll;
+      } else {
         *error = absl::StrCat(
-            "error: Unknown value for experimental_multi_source_generation: ",
-            options[i].second);
+            "error: Unknown value for experimental_multi_source_generation. "
+            "Expected 'all'. Got: '",
+            options[i].second, "'");
         return false;
       }
     } else if (options[i].first == "experimental_strip_nonfunctional_codegen") {
@@ -342,7 +347,7 @@ bool ObjectiveCGenerator::GenerateAll(
   // Multi source generation forces:
   // - off the use of fwd decls in favor of imports
   // - on the minimal imports support
-  if (generation_options.experimental_multi_source_generation) {
+  if (generation_options.IsMultiSourceGeneration()) {
     generation_options.headers_use_forward_declarations = false;
     generation_options.generate_minimal_imports = true;
   }
@@ -479,7 +484,7 @@ bool ObjectiveCGenerator::GenerateAll(
 
     // Generate m file(s).
     if (!headers_only && skip_impls.count(file->name()) == 0) {
-      if (generation_options.experimental_multi_source_generation) {
+      if (generation_options.IsMultiSourceGeneration()) {
         int file_number = 0;
 
         // Generate the Root and FileDescriptor (if needed).
