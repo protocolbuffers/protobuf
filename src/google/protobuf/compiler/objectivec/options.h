@@ -41,6 +41,11 @@ enum class MultiSourceGenerationMode {
 
   // Each ObjC class (messages and roots) generates to a unique .m file.
   kAll,
+
+  // Messages and enums are generated into one .m file (the same code as single
+  // source generation), and only the extension registry/root and the extension
+  // descriptor functions are split into their own .m files.
+  kExtensionsOnly,
 };
 
 // Generation options, documented within generator.cc.
@@ -58,6 +63,7 @@ struct GenerationOptions {
   MultiSourceGenerationMode experimental_multi_source_generation =
       MultiSourceGenerationMode::kNone;
   bool experimental_strip_nonfunctional_codegen = false;
+  bool experimental_global_extension_registry = false;
 
   // The name of the pragma that will be used to indicate the start of the
   // metadata annotations. Must be set (along with `annotation_guard_name`) for
