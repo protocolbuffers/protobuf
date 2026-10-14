@@ -219,7 +219,7 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
                                 options);
         break;
       case kUpb_FieldMode_Map:
-        UPB_UNREACHABLE();  // Maps cannot be extensions.
+        UPB_UNREACHABLE();
         break;
       case kUpb_FieldMode_Scalar: {
         eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm, options);
