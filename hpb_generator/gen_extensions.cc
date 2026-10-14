@@ -26,7 +26,6 @@ using Sub = google::protobuf::io::Printer::Sub;
 
 std::string ExtensionIdentifierBase(const google::protobuf::FieldDescriptor* ext) {
   assert(ext->is_extension());
-  std::string ext_scope;
   if (ext->extension_scope()) {
     return upb::generator::CApiMessageType(ext->extension_scope()->full_name());
   } else {
@@ -55,8 +54,7 @@ void WriteExtensionIdentifierHeader(const google::protobuf::FieldDescriptor* ext
        {"extension_type", ext_type},
        {"default_value", DefaultValue(ext)},
        {"linkage", linkage},
-       {"mini_table_name",
-        absl::StrCat(ExtensionIdentifierBase(ext), "_", ext->name(), "_ext")},
+       {"mini_table_name", mini_table_name},
        Sub("extension_name", ResolveKeywordConflict(ext->name()))
            .AnnotatedAs(ext),
        {"extension_number", ext->number()}},
