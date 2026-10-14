@@ -1303,7 +1303,7 @@ inline void Version::set_allocated_suffix(::std::string* PROTOBUF_NULLABLE value
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.suffix_.SetAllocated(value, GetArena());
+  _impl_.suffix_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.suffix_.IsDefault()) {
     _impl_.suffix_.Set("", *this);
   }
@@ -1447,7 +1447,7 @@ inline void CodeGeneratorRequest::set_allocated_parameter(::std::string* PROTOBU
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.parameter_.SetAllocated(value, GetArena());
+  _impl_.parameter_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.parameter_.IsDefault()) {
     _impl_.parameter_.Set("", *this);
   }
@@ -1717,7 +1717,7 @@ inline void CodeGeneratorResponse_File::set_allocated_name(::std::string* PROTOB
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -1785,7 +1785,7 @@ inline void CodeGeneratorResponse_File::set_allocated_insertion_point(::std::str
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.insertion_point_.SetAllocated(value, GetArena());
+  _impl_.insertion_point_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.insertion_point_.IsDefault()) {
     _impl_.insertion_point_.Set("", *this);
   }
@@ -1853,7 +1853,7 @@ inline void CodeGeneratorResponse_File::set_allocated_content(::std::string* PRO
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.content_.SetAllocated(value, GetArena());
+  _impl_.content_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.content_.IsDefault()) {
     _impl_.content_.Set("", *this);
   }
@@ -2018,7 +2018,7 @@ inline void CodeGeneratorResponse::set_allocated_error(::std::string* PROTOBUF_N
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.error_.SetAllocated(value, GetArena());
+  _impl_.error_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.error_.IsDefault()) {
     _impl_.error_.Set("", *this);
   }

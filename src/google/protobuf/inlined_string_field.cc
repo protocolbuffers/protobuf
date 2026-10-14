@@ -116,7 +116,9 @@ std::string* InlinedStringField::MutableSlow(::google::protobuf::Arena* arena) {
   return UnsafeMutablePointer();
 }
 
-void InlinedStringField::SetAllocated(std::string* value, Arena* arena) {
+void InlinedStringField::SetAllocated(std::string* value,
+                                      const MessageLite& parent) {
+  Arena* arena = parent.GetArena();
   if (arena != nullptr && value != nullptr) {
     MaybeRegisterForDestruction(arena, get_mutable());
   }
@@ -137,7 +139,8 @@ std::string* InlinedStringField::Release() {
   return released;
 }
 
-std::string* InlinedStringField::Release(Arena* arena) {
+std::string* InlinedStringField::Release(const MessageLite& parent) {
+  Arena* arena = parent.GetArena();
   // We can not steal donated arena strings.
   std::string* released = (arena != nullptr && IsDonated())
                               ? new std::string(*get_mutable())

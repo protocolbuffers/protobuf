@@ -150,7 +150,7 @@ class PROTOBUF_EXPORT InlinedStringField {
   // set_allocated_<field> in generated classes.
   //
   // If this field is donated, this method might undonate this field.
-  void SetAllocated(std::string* value, Arena* arena);
+  void SetAllocated(std::string* value, const MessageLite& parent);
 
   void SetAllocatedNoArena(std::string* value);
 
@@ -158,7 +158,7 @@ class PROTOBUF_EXPORT InlinedStringField {
   // Own()'d by any arena. The caller retains ownership. Clears this field back
   // to nullptr state. Used to implement release_<field>() methods on generated
   // classes.
-  [[nodiscard]] std::string* Release(Arena* arena);
+  [[nodiscard]] std::string* Release(const MessageLite& parent);
   [[nodiscard]] std::string* Release();
 
   // Arena-safety semantics: this is guarded by the logic in

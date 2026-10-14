@@ -308,7 +308,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
       }
       $clear_hasbit$;
 
-      return $field_$.Release(GetArena());
+      return $field_$.Release(*this);
     )cc");
     return;
   }
@@ -344,7 +344,7 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
       }
       if (value != nullptr) {
         set_has_$name_internal$();
-        $field_$.InitAllocated(value, GetArena());
+        $field_$.InitAllocated(value, *this);
       }
     )cc");
     return;
@@ -361,7 +361,7 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    $field_$.SetAllocated(value, GetArena());
+    $field_$.SetAllocated(value, *this);
   )cc");
 
   if (is_inlined()) {

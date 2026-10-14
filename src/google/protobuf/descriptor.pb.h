@@ -12778,7 +12778,7 @@ inline void FileDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -12846,7 +12846,7 @@ inline void FileDescriptorProto::set_allocated_package(::std::string* PROTOBUF_N
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
   }
-  _impl_.package_.SetAllocated(value, GetArena());
+  _impl_.package_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.package_.IsDefault()) {
     _impl_.package_.Set("", *this);
   }
@@ -13576,7 +13576,7 @@ inline void FileDescriptorProto::set_allocated_syntax(::std::string* PROTOBUF_NU
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
   }
-  _impl_.syntax_.SetAllocated(value, GetArena());
+  _impl_.syntax_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.syntax_.IsDefault()) {
     _impl_.syntax_.Set("", *this);
   }
@@ -13897,7 +13897,7 @@ inline void DescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULLABLE
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -14583,7 +14583,7 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_full_name(::std::st
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.full_name_.SetAllocated(value, GetArena());
+  _impl_.full_name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.full_name_.IsDefault()) {
     _impl_.full_name_.Set("", *this);
   }
@@ -14651,7 +14651,7 @@ inline void ExtensionRangeOptions_Declaration::set_allocated_type(::std::string*
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.type_.SetAllocated(value, GetArena());
+  _impl_.type_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_.IsDefault()) {
     _impl_.type_.Set("", *this);
   }
@@ -15022,7 +15022,7 @@ inline void FieldDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NUL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -15180,7 +15180,7 @@ inline void FieldDescriptorProto::set_allocated_type_name(::std::string* PROTOBU
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.type_name_.SetAllocated(value, GetArena());
+  _impl_.type_name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_name_.IsDefault()) {
     _impl_.type_name_.Set("", *this);
   }
@@ -15248,7 +15248,7 @@ inline void FieldDescriptorProto::set_allocated_extendee(::std::string* PROTOBUF
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.extendee_.SetAllocated(value, GetArena());
+  _impl_.extendee_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.extendee_.IsDefault()) {
     _impl_.extendee_.Set("", *this);
   }
@@ -15316,7 +15316,7 @@ inline void FieldDescriptorProto::set_allocated_default_value(::std::string* PRO
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.default_value_.SetAllocated(value, GetArena());
+  _impl_.default_value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.default_value_.IsDefault()) {
     _impl_.default_value_.Set("", *this);
   }
@@ -15412,7 +15412,7 @@ inline void FieldDescriptorProto::set_allocated_json_name(::std::string* PROTOBU
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
   }
-  _impl_.json_name_.SetAllocated(value, GetArena());
+  _impl_.json_name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.json_name_.IsDefault()) {
     _impl_.json_name_.Set("", *this);
   }
@@ -15610,7 +15610,7 @@ inline void OneofDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NUL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -15840,7 +15840,7 @@ inline void EnumDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NULL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -16223,7 +16223,7 @@ inline void EnumValueDescriptorProto::set_allocated_name(::std::string* PROTOBUF
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -16421,7 +16421,7 @@ inline void ServiceDescriptorProto::set_allocated_name(::std::string* PROTOBUF_N
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -16646,7 +16646,7 @@ inline void MethodDescriptorProto::set_allocated_name(::std::string* PROTOBUF_NU
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.name_.SetAllocated(value, GetArena());
+  _impl_.name_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_.IsDefault()) {
     _impl_.name_.Set("", *this);
   }
@@ -16714,7 +16714,7 @@ inline void MethodDescriptorProto::set_allocated_input_type(::std::string* PROTO
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.input_type_.SetAllocated(value, GetArena());
+  _impl_.input_type_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.input_type_.IsDefault()) {
     _impl_.input_type_.Set("", *this);
   }
@@ -16782,7 +16782,7 @@ inline void MethodDescriptorProto::set_allocated_output_type(::std::string* PROT
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.output_type_.SetAllocated(value, GetArena());
+  _impl_.output_type_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.output_type_.IsDefault()) {
     _impl_.output_type_.Set("", *this);
   }
@@ -17008,7 +17008,7 @@ inline void FileOptions::set_allocated_java_package(::std::string* PROTOBUF_NULL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.java_package_.SetAllocated(value, GetArena());
+  _impl_.java_package_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.java_package_.IsDefault()) {
     _impl_.java_package_.Set("", *this);
   }
@@ -17076,7 +17076,7 @@ inline void FileOptions::set_allocated_java_outer_classname(::std::string* PROTO
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.java_outer_classname_.SetAllocated(value, GetArena());
+  _impl_.java_outer_classname_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.java_outer_classname_.IsDefault()) {
     _impl_.java_outer_classname_.Set("", *this);
   }
@@ -17259,7 +17259,7 @@ inline void FileOptions::set_allocated_go_package(::std::string* PROTOBUF_NULLAB
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.go_package_.SetAllocated(value, GetArena());
+  _impl_.go_package_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.go_package_.IsDefault()) {
     _impl_.go_package_.Set("", *this);
   }
@@ -17467,7 +17467,7 @@ inline void FileOptions::set_allocated_objc_class_prefix(::std::string* PROTOBUF
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.objc_class_prefix_.SetAllocated(value, GetArena());
+  _impl_.objc_class_prefix_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.objc_class_prefix_.IsDefault()) {
     _impl_.objc_class_prefix_.Set("", *this);
   }
@@ -17535,7 +17535,7 @@ inline void FileOptions::set_allocated_csharp_namespace(::std::string* PROTOBUF_
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
   }
-  _impl_.csharp_namespace_.SetAllocated(value, GetArena());
+  _impl_.csharp_namespace_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.csharp_namespace_.IsDefault()) {
     _impl_.csharp_namespace_.Set("", *this);
   }
@@ -17603,7 +17603,7 @@ inline void FileOptions::set_allocated_swift_prefix(::std::string* PROTOBUF_NULL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
   }
-  _impl_.swift_prefix_.SetAllocated(value, GetArena());
+  _impl_.swift_prefix_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.swift_prefix_.IsDefault()) {
     _impl_.swift_prefix_.Set("", *this);
   }
@@ -17671,7 +17671,7 @@ inline void FileOptions::set_allocated_php_class_prefix(::std::string* PROTOBUF_
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
   }
-  _impl_.php_class_prefix_.SetAllocated(value, GetArena());
+  _impl_.php_class_prefix_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_class_prefix_.IsDefault()) {
     _impl_.php_class_prefix_.Set("", *this);
   }
@@ -17739,7 +17739,7 @@ inline void FileOptions::set_allocated_php_namespace(::std::string* PROTOBUF_NUL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000080U);
   }
-  _impl_.php_namespace_.SetAllocated(value, GetArena());
+  _impl_.php_namespace_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_namespace_.IsDefault()) {
     _impl_.php_namespace_.Set("", *this);
   }
@@ -17807,7 +17807,7 @@ inline void FileOptions::set_allocated_php_metadata_namespace(::std::string* PRO
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000100U);
   }
-  _impl_.php_metadata_namespace_.SetAllocated(value, GetArena());
+  _impl_.php_metadata_namespace_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.php_metadata_namespace_.IsDefault()) {
     _impl_.php_metadata_namespace_.Set("", *this);
   }
@@ -17875,7 +17875,7 @@ inline void FileOptions::set_allocated_ruby_package(::std::string* PROTOBUF_NULL
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
   }
-  _impl_.ruby_package_.SetAllocated(value, GetArena());
+  _impl_.ruby_package_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.ruby_package_.IsDefault()) {
     _impl_.ruby_package_.Set("", *this);
   }
@@ -18428,7 +18428,7 @@ inline void FieldOptions_EditionDefault::set_allocated_value(::std::string* PROT
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.value_.SetAllocated(value, GetArena());
+  _impl_.value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
     _impl_.value_.Set("", *this);
   }
@@ -18562,7 +18562,7 @@ inline void FieldOptions_FeatureSupport::set_allocated_deprecation_warning(::std
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.deprecation_warning_.SetAllocated(value, GetArena());
+  _impl_.deprecation_warning_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.deprecation_warning_.IsDefault()) {
     _impl_.deprecation_warning_.Set("", *this);
   }
@@ -18661,7 +18661,7 @@ inline void FieldOptions_FeatureSupport::set_allocated_removal_error(::std::stri
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.removal_error_.SetAllocated(value, GetArena());
+  _impl_.removal_error_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.removal_error_.IsDefault()) {
     _impl_.removal_error_.Set("", *this);
   }
@@ -20471,7 +20471,7 @@ inline void UninterpretedOption_NamePart::set_allocated_name_part(::std::string*
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.name_part_.SetAllocated(value, GetArena());
+  _impl_.name_part_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.name_part_.IsDefault()) {
     _impl_.name_part_.Set("", *this);
   }
@@ -20626,7 +20626,7 @@ inline void UninterpretedOption::set_allocated_identifier_value(::std::string* P
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.identifier_value_.SetAllocated(value, GetArena());
+  _impl_.identifier_value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.identifier_value_.IsDefault()) {
     _impl_.identifier_value_.Set("", *this);
   }
@@ -20778,7 +20778,7 @@ inline void UninterpretedOption::set_allocated_string_value(::std::string* PROTO
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
   }
-  _impl_.string_value_.SetAllocated(value, GetArena());
+  _impl_.string_value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.string_value_.IsDefault()) {
     _impl_.string_value_.Set("", *this);
   }
@@ -20846,7 +20846,7 @@ inline void UninterpretedOption::set_allocated_aggregate_value(::std::string* PR
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.aggregate_value_.SetAllocated(value, GetArena());
+  _impl_.aggregate_value_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.aggregate_value_.IsDefault()) {
     _impl_.aggregate_value_.Set("", *this);
   }
@@ -21663,7 +21663,7 @@ inline void SourceCodeInfo_Location::set_allocated_leading_comments(::std::strin
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   }
-  _impl_.leading_comments_.SetAllocated(value, GetArena());
+  _impl_.leading_comments_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.leading_comments_.IsDefault()) {
     _impl_.leading_comments_.Set("", *this);
   }
@@ -21731,7 +21731,7 @@ inline void SourceCodeInfo_Location::set_allocated_trailing_comments(::std::stri
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
   }
-  _impl_.trailing_comments_.SetAllocated(value, GetArena());
+  _impl_.trailing_comments_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.trailing_comments_.IsDefault()) {
     _impl_.trailing_comments_.Set("", *this);
   }
@@ -21985,7 +21985,7 @@ inline void GeneratedCodeInfo_Annotation::set_allocated_source_file(::std::strin
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.source_file_.SetAllocated(value, GetArena());
+  _impl_.source_file_.SetAllocated(value, *this);
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.source_file_.IsDefault()) {
     _impl_.source_file_.Set("", *this);
   }

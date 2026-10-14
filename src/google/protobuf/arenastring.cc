@@ -231,7 +231,8 @@ std::string* ArenaStringPtr::Release() {
   return released;
 }
 
-void ArenaStringPtr::SetAllocated(std::string* value, Arena* arena) {
+void ArenaStringPtr::SetAllocated(std::string* value,
+                                  const MessageLite& parent) {
   ScopedCheckPtrInvariants check(&tagged_ptr_);
   // Release what we have first.
   Destroy();
@@ -247,7 +248,7 @@ void ArenaStringPtr::SetAllocated(std::string* value, Arena* arena) {
     delete value;
     value = new_value;
 #endif  // !NDEBUG
-    InitAllocated(value, arena);
+    InitAllocated(value, parent);
   }
 }
 

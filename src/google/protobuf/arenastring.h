@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -295,7 +296,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // `arena` is not null, else, `str` will be owned by ArenaStringPtr. This
   // function should only be used to initialize a ArenaStringPtr or on an
   // instance known to not carry any heap allocated value.
-  inline void InitAllocated(std::string* str, Arena* arena);
+  inline void InitAllocated(std::string* str, const MessageLite& parent);
 
   void SetFromDefault(absl::string_view value, Arena* arena);
 
@@ -362,7 +363,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Takes a std::string that is heap-allocated, and takes ownership. The
   // std::string's destructor is registered with the arena. Used to implement
   // set_allocated_<field> in generated classes.
-  void SetAllocated(std::string* value, Arena* arena);
+  void SetAllocated(std::string* value, const MessageLite& parent);
 
   // Frees storage (if not on an arena).
   void Destroy();
@@ -467,7 +468,9 @@ inline void ArenaStringPtr::InitExternal(const std::string* str) {
   tagged_ptr_.SetDefault(str);
 }
 
-inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
+inline void ArenaStringPtr::InitAllocated(std::string* str,
+                                          const MessageLite& parent) {
+  Arena* arena = GetArena(parent);
   if (arena != nullptr) {
     tagged_ptr_.SetMutableArena(str);
     arena->Own(str);
