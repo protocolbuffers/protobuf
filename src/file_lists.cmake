@@ -1439,6 +1439,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_chunk_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/ifndef_guard_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_size_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/metadata_test.cc
