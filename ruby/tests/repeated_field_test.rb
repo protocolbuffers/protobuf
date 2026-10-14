@@ -383,6 +383,7 @@ class RepeatedFieldTest < Test::Unit::TestCase
   end
 
   def test_push_value_conversion_freezes_field
+    omit "Native JRuby does not run Ruby value conversions during push" if defined?(JRUBY_VERSION) && Google::Protobuf::IMPLEMENTATION == :NATIVE
     # Regression: a value conversion that freezes the field mid-push must not
     # let the element land on the frozen upb array.
     field = Google::Protobuf::RepeatedField.new(:message, Google::Protobuf::Duration)
