@@ -2158,6 +2158,12 @@ class RustRepeatedMessageHelper {
         field.GetArena(), prototype);
   }
 
+  static void Truncate(RepeatedPtrFieldBase& field, size_t new_size) {
+    while (Size(field) > new_size) {
+      field.RemoveLast<GenericTypeHandler<MessageLite>>();
+    }
+  }
+
   static void CopyFrom(const RepeatedPtrFieldBase& src,
                        RepeatedPtrFieldBase& dst) {
     dst.Clear<GenericTypeHandler<google::protobuf::MessageLite>>();
