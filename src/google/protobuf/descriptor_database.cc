@@ -646,10 +646,22 @@ bool EncodedDescriptorDatabase::FindFileByName(
   return MaybeParse(index_->FindFile(filename), output);
 }
 
+bool EncodedDescriptorDatabase::FindFileByName(
+    absl::string_view filename, FileDescriptorProto* PROTOBUF_NONNULL output,
+    absl::string_view* PROTOBUF_NONNULL encoded_file) {
+  return MaybeParse(index_->FindFile(filename), output, encoded_file);
+}
+
 bool EncodedDescriptorDatabase::FindFileContainingSymbol(
     absl::string_view symbol_name,
     FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeParse(index_->FindSymbol(symbol_name), output);
+}
+
+bool EncodedDescriptorDatabase::FindFileContainingSymbol(
+    absl::string_view symbol_name, FileDescriptorProto* PROTOBUF_NONNULL output,
+    absl::string_view* PROTOBUF_NONNULL encoded_file) {
+  return MaybeParse(index_->FindSymbol(symbol_name), output, encoded_file);
 }
 
 bool EncodedDescriptorDatabase::FindNameOfFileContainingSymbol(
@@ -685,6 +697,14 @@ bool EncodedDescriptorDatabase::FindFileContainingExtension(
     FileDescriptorProto* PROTOBUF_NONNULL output) {
   return MaybeParse(index_->FindExtension(containing_type, field_number),
                     output);
+}
+
+bool EncodedDescriptorDatabase::FindFileContainingExtension(
+    absl::string_view containing_type, int field_number,
+    FileDescriptorProto* PROTOBUF_NONNULL output,
+    absl::string_view* PROTOBUF_NONNULL encoded_file) {
+  return MaybeParse(index_->FindExtension(containing_type, field_number),
+                    output, encoded_file);
 }
 
 bool EncodedDescriptorDatabase::FindAllExtensionNumbers(
@@ -943,10 +963,12 @@ bool EncodedDescriptorDatabase::FindAllFileNames(
 
 bool EncodedDescriptorDatabase::MaybeParse(
     std::pair<const void* PROTOBUF_NULLABLE, int> encoded_file,
-    FileDescriptorProto* PROTOBUF_NONNULL output) {
+    FileDescriptorProto* PROTOBUF_NONNULL output,
+    absl::string_view* PROTOBUF_NULLABLE out_encoded_file) {
   if (encoded_file.first == nullptr) return false;
   absl::string_view source(static_cast<const char*>(encoded_file.first),
                            encoded_file.second);
+  if (out_encoded_file != nullptr) *out_encoded_file = source;
   return internal::ParseNoReflection(source, *output);
 }
 

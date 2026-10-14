@@ -371,7 +371,8 @@ PROTOBUF_EXPORT absl::string_view ShortEditionName(Edition edition);
 
 bool IsEnumFullySequential(const EnumDescriptor* enum_desc);
 
-const std::string& DefaultValueStringAsString(const FieldDescriptor* field);
+PROTOBUF_EXPORT const std::string& DefaultValueStringAsString(
+    const FieldDescriptor* field);
 const std::string& NameOfEnumAsString(const EnumValueDescriptor* descriptor);
 
 struct NameLimits {
@@ -834,7 +835,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   internal::NonnullOffsetPtr<ExtensionRange> extension_ranges_;
   internal::NonnullOffsetPtr<FieldDescriptor> extensions_;
   internal::NonnullOffsetPtr<ReservedRange> reserved_ranges_;
-  internal::NonnullOffsetPtr<const std::string*> reserved_names_;
+  internal::NonnullOffsetPtr<const absl::string_view> reserved_names_;
 
   int field_count_;
   int oneof_decl_count_;
@@ -1229,8 +1230,6 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
 #endif  // !SWIG
   friend class Reflection;
   friend class FieldDescriptorLegacy;
-  friend const std::string& internal::DefaultValueStringAsString(
-      const FieldDescriptor* field);
 
   // Returns the original ctype specified in the .proto file.  This should not
   // be relied on, as it no longer uniquely determines behavior.  The
@@ -1351,7 +1350,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
     bool default_value_bool_;
 
     mutable const EnumValueDescriptor* default_value_enum_;
-    const std::string* default_value_string_;
+    const absl::string_view* default_value_string_;
     mutable std::atomic<const internal::ClassData*> generated_class_data_;
   };
 
@@ -1683,7 +1682,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   internal::OffsetProtoPtr<const EnumOptions> options_;
   internal::NonnullOffsetPtr<EnumValueDescriptor> values_;
   internal::NonnullOffsetPtr<EnumDescriptor::ReservedRange> reserved_ranges_;
-  internal::NonnullOffsetPtr<const std::string*> reserved_names_;
+  internal::NonnullOffsetPtr<const absl::string_view> reserved_names_;
 
   int value_count_;
   int reserved_range_count_;
@@ -2240,7 +2239,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // This one is here to fill the padding.
   int extension_count_;
 
-  internal::NonnullOffsetPtr<const std::string> name_;
+  internal::NonnullOffsetPtr<const absl::string_view> name_;
   Edition edition_;
 
   // These are arranged to minimize padding on 64-bit.
@@ -2256,6 +2255,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   internal::NonnullOffsetPtr<int> public_dependencies_;
   internal::NonnullOffsetPtr<int> weak_dependencies_;
   internal::NonnullOffsetPtr<absl::string_view> option_dependencies_;
+  internal::NonnullOffsetPtr<const absl::string_view> package_;
 
   internal::NonnullOffsetPtr<Descriptor> message_types_;
   internal::NonnullOffsetPtr<EnumDescriptor> enum_types_;
@@ -2264,8 +2264,6 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   internal::OffsetProtoPtr<const FileOptions> options_;
 
   internal::OffsetProtoPtr<const SourceCodeInfo> source_code_info_;
-
-  const std::string* package_;
 
   // dependencies_once_ contain a once_flag followed by N NUL terminated
   // strings. Dependencies that do not need to be loaded will be empty. ie just
@@ -2298,7 +2296,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   friend class ServiceDescriptor;
 };
 
-PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 136);
+PROTOBUF_INTERNAL_CHECK_CLASS_SIZE(FileDescriptor, 128);
 
 #ifndef SWIG
 enum class ExtDeclEnforcementLevel : uint8_t {
@@ -2815,8 +2813,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   // fallback_database_.  Declared const because it is called by (semantically)
   // const methods.
   const FileDescriptor* BuildFileFromDatabase(
-      const FileDescriptorProto& proto,
-      DeferredValidation& deferred_validation) const;
+      const FileDescriptorProto& proto, DeferredValidation& deferred_validation,
+      absl::string_view encoded_file) const;
 
   // Helper for when lazily_build_dependencies_ is set, can look up a symbol
   // after the file's descriptor is built, and can build the file where that
@@ -2829,7 +2827,8 @@ class PROTOBUF_EXPORT DescriptorPool {
   // Create a placeholder FileDescriptor of the specified name
   FileDescriptor* NewPlaceholderFile(absl::string_view name) const;
   FileDescriptor* NewPlaceholderFileWithMutexHeld(
-      absl::string_view name, internal::FlatAllocator& alloc) const;
+      absl::string_view name, absl::string_view package,
+      internal::FlatAllocator& alloc) const;
 
   enum PlaceholderType {
     PLACEHOLDER_MESSAGE,
@@ -3061,10 +3060,8 @@ inline bool Descriptor::IsReservedName(absl::string_view name) const {
   return false;
 }
 
-// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
-// an array of pointers rather than the usual array of objects.
 inline absl::string_view Descriptor::reserved_name(int index) const {
-  return *reserved_names_[index];
+  return reserved_names_[index];
 }
 
 inline bool EnumDescriptor::IsReservedNumber(int number) const {
@@ -3080,10 +3077,8 @@ inline bool EnumDescriptor::IsReservedName(absl::string_view name) const {
   return false;
 }
 
-// Can't use PROTOBUF_DEFINE_ARRAY_ACCESSOR because reserved_names_ is actually
-// an array of pointers rather than the usual array of objects.
 inline absl::string_view EnumDescriptor::reserved_name(int index) const {
-  return *reserved_names_[index];
+  return reserved_names_[index];
 }
 
 inline absl::string_view FieldDescriptor::lowercase_name() const {
@@ -3253,11 +3248,6 @@ inline SymbolVisibility EnumDescriptor::visibility_keyword() const {
 }
 
 namespace internal {
-
-inline const std::string& DefaultValueStringAsString(
-    const FieldDescriptor* field) {
-  return *field->default_value_string_;
-}
 
 inline const std::string& NameOfEnumAsString(
     const EnumValueDescriptor* descriptor) {

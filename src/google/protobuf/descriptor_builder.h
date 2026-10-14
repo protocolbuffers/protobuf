@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/base/attributes.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/functional/function_ref.h"
@@ -89,6 +90,11 @@ class DescriptorBuilder {
   ~DescriptorBuilder();
 
   const FileDescriptor* BuildFile(const FileDescriptorProto& proto);
+  // If non-empty, `encoded_file` is the serialized `proto` and must outlive the
+  // pool. Strings may then alias into it rather than being copied.
+  const FileDescriptor* BuildFile(const FileDescriptorProto& proto,
+                                  absl::string_view encoded_file
+                                      ABSL_ATTRIBUTE_LIFETIME_BOUND);
 
  private:
   static constexpr size_t kMaxNumErrors = 1000;

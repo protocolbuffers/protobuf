@@ -395,16 +395,31 @@ class PROTOBUF_EXPORT EncodedDescriptorDatabase : public DescriptorDatabase {
       std::vector<std::string>* PROTOBUF_NONNULL output) override;
 
  private:
+  friend class DescriptorPool;
   class DescriptorIndex;
   // Keep DescriptorIndex by pointer to hide the implementation to keep a
   // cleaner header.
   std::unique_ptr<DescriptorIndex> index_;
   std::vector<void*> files_to_delete_;
 
+  bool FindFileByName(absl::string_view filename,
+                      FileDescriptorProto* PROTOBUF_NONNULL output,
+                      absl::string_view* PROTOBUF_NONNULL encoded_file);
+  bool FindFileContainingSymbol(absl::string_view symbol_name,
+                                FileDescriptorProto* PROTOBUF_NONNULL output,
+                                absl::string_view* PROTOBUF_NONNULL
+                                    encoded_file);
+  bool FindFileContainingExtension(
+      absl::string_view containing_type, int field_number,
+      FileDescriptorProto* PROTOBUF_NONNULL output,
+      absl::string_view* PROTOBUF_NONNULL encoded_file);
+
   // If encoded_file.first is non-nullptr, parse the data into *output and
   // return true, otherwise return false.
-  bool MaybeParse(std::pair<const void* PROTOBUF_NULLABLE, int> encoded_file,
-                  FileDescriptorProto* PROTOBUF_NONNULL output);
+  bool MaybeParse(
+      std::pair<const void* PROTOBUF_NULLABLE, int> encoded_file,
+      FileDescriptorProto* PROTOBUF_NONNULL output,
+      absl::string_view* PROTOBUF_NULLABLE out_encoded_file = nullptr);
 };
 
 struct PROTOBUF_EXPORT DescriptorPoolDatabaseOptions {
