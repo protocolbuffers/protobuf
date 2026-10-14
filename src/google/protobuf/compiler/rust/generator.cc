@@ -528,7 +528,8 @@ bool RustGenerator::Generate(const FileDescriptor* file,
     }
   }
 
-  if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen) {
+  if (ctx.is_upb() && !ctx.opts().strip_nonfunctional_codegen &&
+      HasReflectionSupport(ctx, *file)) {
     if (!FileOrImportsHaveExtensions(*file)) {
       EmitDefInit(ctx, *file, pool);
     }

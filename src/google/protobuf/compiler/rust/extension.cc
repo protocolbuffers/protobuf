@@ -133,11 +133,28 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
       }
     };
 
+    auto def_init = [&] {
+      if (!ctx.opts().strip_nonfunctional_codegen &&
+          HasReflectionSupport(ctx, extension)) {
+        ctx.Emit({{"extendee", extendee},
+                  {"def_init", absl::StrCat(RustModule(ctx, *extension.file()),
+                                            DefInitName(*extension.file()))}},
+                 R"rs(
+        #[linkme::distributed_slice($pbr$::EXTENSION_DEF_INITS)]
+        static DEF_INIT: $pbr$::ExtensionDefInit = $pbr$::ExtensionDefInit {
+            extendee: <$extendee$ as $pbr$::UpbWithReflection>::MESSAGE_DEF_CACHED,
+            def_init: || $def_init$($pbi$::Private),
+        };
+      )rs");
+      }
+    };
+
     if (extension.is_repeated()) {
       ctx.Emit({{"extendee", extendee},
                 {"number", number},
                 {"mini_descriptor", mini_descriptor},
-                {"sub", sub}},
+                {"sub", sub},
+                {"def_init", def_init}},
                R"rs(
     {
         #[linkme::distributed_slice($pbr$::EXTENSIONS)]
@@ -148,6 +165,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 $sub$,
             ))
         });
+        $def_init$
         $pbi$::new_repeated_extension_id($pbi$::Private, $number$, $pbr$::InnerExtensionId::new(&MT))
     };
   )rs");
@@ -155,7 +173,8 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
       ctx.Emit({{"extendee", extendee},
                 {"number", number},
                 {"mini_descriptor", mini_descriptor},
-                {"sub", sub}},
+                {"sub", sub},
+                {"def_init", def_init}},
                R"rs(
     {
         #[linkme::distributed_slice($pbr$::EXTENSIONS)]
@@ -166,6 +185,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 $sub$,
             ))
         });
+        $def_init$
         $pbi$::new_message_extension_id($pbi$::Private, $number$, $pbr$::InnerExtensionId::new(&MT))
     };
   )rs");
@@ -174,7 +194,8 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 {"number", number},
                 {"mini_descriptor", mini_descriptor},
                 {"default", DefaultArgument(ctx, extension)},
-                {"sub", sub}},
+                {"sub", sub},
+                {"def_init", def_init}},
                R"rs(
     {
         #[linkme::distributed_slice($pbr$::EXTENSIONS)]
@@ -185,6 +206,7 @@ void GenerateRs(Context& ctx, const FieldDescriptor& extension,
                 $sub$,
             ))
         });
+        $def_init$
         $pbi$::new_extension_id($pbi$::Private, $number$$default$, $pbr$::InnerExtensionId::new(&MT))
     };
   )rs");
