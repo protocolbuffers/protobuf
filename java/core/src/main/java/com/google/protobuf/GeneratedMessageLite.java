@@ -101,7 +101,7 @@ public abstract class GeneratedMessageLite<
   @Override
   @SuppressWarnings("unchecked") // Guaranteed by runtime.
   public final Parser<MessageT> getParserForType() {
-    return (Parser<MessageT>) dynamicMethod(MethodToInvoke.GET_PARSER, null, null);
+    return getParserForClass((Class<MessageT>) getClass());
   }
 
   @Override

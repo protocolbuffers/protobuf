@@ -329,70 +329,45 @@ void ImmutableMessageLiteGenerator::Generate(io::Printer* printer) {
   }
 
   printer->Print(
-      "@java.lang.Override\n"
-      "@java.lang.SuppressWarnings({\"ThrowNull\"})\n"
       "protected final java.lang.Object dynamicMethod(\n"
       "    com.google.protobuf.GeneratedMessageLite.MethodToInvoke method,\n"
       "    java.lang.Object arg0, java.lang.Object arg1) {\n"
-      "  switch (method) {\n"
-      "    case NEW_MUTABLE_INSTANCE: {\n"
-      "      return new $classname$();\n"
-      "    }\n",
-      "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
-  printer->Indent();
-  printer->Indent();
-
-  printer->Print("case NEW_BUILDER: {\n");
-
-  printer->Indent();
-  GenerateDynamicMethodNewBuilder(printer);
-  printer->Outdent();
-
-  printer->Print(
-      "}\n"
-      "case BUILD_MESSAGE_INFO: {\n");
-
-  printer->Indent();
+      "  if (method == "
+      "com.google.protobuf.GeneratedMessageLite.MethodToInvoke.BUILD_MESSAGE_"
+      "INFO) {\n");
   GenerateDynamicMethodNewBuildMessageInfo(printer);
-  printer->Outdent();
-  printer->Print("}\n");
-
   printer->Print(
-      "case GET_DEFAULT_INSTANCE: {\n"
-      "  return DEFAULT_INSTANCE;\n"
-      "}\n"
-      "case GET_PARSER: {\n"
-      "  return "
-      "com.google.protobuf.GeneratedMessageLite.getParserForClass($classname$."
-      "class);\n"
-      "}\n",
+      "  } else if (method == "
+      "com.google.protobuf.GeneratedMessageLite.MethodToInvoke.NEW_MUTABLE_"
+      "INSTANCE) {\n"
+      "    return new $classname$();\n"
+      "  } else if (method == "
+      "com.google.protobuf.GeneratedMessageLite.MethodToInvoke.NEW_BUILDER) {\n"
+      "    ",
       "classname", name_resolver_->GetImmutableClassName(descriptor_));
-
-  // GET_MEMOIZED_IS_INITIALIZED and SET_MEMOIZED_IS_INITIALIZED cases are only
-  // generated for messages that cannot be statically proven to never
-  // transitively contain a required field. For other messages, these
-  // cases are omitted to reduce gencode size. Unhandled cases in dynamicMethod
-  // return null, causing GeneratedMessageLite.isInitialized() to return true.
+  GenerateDynamicMethodNewBuilder(printer);
+  printer->Print(
+      "  } else if (method == "
+      "com.google.protobuf.GeneratedMessageLite.MethodToInvoke.GET_DEFAULT_"
+      "INSTANCE) {\n"
+      "    return DEFAULT_INSTANCE;\n",
+      "classname", name_resolver_->GetImmutableClassName(descriptor_));
   if (HasRequiredFields(descriptor_)) {
     printer->Print(
-        "case GET_MEMOIZED_IS_INITIALIZED: {\n"
-        "  return memoizedIsInitialized;\n"
-        "}\n"
-        "case SET_MEMOIZED_IS_INITIALIZED: {\n"
-        "  memoizedIsInitialized = (byte) (arg0 == null ? 0 : 1);\n"
-        "  return null;\n"
-        "}\n");
+        "  } else if (method == "
+        "com.google.protobuf.GeneratedMessageLite.MethodToInvoke.GET_MEMOIZED_"
+        "IS_INITIALIZED) {\n"
+        "    return memoizedIsInitialized;\n"
+        "  } else if (method == "
+        "com.google.protobuf.GeneratedMessageLite.MethodToInvoke.SET_MEMOIZED_"
+        "IS_INITIALIZED) {\n"
+        "    memoizedIsInitialized = (byte) (arg0 == null ? 0 : 1);\n"
+        "    return null;\n");
   }
-
-  printer->Outdent();
   printer->Print(
-      "}\n"
-      "return null;\n");
-  printer->Outdent();
-  printer->Print(
-      "}\n"
-      "\n");
+      "  }\n"
+      "  return null;\n"
+      "}\n\n");
 
   printer->Print(
       "\n"
