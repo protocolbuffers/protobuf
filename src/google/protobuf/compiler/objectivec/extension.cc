@@ -165,6 +165,35 @@ void ExtensionGenerator::GenerateDescriptorFunction(
         absl::StrCat("GPBDataType", GetCapitalizedType(descriptor_))},
        {"method_name", method_name_},
        {"function_name", function_name_},
+       {"create_and_return_descriptor",
+        [&] {
+          if (generation_options_.experimental_global_extension_registry) {
+            // Place a two pointer entry in the "__DATA,__gpb_ext_reg" section
+            // that references the static description, so
+            // +[GPBExtensionRegistry globalExtensionRegistry] can find the
+            // extension without this function being referenced. The
+            // descriptor is created on first use by either path, and both
+            // paths share it.
+            printer->Emit(R"objc(
+              GPB_EXTENSION_REGISTRY_SECTION_ATTR static GPBExtensionSectionEntry entry = {
+                .description = &description,
+                .descriptor = nil,
+              };
+              return GPBResolveExtensionSectionEntry(&entry, &$google_protobuf_runtime_support$);
+            )objc");
+          } else {
+            printer->Emit(R"objc(
+              static GPBExtensionDescriptor *extension;
+              static dispatch_once_t onceToken;
+              dispatch_once(&onceToken, ^{
+                extension =
+                  [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&description
+                                                                runtimeSupport:&$google_protobuf_runtime_support$];
+              });
+              return extension;
+            )objc");
+          }
+        }},
        {"number", descriptor_->number()},
        {"options", BuildFlagsString(FLAGTYPE_EXTENSION, options)},
        {"root_or_message_class_name", root_or_message_class_name_},
@@ -183,14 +212,7 @@ void ExtensionGenerator::GenerateDescriptorFunction(
             .dataType = $extension_type$,
             .options = $options$,
           };
-          static GPBExtensionDescriptor *extension;
-          static dispatch_once_t onceToken;
-          dispatch_once(&onceToken, ^{
-            extension =
-              [[GPBExtensionDescriptor alloc] initWithExtensionDescription:&description
-                                                            runtimeSupport:&$google_protobuf_runtime_support$];
-          });
-          return extension;
+          $create_and_return_descriptor$;
         }
       )objc");
 }

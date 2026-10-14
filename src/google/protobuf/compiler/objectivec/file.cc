@@ -409,17 +409,33 @@ void FileGenerator::GenerateHeader(io::Printer* p,
 }
 
 void FileGenerator::GenerateSource(io::Printer* p) const {
-  std::vector<const FileDescriptor*> deps_with_extensions =
-      common_state_->CollectMinimalFileDepsContainingExtensions(file_);
+  GenerateSourceImpl(p, /* include_root_and_extensions = */ true);
+}
+
+void FileGenerator::GenerateSourceForMessagesAndEnums(io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
+  GenerateSourceImpl(p, /* include_root_and_extensions = */ false);
+}
+
+void FileGenerator::GenerateSourceImpl(io::Printer* p,
+                                       bool include_root_and_extensions) const {
+  std::vector<const FileDescriptor*> deps_with_extensions;
   GeneratedFileOptions file_options;
-  file_options.forced_files_to_import = deps_with_extensions;
+  if (include_root_and_extensions) {
+    deps_with_extensions =
+        common_state_->CollectMinimalFileDepsContainingExtensions(file_);
+    file_options.forced_files_to_import = deps_with_extensions;
+  }
 
   absl::btree_set<std::string> fwd_decls;
   for (const auto& generator : message_generators_) {
     generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
   }
-  for (const auto& generator : extension_generators_) {
-    generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+  if (include_root_and_extensions) {
+    for (const auto& generator : extension_generators_) {
+      generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+    }
   }
 
   // The generated code for oneof's uses direct ivar access, suppress the
@@ -443,7 +459,9 @@ void FileGenerator::GenerateSource(io::Printer* p) const {
 
   GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
     EmitSourceFwdDecls(fwd_decls, p);
-    EmitRootImplementation(p, deps_with_extensions);
+    if (include_root_and_extensions) {
+      EmitRootImplementation(p, deps_with_extensions);
+    }
     EmitFileDescription(p);
 
     if (is_bundled_proto_ && HasWKTWithObjCCategory(file_)) {
@@ -467,9 +485,18 @@ void FileGenerator::GenerateGlobalSource(io::Printer* p) const {
   GeneratedFileOptions file_options;
   file_options.forced_files_to_import = deps_with_extensions;
 
+  // In class-based extension mode, `0.pbobjc.m` emits the
+  // `GPBExtensionDescription` array inside `+<RootClass> extensionRegistry`,
+  // which requires Objective-C class forward declarations
+  // (`GPBObjCClassDeclaration`). In C-function extension mode, each extension
+  // descriptor function is emitted in its own dedicated `.pbobjc.m` shard via
+  // `GenerateSourceForExtension()`, so `0.pbobjc.m` contains only the per-file
+  // `<File>_Registry()` function and does not need class symbol declarations.
   absl::btree_set<std::string> fwd_decls;
-  for (const auto& generator : extension_generators_) {
-    generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+  if (!generation_options_.EmitCFunctionExtensions()) {
+    for (const auto& generator : extension_generators_) {
+      generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+    }
   }
 
   if (!fwd_decls.empty()) {
@@ -516,6 +543,34 @@ void FileGenerator::GenerateSourceForMessage(size_t idx, io::Printer* p) const {
     EmitSourceFwdDecls(fwd_decls, p);
     EmitFileDescription(p);
     generator->GenerateSource(p);
+  });
+}
+
+// Generates a dedicated `.pbobjc.m` source shard for the `idx`-th C-function
+// extension in `extension_generators_` (covering both file-scoped and
+// message-scoped extensions).
+//
+// Isolating each C-function extension in its own translation unit ensures that
+// referencing a message class in the same `.proto` file (or referencing one
+// extension in the file) never forces the static linker to pull in sibling or
+// message-scoped extensions from the static archive.
+void FileGenerator::GenerateSourceForExtension(size_t idx,
+                                               io::Printer* p) const {
+  ABSL_CHECK(!is_bundled_proto_)
+      << "Bundled protos aren't expected to use multi source generation.";
+  const auto& generator = extension_generators_[idx];
+
+  absl::btree_set<std::string> fwd_decls;
+  generator->DetermineObjectiveCClassDefinitions(&fwd_decls);
+
+  GeneratedFileOptions file_options;
+  if (!fwd_decls.empty()) {
+    file_options.ignored_warnings.push_back("dollar-in-identifier-extension");
+  }
+
+  GenerateFile(p, GeneratedFileType::kSource, file_options, [&] {
+    EmitSourceFwdDecls(fwd_decls, p);
+    generator->GenerateDescriptorFunction(p);
   });
 }
 
@@ -900,8 +955,17 @@ void FileGenerator::EmitExtensionRegistryAndDescriptorFunctions(
        {
            "extension_descriptor_functions",
            [&] {
-             for (const auto& generator : extension_generators_) {
-               generator->GenerateDescriptorFunction(p);
+             // In single-source mode, emit all C-function extension descriptor
+             // definitions directly in the single `.pbobjc.m` file. In
+             // multi-source mode, each extension descriptor function is emitted
+             // in its own dedicated `.pbobjc.m` shard via
+             // `GenerateSourceForExtension()`, leaving only `<File>_Registry()`
+             // in `0.pbobjc.m` so `0.pbobjc.o` can be dead-stripped when
+             // `<File>_Registry()` is unreferenced.
+             if (!generation_options_.IsMultiSourceGeneration()) {
+               for (const auto& generator : extension_generators_) {
+                 generator->GenerateDescriptorFunction(p);
+               }
              }
            },
        }},

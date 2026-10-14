@@ -324,6 +324,64 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
   return (description->options & GPBExtensionPacked) != 0;
 }
 
+// Mach-O section-based extension registration (__DATA,__gpb_ext_reg).
+//
+// When generated with the `experimental_global_extension_registry` generator
+// option, each generated C-function extension descriptor accessor places a
+// two-pointer GPBExtensionSectionEntry struct into the custom
+// "__DATA,__gpb_ext_reg" Mach-O section.
+//
+// Interaction with linker dead-stripping (-dead_strip):
+// - When an object file (.o) from a static archive (.a) is NOT pulled into the
+//   final binary by the linker (because neither the extension C function nor
+//   any co-located message class in that object file is referenced), the
+//   entire object file—including its GPBExtensionSectionEntry—is omitted.
+// - When an object file IS pulled into the binary, __attribute__((used))
+//   retains the GPBExtensionSectionEntry within that translation unit, and
+//   pointer-sized alignment ensures the linker packs all surviving entries into
+//   a contiguous array in "__DATA,__gpb_ext_reg" with zero inter-element
+//   padding.
+// - At runtime, +[GPBExtensionRegistry globalExtensionRegistry] reads this
+//   section of each loaded Mach-O image via getsectiondata() (starting with
+//   its first lookup) to find the linked extensions without requiring a
+//   build-time global registry table.
+#if !defined(GPB_EXTENSION_SECTION_SEGMENT)
+#define GPB_EXTENSION_SECTION_SEGMENT "__DATA"
+#endif
+
+#if !defined(GPB_EXTENSION_SECTION_NAME)
+#define GPB_EXTENSION_SECTION_NAME "__gpb_ext_reg"
+#endif
+
+#define GPB_EXTENSION_REGISTRY_SECTION_ATTR     \
+  __attribute__((used, aligned(sizeof(void *)), \
+                 section(GPB_EXTENSION_SECTION_SEGMENT "," GPB_EXTENSION_SECTION_NAME)))
+
+// A single entry in the "__DATA,__gpb_ext_reg" Mach-O section.
+// - `description`: Static pointer to the extension's compile-time
+//   GPBExtensionDescription metadata (extended class, payload class, field
+//   number, data type, options).
+// - `descriptor`: Lazily initialized GPBExtensionDescriptor singleton,
+//   populated atomically on first access via GPBResolveExtensionSectionEntry().
+typedef struct GPBExtensionSectionEntry {
+  GPBExtensionDescription *description;
+  GPB_UNSAFE_UNRETAINED GPBExtensionDescriptor *descriptor;
+} GPBExtensionSectionEntry;
+
+// Lazily allocates and caches the GPBExtensionDescriptor instance for `entry`
+// in a thread-safe manner. Both direct calls to generated C extension functions
+// and dynamic lookups through +[GPBExtensionRegistry globalExtensionRegistry]
+// funnel through this helper so that at most one descriptor object is created
+// per extension.
+GPBExtensionDescriptor *GPBResolveExtensionSectionEntry(GPBExtensionSectionEntry *entry,
+                                                        const int32_t *runtimeSupport);
+
+// Returns YES once the registry returned by
+// +[GPBExtensionRegistry globalExtensionRegistry] has started reading the
+// "__DATA,__gpb_ext_reg" sections of the loaded images, which happens on its
+// first -extensionForDescriptor:fieldNumber: call. Exposed for unit tests.
+BOOL GPBGlobalExtensionRegistryHasStartedIndexing(void);
+
 // Helper for compile time assets.
 #ifndef GPBInternalCompileAssert
 #define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)
@@ -334,6 +392,12 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
 GPBInternalCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
                              (sizeof(GPBGenericValue) + sizeof(GPBMessageFieldDescription)),
                          DescriptionsWithDefault_different_size_than_expected);
+
+// Ensure GPBExtensionSectionEntry has no internal or trailing padding so that
+// contiguous section entries in "__DATA,__gpb_ext_reg" can be indexed as a flat
+// C array by getsectiondata().
+GPBInternalCompileAssert(sizeof(GPBExtensionSectionEntry) == 2 * sizeof(void *),
+                         ExtensionSectionEntry_different_size_than_expected);
 
 // Sanity check that the file description structures old and new work.
 GPBInternalCompileAssert(offsetof(GPBFilePackageAndPrefix, package) ==
