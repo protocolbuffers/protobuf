@@ -318,6 +318,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           goto err;
         }
       } else {
+        // Extensions (canonical or non-canonical) cannot be maps.
+        UPB_ASSERT(upb_MiniTableField_IsArray(field));
         const upb_Array* msg_array = upb_Extension_GetArray(msg_ext);
         UPB_ASSERT(msg_array);
         upb_Array* cloned_array =
