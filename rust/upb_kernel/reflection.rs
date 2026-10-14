@@ -20,7 +20,11 @@ use crate::WithReflection;
 ///
 /// `UpbGetMessagePtr<Msg = Self>` ties the message pointer that reflection APIs operate on to the
 /// `MessageDef` they look up by `Self`, so the two can never describe different message types.
-pub trait KernelWithReflection: UpbWithReflection + UpbGetMessagePtr<Msg = Self> {}
+pub trait KernelWithReflection: UpbWithReflection + UpbGetMessagePtr<Msg = Self> {
+    fn kernel_full_name(_private: Private) -> &'static str {
+        Self::FULL_NAME
+    }
+}
 impl<T: UpbWithReflection + UpbGetMessagePtr<Msg = T>> KernelWithReflection for T {}
 
 /// Returns the protobuf TextFormat representation of `msg` with custom options.

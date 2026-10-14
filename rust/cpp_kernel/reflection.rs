@@ -13,11 +13,25 @@
 
 use super::*;
 
-pub trait KernelWithReflection: MessageDescriptorInterop {}
+pub trait KernelWithReflection: MessageDescriptorInterop {
+    fn kernel_full_name(_private: Private) -> &'static str {
+        let desc = Self::__unstable_get_descriptor();
+        // SAFETY:
+        // - This function is only called via `WithReflection::full_name`. Gencode only implements
+        //   `WithReflection` for messages with reflection, so `desc` is a real descriptor.
+        unsafe { std::str::from_utf8_unchecked(proto2_rust_Descriptor_full_name(desc).as_ref()) }
+    }
+}
 impl<T: MessageDescriptorInterop> KernelWithReflection for T {}
 
 #[cfg(not(lite_runtime))]
 unsafe extern "C" {
+    /// From reflection.cc
+    ///
+    /// # Safety
+    /// - `desc` points to a valid `proto2::Descriptor`.
+    fn proto2_rust_Descriptor_full_name(desc: *const std::ffi::c_void) -> PtrAndLen;
+
     /// From reflection.cc
     ///
     /// # Safety
