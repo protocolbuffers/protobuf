@@ -132,18 +132,12 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
     const char* end = ptr + input_->extensions.size();
     // Iterate through the buffer, building extensions as long as we can.
     while (ptr < end) {
-      upb_MiniTableExtension* ext = reinterpret_cast<upb_MiniTableExtension*>(
-          upb_Arena_Malloc(arena_, sizeof(upb_MiniTableExtensionWithSub)));
-      if (!ext) {
-        *exts = nullptr;
-        return;
-      }
-      upb_MiniTableSub sub;
       const upb_MiniTable* extendee = NextMiniTable();
       if (!extendee) break;
-      ptr = upb_MiniTableExtension_Init(ptr, end - ptr, ext, extendee, sub,
-                                        status.ptr());
-      if (!ptr) {
+      upb_MiniTableExtension* ext = _upb_MiniTableExtension_Build(
+          ptr, end - ptr, extendee, upb_MiniTableSub_FromMessage(nullptr),
+          kUpb_MiniTablePlatform_Native, arena_, &ptr, status.ptr());
+      if (!ext) {
         *exts = nullptr;
         return;
       }

@@ -979,12 +979,14 @@ static const char* upb_MtDecoder_BuildMiniTableExtension(
                                                  extendee, sub);
 }
 
-const char* _upb_MiniTableExtension_Init(const char* data, size_t len,
-                                         upb_MiniTableExtension* ext,
-                                         const upb_MiniTable* extendee,
-                                         upb_MiniTableSub sub,
-                                         upb_MiniTablePlatform platform,
-                                         upb_Status* status) {
+upb_MiniTableExtension* _upb_MiniTableExtension_Build(
+    const char* data, size_t len, const upb_MiniTable* extendee,
+    upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
+    const char** end, upb_Status* status) {
+  upb_MiniTableExtension* ext =
+      upb_Arena_Malloc(arena, sizeof(upb_MiniTableExtensionWithSub));
+  if (UPB_UNLIKELY(!ext)) return NULL;
+
   upb_MtDecoder decoder = {
       .base = {.status = status},
       .arena = NULL,
@@ -992,22 +994,10 @@ const char* _upb_MiniTableExtension_Init(const char* data, size_t len,
       .sub_count = 0,
       .is_extension = true,
   };
-
-  return upb_MtDecoder_BuildMiniTableExtension(&decoder, data, len, ext,
-                                               extendee, sub);
-}
-
-upb_MiniTableExtension* _upb_MiniTableExtension_Build(
-    const char* data, size_t len, const upb_MiniTable* extendee,
-    upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
-    upb_Status* status) {
-  upb_MiniTableExtension* ext =
-      upb_Arena_Malloc(arena, sizeof(upb_MiniTableExtensionWithSub));
-  if (UPB_UNLIKELY(!ext)) return NULL;
-
-  const char* ptr = _upb_MiniTableExtension_Init(data, len, ext, extendee, sub,
-                                                 platform, status);
+  const char* ptr = upb_MtDecoder_BuildMiniTableExtension(&decoder, data, len,
+                                                          ext, extendee, sub);
   if (UPB_UNLIKELY(!ptr)) return NULL;
+  if (end) *end = ptr;
 
   if (ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) == kUpb_NoSub) {
     upb_Arena_ShrinkLast(arena, ext, sizeof(upb_MiniTableExtensionWithSub),

@@ -52,35 +52,23 @@ UPB_NODISCARD UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(
                               status);
 }
 
-// Initializes a MiniTableExtension buffer that has already been allocated.
-// If the extension is a sub-message or closed enum, its sub is stored directly
-// after the upb_MiniTableExtension, so the buffer must be at least
-// `sizeof(upb_MiniTableExtension) + sizeof(upb_MiniTableSub)` bytes. Prefer
-// upb_MiniTableExtension_Build(), which sizes the allocation automatically.
-UPB_NODISCARD const char* _upb_MiniTableExtension_Init(
-    const char* data, size_t len, upb_MiniTableExtension* ext,
-    const upb_MiniTable* extendee, upb_MiniTableSub sub,
-    upb_MiniTablePlatform platform, upb_Status* status);
-
-UPB_NODISCARD UPB_API_INLINE const char* upb_MiniTableExtension_Init(
-    const char* data, size_t len, upb_MiniTableExtension* ext,
-    const upb_MiniTable* extendee, upb_MiniTableSub sub, upb_Status* status) {
-  return _upb_MiniTableExtension_Init(data, len, ext, extendee, sub,
-                                      kUpb_MiniTablePlatform_Native, status);
-}
-
+// Builds an extension MiniTable from the MiniDescriptor in [data, len]. If
+// `end` is non-NULL, it is set to the first byte after the extension's
+// MiniDescriptor, which allows parsing a buffer of concatenated extension
+// MiniDescriptors one at a time. Returns NULL and sets `status` on error.
 UPB_NODISCARD UPB_API upb_MiniTableExtension* _upb_MiniTableExtension_Build(
     const char* data, size_t len, const upb_MiniTable* extendee,
     upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
-    upb_Status* status);
+    const char** end, upb_Status* status);
 
 UPB_NODISCARD UPB_API_INLINE upb_MiniTableExtension*
 upb_MiniTableExtension_Build(const char* data, size_t len,
                              const upb_MiniTable* extendee, upb_Arena* arena,
                              upb_Status* status) {
   upb_MiniTableSub sub = upb_MiniTableSub_FromMessage(NULL);
-  return _upb_MiniTableExtension_Build(
-      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
+  return _upb_MiniTableExtension_Build(data, len, extendee, sub,
+                                       kUpb_MiniTablePlatform_Native, arena,
+                                       NULL, status);
 }
 
 UPB_NODISCARD UPB_API_INLINE upb_MiniTableExtension*
@@ -89,8 +77,9 @@ upb_MiniTableExtension_BuildMessage(const char* data, size_t len,
                                     const upb_MiniTable* submsg,
                                     upb_Arena* arena, upb_Status* status) {
   upb_MiniTableSub sub = upb_MiniTableSub_FromMessage(submsg);
-  return _upb_MiniTableExtension_Build(
-      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
+  return _upb_MiniTableExtension_Build(data, len, extendee, sub,
+                                       kUpb_MiniTablePlatform_Native, arena,
+                                       NULL, status);
 }
 
 UPB_NODISCARD UPB_API_INLINE upb_MiniTableExtension*
@@ -99,8 +88,9 @@ upb_MiniTableExtension_BuildEnum(const char* data, size_t len,
                                  const upb_MiniTableEnum* subenum,
                                  upb_Arena* arena, upb_Status* status) {
   upb_MiniTableSub sub = upb_MiniTableSub_FromEnum(subenum);
-  return _upb_MiniTableExtension_Build(
-      data, len, extendee, sub, kUpb_MiniTablePlatform_Native, arena, status);
+  return _upb_MiniTableExtension_Build(data, len, extendee, sub,
+                                       kUpb_MiniTablePlatform_Native, arena,
+                                       NULL, status);
 }
 
 // Like upb_MiniTable_Build(), but the user provides a buffer of layout data so
