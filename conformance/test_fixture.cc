@@ -11,7 +11,6 @@
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gtest/gtest.h>
-#include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "conformance/test_environment.h"
@@ -25,7 +24,6 @@ namespace conformance {
 namespace {
 
 using ::google::protobuf::conformance::internal::ConformanceEnvironment;
-using ::google::protobuf::conformance::internal::Statistics;
 
 // Whether tests for `descriptor`'s message type run under `maximum_edition`:
 // the file's edition must not be newer than it.
@@ -43,14 +41,6 @@ bool IsSupported(const Descriptor& descriptor, Edition maximum_edition) {
   return edition <= maximum_edition;
 }
 
-// Statistics accumulated by ConformanceTest::TearDown() for each test suite,
-// keyed by suite name, until TearDownTestSuite() reports them.
-absl::flat_hash_map<std::string, Statistics>& SuiteStatistics() {
-  static auto* suite_statistics =
-      new absl::flat_hash_map<std::string, Statistics>();
-  return *suite_statistics;
-}
-
 std::string CurrentTestName() {
   const testing::TestInfo* test_info =
       testing::UnitTest::GetInstance()->current_test_info();
@@ -60,19 +50,10 @@ std::string CurrentTestName() {
   return test_info->name();
 }
 
-std::string CurrentTestSuiteName() {
-  const testing::TestSuite* test_suite =
-      testing::UnitTest::GetInstance()->current_test_suite();
-  ABSL_CHECK(test_suite != nullptr)
-      << "ConformanceTest's TearDown hooks must run inside a test suite.";
-  return test_suite->name();
-}
-
 }  // namespace
 
 void ConformanceTest::SetUp() {
   ConformanceEnvironment& environment = ConformanceEnvironment::Get();
-  initial_statistics_ = Statistics::From(environment.test_manager());
   // TODO: Transitional.  Goes away with the in-binary
   // performance mode, see ConformanceEnvironmentOptions::performance.
   if (IsPerformanceTest() && !environment.options().performance) {
@@ -87,27 +68,6 @@ void ConformanceTest::SetUp() {
     GTEST_SKIP() << "Skipping " << message->full_name()
                  << " because its edition is newer than --maximum_edition.";
   }
-}
-
-void ConformanceTest::TearDown() {
-  Statistics delta =
-      Statistics::From(ConformanceEnvironment::Get().test_manager()) -
-      initial_statistics_;
-  delta.RecordProperties();
-  SuiteStatistics()[CurrentTestSuiteName()] += delta;
-}
-
-void ConformanceTest::TearDownTestSuite() {
-  auto node = SuiteStatistics().extract(CurrentTestSuiteName());
-  if (!node) {
-    // gtest only runs TearDownTestSuite() for suites with at least one test to
-    // run, and TearDown() runs even for tests skipped in SetUp(), so this only
-    // happens when a fatal failure in a SetUpTestSuite() skipped every test
-    // outright (which is already reported), or when a subclass's TearDown()
-    // doesn't call ConformanceTest::TearDown().
-    return;
-  }
-  node.mapped().RecordProperties();
 }
 
 internal::Test ConformanceTest::Testee() { return Testee(CurrentTestName()); }
