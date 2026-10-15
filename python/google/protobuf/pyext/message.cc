@@ -302,7 +302,7 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   PyObject* py_message_factory_obj = PyDict_GetItem(dict, kMessageFactory);
   PyMessageFactory* py_message_factory = nullptr;
   if (py_message_factory_obj == nullptr) {
-    py_message_factory = py_descriptor_pool->py_message_factory;
+    py_message_factory = py_descriptor_pool->py_message_factory();
   } else {
     py_message_factory =
         reinterpret_cast<PyMessageFactory*>(py_message_factory_obj);
@@ -2115,7 +2115,7 @@ static PyObject* MergeFromStringImpl(CMessage* self, PyObject* arg,
       depth, false, &ptr,
       absl::string_view(static_cast<const char*>(data.buf), data.len));
 
-  ctx.data().pool = factory->pool->pool->get();
+  ctx.data().pool = factory->pool->pool();
   ctx.data().factory = factory->message_factory;
 
   ptr = merge_dst->_InternalParse(ptr, &ctx);
@@ -2246,8 +2246,7 @@ static PyObject* ListFields(CMessage* self) {
       // When using the default descriptor pool, avoid exposing extensions that
       // happened to be linked in from C++ but not imported via Python.  This is
       // for consistency with the pure Python implementation.
-      if (fields[i]->file()->pool() ==
-              GetDefaultDescriptorPool()->pool->get() &&
+      if (fields[i]->file()->pool() == GetDefaultDescriptorPool()->pool() &&
           fields[i]->message_type() != nullptr &&
           message_factory::GetMessageClass(GetFactoryForMessage(self),
                                            fields[i]->message_type()) ==
@@ -3102,7 +3101,7 @@ static CMessageClass* GetMessageClassFromDescriptor(
                       "DescriptorPool_FromPool and keep it alive");
       return nullptr;
     }
-    factory = pool->py_message_factory;
+    factory = pool->py_message_factory();
   } else if (PyObject_TypeCheck(py_message_factory, &PyMessageFactory_Type)) {
     factory = reinterpret_cast<PyMessageFactory*>(py_message_factory);
   } else {
@@ -3281,7 +3280,7 @@ bool InitProto2MessageModule(PyObject* m) {
   // PyModule_AddObject steals a reference.
   Py_INCREF(GetDefaultDescriptorPool());
   PyModule_AddObject(m, "default_pool",
-                     reinterpret_cast<PyObject*>(GetDefaultDescriptorPool()));
+                     GetDefaultDescriptorPool()->AsPyObject());
 
   PyModule_AddObject(m, "DescriptorPool",
                      reinterpret_cast<PyObject*>(&PyDescriptorPool_Type));

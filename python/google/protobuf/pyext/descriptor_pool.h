@@ -8,97 +8,118 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 
-#include <memory>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+
+#include <memory>
+#include <utility>
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/pyext/free_threading_mutex.h"
+#include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 namespace google {
 namespace protobuf {
 namespace python {
 
 struct PyMessageFactory;
-
-// The (meta) type of all Messages classes.
-struct CMessageClass;
+struct cdescriptor_pool;
 
 // Wraps operations to the global DescriptorPool which contains information
 // about all messages and fields.
 //
 // There is normally one pool per process. We make it a Python object only
 // because it contains many Python references.
-//
-// "Methods" that interacts with this DescriptorPool are in the cdescriptor_pool
-// namespace.
-typedef struct PyDescriptorPool {
+class PyDescriptorPool {
+ public:
+  ~PyDescriptorPool();
+
+  PyObject* AsPyObject() { return &ob_base; }
+
+  const DescriptorPool* pool() const { return pool_.get(); }
+
+  MessageFactory* message_factory() const;
+  PyMessageFactory* py_message_factory() const { return py_message_factory_; }
+
+
+  template <typename BuildFn>
+  ScopedPyObjectPtr GetOrCacheOptions(const void* descriptor,
+                                      BuildFn build_fn) {
+    return GetOrCache(descriptor_options_, descriptor, build_fn);
+  }
+
+  template <typename BuildFn>
+  ScopedPyObjectPtr GetOrCacheFeatures(const void* descriptor,
+                                       BuildFn build_fn) {
+    return GetOrCache(descriptor_features_, descriptor, build_fn);
+  }
+
+ private:
+  friend cdescriptor_pool;
+
+  class BuildFileErrorCollector;
+
+  PyDescriptorPool();
+
+  template <typename BuildFn>
+  ScopedPyObjectPtr GetOrCache(
+      absl::flat_hash_map<const void*, ScopedPyObjectPtr>& cache,
+      const void* key, BuildFn build_fn) {
+    {
+      FreeThreadingLockGuard lock(cache_mutex_);
+      if (auto it = cache.find(key); it != cache.end()) {
+        return it->second;
+      }
+    }
+    ScopedPyObjectPtr value = build_fn();
+    if (value == nullptr) {
+      return nullptr;
+    }
+    FreeThreadingLockGuard lock(cache_mutex_);
+    auto [it, inserted] = cache.try_emplace(key, std::move(value));
+    return it->second;
+  }
+
   // clang-format off
   PyObject_HEAD
 
-  // The C++ pool containing Descriptors.
-  std::shared_ptr<const DescriptorPool>* pool;
+  // Note: Member declaration order is important for destruction order:
+  // `error_collector_` and `database_` must outlive `pool_` (which holds
+  // unowned pointers to them), and `pool_` must outlive `descriptor_options_`
+  // and `descriptor_features_`.
+
+  // The error collector to store error info. Can be NULL.
+  std::unique_ptr<BuildFileErrorCollector> error_collector_;
   // clang-format on
-
-  // True if this pool accepts new proto definitions.
-  bool is_mutable;
-
-
-  // The error collector to store error info. Can be NULL. This pointer is
-  // owned.
-  DescriptorPool::ErrorCollector* error_collector;
 
   // The C++ pool acting as an underlay. Can be NULL.
   // This pointer is not owned and must stay alive.
-  const DescriptorPool* underlay;
+  const DescriptorPool* underlay_ = nullptr;
 
   // The C++ descriptor database used to fetch unknown protos. Can be NULL.
-  std::shared_ptr<const DescriptorDatabase>* database;
+  std::shared_ptr<const DescriptorDatabase> database_;
+
+  // The C++ pool containing Descriptors.
+  std::shared_ptr<const DescriptorPool> pool_;
+
+  // True if this pool accepts new proto definitions.
+  bool is_mutable_ = false;
+
 
   // The preferred MessageFactory to be used by descriptors.
-  PyMessageFactory* py_message_factory;
+  PyMessageFactory* py_message_factory_ = nullptr;
 
   // Cache the options for any kind of descriptor.
-  absl::flat_hash_map<const void*, PyObject*>* descriptor_options;
+  absl::flat_hash_map<const void*, ScopedPyObjectPtr> descriptor_options_;
   // Similar cache for features.
-  absl::flat_hash_map<const void*, PyObject*>* descriptor_features;
+  absl::flat_hash_map<const void*, ScopedPyObjectPtr> descriptor_features_;
 
   // Mutex protecting the caching maps above.
-  FreeThreadingMutex* cache_mutex;
-} PyDescriptorPool;
+  FreeThreadingMutex cache_mutex_;
+};
 
 extern PyTypeObject PyDescriptorPool_Type;
-
-namespace cdescriptor_pool {
-
-// The functions below are also exposed as methods of the DescriptorPool type.
-
-// Looks up a field by name. Returns a PyFieldDescriptor corresponding to
-// the field on success, or NULL on failure.
-//
-// Returns a new reference.
-PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* name);
-
-// Looks up an extension by name. Returns a PyFieldDescriptor corresponding
-// to the field on success, or NULL on failure.
-//
-// Returns a new reference.
-PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg);
-
-// Looks up an enum type by name. Returns a PyEnumDescriptor corresponding
-// to the field on success, or NULL on failure.
-//
-// Returns a new reference.
-PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg);
-
-// Looks up a oneof by name. Returns a COneofDescriptor corresponding
-// to the oneof on success, or NULL on failure.
-//
-// Returns a new reference.
-PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg);
-
-}  // namespace cdescriptor_pool
 
 // Retrieves the global descriptor pool owned by the _message module.
 // This is the one used by pb2.py generated modules.

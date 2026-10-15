@@ -232,7 +232,7 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
   (void)from.SerializeToString(&serialized);
   io::CodedInputStream input(
       reinterpret_cast<const uint8_t*>(serialized.c_str()), serialized.size());
-  input.SetExtensionRegistry(message_factory->pool->pool->get(),
+  input.SetExtensionRegistry(message_factory->pool->pool(),
                              message_factory->message_factory);
   bool success = to->ParseFromCodedStream(&input);
   if (!success) {
@@ -241,26 +241,12 @@ bool Reparse(PyMessageFactory* message_factory, const Message& from,
   return true;
 }
 
-// Converts descriptor messages into a Python protobuf, and cache the result.
+// Converts descriptor messages into a Python protobuf.
 //
 // This is a bit tricky because options can contain extension fields defined in
 // the same proto file. In this case the options parsed from the serialized_pb
 // have unknown fields, and we need to parse them again.
-//
-// Always returns a new reference.
-static PyObject* GetOrBuildMessageInDefaultPool(
-    absl::flat_hash_map<const void*, PyObject*>& cache,
-    FreeThreadingMutex* cache_mutex, const void* key, const Message& message) {
-  // First search in the cache.
-  {
-    FreeThreadingLockGuard lock(*cache_mutex);
-    if (cache.find(key) != cache.end()) {
-      PyObject* value = cache[key];
-      Py_INCREF(value);
-      return value;
-    }
-  }
-
+static ScopedPyObjectPtr BuildMessageInDefaultPool(const Message& message) {
   // Similar to the C++ implementation, we return a message object from the
   // default (generated) factory, so that client code know that they can use
   // extensions from generated files:
@@ -270,7 +256,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   // be available.  If needed, we could add an optional 'message_factory'
   // parameter to the GetOptions() function.
   PyMessageFactory* message_factory =
-      GetDefaultDescriptorPool()->py_message_factory;
+      GetDefaultDescriptorPool()->py_message_factory();
 
   // Build the message object: get its Python class, and make a copy of the C++
   // read-only instance.
@@ -315,20 +301,7 @@ static PyObject* GetOrBuildMessageInDefaultPool(
   }
 
   cmsg->state = MESSAGE_FROZEN;
-
-  // Cache the result.
-  {
-    FreeThreadingLockGuard lock(*cache_mutex);
-    if (cache.find(key) != cache.end()) {
-      PyObject* existing_value = cache[key];
-      Py_INCREF(existing_value);
-      return existing_value;
-    }
-    Py_INCREF(value.get());
-    cache[key] = value.get();
-  }
-
-  return value.release();
+  return value;
 }
 
 template <class DescriptorClass>
@@ -336,9 +309,11 @@ static PyObject* GetOrBuildOptions(const DescriptorClass* descriptor) {
   // Options are cached in the pool that owns the descriptor.
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
-  return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_options,
-                                        caching_pool->cache_mutex, descriptor,
-                                        descriptor->options());
+  return caching_pool
+      ->GetOrCacheOptions(
+          descriptor,
+          [&] { return BuildMessageInDefaultPool(descriptor->options()); })
+      .release();
 }
 
 template <class DescriptorClass>
@@ -352,9 +327,10 @@ static PyObject* GetFeaturesImpl(const DescriptorClass* descriptor) {
   // Features are cached in the pool that owns the descriptor.
   PyDescriptorPool* caching_pool =
       GetDescriptorPool_FromPool(GetFileDescriptor(descriptor)->pool());
-  return GetOrBuildMessageInDefaultPool(*caching_pool->descriptor_features,
-                                        caching_pool->cache_mutex, descriptor,
-                                        features);
+  return caching_pool
+      ->GetOrCacheFeatures(descriptor,
+                           [&] { return BuildMessageInDefaultPool(features); })
+      .release();
 }
 
 // Copy the C++ descriptor to a Python message.
@@ -383,7 +359,7 @@ static PyObject* CopyToPythonProto(const DescriptorClass* descriptor,
   // the descriptor_message. Can't skip reparse when options unknown
   // fields is empty, because they might in sub descriptors' options.
   PyMessageFactory* message_factory =
-      GetDefaultDescriptorPool()->py_message_factory;
+      GetDefaultDescriptorPool()->py_message_factory();
   if (!Reparse(message_factory, *descriptor_message, descriptor_message)) {
     PyErr_Format(PyExc_ValueError, "Error reparsing descriptor message");
     return nullptr;
@@ -561,7 +537,7 @@ static PyObject* GetConcreteClass(PyBaseDescriptor* self, void* closure) {
   // not know about extensions defined in a custom pool.
   CMessageClass* concrete_class(message_factory::GetMessageClass(
       GetDescriptorPool_FromPool(_GetDescriptor(self)->file()->pool())
-          ->py_message_factory,
+          ->py_message_factory(),
       _GetDescriptor(self)));
 
   if (concrete_class == nullptr) {
