@@ -6,12 +6,14 @@
 namespace google {
 namespace protobuf {
 
+class Arena;
 class MessageLite;
 
 namespace internal {
 
 struct ClassData;
 class ExtensionSet;
+class ThreadSafeArena;
 
 // The struct PrivateAccess is used to provide access to private members of
 // message classes without making them public. This is useful for highly
@@ -63,6 +65,9 @@ struct PrivateAccess {
   static constexpr decltype(auto) FullMessageName() {
     return T::FullMessageName();
   }
+
+  // Defined in arena.h
+  static constexpr ThreadSafeArena& GetThreadSafeArena(Arena& arena);
 
   template <typename T>
   using ImplTForTesting = typename T::Impl_;

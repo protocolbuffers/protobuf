@@ -25,6 +25,8 @@
 #include "absl/base/nullability.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/private_access.h"
+#include "google/protobuf/unknown_field_map.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
 #include <exception>
@@ -848,6 +850,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;
+  friend internal::PrivateAccess;
   template <typename>
   friend class RepeatedField;                   // For ReturnArrayMemory
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
@@ -1238,6 +1241,14 @@ inline Arena* PROTOBUF_NULLABLE
 GetArena(const MessageLite* PROTOBUF_NONNULL elem) {
   const auto* dependent_elem = (delay, ..., elem);
   return dependent_elem->GetArena();
+}
+
+constexpr ThreadSafeArena& PrivateAccess::GetThreadSafeArena(Arena& arena) {
+  return arena.impl_;
+}
+
+inline UnknownFieldMap& UnknownFieldMap::ArenaUnknownFieldMap(Arena& arena) {
+  return PrivateAccess::GetThreadSafeArena(arena).unknown_field_map();
 }
 
 // This class is used to define `DestructorSkippable_` for some containing type

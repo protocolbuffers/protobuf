@@ -28,6 +28,7 @@
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
+#include "google/protobuf/unknown_field_map.h"
 
 namespace google {
 namespace protobuf {
@@ -109,6 +110,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
 
   std::vector<void*> PeekCleanupListForTesting();
 
+  UnknownFieldMap& unknown_field_map() { return unknown_field_map_; }
+
  private:
   friend class ArenaBenchmark;
   friend class TcParser;
@@ -160,6 +163,8 @@ class PROTOBUF_EXPORT ThreadSafeArena {
   SerialArena first_arena_;
 
   void* first_owner_;
+
+  UnknownFieldMap unknown_field_map_;
 
   static_assert(std::is_trivially_destructible<SerialArena>{},
                 "SerialArena needs to be trivially destructible.");
