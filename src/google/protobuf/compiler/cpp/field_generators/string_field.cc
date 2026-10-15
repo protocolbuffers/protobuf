@@ -281,14 +281,14 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
         return nullptr;
       }
       clear_has_$oneof_name$();
-      return $field_$.Release();
+      return $mutable_field_$.Release();
     )cc");
     return;
   }
 
   if (!HasHasbit(field_, options_)) {
     p->Emit(R"cc(
-      return $field_$.Release();
+      return $mutable_field_$.Release();
     )cc");
     return;
   }
@@ -300,7 +300,7 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
       }
       $clear_hasbit$;
 
-      return $field_$.Release(*this);
+      return $mutable_field_$.Release(*this);
     )cc");
     return;
   }
@@ -314,15 +314,16 @@ void SingularString::ReleaseImpl(io::Printer* p) const {
 
   if (!EmptyDefault()) {
     p->Emit(R"cc(
-      return $field_$.Release();
+      return $mutable_field_$.Release();
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    auto* released = $field_$.Release();
+    auto& f = $mutable_field_$;
+    auto* released = f.Release();
     if ($pbi$::DebugHardenForceCopyDefaultString()) {
-      $field_$.Set("", *this);
+      f.Set("", *this);
     }
     return released;
   )cc");
@@ -353,7 +354,8 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
   }
 
   p->Emit(R"cc(
-    $field_$.SetAllocated(value, *this);
+    auto& f = $mutable_field_$;
+    f.SetAllocated(value, *this);
   )cc");
 
   if (is_inlined()) {
@@ -362,8 +364,8 @@ void SingularString::SetAllocatedImpl(io::Printer* p) const {
 
   if (EmptyDefault()) {
     p->Emit(R"cc(
-      if ($pbi$::DebugHardenForceCopyDefaultString() && $field_$.IsDefault()) {
-        $field_$.Set("", *this);
+      if ($pbi$::DebugHardenForceCopyDefaultString() && f.IsDefault()) {
+        f.Set("", *this);
       }
     )cc");
   }
@@ -409,16 +411,14 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg, Args_... args) {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
       $update_hasbit$;
-      $field_$.$Set$(static_cast<Arg_&&>(arg), args..., *this);
+      $mutable_field_$.$Set$(static_cast<Arg_&&>(arg), args..., *this);
       $annotate_set$;
       // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
     }
     inline ::std::string* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
-      $PrepareSplitMessageForWrite$;
       $update_hasbit$;
       ::std::string* _s = _internal_mutable_$name_internal$();
       $annotate_mutable$;
@@ -434,24 +434,22 @@ void SingularString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       //~ Don't use $Set$ here; we always want the std::string variant
       //~ regardless of whether this is a `bytes` field.
-      $field_$.Set(value, *this);
+      $mutable_field_$.Set(value, *this);
     }
     inline ::std::string* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
-      return $field_$.Mutable($lazy_args$, *this);
+      return $mutable_field_$.Mutable($lazy_args$, *this);
     }
     inline ::std::string* $nullable$ $Msg$::$release_name$() {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
       $annotate_release$;
-      $PrepareSplitMessageForWrite$;
       // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
       $release_impl$;
     }
     inline void $Msg$::set_allocated_$name$(::std::string* $nullable$ value) {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
       $set_allocated_impl$;
       $annotate_set$;
       // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
@@ -463,6 +461,22 @@ void SingularString::GenerateClearingCode(io::Printer* p) const {
   if (is_oneof()) {
     p->Emit(R"cc(
       $field_$.Destroy();
+    )cc");
+    return;
+  }
+
+  if (should_split()) {
+    if (EmptyDefault()) {
+      p->Emit(R"cc(
+        if (auto* f = $try_mutable_field_$) f->ClearToEmpty();
+      )cc");
+      return;
+    }
+
+    ABSL_DCHECK(!is_inlined());
+    p->Emit(R"cc(
+      if (auto* f = $try_mutable_field_$)
+        f->ClearToDefault($lazy_var$, *this);
     )cc");
     return;
   }
@@ -627,7 +641,7 @@ class RepeatedString : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit("if (auto* f = $try_mutable_field_$) f->Clear();\n");
     } else {
       p->Emit("$field_$.Clear();\n");
     }
@@ -866,39 +880,18 @@ void RepeatedString::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       break;
   }
 
-  if (should_split()) {
-    p->Emit(R"cc(
-      inline const $pb$::RepeatedPtrField<::std::string>&
-      $Msg$::_internal_$name_internal$() const {
-        $TsanDetectConcurrentRead$;
-        return *$field_$;
-      }
-      inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
-      $Msg$::_internal_mutable_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        $PrepareSplitMessageForWrite$;
-        if ($field_$.IsDefault()) {
-          $field_$.Set(
-              $pb$::Arena::Create<$pb$::RepeatedPtrField<::std::string>>(
-                  GetArena()));
-        }
-        return $field_$.Get();
-      }
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      inline const $pb$::RepeatedPtrField<::std::string>&
-      $Msg$::_internal_$name_internal$() const {
-        $TsanDetectConcurrentRead$;
-        return $field_$;
-      }
-      inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
-      $Msg$::_internal_mutable_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        return &$field_$;
-      }
-    )cc");
-  }
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedPtrField<::std::string>&
+    $Msg$::_internal_$name_internal$() const {
+      $TsanDetectConcurrentRead$;
+      return $field_$;
+    }
+    inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
+    $Msg$::_internal_mutable_$name_internal$() {
+      $TsanDetectConcurrentRead$;
+      return &$mutable_field_$;
+    }
+  )cc");
 }
 
 void RepeatedString::GenerateSerializeWithCachedSizesToArray(

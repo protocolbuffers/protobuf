@@ -58,8 +58,13 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
            "1)",
            qualified_type,
            QualifiedMsgGlobalsInstanceName(field->message_type(), opts))},
-      Sub{"cast_to_field",
+      Sub{"cast_to_member",
           use_base_class ? absl::Substitute("reinterpret_cast<$0*>", base) : ""}
+          .ConditionalFunctionCall(),
+      Sub{"cast_to_field",
+          use_base_class
+              ? absl::Substitute("reinterpret_cast<$0*>", qualified_type)
+              : ""}
           .ConditionalFunctionCall(),
       Sub{"arena_cast",
           !is_foreign ? "" : absl::Substitute("reinterpret_cast<$0*>", base)}
@@ -194,7 +199,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
       $TsanDetectConcurrentRead$;
       $StrongRef$;
-      const $Submsg$* p = $cast_field_$;
+      const $Submsg$* p = $cast_to_field$($field_$);
       return p != nullptr ? *p : $kDefaultRef$;
     }
     inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -207,13 +212,14 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $Submsg$* $nullable$ value) {
       $WeakDescriptorSelfPin$;
       $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
+
+      auto*& sub = $mutable_field_$;
       //~ If we're not on an arena, free whatever we were holding before.
       //~ (If we are on arena, we can just forget the earlier pointer.)
       if (!$pbi$::HasArena(*this)) {
-        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
+        delete reinterpret_cast<$pb$::MessageLite*>(sub);
       }
-      $field_$ = reinterpret_cast<$MemberType$*>(value);
+      sub = $cast_to_member$(value);
       $update_hasbit$;
       $annotate_set$;
       // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
@@ -223,11 +229,9 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
       $annotate_release$;
-      $PrepareSplitMessageForWrite$;
 
       $clear_hasbit$;
-      $Submsg$* released = $cast_field_$;
-      $field_$ = nullptr;
+      auto* released = ::std::exchange($mutable_field_$, nullptr);
       if ($pbi$::DebugHardenForceCopyInRelease()) {
         auto* old = reinterpret_cast<$pb$::MessageLite*>(released);
         released = $pbi$::DuplicateIfNonNull(released);
@@ -239,7 +243,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
           released = $pbi$::DuplicateIfNonNull(released);
         }
       }
-      return released;
+      return $cast_to_field$(released);
     }
     inline $Submsg$* $nullable$ $Msg$::unsafe_arena_release_$name$() {
       $WeakDescriptorSelfPin$;
@@ -247,28 +251,25 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $annotate_release$;
       // @@protoc_insertion_point(field_release:$pkg.Msg.field$)
       $StrongRef$;
-      $PrepareSplitMessageForWrite$;
 
       $clear_hasbit$;
-      $Submsg$* temp = $cast_field_$;
-      $field_$ = nullptr;
-      return temp;
+      return $cast_to_field$(::std::exchange($mutable_field_$, nullptr));
     }
     inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
       $TsanDetectConcurrentMutation$;
       $StrongRef$;
-      if ($field_$ == nullptr) {
+      auto*& sub = $mutable_field_$;
+      if (sub == nullptr) {
         auto* p = Super_::DefaultConstruct<$Submsg$>(GetArena());
-        $field_$ = reinterpret_cast<$MemberType$*>(p);
+        sub = $cast_to_member$(p);
       }
-      return $cast_field_$;
+      return $cast_to_field$(sub);
     }
     inline $Submsg$* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       //~ TODO: add tests to make sure all write accessors are
       //~ able to prepare split message allocation.
       $WeakDescriptorSelfPin$;
-      $PrepareSplitMessageForWrite$;
       $set_hasbit$;
       $Submsg$* _msg = _internal_mutable_$name_internal$();
       $annotate_mutable$;
@@ -281,9 +282,9 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $WeakDescriptorSelfPin$;
       $pb$::Arena* message_arena = GetArena();
       $TsanDetectConcurrentMutation$;
-      $PrepareSplitMessageForWrite$;
+      auto*& sub = $mutable_field_$;
       if (message_arena == nullptr) {
-        delete reinterpret_cast<$pb$::MessageLite*>($field_$);
+        delete reinterpret_cast<$pb$::MessageLite*>(sub);
       }
 
       if (value != nullptr) {
@@ -296,7 +297,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
         $clear_hasbit$;
       }
 
-      $field_$ = reinterpret_cast<$MemberType$*>(value);
+      sub = $cast_to_member$(value);
       $annotate_set$;
       // @@protoc_insertion_point(field_set_allocated:$pkg.Msg.field$)
     }
@@ -306,10 +307,18 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
 
 void SingularMessage::GenerateClearingCode(io::Printer* p) const {
   ABSL_CHECK(has_hasbit_);
-  p->Emit(
-      R"cc(
-        if ($field_$ != nullptr) $field_$->Clear();
-      )cc");
+  if (should_split()) {
+    p->Emit(R"cc(
+      if (auto** sub = $try_mutable_field_$;
+          sub != nullptr && *sub != nullptr) {
+        (*sub)->Clear();
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      if (auto* sub = $mutable_field_$) sub->Clear();
+    )cc");
+  }
 }
 
 void SingularMessage::GenerateMessageClearingCode(io::Printer* p) const {
@@ -573,7 +582,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       clear_$oneof_name$();
       if (value) {
         set_has_$name_internal$();
-        $field_$ = $cast_to_field$(value);
+        $field_$ = $cast_to_member$(value);
       }
       $annotate_set$;
       // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
@@ -585,7 +594,7 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
-        $field_$ = $cast_to_field$(Super_::DefaultConstruct<$Submsg$>(GetArena()));
+        $field_$ = $cast_to_member$(Super_::DefaultConstruct<$Submsg$>(GetArena()));
       }
       return $cast_field_$;
     }
@@ -869,39 +878,18 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       break;
   }
 
-  if (should_split()) {
-    p->Emit(R"cc(
-      inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
-      $Msg$::_internal$_weak$_$name_internal$() const {
-        $TsanDetectConcurrentRead$;
-        return *$field_$;
-      }
-      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
-      $Msg$::_internal_mutable$_weak$_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        $PrepareSplitMessageForWrite$;
-        if ($field_$.IsDefault()) {
-          $field_$.Set(
-              Super_::DefaultConstruct<$pb$::$Weak$RepeatedPtrField<$Submsg$>>(
-                  GetArena()));
-        }
-        return $field_$.Get();
-      }
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
-      $Msg$::_internal$_weak$_$name_internal$() const {
-        $TsanDetectConcurrentRead$;
-        return $field_$;
-      }
-      inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
-      $Msg$::_internal_mutable$_weak$_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        return &$field_$;
-      }
-    )cc");
-  }
+  p->Emit(R"cc(
+    inline const $pb$::$Weak$RepeatedPtrField<$Submsg$>&
+    $Msg$::_internal$_weak$_$name_internal$() const {
+      $TsanDetectConcurrentRead$;
+      return $field_$;
+    }
+    inline $pb$::$Weak$RepeatedPtrField<$Submsg$>* $nonnull$
+    $Msg$::_internal_mutable$_weak$_$name_internal$() {
+      $TsanDetectConcurrentRead$;
+      return &$mutable_field_$;
+    }
+  )cc");
   if (is_weak()) {
     p->Emit(R"cc(
       inline const $pb$::RepeatedPtrField<$Submsg$>&
@@ -926,7 +914,7 @@ void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {
 
 void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
   if (should_split()) {
-    p->Emit("$field_$.ClearIfNotDefault();\n");
+    p->Emit("if (auto* f = $try_mutable_field_$) f->Clear();\n");
   } else {
     p->Emit("$field_$.Clear();\n");
   }
