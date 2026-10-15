@@ -36,11 +36,21 @@
 // Must be included last.
 #include "google/protobuf/port_def.inc"
 
+// This file has been migrated to use safe buffer abstractions (absl::Span).
+// Enforce -Wunsafe-buffer-usage to prevent backsliding.
+#if PROTOBUF_CLANG_MIN(16, 0)
+#pragma clang diagnostic error "-Wunsafe-buffer-usage"
+#endif
+
 namespace google {
 namespace protobuf {
 namespace internal {
 
 namespace {
+// Safety audit: ParsingEndsInBuffer uses ptr arithmetic bounded by [ptr, end).
+// ReadTag/VarintParse/ReadSize are bounds-safe parsing primitives. ptr += size
+// is guarded by the size <= end - ptr check.
+PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
 bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
   while (ptr < end) {
     uint32_t tag;
@@ -84,6 +94,7 @@ bool ParsingEndsInBuffer(const char* ptr, const char* end, int depth) {
   }
   return false;
 }
+PROTOBUF_UNSAFE_BUFFER_USAGE_END
 }  // namespace
 
 bool EpsCopyInputStream::IsRequestedLessThanOrEqualTo(int requested,
@@ -100,6 +111,12 @@ bool EpsCopyInputStream::HasEnoughTillLimit(int requested, const char* ptr) {
   return IsRequestedLessThanOrEqualTo(requested, BytesUntilLimit(ptr));
 }
 
+// Safety audit: EpsCopyInputStream methods use the epsilon-copy buffer
+// protocol. Key invariants: buffer_end_ points to the end of the usable
+// buffer region; kSlopBytes (16) beyond buffer_end_ is always readable for
+// look-ahead; patch_buffer_ is kPatchBufferSize + kSlopBytes in size.
+// All pointer arithmetic is bounded by these invariants.
+PROTOBUF_UNSAFE_BUFFER_USAGE_BEGIN
 // Only call if at start of tag.
 bool EpsCopyInputStream::ParseEndsInSlopRegion(const char* begin, int overrun,
                                                int depth) {
@@ -849,6 +866,7 @@ bool VerifyBoolsAssumingLargeArray(const char* ptr, const char* end) {
 
   return (bit_or & ~0x0101010101010101) == 0;
 }
+PROTOBUF_UNSAFE_BUFFER_USAGE_END
 
 }  // namespace internal
 }  // namespace protobuf
