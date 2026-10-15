@@ -5006,6 +5006,12 @@ typedef struct upb_TaggedAuxPtr {
   // For a non-canonical extension, its schema is known but not
   // the one expected by the message, so it should be treated like an unknown
   // field, but is stored as an extension to lazily defer serialization.
+  //
+  // Invariants that hold for all extensions, canonical or non-canonical:
+  //
+  //   - The extension is described by a upb_MiniTableExtension whose field is
+  //     flagged as an extension.
+  //   - The field is never a map, since protobuf does not allow map extensions.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 

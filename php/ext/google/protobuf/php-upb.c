@@ -9536,7 +9536,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         break;
       }
       case kUpb_FieldMode_Map:
-        UPB_UNREACHABLE();  // Maps cannot be extensions.
+        UPB_UNREACHABLE();
         break;
       case kUpb_FieldMode_Scalar:
         if (upb_MiniTableField_IsSubMessage(f)) {
@@ -9949,7 +9949,7 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
                                 options);
         break;
       case kUpb_FieldMode_Map:
-        UPB_UNREACHABLE();  // Maps cannot be extensions.
+        UPB_UNREACHABLE();
         break;
       case kUpb_FieldMode_Scalar: {
         eq = upb_MessageValue_IsEqual(val1, val2, ctype, subm, options);
@@ -10675,6 +10675,8 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           goto err;
         }
       } else {
+        // Extensions (canonical or non-canonical) cannot be maps.
+        UPB_ASSERT(upb_MiniTableField_IsArray(field));
         const upb_Array* msg_array = upb_Extension_GetArray(msg_ext);
         UPB_ASSERT(msg_array);
         upb_Array* cloned_array =
@@ -10797,6 +10799,7 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
     upb_TaggedAuxType tag) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(!upb_MiniTableField_IsMap(upb_MiniTableExtension_ToField(e)));
   // For Canonical Extensions, we check whether the extension has already been
   // set. If we find an extension with the same pointer and tag, we reuse it to
   // prevent duplicate entries for the same extension.
@@ -19790,6 +19793,11 @@ static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
 static char* encode_msgset_item(char* ptr, upb_encstate* e,
                                 const upb_MiniTableExtension* ext,
                                 const upb_MessageValue ext_val) {
+  // MessageSet items are always singular submessages. This holds for canonical
+  // extensions of a MessageSet, but must also hold for any non-canonical
+  // extension that is encoded as a MessageSet item.
+  UPB_ASSERT(upb_MiniTableField_IsScalar(upb_MiniTableExtension_ToField(ext)));
+  UPB_ASSERT(upb_MiniTableExtension_CType(ext) == kUpb_CType_Message);
   size_t size;
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   ptr = encode_message(ptr, e, ext_val.msg_val,
