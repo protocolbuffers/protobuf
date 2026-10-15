@@ -289,6 +289,168 @@ TEST(FastVarints, NameHere) {
   }
 }
 
+TEST(FastVarints, SingularVarintZigZagAndTwoByteTag) {
+  constexpr uint8_t kHasBitsOffset = 4;
+  constexpr uint8_t kHasBitIndex = 0;
+  constexpr uint8_t kFieldOffset = 24;
+
+  const ClassData class_data(nullptr, &NoOpMergeToFrom, MessageCreator(),
+                             &NoOpDestroyMessage, &NoOpClearFunc,
+                             &NoOpByteSizeLongFunc, &NoOpSerializeFunc,
+                             /*cached_size_offset=*/16, "type_name");
+
+  const TcParseTable<0, 1, 0, 0, 2> parse_table = {
+      {
+          kHasBitsOffset,
+          0,  // no _extensions_
+          16,
+          0,  // max_field_number, fast_idx_mask
+          offsetof(decltype(parse_table), field_lookup_table),
+          0xFFFFFFFF - 1,  // skipmap
+          offsetof(decltype(parse_table), field_entries),
+          1,                                             // num_field_entries
+          0,                                             // num_aux_entries
+          offsetof(decltype(parse_table), field_names),  // no aux_entries
+          &class_data,
+          nullptr,           // post_loop_handler
+          FastParserGaveUp,  // fallback
+      },
+      // Fast Table:
+      {{
+          {TcParser::FastZ32S1,
+           {/* coded_tag= */ 8, kHasBitIndex, /* aux_idx= */ 0, kFieldOffset}},
+      }},
+      // Field Lookup Table:
+      {{65535, 65535}},
+      // Field Entries:
+      {{
+          {kFieldOffset, kHasBitsOffset + 0, 0, (field_layout::kFkNone)},
+      }},
+      // no aux_entries
+      {{}},
+  };
+
+  struct ParserCase {
+    const char* name;
+    TailCallParseFunc fn;
+    int field_size;
+    int tag_bytes;
+    bool zigzag;
+  };
+  const ParserCase kCases[] = {
+      {"FastZ32S1", &TcParser::FastZ32S1, 32, 1, true},
+      {"FastZ64S1", &TcParser::FastZ64S1, 64, 1, true},
+      {"FastV8S2", &TcParser::FastV8S2, 8, 2, false},
+      {"FastV32S2", &TcParser::FastV32S2, 32, 2, false},
+      {"FastV64S2", &TcParser::FastV64S2, 64, 2, false},
+      {"FastZ32S2", &TcParser::FastZ32S2, 32, 2, true},
+      {"FastZ64S2", &TcParser::FastZ64S2, 64, 2, true},
+  };
+
+  uint8_t serialize_buffer[64];
+
+  for (const ParserCase& tc : kCases) {
+    SCOPED_TRACE(tc.name);
+    const int field_number = tc.tag_bytes == 1 ? 1 : 16;
+    const uint16_t coded_tag = tc.tag_bytes == 1 ? 0x0008 : 0x0180;
+    const TcFieldData base_data(coded_tag, kHasBitIndex, /*aux_idx=*/0,
+                                kFieldOffset);
+
+    auto next_i = [](uint64_t i) {
+      if ((i & (i + 1)) == 0) return i + 1;
+      return i + (i - 1);
+    };
+    for (uint64_t i = 0; i + 1 != 0; i = next_i(i)) {
+      SCOPED_TRACE(i);
+      enum OverlongKind { kNotOverlong, kOverlong, kOverlongWithDroppedBits };
+      for (OverlongKind overlong :
+           {kNotOverlong, kOverlong, kOverlongWithDroppedBits}) {
+        SCOPED_TRACE(overlong);
+        alignas(16) char fake_msg[64];
+        memset(fake_msg, kDND, sizeof(fake_msg));
+        memset(&fake_msg[kHasBitsOffset], 0, sizeof(uint32_t));
+
+        uint8_t* serialize_ptr = WireFormatLite::WriteUInt64ToArray(
+            field_number, i, serialize_buffer);
+
+        if (overlong == kOverlong || overlong == kOverlongWithDroppedBits) {
+          const ptrdiff_t target_len = tc.tag_bytes + 10;
+          while (serialize_ptr - serialize_buffer < target_len) {
+            serialize_ptr[-1] |= 0x80;
+            *serialize_ptr++ = 0;
+          }
+          if (overlong == kOverlongWithDroppedBits) {
+            serialize_ptr[-1] |= 0b0111'1110;
+          }
+        }
+
+        absl::string_view serialized{
+            reinterpret_cast<char*>(&serialize_buffer[0]),
+            static_cast<size_t>(serialize_ptr - serialize_buffer)};
+
+        const char* ptr = nullptr;
+        ParseContext ctx(io::CodedInputStream::GetDefaultRecursionLimit(),
+                         /*aliasing=*/false, &ptr, serialized);
+        fallback_ptr_received.reset();
+        fallback_hasbits_received.reset();
+        fallback_tag_received.reset();
+
+        const char* end_ptr =
+            tc.fn(reinterpret_cast<MessageLite*>(fake_msg), ptr, &ctx,
+                  Xor2SerializedBytes(base_data, ptr), &parse_table.header,
+                  /*hasbits=*/0);
+        ASSERT_NE(end_ptr, nullptr);
+        ASSERT_EQ(end_ptr - ptr, serialized.size());
+
+        switch (tc.field_size) {
+          case 8: {
+            auto actual_field = ReadAndReset<uint8_t>(&fake_msg[kFieldOffset]);
+            uint8_t expected = static_cast<uint8_t>(static_cast<bool>(i));
+            EXPECT_EQ(actual_field, expected);
+            break;
+          }
+          case 32: {
+            if (tc.zigzag) {
+              auto actual_field =
+                  ReadAndReset<int32_t>(&fake_msg[kFieldOffset]);
+              EXPECT_EQ(actual_field, WireFormatLite::ZigZagDecode32(
+                                          static_cast<uint32_t>(i)));
+            } else {
+              auto actual_field =
+                  ReadAndReset<uint32_t>(&fake_msg[kFieldOffset]);
+              EXPECT_EQ(actual_field, static_cast<uint32_t>(i));
+            }
+            break;
+          }
+          case 64: {
+            if (tc.zigzag) {
+              auto actual_field =
+                  ReadAndReset<int64_t>(&fake_msg[kFieldOffset]);
+              EXPECT_EQ(actual_field, WireFormatLite::ZigZagDecode64(i));
+            } else {
+              auto actual_field =
+                  ReadAndReset<uint64_t>(&fake_msg[kFieldOffset]);
+              EXPECT_EQ(actual_field, i);
+            }
+            break;
+          }
+        }
+        EXPECT_FALSE(fallback_ptr_received.has_value());
+        EXPECT_FALSE(fallback_hasbits_received.has_value());
+        EXPECT_FALSE(fallback_tag_received.has_value());
+        auto hasbits = ReadAndReset<uint32_t>(&fake_msg[kHasBitsOffset]);
+        EXPECT_EQ(hasbits, 1u << kHasBitIndex);
+
+        int offset = 0;
+        for (char ch : fake_msg) {
+          EXPECT_EQ(ch, kDND) << " corruption of message at offset " << offset;
+          ++offset;
+        }
+      }
+    }
+  }
+}
+
 MATCHER_P3(IsEntryForFieldNum, table, field_num, field_numbers_table,
            absl::StrCat(negation ? "isn't " : "",
                         "the field entry for field number ", field_num)) {
