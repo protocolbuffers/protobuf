@@ -21,6 +21,9 @@ import proto2_unittest.NestedExtension.MyNestedExtension;
 import proto2_unittest.NonNestedExtension;
 import proto2_unittest.NonNestedExtension.MessageToBeExtended;
 import proto2_unittest.NonNestedExtension.MyNonNestedExtension;
+import proto2_unittest.NonNestedExtensionLite;
+import proto2_unittest.NonNestedExtensionLite.MessageLiteToBeExtended;
+import proto2_unittest.NonNestedExtensionLite.MyNonNestedExtensionLite;
 import proto2_unittest.OuterClassNameTest2OuterClass;
 import proto2_unittest.OuterClassNameTest3OuterClass;
 import proto2_unittest.OuterClassNameTestOuterClass;
@@ -1038,6 +1041,27 @@ public class GeneratedMessageTest {
     ObjectInputStream in = new ObjectInputStream(bais);
     TestAllTypes actual = (TestAllTypes) in.readObject();
     assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testSerializationWithExtension() throws Exception {
+    MessageLiteToBeExtended expected =
+        MessageLiteToBeExtended.newBuilder()
+            .setExtension(
+                NonNestedExtensionLite.nonNestedExtensionLite,
+                MyNonNestedExtensionLite.getDefaultInstance())
+            .build();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(baos)) {
+      out.writeObject(expected);
+    }
+    ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+    MessageLiteToBeExtended actual = (MessageLiteToBeExtended) in.readObject();
+
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    NonNestedExtensionLite.registerAllExtensions(registry);
+    assertThat(MessageLiteToBeExtended.parseFrom(actual.toByteString(), registry))
+        .isEqualTo(expected);
   }
 
   @Test
