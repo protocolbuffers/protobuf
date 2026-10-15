@@ -208,12 +208,11 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
 
 static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   static const char* kwlist[] = {"name", "bases", "dict", nullptr};
-  PyObject *bases, *dict;
-  const char* name;
+  PyObject *name, *bases, *dict;
 
   // Check arguments: (name, bases, dict)
   if (!PyArg_ParseTupleAndKeywords(
-          args, kwargs, "sO!O!:type", const_cast<char**>(kwlist), &name,
+          args, kwargs, "UO!O!:type", const_cast<char**>(kwlist), &name,
           &PyTuple_Type, &bases, &PyDict_Type, &dict)) {
     return nullptr;
   }
@@ -266,10 +265,10 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   PyObject* well_known_class = PyDict_GetItemString(
       WKT_classes, std::string(message_descriptor->full_name()).c_str());
   if (well_known_class == nullptr) {
-    new_args.reset(Py_BuildValue("s(OO)O", name, CMessage_Type,
+    new_args.reset(Py_BuildValue("O(OO)O", name, CMessage_Type,
                                  PythonMessage_class, dict));
   } else {
-    new_args.reset(Py_BuildValue("s(OOO)O", name, CMessage_Type,
+    new_args.reset(Py_BuildValue("O(OOO)O", name, CMessage_Type,
                                  PythonMessage_class, well_known_class, dict));
   }
 
