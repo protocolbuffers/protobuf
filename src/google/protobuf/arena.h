@@ -866,13 +866,12 @@ struct ArenaPtrCmpBase {
   }
 
   template <typename T>
-  static auto PROTOBUF_NULLABLE
-  Unpack(const typename Arena::UniquePtr<T>& ptr) {
+  static T* PROTOBUF_NULLABLE Unpack(const typename Arena::UniquePtr<T>& ptr) {
     return ptr.get();
   }
 
   template <typename T>
-  static auto PROTOBUF_NONNULL
+  static T* PROTOBUF_NONNULL
   Unpack(const typename Arena::template Ptr<T>& ptr) {
     return ptr.get();
   }
