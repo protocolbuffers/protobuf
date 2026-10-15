@@ -421,8 +421,6 @@ class FlatAllocatorImpl {
     return res;
   }
 
-  // TODO: Remove the NULL terminators to save memory and simplify
-  // the code.
   absl::optional<internal::DescriptorNames::Input> CreateDescriptorNames(
       std::initializer_list<absl::string_view> bytes,
       std::initializer_list<size_t> sizes) {
@@ -456,22 +454,18 @@ class FlatAllocatorImpl {
   }
   absl::optional<internal::DescriptorNames::Input> AllocateEntityNames(
       absl::string_view scope, absl::string_view name) {
-    static constexpr absl::string_view kNullChar("\0", 1);
     if (scope.empty()) {
-      return CreateDescriptorNames({name, kNullChar},
-                                   {name.size(), name.size()});
+      return CreateDescriptorNames({name}, {name.size(), name.size()});
     } else {
       return CreateDescriptorNames(
-          {scope, ".", name, kNullChar},
-          {name.size(), scope.size() + 1 + name.size()});
+          {scope, ".", name}, {name.size(), scope.size() + 1 + name.size()});
     }
   }
 
   internal::DescriptorNames::Input AllocatePlaceholderNames(
       absl::string_view full_name, size_t name_size) {
-    static constexpr absl::string_view kNullChar("\0", 1);
-    auto out = CreateDescriptorNames({full_name, kNullChar},
-                                     {name_size, full_name.size()});
+    auto out =
+        CreateDescriptorNames({full_name}, {name_size, full_name.size()});
     if (out.has_value()) return *out;
     // Return any valid name for the caller to use and keep going.
     return AllocateEntityNames("", "unknown").value();
@@ -502,8 +496,7 @@ class FlatAllocatorImpl {
     // camelcase (offset, size), json (offset, size),
     constexpr int kIndexSize = 8 * sizeof(uint16_t);
 
-    constexpr int kNullCharSize = 1;
-    size_t total_bytes = kIndexSize + name.size() + kNullCharSize;
+    size_t total_bytes = kIndexSize + name.size();
     if (parent_scope_size != 0) {
       total_bytes += parent_scope_size + /* '.' */ 1;
     }
@@ -514,24 +507,21 @@ class FlatAllocatorImpl {
         case FieldNameCase::kAllLower:
           // Case 1: they are all the same.
           return PlanArray<char>(total_bytes);
-        case FieldNameCase::kSnakeCase: {
+        case FieldNameCase::kSnakeCase:
           // Case 2: name==lower, camel==json
-          return PlanArray<char>(total_bytes + CamelCaseSize(name) +
-                                 kNullCharSize);
-        }
+          return PlanArray<char>(total_bytes + CamelCaseSize(name));
         default:
           break;
       }
     }
 
     // lowercase
-    total_bytes += name.size() + kNullCharSize;
+    total_bytes += name.size();
     // camelcase
-    total_bytes += CamelCaseSize(name) + kNullCharSize;
+    total_bytes += CamelCaseSize(name);
     // json_name
-    total_bytes += (opt_json_name != nullptr ? opt_json_name->size()
-                                             : JsonNameSize(name)) +
-                   kNullCharSize;
+    total_bytes +=
+        (opt_json_name != nullptr ? opt_json_name->size() : JsonNameSize(name));
     PlanArray<char>(total_bytes);
   }
 
@@ -543,19 +533,17 @@ class FlatAllocatorImpl {
     const absl::string_view scope_dot = scope.empty() ? "" : ".";
     const size_t full_name_size = scope.size() + scope_dot.size() + name.size();
 
-    static constexpr absl::string_view kNullChar("\0", 1);
-
     if (opt_json_name == nullptr) {
       switch (GetFieldNameCase(name)) {
         case FieldNameCase::kAllLower:
           PROTOBUF_DEBUG_COUNTER("AllocateFieldNames.AllLower").Inc();
           // Case 1: they are all the same.
           return CreateDescriptorNames(
-              {scope, scope_dot, name, kNullChar},
+              {scope, scope_dot, name},
               {name.size(), full_name_size,
-               /* lowercase */ name.size() + 1, name.size(),
-               /* camelcase */ name.size() + 1, name.size(),
-               /* json */ name.size() + 1, name.size()});
+               /* lowercase */ name.size(), name.size(),
+               /* camelcase */ name.size(), name.size(),
+               /* json */ name.size(), name.size()});
         case FieldNameCase::kSnakeCase: {
           PROTOBUF_DEBUG_COUNTER("AllocateFieldNames.SnakeCase").Inc();
           // Case 2: name==lower, camel==json
@@ -564,11 +552,11 @@ class FlatAllocatorImpl {
           const size_t camelcase_offset =
               full_name_size + camelcase_name.size();
           return CreateDescriptorNames(
-              {camelcase_name, kNullChar, scope, scope_dot, name, kNullChar},
+              {camelcase_name, scope, scope_dot, name},
               {name.size(), full_name_size,
-               /* lowercase */ name.size() + 1, name.size(),
-               /* camelcase */ camelcase_offset + 2, camelcase_name.size(),
-               /* json */ camelcase_offset + 2, camelcase_name.size()});
+               /* lowercase */ name.size(), name.size(),
+               /* camelcase */ camelcase_offset, camelcase_name.size(),
+               /* json */ camelcase_offset, camelcase_name.size()});
         }
         default:
           break;
@@ -583,14 +571,13 @@ class FlatAllocatorImpl {
     const std::string json_name =
         opt_json_name != nullptr ? *opt_json_name : ToJsonName(name);
 
-    size_t offset = full_name_size + 1;
+    size_t offset = full_name_size;
     return CreateDescriptorNames(
-        {json_name, kNullChar, camelcase_name, kNullChar,  //
-         lowercase_name, kNullChar, scope, scope_dot, name, kNullChar},
+        {json_name, camelcase_name, lowercase_name, scope, scope_dot, name},
         {name.size(), full_name_size,  //
-         offset += lowercase_name.size() + 1, lowercase_name.size(),
-         offset += camelcase_name.size() + 1, camelcase_name.size(),
-         offset += json_name.size() + 1, json_name.size()});
+         offset += lowercase_name.size(), lowercase_name.size(),
+         offset += camelcase_name.size(), camelcase_name.size(),
+         offset += json_name.size(), json_name.size()});
   }
 
   template <typename Alloc>

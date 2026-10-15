@@ -184,6 +184,11 @@ const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
   return f->ext_layouts[i];
 }
 
+void _upb_FileDef_SetExtensionMiniTable(upb_FileDef* f, int i,
+                                        const upb_MiniTableExtension* ext) {
+  f->ext_layouts[i] = ext;
+}
+
 // Note: Import cycles are not allowed so this will terminate.
 bool upb_FileDef_Resolves(const upb_FileDef* f, const char* path) {
   if (!strcmp(f->name, path)) return true;
@@ -317,11 +322,8 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     // We are building ext layouts from scratch.
     file->ext_layouts = _upb_DefBuilder_Alloc(
         ctx, sizeof(*file->ext_layouts) * file->ext_count);
-    upb_MiniTableExtension* ext =
-        UPB_DEFBUILDER_ALLOCARRAY(ctx, upb_MiniTableExtension, file->ext_count);
-    for (int i = 0; i < file->ext_count; i++) {
-      file->ext_layouts[i] = &ext[i];
-    }
+    memset((void*)file->ext_layouts, 0,
+           sizeof(*file->ext_layouts) * file->ext_count);
   }
 
   upb_StringView name = google_protobuf_FileDescriptorProto_name(file_proto);

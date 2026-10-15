@@ -23,8 +23,6 @@ struct upb_MiniTableExtension {
   // Do not move this field. We need to be able to alias pointers.
   struct upb_MiniTableField UPB_PRIVATE(field);
 
-  union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
-
   // A known extendee schema for a canonical extension. For a non-canonical
   // extension, it's typically converted from a canonical extension via the
   // upb_Message_Convert() API, but is not registered on the extension
@@ -32,6 +30,15 @@ struct upb_MiniTableExtension {
   // `extendee` info is present on the source message before conversion.
   const struct upb_MiniTable* UPB_PRIVATE(extendee);
 };
+
+// The layout of an extension that has a sub-message or closed enum (ie.
+// `field.submsg_ofs != kUpb_NoSub`): the sub is stored directly after the
+// upb_MiniTableExtension. Extensions without a sub are just a bare
+// upb_MiniTableExtension.
+typedef struct {
+  struct upb_MiniTableExtension UPB_PRIVATE(ext);
+  upb_MiniTableSubInternal UPB_PRIVATE(sub);
+} upb_MiniTableExtensionWithSub;
 
 #ifdef __cplusplus
 extern "C" {
@@ -57,7 +64,7 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Message) {
     return NULL;
   }
-  return upb_MiniTableSub_Message(e->UPB_PRIVATE(sub));
+  return upb_MiniTable_GetSubMessageTable(&e->UPB_PRIVATE(field));
 }
 
 UPB_API_INLINE const struct upb_MiniTableEnum*
@@ -65,7 +72,7 @@ upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Enum) {
     return NULL;
   }
-  return upb_MiniTableSub_Enum(e->UPB_PRIVATE(sub));
+  return upb_MiniTable_GetSubEnumTable(&e->UPB_PRIVATE(field));
 }
 
 UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
@@ -79,7 +86,8 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
   if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
     return false;
   }
-  e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+  UPB_PRIVATE(_upb_MiniTableField_Sub)(&e->UPB_PRIVATE(field))
+      ->UPB_PRIVATE(submsg) = m;
   return true;
 }
 
@@ -89,7 +97,8 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
       kUpb_FieldType_Enum) {
     return false;
   }
-  e->UPB_PRIVATE(sub).UPB_PRIVATE(subenum) = en;
+  UPB_PRIVATE(_upb_MiniTableField_Sub)(&e->UPB_PRIVATE(field))
+      ->UPB_PRIVATE(subenum) = en;
   return true;
 }
 
