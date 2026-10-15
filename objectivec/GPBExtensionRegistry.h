@@ -61,9 +61,50 @@ __attribute__((objc_subclassing_restricted))
 /**
  * Adds all the extensions from another registry to this registry.
  *
- * @param registry The registry to merge into this registry.
+ * `registry` can also be the registry returned by `+globalExtensionRegistry`
+ * (or a registry it was added to). Its extensions are not copied: lookups that
+ * do not find an extension added to this registry are forwarded to the global
+ * registry, so adding it does not read any Mach-O section, and extensions from
+ * images loaded later are found. Extensions added to this registry (with
+ * `-addExtension:` or from other registries) take precedence over the global
+ * registry's for the same extended class and field number. A copy of this
+ * registry keeps forwarding to the global registry.
+ *
+ * ```
+ * GPBExtensionRegistry *registry = [[GPBExtensionRegistry alloc] init];
+ * [registry addExtensions:[GPBExtensionRegistry globalExtensionRegistry]];
+ * [registry addExtension:MyExtension()];
+ * ```
+ *
+ * @param registry The registry to merge into this registry. Must be a
+ *                 `GPBExtensionRegistry` or the registry returned by
+ *                 `+globalExtensionRegistry`; any other implementation of the
+ *                 protocol raises an `NSInvalidArgumentException`. (Typed as
+ *                 the protocol so the global registry can be passed without a
+ *                 cast.)
  **/
-- (void)addExtensions:(GPBExtensionRegistry *)registry;
+- (void)addExtensions:(id<GPBExtensionRegistry>)registry;
+
+/**
+ * Returns the process-wide registry of the extensions that are linked into the
+ * process and were generated with the experimental
+ * `experimental_global_extension_registry` generator option (C function
+ * extensions only).
+ *
+ * Each such extension records its description in the `__DATA,__gpb_ext_reg`
+ * Mach-O section. Nothing is done when this method is called; the first
+ * `-extensionForDescriptor:fieldNumber:` call reads the section of every loaded
+ * image (and registers for images loaded later, such as dynamically loaded
+ * frameworks), and indexes the entries by extended class and field number.
+ * A `GPBExtensionDescriptor` is only created when it is looked up, and it is
+ * the same instance that the generated extension function returns.
+ *
+ * The returned object is immutable and can be used from any thread. It is not
+ * a `GPBExtensionRegistry` instance, but it can be passed to any API that takes
+ * an `id<GPBExtensionRegistry>`. To add more extensions to it, pass it to
+ * `-addExtensions:` of a new `GPBExtensionRegistry`.
+ **/
++ (id<GPBExtensionRegistry>)globalExtensionRegistry;
 
 @end
 
