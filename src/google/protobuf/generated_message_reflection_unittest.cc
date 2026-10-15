@@ -68,6 +68,14 @@ namespace protobuf {
 
 class GeneratedMessageReflectionTestHelper {
  public:
+  static void SwapField(Message* lhs, Message* rhs,
+                        const FieldDescriptor* field) {
+    lhs->GetReflection()->SwapField(lhs, rhs, field);
+  }
+  static void UnsafeShallowSwapField(Message* lhs, Message* rhs,
+                                    const FieldDescriptor* field) {
+    lhs->GetReflection()->UnsafeShallowSwapField(lhs, rhs, field);
+  }
   static void UnsafeShallowSwapFields(
       Message* lhs, Message* rhs,
       const std::vector<const FieldDescriptor*>& fields) {
@@ -1533,27 +1541,26 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
 TEST(GeneratedMessageReflectionTest, SwapFieldForeignFieldCheck) {
   unittest::TestAllTypes message1;
   unittest::TestAllTypes message2;
-  const Reflection* reflection = message1.GetReflection();
 
-  // SwapField (singular) had the same missing ownership check as SwapFields.
-  // A foreign field descriptor causes an out-of-bounds read on the offsets
-  // array via GetFieldOffset(), leading to memory corruption.
+  // The private SwapField helper must reject fields from another message type.
   const FieldDescriptor* foreign_field =
       unittest::ForeignMessage::descriptor()->FindFieldByName("c");
-  EXPECT_DEATH(reflection->SwapField(&message1, &message2, foreign_field),
-               "Field does not match message type");
+  EXPECT_DEATH(
+      GeneratedMessageReflectionTestHelper::SwapField(&message1, &message2,
+                                                      foreign_field),
+      "Field does not match message type");
 }
 
 TEST(GeneratedMessageReflectionTest, UnsafeShallowSwapFieldForeignFieldCheck) {
   unittest::TestAllTypes message1;
   unittest::TestAllTypes message2;
-  const Reflection* reflection = message1.GetReflection();
 
-  // UnsafeShallowSwapField had the same missing ownership check.
+  // The private UnsafeShallowSwapField helper must also reject foreign fields.
   const FieldDescriptor* foreign_field =
       unittest::ForeignMessage::descriptor()->FindFieldByName("c");
   EXPECT_DEATH(
-      reflection->UnsafeShallowSwapField(&message1, &message2, foreign_field),
+      GeneratedMessageReflectionTestHelper::UnsafeShallowSwapField(
+          &message1, &message2, foreign_field),
       "Field does not match message type");
 }
 
