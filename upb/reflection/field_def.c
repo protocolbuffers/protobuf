@@ -972,7 +972,7 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
     // whether the decoded extension needs trailing sub storage.
     ext = _upb_MiniTableExtension_Build(
         desc.data, desc.size, upb_MessageDef_MiniTable(f->msgdef), sub,
-        ctx->platform, ctx->arena, ctx->status);
+        ctx->platform, ctx->arena, /*end=*/NULL, ctx->status);
     if (!ext) _upb_DefBuilder_Errf(ctx, "Could not build extension mini table");
     _upb_FileDef_SetExtensionMiniTable(ctx->file, f->layout_index, ext);
   }

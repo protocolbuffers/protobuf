@@ -435,7 +435,7 @@ TEST(MiniTableTest, ExtensionSubOffsetIsPlatformSpecific) {
     upb_MiniTableExtension* ext = _upb_MiniTableExtension_Build(
         ext_e.data().data(), ext_e.data().size(), extendee,
         upb_MiniTableSub_FromMessage(nullptr), platform, arena.ptr(),
-        status.ptr());
+        /*end=*/nullptr, status.ptr());
     ASSERT_NE(nullptr, ext) << status.error_message();
     size_t expected =
         UPB_ALIGN_UP(sizeof(upb_MiniTableField), ptr_size) + ptr_size;
