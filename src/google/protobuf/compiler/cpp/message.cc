@@ -1825,7 +1825,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             ~$Msg$() PROTOBUF_FINAL;
           )cc");
         }},
-       {"decl_annotate", [&] { GenerateAnnotationDecl(p); }},
        {"decl_verify_func", [&] { GenerateVerifyDecl(p); }},
        {"descriptor_accessor",
         [&] {
@@ -1863,6 +1862,7 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
             }
           )cc");
         }},
+       {"msg_globals", MsgGlobalsInstanceName(descriptor_, options_)},
        {"decl_oneof",
         [&] {
           // Generate enum values for every field in oneofs. One list is
@@ -1995,9 +1995,10 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
                 return ByteSizeLong(*this);
               }
               PROTOBUF_ALWAYS_INLINE $nodiscard $$uint8$* $nullable$
-              _InternalSerialize($uint8$* $nullable$ target,
-                                 $pb$::io::EpsCopyOutputStream* $nonnull$
-                                     stream) const {
+              _InternalSerialize(
+                  //~
+                  $uint8$* $nullable$ target,
+                  $pb$::io::EpsCopyOutputStream* $nonnull$ stream) const {
                 return _InternalSerialize(*this, target, stream);
               }
 #else   // PROTOBUF_CUSTOM_VTABLE
@@ -2023,30 +2024,16 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
        {"decl_non_simple_base",
         [&] {
           if (HasSimpleBaseClass(descriptor_, options_)) return;
-          p->Emit(
-              R"cc(
-                $nodiscard $int GetCachedSize() const {
-                  return $cached_size$.Get();
-                }
+          p->Emit(R"cc(
+            $nodiscard $int GetCachedSize() const {
+              return $cached_size$.Get();
+            }
 
-                private:
-                void SharedCtor($pb$::Arena* $nullable$ arena);
-                static void SharedDtor(MessageLite& self);
-                void InternalSwap($Msg$* $nonnull$ other);
-              )cc");
-        }},
-       {"arena_dtor",
-        [&] {
-          switch (NeedsArenaDestructor()) {
-            case ArenaDtorNeeds::kRequired:
-              p->Emit(R"cc(
-                private:
-                static void ArenaDtor(void* $nonnull$ object);
-              )cc");
-              break;
-            case ArenaDtorNeeds::kNone:
-              break;
-          }
+            private:
+            void SharedCtor($pb$::Arena* $nullable$ arena);
+            static void SharedDtor(MessageLite& self);
+            void InternalSwap($Msg$* $nonnull$ other);
+          )cc");
         }},
        {"get_metadata",
         [&] {
@@ -2107,11 +2094,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           // Generate accessor methods for all fields.
           GenerateFieldAccessorDeclarations(p);
         }},
-       {"decl_field_accessors_private_helpers",
-        [&] {
-          // Generate private helper methods for all fields.
-          GenerateFieldAccessorPrivateHelpers(p);
-        }},
        {"decl_extension_ids",
         [&] {
           // Declare extension identifiers.
@@ -2121,6 +2103,25 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
         }},
        {"proto2_message_sets",
         [&] {
+        }},
+       {"decl_annotate", [&] { GenerateAnnotationDecl(p); }},
+       {"arena_dtor",
+        [&] {
+          switch (NeedsArenaDestructor()) {
+            case ArenaDtorNeeds::kRequired:
+              p->Emit(R"cc(
+                private:
+                static void ArenaDtor(void* $nonnull$ object);
+              )cc");
+              break;
+            case ArenaDtorNeeds::kNone:
+              break;
+          }
+        }},
+       {"decl_field_accessors_private_helpers",
+        [&] {
+          // Generate private helper methods for all fields.
+          GenerateFieldAccessorPrivateHelpers(p);
         }},
        {"decl_set_has",
         [&] {
@@ -2155,7 +2156,6 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           )cc");
         }},
        {"decl_impl", [&] { GenerateImplDefinition(p); }},
-       {"msg_globals", MsgGlobalsInstanceName(descriptor_, options_)},
        {"split_friend",
         [&] {
           if (!ShouldSplit(descriptor_, options_)) return;
