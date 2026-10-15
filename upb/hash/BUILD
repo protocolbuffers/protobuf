@@ -29,6 +29,7 @@ cc_library(
         "//upb/base",
         "//upb/base:internal",
         "//upb/mem",
+        "//upb/mem:internal",
         "//upb/port",
     ],
 )

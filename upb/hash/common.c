@@ -22,6 +22,7 @@
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
+#include "upb/mem/internal/arena.h"
 #include "upb/port/overflow.h"
 
 // Must be last.
@@ -565,7 +566,13 @@ bool upb_strtable_resize(upb_strtable* t, size_t size_lg2, upb_Arena* a) {
       insert(&new_table.t, lookupkey, tabkey, val, hash, &strhash, &streql);
     }
   }
+  void* old_entries = t->t.entries;
+  size_t old_bytes =
+      old_entries ? upb_table_size(&t->t) * sizeof(upb_tabent) : 0;
   *t = new_table;
+  if (old_entries) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a, old_entries, old_bytes);
+  }
   return true;
 }
 
@@ -760,7 +767,13 @@ bool upb_exttable_resize(upb_exttable* t, size_t size_lg2, upb_Arena* a) {
     insert(&new_table.t, lookupkey, e->key, e->val, hash, &exthash, &exteql);
   }
 
+  void* old_entries = t->t.entries;
+  size_t old_bytes =
+      old_entries ? upb_table_size(&t->t) * sizeof(upb_tabent) : 0;
   *t = new_table;
+  if (old_entries) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a, old_entries, old_bytes);
+  }
   return true;
 }
 
@@ -989,7 +1002,13 @@ bool upb_inttable_resize(upb_inttable* t, size_t size_lg2, upb_Arena* a) {
   }
 
   UPB_ASSERT(t->t.count == new_table.count);
+  void* old_entries = t->t.entries;
+  size_t old_bytes =
+      old_entries ? upb_table_size(&t->t) * sizeof(upb_tabent) : 0;
   t->t = new_table;
+  if (old_entries) {
+    UPB_PRIVATE(_upb_Arena_UseBlock)(a, old_entries, old_bytes);
+  }
   return true;
 }
 
