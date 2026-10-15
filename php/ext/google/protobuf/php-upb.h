@@ -2724,6 +2724,14 @@ UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
          f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
 }
 
+// Returns true if the field's type requires sub storage (ie. it is a
+// sub-message or closed enum), in which case `submsg_ofs` locates the sub.
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasSub)(
+    const struct upb_MiniTableField* f) {
+  return upb_MiniTableField_IsSubMessage(f) ||
+         upb_MiniTableField_IsClosedEnum(f);
+}
+
 UPB_API_INLINE bool upb_MiniTableField_HasPresence(
     const struct upb_MiniTableField* f) {
   if (upb_MiniTableField_IsExtension(f)) {
@@ -3001,13 +3009,19 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
   return &m->UPB_ONLYBITS(fields)[i];
 }
 
+// Returns the sub-message or sub-enum storage for `f`, which must have one
+// (ie. `submsg_ofs != kUpb_NoSub`).
+UPB_INLINE upb_MiniTableSubInternal* UPB_PRIVATE(_upb_MiniTableField_Sub)(
+    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub);
+  return UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+                    upb_MiniTableSubInternal);
+}
+
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  upb_MiniTableSubInternal* sub =
-      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-                 upb_MiniTableSubInternal);
-  return sub->UPB_PRIVATE(submsg);
+  return UPB_PRIVATE(_upb_MiniTableField_Sub)(f)->UPB_PRIVATE(submsg);
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
@@ -3179,9 +3193,7 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
   UPB_STATIC_ASSERT(sizeof(upb_MiniTableSubInternal) == sizeof(void*),
                     "SubInternal size must be pointer sized.");
   if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
-    upb_MiniTableSubInternal* sub = UPB_PTR_AT(
-        field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-        upb_MiniTableSubInternal);
+    upb_MiniTableSubInternal* sub = UPB_PRIVATE(_upb_MiniTableField_Sub)(field);
     // Type punning via union is legal in C and we're just checking if it's NULL
     // but it's UB in C++, and this header could be included in C++.
     void* sub_ptr;
@@ -3262,10 +3274,7 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_MapEntrySubMessage(
 UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Enum);
-  upb_MiniTableSubInternal* sub =
-      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-                 upb_MiniTableSubInternal);
-  return sub->UPB_PRIVATE(subenum);
+  return UPB_PRIVATE(_upb_MiniTableField_Sub)(f)->UPB_PRIVATE(subenum);
 }
 
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_MapKey(
@@ -4411,8 +4420,6 @@ struct upb_MiniTableExtension {
   // Do not move this field. We need to be able to alias pointers.
   struct upb_MiniTableField UPB_PRIVATE(field);
 
-  union upb_MiniTableSub UPB_PRIVATE(sub);  // NULL unless submsg or proto2 enum
-
   // A known extendee schema for a canonical extension. For a non-canonical
   // extension, it's typically converted from a canonical extension via the
   // upb_Message_Convert() API, but is not registered on the extension
@@ -4420,6 +4427,15 @@ struct upb_MiniTableExtension {
   // `extendee` info is present on the source message before conversion.
   const struct upb_MiniTable* UPB_PRIVATE(extendee);
 };
+
+// The layout of an extension that has a sub-message or closed enum (ie.
+// `field.submsg_ofs != kUpb_NoSub`): the sub is stored directly after the
+// upb_MiniTableExtension. Extensions without a sub are just a bare
+// upb_MiniTableExtension.
+typedef struct {
+  struct upb_MiniTableExtension UPB_PRIVATE(ext);
+  upb_MiniTableSubInternal UPB_PRIVATE(sub);
+} upb_MiniTableExtensionWithSub;
 
 #ifdef __cplusplus
 extern "C" {
@@ -4445,7 +4461,7 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTableExtension_GetSubMessage(
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Message) {
     return NULL;
   }
-  return upb_MiniTableSub_Message(e->UPB_PRIVATE(sub));
+  return upb_MiniTable_GetSubMessageTable(&e->UPB_PRIVATE(field));
 }
 
 UPB_API_INLINE const struct upb_MiniTableEnum*
@@ -4453,7 +4469,7 @@ upb_MiniTableExtension_GetSubEnum(const struct upb_MiniTableExtension* e) {
   if (upb_MiniTableExtension_CType(e) != kUpb_CType_Enum) {
     return NULL;
   }
-  return upb_MiniTableSub_Enum(e->UPB_PRIVATE(sub));
+  return upb_MiniTable_GetSubEnumTable(&e->UPB_PRIVATE(field));
 }
 
 UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
@@ -4467,7 +4483,8 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubMessage(
   if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) {
     return false;
   }
-  e->UPB_PRIVATE(sub).UPB_PRIVATE(submsg) = m;
+  UPB_PRIVATE(_upb_MiniTableField_Sub)(&e->UPB_PRIVATE(field))
+      ->UPB_PRIVATE(submsg) = m;
   return true;
 }
 
@@ -4477,7 +4494,8 @@ UPB_API_INLINE bool upb_MiniTableExtension_SetSubEnum(
       kUpb_FieldType_Enum) {
     return false;
   }
-  e->UPB_PRIVATE(sub).UPB_PRIVATE(subenum) = en;
+  UPB_PRIVATE(_upb_MiniTableField_Sub)(&e->UPB_PRIVATE(field))
+      ->UPB_PRIVATE(subenum) = en;
   return true;
 }
 
@@ -7178,8 +7196,10 @@ UPB_NODISCARD UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(
 }
 
 // Initializes a MiniTableExtension buffer that has already been allocated.
-// This is needed by upb_FileDef and upb_MessageDef, which allocate all of the
-// extensions together in a single contiguous array.
+// If the extension is a sub-message or closed enum, its sub is stored directly
+// after the upb_MiniTableExtension, so the buffer must be at least
+// `sizeof(upb_MiniTableExtension) + sizeof(upb_MiniTableSub)` bytes. Prefer
+// upb_MiniTableExtension_Build(), which sizes the allocation automatically.
 UPB_NODISCARD const char* _upb_MiniTableExtension_Init(
     const char* data, size_t len, upb_MiniTableExtension* ext,
     const upb_MiniTable* extendee, upb_MiniTableSub sub,
@@ -19971,6 +19991,8 @@ extern "C" {
 
 const upb_MiniTableExtension* _upb_FileDef_ExtensionMiniTable(
     const upb_FileDef* f, int i);
+void _upb_FileDef_SetExtensionMiniTable(upb_FileDef* f, int i,
+                                        const upb_MiniTableExtension* ext);
 const int32_t* _upb_FileDef_PublicDependencyIndexes(const upb_FileDef* f);
 const int32_t* _upb_FileDef_WeakDependencyIndexes(const upb_FileDef* f);
 bool _upb_FileDef_ClosedEnumCheckingDisabled(const upb_FileDef* f);

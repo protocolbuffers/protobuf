@@ -348,16 +348,15 @@ PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m) {
   // in the future, we could make PyUpb_Descriptor_Get() append the descriptor
   // to an internal list in DescriptorPool, let the pool keep descriptors alive.
   PyObject* py_descriptor = PyUpb_Descriptor_Get(pool, m);
-  if (py_descriptor == NULL) return NULL;
-  const char* name = upb_MessageDef_Name(m);
+  PyObject* name = PyUnicode_FromString(upb_MessageDef_Name(m));
   PyObject* dict = PyDict_New();
-  if (dict == NULL) goto err;
-  int status = PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor);
-  if (status < 0) goto err;
+  if (!py_descriptor || !name || !dict) goto err;
+  if (PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor) < 0) goto err;
   ret = PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
 
 err:
   Py_XDECREF(py_descriptor);
+  Py_XDECREF(name);
   Py_XDECREF(dict);
   return ret;
 }
