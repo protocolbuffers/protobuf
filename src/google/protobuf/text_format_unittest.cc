@@ -650,6 +650,39 @@ TEST_F(TextFormatTest, PrintUnknownFieldsHidden) {
   EXPECT_EQ("data: \"data\"\n", output);
 }
 
+TEST_F(TextFormatTest, RedactedUnresolvedAnyField) {
+  google::protobuf::Any any;
+  any.set_type_url("type.googleapis.com/unknown.SecretPayload");
+  any.set_value("secret_token_12345");
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  printer.SetRedactDebugString(true);
+
+  std::string output;
+  ASSERT_TRUE(printer.PrintToString(any, &output));
+  EXPECT_THAT(output,
+              HasSubstr("type_url: \"type.googleapis.com/unknown.SecretPayload\""));
+  EXPECT_THAT(output, HasSubstr("value: [REDACTED]"));
+  EXPECT_THAT(output, ::testing::Not(HasSubstr("secret_token_12345")));
+}
+
+TEST_F(TextFormatTest, UnredactedUnresolvedAnyField) {
+  google::protobuf::Any any;
+  any.set_type_url("type.googleapis.com/unknown.SecretPayload");
+  any.set_value("secret_token_12345");
+
+  TextFormat::Printer printer;
+  printer.SetExpandAny(true);
+  printer.SetRedactDebugString(false);
+
+  std::string output;
+  ASSERT_TRUE(printer.PrintToString(any, &output));
+  EXPECT_THAT(output,
+              HasSubstr("type_url: \"type.googleapis.com/unknown.SecretPayload\""));
+  EXPECT_THAT(output, HasSubstr("value: \"secret_token_12345\""));
+}
+
 TEST_F(TextFormatTest, PrintUnknownMessage) {
   // Test heuristic printing of messages in an UnknownFieldSet.
 
