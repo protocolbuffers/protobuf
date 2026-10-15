@@ -105,7 +105,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
     return _internal_metadata_.mutable_unknown_fields<::google::protobuf::UnknownFieldSet>();
   }
 
-  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL descriptor() {
+  [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
+  descriptor() {
     return GetDescriptor();
   }
   [[nodiscard]] static const ::google::protobuf::Descriptor* PROTOBUF_NONNULL
@@ -144,25 +145,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   void CopyFrom(const Empty& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const Empty& from) { Super_::MergeImpl(*this, from); }
-
-  public:
   [[nodiscard]] bool IsInitialized() const {
     return true;
   }
 
- private:
-  static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
-
-  explicit Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Empty& from);
-  Empty(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Empty&& from) noexcept
-      : Empty(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -183,6 +169,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Empty final : publi
   friend class ::google::protobuf::Arena::InternalHelper;
   using InternalArenaConstructable_ = void;
   using DestructorSkippable_ = void;
+
+  static ::absl::string_view FullMessageName() { return "google.protobuf.Empty"; }
+
+  explicit Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Empty(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Empty& from);
+  Empty(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Empty&& from) noexcept
+      : Empty(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
 
 
   friend struct ::TableStruct_google_2fprotobuf_2fempty_2eproto;
