@@ -174,8 +174,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
 
   template <typename = void>
   explicit constexpr CppFeatures(::google::protobuf::internal::ConstantInitialized,
-                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                               class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 
   CppFeatures(const CppFeatures& from) : CppFeatures(nullptr, from) {}
   CppFeatures(CppFeatures&& from) noexcept : CppFeatures(nullptr, ::std::move(from)) {}
@@ -258,7 +257,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -266,18 +265,19 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     return ByteSizeLong(*this);
   }
   PROTOBUF_ALWAYS_INLINE [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE
-  _InternalSerialize(::uint8_t* PROTOBUF_NULLABLE target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  _InternalSerialize(
+      ::uint8_t* PROTOBUF_NULLABLE target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
-  #else   // PROTOBUF_CUSTOM_VTABLE
+#else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  public:
   [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
@@ -287,19 +287,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CppFeatures* PROTOBUF_NONNULL other);
 
- private:
-  static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
-
-  explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
-  CppFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept
-      : CppFeatures(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
+  public:
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -374,8 +362,22 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   void clear_repeated_type() ;
   [[nodiscard]] ::pb::CppFeatures_RepeatedType repeated_type() const;
   void set_repeated_type(::pb::CppFeatures_RepeatedType value);
+
   // @@protoc_insertion_point(class_scope:pb.CppFeatures)
  private:
+  static ::absl::string_view FullMessageName() {
+    return "pb.CppFeatures";
+  }
+
+  explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
+  CppFeatures(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept
+      : CppFeatures(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
   class _Internal;
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<2, 4,

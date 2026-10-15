@@ -16,7 +16,7 @@
 
 #include <cstddef>
 #include <functional>
-#include <initializer_list>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -29,7 +29,6 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -516,6 +515,13 @@ class PROTOBUF_EXPORT Printer {
   // `output`.
   Printer(ZeroCopyOutputStream* output, Options options);
 
+  // Copies the state of another Printer. Can be useful if printing to a
+  // temporary output stream. Variable and annotation lookups are inherited,
+  // but per-output state (indentation, line position, substitution ranges) is
+  // reset, so output starts unindented at the beginning of a line. Use
+  // PrintFormatted() to splice the result back into `from`.
+  Printer(ZeroCopyOutputStream* output, const Printer& from);
+
   // Old-style constructor. Avoid in preference to the two constructors above.
   //
   // Will eventually be marked as deprecated.
@@ -599,6 +605,12 @@ class PROTOBUF_EXPORT Printer {
   // of any sort.
   void PrintRaw(absl::string_view data) { WriteRaw(data.data(), data.size()); }
 
+  // Writes pre-formatted, possibly multi-line `text` (e.g. the output of a
+  // temporary Printer), prefixing each non-empty line with the current
+  // indentation. Lines beginning with '#' (preprocessor directives) are not
+  // indented. No variable substitution is performed.
+  void PrintFormatted(absl::string_view text);
+
   // Write a string directly to the underlying output, performing no formatting
   // of any sort.
   void WriteRaw(const char* data, size_t size);
@@ -680,7 +692,9 @@ class PROTOBUF_EXPORT Printer {
   auto WithSubstitutionListener(
       absl::AnyInvocable<void(absl::string_view, SourceLocation)> listener) {
     ABSL_CHECK(substitution_listener_ == nullptr);
-    substitution_listener_ = std::move(listener);
+    substitution_listener_ = std::make_shared<
+        absl::AnyInvocable<void(absl::string_view, SourceLocation)>>(
+        std::move(listener));
     return absl::MakeCleanup([this] { substitution_listener_ = nullptr; });
   }
 
@@ -753,6 +767,9 @@ class PROTOBUF_EXPORT Printer {
   // Prints indentation if `at_start_of_line_` is true.
   void IndentIfAtStart();
 
+  // Writes a newline and marks the printer as being at the start of a line.
+  void WriteNewline();
+
   // Prints a codegen trace, for the given location in the compiler's source.
   void PrintCodegenTrace(absl::optional<SourceLocation> loc);
 
@@ -784,7 +801,7 @@ class PROTOBUF_EXPORT Printer {
 
   // If set, we invoke this when we do a label substitution. This can be used to
   // verify consistency of the generated code while we generate it.
-  absl::AnyInvocable<void(absl::string_view, SourceLocation)>
+  std::shared_ptr<absl::AnyInvocable<void(absl::string_view, SourceLocation)>>
       substitution_listener_;
 
   // A map from variable name to [start, end) offsets in the output buffer.

@@ -141,8 +141,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
 
   template <typename = void>
   explicit constexpr Version(::google::protobuf::internal::ConstantInitialized,
-                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                               class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 
   Version(const Version& from) : Version(nullptr, from) {}
   Version(Version&& from) noexcept : Version(nullptr, ::std::move(from)) {}
@@ -225,7 +224,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -233,18 +232,19 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     return ByteSizeLong(*this);
   }
   PROTOBUF_ALWAYS_INLINE [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE
-  _InternalSerialize(::uint8_t* PROTOBUF_NULLABLE target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  _InternalSerialize(
+      ::uint8_t* PROTOBUF_NULLABLE target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
-  #else   // PROTOBUF_CUSTOM_VTABLE
+#else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  public:
   [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
@@ -254,19 +254,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static void SharedDtor(MessageLite& self);
   void InternalSwap(Version* PROTOBUF_NONNULL other);
 
- private:
-  static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
-
-  explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from);
-  Version(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
-      : Version(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
+  public:
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -302,8 +290,22 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   void clear_patch() ;
   [[nodiscard]] ::int32_t patch() const;
   void set_patch(::int32_t value);
+
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.Version)
  private:
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.compiler.Version";
+  }
+
+  explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from);
+  Version(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
+      : Version(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
   class _Internal;
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<2, 4,
@@ -372,8 +374,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   template <typename = void>
   explicit constexpr CodeGeneratorResponse_File(::google::protobuf::internal::ConstantInitialized,
-                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                               class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 
   CodeGeneratorResponse_File(const CodeGeneratorResponse_File& from) : CodeGeneratorResponse_File(nullptr, from) {}
   CodeGeneratorResponse_File(CodeGeneratorResponse_File&& from) noexcept : CodeGeneratorResponse_File(nullptr, ::std::move(from)) {}
@@ -456,7 +457,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -464,18 +465,19 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return ByteSizeLong(*this);
   }
   PROTOBUF_ALWAYS_INLINE [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE
-  _InternalSerialize(::uint8_t* PROTOBUF_NULLABLE target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  _InternalSerialize(
+      ::uint8_t* PROTOBUF_NULLABLE target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
-  #else   // PROTOBUF_CUSTOM_VTABLE
+#else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  public:
   [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
@@ -485,19 +487,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
 
- private:
-  static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
-
-  explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from);
-  CodeGeneratorResponse_File(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
-      : CodeGeneratorResponse_File(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
+  public:
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -545,8 +535,22 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   void set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_generated_code_info(::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE value);
   ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE unsafe_arena_release_generated_code_info();
+
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse.File)
  private:
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.compiler.CodeGeneratorResponse.File";
+  }
+
+  explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from);
+  CodeGeneratorResponse_File(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
+      : CodeGeneratorResponse_File(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
   class _Internal;
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<2, 4,
@@ -617,8 +621,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
 
   template <typename = void>
   explicit constexpr CodeGeneratorResponse(::google::protobuf::internal::ConstantInitialized,
-                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                               class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 
   CodeGeneratorResponse(const CodeGeneratorResponse& from) : CodeGeneratorResponse(nullptr, from) {}
   CodeGeneratorResponse(CodeGeneratorResponse&& from) noexcept : CodeGeneratorResponse(nullptr, ::std::move(from)) {}
@@ -701,7 +704,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -709,18 +712,19 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return ByteSizeLong(*this);
   }
   PROTOBUF_ALWAYS_INLINE [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE
-  _InternalSerialize(::uint8_t* PROTOBUF_NULLABLE target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  _InternalSerialize(
+      ::uint8_t* PROTOBUF_NULLABLE target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
-  #else   // PROTOBUF_CUSTOM_VTABLE
+#else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  public:
   [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
@@ -730,19 +734,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
 
- private:
-  static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
-
-  explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from);
-  CodeGeneratorResponse(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
-      : CodeGeneratorResponse(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
+  public:
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -811,8 +803,22 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   void clear_maximum_edition() ;
   [[nodiscard]] ::int32_t maximum_edition() const;
   void set_maximum_edition(::int32_t value);
+
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorResponse)
  private:
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.compiler.CodeGeneratorResponse";
+  }
+
+  explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from);
+  CodeGeneratorResponse(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
+      : CodeGeneratorResponse(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
   class _Internal;
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 5,
@@ -886,8 +892,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
 
   template <typename = void>
   explicit constexpr CodeGeneratorRequest(::google::protobuf::internal::ConstantInitialized,
-                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                               class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 
   CodeGeneratorRequest(const CodeGeneratorRequest& from) : CodeGeneratorRequest(nullptr, from) {}
   CodeGeneratorRequest(CodeGeneratorRequest&& from) noexcept : CodeGeneratorRequest(nullptr, ::std::move(from)) {}
@@ -975,7 +980,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -983,18 +988,19 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     return ByteSizeLong(*this);
   }
   PROTOBUF_ALWAYS_INLINE [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE
-  _InternalSerialize(::uint8_t* PROTOBUF_NULLABLE target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  _InternalSerialize(
+      ::uint8_t* PROTOBUF_NULLABLE target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
-  #else   // PROTOBUF_CUSTOM_VTABLE
+#else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  public:
   [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
@@ -1004,19 +1010,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
 
- private:
-  static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
-
-  explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from);
-  CodeGeneratorRequest(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
-      : CodeGeneratorRequest(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
+  public:
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -1083,8 +1077,22 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   source_file_descriptors() const;
   [[nodiscard]] ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>* PROTOBUF_NONNULL
   mutable_source_file_descriptors();
+
   // @@protoc_insertion_point(class_scope:google.protobuf.compiler.CodeGeneratorRequest)
  private:
+  static ::absl::string_view FullMessageName() {
+    return "google.protobuf.compiler.CodeGeneratorRequest";
+  }
+
+  explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from);
+  CodeGeneratorRequest(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
+      : CodeGeneratorRequest(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
   class _Internal;
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 5,

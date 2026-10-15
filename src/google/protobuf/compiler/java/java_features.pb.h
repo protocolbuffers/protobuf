@@ -177,8 +177,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
 
   template <typename = void>
   explicit constexpr JavaFeatures_NestInFileClassFeature(::google::protobuf::internal::ConstantInitialized,
-                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                               class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 
   JavaFeatures_NestInFileClassFeature(const JavaFeatures_NestInFileClassFeature& from) : JavaFeatures_NestInFileClassFeature(nullptr, from) {}
   JavaFeatures_NestInFileClassFeature(JavaFeatures_NestInFileClassFeature&& from) noexcept : JavaFeatures_NestInFileClassFeature(nullptr, ::std::move(from)) {}
@@ -250,20 +249,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
     return true;
   }
 
- private:
-  static ::absl::string_view FullMessageName() { return "pb.JavaFeatures.NestInFileClassFeature"; }
-
-  explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures_NestInFileClassFeature& from);
-  JavaFeatures_NestInFileClassFeature(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept
-      : JavaFeatures_NestInFileClassFeature(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
-
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
   using NestInFileClass = JavaFeatures_NestInFileClassFeature_NestInFileClass;
@@ -290,8 +275,22 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   }
 
   // accessors -------------------------------------------------------
+
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures.NestInFileClassFeature)
  private:
+  static ::absl::string_view FullMessageName() {
+    return "pb.JavaFeatures.NestInFileClassFeature";
+  }
+
+  explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures_NestInFileClassFeature& from);
+  JavaFeatures_NestInFileClassFeature(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept
+      : JavaFeatures_NestInFileClassFeature(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
   class _Internal;
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<0, 0,
@@ -328,8 +327,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
 
   template <typename = void>
   explicit constexpr JavaFeatures(::google::protobuf::internal::ConstantInitialized,
-                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
-                               class_data);
+                           const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
 
   JavaFeatures(const JavaFeatures& from) : JavaFeatures(nullptr, from) {}
   JavaFeatures(JavaFeatures&& from) noexcept : JavaFeatures(nullptr, ::std::move(from)) {}
@@ -412,7 +410,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
 
   public:
-  #if defined(PROTOBUF_CUSTOM_VTABLE)
+#if defined(PROTOBUF_CUSTOM_VTABLE)
   ABSL_ATTRIBUTE_REINITIALIZES PROTOBUF_ALWAYS_INLINE void Clear() {
     Clear(*this);
   }
@@ -420,18 +418,19 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     return ByteSizeLong(*this);
   }
   PROTOBUF_ALWAYS_INLINE [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE
-  _InternalSerialize(::uint8_t* PROTOBUF_NULLABLE target,
-                     ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL
-                         stream) const {
+  _InternalSerialize(
+      ::uint8_t* PROTOBUF_NULLABLE target,
+      ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const {
     return _InternalSerialize(*this, target, stream);
   }
-  #else   // PROTOBUF_CUSTOM_VTABLE
+#else   // PROTOBUF_CUSTOM_VTABLE
   ABSL_ATTRIBUTE_REINITIALIZES void Clear() final;
   [[nodiscard]] ::size_t ByteSizeLong() const final;
   [[nodiscard]] ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream) const final;
-  #endif  // PROTOBUF_CUSTOM_VTABLE
+#endif  // PROTOBUF_CUSTOM_VTABLE
+  public:
   [[nodiscard]] int GetCachedSize() const {
     return _impl_._cached_size_.Get();
   }
@@ -441,19 +440,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   static void SharedDtor(MessageLite& self);
   void InternalSwap(JavaFeatures* PROTOBUF_NONNULL other);
 
- private:
-  static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
-
-  explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
-  JavaFeatures(
-      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
-      : JavaFeatures(arena) {
-    *this = ::std::move(from);
-  }
-  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
-
- public:
+  public:
 
   [[nodiscard]] ::google::protobuf::Metadata GetMetadata() const;
   // nested types ----------------------------------------------------
@@ -513,8 +500,22 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   void clear_nest_in_file_class() ;
   [[nodiscard]] ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass nest_in_file_class() const;
   void set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
+
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures)
  private:
+  static ::absl::string_view FullMessageName() {
+    return "pb.JavaFeatures";
+  }
+
+  explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
+  JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
+  JavaFeatures(
+      ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
+      : JavaFeatures(arena) {
+    *this = ::std::move(from);
+  }
+  const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL GetClassData() const PROTOBUF_FINAL;
+
   class _Internal;
   using ParseTableT_ =
       ::google::protobuf::internal::TcParseTable<3, 5,

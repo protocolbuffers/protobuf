@@ -19,7 +19,9 @@
 #include <utility>
 #include <vector>
 
+#include "absl/cleanup/cleanup.h"
 #include "absl/container/flat_hash_map.h"
+#include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/ascii.h"
@@ -32,6 +34,7 @@
 #include "absl/strings/strip.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
+#include "google/protobuf/io/zero_copy_stream.h"
 
 namespace google {
 namespace protobuf {
@@ -297,6 +300,36 @@ Printer::Printer(ZeroCopyOutputStream* output, Options options)
   }
 }
 
+Printer::Printer(ZeroCopyOutputStream* output, const Printer& from)
+    : sink_(output), options_(from.options_) {
+  var_lookups_ = from.var_lookups_;
+  annotation_lookups_ = from.annotation_lookups_;
+  substitution_listener_ = from.substitution_listener_;
+}
+
+void Printer::WriteNewline() {
+  sink_.Write("\n");
+  failed_ |= sink_.failed();
+  at_start_of_line_ = true;
+  line_start_variables_.clear();
+}
+
+void Printer::PrintFormatted(absl::string_view text) {
+  bool first = true;
+  for (absl::string_view line : absl::StrSplit(text, '\n')) {
+    if (!first) WriteNewline();
+    first = false;
+
+    // Preprocessor directives always start at column 0; everything else gets
+    // the current indent (applied by WriteRaw() at the start of a line). Empty
+    // lines are no-ops in WriteRaw(), so they get no trailing whitespace.
+    size_t saved_indent = indent_;
+    if (absl::StartsWith(line, "#")) indent_ = 0;
+    PrintRaw(line);
+    indent_ = saved_indent;
+  }
+}
+
 Printer::Printer(ZeroCopyOutputStream* output, char variable_delimiter,
                  AnnotationCollector* annotation_collector)
     : Printer(output, Options{variable_delimiter, annotation_collector}) {}
@@ -481,9 +514,7 @@ void Printer::PrintCodegenTrace(absl::optional<SourceLocation> loc) {
   }
 
   if (!at_start_of_line_) {
-    at_start_of_line_ = true;
-    line_start_variables_.clear();
-    sink_.Write("\n");
+    WriteNewline();
   }
 
   PrintRaw(absl::StrFormat("%s @%s:%d\n", options_.comment_start,
@@ -557,9 +588,7 @@ void Printer::PrintImpl(absl::string_view format,
           skip_next_newline ||
           (fmt.is_raw_string && (at_start_of_line_ && !prev_was_empty));
       if (!should_skip_newline) {
-        line_start_variables_.clear();
-        sink_.Write("\n");
-        at_start_of_line_ = true;
+        WriteNewline();
       }
     }
     skip_next_newline = false;
@@ -584,7 +613,7 @@ void Printer::PrintImpl(absl::string_view format,
       // variable; we rename the `chunk` variable to make this clear below.
       absl::string_view var = chunk.text;
       if (substitution_listener_ != nullptr) {
-        substitution_listener_(var, opts.loc.value_or(SourceLocation()));
+        (*substitution_listener_)(var, opts.loc.value_or(SourceLocation()));
       }
       if (opts.use_curly_brace_substitutions &&
           absl::ConsumePrefix(&var, "{")) {
