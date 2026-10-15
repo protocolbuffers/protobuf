@@ -215,39 +215,11 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
   p->Emit("$field_$ = $from_field$;\n");
 }
 
-void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
-  if (ShouldSplit(field_, options_)) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){arena},
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      decltype($field_$){arena},
-    )cc");
-  }
-}
-
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
     /*decltype($field_$)*/ {},
   )cc");
-}
-
-void FieldGeneratorBase::GenerateCopyAggregateInitializer(
-    io::Printer* p) const {
-  p->Emit(R"cc(
-    decltype($field_$){$from_field$},
-  )cc");
-}
-
-void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (should_split()) {
-    // There is no copy constructor for the `Split` struct, so we need to copy
-    // the value here.
-    Formatter format(p, variables_);
-    format("$field_$ = $from_field$;\n");
-  }
 }
 
 pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {

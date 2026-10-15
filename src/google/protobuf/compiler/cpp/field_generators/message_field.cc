@@ -110,14 +110,11 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
-  void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
-  void GenerateAggregateInitializer(io::Printer* p) const override;
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override;
 
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     p->Emit("$name$_{nullptr}");
@@ -384,15 +381,6 @@ void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
   }
 }
 
-void SingularMessage::GenerateCopyConstructorCode(io::Printer* p) const {
-  ABSL_CHECK(has_hasbit_);
-  p->Emit(R"cc(
-    if (CheckHasBit(from.$has_bits_array$, $has_mask$)) {
-      $this_mutable_field$ = Super_::CopyConstruct(arena, *$from_field$);
-    }
-  )cc");
-}
-
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!is_group()) {
@@ -446,24 +434,6 @@ void SingularMessage::GenerateConstexprAggregateInitializer(
   )cc");
 }
 
-void SingularMessage::GenerateCopyAggregateInitializer(io::Printer* p) const {
-  p->Emit(R"cc(
-    decltype($field_$){nullptr},
-  )cc");
-}
-
-void SingularMessage::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){nullptr},
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      decltype($field_$){nullptr},
-    )cc");
-  }
-}
-
 class OneofMessage : public SingularMessage {
  public:
   OneofMessage(const FieldDescriptor* descriptor, const Options& options)
@@ -510,7 +480,6 @@ class OneofMessage : public SingularMessage {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
-  void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateIsInitialized(io::Printer* p) const override;
   bool NeedsIsInitialized() const override;
   void GenerateMergingCode(io::Printer* p) const override;
@@ -666,15 +635,6 @@ void OneofMessage::GenerateDestructorCode(io::Printer* p) const {
   // behavior.
 }
 
-void OneofMessage::GenerateCopyConstructorCode(io::Printer* p) const {
-  ABSL_CHECK(!has_hasbit_);
-  p->Emit(R"cc(
-    if (from._internal_has_$name$()) {
-      $this_mutable_field$ = Super_::CopyConstruct(arena, *$from_field$);
-    }
-  )cc");
-}
-
 void OneofMessage::GenerateIsInitialized(io::Printer* p) const {
   if (!NeedsIsInitialized()) return;
 
@@ -731,7 +691,6 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
-  void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -999,20 +958,6 @@ void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
   p->Emit(R"cc(
     $field_$.InternalSwap(&other->$field_$);
   )cc");
-}
-
-void RepeatedMessage::GenerateCopyConstructorCode(io::Printer* p) const {
-  // TODO: For split repeated fields we might want to use type
-  // erasure to reduce binary size costs.
-  if (should_split()) {
-    p->Emit(R"cc(
-      if (!from._internal$_weak$_$name$().empty()) {
-        _internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
-            $pb$::MessageLite::internal_visibility(), arena,
-            from._internal$_weak$_$name$());
-      }
-    )cc");
-  }
 }
 
 void RepeatedMessage::GenerateDestructorCode(io::Printer* p) const {

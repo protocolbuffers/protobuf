@@ -134,27 +134,9 @@ class SingularPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      $this_mutable_field$ = $from_field$;
-    )cc");
-  }
-
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       /*decltype($field_$)*/ $kDefault$,
-    )cc");
-  }
-
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){$kDefault$},
-    )cc");
-  }
-
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){},
     )cc");
   }
 
@@ -350,34 +332,9 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     }
   }
 
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        if (!from._internal_$name$().empty()) {
-          _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
-        }
-      )cc");
-    }
-  }
-
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {},
-    )cc");
-  }
-
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-              decltype($field_$){$internal_metadata_offset$},
-            )cc");
-  }
-
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
-    p->Emit(R"cc(
-      decltype($field_$){$from_field$},
     )cc");
   }
 

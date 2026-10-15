@@ -98,12 +98,6 @@ class SingularEnum : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      $this_mutable_field$ = $from_field$;
-    )cc");
-  }
-
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override {
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
@@ -122,24 +116,6 @@ class SingularEnum : public FieldGeneratorBase {
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       /*decltype($field_$)*/ $kDefault$,
-    )cc");
-  }
-
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        decltype(Impl_::Split::$name$_){$kDefault$},
-      )cc");
-    } else {
-      p->Emit(R"cc(
-        decltype($field_$){$kDefault$},
-      )cc");
-    }
-  }
-
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){},
     )cc");
   }
 
@@ -322,19 +298,6 @@ class RepeatedEnum : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-              decltype($field_$){$internal_metadata_offset$},
-            )cc");
-  }
-
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){from._internal_$name$()},
-    )cc");
-  }
-
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     p->Emit({InternalMetadataOffsetSub(p)},
             R"cc(
@@ -360,16 +323,6 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     ABSL_LOG(FATAL) << "Not supported";
-  }
-
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        if (!from._internal_$name$().empty()) {
-          _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
-        }
-      )cc");
-    }
   }
 
   void GenerateAccessorDeclarations(io::Printer* p) const override;

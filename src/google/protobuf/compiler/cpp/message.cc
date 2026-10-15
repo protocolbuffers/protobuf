@@ -192,25 +192,6 @@ std::vector<const Descriptor::ExtensionRange*> SortExtensionRanges(
   return ranges;
 }
 
-bool IsPOD(const FieldDescriptor* field) {
-  if (field->is_repeated() || field->is_extension()) return false;
-  switch (field->cpp_type()) {
-    case FieldDescriptor::CPPTYPE_ENUM:
-    case FieldDescriptor::CPPTYPE_INT32:
-    case FieldDescriptor::CPPTYPE_INT64:
-    case FieldDescriptor::CPPTYPE_UINT32:
-    case FieldDescriptor::CPPTYPE_UINT64:
-    case FieldDescriptor::CPPTYPE_FLOAT:
-    case FieldDescriptor::CPPTYPE_DOUBLE:
-    case FieldDescriptor::CPPTYPE_BOOL:
-      return true;
-    case FieldDescriptor::CPPTYPE_STRING:
-      return false;
-    default:
-      return false;
-  }
-}
-
 // Finds runs of fields for which `predicate` is true.
 // RunMap maps from fields that start each run to the number of fields in that
 // run.  This is optimized for the common case that there are very few runs in
@@ -4112,11 +4093,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
                 } else {
                   ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
                               HasbitMode::kTrueHasbit);
-                  if (check_has_word && IsPOD(field)) {
-                    generator.GenerateCopyConstructorCode(p);
-                  } else {
-                    generator.GenerateMergingCode(p);
-                  }
+                  generator.GenerateMergingCode(p);
                 }
               }}},
             R"cc(

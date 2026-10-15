@@ -138,12 +138,6 @@ class SingularStringView : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){},
-    )cc");
-  }
-
   void GenerateMemberConstexprConstructor(io::Printer* p) const override {
     if (is_inlined()) {
       p->Emit("$name$_{}");
@@ -198,11 +192,9 @@ class SingularStringView : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
-  void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
-  void GenerateAggregateInitializer(io::Printer* p) const override;
 
  private:
   bool EmptyDefault() const { return field_->default_value_string().empty(); }
@@ -427,45 +419,6 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
   )cc");
 }
 
-void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (!(is_inlined() && EmptyDefault()) && !is_oneof() && !use_micro_string()) {
-    ABSL_DCHECK(!is_inlined());
-
-    p->Emit(R"cc(
-      $field_$.InitDefault();
-    )cc");
-
-    if (EmptyDefault()) {
-      p->Emit(R"cc(
-        if ($pbi$::DebugHardenForceCopyDefaultString()) {
-          $field_$.Set("", *this);
-        }
-      )cc");
-    }
-  }
-
-  if (is_inlined()) {
-    p->Emit(R"cc(
-      new (&$this_mutable_field$)::_pbi::InlinedStringField;
-    )cc");
-  }
-
-  p->Emit(
-      {{"hazzer",
-        [&] {
-          if (HasHasbit(field_, options_)) {
-            p->Emit(R"cc(CheckHasBit(from.$has_bits_array$, $has_mask$))cc");
-          } else {
-            p->Emit(R"cc(!from._internal_$name$().empty())cc");
-          }
-        }}},
-      R"cc(
-        if ($hazzer$) {
-          $this_mutable_field$.Set(from._internal_$name$(), this_);
-        }
-      )cc");
-}
-
 void SingularStringView::GenerateDestructorCode(io::Printer* p) const {
   if (is_inlined()) {
     ABSL_DCHECK(!should_split());
@@ -521,23 +474,6 @@ void SingularStringView::GenerateConstexprAggregateInitializer(
           &::_pbi::fixed_address_empty_string,
           ::_pbi::ConstantInitialized{},
       },
-    )cc");
-  }
-}
-
-void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
-    ABSL_CHECK(!is_inlined());
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){},
-    )cc");
-  } else if (!is_inlined()) {
-    p->Emit(R"cc(
-      decltype($field_$){},
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      decltype($field_$){arena},
     )cc");
   }
 }
@@ -620,18 +556,6 @@ class RepeatedStringView : public FieldGeneratorBase {
     if (should_split()) {
       p->Emit(R"cc(
         $this_mutable_field$.DeleteIfNotDefault();
-      )cc");
-    }
-  }
-
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        if (!from._internal_$name$().empty()) {
-          _internal_mutable_$name$()->InternalMergeFromWithArena(
-              $pb$::MessageLite::internal_visibility(), arena,
-              from._internal_$name$());
-        }
       )cc");
     }
   }
