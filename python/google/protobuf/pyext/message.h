@@ -16,10 +16,13 @@
 
 #include <cstdint>
 #include <optional>
+#include <utility>
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
+#include "google/protobuf/pyext/message_tree.h"
 #include "google/protobuf/pyext/weak_value_map.h"
 
 namespace google {
@@ -77,6 +80,12 @@ struct ContainerBase {
   // clang-format off
   PyObject_HEAD
 
+  // Shared pointer to the message tree containing the AccessGuard for the
+  // root of this hierarchy. Never null for an initialized CMessage or
+  // container. Atomic because a sub-message's or container's tree pointer is
+  // updated when it is detached or reparented from its parent.
+  std::atomic<MessageTree*> tree;
+
   // Strong reference to a parent message object. For a CMessage there are three
   // cases:
   // - For a top-level message, this pointer is NULL.
@@ -87,6 +96,9 @@ struct ContainerBase {
   // valid parent CMessage.
   struct CMessage* parent;
   // clang-format on
+
+  MessageTree* GetTree() const { return tree.load(std::memory_order_acquire); }
+  void SetTree(MessageTree* t) { tree.store(t, std::memory_order_release); }
 
   // If this object belongs to a parent message, describes which field it comes
   // from.
@@ -306,6 +318,8 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 PyObject* FindInitializationErrors(CMessage* self);
 
 Message* AssureWritable(CMessage* self);
+
+void UpdateSubtreeTree(CMessage* cmsg, MessageTree* new_tree);
 
 // Returns the message factory for the given message.
 // This is equivalent to message.MESSAGE_FACTORY
