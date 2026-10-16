@@ -79,14 +79,20 @@ class SingularEnum : public FieldGeneratorBase {
   }
 
   void GenerateClearingCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      $field_$ = $kDefault$;
-    )cc");
+    if (should_split()) {
+      p->Emit(R"cc(
+        if (auto* f = $try_mutable_field_$) *f = $kDefault$;
+      )cc");
+    } else {
+      p->Emit(R"cc(
+        $mutable_field_$ = $kDefault$;
+      )cc");
+    }
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $this_mutable_field$ = $from_field$;
+      this_.$mutable_field_$ = $from_field$;
     )cc");
   }
 
@@ -159,13 +165,12 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Enum$ value) {
         $WeakDescriptorSelfPin$;
-        $PrepareSplitMessageForWrite$;
         $assert_valid$;
         if ($not_has_field$) {
           clear_$oneof_name$();
           set_has_$name_internal$();
         }
-        $field_$ = value;
+        $mutable_field_$ = value;
         $annotate_set$;
         // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
       }
@@ -180,7 +185,6 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     p->Emit(R"cc(
       inline void $Msg$::set_$name$($Enum$ value) {
         $WeakDescriptorSelfPin$;
-        $PrepareSplitMessageForWrite$;
         _internal_set_$name_internal$(value);
         $set_hasbit$;
         $annotate_set$;
@@ -193,7 +197,7 @@ void SingularEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       inline void $Msg$::_internal_set_$name_internal$($Enum$ value) {
         $TsanDetectConcurrentMutation$;
         $assert_valid$;
-        $field_$ = value;
+        $mutable_field_$ = value;
       }
     )cc");
   }
@@ -252,7 +256,7 @@ class RepeatedEnum : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit("if (auto* f = $try_mutable_field_$) f->Clear();\n");
     } else {
       p->Emit("$field_$.Clear();\n");
     }
@@ -453,37 +457,18 @@ void RepeatedEnum::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       break;
   }
 
-  if (should_split()) {
-    p->Emit(R"cc(
-      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
-          const {
-        $TsanDetectConcurrentRead$;
-        return *$field_$;
-      }
-      inline $pb$::RepeatedField<int>* $nonnull$
-      $Msg$::_internal_mutable_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        $PrepareSplitMessageForWrite$;
-        if ($field_$.IsDefault()) {
-          $field_$.Set($pb$::Arena::Create<$pb$::RepeatedField<int>>(GetArena()));
-        }
-        return $field_$.Get();
-      }
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
-          const {
-        $TsanDetectConcurrentRead$;
-        return $field_$;
-      }
-      inline $pb$::RepeatedField<int>* $nonnull$
-      $Msg$::_internal_mutable_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        return &$field_$;
-      }
-    )cc");
-  }
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedField<int>& $Msg$::_internal_$name_internal$()
+        const {
+      $TsanDetectConcurrentRead$;
+      return $field_$;
+    }
+    inline $pb$::RepeatedField<int>* $nonnull$
+    $Msg$::_internal_mutable_$name_internal$() {
+      $TsanDetectConcurrentRead$;
+      return &$mutable_field_$;
+    }
+  )cc");
 }
 
 void RepeatedEnum::GenerateSerializeWithCachedSizesToArray(
