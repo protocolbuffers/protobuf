@@ -36,10 +36,10 @@ std::vector<const google::protobuf::FieldDescriptor*> CreateFieldArray(
   return fields;
 }
 
-template <typename ProtoT, typename PredT>
+template <typename ProtoT, typename ProjT>
 std::vector<FieldChunk> CreateAndCollectFields(
-    absl::Span<const char*> field_names, PredT&& predicate) {
-  return CollectFields(CreateFieldArray<ProtoT>(field_names), {}, predicate);
+    absl::Span<const char*> field_names, const ProjT proj) {
+  return CollectFields(CreateFieldArray<ProtoT>(field_names), {}, proj);
 }
 
 TEST(CollectFieldsTest, SingleChunk) {
@@ -47,9 +47,7 @@ TEST(CollectFieldsTest, SingleChunk) {
                                "optional_int64"};
 
   auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return true;
-      });
+      field_names, [](const FieldDescriptor* field) { return true; });
 
   EXPECT_EQ(chunks.size(), 1);
 }
@@ -59,9 +57,7 @@ TEST(CollectFieldsTest, AllDifferentChunks) {
                                "optional_int64"};
 
   auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return false;
-      });
+      field_names, [](const FieldDescriptor* field) { return field; });
 
   EXPECT_EQ(chunks.size(), 3);
 }
@@ -71,10 +67,9 @@ TEST(CollectFieldsTest, RepeatedAndSingular) {
                                "optional_int64"};
 
   auto fields = CreateFieldArray<TestAllTypes>(field_names);
-  auto chunks = CollectFields(
-      fields, {}, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return lhs->is_repeated() == rhs->is_repeated();
-      });
+  auto chunks = CollectFields(fields, {}, [](const FieldDescriptor* field) {
+    return field->is_repeated();
+  });
 
   ASSERT_EQ(chunks.size(), 2);
 

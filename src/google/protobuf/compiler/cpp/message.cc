@@ -3346,11 +3346,7 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   // Group zero-initializable and non-zero-initializable
   // spans of fields without hasbits.
   std::vector<FieldChunk> chunks_without_enclosed_ifs = CollectFields(
-      fields, options_,
-      [](const FieldDescriptor* a, const FieldDescriptor* b) {
-        return CanClearByZeroing(a) == CanClearByZeroing(b);
-      },
-      std::not_fn(needs_enclosing_if));
+      fields, options_, &CanClearByZeroing, std::not_fn(needs_enclosing_if));
 
   for (const FieldChunk& chunk : chunks_without_enclosed_ifs) {
     if (CanClearByZeroing(chunk.fields.front()) && chunk.fields.size() > 1) {
@@ -3368,10 +3364,8 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   absl::c_copy_if(fields, std::back_inserter(enclosing_if_fields),
                   needs_enclosing_if);
   std::vector<FieldChunk> enclosing_if_chunks = CollectFields(
-      enclosing_if_fields, options_,
-      [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
-        return field_layout_.GetHasWordIndex(a) ==
-               field_layout_.GetHasWordIndex(b);
+      enclosing_if_fields, options_, [&](const FieldDescriptor* f) {
+        return field_layout_.GetHasWordIndex(f);
       });
   enclosing_if_chunks = PartitionToMinimizeExpectedBranches(
       std::move(enclosing_if_chunks), options_);
@@ -3995,9 +3989,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
 
   std::vector<FieldChunk> chunks = CollectFields(
       field_layout_.optimized_order(), options_,
-      [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
-        return field_layout_.GetHasWordIndex(a) ==
-               field_layout_.GetHasWordIndex(b);
+      [&](const FieldDescriptor* f) {
+        return field_layout_.GetHasWordIndex(f);
       },
       [&](const auto* f) { return ShouldSplit(f, options_) == is_split; });
   chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
@@ -4814,15 +4807,12 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
   absl::c_sort(
       fixed, [&](auto* a, auto* b) { return fixed_tuple(a) < fixed_tuple(b); });
   std::vector<FieldChunk> fixed_chunks =
-      CollectFields(fixed, options_, [&](const auto* a, const auto* b) {
-        return fixed_tuple(a) == fixed_tuple(b);
-      });
+      CollectFields(fixed, options_, fixed_tuple);
 
   std::vector<FieldChunk> chunks =
-      CollectFields(rest, options_, [&](const auto* a, const auto* b) {
-        return a->is_required() == b->is_required() &&
-               field_layout_.GetHasWordIndex(a) ==
-                   field_layout_.GetHasWordIndex(b);
+      CollectFields(rest, options_, [&](const auto* f) {
+        return std::make_tuple(f->is_required(),
+                               field_layout_.GetHasWordIndex(f));
       });
   chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 

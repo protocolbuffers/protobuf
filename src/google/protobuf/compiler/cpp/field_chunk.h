@@ -38,11 +38,11 @@ struct AlwaysTruePred {
 };
 
 // Breaks down a single chunk of fields into a few chunks that share attributes
-// controlled by "equivalent" predicate. Returns an array of chunks.
-template <typename Predicate, typename Filter = AlwaysTruePred>
+// projected by "proj". Returns an array of chunks.
+template <typename Projector, typename Filter = AlwaysTruePred>
 std::vector<FieldChunk> CollectFields(
     absl::Span<const FieldDescriptor* const> fields, const Options& options,
-    const Predicate& equivalent, const Filter filter = {}) {
+    const Projector proj, const Filter filter = {}) {
   std::vector<FieldChunk> chunks;
   bool force_new_chunk = true;
   for (auto field : fields) {
@@ -52,7 +52,7 @@ std::vector<FieldChunk> CollectFields(
       force_new_chunk = true;
       continue;
     }
-    if (force_new_chunk || !equivalent(chunks.back().fields.back(), field)) {
+    if (force_new_chunk || proj(chunks.back().fields.back()) != proj(field)) {
       force_new_chunk = false;
       chunks.emplace_back(HasHasbit(field, options));
     }
