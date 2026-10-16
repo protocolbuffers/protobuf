@@ -12,6 +12,7 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -48,8 +49,9 @@ class ByTemplate {
       : default_instance_(default_instance) {}
 
   MessageLite* New(Arena* arena) const {
-    return reinterpret_cast<MessageLite*>(
-        Arena::DefaultConstruct<MessageType>(arena));
+    // Through the ClassData, so that `MessageType` may be incomplete (proto_h
+    // forward declarations) and no per type function is instantiated.
+    return NewMessageNoInline(MessageTraits<MessageType>::class_data(), arena);
   }
 
   const MessageLite& Default() const {

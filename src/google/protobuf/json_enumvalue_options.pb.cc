@@ -228,21 +228,23 @@ PROTOBUF_NDEBUG_INLINE JsonEnumValueOptions::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         string_(arena, from.string_) {}
 
-JsonEnumValueOptions::JsonEnumValueOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const JsonEnumValueOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &JsonEnumValueOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  JsonEnumValueOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL JsonEnumValueOptions::CopyConstructImpl_(
+    void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const JsonEnumValueOptions& from = *static_cast<const JsonEnumValueOptions*>(from_msg);
+  if (to == nullptr) {
+    ::google::protobuf::internal::PrefetchCopySource(&from);
+    to = ::new (::google::protobuf::internal::AllocateMessageMemory(arena, sizeof(JsonEnumValueOptions)))
+        JsonEnumValueOptions(arena, ::google::protobuf::internal::ConstructBaseOnly());
+  }
+  JsonEnumValueOptions& this_ = *static_cast<JsonEnumValueOptions*>(to);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:pb.enumvalue.JsonEnumValueOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE JsonEnumValueOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -402,10 +404,6 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace enumvalue
 }  // namespace pb
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google
 // @@protoc_insertion_point(global_scope)
 #include "google/protobuf/port_undef.inc"
 // clang-format on

@@ -759,20 +759,21 @@ PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         suffix_(arena, from.suffix_) {}
 
-Version::Version(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const Version& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &Version_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  Version& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Version::CopyConstructImpl_(
+    void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const Version& from = *static_cast<const Version*>(from_msg);
+  if (to == nullptr) {
+    ::google::protobuf::internal::PrefetchCopySource(&from);
+    to = ::new (::google::protobuf::internal::AllocateMessageMemory(arena, sizeof(Version)))
+        Version(arena, ::google::protobuf::internal::ConstructBaseOnly());
+  }
+  Version& this_ = *static_cast<Version*>(to);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&this_._impl_) +
                offsetof(Impl_, major_),
            reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, major_),
@@ -781,6 +782,7 @@ Version::Version(
                sizeof(Impl_::patch_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.Version)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -999,10 +1001,30 @@ void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 // ===================================================================
 
+::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_proto_file()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::FileDescriptorProto* _add =
+      _internal_mutable_proto_file()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
+  return _add;
+}
 void CodeGeneratorRequest::clear_proto_file() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.proto_file_.Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+}
+::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_source_file_descriptors()
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  ::google::protobuf::FileDescriptorProto* _add =
+      _internal_mutable_source_file_descriptors()->InternalAddWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
+  return _add;
 }
 void CodeGeneratorRequest::clear_source_file_descriptors() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
@@ -1046,25 +1068,27 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
         }
      {}
 
-CodeGeneratorRequest::CodeGeneratorRequest(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const CodeGeneratorRequest& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorRequest_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  CodeGeneratorRequest& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL CodeGeneratorRequest::CopyConstructImpl_(
+    void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const CodeGeneratorRequest& from = *static_cast<const CodeGeneratorRequest*>(from_msg);
+  if (to == nullptr) {
+    ::google::protobuf::internal::PrefetchCopySource(&from);
+    to = ::new (::google::protobuf::internal::AllocateMessageMemory(arena, sizeof(CodeGeneratorRequest)))
+        CodeGeneratorRequest(arena, ::google::protobuf::internal::ConstructBaseOnly());
+  }
+  CodeGeneratorRequest& this_ = *static_cast<CodeGeneratorRequest*>(to);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.compiler_version_ = (CheckHasBit(cached_has_bits, 0x00000008U))
-                 ? Super_::CopyConstruct(arena, *from._impl_.compiler_version_)
-                 : nullptr;
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::uint32_t cached_has_bits = this_._impl_._has_bits_[0];
+  this_._impl_.compiler_version_ =
+      (CheckHasBit(cached_has_bits, 0x00000008U)) ? Super_::CopyConstruct(arena, *from._impl_.compiler_version_)
+                  : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -1362,6 +1386,15 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
 }
 // ===================================================================
 
+::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  auto*& sub = _impl_.generated_code_info_;
+  if (sub == nullptr) {
+    auto* p = Super_::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
+    sub = p;
+  }
+  return sub;
+}
 void CodeGeneratorResponse_File::clear_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (auto* sub = _impl_.generated_code_info_) sub->Clear();
@@ -1385,25 +1418,27 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
         insertion_point_(arena, from.insertion_point_),
         content_(arena, from.content_) {}
 
-CodeGeneratorResponse_File::CodeGeneratorResponse_File(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const CodeGeneratorResponse_File& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorResponse_File_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  CodeGeneratorResponse_File& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL CodeGeneratorResponse_File::CopyConstructImpl_(
+    void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const CodeGeneratorResponse_File& from = *static_cast<const CodeGeneratorResponse_File*>(from_msg);
+  if (to == nullptr) {
+    ::google::protobuf::internal::PrefetchCopySource(&from);
+    to = ::new (::google::protobuf::internal::AllocateMessageMemory(arena, sizeof(CodeGeneratorResponse_File)))
+        CodeGeneratorResponse_File(arena, ::google::protobuf::internal::ConstructBaseOnly());
+  }
+  CodeGeneratorResponse_File& this_ = *static_cast<CodeGeneratorResponse_File*>(to);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.generated_code_info_ = (CheckHasBit(cached_has_bits, 0x00000008U))
-                 ? Super_::CopyConstruct(arena, *from._impl_.generated_code_info_)
-                 : nullptr;
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::uint32_t cached_has_bits = this_._impl_._has_bits_[0];
+  this_._impl_.generated_code_info_ =
+      (CheckHasBit(cached_has_bits, 0x00000008U)) ? Super_::CopyConstruct(arena, *from._impl_.generated_code_info_)
+                  : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -1659,20 +1694,21 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
         ,
         error_(arena, from.error_) {}
 
-CodeGeneratorResponse::CodeGeneratorResponse(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const CodeGeneratorResponse& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorResponse_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  CodeGeneratorResponse& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL CodeGeneratorResponse::CopyConstructImpl_(
+    void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const CodeGeneratorResponse& from = *static_cast<const CodeGeneratorResponse*>(from_msg);
+  if (to == nullptr) {
+    ::google::protobuf::internal::PrefetchCopySource(&from);
+    to = ::new (::google::protobuf::internal::AllocateMessageMemory(arena, sizeof(CodeGeneratorResponse)))
+        CodeGeneratorResponse(arena, ::google::protobuf::internal::ConstructBaseOnly());
+  }
+  CodeGeneratorResponse& this_ = *static_cast<CodeGeneratorResponse*>(to);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&this_._impl_) +
                offsetof(Impl_, supported_features_),
            reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, supported_features_),
@@ -1681,6 +1717,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(
                sizeof(Impl_::maximum_edition_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -1934,10 +1971,6 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRIC
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace compiler
-}  // namespace protobuf
-}  // namespace google
-namespace google {
-namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

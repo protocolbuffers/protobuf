@@ -98,6 +98,17 @@ namespace internal {
 
 struct PrivateAccess;
 
+// Allocates `size` bytes for a message on `arena`, or on the heap when `arena`
+// is null. Kept out of line so that the generated `T::CopyConstructImpl_()`
+// does not inline the arena fast path into every message type. Defined in
+// message_lite.cc.
+PROTOBUF_EXPORT void* AllocateMessageMemory(Arena* arena, size_t size);
+
+// Tag for the generated constructor that initializes only the message base
+// (class data / vtable and `_internal_metadata_`) and leaves `_impl_` to be
+// constructed in place by `T::CopyConstructImpl_()`.
+struct ConstructBaseOnly {};
+
 // Allow easy change to regular int on platforms where the atomic might have a
 // perf impact.
 //
@@ -798,9 +809,13 @@ class PROTOBUF_EXPORT MessageLite {
     }
   }
 
+  // Creates a generated message for generated code, through its `ClassData` so
+  // that `T` may be incomplete (proto_h forward declarations).
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* DefaultConstruct(Arena* arena) {
-    return static_cast<T*>(Arena::DefaultConstruct<T>(arena));
+    // reinterpret_cast because `T` may be incomplete here.
+    return reinterpret_cast<T*>(internal::NewMessageNoInline(
+        internal::MessageTraits<T>::class_data(), arena));
   }
 
   template <typename T>
@@ -817,9 +832,11 @@ class PROTOBUF_EXPORT MessageLite {
     }
   }
 
+  // Copy constructs a generated message through its out of line
+  // `T::CopyConstructImpl_()`.
   template <typename T>
   PROTOBUF_ALWAYS_INLINE static T* CopyConstruct(Arena* arena, const T& from) {
-    return static_cast<T*>(Arena::CopyConstruct<T>(arena, &from));
+    return static_cast<T*>(T::CopyConstructImpl_(nullptr, arena, &from));
   }
 
   // As above, but for fields that use base class type. Eg foreign weak fields.

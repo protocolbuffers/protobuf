@@ -536,6 +536,47 @@ TEST_F(CppGeneratorTest, MapOptionsDeterministicSerialization) {
   EXPECT_EQ(file_content1, file_content2);
 }
 
+TEST_F(CppGeneratorTest, DllExportConstructsCrossFileMessagesOutOfLine) {
+  CreateTempFile("a.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    message A {
+      optional int32 x = 1;
+    })schema");
+  CreateTempFile("b.proto",
+                 R"schema(
+    syntax = "proto2";
+    package test;
+    import "a.proto";
+    message B {
+      optional A single = 1;
+      repeated A rep = 2;
+      oneof o {
+        A one = 3;
+      }
+      optional B same_file = 4;
+    })schema");
+
+  // With DLL linkage there are no constexpr MessageTraits, so the accessors
+  // that construct a cross-file message, which proto_h only forward declares,
+  // have to be defined in the .pb.cc. Same-file messages stay inline.
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=dllexport_decl=TEST_EXPORT,proto_h:$tmpdir a.proto b.proto");
+  ExpectNoErrors();
+  for (absl::string_view accessor :
+       {"B::_internal_mutable_single()", "B::add_rep()",
+        "B::_internal_mutable_one()"}) {
+    ExpectFileContentNotContainsSubstring("b.proto.h", accessor);
+    ExpectFileContentContainsSubstring("b.pb.cc", accessor);
+  }
+  ExpectFileContentContainsSubstring("b.proto.h",
+                                     "B::_internal_mutable_same_file()");
+  ExpectFileContentNotContainsSubstring("b.pb.cc",
+                                        "B::_internal_mutable_same_file()");
+}
+
 
 }  // namespace
 }  // namespace cpp

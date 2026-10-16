@@ -586,48 +586,6 @@ TEST_F(ArenaTest, GetConstructTypeWorks) {
   EXPECT_EQ(CT::kUnknown, (Peer::GetConstructType<int, const int&>()));
 }
 
-class DispatcherTestProto : public Message {
- public:
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-  // For the test below to construct.
-  explicit constexpr DispatcherTestProto(std::in_place_t)
-      : Message(static_cast<internal::ClassData*>(nullptr)) {}
-  explicit DispatcherTestProto(Arena*) : Message(nullptr, nullptr) {
-    ABSL_LOG(FATAL);
-  }
-  DispatcherTestProto(Arena*, const DispatcherTestProto&)
-      : Message(nullptr, nullptr) {
-    ABSL_LOG(FATAL);
-  }
-  const internal::ClassData* GetClassData() const PROTOBUF_FINAL {
-    ABSL_LOG(FATAL);
-    return nullptr;
-  }
-};
-DispatcherTestProto dispatcher_test_proto_instance(std::in_place);
-
-// We use a specialization to inject behavior for the test.
-// This test is very intrusive and will have to be fixed if we change the
-// implementation of CreateMessage.
-absl::string_view hook_called;
-template <>
-void* Arena::DefaultConstruct<DispatcherTestProto>(Arena*) {
-  hook_called = "default";
-  return &dispatcher_test_proto_instance;
-}
-template <>
-void* Arena::CopyConstruct<DispatcherTestProto>(Arena*, const void*) {
-  hook_called = "copy";
-  return &dispatcher_test_proto_instance;
-}
-template <>
-DispatcherTestProto* Arena::CreateArenaCompatible<DispatcherTestProto, int>(
-    Arena*, int&&) {
-  hook_called = "fallback";
-  return &dispatcher_test_proto_instance;
-}
-
 TEST_F(ArenaTest, CreateArenaConstructable) {
   TestAllTypes original;
   TestUtil::SetAllFields(&original);
@@ -661,31 +619,6 @@ TEST_F(ArenaTest, CreateRepeatedPtrField) {
   EXPECT_EQ(repeated->GetArena(), arena());
   EXPECT_EQ(repeated->Get(0).GetArena(), arena());
   EXPECT_EQ(repeated->Get(0).optional_nested_message().GetArena(), arena());
-}
-
-TEST_F(ArenaTest, CreateMessageDispatchesToSpecialFunctions) {
-  hook_called = "";
-  (void)Arena::Create<DispatcherTestProto>(nullptr);
-  EXPECT_EQ(hook_called, "default");
-
-  DispatcherTestProto& ref = dispatcher_test_proto_instance;
-  const DispatcherTestProto& cref = ref;
-
-  hook_called = "";
-  (void)Arena::Create<DispatcherTestProto>(nullptr);
-  EXPECT_EQ(hook_called, "default");
-
-  hook_called = "";
-  (void)Arena::Create<DispatcherTestProto>(nullptr, ref);
-  EXPECT_EQ(hook_called, "copy");
-
-  hook_called = "";
-  (void)Arena::Create<DispatcherTestProto>(nullptr, cref);
-  EXPECT_EQ(hook_called, "copy");
-
-  hook_called = "";
-  (void)Arena::Create<DispatcherTestProto>(nullptr, 1);
-  EXPECT_EQ(hook_called, "fallback");
 }
 
 TEST_F(ArenaTest, Parsing) {

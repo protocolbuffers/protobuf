@@ -638,6 +638,7 @@ cc_library(
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":internal_visibility",
+        ":message_traits",
         ":port",
         ":string_block",
         "//src/google/protobuf/stubs:lite",

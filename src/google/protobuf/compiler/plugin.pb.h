@@ -292,7 +292,18 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from);
+  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &Version_globals_)) {
+    CopyConstructImpl_(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl_(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                     const void* PROTOBUF_NONNULL from_msg);
+  explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                 ::google::protobuf::internal::ConstructBaseOnly)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &Version_globals_)) {}
   Version(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
       : Version(arena) {
@@ -528,7 +539,18 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from);
+  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorResponse_File_globals_)) {
+    CopyConstructImpl_(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl_(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                     const void* PROTOBUF_NONNULL from_msg);
+  explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                 ::google::protobuf::internal::ConstructBaseOnly)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorResponse_File_globals_)) {}
   CodeGeneratorResponse_File(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
       : CodeGeneratorResponse_File(arena) {
@@ -787,7 +809,18 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from);
+  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorResponse_globals_)) {
+    CopyConstructImpl_(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl_(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                     const void* PROTOBUF_NONNULL from_msg);
+  explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                 ::google::protobuf::internal::ConstructBaseOnly)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorResponse_globals_)) {}
   CodeGeneratorResponse(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
       : CodeGeneratorResponse(arena) {
@@ -1047,7 +1080,18 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from);
+  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorRequest_globals_)) {
+    CopyConstructImpl_(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl_(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                     const void* PROTOBUF_NONNULL from_msg);
+  explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                 ::google::protobuf::internal::ConstructBaseOnly)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorRequest_globals_)) {}
   CodeGeneratorRequest(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
       : CodeGeneratorRequest(arena) {
@@ -1443,16 +1487,6 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
   return _internal_mutable_proto_file()->Mutable(index);
 }
-inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_proto_file()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FileDescriptorProto* _add =
-      _internal_mutable_proto_file()->InternalAddWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
-  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
-  return _add;
-}
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& CodeGeneratorRequest::proto_file() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_list:google.protobuf.compiler.CodeGeneratorRequest.proto_file)
@@ -1492,16 +1526,6 @@ inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRe
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
   // @@protoc_insertion_point(field_mutable:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
   return _internal_mutable_source_file_descriptors()->Mutable(index);
-}
-inline ::google::protobuf::FileDescriptorProto* PROTOBUF_NONNULL CodeGeneratorRequest::add_source_file_descriptors()
-    ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  ::google::protobuf::FileDescriptorProto* _add =
-      _internal_mutable_source_file_descriptors()->InternalAddWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), GetArena());
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
-  // @@protoc_insertion_point(field_add:google.protobuf.compiler.CodeGeneratorRequest.source_file_descriptors)
-  return _add;
 }
 inline const ::google::protobuf::RepeatedPtrField<::google::protobuf::FileDescriptorProto>& CodeGeneratorRequest::source_file_descriptors() const
     ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -1894,15 +1918,6 @@ inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NULLABLE CodeGeneratorRes
 
   ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
   return ::std::exchange(_impl_.generated_code_info_, nullptr);
-}
-inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::_internal_mutable_generated_code_info() {
-  ::google::protobuf::internal::TSanWrite(&_impl_);
-  auto*& sub = _impl_.generated_code_info_;
-  if (sub == nullptr) {
-    auto* p = Super_::DefaultConstruct<::google::protobuf::GeneratedCodeInfo>(GetArena());
-    sub = p;
-  }
-  return sub;
 }
 inline ::google::protobuf::GeneratedCodeInfo* PROTOBUF_NONNULL CodeGeneratorResponse_File::mutable_generated_code_info()
     ABSL_ATTRIBUTE_LIFETIME_BOUND {

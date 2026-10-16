@@ -2165,7 +2165,22 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
           $decl_annotate$;
 
           explicit $Msg$($pb$::Arena* $nullable$ arena);
-          $Msg$($pb$::Arena* $nullable$ arena, const $Msg$& from);
+          $Msg$($pb$::Arena* $nullable$ arena, const $Msg$& from)
+              : Super_(arena, $pbi$::MessageGlobalsBase::GetClassData(
+                                  &$msg_globals$)) {
+            CopyConstructImpl_(this, arena, &from);
+          }
+          //~ Out of line body shared by the constructor above (`to == this`)
+          //~ and Arena::CopyConstruct<$Msg$> (`to == nullptr`, allocates).
+          static void* $nonnull$
+          CopyConstructImpl_(void* $nullable$ to, $pb$::Arena* $nullable$ arena,
+                             const void* $nonnull$ from_msg);
+          //~ Base-only constructor used by `CopyConstructImpl_()` when it
+          //~ allocates the message itself; `_impl_` is constructed in place.
+          explicit $Msg$($pb$::Arena* $nullable$ arena,
+                         $pbi$::ConstructBaseOnly)
+              : Super_(arena, $pbi$::MessageGlobalsBase::GetClassData(
+                                  &$msg_globals$)) {}
           $Msg$(
               //~
               $pb$::Arena* $nullable$ arena, $Msg$&& from) noexcept
@@ -2915,7 +2930,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
       if (first != last) {
         p->Emit({{"first", FieldName(first)}, {"last", FieldName(last)}},
                 R"cc(
-                  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+                  ::memcpy(reinterpret_cast<char*>(&this_._impl_) +
                                offsetof(Impl_, $first$_),
                            reinterpret_cast<const char*>(&from._impl_) +
                                offsetof(Impl_, $first$_),
@@ -2926,7 +2941,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
       } else {
         p->Emit(FieldVars(first, options_),
                 R"cc(
-                  $field_$ = $from_field$;
+                  $this_mutable_field$ = $from_field$;
                 )cc");
       }
       first = nullptr;
@@ -2940,7 +2955,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     if (has_bit_word_index != has_word_index) {
       p->Emit({{"declare", has_bit_word_index < 0 ? "::uint32_t " : ""},
                {"index", has_word_index}},
-              "$declare$cached_has_bits = _impl_._has_bits_[$index$];\n");
+              "$declare$cached_has_bits = this_._impl_._has_bits_[$index$];\n");
       has_bit_word_index = has_word_index;
     }
   };
@@ -2961,9 +2976,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field_$ = ($has_msg$)
-                             ? Super_::CopyConstruct(arena, *$from_field$)
-                             : nullptr;
+              $this_mutable_field$ =
+                  ($has_msg$) ? Super_::CopyConstruct(arena, *$from_field$)
+                              : nullptr;
             )cc");
   };
 
@@ -3012,7 +3027,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
               }
             }}},
           R"cc(
-            switch ($name$_case()) {
+            switch (this_.$name$_case()) {
               case $NAME$_NOT_SET:
                 break;
                 $cases$;
@@ -3023,8 +3038,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   if (descriptor_->extension_range_count() > 0) {
     p->Emit(R"cc(
-      _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
-                                    from.GetArena());
+      this_._impl_._extensions_.MergeFrom(arena, &this_,
+                                          from._impl_._extensions_,
+                                          from.GetArena());
     )cc");
   }
 
@@ -3043,6 +3059,22 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     )cc");
   }
 }
+
+namespace {
+// Emits the prologue of `$Msg$::CopyConstructImpl_()`: binds `from` and binds
+// `this_` to `to`, or to a newly allocated message when `to` is null.
+void EmitCopyConstructThis(io::Printer* p) {
+  p->Emit(R"cc(
+    const $Msg$& from = *static_cast<const $Msg$*>(from_msg);
+    if (to == nullptr) {
+      $pbi$::PrefetchCopySource(&from);
+      to = ::new ($pbi$::AllocateMessageMemory(arena, sizeof($Msg$)))
+          $Msg$(arena, $pbi$::ConstructBaseOnly());
+    }
+    $Msg$& this_ = *static_cast<$Msg$*>(to);
+  )cc");
+}
+}  // namespace
 
 void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   if (!HasSimpleBaseClass(descriptor_, options_)) {
@@ -3063,7 +3095,8 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   auto copy_construct_impl = [&] {
     if (!HasSimpleBaseClass(descriptor_, options_)) {
       p->Emit(R"cc(
-        new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+        ::new (&this_._impl_)
+            Impl_(internal_visibility(), arena, from._impl_, from);
       )cc");
     }
   };
@@ -3072,7 +3105,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
     if (ShouldForceAllocationOnConstruction(descriptor_, options_)) {
       p->Emit(R"cc(
         if ($pbi$::DebugHardenForceAllocationOnConstruction()) {
-          $mutable_unknown_fields$;
+          this_.$mutable_unknown_fields$;
         }
       )cc");
     }
@@ -3083,7 +3116,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
       case ArenaDtorNeeds::kRequired: {
         p->Emit(R"cc(
           if (arena != nullptr) {
-            arena->OwnCustomDestructor(this, &$Msg$::ArenaDtor);
+            arena->OwnCustomDestructor(&this_, &$Msg$::ArenaDtor);
           }
         )cc");
         break;
@@ -3096,21 +3129,14 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   p->Emit({{"copy_construct_impl", copy_construct_impl},
            {"copy_init_fields", [&] { GenerateCopyInitFields(p); }},
            {"force_allocation", force_allocation},
-           {"maybe_register_arena_dtor", maybe_register_arena_dtor}},
+           {"maybe_register_arena_dtor", maybe_register_arena_dtor},
+           {"copy_construct_this", [&] { EmitCopyConstructThis(p); }}},
           R"cc(
-            $Msg$::$Msg$(
-                //~ force alignment
-                $pb$::Arena* $nullable$ arena,
-                //~ force alignment
-                const $Msg$& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-                : Super_(arena, &$globals$.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-                : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-              $Msg$& this_ [[maybe_unused]] = *this;
-              _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+            PROTOBUF_NOINLINE void* $nonnull$ $Msg$::CopyConstructImpl_(
+                void* $nullable$ to, $pb$::Arena* $nullable$ arena,
+                const void* $nonnull$ from_msg) {
+              $copy_construct_this$;
+              this_._internal_metadata_.MergeFrom<$unknown_fields_type$>(
                   from._internal_metadata_);
               $copy_construct_impl$;
               $copy_init_fields$;
@@ -3118,6 +3144,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
               $maybe_register_arena_dtor$;
 
               // @@protoc_insertion_point(copy_constructor:$full_name$)
+              return &this_;
             }
           )cc");
 }
@@ -3162,28 +3189,30 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
     // code size and also cuts down on the complexity of implicit weak fields.
     // We might eventually want to do this for all lite protos.
     p->Emit(R"cc(
-      $Msg$::$Msg$(
-          //~ Force alignment
-          $pb$::Arena* $nullable$ arena, const $Msg$& from)
-          : $Msg$(arena) {
-        MergeFrom(from);
+      PROTOBUF_NOINLINE void* $nonnull$ $Msg$::CopyConstructImpl_(
+          void* $nullable$ to, $pb$::Arena* $nullable$ arena,
+          const void* $nonnull$ from_msg) {
+        if (to == nullptr) {
+          to = $pbi$::AllocateMessageMemory(arena, sizeof($Msg$));
+        }
+        auto* this_ = ::new (to) $Msg$(arena);
+        this_->MergeFrom(*static_cast<const $Msg$*>(from_msg));
+        return this_;
       }
     )cc");
   } else if (CanUseTrivialCopy()) {
-    p->Emit(R"cc(
-      $Msg$::$Msg$(
-          //~ Force alignment
-          $pb$::Arena* $nullable$ arena, const $Msg$& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-          : Super_(arena, &$globals$.class_data),
-#else   // PROTOBUF_CUSTOM_VTABLE
-          : Super_(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-            _impl_(from._impl_) {
-        _internal_metadata_.MergeFrom<$unknown_fields_type$>(
-            from._internal_metadata_);
-      }
-    )cc");
+    p->Emit({{"copy_construct_this", [&] { EmitCopyConstructThis(p); }}},
+            R"cc(
+              PROTOBUF_NOINLINE void* $nonnull$ $Msg$::CopyConstructImpl_(
+                  void* $nullable$ to, $pb$::Arena* $nullable$ arena,
+                  const void* $nonnull$ from_msg) {
+                $copy_construct_this$;
+                new (&this_._impl_) Impl_(from._impl_);
+                this_._internal_metadata_.MergeFrom<$unknown_fields_type$>(
+                    from._internal_metadata_);
+                return &this_;
+              }
+            )cc");
   } else {
     GenerateArenaEnabledCopyConstructor(p);
   }
@@ -3214,23 +3243,6 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
   // Generate the arena-specific destructor code.
   if (NeedsArenaDestructor() > ArenaDtorNeeds::kNone) {
     GenerateArenaDestructorCode(p);
-  }
-}
-
-void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
-  auto v = p->WithVars(ClassVars(descriptor_, options_));
-  auto t = p->WithVars(MakeTrackerCalls(descriptor_, options_));
-  Formatter format(p);
-  if (ShouldGenerateExternSpecializations(options_) &&
-      ShouldGenerateClass(descriptor_, options_)) {
-    p->Emit(R"(
-      template void* $nonnull$ Arena::DefaultConstruct<$classtype$>(Arena* $nullable$);
-    )");
-    if (!IsMapEntryMessage(descriptor_)) {
-      p->Emit(R"(
-        template void* $nonnull$ Arena::CopyConstruct<$classtype$>(Arena* $nullable$, const void* $nonnull$);
-      )");
-    }
   }
 }
 

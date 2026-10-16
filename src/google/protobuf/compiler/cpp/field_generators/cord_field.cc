@@ -110,7 +110,8 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     auto vars = p->WithVars(variables_);
     p->Emit(R"cc(
-      $field_$ = $pb$::Arena::Create<absl::Cord>(arena, *$from_field$);
+      $this_mutable_field$ =
+          $pb$::Arena::Create<absl::Cord>(arena, *$from_field$);
     )cc");
   }
 };

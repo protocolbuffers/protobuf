@@ -1144,6 +1144,15 @@ inline bool ShouldGenerateExternSpecializations(const Options& options) {
   return !options.opensource_runtime;
 }
 
+// Whether the generated headers specialize `MessageTraits` with constexpr
+// pointers to the message globals, next to the forward declarations of the
+// messages. Without the specializations (DLL linkage, where a constexpr
+// pointer into another DLL is not possible), `MessageTraits<T>::class_data()`
+// falls back to `T::default_instance()` and needs the complete type.
+inline bool HasConstexprMessageTraits(const Options& options) {
+  return options.dllexport_decl.empty();
+}
+
 struct OneOfRangeImpl {
   struct Iterator {
     using iterator_category = std::forward_iterator_tag;
