@@ -164,8 +164,7 @@ absl::StatusOr<absl::Span<char>> DecodeBase64InPlace(absl::Span<char> base64) {
     }
   }
 
-  return absl::Span<char>(base64.data(),
-                          static_cast<size_t>(out - base64.data()));
+  return absl::MakeSpan(base64).first(static_cast<size_t>(out - base64.data()));
 }
 
 template <typename T>
