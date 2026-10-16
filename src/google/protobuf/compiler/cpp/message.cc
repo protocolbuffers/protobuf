@@ -3395,40 +3395,74 @@ void MessageGenerator::GenerateSourceInProto2Namespace(io::Printer* p) {
 }
 
 void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
-  // The maximum number of bytes we will memset to zero without checking their
-  // hasbit to see if a zero-init is necessary.
-  const int kMaxUnconditionalPrimitiveBytesClear = 4;
+  // It's faster to just overwrite primitive types, but we should only
+  // clear strings and messages if they were set.
+  //
+  // TODO:  Let the CppFieldGenerator decide this somehow.
+  const auto emit_memset = [&](const FieldDescriptor* start,
+                               const FieldDescriptor* end) {
+    p->Emit(
+        {
+            {"Impl", is_split ? "Impl_::Split" : "Impl_"},
+            {"start", FieldMemberName(start, is_split)},
+            {"start_field", FieldName(start)},
+            {"end_field", FieldName(end)},
+        },
+        R"cc(
+          ::memset(&this_.$start$, 0,
+                   PROTOBUF_FIELD_OFFSET($Impl$, $end_field$_) -
+                       PROTOBUF_FIELD_OFFSET($Impl$, $start_field$_) +
+                       sizeof($Impl$::$end_field$_));
+        )cc");
+  };
+  const auto emit_clear_field = [&](const FieldDescriptor* field) {
+    field_generators_.get(field).GenerateMessageClearingCode(p);
+  };
+  const auto needs_enclosing_if = [&](const FieldDescriptor* f) {
+    return ShouldGenerateEnclosingIf(*f);
+  };
+
+  std::vector<const FieldDescriptor*> fields;
+  absl::c_copy_if(field_layout_.optimized_order(), std::back_inserter(fields),
+                  [&](const FieldDescriptor* f) {
+                    return ShouldSplit(f, options_) == is_split;
+                  });
+
+  // Group zero-initializable and non-zero-initializable
+  // spans of fields without hasbits.
+  std::vector<FieldChunk> chunks_without_enclosed_ifs = CollectFields(
+      fields, options_,
+      [](const FieldDescriptor* a, const FieldDescriptor* b) {
+        return CanClearByZeroing(a) == CanClearByZeroing(b);
+      },
+      std::not_fn(needs_enclosing_if));
+
+  for (const FieldChunk& chunk : chunks_without_enclosed_ifs) {
+    if (CanClearByZeroing(chunk.fields.front()) && chunk.fields.size() > 1) {
+      emit_memset(chunk.fields.front(), chunk.fields.back());
+    } else {
+      for (const FieldDescriptor* field : chunk.fields) {
+        emit_clear_field(field);
+      }
+    }
+  }
 
   // Collect fields into chunks. Each chunk may have an if() condition that
   // checks all hasbits in the chunk and skips it if none are set.
-  int zero_init_bytes = 0;
-  for (const auto& field : field_layout_.optimized_order()) {
-    if (CanClearByZeroing(field)) {
-      zero_init_bytes += EstimateAlignmentSize(field);
-    }
-  }
-  bool merge_zero_init = zero_init_bytes > kMaxUnconditionalPrimitiveBytesClear;
-  int chunk_count = 0;
-
-  std::vector<FieldChunk> chunks = CollectFields(
-      field_layout_.optimized_order(), options_,
+  std::vector<const FieldDescriptor*> enclosing_if_fields;
+  absl::c_copy_if(fields, std::back_inserter(enclosing_if_fields),
+                  needs_enclosing_if);
+  std::vector<FieldChunk> enclosing_if_chunks = CollectFields(
+      enclosing_if_fields, options_,
       [&](const FieldDescriptor* a, const FieldDescriptor* b) -> bool {
-        chunk_count++;
-        // This predicate guarantees that there is only a single zero-init
-        // (memset) per chunk, and if present it will be at the beginning.
-        bool same =
-            field_layout_.GetHasWordIndex(a) ==
-                field_layout_.GetHasWordIndex(b) &&
-            (CanClearByZeroing(a) == CanClearByZeroing(b) ||
-             (CanClearByZeroing(a) && (chunk_count == 1 || merge_zero_init)));
-        if (!same) chunk_count = 0;
-        return same;
-      },
-      [&](auto* f) { return ShouldSplit(f, options_) == is_split; });
-  chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
+        return field_layout_.GetHasWordIndex(a) ==
+               field_layout_.GetHasWordIndex(b);
+      });
+  enclosing_if_chunks = PartitionToMinimizeExpectedBranches(
+      std::move(enclosing_if_chunks), options_);
 
-  auto it = chunks.begin();
-  auto end = chunks.end();
+  auto it = enclosing_if_chunks.begin();
+  auto end = enclosing_if_chunks.end();
   int cached_has_word_index = -1;
 
   while (it != end) {
@@ -3439,105 +3473,38 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
     while (it != next) {
       const std::vector<const FieldDescriptor*>& fields = it->fields;
 
-      const FieldDescriptor* memset_start = nullptr;
-      const FieldDescriptor* memset_end = nullptr;
-      bool saw_non_zero_init = false;
-
-      for (const auto& field : fields) {
-        if (CanClearByZeroing(field)) {
-          ABSL_CHECK(!saw_non_zero_init);
-          if (!memset_start) memset_start = field;
-          memset_end = field;
-        } else {
-          saw_non_zero_init = true;
-        }
+      const int has_word_index =
+          field_layout_.GetHasWordIndex(fields.front()).value();
+      if (cached_has_word_index != has_word_index) {
+        cached_has_word_index = has_word_index;
+        p->Emit({{"cached_has_word_index", cached_has_word_index}}, R"cc(
+          cached_has_bits = this_.$has_bits$[$cached_has_word_index$];
+        )cc");
       }
 
-      const auto maybe_emit_update_cached_hasbits = [&](int has_word_index) {
-        if (cached_has_word_index != has_word_index) {
-          cached_has_word_index = has_word_index;
-          p->Emit({{"cached_has_word_index", cached_has_word_index}}, R"cc(
-            cached_has_bits = this_.$has_bits$[$cached_has_word_index$];
-          )cc");
-        }
-      };
-
       const auto print_clear_field_chunk = [&] {
-        if (memset_start) {
-          if (memset_start == memset_end) {
-            // For clarity, do not memset a single field.
-            field_generators_.get(memset_start).GenerateMessageClearingCode(p);
-          } else {
-            p->Emit(
-                {
-                    {"start", FieldMemberName(memset_start, is_split)},
-                    {"end", FieldMemberName(memset_end, is_split)},
-                },
-                R"cc(
-                  ::memset(&this_.$start$, 0,
-                           static_cast<::size_t>(
-                               reinterpret_cast<char*>(&this_.$end$) -
-                               reinterpret_cast<char*>(&this_.$start$)) +
-                               sizeof($end$));
-                )cc");
-          }
-        }
-
-        // Clear all non-zero-initializable fields in the chunk.
         for (const auto& field : fields) {
-          if (CanClearByZeroing(field)) continue;
-          // It's faster to just overwrite primitive types, but we should only
-          // clear strings and messages if they were set.
-          //
-          // TODO:  Let the CppFieldGenerator decide this somehow.
-          const bool have_enclosing_if = ShouldGenerateEnclosingIf(*field);
-
-          auto print_clear_field = [&] {
-            field_generators_.get(field).GenerateMessageClearingCode(p);
-          };
-
-          if (have_enclosing_if) {
-            absl::optional<int> has_word_index =
-                field_layout_.GetHasWordIndex(field);
-            if (has_word_index.has_value()) {
-              maybe_emit_update_cached_hasbits(*has_word_index);
-            }
-
-            p->Emit({{"cond",
-                      [&] {
-                        PrintPresenceCheckCondition(field, field_layout_, p,
-                                                    options_);
-                      }},
-                     {"clear_field", print_clear_field}},
-                    R"cc(
-                      if ($cond$) {
-                        $clear_field$;
-                      }
-                    )cc");
-          } else {
-            print_clear_field();
-          }
+          p->Emit({{"cond",
+                    [&] {
+                      PrintPresenceCheckCondition(field, field_layout_, p,
+                                                  options_);
+                    }},
+                   {"clear_field", [&] { emit_clear_field(field); }}},
+                  R"cc(
+                    if ($cond$) {
+                      $clear_field$;
+                    }
+                  )cc");
         }
       };
 
       // Whether we wrap this chunk in:
-      //   if (cached_has_bits & <chunk hasbits) { /* chunk. */ }
-      // We can omit the if() for chunk size 1, or if our fields do not have
-      // hasbits. I don't understand the rationale for the last part of the
-      // condition, but it matches the old logic.
-      const bool check_has_word =
-          field_layout_.GetHasBitIndex(fields.front()).has_value() &&
-          fields.size() > 1 && (memset_end != fields.back() || merge_zero_init);
-
-      if (check_has_word) {
+      //   if (cached_has_bits & <chunk hasbits>) { /* chunk. */ }
+      if (fields.size() > 1) {
         // Emit an if() that will let us skip the whole chunk if none are set.
         uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
 
         ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-
-        const int has_word_index =
-            field_layout_.GetHasWordIndex(fields.front()).value();
-        maybe_emit_update_cached_hasbits(has_word_index);
 
         const std::string cond = GenerateConditionMaybeWithProbabilityForGroup(
             chunk_mask, fields, options_);
