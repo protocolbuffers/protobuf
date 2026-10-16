@@ -65,6 +65,26 @@ __attribute__((objc_subclassing_restricted))
  **/
 - (void)addExtensions:(GPBExtensionRegistry *)registry;
 
+/**
+ * Returns the process-wide registry of the extensions that are linked into the
+ * process and were generated with the experimental
+ * `experimental_global_extension_registry` generator option (C function
+ * extensions only).
+ *
+ * Each such extension records its description in the `__DATA,__gpb_ext_reg`
+ * Mach-O section. Nothing is done when this method is called; the first
+ * `-extensionForDescriptor:fieldNumber:` call reads the section of every loaded
+ * image (and registers for images loaded later, such as dynamically loaded
+ * frameworks), and indexes the entries by extended class and field number.
+ * A `GPBExtensionDescriptor` is only created when it is looked up, and it is
+ * the same instance that the generated extension function returns.
+ *
+ * The returned object is immutable and can be used from any thread. It is not
+ * a `GPBExtensionRegistry` instance, but it can be passed to any API that takes
+ * an `id<GPBExtensionRegistry>`.
+ **/
++ (id<GPBExtensionRegistry>)globalExtensionRegistry;
+
 @end
 
 NS_ASSUME_NONNULL_END
