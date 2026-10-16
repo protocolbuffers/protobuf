@@ -2460,6 +2460,16 @@ class Proto2Test(unittest.TestCase):
     msg = unittest_pb2.TestAllTypes()
     self.assertRaises(AttributeError, getattr, msg, 'Extensions')
 
+  def testFindExtensionByNumberOutOfIntRange(self):
+    msg = unittest_pb2.TestAllExtensions()
+    self.assertEqual(
+        unittest_pb2.optional_int32_extension,
+        msg.Extensions._FindExtensionByNumber(1),
+    )
+    # These numbers truncate to 1 when narrowed to a 32-bit int.
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(2**32 + 1))
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(-(2**32) + 1))
+
   def testMergeFromExtensions(self):
     msg1 = more_extensions_pb2.TopLevelMessage()
     msg2 = more_extensions_pb2.TopLevelMessage()

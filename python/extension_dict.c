@@ -7,6 +7,9 @@
 
 #include "python/extension_dict.h"
 
+#include <limits.h>
+#include <stdint.h>
+
 #include "google/protobuf/breaking_changes.h"
 #include "python/message.h"
 #include "python/protobuf.h"
@@ -62,8 +65,11 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
   const upb_ExtensionRegistry* reg = upb_DefPool_ExtensionRegistry(symtab);
   int64_t number = PyLong_AsLong(arg);
   if (number == -1 && PyErr_Occurred()) return NULL;
+  // No extension can have a number outside the range of int.
+  if (number < INT_MIN || number > INT_MAX) Py_RETURN_NONE;
   const upb_MiniTableExtension* ext =
-      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l, number);
+      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l,
+                                                            (uint32_t)number);
   if (ext) {
     const upb_FieldDef* f = upb_DefPool_FindExtensionByMiniTable(symtab, ext);
     PyObject* pool = PyUpb_Message_GetPool(self->msg);
