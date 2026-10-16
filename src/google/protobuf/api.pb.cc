@@ -776,6 +776,7 @@ void Api::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
+  this_._impl_.syntax_ = 0;
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000007fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -801,7 +802,6 @@ void Api::Clear(MessageLite& base) {
       this_._impl_.source_context_->Clear();
     }
   }
-  this_._impl_.syntax_ = 0;
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -1201,6 +1201,10 @@ void Method::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
+  ::memset(&this_._impl_.request_streaming_, 0,
+           PROTOBUF_FIELD_OFFSET(Impl_, syntax_) -
+               PROTOBUF_FIELD_OFFSET(Impl_, request_streaming_) +
+               sizeof(Impl_::syntax_));
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1218,13 +1222,6 @@ void Method::Clear(MessageLite& base) {
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       this_._impl_.edition_.ClearNonDefaultToEmpty();
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x000000e0U)) {
-    ::memset(&this_._impl_.request_streaming_, 0,
-             static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.syntax_) -
-                 reinterpret_cast<char*>(&this_._impl_.request_streaming_)) +
-                 sizeof(_impl_.syntax_));
   }
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();

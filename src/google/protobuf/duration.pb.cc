@@ -274,14 +274,10 @@ void Duration::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
-    ::memset(&this_._impl_.seconds_, 0,
-             static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.nanos_) -
-                 reinterpret_cast<char*>(&this_._impl_.seconds_)) +
-                 sizeof(_impl_.nanos_));
-  }
+  ::memset(&this_._impl_.seconds_, 0,
+           PROTOBUF_FIELD_OFFSET(Impl_, nanos_) -
+               PROTOBUF_FIELD_OFFSET(Impl_, seconds_) +
+               sizeof(Impl_::nanos_));
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }

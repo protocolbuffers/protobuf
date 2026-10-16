@@ -1150,6 +1150,7 @@ void Type::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
+  this_._impl_.syntax_ = 0;
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000003fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1172,7 +1173,6 @@ void Type::Clear(MessageLite& base) {
       this_._impl_.source_context_->Clear();
     }
   }
-  this_._impl_.syntax_ = 0;
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -1546,6 +1546,10 @@ void Field::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
+  ::memset(&this_._impl_.kind_, 0,
+           PROTOBUF_FIELD_OFFSET(Impl_, packed_) -
+               PROTOBUF_FIELD_OFFSET(Impl_, kind_) +
+               sizeof(Impl_::packed_));
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -1563,13 +1567,6 @@ void Field::Clear(MessageLite& base) {
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       this_._impl_.default_value_.ClearNonDefaultToEmpty();
     }
-  }
-  if (BatchCheckHasBit(cached_has_bits, 0x000003e0U)) {
-    ::memset(&this_._impl_.kind_, 0,
-             static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.packed_) -
-                 reinterpret_cast<char*>(&this_._impl_.kind_)) +
-                 sizeof(_impl_.packed_));
   }
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -2016,6 +2013,7 @@ void Enum::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
+  this_._impl_.syntax_ = 0;
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x0000001fU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -2035,7 +2033,6 @@ void Enum::Clear(MessageLite& base) {
       this_._impl_.source_context_->Clear();
     }
   }
-  this_._impl_.syntax_ = 0;
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -2364,6 +2361,7 @@ void EnumValue::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
+  this_._impl_.number_ = 0;
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
@@ -2373,7 +2371,6 @@ void EnumValue::Clear(MessageLite& base) {
       this_._impl_.name_.ClearNonDefaultToEmpty();
     }
   }
-  this_._impl_.number_ = 0;
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
