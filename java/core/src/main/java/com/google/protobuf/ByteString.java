@@ -373,7 +373,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *     byte sequence represented by this string; <code>false</code> otherwise.
    */
   public final boolean startsWith(ByteString prefix) {
-    return size() >= prefix.size() && substringNoCopy(0, prefix.size()).equals(prefix);
+    int prefixSize = prefix.size();
+    if (size() < prefixSize) {
+      return false;
+    }
+    if (prefixSize == 0) {
+      return true;
+    }
+    if (prefix instanceof LeafByteString leafPrefix) {
+      return leafPrefix.equalsRange(this, 0, prefixSize);
+    }
+    return substringNoCopy(0, prefixSize).equals(prefix);
   }
 
   /**
@@ -385,7 +395,18 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *     byte sequence represented by this string; <code>false</code> otherwise.
    */
   public final boolean endsWith(ByteString suffix) {
-    return size() >= suffix.size() && substringNoCopy(size() - suffix.size()).equals(suffix);
+    int suffixSize = suffix.size();
+    int thisSize = size();
+    if (thisSize < suffixSize) {
+      return false;
+    }
+    if (suffixSize == 0) {
+      return true;
+    }
+    if (suffix instanceof LeafByteString leafSuffix) {
+      return leafSuffix.equalsRange(this, thisSize - suffixSize, suffixSize);
+    }
+    return substringNoCopy(thisSize - suffixSize, thisSize).equals(suffix);
   }
 
   // =================================================================
@@ -1837,7 +1858,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
       return other
           .substringNoCopy(offset, offset + length)
-          .equals(substringNoCopy(this.offset, this.offset + length));
+          .equals(substringNoCopy(0, length));
     }
 
     @Override
