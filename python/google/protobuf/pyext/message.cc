@@ -647,6 +647,25 @@ bool CheckAndGetBool(PyObject* arg, bool* value) {
 
 bool AllowInvalidUTF8(const FieldDescriptor* field) { return false; }
 
+static bool BufferBytes(PyObject* obj, Py_buffer* view) {
+  if (PyObject_GetBuffer(obj, view, PyBUF_SIMPLE) != 0) {
+    PyErr_Clear();
+    PyErr_SetString(
+        PyExc_ValueError,
+        "expected bytes, memoryview is not contiguous or has >1 dimensions");
+    return false;
+  }
+
+  if (view->itemsize != 1) {
+    PyErr_Format(PyExc_ValueError,
+                 "expected bytes, memoryview of itemsize %zd found",
+                 view->itemsize);
+    PyBuffer_Release(view);
+    return false;
+  }
+  return true;
+}
+
 std::optional<absl::string_view> CheckString(
     PyObject* arg, const FieldDescriptor* descriptor) {
   ABSL_DCHECK(descriptor->type() == FieldDescriptor::TYPE_STRING ||
@@ -675,7 +694,27 @@ std::optional<absl::string_view> CheckString(
     }
     return value;
   }
-  FormatTypeError(arg, "bytes, unicode");
+  if (PyMemoryView_Check(arg)) {
+    Py_buffer view;
+    if (!BufferBytes(arg, &view)) {
+      return std::nullopt;
+    }
+    // This is OK as MemoryView guarantees that the underlying data is valid
+    // for the lifetime of the view.
+    absl::string_view value(static_cast<const char*>(view.buf), view.len);
+    PyBuffer_Release(&view);
+    if (descriptor->type() == FieldDescriptor::TYPE_STRING &&
+        !AllowInvalidUTF8(descriptor)) {
+      PyObject* unicode =
+          PyUnicode_FromStringAndSize(value.data(), value.size());
+      if (unicode == nullptr) {
+        return std::nullopt;
+      }
+      Py_DECREF(unicode);
+    }
+    return value;
+  }
+  FormatTypeError(arg, "bytes, unicode, memoryview");
   return std::nullopt;
 }
 

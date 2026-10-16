@@ -289,6 +289,34 @@ static bool PyUpb_GetBool(PyObject* obj, const upb_FieldDef* f, bool* val) {
   return !PyErr_Occurred();
 }
 
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API + 0 >= 0x030B0000
+static bool PyUpb_PyBufferBytes(PyObject* obj, const char** buf,
+                                Py_ssize_t* len) {
+  Py_buffer view;
+  if (PyObject_GetBuffer(obj, &view, PyBUF_SIMPLE) != 0) {
+    PyErr_Clear();
+    PyErr_SetString(
+        PyExc_ValueError,
+        "expected bytes, memoryview is not contiguous or has >1 dimensions");
+    return false;
+  }
+
+  if (view.itemsize != 1) {
+    PyErr_Format(PyExc_ValueError,
+                 "expected bytes, memoryview of itemsize %zd found",
+                 view.itemsize);
+    PyBuffer_Release(&view);
+    return false;
+  }
+
+  *buf = view.buf;
+  *len = view.len;
+  // Safe as obj is a reference to the memoryview.
+  PyBuffer_Release(&view);
+  return true;
+}
+#endif  // !Py_LIMITED_API || Py_LIMITED_API >= 0x030B0000
+
 bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
                    upb_Arena* arena) {
   switch (upb_FieldDef_CType(f)) {
@@ -313,6 +341,14 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
     case kUpb_CType_Bool:
       return PyUpb_GetBool(obj, f, &val->bool_val);
     case kUpb_CType_Bytes: {
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API + 0 >= 0x030B0000
+      if (PyObject_IsInstance(obj, (PyObject*)&PyMemoryView_Type)) {
+        const char* buf = NULL;
+        Py_ssize_t size = 0;
+        if (!PyUpb_PyBufferBytes(obj, &buf, &size)) return false;
+        return PyUpb_MaybeCopyString(buf, size, val, arena);
+      }
+#endif
       char* ptr;
       Py_ssize_t size;
       if (PyBytes_AsStringAndSize(obj, &ptr, &size) < 0) return false;
@@ -334,6 +370,22 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
         }
         return PyUpb_MaybeCopyString(ptr, size, val, arena);
       }
+      // Try the buffer protocol if it's a memoryview.
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API + 0 >= 0x030B0000
+      if (PyObject_IsInstance(obj, (PyObject*)&PyMemoryView_Type)) {
+        const char* buf = NULL;
+        if (!PyUpb_PyBufferBytes(obj, &buf, &size)) return false;
+        if (!utf8_range_IsValid(buf, size)) {
+          // Invalid UTF-8.  Try to convert the message to a Python Unicode
+          // object, even though we know this will fail, just to get the
+          // idiomatic Python error message.
+          obj = PyUnicode_DecodeUTF8(buf, size, NULL);
+          assert(!obj);
+          return false;
+        }
+        return PyUpb_MaybeCopyString(buf, size, val, arena);
+      }
+#endif
       const char* ptr = PyUnicode_AsUTF8AndSize(obj, &size);
       if (PyErr_Occurred()) return false;
       return PyUpb_MaybeCopyString(ptr, size, val, arena);
