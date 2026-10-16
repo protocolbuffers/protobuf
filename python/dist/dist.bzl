@@ -77,7 +77,7 @@ def _declare_module_file(ctx, module_name, python_version, limited_api):
 #
 #   py_dist_module(
 #       name = "message_mod",
-#       extension = "//python:_message_binary",
+#       extension = "//python:google/_upb/_message",
 #       module_name = "google._upb._message",
 #   )
 #
