@@ -8,12 +8,14 @@
 #ifndef GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 #define GOOGLE_PROTOBUF_PYTHON_CPP_DESCRIPTOR_POOL_H__
 
+#include <atomic>
 #include <memory>
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include "absl/container/flat_hash_map.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/pyext/free_threading_mutex.h"
 
 namespace google {
@@ -57,8 +59,14 @@ typedef struct PyDescriptorPool {
   // This pointer is not owned and must stay alive.
   const DescriptorPool* underlay;
 
-  // The C++ descriptor database used to fetch unknown protos. Can be NULL.
-  std::shared_ptr<const DescriptorDatabase>* database;
+  union {
+    // When `is_mutable` is false, the C++ descriptor database used to fetch
+    // unknown protos. Can be NULL. This pointer is owned.
+    std::shared_ptr<const DescriptorDatabase>* database;
+    // When `is_mutable` is true, the database where newly added files are
+    // stored. This pointer is owned.
+    SimpleThreadSafeDescriptorDatabase* backing_database;
+  };
 
   // The preferred MessageFactory to be used by descriptors.
   PyMessageFactory* py_message_factory;

@@ -38,11 +38,13 @@
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/port_def.inc"
 #include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
+
+// Must be included last.
+#include "google/protobuf/port_def.inc"
 
 #define PyString_AsStringAndSize(ob, charpp, sizep)              \
   (PyUnicode_Check(ob)                                           \

@@ -486,6 +486,117 @@ class FreeThreadingTest(unittest.TestCase):
       t.join()
     self.assertEqual([], errors)
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      'Upb has not been fixed to handle this case.',
+  )
+  def testConcurrentAddSerializedFileDataRace(self):
+    """Tests concurrent AddSerializedFile and lookups on the default pool."""
+    pool = descriptor_pool.Default()
+    num_threads = 10
+    files_per_thread = 4
+
+    def MakeFile(name):
+      # Each file gets its own package so the identical symbol names do not
+      # conflict with each other in the shared default pool.
+      pkg = name.removesuffix('.proto').replace('/', '.')
+      f_proto = descriptor_pb2.FileDescriptorProto(name=name, package=pkg)
+      msg = f_proto.message_type.add(name='Message')
+      msg.field.add(
+          name='val',
+          number=1,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          oneof_index=0,
+      )
+      msg.oneof_decl.add(name='my_oneof')
+      msg.extension_range.add(start=100, end=200)
+      enum = f_proto.enum_type.add(name='MyEnum')
+      enum.value.add(name='ZERO', number=0)
+      f_proto.extension.add(
+          name='my_ext',
+          number=100,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_INT32,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          extendee=f'.{pkg}.Message',
+      )
+      service = f_proto.service.add(name='MyService')
+      service.method.add(
+          name='MyMethod',
+          input_type=f'.{pkg}.Message',
+          output_type=f'.{pkg}.Message',
+      )
+      return f_proto.SerializeToString()
+
+    def ReadAllFromFile(name):
+      pkg = name.removesuffix('.proto').replace('/', '.')
+      file_desc = pool.FindFileByName(name)
+      self.assertEqual(file_desc.name, name)
+      self.assertEqual(
+          pool.FindFileContainingSymbol(f'{pkg}.Message'), file_desc
+      )
+      msg_desc = pool.FindMessageTypeByName(f'{pkg}.Message')
+      self.assertEqual(msg_desc.name, 'Message')
+      self.assertEqual(pool.FindFieldByName(f'{pkg}.Message.val').name, 'val')
+      self.assertEqual(
+          pool.FindOneofByName(f'{pkg}.Message.my_oneof').name, 'my_oneof'
+      )
+      self.assertEqual(pool.FindEnumTypeByName(f'{pkg}.MyEnum').name, 'MyEnum')
+      ext_desc = pool.FindExtensionByName(f'{pkg}.my_ext')
+      self.assertEqual(ext_desc.name, 'my_ext')
+      self.assertEqual(pool.FindExtensionByNumber(msg_desc, 100), ext_desc)
+      self.assertIn(ext_desc, pool.FindAllExtensions(msg_desc))
+      self.assertEqual(
+          pool.FindServiceByName(f'{pkg}.MyService').name, 'MyService'
+      )
+      self.assertEqual(
+          pool.FindMethodByName(f'{pkg}.MyService.MyMethod').name, 'MyMethod'
+      )
+
+    base_name = 'thread_safe_test/unlinked_base.proto'
+    pool.AddSerializedFile(MakeFile(base_name))
+
+    serialized = {
+        t: [
+            (
+                f'thread_safe_test/unlinked_{t}_{i}.proto',
+                MakeFile(f'thread_safe_test/unlinked_{t}_{i}.proto'),
+            )
+            for i in range(files_per_thread)
+        ]
+        for t in range(num_threads)
+    }
+
+    barrier = threading.Barrier(num_threads)
+    errors = []
+
+    def Worker(thread_id):
+      barrier.wait()
+      try:
+        other_thread = (thread_id + 1) % num_threads
+        for idx, (name, data) in enumerate(serialized[thread_id]):
+          ReadAllFromFile(base_name)
+          desc = pool.AddSerializedFile(data)
+          if 'Message' not in desc.message_types_by_name:
+            errors.append(f'Unexpected file descriptor for {desc.name}')
+          ReadAllFromFile(name)
+          other_name, _ = serialized[other_thread][idx]
+          try:
+            ReadAllFromFile(other_name)
+          except KeyError:
+            pass
+      except Exception as e:
+        errors.append(str(e))
+
+    threads = [
+        threading.Thread(target=Worker, args=(i,)) for i in range(num_threads)
+    ]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
+
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""
     pool = descriptor_pool.DescriptorPool()

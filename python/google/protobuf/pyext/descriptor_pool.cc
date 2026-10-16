@@ -24,6 +24,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_database.h"
@@ -180,8 +181,12 @@ static PyDescriptorPool* PyDescriptorPool_NewWithUnderlay(
   if (cpool == nullptr) {
     return nullptr;
   }
-  cpool->pool =
-      new std::shared_ptr<const DescriptorPool>(new DescriptorPool(underlay));
+  cpool->error_collector = new BuildFileErrorCollector();
+  cpool->backing_database = new SimpleThreadSafeDescriptorDatabase();
+  auto pool = std::make_shared<DescriptorPool>(cpool->backing_database,
+                                               cpool->error_collector);
+  pool->internal_set_underlay(underlay);
+  cpool->pool = new std::shared_ptr<const DescriptorPool>(std::move(pool));
   cpool->is_mutable = true;
   cpool->underlay = underlay;
 
@@ -204,15 +209,17 @@ static PyDescriptorPool* PyDescriptorPool_NewWithDatabase(
   if (cpool == nullptr) {
     return nullptr;
   }
+  cpool->error_collector = new BuildFileErrorCollector();
   std::shared_ptr<DescriptorPool> pool_sp;
   if (database != nullptr) {
-    cpool->error_collector = new BuildFileErrorCollector();
     pool_sp =
         std::make_shared<DescriptorPool>(database, cpool->error_collector);
     cpool->is_mutable = false;
     cpool->database = new std::shared_ptr<const DescriptorDatabase>(database);
   } else {
-    pool_sp = std::make_shared<DescriptorPool>();
+    cpool->backing_database = new SimpleThreadSafeDescriptorDatabase();
+    pool_sp = std::make_shared<DescriptorPool>(cpool->backing_database,
+                                               cpool->error_collector);
     cpool->is_mutable = true;
   }
   cpool->pool = new std::shared_ptr<const DescriptorPool>(pool_sp);
@@ -267,7 +274,9 @@ static void Dealloc(PyObject* pself) {
   if (self->pool != nullptr) {
     delete self->pool;
   }
-  if (self->database != nullptr) {
+  if (self->is_mutable) {
+    delete self->backing_database;
+  } else {
     delete self->database;
   }
   delete self->error_collector;
@@ -537,17 +546,17 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   char* message_type;
   Py_ssize_t message_len;
 
-  if (self->database != nullptr) {
-    PyErr_SetString(
-        PyExc_ValueError,
-        "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
-        "Add your file to the underlying database.");
-    return nullptr;
-  }
   if (!self->is_mutable) {
-    PyErr_SetString(
-        PyExc_ValueError,
-        "This DescriptorPool is not mutable and cannot add new definitions.");
+    if (self->database != nullptr) {
+      PyErr_SetString(
+          PyExc_ValueError,
+          "Cannot call Add on a DescriptorPool that uses a DescriptorDatabase. "
+          "Add your file to the underlying database.");
+    } else {
+      PyErr_SetString(
+          PyExc_ValueError,
+          "This DescriptorPool is not mutable and cannot add new definitions.");
+    }
     return nullptr;
   }
 
@@ -573,12 +582,10 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
                                                            serialized_pb);
   }
 
-  BuildFileErrorCollector error_collector;
-  ErrorState error_state(&error_collector);
+  self->backing_database->Add(file_proto);
+  ErrorState error_state(self->error_collector);
   const FileDescriptor* descriptor =
-      // Pool is mutable, we can remove the "const".
-      const_cast<DescriptorPool*>(self->pool->get())
-          ->BuildFileCollectingErrors(file_proto, &error_collector);
+      self->pool->get()->FindFileByName(file_proto.name());
   if (descriptor == nullptr) {
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool!\n%s",
