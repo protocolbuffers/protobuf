@@ -1835,9 +1835,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         return subArrayEquals(bytes, this.offset, lbsOther.bytes, lbsOther.offset + offset, length);
       }
 
-      return other
-          .substringNoCopy(offset, offset + length)
-          .equals(substringNoCopy(this.offset, this.offset + length));
+      return other.substringNoCopy(offset, offset + length).equals(substringNoCopy(0, length));
     }
 
     @Override

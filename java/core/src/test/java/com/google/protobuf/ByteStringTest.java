@@ -1121,4 +1121,122 @@ public class ByteStringTest {
         .that(byteArrayCopier.getClass().getSimpleName().endsWith("ArraysByteArrayCopier"))
         .isTrue();
   }
+
+  private static ByteString wrapDirectNonArrayBacked(byte[] bytes) {
+    ByteBuffer directBuffer = ByteBuffer.allocateDirect(bytes.length);
+    directBuffer.put(bytes);
+    directBuffer.flip();
+    return ByteString.wrap(
+        directBuffer.hasArray() ? directBuffer.asReadOnlyBuffer() : directBuffer,
+        /* copyOffHeap= */ false);
+  }
+
+  @Test
+  public void testBoundedByteStringWithNonZeroOffset_equalsRange() {
+    byte[] backing = new byte[30];
+    for (int i = 0; i < backing.length; i++) {
+      backing[i] = (byte) (i + 1);
+    }
+
+    // Case 1: offset (20) > length (6), content is [21, 22, 23, 24, 25, 26].
+    // Previously threw IndexOutOfBoundsException because substringNoCopy(this.offset,
+    // this.offset + length) exceeded this.length.
+    ByteString.LeafByteString boundedLargeOffset =
+        (ByteString.LeafByteString) ByteString.copyFrom(backing).substring(20, 26);
+    byte[] targetBytes1 =
+        new byte[] {
+          99,
+          99,
+          99,
+          99, // [0..4): padding
+          21,
+          22,
+          23,
+          24,
+          25,
+          26, // [4..10): full match
+          21,
+          22,
+          23,
+          24,
+          99,
+          99, // [10..16): 4-byte prefix match, full mismatch
+          88,
+          88,
+          88,
+          88 // [16..20): padding
+        };
+    ByteString rope1 =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(targetBytes1, 0, 7),
+            ByteString.copyFrom(targetBytes1, 7, targetBytes1.length - 7));
+    ByteString nonArrayBacked1 = wrapDirectNonArrayBacked(targetBytes1);
+
+    for (ByteString other : new ByteString[] {rope1, nonArrayBacked1}) {
+      // Full length (length == boundedLargeOffset.size())
+      assertThat(boundedLargeOffset.equalsRange(other, 4, 6)).isTrue();
+      assertThat(boundedLargeOffset.equalsRange(other, 10, 6)).isFalse();
+      assertThat(boundedLargeOffset.equalsRange(other, 0, 6)).isFalse();
+
+      // Partial length (length < boundedLargeOffset.size())
+      assertThat(boundedLargeOffset.equalsRange(other, 4, 4)).isTrue();
+      assertThat(boundedLargeOffset.equalsRange(other, 10, 4)).isTrue();
+      assertThat(boundedLargeOffset.equalsRange(other, 0, 4)).isFalse();
+    }
+
+    // Case 2: 0 < offset (3) < length (12), content is [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].
+    // For partial length 5 (offset + 5 <= 12), previously compared the wrong slice at 2 * offset
+    // ([7, 8, 9, 10, 11]) instead of [4, 5, 6, 7, 8].
+    ByteString.LeafByteString boundedSmallOffset =
+        (ByteString.LeafByteString) ByteString.copyFrom(backing).substring(3, 15);
+    byte[] targetBytes2 =
+        new byte[] {
+          99,
+          99, // [0..2): padding
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15, // [2..14): full 12-byte match
+          7,
+          8,
+          9,
+          10,
+          11, // [14..19): bytes at 2 * offset (must not match)
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          99 // [19..31): 12-byte mismatch at last byte
+        };
+    ByteString rope2 =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(targetBytes2, 0, 8),
+            ByteString.copyFrom(targetBytes2, 8, targetBytes2.length - 8));
+    ByteString nonArrayBacked2 = wrapDirectNonArrayBacked(targetBytes2);
+
+    for (ByteString other : new ByteString[] {rope2, nonArrayBacked2}) {
+      // Full length (length == boundedSmallOffset.size())
+      assertThat(boundedSmallOffset.equalsRange(other, 2, 12)).isTrue();
+      assertThat(boundedSmallOffset.equalsRange(other, 19, 12)).isFalse();
+
+      // Partial length (length < boundedSmallOffset.size(), offset + length <= size())
+      assertThat(boundedSmallOffset.equalsRange(other, 2, 5)).isTrue();
+      assertThat(boundedSmallOffset.equalsRange(other, 14, 5)).isFalse();
+    }
+  }
 }
