@@ -1405,6 +1405,21 @@ class MessageTest(unittest.TestCase):
     m1.MergeFromString(b'')  # field state should not change
     self.assertFalse(m1.HasField('optional_nested_message'))
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      "Currently broken in upb, will be fixed in the next breaking release"
+  )
+  def testMergeFromSelfRaises(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_int32.append(1)
+    m.optional_nested_message.bb = 2
+    with self.assertRaises(AssertionError):
+      m.MergeFrom(m)
+    with self.assertRaises(AssertionError):
+      m.optional_nested_message.MergeFrom(m.optional_nested_message)
+    self.assertEqual([1], m.repeated_int32)
+    self.assertEqual(2, m.optional_nested_message.bb)
+
   def testMergeFromStringDecodeErrorSync(self, message_module):
     m = message_module.NestedTestAllTypes()
     s1 = m.child
@@ -2456,6 +2471,30 @@ class Proto2Test(unittest.TestCase):
     msg = unittest_pb2.TestAllTypes()
     self.assertRaises(AttributeError, getattr, msg, 'Extensions')
 
+  def testFindExtensionByNumberOutOfIntRange(self):
+    msg = unittest_pb2.TestAllExtensions()
+    self.assertEqual(
+        unittest_pb2.optional_int32_extension,
+        msg.Extensions._FindExtensionByNumber(1),
+    )
+    # These numbers truncate to 1 when narrowed to a 32-bit int.
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(2**32 + 1))
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(-(2**32) + 1))
+
+  def testFindExtensionByNumberMaxMessageSetExtension(self):
+    msg = message_set_extensions_pb2.TestMessageSet()
+    ext = message_set_extensions_pb2.max_number_extension
+    max_number = 2**31 - 2
+    self.assertEqual(max_number, ext.number)
+    self.assertEqual(ext, msg.Extensions._FindExtensionByNumber(max_number))
+    # These numbers truncate to max_number when narrowed to a 32-bit int.
+    self.assertIsNone(
+        msg.Extensions._FindExtensionByNumber(max_number + 2**32)
+    )
+    self.assertIsNone(
+        msg.Extensions._FindExtensionByNumber(max_number - 2**32)
+    )
+
   def testMergeFromExtensions(self):
     msg1 = more_extensions_pb2.TopLevelMessage()
     msg2 = more_extensions_pb2.TopLevelMessage()
@@ -3239,6 +3278,22 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(TypeError):
       del msg2.map_int32_foreign_message['']
 
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      "Currently broken in upb and pure Python, will be fixed in the next"
+      " breaking release"
+  )
+  def testMapMergeFromSelfRaises(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_int32[1] = 2
+    msg.map_int32_foreign_message[3].c = 4
+    with self.assertRaises(AssertionError):
+      msg.map_int32_int32.MergeFrom(msg.map_int32_int32)
+    with self.assertRaises(AssertionError):
+      msg.map_int32_foreign_message.MergeFrom(msg.map_int32_foreign_message)
+    self.assertEqual({1: 2}, dict(msg.map_int32_int32))
+    self.assertEqual(4, msg.map_int32_foreign_message[3].c)
+
   def testMapMergeFrom(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[12] = 34
@@ -3299,6 +3354,43 @@ class Proto3Test(unittest.TestCase):
       m1.map_int32_all_types.MergeFrom(
           {1: unittest_proto3_arena_pb2.TestAllTypes()}
       )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testMapMergeFromKeepsHeldOverwrittenValues(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[1].c = 5
+    held = msg.map_int32_foreign_message[1]
+    other = map_unittest_pb2.TestMap()
+    other.map_int32_foreign_message[1].d = 7
+
+    msg.map_int32_foreign_message.MergeFrom(other.map_int32_foreign_message)
+
+    # The merge replaces the value; the held wrapper keeps the old one.
+    self.assertEqual(5, held.c)
+    self.assertFalse(held.HasField('d'))
+    self.assertEqual(7, msg.map_int32_foreign_message[1].d)
+    self.assertFalse(msg.map_int32_foreign_message[1].HasField('c'))
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testMapMergeFromIncompatibleTypes(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['a'] = 'b'
+    msg.map_string_foreign_message['a'].c = 1
+    with self.assertRaises(AttributeError):
+      msg.map_int32_int32.MergeFrom(msg.map_string_string)
+    with self.assertRaises(AttributeError):
+      msg.map_int32_foreign_message.MergeFrom(msg.map_string_foreign_message)
+    with self.assertRaises(AttributeError):
+      msg.map_int32_all_types.MergeFrom(msg.map_int32_foreign_message)
+    self.assertEqual(0, len(msg.map_int32_int32))
+    self.assertEqual(0, len(msg.map_int32_foreign_message))
+    self.assertEqual(0, len(msg.map_int32_all_types))
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()
