@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.RandomAccess;
 
 /**
  * Immutable sequence of bytes. Provides conversions to and from {@code byte[]}, {@link
@@ -663,12 +664,19 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     // copy the inbound bytes into a list of chunks; the chunk size
     // grows exponentially to support both short and long streams.
     int chunkSize = minChunkSize;
+    byte[] buf = null;
     while (true) {
-      ByteString chunk = readChunk(streamToDrain, chunkSize);
+      if (buf == null || buf.length < chunkSize) {
+        buf = new byte[chunkSize];
+      }
+      ByteString chunk = readChunk(streamToDrain, buf, chunkSize);
       if (chunk == null) {
         break;
       }
       results.add(chunk);
+      if (chunk.size() < chunkSize) {
+        break;
+      }
       chunkSize = Math.min(chunkSize * 2, maxChunkSize);
     }
 
@@ -683,8 +691,8 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    * @return A chunk of the desired size, or else a chunk as large as was available when end of
    *     stream was reached. Returns null if the given stream had no more data in it.
    */
-  private static ByteString readChunk(InputStream in, final int chunkSize) throws IOException {
-    final byte[] buf = new byte[chunkSize];
+  private static ByteString readChunk(InputStream in, final byte[] buf, final int chunkSize)
+      throws IOException {
     int bytesRead = 0;
     while (bytesRead < chunkSize) {
       final int count = in.read(buf, bytesRead, chunkSize - bytesRead);
@@ -740,6 +748,17 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
    *     Integer.MAX_VALUE
    */
   public static ByteString copyFrom(Iterable<ByteString> byteStrings) {
+    if (byteStrings instanceof List<ByteString> list && byteStrings instanceof RandomAccess) {
+      int size = list.size();
+      if (size == 0) {
+        return EMPTY;
+      }
+      if (size == 1) {
+        return list.get(0);
+      }
+      return balancedConcat(list, 0, size);
+    }
+
     // Determine the size;
     final int size;
     if (!(byteStrings instanceof Collection)) {
@@ -757,6 +776,16 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
 
     return balancedConcat(byteStrings.iterator(), size);
+  }
+
+  private static ByteString balancedConcat(List<ByteString> list, int offset, int length) {
+    if (length == 1) {
+      return list.get(offset);
+    }
+    int halfLength = length >>> 1;
+    ByteString left = balancedConcat(list, offset, halfLength);
+    ByteString right = balancedConcat(list, offset + halfLength, length - halfLength);
+    return left.concat(right);
   }
 
   // Internal function used by copyFrom(Iterable<ByteString>).
@@ -1190,7 +1219,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       }
       this.initialCapacity = initialCapacity;
       this.flushedBuffers = new ArrayList<ByteString>();
-      this.buffer = new byte[initialCapacity];
+      this.buffer = initialCapacity == 0 ? EMPTY_BYTE_ARRAY : new byte[initialCapacity];
     }
 
     @Override
@@ -1230,6 +1259,14 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      * @return the current contents of this output stream, as a byte string.
      */
     public synchronized ByteString toByteString() {
+      if (flushedBuffers.isEmpty()) {
+        if (bufferPos == 0) {
+          return EMPTY;
+        }
+        if (bufferPos < buffer.length) {
+          return new LiteralByteString(Arrays.copyOf(buffer, bufferPos));
+        }
+      }
       flushLastBuffer();
       return ByteString.copyFrom(flushedBuffers);
     }
@@ -1256,7 +1293,9 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         byteString.writeTo(out);
       }
 
-      out.write(Arrays.copyOf(cachedBuffer, cachedBufferPos));
+      if (cachedBufferPos > 0) {
+        out.write(Arrays.copyOf(cachedBuffer, cachedBufferPos));
+      }
     }
 
     /**
@@ -1292,8 +1331,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      * buffer whose size is at least the specified minimum size.
      */
     private void flushFullBuffer(int minSize) {
-      flushedBuffers.add(new LiteralByteString(buffer));
-      flushedBuffersTotalBytes += buffer.length;
+      if (buffer.length > 0) {
+        flushedBuffers.add(new LiteralByteString(buffer));
+        flushedBuffersTotalBytes += buffer.length;
+      }
       // We want to increase our total capacity by 50%, but as a minimum,
       // the new buffer should also at least be >= minSize and
       // >= initial Capacity.
@@ -1307,11 +1348,12 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
      * but it needs to be flushed.
      */
     private void flushLastBuffer() {
+      if (bufferPos == 0) {
+        return;
+      }
       if (bufferPos < buffer.length) {
-        if (bufferPos > 0) {
-          byte[] bufferCopy = Arrays.copyOf(buffer, bufferPos);
-          flushedBuffers.add(new LiteralByteString(bufferCopy));
-        }
+        byte[] bufferCopy = Arrays.copyOf(buffer, bufferPos);
+        flushedBuffers.add(new LiteralByteString(bufferCopy));
         // We reuse this buffer for further writes.
       } else {
         // Buffer is completely full.  Huzzah.
