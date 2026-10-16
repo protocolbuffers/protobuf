@@ -558,6 +558,31 @@ TEST(FieldMaskUtilTest, MergeMessage) {
   EXPECT_EQ(1234, nested_dst.payload().repeated_int32(0));
 }
 
+TEST(FieldMaskUtilTest, MergeMessageDeepMaskIsStackSafe) {
+  constexpr int kDepth = 2000;
+
+  std::string path;
+  path.reserve(2 * kDepth + 1);
+  for (int i = 0; i < kDepth; ++i) {
+    path += "a.";
+  }
+  path += "i";
+
+  FieldMask mask;
+  mask.add_paths(path);
+
+  proto2_unittest::TestRecursiveMessage src, dst;
+  FieldMaskUtil::MergeMessageTo(src, mask, FieldMaskUtil::MergeOptions(), &dst);
+
+  int depth = 0;
+  for (const proto2_unittest::TestRecursiveMessage* m = &dst; m->has_a();
+       m = &m->a()) {
+    ++depth;
+  }
+  EXPECT_EQ(depth, kDepth);
+}
+
+
 TEST(FieldMaskUtilTest, TrimMessage) {
 #define TEST_TRIM_ONE_PRIMITIVE_FIELD(field_name)    \
   {                                                  \
