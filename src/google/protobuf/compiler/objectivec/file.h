@@ -69,10 +69,22 @@ class FileGenerator {
 
   size_t NumEnums() const { return enum_generators_.size(); }
   size_t NumMessages() const { return message_generators_.size(); }
+  // Returns the total number of extensions (both file-scoped and
+  // message-scoped) defined in this `.proto` file. In multi-source C-function
+  // extension generation mode, each extension is emitted into its own dedicated
+  // `.pbobjc.m` shard via GenerateSourceForExtension().
+  size_t NumExtensions() const { return extension_generators_.size(); }
 
   void GenerateGlobalSource(io::Printer* p) const;
   void GenerateSourceForMessage(size_t idx, io::Printer* p) const;
   void GenerateSourceForEnums(io::Printer* p) const;
+  // Generates the source for all the messages and enums of the file (without
+  // the root class, extension registry or extension descriptor functions) for
+  // the "extensions_only" multi-source generation mode.
+  void GenerateSourceForMessagesAndEnums(io::Printer* p) const;
+  // Generates a dedicated `.pbobjc.m` source shard for the `idx`-th C-function
+  // extension in multi-source generation mode.
+  void GenerateSourceForExtension(size_t idx, io::Printer* p) const;
 
  private:
   enum class GeneratedFileType : int { kHeader, kSource };
@@ -81,6 +93,13 @@ class FileGenerator {
     std::vector<const FileDescriptor*> forced_files_to_import;
     std::vector<std::string> extra_system_headers;
   };
+
+  // Shared implementation of GenerateSource() and
+  // GenerateSourceForMessagesAndEnums(). `include_root_and_extensions`
+  // controls if the root class/extension registry and the extension descriptor
+  // functions are included.
+  void GenerateSourceImpl(io::Printer* p,
+                          bool include_root_and_extensions) const;
 
   void GenerateFile(io::Printer* p, GeneratedFileType file_type,
                     const GeneratedFileOptions& file_options,
