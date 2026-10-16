@@ -48,7 +48,8 @@ extern const UPB_PRIVATE(_upb_ArenaPool) UPB_PRIVATE(_upb_Arena_EmptyPool);
 // LINT.IfChange(upb_Arena)
 
 struct upb_Arena {
-  char* UPB_ONLYBITS(ptr);
+  // ptr bumps toward exclusive end (true end-pointer pair).
+  char* UPB_ENDED_BY(UPB_ONLYBITS(end)) UPB_ONLYBITS(ptr);
   const UPB_NODEREF char* UPB_ONLYBITS(end);
   UPB_PRIVATE(_upb_ArenaPool) * UPB_ONLYBITS(pool);
   UPB_XSAN_MEMBER
