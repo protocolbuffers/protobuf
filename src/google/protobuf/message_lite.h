@@ -779,6 +779,8 @@ class PROTOBUF_EXPORT MessageLite {
 
   // As above, but for fields that use base class type. Eg foreign weak fields.
   static MessageLite* CopyConstruct(Arena* arena, const MessageLite& from);
+  static void* InitMessageCopy(void* to, Arena* arena, const void* from,
+                               size_t allocation_size);
 
   PROTOBUF_ALWAYS_INLINE static Message* CopyConstruct(Arena* arena,
                                                        const Message& from) {

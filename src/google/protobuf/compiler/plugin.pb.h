@@ -292,7 +292,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.Version"; }
 
   explicit Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from);
+  Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Version& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &Version_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   Version(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, Version&& from) noexcept
       : Version(arena) {
@@ -528,7 +535,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse.File"; }
 
   explicit CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from);
+  CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse_File& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorResponse_File_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   CodeGeneratorResponse_File(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse_File&& from) noexcept
       : CodeGeneratorResponse_File(arena) {
@@ -787,7 +801,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorResponse"; }
 
   explicit CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from);
+  CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorResponse& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorResponse_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   CodeGeneratorResponse(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorResponse&& from) noexcept
       : CodeGeneratorResponse(arena) {
@@ -1047,7 +1068,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   static ::absl::string_view FullMessageName() { return "google.protobuf.compiler.CodeGeneratorRequest"; }
 
   explicit CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from);
+  CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CodeGeneratorRequest& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CodeGeneratorRequest_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   CodeGeneratorRequest(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CodeGeneratorRequest&& from) noexcept
       : CodeGeneratorRequest(arena) {

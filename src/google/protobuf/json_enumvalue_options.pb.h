@@ -212,7 +212,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
   static ::absl::string_view FullMessageName() { return "pb.enumvalue.JsonEnumValueOptions"; }
 
   explicit JsonEnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  JsonEnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JsonEnumValueOptions& from);
+  JsonEnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JsonEnumValueOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &JsonEnumValueOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   JsonEnumValueOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JsonEnumValueOptions&& from) noexcept
       : JsonEnumValueOptions(arena) {

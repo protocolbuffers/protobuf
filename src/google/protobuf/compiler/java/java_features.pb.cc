@@ -386,20 +386,18 @@ JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(::googl
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures.NestInFileClassFeature)
 }
-JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const JavaFeatures_NestInFileClassFeature& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &JavaFeatures_NestInFileClassFeature_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  JavaFeatures_NestInFileClassFeature& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL JavaFeatures_NestInFileClassFeature::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const JavaFeatures_NestInFileClassFeature& from = *static_cast<const JavaFeatures_NestInFileClassFeature*>(from_msg);
+  JavaFeatures_NestInFileClassFeature& this_ = *static_cast<JavaFeatures_NestInFileClassFeature*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(JavaFeatures_NestInFileClassFeature)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 
   // @@protoc_insertion_point(copy_constructor:pb.JavaFeatures.NestInFileClassFeature)
+  return &this_;
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -430,16 +428,16 @@ JavaFeatures::JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.JavaFeatures)
 }
-JavaFeatures::JavaFeatures(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &JavaFeatures_globals_.class_data),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL JavaFeatures::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to, [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const JavaFeatures& from = *static_cast<const JavaFeatures*>(from_msg);
+  JavaFeatures& this_ = *static_cast<JavaFeatures*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(JavaFeatures)));
+  new (&this_._impl_) Impl_(from._impl_);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -656,10 +654,6 @@ PROTOBUF_CONSTINIT PROTOC_EXPORT
         java(kJavaFieldNumber, &::pb::JavaFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google
 // @@protoc_insertion_point(global_scope)
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
     _static_init2_ [[maybe_unused]] =

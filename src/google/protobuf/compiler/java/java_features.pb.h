@@ -295,7 +295,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures_NestInFi
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures.NestInFileClassFeature"; }
 
   explicit JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures_NestInFileClassFeature& from);
+  JavaFeatures_NestInFileClassFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures_NestInFileClassFeature& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &JavaFeatures_NestInFileClassFeature_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   JavaFeatures_NestInFileClassFeature(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures_NestInFileClassFeature&& from) noexcept
       : JavaFeatures_NestInFileClassFeature(arena) {
@@ -501,7 +508,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   static ::absl::string_view FullMessageName() { return "pb.JavaFeatures"; }
 
   explicit JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from);
+  JavaFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const JavaFeatures& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &JavaFeatures_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   JavaFeatures(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, JavaFeatures&& from) noexcept
       : JavaFeatures(arena) {

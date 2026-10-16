@@ -66,9 +66,6 @@ class MessageGenerator {
   // Generate all non-inline methods for this class.
   void GenerateClassMethods(io::Printer* p);
 
-  // Generate source file code that should go outside any namespace.
-  void GenerateSourceInProto2Namespace(io::Printer* p);
-
 
   void GenerateInitDefaultSplitInstance(io::Printer* p);
 

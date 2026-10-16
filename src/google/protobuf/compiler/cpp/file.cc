@@ -685,11 +685,6 @@ void FileGenerator::GenerateSourceForMessage(int idx, io::Printer* p) {
         )cc");
   }
 
-  {
-    NamespaceOpener proto_ns(ProtobufNamespace(options_), p);
-    message_generators_[idx]->GenerateSourceInProto2Namespace(p);
-  }
-
   if (IsAnyMessage(file_)) {
     UnmuteWuninitialized(p);
   }
@@ -916,13 +911,6 @@ void FileGenerator::GenerateSource(io::Printer* p) {
     p->Emit(R"cc(
       // @@protoc_insertion_point(namespace_scope)
     )cc");
-  }
-
-  {
-    NamespaceOpener proto_ns(ProtobufNamespace(options_), p);
-    for (size_t i = 0; i < message_generators_.size(); ++i) {
-      message_generators_[i]->GenerateSourceInProto2Namespace(p);
-    }
   }
 
   p->Emit(R"cc(
@@ -1412,19 +1400,6 @@ class FileGenerator::ForwardDeclarations {
             p->WithVars({{"class", QualifiedClassName(c.second, options)},
                          {"default_name",
                           QualifiedMsgGlobalsInstanceName(c.second, options)}});
-        // To reduce total linker input size in large binaries we make these
-        // functions extern and define then in the pb.cc file. This avoids bloat
-        // in callers by having duplicate definitions of the template.
-        // However, it increases the size of the pb.cc translation units so it
-        // is a tradeoff.
-        p->Emit(R"(
-          extern template void* $nonnull$ Arena::DefaultConstruct<$class$>(Arena* $nullable$);
-        )");
-        if (!IsMapEntryMessage(c.second)) {
-          p->Emit(R"(
-            extern template void* $nonnull$ Arena::CopyConstruct<$class$>(Arena* $nullable$, const void* $nonnull$);
-          )");
-        }
         // We can't make a constexpr pointer to the global if we have DLL
         // linkage so skip this.
         // The fallback traits are slower, but correct.

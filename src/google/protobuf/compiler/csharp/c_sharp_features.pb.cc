@@ -213,16 +213,16 @@ CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.CSharpFeatures)
 }
-CSharpFeatures::CSharpFeatures(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CSharpFeatures& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CSharpFeatures_globals_.class_data),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL CSharpFeatures::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to, [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const CSharpFeatures& from = *static_cast<const CSharpFeatures*>(from_msg);
+  CSharpFeatures& this_ = *static_cast<CSharpFeatures*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(CSharpFeatures)));
+  new (&this_._impl_) Impl_(from._impl_);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE CSharpFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -369,10 +369,6 @@ PROTOBUF_CONSTINIT PROTOC_EXPORT
         csharp(kCsharpFieldNumber, &::pb::CSharpFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google
 // @@protoc_insertion_point(global_scope)
 PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 static ::std::false_type
     _static_init2_ [[maybe_unused]] =
