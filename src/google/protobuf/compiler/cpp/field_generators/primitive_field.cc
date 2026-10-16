@@ -106,7 +106,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      this_.$field_$ = $kDefault$;
+      $this_mutable_field$ = $kDefault$;
     )cc");
   }
 
@@ -118,7 +118,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
+      $this_mutable_field$ = $from_field$;
     )cc");
   }
 
@@ -130,13 +130,7 @@ class SingularPrimitive final : public FieldGeneratorBase {
 
     p->Emit(R"cc(
       //~ A `using std::swap;` is already present in this function.
-      swap(this_.$field_$, other->$field_$);
-    )cc");
-  }
-
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    p->Emit(R"cc(
-      _this->$field_$ = from.$field_$;
+      swap($field_$, other->$field_$);
     )cc");
   }
 
@@ -146,19 +140,8 @@ class SingularPrimitive final : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){$kDefault$},
-    )cc");
-  }
-
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){},
-    )cc");
-  }
-
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -168,18 +151,21 @@ class SingularPrimitive final : public FieldGeneratorBase {
 };
 
 void SingularPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_set_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs = p->WithVars(AnnotatedAccessors(field_, {"set_"}, Semantic::kSet));
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ $Type$ $name$() const;
     $DEPRECATED$ void $set_name$($Type$ value);
+  )cc");
+}
 
-    private:
+void SingularPrimitive::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  auto v =
+      p->WithVars(AnnotatedAccessors(field_, {"_internal_", "_internal_set_"}));
+  p->Emit(R"cc(
     $Type$ $_internal_name$() const;
     void $_internal_set_name$($Type$ value);
-
-    public:
   )cc");
 }
 
@@ -298,9 +284,9 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("this_.$field_$.ClearIfNotDefault();\n");
+      p->Emit("$this_mutable_field$.ClearIfNotDefault();\n");
     } else {
-      p->Emit("this_.$field_$.Clear();\n");
+      p->Emit("$this_mutable_field$.Clear();\n");
     }
   }
 
@@ -317,14 +303,14 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
     // `if (!from.empty()) { body(); }` for both split and non-split cases.
     auto body = [&] {
       p->Emit(R"cc(
-        _this->_internal_mutable_$name$()->MergeFrom(from._internal_$name$());
+        this_._internal_mutable_$name$()->MergeFrom(from._internal_$name$());
       )cc");
     };
     if (!should_split()) {
       body();
     } else {
       p->Emit({{"body", body}}, R"cc(
-        if (!from.$field_$.IsDefault()) {
+        if (!$from_field$.IsDefault()) {
           $body$;
         }
       )cc");
@@ -334,24 +320,14 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateSwappingCode(io::Printer* p) const override {
     ABSL_CHECK(!should_split());
     p->Emit(R"cc(
-      this_.$field_$.InternalSwap(&other->$field_$);
+      $field_$.InternalSwap(&other->$field_$);
     )cc");
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
-        this_.$field_$.DeleteIfNotDefault();
-      )cc");
-    }
-  }
-
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        if (!from._internal_$name$().empty()) {
-          _internal_mutable_$name$()->MergeFrom(from._internal_$name$());
-        }
+        $this_mutable_field$.DeleteIfNotDefault();
       )cc");
     }
   }
@@ -359,21 +335,6 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override {
     p->Emit(R"cc(
       /*decltype($field_$)*/ {},
-    )cc");
-  }
-
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
-    p->Emit({InternalMetadataOffsetSub(p)},
-            R"cc(
-              decltype($field_$){$internal_metadata_offset$},
-            )cc");
-  }
-
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    ABSL_CHECK(!should_split());
-    p->Emit(R"cc(
-      decltype($field_$){from.$field_$},
     )cc");
   }
 
@@ -407,6 +368,7 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateSecondaryPrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -455,8 +417,7 @@ void RepeatedPrimitive::GenerateSecondaryPrivateMembers(io::Printer* p) const {
 }
 
 void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs =
       p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
   auto va =
@@ -487,13 +448,17 @@ void RepeatedPrimitive::GenerateAccessorDeclarations(io::Printer* p) const {
             $DEPRECATED$ void $set_name$(int index, $Type$ value);
             $DEPRECATED$ void $add_name$($Type$ value);
             $decl_field_accessors$;
-
-            private:
-            const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
-            $pb$::RepeatedField<$Type$>* $nonnull$ $_internal_mutable_name$();
-
-            public:
           )cc");
+}
+
+void RepeatedPrimitive::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  auto v = p->WithVars(
+      AnnotatedAccessors(field_, {"_internal_", "_internal_mutable_"}));
+  p->Emit(R"cc(
+    const $pb$::RepeatedField<$Type$>& $_internal_name$() const;
+    $pb$::RepeatedField<$Type$>* $nonnull$ $_internal_mutable_name$();
+  )cc");
 }
 
 void RepeatedPrimitive::GenerateInlineAccessorDefinitions(
@@ -616,10 +581,10 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!field_->is_packed()) {
     p->Emit(R"cc(
-      for (int i = 0, n = this_._internal_$name$_size(); i < n; ++i) {
+      for ($Type$ v : $this_field$) {
         target = stream->EnsureSpace(target);
-        target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray(
-            $number$, this_._internal_$name$().Get(i), target);
+        target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray($number$, v,
+                                                                    target);
       }
     )cc");
     return;

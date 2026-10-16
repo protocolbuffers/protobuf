@@ -57,6 +57,7 @@
 #include "google/protobuf/pyext/field.h"
 #include "google/protobuf/pyext/map_container.h"
 #include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/message_tree.h"
 #include "google/protobuf/pyext/repeated_composite_container.h"
 #include "google/protobuf/pyext/repeated_scalar_container.h"
 #include "google/protobuf/pyext/safe_numerics.h"
@@ -208,12 +209,11 @@ static int AddDescriptors(PyObject* cls, const Descriptor* descriptor) {
 
 static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   static const char* kwlist[] = {"name", "bases", "dict", nullptr};
-  PyObject *bases, *dict;
-  const char* name;
+  PyObject *name, *bases, *dict;
 
   // Check arguments: (name, bases, dict)
   if (!PyArg_ParseTupleAndKeywords(
-          args, kwargs, "sO!O!:type", const_cast<char**>(kwlist), &name,
+          args, kwargs, "UO!O!:type", const_cast<char**>(kwlist), &name,
           &PyTuple_Type, &bases, &PyDict_Type, &dict)) {
     return nullptr;
   }
@@ -266,10 +266,10 @@ static PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
   PyObject* well_known_class = PyDict_GetItemString(
       WKT_classes, std::string(message_descriptor->full_name()).c_str());
   if (well_known_class == nullptr) {
-    new_args.reset(Py_BuildValue("s(OO)O", name, CMessage_Type,
+    new_args.reset(Py_BuildValue("O(OO)O", name, CMessage_Type,
                                  PythonMessage_class, dict));
   } else {
-    new_args.reset(Py_BuildValue("s(OOO)O", name, CMessage_Type,
+    new_args.reset(Py_BuildValue("O(OOO)O", name, CMessage_Type,
                                  PythonMessage_class, well_known_class, dict));
   }
 
@@ -729,6 +729,31 @@ PyMessageFactory* GetFactoryForMessage(CMessage* message) {
   return reinterpret_cast<CMessageClass*>(Py_TYPE(message))->py_message_factory;
 }
 
+void UpdateSubtreeTree(CMessage* cmsg, MessageTree* new_tree) {
+  cmsg->SetTree(new_tree);
+
+  if (CMessage::CompositeFieldsMap* composite_fields =
+          cmsg->composite_fields.TryGet()) {
+    composite_fields->ForEach([new_tree](const void* key, PyObject* value) {
+      const FieldDescriptor* fd = reinterpret_cast<const FieldDescriptor*>(key);
+      if (!fd->is_repeated() &&
+          fd->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+        UpdateSubtreeTree(reinterpret_cast<CMessage*>(value), new_tree);
+      } else {
+        ContainerBase* container = reinterpret_cast<ContainerBase*>(value);
+        container->SetTree(new_tree);
+      }
+    });
+  }
+
+  if (CMessage::SubMessagesMap* child_submessages =
+          cmsg->child_submessages.TryGet()) {
+    child_submessages->ForEach([new_tree](const void* key, PyObject* value) {
+      UpdateSubtreeTree(reinterpret_cast<CMessage*>(value), new_tree);
+    });
+  }
+}
+
 static int MaybeReleaseOverlappingOneofField(CMessage* cmessage,
                                              const FieldDescriptor* field) {
   Message* message = AssureWritable(cmessage);
@@ -817,10 +842,15 @@ void FixupMessageAfterMerge(CMessage* self) {
   composite_fields->ForEach([&](const void* key, PyObject* value) {
     const FieldDescriptor* descriptor =
         reinterpret_cast<const FieldDescriptor*>(key);
+    if (descriptor->is_map()) {
+      reinterpret_cast<MapContainer*>(value)->version++;
+      return;
+    }
     if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE &&
         !descriptor->is_repeated()) {
       CMessage* cmsg = reinterpret_cast<CMessage*>(value);
       if (cmsg->state != MESSAGE_UNPROMOTED) {
+        FixupMessageAfterMerge(cmsg);
         return;
       }
       Message* message = AssureWritable(self);
@@ -849,6 +879,15 @@ Message* AssureWritable(CMessage* self) {
 
   switch (self->state) {
     case MESSAGE_MUTABLE:
+      if (self->has_mutable_map_ancestor) {
+        // This call to AssureWritable(self->parent) ensures we update the whole
+        // chain. It is load bearing.
+        auto* parent = AssureWritable(self->parent);
+        if (parent != nullptr && self->parent_field_descriptor != nullptr &&
+            self->parent_field_descriptor->is_map()) {
+          MakeMapFieldDirty(parent, self->parent_field_descriptor);
+        }
+      }
       return const_cast<Message*>(self->message);
     case MESSAGE_FROZEN:
       if (CheckFrozen(self, "Message is immutable.") < 0) {
@@ -878,6 +917,7 @@ Message* AssureWritable(CMessage* self) {
   if (self->parent_field_descriptor->is_map()) {
     mutable_message = PromoteConstMapValueMessage(
         parent_message, self->parent_field_descriptor, self->message);
+    self->has_mutable_map_ancestor = true;
   } else if (self->parent_field_descriptor->is_repeated()) {
     mutable_message = PromoteConstRepeatedMessage(
         parent_message, self->parent_field_descriptor, self->message);
@@ -886,6 +926,8 @@ Message* AssureWritable(CMessage* self) {
         parent_message, self->parent_field_descriptor,
         GetFactoryForMessage(self->parent)->message_factory);
   }
+
+  self->has_mutable_map_ancestor |= self->parent->has_mutable_map_ancestor;
 
   if (mutable_message == nullptr) {
     return nullptr;
@@ -1328,8 +1370,8 @@ int InitAttributes(CMessage* self, PyObject* args, PyObject* kwargs) {
   return 0;
 }
 
-// Allocates an incomplete Python Message: the caller must fill self->message
-// and eventually self->parent.
+// Allocates an incomplete Python Message: the caller must fill self->tree,
+// self->message, and eventually self->parent.
 CMessage* NewEmptyMessage(CMessageClass* type) {
   CMessage* self =
       reinterpret_cast<CMessage*>(PyType_GenericAlloc(&type->super.ht_type, 0));
@@ -1337,10 +1379,12 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
     return nullptr;
   }
 
+  self->SetTree(nullptr);
   self->message = nullptr;
   self->parent = nullptr;
   self->parent_field_descriptor = nullptr;
   self->state = MESSAGE_MUTABLE;
+  self->has_mutable_map_ancestor = false;
 
   // Construct the lazy unique pointers using placement new.
   new (&self->composite_fields) LazyUniquePtr<CMessage::CompositeFieldsMap>();
@@ -1351,7 +1395,7 @@ CMessage* NewEmptyMessage(CMessageClass* type) {
 
 // The __new__ method of Message classes.
 // Creates a new C++ message and takes ownership.
-static CMessage* NewCMessage(CMessageClass* type) {
+CMessage* NewCMessage(CMessageClass* type) {
   // Retrieve the message descriptor and the default instance (=prototype).
   const Descriptor* message_descriptor = type->message_descriptor;
   if (message_descriptor == nullptr) {
@@ -1375,6 +1419,8 @@ static CMessage* NewCMessage(CMessageClass* type) {
   if (self == nullptr) {
     return nullptr;
   }
+  MessageTree* tree = new MessageTree();
+  self->SetTree(tree);
   self->message = prototype->New(nullptr);  // Ensures no arena is used.
   self->parent = nullptr;                   // This message owns its data.
   return self;
@@ -1413,10 +1459,17 @@ static void Dealloc(CMessage* self) {
 
   CMessage* parent = self->parent;
   if (!parent) {
-    // No parent, we own the message.
+    // No parent, we own the message and the MessageTree reference.
     delete self->message;
+    if (MessageTree* tree = self->GetTree(); tree != nullptr) {
+      tree->Unref();
+    }
   } else if (parent->AsPyObject() == Py_None) {
-    // Message owned externally: Nothing to dealloc
+    // Message owned externally: we own the MessageTree reference, but not the
+    // message.
+    if (MessageTree* tree = self->GetTree(); tree != nullptr) {
+      tree->Unref();
+    }
     Py_CLEAR(self->parent);
   } else {
     // Clear this message from its parent's map.
@@ -1435,6 +1488,9 @@ static void Dealloc(CMessage* self) {
                                        reinterpret_cast<PyObject*>(self));
       }
     }
+    // Child messages do not own a reference to MessageTree; the root owns it.
+    // Py_CLEAR(self->parent) must be the final operation before tp_free,
+    // as it may trigger parent deallocation and free the MessageTree.
     Py_CLEAR(self->parent);
   }
   Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
@@ -1623,6 +1679,8 @@ static int InternalReparentFields(
   if (new_message == nullptr) {
     return -1;
   }
+  MessageTree* new_tree = new MessageTree(self->GetTree());
+  new_message->SetTree(new_tree);
   new_message->message = self->message->New(nullptr);
   ScopedPyObjectPtr holder(reinterpret_cast<PyObject*>(new_message));
   CMessage::SubMessagesMap* new_child_submessages =
@@ -1643,25 +1701,33 @@ static int InternalReparentFields(
     CMessage* to_release = reinterpret_cast<CMessage*>(to_release_ptr.get());
     fields_to_swap.insert(to_release->parent_field_descriptor);
     // Reparent
+    CMessage* old_parent = to_release->parent;
     Py_INCREF(new_message);
-    Py_DECREF(to_release->parent);
     to_release->parent = new_message;
+    Py_DECREF(old_parent);
     self_child_submessages->Erase(to_release->message,
                                   to_release->AsPyObject());
     new_child_submessages->Set(to_release->message, to_release->AsPyObject());
+    UpdateSubtreeTree(to_release, new_tree);
   }
 
   for (const auto& to_release_ptr : containers_to_release) {
     ContainerBase* to_release =
         reinterpret_cast<ContainerBase*>(to_release_ptr.get());
     fields_to_swap.insert(to_release->parent_field_descriptor);
+    CMessage* old_parent = to_release->parent;
     Py_INCREF(new_message);
-    Py_DECREF(to_release->parent);
     to_release->parent = new_message;
+    Py_DECREF(old_parent);
     self_composite_fields->Erase(to_release->parent_field_descriptor,
                                  to_release->AsPyObject());
     new_composite_fields->Set(to_release->parent_field_descriptor,
                               to_release->AsPyObject());
+    if (PyObject_TypeCheck(to_release->AsPyObject(), CMessage_Type)) {
+      UpdateSubtreeTree(reinterpret_cast<CMessage*>(to_release), new_tree);
+    } else {
+      to_release->SetTree(new_tree);
+    }
   }
 
   Message* mutable_self = AssureWritable(self);
@@ -2439,6 +2505,7 @@ CMessage* InternalGetSubMessage(CMessage* self,
   Py_INCREF(self);
   cmsg->parent = self;
   cmsg->parent_field_descriptor = field_descriptor;
+  cmsg->SetTree(self->GetTree());
   cmsg->message = &reflection->GetMessage(*self->message, field_descriptor,
                                           factory->message_factory);
   cmsg->state =
@@ -2885,6 +2952,10 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 PyObject* ContainerBase::DeepCopy() {
   CMessage* new_parent =
       cmessage::NewEmptyMessage(this->parent->GetMessageClass());
+  if (new_parent == nullptr) {
+    return nullptr;
+  }
+  new_parent->SetTree(new MessageTree());
   new_parent->message = this->parent->message->New(nullptr);
 
   // There is no API to copy a single field. The closest operation we have is
@@ -2914,7 +2985,7 @@ void ContainerBase::RemoveFromParentCache() {
             parent->composite_fields.TryGet()) {
       fields->EraseIfEqual(this->parent_field_descriptor, this->AsPyObject());
     }
-    Py_CLEAR(parent);
+    Py_CLEAR(this->parent);
   }
 }
 
@@ -2931,12 +3002,17 @@ CMessage* CMessage::BuildSubMessageFromPointer(
   if (cmsg == nullptr) {
     return nullptr;
   }
+  cmsg->SetTree(this->GetTree());
   cmsg->message = sub_message;
   Py_INCREF(this);
   cmsg->parent = this;
   cmsg->parent_field_descriptor = field_descriptor;
   cmsg->state = this->state == MESSAGE_FROZEN ? MESSAGE_FROZEN : state;
   cmessage::SetSubmessage(this, cmsg);
+  if (state == MESSAGE_MUTABLE) {
+    cmsg->has_mutable_map_ancestor =
+        this->has_mutable_map_ancestor || field_descriptor->is_map();
+  }
   return cmsg;
 }
 
@@ -2949,12 +3025,15 @@ CMessage* CMessage::MaybeReleaseSubMessage(const Message* sub_message) {
   if (value == nullptr) return nullptr;
   CMessage* released = reinterpret_cast<CMessage*>(value);
 
+  MessageTree* new_tree = new MessageTree(this->GetTree());
   // The target message will now own its content.
   Py_CLEAR(released->parent);
   released->parent_field_descriptor = nullptr;
   released->state = MESSAGE_MUTABLE;
+  released->has_mutable_map_ancestor = false;
   // Delete it from the cache.
   sub_messages->Erase(sub_message, released->AsPyObject());
+  cmessage::UpdateSubtreeTree(released, new_tree);
   // child_submessages->Get returned a new reference.
   Py_DECREF(released);
   return released;
@@ -3120,6 +3199,7 @@ PyObject* PyMessage_NewMessageOwnedExternally(Message* message,
   if (self == nullptr) {
     return nullptr;
   }
+  self->SetTree(new MessageTree());
   self->message = message;
   Py_INCREF(Py_None);
   self->parent = reinterpret_cast<CMessage*>(Py_None);

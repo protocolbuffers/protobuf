@@ -276,7 +276,7 @@ class PROTOBUF_EXPORT Message : public MessageLite {
   // Construct a new instance of the same type.  Ownership is passed to the
   // caller.  (This is also defined in MessageLite, but is defined again here
   // for return-type covariance.)
-  [[nodiscard]] Message* New() const { return New(nullptr); }
+  [[nodiscard]] Message* New() const { return New(/*arena=*/nullptr); }
 
   // Construct a new instance on the arena. Ownership is passed to the caller
   // if arena is a nullptr.
@@ -1710,7 +1710,7 @@ Reflection::GetRepeatedPtrFieldInternal<std::string>(
     const Message& message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
   return *static_cast<const RepeatedPtrField<std::string>*>(
-      GetRawRepeatedString(message, field, true, intent));
+      GetRawRepeatedString(message, field, /*is_string=*/true, intent));
 }
 
 template <>
@@ -1722,7 +1722,7 @@ Reflection::MutableRepeatedPtrFieldInternal<std::string>(
     SetHasBit(message, field);
   }
   return static_cast<RepeatedPtrField<std::string>*>(
-      MutableRawRepeatedString(message, field, true, intent));
+      MutableRawRepeatedString(message, field, /*is_string=*/true, intent));
 }
 
 
@@ -1732,8 +1732,9 @@ template <>
 inline const RepeatedPtrField<Message>& Reflection::GetRepeatedPtrFieldInternal(
     const Message& message, const FieldDescriptor* field,
     GetRepeatedFieldIntent intent) const {
-  return *static_cast<const RepeatedPtrField<Message>*>(GetRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
+  return *static_cast<const RepeatedPtrField<Message>*>(
+      GetRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1,
+                          /*desc=*/nullptr, intent));
 }
 
 template <>
@@ -1743,8 +1744,9 @@ inline RepeatedPtrField<Message>* Reflection::MutableRepeatedPtrFieldInternal(
   if (!field->is_extension()) {
     SetHasBit(message, field);
   }
-  return static_cast<RepeatedPtrField<Message>*>(MutableRawRepeatedField(
-      message, field, FieldDescriptor::CPPTYPE_MESSAGE, -1, nullptr, intent));
+  return static_cast<RepeatedPtrField<Message>*>(
+      MutableRawRepeatedField(message, field, FieldDescriptor::CPPTYPE_MESSAGE,
+                              -1, /*desc=*/nullptr, intent));
 }
 
 template <typename PB>

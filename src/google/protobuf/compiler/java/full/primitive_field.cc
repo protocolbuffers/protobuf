@@ -20,6 +20,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -984,6 +985,50 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
 
 void RepeatedImmutablePrimitiveFieldGenerator::
     GenerateBuilderParsingCodeFromPacked(io::Printer* printer) const {
+  // Bulk packed decoding is not yet released to OSS; OSS keeps the loops below.
+  if (!google::protobuf::internal::IsOss()) {
+    switch (GetType(descriptor_)) {
+      case FieldDescriptor::TYPE_INT32:
+      case FieldDescriptor::TYPE_UINT32:
+      case FieldDescriptor::TYPE_INT64:
+      case FieldDescriptor::TYPE_UINT64:
+      case FieldDescriptor::TYPE_BOOL:
+      case FieldDescriptor::TYPE_FLOAT:
+      case FieldDescriptor::TYPE_DOUBLE: {
+        // The runtime decodes the whole payload into a new list. Adopt it if
+        // we have nothing yet, otherwise append. uint32/uint64 decode exactly
+        // like int32/int64, so they share those readers.
+        auto vars = variables_;
+        switch (GetType(descriptor_)) {
+          case FieldDescriptor::TYPE_UINT32:
+            vars["packed_reader"] = "Int32";
+            break;
+          case FieldDescriptor::TYPE_UINT64:
+            vars["packed_reader"] = "Int64";
+            break;
+          default:
+            // Read from variables_, not vars: inserting into vars may rehash
+            // and invalidate a reference into it.
+            vars["packed_reader"] = variables_.at("capitalized_type");
+            break;
+        }
+        printer->Print(vars,
+                       "$field_list_type$ packed =\n"
+                       "    super.readPacked$packed_reader$(input);\n"
+                       "if ($name$_.isEmpty()) {\n"
+                       "  $name$_ = packed;\n"
+                       "  $set_has_field_bit$\n"
+                       "} else {\n"
+                       "  ensure$capitalized_name$IsMutable(\n"
+                       "      $name$_.size() + packed.size());\n"
+                       "  $name$_.addAll(packed);\n"
+                       "}\n");
+        return;
+      }
+      default:
+        break;
+    }
+  }
   if (FixedSize(GetType(descriptor_)) != -1) {
     // 4K limit on pre-allocations to prevent OOM from malformed input.
     printer->Print(variables_,
@@ -1014,14 +1059,15 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializationCode(
     // We invoke getSerializedSize in writeTo for messages that have packed
     // fields in ImmutableMessageGenerator::GenerateMessageSerializationMethods.
     // That makes it safe to rely on the memoized size here.
-    printer->Print(variables_,
-                   "if (get$capitalized_name$List().size() > 0) {\n"
-                   "  output.writeUInt32NoTag($tag$);\n"
-                   "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
-                   "}\n"
-                   "for (int i = 0; i < $name$_.size(); i++) {\n"
-                   "  output.write$capitalized_type$NoTag($repeated_get$(i));\n"
-                   "}\n");
+    printer->Print(
+        variables_,
+        "if (!$name$_.isEmpty()) {\n"
+        "  output.writeUInt32NoTag($tag$);\n"
+        "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
+        "  for (int i = 0; i < $name$_.size(); i++) {\n"
+        "    output.write$capitalized_type$NoTag($repeated_get$(i));\n"
+        "  }\n"
+        "}\n");
   } else {
     printer->Print(
         variables_,
@@ -1038,6 +1084,11 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializedSizeCode(
                  "  int dataSize = 0;\n");
   printer->Indent();
 
+  // An empty field contributes nothing to the serialized size, so we
+  // can skip the whole computation (including the tag) when it is empty.
+  printer->Print(variables_, "if (!$name$_.isEmpty()) {\n");
+  printer->Indent();
+
   if (FixedSize(GetType(descriptor_)) == -1) {
     printer->Print(
         variables_,
@@ -1046,28 +1097,27 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializedSizeCode(
         "    .compute$capitalized_type$SizeNoTag($repeated_get$(i));\n"
         "}\n");
   } else {
-    printer->Print(
-        variables_,
-        "dataSize = $fixed_size$ * get$capitalized_name$List().size();\n");
+    printer->Print(variables_, "dataSize = $fixed_size$ * $name$_.size();\n");
   }
 
   printer->Print("size += dataSize;\n");
 
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-                   "if (!get$capitalized_name$List().isEmpty()) {\n"
-                   "  size += $tag_size$;\n"
-                   "  size += com.google.protobuf.CodedOutputStream\n"
-                   "      .computeInt32SizeNoTag(dataSize);\n"
-                   "}\n");
+                   "size += $tag_size$;\n"
+                   "size += com.google.protobuf.CodedOutputStream\n"
+                   "    .computeInt32SizeNoTag(dataSize);\n");
   } else {
-    printer->Print(
-        variables_,
-        "size += $tag_size$ * get$capitalized_name$List().size();\n");
+    printer->Print(variables_, "size += $tag_size$ * $name$_.size();\n");
   }
 
-  // cache the data size for packed fields.
+  printer->Outdent();
+  printer->Print("}\n");
+
   if (descriptor_->is_packed()) {
+    // Cache the data size for packed fields. This must stay outside the
+    // emptiness check above so that an empty field memoizes 0 rather than
+    // retaining the -1 initializer.
     printer->Print(variables_, "$name$MemoizedSerializedSize = dataSize;\n");
   }
 
@@ -1077,6 +1127,9 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateSerializedSizeCode(
 
 void RepeatedImmutablePrimitiveFieldGenerator::GenerateEqualsCode(
     io::Printer* printer) const {
+  // Note: RepeatedMutablePrimitiveFieldGenerator delegates equals/hashCode to
+  // this generator, and in mutable messages the backing field is nullable, so
+  // these must go through the null-safe accessors rather than $name$_.
   printer->Print(
       variables_,
       "if (!get$capitalized_name$List()\n"

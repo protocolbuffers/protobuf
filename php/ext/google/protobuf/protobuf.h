@@ -22,7 +22,7 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_setter, 0, 0, 1)
 ZEND_ARG_INFO(0, value)
 ZEND_END_ARG_INFO()
 
-#define PHP_PROTOBUF_VERSION "5.37.0"
+#define PHP_PROTOBUF_VERSION "5.38.0"
 
 // ptr -> PHP object cache. This is a weak map that caches lazily-created
 // wrapper objects around upb types:
@@ -57,6 +57,9 @@ void NameMap_ExitConstructor(zend_class_entry* ce);
 // kept alive for the duration of the request but destroyed when the request
 // is ending.
 void Descriptors_Add(zend_object* desc);
+
+// Throws a PHP Out of memory exception and returns NULL.
+void* OutOfMemory(void);
 
 // We need our own assert() because PHP takes control of NDEBUG in its headers.
 #ifdef PBPHP_ENABLE_ASSERTS

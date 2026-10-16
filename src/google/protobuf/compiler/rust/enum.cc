@@ -243,6 +243,15 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         $variants$
 
         $constant_name_fn$
+
+        /// Returns the numeric value of this enum value, as declared in the
+        /// .proto file.
+        ///
+        /// Unlike the `Into<i32>` impl, this is a `const fn`, so it can be
+        /// used to initialize constants and statics.
+        pub const fn number(self) -> i32 {
+          self.0
+        }
       }
 
       impl $std$::convert::From<$name$> for i32 {
@@ -334,6 +343,14 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
 
         fn repeated_clear(_private: $pbi$::Private, r: $pb$::Mut<$pb$::Repeated<Self>>) {
           $pbr$::cast_enum_repeated_mut(r).clear()
+        }
+
+        fn repeated_truncate(
+            _private: $pbi$::Private,
+            r: $pb$::Mut<$pb$::Repeated<Self>>,
+            new_len: usize,
+        ) {
+          $pbr$::cast_enum_repeated_mut(r).truncate(new_len)
         }
 
         unsafe fn repeated_get_unchecked(

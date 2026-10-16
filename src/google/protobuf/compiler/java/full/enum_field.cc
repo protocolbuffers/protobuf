@@ -18,6 +18,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -1172,15 +1173,33 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCode(
 void RepeatedImmutableEnumFieldGenerator::GenerateBuilderParsingCodeFromPacked(
     io::Printer* printer) const {
   if (SupportUnknownEnumValue(descriptor_)) {
-    printer->Print(variables_,
-                   "int length = input.readRawVarint32();\n"
-                   "int limit = input.pushLimit(length);\n"
-                   "int count = input.countPackedVarints(length);\n"
-                   "ensure$capitalized_name$IsMutable(count);\n"
-                   "while (input.getBytesUntilLimit() > 0) {\n"
-                   "  $name$_.addInt(input.readEnum());\n"
-                   "}\n"
-                   "input.popLimit(limit);\n");
+    // Bulk packed decoding is not yet released to OSS.
+    if (!google::protobuf::internal::IsOss()) {
+      // Open enums accept any value and decode exactly like int32, so the
+      // runtime decodes the whole payload into a new list. Adopt it if we
+      // have nothing yet, otherwise append.
+      printer->Print(variables_,
+                     "$field_list_type$ packed =\n"
+                     "    super.readPackedInt32(input);\n"
+                     "if ($name$_.isEmpty()) {\n"
+                     "  $name$_ = packed;\n"
+                     "  $set_has_field_bit$\n"
+                     "} else {\n"
+                     "  ensure$capitalized_name$IsMutable(\n"
+                     "      $name$_.size() + packed.size());\n"
+                     "  $name$_.addAll(packed);\n"
+                     "}\n");
+    } else {
+      printer->Print(variables_,
+                     "int length = input.readRawVarint32();\n"
+                     "int limit = input.pushLimit(length);\n"
+                     "int count = input.countPackedVarints(length);\n"
+                     "ensure$capitalized_name$IsMutable(count);\n"
+                     "while (input.getBytesUntilLimit() > 0) {\n"
+                     "  $name$_.addInt(input.readEnum());\n"
+                     "}\n"
+                     "input.popLimit(limit);\n");
+    }
   } else {
     printer->Print(variables_,
                    "int length = input.readRawVarint32();\n"
@@ -1204,12 +1223,12 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializationCode(
     io::Printer* printer) const {
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-                   "if (get$capitalized_name$List().size() > 0) {\n"
+                   "if (!$name$_.isEmpty()) {\n"
                    "  output.writeUInt32NoTag($tag$);\n"
                    "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
-                   "}\n"
-                   "for (int i = 0; i < $name$_.size(); i++) {\n"
-                   "  output.writeEnumNoTag($name$_.getInt(i));\n"
+                   "  for (int i = 0; i < $name$_.size(); i++) {\n"
+                   "    output.writeEnumNoTag($name$_.getInt(i));\n"
+                   "  }\n"
                    "}\n");
   } else {
     printer->Print(variables_,
@@ -1226,6 +1245,11 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializedSizeCode(
                  "  int dataSize = 0;\n");
   printer->Indent();
 
+  // An empty field contributes nothing to the serialized size, so we
+  // can skip the whole computation (including the tag) when it is empty.
+  printer->Print(variables_, "if (!$name$_.isEmpty()) {\n");
+  printer->Indent();
+
   printer->Print(variables_,
                  "for (int i = 0; i < $name$_.size(); i++) {\n"
                  "  dataSize += com.google.protobuf.CodedOutputStream\n"
@@ -1234,17 +1258,19 @@ void RepeatedImmutableEnumFieldGenerator::GenerateSerializedSizeCode(
   printer->Print("size += dataSize;\n");
   if (descriptor_->is_packed()) {
     printer->Print(variables_,
-                   "if (!get$capitalized_name$List().isEmpty()) {"
-                   "  size += $tag_size$;\n"
-                   "  size += com.google.protobuf.CodedOutputStream\n"
-                   "    .computeUInt32SizeNoTag(dataSize);\n"
-                   "}");
+                   "size += $tag_size$;\n"
+                   "size += com.google.protobuf.CodedOutputStream\n"
+                   "  .computeUInt32SizeNoTag(dataSize);\n");
   } else {
     printer->Print(variables_, "size += $tag_size$ * $name$_.size();\n");
   }
 
-  // cache the data size for packed fields.
+  printer->Outdent();
+  printer->Print("}\n");
+
   if (descriptor_->is_packed()) {
+    // Cache the data size for packed fields. This must stay outside the
+    // emptiness check above so that an empty field memoizes 0.
     printer->Print(variables_, "$name$MemoizedSerializedSize = dataSize;\n");
   }
 

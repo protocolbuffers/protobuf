@@ -83,6 +83,15 @@
    void clear_int32_field() ;
    [[nodiscard]] ::int32_t int32_field() const;
 @@ @@
+   static void SharedDtor(MessageLite& self);
+   void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
+ 
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+ 
+@@ @@
  
  // SimpleProto3
  
@@ -102,6 +111,15 @@
    [[nodiscard]] bool has_int32_field() const;
    void clear_int32_field() ;
    [[nodiscard]] ::int32_t int32_field() const;
+@@ @@
+   static void SharedDtor(MessageLite& self);
+   void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
+ 
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+ 
 @@ @@
  
  // SimpleProto3

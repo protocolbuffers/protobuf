@@ -8,13 +8,17 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <memory>
 #include <string>
+
+#ifdef _WIN32
+#include <fcntl.h>
+#include <io.h>
+#endif
 
 #include "google/protobuf/any.pb.h"
 #include "google/protobuf/api.pb.h"
@@ -32,6 +36,7 @@
 #include "absl/strings/str_cat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/test_protos/test_messages_edition2023.pb.h"
+#include "conformance/test_protos/test_messages_edition2026.pb.h"
 #include "conformance/test_protos/test_messages_edition_unstable.pb.h"
 #include "editions/golden/test_messages_proto2_editions.pb.h"
 #include "editions/golden/test_messages_proto3_editions.pb.h"
@@ -51,6 +56,7 @@
 
 namespace google {
 namespace protobuf {
+namespace conformance {
 namespace {
 using ::conformance::ConformanceRequest;
 using ::conformance::ConformanceResponse;
@@ -61,6 +67,7 @@ using ::google::protobuf::util::NewTypeResolverForDescriptorPool;
 using ::google::protobuf::util::TypeResolver;
 using ::protobuf_test_messages::edition_unstable::TestAllTypesEditionUnstable;
 using ::protobuf_test_messages::editions::TestAllTypesEdition2023;
+using ::protobuf_test_messages::editions::TestAllTypesEdition2026;
 using ::protobuf_test_messages::proto2::TestAllTypesProto2;
 using ::protobuf_test_messages::proto3::TestAllTypesProto3;
 using TestAllTypesProto2Editions =
@@ -68,15 +75,14 @@ using TestAllTypesProto2Editions =
 using TestAllTypesProto3Editions =
     ::protobuf_test_messages::editions::proto3::TestAllTypesProto3;
 
-absl::Status ReadFd(int fd, char* buf, size_t len) {
+absl::Status ReadAll(FILE* file, char* buf, size_t len) {
   while (len > 0) {
-    ssize_t bytes_read = read(fd, buf, len);
+    size_t bytes_read = fread(buf, 1, len, file);
 
     if (bytes_read == 0) {
-      return absl::DataLossError("unexpected EOF");
-    }
-
-    if (bytes_read < 0) {
+      if (feof(file)) {
+        return absl::DataLossError("unexpected EOF");
+      }
       return absl::ErrnoToStatus(errno, "error reading from test runner");
     }
 
@@ -86,9 +92,9 @@ absl::Status ReadFd(int fd, char* buf, size_t len) {
   return absl::OkStatus();
 }
 
-absl::Status WriteFd(int fd, const void* buf, size_t len) {
-  if (static_cast<size_t>(write(fd, buf, len)) != len) {
-    return absl::ErrnoToStatus(errno, "error reading to test runner");
+absl::Status WriteAll(FILE* file, const void* buf, size_t len) {
+  if (fwrite(buf, 1, len, file) != len) {
+    return absl::ErrnoToStatus(errno, "error writing to test runner");
   }
   return absl::OkStatus();
 }
@@ -99,6 +105,7 @@ class Harness {
     google::protobuf::LinkMessageReflection<TestAllTypesProto2>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3>();
     google::protobuf::LinkMessageReflection<TestAllTypesEdition2023>();
+    google::protobuf::LinkMessageReflection<TestAllTypesEdition2026>();
     google::protobuf::LinkMessageReflection<TestAllTypesEditionUnstable>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto2Editions>();
     google::protobuf::LinkMessageReflection<TestAllTypesProto3Editions>();
@@ -158,7 +165,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       JsonParseOptions options;
       options.ignore_unknown_fields =
           (request.test_category() ==
-           conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
+           ::conformance::JSON_IGNORE_UNKNOWN_PARSING_TEST);
       absl::Status status = JsonStringToMessage(request.json_payload(),
                                                 test_message.get(), options);
       if (!status.ok()) {
@@ -187,16 +194,16 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
   }
 
   switch (request.requested_output_format()) {
-    case conformance::UNSPECIFIED:
+    case ::conformance::UNSPECIFIED:
       return absl::InvalidArgumentError("unspecified output format");
 
-    case conformance::PROTOBUF: {
+    case ::conformance::PROTOBUF: {
       ABSL_CHECK(
           test_message->SerializeToString(response.mutable_protobuf_payload()));
       break;
     }
 
-    case conformance::JSON: {
+    case ::conformance::JSON: {
       absl::Status status =
           MessageToJsonString(*test_message, response.mutable_json_payload());
       if (!status.ok()) {
@@ -206,7 +213,7 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
       break;
     }
 
-    case conformance::TEXT_FORMAT: {
+    case ::conformance::TEXT_FORMAT: {
       TextFormat::Printer printer;
       printer.SetHideUnknownFields(!request.print_unknown_fields());
       ABSL_CHECK(printer.PrintToString(*test_message,
@@ -224,16 +231,15 @@ absl::StatusOr<ConformanceResponse> Harness::RunTest(
 
 absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   uint32_t in_len;
-  if (!ReadFd(STDIN_FILENO, reinterpret_cast<char*>(&in_len), sizeof(in_len))
-           .ok()) {
+  if (!ReadAll(stdin, reinterpret_cast<char*>(&in_len), sizeof(in_len)).ok()) {
     // EOF means we're done.
     return true;
   }
-  in_len = internal::little_endian::ToHost(in_len);
+  in_len = ::google::protobuf::internal::little_endian::ToHost(in_len);
 
   std::string serialized_input;
   serialized_input.resize(in_len);
-  RETURN_IF_ERROR(ReadFd(STDIN_FILENO, &serialized_input[0], in_len));
+  RETURN_IF_ERROR(ReadAll(stdin, &serialized_input[0], in_len));
 
   ConformanceRequest request;
   ABSL_CHECK(request.ParseFromString(serialized_input));
@@ -245,12 +251,15 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   // TODO: Remove this suppression.
   (void)response->SerializeToString(&serialized_output);
 
-  uint32_t out_len = internal::little_endian::FromHost(
+  uint32_t out_len = ::google::protobuf::internal::little_endian::FromHost(
       static_cast<uint32_t>(serialized_output.size()));
 
-  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, &out_len, sizeof(out_len)));
-  RETURN_IF_ERROR(WriteFd(STDOUT_FILENO, serialized_output.data(),
-                          serialized_output.size()));
+  RETURN_IF_ERROR(WriteAll(stdout, &out_len, sizeof(out_len)));
+  RETURN_IF_ERROR(
+      WriteAll(stdout, serialized_output.data(), serialized_output.size()));
+  if (fflush(stdout) != 0) {
+    return absl::ErrnoToStatus(errno, "error flushing to test runner");
+  }
 
   if (verbose_) {
     ABSL_LOG(INFO) << "conformance-cpp: request="
@@ -260,11 +269,16 @@ absl::StatusOr<bool> Harness::ServeConformanceRequest() {
   return false;
 }
 }  // namespace
+}  // namespace conformance
 }  // namespace protobuf
 }  // namespace google
 
 int main() {
-  google::protobuf::Harness harness;
+#ifdef _WIN32
+  _setmode(_fileno(stdin), _O_BINARY);
+  _setmode(_fileno(stdout), _O_BINARY);
+#endif
+  google::protobuf::conformance::Harness harness;
   int total_runs = 0;
   while (true) {
     auto is_done = harness.ServeConformanceRequest();

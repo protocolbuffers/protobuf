@@ -321,63 +321,81 @@ namespace Google.Protobuf.Reflection {
 
   }
   #region Enums
-  /// <summary>
-  /// The full set of known editions.
-  /// </summary>
+  /**
+   * <summary>
+   *  The full set of known editions.
+   * </summary>
+   */
   public enum Edition {
-    /// <summary>
-    /// A placeholder for an unknown edition value.
-    /// </summary>
+    /**
+     * <summary>
+     *  A placeholder for an unknown edition value.
+     * </summary>
+     */
     [pbr::OriginalName("EDITION_UNKNOWN")] Unknown = 0,
-    /// <summary>
-    /// A placeholder edition for specifying default behaviors *before* a feature
-    /// was first introduced.  This is effectively an "infinite past".
-    /// </summary>
+    /**
+     * <summary>
+     *  A placeholder edition for specifying default behaviors *before* a feature
+     *  was first introduced.  This is effectively an "infinite past".
+     * </summary>
+     */
     [pbr::OriginalName("EDITION_LEGACY")] Legacy = 900,
-    /// <summary>
-    /// Legacy syntax "editions".  These pre-date editions, but behave much like
-    /// distinct editions.  These can't be used to specify the edition of proto
-    /// files, but feature definitions must supply proto2/proto3 defaults for
-    /// backwards compatibility.
-    /// </summary>
+    /**
+     * <summary>
+     *  Legacy syntax "editions".  These pre-date editions, but behave much like
+     *  distinct editions.  These can't be used to specify the edition of proto
+     *  files, but feature definitions must supply proto2/proto3 defaults for
+     *  backwards compatibility.
+     * </summary>
+     */
     [pbr::OriginalName("EDITION_PROTO2")] Proto2 = 998,
     [pbr::OriginalName("EDITION_PROTO3")] Proto3 = 999,
-    /// <summary>
-    /// Editions that have been released.  The specific values are arbitrary and
-    /// should not be depended on, but they will always be time-ordered for easy
-    /// comparison.
-    /// </summary>
+    /**
+     * <summary>
+     *  Editions that have been released.  The specific values are arbitrary and
+     *  should not be depended on, but they will always be time-ordered for easy
+     *  comparison.
+     * </summary>
+     */
     [pbr::OriginalName("EDITION_2023")] _2023 = 1000,
     [pbr::OriginalName("EDITION_2024")] _2024 = 1001,
     [pbr::OriginalName("EDITION_2026")] _2026 = 1002,
-    /// <summary>
-    /// A placeholder edition for developing and testing unscheduled features.
-    /// </summary>
+    /**
+     * <summary>
+     *  A placeholder edition for developing and testing unscheduled features.
+     * </summary>
+     */
     [pbr::OriginalName("EDITION_UNSTABLE")] Unstable = 9999,
-    /// <summary>
-    /// Placeholder editions for testing feature resolution.  These should not be
-    /// used or relied on outside of tests.
-    /// </summary>
+    /**
+     * <summary>
+     *  Placeholder editions for testing feature resolution.  These should not be
+     *  used or relied on outside of tests.
+     * </summary>
+     */
     [pbr::OriginalName("EDITION_1_TEST_ONLY")] _1TestOnly = 1,
     [pbr::OriginalName("EDITION_2_TEST_ONLY")] _2TestOnly = 2,
     [pbr::OriginalName("EDITION_99997_TEST_ONLY")] _99997TestOnly = 99997,
     [pbr::OriginalName("EDITION_99998_TEST_ONLY")] _99998TestOnly = 99998,
     [pbr::OriginalName("EDITION_99999_TEST_ONLY")] _99999TestOnly = 99999,
-    /// <summary>
-    /// Placeholder for specifying unbounded edition support.  This should only
-    /// ever be used by plugins that can expect to never require any changes to
-    /// support a new edition.
-    /// </summary>
+    /**
+     * <summary>
+     *  Placeholder for specifying unbounded edition support.  This should only
+     *  ever be used by plugins that can expect to never require any changes to
+     *  support a new edition.
+     * </summary>
+     */
     [pbr::OriginalName("EDITION_MAX")] Max = 2147483647,
   }
 
-  /// <summary>
-  /// Describes the 'visibility' of a symbol with respect to the proto import
-  /// system. Symbols can only be imported when the visibility rules do not prevent
-  /// it (ex: local symbols cannot be imported).  Visibility modifiers can only set
-  /// on `message` and `enum` as they are the only types available to be referenced
-  /// from other files.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes the 'visibility' of a symbol with respect to the proto import
+   *  system. Symbols can only be imported when the visibility rules do not prevent
+   *  it (ex: local symbols cannot be imported).  Visibility modifiers can only set
+   *  on `message` and `enum` as they are the only types available to be referenced
+   *  from other files.
+   * </summary>
+   */
   public enum SymbolVisibility {
     [pbr::OriginalName("VISIBILITY_UNSET")] VisibilityUnset = 0,
     [pbr::OriginalName("VISIBILITY_LOCAL")] VisibilityLocal = 1,
@@ -387,10 +405,12 @@ namespace Google.Protobuf.Reflection {
   #endregion
 
   #region Messages
-  /// <summary>
-  /// The protocol compiler can output a FileDescriptorSet containing the .proto
-  /// files it parses.
-  /// </summary>
+  /**
+   * <summary>
+   *  The protocol compiler can output a FileDescriptorSet containing the .proto
+   *  files it parses.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FileDescriptorSet : pb::IExtendableMessage<FileDescriptorSet>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -623,9 +643,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes a complete .proto file.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes a complete .proto file.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FileDescriptorProto : pb::IMessage<FileDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -691,9 +713,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static string NameDefaultValue = "";
 
     private string name_;
-    /// <summary>
-    /// file name, relative to root of source tree
-    /// </summary>
+    /**
+     * <summary>
+     *  file name, relative to root of source tree
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Name {
@@ -720,9 +744,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static string PackageDefaultValue = "";
 
     private string package_;
-    /// <summary>
-    /// e.g. "foo", "foo.bar", etc.
-    /// </summary>
+    /**
+     * <summary>
+     *  e.g. "foo", "foo.bar", etc.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Package {
@@ -749,9 +775,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<string> _repeated_dependency_codec
         = pb::FieldCodec.ForString(26);
     private readonly pbc::RepeatedField<string> dependency_ = new pbc::RepeatedField<string>();
-    /// <summary>
-    /// Names of files imported by this file.
-    /// </summary>
+    /**
+     * <summary>
+     *  Names of files imported by this file.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<string> Dependency {
@@ -763,9 +791,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<int> _repeated_publicDependency_codec
         = pb::FieldCodec.ForInt32(80);
     private readonly pbc::RepeatedField<int> publicDependency_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Indexes of the public imported files in the dependency list above.
-    /// </summary>
+    /**
+     * <summary>
+     *  Indexes of the public imported files in the dependency list above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> PublicDependency {
@@ -777,10 +807,12 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<int> _repeated_weakDependency_codec
         = pb::FieldCodec.ForInt32(88);
     private readonly pbc::RepeatedField<int> weakDependency_ = new pbc::RepeatedField<int>();
-    /// <summary>
-    /// Indexes of the weak imported files in the dependency list.
-    /// For Google-internal migration only. Do not use.
-    /// </summary>
+    /**
+     * <summary>
+     *  Indexes of the weak imported files in the dependency list.
+     *  For Google-internal migration only. Do not use.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<int> WeakDependency {
@@ -792,10 +824,12 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<string> _repeated_optionDependency_codec
         = pb::FieldCodec.ForString(122);
     private readonly pbc::RepeatedField<string> optionDependency_ = new pbc::RepeatedField<string>();
-    /// <summary>
-    /// Names of files imported by this file purely for the purpose of providing
-    /// option extensions. These are excluded from the dependency list above.
-    /// </summary>
+    /**
+     * <summary>
+     *  Names of files imported by this file purely for the purpose of providing
+     *  option extensions. These are excluded from the dependency list above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<string> OptionDependency {
@@ -807,9 +841,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.DescriptorProto> _repeated_messageType_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.DescriptorProto.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> messageType_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto>();
-    /// <summary>
-    /// All top-level definitions in this file.
-    /// </summary>
+    /**
+     * <summary>
+     *  All top-level definitions in this file.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.DescriptorProto> MessageType {
@@ -864,12 +900,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "source_code_info" field.</summary>
     public const int SourceCodeInfoFieldNumber = 9;
     private global::Google.Protobuf.Reflection.SourceCodeInfo sourceCodeInfo_;
-    /// <summary>
-    /// This field contains optional information about the original source code.
-    /// You may safely remove this entire field without harming runtime
-    /// functionality of the descriptors -- the information is needed only by
-    /// development tools.
-    /// </summary>
+    /**
+     * <summary>
+     *  This field contains optional information about the original source code.
+     *  You may safely remove this entire field without harming runtime
+     *  functionality of the descriptors -- the information is needed only by
+     *  development tools.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.SourceCodeInfo SourceCodeInfo {
@@ -884,15 +922,17 @@ namespace Google.Protobuf.Reflection {
     private readonly static string SyntaxDefaultValue = "";
 
     private string syntax_;
-    /// <summary>
-    /// The syntax of the proto file.
-    /// The supported values are "proto2", "proto3", and "editions".
-    ///
-    /// If `edition` is present, this value must be "editions".
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  The syntax of the proto file.
+     *  The supported values are "proto2", "proto3", and "editions".
+     * 
+     *  If `edition` is present, this value must be "editions".
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Syntax {
@@ -919,12 +959,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.Edition EditionDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
 
     private global::Google.Protobuf.Reflection.Edition edition_;
-    /// <summary>
-    /// The edition of the proto file.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  The edition of the proto file.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.Edition Edition {
@@ -1342,9 +1384,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes a message type.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes a message type.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class DescriptorProto : pb::IMessage<DescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -1522,10 +1566,12 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<string> _repeated_reservedName_codec
         = pb::FieldCodec.ForString(82);
     private readonly pbc::RepeatedField<string> reservedName_ = new pbc::RepeatedField<string>();
-    /// <summary>
-    /// Reserved field names, which may not be used by fields in the same message.
-    /// A given name may only be reserved once.
-    /// </summary>
+    /**
+     * <summary>
+     *  Reserved field names, which may not be used by fields in the same message.
+     *  A given name may only be reserved once.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<string> ReservedName {
@@ -1537,9 +1583,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.SymbolVisibility VisibilityDefaultValue = global::Google.Protobuf.Reflection.SymbolVisibility.VisibilityUnset;
 
     private global::Google.Protobuf.Reflection.SymbolVisibility visibility_;
-    /// <summary>
-    /// Support for `export` and `local` keywords on enums.
-    /// </summary>
+    /**
+     * <summary>
+     *  Support for `export` and `local` keywords on enums.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.SymbolVisibility Visibility {
@@ -1929,9 +1977,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static int StartDefaultValue = 0;
 
         private int start_;
-        /// <summary>
-        /// Inclusive.
-        /// </summary>
+        /**
+         * <summary>
+         *  Inclusive.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Start {
@@ -1959,9 +2009,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static int EndDefaultValue = 0;
 
         private int end_;
-        /// <summary>
-        /// Exclusive.
-        /// </summary>
+        /**
+         * <summary>
+         *  Exclusive.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int End {
@@ -2194,11 +2246,13 @@ namespace Google.Protobuf.Reflection {
 
       }
 
-      /// <summary>
-      /// Range of reserved tag numbers. Reserved tag numbers may not be used by
-      /// fields or extension ranges in the same message. Reserved ranges may
-      /// not overlap.
-      /// </summary>
+      /**
+       * <summary>
+       *  Range of reserved tag numbers. Reserved tag numbers may not be used by
+       *  fields or extension ranges in the same message. Reserved ranges may
+       *  not overlap.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class ReservedRange : pb::IMessage<ReservedRange>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -2252,9 +2306,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static int StartDefaultValue = 0;
 
         private int start_;
-        /// <summary>
-        /// Inclusive.
-        /// </summary>
+        /**
+         * <summary>
+         *  Inclusive.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Start {
@@ -2282,9 +2338,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static int EndDefaultValue = 0;
 
         private int end_;
-        /// <summary>
-        /// Exclusive.
-        /// </summary>
+        /**
+         * <summary>
+         *  Exclusive.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int End {
@@ -2535,9 +2593,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -2549,11 +2609,13 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration> _repeated_declaration_codec
         = pb::FieldCodec.ForMessage(18, global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration> declaration_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration>();
-    /// <summary>
-    /// For external users: DO NOT USE. We are in the process of open sourcing
-    /// extension declaration and executing internal cleanups before it can be
-    /// used externally.
-    /// </summary>
+    /**
+     * <summary>
+     *  For external users: DO NOT USE. We are in the process of open sourcing
+     *  extension declaration and executing internal cleanups before it can be
+     *  used externally.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.Declaration> Declaration {
@@ -2563,9 +2625,11 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 50;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -2580,11 +2644,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.VerificationState VerificationDefaultValue = global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.VerificationState.Unverified;
 
     private global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.VerificationState verification_;
-    /// <summary>
-    /// The verification state of the range.
-    /// TODO: flip the default to DECLARATION once all empty ranges
-    /// are marked as UNVERIFIED.
-    /// </summary>
+    /**
+     * <summary>
+     *  The verification state of the range.
+     *  TODO: flip the default to DECLARATION once all empty ranges
+     *  are marked as UNVERIFIED.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.ExtensionRangeOptions.Types.VerificationState Verification {
@@ -2854,13 +2920,17 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// The verification state of the extension range.
-      /// </summary>
+      /**
+       * <summary>
+       *  The verification state of the extension range.
+       * </summary>
+       */
       public enum VerificationState {
-        /// <summary>
-        /// All the extensions of the range must be declared.
-        /// </summary>
+        /**
+         * <summary>
+         *  All the extensions of the range must be declared.
+         * </summary>
+         */
         [pbr::OriginalName("DECLARATION")] Declaration = 0,
         [pbr::OriginalName("UNVERIFIED")] Unverified = 1,
       }
@@ -2921,9 +2991,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static int NumberDefaultValue = 0;
 
         private int number_;
-        /// <summary>
-        /// The extension number declared within the extension range.
-        /// </summary>
+        /**
+         * <summary>
+         *  The extension number declared within the extension range.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Number {
@@ -2951,10 +3023,12 @@ namespace Google.Protobuf.Reflection {
         private readonly static string FullNameDefaultValue = "";
 
         private string fullName_;
-        /// <summary>
-        /// The fully-qualified name of the extension field. There must be a leading
-        /// dot in front of the full name.
-        /// </summary>
+        /**
+         * <summary>
+         *  The fully-qualified name of the extension field. There must be a leading
+         *  dot in front of the full name.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string FullName {
@@ -2981,11 +3055,13 @@ namespace Google.Protobuf.Reflection {
         private readonly static string TypeDefaultValue = "";
 
         private string type_;
-        /// <summary>
-        /// The fully-qualified type name of the extension field. Unlike
-        /// Metadata.type, Declaration.type must have a leading dot for messages
-        /// and enums.
-        /// </summary>
+        /**
+         * <summary>
+         *  The fully-qualified type name of the extension field. Unlike
+         *  Metadata.type, Declaration.type must have a leading dot for messages
+         *  and enums.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string Type {
@@ -3012,11 +3088,13 @@ namespace Google.Protobuf.Reflection {
         private readonly static bool ReservedDefaultValue = false;
 
         private bool reserved_;
-        /// <summary>
-        /// If true, indicates that the number is reserved in the extension range,
-        /// and any extension field with the number will fail to compile. Set this
-        /// when a declared extension field is deleted.
-        /// </summary>
+        /**
+         * <summary>
+         *  If true, indicates that the number is reserved in the extension range,
+         *  and any extension field with the number will fail to compile. Set this
+         *  when a declared extension field is deleted.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Reserved {
@@ -3044,10 +3122,12 @@ namespace Google.Protobuf.Reflection {
         private readonly static bool RepeatedDefaultValue = false;
 
         private bool repeated_;
-        /// <summary>
-        /// If true, indicates that the extension must be defined as repeated.
-        /// Otherwise the extension must be defined as optional.
-        /// </summary>
+        /**
+         * <summary>
+         *  If true, indicates that the extension must be defined as repeated.
+         *  Otherwise the extension must be defined as optional.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public bool Repeated {
@@ -3312,9 +3392,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes a field within a message.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes a field within a message.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FieldDescriptorProto : pb::IMessage<FieldDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -3457,10 +3539,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type TypeDefaultValue = global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type.Double;
 
     private global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type type_;
-    /// <summary>
-    /// If type_name is set, this need not be set.  If both this and type_name
-    /// are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
-    /// </summary>
+    /**
+     * <summary>
+     *  If type_name is set, this need not be set.  If both this and type_name
+     *  are set, this must be one of TYPE_ENUM, TYPE_MESSAGE or TYPE_GROUP.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FieldDescriptorProto.Types.Type Type {
@@ -3488,13 +3572,15 @@ namespace Google.Protobuf.Reflection {
     private readonly static string TypeNameDefaultValue = "";
 
     private string typeName_;
-    /// <summary>
-    /// For message and enum types, this is the name of the type.  If the name
-    /// starts with a '.', it is fully-qualified.  Otherwise, C++-like scoping
-    /// rules are used to find the type (i.e. first the nested types within this
-    /// message are searched, then within the parent, on up to the root
-    /// namespace).
-    /// </summary>
+    /**
+     * <summary>
+     *  For message and enum types, this is the name of the type.  If the name
+     *  starts with a '.', it is fully-qualified.  Otherwise, C++-like scoping
+     *  rules are used to find the type (i.e. first the nested types within this
+     *  message are searched, then within the parent, on up to the root
+     *  namespace).
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string TypeName {
@@ -3521,10 +3607,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static string ExtendeeDefaultValue = "";
 
     private string extendee_;
-    /// <summary>
-    /// For extensions, this is the name of the type being extended.  It is
-    /// resolved in the same manner as type_name.
-    /// </summary>
+    /**
+     * <summary>
+     *  For extensions, this is the name of the type being extended.  It is
+     *  resolved in the same manner as type_name.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string Extendee {
@@ -3551,12 +3639,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static string DefaultValueDefaultValue = "";
 
     private string defaultValue_;
-    /// <summary>
-    /// For numeric types, contains the original text representation of the value.
-    /// For booleans, "true" or "false".
-    /// For strings, contains the default text contents (not escaped in any way).
-    /// For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
-    /// </summary>
+    /**
+     * <summary>
+     *  For numeric types, contains the original text representation of the value.
+     *  For booleans, "true" or "false".
+     *  For strings, contains the default text contents (not escaped in any way).
+     *  For bytes, contains the C escaped value.  All bytes >= 128 are escaped.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string DefaultValue {
@@ -3583,10 +3673,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static int OneofIndexDefaultValue = 0;
 
     private int oneofIndex_;
-    /// <summary>
-    /// If set, gives the index of a oneof in the containing type's oneof_decl
-    /// list.  This field is a member of that oneof.
-    /// </summary>
+    /**
+     * <summary>
+     *  If set, gives the index of a oneof in the containing type's oneof_decl
+     *  list.  This field is a member of that oneof.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public int OneofIndex {
@@ -3614,12 +3706,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static string JsonNameDefaultValue = "";
 
     private string jsonName_;
-    /// <summary>
-    /// JSON name of this field. The value is set by protocol compiler. If the
-    /// user has set a "json_name" option on this field, that option's value
-    /// will be used. Otherwise, it's deduced from the field's name by converting
-    /// it to camelCase.
-    /// </summary>
+    /**
+     * <summary>
+     *  JSON name of this field. The value is set by protocol compiler. If the
+     *  user has set a "json_name" option on this field, that option's value
+     *  will be used. Otherwise, it's deduced from the field's name by converting
+     *  it to camelCase.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JsonName {
@@ -3658,29 +3752,31 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool Proto3OptionalDefaultValue = false;
 
     private bool proto3Optional_;
-    /// <summary>
-    /// If true, this is a proto3 "optional". When a proto3 field is optional, it
-    /// tracks presence regardless of field type.
-    ///
-    /// When proto3_optional is true, this field must belong to a oneof to signal
-    /// to old proto3 clients that presence is tracked for this field. This oneof
-    /// is known as a "synthetic" oneof, and this field must be its sole member
-    /// (each proto3 optional field gets its own synthetic oneof). Synthetic oneofs
-    /// exist in the descriptor only, and do not generate any API. Synthetic oneofs
-    /// must be ordered after all "real" oneofs.
-    ///
-    /// For message fields, proto3_optional doesn't create any semantic change,
-    /// since non-repeated message fields always track presence. However it still
-    /// indicates the semantic detail of whether the user wrote "optional" or not.
-    /// This can be useful for round-tripping the .proto file. For consistency we
-    /// give message fields a synthetic oneof also, even though it is not required
-    /// to track presence. This is especially important because the parser can't
-    /// tell if a field is a message or an enum, so it must always create a
-    /// synthetic oneof.
-    ///
-    /// Proto2 optional fields do not set this flag, because they already indicate
-    /// optional with `LABEL_OPTIONAL`.
-    /// </summary>
+    /**
+     * <summary>
+     *  If true, this is a proto3 "optional". When a proto3 field is optional, it
+     *  tracks presence regardless of field type.
+     * 
+     *  When proto3_optional is true, this field must belong to a oneof to signal
+     *  to old proto3 clients that presence is tracked for this field. This oneof
+     *  is known as a "synthetic" oneof, and this field must be its sole member
+     *  (each proto3 optional field gets its own synthetic oneof). Synthetic oneofs
+     *  exist in the descriptor only, and do not generate any API. Synthetic oneofs
+     *  must be ordered after all "real" oneofs.
+     * 
+     *  For message fields, proto3_optional doesn't create any semantic change,
+     *  since non-repeated message fields always track presence. However it still
+     *  indicates the semantic detail of whether the user wrote "optional" or not.
+     *  This can be useful for round-tripping the .proto file. For consistency we
+     *  give message fields a synthetic oneof also, even though it is not required
+     *  to track presence. This is especially important because the parser can't
+     *  tell if a field is a message or an enum, so it must always create a
+     *  synthetic oneof.
+     * 
+     *  Proto2 optional fields do not set this flag, because they already indicate
+     *  optional with `LABEL_OPTIONAL`.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Proto3Optional {
@@ -4097,68 +4193,88 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
       public enum Type {
-        /// <summary>
-        /// 0 is reserved for errors.
-        /// Order is weird for historical reasons.
-        /// </summary>
+        /**
+         * <summary>
+         *  0 is reserved for errors.
+         *  Order is weird for historical reasons.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_DOUBLE")] Double = 1,
         [pbr::OriginalName("TYPE_FLOAT")] Float = 2,
-        /// <summary>
-        /// Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT64 if
-        /// negative values are likely.
-        /// </summary>
+        /**
+         * <summary>
+         *  Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT64 if
+         *  negative values are likely.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_INT64")] Int64 = 3,
         [pbr::OriginalName("TYPE_UINT64")] Uint64 = 4,
-        /// <summary>
-        /// Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT32 if
-        /// negative values are likely.
-        /// </summary>
+        /**
+         * <summary>
+         *  Not ZigZag encoded.  Negative numbers take 10 bytes.  Use TYPE_SINT32 if
+         *  negative values are likely.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_INT32")] Int32 = 5,
         [pbr::OriginalName("TYPE_FIXED64")] Fixed64 = 6,
         [pbr::OriginalName("TYPE_FIXED32")] Fixed32 = 7,
         [pbr::OriginalName("TYPE_BOOL")] Bool = 8,
         [pbr::OriginalName("TYPE_STRING")] String = 9,
-        /// <summary>
-        /// Tag-delimited aggregate.
-        /// Group type is deprecated and not supported after google.protobuf. However, Proto3
-        /// implementations should still be able to parse the group wire format and
-        /// treat group fields as unknown fields.  In Editions, the group wire format
-        /// can be enabled via the `message_encoding` feature.
-        /// </summary>
+        /**
+         * <summary>
+         *  Tag-delimited aggregate.
+         *  Group type is deprecated and not supported after google.protobuf. However, Proto3
+         *  implementations should still be able to parse the group wire format and
+         *  treat group fields as unknown fields.  In Editions, the group wire format
+         *  can be enabled via the `message_encoding` feature.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_GROUP")] Group = 10,
-        /// <summary>
-        /// Length-delimited aggregate.
-        /// </summary>
+        /**
+         * <summary>
+         *  Length-delimited aggregate.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_MESSAGE")] Message = 11,
-        /// <summary>
-        /// New in version 2.
-        /// </summary>
+        /**
+         * <summary>
+         *  New in version 2.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_BYTES")] Bytes = 12,
         [pbr::OriginalName("TYPE_UINT32")] Uint32 = 13,
         [pbr::OriginalName("TYPE_ENUM")] Enum = 14,
         [pbr::OriginalName("TYPE_SFIXED32")] Sfixed32 = 15,
         [pbr::OriginalName("TYPE_SFIXED64")] Sfixed64 = 16,
-        /// <summary>
-        /// Uses ZigZag encoding.
-        /// </summary>
+        /**
+         * <summary>
+         *  Uses ZigZag encoding.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_SINT32")] Sint32 = 17,
-        /// <summary>
-        /// Uses ZigZag encoding.
-        /// </summary>
+        /**
+         * <summary>
+         *  Uses ZigZag encoding.
+         * </summary>
+         */
         [pbr::OriginalName("TYPE_SINT64")] Sint64 = 18,
       }
 
       public enum Label {
-        /// <summary>
-        /// 0 is reserved for errors
-        /// </summary>
+        /**
+         * <summary>
+         *  0 is reserved for errors
+         * </summary>
+         */
         [pbr::OriginalName("LABEL_OPTIONAL")] Optional = 1,
         [pbr::OriginalName("LABEL_REPEATED")] Repeated = 3,
-        /// <summary>
-        /// The required label is only allowed in google.protobuf.  In proto3 and Editions
-        /// it's explicitly prohibited.  In Editions, the `field_presence` feature
-        /// can be used to get this behavior.
-        /// </summary>
+        /**
+         * <summary>
+         *  The required label is only allowed in google.protobuf.  In proto3 and Editions
+         *  it's explicitly prohibited.  In Editions, the `field_presence` feature
+         *  can be used to get this behavior.
+         * </summary>
+         */
         [pbr::OriginalName("LABEL_REQUIRED")] Required = 2,
       }
 
@@ -4167,9 +4283,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes a oneof.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes a oneof.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class OneofDescriptorProto : pb::IMessage<OneofDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -4428,9 +4546,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes an enum type.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes an enum type.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class EnumDescriptorProto : pb::IMessage<EnumDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -4537,11 +4657,13 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange> _repeated_reservedRange_codec
         = pb::FieldCodec.ForMessage(34, global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange> reservedRange_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange>();
-    /// <summary>
-    /// Range of reserved numeric values. Reserved numeric values may not be used
-    /// by enum values in the same enum declaration. Reserved ranges may not
-    /// overlap.
-    /// </summary>
+    /**
+     * <summary>
+     *  Range of reserved numeric values. Reserved numeric values may not be used
+     *  by enum values in the same enum declaration. Reserved ranges may not
+     *  overlap.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.EnumDescriptorProto.Types.EnumReservedRange> ReservedRange {
@@ -4553,10 +4675,12 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<string> _repeated_reservedName_codec
         = pb::FieldCodec.ForString(42);
     private readonly pbc::RepeatedField<string> reservedName_ = new pbc::RepeatedField<string>();
-    /// <summary>
-    /// Reserved enum value names, which may not be reused. A given name may only
-    /// be reserved once.
-    /// </summary>
+    /**
+     * <summary>
+     *  Reserved enum value names, which may not be reused. A given name may only
+     *  be reserved once.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<string> ReservedName {
@@ -4568,9 +4692,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.SymbolVisibility VisibilityDefaultValue = global::Google.Protobuf.Reflection.SymbolVisibility.VisibilityUnset;
 
     private global::Google.Protobuf.Reflection.SymbolVisibility visibility_;
-    /// <summary>
-    /// Support for `export` and `local` keywords on enums.
-    /// </summary>
+    /**
+     * <summary>
+     *  Support for `export` and `local` keywords on enums.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.SymbolVisibility Visibility {
@@ -4836,14 +4962,16 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// Range of reserved numeric values. Reserved values may not be used by
-      /// entries in the same enum. Reserved ranges may not overlap.
-      ///
-      /// Note that this is distinct from DescriptorProto.ReservedRange in that it
-      /// is inclusive such that it can appropriately represent the entire int32
-      /// domain.
-      /// </summary>
+      /**
+       * <summary>
+       *  Range of reserved numeric values. Reserved values may not be used by
+       *  entries in the same enum. Reserved ranges may not overlap.
+       * 
+       *  Note that this is distinct from DescriptorProto.ReservedRange in that it
+       *  is inclusive such that it can appropriately represent the entire int32
+       *  domain.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class EnumReservedRange : pb::IMessage<EnumReservedRange>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -4897,9 +5025,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static int StartDefaultValue = 0;
 
         private int start_;
-        /// <summary>
-        /// Inclusive.
-        /// </summary>
+        /**
+         * <summary>
+         *  Inclusive.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Start {
@@ -4927,9 +5057,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static int EndDefaultValue = 0;
 
         private int end_;
-        /// <summary>
-        /// Inclusive.
-        /// </summary>
+        /**
+         * <summary>
+         *  Inclusive.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int End {
@@ -5122,9 +5254,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes a value within an enum.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes a value within an enum.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class EnumValueDescriptorProto : pb::IMessage<EnumValueDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -5437,9 +5571,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes a service.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes a service.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class ServiceDescriptorProto : pb::IMessage<ServiceDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -5724,9 +5860,11 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes a method of a service.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes a method of a service.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class MethodDescriptorProto : pb::IMessage<MethodDescriptorProto>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -5810,10 +5948,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static string InputTypeDefaultValue = "";
 
     private string inputType_;
-    /// <summary>
-    /// Input and output type names.  These are resolved in the same way as
-    /// FieldDescriptorProto.type_name, but must refer to a message type.
-    /// </summary>
+    /**
+     * <summary>
+     *  Input and output type names.  These are resolved in the same way as
+     *  FieldDescriptorProto.type_name, but must refer to a message type.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string InputType {
@@ -5878,9 +6018,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool ClientStreamingDefaultValue = false;
 
     private bool clientStreaming_;
-    /// <summary>
-    /// Identifies if client streams multiple client messages
-    /// </summary>
+    /**
+     * <summary>
+     *  Identifies if client streams multiple client messages
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool ClientStreaming {
@@ -5908,9 +6050,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool ServerStreamingDefaultValue = false;
 
     private bool serverStreaming_;
-    /// <summary>
-    /// Identifies if server streams multiple server messages
-    /// </summary>
+    /**
+     * <summary>
+     *  Identifies if server streams multiple server messages
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool ServerStreaming {
@@ -6278,12 +6422,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static string JavaPackageDefaultValue = "";
 
     private string javaPackage_;
-    /// <summary>
-    /// Sets the Java package where classes generated from this .proto will be
-    /// placed.  By default, the proto package is used, but this is often
-    /// inappropriate because proto packages do not normally start with backwards
-    /// domain names.
-    /// </summary>
+    /**
+     * <summary>
+     *  Sets the Java package where classes generated from this .proto will be
+     *  placed.  By default, the proto package is used, but this is often
+     *  inappropriate because proto packages do not normally start with backwards
+     *  domain names.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JavaPackage {
@@ -6310,13 +6456,15 @@ namespace Google.Protobuf.Reflection {
     private readonly static string JavaOuterClassnameDefaultValue = "";
 
     private string javaOuterClassname_;
-    /// <summary>
-    /// Controls the name of the wrapper Java class generated for the .proto file.
-    /// That class will always contain the .proto file's getDescriptor() method as
-    /// well as any top-level extensions defined in the .proto file.
-    /// If java_multiple_files is disabled, then all the other classes from the
-    /// .proto file will be nested inside the single wrapper outer class.
-    /// </summary>
+    /**
+     * <summary>
+     *  Controls the name of the wrapper Java class generated for the .proto file.
+     *  That class will always contain the .proto file's getDescriptor() method as
+     *  well as any top-level extensions defined in the .proto file.
+     *  If java_multiple_files is disabled, then all the other classes from the
+     *  .proto file will be nested inside the single wrapper outer class.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string JavaOuterClassname {
@@ -6343,14 +6491,16 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool JavaMultipleFilesDefaultValue = false;
 
     private bool javaMultipleFiles_;
-    /// <summary>
-    /// If enabled, then the Java code generator will generate a separate .java
-    /// file for each top-level message, enum, and service defined in the .proto
-    /// file.  Thus, these types will *not* be nested inside the wrapper class
-    /// named by java_outer_classname.  However, the wrapper class will still be
-    /// generated to contain the file's getDescriptor() method as well as any
-    /// top-level extensions defined in the file.
-    /// </summary>
+    /**
+     * <summary>
+     *  If enabled, then the Java code generator will generate a separate .java
+     *  file for each top-level message, enum, and service defined in the .proto
+     *  file.  Thus, these types will *not* be nested inside the wrapper class
+     *  named by java_outer_classname.  However, the wrapper class will still be
+     *  generated to contain the file's getDescriptor() method as well as any
+     *  top-level extensions defined in the file.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool JavaMultipleFiles {
@@ -6378,9 +6528,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool JavaGenerateEqualsAndHashDefaultValue = false;
 
     private bool javaGenerateEqualsAndHash_;
-    /// <summary>
-    /// This option does nothing.
-    /// </summary>
+    /**
+     * <summary>
+     *  This option does nothing.
+     * </summary>
+     */
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -6411,18 +6563,20 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool JavaStringCheckUtf8DefaultValue = false;
 
     private bool javaStringCheckUtf8_;
-    /// <summary>
-    /// A proto2 file can set this to true to opt in to UTF-8 checking for Java,
-    /// which will throw an exception if invalid UTF-8 is parsed from the wire or
-    /// assigned to a string field.
-    ///
-    /// TODO: clarify exactly what kinds of field types this option
-    /// applies to, and update these docs accordingly.
-    ///
-    /// Proto3 files already perform these checks. Setting the option explicitly to
-    /// false has no effect: it cannot be used to opt proto3 files out of UTF-8
-    /// checks.
-    /// </summary>
+    /**
+     * <summary>
+     *  A proto2 file can set this to true to opt in to UTF-8 checking for Java,
+     *  which will throw an exception if invalid UTF-8 is parsed from the wire or
+     *  assigned to a string field.
+     * 
+     *  TODO: clarify exactly what kinds of field types this option
+     *  applies to, and update these docs accordingly.
+     * 
+     *  Proto3 files already perform these checks. Setting the option explicitly to
+     *  false has no effect: it cannot be used to opt proto3 files out of UTF-8
+     *  checks.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool JavaStringCheckUtf8 {
@@ -6477,13 +6631,15 @@ namespace Google.Protobuf.Reflection {
     private readonly static string GoPackageDefaultValue = "";
 
     private string goPackage_;
-    /// <summary>
-    /// Sets the Go package where structs generated from this .proto will be
-    /// placed. If omitted, the Go package will be derived from the following:
-    ///   - The basename of the package import path, if provided.
-    ///   - Otherwise, the package statement in the .proto file, if present.
-    ///   - Otherwise, the basename of the .proto file, without extension.
-    /// </summary>
+    /**
+     * <summary>
+     *  Sets the Go package where structs generated from this .proto will be
+     *  placed. If omitted, the Go package will be derived from the following:
+     *    - The basename of the package import path, if provided.
+     *    - Otherwise, the package statement in the .proto file, if present.
+     *    - Otherwise, the basename of the .proto file, without extension.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string GoPackage {
@@ -6510,18 +6666,20 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool CcGenericServicesDefaultValue = false;
 
     private bool ccGenericServices_;
-    /// <summary>
-    /// Should generic services be generated in each language?  "Generic" services
-    /// are not specific to any particular RPC system.  They are generated by the
-    /// main code generators in each language (without additional plugins).
-    /// Generic services were the only kind of service generation supported by
-    /// early versions of google.protobuf.
-    ///
-    /// Generic services are now considered deprecated in favor of using plugins
-    /// that generate code specific to your particular RPC system.  Therefore,
-    /// these default to false.  Old code which depends on generic services should
-    /// explicitly set them to true.
-    /// </summary>
+    /**
+     * <summary>
+     *  Should generic services be generated in each language?  "Generic" services
+     *  are not specific to any particular RPC system.  They are generated by the
+     *  main code generators in each language (without additional plugins).
+     *  Generic services were the only kind of service generation supported by
+     *  early versions of google.protobuf.
+     * 
+     *  Generic services are now considered deprecated in favor of using plugins
+     *  that generate code specific to your particular RPC system.  Therefore,
+     *  these default to false.  Old code which depends on generic services should
+     *  explicitly set them to true.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool CcGenericServices {
@@ -6603,12 +6761,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
-    /// <summary>
-    /// Is this file deprecated?
-    /// Depending on the target platform, this can emit Deprecated annotations
-    /// for everything in the file, or it will be completely ignored; in the very
-    /// least, this is a formalization for deprecating files.
-    /// </summary>
+    /**
+     * <summary>
+     *  Is this file deprecated?
+     *  Depending on the target platform, this can emit Deprecated annotations
+     *  for everything in the file, or it will be completely ignored; in the very
+     *  least, this is a formalization for deprecating files.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Deprecated {
@@ -6636,10 +6796,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool CcEnableArenasDefaultValue = true;
 
     private bool ccEnableArenas_;
-    /// <summary>
-    /// Enables the use of arenas for the proto messages in this file. This applies
-    /// only to generated classes for C++.
-    /// </summary>
+    /**
+     * <summary>
+     *  Enables the use of arenas for the proto messages in this file. This applies
+     *  only to generated classes for C++.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool CcEnableArenas {
@@ -6667,10 +6829,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static string ObjcClassPrefixDefaultValue = "";
 
     private string objcClassPrefix_;
-    /// <summary>
-    /// Sets the objective c class prefix which is prepended to all objective c
-    /// generated classes from this .proto. There is no default.
-    /// </summary>
+    /**
+     * <summary>
+     *  Sets the objective c class prefix which is prepended to all objective c
+     *  generated classes from this .proto. There is no default.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string ObjcClassPrefix {
@@ -6697,9 +6861,11 @@ namespace Google.Protobuf.Reflection {
     private readonly static string CsharpNamespaceDefaultValue = "";
 
     private string csharpNamespace_;
-    /// <summary>
-    /// Namespace for generated classes; defaults to the package.
-    /// </summary>
+    /**
+     * <summary>
+     *  Namespace for generated classes; defaults to the package.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string CsharpNamespace {
@@ -6726,12 +6892,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static string SwiftPrefixDefaultValue = "";
 
     private string swiftPrefix_;
-    /// <summary>
-    /// By default Swift generators will take the proto package and CamelCase it
-    /// replacing '.' with underscore and use that to prefix the types/symbols
-    /// defined. When this options is provided, they will use this value instead
-    /// to prefix the types/symbols defined.
-    /// </summary>
+    /**
+     * <summary>
+     *  By default Swift generators will take the proto package and CamelCase it
+     *  replacing '.' with underscore and use that to prefix the types/symbols
+     *  defined. When this options is provided, they will use this value instead
+     *  to prefix the types/symbols defined.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string SwiftPrefix {
@@ -6758,10 +6926,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static string PhpClassPrefixDefaultValue = "";
 
     private string phpClassPrefix_;
-    /// <summary>
-    /// Sets the php class prefix which is prepended to all php generated classes
-    /// from this .proto. Default is empty.
-    /// </summary>
+    /**
+     * <summary>
+     *  Sets the php class prefix which is prepended to all php generated classes
+     *  from this .proto. Default is empty.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string PhpClassPrefix {
@@ -6788,11 +6958,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static string PhpNamespaceDefaultValue = "";
 
     private string phpNamespace_;
-    /// <summary>
-    /// Use this option to change the namespace of php generated classes. Default
-    /// is empty. When this option is empty, the package name will be used for
-    /// determining the namespace.
-    /// </summary>
+    /**
+     * <summary>
+     *  Use this option to change the namespace of php generated classes. Default
+     *  is empty. When this option is empty, the package name will be used for
+     *  determining the namespace.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string PhpNamespace {
@@ -6819,11 +6991,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static string PhpMetadataNamespaceDefaultValue = "";
 
     private string phpMetadataNamespace_;
-    /// <summary>
-    /// Use this option to change the namespace of php generated metadata classes.
-    /// Default is empty. When this option is empty, the proto file name will be
-    /// used for determining the namespace.
-    /// </summary>
+    /**
+     * <summary>
+     *  Use this option to change the namespace of php generated metadata classes.
+     *  Default is empty. When this option is empty, the proto file name will be
+     *  used for determining the namespace.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string PhpMetadataNamespace {
@@ -6850,11 +7024,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static string RubyPackageDefaultValue = "";
 
     private string rubyPackage_;
-    /// <summary>
-    /// Use this option to change the package of ruby generated classes. Default
-    /// is empty. When this option is not set, the package name will be used for
-    /// determining the ruby package.
-    /// </summary>
+    /**
+     * <summary>
+     *  Use this option to change the package of ruby generated classes. Default
+     *  is empty. When this option is not set, the package name will be used for
+     *  determining the ruby package.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string RubyPackage {
@@ -6879,12 +7055,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 50;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -6899,10 +7077,12 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here.
-    /// See the documentation for the "Options" section above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here.
+     *  See the documentation for the "Options" section above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -7574,21 +7754,29 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// Generated classes can be optimized for speed or code size.
-      /// </summary>
+      /**
+       * <summary>
+       *  Generated classes can be optimized for speed or code size.
+       * </summary>
+       */
       public enum OptimizeMode {
-        /// <summary>
-        /// Generate complete code for parsing, serialization,
-        /// </summary>
+        /**
+         * <summary>
+         *  Generate complete code for parsing, serialization,
+         * </summary>
+         */
         [pbr::OriginalName("SPEED")] Speed = 1,
-        /// <summary>
-        /// etc.
-        /// </summary>
+        /**
+         * <summary>
+         *  etc.
+         * </summary>
+         */
         [pbr::OriginalName("CODE_SIZE")] CodeSize = 2,
-        /// <summary>
-        /// Generate code using MessageLite and the lite runtime.
-        /// </summary>
+        /**
+         * <summary>
+         *  Generate code using MessageLite and the lite runtime.
+         * </summary>
+         */
         [pbr::OriginalName("LITE_RUNTIME")] LiteRuntime = 3,
       }
 
@@ -7658,26 +7846,28 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool MessageSetWireFormatDefaultValue = false;
 
     private bool messageSetWireFormat_;
-    /// <summary>
-    /// Set true to use the old proto1 MessageSet wire format for extensions.
-    /// This is provided for backwards-compatibility with the MessageSet wire
-    /// format.  You should not use this for any other reason:  It's less
-    /// efficient, has fewer features, and is more complicated.
-    ///
-    /// The message must be defined exactly as follows:
-    ///   message Foo {
-    ///     option message_set_wire_format = true;
-    ///     extensions 4 to max;
-    ///   }
-    /// Note that the message cannot have any defined fields; MessageSets only
-    /// have extensions.
-    ///
-    /// All extensions of your type must be singular messages; e.g. they cannot
-    /// be int32s, enums, or repeated messages.
-    ///
-    /// Because this is an option, the above two restrictions are not enforced by
-    /// the protocol compiler.
-    /// </summary>
+    /**
+     * <summary>
+     *  Set true to use the old proto1 MessageSet wire format for extensions.
+     *  This is provided for backwards-compatibility with the MessageSet wire
+     *  format.  You should not use this for any other reason:  It's less
+     *  efficient, has fewer features, and is more complicated.
+     * 
+     *  The message must be defined exactly as follows:
+     *    message Foo {
+     *      option message_set_wire_format = true;
+     *      extensions 4 to max;
+     *    }
+     *  Note that the message cannot have any defined fields; MessageSets only
+     *  have extensions.
+     * 
+     *  All extensions of your type must be singular messages; e.g. they cannot
+     *  be int32s, enums, or repeated messages.
+     * 
+     *  Because this is an option, the above two restrictions are not enforced by
+     *  the protocol compiler.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool MessageSetWireFormat {
@@ -7705,11 +7895,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool NoStandardDescriptorAccessorDefaultValue = false;
 
     private bool noStandardDescriptorAccessor_;
-    /// <summary>
-    /// Disables the generation of the standard "descriptor()" accessor, which can
-    /// conflict with a field of the same name.  This is meant to make migration
-    /// from proto1 easier; new code should avoid fields named "descriptor".
-    /// </summary>
+    /**
+     * <summary>
+     *  Disables the generation of the standard "descriptor()" accessor, which can
+     *  conflict with a field of the same name.  This is meant to make migration
+     *  from proto1 easier; new code should avoid fields named "descriptor".
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool NoStandardDescriptorAccessor {
@@ -7737,12 +7929,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
-    /// <summary>
-    /// Is this message deprecated?
-    /// Depending on the target platform, this can emit Deprecated annotations
-    /// for the message, or it will be completely ignored; in the very least,
-    /// this is a formalization for deprecating messages.
-    /// </summary>
+    /**
+     * <summary>
+     *  Is this message deprecated?
+     *  Depending on the target platform, this can emit Deprecated annotations
+     *  for the message, or it will be completely ignored; in the very least,
+     *  this is a formalization for deprecating messages.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Deprecated {
@@ -7770,29 +7964,31 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool MapEntryDefaultValue = false;
 
     private bool mapEntry_;
-    /// <summary>
-    /// Whether the message is an automatically generated map entry type for the
-    /// maps field.
-    ///
-    /// For maps fields:
-    ///     map&lt;KeyType, ValueType> map_field = 1;
-    /// The parsed descriptor looks like:
-    ///     message MapFieldEntry {
-    ///         option map_entry = true;
-    ///         optional KeyType key = 1;
-    ///         optional ValueType value = 2;
-    ///     }
-    ///     repeated MapFieldEntry map_field = 1;
-    ///
-    /// Implementations may choose not to generate the map_entry=true message, but
-    /// use a native map in the target language to hold the keys and values.
-    /// The reflection APIs in such implementations still need to work as
-    /// if the field is a repeated message field.
-    ///
-    /// NOTE: Do not set the option in .proto files. Always use the maps syntax
-    /// instead. The option should only be implicitly set by the proto compiler
-    /// parser.
-    /// </summary>
+    /**
+     * <summary>
+     *  Whether the message is an automatically generated map entry type for the
+     *  maps field.
+     * 
+     *  For maps fields:
+     *      map&lt;KeyType, ValueType> map_field = 1;
+     *  The parsed descriptor looks like:
+     *      message MapFieldEntry {
+     *          option map_entry = true;
+     *          optional KeyType key = 1;
+     *          optional ValueType value = 2;
+     *      }
+     *      repeated MapFieldEntry map_field = 1;
+     * 
+     *  Implementations may choose not to generate the map_entry=true message, but
+     *  use a native map in the target language to hold the keys and values.
+     *  The reflection APIs in such implementations still need to work as
+     *  if the field is a repeated message field.
+     * 
+     *  NOTE: Do not set the option in .proto files. Always use the maps syntax
+     *  instead. The option should only be implicitly set by the proto compiler
+     *  parser.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool MapEntry {
@@ -7820,18 +8016,20 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedLegacyJsonFieldConflictsDefaultValue = false;
 
     private bool deprecatedLegacyJsonFieldConflicts_;
-    /// <summary>
-    /// Enable the legacy handling of JSON field name conflicts.  This lowercases
-    /// and strips underscored from the fields before comparison in proto3 only.
-    /// The new behavior takes `json_name` into account and applies to proto2 as
-    /// well.
-    ///
-    /// This should only be used as a temporary measure against broken builds due
-    /// to the change in behavior for JSON field name conflicts.
-    ///
-    /// TODO This is legacy behavior we plan to remove once downstream
-    /// teams have had time to migrate.
-    /// </summary>
+    /**
+     * <summary>
+     *  Enable the legacy handling of JSON field name conflicts.  This lowercases
+     *  and strips underscored from the fields before comparison in proto3 only.
+     *  The new behavior takes `json_name` into account and applies to proto2 as
+     *  well.
+     * 
+     *  This should only be used as a temporary measure against broken builds due
+     *  to the change in behavior for JSON field name conflicts.
+     * 
+     *  TODO This is legacy behavior we plan to remove once downstream
+     *  teams have had time to migrate.
+     * </summary>
+     */
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -7860,12 +8058,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 12;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -7880,9 +8080,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -8283,15 +8485,17 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.FieldOptions.Types.CType CtypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.CType.String;
 
     private global::Google.Protobuf.Reflection.FieldOptions.Types.CType ctype_;
-    /// <summary>
-    /// NOTE: ctype is deprecated. Use `features.(pb.cpp).string_type` instead.
-    /// The ctype option instructs the C++ code generator to use a different
-    /// representation of the field than it normally would.  See the specific
-    /// options below.  This option is only implemented to support use of
-    /// [ctype=CORD] and [ctype=STRING] (the default) on non-repeated fields of
-    /// type "bytes" in the open source release.
-    /// TODO: make ctype actually deprecated.
-    /// </summary>
+    /**
+     * <summary>
+     *  NOTE: ctype is deprecated. Use `features.(pb.cpp).string_type` instead.
+     *  The ctype option instructs the C++ code generator to use a different
+     *  representation of the field than it normally would.  See the specific
+     *  options below.  This option is only implemented to support use of
+     *  [ctype=CORD] and [ctype=STRING] (the default) on non-repeated fields of
+     *  type "bytes" in the open source release.
+     *  TODO: make ctype actually deprecated.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FieldOptions.Types.CType Ctype {
@@ -8319,15 +8523,17 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool PackedDefaultValue = false;
 
     private bool packed_;
-    /// <summary>
-    /// The packed option can be enabled for repeated primitive fields to enable
-    /// a more efficient representation on the wire. Rather than repeatedly
-    /// writing the tag and type for each element, the entire array is encoded as
-    /// a single length-delimited blob. In proto3, only explicit setting it to
-    /// false will avoid using packed encoding.  This option is prohibited in
-    /// Editions, but the `repeated_field_encoding` feature can be used to control
-    /// the behavior.
-    /// </summary>
+    /**
+     * <summary>
+     *  The packed option can be enabled for repeated primitive fields to enable
+     *  a more efficient representation on the wire. Rather than repeatedly
+     *  writing the tag and type for each element, the entire array is encoded as
+     *  a single length-delimited blob. In proto3, only explicit setting it to
+     *  false will avoid using packed encoding.  This option is prohibited in
+     *  Editions, but the `repeated_field_encoding` feature can be used to control
+     *  the behavior.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Packed {
@@ -8355,19 +8561,21 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.FieldOptions.Types.JSType JstypeDefaultValue = global::Google.Protobuf.Reflection.FieldOptions.Types.JSType.JsNormal;
 
     private global::Google.Protobuf.Reflection.FieldOptions.Types.JSType jstype_;
-    /// <summary>
-    /// The jstype option determines the JavaScript type used for values of the
-    /// field.  The option is permitted only for 64 bit integral and fixed types
-    /// (int64, uint64, sint64, fixed64, sfixed64).  A field with jstype JS_STRING
-    /// is represented as JavaScript string, which avoids loss of precision that
-    /// can happen when a large value is converted to a floating point JavaScript.
-    /// Specifying JS_NUMBER for the jstype causes the generated JavaScript code to
-    /// use the JavaScript "number" type.  The behavior of the default option
-    /// JS_NORMAL is implementation dependent.
-    ///
-    /// This option is an enum to permit additional types to be added, e.g.
-    /// goog.math.Integer.
-    /// </summary>
+    /**
+     * <summary>
+     *  The jstype option determines the JavaScript type used for values of the
+     *  field.  The option is permitted only for 64 bit integral and fixed types
+     *  (int64, uint64, sint64, fixed64, sfixed64).  A field with jstype JS_STRING
+     *  is represented as JavaScript string, which avoids loss of precision that
+     *  can happen when a large value is converted to a floating point JavaScript.
+     *  Specifying JS_NUMBER for the jstype causes the generated JavaScript code to
+     *  use the JavaScript "number" type.  The behavior of the default option
+     *  JS_NORMAL is implementation dependent.
+     * 
+     *  This option is an enum to permit additional types to be added, e.g.
+     *  goog.math.Integer.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FieldOptions.Types.JSType Jstype {
@@ -8395,30 +8603,32 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool LazyDefaultValue = false;
 
     private bool lazy_;
-    /// <summary>
-    /// Should this field be parsed lazily?  Lazy applies only to message-type
-    /// fields.  It means that when the outer message is initially parsed, the
-    /// inner message's contents will not be parsed but instead stored in encoded
-    /// form.  The inner message will actually be parsed when it is first accessed.
-    ///
-    /// This is only a hint.  Implementations are free to choose whether to use
-    /// eager or lazy parsing regardless of the value of this option.  However,
-    /// setting this option true suggests that the protocol author believes that
-    /// using lazy parsing on this field is worth the additional bookkeeping
-    /// overhead typically needed to implement it.
-    ///
-    /// This option does not affect the public interface of any generated code;
-    /// all method signatures remain the same.  Furthermore, thread-safety of the
-    /// interface is not affected by this option; const methods remain safe to
-    /// call from multiple threads concurrently, while non-const methods continue
-    /// to require exclusive access.
-    ///
-    /// Note that lazy message fields are still eagerly verified to check
-    /// ill-formed wireformat or missing required fields. Calling IsInitialized()
-    /// on the outer message would fail if the inner message has missing required
-    /// fields. Failed verification would result in parsing failure (except when
-    /// uninitialized messages are acceptable).
-    /// </summary>
+    /**
+     * <summary>
+     *  Should this field be parsed lazily?  Lazy applies only to message-type
+     *  fields.  It means that when the outer message is initially parsed, the
+     *  inner message's contents will not be parsed but instead stored in encoded
+     *  form.  The inner message will actually be parsed when it is first accessed.
+     * 
+     *  This is only a hint.  Implementations are free to choose whether to use
+     *  eager or lazy parsing regardless of the value of this option.  However,
+     *  setting this option true suggests that the protocol author believes that
+     *  using lazy parsing on this field is worth the additional bookkeeping
+     *  overhead typically needed to implement it.
+     * 
+     *  This option does not affect the public interface of any generated code;
+     *  all method signatures remain the same.  Furthermore, thread-safety of the
+     *  interface is not affected by this option; const methods remain safe to
+     *  call from multiple threads concurrently, while non-const methods continue
+     *  to require exclusive access.
+     * 
+     *  Note that lazy message fields are still eagerly verified to check
+     *  ill-formed wireformat or missing required fields. Calling IsInitialized()
+     *  on the outer message would fail if the inner message has missing required
+     *  fields. Failed verification would result in parsing failure (except when
+     *  uninitialized messages are acceptable).
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Lazy {
@@ -8446,11 +8656,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool UnverifiedLazyDefaultValue = false;
 
     private bool unverifiedLazy_;
-    /// <summary>
-    /// unverified_lazy does no correctness checks on the byte stream. This should
-    /// only be used where lazy with verification is prohibitive for performance
-    /// reasons.
-    /// </summary>
+    /**
+     * <summary>
+     *  unverified_lazy does no correctness checks on the byte stream. This should
+     *  only be used where lazy with verification is prohibitive for performance
+     *  reasons.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool UnverifiedLazy {
@@ -8478,12 +8690,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
-    /// <summary>
-    /// Is this field deprecated?
-    /// Depending on the target platform, this can emit Deprecated annotations
-    /// for accessors, or it will be completely ignored; in the very least, this
-    /// is a formalization for deprecating fields.
-    /// </summary>
+    /**
+     * <summary>
+     *  Is this field deprecated?
+     *  Depending on the target platform, this can emit Deprecated annotations
+     *  for accessors, or it will be completely ignored; in the very least, this
+     *  is a formalization for deprecating fields.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Deprecated {
@@ -8511,10 +8725,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool WeakDefaultValue = false;
 
     private bool weak_;
-    /// <summary>
-    /// DEPRECATED. DO NOT USE!
-    /// For Google-internal migration only. Do not use.
-    /// </summary>
+    /**
+     * <summary>
+     *  DEPRECATED. DO NOT USE!
+     *  For Google-internal migration only. Do not use.
+     * </summary>
+     */
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -8545,10 +8761,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DebugRedactDefaultValue = false;
 
     private bool debugRedact_;
-    /// <summary>
-    /// Indicate that the field value should not be printed out when using debug
-    /// formats, e.g. when the field contains sensitive credentials.
-    /// </summary>
+    /**
+     * <summary>
+     *  Indicate that the field value should not be printed out when using debug
+     *  formats, e.g. when the field contains sensitive credentials.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool DebugRedact {
@@ -8623,12 +8841,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 21;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -8655,9 +8875,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -9153,51 +9375,65 @@ namespace Google.Protobuf.Reflection {
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
       public enum CType {
-        /// <summary>
-        /// Default mode.
-        /// </summary>
+        /**
+         * <summary>
+         *  Default mode.
+         * </summary>
+         */
         [pbr::OriginalName("STRING")] String = 0,
-        /// <summary>
-        /// The option [ctype=CORD] may be applied to a non-repeated field of type
-        /// "bytes". It indicates that in C++, the data should be stored in a Cord
-        /// instead of a string.  For very large strings, this may reduce memory
-        /// fragmentation. It may also allow better performance when parsing from a
-        /// Cord, or when parsing with aliasing enabled, as the parsed Cord may then
-        /// alias the original buffer.
-        /// </summary>
+        /**
+         * <summary>
+         *  The option [ctype=CORD] may be applied to a non-repeated field of type
+         *  "bytes". It indicates that in C++, the data should be stored in a Cord
+         *  instead of a string.  For very large strings, this may reduce memory
+         *  fragmentation. It may also allow better performance when parsing from a
+         *  Cord, or when parsing with aliasing enabled, as the parsed Cord may then
+         *  alias the original buffer.
+         * </summary>
+         */
         [pbr::OriginalName("CORD")] Cord = 1,
         [pbr::OriginalName("STRING_PIECE")] StringPiece = 2,
       }
 
       public enum JSType {
-        /// <summary>
-        /// Use the default type.
-        /// </summary>
+        /**
+         * <summary>
+         *  Use the default type.
+         * </summary>
+         */
         [pbr::OriginalName("JS_NORMAL")] JsNormal = 0,
-        /// <summary>
-        /// Use JavaScript strings.
-        /// </summary>
+        /**
+         * <summary>
+         *  Use JavaScript strings.
+         * </summary>
+         */
         [pbr::OriginalName("JS_STRING")] JsString = 1,
-        /// <summary>
-        /// Use JavaScript numbers.
-        /// </summary>
+        /**
+         * <summary>
+         *  Use JavaScript numbers.
+         * </summary>
+         */
         [pbr::OriginalName("JS_NUMBER")] JsNumber = 2,
       }
 
-      /// <summary>
-      /// If set to RETENTION_SOURCE, the option will be omitted from the binary.
-      /// </summary>
+      /**
+       * <summary>
+       *  If set to RETENTION_SOURCE, the option will be omitted from the binary.
+       * </summary>
+       */
       public enum OptionRetention {
         [pbr::OriginalName("RETENTION_UNKNOWN")] RetentionUnknown = 0,
         [pbr::OriginalName("RETENTION_RUNTIME")] RetentionRuntime = 1,
         [pbr::OriginalName("RETENTION_SOURCE")] RetentionSource = 2,
       }
 
-      /// <summary>
-      /// This indicates the types of entities that the field may apply to when used
-      /// as an option. If it is unset, then the field may be freely used as an
-      /// option on any kind of entity.
-      /// </summary>
+      /**
+       * <summary>
+       *  This indicates the types of entities that the field may apply to when used
+       *  as an option. If it is unset, then the field may be freely used as an
+       *  option on any kind of entity.
+       * </summary>
+       */
       public enum OptionTargetType {
         [pbr::OriginalName("TARGET_TYPE_UNKNOWN")] TargetTypeUnknown = 0,
         [pbr::OriginalName("TARGET_TYPE_FILE")] TargetTypeFile = 1,
@@ -9291,9 +9527,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static string ValueDefaultValue = "";
 
         private string value_;
-        /// <summary>
-        /// Textproto value.
-        /// </summary>
+        /**
+         * <summary>
+         *  Textproto value.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string Value {
@@ -9480,9 +9718,11 @@ namespace Google.Protobuf.Reflection {
 
       }
 
-      /// <summary>
-      /// Information about the support window of a feature.
-      /// </summary>
+      /**
+       * <summary>
+       *  Information about the support window of a feature.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class FeatureSupport : pb::IMessage<FeatureSupport>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -9539,11 +9779,13 @@ namespace Google.Protobuf.Reflection {
         private readonly static global::Google.Protobuf.Reflection.Edition EditionIntroducedDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
 
         private global::Google.Protobuf.Reflection.Edition editionIntroduced_;
-        /// <summary>
-        /// The edition that this feature was first available in.  In editions
-        /// earlier than this one, the default assigned to EDITION_LEGACY will be
-        /// used, and proto files will not be able to override it.
-        /// </summary>
+        /**
+         * <summary>
+         *  The edition that this feature was first available in.  In editions
+         *  earlier than this one, the default assigned to EDITION_LEGACY will be
+         *  used, and proto files will not be able to override it.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.Reflection.Edition EditionIntroduced {
@@ -9571,10 +9813,12 @@ namespace Google.Protobuf.Reflection {
         private readonly static global::Google.Protobuf.Reflection.Edition EditionDeprecatedDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
 
         private global::Google.Protobuf.Reflection.Edition editionDeprecated_;
-        /// <summary>
-        /// The edition this feature becomes deprecated in.  Using this after this
-        /// edition may trigger warnings.
-        /// </summary>
+        /**
+         * <summary>
+         *  The edition this feature becomes deprecated in.  Using this after this
+         *  edition may trigger warnings.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.Reflection.Edition EditionDeprecated {
@@ -9602,10 +9846,12 @@ namespace Google.Protobuf.Reflection {
         private readonly static string DeprecationWarningDefaultValue = "";
 
         private string deprecationWarning_;
-        /// <summary>
-        /// The deprecation warning text if this feature is used after the edition it
-        /// was marked deprecated in.
-        /// </summary>
+        /**
+         * <summary>
+         *  The deprecation warning text if this feature is used after the edition it
+         *  was marked deprecated in.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string DeprecationWarning {
@@ -9632,11 +9878,13 @@ namespace Google.Protobuf.Reflection {
         private readonly static global::Google.Protobuf.Reflection.Edition EditionRemovedDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
 
         private global::Google.Protobuf.Reflection.Edition editionRemoved_;
-        /// <summary>
-        /// The edition this feature is no longer available in.  In editions after
-        /// this one, the last default assigned will be used, and proto files will
-        /// not be able to override it.
-        /// </summary>
+        /**
+         * <summary>
+         *  The edition this feature is no longer available in.  In editions after
+         *  this one, the last default assigned will be used, and proto files will
+         *  not be able to override it.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.Reflection.Edition EditionRemoved {
@@ -9664,10 +9912,12 @@ namespace Google.Protobuf.Reflection {
         private readonly static string RemovalErrorDefaultValue = "";
 
         private string removalError_;
-        /// <summary>
-        /// The removal error text if this feature is used after the edition it was
-        /// removed in.
-        /// </summary>
+        /**
+         * <summary>
+         *  The removal error text if this feature is used after the edition it was
+         *  removed in.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string RemovalError {
@@ -9983,12 +10233,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 1;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -10003,9 +10255,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -10277,10 +10531,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool AllowAliasDefaultValue = false;
 
     private bool allowAlias_;
-    /// <summary>
-    /// Set this option to true to allow mapping different tag names to the same
-    /// value.
-    /// </summary>
+    /**
+     * <summary>
+     *  Set this option to true to allow mapping different tag names to the same
+     *  value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool AllowAlias {
@@ -10308,12 +10564,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
-    /// <summary>
-    /// Is this enum deprecated?
-    /// Depending on the target platform, this can emit Deprecated annotations
-    /// for the enum, or it will be completely ignored; in the very least, this
-    /// is a formalization for deprecating enums.
-    /// </summary>
+    /**
+     * <summary>
+     *  Is this enum deprecated?
+     *  Depending on the target platform, this can emit Deprecated annotations
+     *  for the enum, or it will be completely ignored; in the very least, this
+     *  is a formalization for deprecating enums.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Deprecated {
@@ -10341,14 +10599,16 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedLegacyJsonFieldConflictsDefaultValue = false;
 
     private bool deprecatedLegacyJsonFieldConflicts_;
-    /// <summary>
-    /// Enable the legacy handling of JSON field name conflicts.  This lowercases
-    /// and strips underscored from the fields before comparison in proto3 only.
-    /// The new behavior takes `json_name` into account and applies to proto2 as
-    /// well.
-    /// TODO Remove this legacy behavior once downstream teams have
-    /// had time to migrate.
-    /// </summary>
+    /**
+     * <summary>
+     *  Enable the legacy handling of JSON field name conflicts.  This lowercases
+     *  and strips underscored from the fields before comparison in proto3 only.
+     *  The new behavior takes `json_name` into account and applies to proto2 as
+     *  well.
+     *  TODO Remove this legacy behavior once downstream teams have
+     *  had time to migrate.
+     * </summary>
+     */
     [global::System.ObsoleteAttribute]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
@@ -10377,12 +10637,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 7;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -10397,9 +10659,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -10743,12 +11007,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
-    /// <summary>
-    /// Is this enum value deprecated?
-    /// Depending on the target platform, this can emit Deprecated annotations
-    /// for the enum value, or it will be completely ignored; in the very least,
-    /// this is a formalization for deprecating enum values.
-    /// </summary>
+    /**
+     * <summary>
+     *  Is this enum value deprecated?
+     *  Depending on the target platform, this can emit Deprecated annotations
+     *  for the enum value, or it will be completely ignored; in the very least,
+     *  this is a formalization for deprecating enum values.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Deprecated {
@@ -10774,12 +11040,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 2;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -10794,11 +11062,13 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DebugRedactDefaultValue = false;
 
     private bool debugRedact_;
-    /// <summary>
-    /// Indicate that fields annotated with this enum value should not be printed
-    /// out when using debug formats, e.g. when the field contains sensitive
-    /// credentials.
-    /// </summary>
+    /**
+     * <summary>
+     *  Indicate that fields annotated with this enum value should not be printed
+     *  out when using debug formats, e.g. when the field contains sensitive
+     *  credentials.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool DebugRedact {
@@ -10824,9 +11094,11 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "feature_support" field.</summary>
     public const int FeatureSupportFieldNumber = 4;
     private global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport featureSupport_;
-    /// <summary>
-    /// Information about the support window of a feature value.
-    /// </summary>
+    /**
+     * <summary>
+     *  Information about the support window of a feature value.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FieldOptions.Types.FeatureSupport FeatureSupport {
@@ -10841,9 +11113,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -11192,12 +11466,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 34;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -11212,12 +11488,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
-    /// <summary>
-    /// Is this service deprecated?
-    /// Depending on the target platform, this can emit Deprecated annotations
-    /// for the service, or it will be completely ignored; in the very least,
-    /// this is a formalization for deprecating services.
-    /// </summary>
+    /**
+     * <summary>
+     *  Is this service deprecated?
+     *  Depending on the target platform, this can emit Deprecated annotations
+     *  for the service, or it will be completely ignored; in the very least,
+     *  this is a formalization for deprecating services.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Deprecated {
@@ -11245,9 +11523,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -11542,12 +11822,14 @@ namespace Google.Protobuf.Reflection {
     private readonly static bool DeprecatedDefaultValue = false;
 
     private bool deprecated_;
-    /// <summary>
-    /// Is this method deprecated?
-    /// Depending on the target platform, this can emit Deprecated annotations
-    /// for the method, or it will be completely ignored; in the very least,
-    /// this is a formalization for deprecating methods.
-    /// </summary>
+    /**
+     * <summary>
+     *  Is this method deprecated?
+     *  Depending on the target platform, this can emit Deprecated annotations
+     *  for the method, or it will be completely ignored; in the very least,
+     *  this is a formalization for deprecating methods.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public bool Deprecated {
@@ -11600,12 +11882,14 @@ namespace Google.Protobuf.Reflection {
     /// <summary>Field number for the "features" field.</summary>
     public const int FeaturesFieldNumber = 35;
     private global::Google.Protobuf.Reflection.FeatureSet features_;
-    /// <summary>
-    /// Any features defined in the specific edition.
-    /// WARNING: This field should only be used by protobuf plugins or special
-    /// cases like the proto compiler. Other uses are discouraged and
-    /// developers should rely on the protoreflect APIs for their client language.
-    /// </summary>
+    /**
+     * <summary>
+     *  Any features defined in the specific edition.
+     *  WARNING: This field should only be used by protobuf plugins or special
+     *  cases like the proto compiler. Other uses are discouraged and
+     *  developers should rely on the protoreflect APIs for their client language.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.FeatureSet Features {
@@ -11620,9 +11904,11 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.UninterpretedOption> _repeated_uninterpretedOption_codec
         = pb::FieldCodec.ForMessage(7994, global::Google.Protobuf.Reflection.UninterpretedOption.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> uninterpretedOption_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption>();
-    /// <summary>
-    /// The parser stores options it doesn't recognize here. See above.
-    /// </summary>
+    /**
+     * <summary>
+     *  The parser stores options it doesn't recognize here. See above.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.UninterpretedOption> UninterpretedOption {
@@ -11886,20 +12172,26 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
-      /// or neither? HTTP based RPC implementation may choose GET verb for safe
-      /// methods, and PUT verb for idempotent methods instead of the default POST.
-      /// </summary>
+      /**
+       * <summary>
+       *  Is this method side-effect-free (or safe in HTTP parlance), or idempotent,
+       *  or neither? HTTP based RPC implementation may choose GET verb for safe
+       *  methods, and PUT verb for idempotent methods instead of the default POST.
+       * </summary>
+       */
       public enum IdempotencyLevel {
         [pbr::OriginalName("IDEMPOTENCY_UNKNOWN")] IdempotencyUnknown = 0,
-        /// <summary>
-        /// implies idempotent
-        /// </summary>
+        /**
+         * <summary>
+         *  implies idempotent
+         * </summary>
+         */
         [pbr::OriginalName("NO_SIDE_EFFECTS")] NoSideEffects = 1,
-        /// <summary>
-        /// idempotent, but may have side effects
-        /// </summary>
+        /**
+         * <summary>
+         *  idempotent, but may have side effects
+         * </summary>
+         */
         [pbr::OriginalName("IDEMPOTENT")] Idempotent = 2,
       }
 
@@ -11908,14 +12200,16 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// A message representing a option the parser does not recognize. This only
-  /// appears in options protos created by the compiler::Parser class.
-  /// DescriptorPool resolves these when building Descriptor objects. Therefore,
-  /// options protos in descriptor objects (e.g. returned by Descriptor::options(),
-  /// or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
-  /// in them.
-  /// </summary>
+  /**
+   * <summary>
+   *  A message representing a option the parser does not recognize. This only
+   *  appears in options protos created by the compiler::Parser class.
+   *  DescriptorPool resolves these when building Descriptor objects. Therefore,
+   *  options protos in descriptor objects (e.g. returned by Descriptor::options(),
+   *  or produced by Descriptor::CopyTo()) will never have UninterpretedOptions
+   *  in them.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class UninterpretedOption : pb::IMessage<UninterpretedOption>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -11985,10 +12279,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static string IdentifierValueDefaultValue = "";
 
     private string identifierValue_;
-    /// <summary>
-    /// The value of the uninterpreted option, in whatever type the tokenizer
-    /// identified it as during parsing. Exactly one of these should be set.
-    /// </summary>
+    /**
+     * <summary>
+     *  The value of the uninterpreted option, in whatever type the tokenizer
+     *  identified it as during parsing. Exactly one of these should be set.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public string IdentifierValue {
@@ -12421,13 +12717,15 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// The name of the uninterpreted option.  Each string represents a segment in
-      /// a dot-separated name.  is_extension is true iff a segment represents an
-      /// extension (denoted with parentheses in options specs in .proto files).
-      /// E.g.,{ ["foo", false], ["bar.baz", true], ["moo", false] } represents
-      /// "foo.(bar.baz).moo".
-      /// </summary>
+      /**
+       * <summary>
+       *  The name of the uninterpreted option.  Each string represents a segment in
+       *  a dot-separated name.  is_extension is true iff a segment represents an
+       *  extension (denoted with parentheses in options specs in .proto files).
+       *  E.g.,{ ["foo", false], ["bar.baz", true], ["moo", false] } represents
+       *  "foo.(bar.baz).moo".
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class NamePart : pb::IMessage<NamePart>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -12699,14 +12997,16 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// TODO Enums in C++ gencode (and potentially other languages) are
-  /// not well scoped.  This means that each of the feature enums below can clash
-  /// with each other.  The short names we've chosen maximize call-site
-  /// readability, but leave us very open to this scenario.  A future feature will
-  /// be designed and implemented to handle this, hopefully before we ever hit a
-  /// conflict here.
-  /// </summary>
+  /**
+   * <summary>
+   *  TODO Enums in C++ gencode (and potentially other languages) are
+   *  not well scoped.  This means that each of the feature enums below can clash
+   *  with each other.  The short names we've chosen maximize call-site
+   *  readability, but leave us very open to this scenario.  A future feature will
+   *  be designed and implemented to handle this, hopefully before we ever hit a
+   *  conflict here.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FeatureSet : pb::IExtendableMessage<FeatureSet>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -13596,23 +13896,31 @@ namespace Google.Protobuf.Reflection {
         public static partial class Types {
           public enum DefaultSymbolVisibility {
             [pbr::OriginalName("DEFAULT_SYMBOL_VISIBILITY_UNKNOWN")] Unknown = 0,
-            /// <summary>
-            /// Default pre-EDITION_2024, all UNSET visibility are export.
-            /// </summary>
+            /**
+             * <summary>
+             *  Default pre-EDITION_2024, all UNSET visibility are export.
+             * </summary>
+             */
             [pbr::OriginalName("EXPORT_ALL")] ExportAll = 1,
-            /// <summary>
-            /// All top-level symbols default to export, nested default to local.
-            /// </summary>
+            /**
+             * <summary>
+             *  All top-level symbols default to export, nested default to local.
+             * </summary>
+             */
             [pbr::OriginalName("EXPORT_TOP_LEVEL")] ExportTopLevel = 2,
-            /// <summary>
-            /// All symbols default to local.
-            /// </summary>
+            /**
+             * <summary>
+             *  All symbols default to local.
+             * </summary>
+             */
             [pbr::OriginalName("LOCAL_ALL")] LocalAll = 3,
-            /// <summary>
-            /// All symbols local by default. Nested types cannot be exported.
-            /// With special case caveat for message { enum {} reserved 1 to max; }
-            /// This is the recommended setting for new protos.
-            /// </summary>
+            /**
+             * <summary>
+             *  All symbols local by default. Nested types cannot be exported.
+             *  With special case caveat for message { enum {} reserved 1 to max; }
+             *  This is the recommended setting for new protos.
+             * </summary>
+             */
             [pbr::OriginalName("STRICT")] Strict = 4,
           }
 
@@ -13787,17 +14095,21 @@ namespace Google.Protobuf.Reflection {
         public static partial class Types {
           public enum EnforceProtoLimits {
             [pbr::OriginalName("PROTO_LIMITS_UNKNOWN")] ProtoLimitsUnknown = 0,
-            /// <summary>
-            /// Default pre-EDITION_2026: there are no limit enforcement at the protoc
-            /// level. Practical limits still exist, but they will tend to fail while
-            /// compiling protoc-generated code, and these limits tend to be language
-            /// or toolchain specific.
-            /// </summary>
+            /**
+             * <summary>
+             *  Default pre-EDITION_2026: there are no limit enforcement at the protoc
+             *  level. Practical limits still exist, but they will tend to fail while
+             *  compiling protoc-generated code, and these limits tend to be language
+             *  or toolchain specific.
+             * </summary>
+             */
             [pbr::OriginalName("LEGACY_NO_EXPLICIT_LIMITS")] LegacyNoExplicitLimits = 1,
-            /// <summary>
-            /// A set of limits enforced by Edition 2026 by default. For a detailed
-            /// list of all the limits please consult the Edition 2026 documentation.
-            /// </summary>
+            /**
+             * <summary>
+             *  A set of limits enforced by Edition 2026 by default. For a detailed
+             *  list of all the limits please consult the Edition 2026 documentation.
+             * </summary>
+             */
             [pbr::OriginalName("PROTO_LIMITS2026")] ProtoLimits2026 = 2,
           }
 
@@ -13811,12 +14123,14 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// A compiled specification for the defaults of a set of features.  These
-  /// messages are generated from FeatureSet extensions and can be used to seed
-  /// feature resolution. The resolution with this object becomes a simple search
-  /// for the closest matching edition, followed by proto merges.
-  /// </summary>
+  /**
+   * <summary>
+   *  A compiled specification for the defaults of a set of features.  These
+   *  messages are generated from FeatureSet extensions and can be used to seed
+   *  feature resolution. The resolution with this object becomes a simple search
+   *  for the closest matching edition, followed by proto merges.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class FeatureSetDefaults : pb::IMessage<FeatureSetDefaults>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -13882,10 +14196,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.Edition MinimumEditionDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
 
     private global::Google.Protobuf.Reflection.Edition minimumEdition_;
-    /// <summary>
-    /// The minimum supported edition (inclusive) when this was constructed.
-    /// Editions before this will not have defaults.
-    /// </summary>
+    /**
+     * <summary>
+     *  The minimum supported edition (inclusive) when this was constructed.
+     *  Editions before this will not have defaults.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.Edition MinimumEdition {
@@ -13913,10 +14229,12 @@ namespace Google.Protobuf.Reflection {
     private readonly static global::Google.Protobuf.Reflection.Edition MaximumEditionDefaultValue = global::Google.Protobuf.Reflection.Edition.Unknown;
 
     private global::Google.Protobuf.Reflection.Edition maximumEdition_;
-    /// <summary>
-    /// The maximum known edition (inclusive) when this was constructed. Editions
-    /// after this will not have reliable defaults.
-    /// </summary>
+    /**
+     * <summary>
+     *  The maximum known edition (inclusive) when this was constructed. Editions
+     *  after this will not have reliable defaults.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public global::Google.Protobuf.Reflection.Edition MaximumEdition {
@@ -14121,12 +14439,14 @@ namespace Google.Protobuf.Reflection {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static partial class Types {
-      /// <summary>
-      /// A map from every known edition with a unique set of defaults to its
-      /// defaults. Not all editions may be contained here.  For a given edition,
-      /// the defaults at the closest matching edition ordered at or before it should
-      /// be used.  This field must be in strict ascending order by edition.
-      /// </summary>
+      /**
+       * <summary>
+       *  A map from every known edition with a unique set of defaults to its
+       *  defaults. Not all editions may be contained here.  For a given edition,
+       *  the defaults at the closest matching edition ordered at or before it should
+       *  be used.  This field must be in strict ascending order by edition.
+       * </summary>
+       */
       [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
       public sealed partial class FeatureSetEditionDefault : pb::IMessage<FeatureSetEditionDefault>
       #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -14206,9 +14526,11 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Field number for the "overridable_features" field.</summary>
         public const int OverridableFeaturesFieldNumber = 4;
         private global::Google.Protobuf.Reflection.FeatureSet overridableFeatures_;
-        /// <summary>
-        /// Defaults of features that can be overridden in this edition.
-        /// </summary>
+        /**
+         * <summary>
+         *  Defaults of features that can be overridden in this edition.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.Reflection.FeatureSet OverridableFeatures {
@@ -14221,9 +14543,11 @@ namespace Google.Protobuf.Reflection {
         /// <summary>Field number for the "fixed_features" field.</summary>
         public const int FixedFeaturesFieldNumber = 5;
         private global::Google.Protobuf.Reflection.FeatureSet fixedFeatures_;
-        /// <summary>
-        /// Defaults of features that can't be overridden in this edition.
-        /// </summary>
+        /**
+         * <summary>
+         *  Defaults of features that can't be overridden in this edition.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public global::Google.Protobuf.Reflection.FeatureSet FixedFeatures {
@@ -14445,10 +14769,12 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Encapsulates information about the original source file from which a
-  /// FileDescriptorProto was generated.
-  /// </summary>
+  /**
+   * <summary>
+   *  Encapsulates information about the original source file from which a
+   *  FileDescriptorProto was generated.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class SourceCodeInfo : pb::IExtendableMessage<SourceCodeInfo>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -14502,51 +14828,53 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> _repeated_location_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> location_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location>();
-    /// <summary>
-    /// A Location identifies a piece of source code in a .proto file which
-    /// corresponds to a particular definition.  This information is intended
-    /// to be useful to IDEs, code indexers, documentation generators, and similar
-    /// tools.
-    ///
-    /// For example, say we have a file like:
-    ///   message Foo {
-    ///     optional string foo = 1;
-    ///   }
-    /// Let's look at just the field definition:
-    ///   optional string foo = 1;
-    ///   ^       ^^     ^^  ^  ^^^
-    ///   a       bc     de  f  ghi
-    /// We have the following locations:
-    ///   span   path               represents
-    ///   [a,i)  [ 4, 0, 2, 0 ]     The whole field definition.
-    ///   [a,b)  [ 4, 0, 2, 0, 4 ]  The label (optional).
-    ///   [c,d)  [ 4, 0, 2, 0, 5 ]  The type (string).
-    ///   [e,f)  [ 4, 0, 2, 0, 1 ]  The name (foo).
-    ///   [g,h)  [ 4, 0, 2, 0, 3 ]  The number (1).
-    ///
-    /// Notes:
-    /// - A location may refer to a repeated field itself (i.e. not to any
-    ///   particular index within it).  This is used whenever a set of elements are
-    ///   logically enclosed in a single code segment.  For example, an entire
-    ///   extend block (possibly containing multiple extension definitions) will
-    ///   have an outer location whose path refers to the "extensions" repeated
-    ///   field without an index.
-    /// - Multiple locations may have the same path.  This happens when a single
-    ///   logical declaration is spread out across multiple places.  The most
-    ///   obvious example is the "extend" block again -- there may be multiple
-    ///   extend blocks in the same scope, each of which will have the same path.
-    /// - A location's span is not always a subset of its parent's span.  For
-    ///   example, the "extendee" of an extension declaration appears at the
-    ///   beginning of the "extend" block and is shared by all extensions within
-    ///   the block.
-    /// - Just because a location's span is a subset of some other location's span
-    ///   does not mean that it is a descendant.  For example, a "group" defines
-    ///   both a type and a field in a single declaration.  Thus, the locations
-    ///   corresponding to the type and field and their components will overlap.
-    /// - Code which tries to interpret locations should probably be designed to
-    ///   ignore those that it doesn't understand, as more types of locations could
-    ///   be recorded in the future.
-    /// </summary>
+    /**
+     * <summary>
+     *  A Location identifies a piece of source code in a .proto file which
+     *  corresponds to a particular definition.  This information is intended
+     *  to be useful to IDEs, code indexers, documentation generators, and similar
+     *  tools.
+     * 
+     *  For example, say we have a file like:
+     *    message Foo {
+     *      optional string foo = 1;
+     *    }
+     *  Let's look at just the field definition:
+     *    optional string foo = 1;
+     *    ^       ^^     ^^  ^  ^^^
+     *    a       bc     de  f  ghi
+     *  We have the following locations:
+     *    span   path               represents
+     *    [a,i)  [ 4, 0, 2, 0 ]     The whole field definition.
+     *    [a,b)  [ 4, 0, 2, 0, 4 ]  The label (optional).
+     *    [c,d)  [ 4, 0, 2, 0, 5 ]  The type (string).
+     *    [e,f)  [ 4, 0, 2, 0, 1 ]  The name (foo).
+     *    [g,h)  [ 4, 0, 2, 0, 3 ]  The number (1).
+     * 
+     *  Notes:
+     *  - A location may refer to a repeated field itself (i.e. not to any
+     *    particular index within it).  This is used whenever a set of elements are
+     *    logically enclosed in a single code segment.  For example, an entire
+     *    extend block (possibly containing multiple extension definitions) will
+     *    have an outer location whose path refers to the "extensions" repeated
+     *    field without an index.
+     *  - Multiple locations may have the same path.  This happens when a single
+     *    logical declaration is spread out across multiple places.  The most
+     *    obvious example is the "extend" block again -- there may be multiple
+     *    extend blocks in the same scope, each of which will have the same path.
+     *  - A location's span is not always a subset of its parent's span.  For
+     *    example, the "extendee" of an extension declaration appears at the
+     *    beginning of the "extend" block and is shared by all extensions within
+     *    the block.
+     *  - Just because a location's span is a subset of some other location's span
+     *    does not mean that it is a descendant.  For example, a "group" defines
+     *    both a type and a field in a single declaration.  Thus, the locations
+     *    corresponding to the type and field and their components will overlap.
+     *  - Code which tries to interpret locations should probably be designed to
+     *    ignore those that it doesn't understand, as more types of locations could
+     *    be recorded in the future.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.SourceCodeInfo.Types.Location> Location {
@@ -14783,74 +15111,76 @@ namespace Google.Protobuf.Reflection {
         private static readonly pb::FieldCodec<int> _repeated_path_codec
             = pb::FieldCodec.ForInt32(10);
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
-        /// <summary>
-        /// Identifies which part of the FileDescriptorProto was defined at this
-        /// location.
-        ///
-        /// Each element is a field number or an index.  They form a path from
-        /// the root FileDescriptorProto to the place where the definition appears.
-        /// For example, this path:
-        ///   [ 4, 3, 2, 7, 1 ]
-        /// refers to:
-        ///   file.message_type(3)  // 4, 3
-        ///       .field(7)         // 2, 7
-        ///       .name()           // 1
-        /// This is because FileDescriptorProto.message_type has field number 4:
-        ///   repeated DescriptorProto message_type = 4;
-        /// and DescriptorProto.field has field number 2:
-        ///   repeated FieldDescriptorProto field = 2;
-        /// and FieldDescriptorProto.name has field number 1:
-        ///   optional string name = 1;
-        ///
-        /// Thus, the above path gives the location of a field name.  If we removed
-        /// the last element:
-        ///   [ 4, 3, 2, 7 ]
-        /// this path refers to the whole field declaration (from the beginning
-        /// of the label to the terminating semicolon).
-        ///
-        /// For options, the path refers to the interpreted option in the descriptor.
-        /// E.g., for a custom option `(my_opt) = "foo"` on a message using extension
-        /// number 10101, the path is:
-        ///   [ 4, 3, 7, 10101 ]
-        /// refers to:
-        ///   file.message_type(3)     // 4, 3
-        ///       .options()           // 7
-        ///       .my_opt()            // 10101
-        ///
-        /// Option parts, e.g. name and value are also appended using field numbers
-        /// from `UninterpretedOption`, which deviates from the actual
-        /// FileDescriptorProto path and uses negative values.
-        /// E.g., for `(my_opt) = "foo"` the name `(my_opt)` is:
-        ///   [ 4, 3, 7, 10101, -2 ]
-        /// where -2 is negative of `UninterpretedOption.name`.
-        /// The value "foo" is:
-        ///   [ 4, 3, 7, 10101, -7 ]
-        /// where -7 is the negative of `UninterpretedOption.string_value`.
-        ///
-        /// For complex options (e.g., "(my_opt) = {a: 100}"), the path
-        /// will include -UninterpretedOption.aggregate_value (field number -8) as a
-        /// marker for each level of nesting.
-        ///
-        /// For example, given:
-        ///   option (my_opt) = {a: 100};
-        ///
-        /// The path for the `a` identifier would look like:
-        ///   [ 4, 3, 7, 10101, -8, 1, -2 ]
-        ///
-        /// And for the value 100:
-        ///   [ 4, 3, 7, 10101, -8, 1, -4 ]
-        ///
-        /// Where:
-        ///   -8: UninterpretedOption.aggregate_value marker
-        ///    1: The field number of "a" inside "my_opt"
-        ///   -2: UninterpretedOption.name
-        ///   -4: UninterpretedOption.positive_int_value
-        ///
-        /// We use negative values for UninterpretedOption due to keep it backward
-        /// compatible with pre-existing undocumented behavior where options using
-        /// dot-notation (e.g. `(my_opt).a = 100`) also produce a path like
-        /// [ 4, 3, 7, 10101, 1] that spans the entire option.
-        /// </summary>
+        /**
+         * <summary>
+         *  Identifies which part of the FileDescriptorProto was defined at this
+         *  location.
+         * 
+         *  Each element is a field number or an index.  They form a path from
+         *  the root FileDescriptorProto to the place where the definition appears.
+         *  For example, this path:
+         *    [ 4, 3, 2, 7, 1 ]
+         *  refers to:
+         *    file.message_type(3)  // 4, 3
+         *        .field(7)         // 2, 7
+         *        .name()           // 1
+         *  This is because FileDescriptorProto.message_type has field number 4:
+         *    repeated DescriptorProto message_type = 4;
+         *  and DescriptorProto.field has field number 2:
+         *    repeated FieldDescriptorProto field = 2;
+         *  and FieldDescriptorProto.name has field number 1:
+         *    optional string name = 1;
+         * 
+         *  Thus, the above path gives the location of a field name.  If we removed
+         *  the last element:
+         *    [ 4, 3, 2, 7 ]
+         *  this path refers to the whole field declaration (from the beginning
+         *  of the label to the terminating semicolon).
+         * 
+         *  For options, the path refers to the interpreted option in the descriptor.
+         *  E.g., for a custom option `(my_opt) = "foo"` on a message using extension
+         *  number 10101, the path is:
+         *    [ 4, 3, 7, 10101 ]
+         *  refers to:
+         *    file.message_type(3)     // 4, 3
+         *        .options()           // 7
+         *        .my_opt()            // 10101
+         * 
+         *  Option parts, e.g. name and value are also appended using field numbers
+         *  from `UninterpretedOption`, which deviates from the actual
+         *  FileDescriptorProto path and uses negative values.
+         *  E.g., for `(my_opt) = "foo"` the name `(my_opt)` is:
+         *    [ 4, 3, 7, 10101, -2 ]
+         *  where -2 is negative of `UninterpretedOption.name`.
+         *  The value "foo" is:
+         *    [ 4, 3, 7, 10101, -7 ]
+         *  where -7 is the negative of `UninterpretedOption.string_value`.
+         * 
+         *  For complex options (e.g., "(my_opt) = {a: 100}"), the path
+         *  will include -UninterpretedOption.aggregate_value (field number -8) as a
+         *  marker for each level of nesting.
+         * 
+         *  For example, given:
+         *    option (my_opt) = {a: 100};
+         * 
+         *  The path for the `a` identifier would look like:
+         *    [ 4, 3, 7, 10101, -8, 1, -2 ]
+         * 
+         *  And for the value 100:
+         *    [ 4, 3, 7, 10101, -8, 1, -4 ]
+         * 
+         *  Where:
+         *    -8: UninterpretedOption.aggregate_value marker
+         *     1: The field number of "a" inside "my_opt"
+         *    -2: UninterpretedOption.name
+         *    -4: UninterpretedOption.positive_int_value
+         * 
+         *  We use negative values for UninterpretedOption due to keep it backward
+         *  compatible with pre-existing undocumented behavior where options using
+         *  dot-notation (e.g. `(my_opt).a = 100`) also produce a path like
+         *  [ 4, 3, 7, 10101, 1] that spans the entire option.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public pbc::RepeatedField<int> Path {
@@ -14862,13 +15192,15 @@ namespace Google.Protobuf.Reflection {
         private static readonly pb::FieldCodec<int> _repeated_span_codec
             = pb::FieldCodec.ForInt32(18);
         private readonly pbc::RepeatedField<int> span_ = new pbc::RepeatedField<int>();
-        /// <summary>
-        /// Always has exactly three or four elements: start line, start column,
-        /// end line (optional, otherwise assumed same as start line), end column.
-        /// These are packed into a single field for efficiency.  Note that line
-        /// and column numbers are zero-based -- typically you will want to add
-        /// 1 to each before displaying to a user.
-        /// </summary>
+        /**
+         * <summary>
+         *  Always has exactly three or four elements: start line, start column,
+         *  end line (optional, otherwise assumed same as start line), end column.
+         *  These are packed into a single field for efficiency.  Note that line
+         *  and column numbers are zero-based -- typically you will want to add
+         *  1 to each before displaying to a user.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public pbc::RepeatedField<int> Span {
@@ -14880,55 +15212,57 @@ namespace Google.Protobuf.Reflection {
         private readonly static string LeadingCommentsDefaultValue = "";
 
         private string leadingComments_;
-        /// <summary>
-        /// If this SourceCodeInfo represents a complete declaration, these are any
-        /// comments appearing before and after the declaration which appear to be
-        /// attached to the declaration.
-        ///
-        /// A series of line comments appearing on consecutive lines, with no other
-        /// tokens appearing on those lines, will be treated as a single comment.
-        ///
-        /// leading_detached_comments will keep paragraphs of comments that appear
-        /// before (but not connected to) the current element. Each paragraph,
-        /// separated by empty lines, will be one comment element in the repeated
-        /// field.
-        ///
-        /// Only the comment content is provided; comment markers (e.g. //) are
-        /// stripped out.  For block comments, leading whitespace and an asterisk
-        /// will be stripped from the beginning of each line other than the first.
-        /// Newlines are included in the output.
-        ///
-        /// Examples:
-        ///
-        ///   optional int32 foo = 1;  // Comment attached to foo.
-        ///   // Comment attached to bar.
-        ///   optional int32 bar = 2;
-        ///
-        ///   optional string baz = 3;
-        ///   // Comment attached to baz.
-        ///   // Another line attached to baz.
-        ///
-        ///   // Comment attached to moo.
-        ///   //
-        ///   // Another line attached to moo.
-        ///   optional double moo = 4;
-        ///
-        ///   // Detached comment for corge. This is not leading or trailing comments
-        ///   // to moo or corge because there are blank lines separating it from
-        ///   // both.
-        ///
-        ///   // Detached comment for corge paragraph 2.
-        ///
-        ///   optional string corge = 5;
-        ///   /* Block comment attached
-        ///    * to corge.  Leading asterisks
-        ///    * will be removed. */
-        ///   /* Block comment attached to
-        ///    * grault. */
-        ///   optional int32 grault = 6;
-        ///
-        ///   // ignored detached comments.
-        /// </summary>
+        /**
+         * <summary>
+         *  If this SourceCodeInfo represents a complete declaration, these are any
+         *  comments appearing before and after the declaration which appear to be
+         *  attached to the declaration.
+         * 
+         *  A series of line comments appearing on consecutive lines, with no other
+         *  tokens appearing on those lines, will be treated as a single comment.
+         * 
+         *  leading_detached_comments will keep paragraphs of comments that appear
+         *  before (but not connected to) the current element. Each paragraph,
+         *  separated by empty lines, will be one comment element in the repeated
+         *  field.
+         * 
+         *  Only the comment content is provided; comment markers (e.g. //) are
+         *  stripped out.  For block comments, leading whitespace and an asterisk
+         *  will be stripped from the beginning of each line other than the first.
+         *  Newlines are included in the output.
+         * 
+         *  Examples:
+         * 
+         *    optional int32 foo = 1;  // Comment attached to foo.
+         *    // Comment attached to bar.
+         *    optional int32 bar = 2;
+         * 
+         *    optional string baz = 3;
+         *    // Comment attached to baz.
+         *    // Another line attached to baz.
+         * 
+         *    // Comment attached to moo.
+         *    //
+         *    // Another line attached to moo.
+         *    optional double moo = 4;
+         * 
+         *    // Detached comment for corge. This is not leading or trailing comments
+         *    // to moo or corge because there are blank lines separating it from
+         *    // both.
+         * 
+         *    // Detached comment for corge paragraph 2.
+         * 
+         *    optional string corge = 5;
+         *    /&#42; Block comment attached
+         *     * to corge.  Leading asterisks
+         *     * will be removed. *&#47;
+         *    /&#42; Block comment attached to
+         *     * grault. *&#47;
+         *    optional int32 grault = 6;
+         * 
+         *    // ignored detached comments.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string LeadingComments {
@@ -15203,11 +15537,13 @@ namespace Google.Protobuf.Reflection {
 
   }
 
-  /// <summary>
-  /// Describes the relationship between generated code and its original source
-  /// file. A GeneratedCodeInfo message is associated with only one generated
-  /// source file, but may contain references to different source .proto files.
-  /// </summary>
+  /**
+   * <summary>
+   *  Describes the relationship between generated code and its original source
+   *  file. A GeneratedCodeInfo message is associated with only one generated
+   *  source file, but may contain references to different source .proto files.
+   * </summary>
+   */
   [global::System.Diagnostics.DebuggerDisplayAttribute("{ToString(),nq}")]
   public sealed partial class GeneratedCodeInfo : pb::IMessage<GeneratedCodeInfo>
   #if !GOOGLE_PROTOBUF_REFSTRUCT_COMPATIBILITY_MODE
@@ -15258,10 +15594,12 @@ namespace Google.Protobuf.Reflection {
     private static readonly pb::FieldCodec<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation> _repeated_annotation_codec
         = pb::FieldCodec.ForMessage(10, global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation.Parser);
     private readonly pbc::RepeatedField<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation> annotation_ = new pbc::RepeatedField<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation>();
-    /// <summary>
-    /// An Annotation connects some span of text in generated code to an element
-    /// of its generating .proto file.
-    /// </summary>
+    /**
+     * <summary>
+     *  An Annotation connects some span of text in generated code to an element
+     *  of its generating .proto file.
+     * </summary>
+     */
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public pbc::RepeatedField<global::Google.Protobuf.Reflection.GeneratedCodeInfo.Types.Annotation> Annotation {
@@ -15458,10 +15796,12 @@ namespace Google.Protobuf.Reflection {
         private static readonly pb::FieldCodec<int> _repeated_path_codec
             = pb::FieldCodec.ForInt32(10);
         private readonly pbc::RepeatedField<int> path_ = new pbc::RepeatedField<int>();
-        /// <summary>
-        /// Identifies the element in the original source .proto file. This field
-        /// is formatted the same as SourceCodeInfo.Location.path.
-        /// </summary>
+        /**
+         * <summary>
+         *  Identifies the element in the original source .proto file. This field
+         *  is formatted the same as SourceCodeInfo.Location.path.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public pbc::RepeatedField<int> Path {
@@ -15473,9 +15813,11 @@ namespace Google.Protobuf.Reflection {
         private readonly static string SourceFileDefaultValue = "";
 
         private string sourceFile_;
-        /// <summary>
-        /// Identifies the filesystem path to the original source .proto.
-        /// </summary>
+        /**
+         * <summary>
+         *  Identifies the filesystem path to the original source .proto.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public string SourceFile {
@@ -15502,10 +15844,12 @@ namespace Google.Protobuf.Reflection {
         private readonly static int BeginDefaultValue = 0;
 
         private int begin_;
-        /// <summary>
-        /// Identifies the starting offset in bytes in the generated code
-        /// that relates to the identified object.
-        /// </summary>
+        /**
+         * <summary>
+         *  Identifies the starting offset in bytes in the generated code
+         *  that relates to the identified object.
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int Begin {
@@ -15533,11 +15877,13 @@ namespace Google.Protobuf.Reflection {
         private readonly static int EndDefaultValue = 0;
 
         private int end_;
-        /// <summary>
-        /// Identifies the ending offset in bytes in the generated code that
-        /// relates to the identified object. The end offset should be one past
-        /// the last relevant byte (so the length of the text = end - begin).
-        /// </summary>
+        /**
+         * <summary>
+         *  Identifies the ending offset in bytes in the generated code that
+         *  relates to the identified object. The end offset should be one past
+         *  the last relevant byte (so the length of the text = end - begin).
+         * </summary>
+         */
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public int End {
@@ -15819,22 +16165,30 @@ namespace Google.Protobuf.Reflection {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static partial class Types {
-          /// <summary>
-          /// Represents the identified object's effect on the element in the original
-          /// .proto file.
-          /// </summary>
+          /**
+           * <summary>
+           *  Represents the identified object's effect on the element in the original
+           *  .proto file.
+           * </summary>
+           */
           public enum Semantic {
-            /// <summary>
-            /// There is no effect or the effect is indescribable.
-            /// </summary>
+            /**
+             * <summary>
+             *  There is no effect or the effect is indescribable.
+             * </summary>
+             */
             [pbr::OriginalName("NONE")] None = 0,
-            /// <summary>
-            /// The element is set or otherwise mutated.
-            /// </summary>
+            /**
+             * <summary>
+             *  The element is set or otherwise mutated.
+             * </summary>
+             */
             [pbr::OriginalName("SET")] Set = 1,
-            /// <summary>
-            /// An alias to the element is returned.
-            /// </summary>
+            /**
+             * <summary>
+             *  An alias to the element is returned.
+             * </summary>
+             */
             [pbr::OriginalName("ALIAS")] Alias = 2,
           }
 

@@ -355,8 +355,7 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
 // but in the message and can be queried using additional getters that return
 // ints.
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  if (JavaGenerator::GetResolvedSourceFeatures(*field)
-          .GetExtension(pb::java)
+  if (JavaGenerator::GetResolvedSourceFeatureExtension(*field, pb::java)
           .legacy_closed_enum()) {
     return false;
   }
