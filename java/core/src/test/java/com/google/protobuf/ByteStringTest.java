@@ -133,24 +133,114 @@ public class ByteStringTest {
   }
 
   @Test
+  public void testCompare_boundedByteStrings_thorough() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    // Matching slices at different non-zero offsets with opposite sentinel bytes outside the bounds
+    ByteString b1 =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, (byte) 0xFF})
+            .substring(1, 11);
+    ByteString b2 =
+        ByteString.copyFrom(new byte[] {0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0}).substring(2, 12);
+    assertWithMessage("Bounded slices with identical contents at different offsets are equal")
+        .that(comparator.compare(b1, b2))
+        .isEqualTo(0);
+
+    // Matching prefixes, different lengths
+    ByteString b3 =
+        ByteString.copyFrom(new byte[] {99, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99})
+            .substring(1, 12);
+    assertWithMessage("Shorter bounded prefix string is less")
+        .that(comparator.compare(b1, b3) < 0)
+        .isTrue();
+    assertWithMessage("Longer bounded string is greater")
+        .that(comparator.compare(b3, b1) > 0)
+        .isTrue();
+
+    // Unsigned byte comparison within bounded slices: 0x00 < 0x7F < 0x80 < 0xFF
+    ByteString unsignedLow =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 0x7F, (byte) 0xFF}).substring(1, 4);
+    ByteString unsignedHigh =
+        ByteString.copyFrom(new byte[] {0, 0, 1, 2, (byte) 0x80, 0}).substring(2, 5);
+    assertWithMessage("Bounded slice treats 0x7F < 0x80 as unsigned")
+        .that(comparator.compare(unsignedLow, unsignedHigh) < 0)
+        .isTrue();
+    assertWithMessage("Bounded slice treats 0x80 > 0x7F as unsigned")
+        .that(comparator.compare(unsignedHigh, unsignedLow) > 0)
+        .isTrue();
+  }
+
+  @Test
+  public void testCompare_literalAndBoundedByteStrings() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    ByteString literal = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    // Substring with non-zero offset and sentinel bytes outside [offset, offset + length)
+    ByteString boundedEqual =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0})
+            .substring(1, 11);
+    ByteString boundedGreater =
+        ByteString.copyFrom(new byte[] {0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, (byte) 0x80, 0})
+            .substring(2, 12);
+    ByteString boundedPrefix =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 3, 4, 5, (byte) 0xFF}).substring(1, 6);
+
+    assertWithMessage("Literal vs Bounded equal")
+        .that(comparator.compare(literal, boundedEqual))
+        .isEqualTo(0);
+    assertWithMessage("Bounded vs Literal equal")
+        .that(comparator.compare(boundedEqual, literal))
+        .isEqualTo(0);
+    assertWithMessage("Literal vs Bounded less")
+        .that(comparator.compare(literal, boundedGreater) < 0)
+        .isTrue();
+    assertWithMessage("Bounded vs Literal greater")
+        .that(comparator.compare(boundedGreater, literal) > 0)
+        .isTrue();
+    assertWithMessage("Literal vs shorter Bounded prefix")
+        .that(comparator.compare(literal, boundedPrefix) > 0)
+        .isTrue();
+    assertWithMessage("Shorter Bounded prefix vs Literal")
+        .that(comparator.compare(boundedPrefix, literal) < 0)
+        .isTrue();
+  }
+
+  @Test
   public void testCompare_heterogeneousByteStrings_fallbackPath() throws Exception {
     Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
 
-    byte[] raw = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    byte[] raw = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, (byte) 0x80};
     ByteString literal = ByteString.copyFrom(raw);
-    // Substring creates BoundedByteString (LeafByteString but NOT LiteralByteString)
-    ByteString bounded1 = ByteString.copyFrom(raw).substring(0, 10);
-    ByteString bounded2 = ByteString.copyFrom(raw).substring(1, 11);
+    ByteString bounded =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, (byte) 0x80, 0})
+            .substring(1, 12);
+    ByteString ropeEqual =
+        RopeByteString.newInstanceForTest(literal.substring(0, 5), literal.substring(5, 11));
+    ByteString ropeSmaller =
+        RopeByteString.newInstanceForTest(
+            literal.substring(0, 10), ByteString.copyFrom(new byte[] {0x7F}));
+    ByteString ropePrefix =
+        RopeByteString.newInstanceForTest(literal.substring(0, 4), literal.substring(4, 8));
 
-    // Test Literal vs Bounded
-    assertWithMessage("Literal vs Bounded equal")
-        .that(comparator.compare(literal.substring(0, 10), bounded1))
+    // Exercise the ByteIterator fallback path with RopeByteString against Literal, Bounded, and
+    // Rope
+    assertWithMessage("Literal vs Rope equal")
+        .that(comparator.compare(literal, ropeEqual))
         .isEqualTo(0);
-    assertWithMessage("Literal vs Bounded different")
-        .that(comparator.compare(literal.substring(0, 10), bounded2) < 0)
+    assertWithMessage("Rope vs Bounded equal")
+        .that(comparator.compare(ropeEqual, bounded))
+        .isEqualTo(0);
+    assertWithMessage("Rope vs Rope different (unsigned byte 0x7F < 0x80)")
+        .that(comparator.compare(ropeSmaller, ropeEqual) < 0)
         .isTrue();
-    assertWithMessage("Bounded vs Literal different")
-        .that(comparator.compare(bounded2, literal.substring(0, 10)) > 0)
+    assertWithMessage("Bounded vs Rope different (unsigned byte 0x80 > 0x7F)")
+        .that(comparator.compare(bounded, ropeSmaller) > 0)
+        .isTrue();
+    assertWithMessage("Rope prefix vs Literal")
+        .that(comparator.compare(ropePrefix, literal) < 0)
+        .isTrue();
+    assertWithMessage("Bounded vs Rope prefix")
+        .that(comparator.compare(bounded, ropePrefix) > 0)
         .isTrue();
   }
 
