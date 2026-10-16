@@ -133,25 +133,93 @@ public class ByteStringTest {
   }
 
   @Test
+  public void testCompare_boundedAndLiteralByteStrings() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    // Underlying bytes with non-zero offsets and unsigned high bytes (0xFF = -1).
+    byte[] padded = new byte[] {99, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, (byte) 0xFF, 99};
+    ByteString literal1 = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    ByteString literal2 = ByteString.copyFrom(new byte[] {2, 3, 4, 5, 6, 7, 8, 9, 10, (byte) 0xFF});
+    ByteString literalPrefix = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5});
+
+    // Substring with non-zero offset creates BoundedByteString.
+    ByteString bounded1 = ByteString.copyFrom(padded).substring(1, 11);
+    ByteString bounded1Copy = ByteString.copyFrom(padded).substring(1, 11);
+    ByteString bounded2 = ByteString.copyFrom(padded).substring(2, 12);
+    ByteString boundedPrefix = ByteString.copyFrom(padded).substring(1, 6);
+
+    // Literal vs Bounded
+    assertThat(comparator.compare(literal1, bounded1)).isEqualTo(0);
+    assertThat(comparator.compare(literal1, bounded2)).isLessThan(0);
+    assertThat(comparator.compare(literal2, bounded1)).isGreaterThan(0);
+    assertThat(comparator.compare(literalPrefix, bounded1)).isLessThan(0);
+    assertThat(comparator.compare(literal1, boundedPrefix)).isGreaterThan(0);
+
+    // Bounded vs Literal
+    assertThat(comparator.compare(bounded1, literal1)).isEqualTo(0);
+    assertThat(comparator.compare(bounded1, literal2)).isLessThan(0);
+    assertThat(comparator.compare(bounded2, literal1)).isGreaterThan(0);
+    assertThat(comparator.compare(boundedPrefix, literal1)).isLessThan(0);
+    assertThat(comparator.compare(bounded1, literalPrefix)).isGreaterThan(0);
+
+    // Bounded vs Bounded
+    assertThat(comparator.compare(bounded1, bounded1Copy)).isEqualTo(0);
+    assertThat(comparator.compare(bounded1, bounded2)).isLessThan(0);
+    assertThat(comparator.compare(bounded2, bounded1)).isGreaterThan(0);
+    assertThat(comparator.compare(boundedPrefix, bounded1)).isLessThan(0);
+    assertThat(comparator.compare(bounded1, boundedPrefix)).isGreaterThan(0);
+
+    // Unsigned byte comparison across Bounded and Literal (0x0A < 0xFF)
+    ByteString boundedLow = ByteString.copyFrom(padded).substring(10, 11); // {10}
+    ByteString boundedHigh = ByteString.copyFrom(padded).substring(11, 12); // {-1}
+    ByteString literalLow = ByteString.copyFrom(new byte[] {10});
+    ByteString literalHigh = ByteString.copyFrom(new byte[] {-1});
+    assertThat(comparator.compare(boundedLow, boundedHigh)).isLessThan(0);
+    assertThat(comparator.compare(boundedHigh, boundedLow)).isGreaterThan(0);
+    assertThat(comparator.compare(literalLow, boundedHigh)).isLessThan(0);
+    assertThat(comparator.compare(boundedHigh, literalLow)).isGreaterThan(0);
+    assertThat(comparator.compare(boundedLow, literalHigh)).isLessThan(0);
+    assertThat(comparator.compare(literalHigh, boundedLow)).isGreaterThan(0);
+  }
+
+  @Test
   public void testCompare_heterogeneousByteStrings_fallbackPath() throws Exception {
     Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
 
-    byte[] raw = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    ByteString literal = ByteString.copyFrom(raw);
-    // Substring creates BoundedByteString (LeafByteString but NOT LiteralByteString)
-    ByteString bounded1 = ByteString.copyFrom(raw).substring(0, 10);
-    ByteString bounded2 = ByteString.copyFrom(raw).substring(1, 11);
+    byte[] raw = new byte[] {99, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99};
+    ByteString literal1 = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    ByteString literal2 = ByteString.copyFrom(new byte[] {2, 3, 4, 5, 6, 7, 8, 9, 10, 11});
+    ByteString bounded1 = ByteString.copyFrom(raw).substring(1, 11);
+    ByteString bounded2 = ByteString.copyFrom(raw).substring(2, 12);
+    ByteString rope1 =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5}),
+            ByteString.copyFrom(new byte[] {6, 7, 8, 9, 10}));
+    ByteString rope2 =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(new byte[] {2, 3, 4, 5, 6}),
+            ByteString.copyFrom(new byte[] {7, 8, 9, 10, 11}));
 
-    // Test Literal vs Bounded
-    assertWithMessage("Literal vs Bounded equal")
-        .that(comparator.compare(literal.substring(0, 10), bounded1))
-        .isEqualTo(0);
-    assertWithMessage("Literal vs Bounded different")
-        .that(comparator.compare(literal.substring(0, 10), bounded2) < 0)
-        .isTrue();
-    assertWithMessage("Bounded vs Literal different")
-        .that(comparator.compare(bounded2, literal.substring(0, 10)) > 0)
-        .isTrue();
+    // Literal vs Rope
+    assertThat(comparator.compare(literal1, rope1)).isEqualTo(0);
+    assertThat(comparator.compare(rope1, literal1)).isEqualTo(0);
+    assertThat(comparator.compare(literal1, rope2)).isLessThan(0);
+    assertThat(comparator.compare(rope2, literal1)).isGreaterThan(0);
+    assertThat(comparator.compare(rope1, literal2)).isLessThan(0);
+    assertThat(comparator.compare(literal2, rope1)).isGreaterThan(0);
+
+    // Bounded vs Rope
+    assertThat(comparator.compare(bounded1, rope1)).isEqualTo(0);
+    assertThat(comparator.compare(rope1, bounded1)).isEqualTo(0);
+    assertThat(comparator.compare(bounded1, rope2)).isLessThan(0);
+    assertThat(comparator.compare(rope2, bounded1)).isGreaterThan(0);
+    assertThat(comparator.compare(rope1, bounded2)).isLessThan(0);
+    assertThat(comparator.compare(bounded2, rope1)).isGreaterThan(0);
+
+    // Rope vs Rope
+    assertThat(comparator.compare(rope1, rope1)).isEqualTo(0);
+    assertThat(comparator.compare(rope1, rope2)).isLessThan(0);
+    assertThat(comparator.compare(rope2, rope1)).isGreaterThan(0);
   }
 
   @Test
