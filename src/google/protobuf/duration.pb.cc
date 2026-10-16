@@ -348,15 +348,15 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // int64 seconds = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (this_._internal_seconds() != 0) {
-        total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
-            this_._internal_seconds());
+        total_size +=
+            ::_pbi::WireFormatLite::Int64SizePlusOne(this_._impl_.seconds_);
       }
     }
     // int32 nanos = 2;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (this_._internal_nanos() != 0) {
-        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-            this_._internal_nanos());
+        total_size +=
+            ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.nanos_);
       }
     }
   }

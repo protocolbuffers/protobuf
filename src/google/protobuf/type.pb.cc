@@ -1287,9 +1287,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // repeated .google.protobuf.Field fields = 2;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1UL * this_._internal_fields_size();
-      for (const auto& msg : this_._internal_fields()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.fields_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // repeated string oneofs = 3;
@@ -1304,23 +1306,25 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // repeated .google.protobuf.Option options = 4;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += 1UL * this_._internal_options_size();
-      for (const auto& msg : this_._internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.options_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_name());
+                                        this_._impl_.name_.Get());
       }
     }
     // string edition = 7;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (!this_._internal_edition().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_edition());
+                                        this_._impl_.edition_.Get());
       }
     }
     // .google.protobuf.SourceContext source_context = 5;
@@ -1331,8 +1335,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // .google.protobuf.Syntax syntax = 6;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       if (this_._internal_syntax() != 0) {
-        total_size += 1 +
-                      ::_pbi::WireFormatLite::EnumSize(this_._internal_syntax());
+        total_size +=
+            1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.syntax_);
       }
     }
   }
@@ -1359,30 +1363,33 @@ void Type::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_mutable_fields()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_fields());
+      if (const auto& sub = from._impl_.fields_; !sub.empty()) {
+        this_._internal_mutable_fields()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._internal_mutable_oneofs()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_oneofs());
+      if (const auto& sub = from._impl_.oneofs_; !sub.empty()) {
+        this_._internal_mutable_oneofs()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      this_._internal_mutable_options()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_options());
+      if (const auto& sub = from._impl_.options_; !sub.empty()) {
+        this_._internal_mutable_options()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!from._internal_name().empty()) {
-        this_._internal_set_name(from._internal_name());
+        this_._internal_set_name(from._impl_.name_.Get());
       } else if (this_._impl_.name_.IsDefault()) {
         this_._internal_set_name("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (!from._internal_edition().empty()) {
-        this_._internal_set_edition(from._internal_edition());
+        this_._internal_set_edition(from._impl_.edition_.Get());
       } else if (this_._impl_.edition_.IsDefault()) {
         this_._internal_set_edition("");
       }
@@ -1712,65 +1719,67 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // repeated .google.protobuf.Option options = 9;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1UL * this_._internal_options_size();
-      for (const auto& msg : this_._internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.options_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // string name = 4;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_name());
+                                        this_._impl_.name_.Get());
       }
     }
     // string type_url = 6;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!this_._internal_type_url().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_type_url());
+                                        this_._impl_.type_url_.Get());
       }
     }
     // string json_name = 10;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!this_._internal_json_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_json_name());
+                                        this_._impl_.json_name_.Get());
       }
     }
     // string default_value = 11;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (!this_._internal_default_value().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_default_value());
+                                        this_._impl_.default_value_.Get());
       }
     }
     // .google.protobuf.Field.Kind kind = 1;
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (this_._internal_kind() != 0) {
-        total_size += 1 +
-                      ::_pbi::WireFormatLite::EnumSize(this_._internal_kind());
+        total_size +=
+            1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.kind_);
       }
     }
     // .google.protobuf.Field.Cardinality cardinality = 2;
     if (CheckHasBit(cached_has_bits, 0x00000040U)) {
       if (this_._internal_cardinality() != 0) {
-        total_size += 1 +
-                      ::_pbi::WireFormatLite::EnumSize(this_._internal_cardinality());
+        total_size +=
+            1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.cardinality_);
       }
     }
     // int32 number = 3;
     if (CheckHasBit(cached_has_bits, 0x00000080U)) {
       if (this_._internal_number() != 0) {
-        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-            this_._internal_number());
+        total_size +=
+            ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.number_);
       }
     }
     // int32 oneof_index = 7;
     if (CheckHasBit(cached_has_bits, 0x00000100U)) {
       if (this_._internal_oneof_index() != 0) {
-        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-            this_._internal_oneof_index());
+        total_size +=
+            ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.oneof_index_);
       }
     }
     // bool packed = 8;
@@ -1803,34 +1812,35 @@ void Field::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_mutable_options()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_options());
+      if (const auto& sub = from._impl_.options_; !sub.empty()) {
+        this_._internal_mutable_options()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_name().empty()) {
-        this_._internal_set_name(from._internal_name());
+        this_._internal_set_name(from._impl_.name_.Get());
       } else if (this_._impl_.name_.IsDefault()) {
         this_._internal_set_name("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!from._internal_type_url().empty()) {
-        this_._internal_set_type_url(from._internal_type_url());
+        this_._internal_set_type_url(from._impl_.type_url_.Get());
       } else if (this_._impl_.type_url_.IsDefault()) {
         this_._internal_set_type_url("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!from._internal_json_name().empty()) {
-        this_._internal_set_json_name(from._internal_json_name());
+        this_._internal_set_json_name(from._impl_.json_name_.Get());
       } else if (this_._impl_.json_name_.IsDefault()) {
         this_._internal_set_json_name("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       if (!from._internal_default_value().empty()) {
-        this_._internal_set_default_value(from._internal_default_value());
+        this_._internal_set_default_value(from._impl_.default_value_.Get());
       } else if (this_._impl_.default_value_.IsDefault()) {
         this_._internal_set_default_value("");
       }
@@ -2138,30 +2148,34 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // repeated .google.protobuf.EnumValue enumvalue = 2;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1UL * this_._internal_enumvalue_size();
-      for (const auto& msg : this_._internal_enumvalue()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.enumvalue_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // repeated .google.protobuf.Option options = 3;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1UL * this_._internal_options_size();
-      for (const auto& msg : this_._internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.options_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_name());
+                                        this_._impl_.name_.Get());
       }
     }
     // string edition = 6;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!this_._internal_edition().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_edition());
+                                        this_._impl_.edition_.Get());
       }
     }
     // .google.protobuf.SourceContext source_context = 4;
@@ -2172,8 +2186,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // .google.protobuf.Syntax syntax = 5;
     if (CheckHasBit(cached_has_bits, 0x00000020U)) {
       if (this_._internal_syntax() != 0) {
-        total_size += 1 +
-                      ::_pbi::WireFormatLite::EnumSize(this_._internal_syntax());
+        total_size +=
+            1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.syntax_);
       }
     }
   }
@@ -2200,25 +2214,27 @@ void Enum::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_mutable_enumvalue()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_enumvalue());
+      if (const auto& sub = from._impl_.enumvalue_; !sub.empty()) {
+        this_._internal_mutable_enumvalue()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._internal_mutable_options()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_options());
+      if (const auto& sub = from._impl_.options_; !sub.empty()) {
+        this_._internal_mutable_options()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (!from._internal_name().empty()) {
-        this_._internal_set_name(from._internal_name());
+        this_._internal_set_name(from._impl_.name_.Get());
       } else if (this_._impl_.name_.IsDefault()) {
         this_._internal_set_name("");
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       if (!from._internal_edition().empty()) {
-        this_._internal_set_edition(from._internal_edition());
+        this_._internal_set_edition(from._impl_.edition_.Get());
       } else if (this_._impl_.edition_.IsDefault()) {
         this_._internal_set_edition("");
       }
@@ -2449,23 +2465,25 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // repeated .google.protobuf.Option options = 3;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1UL * this_._internal_options_size();
-      for (const auto& msg : this_._internal_options()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.options_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_name());
+                                        this_._impl_.name_.Get());
       }
     }
     // int32 number = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       if (this_._internal_number() != 0) {
-        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-            this_._internal_number());
+        total_size +=
+            ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.number_);
       }
     }
   }
@@ -2492,13 +2510,14 @@ void EnumValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_mutable_options()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_options());
+      if (const auto& sub = from._impl_.options_; !sub.empty()) {
+        this_._internal_mutable_options()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       if (!from._internal_name().empty()) {
-        this_._internal_set_name(from._internal_name());
+        this_._internal_set_name(from._impl_.name_.Get());
       } else if (this_._impl_.name_.IsDefault()) {
         this_._internal_set_name("");
       }
@@ -2702,7 +2721,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_name().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_name());
+                                        this_._impl_.name_.Get());
       }
     }
     // .google.protobuf.Any value = 2;
@@ -2735,7 +2754,7 @@ void Option::MergeImpl(::google::protobuf::MessageLite& to_msg,
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!from._internal_name().empty()) {
-        this_._internal_set_name(from._internal_name());
+        this_._internal_set_name(from._impl_.name_.Get());
       } else if (this_._impl_.name_.IsDefault()) {
         this_._internal_set_name("");
       }

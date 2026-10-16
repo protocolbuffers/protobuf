@@ -1138,8 +1138,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   switch (this_.kind_case()) {
     // .google.protobuf.NullValue null_value = 1;
     case kNullValue: {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_null_value());
+      total_size +=
+          1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.kind_.null_value_);
       break;
     }
     // double number_value = 2;
@@ -1150,7 +1150,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // string string_value = 3;
     case kStringValue: {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_string_value());
+                                      this_._impl_.kind_.string_value_.Get());
       break;
     }
     // bool bool_value = 4;
@@ -1410,9 +1410,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // repeated .google.protobuf.Value values = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1UL * this_._internal_values_size();
-      for (const auto& msg : this_._internal_values()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.values_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
   }
@@ -1438,9 +1440,10 @@ void ListValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    this_._internal_mutable_values()->InternalMergeFromWithArena(
-        ::google::protobuf::MessageLite::internal_visibility(), arena,
-        from._internal_values());
+    if (const auto& sub = from._impl_.values_; !sub.empty()) {
+      this_._internal_mutable_values()->InternalMergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+    }
   }
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(

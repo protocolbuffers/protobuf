@@ -1596,8 +1596,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (this_._internal_value() != 0) {
-        total_size += ::_pbi::WireFormatLite::Int64SizePlusOne(
-            this_._internal_value());
+        total_size +=
+            ::_pbi::WireFormatLite::Int64SizePlusOne(this_._impl_.value_);
       }
     }
   }
@@ -1769,8 +1769,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (this_._internal_value() != 0) {
-        total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
-            this_._internal_value());
+        total_size +=
+            ::_pbi::WireFormatLite::UInt64SizePlusOne(this_._impl_.value_);
       }
     }
   }
@@ -1942,8 +1942,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (this_._internal_value() != 0) {
-        total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-            this_._internal_value());
+        total_size +=
+            ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.value_);
       }
     }
   }
@@ -2115,8 +2115,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (this_._internal_value() != 0) {
-        total_size += ::_pbi::WireFormatLite::UInt32SizePlusOne(
-            this_._internal_value());
+        total_size +=
+            ::_pbi::WireFormatLite::UInt32SizePlusOne(this_._impl_.value_);
       }
     }
   }
@@ -2477,7 +2477,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_value().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                        this_._internal_value());
+                                        this_._impl_.value_.Get());
       }
     }
   }
@@ -2503,7 +2503,7 @@ void StringValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!from._internal_value().empty()) {
-      this_._internal_set_value(from._internal_value());
+      this_._internal_set_value(from._impl_.value_.Get());
     } else if (this_._impl_.value_.IsDefault()) {
       this_._internal_set_value("");
     }
@@ -2668,7 +2668,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       if (!this_._internal_value().empty()) {
         total_size += 1 + ::google::protobuf::internal::WireFormatLite::BytesSize(
-                                        this_._internal_value());
+                                        this_._impl_.value_.Get());
       }
     }
   }
@@ -2694,7 +2694,7 @@ void BytesValue::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
     if (!from._internal_value().empty()) {
-      this_._internal_set_value(from._internal_value());
+      this_._internal_set_value(from._impl_.value_.Get());
     } else if (this_._impl_.value_.IsDefault()) {
       this_._internal_set_value("");
     }

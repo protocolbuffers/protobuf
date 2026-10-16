@@ -381,9 +381,10 @@ void FieldMask::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    this_._internal_mutable_paths()->InternalMergeFromWithArena(
-        ::google::protobuf::MessageLite::internal_visibility(), arena,
-        from._internal_paths());
+    if (const auto& sub = from._impl_.paths_; !sub.empty()) {
+      this_._internal_mutable_paths()->InternalMergeFromWithArena(
+          ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+    }
   }
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
