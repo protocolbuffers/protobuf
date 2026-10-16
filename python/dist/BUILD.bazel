@@ -352,7 +352,6 @@ py_wheel(
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
@@ -377,10 +376,10 @@ py_wheel(
         ":windows_x86_64": "win_amd64",
         "//conditions:default": "any",
     }),
-    python_requires = ">=3.10",
+    python_requires = ">=3.11",
     # LINT.IfChange(python_tag)
     python_tag = selects.with_or({
-        "//python:limited_api_3.10": "cp310",
+        "//python:limited_api_3.11": "cp311",
         "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION,
     }),
     # LINT.ThenChange(
@@ -412,7 +411,6 @@ py_wheel(
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3.13",
@@ -425,7 +423,7 @@ py_wheel(
     homepage = "https://developers.google.com/protocol-buffers/",
     license = "BSD-3-Clause",
     platform = "any",
-    python_requires = ">=3.10",
+    python_requires = ">=3.11",
     python_tag = "py3",
     strip_path_prefixes = [
         "python/",
@@ -482,12 +480,12 @@ py_dist(
     # details).
     # LINT.IfChange(limited_api_wheels)
     limited_api_platforms = {
-        "//build_defs:win32": "310",
-        "//build_defs:win64": "310",
-        "//build_defs:linux-x86_64": "310",
-        "//build_defs:linux-aarch_64": "310",
-        "//build_defs:linux-s390_64": "310",
-        "//build_defs:osx-universal2": "310",
+        "//build_defs:win32": "311",
+        "//build_defs:win64": "311",
+        "//build_defs:linux-x86_64": "311",
+        "//build_defs:linux-aarch_64": "311",
+        "//build_defs:linux-s390_64": "311",
+        "//build_defs:osx-universal2": "311",
     },
     # LINT.ThenChange(:python_tag)
     pure_python_wheel = ":pure_python_wheel",
