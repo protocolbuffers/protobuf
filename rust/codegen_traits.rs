@@ -69,9 +69,14 @@ pub trait Message: SealedInternal
     type MessageMut<'msg>: MessageMut<'msg, Message = Self>;
 }
 
-/// A marker trait for messages that support reflection.
+/// A trait for messages that support reflection.
 #[cfg(not(lite_runtime))]
-pub trait WithReflection: Message + KernelWithReflection {}
+pub trait WithReflection: Message + KernelWithReflection {
+    /// Returns the fully-qualified name of the message, implemented by the kernel.
+    fn full_name() -> &'static str {
+        <Self as KernelWithReflection>::kernel_full_name(crate::__internal::Private)
+    }
+}
 
 /// A trait that all generated message views implement.
 #[diagnostic::on_unimplemented(
