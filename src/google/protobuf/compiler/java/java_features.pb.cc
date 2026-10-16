@@ -485,14 +485,10 @@ void JavaFeatures::Clear(MessageLite& base) {
   ::google::protobuf::internal::TSanWrite(&this_._impl_);
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
-  cached_has_bits = this_._impl_._has_bits_[0];
-  if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
-    ::memset(&this_._impl_.utf8_validation_, 0,
-             static_cast<::size_t>(
-                 reinterpret_cast<char*>(&this_._impl_.nest_in_file_class_) -
-                 reinterpret_cast<char*>(&this_._impl_.utf8_validation_)) +
-                 sizeof(_impl_.nest_in_file_class_));
-  }
+  ::memset(&this_._impl_.utf8_validation_, 0,
+           PROTOBUF_FIELD_OFFSET(Impl_, nest_in_file_class_) -
+               PROTOBUF_FIELD_OFFSET(Impl_, utf8_validation_) +
+               sizeof(Impl_::nest_in_file_class_));
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
