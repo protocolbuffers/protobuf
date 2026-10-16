@@ -1239,4 +1239,76 @@ public class ByteStringTest {
       assertThat(boundedSmallOffset.equalsRange(other, 14, 5)).isFalse();
     }
   }
+
+  private static void assertByteIteratorMatches(ByteString byteString, byte[] expected) {
+    // Test unboxed iteration via nextByte()
+    ByteString.ByteIterator iter = byteString.iterator();
+    for (int i = 0; i < expected.length; i++) {
+      assertThat(iter.hasNext()).isTrue();
+      assertThat(iter.nextByte()).isEqualTo(expected[i]);
+    }
+    assertThat(iter.hasNext()).isFalse();
+    try {
+      byte unused = iter.nextByte();
+      assertWithMessage("Expected NoSuchElementException from nextByte()").fail();
+    } catch (NoSuchElementException expectedException) {
+      // Expected
+    }
+
+    // Test boxed iteration via next() and remove()
+    ByteString.ByteIterator boxedIter = byteString.iterator();
+    try {
+      boxedIter.remove();
+      assertWithMessage("Expected UnsupportedOperationException from remove()").fail();
+    } catch (UnsupportedOperationException expectedException) {
+      // Expected
+    }
+    for (int i = 0; i < expected.length; i++) {
+      assertThat(boxedIter.hasNext()).isTrue();
+      assertThat(boxedIter.next()).isEqualTo(expected[i]);
+    }
+    assertThat(boxedIter.hasNext()).isFalse();
+    try {
+      Byte unused = boxedIter.next();
+      assertWithMessage("Expected NoSuchElementException from next()").fail();
+    } catch (NoSuchElementException expectedException) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void testIterator_empty() {
+    assertByteIteratorMatches(ByteString.EMPTY, new byte[0]);
+  }
+
+  @Test
+  public void testIterator_literalByteString() {
+    byte[] expected = getTestBytes(256, 12345L);
+    ByteString literal = ByteString.copyFrom(expected);
+    assertByteIteratorMatches(literal, expected);
+  }
+
+  @Test
+  public void testIterator_boundedByteString() {
+    byte[] full = getTestBytes(256, 67890L);
+    int offset = 37;
+    int length = 149;
+    byte[] expected = Arrays.copyOfRange(full, offset, offset + length);
+    ByteString bounded = ByteString.copyFrom(full).substring(offset, offset + length);
+    assertByteIteratorMatches(bounded, expected);
+  }
+
+  @Test
+  public void testIterator_ropeByteString() {
+    byte[] expected = getTestBytes(1024, 54321L);
+    List<ByteString> pieces = makeConcretePieces(expected);
+    ByteString rope = ByteString.copyFrom(pieces);
+    // Also test a RopeByteString containing BoundedByteString leaves
+    ByteString boundedLeft = ByteString.copyFrom(expected).substring(10, 300);
+    ByteString boundedRight = ByteString.copyFrom(expected).substring(300, 900);
+    ByteString boundedRope = RopeByteString.newInstanceForTest(boundedLeft, boundedRight);
+
+    assertByteIteratorMatches(rope, expected);
+    assertByteIteratorMatches(boundedRope, Arrays.copyOfRange(expected, 10, 900));
+  }
 }
