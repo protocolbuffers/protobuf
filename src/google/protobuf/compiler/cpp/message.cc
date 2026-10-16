@@ -435,91 +435,6 @@ bool HasNonSplitOptionalString(const Descriptor* desc, const Options& options) {
   return false;
 }
 
-// Returns true if two chunks may be grouped for hasword check to skip multiple
-// cold fields at once. They have to share the following traits:
-// - whether they have hasbits
-// - whether they are rarely present
-// - whether they are split
-bool MayGroupChunksForHaswordsCheck(const FieldChunk& a, const FieldChunk& b) {
-  return a.has_hasbit == b.has_hasbit &&
-         a.is_rarely_present == b.is_rarely_present &&
-         a.should_split == b.should_split;
-}
-
-// Returns true if it emits conditional check against hasbit words. This is
-// useful to skip multiple fields that are unlikely present based on profile
-// (go/pdproto). Assumes that each chunk is limited to one has "word".
-bool MaybeEmitHaswordsCheck(ChunkIterator it, ChunkIterator end,
-                            const Options& options,
-                            const FieldLayout& field_layout,
-                            int cached_has_word_index, const std::string& from,
-                            io::Printer* p) {
-  if (!it->has_hasbit || !IsProfileDriven(options) ||
-      std::distance(it, end) < 2 || !it->is_rarely_present) {
-    return false;
-  }
-
-  auto hasbit_word = [&field_layout](const FieldDescriptor* field) {
-    return field_layout.GetHasWordIndex(field).value();
-  };
-  auto is_same_hasword = [&](const FieldChunk& a, const FieldChunk& b) {
-    // Empty fields are assumed to have the same haswords.
-    if (a.fields.empty() || b.fields.empty()) return true;
-
-    return hasbit_word(a.fields.front()) == hasbit_word(b.fields.front());
-  };
-
-  struct HasWordMask {
-    int word;
-    uint32_t mask;
-  };
-
-  std::vector<HasWordMask> hasword_masks;
-  while (it != end) {
-    auto next = FindNextUnequalChunk(it, end, is_same_hasword);
-    for (; it != next; ++it) {
-      if (!it->fields.empty()) {
-        hasword_masks.push_back({hasbit_word(it->fields.front()),
-                                 GenChunkMask(it, next, field_layout)});
-        break;
-      }
-    }
-    // Jump to the next batch instead.
-    it = next;
-  }
-
-  if (hasword_masks.empty()) return false;
-
-  // Emit has_bit check for each has_bit_dword index.
-  p->Emit({{"cond",
-            [&] {
-              int first_word = hasword_masks.front().word;
-              for (const auto& m : hasword_masks) {
-                uint32_t mask = m.mask;
-                int this_word = m.word;
-                if (this_word != first_word) {
-                  p->Emit(R"cc(
-                    ||
-                  )cc");
-                }
-                auto v =
-                    p->WithVars({{"mask", absl::StrFormat("0x%08xU", mask)}});
-                if (this_word == cached_has_word_index) {
-                  p->Emit("BatchCheckHasBit(cached_has_bits, $mask$)");
-                } else {
-                  p->Emit({{"from", from}, {"word", this_word}},
-                          "BatchCheckHasBit($from$_impl_._has_bits_[$word$], "
-                          "$mask$)");
-                }
-              }
-            }}},
-          R"cc(
-            if (ABSL_PREDICT_FALSE($cond$)) {
-          )cc");
-  p->Indent();
-  return true;
-}
-
 // Calculates the expected number of branch checks executed for a chunk of
 // `size` fields, where `p_none` is the probability that none of the fields
 // are present.
@@ -547,7 +462,7 @@ double GetAbsenceProbability(const FieldDescriptor* field,
 
 FieldChunk ChunkWithFields(const FieldChunk& chunk,
                            std::vector<const FieldDescriptor*> fields) {
-  FieldChunk res(chunk.has_hasbit, chunk.is_rarely_present, chunk.should_split);
+  FieldChunk res(chunk.has_hasbit);
   res.fields = std::move(fields);
   return res;
 }
@@ -3461,78 +3376,56 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   enclosing_if_chunks = PartitionToMinimizeExpectedBranches(
       std::move(enclosing_if_chunks), options_);
 
-  auto it = enclosing_if_chunks.begin();
-  auto end = enclosing_if_chunks.end();
   int cached_has_word_index = -1;
 
-  while (it != end) {
-    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, field_layout_, cached_has_word_index, "this_.", p);
+  for (const FieldChunk& chunk : enclosing_if_chunks) {
+    const std::vector<const FieldDescriptor*>& fields = chunk.fields;
 
-    while (it != next) {
-      const std::vector<const FieldDescriptor*>& fields = it->fields;
-
-      const int has_word_index =
-          field_layout_.GetHasWordIndex(fields.front()).value();
-      if (cached_has_word_index != has_word_index) {
-        cached_has_word_index = has_word_index;
-        p->Emit({{"cached_has_word_index", cached_has_word_index}}, R"cc(
-          cached_has_bits = this_.$has_bits$[$cached_has_word_index$];
-        )cc");
-      }
-
-      const auto print_clear_field_chunk = [&] {
-        for (const auto& field : fields) {
-          p->Emit({{"cond",
-                    [&] {
-                      PrintPresenceCheckCondition(field, field_layout_, p,
-                                                  options_);
-                    }},
-                   {"clear_field", [&] { emit_clear_field(field); }}},
-                  R"cc(
-                    if ($cond$) {
-                      $clear_field$;
-                    }
-                  )cc");
-        }
-      };
-
-      // Whether we wrap this chunk in:
-      //   if (cached_has_bits & <chunk hasbits>) { /* chunk. */ }
-      if (fields.size() > 1) {
-        // Emit an if() that will let us skip the whole chunk if none are set.
-        uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
-
-        ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-
-        const std::string cond = GenerateConditionMaybeWithProbabilityForGroup(
-            chunk_mask, fields, options_);
-        p->Emit(
-            {{"cond", cond}, {"clear_field_chunk", print_clear_field_chunk}},
-            R"cc(
-              if ($cond$) {
-                $clear_field_chunk$;
-              }
-            )cc");
-      } else {
-        print_clear_field_chunk();
-      }
-
-      // To next chunk.
-      ++it;
-    }
-
-    if (has_haswords_check) {
-      p->Outdent();
-      p->Emit(R"cc(
-        }
+    const int has_word_index =
+        field_layout_.GetHasWordIndex(fields.front()).value();
+    if (cached_has_word_index != has_word_index) {
+      cached_has_word_index = has_word_index;
+      p->Emit({{"cached_has_word_index", cached_has_word_index}}, R"cc(
+        cached_has_bits = this_.$has_bits$[$cached_has_word_index$];
       )cc");
-
-      // Reset here as it may have been updated in just closed if statement.
-      cached_has_word_index = -1;
     }
-  };
+
+    const auto print_clear_field_chunk = [&] {
+      for (const auto& field : fields) {
+        p->Emit({{"cond",
+                  [&] {
+                    PrintPresenceCheckCondition(field, field_layout_, p,
+                                                options_);
+                  }},
+                 {"clear_field", [&] { emit_clear_field(field); }}},
+                R"cc(
+                  if ($cond$) {
+                    $clear_field$;
+                  }
+                )cc");
+      }
+    };
+
+    // Whether we wrap this chunk in:
+    //   if (cached_has_bits & <chunk hasbits>) { /* chunk. */ }
+    if (fields.size() > 1) {
+      // Emit an if() that will let us skip the whole chunk if none are set.
+      uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
+
+      ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
+
+      const std::string cond = GenerateConditionMaybeWithProbabilityForGroup(
+          chunk_mask, fields, options_);
+      p->Emit({{"cond", cond}, {"clear_field_chunk", print_clear_field_chunk}},
+              R"cc(
+                if ($cond$) {
+                  $clear_field_chunk$;
+                }
+              )cc");
+    } else {
+      print_clear_field_chunk();
+    }
+  }
 }
 
 void MessageGenerator::GenerateClear(io::Printer* p) {
@@ -4057,24 +3950,10 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
               generator.GenerateMergingCode(p);
             },
             /*with_enclosing_braces_always=*/true);
-      } else if (cached_has_word_index !=
-                 field_layout_.GetHasWordIndex(field).value()) {
-        // Check hasbit, not using cached bits.
-        auto v = p->WithVars(HasBitVars(field));
-        p->Emit(
-            {{"merge_field",
-              [&] {
-                prepare_split();
-                generator.GenerateMergingCode(p);
-              }}},
-            R"cc(
-              if (CheckHasBit(from.$has_bits$[$has_array_index$], $has_mask$)) {
-                $merge_field$;
-              }
-            )cc");
       } else {
         // Check hasbit, using cached bits.
-        ABSL_CHECK(HasHasbit(field, options_));
+        ABSL_CHECK_EQ(field_layout_.GetHasWordIndex(field),
+                      cached_has_word_index);
         int has_bit_index = field_layout_.GetHasBitIndex(field).value();
 
         p->Emit(
@@ -4123,28 +4002,8 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       [&](const auto* f) { return ShouldSplit(f, options_) == is_split; });
   chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
-  auto it = chunks.begin();
-  auto end = chunks.end();
-  while (it != end) {
-    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, field_layout_, cached_has_word_index, "from.", p);
-
-    while (it != next) {
-      emit_merge_chunk(it->fields);
-      ++it;
-    }
-
-    if (has_haswords_check) {
-      p->Outdent();
-      p->Emit(R"cc(
-        }
-      )cc");
-
-      // Reset here as it may have been updated in just closed if
-      // statement.
-      cached_has_word_index = -1;
-    }
+  for (const FieldChunk& chunk : chunks) {
+    emit_merge_chunk(chunk.fields);
   }
 
   return cached_has_word_index >= 0;
@@ -4977,8 +4836,6 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
     chunks.insert(it, std::move(chunk));
   }
 
-  auto it = chunks.begin();
-  auto end = chunks.end();
   int cached_has_word_index = -1;
   const auto update_cached_has_bits = [&](auto& fields) {
     const int has_word_index =
@@ -4992,95 +4849,75 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
             )cc");
   };
 
-  while (it != end) {
-    auto next = FindNextUnequalChunk(it, end, MayGroupChunksForHaswordsCheck);
-    bool has_haswords_check = MaybeEmitHaswordsCheck(
-        it, next, options_, field_layout_, cached_has_word_index, "this_.", p);
+  for (const FieldChunk& chunk : chunks) {
+    const auto& fields = chunk.fields;
 
-    while (it != next) {
-      const auto& fields = it->fields;
-
-      // If the chunk is a fixed size singular chunk, use a branchless
-      // approach for it.
-      if (absl::optional<int> fsize = FixedSize(fields[0])) {
-        update_cached_has_bits(fields);
-        // When a single field is the only field in its has_word, `GenChunkMask`
-        // returns ~0u, which would fail the `absl::has_single_bit(mask)` check
-        // below, emitting `::absl::popcount` instead of `static_cast<bool>`.
-        // Therefore we process the single-field case separately.
-        uint32_t mask =
-            fields.size() == 1
-                ? uint32_t{1}
-                      << (field_layout_.GetHasBitIndex(fields[0]).value() % 32)
-                : GenChunkMask(fields, field_layout_);
-        p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
-                 {"popcount", absl::has_single_bit(mask) ? "static_cast<bool>"
-                                                         : "::absl::popcount"},
-                 {"fsize", *fsize}},
-                R"cc(
-                  //~
-                  total_size += $popcount$($mask$ & cached_has_bits) * $fsize$;
-                )cc");
-        ++it;
-        continue;
-      }
-
-      const bool check_has_word =
-          fields.size() > 1 &&
-          field_layout_.GetHasWordIndex(fields[0]).has_value();
-      p->Emit({{"update_byte_size_for_chunk",
-                [&] {
-                  // Go back and emit checks for each of the fields we
-                  // processed.
-                  for (const auto* field : fields) {
-                    EmitUpdateByteSizeForField(field, p, cached_has_word_index);
-                  }
-                }},
-               {"may_update_cached_has_word_index",
-                [&] {
-                  if (!check_has_word) return;
-                  update_cached_has_bits(fields);
-                }},
-               {"check_if_chunk_present",
-                [&] {
-                  if (!check_has_word) {
-                    return;
-                  }
-
-                  // Emit an if() that will let us skip the whole chunk
-                  // if none are set.
-                  uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
-
-                  // Check has_bits at a time if we have more than one field in
-                  // this chunk.
-                  ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
-
-                  p->Emit({{"condition",
-                            GenerateConditionMaybeWithProbabilityForGroup(
-                                chunk_mask, fields, options_)}},
-                          "if ($condition$)");
-                }}},
+    // If the chunk is a fixed size singular chunk, use a branchless
+    // approach for it.
+    if (absl::optional<int> fsize = FixedSize(fields[0])) {
+      update_cached_has_bits(fields);
+      // When a single field is the only field in its has_word, `GenChunkMask`
+      // returns ~0u, which would fail the `absl::has_single_bit(mask)` check
+      // below, emitting `::absl::popcount` instead of `static_cast<bool>`.
+      // Therefore we process the single-field case separately.
+      uint32_t mask =
+          fields.size() == 1
+              ? uint32_t{1}
+                    << (field_layout_.GetHasBitIndex(fields[0]).value() % 32)
+              : GenChunkMask(fields, field_layout_);
+      p->Emit({{"mask", absl::StrFormat("0x%08xU", mask)},
+               {"popcount", absl::has_single_bit(mask) ? "static_cast<bool>"
+                                                       : "::absl::popcount"},
+               {"fsize", *fsize}},
               R"cc(
-                $may_update_cached_has_word_index$;
-                $check_if_chunk_present$ {
-                  //~ Force newline.
-                  $update_byte_size_for_chunk$;
-                }
+                //~
+                total_size += $popcount$($mask$ & cached_has_bits) * $fsize$;
               )cc");
-
-      // To next chunk.
-      ++it;
+      continue;
     }
 
-    if (has_haswords_check) {
-      p->Emit(R"cc(
-        }
-      )cc");
+    const bool check_has_word =
+        fields.size() > 1 &&
+        field_layout_.GetHasWordIndex(fields[0]).has_value();
+    p->Emit({{"update_byte_size_for_chunk",
+              [&] {
+                // Go back and emit checks for each of the fields we
+                // processed.
+                for (const auto* field : fields) {
+                  EmitUpdateByteSizeForField(field, p, cached_has_word_index);
+                }
+              }},
+             {"may_update_cached_has_word_index",
+              [&] {
+                if (!check_has_word) return;
+                update_cached_has_bits(fields);
+              }},
+             {"check_if_chunk_present",
+              [&] {
+                if (!check_has_word) {
+                  return;
+                }
 
-      // Reset here as it may have been updated in just closed if
-      // statement.
-      cached_has_word_index = -1;
-    }
+                // Emit an if() that will let us skip the whole chunk
+                // if none are set.
+                uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
+
+                // Check has_bits at a time if we have more than one field in
+                // this chunk.
+                ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
+
+                p->Emit({{"condition",
+                          GenerateConditionMaybeWithProbabilityForGroup(
+                              chunk_mask, fields, options_)}},
+                        "if ($condition$)");
+              }}},
+            R"cc(
+              $may_update_cached_has_word_index$;
+              $check_if_chunk_present$ {
+                //~ Force newline.
+                $update_byte_size_for_chunk$;
+              }
+            )cc");
   }
 }
 
