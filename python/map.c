@@ -549,6 +549,7 @@ static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_MapIterator* iter =
       (void*)PyType_GenericAlloc(state->map_iterator_type, 0);
+  if (!iter) return NULL;
   iter->map = map;
   iter->iter = kUpb_Map_Begin;
   iter->version = map->version;
