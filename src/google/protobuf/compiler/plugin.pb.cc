@@ -914,22 +914,22 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // optional string suffix = 4;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_suffix());
+                                      this_._impl_.suffix_.Get());
     }
     // optional int32 major = 1;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_major());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.major_);
     }
     // optional int32 minor = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_minor());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.minor_);
     }
     // optional int32 patch = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_patch());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.patch_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -954,7 +954,7 @@ void Version::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_set_suffix(from._internal_suffix());
+      this_._internal_set_suffix(from._impl_.suffix_.Get());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       this_._impl_.major_ = from._impl_.major_;
@@ -1240,15 +1240,17 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // repeated .google.protobuf.FileDescriptorProto proto_file = 15;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1UL * this_._internal_proto_file_size();
-      for (const auto& msg : this_._internal_proto_file()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.proto_file_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // optional string parameter = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_parameter());
+                                      this_._impl_.parameter_.Get());
     }
     // optional .google.protobuf.compiler.Version compiler_version = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
@@ -1257,9 +1259,11 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
     // repeated .google.protobuf.FileDescriptorProto source_file_descriptors = 17;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      total_size += 2UL * this_._internal_source_file_descriptors_size();
-      for (const auto& msg : this_._internal_source_file_descriptors()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.source_file_descriptors_; !value.empty()) {
+        total_size += 2UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
   }
@@ -1286,17 +1290,19 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_mutable_file_to_generate()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_file_to_generate());
+      if (const auto& sub = from._impl_.file_to_generate_; !sub.empty()) {
+        this_._internal_mutable_file_to_generate()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._internal_mutable_proto_file()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_proto_file());
+      if (const auto& sub = from._impl_.proto_file_; !sub.empty()) {
+        this_._internal_mutable_proto_file()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      this_._internal_set_parameter(from._internal_parameter());
+      this_._internal_set_parameter(from._impl_.parameter_.Get());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.compiler_version_ != nullptr);
@@ -1310,9 +1316,10 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
       }
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      this_._internal_mutable_source_file_descriptors()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_source_file_descriptors());
+      if (const auto& sub = from._impl_.source_file_descriptors_; !sub.empty()) {
+        this_._internal_mutable_source_file_descriptors()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
   }
   this_._impl_._has_bits_[0] |= cached_has_bits;
@@ -1538,17 +1545,17 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // optional string name = 1;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_name());
+                                      this_._impl_.name_.Get());
     }
     // optional string insertion_point = 2;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_insertion_point());
+                                      this_._impl_.insertion_point_.Get());
     }
     // optional string content = 15;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_content());
+                                      this_._impl_.content_.Get());
     }
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
@@ -1579,13 +1586,13 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_m
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_set_name(from._internal_name());
+      this_._internal_set_name(from._impl_.name_.Get());
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._internal_set_insertion_point(from._internal_insertion_point());
+      this_._internal_set_insertion_point(from._impl_.insertion_point_.Get());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      this_._internal_set_content(from._internal_content());
+      this_._internal_set_content(from._impl_.content_.Get());
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.generated_code_info_ != nullptr);
@@ -1824,30 +1831,32 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1UL * this_._internal_file_size();
-      for (const auto& msg : this_._internal_file()) {
-        total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+      if (const auto& value = this_._impl_.file_; !value.empty()) {
+        total_size += 1UL * value.size();
+        for (const auto& msg : value) {
+          total_size += ::google::protobuf::internal::WireFormatLite::MessageSize(msg);
+        }
       }
     }
     // optional string error = 1;
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_error());
+                                      this_._impl_.error_.Get());
     }
     // optional uint64 supported_features = 2;
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += ::_pbi::WireFormatLite::UInt64SizePlusOne(
-          this_._internal_supported_features());
+      total_size +=
+          ::_pbi::WireFormatLite::UInt64SizePlusOne(this_._impl_.supported_features_);
     }
     // optional int32 minimum_edition = 3;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_minimum_edition());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.minimum_edition_);
     }
     // optional int32 maximum_edition = 4;
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
-          this_._internal_maximum_edition());
+      total_size +=
+          ::_pbi::WireFormatLite::Int32SizePlusOne(this_._impl_.maximum_edition_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -1873,12 +1882,13 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg,
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_mutable_file()->InternalMergeFromWithArena(
-          ::google::protobuf::MessageLite::internal_visibility(), arena,
-          from._internal_file());
+      if (const auto& sub = from._impl_.file_; !sub.empty()) {
+        this_._internal_mutable_file()->InternalMergeFromWithArena(
+            ::google::protobuf::MessageLite::internal_visibility(), arena, sub);
+      }
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._internal_set_error(from._internal_error());
+      this_._internal_set_error(from._impl_.error_.Get());
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       this_._impl_.supported_features_ = from._impl_.supported_features_;

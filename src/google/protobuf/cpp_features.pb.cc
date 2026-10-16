@@ -408,13 +408,13 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   if (BatchCheckHasBit(cached_has_bits, 0x00000009U)) {
     // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_string_type());
+      total_size +=
+          1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.string_type_);
     }
     // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      total_size += 1 +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_repeated_type());
+      total_size +=
+          1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.repeated_type_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,

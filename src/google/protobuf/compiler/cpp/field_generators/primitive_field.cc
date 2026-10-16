@@ -260,15 +260,15 @@ void SingularPrimitive::GenerateByteSize(io::Printer* p) const {
   // free inside of WireFormatLite, so we can save an instruction here.
   if (tag_size == 1) {
     p->Emit(R"cc(
-      total_size += ::_pbi::WireFormatLite::$DeclaredType$SizePlusOne(
-          this_._internal_$name$());
+      total_size +=
+          ::_pbi::WireFormatLite::$DeclaredType$SizePlusOne($this_field$);
     )cc");
     return;
   }
 
   p->Emit(R"cc(
-    total_size += $kTagBytes$ + ::_pbi::WireFormatLite::$DeclaredType$Size(
-                                    this_._internal_$name$());
+    total_size +=
+        $kTagBytes$ + ::_pbi::WireFormatLite::$DeclaredType$Size($this_field$);
   )cc");
 }
 
@@ -299,22 +299,11 @@ class RepeatedPrimitive final : public FieldGeneratorBase {
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    // TODO: experiment with simplifying this to be
-    // `if (!from.empty()) { body(); }` for both split and non-split cases.
-    auto body = [&] {
-      p->Emit(R"cc(
-        this_._internal_mutable_$name$()->MergeFrom(from._internal_$name$());
-      )cc");
-    };
-    if (!should_split()) {
-      body();
-    } else {
-      p->Emit({{"body", body}}, R"cc(
-        if (!$from_field$.IsDefault()) {
-          $body$;
-        }
-      )cc");
-    }
+    p->Emit(R"cc(
+      if (const auto& f = $from_field$; !f.empty()) {
+        this_._internal_mutable_$name$()->MergeFrom(f);
+      }
+    )cc");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -581,7 +570,7 @@ void RepeatedPrimitive::GenerateSerializeWithCachedSizesToArray(
     io::Printer* p) const {
   if (!field_->is_packed()) {
     p->Emit(R"cc(
-      for ($Type$ v : $this_field$) {
+      for ($Type$ v : this_.$field_$) {
         target = stream->EnsureSpace(target);
         target = ::_pbi::WireFormatLite::Write$DeclaredType$ToArray($number$, v,
                                                                     target);
@@ -631,8 +620,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
         R"cc(
           total_size +=
               ::_pbi::WireFormatLite::$DeclaredType$SizeWithPackedTagSize(
-                  this_._internal_$name$(), $kTagBytes$,
-                  this_.$_field_cached_byte_size_$);
+                  $this_field$, $kTagBytes$, this_.$_field_cached_byte_size_$);
         )cc");
     return;
   }
@@ -643,13 +631,11 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
              auto fixed_size = FixedSize(field_->type());
              if (fixed_size.has_value()) {
                p->Emit({{"kFixed", *fixed_size}}, R"cc(
-                 ::size_t{$kFixed$} *
-                     ::_pbi::FromIntSize(this_._internal_$name$_size());
+                 ::size_t{$kFixed$} * ::_pbi::FromIntSize($this_field$.size());
                )cc");
              } else {
                p->Emit(R"cc(
-                 ::_pbi::WireFormatLite::$DeclaredType$Size(
-                     this_._internal_$name$());
+                 ::_pbi::WireFormatLite::$DeclaredType$Size($this_field$);
                )cc");
              }
            }},
@@ -665,7 +651,7 @@ void RepeatedPrimitive::GenerateByteSize(io::Printer* p) const {
              } else {
                p->Emit(R"cc(
                  ::size_t{$kTagBytes$} *
-                     ::_pbi::FromIntSize(this_._internal_$name$_size());
+                     ::_pbi::FromIntSize($this_field$.size());
                )cc");
              }
            }},

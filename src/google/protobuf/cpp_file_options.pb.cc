@@ -341,8 +341,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // string namespace = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_namespace_());
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::StringSize(this_._impl_.namespace__);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -366,7 +366,7 @@ void CppFileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    this_._internal_set_namespace_(from._internal_namespace_());
+    this_._internal_set_namespace_(from._impl_.namespace__.Get());
   }
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(

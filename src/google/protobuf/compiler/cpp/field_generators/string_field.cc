@@ -103,7 +103,7 @@ class SingularString : public FieldGeneratorBase {
       )cc");
     } else {
       p->Emit(R"cc(
-        this_._internal_set_$name$(from._internal_$name$());
+        this_._internal_set_$name$($from_field$.Get());
       )cc");
     }
   }
@@ -121,7 +121,7 @@ class SingularString : public FieldGeneratorBase {
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
       total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                      this_._internal_$name$());
+                                      $this_field$.Get());
     )cc");
   }
 
@@ -642,24 +642,12 @@ class RepeatedString : public FieldGeneratorBase {
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    // TODO: experiment with simplifying this to be
-    // `if (!from.empty()) { body(); }` for both split and non-split cases.
-    auto body = [&] {
-      p->Emit(R"cc(
+    p->Emit(R"cc(
+      if (const auto& sub = $from_field$; !sub.empty()) {
         this_._internal_mutable_$name$()->InternalMergeFromWithArena(
-            $pb$::MessageLite::internal_visibility(), arena,
-            from._internal_$name$());
-      )cc");
-    };
-    if (!should_split()) {
-      body();
-    } else {
-      p->Emit({{"body", body}}, R"cc(
-        if (!$from_field$.IsDefault()) {
-          $body$;
-        }
-      )cc");
-    }
+            $pb$::MessageLite::internal_visibility(), arena, sub);
+      }
+    )cc");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -922,7 +910,7 @@ void RepeatedString::GenerateSerializeWithCachedSizesToArray(
                   "s.data(), static_cast<int>(s.length()),");
             }}},
           R"cc(
-            for (const auto& s : $this_field$) {
+            for (const auto& s : this_.$field_$) {
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }

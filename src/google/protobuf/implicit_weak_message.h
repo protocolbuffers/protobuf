@@ -178,6 +178,7 @@ struct WeakRepeatedPtrField {
       const_pointer_iterator;
 
   bool empty() const { return base().empty(); }
+  int size() const { return base().size(); }
   iterator begin() { return iterator(base().raw_data()); }
   const_iterator begin() const { return iterator(base().raw_data()); }
   const_iterator cbegin() const { return begin(); }

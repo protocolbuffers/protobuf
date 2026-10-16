@@ -343,7 +343,7 @@ void SingularMessage::GenerateMergingCode(io::Printer* p) const {
     p->Emit(
         R"cc(
           this_._internal_mutable_$name$()->$Submsg$::MergeFrom(
-              from._internal_$name$());
+              *reinterpret_cast<const $Submsg$*>($from_field$));
         )cc");
   } else {
     // Important: we set `hasbits` after we copied the field. There are cases
@@ -386,7 +386,7 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
   if (!is_group()) {
     p->Emit(R"cc(
       {
-        auto* sub = $this_field$;
+        auto* sub = this_.$field_$;
         target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
             $number$, *sub, sub->GetCachedSize(), target, stream);
       }
@@ -395,7 +395,7 @@ void SingularMessage::GenerateSerializeWithCachedSizesToArray(
     p->Emit(R"cc(
       target = stream->EnsureSpace(target);
       target = $pbi$::WireFormatLite::InternalWrite$DeclaredType$(
-          $number$, *$this_field$, target, stream);
+          $number$, *this_.$field_$, target, stream);
     )cc");
   }
 }
@@ -413,7 +413,7 @@ void SingularMessage::GenerateIsInitialized(io::Printer* p) const {
   if (HasHasbit(field_, *opts_)) {
     p->Emit(R"cc(
       if (CheckHasBit(this_.$has_bits_array$, $has_mask$)) {
-        if (!$this_field$->IsInitialized()) return false;
+        if (!this_.$field_$->IsInitialized()) return false;
       }
     )cc");
   } else {
@@ -933,24 +933,12 @@ void RepeatedMessage::GenerateClearingCode(io::Printer* p) const {
 }
 
 void RepeatedMessage::GenerateMergingCode(io::Printer* p) const {
-  // TODO: experiment with simplifying this to be
-  // `if (!from.empty()) { body(); }` for both split and non-split cases.
-  auto body = [&] {
-    p->Emit(R"cc(
+  p->Emit(R"cc(
+    if (const auto& sub = $from_field$; !sub.empty()) {
       this_._internal_mutable$_weak$_$name$()->InternalMergeFromWithArena(
-          $pb$::MessageLite::internal_visibility(), arena,
-          from._internal$_weak$_$name$());
-    )cc");
-  };
-  if (!should_split()) {
-    body();
-  } else {
-    p->Emit({{"body", body}}, R"cc(
-      if (!$from_field$.IsDefault()) {
-        $body$;
-      }
-    )cc");
-  }
+          $pb$::MessageLite::internal_visibility(), arena, sub);
+    }
+  )cc");
 }
 
 void RepeatedMessage::GenerateSwappingCode(io::Printer* p) const {
@@ -989,20 +977,21 @@ void RepeatedMessage::GenerateSerializeWithCachedSizesToArray(
           }
         }}},
       R"cc(
-        for (const auto& sub : $this_field$) {
+        for (const auto& sub : this_.$field_$) {
           $serialize_field$;
         }
       )cc");
 }
 
 void RepeatedMessage::GenerateByteSize(io::Printer* p) const {
-  p->Emit(
-      R"cc(
-        total_size += $kTagBytes$UL * this_._internal_$name$_size();
-        for (const auto& msg : this_._internal$_weak$_$name$()) {
-          total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
-        }
-      )cc");
+  p->Emit(R"cc(
+    if (const auto& value = $this_field$; !value.empty()) {
+      total_size += $kTagBytes$UL * value.size();
+      for (const auto& msg : value) {
+        total_size += $pbi$::WireFormatLite::$DeclaredType$Size(msg);
+      }
+    }
+  )cc");
 }
 
 void RepeatedMessage::GenerateIsInitialized(io::Printer* p) const {

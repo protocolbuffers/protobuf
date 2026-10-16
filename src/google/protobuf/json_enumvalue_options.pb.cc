@@ -343,8 +343,8 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     // string string = 1;
     cached_has_bits = this_._impl_._has_bits_[0];
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._internal_string());
+      total_size +=
+          1 + ::google::protobuf::internal::WireFormatLite::StringSize(this_._impl_.string_);
     }
   }
   return this_.MaybeComputeUnknownFieldsSize(total_size,
@@ -368,7 +368,7 @@ void JsonEnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-    this_._internal_set_string(from._internal_string());
+    this_._internal_set_string(from._impl_.string_.Get());
   }
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(

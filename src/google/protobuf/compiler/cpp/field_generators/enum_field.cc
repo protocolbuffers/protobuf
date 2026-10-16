@@ -108,8 +108,8 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size += $kTagBytes$ +
-                    ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
+      total_size +=
+          $kTagBytes$ + ::_pbi::WireFormatLite::EnumSize($this_field$);
     )cc");
   }
 
@@ -259,22 +259,11 @@ class RepeatedEnum : public FieldGeneratorBase {
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    // TODO: experiment with simplifying this to be
-    // `if (!from.empty()) { body(); }` for both split and non-split cases.
-    auto body = [&] {
-      p->Emit(R"cc(
-        this_._internal_mutable_$name$()->MergeFrom(from._internal_$name$());
-      )cc");
-    };
-    if (!should_split()) {
-      body();
-    } else {
-      p->Emit({{"body", body}}, R"cc(
-        if (!$from_field$.IsDefault()) {
-          $body$;
-        }
-      )cc");
-    }
+    p->Emit(R"cc(
+      if (const auto& f = $from_field$; !f.empty()) {
+        this_._internal_mutable_$name$()->MergeFrom(f);
+      }
+    )cc");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -541,7 +530,7 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
     ABSL_CHECK(field_->is_packed());
     p->Emit(R"cc(
       total_size += ::_pbi::WireFormatLite::EnumSizeWithPackedTagSize(
-          this_._internal_$name$(), $kTagBytes$, this_.$cached_size_$);
+          $this_field$, $kTagBytes$, this_.$cached_size_$);
     )cc");
     return;
   }
@@ -559,14 +548,13 @@ void RepeatedEnum::GenerateByteSize(io::Printer* p) const {
              } else {
                p->Emit(R"cc(
                  ::size_t{$kTagBytes$} *
-                     ::_pbi::FromIntSize(this_._internal_$name$_size());
+                     ::_pbi::FromIntSize($this_field$.size());
                )cc");
              }
            }},
       },
       R"cc(
-        ::size_t data_size =
-            ::_pbi::WireFormatLite::EnumSize(this_._internal_$name$());
+        ::size_t data_size = ::_pbi::WireFormatLite::EnumSize($this_field$);
         ::size_t tag_size = $tag_size$;
         total_size += data_size + tag_size;
       )cc");
