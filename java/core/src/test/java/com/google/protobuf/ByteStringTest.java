@@ -1046,6 +1046,95 @@ public class ByteStringTest {
     assertThat(ByteString.EMPTY.endsWith(ByteString.EMPTY)).isTrue();
   }
 
+  private static List<ByteString> makeRepresentations(byte[] slice) {
+    ByteString literal = ByteString.copyFrom(slice);
+    byte[] padded = new byte[slice.length + 700];
+    System.arraycopy(slice, 0, padded, 600, slice.length);
+    ByteString bounded = ByteString.copyFrom(padded).substring(600, 600 + slice.length);
+    int mid = slice.length / 2;
+    ByteString rope =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(slice, 0, mid),
+            ByteString.copyFrom(slice, mid, slice.length - mid));
+    return Arrays.asList(literal, bounded, rope);
+  }
+
+  @Test
+  public void testStartsWith_allRepresentations() {
+    byte[] bytes = getTestBytes(1000, 1234L);
+    byte[] prefixBytes = Arrays.copyOfRange(bytes, 0, 400);
+    byte[] suffixBytes = Arrays.copyOfRange(bytes, 600, 1000);
+
+    List<ByteString> strings = makeRepresentations(bytes);
+    List<ByteString> prefixes = makeRepresentations(prefixBytes);
+    List<ByteString> suffixes = makeRepresentations(suffixBytes);
+
+    for (ByteString s : strings) {
+      assertThat(s.startsWith(ByteString.EMPTY)).isTrue();
+      for (ByteString otherFull : strings) {
+        assertThat(s.startsWith(otherFull)).isTrue();
+      }
+      for (ByteString p : prefixes) {
+        assertThat(s.startsWith(p)).isTrue();
+        assertThat(p.startsWith(s)).isFalse();
+      }
+      for (ByteString suf : suffixes) {
+        assertThat(s.startsWith(suf)).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void testEndsWith_allRepresentations() {
+    byte[] bytes = getTestBytes(1000, 1234L);
+    byte[] prefixBytes = Arrays.copyOfRange(bytes, 0, 400);
+    byte[] suffixBytes = Arrays.copyOfRange(bytes, 600, 1000);
+
+    List<ByteString> strings = makeRepresentations(bytes);
+    List<ByteString> prefixes = makeRepresentations(prefixBytes);
+    List<ByteString> suffixes = makeRepresentations(suffixBytes);
+
+    for (ByteString s : strings) {
+      assertThat(s.endsWith(ByteString.EMPTY)).isTrue();
+      for (ByteString otherFull : strings) {
+        assertThat(s.endsWith(otherFull)).isTrue();
+      }
+      for (ByteString suf : suffixes) {
+        assertThat(s.endsWith(suf)).isTrue();
+        assertThat(suf.endsWith(s)).isFalse();
+      }
+      for (ByteString p : prefixes) {
+        assertThat(s.endsWith(p)).isFalse();
+      }
+    }
+  }
+
+  @Test
+  public void testBoundedByteStringWithNonZeroOffset_comparedWithRopeByteString() {
+    byte[] bytes = getTestBytes(1000, 5678L);
+    ByteString fullLiteral = ByteString.copyFrom(bytes);
+    // BoundedByteString with offset = 600, length = 300 (so offset > length).
+    ByteString boundedSlice = fullLiteral.substring(600, 900);
+
+    // RopeByteString of length 1000 containing the same bytes.
+    ByteString fullRope =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(bytes, 0, 500), ByteString.copyFrom(bytes, 500, 500));
+    // RopeByteString equal to bytes[600..900].
+    ByteString sliceRope =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(bytes, 600, 150), ByteString.copyFrom(bytes, 750, 150));
+
+    assertThat(boundedSlice.equals(sliceRope)).isTrue();
+    assertThat(sliceRope.equals(boundedSlice)).isTrue();
+    assertThat(sliceRope.startsWith(boundedSlice)).isTrue();
+    assertThat(sliceRope.endsWith(boundedSlice)).isTrue();
+    assertThat(fullRope.substring(600, 1000).startsWith(boundedSlice)).isTrue();
+    assertThat(fullRope.substring(0, 900).endsWith(boundedSlice)).isTrue();
+    assertThat(((ByteString.LeafByteString) boundedSlice).equalsRange(fullRope, 600, 300)).isTrue();
+    assertThat(((ByteString.LeafByteString) boundedSlice).equalsRange(fullRope, 0, 300)).isFalse();
+  }
+
   static List<ByteString> makeConcretePieces(byte[] referenceBytes) {
     List<ByteString> pieces = new ArrayList<ByteString>();
     // Starting length should be small enough that we'll do some concatenating by
