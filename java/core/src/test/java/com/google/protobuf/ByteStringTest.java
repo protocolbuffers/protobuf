@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -1120,5 +1121,71 @@ public class ByteStringTest {
     assertWithMessage(byteArrayCopier.toString())
         .that(byteArrayCopier.getClass().getSimpleName().endsWith("ArraysByteArrayCopier"))
         .isTrue();
+  }
+
+  @Test
+  public void testCopyFrom_randomAccessListSizes() {
+    assertThat(ByteString.copyFrom(Collections.<ByteString>emptyList()))
+        .isSameInstanceAs(ByteString.EMPTY);
+    assertThat(ByteString.copyFrom(new ArrayList<ByteString>()))
+        .isSameInstanceAs(ByteString.EMPTY);
+
+    ByteString single = ByteString.copyFromUtf8("singleton");
+    assertThat(ByteString.copyFrom(Collections.singletonList(single))).isSameInstanceAs(single);
+    assertThat(ByteString.copyFrom(new ArrayList<>(Collections.singletonList(single))))
+        .isSameInstanceAs(single);
+
+    for (int numElements : new int[] {2, 7}) {
+      List<ByteString> list = new ArrayList<>(numElements);
+      ByteArrayOutputStream expected = new ByteArrayOutputStream();
+      for (int i = 0; i < numElements; i++) {
+        byte[] chunk = getTestBytes(200 + i * 37, 1000L + i);
+        list.add(ByteString.copyFrom(chunk));
+        expected.write(chunk, 0, chunk.length);
+      }
+      ByteString fromList = ByteString.copyFrom(list);
+      ByteString fromIterable =
+          ByteString.copyFrom(
+              new Iterable<ByteString>() {
+                @Override
+                public Iterator<ByteString> iterator() {
+                  return list.iterator();
+                }
+              });
+      assertThat(fromList.toByteArray()).isEqualTo(expected.toByteArray());
+      assertThat(fromList).isEqualTo(fromIterable);
+      assertThat(fromList.hashCode()).isEqualTo(fromIterable.hashCode());
+    }
+  }
+
+  @Test
+  public void testReadFrom_multiChunkMaxBufferReuse() throws IOException {
+    byte[] data = getTestBytes(ByteString.MAX_READ_FROM_CHUNK_SIZE * 4 + 321, 98765L);
+    ByteString result = ByteString.readFrom(new ByteArrayInputStream(data));
+    assertThat(result.toByteArray()).isEqualTo(data);
+
+    byte[] customData = getTestBytes(2000, 54321L);
+    ByteString customResult = ByteString.readFrom(new ByteArrayInputStream(customData), 64, 256);
+    assertThat(customResult.toByteArray()).isEqualTo(customData);
+  }
+
+  @Test
+  public void testNewOutput_zeroInitialCapacityAndRepeatedToByteString() throws IOException {
+    ByteString.Output emptyOut = ByteString.newOutput(0);
+    assertThat(emptyOut.toByteString()).isSameInstanceAs(ByteString.EMPTY);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    emptyOut.writeTo(baos);
+    assertThat(baos.toByteArray()).isEmpty();
+
+    byte[] data = getTestBytes(64, 12345L);
+    ByteString.Output exactOut = ByteString.newOutput(data.length);
+    exactOut.write(data);
+    ByteString first = exactOut.toByteString();
+    ByteString second = exactOut.toByteString();
+    assertThat(second).isSameInstanceAs(first);
+    assertThat(second.toByteArray()).isEqualTo(data);
+
+    exactOut.writeTo(baos);
+    assertThat(baos.toByteArray()).isEqualTo(data);
   }
 }
