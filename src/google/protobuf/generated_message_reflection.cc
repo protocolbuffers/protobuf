@@ -25,7 +25,6 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
-#include "absl/base/attributes.h"
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/const_init.h"
@@ -299,7 +298,6 @@ std::string AbslUnparseFlagImpl(int e, const EnumDescriptor& desc) {
 
 namespace {
 
-using internal::GetConstPointerAtOffset;
 using internal::GetConstRefAtOffset;
 using internal::GetPointerAtOffset;
 
@@ -2676,7 +2674,6 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
     MutableExtensionSet(message)->UnsafeArenaSetAllocatedMessage(
         *message, field->number(), field->type(), field, sub_message);
   } else {
-    Arena* arena = message->GetArena();
     if (schema_.InRealOneof(field)) {
       if (sub_message == nullptr) {
         ClearOneof(message, field->containing_oneof());
@@ -2694,7 +2691,7 @@ void Reflection::UnsafeArenaSetAllocatedMessage(
       SetHasBit(message, field);
     }
     Message** sub_message_holder = MutableRaw<Message*>(message, field);
-    if (arena == nullptr) {
+    if (!internal::HasArena(*message)) {
       delete *sub_message_holder;
     }
     *sub_message_holder = sub_message;
