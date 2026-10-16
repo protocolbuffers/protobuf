@@ -110,13 +110,11 @@ bool Builder::LinkExtension(upb_MiniTableExtension* ext) {
   upb_MiniTableField* field = &ext->UPB_PRIVATE(field);
   if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
     auto mt = NextMiniTable();
-    if (!mt) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
-    upb_MiniTableExtension_SetSubMessage(ext, mt);
+    if (!mt || !upb_MiniTableExtension_SetSubMessage(ext, mt)) return false;
   }
   if (upb_MiniTableField_IsClosedEnum(field)) {
     auto et = NextEnumTable();
-    if (!et) return false;
-    upb_MiniTableExtension_SetSubEnum(ext, et);
+    if (!et || !upb_MiniTableExtension_SetSubEnum(ext, et)) return false;
   }
   return true;
 }
@@ -138,7 +136,7 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
         *exts = nullptr;
         return;
       }
-      upb_MiniTableSub sub;
+      upb_MiniTableSub sub = upb_MiniTableSub_FromMessage(nullptr);
       const upb_MiniTable* extendee = NextMiniTable();
       if (!extendee) break;
       ptr = upb_MiniTableExtension_Init(ptr, end - ptr, ext, extendee, sub,

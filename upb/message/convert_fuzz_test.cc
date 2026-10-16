@@ -615,6 +615,30 @@ TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b529945368) {
                   20),
       372456973, 1140553636);
 }
+
+TEST(ConvertFuzz, ArbitraryMiniTableConvertFuzzRegression_b574481307) {
+  ArbitraryMiniTableConvertFuzz(
+      upb::fuzz::MiniTableFuzzInput{
+          {"&", "", "%%%", "", ""}, {}, "#3", {0, 2884765147, 4294967295}},
+      upb::fuzz::MiniTableFuzzInput{{"&"}, {}, "", {1}},
+      std::string(
+          "\n{ppppppp`0\000ppppppppppppppppppuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuquuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "\331uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuu\010\010\010\010uuuuuuuuuuuuuuuuuuuyuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuuuuuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu\301\301"
+          "\301\301\301\301uuuuuu~uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu\215uuu"
+          "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+          "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuppppppppppppppp\371\371\371pp\331:"
+          "\000\000p\n\nppppppppppppppppppuppppppppppppppppp\216ppppp\n\npppppp"
+          "pppppppppppppopppppppppppp)pppppppppp",
+          858),
+      623911074, 3917243171);
+}
 }  // namespace
 
 }  // namespace upb
