@@ -215,7 +215,14 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
   static ::absl::string_view FullMessageName() { return "pb.CSharpFeatures"; }
 
   explicit CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CSharpFeatures& from);
+  CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CSharpFeatures& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CSharpFeatures_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   CSharpFeatures(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CSharpFeatures&& from) noexcept
       : CSharpFeatures(arena) {

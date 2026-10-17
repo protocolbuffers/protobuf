@@ -226,21 +226,20 @@ PROTOBUF_NDEBUG_INLINE CppFileOptions::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         namespace__(arena, from.namespace__) {}
 
-CppFileOptions::CppFileOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const CppFileOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CppFileOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  CppFileOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL CppFileOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const CppFileOptions& from = *static_cast<const CppFileOptions*>(from_msg);
+  CppFileOptions& this_ = *static_cast<CppFileOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(CppFileOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:pb.file.CppFileOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE CppFileOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -400,10 +399,6 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace file
 }  // namespace pb
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google
 // @@protoc_insertion_point(global_scope)
 #include "google/protobuf/port_undef.inc"
 // clang-format on

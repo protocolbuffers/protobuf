@@ -261,7 +261,7 @@ int RepeatedPtrFieldBase::MergeIntoClearedMessages(
   return count;
 }
 
-void RepeatedPtrFieldBase::MergeFromConcreteMessage(
+PROTOBUF_NOINLINE void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     const RepeatedPtrFieldBase& from, Arena* arena, CopyFn copy_fn) {
   Prefetch5LinesFrom1Line(&from);
   ABSL_DCHECK_EQ(arena, GetArena());
@@ -281,11 +281,11 @@ void RepeatedPtrFieldBase::MergeFromConcreteMessage(
     for (; src < prefetch_end; ++src, ++dst) {
       auto next = src + kPrefetchstride;
       absl::PrefetchToLocalCache(*next);
-      *dst = copy_fn(arena, *src);
+      *dst = copy_fn(nullptr, arena, *src);
     }
   }
   for (; src < end; ++src, ++dst) {
-    *dst = copy_fn(arena, *src);
+    *dst = copy_fn(nullptr, arena, *src);
   }
   ExchangeCurrentSize(new_size);
   if (new_size > allocated_size()) {

@@ -437,7 +437,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
       // For LITE objects we use the generic MergeFrom to save on binary size.
       return MergeFrom<MessageLite>(from, arena);
     }
-    MergeFromConcreteMessage(from, arena, Arena::CopyConstruct<T>);
+    MergeFromConcreteMessage(from, arena, Arena::CopyConstructImplFnFor<T>(0));
   }
 
   void InternalSwap(RepeatedPtrFieldBase* PROTOBUF_RESTRICT rhs) {
@@ -769,7 +769,7 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   // This follows the `Arena::CopyConstruct` signature so that the compiler
   // can have the inlined call into the out of line copy function(s) simply pass
   // the address of `Arena::CopyConstruct` 'as is'.
-  using CopyFn = void* (*)(Arena*, const void*);
+  using CopyFn = internal::CopyConstructImplFn;
 
   struct Rep {
     // The size of the elements array, in number of elements.

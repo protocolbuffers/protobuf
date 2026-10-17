@@ -41,6 +41,7 @@ using type_info = ::type_info;
 #include "absl/strings/str_format.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -94,6 +95,13 @@ bool HasArena(const MessageLite& message);
 
 // Defined in message_lite.h
 Arena* PROTOBUF_NULLABLE GetArena(const MessageLite& message);
+
+PROTOBUF_EXPORT void* PROTOBUF_NONNULL
+DefaultConstructMessage(const ClassData* PROTOBUF_NONNULL class_data,
+                        Arena* PROTOBUF_NULLABLE arena);
+using CopyConstructImplFn = void* PROTOBUF_NONNULL (*PROTOBUF_NONNULL)(
+    void* PROTOBUF_NULLABLE to, Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from);
 
 // This struct maps field types to the types that we will use to represent them
 // when allocated on an arena. This is necessary because fields no longer own an
@@ -675,6 +683,19 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
  private:
   internal::ThreadSafeArena impl_;
 
+  template <typename T, typename = decltype(&T::CopyConstructImpl)>
+  static constexpr internal::CopyConstructImplFn CopyConstructImplFnFor(int) {
+    return &T::CopyConstructImpl;
+  }
+  template <typename T>
+  static constexpr internal::CopyConstructImplFn CopyConstructImplFnFor(...) {
+    return +[](void*, Arena* arena, const void* from) -> void* {
+      void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
+                                   : internal::Allocate(sizeof(T));
+      return new (mem) T(arena, *static_cast<const T*>(from));
+    };
+  }
+
   enum class ConstructType { kUnknown, kDefault, kCopy, kMove };
   // Overload set to detect which kind of construction is going to happen for a
   // specific set of input arguments. This is used to dispatch to different
@@ -765,10 +786,10 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   //  - It allows the optimizer to see the constructors called to
   //  further optimize the instantiation.
   template <typename T>
-  static void* PROTOBUF_NONNULL
+  PROTOBUF_ALWAYS_INLINE static void* PROTOBUF_NONNULL
   DefaultConstruct(Arena* PROTOBUF_NULLABLE arena);
   template <typename T>
-  static void* PROTOBUF_NONNULL CopyConstruct(
+  PROTOBUF_ALWAYS_INLINE static void* PROTOBUF_NONNULL CopyConstruct(
       Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from);
 
   template <typename T, typename... Args>
@@ -1135,11 +1156,8 @@ class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
 };
 
 // DefaultConstruct/CopyConstruct
-//
-// IMPORTANT: These have to be defined out of line and without an `inline`
-// keyword to make sure the `extern template` suppresses instantiations.
 template <typename T>
-PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
+PROTOBUF_ALWAYS_INLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
   if constexpr (internal::FieldHasArenaOffset<T>()) {
     if (arena != nullptr) {
@@ -1156,6 +1174,10 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
       // construct the object.
       return new (internal::Allocate(sizeof(T))) T();
     }
+  } else if constexpr (!std::is_same_v<internal::MessageTraits<T>,
+                                       internal::FallbackMessageTraits<T>>) {
+    return internal::DefaultConstructMessage(
+        internal::MessageTraits<T>::class_data(), arena);
   } else {
     static_assert(is_destructor_skippable<T>::value);
     void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
@@ -1169,31 +1191,10 @@ Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
 }
 
 template <typename T>
-PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
+PROTOBUF_ALWAYS_INLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
     Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from) {
-  const auto* typed_from = static_cast<const T*>(from);
-  // If the object is larger than half of a cache line, prefetch either the rest
-  // of it or half of it, whichiver is smaller, starting at 1-cache-line offset.
-  // This has shown the best benchmark results on average between several tested
-  // configurations.
-  if constexpr (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
-    using internal::PrefetchOpts;
-    static constexpr PrefetchOpts kPrefetchOpts = {
-        /*num=*/{std::min(sizeof(T) / 2, sizeof(T) - ABSL_CACHELINE_SIZE / 2),
-                 PrefetchOpts::kBytes},
-        /*from=*/{1, PrefetchOpts::kLines},
-        /*locality=*/PrefetchOpts::kHigh,
-    };
-    internal::Prefetch<kPrefetchOpts, T, T>(typed_from);
-  }
   static_assert(is_destructor_skippable<T>::value, "");
-  void* mem;
-  if (arena != nullptr) {
-    mem = arena->AllocateAligned(sizeof(T));
-  } else {
-    mem = internal::Allocate(sizeof(T));
-  }
-  return new (mem) T(arena, *typed_from);
+  return CopyConstructImplFnFor<T>(0)(nullptr, arena, from);
 }
 
 template <>

@@ -6678,23 +6678,22 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
         }
      {}
 
-FileDescriptorSet::FileDescriptorSet(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FileDescriptorSet& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FileDescriptorSet_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FileDescriptorSet& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FileDescriptorSet::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FileDescriptorSet& from = *static_cast<const FileDescriptorSet*>(from_msg);
+  FileDescriptorSet& this_ = *static_cast<FileDescriptorSet*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FileDescriptorSet)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorSet)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -6954,19 +6953,17 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
         package_(arena, from.package_),
         syntax_(arena, from.syntax_) {}
 
-FileDescriptorProto::FileDescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FileDescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FileDescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FileDescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FileDescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FileDescriptorProto& from = *static_cast<const FileDescriptorProto*>(from_msg);
+  FileDescriptorProto& this_ = *static_cast<FileDescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FileDescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000800U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
@@ -6977,6 +6974,7 @@ FileDescriptorProto::FileDescriptorProto(
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileDescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -7551,19 +7549,17 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
     [[maybe_unused]] const ::google::protobuf::DescriptorProto_ExtensionRange& from_msg)
       : _has_bits_{from._has_bits_} {}
 
-DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const DescriptorProto_ExtensionRange& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &DescriptorProto_ExtensionRange_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  DescriptorProto_ExtensionRange& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL DescriptorProto_ExtensionRange::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const DescriptorProto_ExtensionRange& from = *static_cast<const DescriptorProto_ExtensionRange*>(from_msg);
+  DescriptorProto_ExtensionRange& this_ = *static_cast<DescriptorProto_ExtensionRange*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(DescriptorProto_ExtensionRange)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
@@ -7577,6 +7573,7 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
                sizeof(Impl_::end_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto.ExtensionRange)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -7807,16 +7804,16 @@ DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(::google::protobuf:
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.DescriptorProto.ReservedRange)
 }
-DescriptorProto_ReservedRange::DescriptorProto_ReservedRange(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &DescriptorProto_ReservedRange_globals_.class_data),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL DescriptorProto_ReservedRange::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to, [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const DescriptorProto_ReservedRange& from = *static_cast<const DescriptorProto_ReservedRange*>(from_msg);
+  DescriptorProto_ReservedRange& this_ = *static_cast<DescriptorProto_ReservedRange*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(DescriptorProto_ReservedRange)));
+  new (&this_._impl_) Impl_(from._impl_);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -8070,19 +8067,17 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
         ,
         name_(arena, from.name_) {}
 
-DescriptorProto::DescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const DescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &DescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  DescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL DescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const DescriptorProto& from = *static_cast<const DescriptorProto*>(from_msg);
+  DescriptorProto& this_ = *static_cast<DescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(DescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000200U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
@@ -8090,6 +8085,7 @@ DescriptorProto::DescriptorProto(
   _impl_.visibility_ = from._impl_.visibility_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.DescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -8601,19 +8597,17 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
         full_name_(arena, from.full_name_),
         type_(arena, from.type_) {}
 
-ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const ExtensionRangeOptions_Declaration& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &ExtensionRangeOptions_Declaration_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  ExtensionRangeOptions_Declaration& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL ExtensionRangeOptions_Declaration::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const ExtensionRangeOptions_Declaration& from = *static_cast<const ExtensionRangeOptions_Declaration*>(from_msg);
+  ExtensionRangeOptions_Declaration& this_ = *static_cast<ExtensionRangeOptions_Declaration*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(ExtensionRangeOptions_Declaration)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, number_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -8623,6 +8617,7 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
                sizeof(Impl_::repeated_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions.Declaration)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -8885,20 +8880,18 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
         }
      {}
 
-ExtensionRangeOptions::ExtensionRangeOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const ExtensionRangeOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &ExtensionRangeOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  ExtensionRangeOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL ExtensionRangeOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const ExtensionRangeOptions& from = *static_cast<const ExtensionRangeOptions*>(from_msg);
+  ExtensionRangeOptions& this_ = *static_cast<ExtensionRangeOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(ExtensionRangeOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
@@ -8907,6 +8900,7 @@ ExtensionRangeOptions::ExtensionRangeOptions(
   _impl_.verification_ = from._impl_.verification_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ExtensionRangeOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -9210,19 +9204,17 @@ PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
         default_value_(arena, from.default_value_),
         json_name_(arena, from.json_name_) {}
 
-FieldDescriptorProto::FieldDescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FieldDescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FieldDescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldDescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FieldDescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FieldDescriptorProto& from = *static_cast<const FieldDescriptorProto*>(from_msg);
+  FieldDescriptorProto& this_ = *static_cast<FieldDescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FieldDescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000020U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
@@ -9236,6 +9228,7 @@ FieldDescriptorProto::FieldDescriptorProto(
                sizeof(Impl_::type_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldDescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -9621,25 +9614,24 @@ PROTOBUF_NDEBUG_INLINE OneofDescriptorProto::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         name_(arena, from.name_) {}
 
-OneofDescriptorProto::OneofDescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const OneofDescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &OneofDescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  OneofDescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL OneofDescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const OneofDescriptorProto& from = *static_cast<const OneofDescriptorProto*>(from_msg);
+  OneofDescriptorProto& this_ = *static_cast<OneofDescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(OneofDescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
                  : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofDescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE OneofDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -9849,16 +9841,16 @@ EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(::g
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
 }
-EnumDescriptorProto_EnumReservedRange::EnumDescriptorProto_EnumReservedRange(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &EnumDescriptorProto_EnumReservedRange_globals_.class_data),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL EnumDescriptorProto_EnumReservedRange::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to, [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const EnumDescriptorProto_EnumReservedRange& from = *static_cast<const EnumDescriptorProto_EnumReservedRange*>(from_msg);
+  EnumDescriptorProto_EnumReservedRange& this_ = *static_cast<EnumDescriptorProto_EnumReservedRange*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(EnumDescriptorProto_EnumReservedRange)));
+  new (&this_._impl_) Impl_(from._impl_);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto_EnumReservedRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -10077,19 +10069,17 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
         ,
         name_(arena, from.name_) {}
 
-EnumDescriptorProto::EnumDescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const EnumDescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &EnumDescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumDescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL EnumDescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const EnumDescriptorProto& from = *static_cast<const EnumDescriptorProto*>(from_msg);
+  EnumDescriptorProto& this_ = *static_cast<EnumDescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(EnumDescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000010U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
@@ -10097,6 +10087,7 @@ EnumDescriptorProto::EnumDescriptorProto(
   _impl_.visibility_ = from._impl_.visibility_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumDescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -10437,19 +10428,17 @@ PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         name_(arena, from.name_) {}
 
-EnumValueDescriptorProto::EnumValueDescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const EnumValueDescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &EnumValueDescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumValueDescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL EnumValueDescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const EnumValueDescriptorProto& from = *static_cast<const EnumValueDescriptorProto*>(from_msg);
+  EnumValueDescriptorProto& this_ = *static_cast<EnumValueDescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(EnumValueDescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000002U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
@@ -10457,6 +10446,7 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(
   _impl_.number_ = from._impl_.number_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueDescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -10706,25 +10696,24 @@ PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
         ,
         name_(arena, from.name_) {}
 
-ServiceDescriptorProto::ServiceDescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const ServiceDescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &ServiceDescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  ServiceDescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL ServiceDescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const ServiceDescriptorProto& from = *static_cast<const ServiceDescriptorProto*>(from_msg);
+  ServiceDescriptorProto& this_ = *static_cast<ServiceDescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(ServiceDescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000004U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
                  : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceDescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -10977,19 +10966,17 @@ PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
         input_type_(arena, from.input_type_),
         output_type_(arena, from.output_type_) {}
 
-MethodDescriptorProto::MethodDescriptorProto(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const MethodDescriptorProto& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &MethodDescriptorProto_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  MethodDescriptorProto& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL MethodDescriptorProto::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const MethodDescriptorProto& from = *static_cast<const MethodDescriptorProto*>(from_msg);
+  MethodDescriptorProto& this_ = *static_cast<MethodDescriptorProto*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(MethodDescriptorProto)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.options_ = (CheckHasBit(cached_has_bits, 0x00000008U))
                  ? Super_::CopyConstruct(arena, *from._impl_.options_)
@@ -11003,6 +10990,7 @@ MethodDescriptorProto::MethodDescriptorProto(
                sizeof(Impl_::server_streaming_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodDescriptorProto)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -11312,20 +11300,18 @@ PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
         }
      {}
 
-FileOptions::FileOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FileOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FileOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FileOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FileOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FileOptions& from = *static_cast<const FileOptions*>(from_msg);
+  FileOptions& this_ = *static_cast<FileOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FileOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000400U))
@@ -11340,6 +11326,7 @@ FileOptions::FileOptions(
                sizeof(Impl_::cc_enable_arenas_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FileOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -11910,20 +11897,18 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
         }
      {}
 
-MessageOptions::MessageOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const MessageOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &MessageOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  MessageOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL MessageOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const MessageOptions& from = *static_cast<const MessageOptions*>(from_msg);
+  MessageOptions& this_ = *static_cast<MessageOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(MessageOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
@@ -11938,6 +11923,7 @@ MessageOptions::MessageOptions(
                sizeof(Impl_::deprecated_legacy_json_field_conflicts_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MessageOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -12248,22 +12234,21 @@ PROTOBUF_NDEBUG_INLINE FieldOptions_EditionDefault::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         value_(arena, from.value_) {}
 
-FieldOptions_EditionDefault::FieldOptions_EditionDefault(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FieldOptions_EditionDefault& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FieldOptions_EditionDefault_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldOptions_EditionDefault& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FieldOptions_EditionDefault::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FieldOptions_EditionDefault& from = *static_cast<const FieldOptions_EditionDefault*>(from_msg);
+  FieldOptions_EditionDefault& this_ = *static_cast<FieldOptions_EditionDefault*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FieldOptions_EditionDefault)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions.EditionDefault)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_EditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -12456,19 +12441,17 @@ PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
         deprecation_warning_(arena, from.deprecation_warning_),
         removal_error_(arena, from.removal_error_) {}
 
-FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FieldOptions_FeatureSupport& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FieldOptions_FeatureSupport_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldOptions_FeatureSupport& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FieldOptions_FeatureSupport::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FieldOptions_FeatureSupport& from = *static_cast<const FieldOptions_FeatureSupport*>(from_msg);
+  FieldOptions_FeatureSupport& this_ = *static_cast<FieldOptions_FeatureSupport*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FieldOptions_FeatureSupport)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, edition_introduced_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -12478,6 +12461,7 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
                sizeof(Impl_::edition_removed_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions.FeatureSupport)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -12756,20 +12740,18 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
         }
      {}
 
-FieldOptions::FieldOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FieldOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FieldOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FieldOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FieldOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FieldOptions& from = *static_cast<const FieldOptions*>(from_msg);
+  FieldOptions& this_ = *static_cast<FieldOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FieldOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000004U))
@@ -12787,6 +12769,7 @@ FieldOptions::FieldOptions(
                sizeof(Impl_::retention_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FieldOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -13252,20 +13235,18 @@ PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
         }
      {}
 
-OneofOptions::OneofOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const OneofOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &OneofOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  OneofOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL OneofOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const OneofOptions& from = *static_cast<const OneofOptions*>(from_msg);
+  OneofOptions& this_ = *static_cast<OneofOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(OneofOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
@@ -13273,6 +13254,7 @@ OneofOptions::OneofOptions(
                  : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.OneofOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -13524,20 +13506,18 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
         }
      {}
 
-EnumOptions::EnumOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const EnumOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &EnumOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL EnumOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const EnumOptions& from = *static_cast<const EnumOptions*>(from_msg);
+  EnumOptions& this_ = *static_cast<EnumOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(EnumOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
@@ -13552,6 +13532,7 @@ EnumOptions::EnumOptions(
                sizeof(Impl_::deprecated_legacy_json_field_conflicts_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -13850,20 +13831,18 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
         }
      {}
 
-EnumValueOptions::EnumValueOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const EnumValueOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &EnumValueOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  EnumValueOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL EnumValueOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const EnumValueOptions& from = *static_cast<const EnumValueOptions*>(from_msg);
+  EnumValueOptions& this_ = *static_cast<EnumValueOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(EnumValueOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
@@ -13881,6 +13860,7 @@ EnumValueOptions::EnumValueOptions(
                sizeof(Impl_::debug_redact_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.EnumValueOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -14199,20 +14179,18 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
         }
      {}
 
-ServiceOptions::ServiceOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const ServiceOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &ServiceOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  ServiceOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL ServiceOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const ServiceOptions& from = *static_cast<const ServiceOptions*>(from_msg);
+  ServiceOptions& this_ = *static_cast<ServiceOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(ServiceOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
@@ -14221,6 +14199,7 @@ ServiceOptions::ServiceOptions(
   _impl_.deprecated_ = from._impl_.deprecated_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.ServiceOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -14496,20 +14475,18 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
         }
      {}
 
-MethodOptions::MethodOptions(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const MethodOptions& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &MethodOptions_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  MethodOptions& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL MethodOptions::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const MethodOptions& from = *static_cast<const MethodOptions*>(from_msg);
+  MethodOptions& this_ = *static_cast<MethodOptions*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(MethodOptions)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.features_ = (CheckHasBit(cached_has_bits, 0x00000002U))
@@ -14524,6 +14501,7 @@ MethodOptions::MethodOptions(
                sizeof(Impl_::idempotency_level_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.MethodOptions)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -14809,22 +14787,21 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption_NamePart::Impl_::Impl_(
       : _has_bits_{from._has_bits_},
         name_part_(arena, from.name_part_) {}
 
-UninterpretedOption_NamePart::UninterpretedOption_NamePart(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const UninterpretedOption_NamePart& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &UninterpretedOption_NamePart_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  UninterpretedOption_NamePart& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL UninterpretedOption_NamePart::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const UninterpretedOption_NamePart& from = *static_cast<const UninterpretedOption_NamePart*>(from_msg);
+  UninterpretedOption_NamePart& this_ = *static_cast<UninterpretedOption_NamePart*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(UninterpretedOption_NamePart)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   _impl_.is_extension_ = from._impl_.is_extension_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption.NamePart)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption_NamePart::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -15029,19 +15006,17 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
         string_value_(arena, from.string_value_),
         aggregate_value_(arena, from.aggregate_value_) {}
 
-UninterpretedOption::UninterpretedOption(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const UninterpretedOption& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &UninterpretedOption_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  UninterpretedOption& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL UninterpretedOption::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const UninterpretedOption& from = *static_cast<const UninterpretedOption*>(from_msg);
+  UninterpretedOption& this_ = *static_cast<UninterpretedOption*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(UninterpretedOption)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, positive_int_value_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -15051,6 +15026,7 @@ UninterpretedOption::UninterpretedOption(
                sizeof(Impl_::double_value_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.UninterpretedOption)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -15355,20 +15331,18 @@ FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(::google::protobuf::A
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet.VisibilityFeature)
 }
-FeatureSet_VisibilityFeature::FeatureSet_VisibilityFeature(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FeatureSet_VisibilityFeature& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FeatureSet_VisibilityFeature_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSet_VisibilityFeature& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FeatureSet_VisibilityFeature::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FeatureSet_VisibilityFeature& from = *static_cast<const FeatureSet_VisibilityFeature*>(from_msg);
+  FeatureSet_VisibilityFeature& this_ = *static_cast<FeatureSet_VisibilityFeature*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FeatureSet_VisibilityFeature)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet.VisibilityFeature)
+  return &this_;
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -15398,20 +15372,18 @@ FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(::google::protobuf:
 #endif  // PROTOBUF_CUSTOM_VTABLE
   // @@protoc_insertion_point(arena_constructor:google.protobuf.FeatureSet.ProtoLimitsFeature)
 }
-FeatureSet_ProtoLimitsFeature::FeatureSet_ProtoLimitsFeature(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FeatureSet_ProtoLimitsFeature& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FeatureSet_ProtoLimitsFeature_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSet_ProtoLimitsFeature& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FeatureSet_ProtoLimitsFeature::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FeatureSet_ProtoLimitsFeature& from = *static_cast<const FeatureSet_ProtoLimitsFeature*>(from_msg);
+  FeatureSet_ProtoLimitsFeature& this_ = *static_cast<FeatureSet_ProtoLimitsFeature*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FeatureSet_ProtoLimitsFeature)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet.ProtoLimitsFeature)
+  return &this_;
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
@@ -15450,20 +15422,18 @@ PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
         ,
         _has_bits_{from._has_bits_} {}
 
-FeatureSet::FeatureSet(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FeatureSet& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FeatureSet_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSet& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FeatureSet::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FeatureSet& from = *static_cast<const FeatureSet*>(from_msg);
+  FeatureSet& this_ = *static_cast<FeatureSet*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FeatureSet)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, field_presence_),
@@ -15474,6 +15444,7 @@ FeatureSet::FeatureSet(
                sizeof(Impl_::enforce_proto_limits_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSet)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -15794,19 +15765,17 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_
     [[maybe_unused]] const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& from_msg)
       : _has_bits_{from._has_bits_} {}
 
-FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FeatureSetDefaults_FeatureSetEditionDefault& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FeatureSetDefaults_FeatureSetEditionDefault_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSetDefaults_FeatureSetEditionDefault& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FeatureSetDefaults_FeatureSetEditionDefault::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FeatureSetDefaults_FeatureSetEditionDefault& from = *static_cast<const FeatureSetDefaults_FeatureSetEditionDefault*>(from_msg);
+  FeatureSetDefaults_FeatureSetEditionDefault& this_ = *static_cast<FeatureSetDefaults_FeatureSetEditionDefault*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FeatureSetDefaults_FeatureSetEditionDefault)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
   _impl_.overridable_features_ = (CheckHasBit(cached_has_bits, 0x00000001U))
                  ? Super_::CopyConstruct(arena, *from._impl_.overridable_features_)
@@ -15817,6 +15786,7 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
   _impl_.edition_ = from._impl_.edition_;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -16077,19 +16047,17 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
         }
      {}
 
-FeatureSetDefaults::FeatureSetDefaults(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const FeatureSetDefaults& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &FeatureSetDefaults_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  FeatureSetDefaults& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL FeatureSetDefaults::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const FeatureSetDefaults& from = *static_cast<const FeatureSetDefaults*>(from_msg);
+  FeatureSetDefaults& this_ = *static_cast<FeatureSetDefaults*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(FeatureSetDefaults)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, minimum_edition_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -16099,6 +16067,7 @@ FeatureSetDefaults::FeatureSetDefaults(
                sizeof(Impl_::maximum_edition_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.FeatureSetDefaults)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -16358,21 +16327,20 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
         leading_comments_(arena, from.leading_comments_),
         trailing_comments_(arena, from.trailing_comments_) {}
 
-SourceCodeInfo_Location::SourceCodeInfo_Location(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const SourceCodeInfo_Location& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &SourceCodeInfo_Location_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  SourceCodeInfo_Location& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL SourceCodeInfo_Location::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const SourceCodeInfo_Location& from = *static_cast<const SourceCodeInfo_Location*>(from_msg);
+  SourceCodeInfo_Location& this_ = *static_cast<SourceCodeInfo_Location*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(SourceCodeInfo_Location)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo.Location)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -16671,23 +16639,22 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
         }
      {}
 
-SourceCodeInfo::SourceCodeInfo(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const SourceCodeInfo& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &SourceCodeInfo_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  SourceCodeInfo& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL SourceCodeInfo::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const SourceCodeInfo& from = *static_cast<const SourceCodeInfo*>(from_msg);
+  SourceCodeInfo& this_ = *static_cast<SourceCodeInfo*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(SourceCodeInfo)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
+  _impl_._extensions_.MergeFrom(arena, &this_, from._impl_._extensions_,
                                 from.GetArena());
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.SourceCodeInfo)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -16894,19 +16861,17 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
         ,
         source_file_(arena, from.source_file_) {}
 
-GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const GeneratedCodeInfo_Annotation& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &GeneratedCodeInfo_Annotation_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  GeneratedCodeInfo_Annotation& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL GeneratedCodeInfo_Annotation::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const GeneratedCodeInfo_Annotation& from = *static_cast<const GeneratedCodeInfo_Annotation*>(from_msg);
+  GeneratedCodeInfo_Annotation& this_ = *static_cast<GeneratedCodeInfo_Annotation*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(GeneratedCodeInfo_Annotation)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
   ::memcpy(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, begin_),
            reinterpret_cast<const char*>(&from._impl_) +
@@ -16916,6 +16881,7 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
                sizeof(Impl_::semantic_));
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo.Annotation)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -17189,21 +17155,20 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
         }
      {}
 
-GeneratedCodeInfo::GeneratedCodeInfo(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
-    const GeneratedCodeInfo& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &GeneratedCodeInfo_globals_.class_data) {
-
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena) {
-#endif  // PROTOBUF_CUSTOM_VTABLE
-  GeneratedCodeInfo& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL GeneratedCodeInfo::CopyConstructImpl(
+    void* PROTOBUF_NULLABLE to,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const GeneratedCodeInfo& from = *static_cast<const GeneratedCodeInfo*>(from_msg);
+  GeneratedCodeInfo& this_ = *static_cast<GeneratedCodeInfo*>(
+      InitMessageCopy(to, arena, from_msg, sizeof(GeneratedCodeInfo)));
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+  auto& _impl_ [[maybe_unused]] = *::new (&this_._impl_) Impl_(
+      internal_visibility(), arena, from._impl_, from);
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.GeneratedCodeInfo)
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -17367,10 +17332,6 @@ void GeneratedCodeInfo::InternalSwap(GeneratedCodeInfo* PROTOBUF_RESTRICT PROTOB
   return Super_::GetMetadataImpl(GeneratedCodeInfo_globals_.class_data);
 }
 // @@protoc_insertion_point(namespace_scope)
-}  // namespace protobuf
-}  // namespace google
-namespace google {
-namespace protobuf {
 }  // namespace protobuf
 }  // namespace google
 // @@protoc_insertion_point(global_scope)

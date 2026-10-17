@@ -1239,7 +1239,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption.NamePart"; }
 
   explicit UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption_NamePart& from);
+  UninterpretedOption_NamePart(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption_NamePart& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &UninterpretedOption_NamePart_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   UninterpretedOption_NamePart(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption_NamePart&& from) noexcept
       : UninterpretedOption_NamePart(arena) {
@@ -1485,7 +1492,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo.Location"; }
 
   explicit SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo_Location& from);
+  SourceCodeInfo_Location(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo_Location& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &SourceCodeInfo_Location_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   SourceCodeInfo_Location(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo_Location&& from) noexcept
       : SourceCodeInfo_Location(arena) {
@@ -1750,7 +1764,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo.Annotation"; }
 
   explicit GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo_Annotation& from);
+  GeneratedCodeInfo_Annotation(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo_Annotation& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &GeneratedCodeInfo_Annotation_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   GeneratedCodeInfo_Annotation(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo_Annotation&& from) noexcept
       : GeneratedCodeInfo_Annotation(arena) {
@@ -1990,7 +2011,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.FeatureSupport"; }
 
   explicit FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_FeatureSupport& from);
+  FieldOptions_FeatureSupport(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_FeatureSupport& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FieldOptions_FeatureSupport_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FieldOptions_FeatureSupport(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_FeatureSupport&& from) noexcept
       : FieldOptions_FeatureSupport(arena) {
@@ -2207,7 +2235,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions.EditionDefault"; }
 
   explicit FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_EditionDefault& from);
+  FieldOptions_EditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions_EditionDefault& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FieldOptions_EditionDefault_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FieldOptions_EditionDefault(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions_EditionDefault&& from) noexcept
       : FieldOptions_EditionDefault(arena) {
@@ -2390,7 +2425,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_Visibili
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet.VisibilityFeature"; }
 
   explicit FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_VisibilityFeature& from);
+  FeatureSet_VisibilityFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_VisibilityFeature& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FeatureSet_VisibilityFeature_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FeatureSet_VisibilityFeature(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_VisibilityFeature&& from) noexcept
       : FeatureSet_VisibilityFeature(arena) {
@@ -2537,7 +2579,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet_ProtoLim
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet.ProtoLimitsFeature"; }
 
   explicit FeatureSet_ProtoLimitsFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FeatureSet_ProtoLimitsFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_ProtoLimitsFeature& from);
+  FeatureSet_ProtoLimitsFeature(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet_ProtoLimitsFeature& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FeatureSet_ProtoLimitsFeature_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FeatureSet_ProtoLimitsFeature(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet_ProtoLimitsFeature&& from) noexcept
       : FeatureSet_ProtoLimitsFeature(arena) {
@@ -3085,7 +3134,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSet"; }
 
   explicit FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet& from);
+  FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSet& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FeatureSet_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FeatureSet(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSet&& from) noexcept
       : FeatureSet(arena) {
@@ -3340,7 +3396,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions.Declaration"; }
 
   explicit ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions_Declaration& from);
+  ExtensionRangeOptions_Declaration(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions_Declaration& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &ExtensionRangeOptions_Declaration_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   ExtensionRangeOptions_Declaration(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions_Declaration&& from) noexcept
       : ExtensionRangeOptions_Declaration(arena) {
@@ -3553,7 +3616,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto.EnumReservedRange"; }
 
   explicit EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from);
+  EnumDescriptorProto_EnumReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto_EnumReservedRange& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &EnumDescriptorProto_EnumReservedRange_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   EnumDescriptorProto_EnumReservedRange(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto_EnumReservedRange&& from) noexcept
       : EnumDescriptorProto_EnumReservedRange(arena) {
@@ -3752,7 +3822,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ReservedRange"; }
 
   explicit DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from);
+  DescriptorProto_ReservedRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ReservedRange& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &DescriptorProto_ReservedRange_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   DescriptorProto_ReservedRange(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ReservedRange&& from) noexcept
       : DescriptorProto_ReservedRange(arena) {
@@ -3999,7 +4076,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   static ::absl::string_view FullMessageName() { return "google.protobuf.UninterpretedOption"; }
 
   explicit UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption& from);
+  UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const UninterpretedOption& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &UninterpretedOption_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   UninterpretedOption(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, UninterpretedOption&& from) noexcept
       : UninterpretedOption(arena) {
@@ -4412,7 +4496,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   static ::absl::string_view FullMessageName() { return "google.protobuf.SourceCodeInfo"; }
 
   explicit SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo& from);
+  SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const SourceCodeInfo& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &SourceCodeInfo_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   SourceCodeInfo(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, SourceCodeInfo&& from) noexcept
       : SourceCodeInfo(arena) {
@@ -4610,7 +4701,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   static ::absl::string_view FullMessageName() { return "google.protobuf.GeneratedCodeInfo"; }
 
   explicit GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo& from);
+  GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const GeneratedCodeInfo& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &GeneratedCodeInfo_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   GeneratedCodeInfo(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, GeneratedCodeInfo&& from) noexcept
       : GeneratedCodeInfo(arena) {
@@ -4820,7 +4918,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault"; }
 
   explicit FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults_FeatureSetEditionDefault& from);
+  FeatureSetDefaults_FeatureSetEditionDefault(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults_FeatureSetEditionDefault& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FeatureSetDefaults_FeatureSetEditionDefault_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FeatureSetDefaults_FeatureSetEditionDefault(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults_FeatureSetEditionDefault&& from) noexcept
       : FeatureSetDefaults_FeatureSetEditionDefault(arena) {
@@ -5228,7 +5333,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceOptions"; }
 
   explicit ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceOptions& from);
+  ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &ServiceOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   ServiceOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceOptions&& from) noexcept
       : ServiceOptions(arena) {
@@ -5632,7 +5744,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofOptions"; }
 
   explicit OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofOptions& from);
+  OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &OneofOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   OneofOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofOptions&& from) noexcept
       : OneofOptions(arena) {
@@ -6065,7 +6184,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodOptions"; }
 
   explicit MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodOptions& from);
+  MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &MethodOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   MethodOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodOptions&& from) noexcept
       : MethodOptions(arena) {
@@ -6503,7 +6629,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   static ::absl::string_view FullMessageName() { return "google.protobuf.MessageOptions"; }
 
   explicit MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MessageOptions& from);
+  MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MessageOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &MessageOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   MessageOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MessageOptions&& from) noexcept
       : MessageOptions(arena) {
@@ -7098,7 +7231,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileOptions"; }
 
   explicit FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileOptions& from);
+  FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FileOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FileOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileOptions&& from) noexcept
       : FileOptions(arena) {
@@ -7762,7 +7902,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldOptions"; }
 
   explicit FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions& from);
+  FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FieldOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FieldOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldOptions&& from) noexcept
       : FieldOptions(arena) {
@@ -8026,7 +8173,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   static ::absl::string_view FullMessageName() { return "google.protobuf.FeatureSetDefaults"; }
 
   explicit FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults& from);
+  FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FeatureSetDefaults& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FeatureSetDefaults_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FeatureSetDefaults(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FeatureSetDefaults&& from) noexcept
       : FeatureSetDefaults(arena) {
@@ -8467,7 +8621,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   static ::absl::string_view FullMessageName() { return "google.protobuf.ExtensionRangeOptions"; }
 
   explicit ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions& from);
+  ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ExtensionRangeOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &ExtensionRangeOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   ExtensionRangeOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ExtensionRangeOptions&& from) noexcept
       : ExtensionRangeOptions(arena) {
@@ -8898,7 +9059,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueOptions"; }
 
   explicit EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueOptions& from);
+  EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &EnumValueOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   EnumValueOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueOptions&& from) noexcept
       : EnumValueOptions(arena) {
@@ -9328,7 +9496,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumOptions"; }
 
   explicit EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumOptions& from);
+  EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &EnumOptions_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   EnumOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumOptions&& from) noexcept
       : EnumOptions(arena) {
@@ -9550,7 +9725,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   static ::absl::string_view FullMessageName() { return "google.protobuf.OneofDescriptorProto"; }
 
   explicit OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofDescriptorProto& from);
+  OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const OneofDescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &OneofDescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   OneofDescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, OneofDescriptorProto&& from) noexcept
       : OneofDescriptorProto(arena) {
@@ -9791,7 +9973,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   static ::absl::string_view FullMessageName() { return "google.protobuf.MethodDescriptorProto"; }
 
   explicit MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodDescriptorProto& from);
+  MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const MethodDescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &MethodDescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   MethodDescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, MethodDescriptorProto&& from) noexcept
       : MethodDescriptorProto(arena) {
@@ -10145,7 +10334,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   static ::absl::string_view FullMessageName() { return "google.protobuf.FieldDescriptorProto"; }
 
   explicit FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldDescriptorProto& from);
+  FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FieldDescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FieldDescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FieldDescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FieldDescriptorProto&& from) noexcept
       : FieldDescriptorProto(arena) {
@@ -10400,7 +10596,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumValueDescriptorProto"; }
 
   explicit EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueDescriptorProto& from);
+  EnumValueDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumValueDescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &EnumValueDescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   EnumValueDescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumValueDescriptorProto&& from) noexcept
       : EnumValueDescriptorProto(arena) {
@@ -10615,7 +10818,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto.ExtensionRange"; }
 
   explicit DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ExtensionRange& from);
+  DescriptorProto_ExtensionRange(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto_ExtensionRange& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &DescriptorProto_ExtensionRange_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   DescriptorProto_ExtensionRange(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto_ExtensionRange&& from) noexcept
       : DescriptorProto_ExtensionRange(arena) {
@@ -10838,7 +11048,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   static ::absl::string_view FullMessageName() { return "google.protobuf.ServiceDescriptorProto"; }
 
   explicit ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceDescriptorProto& from);
+  ServiceDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const ServiceDescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &ServiceDescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   ServiceDescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, ServiceDescriptorProto&& from) noexcept
       : ServiceDescriptorProto(arena) {
@@ -11098,7 +11315,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   static ::absl::string_view FullMessageName() { return "google.protobuf.EnumDescriptorProto"; }
 
   explicit EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto& from);
+  EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const EnumDescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &EnumDescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   EnumDescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, EnumDescriptorProto&& from) noexcept
       : EnumDescriptorProto(arena) {
@@ -11428,7 +11652,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   static ::absl::string_view FullMessageName() { return "google.protobuf.DescriptorProto"; }
 
   explicit DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto& from);
+  DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const DescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &DescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   DescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, DescriptorProto&& from) noexcept
       : DescriptorProto(arena) {
@@ -11815,7 +12046,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorProto"; }
 
   explicit FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorProto& from);
+  FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorProto& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FileDescriptorProto_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FileDescriptorProto(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorProto&& from) noexcept
       : FileDescriptorProto(arena) {
@@ -12262,7 +12500,14 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   static ::absl::string_view FullMessageName() { return "google.protobuf.FileDescriptorSet"; }
 
   explicit FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorSet& from);
+  FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const FileDescriptorSet& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &FileDescriptorSet_globals_)) {
+    CopyConstructImpl(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                    const void* PROTOBUF_NONNULL from_msg);
   FileDescriptorSet(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, FileDescriptorSet&& from) noexcept
       : FileDescriptorSet(arena) {
