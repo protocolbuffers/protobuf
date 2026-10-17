@@ -1642,10 +1642,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
     @Override
     protected final boolean equalsInternal(ByteString other) {
-      if (other instanceof LiteralByteString) {
-        return Arrays.equals(bytes, ((LiteralByteString) other).bytes);
-      } else if (other instanceof BoundedByteString) {
-        return equalsRange(other, 0, size());
+      if (other instanceof LiteralByteString lbsOther) {
+        return Arrays.equals(bytes, lbsOther.bytes);
+      } else if (other instanceof BoundedByteString bbsOther) {
+        return subArrayEquals(bytes, 0, bbsOther.bytes, bbsOther.offset, bytes.length);
       } else {
         // Anything other than LiteralByteString or BoundedByteString, delegate to the other side
         // who will be able to optimize the check better based on the more exotic representation.
@@ -1843,10 +1843,10 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
 
     @Override
     protected boolean equalsInternal(ByteString other) {
-      // If the other side is a LiteralByteString or BoundedByteString, implement equals by doing
-      // equalsInternal since that is as a fast range check against the byte arrays.
-      if (other instanceof LiteralByteString || other instanceof BoundedByteString) {
-        return equalsRange(other, 0, size());
+      if (other instanceof LiteralByteString lbsOther) {
+        return subArrayEquals(bytes, offset, lbsOther.bytes, 0, length);
+      } else if (other instanceof BoundedByteString bbsOther) {
+        return subArrayEquals(bytes, offset, bbsOther.bytes, bbsOther.offset, length);
       }
 
       // Anything other than LiteralByteString or BoundedByteString, delegate to the other side

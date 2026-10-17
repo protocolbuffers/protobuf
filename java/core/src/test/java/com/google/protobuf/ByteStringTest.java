@@ -905,6 +905,58 @@ public class ByteStringTest {
   }
 
   @Test
+  public void testEquals_boundedByteString_matchingAndMismatching() {
+    int length = 256;
+    byte[] base = getTestBytes(length + 20, 998877L);
+    ByteString bounded1 = ByteString.copyFrom(base).substring(5, 5 + length);
+    ByteString bounded2 = ByteString.copyFrom(base).substring(10, 10 + length);
+    // Construct another BoundedByteString at a different offset with identical contents.
+    byte[] shifted = new byte[length + 20];
+    System.arraycopy(base, 5, shifted, 12, length);
+    ByteString boundedSame = ByteString.copyFrom(shifted).substring(12, 12 + length);
+    ByteString literalSame = ByteString.copyFrom(base, 5, length);
+    ByteString ropeSame =
+        RopeByteString.newInstanceForTest(
+            literalSame.substring(0, 100), literalSame.substring(100, length));
+
+    // Equal across representations (both directions)
+    assertThat(bounded1).isEqualTo(boundedSame);
+    assertThat(boundedSame).isEqualTo(bounded1);
+    assertThat(bounded1).isEqualTo(literalSame);
+    assertThat(literalSame).isEqualTo(bounded1);
+    assertThat(bounded1).isEqualTo(ropeSame);
+    assertThat(ropeSame).isEqualTo(bounded1);
+    assertThat(bounded1).isNotEqualTo(bounded2);
+
+    // Mismatches at start, middle (across SIMD word boundary), and end
+    for (int mismatchPos : new int[] {0, 1, 7, 8, 31, 32, length / 2, length - 1}) {
+      byte[] mutated = Arrays.copyOf(shifted, shifted.length);
+      mutated[12 + mismatchPos] ^= 1;
+      ByteString boundedDiff = ByteString.copyFrom(mutated).substring(12, 12 + length);
+      ByteString literalDiff = ByteString.copyFrom(mutated, 12, length);
+      ByteString ropeDiff =
+          RopeByteString.newInstanceForTest(
+              literalDiff.substring(0, 100), literalDiff.substring(100, length));
+
+      assertWithMessage("Bounded vs Bounded mismatch at %s", mismatchPos)
+          .that(bounded1.equals(boundedDiff))
+          .isFalse();
+      assertWithMessage("Bounded vs Literal mismatch at %s", mismatchPos)
+          .that(bounded1.equals(literalDiff))
+          .isFalse();
+      assertWithMessage("Literal vs Bounded mismatch at %s", mismatchPos)
+          .that(literalDiff.equals(bounded1))
+          .isFalse();
+      assertWithMessage("Bounded vs Rope mismatch at %s", mismatchPos)
+          .that(bounded1.equals(ropeDiff))
+          .isFalse();
+      assertWithMessage("Rope vs Bounded mismatch at %s", mismatchPos)
+          .that(ropeDiff.equals(bounded1))
+          .isFalse();
+    }
+  }
+
+  @Test
   public void testSubstringNoCopyParity() {
     byte[] bigBytes = getTestBytes(2048 * 1024, 113344L);
     int start = 512 * 1024 - 3333;
