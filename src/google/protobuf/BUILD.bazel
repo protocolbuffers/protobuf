@@ -643,6 +643,7 @@ cc_library(
         "//src/google/protobuf/stubs:lite",
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:dynamic_annotations",
+        "@abseil-cpp//absl/base:nullability",
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/container:layout",
         "@abseil-cpp//absl/hash",
@@ -652,6 +653,7 @@ cc_library(
         "@abseil-cpp//absl/numeric:bits",
         "@abseil-cpp//absl/strings:str_format",
         "@abseil-cpp//absl/synchronization",
+        "@abseil-cpp//absl/types:optional",
         "@abseil-cpp//absl/types:span",
     ],
 )
@@ -813,6 +815,7 @@ cc_library(
         "@abseil-cpp//absl/base:core_headers",
         "@abseil-cpp//absl/base:dynamic_annotations",
         "@abseil-cpp//absl/base:no_destructor",
+        "@abseil-cpp//absl/base:nullability",
         "@abseil-cpp//absl/base:prefetch",
         "@abseil-cpp//absl/cleanup",
         "@abseil-cpp//absl/container:btree",

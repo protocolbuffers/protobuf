@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <new>  // IWYU pragma: keep for operator new().
 #include <string>
 #include <type_traits>
@@ -21,6 +22,8 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/base/nullability.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/internal_visibility.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
@@ -300,13 +303,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
-  inline Arena() : impl_() {}
+  Arena() : impl_() {}
 
   // Construct an arena with default options, except for the supplied
   // initial block. It is more efficient to use this constructor
   // instead of passing ArenaOptions if the only configuration needed
   // by the caller is supplying an initial block.
-  inline Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
+  Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
       : impl_(initial_block, initial_block_size) {}
 
   // Arena constructor taking custom options. See ArenaOptions above for
@@ -325,7 +328,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       internal::ThreadSafeArena::kBlockHeaderSize +
       internal::ThreadSafeArena::kSerialArenaSize;
 
-  inline ~Arena() = default;
+  ~Arena() = default;
 
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.
@@ -651,7 +654,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     return InternalHelper<T>::GetArena(p);
   }
 
-  // Helper typetraits that indicates support for arenas in a type T at compile
+  // Helper type traits that indicates support for arenas in a type T at compile
   // time. This is public only to allow construction of higher-level templated
   // utilities.
   //
