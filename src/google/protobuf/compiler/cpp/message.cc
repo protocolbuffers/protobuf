@@ -471,35 +471,47 @@ const FieldChunk* GetPartitionableChunk(const FieldChunk& chunk) {
   return chunk.has_hasbit ? &chunk : nullptr;
 }
 
-// Greedily partitions the fields sharing a hasbit word into batches to
-// minimize the expected number of branch checks executed.
+// Partitions the fields sharing a hasbit word into batches using dynamic
+// programming to minimize the expected number of branch checks executed.
 template <typename Chunk>
 std::vector<Chunk> PartitionToMinimizeExpectedBranches(const Chunk& chunk,
                                                        const Options& options) {
-  std::vector<Chunk> result;
-  if (chunk.fields.empty()) return result;
+  const auto& fields = chunk.fields;
+  const size_t n = fields.size();
+  if (n == 0) return {};
 
-  result.push_back(ChunkWithFields(chunk, {chunk.fields.front()}));
-  double p_none = GetAbsenceProbability(chunk.fields.front(), options);
+  const auto p_absent = [&](size_t i) {
+    return GetAbsenceProbability(fields[i], options);
+  };
+  // `min_cost[i]` is the minimum expected number of branch checks for the
+  // suffix `fields[i..n)`.
+  std::vector<double> min_cost(n + 1, 0.0);
+  // `next_split[i]` is the exclusive end index `j` of the optimal first batch
+  // `fields[i..j)` of the suffix `fields[i..n)`.
+  std::vector<size_t> next_split(n, n);
 
-  for (size_t i = 1; i < chunk.fields.size(); ++i) {
-    const FieldDescriptor* field = chunk.fields[i];
-    double current_cost =
-        ExpectedNumberOfBranchesTaken(result.back().fields.size(), p_none);
-    double p_field_absent = GetAbsenceProbability(field, options);
-    double new_absent = p_none * p_field_absent;
-    double extended_cost = ExpectedNumberOfBranchesTaken(
-        result.back().fields.size() + 1, new_absent);
-
-    // If adding this field to the current batch has a higher expected branches
-    // cost than if the field were alone, start a new chunk.
-    if (extended_cost > current_cost + 1.0) {
-      result.push_back(ChunkWithFields(chunk, {field}));
-      p_none = p_field_absent;
-    } else {
-      result.back().fields.push_back(field);
-      p_none = new_absent;
+  for (size_t i = n; i-- > 0;) {
+    // Base candidate: put `fields[i]` in a single-field chunk `[i, i+1)`,
+    // which always costs 1.0 branch check.
+    min_cost[i] = 1.0 + min_cost[i + 1];
+    next_split[i] = i + 1;
+    double p_none = p_absent(i);
+    // Try extending the batch starting at `i` to `[i, j)`.
+    for (size_t j = i + 2; j <= n; ++j) {
+      p_none *= p_absent(j - 1);
+      double cost = ExpectedNumberOfBranchesTaken(j - i, p_none) + min_cost[j];
+      if (cost <= min_cost[i]) {
+        min_cost[i] = cost;
+        next_split[i] = j;
+      }
     }
+  }
+
+  std::vector<Chunk> result;
+  for (size_t i = 0; i < n; i = next_split[i]) {
+    result.push_back(ChunkWithFields(
+        chunk, std::vector<const FieldDescriptor*>(
+                   fields.begin() + i, fields.begin() + next_split[i])));
   }
   return result;
 }
