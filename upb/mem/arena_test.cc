@@ -9,6 +9,10 @@
 
 #include <stddef.h>
 
+#ifndef _WIN32
+#include <pthread.h>
+#endif
+
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -824,6 +828,65 @@ TEST(ArenaTest, FuzzFuseIsFusedRace) {
   done.Notify();
   for (auto& t : threads) t.join();
 }
+
+#ifndef _WIN32
+// Frees the head of a chain of arena refs on a thread with a small stack, so
+// that freeing recursively once per arena would overflow it. If `fuse` is true
+// each arena in the chain is also fused with a second arena, so the arenas that
+// are released are roots of fused lists.
+static bool FreeRefArenaChainOnSmallStack(bool fuse) {
+  constexpr int kChainLength = 20000;
+  constexpr size_t kStackSize = 128 * 1024;
+  struct Args {
+    bool fuse;
+    bool ok = false;
+  } args;
+  args.fuse = fuse;
+  auto body = [](void* p) -> void* {
+    Args* args = static_cast<Args*>(p);
+    std::vector<upb_Arena*> arenas;
+    for (int i = 0; i < kChainLength; ++i) {
+      arenas.push_back(upb_Arena_New());
+      if (args->fuse) {
+        // Fused arenas share a refcount; freeing `extra` drops its ref but
+        // leaves it in the fused list of arenas.back().
+        upb_Arena* extra = upb_Arena_New();
+        if (!upb_Arena_Fuse(arenas.back(), extra)) return nullptr;
+        upb_Arena_Free(extra);
+      }
+    }
+    for (int i = 0; i + 1 < kChainLength; ++i) {
+      if (!upb_Arena_RefArena(arenas[i], arenas[i + 1])) return nullptr;
+    }
+    // Drop the direct references; arenas[1..] are kept alive by the chain.
+    for (int i = kChainLength - 1; i >= 1; --i) upb_Arena_Free(arenas[i]);
+    upb_Arena_Free(arenas[0]);
+    args->ok = true;
+    return nullptr;
+  };
+  pthread_attr_t attr;
+  EXPECT_EQ(pthread_attr_init(&attr), 0);
+  EXPECT_EQ(pthread_attr_setstacksize(&attr, kStackSize), 0);
+  pthread_t thread;
+  int rc = pthread_create(&thread, &attr, body, &args);
+  EXPECT_EQ(rc, 0);
+  if (rc != 0) {
+    pthread_attr_destroy(&attr);
+    return false;
+  }
+  pthread_join(thread, nullptr);
+  pthread_attr_destroy(&attr);
+  return args.ok;
+}
+
+TEST(ArenaTest, FreeLongRefArenaChain) {
+  EXPECT_TRUE(FreeRefArenaChainOnSmallStack(/*fuse=*/false));
+}
+
+TEST(ArenaTest, FreeLongRefArenaChainOfFusedArenas) {
+  EXPECT_TRUE(FreeRefArenaChainOnSmallStack(/*fuse=*/true));
+}
+#endif  // _WIN32
 
 TEST(ArenaTest, FuzzRefArenaRace) {
   Environment env;
