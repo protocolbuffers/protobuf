@@ -10,7 +10,13 @@
 //  Sanjay Ghemawat, Jeff Dean, and others.
 
 // We request posix_close if available. See the comment on "robust_close".
+// Not on the BSDs: there _POSIX_C_SOURCE hides everything outside POSIX,
+// including the isascii that libc++'s <locale> uses, and their libc has no
+// posix_close to request.
+#if !defined(__FreeBSD__) && !defined(__OpenBSD__) && !defined(__NetBSD__) && \
+    !defined(__DragonFly__)
 #define _POSIX_C_SOURCE 202405L
+#endif
 
 #ifndef _MSC_VER
 #include <fcntl.h>
