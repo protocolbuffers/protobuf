@@ -236,6 +236,7 @@ cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire",
+        "//upb/wire:encode_extension",
     ],
 )
 
@@ -303,6 +304,7 @@ cc_test(
         ":convert",
         ":convert_test_upb_minitable_proto",
         ":convert_test_upb_proto",
+        ":copy",
         ":internal",
         ":message",
         ":message_test_upb_minitable_proto",
@@ -311,6 +313,8 @@ cc_test(
         ":promote",
         "//upb/base",
         "//upb/mem",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
         "//upb/mini_table",
         "//upb/port",
         "//upb/test:test_messages_proto2_upb_proto",
