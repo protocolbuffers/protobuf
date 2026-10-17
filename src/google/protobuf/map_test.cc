@@ -55,6 +55,39 @@ using ::testing::Le;
 using ::testing::UnorderedElementsAre;
 using ::testing::UnorderedElementsAreArray;
 
+TEST(MapTest, LargeMapSpaceUsedDoesNotWrap) {
+  if (!RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
+
+  // Exercise the real map implementation with enough nodes to overflow
+  // the original 32-bit multiplication in SpaceUsedExcludingSelfLong().
+  using MapType = Map<int32_t, proto2_unittest::TestAllTypes>;
+
+  const size_t node_size =
+      MapTestPeer::GetTypeInfo<MapType>().node_size;
+
+  const uint64_t count =
+      (uint64_t{1} << 32) / node_size + 1;
+
+  MapType map;
+  for (uint64_t i = 0; i < count; ++i) {
+    map[static_cast<int32_t>(i)];
+  }
+
+  ASSERT_EQ(map.size(), count);
+
+  const size_t expected_node_bytes =
+      static_cast<size_t>(node_size) * count;
+
+  ASSERT_GT(expected_node_bytes,
+            std::numeric_limits<uint32_t>::max());
+
+  EXPECT_GE(map.SpaceUsedExcludingSelfLong(),
+            expected_node_bytes);
+}
+
+
 TEST(MapTest, CopyConstructIntegers) {
   using MapType = Map<int32_t, int32_t>;
   MapType original;
