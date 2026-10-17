@@ -103,7 +103,7 @@ std::string JoinPaths(absl::Span<const absl::string_view> paths) {
   return absl::StrJoin(paths, kPathSeparator);
 }
 
-std::string CreatePluginArg() {
+std::string CreatePluginArg(absl::string_view name = "prefix-gen-plug") {
   std::string plugin_path;
 #ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
   plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
@@ -142,7 +142,7 @@ std::string CreatePluginArg() {
         << plugin_path;
     return "";
   }
-  return absl::StrCat("--plugin=prefix-gen-plug=", plugin_path);
+  return absl::StrCat("--plugin=", name, "=", plugin_path);
 }
 
 class CommandLineInterfaceTest : public CommandLineInterfaceTester {
@@ -4829,6 +4829,47 @@ TEST_F(CommandLineInterfaceTest, PluginReceivesJsonName) {
 
   Run("protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir foo.proto");
 
+  ExpectErrorSubstring("Saw json_name: true");
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetInStripsDefaultJsonName) {
+  CreateTempFile("default_json.proto",
+                 "syntax = \"proto2\";\n"
+                 "package default_pkg;\n"
+                 "message MockCodeGenerator_HasJsonName {\n"
+                 "  optional int32 value = 1;\n"
+                 "}\n");
+  CreateTempFile("custom_json.proto",
+                 "syntax = \"proto2\";\n"
+                 "package custom_pkg;\n"
+                 "message MockCodeGenerator_HasJsonName {\n"
+                 "  optional int32 value = 1 [json_name = \"custom\"];\n"
+                 "}\n");
+
+  Run("protocol_compiler --descriptor_set_out=$tmpdir/descriptors.bin "
+      "--proto_path=$tmpdir default_json.proto custom_json.proto");
+  ExpectNoErrors();
+
+  std::string java_plugin_arg = CreatePluginArg("protoc-gen-java");
+
+  // Built-in plugins see has_json_name == false for default json_name,
+  // matching source parsing.
+  AllowPlugins("protoc-");
+  RunProtoc(absl::StrCat(
+      "protocol_compiler --java_out=$tmpdir ", java_plugin_arg,
+      " --descriptor_set_in=$tmpdir/descriptors.bin default_json.proto"));
+  ExpectErrorSubstring("Saw json_name: false");
+
+  // Built-in plugins see has_json_name == true for custom json_name.
+  AllowPlugins("protoc-");
+  RunProtoc(absl::StrCat(
+      "protocol_compiler --java_out=$tmpdir ", java_plugin_arg,
+      " --descriptor_set_in=$tmpdir/descriptors.bin custom_json.proto"));
+  ExpectErrorSubstring("Saw json_name: true");
+
+  // External plugins still receive synthesized json_name on all fields.
+  Run("protocol_compiler --plug_out=$tmpdir "
+      "--descriptor_set_in=$tmpdir/descriptors.bin default_json.proto");
   ExpectErrorSubstring("Saw json_name: true");
 }
 

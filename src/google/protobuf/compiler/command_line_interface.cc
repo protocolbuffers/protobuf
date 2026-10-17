@@ -87,6 +87,7 @@
 #include "google/protobuf/io/printer.h"
 #include "google/protobuf/io/zero_copy_stream_impl.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/naming_style.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/util/message_differencer.h"
 
@@ -1444,6 +1445,34 @@ struct MergedFileDescriptor {
   absl::flat_hash_map<FileDescriptorUnit, std::string> unit_sources;
 };
 
+void StripDefaultJsonName(FieldDescriptorProto& field) {
+  if (field.has_json_name() &&
+      field.json_name() == google::protobuf::internal::ToJsonName(field.name())) {
+    field.clear_json_name();
+  }
+}
+
+void StripDefaultJsonName(DescriptorProto& message) {
+  for (FieldDescriptorProto& field : *message.mutable_field()) {
+    StripDefaultJsonName(field);
+  }
+  for (FieldDescriptorProto& extension : *message.mutable_extension()) {
+    StripDefaultJsonName(extension);
+  }
+  for (DescriptorProto& nested : *message.mutable_nested_type()) {
+    StripDefaultJsonName(nested);
+  }
+}
+
+void StripDefaultJsonName(FileDescriptorProto& file) {
+  for (FieldDescriptorProto& extension : *file.mutable_extension()) {
+    StripDefaultJsonName(extension);
+  }
+  for (DescriptorProto& message : *file.mutable_message_type()) {
+    StripDefaultJsonName(message);
+  }
+}
+
 bool PopulateDescriptorSetInDatabases(
     const std::vector<std::string>& descriptor_set_in_names,
     std::vector<std::unique_ptr<SimpleDescriptorDatabase>>* databases) {
@@ -1523,7 +1552,7 @@ bool PopulateDescriptorSetInDatabases(
   std::vector<std::unique_ptr<SimpleDescriptorDatabase>> dbs(
       descriptor_set_in_names.size());
   for (const std::string& path : file_order) {
-    const MergedFileDescriptor& entry = files_by_name[path];
+    MergedFileDescriptor& entry = files_by_name[path];
     if (!entry.unit_sources.contains(kCoreSchema)) {
       std::cerr << "No instance of FileDescriptorProto for \"" << path
                 << "\" in --descriptor_set_in contains core descriptor schema."
@@ -1533,6 +1562,7 @@ bool PopulateDescriptorSetInDatabases(
     if (!dbs[entry.db_index]) {
       dbs[entry.db_index] = std::make_unique<SimpleDescriptorDatabase>();
     }
+    StripDefaultJsonName(entry.proto);
     if (!dbs[entry.db_index]->Add(entry.proto)) {
       return false;
     }
