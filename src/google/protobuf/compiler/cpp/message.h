@@ -92,8 +92,6 @@ class MessageGenerator {
 
   std::vector<const FieldDescriptor*> AllFields() const;
 
-  void GeneratePrivateHelpers(io::Printer* p);
-
   // Generate declarations and definitions of accessors for fields.
   void GenerateFieldAccessorDeclarations(io::Printer* p);
   void GenerateFieldAccessorPrivateHelpers(io::Printer* p);
