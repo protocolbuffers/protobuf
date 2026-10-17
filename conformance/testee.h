@@ -64,6 +64,12 @@ inline constexpr TestPriority kLowestPriority = kP1;
 // The name of a priority: "P0" or "P1".
 absl::string_view PriorityName(TestPriority priority);
 
+// Flag support for TestPriority, as the priority's number: "0" is kP0, "1" is
+// kP1.
+bool AbslParseFlag(absl::string_view text, TestPriority* priority,
+                   std::string* error);
+std::string AbslUnparseFlag(TestPriority priority);
+
 // The level a priority is named with in test names, until the rename (see
 // TestPriority): "Required" for kP0, "Recommended" for kP1.
 absl::string_view PriorityLevelName(TestPriority priority);
