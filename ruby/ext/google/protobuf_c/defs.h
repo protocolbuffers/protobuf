@@ -62,6 +62,9 @@ static inline TypeInfo TypeInfo_from_type(upb_CType type) {
 // -----------------------------------------------------------------------------
 
 VALUE Descriptor_DefToClass(const upb_MessageDef* m);
+// Returns the Ruby EnumDescriptor for this enumdef, which GC-roots the
+// owning DescriptorPool (and therefore the upb_EnumDef itself).
+VALUE EnumDescriptor_DefToObj(const upb_EnumDef* e);
 
 // Returns the underlying msgdef, enumdef, or symtab (respectively) for the
 // given Descriptor, EnumDescriptor, or DescriptorPool Ruby object.
