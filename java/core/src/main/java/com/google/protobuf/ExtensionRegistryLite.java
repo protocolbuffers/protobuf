@@ -208,8 +208,6 @@ public class ExtensionRegistryLite {
         new HashMap<ObjectIntPair, GeneratedMessageLite.GeneratedExtension<?, ?>>();
   }
 
-  static final ExtensionRegistryLite EMPTY_REGISTRY_LITE = new ExtensionRegistryLite(true);
-
   ExtensionRegistryLite(ExtensionRegistryLite other) {
     if (other == EMPTY_REGISTRY_LITE) {
       this.extensionsByNumber = Collections.emptyMap();
@@ -219,12 +217,16 @@ public class ExtensionRegistryLite {
     this.lazyExtensionModeOverride = other.lazyExtensionModeOverride;
   }
 
+  // Public so that generated extension registries loaded in isolated split ClassLoaders can
+  // invoke super(true).
+  public ExtensionRegistryLite(boolean empty) {
+    this.extensionsByNumber = Collections.emptyMap();
+  }
+
   private final Map<ObjectIntPair, GeneratedMessageLite.GeneratedExtension<?, ?>>
       extensionsByNumber;
 
-  ExtensionRegistryLite(boolean empty) {
-    this.extensionsByNumber = Collections.emptyMap();
-  }
+  static final ExtensionRegistryLite EMPTY_REGISTRY_LITE = new ExtensionRegistryLite(true);
 
   /** A (Object, int) pair, used as a map key. */
   private static final class ObjectIntPair {
