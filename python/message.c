@@ -108,8 +108,6 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   PyObject* bases = NULL;
   PyTypeObject* type = NULL;
   PyObject* size = NULL;
-  PyObject* sys = NULL;
-  PyObject* hex_version = NULL;
   bool ret = false;
 
   // PyType_GetSlot() only works on heap types, so we cannot use it on
@@ -160,16 +158,12 @@ static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
   assert(bits->type_clear == PyType_Type.tp_clear);
 #endif
 
-  sys = PyImport_ImportModule("sys");
-  hex_version = PyObject_GetAttrString(sys, "hexversion");
   ret = true;
 
 err:
   Py_XDECREF(bases);
   Py_XDECREF(type);
   Py_XDECREF(size);
-  Py_XDECREF(sys);
-  Py_XDECREF(hex_version);
   return ret;
 }
 
@@ -314,13 +308,18 @@ static bool PyUpb_Message_LookupName(PyUpb_Message* self, PyObject* py_name,
   const char* name = NULL;
   if (PyUnicode_Check(py_name)) {
     name = PyUnicode_AsUTF8AndSize(py_name, &size);
+    if (!name) return false;
   } else if (PyBytes_Check(py_name)) {
-    PyBytes_AsStringAndSize(py_name, (char**)&name, &size);
+    if (PyBytes_AsStringAndSize(py_name, (char**)&name, &size) < 0) {
+      return false;
+    }
   }
   if (!name) {
-    PyErr_Format(exc_type,
-                 "Expected a field name, but got non-string argument %S.",
-                 py_name);
+    if (exc_type) {
+      PyErr_Format(exc_type,
+                   "Expected a field name, but got non-string argument %S.",
+                   py_name);
+    }
     return false;
   }
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
@@ -376,11 +375,7 @@ int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
   int ret = -1;
   if (upb_FieldDef_IsSubMessage(val_f)) {
     it = PyObject_GetIter(value);
-    if (it == NULL) {
-      PyErr_Format(PyExc_TypeError, "Argument for field %s is not iterable",
-                   upb_FieldDef_FullName(f));
-      goto err;
-    }
+    if (it == NULL) goto err;
     PyObject* e;
     while ((e = PyIter_Next(it)) != NULL) {
       PyObject* src = PyObject_GetItem(value, e);
@@ -391,6 +386,7 @@ int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
       Py_XDECREF(dst);
       if (!ok) goto err;
     }
+    if (PyErr_Occurred()) goto err;
   } else {
     tmp = PyObject_CallMethod(map, "update", "O", value);
     if (!tmp) goto err;
@@ -456,11 +452,7 @@ static bool PyUpb_Message_InitRepeatedMessageAttribute(PyObject* _self,
                                                        PyObject* value,
                                                        const upb_FieldDef* f) {
   PyObject* it = PyObject_GetIter(value);
-  if (!it) {
-    PyErr_Format(PyExc_TypeError, "Argument for field %s is not iterable",
-                 upb_FieldDef_FullName(f));
-    return false;
-  }
+  if (!it) return false;
   PyObject* e = NULL;
   PyObject* m = NULL;
   const upb_MessageDef* m_def = upb_FieldDef_MessageSubDef(f);
