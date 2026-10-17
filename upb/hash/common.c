@@ -894,7 +894,10 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
   size_t old_size = upb_table_size(&t->t);
   size_t old_bytes = old_size * sizeof(upb_tabent);
   size_t new_size = (size_t)1 << size_lg2;
-  size_t new_bytes = new_size * sizeof(upb_tabent);
+  size_t new_bytes;
+  if (upb_MulOverflow(new_size, sizeof(upb_tabent), &new_bytes)) {
+    return false;
+  }
   if (new_bytes <= old_bytes || !t->t.entries) {
     return false;
   }
@@ -904,8 +907,7 @@ static bool upb_inttable_trygrow(upb_inttable* t, size_t size_lg2,
   }
 
   // Zero out the newly extended region of the table buffer.
-  memset(t->t.entries + old_size, 0,
-         (new_size - old_size) * sizeof(upb_tabent));
+  memset(t->t.entries + old_size, 0, new_bytes - old_bytes);
 
   // This one-past-the-end pointer is guaranteed to be distinct from NULL and
   // any valid internal collision chain pointer in the entire table.
