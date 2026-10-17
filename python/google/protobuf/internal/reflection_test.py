@@ -1401,6 +1401,31 @@ class Proto2ReflectionTest(unittest.TestCase):
     del proto.repeated_int32[100:10000]
     self.assertEqual([2], proto.repeated_int32)
 
+    # Test extended slice deletion.
+    proto.repeated_int32[:] = list(range(10))
+    del proto.repeated_int32[::2]
+    self.assertEqual([1, 3, 5, 7, 9], proto.repeated_int32)
+
+    del proto.repeated_int32[1:1:2]
+    self.assertEqual([1, 3, 5, 7, 9], proto.repeated_int32)
+
+    del proto.repeated_int32[100:200:2]
+    self.assertEqual([1, 3, 5, 7, 9], proto.repeated_int32)
+
+    del proto.repeated_int32[2:2:-2]
+    self.assertEqual([1, 3, 5, 7, 9], proto.repeated_int32)
+
+    # Test empty extended slice deletion on empty repeated field.
+    proto.ClearField('repeated_int32')
+    del proto.repeated_int32[::2]
+    self.assertEqual([], list(proto.repeated_int32))
+    del proto.repeated_int32[5:5:2]
+    self.assertEqual([], list(proto.repeated_int32))
+    del proto.repeated_int32[0:0:2]
+    self.assertEqual([], list(proto.repeated_int32))
+    del proto.repeated_int32[::-2]
+    self.assertEqual([], list(proto.repeated_int32))
+
   def testRepeatedScalarsRemove(self):
     proto = unittest_pb2.TestAllTypes()
 
@@ -1515,6 +1540,26 @@ class Proto2ReflectionTest(unittest.TestCase):
     # Test slice deletion.
     del proto.repeated_nested_message[2:]
     self.assertListsEqual([m0, m1], proto.repeated_nested_message)
+
+    # Test extended slice deletion and empty extended slice deletion.
+    test_proto = unittest_pb2.TestAllTypes()
+    m_a = test_proto.repeated_nested_message.add(bb=1)
+    m_b = test_proto.repeated_nested_message.add(bb=2)
+    m_c = test_proto.repeated_nested_message.add(bb=3)
+    del test_proto.repeated_nested_message[5:5:2]
+    self.assertListsEqual([m_a, m_b, m_c], test_proto.repeated_nested_message)
+    del test_proto.repeated_nested_message[::2]
+    self.assertListsEqual([m_b], test_proto.repeated_nested_message)
+
+    empty_proto = unittest_pb2.TestAllTypes()
+    del empty_proto.repeated_nested_message[::2]
+    self.assertListsEqual([], empty_proto.repeated_nested_message)
+    del empty_proto.repeated_nested_message[5:5:2]
+    self.assertListsEqual([], empty_proto.repeated_nested_message)
+    del empty_proto.repeated_nested_message[0:0:2]
+    self.assertListsEqual([], empty_proto.repeated_nested_message)
+    del empty_proto.repeated_nested_message[::-2]
+    self.assertListsEqual([], empty_proto.repeated_nested_message)
 
     # Test extending.
     n1 = unittest_pb2.TestAllTypes.NestedMessage(bb=1)
