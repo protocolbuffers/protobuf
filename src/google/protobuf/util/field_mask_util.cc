@@ -42,9 +42,7 @@ std::string FieldMaskUtil::ToString(const FieldMask& mask) {
 
 void FieldMaskUtil::FromString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<absl::string_view> paths = absl::StrSplit(str, ',');
-  for (absl::string_view path : paths) {
-    if (path.empty()) continue;
+  for (absl::string_view path : absl::StrSplit(str, ',', absl::SkipEmpty())) {
     out->add_paths(path);
   }
 }
@@ -115,14 +113,12 @@ bool FieldMaskUtil::ToJsonString(const FieldMask& mask, std::string* out) {
 
 bool FieldMaskUtil::FromJsonString(absl::string_view str, FieldMask* out) {
   out->Clear();
-  std::vector<absl::string_view> paths = absl::StrSplit(str, ',');
-  for (absl::string_view path : paths) {
-    if (path.empty()) continue;
+  for (absl::string_view path : absl::StrSplit(str, ',', absl::SkipEmpty())) {
     std::string snakecase_path;
     if (!CamelCaseToSnakeCase(path, &snakecase_path)) {
       return false;
     }
-    out->add_paths(snakecase_path);
+    out->add_paths(std::move(snakecase_path));
   }
   return true;
 }
@@ -133,8 +129,7 @@ bool FieldMaskUtil::GetFieldDescriptors(
   if (field_descriptors != nullptr) {
     field_descriptors->clear();
   }
-  std::vector<absl::string_view> parts = absl::StrSplit(path, '.');
-  for (absl::string_view field_name : parts) {
+  for (absl::string_view field_name : absl::StrSplit(path, '.')) {
     if (descriptor == nullptr) {
       return false;
     }
@@ -305,6 +300,8 @@ void FieldMaskTree::MergeFromFieldMask(const FieldMask& mask) {
 
 namespace {
 
+// Invokes `f` with an rvalue `std::string` for each leaf path, which `f` may
+// consume via std::move.
 template <typename F>
 void ForEachLeaf(const FieldMaskTree::Node* root, F&& f) {
   struct StackElement {
@@ -319,20 +316,20 @@ void ForEachLeaf(const FieldMaskTree::Node* root, F&& f) {
     StackElement next = std::move(stack.back());
     stack.pop_back();
     const FieldMaskTree::Node* node = next.node;
-    const std::string& path = next.path;
 
     if (node->children.empty()) {
-      f(path);
-    } else {
-      // Iterate in reverse order to maintain the order of the field mask (we
-      // want the next pop to be the first child not the last child).
-      for (auto it = node->children.crbegin(); it != node->children.crend();
-           ++it) {
-        const auto& [name, child_ptr] = *it;
-        std::string current_path =
-            path.empty() ? std::string(name) : absl::StrCat(path, ".", name);
-        stack.push_back(StackElement{child_ptr.get(), std::move(current_path)});
-      }
+      f(std::move(next.path));
+      continue;
+    }
+    const std::string& path = next.path;
+    // Iterate in reverse order to maintain the order of the field mask (we
+    // want the next pop to be the first child not the last child).
+    for (auto it = node->children.crbegin(); it != node->children.crend();
+         ++it) {
+      const auto& [name, child_ptr] = *it;
+      std::string current_path =
+          path.empty() ? std::string(name) : absl::StrCat(path, ".", name);
+      stack.push_back(StackElement{child_ptr.get(), std::move(current_path)});
     }
   }
 }
@@ -343,21 +340,17 @@ void FieldMaskTree::MergeToFieldMask(FieldMask* mask) {
   if (root_.children.empty()) {
     return;
   }
-  ForEachLeaf(&root_, [mask](const std::string& path) {
+  ForEachLeaf(&root_, [mask](std::string&& path) {
     if (!path.empty()) {
-      mask->add_paths(path);
+      mask->add_paths(std::move(path));
     }
   });
 }
 
 void FieldMaskTree::AddPath(absl::string_view path) {
-  std::vector<absl::string_view> parts = absl::StrSplit(path, '.');
-  if (parts.empty()) {
-    return;
-  }
   bool new_branch = false;
   Node* node = &root_;
-  for (absl::string_view node_name : parts) {
+  for (absl::string_view node_name : absl::StrSplit(path, '.')) {
     if (!new_branch && node != &root_ && node->children.empty()) {
       // Path matches an existing leaf node. This means the path is already
       // covered by this tree (for example, adding "foo.bar.baz" to a tree
@@ -370,6 +363,12 @@ void FieldMaskTree::AddPath(absl::string_view path) {
       child = std::make_unique<Node>();
     }
     node = child.get();
+  }
+  // Zero iterations: absl::StrSplit yields nothing for a string_view with
+  // null data() (legacy Abseil behavior), unlike "" which yields {""}.
+  // Equivalent to the old `if (parts.empty()) return;`.
+  if (node == &root_) {
+    return;
   }
   if (!node->children.empty()) {
     node->ClearChildren();
@@ -433,12 +432,8 @@ void FieldMaskTree::RemovePath(absl::string_view path,
 }
 
 void FieldMaskTree::IntersectPath(absl::string_view path, FieldMaskTree* out) {
-  std::vector<absl::string_view> parts = absl::StrSplit(path, '.');
-  if (parts.empty()) {
-    return;
-  }
   const Node* node = &root_;
-  for (absl::string_view node_name : parts) {
+  for (absl::string_view node_name : absl::StrSplit(path, '.')) {
     if (node->children.empty()) {
       if (node != &root_) {
         out->AddPath(path);
@@ -451,6 +446,12 @@ void FieldMaskTree::IntersectPath(absl::string_view path, FieldMaskTree* out) {
       return;
     }
     node = it->second.get();
+  }
+  // Zero iterations: absl::StrSplit yields nothing for a string_view with
+  // null data() (legacy Abseil behavior), unlike "" which yields {""}.
+  // Equivalent to the old `if (parts.empty()) return;`.
+  if (node == &root_) {
+    return;
   }
   // Now we found a matching node with the given path. Add all leaf nodes
   // to out.

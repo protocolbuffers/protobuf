@@ -907,6 +907,183 @@ TEST(FieldMaskUtilTest, TestCanonicalizeFieldMaskWithEmptyAndNonEmptyPaths) {
 
 
 
+TEST(FieldMaskUtilTest, NullAndEmptyStringViewHandling) {
+  FieldMask mask;
+  const Descriptor* descriptor = TestAllTypes::descriptor();
+  std::vector<const FieldDescriptor*> fields;
+
+
+  mask.Clear();
+  FieldMaskUtil::FromString("", &mask);
+  EXPECT_EQ(0, mask.paths_size());
+
+  FieldMaskUtil::FromString(",foo,,bar,", &mask);
+  ASSERT_EQ(2, mask.paths_size());
+  EXPECT_EQ("foo", mask.paths(0));
+  EXPECT_EQ("bar", mask.paths(1));
+
+  mask.Clear();
+  EXPECT_TRUE(FieldMaskUtil::FromJsonString("", &mask));
+  EXPECT_EQ(0, mask.paths_size());
+
+  EXPECT_TRUE(FieldMaskUtil::FromJsonString("fooBar,,bazQux,", &mask));
+  ASSERT_EQ(2, mask.paths_size());
+  EXPECT_EQ("foo_bar", mask.paths(0));
+  EXPECT_EQ("baz_qux", mask.paths(1));
+
+  mask.Clear();
+  std::string json_str;
+  EXPECT_TRUE(FieldMaskUtil::ToJsonString(mask, &json_str));
+  EXPECT_TRUE(json_str.empty());
+
+  fields.clear();
+  EXPECT_FALSE(FieldMaskUtil::GetFieldDescriptors(descriptor, "", &fields));
+
+  EXPECT_TRUE(FieldMaskUtil::GetFieldDescriptors(descriptor, "optional_int32",
+                                                 &fields));
+  EXPECT_EQ(1, fields.size());
+
+  EXPECT_TRUE(FieldMaskUtil::GetFieldDescriptors(
+      descriptor, "optional_nested_message.bb", &fields));
+  EXPECT_EQ(2, fields.size());
+
+  FieldMask mask1, mask2, intersected;
+  FieldMaskUtil::FromString("optional_int32", &mask1);
+  FieldMaskUtil::Intersect(mask1, mask2, &intersected);
+  EXPECT_EQ(0, intersected.paths_size());
+}
+
+TEST(FieldMaskUtilTest, DegeneratePathDifferential) {
+  const std::vector<std::string> degenerate_paths = {
+      "",
+      ".",
+      "..",
+      ".optional_int32",
+      "optional_int32.",
+      "optional_nested_message..bb",
+      "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r",
+      ",,,",
+  };
+
+  const Descriptor* descriptor = TestAllTypes::descriptor();
+
+  for (const auto& path : degenerate_paths) {
+    FieldMask mask;
+    FieldMaskUtil::FromString(path, &mask);
+
+    FieldMask canonical;
+    FieldMaskUtil::ToCanonicalForm(mask, &canonical);
+
+    FieldMask union_out;
+    FieldMaskUtil::Union(mask, mask, &union_out);
+    EXPECT_EQ(canonical.paths_size(), union_out.paths_size());
+    for (int i = 0; i < canonical.paths_size(); ++i) {
+      EXPECT_EQ(canonical.paths(i), union_out.paths(i));
+    }
+
+    FieldMask intersect_out;
+    FieldMaskUtil::Intersect(mask, mask, &intersect_out);
+    EXPECT_EQ(canonical.paths_size(), intersect_out.paths_size());
+    for (int i = 0; i < canonical.paths_size(); ++i) {
+      EXPECT_EQ(canonical.paths(i), intersect_out.paths(i));
+    }
+
+    FieldMask other_mask;
+    FieldMaskUtil::FromString("optional_int32", &other_mask);
+    FieldMask subtract_out;
+    FieldMaskUtil::Subtract<TestAllTypes>(mask, other_mask, &subtract_out);
+
+    bool is_valid = FieldMaskUtil::IsValidPath<TestAllTypes>(path);
+    std::vector<const FieldDescriptor*> fields;
+    bool get_fields =
+        FieldMaskUtil::GetFieldDescriptors(descriptor, path, &fields);
+    (void)is_valid;
+    (void)get_fields;
+  }
+}
+
+TEST(FieldMaskUtilTest, SelfAliasingAndArenaSafety) {
+  // Self-aliasing tests
+  {
+    FieldMask self_mask;
+    self_mask.add_paths("optional_int32,optional_string,optional_bool");
+    std::string self_path = self_mask.paths(0);
+    FieldMaskUtil::FromString(self_path, &self_mask);
+    EXPECT_EQ(3, self_mask.paths_size());
+    EXPECT_EQ("optional_int32", self_mask.paths(0));
+    EXPECT_EQ("optional_string", self_mask.paths(1));
+    EXPECT_EQ("optional_bool", self_mask.paths(2));
+
+    FieldMask self_json;
+    self_json.add_paths("optionalInt32,optionalString,optionalBool");
+    std::string self_json_path = self_json.paths(0);
+    EXPECT_TRUE(FieldMaskUtil::FromJsonString(self_json_path, &self_json));
+    EXPECT_EQ(3, self_json.paths_size());
+    EXPECT_EQ("optional_int32", self_json.paths(0));
+    EXPECT_EQ("optional_string", self_json.paths(1));
+    EXPECT_EQ("optional_bool", self_json.paths(2));
+
+    FieldMask m;
+    FieldMaskUtil::FromString("optional_int32,optional_string", &m);
+    FieldMaskUtil::ToCanonicalForm(m, &m);
+    EXPECT_EQ(2, m.paths_size());
+
+    FieldMaskUtil::Union(m, m, &m);
+    EXPECT_EQ(2, m.paths_size());
+
+    FieldMaskUtil::Intersect(m, m, &m);
+    EXPECT_EQ(2, m.paths_size());
+
+    FieldMask m2;
+    FieldMaskUtil::FromString("optional_int32", &m2);
+    FieldMaskUtil::Subtract<TestAllTypes>(m, m2, &m);
+    EXPECT_EQ(1, m.paths_size());
+    EXPECT_EQ("optional_string", m.paths(0));
+  }
+
+  // Arena-allocated FieldMask tests
+  {
+    google::protobuf::Arena arena;
+    FieldMask* arena_mask = google::protobuf::Arena::Create<FieldMask>(&arena);
+
+    // Short SSO paths (<= 22B)
+    FieldMaskUtil::FromString("optional_int32,optional_string,optional_bool",
+                              arena_mask);
+    EXPECT_EQ(3, arena_mask->paths_size());
+
+    FieldMask canonical;
+    FieldMaskUtil::ToCanonicalForm(*arena_mask, &canonical);
+    EXPECT_EQ(3, canonical.paths_size());
+
+    FieldMask union_out;
+    FieldMaskUtil::Union(*arena_mask, *arena_mask, &union_out);
+    EXPECT_EQ(3, union_out.paths_size());
+
+    FieldMask intersect_out;
+    FieldMaskUtil::Intersect(*arena_mask, *arena_mask, &intersect_out);
+    EXPECT_EQ(3, intersect_out.paths_size());
+
+    FieldMask subtract_out;
+    FieldMask sub_other;
+    FieldMaskUtil::FromString("optional_int32", &sub_other);
+    FieldMaskUtil::Subtract<TestAllTypes>(*arena_mask, sub_other,
+                                          &subtract_out);
+    EXPECT_EQ(2, subtract_out.paths_size());
+
+    // Long non-SSO paths (> 22B)
+    EXPECT_TRUE(FieldMaskUtil::FromJsonString(
+        "optionalNestedMessage.nestedMessage.bb,repeatedNestedMessage.bb",
+        arena_mask));
+    EXPECT_EQ(2, arena_mask->paths_size());
+    EXPECT_EQ("optional_nested_message.nested_message.bb",
+              arena_mask->paths(0));
+    EXPECT_EQ("repeated_nested_message.bb", arena_mask->paths(1));
+
+    FieldMaskUtil::ToCanonicalForm(*arena_mask, &canonical);
+    EXPECT_EQ(2, canonical.paths_size());
+  }
+}
+
 }  // namespace
 }  // namespace util
 }  // namespace protobuf
