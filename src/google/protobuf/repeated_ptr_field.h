@@ -469,6 +469,22 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
     ExchangeCurrentSize(current_size_ + 1);
   }
 
+  // Trim the array if possible.
+  void TryShrinkToFit(internal::SerialArena* arena) {
+    if (using_sso() || arena == nullptr) return;
+    auto* r = rep();
+    size_t desired_capacity = r->allocated_size;
+    if constexpr (ArenaAlignDefault::Ceil(sizeof(void*)) != sizeof(void*)) {
+      desired_capacity =
+          ArenaAlignDefault::Ceil(desired_capacity * sizeof(void*)) /
+          sizeof(void*);
+    }
+    if (arena->TryTrimTail(r->elements + r->capacity,
+                           r->elements + desired_capacity)) {
+      r->capacity = desired_capacity;
+    }
+  }
+
  protected:
   template <typename TypeHandler, typename AddOne>
   void ResizeImpl(int new_size, AddOne add_one);
@@ -2142,6 +2158,12 @@ class RustRepeatedMessageHelper {
         field.GetArena(), prototype);
   }
 
+  static void Truncate(RepeatedPtrFieldBase& field, size_t new_size) {
+    while (Size(field) > new_size) {
+      field.RemoveLast<GenericTypeHandler<MessageLite>>();
+    }
+  }
+
   static void CopyFrom(const RepeatedPtrFieldBase& src,
                        RepeatedPtrFieldBase& dst) {
     dst.Clear<GenericTypeHandler<google::protobuf::MessageLite>>();
@@ -2149,16 +2171,17 @@ class RustRepeatedMessageHelper {
   }
 
   static void Reserve(RepeatedPtrFieldBase& field, size_t additional) {
-    field.ReserveWithArena(field.GetArena(), field.size() + additional);
+    field.ReserveWithArena(field.GetArena(),
+                           internal::CheckedAdd(field.size(), additional));
   }
 
   static const MessageLite& At(const RepeatedPtrFieldBase& field,
                                size_t index) {
-    return field.at<GenericTypeHandler<MessageLite>>(index);
+    return field.at<GenericTypeHandler<MessageLite>>(static_cast<int>(index));
   }
 
   static MessageLite& At(RepeatedPtrFieldBase& field, size_t index) {
-    return field.at<GenericTypeHandler<MessageLite>>(index);
+    return field.at<GenericTypeHandler<MessageLite>>(static_cast<int>(index));
   }
 };
 
@@ -2470,9 +2493,9 @@ RepeatedPtrField<Element>::pointer_end() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       const_cast<const void* const*>(raw_data() + size()));
 }
 
-// Like C++20's std::erase_if, for RepeatedPtrField
-// For string containers, the predicate is called with an `absl::string_view`.
-// Otherwise, it is called with a `const T&`.
+// Like C++20's std::erase_if, for RepeatedPtrField. The order of calls to the
+// predicate is not specified. For string containers, the predicate is called
+// with an `absl::string_view`. Otherwise, it is called with a `const T&`.
 template <typename T, typename Pred>
 size_t erase_if(RepeatedPtrField<T>& cont, Pred pred) {
   // We use `partition` instead of `remove` to keep all the erased elements at

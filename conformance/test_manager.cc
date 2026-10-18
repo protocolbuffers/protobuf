@@ -242,7 +242,7 @@ absl::Status TestManager::ReportFailure(absl::string_view test_name,
   };
 
   if (!failure_match.has_value()) {
-    if (static_cast<int>(priority) > enforcement_level_) {
+    if (priority > enforcement_level_) {
       // Tolerated: neither a failure nor a skip, and not written to the
       // failure list; only counted.
       IncrementIfUnique(unique, tolerated_failures_);
@@ -321,6 +321,7 @@ absl::Status TestManager::ReportSkip(absl::string_view test_name,
 }
 
 void TestManager::ReportNotSelected(absl::string_view test_name) {
+  seen_tests_.emplace(test_name);
   MarkMatched(test_name);
 }
 

@@ -487,3 +487,262 @@ fn test_repeated_from_iter() {
     let r: Repeated<i32> = [10, 20, 30].into_iter().collect();
     assert_that!(r.as_view(), elements_are![eq(10), eq(20), eq(30)]);
 }
+
+#[gtest]
+fn test_repeated_truncate() {
+    use test_all_types::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+
+    msg.repeated_int32_mut().extend([1, 2, 3, 4]);
+    msg.repeated_int32_mut().truncate(10);
+    expect_that!(msg.repeated_int32(), elements_are![eq(1), eq(2), eq(3), eq(4)]);
+    msg.repeated_int32_mut().truncate(2);
+    expect_that!(msg.repeated_int32(), elements_are![eq(1), eq(2)]);
+    msg.repeated_int32_mut().push(5);
+    expect_that!(msg.repeated_int32(), elements_are![eq(1), eq(2), eq(5)]);
+    msg.repeated_int32_mut().truncate(0);
+    expect_true!(msg.repeated_int32().is_empty());
+    msg.repeated_int32_mut().push(6);
+    expect_that!(msg.repeated_int32(), elements_are![eq(6)]);
+
+    msg.repeated_bool_mut().extend([true, false, true]);
+    msg.repeated_bool_mut().truncate(3);
+    expect_that!(msg.repeated_bool(), elements_are![eq(true), eq(false), eq(true)]);
+    msg.repeated_bool_mut().truncate(1);
+    expect_that!(msg.repeated_bool(), elements_are![eq(true)]);
+    msg.repeated_bool_mut().push(false);
+    expect_that!(msg.repeated_bool(), elements_are![eq(true), eq(false)]);
+
+    msg.repeated_nested_enum_mut().extend([NestedEnum::Foo, NestedEnum::Bar, NestedEnum::Baz]);
+    msg.repeated_nested_enum_mut().truncate(5);
+    expect_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar), eq(NestedEnum::Baz)]
+    );
+    msg.repeated_nested_enum_mut().truncate(2);
+    expect_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar)]
+    );
+    msg.repeated_nested_enum_mut().push(NestedEnum::Neg);
+    expect_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar), eq(NestedEnum::Neg)]
+    );
+    msg.repeated_nested_enum_mut().truncate(0);
+    expect_true!(msg.repeated_nested_enum().is_empty());
+    msg.repeated_nested_enum_mut().push(NestedEnum::Baz);
+    expect_that!(msg.repeated_nested_enum(), elements_are![eq(NestedEnum::Baz)]);
+
+    msg.repeated_string_mut().push("a");
+    msg.repeated_string_mut().push("b");
+    msg.repeated_string_mut().push("c");
+    msg.repeated_string_mut().truncate(4);
+    expect_that!(msg.repeated_string(), elements_are![eq("a"), eq("b"), eq("c")]);
+    msg.repeated_string_mut().truncate(2);
+    expect_that!(msg.repeated_string(), elements_are![eq("a"), eq("b")]);
+    msg.repeated_string_mut().push("d");
+    expect_that!(msg.repeated_string(), elements_are![eq("a"), eq("b"), eq("d")]);
+    msg.repeated_string_mut().truncate(0);
+    expect_true!(msg.repeated_string().is_empty());
+    msg.repeated_string_mut().push("e");
+    expect_that!(msg.repeated_string(), elements_are![eq("e")]);
+
+    msg.repeated_bytes_mut().push(b"x");
+    msg.repeated_bytes_mut().push(b"y");
+    msg.repeated_bytes_mut().push(b"z");
+    msg.repeated_bytes_mut().truncate(2);
+    expect_that!(
+        msg.repeated_bytes().iter().collect::<Vec<_>>(),
+        elements_are![eq(b"x"), eq(b"y")]
+    );
+    msg.repeated_bytes_mut().push(b"w");
+    expect_that!(
+        msg.repeated_bytes().iter().collect::<Vec<_>>(),
+        elements_are![eq(b"x"), eq(b"y"), eq(b"w")]
+    );
+    msg.repeated_bytes_mut().truncate(0);
+    expect_true!(msg.repeated_bytes().is_empty());
+    msg.repeated_bytes_mut().push(b"v");
+    expect_that!(msg.repeated_bytes().iter().collect::<Vec<_>>(), elements_are![eq(b"v")]);
+
+    msg.repeated_nested_message_mut().push_default().set_bb(10);
+    msg.repeated_nested_message_mut().push_default().set_bb(20);
+    msg.repeated_nested_message_mut().push_default().set_bb(30);
+    msg.repeated_nested_message_mut().truncate(5);
+    expect_eq!(msg.repeated_nested_message().len(), 3);
+    msg.repeated_nested_message_mut().truncate(2);
+    expect_that!(
+        msg.repeated_nested_message(),
+        elements_are![
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 10),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 20),
+        ]
+    );
+    msg.repeated_nested_message_mut().push_default().set_bb(40);
+    expect_that!(
+        msg.repeated_nested_message(),
+        elements_are![
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 10),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 20),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 40),
+        ]
+    );
+    msg.repeated_nested_message_mut().truncate(0);
+    expect_true!(msg.repeated_nested_message().is_empty());
+    msg.repeated_nested_message_mut().push_default().set_bb(50);
+    expect_that!(
+        msg.repeated_nested_message(),
+        elements_are![predicate(|m: protobuf::View<NestedMessage>| m.bb() == 50)]
+    );
+}
+
+#[gtest]
+fn test_repeated_resize() {
+    use test_all_types::NestedEnum;
+
+    let mut msg = TestAllTypes::new();
+
+    msg.repeated_int32_mut().extend([1, 2, 3, 4]);
+    msg.repeated_int32_mut().resize(4, 99);
+    expect_that!(msg.repeated_int32(), elements_are![eq(1), eq(2), eq(3), eq(4)]);
+    msg.repeated_int32_mut().resize(6, 99);
+    expect_that!(msg.repeated_int32(), elements_are![eq(1), eq(2), eq(3), eq(4), eq(99), eq(99)]);
+    msg.repeated_int32_mut().resize(2, 0);
+    expect_that!(msg.repeated_int32(), elements_are![eq(1), eq(2)]);
+    msg.repeated_int32_mut().push(5);
+    expect_that!(msg.repeated_int32(), elements_are![eq(1), eq(2), eq(5)]);
+    msg.repeated_int32_mut().resize(0, 0);
+    expect_true!(msg.repeated_int32().is_empty());
+    msg.repeated_int32_mut().resize(2, 6);
+    expect_that!(msg.repeated_int32(), elements_are![eq(6), eq(6)]);
+
+    msg.repeated_bool_mut().extend([true, false, true]);
+    msg.repeated_bool_mut().resize(3, false);
+    expect_that!(msg.repeated_bool(), elements_are![eq(true), eq(false), eq(true)]);
+    msg.repeated_bool_mut().resize(5, false);
+    expect_that!(
+        msg.repeated_bool(),
+        elements_are![eq(true), eq(false), eq(true), eq(false), eq(false)]
+    );
+    msg.repeated_bool_mut().resize(1, false);
+    expect_that!(msg.repeated_bool(), elements_are![eq(true)]);
+    msg.repeated_bool_mut().push(false);
+    expect_that!(msg.repeated_bool(), elements_are![eq(true), eq(false)]);
+
+    msg.repeated_nested_enum_mut().extend([NestedEnum::Foo, NestedEnum::Bar, NestedEnum::Baz]);
+    msg.repeated_nested_enum_mut().resize(3, NestedEnum::Neg);
+    expect_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar), eq(NestedEnum::Baz)]
+    );
+    msg.repeated_nested_enum_mut().resize(5, NestedEnum::Neg);
+    expect_that!(
+        msg.repeated_nested_enum(),
+        elements_are![
+            eq(NestedEnum::Foo),
+            eq(NestedEnum::Bar),
+            eq(NestedEnum::Baz),
+            eq(NestedEnum::Neg),
+            eq(NestedEnum::Neg),
+        ]
+    );
+    msg.repeated_nested_enum_mut().resize(2, NestedEnum::Foo);
+    expect_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar)]
+    );
+    msg.repeated_nested_enum_mut().push(NestedEnum::Neg);
+    expect_that!(
+        msg.repeated_nested_enum(),
+        elements_are![eq(NestedEnum::Foo), eq(NestedEnum::Bar), eq(NestedEnum::Neg)]
+    );
+    msg.repeated_nested_enum_mut().resize(0, NestedEnum::Foo);
+    expect_true!(msg.repeated_nested_enum().is_empty());
+    msg.repeated_nested_enum_mut().resize(1, NestedEnum::Baz);
+    expect_that!(msg.repeated_nested_enum(), elements_are![eq(NestedEnum::Baz)]);
+
+    msg.repeated_string_mut().push("a");
+    msg.repeated_string_mut().push("b");
+    msg.repeated_string_mut().push("c");
+    msg.repeated_string_mut().resize(3, "z");
+    expect_that!(msg.repeated_string(), elements_are![eq("a"), eq("b"), eq("c")]);
+    msg.repeated_string_mut().resize(5, "z");
+    expect_that!(msg.repeated_string(), elements_are![eq("a"), eq("b"), eq("c"), eq("z"), eq("z")]);
+    msg.repeated_string_mut().resize(2, "");
+    expect_that!(msg.repeated_string(), elements_are![eq("a"), eq("b")]);
+    msg.repeated_string_mut().push("d");
+    expect_that!(msg.repeated_string(), elements_are![eq("a"), eq("b"), eq("d")]);
+    msg.repeated_string_mut().resize(0, "");
+    expect_true!(msg.repeated_string().is_empty());
+    msg.repeated_string_mut().resize(1, "e");
+    expect_that!(msg.repeated_string(), elements_are![eq("e")]);
+
+    msg.repeated_bytes_mut().push(b"x");
+    msg.repeated_bytes_mut().push(b"y");
+    msg.repeated_bytes_mut().push(b"z");
+    msg.repeated_bytes_mut().resize(4, b"q");
+    expect_that!(
+        msg.repeated_bytes().iter().collect::<Vec<_>>(),
+        elements_are![eq(b"x"), eq(b"y"), eq(b"z"), eq(b"q")]
+    );
+    msg.repeated_bytes_mut().resize(2, b"");
+    expect_that!(
+        msg.repeated_bytes().iter().collect::<Vec<_>>(),
+        elements_are![eq(b"x"), eq(b"y")]
+    );
+    msg.repeated_bytes_mut().push(b"w");
+    expect_that!(
+        msg.repeated_bytes().iter().collect::<Vec<_>>(),
+        elements_are![eq(b"x"), eq(b"y"), eq(b"w")]
+    );
+    msg.repeated_bytes_mut().resize(0, b"");
+    expect_true!(msg.repeated_bytes().is_empty());
+    msg.repeated_bytes_mut().resize(1, b"v");
+    expect_that!(msg.repeated_bytes().iter().collect::<Vec<_>>(), elements_are![eq(b"v")]);
+
+    msg.repeated_nested_message_mut().push_default().set_bb(10);
+    msg.repeated_nested_message_mut().push_default().set_bb(20);
+    msg.repeated_nested_message_mut().push_default().set_bb(30);
+    let mut fill_msg = NestedMessage::new();
+    fill_msg.set_bb(99);
+    msg.repeated_nested_message_mut().resize(3, fill_msg.as_view());
+    expect_eq!(msg.repeated_nested_message().len(), 3);
+    msg.repeated_nested_message_mut().resize(5, fill_msg.as_view());
+    expect_that!(
+        msg.repeated_nested_message(),
+        elements_are![
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 10),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 20),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 30),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 99),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 99),
+        ]
+    );
+    msg.repeated_nested_message_mut().resize(2, NestedMessage::default());
+    expect_that!(
+        msg.repeated_nested_message(),
+        elements_are![
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 10),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 20),
+        ]
+    );
+    msg.repeated_nested_message_mut().push_default().set_bb(40);
+    expect_that!(
+        msg.repeated_nested_message(),
+        elements_are![
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 10),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 20),
+            predicate(|m: protobuf::View<NestedMessage>| m.bb() == 40),
+        ]
+    );
+    msg.repeated_nested_message_mut().resize(0, NestedMessage::default());
+    expect_true!(msg.repeated_nested_message().is_empty());
+    fill_msg.set_bb(50);
+    msg.repeated_nested_message_mut().resize(1, fill_msg);
+    expect_that!(
+        msg.repeated_nested_message(),
+        elements_are![predicate(|m: protobuf::View<NestedMessage>| m.bb() == 50)]
+    );
+}

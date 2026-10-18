@@ -1,5 +1,6 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:java_library.bzl", "java_library")
+load("@rules_java//java:java_test.bzl", "java_test")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
@@ -437,6 +438,7 @@ junit_tests(
         exclude = [
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
@@ -475,6 +477,25 @@ junit_tests(
         "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
         "src/test/java/com/google/protobuf/IsValidUtf8TestUtil.java",
     ],
+    deps = [
+        ":core",
+        "@protobuf_maven_dev//:com_google_guava_guava",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
+    ],
+)
+
+java_test(
+    name = "IsValidUtf8FourByteTest",
+    size = "large",
+    timeout = "eternal",
+    srcs = [
+        "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
+        "src/test/java/com/google/protobuf/IsValidUtf8TestUtil.java",
+    ],
+    shard_count = 50,
+    tags = ["manual"],
+    test_class = "com.google.protobuf.IsValidUtf8FourByteTest",
     deps = [
         ":core",
         "@protobuf_maven_dev//:com_google_guava_guava",
@@ -560,6 +581,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/GeneratorNamesTest.java",
     "src/test/java/com/google/protobuf/ImportOptionTest.java",
     "src/test/java/com/google/protobuf/InternalLazyFieldTest.java",
+    "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
     "src/test/java/com/google/protobuf/LargeEnumTest.java",
     "src/test/java/com/google/protobuf/LazilyParsedMessageSetTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
@@ -658,6 +680,7 @@ junit_tests(
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
@@ -722,6 +745,7 @@ junit_tests(
             # Excluded in core_tests
             "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
             "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+            "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
             "src/test/java/com/google/protobuf/TestUtil.java",
             "src/test/java/com/google/protobuf/TestUtilLite.java",
             "src/test/java/com/google/protobuf/RuntimeVersionTest.java",

@@ -43,6 +43,7 @@
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/testing/googletest.h"
 #include <gtest/gtest.h>
+#include "absl/strings/str_join.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -91,6 +92,16 @@ using google::protobuf::io::win32::write;
 #if !defined(GOOGLE_PROTOBUF_HEAP_CHECK_DRACONIAN)
 
 namespace {
+
+#ifndef _WIN32
+constexpr absl::string_view kPathSeparator = ":";
+#else
+constexpr absl::string_view kPathSeparator = ";";
+#endif
+
+std::string JoinPaths(absl::Span<const absl::string_view> paths) {
+  return absl::StrJoin(paths, kPathSeparator);
+}
 
 std::string CreatePluginArg() {
   std::string plugin_path;
@@ -681,7 +692,6 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
                  "echo wrapped > \"%~dp0wrapper_invoked.txt\"\r\n"
                  "\"%~1\"\r\n"
                  "exit /b %errorlevel%\r\n");
-  const char path_separator = ';';
 #else
   const std::string wrapper_basename = "plugin_wrapper_searchpath.sh";
   CreateTempFile(wrapper_basename,
@@ -691,15 +701,13 @@ TEST_F(CommandLineInterfaceTest, PluginPrefixFromSearchPath) {
   ASSERT_EQ(0,
             chmod(absl::StrCat(temp_directory(), "/", wrapper_basename).c_str(),
                   0777));
-  const char path_separator = ':';
 #endif
 
   // Prepend the temp directory to PATH so the wrapper can be located by
   // basename only (Subprocess uses execvp / SEARCH_PATH for the prefix).
   const char* old_path_cstr = getenv("PATH");
   const std::string old_path = old_path_cstr ? old_path_cstr : "";
-  const std::string new_path =
-      absl::StrCat(temp_directory(), std::string(1, path_separator), old_path);
+  const std::string new_path = JoinPaths({temp_directory(), old_path});
 #ifdef _WIN32
   _putenv_s("PATH", new_path.c_str());
 #else
@@ -3868,6 +3876,165 @@ TEST_F(CommandLineInterfaceTest, WriteTransitiveDescriptorSetWithSourceInfo) {
   EXPECT_TRUE(descriptor_set.file(0).has_source_code_info());
   EXPECT_TRUE(descriptor_set.file(1).has_source_code_info());
 }
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_SingleFileWithSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  Run("protocol_compiler "
+      "--descriptor_set_in=$tmpdir/foo-with-sci.proto.bin "
+      "--descriptor_set_out=$tmpdir/foo_desc "
+      "--include_source_info foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_TRUE(foo_set.file(0).has_source_code_info());
+  EXPECT_GT(foo_set.file(0).source_code_info().location_size(), 0);
+}
+
+TEST_F(CommandLineInterfaceTest, DescriptorSetIn_FullOverlap) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet single_set;
+  ReadDescriptorSet("foo-with-sci.proto.bin", &single_set);
+  ASSERT_EQ(1, single_set.file_size());
+  int expected_locations =
+      single_set.file(0).source_code_info().location_size();
+  EXPECT_GT(expected_locations, 0);
+
+  // Full overlap: two identical files containing both core descriptor schema
+  // and source_code_info.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths(
+          {"$tmpdir/foo-with-sci.proto.bin", "$tmpdir/foo-with-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_EQ(expected_locations,
+            foo_set.file(0).source_code_info().location_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_PartialOverlap_AdditionalSourceCodeInfo) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-with-sci.proto.bin "
+      "--include_source_info "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo-desc.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  FileDescriptorSet single_set;
+  ReadDescriptorSet("foo-with-sci.proto.bin", &single_set);
+  ASSERT_EQ(1, single_set.file_size());
+  int expected_locations =
+      single_set.file(0).source_code_info().location_size();
+
+  // Partial overlap where subsequent file contains matching core schema plus
+  // additional source_code_info.
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths(
+          {"$tmpdir/foo-desc.proto.bin", "$tmpdir/foo-with-sci.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/foo_desc --include_source_info "
+      "foo.proto"));
+  ExpectNoErrors();
+
+  FileDescriptorSet foo_set;
+  ReadDescriptorSet("foo_desc", &foo_set);
+  ASSERT_EQ(1, foo_set.file_size());
+  EXPECT_EQ("foo.proto", foo_set.file(0).name());
+  EXPECT_EQ(1, foo_set.file(0).message_type_size());
+  EXPECT_EQ(expected_locations,
+            foo_set.file(0).source_code_info().location_size());
+}
+
+TEST_F(CommandLineInterfaceTest,
+       DescriptorSetIn_ConflictingCoreDescriptorSchema) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo { optional int32 a = 1; }\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo1.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo { optional int32 b = 2; }\n");
+
+  Run("protocol_compiler "
+      "--descriptor_set_out=$tmpdir/foo2.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  ExpectNoErrors();
+
+  CreateTempFile("bar.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Bar {}\n");
+
+  Run(absl::StrCat(
+      "protocol_compiler --descriptor_set_in=",
+      JoinPaths({"$tmpdir/foo1.proto.bin", "$tmpdir/foo2.proto.bin"}),
+      " --descriptor_set_out=$tmpdir/bar_desc --proto_path=$tmpdir "
+      "bar.proto"));
+  // TODO - Remove this branch for release v38.0 once conflicting
+  // descriptors are an unconditional error.
+  ExpectWarningSubstring(
+      "foo2.proto.bin: FileDescriptorProto for \"foo.proto\" in "
+      "--descriptor_set_in has conflicting core descriptor schema with");
+}
+
+TEST_F(CommandLineInterfaceTest, SourceCodeInfoOut_SourceCodeInfoOnly) {
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "// Foo comment\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler "
+      "--source_code_info_out=$tmpdir/out-source_code_info.proto.bin "
+      "--proto_path=$tmpdir foo.proto");
+  // TODO - Remove this branch for release v38.0 once
+  // --source_code_info_out is supported in OSS.
+  ExpectErrorText("--source_code_info_out not yet supported.\n");
+}
+
 
 TEST_F(CommandLineInterfaceTest, WriteTransitiveOptionImportDescriptorSet) {
   CreateTempFile("google/protobuf/descriptor.proto",

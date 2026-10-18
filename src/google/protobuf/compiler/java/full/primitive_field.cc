@@ -20,6 +20,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/compiler/code_generator_lite.h"
 #include "google/protobuf/compiler/java/context.h"
 #include "google/protobuf/compiler/java/doc_comment.h"
 #include "google/protobuf/compiler/java/field_common.h"
@@ -984,6 +985,50 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderParsingCode(
 
 void RepeatedImmutablePrimitiveFieldGenerator::
     GenerateBuilderParsingCodeFromPacked(io::Printer* printer) const {
+  // Bulk packed decoding is not yet released to OSS; OSS keeps the loops below.
+  if (!google::protobuf::internal::IsOss()) {
+    switch (GetType(descriptor_)) {
+      case FieldDescriptor::TYPE_INT32:
+      case FieldDescriptor::TYPE_UINT32:
+      case FieldDescriptor::TYPE_INT64:
+      case FieldDescriptor::TYPE_UINT64:
+      case FieldDescriptor::TYPE_BOOL:
+      case FieldDescriptor::TYPE_FLOAT:
+      case FieldDescriptor::TYPE_DOUBLE: {
+        // The runtime decodes the whole payload into a new list. Adopt it if
+        // we have nothing yet, otherwise append. uint32/uint64 decode exactly
+        // like int32/int64, so they share those readers.
+        auto vars = variables_;
+        switch (GetType(descriptor_)) {
+          case FieldDescriptor::TYPE_UINT32:
+            vars["packed_reader"] = "Int32";
+            break;
+          case FieldDescriptor::TYPE_UINT64:
+            vars["packed_reader"] = "Int64";
+            break;
+          default:
+            // Read from variables_, not vars: inserting into vars may rehash
+            // and invalidate a reference into it.
+            vars["packed_reader"] = variables_.at("capitalized_type");
+            break;
+        }
+        printer->Print(vars,
+                       "$field_list_type$ packed =\n"
+                       "    super.readPacked$packed_reader$(input);\n"
+                       "if ($name$_.isEmpty()) {\n"
+                       "  $name$_ = packed;\n"
+                       "  $set_has_field_bit$\n"
+                       "} else {\n"
+                       "  ensure$capitalized_name$IsMutable(\n"
+                       "      $name$_.size() + packed.size());\n"
+                       "  $name$_.addAll(packed);\n"
+                       "}\n");
+        return;
+      }
+      default:
+        break;
+    }
+  }
   if (FixedSize(GetType(descriptor_)) != -1) {
     // 4K limit on pre-allocations to prevent OOM from malformed input.
     printer->Print(variables_,

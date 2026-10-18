@@ -126,6 +126,8 @@ class FieldGeneratorBase {
 
   virtual void GenerateAccessorDeclarations(io::Printer* p) const = 0;
 
+  virtual void GeneratePrivateAccessorDeclarations(io::Printer* p) const = 0;
+
   virtual void GenerateInlineAccessorDefinitions(io::Printer* p) const = 0;
 
   virtual void GenerateNonInlineAccessorDefinitions(io::Printer* p) const {}
@@ -137,8 +139,6 @@ class FieldGeneratorBase {
   }
 
   virtual void GenerateMergingCode(io::Printer* p) const = 0;
-
-  virtual void GenerateCopyConstructorCode(io::Printer* p) const;
 
   virtual void GenerateSwappingCode(io::Printer* p) const = 0;
 
@@ -175,11 +175,7 @@ class FieldGeneratorBase {
   // - `field_ = from.field_`
   virtual void GenerateOneofCopyConstruct(io::Printer* p) const;
 
-  virtual void GenerateAggregateInitializer(io::Printer* p) const;
-
   virtual void GenerateConstexprAggregateInitializer(io::Printer* p) const;
-
-  virtual void GenerateCopyAggregateInitializer(io::Printer* p) const;
 
   virtual void GenerateSerializeWithCachedSizesToArray(
       io::Printer* p) const = 0;
@@ -337,6 +333,10 @@ class FieldGenerator {
     auto vars = PushVarsForCall(p);
     impl_->GenerateAccessorDeclarations(p);
   }
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+    auto vars = PushVarsForCall(p);
+    impl_->GeneratePrivateAccessorDeclarations(p);
+  }
 
   // Generates inline definitions of accessor functions for this field.
   //
@@ -387,14 +387,6 @@ class FieldGenerator {
     impl_->GenerateMergingCode(p);
   }
 
-  // Generates a copy constructor
-  //
-  // TODO: Document this properly.
-  void GenerateCopyConstructorCode(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateCopyConstructorCode(p);
-  }
-
   // Generates statements which swap this field and the corresponding field of
   // another message, which is stored in the generated code variable `other`.
   //
@@ -422,24 +414,6 @@ class FieldGenerator {
     impl_->GenerateArenaDestructorCode(p);
   }
 
-  // Generates initialization code for private members declared by
-  // GeneratePrivateMembers().
-  //
-  // These go into the SharedCtor's aggregate initialization of the _impl_
-  // struct and must follow the syntax `decltype($field_$){$default$}`.
-  // Does not include `:` or `,` separators. Default values should be specified
-  // here when possible.
-  //
-  // NOTE: We use `decltype($field_$)` for both explicit construction and the
-  // fact that it's self-documenting. Pre-C++17, copy elision isn't guaranteed
-  // in aggregate initialization so a valid copy/move constructor must exist
-  // (even though it's not used). Because of this, we need to comment out the
-  // decltype and fallback to implicit construction.
-  void GenerateAggregateInitializer(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateAggregateInitializer(p);
-  }
-
   // Generates constinit initialization code for private members declared by
   // GeneratePrivateMembers().
   //
@@ -449,17 +423,6 @@ class FieldGenerator {
   void GenerateConstexprAggregateInitializer(io::Printer* p) const {
     auto vars = PushVarsForCall(p);
     impl_->GenerateConstexprAggregateInitializer(p);
-  }
-
-  // Generates copy initialization code for private members declared by
-  // GeneratePrivateMembers().
-  //
-  // These go into the copy constructor's aggregate initialization of the _impl_
-  // struct and must follow the syntax `decltype($field_$){$from_field$}` (see
-  // above). Does not include `:` or `,` separators.
-  void GenerateCopyAggregateInitializer(io::Printer* p) const {
-    auto vars = PushVarsForCall(p);
-    impl_->GenerateCopyAggregateInitializer(p);
   }
 
   // Generates statements to serialize this field directly to the array

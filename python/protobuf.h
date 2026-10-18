@@ -167,6 +167,16 @@ static inline PyObject* PyUpb_NewRef(PyObject* obj) {
   return obj;
 }
 
+// Ensures google.protobuf.descriptor_pb2 is imported. Returns false and sets a
+// Python exception on failure.
+static inline bool PyUpb_ImportDescriptorModule(void) {
+  PyObject* mod =
+      PyImport_ImportModuleLevel(PYUPB_DESCRIPTOR_MODULE, NULL, NULL, NULL, 0);
+  if (!mod) return false;
+  Py_DECREF(mod);
+  return true;
+}
+
 const char* PyUpb_GetStrData(PyObject* obj);
 const char* PyUpb_VerifyStrData(PyObject* obj);
 

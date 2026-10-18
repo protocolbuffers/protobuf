@@ -32,7 +32,11 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+#if defined(Py_LIMITED_API) && Py_LIMITED_API + 0 < 0x030B0000
 #define PyUpb_SUPPORT_BUFFER_VIEW 0
+#else
+#define PyUpb_SUPPORT_BUFFER_VIEW 1
+#endif
 
 static PyObject* PyUpb_RepeatedCompositeContainer_Append(PyObject* _self,
                                                          PyObject* value);

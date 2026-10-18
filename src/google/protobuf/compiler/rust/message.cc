@@ -311,6 +311,7 @@ void UpbGeneratedMessageTraitImpls(Context& ctx, const Descriptor& msg,
               &CACHED
             }
           }
+          impl $pb$::WithReflection for $Msg$ {}
         )rs");
   }
 

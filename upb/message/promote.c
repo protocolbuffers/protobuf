@@ -66,17 +66,18 @@ static upb_UnknownToMessageRet upb_MiniTable_ParseUnknownMessage(
     // always going through the encoding-and-decoding path.
     UPB_ASSERT(unknown->type == kUpb_MessageUnknownType_NonCanonicalExtension);
     const upb_Extension* ext = (const upb_Extension*)unknown->value.extension;
+    const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
     // Extension promotion `upb_Message_GetOrPromoteExtension` currently only
     // supports Message types. If we find a primitive type, fail gracefully to
     // avoid invalid access/crashes.
-    if (upb_MiniTableExtension_CType(ext->ext) != kUpb_CType_Message) {
+    if (upb_MiniTableField_CType(f) != kUpb_CType_Message) {
       ret.status = kUpb_UnknownToMessage_ParseError;
       return ret;
     }
     char* buf;
-    upb_EncodeStatus enc_status = upb_Encode(
-        ext->data.msg_val, upb_MiniTableExtension_GetSubMessage(ext->ext),
-        /* options= */ 0, arena, &buf, &size);
+    upb_EncodeStatus enc_status =
+        upb_Encode(upb_Extension_GetMessage(ext), upb_MiniTable_SubMessage(f),
+                   /* options= */ 0, arena, &buf, &size);
     if (enc_status != kUpb_EncodeStatus_Ok) {
       ret.status = enc_status == kUpb_EncodeStatus_OutOfMemory
                        ? kUpb_UnknownToMessage_OutOfMemory
@@ -123,7 +124,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   const upb_Extension* extension =
       UPB_PRIVATE(_upb_Message_Getext)(msg, ext_table);
   if (extension) {
-    memcpy(value, &extension->data, sizeof(upb_MessageValue));
+    *value = upb_Extension_GetValue(extension);
     return kUpb_GetExtension_Ok;
   }
 
@@ -140,7 +141,8 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   while (upb_Message_NextUnknown2(msg, &data, &iter)) {
     if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
       const upb_Extension* ext = (const upb_Extension*)data.value.extension;
-      if (upb_MiniTableExtension_Number(ext->ext) == field_number) {
+      if (upb_MiniTableField_Number(upb_Extension_MiniTableField(ext)) ==
+          field_number) {
         found_count++;
         upb_UnknownToMessageRet parse_result =
             upb_MiniTable_ParseUnknownMessage(&data, extension_table,
@@ -199,7 +201,7 @@ upb_GetExtension_Status upb_Message_GetOrPromoteExtension(
   if (!ext) {
     return kUpb_GetExtension_OutOfMemory;
   }
-  ext->data.msg_val = extension_msg;
+  upb_Extension_SetMessage(ext, extension_msg);
 
   while (found_count > 0) {
     upb_FindUnknownRet2 found = upb_Message_FindUnknown2(msg, field_number, 0);

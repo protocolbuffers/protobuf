@@ -34,6 +34,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/io/printer.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/wire_format.h"
 
 namespace google {
@@ -46,6 +47,13 @@ using Sub = ::google::protobuf::io::Printer::Sub;
 
 std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
   bool split = ShouldSplit(field, opts);
+  const auto add_as_const = [](auto str) {
+    // We want to make sure `this_field` is used correctly but we don't want to
+    // generate the bloat in normal mode.
+    return google::protobuf::internal::GenerateCompileTimeHardeningInProtoc()
+               ? absl::StrFormat("::std::as_const(%s)", str)
+               : str;
+  };
   std::vector<Sub> vars = {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
@@ -57,7 +65,10 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
-      {"this_field", absl::StrCat("this_.", FieldMemberName(field, split))},
+      {"this_field",
+       add_as_const(absl::StrCat("this_.", FieldMemberName(field, split)))},
+      {"this_mutable_field",
+       absl::StrCat("this_.", FieldMemberName(field, split))},
       {"from_field", absl::StrCat("from.", FieldMemberName(field, split))},
 
       {"field_", FieldMemberName(field, split)},
@@ -204,39 +215,11 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
   p->Emit("$field_$ = $from_field$;\n");
 }
 
-void FieldGeneratorBase::GenerateAggregateInitializer(io::Printer* p) const {
-  if (ShouldSplit(field_, options_)) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){arena},
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      decltype($field_$){arena},
-    )cc");
-  }
-}
-
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
   p->Emit(R"cc(
     /*decltype($field_$)*/ {},
   )cc");
-}
-
-void FieldGeneratorBase::GenerateCopyAggregateInitializer(
-    io::Printer* p) const {
-  p->Emit(R"cc(
-    decltype($field_$){$from_field$},
-  )cc");
-}
-
-void FieldGeneratorBase::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (should_split()) {
-    // There is no copy constructor for the `Split` struct, so we need to copy
-    // the value here.
-    Formatter format(p, variables_);
-    format("$field_$ = $from_field$;\n");
-  }
 }
 
 pb::CppFeatures::StringType FieldGeneratorBase::GetDeclaredStringType() const {
@@ -308,7 +291,7 @@ std::unique_ptr<FieldGeneratorBase> MakeGenerator(const FieldDescriptor* field,
               return MakeSingularCordGenerator(field, options);
             }
           }
-          ABSL_FALLTHROUGH_INTENDED;
+          [[fallthrough]];
         default:
           return MakeSinguarStringGenerator(field, options);
       }

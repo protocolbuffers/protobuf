@@ -6,8 +6,8 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use crate::{
-    IntoProxied, Message, Mut, Proxied, Repeated, View,
     __internal::{Private, SealedInternal},
+    IntoProxied, Message, Mut, Proxied, Repeated, View,
 };
 
 /// Singular types are types which are allowed as a simple field, or in a repeated, or as a map
@@ -22,8 +22,7 @@ use crate::{
 /// not allowed in that position.
 ///
 /// # Safety
-/// - It must be sound to call `*_unchecked*(x)` with an `index` less than
-///   `repeated_len(x)`.
+/// - It must be sound to call `*_unchecked*(x)` with an `index` less than `repeated_len(x)`.
 pub unsafe trait Singular: Proxied + SealedInternal {
     /// Constructs a new owned `Repeated` field.
     #[doc(hidden)]
@@ -47,6 +46,11 @@ pub unsafe trait Singular: Proxied + SealedInternal {
     /// Clears the repeated field of elements.
     #[doc(hidden)]
     fn repeated_clear(_private: Private, repeated: Mut<Repeated<Self>>);
+
+    /// Shortens the repeated field, keeping the first `new_len` elements and
+    /// dropping the rest.
+    #[doc(hidden)]
+    fn repeated_truncate(_private: Private, repeated: Mut<Repeated<Self>>, new_len: usize);
 
     /// # Safety
     /// `index` must be less than `Self::repeated_len(repeated)`

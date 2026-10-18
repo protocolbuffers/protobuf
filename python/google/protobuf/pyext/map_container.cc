@@ -361,6 +361,7 @@ MapContainer* NewScalarMapContainer(
 
   MapContainer* self = GetMap(obj);
 
+  self->SetTree(parent->GetTree());
   Py_INCREF(parent);
   self->parent = parent;
   self->parent_field_descriptor = parent_field_descriptor;
@@ -615,6 +616,7 @@ MessageMapContainer* NewMessageMapContainer(
 
   MessageMapContainer* self = GetMessageMap(obj);
 
+  self->SetTree(parent->GetTree());
   Py_INCREF(parent);
   self->parent = parent;
   self->parent_field_descriptor = parent_field_descriptor;

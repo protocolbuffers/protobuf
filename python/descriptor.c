@@ -132,12 +132,14 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   PyUpb_GetCachedArgs* args = _args;
   PyObject* py_arena = NULL;
 
-  // Load descriptors protos if they are not loaded already. We have to do
-  // this lazily, otherwise, it would lead to circular imports.
-  PyObject* mod =
-      PyImport_ImportModuleLevel(PYUPB_DESCRIPTOR_MODULE, NULL, NULL, NULL, 0);
-  if (mod == NULL) return NULL;
-  Py_DECREF(mod);
+  // Load descriptor protos if they are not loaded already. This is kept here as
+  // a fallback. We cannot import descriptor_pb2 when _message is initialized,
+  // as that would lead to circular imports.
+  //
+  // Normally this just costs a sys.modules lookup, since DescriptorPool has
+  // already eagerly imported descriptor_pb2 for every file except
+  // descriptor.proto.
+  if (!PyUpb_ImportDescriptorModule()) return NULL;
 
   // Find the correct options message.
   PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();
@@ -346,16 +348,15 @@ PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m) {
   // in the future, we could make PyUpb_Descriptor_Get() append the descriptor
   // to an internal list in DescriptorPool, let the pool keep descriptors alive.
   PyObject* py_descriptor = PyUpb_Descriptor_Get(pool, m);
-  if (py_descriptor == NULL) return NULL;
-  const char* name = upb_MessageDef_Name(m);
+  PyObject* name = PyUnicode_FromString(upb_MessageDef_Name(m));
   PyObject* dict = PyDict_New();
-  if (dict == NULL) goto err;
-  int status = PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor);
-  if (status < 0) goto err;
+  if (!py_descriptor || !name || !dict) goto err;
+  if (PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor) < 0) goto err;
   ret = PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
 
 err:
   Py_XDECREF(py_descriptor);
+  Py_XDECREF(name);
   Py_XDECREF(dict);
   return ret;
 }
