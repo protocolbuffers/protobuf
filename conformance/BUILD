@@ -123,6 +123,7 @@ test_suite(
     tests = [
         "binary_test_util_test",
         "binary_wireformat_test",
+        "failure_list_test",
         "failure_list_trie_node_test",
         "matchers_test",
         "naming_test",
@@ -319,13 +320,44 @@ cc_library(
 )
 
 cc_library(
+    name = "failure_list",
+    testonly = True,
+    srcs = ["failure_list.cc"],
+    hdrs = ["failure_list.h"],
+    deps = [
+        ":failure_list_trie_node",
+        ":testee",
+        "@abseil-cpp//absl/container:flat_hash_map",
+        "@abseil-cpp//absl/log:absl_check",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:string_view",
+        "@abseil-cpp//absl/types:optional",
+    ],
+)
+
+cc_test(
+    name = "failure_list_test",
+    srcs = ["failure_list_test.cc"],
+    deps = [
+        ":failure_list",
+        ":testee",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:status_matchers",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/types:optional",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "result_ledger",
     testonly = True,
     srcs = ["result_ledger.cc"],
     hdrs = ["result_ledger.h"],
     deps = [
-        ":conformance_cc_proto",
-        ":failure_list_trie_node",
+        ":failure_list",
         ":testee",
         "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/container:btree",
@@ -412,6 +444,7 @@ cc_test(
     name = "result_ledger_test",
     srcs = ["result_ledger_test.cc"],
     deps = [
+        ":failure_list",
         ":result_ledger",
         ":testee",
         "//src/google/protobuf/testing",
