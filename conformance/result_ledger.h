@@ -11,8 +11,7 @@
 #include "absl/status/status.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
-#include "conformance/conformance.pb.h"
-#include "conformance/failure_list_trie_node.h"
+#include "conformance/failure_list.h"
 #include "conformance/testee.h"
 
 namespace google {
@@ -36,20 +35,29 @@ struct UnexpectedResult {
   absl::optional<std::string> matched_entry;
 };
 
-// Tracks the expected failures and the actual results of a test suite.  The
-// conformance matchers (see matchers.h) report the outcome of every test
-// here.  The test environment reads the results back and reports them as test
-// properties.  Under --fix the results also populate the new failure list.
+// How many tests one wildcard entry may cover with a verdict, that is an
+// expected failure or an unexpected success.  See OverexpandedWildcards().
+inline constexpr int kMaximumWildcardExpansions = 20;
+
+// The ledger of a conformance run: tallies the results of its tests against
+// its failure list.  The failure list is loaded once (see LoadFailureList())
+// into a FailureList, which decides each result; the Report*() methods apply
+// its verdicts and count the outcomes.  The conformance matchers (see
+// matchers.h) report the outcome of every test here.  The test environment
+// reads the counters back as test properties and, under --fix, writes the new
+// failure list from the ledger (see SaveFailureList()).
 class ResultLedger {
  public:
-  ResultLedger() : expected_failure_list_("root") {}
+  ResultLedger() = default;
   ~ResultLedger();
 
   // The lowest priority whose failures fail the suite (see TestPriority in
   // testee.h).  ReportFailure() tolerates a failing test of a lower priority
   // unless it is in the failure list.  Defaults to kLowestPriority, which
   // enforces every priority.
-  void set_enforcement_level(TestPriority level) { enforcement_level_ = level; }
+  void set_enforcement_level(TestPriority level) {
+    failure_list_.set_enforcement_level(level);
+  }
 
   // Loads a failure list from disk and adds its entries to the ones loaded so
   // far.  Each line that isn't blank or a comment names one expected failure,
@@ -59,36 +67,32 @@ class ResultLedger {
   // invalid wildcard.
   absl::Status LoadFailureList(absl::string_view filename);
 
+  // The failure list as loaded so far, which decides each result.  Yields()
+  // reads the global environment's through GetGlobalResultLedger().
+  const FailureList& failure_list() const { return failure_list_; }
+
   // Saves an updated failure list to disk based on the reported results.
   // Returns an error if `filename` can't be opened for writing or the write
   // fails.
   absl::Status SaveFailureList(absl::string_view filename) const;
 
-  // Reports a successful test run.  This will return an error if the test was
-  // expected to fail.
+  // Records a successful test run and returns
+  // FailureList::VerdictOnSuccess().
   absl::Status ReportSuccess(absl::string_view test_name);
 
-  // Reports a failed test run along with the failure message.  Returns OK if
-  // the failure doesn't fail the suite.  That is the case when the test is in
-  // the failure list with a matching message (an expected failure, logged at
-  // INFO), or when it isn't listed and `priority` is above the enforcement
-  // level (a tolerated failure, logged as a WARNING and only counted by
-  // tolerated_failures()).  Otherwise the failure is unexpected and the error
-  // says why.  A listed test is checked whatever its priority, so that the
-  // failure list can't go stale unnoticed.  The normalized actual message
-  // only needs to start with the expected message, so an empty expected
-  // message matches any failure.
+  // Records a failed test run along with the failure message and returns
+  // FailureList::VerdictOnFailure().  A tolerated failure is only counted
+  // (see tolerated_failures()).  An unexpected one is also kept for
+  // UnexpectedFailures() and SaveFailureList().
   absl::Status ReportFailure(absl::string_view test_name, TestPriority priority,
                              absl::string_view failure_message);
 
-  // Reports a test that the testee skipped for `skip_reason`.  A skip is not
-  // a verdict on the test's failure list entry, if any.  The entry counts as
-  // seen and matched, so that Finalize() doesn't report it and
-  // SaveFailureList() keeps it, but the skip is not an expected failure.  A
-  // listed test that is skipped is recorded (see ListedSkips()) and returns an
-  // error that names the matched entry, like an unexpected success.  Whether
-  // that error fails the test is the caller's policy.  The matchers fail such
-  // a test.
+  // Records a test that the testee skipped for `skip_reason` and returns
+  // FailureList::VerdictOnSkip().  A skip is not a verdict on the test's
+  // entry, if any.  The entry counts as seen and matched, so that Finalize()
+  // doesn't report it and SaveFailureList() keeps it, but the skip is not an
+  // expected failure.  A listed test that is skipped is also recorded for
+  // ListedSkips().
   absl::Status ReportSkip(absl::string_view test_name,
                           absl::string_view skip_reason);
 
@@ -106,6 +110,12 @@ class ResultLedger {
   bool WasReported(absl::string_view test_name) const {
     return seen_tests_.contains(test_name);
   }
+
+  // The sorted failure list entries that more than kMaximumWildcardExpansions
+  // reported tests matched with a verdict, that is as an expected failure or
+  // an unexpected success.  Skips don't count.  Such a wildcard hides too
+  // much; the test environment fails the run over it.
+  std::vector<std::string> OverexpandedWildcards() const;
 
   // Runs sanity checks over the failure list to make sure everything we
   // expected to run was reported.  Returns an error naming the sorted expected
@@ -189,13 +199,14 @@ class ResultLedger {
   // UnmatchedExpectedFailures()) and returns it.
   absl::optional<std::string> MarkMatched(absl::string_view test_name);
 
-  FailureListTrieNode expected_failure_list_;
-  absl::flat_hash_map<std::string, std::string> expected_failure_messages_;
+  FailureList failure_list_;
 
   absl::flat_hash_set<std::string> unseen_expected_failures_;
   // Entries never matched by name by any Report*() call.
   absl::flat_hash_set<std::string> unmatched_expected_failures_;
   absl::flat_hash_set<std::string> seen_unexpected_successes_;
+  // How many tests matched each entry as an expected failure or an unexpected
+  // success.  See OverexpandedWildcards().
   absl::flat_hash_map<std::string, int> number_of_matches_;
 
   // Every test name reported so far (see WasReported()), so that a test
@@ -221,7 +232,6 @@ class ResultLedger {
   int expected_successes_ = 0;
   int unexpected_successes_ = 0;
   bool finalized_ = false;
-  TestPriority enforcement_level_ = kLowestPriority;
 };
 
 }  // namespace internal

@@ -15,11 +15,11 @@
 #include "absl/log/absl_log.h"
 #include "absl/status/status.h"
 #include "absl/strings/ascii.h"
-#include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "conformance/failure_list.h"
 #include "conformance/testee.h"
 
 namespace google {
@@ -27,13 +27,6 @@ namespace protobuf {
 namespace conformance {
 namespace internal {
 namespace {
-
-// How many failures one wildcard entry may cover.  As in the legacy runner the
-// check precedes the count of the current match, so the limit is reached one
-// failure later than the number says: the (kMaximumWildcardExpansions + 2)th
-// is the first one reported.
-constexpr int kMaximumWildcardExpansions = 20;
-constexpr int kFailureMessageLengthLimit = 128;
 
 bool InsertUniqueTest(absl::flat_hash_set<std::string>& set,
                       absl::string_view value) {
@@ -47,22 +40,6 @@ void IncrementIfUnique(bool unique, int& counter) {
   if (unique) {
     ++counter;
   }
-}
-
-void Normalize(std::string& input) {
-  input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
-}
-
-// Sets up a failure message properly for our failure lists.
-std::string FormatFailureMessage(absl::string_view input) {
-  std::string result(absl::StripAsciiWhitespace(input));
-  // Remove newlines
-  Normalize(result);
-  // Truncate failure message if needed
-  if (result.length() > kFailureMessageLengthLimit) {
-    result = result.substr(0, kFailureMessageLengthLimit);
-  }
-  return result;
 }
 
 std::string ReformatLine(size_t alignment, absl::string_view line) {
@@ -135,15 +112,10 @@ absl::Status ResultLedger::LoadFailureList(absl::string_view filename) {
 
 absl::Status ResultLedger::AddExpectedFailure(
     absl::string_view test_name, absl::string_view failure_message) {
-  if (absl::Status status = expected_failure_list_.Insert(test_name);
+  if (absl::Status status = failure_list_.Add(test_name, failure_message);
       !status.ok()) {
     return status;
   }
-  // Normalize the message the same way reported failures are normalized so
-  // that the two compare equal in ReportFailure.
-  ABSL_CHECK(expected_failure_messages_
-                 .emplace(test_name, FormatFailureMessage(failure_message))
-                 .second);
   ABSL_CHECK(unseen_expected_failures_.emplace(test_name).second);
   ABSL_CHECK(unmatched_expected_failures_.emplace(test_name).second);
   return absl::OkStatus();
@@ -215,15 +187,11 @@ absl::Status ResultLedger::ReportSuccess(absl::string_view test_name) {
     }
     unseen_expected_failures_.erase(*failure_match);
     seen_unexpected_successes_.insert(*failure_match);
-    return absl::FailedPreconditionError(absl::StrCat(
-        "test ", test_name, " (matched to ", *failure_match,
-        ") is in the failure list, but test succeeded.  Remove its match from "
-        "the failure list."));
+  } else {
+    // This wasn't expected to fail.
+    IncrementIfUnique(unique, expected_successes_);
   }
-
-  // This wasn't expected to fail.
-  IncrementIfUnique(unique, expected_successes_);
-  return absl::OkStatus();
+  return failure_list_.VerdictOnSuccess(test_name);
 }
 
 absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
@@ -231,6 +199,8 @@ absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
                                          absl::string_view failure_message) {
   bool unique = InsertUniqueTest(seen_tests_, test_name);
   absl::optional<std::string> failure_match = MarkMatched(test_name);
+  absl::Status verdict =
+      failure_list_.VerdictOnFailure(test_name, priority, failure_message);
 
   std::string formatted_failure_message = FormatFailureMessage(failure_message);
   // Counts the failure as unexpected and records it for UnexpectedFailures().
@@ -242,26 +212,23 @@ absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
   };
 
   if (!failure_match.has_value()) {
-    if (priority > enforcement_level_) {
+    if (verdict.ok()) {
       // Tolerated: neither a failure nor a skip, and not written to the
       // failure list; only counted.
       IncrementIfUnique(unique, tolerated_failures_);
       ABSL_LOG(WARNING) << "WARNING, test=" << test_name << ": "
                         << absl::StripTrailingAsciiWhitespace(failure_message);
-      return absl::OkStatus();
+    } else {
+      // This was not expected to fail.
+      record_unexpected_failure();
+      new_failures_[test_name] = formatted_failure_message;
     }
-    // This was not expected to fail.
-    record_unexpected_failure();
-    new_failures_[test_name] = formatted_failure_message;
-    return absl::FailedPreconditionError(
-        absl::StrCat("Unexpected failure for test: ", test_name));
+    return verdict;
   }
 
-  // Mirror the legacy runner, which only requires the actual failure message to
-  // start with the expected one.
-  const std::string& expected_failure_message =
-      expected_failure_messages_.at(*failure_match);
-  if (!absl::StartsWith(formatted_failure_message, expected_failure_message)) {
+  // A listed test's verdict only depends on its message, which the list
+  // matches as a prefix of the actual one.
+  if (!verdict.ok()) {
     record_unexpected_failure();
     // TODO: Keying the replacement by the (possibly wildcard)
     // entry duplicates the line if another test later matches the entry with
@@ -270,28 +237,15 @@ absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
     // makes SaveFailureList() keep the original line and add a second
     // `foo.*.bar` line, which LoadFailureList() then rejects.
     new_failures_[*failure_match] = formatted_failure_message;
-    return absl::FailedPreconditionError(absl::StrCat(
-        "Unexpected failure message for test: ", test_name, " expected: ",
-        expected_failure_message, " actual: ", formatted_failure_message));
+    return verdict;
   }
 
   unseen_expected_failures_.erase(*failure_match);
-
-  if (number_of_matches_[*failure_match] > kMaximumWildcardExpansions) {
-    record_unexpected_failure();
-    return absl::FailedPreconditionError(
-        absl::StrCat("The wildcard ", *failure_match,
-                     " served as matches to too many test "
-                     "names exceeding the max amount of ",
-                     kMaximumWildcardExpansions, " for test: ", test_name));
-  }
-
   IncrementIfUnique(unique, number_of_matches_[*failure_match]);
   IncrementIfUnique(unique, expected_failures_);
   ABSL_LOG(INFO) << "Ignoring expected failure for test " << test_name << ": "
                  << absl::StripTrailingAsciiWhitespace(failure_message);
-
-  return absl::OkStatus();
+  return verdict;
 }
 
 absl::Status ResultLedger::ReportSkip(absl::string_view test_name,
@@ -314,10 +268,7 @@ absl::Status ResultLedger::ReportSkip(absl::string_view test_name,
   if (unique) {
     listed_skip_matches_[test_name] = *failure_match;
   }
-  return absl::FailedPreconditionError(absl::StrCat(
-      "test ", test_name, " (matched to ", *failure_match,
-      ") is in the failure list but was skipped by the testee: ", skip_reason,
-      ".  Remove its match from the failure list."));
+  return failure_list_.VerdictOnSkip(test_name, skip_reason);
 }
 
 void ResultLedger::ReportNotSelected(absl::string_view test_name) {
@@ -328,11 +279,20 @@ void ResultLedger::ReportNotSelected(absl::string_view test_name) {
 absl::optional<std::string> ResultLedger::MarkMatched(
     absl::string_view test_name) {
   absl::optional<std::string> failure_match =
-      expected_failure_list_.WalkDownMatch(test_name);
+      failure_list_.MatchingEntry(test_name);
   if (failure_match.has_value()) {
     unmatched_expected_failures_.erase(*failure_match);
   }
   return failure_match;
+}
+
+std::vector<std::string> ResultLedger::OverexpandedWildcards() const {
+  std::vector<std::string> entries;
+  for (const auto& [entry, matches] : number_of_matches_) {
+    if (matches > kMaximumWildcardExpansions) entries.push_back(entry);
+  }
+  absl::c_sort(entries);
+  return entries;
 }
 
 std::vector<std::string> ResultLedger::UnseenExpectedFailures() const {
@@ -368,7 +328,7 @@ std::vector<UnexpectedResult> ResultLedger::UnexpectedSuccesses() const {
   for (const auto& [test_name, matched_entry] : unexpected_success_matches_) {
     successes.push_back(
         {/*test_name=*/test_name,
-         /*failure_message=*/expected_failure_messages_.at(matched_entry),
+         /*failure_message=*/*failure_list_.ExpectedMessage(matched_entry),
          /*matched_entry=*/matched_entry});
   }
   return successes;
