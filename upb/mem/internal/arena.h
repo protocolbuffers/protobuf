@@ -14,6 +14,7 @@
 
 #include "upb/base/internal/log2.h"
 #include "upb/mem/internal/alloc.h"
+#include "upb/port/overflow.h"
 #include "upb/port/sanitizers.h"
 
 // Must be last.
@@ -70,6 +71,16 @@ UPB_PRIVATE(_upb_ArenaHas)(const struct upb_Arena* a) {
   return (size_t)(a->UPB_ONLYBITS(end) - a->UPB_ONLYBITS(ptr));
 }
 
+#define _UPB_ARENA_MAX_ALLOC_SIZE               \
+  ((size_t)(SIZE_MAX - (UPB_MALLOC_ALIGN - 1) - \
+            UPB_PRIVATE(kUpb_Asan_GuardSize)))
+
+UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Arena_CheckedAdd)(size_t a,
+                                                                 size_t b,
+                                                                 size_t* out) {
+  return !upb_AddOverflow(a, b, out);
+}
+
 UPB_NODISCARD UPB_INLINE size_t UPB_PRIVATE(_upb_Arena_AllocSpan)(size_t size) {
   return UPB_ALIGN_MALLOC(size) + UPB_PRIVATE(kUpb_Asan_GuardSize);
 }
@@ -90,6 +101,7 @@ UPB_NODISCARD UPB_INLINE bool UPB_PRIVATE(_upb_Arena_IsAligned)(
 UPB_NODISCARD UPB_API_INLINE void* _upb_Arena_Malloc_Unchecked(
     struct upb_Arena* a, size_t size) {
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  if (UPB_UNLIKELY(size > _UPB_ARENA_MAX_ALLOC_SIZE)) return NULL;
 
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(size);
 
@@ -144,6 +156,7 @@ UPB_NODISCARD UPB_API_INLINE bool upb_Arena_TryExtend(struct upb_Arena* a,
   UPB_ASSERT(size > oldsize);
 
   UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(a));
+  if (UPB_UNLIKELY(size > _UPB_ARENA_MAX_ALLOC_SIZE)) return false;
   size_t extend = UPB_ALIGN_MALLOC(size) - UPB_ALIGN_MALLOC(oldsize);
 
   if (UPB_PRIVATE(_upb_Arena_WasLastAllocFromCurrentBlock)(a, ptr, oldsize) &&
