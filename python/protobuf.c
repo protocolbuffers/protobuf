@@ -29,9 +29,14 @@
 
 static void PyUpb_ModuleDealloc(void* module) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(module);
+  PyUpb_LazyPtr_Clear(&state->wkt_bases);
   if (state->obj_cache) {
     PyUpb_WeakMap_Free(state->obj_cache);
     state->obj_cache = NULL;
+  }
+  if (state->c_descriptor_symtab) {
+    upb_DefPool_Free(state->c_descriptor_symtab);
+    state->c_descriptor_symtab = NULL;
   }
 }
 
@@ -42,7 +47,8 @@ PyObject* PyUpb_SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
     return NULL;
   }
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  state->allow_oversize_protos = PyObject_IsTrue(arg);
+  upb_Atomic_Store(&state->allow_oversize_protos, PyObject_IsTrue(arg),
+                   memory_order_relaxed);
   Py_INCREF(arg);
   return arg;
 }
@@ -128,23 +134,30 @@ PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
   return PyUpb_ModuleState_GetFromModule(module);
 }
 
+static PyObject* PyUpb_InitWktBases(void* unused) {
+  PyObject* wkt_module = PyImport_ImportModule(PYUPB_PROTOBUF_INTERNAL_PACKAGE
+                                               ".well_known_types");
+  if (!wkt_module) return NULL;
+  PyObject* wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
+  Py_DECREF(wkt_module);
+  return wkt_bases;
+}
+
 PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
-  if (!state->wkt_bases) {
-    PyObject* wkt_module = PyImport_ImportModule(PYUPB_PROTOBUF_INTERNAL_PACKAGE
-                                                 ".well_known_types");
+  PyObject* wkt_bases = PyUpb_LazyPtr_LazyInitPyObj(
+      &state->wkt_bases, PyUpb_InitWktBases, NULL);
+  if (!wkt_bases) return NULL;
 
-    if (wkt_module == NULL) {
-      return NULL;
-    }
-
-    state->wkt_bases = PyObject_GetAttrString(wkt_module, "WKTBASES");
-    PyObject* m = PyState_FindModule(&module_def);
-    // Reparent ownership to m.
-    PyModule_AddObject(m, "__internal_wktbases", state->wkt_bases);
-    Py_DECREF(wkt_module);
+  // Preserve the private module attribute used by the existing implementation.
+  // Concurrent stores are safe Python dictionary operations and all store the
+  // same CAS-selected object.
+  PyObject* m = PyState_FindModule(&module_def);
+  if (!m || PyModule_AddObjectRef(m, "__internal_wktbases", wkt_bases) < 0) {
+    Py_DECREF(wkt_bases);
+    return NULL;
   }
-
-  return state->wkt_bases;
+  Py_DECREF(wkt_bases);
+  return PyUpb_LazyPtr_RawGet(&state->wkt_bases);
 }
 
 // -----------------------------------------------------------------------------
@@ -158,6 +171,7 @@ typedef struct {
   // clang-format on
   PyObject* pool;
   PyUpb_WeakMap* obj_cache;
+  PyUpb_AtomicInt32 frozen;
 } PyUpb_Arena;
 
 #ifdef __GLIBC__
@@ -180,10 +194,16 @@ static void* upb_trim_allocfunc(upb_alloc* alloc, void* ptr, size_t oldsize,
   if (size == 0) {
     free(ptr);
 #ifdef __GLIBC__
-    static int count = 0;
-    if (++count == 10000) {
-      malloc_trim(0);
-      count = 0;
+    static PyUpb_AtomicInt32 count = 0;
+    int32_t current =
+        upb_Atomic_Add(&count, 1, memory_order_relaxed) + 1;
+    if (current >= 10000) {
+      int32_t expected = current;
+      if (upb_Atomic_CompareExchangeStrong(
+              &count, &expected, 0, memory_order_relaxed,
+              memory_order_relaxed)) {
+        malloc_trim(0);
+      }
     }
 #endif
     return NULL;
@@ -225,6 +245,7 @@ PyObject* PyUpb_Arena_New(PyObject* pool) {
   }
   arena->pool = pool;
   Py_INCREF(pool);
+  upb_Atomic_Init(&arena->frozen, false);
   return &arena->ob_base;
 }
 
@@ -249,6 +270,16 @@ static void PyUpb_Arena_Dealloc(PyObject* self) {
 
 upb_Arena* PyUpb_Arena_Get(PyObject* arena) {
   return ((PyUpb_Arena*)arena)->arena;
+}
+
+bool PyUpb_Arena_IsFrozen(PyObject* arena) {
+  return upb_Atomic_Load(&((PyUpb_Arena*)arena)->frozen,
+                         memory_order_acquire);
+}
+
+void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen) {
+  upb_Atomic_Store(&((PyUpb_Arena*)arena)->frozen, frozen,
+                   memory_order_release);
 }
 
 bool PyUpb_Arena_CacheAdd(PyObject* _arena, const void* key,
@@ -437,12 +468,25 @@ bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg) {
 PyMODINIT_FUNC PyInit__message(void) {
   PyObject* m = PyModule_Create(&module_def);
   if (!m) return NULL;
+#if defined(Py_GIL_DISABLED) && \
+    defined(PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING)
+  // Keep this opt-in until the complete upb safety and stress matrix passes.
+  if (PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED) < 0) {
+    Py_DECREF(m);
+    return NULL;
+  }
+#endif
 
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
 
-  state->allow_oversize_protos = false;
+  upb_Atomic_Init(&state->allow_oversize_protos, false);
   state->wkt_bases = NULL;
-  state->c_descriptor_symtab = NULL;
+  state->c_descriptor_symtab = upb_DefPool_New();
+  if (!state->c_descriptor_symtab) {
+    PyErr_NoMemory();
+    Py_DECREF(m);
+    return NULL;
+  }
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
       !PyUpb_InitDescriptor(m) || !PyUpb_InitArena(m) ||

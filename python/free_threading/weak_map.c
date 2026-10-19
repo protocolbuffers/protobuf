@@ -55,7 +55,12 @@ void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) {
   upb_Arena_Free(map->arena);
 }
 
-size_t PyUpb_WeakMap_Count(PyUpb_WeakMap* map) { return map->table.t.count; }
+size_t PyUpb_WeakMap_Count(PyUpb_WeakMap* map) {
+  PyUpb_Mutex_Lock(&map->mutex);
+  size_t count = map->table.t.count;
+  PyUpb_Mutex_Unlock(&map->mutex);
+  return count;
+}
 
 // To give better entropy in the table key, we shift away low bits that are
 // always zero.
@@ -162,7 +167,8 @@ bool PyUpb_WeakMapIter_Begin(PyUpb_WeakMapIter* iter, PyUpb_WeakMap* map) {
   iter->map = map;
   iter->iter = UPB_INTTABLE_BEGIN;
 #ifdef Py_GIL_DISABLED
-  size_t cap = PyUpb_WeakMap_Count(map);
+  // The iterator owns map->mutex for its entire lifetime.
+  size_t cap = map->table.t.count;
   if (cap > 0) {
     iter->deferred_decrefs = upb_gmalloc(cap * sizeof(PyObject*));
     if (!iter->deferred_decrefs) {

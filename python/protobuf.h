@@ -17,9 +17,22 @@
 #include <stdint.h>
 
 #include "python/descriptor.h"
+#include "python/free_threading/lazy_ptr.h"
 #include "python/free_threading/weak_map.h"
 #include "upb/mem/arena.h"
+#include "upb/port/atomic.h"
 #include "upb/reflection/def.h"
+
+// Keep the upb atomic implementation detail local while exposing a type that
+// can safely be embedded in Python extension state.
+#include "upb/port/def.inc"
+typedef UPB_ATOMIC(int32_t) PyUpb_AtomicInt32;
+#ifdef Py_GIL_DISABLED
+typedef UPB_ATOMIC(PyObject*) PyUpb_LazyPyObjectPtr;
+#else
+typedef PyObject* PyUpb_LazyPyObjectPtr;
+#endif
+#include "upb/port/undef.inc"
 
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"
 #define PYUPB_PROTOBUF_INTERNAL_PACKAGE "google.protobuf.internal"
@@ -74,8 +87,8 @@ typedef struct {
   PyObject* listfields_item_key;
 
   // From protobuf.c
-  bool allow_oversize_protos;
-  PyObject* wkt_bases;
+  PyUpb_AtomicInt32 allow_oversize_protos;
+  PyUpb_LazyPyObjectPtr wkt_bases;
   PyTypeObject* arena_type;
 
   // From repeated.c

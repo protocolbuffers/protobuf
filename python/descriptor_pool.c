@@ -53,10 +53,9 @@ PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
 
 const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  if (!s->c_descriptor_symtab) {
-    s->c_descriptor_symtab = upb_DefPool_New();
-  }
-  return google_protobuf_FileDescriptorProto_getmsgdef(s->c_descriptor_symtab);
+  assert(s->c_descriptor_symtab);
+  return google_protobuf_FileDescriptorProto_getmsgdef(
+      s->c_descriptor_symtab);
 }
 
 static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(

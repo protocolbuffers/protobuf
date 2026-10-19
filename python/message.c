@@ -1664,7 +1664,11 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   int options =
-      upb_DecodeOptions_MaxDepth(state->allow_oversize_protos ? UINT16_MAX : 0);
+      upb_DecodeOptions_MaxDepth(
+          upb_Atomic_Load(&state->allow_oversize_protos,
+                          memory_order_relaxed)
+              ? UINT16_MAX
+              : 0);
   upb_DecodeStatus status =
       upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
   Py_XDECREF(mv_contiguous);
