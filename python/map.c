@@ -383,6 +383,21 @@ static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
     return PyErr_Format(PyExc_AttributeError, "Merging of dict is not allowed");
   }
 
+  if (_arg == _self) {
+    // Self-merge is not supported, as for messages.
+#if PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+    PyErr_SetString(PyExc_AssertionError, "Cannot merge a map into itself.");
+    return NULL;
+#else
+    if (PyErr_WarnEx(PyExc_FutureWarning,
+                     "Merging a map into itself will raise AssertionError in "
+                     "a future release.",
+                     1) < 0) {
+      return NULL;
+    }
+#endif  // PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+  }
+
   if (PyUpb_Message_InitMapAttributes(_self, _arg, f) < 0) {
     return NULL;
   }

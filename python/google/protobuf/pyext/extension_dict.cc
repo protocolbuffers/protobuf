@@ -11,6 +11,7 @@
 #include "google/protobuf/pyext/extension_dict.h"
 
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -262,11 +263,16 @@ PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
   if (number == -1 && PyErr_Occurred()) {
     return nullptr;
   }
+  // No extension can have a number outside the range of int.
+  if (number < std::numeric_limits<int>::min() ||
+      number > std::numeric_limits<int>::max()) {
+    Py_RETURN_NONE;
+  }
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
       pool->pool->get()->FindExtensionByNumber(
-          self->parent->message->GetDescriptor(), number);
+          self->parent->message->GetDescriptor(), static_cast<int>(number));
   if (message_extension == nullptr) {
     Py_RETURN_NONE;
   }
