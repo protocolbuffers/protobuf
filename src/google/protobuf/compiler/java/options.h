@@ -26,6 +26,7 @@ struct Options {
         enforce_lite(false),
         annotate_code(false),
         strip_nonfunctional_codegen(false),
+        strip_doc_comments(false),
         jvm_dsl(true),
         dsl_use_concrete_types(false) {}
 
@@ -46,6 +47,8 @@ struct Options {
   std::string output_list_file;
   // If true, strip out nonfunctional codegen.
   bool strip_nonfunctional_codegen;
+  // If true, strip out doc comments and line numbers in Javadoc.
+  bool strip_doc_comments;
 
   // If true, generate JVM-specific DSL code.  This defaults to true for
   // compatibility with the old behavior.
