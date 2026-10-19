@@ -669,6 +669,8 @@ static char* encode_msgset_item(char* ptr, upb_encstate* e,
   // MessageSet items are always singular submessages. This holds for canonical
   // extensions of a MessageSet, but must also hold for any non-canonical
   // extension that is encoded as a MessageSet item.
+  UPB_ASSERT(
+      upb_MiniTableField_IsExtension(upb_MiniTableExtension_ToField(ext)));
   UPB_ASSERT(upb_MiniTableField_IsScalar(upb_MiniTableExtension_ToField(ext)));
   UPB_ASSERT(upb_MiniTableExtension_CType(ext) == kUpb_CType_Message);
   size_t size;
@@ -690,7 +692,7 @@ static char* encode_ext(char* ptr, upb_encstate* e,
     ptr = encode_msgset_item(ptr, e, ext, ext_val);
   } else {
     ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val),
-                       &ext->UPB_PRIVATE(field));
+                       upb_MiniTableExtension_ToField(ext));
   }
   return ptr;
 }

@@ -222,7 +222,7 @@ UPB_API_INLINE bool upb_Message_HasBaseField(const struct upb_Message* msg,
 
 UPB_API_INLINE bool upb_Message_HasExtension(const struct upb_Message* msg,
                                              const upb_MiniTableExtension* e) {
-  UPB_ASSERT(upb_MiniTableField_HasPresence(&e->UPB_PRIVATE(field)));
+  UPB_ASSERT(upb_MiniTableField_HasPresence(upb_MiniTableExtension_ToField(e)));
   return UPB_PRIVATE(_upb_Message_Getext)(msg, e) != NULL;
 }
 
@@ -244,7 +244,7 @@ UPB_INLINE void _upb_Message_GetExtensionField(
     const struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
     const void* default_val, void* val) {
   const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getext)(msg, mt_ext);
-  const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
+  const upb_MiniTableField* f = upb_MiniTableExtension_ToField(mt_ext);
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
 
   if (ext) {

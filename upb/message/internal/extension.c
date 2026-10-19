@@ -42,7 +42,13 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
     upb_TaggedAuxType tag) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
-  UPB_ASSERT(!upb_MiniTableField_IsMap(upb_MiniTableExtension_ToField(e)));
+  const upb_MiniTableField* f = upb_MiniTableExtension_ToField(e);
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
+  // Every extension, including a non-canonical extension that is described by
+  // a regular field, has a zero offset and presence: its value lives in the
+  // upb_Extension, and its presence is the existence of the upb_Extension.
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Offset)(f) == 0);
+  UPB_ASSERT(f->presence == 0);
   // For Canonical Extensions, we check whether the extension has already been
   // set. If we find an extension with the same pointer and tag, we reuse it to
   // prevent duplicate entries for the same extension.

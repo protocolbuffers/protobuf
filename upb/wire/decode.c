@@ -612,7 +612,7 @@ static void upb_Decoder_AddKnownMessageSetItem(
   upb_Message* submsg = upb_Extension_GetMutableMessage(ext);
   submsg = _upb_Decoder_NewSubMessage2(
       d, upb_MiniTableExtension_GetSubMessage(item_mt),
-      &item_mt->UPB_PRIVATE(field), &submsg);
+      upb_MiniTableExtension_ToField(item_mt), &submsg);
   upb_Extension_SetMessage(ext, submsg);
   // upb_Decode_LimitDepth() takes uint32_t, d->depth - 1 can not be negative.
   if (d->depth <= 1) {
@@ -736,7 +736,7 @@ UPB_NOINLINE const upb_MiniTableField* _upb_Decoder_FindExtensionField(
        wire_type == kUpb_WireType_Delimited)) {
     const upb_MiniTableExtension* ext =
         upb_ExtensionRegistry_Lookup(d->extreg, t, field_number);
-    if (ext) return &ext->UPB_PRIVATE(field);
+    if (ext) return upb_MiniTableExtension_ToField(ext);
   } else if (ext_mode == kUpb_ExtMode_IsMessageSet) {
     if (field_number == kUpb_MsgSet_Item) {
       static upb_MiniTableField item = {

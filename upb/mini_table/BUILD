@@ -139,6 +139,23 @@ cc_test(
 )
 
 cc_test(
+    name = "extension_test",
+    srcs = ["extension_test.cc"],
+    deps = [
+        ":mini_table",
+        "//upb/base",
+        "//upb/mem",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
+        "//upb/test:test_messages_proto2_upb_minitable",
+        "//upb/test:test_proto_upb_minitable",
+        "//upb/test:test_upb_proto",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "generated_registry_test",
     srcs = ["generated_registry_test.cc"],
     deps = [

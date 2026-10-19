@@ -31,6 +31,27 @@ typedef enum {
 
 // Represents an unknown field in a message, whether it's in a serialized
 // (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+//
+// A non-canonical extension is described by one of:
+//
+//   - An actual extension of some message. upb_Extension_MiniTableExtension()
+//     returns a complete upb_MiniTableExtension, and
+//     upb_MiniTableExtension_Extendee() returns the message it extends.
+//   - A regular field, typically a copy of a field of another message.
+//     upb_Extension_MiniTableExtension() returns that upb_MiniTableField cast
+//     to upb_MiniTableExtension*, and upb_MiniTableExtension_Extendee()
+//     returns NULL. Like for an actual extension, the field's offset and
+//     presence are 0.
+//
+// Since either is possible, only use field-level accessors on a non-canonical
+// extension (e.g. upb_Extension_MiniTableField(), upb_MiniTableField_Number(),
+// upb_MiniTableField_CType(), upb_MiniTable_SubMessage()), and handle a NULL
+// result from upb_MiniTableExtension_Extendee().
+//
+// Since the field may not be flagged as an extension, a non-canonical
+// extension's field must not be used with the containing message (e.g.
+// upb_Message_GetField()). Read its value with upb_Extension_GetValue()
+// instead.
 typedef struct upb_MessageUnknown {
   uint8_t type;
   union {
