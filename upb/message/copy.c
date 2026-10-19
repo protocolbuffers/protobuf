@@ -244,6 +244,9 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
                                const upb_MiniTable* mini_table,
                                upb_Arena* arena) {
   UPB_ASSERT(!upb_Message_IsFrozen(dst));
+  if (UPB_UNLIKELY(mini_table->UPB_PRIVATE(size) < sizeof(upb_Message))) {
+    return NULL;
+  }
   upb_StringView empty_string = upb_StringView_FromDataAndSize(NULL, 0);
   // Only copy message area skipping upb_Message_Internal.
   memcpy(dst + 1, src + 1, mini_table->UPB_PRIVATE(size) - sizeof(upb_Message));

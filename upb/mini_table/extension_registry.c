@@ -15,6 +15,7 @@
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
+#include "upb/port/overflow.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -53,6 +54,11 @@ UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count) {
+  size_t byte_len;
+  if (UPB_UNLIKELY(upb_MulOverflow(count, sizeof(*e), &byte_len) ||
+                   (uintptr_t)e > UINTPTR_MAX - byte_len)) {
+    return kUpb_ExtensionRegistryStatus_OutOfMemory;
+  }
   const upb_MiniTableExtension** start = e;
   const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
   upb_ExtensionRegistryStatus status = kUpb_ExtensionRegistryStatus_Ok;

@@ -37,6 +37,7 @@
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
 #include "upb/message/internal/accessors.h"
+#include "upb/message/internal/array.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
@@ -1872,4 +1873,61 @@ TEST(MessageTest, NextSerializableFieldProto3) {
   EXPECT_EQ(upb_MiniTableField_Number(f), 18u);
   EXPECT_FALSE(
       upb_Message_NextSerializableField(UPB_UPCAST(msg_sub), mt, &f, &iter));
+}
+
+TEST(MessageTest, ArrayMapAndExtensionRegistryOverflow) {
+  upb::Arena arena;
+
+  void* pooled = upb_Arena_AllocPool(arena.ptr(), 16);
+  ASSERT_NE(pooled, nullptr);
+  upb_Arena_FreePool(arena.ptr(), pooled, 16);
+
+  EXPECT_EQ(UPB_PRIVATE(_upb_Array_New)(arena.ptr(), (SIZE_MAX >> 3) + 1, 3),
+            nullptr);
+  EXPECT_EQ(UPB_PRIVATE(_upb_Array_New)(arena.ptr(), SIZE_MAX, 3), nullptr);
+
+  upb_Array* arr = UPB_PRIVATE(_upb_Array_New)(arena.ptr(), 4, 3);
+  ASSERT_NE(arr, nullptr);
+  size_t init_cap = upb_Array_Capacity(arr);
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Array_TryFastRealloc)(arr, (SIZE_MAX >> 3) + 1,
+                                                      3, arena.ptr()));
+  EXPECT_FALSE(UPB_PRIVATE(_upb_Array_TryFastRealloc)(arr, SIZE_MAX >> 3, 3,
+                                                      arena.ptr()));
+  EXPECT_EQ(upb_Array_Capacity(arr), init_cap);
+
+  upb_MessageValue val;
+  val.uint64_val = 123;
+  ASSERT_TRUE(upb_Array_Append(arr, val, arena.ptr()));
+#ifdef NDEBUG
+  EXPECT_FALSE(upb_Array_Insert(arr, 0, SIZE_MAX, arena.ptr()));
+  EXPECT_EQ(upb_Array_Size(arr), 1u);
+#endif
+
+  upb_Map* int_map =
+      upb_Map_New(arena.ptr(), kUpb_CType_Int32, kUpb_CType_Int32);
+  ASSERT_NE(int_map, nullptr);
+  EXPECT_FALSE(upb_Map_Reserve(int_map, SIZE_MAX, arena.ptr()));
+  EXPECT_FALSE(
+      upb_Map_Reserve(int_map, SIZE_MAX - (SIZE_MAX / 7), arena.ptr()));
+#if SIZE_MAX > UINT32_MAX
+  EXPECT_FALSE(upb_Map_Reserve(int_map, (size_t)1 << 32, arena.ptr()));
+#endif
+
+  upb_Map* str_map =
+      upb_Map_New(arena.ptr(), kUpb_CType_String, kUpb_CType_Int32);
+  ASSERT_NE(str_map, nullptr);
+  EXPECT_FALSE(upb_Map_Reserve(str_map, SIZE_MAX, arena.ptr()));
+  EXPECT_FALSE(
+      upb_Map_Reserve(str_map, SIZE_MAX - (SIZE_MAX / 7), arena.ptr()));
+
+  upb_ExtensionRegistry* reg = upb_ExtensionRegistry_New(arena.ptr());
+  ASSERT_NE(reg, nullptr);
+  const upb_MiniTableExtension* ext =
+      upb_test_TestExtensions_optional_int32_ext_ext;
+  EXPECT_EQ(
+      upb_ExtensionRegistry_AddArray(reg, &ext, (SIZE_MAX / sizeof(ext)) + 1),
+      kUpb_ExtensionRegistryStatus_OutOfMemory);
+  EXPECT_EQ(upb_ExtensionRegistry_AddArray(reg, &ext, SIZE_MAX / sizeof(ext)),
+            kUpb_ExtensionRegistryStatus_OutOfMemory);
+  EXPECT_EQ(upb_ExtensionRegistry_Size(reg), 0u);
 }
