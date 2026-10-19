@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2019 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """upb_c_proto_reflection_library() exposes upb reflection for protobuf (foo.upbdefs.h)"""
 
 load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
