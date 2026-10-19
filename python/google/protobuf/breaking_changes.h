@@ -27,6 +27,11 @@
 // Owner: runze@
 #define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 1
 
+// Raise AssertionError on message self-merge (msg.MergeFrom(msg)) in upb, like
+// the pure-Python and C++ implementations, instead of merging from a copy.
+// Owner: haberman@
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 1
+
 #else
 
 #define PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP 0
@@ -34,6 +39,8 @@
 #define PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
 
 #define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 0
+
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 0
 
 #endif
 

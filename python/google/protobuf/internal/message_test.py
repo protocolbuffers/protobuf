@@ -1405,6 +1405,21 @@ class MessageTest(unittest.TestCase):
     m1.MergeFromString(b'')  # field state should not change
     self.assertFalse(m1.HasField('optional_nested_message'))
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      "Currently broken in upb, will be fixed in the next breaking release"
+  )
+  def testMergeFromSelfRaises(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_int32.append(1)
+    m.optional_nested_message.bb = 2
+    with self.assertRaises(AssertionError):
+      m.MergeFrom(m)
+    with self.assertRaises(AssertionError):
+      m.optional_nested_message.MergeFrom(m.optional_nested_message)
+    self.assertEqual([1], m.repeated_int32)
+    self.assertEqual(2, m.optional_nested_message.bb)
+
   def testMergeFromStringDecodeErrorSync(self, message_module):
     m = message_module.NestedTestAllTypes()
     s1 = m.child
@@ -2459,6 +2474,30 @@ class Proto2Test(unittest.TestCase):
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()
     self.assertRaises(AttributeError, getattr, msg, 'Extensions')
+
+  def testFindExtensionByNumberOutOfIntRange(self):
+    msg = unittest_pb2.TestAllExtensions()
+    self.assertEqual(
+        unittest_pb2.optional_int32_extension,
+        msg.Extensions._FindExtensionByNumber(1),
+    )
+    # These numbers truncate to 1 when narrowed to a 32-bit int.
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(2**32 + 1))
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(-(2**32) + 1))
+
+  def testFindExtensionByNumberMaxMessageSetExtension(self):
+    msg = message_set_extensions_pb2.TestMessageSet()
+    ext = message_set_extensions_pb2.max_number_extension
+    max_number = 2**31 - 2
+    self.assertEqual(max_number, ext.number)
+    self.assertEqual(ext, msg.Extensions._FindExtensionByNumber(max_number))
+    # These numbers truncate to max_number when narrowed to a 32-bit int.
+    self.assertIsNone(
+        msg.Extensions._FindExtensionByNumber(max_number + 2**32)
+    )
+    self.assertIsNone(
+        msg.Extensions._FindExtensionByNumber(max_number - 2**32)
+    )
 
   def testMergeFromExtensions(self):
     msg1 = more_extensions_pb2.TopLevelMessage()

@@ -7,10 +7,21 @@
 
 #include "python/extension_dict.h"
 
+#include <limits.h>
+#include <stddef.h>
+#include <stdint.h>
+
 #include "google/protobuf/breaking_changes.h"
+#include "python/descriptor.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "upb/message/array.h"
+#include "upb/message/message.h"
+#include "upb/mini_table/extension.h"
+#include "upb/mini_table/extension_registry.h"
+#include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
+#include "upb/reflection/message.h"
 
 // -----------------------------------------------------------------------------
 // ExtensionDict
@@ -62,8 +73,12 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
   const upb_ExtensionRegistry* reg = upb_DefPool_ExtensionRegistry(symtab);
   int64_t number = PyLong_AsLong(arg);
   if (number == -1 && PyErr_Occurred()) return NULL;
+  // Extension numbers are positive and fit in an int, so anything else (which
+  // the cast below could otherwise wrap onto a valid number) has no extension.
+  if (number < 0 || number > INT32_MAX) Py_RETURN_NONE;
   const upb_MiniTableExtension* ext =
-      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l, number);
+      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l,
+                                                            (uint32_t)number);
   if (ext) {
     const upb_FieldDef* f = upb_DefPool_FindExtensionByMiniTable(symtab, ext);
     PyObject* pool = PyUpb_Message_GetPool(self->msg);
