@@ -2279,13 +2279,14 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   meta->py_message_descriptor = py_descriptor;
   meta->layout = upb_MessageDef_MiniTable(msgdef);
   Py_INCREF(meta->py_message_descriptor);
-  PyUpb_Descriptor_SetClass(py_descriptor, ret);
 
   if (!PyUpb_DescriptorPool_CacheAdd(pool, meta->layout, &ret)) {
-    PyUpb_Descriptor_SetClass(py_descriptor, NULL);
     Py_DECREF(ret);
     return NULL;
   }
+  // CacheAdd resolves concurrent class creation to one unique winner. Publish
+  // only that object through the descriptor's strong back-reference.
+  PyUpb_Descriptor_SetClass(py_descriptor, ret);
 
   return ret;
 }

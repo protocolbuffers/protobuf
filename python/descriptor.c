@@ -52,7 +52,7 @@ typedef struct {
   const void* def;  // Type depends on the class. Kept alive by "pool".
   PYUPB_LAZYPTR(PyObject) options;   // NULL if not present or not cached.
   PYUPB_LAZYPTR(PyObject) features;  // NULL if not present or not cached.
-  PyObject* message_meta;            // We own a ref.
+  PYUPB_LAZYPTR(PyObject) message_meta;  // We own a ref.
 } PyUpb_DescriptorBase;
 
 static PyObject* PyUpb_DescriptorBase_AsPyObj(PyUpb_DescriptorBase* base) {
@@ -297,7 +297,7 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   // arbitrary code, so any struct members we DECREF should be set to NULL
   // or a new value *before* calling Py_DECREF on them. The Py_CLEAR macro
   // (and Py_SETREF in Python 3.8+) takes care to do this safely.
-  Py_CLEAR(base->message_meta);
+  PyUpb_LazyPtr_Clear(&base->message_meta);
   Py_CLEAR(base->pool);
   PyUpb_LazyPtr_Clear(&base->options);
   PyUpb_LazyPtr_Clear(&base->features);
@@ -306,12 +306,12 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
 
 static int PyUpb_Descriptor_Traverse(PyUpb_DescriptorBase* base,
                                      visitproc visit, void* arg) {
-  Py_VISIT(base->message_meta);
+  Py_VISIT(PyUpb_LazyPtr_RawGet(&base->message_meta));
   return 0;
 }
 
 static int PyUpb_Descriptor_Clear(PyUpb_DescriptorBase* base) {
-  Py_CLEAR(base->message_meta);
+  PyUpb_LazyPtr_Clear(&base->message_meta);
   return 0;
 }
 
@@ -361,12 +361,18 @@ err:
   return ret;
 }
 
+static PyObject* PyUpb_Descriptor_InitClass(void* meta) {
+  Py_INCREF(meta);
+  return meta;
+}
+
 void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta) {
+  assert(meta);
   PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)py_descriptor;
-  Py_XINCREF(meta);
-  PyObject* tmp = base->message_meta;
-  base->message_meta = meta;
-  Py_XDECREF(tmp);
+  PyObject* selected = PyUpb_LazyPtr_LazyInitPyObj(
+      &base->message_meta, PyUpb_Descriptor_InitClass, meta);
+  assert(selected == meta);
+  Py_DECREF(selected);
 }
 
 // The LookupNested*() functions provide name lookup for entities nested inside
