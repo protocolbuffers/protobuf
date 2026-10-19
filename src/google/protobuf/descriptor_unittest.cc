@@ -8896,7 +8896,7 @@ TEST_F(ValidationErrorTest, MapEntryOrphanedWithZeroFields) {
       "} ",
 
       "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
-      "have at least 2 fields.\n");
+      "have exactly 2 fields.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
@@ -8912,7 +8912,33 @@ TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
       "} ",
 
       "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
-      "have at least 2 fields.\n");
+      "have exactly 2 fields.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithThreeFields) {
+  // A map_entry message with 3 fields and no parent field referencing it.
+  // CrossLinkMessage previously tested only field_count < 2, and
+  // ValidateMapEntry (field_count != 2) only runs when a parent field
+  // references the map entry, so this case was accepted and later aborted in
+  // TextFormat::PrintMessage.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "  field { "
+      "    name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "  } "
+      "  field { "
+      "    name: 'value' number: 2 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "  } "
+      "  field { "
+      "    name: 'extra' number: 3 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "  } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have exactly 2 fields.\n");
 }
 
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
@@ -9353,6 +9379,11 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
   BuildFileWithErrors(
       file_proto,
+      // The nested map entry is cross-linked before the field that refers to
+      // it (CrossLinkMessage recurses into nested types before cross-linking
+      // fields), so the field count error is reported first.
+      "foo.proto: Foo.FooMapEntry: NAME: Messages with map_entry set must "
+      "have exactly 2 fields.\n"
       "foo.proto: Foo.foo_map: TYPE: map_entry should not be set explicitly. "
       "Use map<KeyType, ValueType> instead.\n");
 }

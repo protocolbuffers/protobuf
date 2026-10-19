@@ -7193,15 +7193,15 @@ void internal::DescriptorBuilder::CrossLinkMessage(
     }
   }
 
-  // Reject map_entry messages with fewer than 2 fields. This catches orphaned
-  // map_entry descriptors (not referenced by any parent field) that bypass
-  // ValidateMapEntry and would cause null dereferences in
-  // TextFormat::PrintMessage. We only check field_count < 2 here;
-  // extra fields (field_count > 2) are caught by ValidateMapEntry when a
-  // parent field references this message.
-  if (message->options().map_entry() && message->field_count() < 2) {
+  // Reject map_entry messages that do not have exactly 2 fields. This catches
+  // orphaned map_entry descriptors (not referenced by any parent field) that
+  // bypass ValidateMapEntry and would otherwise abort in
+  // TextFormat::PrintMessage. The test has to be != 2 rather than < 2: an
+  // orphan with more than 2 fields satisfies neither it nor ValidateMapEntry,
+  // which only runs when a parent field references the map entry.
+  if (message->options().map_entry() && message->field_count() != 2) {
     AddError(message->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-             "Messages with map_entry set must have at least 2 fields.");
+             "Messages with map_entry set must have exactly 2 fields.");
   }
 
   for (int i = 0; i < message->field_count(); i++) {
