@@ -3811,8 +3811,9 @@ GPB_INLINE BOOL GPBIsCaseOfSelForOneOf(const char *selName, size_t selNameLength
     NSData *data = [aDecoder decodeObjectOfClass:[NSData class] forKey:kGPBDataCoderKey];
     if (data.length) {
       GPBCodedInputStream *input = [[GPBCodedInputStream alloc] initWithData:data];
+      id<GPBExtensionRegistry> extensionRegistry = nil;
       @try {
-        [self mergeFromCodedInputStream:input extensionRegistry:nil endingTag:0];
+        [self mergeFromCodedInputStream:input extensionRegistry:extensionRegistry endingTag:0];
       } @finally {
         [input release];
       }
@@ -3823,7 +3824,7 @@ GPB_INLINE BOOL GPBIsCaseOfSelForOneOf(const char *selName, size_t selNameLength
 
 - (void)encodeWithCoder:(NSCoder *)aCoder {
 #if defined(DEBUG) && DEBUG
-  if (extensionMap_.count) {
+  if (extensionMap_.count && GPBGetDefaultCodingExtensionRegistry() == nil) {
     // Hint to go along with the docs on GPBMessage about this.
     //
     // Note: This is incomplete, in that it only checked the "root" message,
