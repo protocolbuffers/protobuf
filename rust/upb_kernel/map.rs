@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use super::*;
 
 /// Returns a static empty MapView.
@@ -24,10 +31,9 @@ where
     // SAFETY:
     // - The map is empty and never mutated.
     // - The value type is never used.
-    // - The size of the key type is used when `get()` computes the hash of the key.
-    //   The map is empty, therefore it doesn't matter what hash is computed, but we
-    //   have to use `bool` type as the smallest key possible (otherwise UPB would
-    //   read more bytes than Rust allocated).
+    // - The size of the key type is used when `get()` computes the hash of the key. The map is
+    //   empty, therefore it doesn't matter what hash is computed, but we have to use `bool` type as
+    //   the smallest key possible (otherwise UPB would read more bytes than Rust allocated).
     unsafe {
         MapView::from_raw(Private, EMPTY_MAP_VIEW.get_or_init(Map::new).as_view().as_raw(Private))
     }
@@ -105,8 +111,7 @@ impl RawMapIter {
     }
 
     /// # Safety
-    /// - `self.map` must be valid, and remain valid while the return value is
-    ///   in use.
+    /// - `self.map` must be valid, and remain valid while the return value is in use.
     pub unsafe fn next_unchecked(&mut self) -> Option<(upb_MessageValue, upb_MessageValue)> {
         let mut key = MaybeUninit::uninit();
         let mut value = MaybeUninit::uninit();

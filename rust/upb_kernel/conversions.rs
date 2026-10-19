@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use super::*;
 use crate::Enum;
 
@@ -275,10 +282,10 @@ unsafe fn copy_repeated_bytes(src: RawArray, dest: RawArray, arena: RawArena) {
     // SAFETY:
     // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
     // - `upb_Array` ensures its elements are never uninitialized memory.
-    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans
-    //   of memory that are valid for at least `len` elements of PtrAndLen.
-    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
-    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
+    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans of memory that are
+    //   valid for at least `len` elements of PtrAndLen.
+    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers are valid, the
+    //   pointers are `#[repr(u8)]`, and the size is correct.
     // - The bytes held within a valid array are valid.
     unsafe {
         let len = upb_Array_Size(src);
