@@ -32,13 +32,33 @@
 static int PyUpb_ModuleTraverse(PyObject* module, visitproc visit, void* arg) {
   PyUpb_ModuleState* state = PyModule_GetState(module);
   if (!state) return 0;
-  // Visit only owned references. Most type pointers and default_pool are
-  // borrowed from the module dictionary, which Python traverses separately.
+  // Native state must retain its own references: module attributes are public
+  // and may be replaced or deleted without invalidating these pointers.
+  for (size_t i = 0; i < kPyUpb_Descriptor_Count; ++i) {
+    Py_VISIT(state->descriptor_types[i]);
+  }
+  Py_VISIT(state->by_name_map_type);
+  Py_VISIT(state->by_name_iterator_type);
+  Py_VISIT(state->by_number_map_type);
+  Py_VISIT(state->by_number_iterator_type);
+  Py_VISIT(state->generic_sequence_type);
+  Py_VISIT(state->default_pool);
+  Py_VISIT(state->descriptor_pool_type);
+  Py_VISIT(state->extension_dict_type);
+  Py_VISIT(state->extension_iterator_type);
+  Py_VISIT(state->map_iterator_type);
+  Py_VISIT(state->cmessage_type);
+  Py_VISIT(state->message_meta_type);
+  Py_VISIT(state->arena_type);
+  Py_VISIT(state->repeated_composite_container_type);
+  Py_VISIT(state->repeated_scalar_container_type);
+  Py_VISIT(state->unknown_fields_type);
   Py_VISIT(PyUpb_LazyPtr_RawGet(&state->wkt_bases));
   Py_VISIT(state->message_map_container_type);
   Py_VISIT(state->scalar_map_container_type);
   Py_VISIT(state->encode_error_class);
   Py_VISIT(state->decode_error_class);
+  Py_VISIT(state->descriptor_string);
   Py_VISIT(state->message_class);
   Py_VISIT(state->frozen_instance_error_class);
   Py_VISIT(state->enum_type_wrapper_class);
@@ -50,11 +70,31 @@ static int PyUpb_ModuleTraverse(PyObject* module, visitproc visit, void* arg) {
 static int PyUpb_ModuleClear(PyObject* module) {
   PyUpb_ModuleState* state = PyModule_GetState(module);
   if (!state) return 0;
+  for (size_t i = 0; i < kPyUpb_Descriptor_Count; ++i) {
+    Py_CLEAR(state->descriptor_types[i]);
+  }
+  Py_CLEAR(state->by_name_map_type);
+  Py_CLEAR(state->by_name_iterator_type);
+  Py_CLEAR(state->by_number_map_type);
+  Py_CLEAR(state->by_number_iterator_type);
+  Py_CLEAR(state->generic_sequence_type);
+  Py_CLEAR(state->default_pool);
+  Py_CLEAR(state->descriptor_pool_type);
+  Py_CLEAR(state->extension_dict_type);
+  Py_CLEAR(state->extension_iterator_type);
+  Py_CLEAR(state->map_iterator_type);
+  Py_CLEAR(state->cmessage_type);
+  Py_CLEAR(state->message_meta_type);
+  Py_CLEAR(state->arena_type);
+  Py_CLEAR(state->repeated_composite_container_type);
+  Py_CLEAR(state->repeated_scalar_container_type);
+  Py_CLEAR(state->unknown_fields_type);
   PyUpb_LazyPtr_Clear(&state->wkt_bases);
   Py_CLEAR(state->message_map_container_type);
   Py_CLEAR(state->scalar_map_container_type);
   Py_CLEAR(state->encode_error_class);
   Py_CLEAR(state->decode_error_class);
+  Py_CLEAR(state->descriptor_string);
   Py_CLEAR(state->message_class);
   Py_CLEAR(state->frozen_instance_error_class);
   Py_CLEAR(state->enum_type_wrapper_class);
@@ -368,7 +408,7 @@ static bool PyUpb_InitArena(PyObject* m) {
 PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec) {
   PyObject* type = PyType_FromSpec(spec);
   if (!type) return NULL;
-  if (PyModule_AddObject(m, name, type) < 0) {
+  if (PyModule_AddObjectRef(m, name, type) < 0) {
     Py_DECREF(type);
     return NULL;
   }
@@ -389,7 +429,7 @@ PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec) {
   PyObject* type = PyType_FromSpec(spec);
   if (!type) return NULL;
   const char* name = PyUpb_GetClassName(spec);
-  if (PyModule_AddObject(m, name, type) < 0) {
+  if (PyModule_AddObjectRef(m, name, type) < 0) {
     Py_XDECREF(type);
     return NULL;
   }
@@ -401,7 +441,7 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
   PyObject* type = PyType_FromSpecWithBases(spec, bases);
   if (!type) return NULL;
   const char* name = PyUpb_GetClassName(spec);
-  if (PyModule_AddObject(m, name, type) < 0) {
+  if (PyModule_AddObjectRef(m, name, type) < 0) {
     Py_XDECREF(type);
     return NULL;
   }

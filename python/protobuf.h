@@ -49,9 +49,9 @@ typedef PyObject* PyUpb_LazyPyObjectPtr;
 // We store state per module instead of in C globals. Interpreter isolation also
 // requires compatible module initialization and state lookup; per-module state
 // alone does not establish subinterpreter support.
-// Most type pointers and default_pool borrow module-dictionary references.
-// Map container types and the Python caches/classes below own references:
-// keep ModuleTraverse/ModuleClear in sync with any ownership changes.
+// Every non-NULL Python object/type pointer owns a reference independently of
+// public module attributes. Keep ModuleTraverse/ModuleClear in sync with any
+// ownership changes.
 
 typedef struct {
   // From descriptor.c
@@ -142,6 +142,7 @@ bool PyUpb_Arena_CacheEraseIfEqual(PyObject* arena, const void* key,
 PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec);
 
 // Creates a Python type from `spec` and adds it to the given module `m`.
+// Returns an owned reference independent of the module dictionary.
 PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec);
 
 // Like PyUpb_AddClass(), but allows you to specify a tuple of base classes
@@ -151,7 +152,7 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
 
 // Like PyUpb_AddClass(), but allows you to specify a tuple of base classes in
 // `bases` to register as a "virtual subclass" with mixin methods.
-// Unlike PyUpb_AddClass(), returns an owned reference; the class is not added
+// Returns an owned reference; unlike PyUpb_AddClass(), the class is not added
 // to the module dictionary. Module state must traverse and clear this reference.
 PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
                                          PyObject* virtual_base,

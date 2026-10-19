@@ -49,8 +49,49 @@ class ThreadSafeTest(unittest.TestCase):
     for reference in (
         type(maps.map_items), type(maps.scalar_map), type(unknown[0]),
         unittest_pb2.TestAllTypes._ListFieldsItemKey, DecodeError,
+        _message.Arena, _message.MapIterator, _message.MessageMeta,
+        _message.DescriptorPool, _message.default_pool,
     ):
       self.assertTrue(any(item is reference for item in owned), reference)
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'Native module state')
+  def testModuleStateRetainsTypesWithoutPublicAttributes(self):
+    # Isolate destructive attribute removal; do not leave a test process with
+    # invalid pointers if the regression reappears. Check weakrefs before using
+    # native APIs, so the old implementation fails without dereferencing them.
+    script = '''
+import gc
+import sys
+import weakref
+from google._upb import _message
+from google.protobuf.internal import api_implementation, test_proto2_pb2
+assert api_implementation.Type() == "upb"
+if sys.argv[1] == "nogil":
+  assert not sys._is_gil_enabled()
+refs = {name: weakref.ref(value) for name, value in vars(_message).items()
+        if isinstance(value, type)}
+for name in refs:
+  delattr(_message, name)
+gc.collect()
+lost = [name for name, ref in refs.items() if ref() is None]
+assert not lost, f"Native state lost its retained classes: {lost}"
+for name, ref in refs.items():
+  if name != "MapIterator":
+    setattr(_message, name, ref())
+# Python code may require its public exports, but the native iterator factory
+# must use its owned state pointer, independent of the removed attribute.
+msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+msg.scalar_map["key"] = "value"
+assert list(msg.scalar_map) == ["key"]
+assert type(iter(msg.scalar_map)) is refs["MapIterator"]()
+setattr(_message, "MapIterator", refs["MapIterator"]())
+'''
+    nogil = hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled()
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script, 'nogil' if nogil else 'gil'],
+        capture_output=True, text=True, timeout=60, check=False,
+    )
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
   def testNativeAtexitFinalizer(self):
     script = '''

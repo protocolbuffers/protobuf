@@ -880,5 +880,5 @@ bool PyUpb_InitDescriptorPool(PyObject* m) {
   state->default_pool = PyUpb_DescriptorPool_DoCreateWithCache(
       state->descriptor_pool_type, NULL, state->obj_cache);
   return state->default_pool &&
-         PyModule_AddObject(m, "default_pool", state->default_pool) == 0;
+         PyModule_AddObjectRef(m, "default_pool", state->default_pool) == 0;
 }

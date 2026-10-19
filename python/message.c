@@ -2613,7 +2613,7 @@ bool PyUpb_InitMessage(PyObject* m) {
   state->message_meta_type = (PyTypeObject*)message_meta_type;
 
   if (!state->cmessage_type || !state->message_meta_type) return false;
-  if (PyModule_AddObject(m, "MessageMeta", message_meta_type)) return false;
+  if (PyModule_AddObjectRef(m, "MessageMeta", message_meta_type)) return false;
   state->listfields_item_key = PyObject_GetAttrString(
       (PyObject*)state->cmessage_type, "_ListFieldsItemKey");
 
