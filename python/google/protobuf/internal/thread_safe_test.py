@@ -7,6 +7,7 @@
 
 """Unittest for thread safe"""
 
+from concurrent import futures
 import sys
 import threading
 import time
@@ -33,6 +34,27 @@ class ThreadSafeTest(unittest.TestCase):
 
   def setUp(self):
     self.success = 0
+
+  def testConcurrentCreationReturnsOneMessageClass(self):
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='class_identity.proto')
+    for i in range(32):
+      file_proto.message_type.add(name=f'IdentityMessage{i}')
+    pool.Add(file_proto)
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      for i in range(32):
+        desc = pool.FindMessageTypeByName(f'IdentityMessage{i}')
+        barrier = threading.Barrier(8)
+
+        def CreateClass():
+          barrier.wait(timeout=30)
+          return message_factory.GetMessageClass(desc)
+
+        pending = [executor.submit(CreateClass) for _ in range(8)]
+        classes = [result.result(timeout=30) for result in pending]
+        for cls in classes:
+          self.assertIs(cls, classes[0])
+        self.assertIs(desc._concrete_class, classes[0])
 
   def testConcurrentMessageObjectIdentity(self):
     msg = unittest_pb2.TestAllTypes()
@@ -919,4 +941,14 @@ class FreeThreadingTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
+  print(
+      'protobuf thread tests: backend=%s GIL=%s extension=%s'
+      % (
+          api_implementation.Type(),
+          getattr(sys, '_is_gil_enabled', lambda: True)(),
+          getattr(api_implementation._c_module, '__file__', None),
+      ),
+      file=sys.stderr,
+      flush=True,
+  )
   unittest.main()

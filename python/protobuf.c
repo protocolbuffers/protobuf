@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "google/protobuf/breaking_changes.h"
+#include "google/protobuf/descriptor.upbdefs.h"
 #include "python/descriptor.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -482,7 +484,9 @@ PyMODINIT_FUNC PyInit__message(void) {
   upb_Atomic_Init(&state->allow_oversize_protos, false);
   state->wkt_bases = NULL;
   state->c_descriptor_symtab = upb_DefPool_New();
-  if (!state->c_descriptor_symtab) {
+  if (!state->c_descriptor_symtab ||
+      !google_protobuf_FileDescriptorProto_getmsgdef(
+          state->c_descriptor_symtab)) {
     PyErr_NoMemory();
     Py_DECREF(m);
     return NULL;
