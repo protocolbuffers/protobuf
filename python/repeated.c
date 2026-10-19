@@ -137,8 +137,7 @@ bool PyUpb_RepeatedContainer_IsFrozen(PyUpb_RepeatedContainer* self) {
   if (PyUpb_RepeatedContainer_IsStub(self)) {
     return PyUpb_Message_IsFrozen(self->ptr.parent);
   } else {
-    return upb_Array_IsFrozen(self->ptr.arr) ||
-           PyUpb_Arena_IsFrozen(self->arena);
+    return upb_Array_IsFrozen(self->ptr.arr);
   }
 }
 

@@ -414,11 +414,9 @@ PyObject* SetFrozenError(const char* msg);
 // Sets a Python FrozenInstanceError with the default error message for messages
 // type and returns nullptr.
 PyObject* SetMessageFrozenError();
-// Emits a DeprecationWarning when mutating a frozen message or container in
-// OSS.
-int WarnMessageFrozen();
-// Returns 0 if writable (might have thrown warning).
-// Returns -1 on error (sets Python exception).
+// Returns 0 if `parent` is writable.
+// Returns -1 if `parent` is frozen (sets a Python FrozenInstanceError with
+// `error_msg`).
 int CheckFrozen(CMessage* parent, const char* error_msg);
 
 PyObject* PyMessage_New(const Descriptor* descriptor,

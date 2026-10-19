@@ -302,18 +302,6 @@ class DescriptorTest(unittest.TestCase):
         self.my_service.GetOptions(), descriptor_pb2.ServiceOptions()
     )
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Needs to wait for a breaking change release in OSS'
-  )
-  @unittest.skipIf(
-      api_implementation.Type() == 'cpp',
-      'Needs to wait for a breaking change release in OSS'
-  )
-  @unittest.skipIf(
-      api_implementation.Type() == 'python',
-      'Needs to wait for a breaking change release in OSS'
-  )
   def testModifyFrozenMessage(self):
     immutability_error = message.FrozenInstanceError
     message_options = self.my_message.GetOptions()
@@ -420,24 +408,6 @@ class DescriptorTest(unittest.TestCase):
     with self.assertRaises(immutability_error):
       map_field.MergeFrom(map_field)
 
-  def testModifyOptions(self):
-    # We unfortunately allow modification of options returned from GetOptions().
-    # This is not intended, and has negative consequences:
-    # - It makes the results of GetOptions() invalid if the options are
-    #   modified.
-    # - It has an efficiency cost from copying the options.
-    #
-    # This will be fixed in a breaking change release.
-    message_options = self.my_message.GetOptions()
-    message_options.deprecated = True
-    self.assertTrue(
-        message_options.deprecated,
-        f'Modification ignored on {api_implementation.Type()}',
-    )
-
-    # Modification is (unfortunately) reflected in the descriptor.
-    self.assertTrue(self.my_message.GetOptions().deprecated)
-
   def testImmutableMapLookup(self):
     complex_opt1 = unittest_custom_options_pb2.complex_opt1
     complex_options_msg = (
@@ -472,6 +442,17 @@ class DescriptorTest(unittest.TestCase):
     self.assertEqual(immutable_map.get('key'), 123)
     self.assertEqual(immutable_map.get('nonexistent_key'), None)
     self.assertEqual(immutable_map.get('nonexistent_key', 999), 999)
+
+    # Test get() with bytes.
+    self.assertEqual(immutable_map.get(b'key'), 123)
+    self.assertEqual(immutable_map.get(b'nonexistent_key'), None)
+    self.assertEqual(immutable_map.get(b'nonexistent_key', 999), 999)
+
+    # Test immutability
+    with self.assertRaises(message.FrozenInstanceError):
+      _ = immutable_map['missing_key']
+    with self.assertRaises(message.FrozenInstanceError):
+      immutable_map['new_key'] = 789
 
   def testImmutableMessageMapLookup(self):
     complex_opt1 = unittest_custom_options_pb2.complex_opt1
@@ -511,6 +492,28 @@ class DescriptorTest(unittest.TestCase):
     text = text_format.MessageToString(complex_options_msg)
     self.assertIn('sub_key', text)
     self.assertIn('555', text)
+
+    # Verify the message, map, and elements are frozen (immutable).
+    with self.assertRaises(message.FrozenInstanceError):
+      immutable_map.clear()
+    with self.assertRaises(message.FrozenInstanceError):
+      del immutable_map['sub_key']
+    with self.assertRaises(message.FrozenInstanceError):
+      immutable_map.MergeFrom(immutable_map)
+    with self.assertRaises(message.FrozenInstanceError):
+      _ = immutable_map['missing_key']
+    with self.assertRaises(message.FrozenInstanceError):
+      immutable_map['sub_key'].moo = 999
+    with self.assertRaises(message.FrozenInstanceError):
+      immutable_map['sub_key'].Clear()
+    with self.assertRaises(message.FrozenInstanceError):
+      immutable_map['new_key'].moo = 999
+    with self.assertRaises((message.FrozenInstanceError, ValueError)):
+      immutable_map['new_key'] = (
+          unittest_custom_options_pb2.ComplexOptionType3()
+      )
+    with self.assertRaises(message.FrozenInstanceError):
+      complex_options_msg.Extensions[complex_opt1].ClearField('submsg_map')
 
   def testSimpleCustomOptions(self):
     file_descriptor = unittest_custom_options_pb2.DESCRIPTOR

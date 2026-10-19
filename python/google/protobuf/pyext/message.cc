@@ -30,7 +30,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -491,22 +490,10 @@ PyObject* SetMessageFrozenError() {
   return SetFrozenError("Message is immutable.");
 }
 
-int WarnMessageFrozen() {
-  return PyErr_WarnEx(
-      PyExc_FutureWarning,
-      "Mutating messages or containers returned by GetOptions() is deprecated"
-      " and will raise an exception in a future release.",
-      3);
-}
-
 int CheckFrozen(CMessage* parent, const char* error_msg) {
   if (parent->state == MESSAGE_FROZEN) {
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
     SetFrozenError(error_msg);
     return -1;
-#else
-    return WarnMessageFrozen();
-#endif
   }
   return 0;
 }
