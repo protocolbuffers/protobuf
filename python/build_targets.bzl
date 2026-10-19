@@ -466,6 +466,12 @@ def build_targets(name):
     )
 
     internal_py_test(
+        name = "thread_safe_test",
+        srcs = ["google/protobuf/internal/thread_safe_test.py"],
+        deps = [":_message"],
+    )
+
+    internal_py_test(
         name = "unknown_fields_test",
         srcs = ["google/protobuf/internal/unknown_fields_test.py"],
     )

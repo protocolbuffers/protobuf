@@ -671,10 +671,6 @@ class FreeThreadingTest(unittest.TestCase):
     for _ in range(500):
       RunRace()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedCompositeSubscript(self):
     msg = test_proto2_pb2.ContainerForRepeatedComposite()
     msg.submessage.items.add(value='foo')
