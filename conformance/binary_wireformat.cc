@@ -1,10 +1,10 @@
 #include "conformance/binary_wireformat.h"
 
-#include <cassert>
 #include <cstdint>
 #include <cstring>
 #include <string>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/endian.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -18,19 +18,16 @@ namespace {
 #define VARINT_MAX_LEN 10
 
 size_t vencode64(uint64_t val, int over_encoded_bytes, char* buf) {
-  if (val == 0) {
-    buf[0] = 0;
-    return 1;
-  }
+  ABSL_CHECK_GE(over_encoded_bytes, 0);
   size_t i = 0;
-  while (val) {
+  do {
     uint8_t byte = val & 0x7fU;
     val >>= 7;
     if (val || over_encoded_bytes) byte |= 0x80U;
     buf[i++] = byte;
-  }
+  } while (val);
   while (over_encoded_bytes--) {
-    assert(i < 10);
+    ABSL_CHECK_LT(i, VARINT_MAX_LEN);
     uint8_t byte = over_encoded_bytes ? 0x80 : 0;
     buf[i++] = byte;
   }

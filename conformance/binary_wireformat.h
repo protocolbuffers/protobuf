@@ -169,11 +169,11 @@ inline Wire LengthPrefixed(const Wire& data) {
 namespace internal {
 template <typename Func, typename Container>
 Wire PackedImpl(Func func, const Container& container) {
-  std::string buf = Varint(container.size()).str();
+  std::string elements;
   for (auto x : container) {
-    absl::StrAppend(&buf, func(x).str());
+    absl::StrAppend(&elements, func(x).str());
   }
-  return Wire(buf);
+  return LengthPrefixed(elements);
 }
 }  // namespace internal
 

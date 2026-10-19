@@ -314,6 +314,7 @@ cc_library(
     deps = [
         "//src/google/protobuf:endian",
         "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
     ],
 )
