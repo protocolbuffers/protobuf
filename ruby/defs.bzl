@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2023 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Wrapper around internal_ruby_proto_library to supply our rules_ruby"""
 
 load("@rules_ruby//ruby:defs.bzl", "rb_library")
