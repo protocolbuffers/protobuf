@@ -8,6 +8,8 @@
 """Unittest for thread safe"""
 
 from concurrent import futures
+import gc
+import subprocess
 import sys
 import threading
 import time
@@ -34,6 +36,147 @@ class ThreadSafeTest(unittest.TestCase):
 
   def setUp(self):
     self.success = 0
+
+  def testConcurrentColdImports(self):
+    # A fresh process is essential: this module has already imported the
+    # generated types. Propagate every worker exception to the parent test.
+    script = '''
+from concurrent import futures
+import importlib
+import sys
+import threading
+barrier = threading.Barrier(8)
+names = ("any", "duration", "empty", "field_mask", "struct", "timestamp",
+         "type", "wrappers")
+def load(index):
+  barrier.wait(timeout=30)
+  # Distinct module locks must not accidentally serialize registration into
+  # the shared default descriptor pool.
+  importlib.import_module("google.protobuf." + names[index] + "_pb2")
+  modules = [importlib.import_module(name) for name in (
+      "google.protobuf.descriptor_pb2", "google.protobuf.json_format",
+      "google.protobuf.internal.test_proto2_pb2")]
+  return modules[0].FileDescriptorProto(name="cold.proto").SerializeToString()
+with futures.ThreadPoolExecutor(max_workers=8) as executor:
+  results = list(executor.map(load, range(8)))
+assert all(result == results[0] for result in results)
+from google.protobuf.internal import api_implementation
+assert api_implementation.Type() == sys.argv[1]
+if sys.argv[2] == "nogil":
+  assert not sys._is_gil_enabled()
+'''
+    nogil = hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled()
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script, api_implementation.Type(),
+         'nogil' if nogil else 'gil'],
+        capture_output=True, text=True, timeout=90, check=False,
+    )
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+  def testConcurrentDescriptorPoolLifetimes(self):
+    barrier = threading.Barrier(8)
+
+    def ExercisePools(worker):
+      barrier.wait(timeout=30)
+      for iteration in range(32):
+        pool = descriptor_pool.DescriptorPool()
+        proto = descriptor_pb2.FileDescriptorProto(
+            name=f'lifetime_{worker}_{iteration}.proto'
+        )
+        proto.message_type.add(name='LifetimeMessage').field.add(
+            name='value', number=1, type=5, label=1
+        )
+        pool.Add(proto)
+        desc = pool.FindMessageTypeByName('LifetimeMessage')
+        cls = message_factory.GetMessageClass(desc)
+        value = cls(value=iteration)
+        # Keep descendants alive while releasing their originating references.
+        field = desc.fields_by_name['value']
+        del pool, desc, cls
+        if iteration % 8 == 0:
+          gc.collect()
+        self.assertEqual(field.containing_type.name, 'LifetimeMessage')
+        self.assertEqual(
+            type(value).FromString(value.SerializeToString()), value
+        )
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(ExercisePools, range(8))))
+
+  def testConcurrentDescriptorPoolRegistrationAndLookup(self):
+    pool = descriptor_pool.DescriptorPool()
+    seed = descriptor_pb2.FileDescriptorProto(name='seed.proto')
+    seed.message_type.add(name='Seed')
+    pool.Add(seed)
+    barrier = threading.Barrier(8)
+
+    def AccessPool(worker):
+      barrier.wait(timeout=30)
+      for iteration in range(64):
+        if worker < 4:
+          name = f'Registered_{worker}_{iteration}'
+          proto = descriptor_pb2.FileDescriptorProto(name=name + '.proto')
+          proto.message_type.add(name=name)
+          pool.Add(proto)
+          self.assertEqual(pool.FindMessageTypeByName(name).name, name)
+        else:
+          self.assertEqual(pool.FindFileByName('seed.proto').name, 'seed.proto')
+          self.assertEqual(pool.FindMessageTypeByName('Seed').name, 'Seed')
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(AccessPool, range(8))))
+
+  def testDescriptorDatabaseCallbackAllowsOtherThread(self):
+    entered = threading.Event()
+    finished = threading.Event()
+
+    class Database(descriptor_database.DescriptorDatabase):
+
+      def FindFileByName(self, name):
+        if name == 'first.proto':
+          entered.set()
+          if not finished.wait(timeout=30):
+            raise RuntimeError('Pool critical section blocked database callback')
+        return descriptor_pb2.FileDescriptorProto(name=name)
+
+    pool = descriptor_pool.DescriptorPool(Database())
+
+    def FindSecond():
+      if not entered.wait(timeout=30):
+        raise RuntimeError('Database callback did not start')
+      try:
+        return pool.FindFileByName('second.proto').name
+      finally:
+        finished.set()
+
+    with futures.ThreadPoolExecutor(max_workers=2) as executor:
+      second = executor.submit(FindSecond)
+      first = executor.submit(pool.FindFileByName, 'first.proto')
+      self.assertEqual(first.result(timeout=60).name, 'first.proto')
+      self.assertEqual(second.result(timeout=60), 'second.proto')
+
+  def testConcurrentOptionsCacheIdentity(self):
+    pool = descriptor_pool.DescriptorPool()
+    proto = descriptor_pb2.FileDescriptorProto(name='option_identity.proto')
+    proto.message_type.add(name='OptionsMessage').options.deprecated = True
+    pool.Add(proto)
+    desc = pool.FindMessageTypeByName('OptionsMessage')
+    barrier = threading.Barrier(8)
+
+    def GetOptions(unused):
+      barrier.wait(timeout=30)
+      options = desc.GetOptions()
+      for _ in range(100):
+        self.assertIs(options, desc.GetOptions())
+        self.assertTrue(options.deprecated)
+      return options
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      options = list(executor.map(GetOptions, range(8)))
+    for value in options:
+      self.assertIs(value, options[0])
 
   def testConcurrentCreationReturnsOneMessageClass(self):
     pool = descriptor_pool.DescriptorPool()

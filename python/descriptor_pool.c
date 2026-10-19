@@ -767,36 +767,71 @@ done:
   return ret;
 }
 
+// The registry is mutable even when all message objects are thread-confined:
+// unrelated generated modules register their files under distinct import locks.
+// Use CPython's suspendable object critical sections so database callbacks and
+// recursive descriptor imports cannot deadlock while waiting on Python locks.
+// No message mutex is added, and classic Python retains the original calls.
+#ifdef Py_GIL_DISABLED
+#define PYUPB_POOL_METHOD(name) PyUpb_DescriptorPool_##name##_Critical
+#define PYUPB_POOL_WRAP(name)                                             \
+  static PyObject* PYUPB_POOL_METHOD(name)(PyObject* self, PyObject* arg) { \
+    PyObject* result;                                                    \
+    Py_BEGIN_CRITICAL_SECTION(self);                                     \
+    result = PyUpb_DescriptorPool_##name(self, arg);                       \
+    Py_END_CRITICAL_SECTION();                                           \
+    return result;                                                      \
+  }
+PYUPB_POOL_WRAP(Add)
+PYUPB_POOL_WRAP(AddSerializedFile)
+PYUPB_POOL_WRAP(SetFeatureSetDefaults)
+PYUPB_POOL_WRAP(FindFileByName)
+PYUPB_POOL_WRAP(FindMessageTypeByName)
+PYUPB_POOL_WRAP(FindFieldByName)
+PYUPB_POOL_WRAP(FindExtensionByName)
+PYUPB_POOL_WRAP(FindEnumTypeByName)
+PYUPB_POOL_WRAP(FindOneofByName)
+PYUPB_POOL_WRAP(FindServiceByName)
+PYUPB_POOL_WRAP(FindMethodByName)
+PYUPB_POOL_WRAP(FindFileContainingSymbol)
+PYUPB_POOL_WRAP(FindExtensionByNumber)
+PYUPB_POOL_WRAP(FindAllExtensions)
+#undef PYUPB_POOL_WRAP
+#else
+#define PYUPB_POOL_METHOD(name) PyUpb_DescriptorPool_##name
+#endif
+
 static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
-    {"Add", PyUpb_DescriptorPool_Add, METH_O,
+    {"Add", PYUPB_POOL_METHOD(Add), METH_O,
      "Adds the FileDescriptorProto and its types to this pool."},
-    {"AddSerializedFile", PyUpb_DescriptorPool_AddSerializedFile, METH_O,
+    {"AddSerializedFile", PYUPB_POOL_METHOD(AddSerializedFile), METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
-    {"SetFeatureSetDefaults", PyUpb_DescriptorPool_SetFeatureSetDefaults,
+    {"SetFeatureSetDefaults", PYUPB_POOL_METHOD(SetFeatureSetDefaults),
      METH_O, "Sets the default feature mappings used during the build."},
-    {"FindFileByName", PyUpb_DescriptorPool_FindFileByName, METH_O,
+    {"FindFileByName", PYUPB_POOL_METHOD(FindFileByName), METH_O,
      "Searches for a file descriptor by its .proto name."},
-    {"FindMessageTypeByName", PyUpb_DescriptorPool_FindMessageTypeByName,
+    {"FindMessageTypeByName", PYUPB_POOL_METHOD(FindMessageTypeByName),
      METH_O, "Searches for a message descriptor by full name."},
-    {"FindFieldByName", PyUpb_DescriptorPool_FindFieldByName, METH_O,
+    {"FindFieldByName", PYUPB_POOL_METHOD(FindFieldByName), METH_O,
      "Searches for a field descriptor by full name."},
-    {"FindExtensionByName", PyUpb_DescriptorPool_FindExtensionByName, METH_O,
+    {"FindExtensionByName", PYUPB_POOL_METHOD(FindExtensionByName), METH_O,
      "Searches for extension descriptor by full name."},
-    {"FindEnumTypeByName", PyUpb_DescriptorPool_FindEnumTypeByName, METH_O,
+    {"FindEnumTypeByName", PYUPB_POOL_METHOD(FindEnumTypeByName), METH_O,
      "Searches for enum type descriptor by full name."},
-    {"FindOneofByName", PyUpb_DescriptorPool_FindOneofByName, METH_O,
+    {"FindOneofByName", PYUPB_POOL_METHOD(FindOneofByName), METH_O,
      "Searches for oneof descriptor by full name."},
-    {"FindServiceByName", PyUpb_DescriptorPool_FindServiceByName, METH_O,
+    {"FindServiceByName", PYUPB_POOL_METHOD(FindServiceByName), METH_O,
      "Searches for service descriptor by full name."},
-    {"FindMethodByName", PyUpb_DescriptorPool_FindMethodByName, METH_O,
+    {"FindMethodByName", PYUPB_POOL_METHOD(FindMethodByName), METH_O,
      "Searches for method descriptor by full name."},
-    {"FindFileContainingSymbol", PyUpb_DescriptorPool_FindFileContainingSymbol,
+    {"FindFileContainingSymbol", PYUPB_POOL_METHOD(FindFileContainingSymbol),
      METH_O, "Gets the FileDescriptor containing the specified symbol."},
-    {"FindExtensionByNumber", PyUpb_DescriptorPool_FindExtensionByNumber,
+    {"FindExtensionByNumber", PYUPB_POOL_METHOD(FindExtensionByNumber),
      METH_VARARGS, "Gets the extension descriptor for the given number."},
-    {"FindAllExtensions", PyUpb_DescriptorPool_FindAllExtensions, METH_O,
+    {"FindAllExtensions", PYUPB_POOL_METHOD(FindAllExtensions), METH_O,
      "Gets all known extensions of the given message descriptor."},
     {NULL}};
+#undef PYUPB_POOL_METHOD
 
 static PyObject* PyUpb_DescriptorPool_GetObjCacheCount(
     PyUpb_DescriptorPool* self, void* closure) {
