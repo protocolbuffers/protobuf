@@ -72,7 +72,7 @@ typedef struct {
 } PyUpb_CPythonBits;
 
 // A global containing the values for this process.
-PyUpb_CPythonBits cpython_bits;
+static PYUPB_LAZYPTR(PyUpb_CPythonBits) cpython_bits_ptr;
 
 destructor upb_Pre310_PyType_GetDeallocSlot(PyTypeObject* type_subclass) {
   // This is a bit desperate.  We need type_dealloc(), but PyType_GetSlot(type,
@@ -104,7 +104,7 @@ destructor upb_Pre310_PyType_GetDeallocSlot(PyTypeObject* type_subclass) {
   return NULL;
 }
 
-static bool PyUpb_CPythonBits_Init(PyUpb_CPythonBits* bits) {
+static bool PyUpb_CPythonBits_Populate(PyUpb_CPythonBits* bits) {
   PyObject* bases = NULL;
   PyTypeObject* type = NULL;
   PyObject* size = NULL;
@@ -174,6 +174,29 @@ err:
   Py_XDECREF(hex_version);
   return ret;
 }
+
+static void PyUpb_CPythonBits_Free(void* ptr) { PyMem_Free(ptr); }
+
+static void* PyUpb_CPythonBits_Create(void* unused) {
+  PyUpb_CPythonBits* bits = PyMem_Malloc(sizeof(*bits));
+  if (!bits) {
+    PyErr_NoMemory();
+    return NULL;
+  }
+  if (!PyUpb_CPythonBits_Populate(bits)) {
+    PyMem_Free(bits);
+    return NULL;
+  }
+  return bits;
+}
+
+static PyUpb_CPythonBits* PyUpb_CPythonBits_Get(void) {
+  return PyUpb_LazyPtr_LazyInit(&cpython_bits_ptr,
+                                PyUpb_CPythonBits_Create,
+                                PyUpb_CPythonBits_Free, NULL);
+}
+
+#define cpython_bits (*PyUpb_CPythonBits_Get())
 
 // -----------------------------------------------------------------------------
 // Message
@@ -2505,15 +2528,15 @@ static PyType_Spec PyUpb_MessageMeta_Spec = {
 static PyObject* PyUpb_MessageMeta_CreateType(void) {
   PyObject* bases = Py_BuildValue("(O)", &PyType_Type);
   if (!bases) return NULL;
-  PyUpb_MessageMeta_Spec.basicsize =
-      cpython_bits.type_basicsize + sizeof(PyUpb_MessageMeta);
-  PyObject* type = PyType_FromSpecWithBases(&PyUpb_MessageMeta_Spec, bases);
+  PyType_Spec spec = PyUpb_MessageMeta_Spec;
+  spec.basicsize = cpython_bits.type_basicsize + sizeof(PyUpb_MessageMeta);
+  PyObject* type = PyType_FromSpecWithBases(&spec, bases);
   Py_DECREF(bases);
   return type;
 }
 
 bool PyUpb_InitMessage(PyObject* m) {
-  if (!PyUpb_CPythonBits_Init(&cpython_bits)) return false;
+  if (!PyUpb_CPythonBits_Get()) return false;
   PyObject* message_meta_type = PyUpb_MessageMeta_CreateType();
 
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
