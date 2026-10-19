@@ -12,6 +12,7 @@
 
 #include "upb/mini_table/extension.h"
 #include "upb/reflection/def.h"
+#include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/file_def.h"
 
@@ -33,6 +34,13 @@ bool _upb_FileDef_ImplicitFieldPresenceDisabled(const upb_FileDef* f);
 
 // upb_FileDef_Package() returns "" if f->package is NULL, this does not.
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f);
+
+// Built alongside the file and never mutated after publication. Unlike the
+// pool-wide table, readers do not race with registration of unrelated files.
+bool _upb_FileDef_InsertSymbol(upb_FileDef* f, const char* name, size_t size,
+                              upb_value value, upb_Arena* arena);
+const void* _upb_FileDef_FindSymbol(const upb_FileDef* f, const char* name,
+                                   size_t size, upb_deftype_t type);
 
 void _upb_FileDef_Create(upb_DefBuilder* ctx,
                          const google_protobuf_FileDescriptorProto* file_proto);

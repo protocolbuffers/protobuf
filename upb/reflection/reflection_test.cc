@@ -19,6 +19,7 @@
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
+#include "upb/reflection/internal/file_def.h"
 #include "upb/test/parse_text_proto.h"
 
 namespace upb_test {
@@ -54,6 +55,61 @@ absl::StatusOr<upb::DefPool> LoadDescriptorProto(absl::string_view proto_text) {
   google::protobuf::FileDescriptorSet set;
   *set.add_file() = proto;
   return LoadDescriptorSetFromProto(set);
+}
+
+TEST(ReflectionTest, FileSymbolIndexIsCompleteAndImmutable) {
+  google::protobuf::FileDescriptorProto proto = ParseTextProtoOrDie(R"pb(
+    name: "index.proto"
+    package: "index"
+    syntax: "proto2"
+    message_type {
+      name: "Owner"
+      nested_type { name: "Child" }
+      enum_type { name: "Kind" value { name: "VALUE" number: 0 } }
+      extension_range { start: 100 end: 200 }
+      extension {
+        name: "extra" number: 100 label: LABEL_OPTIONAL type: TYPE_INT32
+        extendee: ".index.Owner"
+      }
+    }
+    service { name: "Service" }
+  )pb");
+  upb::Arena arena;
+  upb::DefPool pool;
+  upb::Status status;
+  upb::FileDefPtr file = pool.AddFile(ToUpbDescriptorSet(proto, arena), &status);
+  ASSERT_TRUE(file) << status.error_message();
+  struct Symbol {
+    const char* name;
+    upb_deftype_t type;
+  };
+  const Symbol symbols[] = {
+      {"index.Owner", UPB_DEFTYPE_MSG},
+      {"index.Owner.Child", UPB_DEFTYPE_MSG},
+      {"index.Owner.Kind", UPB_DEFTYPE_ENUM},
+      {"index.Owner.VALUE", UPB_DEFTYPE_ENUMVAL},
+      {"index.Owner.extra", UPB_DEFTYPE_EXT},
+      {"index.Service", UPB_DEFTYPE_SERVICE},
+  };
+  for (const auto& symbol : symbols) {
+    upb_value value;
+    ASSERT_TRUE(_upb_DefPool_LookupSym(pool.ptr(), symbol.name,
+                                      std::strlen(symbol.name), &value));
+    EXPECT_EQ(_upb_FileDef_FindSymbol(file.ptr(), symbol.name,
+                                     std::strlen(symbol.name), symbol.type),
+              _upb_DefType_Unpack(value, symbol.type));
+  }
+  EXPECT_EQ(_upb_FileDef_FindSymbol(file.ptr(), "index.Owner", 11,
+                                   UPB_DEFTYPE_ENUM), nullptr);
+  proto.Clear();
+  proto.set_name("later.proto");
+  proto.set_package("index");
+  proto.add_message_type()->set_name("Later");
+  ASSERT_TRUE(pool.AddFile(ToUpbDescriptorSet(proto, arena), &status));
+  EXPECT_EQ(_upb_FileDef_FindSymbol(file.ptr(), "index.Later", 11,
+                                   UPB_DEFTYPE_MSG), nullptr);
+  EXPECT_NE(_upb_FileDef_FindSymbol(file.ptr(), "index.Owner", 11,
+                                   UPB_DEFTYPE_MSG), nullptr);
 }
 
 TEST(ReflectionTest, OpenEnumWithNonZeroDefault) {

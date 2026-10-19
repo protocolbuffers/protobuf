@@ -128,6 +128,77 @@ if sys.argv[2] == "nogil":
     with futures.ThreadPoolExecutor(max_workers=8) as executor:
       self.assertTrue(all(executor.map(AccessPool, range(8))))
 
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'upb lookup semantics')
+  def testDescriptorTreeLookupsDuringRegistration(self):
+    pool = descriptor_pool.DescriptorPool()
+    proto = descriptor_pb2.FileDescriptorProto(
+        name='tree.proto', package='lookup', syntax='proto2'
+    )
+    outer = proto.message_type.add(name='Outer')
+    outer.nested_type.add(name='Inner').nested_type.add(name='Deep')
+    outer.enum_type.add(name='Kind').value.add(name='NESTED_VALUE', number=0)
+    outer.extension_range.add(start=100, end=200)
+    outer.extension.add(
+        name='extra', number=100, type=5, label=1, extendee='.lookup.Outer'
+    )
+    proto.service.add(name='Example')
+    pool.Add(proto)
+    desc = pool.FindMessageTypeByName('lookup.Outer')
+    cls = message_factory.GetMessageClass(desc)
+    file = desc.file
+    barrier = threading.Barrier(8)
+
+    def AccessTree(worker):
+      barrier.wait(timeout=30)
+      for iteration in range(128):
+        if worker < 4:
+          added = descriptor_pb2.FileDescriptorProto(
+              name=f'tree_add_{worker}_{iteration}.proto'
+          )
+          added.message_type.add(name=f'TreeAdded_{worker}_{iteration}')
+          pool.Add(added)
+        else:
+          inner = desc.nested_types_by_name['Inner']
+          deep = desc.nested_types_by_name['Inner.Deep']
+          self.assertIs(deep.containing_type, inner)
+          self.assertIs(file.message_types_by_name['Outer.Inner'], inner)
+          self.assertIs(file.enum_types_by_name['Outer.Kind'],
+                        desc.enum_types_by_name['Kind'])
+          self.assertIs(file.extensions_by_name['Outer.extra'],
+                        desc.extensions_by_name['extra'])
+          self.assertEqual(file.services_by_name['Example'].name, 'Example')
+          self.assertEqual(cls.NESTED_VALUE, 0)
+          self.assertIsNone(getattr(cls, 'missing_attribute', None))
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(AccessTree, range(8))))
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'upb lookup semantics')
+  def testLongDescriptorLookupNamesAndKinds(self):
+    for package in ('', 'long_package_' * 24):
+      with self.subTest(package=package):
+        pool = descriptor_pool.DescriptorPool()
+        proto = descriptor_pb2.FileDescriptorProto(name='long.proto',
+                                                   package=package)
+        outer = proto.message_type.add(name='Outer')
+        outer.nested_type.add(name='Child')
+        outer.enum_type.add(name='Kind').value.add(name='VALUE', number=0)
+        pool.Add(proto)
+        name = (package + '.' if package else '') + 'Outer'
+        desc = pool.FindMessageTypeByName(name)
+        child = desc.nested_types_by_name['Child']
+        self.assertIs(desc.file.message_types_by_name['Outer.Child'], child)
+        self.assertIs(child.containing_type, desc)
+        cls = message_factory.GetMessageClass(desc)
+        self.assertIs(cls.Child.DESCRIPTOR, child)
+        self.assertEqual(cls.Kind.Name(0), 'VALUE')
+        for mapping, key in ((desc.nested_types_by_name, 'Kind'),
+                             (desc.enum_types_by_name, 'Child'),
+                             (desc.file.message_types_by_name, 'Outer.Kind')):
+          with self.assertRaises(KeyError):
+            mapping[key]
+
   def testDescriptorDatabaseCallbackAllowsOtherThread(self):
     entered = threading.Event()
     finished = threading.Event()

@@ -17,6 +17,7 @@
 
 #include "google/protobuf/descriptor.upb_minitable.h"
 #include "python/convert.h"
+#include "python/def_lookup.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
 #include "python/free_threading/lazy_ptr.h"
@@ -375,46 +376,22 @@ void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta) {
   Py_DECREF(selected);
 }
 
-// The LookupNested*() functions provide name lookup for entities nested inside
-// a message.  This uses the symtab's table, which requires that the symtab is
-// not being mutated concurrently.  We can guarantee this for Python-owned
-// symtabs, but upb cannot guarantee it in general for an arbitrary
-// `const upb_MessageDef*`.
+// Resolve nested entities through immutable definition trees, not the pool's
+// mutable symbol table: unrelated modules may register new files concurrently.
 
 static const void* PyUpb_Descriptor_LookupNestedMessage(const upb_MessageDef* m,
                                                         const char* name) {
-  const upb_FileDef* filedef = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  PyObject* qname =
-      PyUnicode_FromFormat("%s.%s", upb_MessageDef_FullName(m), name);
-  const upb_MessageDef* ret = upb_DefPool_FindMessageByName(
-      symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-  Py_DECREF(qname);
-  return ret;
+  return PyUpb_DefLookup_Message(m, name, kPyUpb_LookupMessage);
 }
 
 static const void* PyUpb_Descriptor_LookupNestedEnum(const upb_MessageDef* m,
                                                      const char* name) {
-  const upb_FileDef* filedef = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  PyObject* qname =
-      PyUnicode_FromFormat("%s.%s", upb_MessageDef_FullName(m), name);
-  const upb_EnumDef* ret =
-      upb_DefPool_FindEnumByName(symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-  Py_DECREF(qname);
-  return ret;
+  return PyUpb_DefLookup_Message(m, name, kPyUpb_LookupEnum);
 }
 
 static const void* PyUpb_Descriptor_LookupNestedExtension(
     const upb_MessageDef* m, const char* name) {
-  const upb_FileDef* filedef = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  PyObject* qname =
-      PyUnicode_FromFormat("%s.%s", upb_MessageDef_FullName(m), name);
-  const upb_FieldDef* ret = upb_DefPool_FindExtensionByName(
-      symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-  Py_DECREF(qname);
-  return ret;
+  return PyUpb_DefLookup_Message(m, name, kPyUpb_LookupExtension);
 }
 
 static PyObject* PyUpb_Descriptor_GetExtensionRanges(PyObject* _self,
@@ -598,17 +575,8 @@ static PyObject* PyUpb_Descriptor_GetNestedTypesByName(PyObject* _self,
 
 static PyObject* PyUpb_Descriptor_GetContainingType(PyObject* _self,
                                                     void* closure) {
-  // upb does not natively store the lexical parent of a message type, but we
-  // can derive it with some string manipulation and a lookup.
   PyUpb_DescriptorBase* self = (void*)_self;
-  const upb_MessageDef* m = self->def;
-  const upb_FileDef* file = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(file);
-  const char* full_name = upb_MessageDef_FullName(m);
-  const char* last_dot = strrchr(full_name, '.');
-  if (!last_dot) Py_RETURN_NONE;
-  const upb_MessageDef* parent = upb_DefPool_FindMessageByNameWithSize(
-      symtab, full_name, last_dot - full_name);
+  const upb_MessageDef* parent = upb_MessageDef_ContainingType(self->def);
   if (!parent) Py_RETURN_NONE;
   return PyUpb_Descriptor_Get(self->pool, parent);
 }
@@ -1335,58 +1303,24 @@ PyObject* PyUpb_FileDescriptor_Get(PyObject* pool, const upb_FileDef* file) {
   return PyUpb_DescriptorBase_Get(kPyUpb_FileDescriptor, file, pool);
 }
 
-// These are not provided on upb_FileDef because they use the underlying
-// symtab's hash table. This works for Python because everything happens under
-// the GIL, but in general the caller has to guarantee that the symtab is not
-// being mutated concurrently.
-typedef const void* PyUpb_FileDescriptor_LookupFunc(const upb_DefPool*,
-                                                    const char*);
-
-static const void* PyUpb_FileDescriptor_NestedLookup(
-    const upb_FileDef* filedef, const char* name,
-    PyUpb_FileDescriptor_LookupFunc* func) {
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  const char* package = upb_FileDef_Package(filedef);
-  if (strlen(package)) {
-    PyObject* qname = PyUnicode_FromFormat("%s.%s", package, name);
-    const void* ret = func(symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-    Py_DECREF(qname);
-    return ret;
-  } else {
-    return func(symtab, name);
-  }
-}
-
 static const void* PyUpb_FileDescriptor_LookupMessage(
     const upb_FileDef* filedef, const char* name) {
-  const upb_MessageDef* m = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindMessageByName);
-  if (!m) return NULL;
-  return upb_MessageDef_File(m) == filedef ? m : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupMessage);
 }
 
 static const void* PyUpb_FileDescriptor_LookupEnum(const upb_FileDef* filedef,
                                                    const char* name) {
-  const upb_EnumDef* e = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindEnumByName);
-  if (!e) return NULL;
-  return upb_EnumDef_File(e) == filedef ? e : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupEnum);
 }
 
 static const void* PyUpb_FileDescriptor_LookupExtension(
     const upb_FileDef* filedef, const char* name) {
-  const upb_FieldDef* f = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindExtensionByName);
-  if (!f) return NULL;
-  return upb_FieldDef_File(f) == filedef ? f : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupExtension);
 }
 
 static const void* PyUpb_FileDescriptor_LookupService(
     const upb_FileDef* filedef, const char* name) {
-  const upb_ServiceDef* s = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindServiceByName);
-  if (!s) return NULL;
-  return upb_ServiceDef_File(s) == filedef ? s : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupService);
 }
 
 static PyObject* PyUpb_FileDescriptor_GetName(PyUpb_DescriptorBase* self,

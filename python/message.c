@@ -15,6 +15,7 @@
 
 #include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
+#include "python/def_lookup.h"
 #include "python/descriptor.h"
 #include "python/descriptor_pool.h"
 #include "python/extension_dict.h"
@@ -2409,19 +2410,9 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
   const char* name_buf = PyUpb_GetStrData(name);
   if (!name_buf) return NULL;
   const upb_MessageDef* msgdef = PyUpb_MessageMeta_GetMsgdef(self);
-  const upb_FileDef* filedef = upb_MessageDef_File(msgdef);
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-
-  PyObject* py_key =
-      PyBytes_FromFormat("%s.%s", upb_MessageDef_FullName(msgdef), name_buf);
-  if (!py_key) return NULL;
-  const char* key = PyUpb_GetStrData(py_key);
-  if (!key) {
-    Py_DECREF(py_key);
-    return NULL;
-  }
   PyObject* ret = NULL;
-  const upb_MessageDef* nested = upb_DefPool_FindMessageByName(symtab, key);
+  const upb_MessageDef* nested =
+      PyUpb_DefLookup_Message(msgdef, name_buf, kPyUpb_LookupMessage);
   const upb_EnumDef* enumdef;
   const upb_EnumValueDef* enumval;
   const upb_FieldDef* ext;
@@ -2429,18 +2420,22 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
   PyObject* pool = PyUpb_MessageClass_GetPool(self);
   if (nested) {
     ret = PyUpb_Descriptor_GetClass(pool, nested);
-  } else if ((enumdef = upb_DefPool_FindEnumByName(symtab, key))) {
+  } else if ((enumdef = PyUpb_DefLookup_Message(msgdef, name_buf,
+                                               kPyUpb_LookupEnum))) {
     PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
     PyObject* klass = state->enum_type_wrapper_class;
-    ret = PyUpb_EnumDescriptor_Get(pool, enumdef);
-    ret = PyObject_CallFunctionObjArgs(klass, ret, NULL);
-  } else if ((enumval = upb_DefPool_FindEnumValueByName(symtab, key))) {
+    PyObject* enum_descriptor = PyUpb_EnumDescriptor_Get(pool, enumdef);
+    if (enum_descriptor) {
+      ret = PyObject_CallFunctionObjArgs(klass, enum_descriptor, NULL);
+      Py_DECREF(enum_descriptor);
+    }
+  } else if ((enumval = PyUpb_DefLookup_Message(msgdef, name_buf,
+                                               kPyUpb_LookupEnumValue))) {
     ret = PyLong_FromLong(upb_EnumValueDef_Number(enumval));
-  } else if ((ext = upb_DefPool_FindExtensionByName(symtab, key))) {
+  } else if ((ext = PyUpb_DefLookup_Message(msgdef, name_buf,
+                                           kPyUpb_LookupExtension))) {
     ret = PyUpb_FieldDescriptor_Get(pool, ext);
   }
-
-  Py_DECREF(py_key);
 
   const char* suffix = "_FIELD_NUMBER";
   size_t n = strlen(name_buf);
