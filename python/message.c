@@ -1649,35 +1649,102 @@ static bool PyUpb_AsReadBuffer(PyObject* arg, const char** buf,
   return true;
 }
 
-static bool PyUpb_GetContiguousBuffer(PyObject* arg, const char** buf,
-                                      Py_ssize_t* size,
-                                      PyObject** mv_contiguous) {
+typedef struct {
+  const char* data;
+  Py_ssize_t size;
+  PyObject* owner;
+#ifdef Py_GIL_DISABLED
+  Py_buffer view;
+  bool has_view;
+#endif
+} PyUpb_InputBuffer;
+
+static void PyUpb_InputBuffer_Clear(PyUpb_InputBuffer* input) {
+#ifdef Py_GIL_DISABLED
+  if (input->has_view) PyBuffer_Release(&input->view);
+#endif
+  Py_XDECREF(input->owner);
+}
+
+#ifdef Py_GIL_DISABLED
+static PyObject* PyUpb_InputBuffer_Copy(const Py_buffer* view) {
+  PyObject* copy = PyBytes_FromStringAndSize(NULL, view->len);
+  if (!copy) return NULL;
+  if (PyBuffer_ToContiguous(PyBytes_AsString(copy), view, view->len, 'C') < 0) {
+    Py_DECREF(copy);
+    return NULL;
+  }
+  return copy;
+}
+#endif
+
+static bool PyUpb_GetContiguousBuffer(PyObject* arg, PyUpb_InputBuffer* input) {
+#ifdef Py_GIL_DISABLED
+  if (PyByteArray_Check(arg)) {
+    // Pointer and length must be obtained and copied under the same lock.
+    // Decode the immutable snapshot, not storage another thread can resize.
+    Py_BEGIN_CRITICAL_SECTION(arg);
+    input->owner = PyBytes_FromStringAndSize(PyByteArray_AsString(arg),
+                                            PyByteArray_Size(arg));
+    Py_END_CRITICAL_SECTION();
+    return input->owner &&
+           PyBytes_AsStringAndSize(input->owner, (char**)&input->data,
+                                   &input->size) == 0;
+  }
   if (PyMemoryView_Check(arg)) {
-    bool ok = PyUpb_AsReadBuffer(arg, buf, size);
+    // A reference to a memoryview is not a buffer export: release() can end
+    // its ownership. Retain the actual export until decoding has finished.
+    if (PyObject_GetBuffer(arg, &input->view, PyBUF_FULL_RO) < 0) return false;
+    input->has_view = true;
+    PyObject* exporter = PyObject_GetAttrString(arg, "obj");
+    if (!exporter) return false;
+    if (PyBytes_Check(exporter) && PyBuffer_IsContiguous(&input->view, 'C')) {
+      input->data = input->view.buf;
+      input->size = input->view.len;
+      Py_DECREF(exporter);
+      return true;
+    }
+    // Built-in mutable exporters serialize their own mutations on this
+    // object lock. Native exporters must honor their buffer synchronization
+    // contract; a view into external memory has no Python lock to acquire.
+    if (exporter == Py_None || PyBytes_Check(exporter)) {
+      input->owner = PyUpb_InputBuffer_Copy(&input->view);
+    } else {
+      Py_BEGIN_CRITICAL_SECTION(exporter);
+      input->owner = PyUpb_InputBuffer_Copy(&input->view);
+      Py_END_CRITICAL_SECTION();
+    }
+    Py_DECREF(exporter);
+    return input->owner &&
+           PyBytes_AsStringAndSize(input->owner, (char**)&input->data,
+                                   &input->size) == 0;
+  }
+#endif
+  if (PyMemoryView_Check(arg)) {
+    bool ok = PyUpb_AsReadBuffer(arg, &input->data, &input->size);
     if (!ok) {
       // PyBUF_READ is defined as 0x100 but not available in limited API.
-      *mv_contiguous = PyMemoryView_GetContiguous(arg, 0x100, 'C');
-      if (!*mv_contiguous) return false;
-      ok = PyUpb_AsReadBuffer(*mv_contiguous, buf, size);
+      input->owner = PyMemoryView_GetContiguous(arg, 0x100, 'C');
+      if (!input->owner) return false;
+      ok = PyUpb_AsReadBuffer(input->owner, &input->data, &input->size);
     }
     assert(ok);
     return true;
   }
   if (PyByteArray_Check(arg)) {
-    *buf = PyByteArray_AsString(arg);
-    *size = PyByteArray_Size(arg);
+    input->data = PyByteArray_AsString(arg);
+    input->size = PyByteArray_Size(arg);
     return true;
   }
-  return PyBytes_AsStringAndSize(arg, (char**)buf, size) >= 0;
+  return PyBytes_AsStringAndSize(arg, (char**)&input->data, &input->size) >= 0;
 }
 
 PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
   if (!PyUpb_Message_AssureWritable(self)) return NULL;
-  const char* buf;
-  Py_ssize_t size;
-  PyObject* mv_contiguous = NULL;
-  if (!PyUpb_GetContiguousBuffer(arg, &buf, &size, &mv_contiguous)) {
+  PyUpb_InputBuffer input = {0};
+  if (!PyUpb_GetContiguousBuffer(arg, &input)) {
+    PyUpb_InputBuffer_Clear(&input);
     return NULL;
   }
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
@@ -1694,8 +1761,10 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
               ? UINT16_MAX
               : 0);
   upb_DecodeStatus status =
-      upb_Decode(buf, size, self->ptr.msg, layout, extreg, options, arena);
-  Py_XDECREF(mv_contiguous);
+      upb_Decode(input.data, input.size, self->ptr.msg, layout, extreg, options,
+                 arena);
+  Py_ssize_t size = input.size;
+  PyUpb_InputBuffer_Clear(&input);
   if (!PyUpb_Message_SyncSubobjs(self)) return NULL;
   if (status != kUpb_DecodeStatus_Ok) {
     if (status == kUpb_DecodeStatus_OutOfMemory) {

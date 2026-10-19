@@ -20,6 +20,7 @@ from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
+from google.protobuf.message import DecodeError
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import testing_refleaks
@@ -319,6 +320,72 @@ if sys.argv[2] == "nogil":
 
     with futures.ThreadPoolExecutor(max_workers=6) as executor:
       self.assertTrue(all(executor.map(AccessOptions, range(6))))
+
+  def testParsingBytearrayDuringResize(self):
+    data = b'x' * 65536
+    payload = unittest_pb2.TestAllTypes(optional_bytes=data).SerializeToString()
+    shared = bytearray(payload)
+    barrier = threading.Barrier(4)
+
+    def UseBuffer(worker):
+      barrier.wait(timeout=30)
+      if worker == 0:
+        for _ in range(1000):
+          shared.clear()
+          shared.extend(payload)
+      else:
+        for _ in range(700):
+          local = unittest_pb2.TestAllTypes.FromString(shared)
+          self.assertIn(local.optional_bytes, (b'', data))
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=4) as executor:
+      self.assertTrue(all(executor.map(UseBuffer, range(4))))
+
+  def testParsingMemoryviewDuringExporterMutation(self):
+    values = (b'x' * 65536, b'y' * 65536)
+    payloads = [unittest_pb2.TestAllTypes(optional_bytes=value).SerializeToString()
+                for value in values]
+    shared = bytearray(payloads[0])
+    view = memoryview(shared).toreadonly()
+    barrier = threading.Barrier(4)
+
+    def UseView(worker):
+      barrier.wait(timeout=30)
+      if worker == 0:
+        for iteration in range(1000):
+          shared[:] = payloads[iteration % 2]
+      else:
+        for _ in range(700):
+          parsed = unittest_pb2.TestAllTypes.FromString(view)
+          self.assertIn(parsed.optional_bytes, values)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=4) as executor:
+      self.assertTrue(all(executor.map(UseView, range(4))))
+    view.release()
+    shared.clear()  # No parse export may survive the call.
+
+  def testParsingMemoryviewShapesAndFailureCleanup(self):
+    payload = unittest_pb2.TestAllTypes(optional_bytes=b'buffer').SerializeToString()
+    expanded = bytearray(len(payload) * 2)
+    expanded[::2] = payload
+    views = (memoryview(payload), memoryview(expanded)[::2],
+             memoryview(payload[::-1])[::-1])
+    for view in views:
+      with self.subTest(strides=view.strides):
+        parsed = unittest_pb2.TestAllTypes.FromString(view)
+        self.assertEqual(parsed.optional_bytes, b'buffer')
+        view.release()
+    expanded.clear()
+    bad = bytearray(b'\x80')
+    view = memoryview(bad)
+    with self.assertRaises(DecodeError):
+      unittest_pb2.TestAllTypes.FromString(view)
+    view.release()
+    bad.clear()
+    with self.assertRaises(ValueError):
+      unittest_pb2.TestAllTypes.FromString(view)
 
   def testDescriptorDatabaseCallbackAllowsOtherThread(self):
     entered = threading.Event()
