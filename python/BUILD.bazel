@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
 load("//python:build_targets.bzl", "build_targets")
 load("//python:cc_link_bundle.bzl", "py_extension_with_bundled_deps")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
@@ -172,5 +173,29 @@ py_extension_with_bundled_deps(
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
         "@abseil-cpp//absl/base:core_headers",
+    ],
+)
+
+cc_library(
+    name = "free_threading_access",
+    srcs = ["free_threading/access.c"],
+    hdrs = ["free_threading/access.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = ["//upb/port"],
+)
+
+cc_test(
+    name = "free_threading_access_test",
+    size = "small",
+    srcs = [
+        "free_threading/access_test.cc",
+        "free_threading/access_test_util.c",
+        "free_threading/access_test_util.h",
+    ],
+    deps = [
+        ":free_threading_access",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
     ],
 )
