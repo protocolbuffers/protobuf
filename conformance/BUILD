@@ -127,12 +127,12 @@ test_suite(
         "matchers_test",
         "naming_test",
         "recording_test_runner_test",
+        "result_ledger_test",
         "sample_conformance_test",
         "test_environment_flags_test",
         "test_environment_integration_test",
         "test_environment_test",
         "test_fixture_test",
-        "test_manager_test",
         "testee_test",
     ],
 )
@@ -319,10 +319,10 @@ cc_library(
 )
 
 cc_library(
-    name = "test_manager",
+    name = "result_ledger",
     testonly = True,
-    srcs = ["test_manager.cc"],
-    hdrs = ["test_manager.h"],
+    srcs = ["result_ledger.cc"],
+    hdrs = ["result_ledger.h"],
     deps = [
         ":conformance_cc_proto",
         ":failure_list_trie_node",
@@ -409,10 +409,10 @@ cc_test(
 )
 
 cc_test(
-    name = "test_manager_test",
-    srcs = ["test_manager_test.cc"],
+    name = "result_ledger_test",
+    srcs = ["result_ledger_test.cc"],
     deps = [
-        ":test_manager",
+        ":result_ledger",
         ":testee",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
@@ -430,12 +430,12 @@ cc_library(
     name = "global_test_environment",
     testonly = 1,
     hdrs = ["global_test_environment.h"],
-    deps = [":test_manager"],
+    deps = [":result_ledger"],
 )
 
 # gMock matchers for conformance TestResults.
 #
-# NOTE: Consumers must link a definition of GetGlobalTestManager(), declared in
+# NOTE: Consumers must link a definition of GetGlobalResultLedger(), declared in
 # global_test_environment.h.  The conformance test environment provides it in
 # the real test binary; matchers_test provides an in-memory stand-in.
 cc_library(
@@ -447,7 +447,7 @@ cc_library(
         ":binary_wireformat",
         ":conformance_cc_proto",
         ":global_test_environment",
-        ":test_manager",
+        ":result_ledger",
         ":testee",
         "//src/google/protobuf",
         "//src/google/protobuf:port",
@@ -476,7 +476,7 @@ cc_test(
         ":global_test_environment",
         ":matchers",
         ":mock_test_runner",
-        ":test_manager",
+        ":result_ledger",
         ":testee",
         "//:test_messages_proto2_cc_proto",
         "//src/google/protobuf",
@@ -512,7 +512,7 @@ cc_library(
     deps = [
         ":fork_pipe_runner",
         ":global_test_environment",
-        ":test_manager",
+        ":result_ledger",
         ":test_runner",
         ":testee",
         "//src/google/protobuf",
@@ -548,9 +548,9 @@ cc_test(
         ":global_test_environment",
         ":matchers",
         ":mock_test_runner",
+        ":result_ledger",
         ":test_environment",
         ":test_environment_testing",
-        ":test_manager",
         ":testee",
         "//:test_messages_proto3_cc_proto",
         "//src/google/protobuf",

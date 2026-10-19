@@ -56,8 +56,8 @@ enum class TestPriority { kP0 = 0, kP1 = 1 };
 inline constexpr TestPriority kP0 = TestPriority::kP0;
 inline constexpr TestPriority kP1 = TestPriority::kP1;
 
-// The lowest priority there is.  An enforcement level (see TestManager in
-// test_manager.h) is the lowest priority whose unlisted failures fail the run;
+// The lowest priority there is.  An enforcement level (see ResultLedger in
+// result_ledger.h) is the lowest priority whose unlisted failures fail the run;
 // kLowestPriority, the default, enforces every priority.
 inline constexpr TestPriority kLowestPriority = kP1;
 

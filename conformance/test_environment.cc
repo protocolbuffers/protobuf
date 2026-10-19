@@ -26,7 +26,7 @@
 #include "absl/types/optional.h"
 #include "conformance/fork_pipe_runner.h"
 #include "conformance/global_test_environment.h"
-#include "conformance/test_manager.h"
+#include "conformance/result_ledger.h"
 #include "conformance/test_runner.h"
 #include "conformance/testee.h"
 
@@ -112,15 +112,15 @@ class ForwardingEnvironment : public testing::Environment {
 
 }  // namespace
 
-Statistics Statistics::From(const TestManager& manager) {
+Statistics Statistics::From(const ResultLedger& ledger) {
   Statistics statistics;
-  statistics.skipped_tests = manager.skipped();
-  statistics.listed_skips = manager.listed_skips();
-  statistics.tolerated_failures = manager.tolerated_failures();
-  statistics.expected_failures = manager.expected_failures();
-  statistics.unexpected_failures = manager.unexpected_failures();
-  statistics.expected_successes = manager.expected_successes();
-  statistics.unexpected_successes = manager.unexpected_successes();
+  statistics.skipped_tests = ledger.skipped();
+  statistics.listed_skips = ledger.listed_skips();
+  statistics.tolerated_failures = ledger.tolerated_failures();
+  statistics.expected_failures = ledger.expected_failures();
+  statistics.unexpected_failures = ledger.unexpected_failures();
+  statistics.expected_successes = ledger.expected_successes();
+  statistics.unexpected_successes = ledger.unexpected_successes();
   return statistics;
 }
 
@@ -158,8 +158,8 @@ void Statistics::RecordProperties() const {
   testing::Test::RecordProperty("unexpected_successes", unexpected_successes);
 }
 
-TestManager& GetGlobalTestManager() {
-  return ConformanceEnvironment::Get().test_manager();
+ResultLedger& GetGlobalResultLedger() {
+  return ConformanceEnvironment::Get().ledger();
 }
 
 ConformanceEnvironment::ConformanceEnvironment(
@@ -175,16 +175,16 @@ ConformanceEnvironment::ConformanceEnvironment(
   // default) is meaningless, since proto2 and proto3 tests always run.  This is
   // the one place the maximum edition is clamped; see the option's comment.
   options_.maximum_edition = std::max(options_.maximum_edition, EDITION_PROTO3);
-  test_manager_.set_enforcement_level(options_.enforcement_level);
+  ledger_.set_enforcement_level(options_.enforcement_level);
 }
 
 ConformanceEnvironment::~ConformanceEnvironment() {
-  // TestManager insists on being finalized before destruction.  An installed
+  // ResultLedger insists on being finalized before destruction.  An installed
   // environment is never destroyed (see Install()), so this only runs for
   // environments constructed by ScopedGlobalConformanceEnvironment in unit
   // tests, and those don't necessarily call TearDown(); make sure we don't
   // crash on the way out.
-  test_manager_.Finalize().IgnoreError();
+  ledger_.Finalize().IgnoreError();
   ABSL_CHECK_EQ(global_environment, this);
   global_environment = nullptr;
 }
@@ -195,7 +195,7 @@ ConformanceEnvironment& ConformanceEnvironment::Install(
       << "ConformanceEnvironment::Install() must only be called once.";
   // gtest deletes the environments it owns at the end of RUN_ALL_TESTS(), but
   // callers (e.g. the merged conformance_test_runner) still need the test
-  // manager afterwards.  So although this class is a testing::Environment, it
+  // ledger afterwards.  So although this class is a testing::Environment, it
   // isn't registered with gtest itself: gtest only gets a forwarding proxy,
   // and the real environment intentionally lives until the process exits.
   // Only the environment object leaks, though; TearDown() releases the testee.
@@ -224,7 +224,7 @@ Testee& ConformanceEnvironment::testee() {
 
 void ConformanceEnvironment::SetUp() {
   for (const std::string& failure_list : options_.failure_list_files) {
-    absl::Status status = test_manager_.LoadFailureList(failure_list);
+    absl::Status status = ledger_.LoadFailureList(failure_list);
     ASSERT_TRUE(status.ok())
         << "Failed to load failure list " << failure_list << ": " << status;
   }
@@ -232,7 +232,7 @@ void ConformanceEnvironment::SetUp() {
 }
 
 void ConformanceEnvironment::TearDown() {
-  Statistics::From(test_manager_).RecordProperties();
+  Statistics::From(ledger_).RecordProperties();
   const bool partial_run = partial_run_override_.value_or(IsPartialRun());
 
   // The path the failure list was rewritten to, if --fix succeeded.
@@ -267,7 +267,7 @@ void ConformanceEnvironment::TearDown() {
         }
       }
       if (!output_file.empty()) {
-        absl::Status status = test_manager_.SaveFailureList(output_file);
+        absl::Status status = ledger_.SaveFailureList(output_file);
         if (status.ok()) {
           ABSL_LOG(INFO) << "Wrote updated failure list to " << output_file;
           fixed_list = output_file;
@@ -279,7 +279,7 @@ void ConformanceEnvironment::TearDown() {
     }
   }
 
-  absl::Status status = test_manager_.Finalize();
+  absl::Status status = ledger_.Finalize();
   if (!status.ok() && set_up_succeeded_ &&
       options_.check_unseen_expected_failures) {
     if (partial_run) {
