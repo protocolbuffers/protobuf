@@ -1,4 +1,10 @@
 #!/bin/bash
+# Protocol Buffers - Google's data interchange format
+# Copyright 2025 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
 #
 # Bisect the set of fasttable parsing functions to find the one(s) causing a
 # test failure.
