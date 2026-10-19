@@ -137,7 +137,8 @@ def _compile(
         resource_set = None,
         experimental_exec_group = None,
         experimental_progress_message = None,
-        experimental_output_files = "legacy"):
+        experimental_output_files = "legacy",
+        experimental_use_transitive_descriptor_sets = False):
     """Creates proto compile action for compiling *.proto files to language specific sources.
 
     Args:
@@ -206,9 +207,14 @@ def _compile(
     # For example: 'bazel-out/k8-fastbuild/bin/external/foo' needs to be listed
     # before 'bazel-out/k8-fastbuild/bin'. If not, protoc will discover file under
     # the shorter path and use 'external/foo/...' as its package path.
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_virtual_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_repo_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_main_output_proto_path)
+    if experimental_use_transitive_descriptor_sets:
+        proto_paths = getattr(proto_info, "direct_proto_path", proto_info.transitive_proto_path)
+    else:
+        proto_paths = proto_info.transitive_proto_path
+
+    args.add_all(proto_paths, map_each = _import_virtual_proto_path)
+    args.add_all(proto_paths, map_each = _import_repo_proto_path)
+    args.add_all(proto_paths, map_each = _import_main_output_proto_path)
     args.add("-I.")  # Needs to come last
 
     args.add_all(proto_lang_toolchain_info.protoc_opts)
@@ -221,12 +227,20 @@ def _compile(
 
     declarations = getattr(proto_info, "transitive_extension_declarations", depset())
 
+    if experimental_use_transitive_descriptor_sets:
+        inputs = depset(
+            direct = proto_info.direct_sources,
+            transitive = [declarations, additional_inputs],
+        )
+    else:
+        inputs = depset(transitive = [proto_info.transitive_sources, declarations, additional_inputs])
+
     actions.run(
         mnemonic = proto_lang_toolchain_info.mnemonic,
         progress_message = experimental_progress_message if experimental_progress_message else proto_lang_toolchain_info.progress_message,
         executable = proto_lang_toolchain_info.proto_compiler,
         arguments = [args, additional_args] if additional_args else [args],
-        inputs = depset(transitive = [proto_info.transitive_sources, declarations, additional_inputs]),
+        inputs = inputs,
         outputs = generated_files,
         tools = tools,
         use_default_shell_env = True,

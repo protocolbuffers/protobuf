@@ -23,6 +23,12 @@ compat_bool_flag(
     scope = "universal",
 )
 
+compat_bool_flag(
+    name = "experimental_use_transitive_descriptor_sets",
+    build_setting_default = False,
+    scope = "universal",
+)
+
 compat_label_flag(
     name = "proto_compiler",
     build_setting_default = "@bazel_tools//tools/proto:protoc",

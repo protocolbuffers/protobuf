@@ -85,8 +85,9 @@ def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_pa
     # There can be up more than 1 direct proto_paths, for example when there's
     # a generated and non-generated .proto file in srcs
     root_paths = _uniq([src.root.path for src in srcs])
+    direct_proto_path = [_empty_to_dot(_from_root(root, workspace_root, proto_path)) for root in root_paths]
     transitive_proto_path = depset(
-        direct = [_empty_to_dot(_from_root(root, workspace_root, proto_path)) for root in root_paths],
+        direct = direct_proto_path,
         transitive = [dep.transitive_proto_path for dep in protoc_deps],
     )
 
@@ -122,6 +123,7 @@ def _create_proto_info(*, srcs, deps, descriptor_set, option_deps = [], proto_pa
         direct_descriptor_set = descriptor_set,
         transitive_descriptor_sets = transitive_descriptor_sets,
         proto_source_root = proto_source_root,
+        direct_proto_path = direct_proto_path,
         transitive_proto_path = transitive_proto_path,
         check_deps_sources = check_deps_sources,
         transitive_extension_declarations = transitive_extension_declarations,
@@ -134,6 +136,7 @@ ProtoInfo, _ = provider(
     doc = "Encapsulates information provided by a `proto_library.`",
     fields = {
         "direct_sources": "(list[File]) The `.proto` source files from the `srcs` attribute.",
+        "direct_proto_path": "(list[str]) The `-I` proto search paths for direct sources.",
         "transitive_sources": """(depset[File]) The `.proto` source files from this rule and all
             its `deps` and `option_deps` protocol buffer rules.""",
         "direct_descriptor_set": """(File) The descriptor set of the direct sources. If no srcs,
