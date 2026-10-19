@@ -18,8 +18,8 @@
 #include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/string_view.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/io/zero_copy_stream.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
