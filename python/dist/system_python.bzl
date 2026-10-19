@@ -188,7 +188,17 @@ def _populate_package(ctx, path, python3, python_version):
 
     ctx.file("interpreter", "#!/bin/sh\nexec {} \"$@\"".format(python3))
     ctx.file("BUILD.bazel", build_file)
-    ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = '{}{}'".format(python_version[0], python_version[1]))
+    config = ctx.execute([python3, "-c", "import json, sys, sysconfig; print(json.dumps([sys.abiflags, sysconfig.get_config_var('EXT_SUFFIX'), bool(sysconfig.get_config_var('Py_GIL_DISABLED'))]))"])
+    if config.return_code:
+        fail("Could not inspect system Python ABI: " + config.stderr)
+    abiflags, ext_suffix, gil_disabled = json.decode(config.stdout)
+    ctx.file("version.bzl", "\n".join([
+        "SYSTEM_PYTHON_VERSION = '{}{}'".format(python_version[0], python_version[1]),
+        "SYSTEM_PYTHON_ABIFLAGS = " + repr(abiflags),
+        "SYSTEM_PYTHON_EXT_SUFFIX = " + repr(ext_suffix),
+        "SYSTEM_PYTHON_GIL_DISABLED = " + repr(gil_disabled),
+        "",
+    ]))
     ctx.file("register.bzl", _register.format(ctx.attr.name))
     if supported:
         ctx.file("pip.bzl", _alias_pip.format(
@@ -212,7 +222,13 @@ def _populate_empty_package(ctx):
             support = "None",
         ),
     )
-    ctx.file("version.bzl", "SYSTEM_PYTHON_VERSION = 'None'")
+    ctx.file("version.bzl", "\n".join([
+        "SYSTEM_PYTHON_VERSION = 'None'",
+        "SYSTEM_PYTHON_ABIFLAGS = ''",
+        "SYSTEM_PYTHON_EXT_SUFFIX = '.so'",
+        "SYSTEM_PYTHON_GIL_DISABLED = False",
+        "",
+    ]))
     ctx.file("register.bzl", _mock_register)
     ctx.file("pip.bzl", _mock_pip)
     ctx.file("fuzzing_py.bzl", _mock_fuzzing_py)

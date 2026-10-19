@@ -29,6 +29,12 @@ bool_flag(
     build_setting_default = True,
 )
 
+config_setting(
+    name = "limited_api_enabled",
+    flag_values = {":limited_api": "True"},
+    visibility = ["//python:__subpackages__"],
+)
+
 string_flag(
     name = "python_version",
     build_setting_default = "system",
