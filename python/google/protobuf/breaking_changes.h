@@ -14,18 +14,11 @@
 
 #ifdef PROTOBUF_PY_FUTURE_BREAKING_CHANGES
 
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
 // Make GetOptions() return immutable options.
 // Owner: runze@
 #define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 1
 
 #else
-
-#define PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
 
 #define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 0
 

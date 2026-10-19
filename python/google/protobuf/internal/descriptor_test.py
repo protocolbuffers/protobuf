@@ -148,10 +148,6 @@ class DescriptorTest(unittest.TestCase):
     file_descriptor = pool.AddSerializedFile(serialized)
     self.assertEqual('', file_descriptor.package)
 
-  @unittest.skipIf(
-      api_implementation.Type() in ('upb', 'cpp'),
-      "Currently broken in OSS, will be fixed in the next breaking release"
-  )
   def testBadEqOnFieldsByName(self):
     fields = unittest_pb2.TestAllTypes.DESCRIPTOR.fields_by_name
 
