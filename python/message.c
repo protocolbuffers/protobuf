@@ -1534,6 +1534,22 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
                  Py_TYPE(self), Py_TYPE(arg));
     return NULL;
   }
+  if (self == arg) {
+    // Self-merge is not supported, as in C++ and the other Python
+    // implementations.
+#if PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot merge a message into itself.");
+    return NULL;
+#else
+    if (PyErr_WarnEx(PyExc_FutureWarning,
+                     "Merging a message into itself will raise AssertionError "
+                     "in a future release.",
+                     1) < 0) {
+      return NULL;
+    }
+#endif  // PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES
+  }
   // OPT: exit if src is empty.
   PyObject* subargs = PyTuple_New(0);
   PyObject* serialized =

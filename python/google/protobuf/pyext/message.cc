@@ -2090,6 +2090,13 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
             .c_str());
     return nullptr;
   }
+  if (other_message == self) {
+    // Self-merge is not supported (Message::MergeFrom() CHECK-fails). Raise
+    // AssertionError, like the pure-Python implementation.
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot merge a message into itself.");
+    return nullptr;
+  }
   Message* message = AssureWritable(self);
   if (message == nullptr) return nullptr;
 
