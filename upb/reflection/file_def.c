@@ -327,6 +327,11 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     ext_count += count_exts_in_msg(msgs[i]);
   }
   file->ext_count = ext_count;
+  if (ext_count) {
+    ctx->extension_batch =
+        upb_PublicationBatch_New(_upb_DefPool_Arena(ctx->symtab));
+    if (!ctx->extension_batch) _upb_DefBuilder_OomErr(ctx);
+  }
 
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.
@@ -501,8 +506,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   if (file->ext_count) {
-    upb_ExtensionRegistryStatus status = upb_ExtensionRegistry_AddArray(
-        _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count);
+    upb_ExtensionRegistryStatus status = _upb_ExtensionRegistry_AddArrayPending(
+        _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count,
+        ctx->extension_batch);
     if (status != kUpb_ExtensionRegistryStatus_Ok) {
       if (status == kUpb_ExtensionRegistryStatus_OutOfMemory) {
         _upb_DefBuilder_OomErr(ctx);

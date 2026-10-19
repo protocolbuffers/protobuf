@@ -199,6 +199,127 @@ if sys.argv[2] == "nogil":
           with self.assertRaises(KeyError):
             mapping[key]
 
+  def testParsingExtensionsDuringRegistration(self):
+    pool = descriptor_pool.DescriptorPool()
+    proto = descriptor_pb2.FileDescriptorProto(name='ext_base.proto',
+                                               syntax='proto2')
+    proto.message_type.add(name='ExtTarget').extension_range.add(
+        start=100, end=1000000
+    )
+    pool.Add(proto)
+    seed = descriptor_pb2.FileDescriptorProto(name='seed_ext.proto',
+                                              dependency=['ext_base.proto'])
+    seed.extension.add(name='seed', number=100, type=5, label=1,
+                       extendee='.ExtTarget')
+    pool.Add(seed)
+    extension = pool.FindExtensionByName('seed')
+    cls = message_factory.GetMessageClass(
+        pool.FindMessageTypeByName('ExtTarget')
+    )
+    message = cls()
+    message.Extensions[extension] = 123
+    payload = message.SerializeToString()
+    barrier = threading.Barrier(8)
+
+    def UseRegistry(worker):
+      barrier.wait(timeout=30)
+      if worker < 4:
+        for iteration in range(128):
+          name = f'extension_{worker}_{iteration}'
+          added = descriptor_pb2.FileDescriptorProto(
+              name=name + '.proto', dependency=['ext_base.proto']
+          )
+          added.extension.add(name=name, number=101 + worker * 1000 + iteration,
+                              type=5, label=1, extendee='.ExtTarget')
+          pool.Add(added)
+      else:
+        local = cls()
+        for iteration in range(2000):
+          local.ParseFromString(payload)
+          self.assertEqual(local.Extensions[extension], 123)
+          if iteration % 100 == 0 and api_implementation.Type() == 'upb':
+            self.assertIs(local.Extensions._FindExtensionByName('seed'), extension)
+            self.assertIs(local.Extensions._FindExtensionByNumber(100), extension)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(UseRegistry, range(8))))
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'upb rollback semantics')
+  def testFailedExtensionRegistrationDuringParsing(self):
+    pool = descriptor_pool.DescriptorPool()
+    base = descriptor_pb2.FileDescriptorProto(name='rollback_base.proto')
+    base.message_type.add(name='RollbackTarget').extension_range.add(
+        start=100, end=1000
+    )
+    base.extension.add(name='known', number=100, type=5, label=1,
+                       extendee='.RollbackTarget')
+    pool.Add(base)
+    known = pool.FindExtensionByName('known')
+    cls = message_factory.GetMessageClass(
+        pool.FindMessageTypeByName('RollbackTarget')
+    )
+    seed = cls()
+    seed.Extensions[known] = 123
+    # Field 101 must remain unknown: its declaration always belongs to a
+    # rejected file whose storage can be reclaimed immediately after failure.
+    payload = seed.SerializeToString() + b'\xa8\x06\x01'
+    barrier = threading.Barrier(4)
+
+    def AccessRegistry(worker):
+      barrier.wait(timeout=30)
+      if worker == 0:
+        for _ in range(128):
+          failed = descriptor_pb2.FileDescriptorProto(
+              name='rejected.proto', dependency=['rollback_base.proto']
+          )
+          failed.extension.add(name='rejected', number=101, type=5, label=1,
+                               extendee='.RollbackTarget')
+          failed.extension.add(name='duplicate', number=100, type=5, label=1,
+                               extendee='.RollbackTarget')
+          with self.assertRaisesRegex(TypeError, 'duplicate extension'):
+            pool.Add(failed)
+      else:
+        for _ in range(2000):
+          local = cls.FromString(payload)
+          self.assertEqual(local.Extensions[known], 123)
+          self.assertEqual(len(local.ListFields()), 1)
+          self.assertEqual(local.SerializeToString(), payload)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=4) as executor:
+      self.assertTrue(all(executor.map(AccessRegistry, range(4))))
+    with self.assertRaises(KeyError):
+      pool.FindExtensionByName('rejected')
+
+  def testDefaultPoolOptionsDuringRegistration(self):
+    pool = descriptor_pool.Default()
+    prefix = f'options_registration_{time.time_ns()}'
+    proto = descriptor_pb2.FileDescriptorProto(name=prefix + '.proto',
+                                               package=prefix)
+    for i in range(256):
+      proto.message_type.add(name=f'Options{i}').options.deprecated = True
+    pool.Add(proto)
+    descriptors = [pool.FindMessageTypeByName(f'{prefix}.Options{i}')
+                   for i in range(256)]
+    barrier = threading.Barrier(6)
+
+    def AccessOptions(worker):
+      barrier.wait(timeout=30)
+      if worker < 2:
+        for iteration in range(128):
+          name = f'{prefix}_{worker}_{iteration}'
+          added = descriptor_pb2.FileDescriptorProto(name=name + '.proto')
+          added.message_type.add(name=name)
+          pool.Add(added)
+      else:
+        for desc in descriptors[worker - 2::4]:
+          self.assertTrue(desc.GetOptions().deprecated)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=6) as executor:
+      self.assertTrue(all(executor.map(AccessOptions, range(6))))
+
   def testDescriptorDatabaseCallbackAllowsOtherThread(self):
     entered = threading.Event()
     finished = threading.Event()

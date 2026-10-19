@@ -171,6 +171,68 @@ TEST(ReflectionTest, FailedAddFileDoesNotRetainExtensions) {
   upb_gfree(extensions);
 }
 
+TEST(ReflectionTest, PoolConstructionAllocationFailure) {
+  if (!upb_AllocationCount_IsAvailable()) GTEST_SKIP();
+  upb_AllocationCount_Reset();
+  auto* pool = upb_DefPool_New();
+  ASSERT_NE(pool, nullptr);
+  size_t allocations = upb_AllocationCount_Get();
+  upb_AllocationCount_Reset();
+  upb_DefPool_Free(pool);
+  for (size_t i = 0; i < allocations; i++) {
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(i);
+    pool = upb_DefPool_New();
+    upb_AllocationCount_Reset();
+    // Some optional allocations may recover. Both outcomes must clean up.
+    upb_DefPool_Free(pool);
+  }
+}
+
+TEST(ReflectionTest, ExtensionPublicationAllocationFailure) {
+  if (!upb_AllocationCount_IsAvailable()) GTEST_SKIP();
+  google::protobuf::FileDescriptorProto base = ParseTextProtoOrDie(R"pb(
+    name: "allocation_base.proto"
+    message_type { name: "Target" extension_range { start: 100 end: 200 } }
+    extension {
+      name: "seed" number: 100 label: LABEL_OPTIONAL type: TYPE_INT32
+      extendee: ".Target"
+    }
+  )pb");
+  google::protobuf::FileDescriptorProto added = ParseTextProtoOrDie(R"pb(
+    name: "allocation_added.proto"
+    dependency: "allocation_base.proto"
+    extension {
+      name: "added" number: 101 label: LABEL_OPTIONAL type: TYPE_INT32
+      extendee: ".Target"
+    }
+  )pb");
+  auto run = [&](size_t fail_on) {
+    upb::Arena arena;
+    upb::DefPool pool;
+    upb::Status status;
+    EXPECT_TRUE(pool.AddFile(ToUpbDescriptorSet(base, arena), &status));
+    auto* input = ToUpbDescriptorSet(added, arena);
+    EXPECT_NE(input, nullptr);
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(fail_on);
+    auto file = pool.AddFile(input, &status);
+    size_t allocations = upb_AllocationCount_Get();
+    upb_AllocationCount_Reset();
+    const auto* message = upb_DefPool_FindMessageByName(pool.ptr(), "Target");
+    EXPECT_NE(upb_DefPool_FindExtensionByNumber(pool.ptr(), message, 100), nullptr);
+    EXPECT_EQ(upb_DefPool_FindExtensionByNumber(pool.ptr(), message, 101) != nullptr,
+              static_cast<bool>(file));
+    EXPECT_EQ(upb_DefPool_FindExtensionByName(pool.ptr(), "added") != nullptr,
+              static_cast<bool>(file));
+    EXPECT_EQ(upb_ExtensionRegistry_Size(upb_DefPool_ExtensionRegistry(pool.ptr())),
+              file ? 2 : 1);
+    return allocations;
+  };
+  size_t allocations = run(SIZE_MAX);
+  for (size_t i = 0; i < allocations; i++) run(i);
+}
+
 TEST(ReflectionTest, EnumDefault) {
   upb::DefPool pool = LoadDescriptorProto(
                           R"pb(

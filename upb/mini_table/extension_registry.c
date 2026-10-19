@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "upb/hash/ext_table.h"
+#include "upb/hash/published_map.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
@@ -20,7 +20,7 @@
 #include "upb/port/def.inc"
 
 struct upb_ExtensionRegistry {
-  upb_exttable exts;
+  upb_PublishedMap* exts;
   upb_Arena* arena;
 };
 
@@ -28,57 +28,52 @@ upb_ExtensionRegistry* upb_ExtensionRegistry_New(upb_Arena* arena) {
   upb_ExtensionRegistry* r = upb_Arena_Malloc(arena, sizeof(*r));
   if (!r) return NULL;
   r->arena = arena;
-  if (!upb_exttable_init(&r->exts, 8, arena)) return NULL;
+  r->exts = upb_PublishedMap_New(arena);
+  if (!r->exts) return NULL;
   return r;
 }
 
 UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension* e) {
-  UPB_STATIC_ASSERT(
-      offsetof(upb_MiniTableExtension,
-               UPB_PRIVATE(field).UPB_PRIVATE(number)) == 0,
-      "Extension must be first-member-of-struct convertable with uint32_t");
-  uint32_t fieldnum = upb_MiniTableExtension_Number(e);
-  const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(e);
-
-  if (upb_exttable_lookup(&r->exts, extendee, fieldnum) != NULL) {
-    return kUpb_ExtensionRegistryStatus_DuplicateEntry;
-  }
-
-  if (!upb_exttable_insert(&r->exts, extendee, (const uint32_t*)e, r->arena)) {
-    return kUpb_ExtensionRegistryStatus_OutOfMemory;
-  }
-  return kUpb_ExtensionRegistryStatus_Ok;
+  const upb_MiniTableExtension* array[] = {e};
+  return upb_ExtensionRegistry_AddArray(r, array, 1);
 }
 
 upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count) {
-  const upb_MiniTableExtension** start = e;
-  const upb_MiniTableExtension** end = UPB_PTRADD(e, count);
-  upb_ExtensionRegistryStatus status = kUpb_ExtensionRegistryStatus_Ok;
-  for (; e < end; e++) {
-    status = upb_ExtensionRegistry_Add(r, *e);
-    if (status != kUpb_ExtensionRegistryStatus_Ok) goto failure;
+  if (!count) return kUpb_ExtensionRegistryStatus_Ok;
+  upb_PublicationBatch* batch = upb_PublicationBatch_New(r->arena);
+  if (!batch) return kUpb_ExtensionRegistryStatus_OutOfMemory;
+  upb_ExtensionRegistryStatus status =
+      _upb_ExtensionRegistry_AddArrayPending(r, e, count, batch);
+  if (status == kUpb_ExtensionRegistryStatus_Ok) {
+    upb_PublicationBatch_Commit(batch);
+  }
+  return status;
+}
+
+upb_ExtensionRegistryStatus _upb_ExtensionRegistry_AddArrayPending(
+    upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count,
+    upb_PublicationBatch* batch) {
+  for (size_t i = 0; i < count; i++) {
+    upb_PublishedMapStatus status = upb_PublishedMap_Insert(
+        r->exts, batch, upb_MiniTableExtension_Extendee(e[i]),
+        upb_MiniTableExtension_Number(e[i]), e[i]);
+    if (status == kUpb_PublishedMap_Duplicate) {
+      return kUpb_ExtensionRegistryStatus_DuplicateEntry;
+    }
+    if (status == kUpb_PublishedMap_OutOfMemory) {
+      return kUpb_ExtensionRegistryStatus_OutOfMemory;
+    }
   }
   return kUpb_ExtensionRegistryStatus_Ok;
-
-failure:
-  // Back out the entries previously added.
-  for (end = e, e = start; e < end; e++) {
-    const upb_MiniTableExtension* ext = *e;
-    upb_exttable_remove(&r->exts, upb_MiniTableExtension_Extendee(ext),
-                        upb_MiniTableExtension_Number(ext));
-  }
-  UPB_ASSERT(status != kUpb_ExtensionRegistryStatus_Ok);
-  return status;
 }
 
 const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num) {
-  const uint32_t* v = upb_exttable_lookup(&r->exts, t, num);
-  return (const upb_MiniTableExtension*)v;
+  return upb_PublishedMap_Lookup(r->exts, t, num);
 }
 
 size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r) {
-  return upb_exttable_size(&r->exts);
+  return upb_PublishedMap_Size(r->exts);
 }

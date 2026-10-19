@@ -148,8 +148,14 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   // Find the correct options message.
   PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();
   const upb_DefPool* symtab = PyUpb_DescriptorPool_GetSymtab(default_pool);
-  const upb_MessageDef* m =
-      upb_DefPool_FindMessageByName(symtab, args->msg_name);
+  const upb_MessageDef* m;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(default_pool);
+#endif
+  m = upb_DefPool_FindMessageByName(symtab, args->msg_name);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
   assert(m);
 
   // Copy the options message from C to Python using serialize+parse.

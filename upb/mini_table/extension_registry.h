@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "upb/hash/published_map.h"
 #include "upb/mem/arena.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
@@ -54,6 +55,10 @@ extern "C" {
  *
  * A upb_DefPool provides a upb_ExtensionRegistry, so any users who use
  * reflection do not need to populate a upb_ExtensionRegistry directly.
+ *
+ * Writers must be externally serialized. With atomics enabled, lookups may
+ * run concurrently with registration; failed batches are never visible to
+ * readers. Registered extensions must remain alive for the registry lifetime.
  */
 
 typedef struct upb_ExtensionRegistry upb_ExtensionRegistry;
@@ -81,12 +86,19 @@ UPB_NODISCARD UPB_API upb_ExtensionRegistryStatus upb_ExtensionRegistry_Add(
 UPB_NODISCARD upb_ExtensionRegistryStatus upb_ExtensionRegistry_AddArray(
     upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count);
 
+// Internal: stage entries in a caller-owned transaction. The caller must
+// commit only after all associated reflection data has been published safely.
+upb_ExtensionRegistryStatus _upb_ExtensionRegistry_AddArrayPending(
+    upb_ExtensionRegistry* r, const upb_MiniTableExtension** e, size_t count,
+    upb_PublicationBatch* batch);
+
 // Looks up the extension (if any) defined for message type |t| and field
 // number |num|. Returns the extension if found, otherwise NULL.
 UPB_API const upb_MiniTableExtension* upb_ExtensionRegistry_Lookup(
     const upb_ExtensionRegistry* r, const upb_MiniTable* t, uint32_t num);
 
-// Returns the number of extensions in the registry. For testing/debugging only.
+// Returns the number of extensions in the registry. For testing/debugging only;
+// the count is not a consistent snapshot during concurrent registration.
 UPB_API size_t upb_ExtensionRegistry_Size(const upb_ExtensionRegistry* r);
 
 #ifdef __cplusplus

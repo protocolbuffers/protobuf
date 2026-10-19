@@ -63,6 +63,7 @@ struct upb_DefBuilder {
   upb_FileDef* file;                   // File we are building.
   upb_Arena* arena;                    // Allocate defs here.
   upb_Arena* tmp_arena;                // For temporary allocations.
+  upb_PublicationBatch* extension_batch;  // Commits registry + reflection index.
   upb_Status* status;                  // Record errors here.
   const upb_MiniTableFile* layout;     // NULL if we should build layouts.
   upb_MiniTablePlatform platform;      // Platform we are targeting.

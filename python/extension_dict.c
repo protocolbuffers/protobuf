@@ -55,9 +55,16 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByName(PyObject* _self,
   const upb_MessageDef* m = PyUpb_Message_GetMsgdef(self->msg);
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
-  const upb_FieldDef* ext = upb_DefPool_FindExtensionByName(symtab, name);
+  PyObject* pool = PyUpb_Message_GetPool(self->msg);
+  const upb_FieldDef* ext;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pool);
+#endif
+  ext = upb_DefPool_FindExtensionByName(symtab, name);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
   if (ext) {
-    PyObject* pool = PyUpb_Message_GetPool(self->msg);
     return PyUpb_FieldDescriptor_Get(pool, ext);
   } else {
     Py_RETURN_NONE;
