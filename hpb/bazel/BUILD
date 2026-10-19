@@ -14,10 +14,9 @@ licenses(["notice"])
 bzl_library(
     name = "hpb_proto_library_bzl",
     srcs = ["hpb_proto_library.bzl"],
-    visibility = ["//hpb:hpb_users"],
+    visibility = ["//visibility:public"],
     deps = [
         "//bazel/common:proto_common_bzl",
-        "//hpb:hpb_users_bzl",
         "//upb/bazel:upb_proto_library_bzl",
         "@bazel_skylib//lib:paths",
         "@bazel_tools//tools/cpp:toolchain_utils.bzl",

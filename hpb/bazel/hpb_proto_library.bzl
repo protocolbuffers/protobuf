@@ -16,11 +16,8 @@ load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
-load("//hpb:hpb_users.bzl", "HPB_USERS")
 load("//upb/bazel:upb_proto_library.bzl", "UpbWrappedCcInfo", "upb_proto_library_aspect")
 load("//upb/bazel/private:upb_proto_library_internal/cc_library_func.bzl", "cc_library_func")  # buildifier: disable=bzl-visibility
-
-visibility(HPB_USERS)
 
 def upb_use_cpp_toolchain():
     return use_cpp_toolchain()
