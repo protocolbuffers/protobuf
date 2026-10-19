@@ -29,9 +29,44 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-static void PyUpb_ModuleDealloc(void* module) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(module);
+static int PyUpb_ModuleTraverse(PyObject* module, visitproc visit, void* arg) {
+  PyUpb_ModuleState* state = PyModule_GetState(module);
+  if (!state) return 0;
+  // Visit only owned references. Most type pointers and default_pool are
+  // borrowed from the module dictionary, which Python traverses separately.
+  Py_VISIT(PyUpb_LazyPtr_RawGet(&state->wkt_bases));
+  Py_VISIT(state->message_map_container_type);
+  Py_VISIT(state->scalar_map_container_type);
+  Py_VISIT(state->encode_error_class);
+  Py_VISIT(state->decode_error_class);
+  Py_VISIT(state->message_class);
+  Py_VISIT(state->frozen_instance_error_class);
+  Py_VISIT(state->enum_type_wrapper_class);
+  Py_VISIT(state->listfields_item_key);
+  Py_VISIT(state->unknown_field_type);
+  return 0;
+}
+
+static int PyUpb_ModuleClear(PyObject* module) {
+  PyUpb_ModuleState* state = PyModule_GetState(module);
+  if (!state) return 0;
   PyUpb_LazyPtr_Clear(&state->wkt_bases);
+  Py_CLEAR(state->message_map_container_type);
+  Py_CLEAR(state->scalar_map_container_type);
+  Py_CLEAR(state->encode_error_class);
+  Py_CLEAR(state->decode_error_class);
+  Py_CLEAR(state->message_class);
+  Py_CLEAR(state->frozen_instance_error_class);
+  Py_CLEAR(state->enum_type_wrapper_class);
+  Py_CLEAR(state->listfields_item_key);
+  Py_CLEAR(state->unknown_field_type);
+  return 0;
+}
+
+static void PyUpb_ModuleDealloc(void* module) {
+  PyUpb_ModuleState* state = PyModule_GetState((PyObject*)module);
+  if (!state) return;  // Module-state allocation itself may have failed.
+  PyUpb_ModuleClear(module);
   if (state->obj_cache) {
     PyUpb_WeakMap_Free(state->obj_cache);
     state->obj_cache = NULL;
@@ -104,8 +139,8 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
                                         sizeof(PyUpb_ModuleState),
                                         PyUpb_ModuleMethods,  // m_methods
                                         NULL,                 // m_slots
-                                        NULL,                 // m_traverse
-                                        NULL,                 // m_clear
+                                        PyUpb_ModuleTraverse, // m_traverse
+                                        PyUpb_ModuleClear,    // m_clear
                                         PyUpb_ModuleDealloc};
 
 // -----------------------------------------------------------------------------
@@ -332,8 +367,12 @@ static bool PyUpb_InitArena(PyObject* m) {
 
 PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec) {
   PyObject* type = PyType_FromSpec(spec);
-  return type && PyModule_AddObject(m, name, type) == 0 ? (PyTypeObject*)type
-                                                        : NULL;
+  if (!type) return NULL;
+  if (PyModule_AddObject(m, name, type) < 0) {
+    Py_DECREF(type);
+    return NULL;
+  }
+  return (PyTypeObject*)type;
 }
 
 static const char* PyUpb_GetClassName(PyType_Spec* spec) {
@@ -348,6 +387,7 @@ static const char* PyUpb_GetClassName(PyType_Spec* spec) {
 
 PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec) {
   PyObject* type = PyType_FromSpec(spec);
+  if (!type) return NULL;
   const char* name = PyUpb_GetClassName(spec);
   if (PyModule_AddObject(m, name, type) < 0) {
     Py_XDECREF(type);
@@ -359,6 +399,7 @@ PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec) {
 PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
                                       PyObject* bases) {
   PyObject* type = PyType_FromSpecWithBases(spec, bases);
+  if (!type) return NULL;
   const char* name = PyUpb_GetClassName(spec);
   if (PyModule_AddObject(m, name, type) < 0) {
     Py_XDECREF(type);
@@ -371,11 +412,13 @@ PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
                                          PyObject* virtual_base,
                                          const char** methods) {
   PyObject* type = PyType_FromSpec(spec);
+  if (!type) return NULL;
   PyObject* ret1 = PyObject_CallMethod(virtual_base, "register", "O", type);
   if (!ret1) {
     Py_XDECREF(type);
     return NULL;
   }
+  Py_DECREF(ret1);
   for (size_t i = 0; methods[i] != NULL; i++) {
     PyObject* method = PyObject_GetAttrString(virtual_base, methods[i]);
     if (!method) {
@@ -383,6 +426,7 @@ PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
       return NULL;
     }
     int ret2 = PyObject_SetAttrString(type, methods[i], method);
+    Py_DECREF(method);
     if (ret2 < 0) {
       Py_XDECREF(type);
       return NULL;

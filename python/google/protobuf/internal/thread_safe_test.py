@@ -38,6 +38,57 @@ class ThreadSafeTest(unittest.TestCase):
   def setUp(self):
     self.success = 0
 
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'Native module GC')
+  def testModuleTraversesOwnedReferences(self):
+    from google._upb import _message
+
+    maps = test_proto2_pb2.MessageWithRepeatedAndMap()
+    unknown = _message.UnknownFieldSet(
+        unittest_pb2.TestAllTypes.FromString(b'\x80\x3e\x01'))
+    owned = gc.get_referents(_message)
+    for reference in (
+        type(maps.map_items), type(maps.scalar_map), type(unknown[0]),
+        unittest_pb2.TestAllTypes._ListFieldsItemKey, DecodeError,
+    ):
+      self.assertTrue(any(item is reference for item in owned), reference)
+
+  def testNativeAtexitFinalizer(self):
+    script = '''
+import atexit
+import gc
+import os
+import sys
+from google.protobuf import unittest_pb2
+from google.protobuf.internal import api_implementation
+assert api_implementation.Type() == sys.argv[1]
+if sys.argv[2] == "nogil":
+  assert not sys._is_gil_enabled()
+def unraisable(error, exit_process=os._exit):
+  exit_process(91)
+sys.unraisablehook = unraisable
+class LateFinalizer:
+  def __init__(self):
+    self.cycle = self
+  def __del__(self, cls=unittest_pb2.TestAllTypes, write=os.write):
+    value = cls.FromString(b"\\x08\\x01")
+    assert value.optional_int32 == 1
+    assert value.SerializeToString() == b"\\x08\\x01"
+    write(1, b"native shutdown finalizer completed\\n")
+late = LateFinalizer()
+def collect_at_exit(namespace=globals(), collect=gc.collect):
+  namespace.pop("late")
+  collect()
+atexit.register(collect_at_exit)
+'''
+    nogil = hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled()
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script, api_implementation.Type(),
+         'nogil' if nogil else 'gil'],
+        capture_output=True, text=True, timeout=60, check=False,
+    )
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertEqual(result.stdout.count('native shutdown finalizer completed'), 1)
+
   def testConcurrentColdImports(self):
     # A fresh process is essential: this module has already imported the
     # generated types. Propagate every worker exception to the parent test.

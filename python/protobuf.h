@@ -46,8 +46,12 @@ typedef PyObject* PyUpb_LazyPyObjectPtr;
 // ModuleState
 // -----------------------------------------------------------------------------
 
-// We store all "global" state in this struct instead of using (C) global
-// variables. This makes this extension compatible with sub-interpreters.
+// We store state per module instead of in C globals. Interpreter isolation also
+// requires compatible module initialization and state lookup; per-module state
+// alone does not establish subinterpreter support.
+// Most type pointers and default_pool borrow module-dictionary references.
+// Map container types and the Python caches/classes below own references:
+// keep ModuleTraverse/ModuleClear in sync with any ownership changes.
 
 typedef struct {
   // From descriptor.c
@@ -147,6 +151,8 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
 
 // Like PyUpb_AddClass(), but allows you to specify a tuple of base classes in
 // `bases` to register as a "virtual subclass" with mixin methods.
+// Unlike PyUpb_AddClass(), returns an owned reference; the class is not added
+// to the module dictionary. Module state must traverse and clear this reference.
 PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
                                          PyObject* virtual_base,
                                          const char** methods);

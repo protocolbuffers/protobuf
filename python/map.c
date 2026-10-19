@@ -620,11 +620,13 @@ bool PyUpb_Map_Init(PyObject* m) {
   state->message_map_container_type = PyUpb_AddClassWithRegister(
       m, &PyUpb_MessageMapContainer_Spec, base, methods);
   if (!state->message_map_container_type) {
+    Py_DECREF(base);
     return false;
   }
   state->scalar_map_container_type = PyUpb_AddClassWithRegister(
       m, &PyUpb_ScalarMapContainer_Spec, base, methods);
   if (!state->scalar_map_container_type) {
+    Py_DECREF(base);
     return false;
   }
   state->map_iterator_type = PyUpb_AddClass(m, &PyUpb_MapIterator_Spec);
