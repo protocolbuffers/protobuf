@@ -483,6 +483,8 @@ cc_test(
         "//src/google/protobuf",
         "//upb/base",
         "//upb/mem",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
         "//upb/mini_table",
         "//upb/port",
         "//upb/test:test_messages_proto2_upb_minitable",

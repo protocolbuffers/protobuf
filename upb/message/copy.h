@@ -31,7 +31,8 @@ extern "C" {
 // serialized into unknown fields, since their minitables may belong to a schema
 // that does not outlive the result.
 //
-// Returns NULL on failure.
+// Returns NULL on failure, including when sub-message nesting exceeds the
+// default wire format depth limit (100).
 UPB_NODISCARD upb_Message* upb_Message_DeepClone(const upb_Message* msg,
                                                  const upb_MiniTable* m,
                                                  upb_Arena* arena);
@@ -43,13 +44,15 @@ UPB_NODISCARD upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
                                                     const upb_MiniTable* m,
                                                     upb_Arena* arena);
 
-// Deep clones array contents.
+// Deep clones array contents. Returns NULL on failure, including when
+// sub-message nesting exceeds the default wire format depth limit (100).
 UPB_NODISCARD upb_Array* upb_Array_DeepClone(const upb_Array* array,
                                              upb_CType value_type,
                                              const upb_MiniTable* sub,
                                              upb_Arena* arena);
 
-// Deep clones map contents.
+// Deep clones map contents. Returns NULL on failure, including when
+// sub-message nesting exceeds the default wire format depth limit (100).
 UPB_NODISCARD upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
                                          upb_CType value_type,
                                          const upb_MiniTable* map_entry_table,
@@ -64,7 +67,8 @@ UPB_NODISCARD upb_Map* upb_Map_DeepClone(const upb_Map* map, upb_CType key_type,
 // extensions are serialized into unknown fields, since their minitables may
 // belong to a schema that does not outlive `dst`.
 //
-// Returns false on failure, in which case `dst` is cleared.
+// Returns false on failure, including when sub-message nesting exceeds the
+// default wire format depth limit (100), in which case `dst` is cleared.
 UPB_NODISCARD bool upb_Message_DeepCopy(upb_Message* dst,
                                         const upb_Message* src,
                                         const upb_MiniTable* m,

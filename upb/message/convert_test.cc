@@ -2765,8 +2765,8 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
   // Set recursive_message (field 27) with a submessage that:
   // 1) Has a large repeated_string (field 44, encoded first) forcing
   //    upb_BackAlloc to allocate a standalone block.
-  // 2) Has another recursive_message (field 27, encoded after field 44)
-  //    that exceeds the max depth limit during _upb_Encode_Field.
+  // 2) Has two more levels of recursive_message (field 27, encoded after
+  //    field 44) that exceed the max depth limit during _upb_Encode_Field.
   TestMsg* sub =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(src_arena.ptr());
   protobuf_test_messages_proto3_TestAllTypesProto3_set_recursive_message(msg,
@@ -2775,8 +2775,11 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
   protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_string(
       sub, upb_StringView_FromDataAndSize(large_str.data(), large_str.size()),
       src_arena.ptr());
+  TestMsg* sub2 =
+      protobuf_test_messages_proto3_TestAllTypesProto3_mutable_recursive_message(
+          sub, src_arena.ptr());
   protobuf_test_messages_proto3_TestAllTypesProto3_mutable_recursive_message(
-      sub, src_arena.ptr());
+      sub2, src_arena.ptr());
 
   upb::Arena dst_arena;
   const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
