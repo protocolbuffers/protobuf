@@ -11,10 +11,12 @@
 #include <stdio.h>
 
 #include <cstdint>
+#include <atomic>
 #include <cstring>
 #include <map>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -23,9 +25,11 @@
 #include "upb/hash/common.h"
 #include "upb/hash/ext_table.h"
 #include "upb/hash/int_table.h"
+#include "upb/hash/published_map.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
+#include "upb/mem/alloc.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/message.h"
@@ -635,6 +639,121 @@ TEST(IntTableTest, RemoveIterHeadOfChainDemonstratesBug) {
   // The remaining element 9 should still be in the table and reachable.
   EXPECT_EQ(upb_inttable_count(&t), 1);
   EXPECT_TRUE(upb_inttable_lookup(&t, 9, &val));
+}
+
+TEST(PublishedMapTest, BatchVisibilityAndAbandonment) {
+  upb::Arena arena;
+  auto* first = upb_PublishedMap_New(arena.ptr());
+  auto* second = upb_PublishedMap_New(arena.ptr());
+  ASSERT_NE(first, nullptr);
+  ASSERT_NE(second, nullptr);
+  int key = 0, value = 123, abandoned_value = 456;
+  auto* batch = upb_PublicationBatch_New(arena.ptr());
+  ASSERT_NE(batch, nullptr);
+  ASSERT_EQ(upb_PublishedMap_Insert(first, batch, &key, 1, &value),
+            kUpb_PublishedMap_Ok);
+  ASSERT_EQ(upb_PublishedMap_Insert(second, batch, &key, 2, &value),
+            kUpb_PublishedMap_Ok);
+  EXPECT_EQ(upb_PublishedMap_Lookup(first, &key, 1), nullptr);
+  EXPECT_EQ(upb_PublishedMap_Lookup(second, &key, 2), nullptr);
+  upb_PublicationBatch_Commit(batch);
+  EXPECT_EQ(upb_PublishedMap_Lookup(first, &key, 1), &value);
+  EXPECT_EQ(upb_PublishedMap_Lookup(second, &key, 2), &value);
+  auto* abandoned = upb_PublicationBatch_New(arena.ptr());
+  ASSERT_NE(abandoned, nullptr);
+  ASSERT_EQ(upb_PublishedMap_Insert(first, abandoned, &key, 3, &abandoned_value),
+            kUpb_PublishedMap_Ok);
+  EXPECT_EQ(upb_PublishedMap_Insert(first, abandoned, &key, 3, &value),
+            kUpb_PublishedMap_Duplicate);
+  EXPECT_EQ(upb_PublishedMap_Lookup(first, &key, 3), nullptr);
+  auto* replacement = upb_PublicationBatch_New(arena.ptr());
+  ASSERT_NE(replacement, nullptr);
+  ASSERT_EQ(upb_PublishedMap_Insert(first, replacement, &key, 3, &value),
+            kUpb_PublishedMap_Ok);
+  upb_PublicationBatch_Commit(replacement);
+  EXPECT_EQ(upb_PublishedMap_Lookup(first, &key, 3), &value);
+  EXPECT_EQ(upb_PublishedMap_Size(first), 2);
+  EXPECT_EQ(upb_PublishedMap_Size(second), 1);
+}
+
+TEST(PublishedMapTest, AllocationFailureNeverPublishesPartialBatch) {
+  if (!upb_AllocationCount_IsAvailable()) GTEST_SKIP();
+  auto run = [](size_t fail_on) {
+    upb::Arena arena;
+    auto* map = upb_PublishedMap_New(arena.ptr());
+    EXPECT_NE(map, nullptr);
+    int key = 0, value = 123;
+    auto* seed = upb_PublicationBatch_New(arena.ptr());
+    EXPECT_NE(seed, nullptr);
+    EXPECT_EQ(upb_PublishedMap_Insert(map, seed, &key, 0, &value),
+              kUpb_PublishedMap_Ok);
+    upb_PublicationBatch_Commit(seed);
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(fail_on);
+    auto* batch = upb_PublicationBatch_New(arena.ptr());
+    bool success = batch != nullptr;
+    for (uint32_t i = 1; success && i <= 128; i++) {
+      success = upb_PublishedMap_Insert(map, batch, &key, i, &value) ==
+                kUpb_PublishedMap_Ok;
+    }
+    if (success) upb_PublicationBatch_Commit(batch);
+    size_t allocations = upb_AllocationCount_Get();
+    upb_AllocationCount_Reset();
+    EXPECT_EQ(upb_PublishedMap_Lookup(map, &key, 0), &value);
+    for (uint32_t i = 1; i <= 128; i++) {
+      EXPECT_EQ(upb_PublishedMap_Lookup(map, &key, i),
+                success ? &value : nullptr);
+    }
+    EXPECT_EQ(upb_PublishedMap_Size(map), success ? 129 : 1);
+    return allocations;
+  };
+  size_t allocations = run(SIZE_MAX);
+  for (size_t i = 0; i < allocations; i++) run(i);
+}
+
+TEST(PublishedMapTest, ConcurrentReadersDuringGrowth) {
+  upb::Arena arena;
+  auto* map = upb_PublishedMap_New(arena.ptr());
+  ASSERT_NE(map, nullptr);
+  int key = 0;
+  std::vector<uint32_t> values(4096);
+  for (uint32_t i = 0; i < values.size(); i++) values[i] = i + 1;
+  auto* seed = upb_PublicationBatch_New(arena.ptr());
+  ASSERT_NE(seed, nullptr);
+  ASSERT_EQ(upb_PublishedMap_Insert(map, seed, &key, 0, &values[0]),
+            kUpb_PublishedMap_Ok);
+  upb_PublicationBatch_Commit(seed);
+  std::atomic<bool> stop{false}, failed{false};
+  std::vector<std::thread> readers;
+  for (int worker = 0; worker < 4; worker++) {
+    readers.emplace_back([&] {
+      while (!stop.load(std::memory_order_acquire)) {
+        for (uint32_t i = 0; i < values.size(); i += 17) {
+          const void* value = upb_PublishedMap_Lookup(map, &key, i);
+          if (value && value != &values[i]) failed.store(true);
+        }
+        if (upb_PublishedMap_Lookup(map, &key, 0) != &values[0]) {
+          failed.store(true);
+        }
+      }
+    });
+  }
+  for (uint32_t i = 1; i < values.size(); i++) {
+    auto* batch = upb_PublicationBatch_New(arena.ptr());
+    if (!batch || upb_PublishedMap_Insert(map, batch, &key, i, &values[i]) !=
+                      kUpb_PublishedMap_Ok) {
+      failed.store(true);
+      break;
+    }
+    upb_PublicationBatch_Commit(batch);
+  }
+  stop.store(true, std::memory_order_release);
+  for (auto& reader : readers) reader.join();
+  EXPECT_FALSE(failed.load());
+  EXPECT_EQ(upb_PublishedMap_Size(map), values.size());
+  for (uint32_t i = 0; i < values.size(); i++) {
+    EXPECT_EQ(upb_PublishedMap_Lookup(map, &key, i), &values[i]);
+  }
 }
 
 TEST(IntTableTest, InPlaceGrow) {

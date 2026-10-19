@@ -701,6 +701,7 @@ set(libprotoc_hdrs
 set(libupb_srcs
   ${protobuf_SOURCE_DIR}/upb/base/status.c
   ${protobuf_SOURCE_DIR}/upb/hash/common.c
+  ${protobuf_SOURCE_DIR}/upb/hash/published_map.c
   ${protobuf_SOURCE_DIR}/upb/json/decode.c
   ${protobuf_SOURCE_DIR}/upb/json/encode.c
   ${protobuf_SOURCE_DIR}/upb/lex/atoi.c
@@ -783,6 +784,7 @@ set(libupb_hdrs
   ${protobuf_SOURCE_DIR}/upb/hash/common.h
   ${protobuf_SOURCE_DIR}/upb/hash/ext_table.h
   ${protobuf_SOURCE_DIR}/upb/hash/int_table.h
+  ${protobuf_SOURCE_DIR}/upb/hash/published_map.h
   ${protobuf_SOURCE_DIR}/upb/hash/str_table.h
   ${protobuf_SOURCE_DIR}/upb/json/decode.h
   ${protobuf_SOURCE_DIR}/upb/json/encode.h
