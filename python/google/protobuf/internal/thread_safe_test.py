@@ -474,6 +474,40 @@ if sys.argv[2] == "nogil":
 
     self.assertIs(sub_objs[0], sub_objs[1])
 
+  def testConcurrentExtensionWrapperIdentityAndRetirement(self):
+    for _ in range(16):
+      shared = unittest_pb2.TestAllExtensions()
+      barrier = threading.Barrier(8)
+
+      def ReadExtensions(worker):
+        barrier.wait(timeout=30)
+        wrappers = [shared.Extensions for _ in range(32)]
+        self.assertTrue(all(wrapper is wrappers[0] for wrapper in wrappers))
+        return wrappers[0]
+
+      with futures.ThreadPoolExecutor(max_workers=8) as executor:
+        wrappers = list(executor.map(ReadExtensions, range(8)))
+      self.assertTrue(all(wrapper is wrappers[0] for wrapper in wrappers))
+      del wrappers
+
+      # Repeated destruction/recreation must leave neither stale references
+      # nor a losing candidate that can evict the published wrapper.
+      def RetireExtensions(worker):
+        for _ in range(128):
+          self.assertEqual(len(shared.Extensions), 0)
+        return True
+
+      with futures.ThreadPoolExecutor(max_workers=8) as executor:
+        self.assertTrue(all(executor.map(RetireExtensions, range(8))))
+
+  def testExtensionWrapperOwnsMessage(self):
+    shared = unittest_pb2.TestAllExtensions()
+    wrappers = shared.Extensions
+    del shared
+    gc.collect()
+    wrappers[unittest_pb2.optional_int32_extension] = 42
+    self.assertEqual(wrappers[unittest_pb2.optional_int32_extension], 42)
+
   def testConcurrentDescriptorObjectIdentity(self):
     desc_objs = [None, None]
 

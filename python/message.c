@@ -233,7 +233,10 @@ typedef struct PyUpb_Message {
     // when def is fielddef, owning pointer to parent
     struct PyUpb_Message* parent;
   } ptr;
-  PyObject* ext_dict;  // Weak pointer to extension dict, if any.
+  // Address-only key for the extension wrapper in the arena's weak cache.
+  // Never store a raw weak Python pointer here: taking a reference would race
+  // wrapper retirement, even if publication itself used an atomic pointer.
+  uintptr_t ext_dict_cache_key;
 
   // upb_FieldDef* -> obj dict for non-present msg/map/repeated, NULL if none.
   //
@@ -312,7 +315,6 @@ static PyObject* PyUpb_Message_New(PyObject* cls, PyObject* unused_args,
     goto err1;
   }
   msg->unset_subobj_map = NULL;
-  msg->ext_dict = NULL;
   msg->version = 0;
 
   PyObject* ret = &msg->ob_base;
@@ -642,7 +644,6 @@ static PyObject* PyUpb_Message_NewStub(PyObject* parent, const upb_FieldDef* f,
   msg->arena = arena;
   msg->ptr.parent = (PyUpb_Message*)parent;
   msg->unset_subobj_map = NULL;
-  msg->ext_dict = NULL;
   msg->version = 0;
 
   Py_DECREF(cls);
@@ -1073,7 +1074,6 @@ PyObject* PyUpb_Message_Get(PyObject* pool, upb_Message* u_msg,
   py_msg->def = (uintptr_t)m;
   py_msg->ptr.msg = u_msg;
   py_msg->unset_subobj_map = NULL;
-  py_msg->ext_dict = NULL;
   py_msg->version = 0;
   ret = &py_msg->ob_base;
   Py_DECREF(cls);
@@ -2163,19 +2163,17 @@ PyObject* PyUpb_Message_Clone(PyObject* _self, PyObject* args) {
   return ret;
 }
 
-void PyUpb_Message_ClearExtensionDict(PyObject* _self) {
+void PyUpb_Message_ClearExtensionDict(PyObject* _self, PyObject* wrapper) {
   PyUpb_Message* self = (void*)_self;
-  assert(self->ext_dict);
-  self->ext_dict = NULL;
+  // A candidate that lost publication must not evict the winning wrapper.
+  PyUpb_Arena_CacheEraseIfEqual(self->arena, &self->ext_dict_cache_key, wrapper);
 }
 
 static PyObject* PyUpb_Message_GetExtensionDict(PyObject* _self,
                                                 void* closure) {
   PyUpb_Message* self = (void*)_self;
-  if (self->ext_dict) {
-    Py_INCREF(self->ext_dict);
-    return self->ext_dict;
-  }
+  PyObject* ret = PyUpb_Arena_CacheGet(self->arena, &self->ext_dict_cache_key);
+  if (ret) return ret;
 
   const upb_MessageDef* m = _PyUpb_Message_GetMsgdef(self);
   if (upb_MessageDef_ExtensionRangeCount(m) == 0) {
@@ -2183,8 +2181,13 @@ static PyObject* PyUpb_Message_GetExtensionDict(PyObject* _self,
     return NULL;
   }
 
-  self->ext_dict = PyUpb_ExtensionDict_New(_self);
-  return self->ext_dict;
+  ret = PyUpb_ExtensionDict_New(_self);
+  if (!ret) return NULL;
+  if (!PyUpb_Arena_CacheAdd(self->arena, &self->ext_dict_cache_key, &ret)) {
+    Py_DECREF(ret);
+    return NULL;
+  }
+  return ret;
 }
 
 static PyGetSetDef PyUpb_Message_Getters[] = {

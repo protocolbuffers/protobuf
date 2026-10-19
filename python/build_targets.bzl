@@ -482,12 +482,14 @@ def build_targets(name):
         "descriptor_test",
         "json_format_test",
         "message_factory_test",
+        "message_test",
         "well_known_types_test",
     ]:
         internal_py_test(
             name = "upb_" + test,
             srcs = ["google/protobuf/internal/" + test + ".py"],
             main = "google/protobuf/internal/" + test + ".py",
+            data = ["//src/google/protobuf:testdata"] if test == "message_test" else [],
             env = {
                 "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "upb",
                 "PROTOCOL_BUFFERS_PYTHON_INTERNAL_FORCE_IMPLEMENTATION": "1",
