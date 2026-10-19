@@ -41,6 +41,11 @@ enum class MultiSourceGenerationMode {
 
   // Each ObjC class (messages and roots) generates to a unique .m file.
   kAll,
+
+  // Messages and enums are generated into one .m file (the same code as single
+  // source generation), and only the extension registry/root and the extension
+  // descriptor functions are split into their own .m files.
+  kExtensionsOnly,
 };
 
 // Generation options, documented within generator.cc.
