@@ -1198,6 +1198,49 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
     }
   }
 
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* arena = ((PyUpb_RepeatedContainer*)pself)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  // Keep the source stable while Python key/comparison callbacks run. A
+  // successful single-reader upgrade makes the native commit atomic with the
+  // snapshot; a concurrent reader causes a clear fail-fast error.
+  if (PyUpb_RepeatedContainer_LengthUnprotected(pself) == 0) {
+    PyUpb_Arena_EndRead(arena);
+    Py_DECREF(arena);
+    Py_RETURN_NONE;
+  }
+
+  PyObject* ret = NULL;
+  PyObject* full_slice = PySlice_New(NULL, NULL, NULL);
+  PyObject* list = NULL;
+  PyObject* m = NULL;
+  PyObject* res = NULL;
+  bool upgraded = false;
+  if (full_slice &&
+      (list = PyUpb_RepeatedContainer_Subscript(pself, full_slice)) &&
+      (m = PyObject_GetAttrString(list, "sort")) &&
+      (res = PyObject_Call(m, args, kwds)) &&
+      PyUpb_Arena_TryUpgradeReadToWrite(arena)) {
+    upgraded = true;
+    if (PyUpb_RepeatedContainer_Assign(pself, list)) ret = Py_NewRef(Py_None);
+  }
+
+  Py_XDECREF(full_slice);
+  Py_XDECREF(list);
+  Py_XDECREF(m);
+  Py_XDECREF(res);
+  if (upgraded) {
+    PyUpb_Arena_EndWrite(arena);
+  } else {
+    PyUpb_Arena_EndRead(arena);
+  }
+  Py_DECREF(arena);
+  return ret;
+#else
   // TODO:b/517235198 - Reify even for empty sequences.
   if (PyUpb_RepeatedContainer_Length(pself) == 0) Py_RETURN_NONE;
 
@@ -1224,6 +1267,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   Py_XDECREF(m);
   Py_XDECREF(res);
   return ret;
+#endif
 }
 
 static PyObject* PyUpb_RepeatedContainer_ReverseUnprotected(PyObject* _self) {

@@ -449,6 +449,20 @@ bool PyUpb_Arena_TryWrite(PyObject* arena) {
   return true;
 }
 
+bool PyUpb_Arena_TryUpgradeReadToWrite(PyObject* arena) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  if (!PyUpb_Access_TryUpgradeReadToWrite(
+          &((PyUpb_Arena*)arena)->access)) {
+    PyErr_SetString(PyExc_RuntimeError,
+                    "concurrent mutation of a protobuf message");
+    return false;
+  }
+#else
+  (void)arena;
+#endif
+  return true;
+}
+
 void PyUpb_Arena_EndRead(PyObject* arena) {
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   PyUpb_Access_EndRead(&((PyUpb_Arena*)arena)->access);

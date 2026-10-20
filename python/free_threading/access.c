@@ -33,6 +33,13 @@ bool PyUpb_Access_TryWrite(PyUpb_Access* access) {
                                          memory_order_relaxed);
 }
 
+bool PyUpb_Access_TryUpgradeReadToWrite(PyUpb_Access* access) {
+  int32_t state = 1;
+  return upb_Atomic_CompareExchangeStrong(&access->state, &state, -1,
+                                         memory_order_acq_rel,
+                                         memory_order_relaxed);
+}
+
 void PyUpb_Access_EndRead(PyUpb_Access* access) {
   int32_t previous = upb_Atomic_Sub(&access->state, 1, memory_order_release);
   assert(previous > 0);

@@ -39,6 +39,19 @@ TEST_F(AccessTest, AdmissionAndBalancedRetirement) {
   PyUpb_Access_EndRead(access);
 }
 
+TEST_F(AccessTest, UpgradeRequiresExactlyOneReader) {
+  ASSERT_TRUE(PyUpb_Access_TryRead(access));
+  ASSERT_TRUE(PyUpb_Access_TryRead(access));
+  EXPECT_FALSE(PyUpb_Access_TryUpgradeReadToWrite(access));
+  PyUpb_Access_EndRead(access);
+  ASSERT_TRUE(PyUpb_Access_TryUpgradeReadToWrite(access));
+  EXPECT_FALSE(PyUpb_Access_TryRead(access));
+  EXPECT_FALSE(PyUpb_Access_TryWrite(access));
+  PyUpb_Access_EndWrite(access);
+  ASSERT_TRUE(PyUpb_Access_TryRead(access));
+  PyUpb_Access_EndRead(access);
+}
+
 TEST_F(AccessTest, ReaderCountCannotWrapIntoWriterState) {
   PyUpb_Access_SetCountForTest(access, std::numeric_limits<int32_t>::max());
   EXPECT_FALSE(PyUpb_Access_TryRead(access));

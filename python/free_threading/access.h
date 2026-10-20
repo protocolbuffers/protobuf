@@ -17,7 +17,9 @@
 //
 // This low-level primitive is deliberately non-recursive. Binding scopes must
 // track nesting, retain the domain lifetime, and distinguish safe internal
-// calls from callbacks. Read-to-write upgrades are NOT supported. All aliases,
+// calls from callbacks. A single-reader upgrade is only for audited binding
+// paths that hold exactly one outer read admission after callbacks return.
+// All aliases,
 // borrowed native pointers, source trees and arena allocations must be covered
 // before this primitive provides a Python API memory-safety guarantee.
 #ifdef __cplusplus
@@ -43,6 +45,7 @@ extern "C" {
 void PyUpb_Access_Init(PyUpb_Access* access);
 bool PyUpb_Access_TryRead(PyUpb_Access* access);
 bool PyUpb_Access_TryWrite(PyUpb_Access* access);
+bool PyUpb_Access_TryUpgradeReadToWrite(PyUpb_Access* access);
 void PyUpb_Access_EndRead(PyUpb_Access* access);
 void PyUpb_Access_EndWrite(PyUpb_Access* access);
 
