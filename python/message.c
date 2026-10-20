@@ -1624,7 +1624,8 @@ static PyObject* PyUpb_Message_MergeFromPublic(PyObject* self, PyObject* arg) {
   return PyUpb_Message_MergeFromImpl(self, arg, true);
 }
 
-static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
+static PyObject* PyUpb_Message_CopyFromUnprotected(PyObject* _self,
+                                                    PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
   if (_self->ob_type != arg->ob_type) {
     PyErr_Format(PyExc_TypeError,
@@ -1656,6 +1657,37 @@ static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
   if (!PyUpb_Message_SyncSubobjs(self)) return NULL;
 
   Py_RETURN_NONE;
+}
+
+static PyObject* PyUpb_Message_CopyFrom(PyObject* self, PyObject* arg) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_CopyFromUnprotected(self, arg);
+#else
+  if (Py_TYPE(self) != Py_TYPE(arg) || self == arg) {
+    return PyUpb_Message_CopyFromUnprotected(self, arg);
+  }
+  PyObject* target_arena = ((PyUpb_Message*)self)->arena;
+  PyObject* source_arena = ((PyUpb_Message*)arg)->arena;
+  Py_INCREF(target_arena);
+  Py_INCREF(source_arena);
+  const bool distinct = target_arena != source_arena;
+  if (distinct && !PyUpb_Arena_TryRead(source_arena)) goto fail;
+  if (!PyUpb_Arena_TryWrite(target_arena)) {
+    if (distinct) PyUpb_Arena_EndRead(source_arena);
+    goto fail;
+  }
+  PyObject* result = PyUpb_Message_CopyFromUnprotected(self, arg);
+  PyUpb_Arena_EndWrite(target_arena);
+  if (distinct) PyUpb_Arena_EndRead(source_arena);
+  Py_DECREF(source_arena);
+  Py_DECREF(target_arena);
+  return result;
+
+fail:
+  Py_DECREF(source_arena);
+  Py_DECREF(target_arena);
+  return NULL;
+#endif
 }
 
 static PyObject* PyUpb_Message_SetInParent(PyObject* _self, PyObject* arg) {
