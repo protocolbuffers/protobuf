@@ -260,7 +260,8 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
 static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
                                                    PyObject* args);
 
-PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
+static PyObject* PyUpb_RepeatedContainer_DeepCopyUnprotected(
+    PyObject* _self, PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   PyUpb_RepeatedContainer* clone =
       (void*)PyType_GenericAlloc(Py_TYPE(_self), 0);
@@ -292,6 +293,19 @@ PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* _self, PyObject* value) {
 err:
   Py_DECREF(clone);
   return NULL;
+}
+
+PyObject* PyUpb_RepeatedContainer_DeepCopy(PyObject* self, PyObject* value) {
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_DeepCopyUnprotected(self, value);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 #if PyUpb_SUPPORT_BUFFER_VIEW
