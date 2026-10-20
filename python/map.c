@@ -530,9 +530,21 @@ int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
 
 static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
-  upb_Map* map = PyUpb_MapContainer_AssureWritable(_self);
-  if (!map) return NULL;
   const upb_FieldDef* f = PyUpb_MapContainer_GetField(self);
+
+  // The Python iteration and per-entry API calls below must acquire their own
+  // short scopes. In particular, do not retain a native map pointer across
+  // arbitrary user-defined iteration callbacks.
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  upb_Map* map = PyUpb_MapContainer_AssureWritable(_self);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  if (!map) return NULL;
 
   if (PyDict_Check(_arg)) {
     return PyErr_Format(PyExc_AttributeError, "Merging of dict is not allowed");
