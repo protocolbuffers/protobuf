@@ -208,8 +208,9 @@ static bool PyUpb_MapContainer_Set(PyUpb_MapContainer* self, upb_Map* map,
 }
 
 // Assigns `self[key] = val` for the map `self`.
-static int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
-                                              PyObject* val) {
+static int PyUpb_MapContainer_AssignSubscriptUnprotected(PyObject* _self,
+                                                         PyObject* key,
+                                                         PyObject* val) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_AssureWritable(_self);
   if (!map) return -1;
@@ -231,6 +232,24 @@ static int PyUpb_MapContainer_AssignSubscript(PyObject* _self, PyObject* key,
     }
   }
   return 0;
+}
+
+static int PyUpb_MapContainer_AssignSubscript(PyObject* self, PyObject* key,
+                                              PyObject* val) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_MapContainer_AssignSubscriptUnprotected(self, key, val);
+#else
+  PyObject* arena = ((PyUpb_MapContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  int result = PyUpb_MapContainer_AssignSubscriptUnprotected(self, key, val);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_MapContainer_Subscript(PyObject* _self, PyObject* key) {
