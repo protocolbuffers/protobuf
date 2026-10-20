@@ -78,15 +78,40 @@ typedef struct upb_TaggedAuxPtr {
   // pointer to the StringView can be anywhere in the allocation, and the
   // StringView may point to non-data memory.
   //
-  // For a non-canonical extension, its schema is known but not
-  // the one expected by the message, so it should be treated like an unknown
-  // field, but is stored as an extension to lazily defer serialization.
+  // Canonical extensions (tag 011) are extensions that are known to the
+  // message's schema:
   //
-  // Invariants that hold for all extensions, canonical or non-canonical:
+  //   - Described by a complete upb_MiniTableExtension whose field is flagged
+  //     as an extension. upb_MiniTableExtension_Extendee() returns the message
+  //     it extends.
+  //   - Never a map, since protobuf does not allow map extensions.
   //
-  //   - The extension is described by a upb_MiniTableExtension whose field is
-  //     flagged as an extension.
-  //   - The field is never a map, since protobuf does not allow map extensions.
+  // Non-canonical extensions (tag 001) hold a field whose schema is known, but
+  // is not the one expected by the message. They are semantically unknown
+  // fields, but are stored as extensions to lazily defer serialization. A
+  // non-canonical extension is described by one of:
+  //
+  //   - An actual extension of some message: a complete upb_MiniTableExtension
+  //     whose field is flagged as an extension.
+  //     upb_MiniTableExtension_Extendee() returns the message it extends.
+  //   - A regular upb_MiniTableField, typically a copy of a field of another
+  //     message (see upb_Message_Convert()), cast to upb_MiniTableExtension*.
+  //     The field is not flagged as an extension and is not followed by an
+  //     `extendee`. upb_MiniTableExtension_Extendee() returns NULL.
+  //
+  // Either way, a non-canonical extension is never a map (map fields are never
+  // stored as non-canonical extensions), and like for every extension, its
+  // field's `offset` and `presence` are 0: the value is stored in
+  // upb_Extension.data, and the extension is present iff it is in `aux_data`.
+  //
+  // Since a non-canonical extension may be a regular field, code that handles
+  // non-canonical extensions must only use field-level accessors
+  // (upb_MiniTableExtension_ToField(), _Number(), _CType(), _GetSubMessage(),
+  // _GetSubEnum()) and must handle a NULL upb_MiniTableExtension_Extendee().
+  // Since such a field is not flagged as an extension, never pass it together
+  // with this message to the upb_Message_*Field() accessors (e.g.
+  // upb_Message_GetField()), which would treat it as a regular field of this
+  // message.
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 

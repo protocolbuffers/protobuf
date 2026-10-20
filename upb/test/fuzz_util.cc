@@ -152,7 +152,8 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
               extendee, upb_MiniTableExtension_Number(ext)) != nullptr) {
         continue;
       }
-      if (upb_ExtensionRegistry_Lookup(*exts, ext->UPB_PRIVATE(extendee),
+      if (upb_ExtensionRegistry_Lookup(*exts,
+                                       upb_MiniTableExtension_Extendee(ext),
                                        upb_MiniTableExtension_Number(ext)))
         continue;
       auto status = upb_ExtensionRegistry_AddArray(
