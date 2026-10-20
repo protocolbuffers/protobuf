@@ -93,11 +93,9 @@ inline absl::Status MessageToJsonStream(const Message& message,
                                         io::ZeroCopyOutputStream* json_output) {
   return MessageToJsonStream(message, json_output, PrintOptions());
 }
-
 // Parses a JSON string into a protobuf message. This works equivalently to
 // JsonToBinaryStream(). It will use the DescriptorPool of the passed-in
-// message to resolve Any types. The parsed fields are merged into the
-// existing message; the message is not cleared before parsing.
+// message to resolve Any types.
 //
 // Please note that non-OK statuses are not a stable output of this API and
 // subject to change without notice.
