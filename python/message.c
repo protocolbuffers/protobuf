@@ -1211,8 +1211,8 @@ PyObject* PyUpb_Message_GetFieldValue(PyObject* _self,
   return PyUpb_Message_GetScalarValue(self, field);
 }
 
-int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
-                                PyObject* value, PyObject* exc) {
+static int PyUpb_Message_SetFieldValueUnprotected(
+    PyObject* _self, const upb_FieldDef* field, PyObject* value, PyObject* exc) {
   PyUpb_Message* self = (void*)_self;
   assert(value);
 
@@ -1259,6 +1259,63 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
     return -1;
   }
   return 0;
+}
+
+int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
+                                PyObject* value, PyObject* exc) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_SetFieldValueUnprotected(_self, field, value, exc);
+#else
+  PyUpb_Message* self = (PyUpb_Message*)_self;
+  if (upb_FieldDef_IsRepeated(field)) {
+    return PyUpb_Message_SetFieldValueUnprotected(_self, field, value, exc);
+  }
+
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+
+  // Well-known-type assignment invokes Python code that writes child fields.
+  // Finish native reification under admission, then release before callback.
+  if (upb_FieldDef_IsSubMessage(field) &&
+      upb_MessageDef_WellKnownType(upb_FieldDef_MessageSubDef(field)) !=
+          kUpb_WellKnown_Unspecified) {
+    PyObject* sub_message = NULL;
+    if (PyUpb_Message_AssureWritable(self)) {
+      sub_message = PyUpb_Message_GetFieldValue(_self, field);
+    }
+    PyUpb_Arena_EndWrite(arena);
+    Py_DECREF(arena);
+    if (!sub_message) return -1;
+    int has_assign = PyObject_HasAttrString(sub_message, "_internal_assign");
+    if (has_assign < 0) {
+      Py_DECREF(sub_message);
+      return -1;
+    }
+    if (has_assign) {
+      PyObject* ok =
+          PyObject_CallMethod(sub_message, "_internal_assign", "O", value);
+      Py_DECREF(sub_message);
+      if (!ok) return -1;
+      Py_DECREF(ok);
+      return 0;
+    }
+    Py_DECREF(sub_message);
+    PyErr_Format(exc,
+                 "Assignment not allowed to message field \"%s\" in "
+                 "protocol message object.",
+                 upb_FieldDef_Name(field));
+    return -1;
+  }
+
+  int result = PyUpb_Message_SetFieldValueUnprotected(_self, field, value, exc);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 int PyUpb_Message_GetVersion(PyObject* _self) {
@@ -1339,8 +1396,8 @@ __attribute__((flatten)) static PyObject* PyUpb_Message_GetAttr(
  * Implements:
  *   msg.foo = foo
  */
-static int PyUpb_Message_SetAttrUnprotected(PyObject* _self, PyObject* attr,
-                                            PyObject* value) {
+static int PyUpb_Message_SetAttr(PyObject* _self, PyObject* attr,
+                                PyObject* value) {
   PyUpb_Message* self = (void*)_self;
 
   if (value == NULL) {
@@ -1355,24 +1412,6 @@ static int PyUpb_Message_SetAttrUnprotected(PyObject* _self, PyObject* attr,
   }
 
   return PyUpb_Message_SetFieldValue(_self, field, value, PyExc_AttributeError);
-}
-
-static int PyUpb_Message_SetAttr(PyObject* self, PyObject* attr,
-                                PyObject* value) {
-#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
-  return PyUpb_Message_SetAttrUnprotected(self, attr, value);
-#else
-  PyObject* arena = ((PyUpb_Message*)self)->arena;
-  Py_INCREF(arena);
-  if (!PyUpb_Arena_TryWrite(arena)) {
-    Py_DECREF(arena);
-    return -1;
-  }
-  int result = PyUpb_Message_SetAttrUnprotected(self, attr, value);
-  PyUpb_Arena_EndWrite(arena);
-  Py_DECREF(arena);
-  return result;
-#endif
 }
 
 static PyObject* PyUpb_Message_HasField(PyObject* _self, PyObject* arg) {
