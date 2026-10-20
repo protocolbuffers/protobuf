@@ -1797,6 +1797,26 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   return PyLong_FromSsize_t(size);
 }
 
+// Only the Python entry point acquires admission. Internal callers may already
+// hold the arena writer (for example, repeated composite extend).
+static PyObject* PyUpb_Message_MergeFromStringPublic(PyObject* self,
+                                                      PyObject* arg) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_MergeFromString(self, arg);
+#else
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_MergeFromString(self, arg);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
+}
+
 static PyObject* PyUpb_Message_ParseFromStringUnprotected(PyObject* self,
                                                            PyObject* arg) {
   PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)self);
@@ -2301,7 +2321,7 @@ static PyMethodDef PyUpb_Message_Methods[] = {
      "Lists all set fields of a message."},
     {"MergeFrom", PyUpb_Message_MergeFrom, METH_O,
      "Merges a protocol message into the current message."},
-    {"MergeFromString", PyUpb_Message_MergeFromString, METH_O,
+    {"MergeFromString", PyUpb_Message_MergeFromStringPublic, METH_O,
      "Merges a serialized message into the current message."},
     {"ParseFromString", PyUpb_Message_ParseFromString, METH_O,
      "Parses a serialized message into the current message."},
