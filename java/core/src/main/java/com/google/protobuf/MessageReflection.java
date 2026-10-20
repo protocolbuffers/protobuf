@@ -1071,7 +1071,7 @@ class MessageReflection {
         throws IOException {
       if (!field.isRepeated()) {
         boolean isLazyField =
-            ExtensionRegistryLite.lazyExtensionEnabled()
+            extensionRegistry.lazyExtensionEnabled()
                 && field.isExtension()
                 && !field.getContainingType().isDescriptorProtoType();
         if (hasField(field)) {

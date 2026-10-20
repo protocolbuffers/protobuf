@@ -367,10 +367,17 @@ void Subprocess::Start(const std::string& program, SearchMode search_mode,
     // stuff that is unsafe here.
     int ignored;
     ignored = write(STDERR_FILENO, argv[0], strlen(argv[0]));
+    // The PATH is only consulted in SEARCH_PATH mode, so only suggest it then.
+    // In EXACT_NAME mode the program is run by its exact path (e.g. a plugin
+    // registered via --plugin=name=path), so pointing at PATH is misleading.
     const char* message =
-        ": program not found or is not executable\n"
-        "Please specify a program using absolute path or make sure "
-        "the program is available in your PATH system variable\n";
+        search_mode == SEARCH_PATH
+            ? ": program not found or is not executable\n"
+              "Please specify a program using absolute path or make sure "
+              "the program is available in your PATH system variable\n"
+            : ": program not found or is not executable\n"
+              "Please specify a program using an absolute path or a path "
+              "relative to the current working directory\n";
     ignored = write(STDERR_FILENO, message, strlen(message));
     (void)ignored;
 

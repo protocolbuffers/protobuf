@@ -351,16 +351,11 @@ inline bool HasHasbit(const FieldDescriptor* descriptor) {
   return descriptor->has_presence() && !descriptor->real_containing_oneof();
 }
 
-inline bool HasHazzerMethod(const FieldDescriptor* descriptor) {
-  return descriptor->has_presence();
-}
-
 // Whether unknown enum values are kept (i.e., not stored in UnknownFieldSet
 // but in the message and can be queried using additional getters that return
 // ints.
 inline bool SupportUnknownEnumValue(const FieldDescriptor* field) {
-  if (JavaGenerator::GetResolvedSourceFeatures(*field)
-          .GetExtension(pb::java)
+  if (JavaGenerator::GetResolvedSourceFeatureExtension(*field, pb::java)
           .legacy_closed_enum()) {
     return false;
   }

@@ -120,8 +120,7 @@ std::string MessageLite::InitializationErrorString() const {
 
   if (!data->is_lite) {
     // For !LITE messages, we use the descriptor method function.
-    return data->full().descriptor_methods()->initialization_error_string(
-        *this);
+    return data->descriptor_methods()->initialization_error_string(*this);
   }
 
   return "(cannot determine missing fields for lite message)";
@@ -131,7 +130,7 @@ std::string MessageLite::DebugString() const {
   auto* data = GetClassData();
   ABSL_DCHECK(data != nullptr);
   if (!data->is_lite) {
-    return data->full().descriptor_methods()->debug_string(*this);
+    return data->descriptor_methods()->debug_string(*this);
   }
 
   return absl::StrCat("MessageLite at 0x", absl::Hex(this));
@@ -202,6 +201,16 @@ void MessageLite::LogInitializationErrorMessage() const {
 
 namespace internal {
 
+std::string ClassData::DebugName() const {
+  absl::string_view type_name = TypeIdFromClassData(this).name();
+  if (is_dynamic) {
+    return absl::StrCat(type_name, " (dynamic, class_data = 0x",
+                        absl::Hex(this), ")");
+  } else {
+    return std::string(type_name);
+  }
+}
+
 void FailDynamicCast(
     const MessageLite& from,
     std::variant<const char*, const MessageLite*> to_type_name) {
@@ -261,11 +270,9 @@ bool MergeFromImpl(BoundedZCIS input, MessageLite* msg,
                              aliasing, &ptr, input.zcis, input.limit);
   ptr = internal::TcParser::ParseLoop(msg, ptr, &ctx, tc_table);
   if (ABSL_PREDICT_FALSE(!ptr)) return false;
+  if (ABSL_PREDICT_FALSE(!ctx.EndedAtLimit())) return false;
   ctx.BackUp(ptr);
-  if (ABSL_PREDICT_TRUE(ctx.EndedAtLimit())) {
-    return CheckFieldPresenceImpl(ctx, *msg, parse_flags);
-  }
-  return false;
+  return CheckFieldPresenceImpl(ctx, *msg, parse_flags);
 }
 
 template bool MergeFromImpl<false>(absl::string_view input, MessageLite* msg,
@@ -608,8 +615,10 @@ bool MessageLite::AppendPartialToString(std::string* output) const {
     return false;
   }
 
+  PROTOBUF_IGNORE_DEPRECATION_START
   absl::strings_internal::STLStringResizeUninitializedAmortized(
       output, old_size + byte_size);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
   uint8_t* start =
       reinterpret_cast<uint8_t*>(io::mutable_string_data(output) + old_size);
   SerializeToArrayImpl(*this, start, byte_size);
@@ -742,30 +751,6 @@ absl::Cord MessageLite::SerializePartialAsCord() const {
   return output;
 }
 
-namespace internal {
-
-// Non-inline variants of std::string specializations for
-// various InternalMetadata routines.
-template <>
-void InternalMetadata::DoClear<std::string>() {
-  mutable_unknown_fields<std::string>()->clear();
-}
-
-template <>
-void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
-  mutable_unknown_fields<std::string>()->append(other);
-}
-
-template <>
-void InternalMetadata::DoSwap<std::string>(std::string* other) {
-  mutable_unknown_fields<std::string>()->swap(*other);
-}
-
-template UnknownFieldSet*
-InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
-
-}  // namespace internal
-
 std::string ShortFormat(const MessageLite& message_lite) {
   return message_lite.DebugString();
 }
@@ -806,7 +791,7 @@ void OnShutdown(void (*func)()) {
 
 void OnShutdownRun(void (*f)(const void*), const void* arg) {
   auto shutdown_data = ShutdownData::get();
-  absl::MutexLock lock(&shutdown_data->mutex);
+  absl::MutexLock lock(shutdown_data->mutex);
   shutdown_data->functions.push_back(std::make_pair(f, arg));
 }
 

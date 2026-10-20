@@ -64,6 +64,12 @@ std::string MessageRsName(const Descriptor& desc);
 std::string EnumRsName(const EnumDescriptor& desc);
 std::string EnumValueRsName(const EnumValueDescriptor& value);
 
+// Returns the Rust identifier for a message extension, emitted as a
+// `pub const <NAME>: ExtensionId<...>`. Centralizing this here keeps the name
+// used by the code generator in sync with any future mangling (e.g. for
+// extension names that are not valid Rust identifiers).
+std::string ExtensionRsName(const FieldDescriptor& extension);
+
 std::string OneofViewEnumRsName(const OneofDescriptor& oneof);
 std::string OneofCaseEnumRsName(const OneofDescriptor& oneof);
 
@@ -105,8 +111,11 @@ std::string RsSafeName(absl::string_view name);
 std::string RustModule(Context& ctx, const Descriptor& msg);
 std::string RustModule(Context& ctx, const EnumDescriptor& enum_);
 std::string RustModule(Context& ctx, const OneofDescriptor& oneof);
+std::string RustModule(Context& ctx, const FileDescriptor& file);
+std::string RustModuleForExtension(Context& ctx,
+                                   const FieldDescriptor& extension);
 
-std::string RustInternalModuleName(const FileDescriptor& file);
+std::string RustModuleName(const FileDescriptor& file);
 
 template <typename Desc>
 std::string GetUnderscoreDelimitedFullName(Context& ctx, const Desc& desc);
@@ -151,6 +160,10 @@ std::string EnumValueRsName(const MultiCasePrefixStripper& stripper,
 
 // Returns the name of the generated DescriptorInfo object for the given file.
 std::string DescriptorInfoName(const FileDescriptor& file);
+
+// Returns the name of the generated function that returns the given file's
+// `upb_DefPool_Init`.
+std::string DefInitName(const FileDescriptor& file);
 
 // Describes the names and conversions for a supported map key type.
 struct MapKeyType {

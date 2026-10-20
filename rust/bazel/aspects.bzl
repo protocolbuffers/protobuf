@@ -511,6 +511,7 @@ def _make_proto_library_aspect(is_upb):
                 default = [
                     Label("//rust:cpp_api"),
                     Label("//src/google/protobuf"),
+                    Label("//src/google/protobuf:port"),
                     Label("//src/google/protobuf:protobuf_lite"),
                 ],
             ),

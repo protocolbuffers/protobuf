@@ -788,7 +788,6 @@ void WriteUsingAccessorsInHeader(const google::protobuf::Descriptor* desc,
 void WriteOneofAccessorsInHeader(const google::protobuf::Descriptor* desc, Context& ctx) {
   // Generate const methods.
   auto indent = ctx.printer().WithIndent();
-  std::string class_name = ClassName(desc);
   auto field_names = CreateFieldNameMap(desc);
   for (int i = 0; i < desc->real_oneof_decl_count(); ++i) {
     const google::protobuf::OneofDescriptor* oneof = desc->oneof_decl(i);

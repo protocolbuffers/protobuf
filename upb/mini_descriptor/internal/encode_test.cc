@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -24,9 +25,13 @@
 #include "upb/mini_descriptor/internal/modifiers.h"
 #include "upb/mini_descriptor/link.h"
 #include "upb/mini_table/enum.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
+#include "upb/mini_table/sub.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -242,6 +247,34 @@ TEST_P(MiniTableTest, OneofCaseOverflow) {
   EXPECT_EQ(nullptr, table);
 }
 
+TEST_P(MiniTableTest, SubmsgOffsetSentinelOverflow) {
+  // Construct a message where the first submessage field's u32_ofs lands
+  // exactly on UINT16_MAX (kUpb_NoSub = 65535):
+  // - 32-bit (ptr_size = 4): 21845 fields with submessage at index 0 ->
+  //   field_bytes = 21845 * 12 = 262140, u32_ofs = 262140 / 4 = 65535.
+  // - 64-bit (ptr_size = 8): 21846 fields with submessage at index 1 ->
+  //   field_bytes = 21846 * 12 = 262152, ofs = 262152 - 12 = 262140,
+  //   u32_ofs = 262140 / 4 = 65535.
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  const bool is_64bit = GetParam() == kUpb_MiniTablePlatform_64Bit;
+  const uint32_t total_fields = is_64bit ? 21846 : 21845;
+  const uint32_t submsg_index = is_64bit ? 1 : 0;
+  for (uint32_t i = 0; i < total_fields; i++) {
+    if (i == submsg_index) {
+      ASSERT_TRUE(e.PutField(kUpb_FieldType_Message, i + 1, 0));
+    } else {
+      ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i + 1,
+                             kUpb_FieldModifier_IsProto3Singular));
+    }
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+}
+
 INSTANTIATE_TEST_SUITE_P(Platforms, MiniTableTest,
                          testing::Values(kUpb_MiniTablePlatform_32Bit,
                                          kUpb_MiniTablePlatform_64Bit));
@@ -377,4 +410,49 @@ TEST(MiniTableTest, Build32BitMiniTableWithSubmessagesNoFastTableAssert) {
   ASSERT_NE(nullptr, table) << status.error_message();
   EXPECT_EQ(3, upb_MiniTable_FieldCount(table));
   EXPECT_EQ(0xff, table->UPB_PRIVATE(table_mask));
+}
+
+TEST(MiniTableTest, ExtensionSubOffsetIsPlatformSpecific) {
+  upb::Arena arena;
+  upb::Status status;
+  upb::MtDataEncoder msg_e;
+  ASSERT_TRUE(msg_e.StartMessage(kUpb_MessageModifier_IsExtendable));
+  upb_MiniTable* extendee = upb_MiniTable_Build(
+      msg_e.data().data(), msg_e.data().size(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, extendee) << status.error_message();
+
+  upb::MtDataEncoder ext_e;
+  ASSERT_TRUE(ext_e.EncodeExtension(kUpb_FieldType_Message, 100, 0));
+
+  // The sub follows the upb_MiniTableExtension, which is `field` (padded to
+  // pointer alignment) followed by the pointer-sized `extendee`. The generator
+  // emits this offset into generated code for both platforms, so it must be
+  // computed for the target platform rather than the host.
+  for (auto [platform, ptr_size] : {std::pair<upb_MiniTablePlatform, size_t>{
+                                        kUpb_MiniTablePlatform_32Bit, 4},
+                                    std::pair<upb_MiniTablePlatform, size_t>{
+                                        kUpb_MiniTablePlatform_64Bit, 8}}) {
+    upb_MiniTableExtension* ext = _upb_MiniTableExtension_Build(
+        ext_e.data().data(), ext_e.data().size(), extendee,
+        upb_MiniTableSub_FromMessage(nullptr), platform, arena.ptr(),
+        status.ptr());
+    ASSERT_NE(nullptr, ext) << status.error_message();
+    size_t expected =
+        UPB_ALIGN_UP(sizeof(upb_MiniTableField), ptr_size) + ptr_size;
+    size_t actual =
+        static_cast<size_t>(ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) *
+                            kUpb_SubmsgOffsetBytes);
+    EXPECT_EQ(actual, expected) << "ptr_size=" << ptr_size;
+  }
+
+  // For the native platform the offset must match the real layout, and the
+  // sub must be readable through it.
+  upb_MiniTableExtension* ext = upb_MiniTableExtension_BuildMessage(
+      ext_e.data().data(), ext_e.data().size(), extendee, extendee, arena.ptr(),
+      status.ptr());
+  ASSERT_NE(nullptr, ext) << status.error_message();
+  size_t actual = static_cast<size_t>(
+      ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes);
+  EXPECT_EQ(actual, sizeof(upb_MiniTableExtension));
+  EXPECT_EQ(upb_MiniTableExtension_GetSubMessage(ext), extendee);
 }

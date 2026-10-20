@@ -21,8 +21,10 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/base/thread_annotations.h"
 #include "absl/container/btree_map.h"
 #include "absl/strings/string_view.h"
+#include "absl/synchronization/mutex.h"
 #include "google/protobuf/descriptor.h"
 
 // Must be included last.
@@ -38,6 +40,7 @@ namespace protobuf {
 // Defined in this file.
 class DescriptorDatabase;
 class SimpleDescriptorDatabase;
+class SimpleThreadSafeDescriptorDatabase;
 class EncodedDescriptorDatabase;
 class DescriptorPoolDatabase;
 class MergedDescriptorDatabase;
@@ -279,6 +282,71 @@ class PROTOBUF_EXPORT SimpleDescriptorDatabase : public DescriptorDatabase {
   // return false.
   bool MaybeCopy(const FileDescriptorProto* PROTOBUF_NULLABLE file,
                  FileDescriptorProto* PROTOBUF_NONNULL output);
+};
+
+// A thread-safe DescriptorDatabase into which you can insert files manually.
+// See SimpleDescriptorDatabase for details.
+class PROTOBUF_EXPORT SimpleThreadSafeDescriptorDatabase
+    : public DescriptorDatabase {
+ public:
+  SimpleThreadSafeDescriptorDatabase() = default;
+  SimpleThreadSafeDescriptorDatabase(
+      const SimpleThreadSafeDescriptorDatabase&) = delete;
+  SimpleThreadSafeDescriptorDatabase& operator=(
+      const SimpleThreadSafeDescriptorDatabase&) = delete;
+  ~SimpleThreadSafeDescriptorDatabase() override = default;
+
+  bool Add(const FileDescriptorProto& file) {
+    absl::MutexLock lock(mutex_);
+    return database_.Add(file);
+  }
+
+  bool AddAndOwn(const FileDescriptorProto* PROTOBUF_NONNULL file) {
+    absl::MutexLock lock(mutex_);
+    return database_.AddAndOwn(file);
+  }
+
+  bool AddUnowned(const FileDescriptorProto* PROTOBUF_NONNULL file) {
+    absl::MutexLock lock(mutex_);
+    return database_.AddUnowned(file);
+  }
+
+  // implements DescriptorDatabase -----------------------------------
+  [[nodiscard]] bool FindFileByName(absl::string_view filename,
+                                    FileDescriptorProto* PROTOBUF_NONNULL
+                                        output) override {
+    absl::MutexLock lock(mutex_);
+    return database_.FindFileByName(filename, output);
+  }
+  [[nodiscard]] bool FindFileContainingSymbol(
+      absl::string_view symbol_name,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override {
+    absl::MutexLock lock(mutex_);
+    return database_.FindFileContainingSymbol(symbol_name, output);
+  }
+  [[nodiscard]] bool FindFileContainingExtension(
+      absl::string_view containing_type, int field_number,
+      FileDescriptorProto* PROTOBUF_NONNULL output) override {
+    absl::MutexLock lock(mutex_);
+    return database_.FindFileContainingExtension(containing_type, field_number,
+                                                 output);
+  }
+  [[nodiscard]] bool FindAllExtensionNumbers(absl::string_view extendee_type,
+                                             std::vector<int>* PROTOBUF_NONNULL
+                                                 output) override {
+    absl::MutexLock lock(mutex_);
+    return database_.FindAllExtensionNumbers(extendee_type, output);
+  }
+
+  [[nodiscard]] bool FindAllFileNames(
+      std::vector<std::string>* PROTOBUF_NONNULL output) override {
+    absl::MutexLock lock(mutex_);
+    return database_.FindAllFileNames(output);
+  }
+
+ private:
+  absl::Mutex mutex_;
+  SimpleDescriptorDatabase database_ ABSL_GUARDED_BY(mutex_);
 };
 
 // Very similar to SimpleDescriptorDatabase, but stores all the descriptors

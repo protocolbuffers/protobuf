@@ -173,9 +173,7 @@ class PROTOBUF_EXPORT SimpleFieldComparator : public FieldComparator {
   bool CompareDouble(const FieldDescriptor& field, double value_1,
                      double value_2);
 
-  bool CompareEnum(const FieldDescriptor& field,
-                   const EnumValueDescriptor* value_1,
-                   const EnumValueDescriptor* value_2);
+  bool CompareEnumValue(const FieldDescriptor& field, int value_1, int value_2);
 
   // Uses CompareDoubleOrFloat, a helper function used by both CompareDouble and
   // CompareFloat.

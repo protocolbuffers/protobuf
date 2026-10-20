@@ -487,4 +487,41 @@ public class ParserTest {
     assertThat(thrown).hasMessageThat().contains("invalid tag");
     ExtensionRegistryLite.setLazyExtensionMode(originalMode);
   }
+
+  private static final byte[] MISSING_REQUIRED_EXTENSION_BYTES =
+      createMissingRequiredExtensionBytes();
+
+  private static byte[] createMissingRequiredExtensionBytes() {
+    TestMergeException.Builder message = TestMergeException.newBuilder();
+    message
+        .getAllExtensionsBuilder()
+        .setExtension(TestRequired.single, TestRequired.newBuilder().setA(1).buildPartial());
+    ByteString byteString = message.buildPartial().toByteString();
+    return byteString.concat(byteString).toByteArray();
+  }
+
+  @Test
+  public void testLazyExtensionsOverride_true_doesNotThrow() throws Exception {
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    UnittestProto.registerAllExtensions(registry);
+
+    // Should pass without throwing exception when overridden to lazy
+    TestMergeException result =
+        TestMergeException.parseFrom(
+            MISSING_REQUIRED_EXTENSION_BYTES, registry.withLazyExtensionsOverride(true));
+    assertThat(result).isNotNull();
+  }
+
+  @Test
+  public void testLazyExtensionsOverride_false_throwsException() throws Exception {
+    ExtensionRegistry registry = ExtensionRegistry.newInstance();
+    UnittestProto.registerAllExtensions(registry);
+
+    // Should throw exception when overridden to eager
+    assertThrows(
+        InvalidProtocolBufferException.class,
+        () ->
+            TestMergeException.parseFrom(
+                MISSING_REQUIRED_EXTENSION_BYTES, registry.withLazyExtensionsOverride(false)));
+  }
 }

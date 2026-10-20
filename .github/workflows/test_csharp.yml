@@ -15,37 +15,43 @@ jobs:
   # All C# jobs are currently run on presubmit
   # If you wish to add continuous-only jobs you will need to import test-type above
   linux:
-    name: Linux
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["8.0", "10.0"]
+    name: Linux .NET ${{ matrix.version }}
     runs-on: ubuntu-22-4core
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v7
         with:
           ref: ${{ inputs.safe-checkout }}
 
       # TODO Run this with Bazel once codegen is handled properly.
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v7
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          # Note: this image includes .NET 8 and .NET 10 SDKs side-by-side.
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-4b38cf83a0c85429c6d578590f4a4a39e660036b
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           entrypoint: /bin/bash
           command: >-
-            -cex "
-            cd csharp &&
-            dotnet restore src/Google.Protobuf.sln &&
-            dotnet build -c Release src/Google.Protobuf.sln &&
-            dotnet test -c Release -f net8.0 src/Google.Protobuf.Test/Google.Protobuf.Test.csproj"
+            -cex '
+            cd csharp;
+            dotnet restore src/Google.Protobuf.sln;
+            dotnet build -c Release src/Google.Protobuf.sln;
+            dotnet test -c Release -f net${{ matrix.version }} src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
 
       - name: Clear bazel between docker instances
         run: sudo rm -rf _build .repository-cache
 
       - name: Run conformance tests
-        uses: protocolbuffers/protobuf-ci/bazel-docker@v5
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v7
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7
+          # Note: this image includes .NET 8 and .NET 10 SDKs side-by-side.
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/csharp:9.2.0-3.1.415-8.0.100-4b38cf83a0c85429c6d578590f4a4a39e660036b
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
-          bazel-cache: csharp_linux
+          bazel-cache: csharp_linux/${{ matrix.version }}
           bazel: test //csharp:conformance_test --action_env=PATH --action_env=DOTNET_CLI_TELEMETRY_OPTOUT=1 --test_env=DOTNET_CLI_HOME=/home/bazel
 
   windows:
@@ -53,17 +59,21 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v7
         with:
           ref: ${{ inputs.safe-checkout }}
-
+      - name: Windows startup flags
+        shell: bash
+        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
       - name: Setup dotnet
         uses: actions/setup-dotnet@baa11fbfe1d6520db94683bd5c7a3818018e4309  # v5.1.0
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Run tests
-        uses: protocolbuffers/protobuf-ci/bash@v5
+        uses: protocolbuffers/protobuf-ci/bash@v7
         with:
           bazel-version: 9.2.0
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -76,14 +86,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
-        uses: protocolbuffers/protobuf-ci/checkout@v5
+        uses: protocolbuffers/protobuf-ci/checkout@v7
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Build protobuf C# tests under x86_64 docker image
         # Tests are built "dotnet publish" because we want all the dependencies to the copied to the destination directory
         # (we want to avoid references to ~/.nuget that won't be available in the subsequent docker run)
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v7
         with:
           image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
@@ -91,7 +101,7 @@ jobs:
             /bin/bash -cex '
             DOTNET_CLI_TELEMETRY_OPTOUT=true
             DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
-            dotnet publish -c Release -f net8.0 /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
+            dotnet publish -c Release -f net8.0 -p:TargetFrameworks=net8.0 /workspace/csharp/src/Google.Protobuf.Test/Google.Protobuf.Test.csproj'
 
       - name: Use an actual aarch64 docker image to run protobuf C# tests with an emulator
         # "dotnet vstest" allows running tests from a pre-built project.
@@ -100,7 +110,7 @@ jobs:
         #   running under current user's UID and GID. To be able to do that, we need to provide a home directory for the user
         #   otherwise the UID would be homeless under the docker container and pip install wouldn't work. For simplicity,
         #   we just run map the user's home to a throwaway temporary directory
-        uses: protocolbuffers/protobuf-ci/docker@v5
+        uses: protocolbuffers/protobuf-ci/docker@v7
         with:
           image: mcr.microsoft.com/dotnet/sdk:8.0.100-bookworm-slim-arm64v8
           skip-staleness-check: true
@@ -110,3 +120,4 @@ jobs:
             DOTNET_CLI_TELEMETRY_OPTOUT=true
             DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
             dotnet vstest /workspace/csharp/src/Google.Protobuf.Test/bin/Release/net8.0/publish/Google.Protobuf.Test.dll'
+

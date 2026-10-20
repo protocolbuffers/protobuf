@@ -122,6 +122,10 @@ TEST(FieldMaskUtilTest, StringFormat) {
   EXPECT_EQ(2, mask.paths_size());
   EXPECT_EQ("fooBar", mask.paths(0));
   EXPECT_EQ("bazQuz", mask.paths(1));
+  FieldMaskUtil::FromString(",fooBar,,bazQuz,", &mask);
+  EXPECT_EQ(2, mask.paths_size());
+  EXPECT_EQ("fooBar", mask.paths(0));
+  EXPECT_EQ("bazQuz", mask.paths(1));
 }
 
 TEST(FieldMaskUtilTest, JsonStringFormat) {
@@ -145,6 +149,11 @@ TEST(FieldMaskUtilTest, JsonStringFormat) {
   EXPECT_EQ(2, mask.paths_size());
   EXPECT_EQ("foo_bar", mask.paths(0));
   EXPECT_EQ("baz_quz", mask.paths(1));
+  EXPECT_TRUE(FieldMaskUtil::FromJsonString(",fooBar,,bazQuz,", &mask));
+  EXPECT_EQ(2, mask.paths_size());
+  EXPECT_EQ("foo_bar", mask.paths(0));
+  EXPECT_EQ("baz_quz", mask.paths(1));
+  EXPECT_FALSE(FieldMaskUtil::FromJsonString("foo_bar", &mask));
 }
 
 TEST(FieldMaskUtilTest, FromFieldNumbers) {
@@ -345,6 +354,24 @@ TEST(FieldMaskUtilTest, TestIntersect) {
   FieldMaskUtil::FromString("foo.bar.baz,quz", &mask1);
   FieldMaskUtil::FromString("foo.bar,bar", &mask2);
   FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::Intersect(mask2, mask1, &out);
+  EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
+  // Intersect with empty mask.
+  mask1.Clear();
+  FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("", FieldMaskUtil::ToString(out));
+  // Intersect with masks containing empty paths alongside non-empty paths.
+  mask1.Clear();
+  mask1.add_paths("");
+  mask1.add_paths("foo.bar");
+  mask2.Clear();
+  mask2.add_paths("");
+  mask2.add_paths("foo.bar.baz");
+  mask2.add_paths("quz");
+  FieldMaskUtil::Intersect(mask1, mask2, &out);
+  EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
+  FieldMaskUtil::Intersect(mask2, mask1, &out);
   EXPECT_EQ("foo.bar.baz", FieldMaskUtil::ToString(out));
 }
 
@@ -903,6 +930,14 @@ TEST(FieldMaskUtilTest, TestCanonicalizeFieldMaskWithEmptyAndNonEmptyPaths) {
   FieldMaskUtil::ToCanonicalForm(mask, &canonical);
   EXPECT_EQ(canonical.paths().size(), 1);
   EXPECT_EQ(canonical.paths(0), "a.b");
+
+  FieldMask other;
+  other.add_paths("");
+  other.add_paths("a");
+  FieldMask intersected;
+  FieldMaskUtil::Intersect(mask, other, &intersected);
+  EXPECT_EQ(intersected.paths().size(), 1);
+  EXPECT_EQ(intersected.paths(0), "a.b");
 }
 
 

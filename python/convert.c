@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "python/descriptor.h"
+#include "python/descriptor_pool.h"
 #include "python/message.h"
 #include "python/protobuf.h"
 #include "upb/base/descriptor_constants.h"
@@ -60,7 +62,8 @@ PyObject* PyUpb_UpbToPy(upb_MessageValue val, const upb_FieldDef* f,
       return ret;
     }
     case kUpb_CType_Message:
-      return PyUpb_Message_Get((upb_Message*)val.msg_val,
+      return PyUpb_Message_Get(PyUpb_Arena_GetPool(arena),
+                               (upb_Message*)val.msg_val,
                                upb_FieldDef_MessageSubDef(f), arena);
     default:
       PyErr_Format(PyExc_SystemError,
@@ -236,8 +239,13 @@ bool PyUpb_IsNumpyNdarray(PyObject* obj, const upb_FieldDef* f) {
     PyErr_Clear();
     return false;
   }
+  const char* type_name = PyUpb_GetStrData(type_name_obj);
+  if (!type_name) {
+    Py_DECREF(type_name_obj);
+    return false;
+  }
   bool is_ndarray = false;
-  if (!strcmp(PyUpb_GetStrData(type_name_obj), "ndarray")) {
+  if (!strcmp(type_name, "ndarray")) {
     PyErr_Format(PyExc_TypeError,
                  "%S has type ndarray, but expected one of: %s", obj,
                  upb_FieldDef_TypeString(f));
@@ -254,7 +262,12 @@ bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
     PyErr_Clear();
     return false;
   }
-  bool is_numpy = !strcmp(PyUpb_GetStrData(type_module_obj), "numpy");
+  const char* type_module = PyUpb_GetStrData(type_module_obj);
+  if (!type_module) {
+    Py_DECREF(type_module_obj);
+    return false;
+  }
+  bool is_numpy = !strcmp(type_module, "numpy");
   Py_DECREF(type_module_obj);
   if (!is_numpy) {
     return false;
@@ -266,7 +279,12 @@ bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
     PyErr_Clear();
     return false;
   }
-  bool is_bool = !strcmp(PyUpb_GetStrData(type_name_obj), "bool");
+  const char* type_name = PyUpb_GetStrData(type_name_obj);
+  if (!type_name) {
+    Py_DECREF(type_name_obj);
+    return false;
+  }
+  bool is_bool = !strcmp(type_name, "bool");
   Py_DECREF(type_name_obj);
   if (!is_bool) {
     return false;
@@ -277,7 +295,9 @@ bool PyUpb_IsNumpyBoolScalar(PyObject* obj) {
 static bool PyUpb_GetBool(PyObject* obj, const upb_FieldDef* f, bool* val) {
   if (!PyBool_Check(obj)) {
     if (PyUpb_IsNumpyNdarray(obj, f)) return false;
+    if (PyErr_Occurred()) return false;
     if (PyUpb_IsNumpyBoolScalar(obj)) {
+      if (PyErr_Occurred()) return false;
       *val = PyObject_IsTrue(obj);
       return !PyErr_Occurred();
     }
@@ -285,6 +305,34 @@ static bool PyUpb_GetBool(PyObject* obj, const upb_FieldDef* f, bool* val) {
   *val = PyLong_AsLong(obj);
   return !PyErr_Occurred();
 }
+
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API + 0 >= 0x030B0000
+static bool PyUpb_PyBufferBytes(PyObject* obj, const char** buf,
+                                Py_ssize_t* len) {
+  Py_buffer view;
+  if (PyObject_GetBuffer(obj, &view, PyBUF_SIMPLE) != 0) {
+    PyErr_Clear();
+    PyErr_SetString(
+        PyExc_ValueError,
+        "expected bytes, memoryview is not contiguous or has >1 dimensions");
+    return false;
+  }
+
+  if (view.itemsize != 1) {
+    PyErr_Format(PyExc_ValueError,
+                 "expected bytes, memoryview of itemsize %zd found",
+                 view.itemsize);
+    PyBuffer_Release(&view);
+    return false;
+  }
+
+  *buf = view.buf;
+  *len = view.len;
+  // Safe as obj is a reference to the memoryview.
+  PyBuffer_Release(&view);
+  return true;
+}
+#endif  // !Py_LIMITED_API || Py_LIMITED_API >= 0x030B0000
 
 bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
                    upb_Arena* arena) {
@@ -300,16 +348,28 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
     case kUpb_CType_UInt64:
       return PyUpb_GetUint64(obj, f, &val->uint64_val);
     case kUpb_CType_Float:
-      if (!PyFloat_Check(obj) && PyUpb_IsNumpyNdarray(obj, f)) return false;
+      if (!PyFloat_Check(obj)) {
+        if (PyUpb_IsNumpyNdarray(obj, f) || PyErr_Occurred()) return false;
+      }
       val->float_val = PyFloat_AsDouble(obj);
       return !PyErr_Occurred();
     case kUpb_CType_Double:
-      if (!PyFloat_Check(obj) && PyUpb_IsNumpyNdarray(obj, f)) return false;
+      if (!PyFloat_Check(obj)) {
+        if (PyUpb_IsNumpyNdarray(obj, f) || PyErr_Occurred()) return false;
+      }
       val->double_val = PyFloat_AsDouble(obj);
       return !PyErr_Occurred();
     case kUpb_CType_Bool:
       return PyUpb_GetBool(obj, f, &val->bool_val);
     case kUpb_CType_Bytes: {
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API + 0 >= 0x030B0000
+      if (PyObject_IsInstance(obj, (PyObject*)&PyMemoryView_Type)) {
+        const char* buf = NULL;
+        Py_ssize_t size = 0;
+        if (!PyUpb_PyBufferBytes(obj, &buf, &size)) return false;
+        return PyUpb_MaybeCopyString(buf, size, val, arena);
+      }
+#endif
       char* ptr;
       Py_ssize_t size;
       if (PyBytes_AsStringAndSize(obj, &ptr, &size) < 0) return false;
@@ -331,6 +391,22 @@ bool PyUpb_PyToUpb(PyObject* obj, const upb_FieldDef* f, upb_MessageValue* val,
         }
         return PyUpb_MaybeCopyString(ptr, size, val, arena);
       }
+      // Try the buffer protocol if it's a memoryview.
+#if !defined(Py_LIMITED_API) || Py_LIMITED_API + 0 >= 0x030B0000
+      if (PyObject_IsInstance(obj, (PyObject*)&PyMemoryView_Type)) {
+        const char* buf = NULL;
+        if (!PyUpb_PyBufferBytes(obj, &buf, &size)) return false;
+        if (!utf8_range_IsValid(buf, size)) {
+          // Invalid UTF-8.  Try to convert the message to a Python Unicode
+          // object, even though we know this will fail, just to get the
+          // idiomatic Python error message.
+          obj = PyUnicode_DecodeUTF8(buf, size, NULL);
+          assert(!obj);
+          return false;
+        }
+        return PyUpb_MaybeCopyString(buf, size, val, arena);
+      }
+#endif
       const char* ptr = PyUnicode_AsUTF8AndSize(obj, &size);
       if (PyErr_Occurred()) return false;
       return PyUpb_MaybeCopyString(ptr, size, val, arena);

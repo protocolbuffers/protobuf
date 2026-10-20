@@ -46,6 +46,10 @@ while [[ -n "$@" ]]; do
 done
 
 conformance_test_runner=$(rlocation com_google_protobuf/conformance/conformance_test_runner)
+if [[ ! -e "$conformance_test_runner" ]]; then
+  # Windows.
+  conformance_test_runner=$(rlocation com_google_protobuf/conformance/conformance_test_runner.exe)
+fi
 conformance_testee=$TESTEE
 args=(--enforce_recommended)
 

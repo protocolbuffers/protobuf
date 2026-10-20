@@ -1,6 +1,7 @@
 #include "google/protobuf/compiler/cpp/field_chunk.h"
 
 #include <cstdint>
+#include <numeric>
 #include <vector>
 
 #include <gmock/gmock.h>
@@ -10,6 +11,7 @@
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/descriptor.h"
+#include "google/protobuf/has_bits.h"
 #include "google/protobuf/unittest.pb.h"
 
 namespace google {
@@ -19,7 +21,6 @@ namespace cpp {
 namespace {
 
 using proto2_unittest::TestAllTypes;
-using testing::IsEmpty;
 
 template <typename ProtoT>
 std::vector<const google::protobuf::FieldDescriptor*> CreateFieldArray(
@@ -35,10 +36,10 @@ std::vector<const google::protobuf::FieldDescriptor*> CreateFieldArray(
   return fields;
 }
 
-template <typename ProtoT, typename PredT>
+template <typename ProtoT, typename ProjT>
 std::vector<FieldChunk> CreateAndCollectFields(
-    absl::Span<const char*> field_names, PredT&& predicate) {
-  return CollectFields(CreateFieldArray<ProtoT>(field_names), {}, predicate);
+    absl::Span<const char*> field_names, const ProjT proj) {
+  return CollectFields(CreateFieldArray<ProtoT>(field_names), {}, proj);
 }
 
 TEST(CollectFieldsTest, SingleChunk) {
@@ -46,9 +47,7 @@ TEST(CollectFieldsTest, SingleChunk) {
                                "optional_int64"};
 
   auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return true;
-      });
+      field_names, [](const FieldDescriptor* field) { return true; });
 
   EXPECT_EQ(chunks.size(), 1);
 }
@@ -58,9 +57,7 @@ TEST(CollectFieldsTest, AllDifferentChunks) {
                                "optional_int64"};
 
   auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return false;
-      });
+      field_names, [](const FieldDescriptor* field) { return field; });
 
   EXPECT_EQ(chunks.size(), 3);
 }
@@ -70,10 +67,9 @@ TEST(CollectFieldsTest, RepeatedAndSingular) {
                                "optional_int64"};
 
   auto fields = CreateFieldArray<TestAllTypes>(field_names);
-  auto chunks = CollectFields(
-      fields, {}, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return lhs->is_repeated() == rhs->is_repeated();
-      });
+  auto chunks = CollectFields(fields, {}, [](const FieldDescriptor* field) {
+    return field->is_repeated();
+  });
 
   ASSERT_EQ(chunks.size(), 2);
 
@@ -84,101 +80,55 @@ TEST(CollectFieldsTest, RepeatedAndSingular) {
   EXPECT_FALSE(chunks[1].fields.front()->is_repeated());
 }
 
-TEST(FindNextTest, AllEqual) {
-  const char* field_names[] = {"optional_int32", "optional_int64"};
-  auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return false;
-      });
-  auto it = FindNextUnequalChunk(
-      chunks.begin(), chunks.end(),
-      [](const FieldChunk&, const FieldChunk&) { return true; });
-
-  EXPECT_EQ(it, chunks.end());
-}
-
-TEST(FindNextTest, AllUnequal) {
-  const char* field_names[] = {"optional_int32", "optional_int64"};
-  auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return false;
-      });
-  auto it = FindNextUnequalChunk(
-      chunks.begin(), chunks.end(),
-      [](const FieldChunk&, const FieldChunk&) { return false; });
-
-  ASSERT_NE(it, chunks.end());
-  EXPECT_EQ(it->fields, chunks[1].fields);
-}
-
-TEST(ExtractTest, ExtractNone) {
-  const char* field_names[] = {"optional_int32", "optional_int64"};
-  auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return false;
-      });
-
-  ASSERT_EQ(chunks.size(), 2);
-  auto extracted =
-      ExtractFields(chunks.begin(), chunks.end(),
-                    [](const FieldDescriptor* f) { return false; });
-
-  EXPECT_THAT(extracted, IsEmpty());
-}
-
-TEST(ExtractTest, ExtractAll) {
-  const char* field_names[] = {"optional_int32", "optional_int64"};
-  auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return false;
-      });
-
-  ASSERT_EQ(chunks.size(), 2);
-
-  auto extracted = ExtractFields(chunks.begin(), chunks.end(),
-                                 [](const FieldDescriptor* f) { return true; });
-
-  ASSERT_EQ(chunks.size(), 2);
-  ASSERT_THAT(chunks[0].fields, IsEmpty());
-  ASSERT_THAT(chunks[1].fields, IsEmpty());
-
-  auto fields = CreateFieldArray<TestAllTypes>(field_names);
-  EXPECT_THAT(extracted, testing::ElementsAreArray(fields));
-}
-
 TEST(GenChunkMaskTest, ValidMaskFromFields) {
-  const char* field_names[] = {"optional_int32"};
+  const char* field_names[] = {"optional_int32", "optional_int64"};
 
   auto fields = CreateFieldArray<TestAllTypes>(field_names);
-  ASSERT_EQ(fields.size(), 1);
+  ASSERT_EQ(fields.size(), 2);
   ASSERT_EQ(fields[0]->index(), 0);
-
-  const uint32_t kHasbitIdx = 3;
-  auto field_layout = FieldLayout::BuildForTesting(fields, {kHasbitIdx});
-  uint32_t mask = GenChunkMask(fields, field_layout);
-  EXPECT_EQ(mask, 1 << kHasbitIdx);
-}
-
-TEST(GenChunkMaskTest, ValidMaskFromChunks) {
-  const char* field_names[] = {"optional_int32", "optional_int64"};
-  auto chunks = CreateAndCollectFields<TestAllTypes>(
-      field_names, [](const FieldDescriptor* lhs, const FieldDescriptor* rhs) {
-        return false;
-      });
-
-  ASSERT_EQ(chunks.size(), 2);
-  ASSERT_EQ(chunks[0].fields.size(), 1);
-  ASSERT_EQ(chunks[0].fields[0]->index(), 0);
-  ASSERT_EQ(chunks[1].fields.size(), 1);
-  ASSERT_EQ(chunks[1].fields[0]->index(), 1);
+  ASSERT_EQ(fields[1]->index(), 1);
 
   const uint32_t kHasbitIdxAt0 = 3;
   const uint32_t kHasbitIdxAt1 = 5;
   auto field_layout =
-      FieldLayout::BuildForTesting({chunks[0].fields[0], chunks[1].fields[0]},
-                                   {kHasbitIdxAt0, kHasbitIdxAt1});
-  uint32_t mask = GenChunkMask(chunks.begin(), chunks.end(), field_layout);
+      FieldLayout::BuildForTesting(fields, {kHasbitIdxAt0, kHasbitIdxAt1});
+  uint32_t mask = GenChunkMask(fields, field_layout);
   EXPECT_EQ(mask, (1 << kHasbitIdxAt0) | (1 << kHasbitIdxAt1));
+}
+
+TEST(GenChunkMaskTest, FullWordMaskFromFields) {
+  const Descriptor* descriptor = TestAllTypes::GetDescriptor();
+  std::vector<const FieldDescriptor*> fields;
+  for (int i = 0; i < 37; ++i) {
+    fields.push_back(descriptor->field(i));
+  }
+
+  // First two fields have no hasbit (kNoHasbit), the rest have the bits 0..34.
+  std::vector<int> has_bit_indices(37, internal::kNoHasbit);
+  std::iota(has_bit_indices.begin() + 2, has_bit_indices.end(), 0);
+
+  auto field_layout = FieldLayout::BuildForTesting(fields, has_bit_indices);
+  ASSERT_EQ(field_layout.CountFieldsSharingHasWord(0), 32);
+  ASSERT_EQ(field_layout.CountFieldsSharingHasWord(1), 3);
+
+  auto hasbit_fields = absl::MakeSpan(fields).subspan(2);
+
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(0, 32), field_layout),
+            ~uint32_t{0});
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(0, 31), field_layout),
+            (uint32_t{1} << 31) - 1);
+
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(32, 3), field_layout),
+            ~uint32_t{0});
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(32, 2), field_layout),
+            uint32_t{0b11});
+
+  auto exact_word_layout = FieldLayout::BuildForTesting(
+      std::vector<const FieldDescriptor*>(fields.begin(), fields.begin() + 34),
+      std::vector<int>(has_bit_indices.begin(), has_bit_indices.begin() + 34));
+  ASSERT_EQ(exact_word_layout.CountFieldsSharingHasWord(0), 32);
+  EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(0, 32), exact_word_layout),
+            ~uint32_t{0});
 }
 
 }  // namespace

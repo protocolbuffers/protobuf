@@ -151,51 +151,6 @@ void ParseFunctionGenerator::GenerateAliasParseTableType(io::Printer* p) {
       )cc");
 }
 
-void ParseFunctionGenerator::GenerateDataDecls(io::Printer* p) {
-  auto v = p->WithVars(variables_);
-  p->Emit({{"SECTION",
-            [&] {
-              if (!IsProfileDriven(options_)) return;
-              std::string section_name;
-              // Since most (>80%) messages are never present, messages that are
-              // present are considered hot enough to be clustered together.
-              // When using weak descriptors we use unique sections for each
-              // table to allow for GC to work. pth/ptl names must be in sync
-              // with the linker script.
-              if (UsingImplicitWeakDescriptor(descriptor_->file(), options_)) {
-                section_name = WeakDescriptorDataSection(
-                    IsPresentMessage(descriptor_, options_) ? "pth" : "ptl",
-                    descriptor_, index_in_file_messages_, options_);
-              } else if (IsPresentMessage(descriptor_, options_)) {
-                section_name = "proto_parse_table_hot";
-              } else {
-                section_name = "proto_parse_table_lukewarm";
-              }
-              p->Emit({{"section_name", section_name}},
-                      "ABSL_ATTRIBUTE_SECTION_VARIABLE($section_name$)");
-            }}},
-          R"cc(
-            friend class $pbi$::TcParser;
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-            $SECTION$
-            static const ParseTableT_ _table_;
-#endif
-          )cc");
-}
-
-void ParseFunctionGenerator::GenerateDataDefinitions(io::Printer* p) {
-  auto v = p->WithVars(variables_);
-  p->Emit(
-      R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-        PROTOBUF_CONSTINIT
-        PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const $Msg$::ParseTableT_
-            $Msg$::_table_ =
-                $Msg$::InternalGenerateParseTable_($Msg$_class_data_.base());
-#endif  // !PROTOBUF_MESSAGE_GLOBALS
-      )cc");
-}
-
 static std::string TcParseFunctionName(internal::TcParseFunction func) {
 #define PROTOBUF_TC_PARSE_FUNCTION_X(value) #value,
   static constexpr absl::string_view kNames[] = {
@@ -280,26 +235,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
               p->Emit("nullptr,  // post_loop_handler\n");
             }
           }},
-         {"fallback", TcParseFunctionName(tc_table_info_->fallback_function)},
-         {"to_prefetch",
-          [&] {
-            std::vector<const FieldDescriptor*> subtable_fields;
-            for (const auto& aux : tc_table_info_->aux_entries) {
-              if (aux.type == internal::TailCallTableInfo::kClassData) {
-                subtable_fields.push_back(aux.field);
-              }
-            }
-            const auto* hottest = FindHottestField(subtable_fields, options_);
-            p->Emit(
-                {{"hot_type", QualifiedClassName(hottest == nullptr
-                                                     ? descriptor_
-                                                     : hottest->message_type(),
-                                                 options_)}},
-                R"cc(
-#ifdef PROTOBUF_PREFETCH_PARSE_TABLE
-                  ::_pbi::TcParser::GetTable<$hot_type$>(),  // to_prefetch
-#endif  // PROTOBUF_PREFETCH_PARSE_TABLE)cc");
-          }}},
+         {"fallback", TcParseFunctionName(tc_table_info_->fallback_function)}},
         // clang-format off
         R"cc(
         $has_bits_offset$,
@@ -314,7 +250,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         class_data,
         $post_loop_handler$,
         $fallback$,  // fallback
-        $to_prefetch$)cc"
+        )cc"
         // clang-format on
     );
   };
@@ -341,11 +277,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                        aux_entry.field->message_type(), options_)},
               },
               R"cc(
-#ifndef PROTOBUF_MESSAGE_GLOBALS
-                {::_pbi::FieldAuxClassData(), &$sub_type$_class_data_},
-#else
                 {::_pbi::FieldAuxClassData(), &$sub_globals$},
-#endif
               )cc");
           break;
         case TailCallTableInfo::kClassDataWeak:
@@ -502,7 +434,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
       // clang-format off
 R"cc(
-constexpr $Msg$::ParseTableT_ $Msg$::InternalGenerateParseTable_(const ::_pbi::ClassData* class_data) {
+constexpr $Msg$::ParseTableT_ $Msg$::_Internal::GenerateParseTable(const ::_pbi::ClassData* class_data) {
   return ParseTableT_{
     {
       $table_base$
@@ -532,16 +464,14 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                 {$target$, {$coded_tag$, ::uint16_t{$nonfield_info$}}},
               )cc");
     } else if (auto* mp_field = info.AsMpField()) {
-      {
-        // TODO: refactor this to use Emit.
-        Formatter format(p, variables_);
-        PrintFieldComment(format, mp_field->field, options_);
-      }
-      p->Emit({{"target", TcParseFunctionName(mp_field->func)},
+      p->Emit({{"comment",
+                [&] { PrintFieldComment(p, mp_field->field, options_); }},
+               {"target", TcParseFunctionName(mp_field->func)},
                {"coded_tag", mp_field->coded_tag},
                {"function_index", mp_field->function_index},
                {"index", mp_field->field_index}},
               R"cc(
+                $comment$;
                 {$target$,
                  {$coded_tag$, ::uint8_t{$function_index$},
                   ::uint32_t{
@@ -549,11 +479,6 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                       sizeof(_pbi::TcParseTableBase::FieldEntry) * $index$}}},
               )cc");
     } else if (auto* as_field = info.AsField()) {
-      {
-        // TODO: refactor this to use Emit.
-        Formatter format(p, variables_);
-        PrintFieldComment(format, as_field->field, options_);
-      }
       ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
       std::string func_name = TcParseFunctionName(as_field->func);
@@ -582,6 +507,8 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
 
       p->Emit(
           {
+              {"comment",
+               [&] { PrintFieldComment(p, as_field->field, options_); }},
               {"target", func_name},
               {"coded_tag", as_field->coded_tag},
               {"hasbit_idx", as_field->hasbit_idx},
@@ -589,6 +516,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
               {"field_name", FieldMemberName(as_field->field, /*split=*/false)},
           },
           R"cc(
+            $comment$;
             {$target$,
              {$coded_tag$, $hasbit_idx$, $aux_idx$,
               PROTOBUF_FIELD_OFFSET($Msg$, $field_name$)}},
@@ -605,9 +533,6 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
 void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
-    // TODO: refactor this to use Emit.
-    Formatter format(p, variables_);
-    PrintFieldComment(format, field, options_);
 
     bool weak = IsWeak(field, options_);
     bool split = ShouldSplit(field, options_);
@@ -617,7 +542,8 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
         {{"field_name", FieldName(field)},
          {"field_member_name", FieldMemberName(field, /*split=*/false)}});
 
-    p->Emit({{"offset",
+    p->Emit({{"comment", [&] { PrintFieldComment(p, field, options_); }},
+             {"offset",
               [&] {
                 if (weak) {
                   p->Emit("/* weak */ 0,");
@@ -648,6 +574,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
             // Use `0|` prefix to eagerly convert the enums to int to avoid
             // enum-enum operations. They are deprecated in C++20.
             R"cc(
+              $comment$;
               {$offset$, $has_idx$, $aux_idx$, (0 | $type_card$)},
             )cc");
   }

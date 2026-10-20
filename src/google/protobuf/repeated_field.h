@@ -123,6 +123,7 @@ class alignas(8) HeapRep {
   ~HeapRep() = delete;
 
   uint32_t capacity() const { return capacity_; }
+  void set_capacity(uint32_t c) { capacity_ = c; }
 
   template <typename Element>
   const Element* elements() const {
@@ -268,6 +269,9 @@ class SooRep {
 
 // The untyped common base class for `RepeatedField`.
 class RepeatedFieldBase {
+ public:
+  bool empty() const { return soo_rep_.size() == 0; }
+
  protected:
   constexpr RepeatedFieldBase() = default;
   constexpr explicit RepeatedFieldBase(internal::InternalMetadataOffset offset)
@@ -733,7 +737,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   void InternalDeallocate(ArenaProvider arena_provider) {
     ABSL_DCHECK(!is_soo());
     ABSL_DCHECK_EQ(ResolveArena(arena_provider), GetSerialArena());
-    const size_t bytes = Capacity(false) * sizeof(Element) + kHeapRepHeaderSize;
+    const size_t bytes =
+        Capacity(/*is_soo=*/false) * sizeof(Element) + kHeapRepHeaderSize;
     if constexpr (in_destructor &&
                   Arena::is_destructor_skippable<RepeatedField>::value) {
       // Repeated fields with destructor-skippable elements are never destroyed
@@ -896,7 +901,7 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 
 template <typename Element>
 inline bool RepeatedField<Element>::empty() const {
-  return size() == 0;
+  return RepeatedFieldBase::empty();
 }
 
 template <typename Element>
@@ -1415,7 +1420,8 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
              : 0;
 }
 
-// Like C++20's std::erase_if, for RepeatedField
+// Like C++20's std::erase_if, for RepeatedField. The order of calls to the
+// predicate is not specified.
 template <typename T, typename Pred>
 size_t erase_if(RepeatedField<T>& cont, Pred pred) {
   // Intentionally decay `elem` to avoid exposing a reference to elements of the
@@ -1577,7 +1583,21 @@ PROTOBUF_NOINLINE void RepeatedField<Element>::GrowNoAnnotate(
                   sizeof(Element)) {
       // We need to manually align the allocation.
       bytes = internal::ArenaAlignDefault::Ceil(bytes);
+      new_size = (bytes - kHeapRepHeaderSize) / sizeof(Element);
     }
+
+    // Try grow in place if the arena allows it.
+    if (!was_soo) {
+      internal::HeapRep* rep = soo_rep_.heap_rep();
+      const size_t old_bytes =
+          kHeapRepHeaderSize + sizeof(Element) * old_capacity;
+      if (arena->TryGrowTail(rep->elements<Element>() + old_capacity,
+                             bytes - old_bytes)) {
+        rep->set_capacity(new_size);
+        return;
+      }
+    }
+
     new_rep =
         new (arena->AllocateAligned<internal::AllocationClient::kArray>(bytes))
             internal::HeapRep(new_size);

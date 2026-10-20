@@ -28,11 +28,10 @@
 
 namespace google {
 namespace protobuf {
+namespace io {
 namespace internal {
 struct StreamContext;
 }  // namespace internal
-
-namespace io {
 
 // A ZeroCopyInputStream that reads compressed data through zlib
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED PROTOBUF_EXPORT

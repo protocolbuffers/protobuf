@@ -19,7 +19,6 @@ are:
 import collections.abc
 import copy
 import pickle
-import warnings
 from typing import (
     Any,
     Iterable,
@@ -45,12 +44,7 @@ from google.protobuf import message
 
 def _CheckFrozen(is_frozen: bool, msg: str) -> None:
   if is_frozen:
-    warnings.warn(
-        'Mutating messages or containers returned by GetOptions() is'
-        ' deprecated and will raise an exception in a future release.',
-        category=FutureWarning,
-        stacklevel=3,
-    )
+    raise message.FrozenInstanceError(msg)
 
 
 class BaseContainer(Sequence[_T]):
@@ -206,8 +200,6 @@ class RepeatedScalarFieldContainer(BaseContainer[_T], MutableSequence[_T]):
     """Sets the item on the specified position."""
     self._AssureWritable()
     if isinstance(key, slice):
-      if key.step is not None:
-        raise ValueError('Extended slices not supported')
       self._values[key] = map(self._type_checker.CheckValue, value)
       self._message_listener.Modified()
     else:

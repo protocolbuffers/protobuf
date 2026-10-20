@@ -1,7 +1,7 @@
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Go)
 @@ @@
-       ::_pbi::TcParser::GetTable<::protobuf_editions_test::golden::SimpleProto3>(),  // to_prefetch
-       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+       nullptr,  // post_loop_handler
+       ::_pbi::TcParser::MpUnknownFields,  // fallback
      }, {{
 -      // optional int32 int32_field = 1;
 +      // int32 int32_field = 1;
@@ -33,12 +33,12 @@
 +    // int32 int32_field = 1;
      cached_has_bits = this_._impl_._has_bits_[0];
      if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+       total_size +=
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Go)
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Java)
 @@ @@
-       ::_pbi::TcParser::GetTable<::protobuf_editions_test::golden::SimpleProto3>(),  // to_prefetch
-       #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
+       nullptr,  // post_loop_handler
+       ::_pbi::TcParser::MpUnknownFields,  // fallback
      }, {{
 -      // optional int32 int32_field = 1;
 +      // int32 int32_field = 1;
@@ -70,7 +70,7 @@
 +    // int32 int32_field = 1;
      cached_has_bits = this_._impl_._has_bits_[0];
      if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-       total_size += ::_pbi::WireFormatLite::Int32SizePlusOne(
+       total_size +=
 [  FAILED  ] third_party/protobuf/editions/golden/simple_proto3.pb.cc (Java)
 [ RUN      ] third_party/protobuf/editions/golden/simple_proto3.pb.h (Go)
 @@ @@
@@ -82,6 +82,15 @@
    [[nodiscard]] bool has_int32_field() const;
    void clear_int32_field() ;
    [[nodiscard]] ::int32_t int32_field() const;
+@@ @@
+   static void SharedDtor(MessageLite& self);
+   void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
+ 
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+ 
 @@ @@
  
  // SimpleProto3
@@ -102,6 +111,15 @@
    [[nodiscard]] bool has_int32_field() const;
    void clear_int32_field() ;
    [[nodiscard]] ::int32_t int32_field() const;
+@@ @@
+   static void SharedDtor(MessageLite& self);
+   void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
+ 
+-  // optional int32 int32_field = 1;
++  // int32 int32_field = 1;
+   ::int32_t _internal_int32_field() const;
+   void _internal_set_int32_field(::int32_t value);
+ 
 @@ @@
  
  // SimpleProto3

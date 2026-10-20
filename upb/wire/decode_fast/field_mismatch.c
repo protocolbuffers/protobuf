@@ -20,6 +20,7 @@
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
 #include "upb/wire/internal/decoder.h"
+#include "upb/wire/internal/eps_copy_input_stream.h"
 #include "upb/wire/internal/reader.h"
 #include "upb/wire/types.h"
 
@@ -54,13 +55,17 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeMismatchedSlot(
         field_num = _upb_DecodeFast_Tag2FieldNumber(tag);
         count = 2;
       }
-      data = field_num;
-      data2 =
-          upb_DecodeFastData2_PackWireTypeAndTagLen(data2, tag & 0x7, count);
-      ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(table) ==
-                    kUpb_ExtMode_NonExtendable
-                ? kUpb_DecodeFastNext_CheckMiniTable
-                : kUpb_DecodeFastNext_CheckExtRegMiniTable;
+      if (UPB_UNLIKELY(field_num == 0)) {
+        UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
+      } else {
+        data = field_num;
+        data2 =
+            upb_DecodeFastData2_PackWireTypeAndTagLen(data2, tag & 0x7, count);
+        ret = UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(table) ==
+                      kUpb_ExtMode_NonExtendable
+                  ? kUpb_DecodeFastNext_CheckMiniTable
+                  : kUpb_DecodeFastNext_CheckExtRegMiniTable;
+      }
     } else {
       ret = kUpb_DecodeFastNext_DecodeLongTag;
     }
@@ -77,7 +82,8 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeLongTag(
 
   uint32_t field_num, tag_len;
   if (UPB_UNLIKELY(
-          !_upb_DecodeFast_ParseLongTag(ptr, tag, &field_num, &tag_len))) {
+          !_upb_DecodeFast_ParseLongTag(ptr, tag, &field_num, &tag_len) ||
+          field_num == 0)) {
     UPB_DECODEFAST_ERROR(d, kUpb_DecodeStatus_Malformed, &ret);
     UPB_DECODEFAST_NEXT(ret);
   }
@@ -97,9 +103,11 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
     uint64_t data2) {
   uint32_t field_num = data;
 #ifndef NDEBUG
+  int guaranteed =
+      UPB_PRIVATE(upb_EpsCopyInputStream_GetBoundsCheckedBytes)(EPS(d));
   uint32_t check;
   const char* read = upb_WireReader_ReadTag(ptr, &check, EPS(d));
-  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(&d->input);
+  UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(EPS(d), guaranteed);
   UPB_ASSERT(upb_WireReader_GetFieldNumber(check) == field_num);
   UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);
 #endif
@@ -125,10 +133,11 @@ _upb_FastDecoder_DecodeCheckExtRegMiniTable(struct upb_Decoder* d,
   if (d->extreg != NULL) {
     uint32_t field_num = data;
 #ifndef NDEBUG
-    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(&d->input);
+    int guaranteed =
+        UPB_PRIVATE(upb_EpsCopyInputStream_GetBoundsCheckedBytes)(EPS(d));
     uint32_t check;
     const char* read = upb_WireReader_ReadTag(ptr, &check, EPS(d));
-
+    UPB_PRIVATE(upb_EpsCopyInputStream_BoundsChecked)(EPS(d), guaranteed);
     UPB_ASSERT(upb_WireReader_GetFieldNumber(check) == field_num);
     UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);
 #endif

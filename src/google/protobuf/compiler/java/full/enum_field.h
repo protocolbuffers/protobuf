@@ -70,12 +70,10 @@ class ImmutableEnumFieldGenerator : public ImmutableFieldGenerator {
   void GenerateInterfaceGetMethod(io::Printer* printer) const;
 
   void GenerateHasMethod(io::Printer* printer) const;
-  void GeneratePrivateHasMethod(io::Printer* printer) const;
   void GenerateGetValueMethod(io::Printer* printer) const;
   void GenerateGetMethod(io::Printer* printer) const;
 
   void GenerateBuilderHasMethod(io::Printer* printer) const;
-  void GenerateBuilderPrivateHasMethod(io::Printer* printer) const;
   void GenerateBuilderGetValueMethod(io::Printer* printer) const;
   void GenerateBuilderSetValueMethod(io::Printer* printer) const;
   void GenerateBuilderGetMethod(io::Printer* printer) const;
@@ -115,7 +113,7 @@ class ImmutableEnumOneofFieldGenerator : public ImmutableEnumFieldGenerator {
   void GenerateBuilderGetMethod(io::Printer* printer) const;
   void GenerateBuilderSetMethod(io::Printer* printer) const;
   void GenerateBuilderClearMethod(io::Printer* printer) const;
-  void GenerateBuilderParserMethod(io::Printer* printer) const;
+  void GenerateBuilderParseMethod(io::Printer* printer) const;
 };
 
 class RepeatedImmutableEnumFieldGenerator : public ImmutableEnumFieldGenerator {

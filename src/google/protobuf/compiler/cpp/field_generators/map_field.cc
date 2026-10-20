@@ -5,15 +5,12 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -21,7 +18,6 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/printer.h"
-#include "google/protobuf/port.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -55,7 +51,6 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   return {
       {"Map", absl::Substitute("::$2::Map<$0, $1>", key_type, val_type,
                                ProtobufNamespace(opts))},
-      {"Entry", ClassName(field->message_type(), false)},
       {"Key", PrimitiveTypeName(opts, key->cpp_type())},
       {"Val", val_type},
       {"MapField", lite ? "MapFieldLite" : "MapField"},
@@ -103,13 +98,13 @@ class Map : public FieldGeneratorBase {
 
   void GenerateMessageClearingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      this_.$field_$.Clear();
+      $this_mutable_field$.Clear();
     )cc");
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      _this->$field_$.MergeFrom(from.$field_$);
+      $this_mutable_field$.MergeFrom($from_field$);
     )cc");
   }
 
@@ -119,15 +114,11 @@ class Map : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    GenerateMergingCode(p);
-  }
-
   void GenerateIsInitialized(io::Printer* p) const override {
     if (!NeedsIsInitialized()) return;
 
     p->Emit(R"cc(
-      if (!$pbi$::AllAreInitialized(this_.$field_$)) {
+      if (!$pbi$::AllAreInitialized($this_field$)) {
         return false;
       }
     )cc");
@@ -141,29 +132,6 @@ class Map : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    // MapField has no move constructor, which prevents explicit aggregate
-    // initialization pre-C++17.
-    p->Emit(R"cc(
-      /* decltype($field_$) */ {},
-    )cc");
-  }
-
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        /* decltype($Msg$::Split::$name$_) */ {
-            $pbi$::ArenaInitialized(),
-            arena,
-        },
-      )cc");
-    } else {
-      p->Emit(R"cc(
-        /* decltype($field_$) */ {$pbi$::ArenaInitialized(), arena},
-      )cc");
-    }
-  }
-
   void GenerateDestructorCode(io::Printer* p) const override {
     if (should_split()) {
       p->Emit(R"cc(
@@ -175,6 +143,7 @@ class Map : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
@@ -194,30 +163,30 @@ void Map::GeneratePrivateMembers(io::Printer* p) const {
           $pbi$::MapFieldLite<$Key$, $Val$> $name$_;
         )cc");
   } else {
-    p->Emit({{"kKeyType",
-              absl::AsciiStrToUpper(DeclaredTypeMethodName(key_->type()))},
-             {"kValType",
-              absl::AsciiStrToUpper(DeclaredTypeMethodName(val_->type()))}},
-            R"cc(
-              $pbi$::$MapField$<$Entry$, $Key$, $Val$> $name$_;
-            )cc");
+    p->Emit(
+        {{"globals", MsgGlobalsInstanceName(field_->message_type(), options_)}},
+        R"cc(
+          $pbi$::$MapField$<&$globals$, $Key$, $Val$> $name$_;
+        )cc");
   }
 }
 
 void Map::GenerateAccessorDeclarations(io::Printer* p) const {
-  auto v1 = p->WithVars(
-      AnnotatedAccessors(field_, {"", "_internal_", "_internal_mutable_"}));
+  auto v1 = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto v2 = p->WithVars(AnnotatedAccessors(field_, {"mutable_"},
                                            io::AnnotationCollector::kAlias));
   p->Emit(R"cc(
     [[nodiscard]] $DEPRECATED$ const $Map$& $name$() const;
     [[nodiscard]] $DEPRECATED$ $Map$* $nonnull$ $mutable_name$();
+  )cc");
+}
 
-    private:
+void Map::GeneratePrivateAccessorDeclarations(io::Printer* p) const {
+  auto v1 = p->WithVars(
+      AnnotatedAccessors(field_, {"_internal_", "_internal_mutable_"}));
+  p->Emit(R"cc(
     const $Map$& $_internal_name$() const;
     $Map$* $nonnull$ $_internal_mutable_name$();
-
-    public:
   )cc");
 }
 

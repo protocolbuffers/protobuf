@@ -3906,7 +3906,7 @@ TEST_F(ParseDescriptorDebugTest, TestCommentsInDebugString) {
     const std::string debug_string =
         descriptor->DebugStringWithOptions(debug_string_options);
 
-    for (size_t i = 0; i < ABSL_ARRAYSIZE(expected_comments); ++i) {
+    for (size_t i = 0; i < std::size(expected_comments); ++i) {
       std::string::size_type found_pos =
           debug_string.find(expected_comments[i]);
       EXPECT_TRUE(found_pos != std::string::npos)

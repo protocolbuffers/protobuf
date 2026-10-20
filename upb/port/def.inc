@@ -88,6 +88,19 @@
 #define UPB_HAS_BUILTIN(x) 0
 #endif
 
+// UPB_MEMCPY_INLINE(dst, src, n): memcpy() of a compile-time constant number
+// of bytes `n`, which the compiler never turns into a call to the library
+// memcpy(). A plain memcpy() of a constant size is usually inlined as loads and
+// stores too, but the compiler can merge such copies of different sizes (e.g.
+// the cases of a switch on the size) into one copy of a variable size, which
+// it then can't inline; the merge can even happen before the compiler uses the
+// UPB_ASSUME()s about the size.
+#if UPB_HAS_BUILTIN(__builtin_memcpy_inline)
+#define UPB_MEMCPY_INLINE(dst, src, n) __builtin_memcpy_inline(dst, src, n)
+#else
+#define UPB_MEMCPY_INLINE(dst, src, n) memcpy(dst, src, n)
+#endif
+
 #ifdef __has_extension
 #define UPB_HAS_EXTENSION(x) __has_extension(x)
 #else
@@ -132,6 +145,14 @@ Error, UINTPTR_MAX is undefined
 #define UPB_SIZEOF_FLEX_WOULD_OVERFLOW(type, member, count) \
   (((SIZE_MAX - offsetof(type, member[0])) /                \
     (offsetof(type, member[1]) - offsetof(type, member[0]))) < (size_t)count)
+
+// Inverse of UPB_SIZEOF_FLEX; given the size in memory, how many elements can
+// the flexible array member store?
+#define UPB_FLEX_CAPACITY(type, member, size)   \
+  ((size) < sizeof(type)                        \
+       ? (size_t)0                              \
+       : ((size) - offsetof(type, member[0])) / \
+             (offsetof(type, member[1]) - offsetof(type, member[0])))
 
 #define UPB_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 
@@ -308,12 +329,11 @@ Error, UINTPTR_MAX is undefined
 #define UPB_NODEREF
 #endif
 
-// Will be defined properly once call sites are updated
-#if false && UPB_HAS_C_ATTRIBUTE(nodiscard)
+#if UPB_HAS_C_ATTRIBUTE(nodiscard)
 #define UPB_NODISCARD [[nodiscard]]
-#elif false && UPB_HAS_ATTRIBUTE(warn_unused_result)
+#elif UPB_HAS_ATTRIBUTE(warn_unused_result)
 #define UPB_NODISCARD __attribute__((warn_unused_result))
-#elif false && UPB_HAS_CPP_ATTRIBUTE(nodiscard)
+#elif UPB_HAS_CPP_ATTRIBUTE(nodiscard)
 #define UPB_NODISCARD [[nodiscard]]
 #else
 #define UPB_NODISCARD
@@ -499,7 +519,7 @@ Error, UINTPTR_MAX is undefined
 
 /* aarch64 supports big and little endian modes; fasttable performs multibyte
  * tag loads assumes the tag of a varint is in the low bits. */
-#if (defined(__x86_64__) || defined(__AARCH64EL__)) && \
+#if !defined(_WIN32) && (defined(__x86_64__) || defined(__AARCH64EL__)) && \
     UPB_HAS_ATTRIBUTE(preserve_none) && UPB_HAS_ATTRIBUTE(musttail)
 #define UPB_FASTTABLE_SUPPORTED 1
 #else
@@ -518,7 +538,11 @@ Error, UINTPTR_MAX is undefined
  * This is useful for releasing code that might be used on multiple platforms,
  * for example the PHP or Ruby C extensions. */
 #elif defined(UPB_TRY_ENABLE_FASTTABLE)
-#define UPB_FASTTABLE UPB_FASTTABLE_SUPPORTED
+#if UPB_FASTTABLE_SUPPORTED
+#define UPB_FASTTABLE 1
+#else
+#define UPB_FASTTABLE 0
+#endif
 #else
 #define UPB_FASTTABLE 0
 #endif
@@ -546,6 +570,25 @@ Error, UINTPTR_MAX is undefined
 #define UPB_DEPRECATED
 #endif
 
+#if defined(__clang__)
+#define UPB_IGNORE_DEPRECATION_START \
+  _Pragma("clang diagnostic push")   \
+      _Pragma("clang diagnostic ignored \"-Wdeprecated-declarations\"")
+#define UPB_IGNORE_DEPRECATION_STOP _Pragma("clang diagnostic pop")
+#elif defined(__GNUC__)
+#define UPB_IGNORE_DEPRECATION_START \
+  _Pragma("GCC diagnostic push")     \
+      _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+#define UPB_IGNORE_DEPRECATION_STOP _Pragma("GCC diagnostic pop")
+#elif defined(_MSC_VER)
+#define UPB_IGNORE_DEPRECATION_START \
+  __pragma(warning(push)) __pragma(warning(disable : 4996))
+#define UPB_IGNORE_DEPRECATION_STOP __pragma(warning(pop))
+#else
+#define UPB_IGNORE_DEPRECATION_START
+#define UPB_IGNORE_DEPRECATION_STOP
+#endif
+
 #if defined(UPB_IS_GOOGLE3) && \
     (!defined(UPB_BOOTSTRAP_STAGE) || UPB_BOOTSTRAP_STAGE != 0)
 #define UPB_DESC_MINITABLE(sym) &proto2__##sym##_msg_init
@@ -570,6 +613,12 @@ Error, UINTPTR_MAX is undefined
 #define UPB_RETAIN __attribute__((retain))
 #else
 #define UPB_RETAIN
+#endif
+
+#if defined(__GNUC__) || defined(__clang__)
+#define UPB_HIDDEN __attribute__((visibility("hidden")))
+#else
+#define UPB_HIDDEN
 #endif
 
 // Linker arrays combine elements from multiple translation units into a single
@@ -625,7 +674,7 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(__MACH__)
 
-/* As described in: https://stackoverflow.com/a/22366882 */
+  /* As described in: https://stackoverflow.com/a/22366882 */
 #define UPB_LINKARR_APPEND(name) \
   __attribute__((                \
       section("__DATA,__la_" #name))) UPB_LINKARR_ATTR UPB_NO_SANITIZE_ADDRESS
@@ -644,10 +693,10 @@ Error, UINTPTR_MAX is undefined
 
 #elif defined(_MSC_VER)
 
-/* See:
- *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
- *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
- *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
+  /* See:
+   *   https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155
+   *   https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165
+   *   https://devblogs.microsoft.com/oldnewthing/20181109-00/?p=100175 */
 #define UPB_STRINGIFY_INTERNAL(x) #x
 #define UPB_STRINGIFY(x) UPB_STRINGIFY_INTERNAL(x)
 #define UPB_CONCAT(a, b, c) a##b##c
@@ -656,7 +705,7 @@ Error, UINTPTR_MAX is undefined
 #define UPB_LINKARR_APPEND(name)                      \
   __pragma(section(UPB_LINKARR_NAME(name, $j), read)) \
       __declspec(allocate(UPB_LINKARR_NAME(name, $j)))
-// clang-format off
+  // clang-format off
 #define UPB_LINKARR_DECLARE(name, type)                          \
   __pragma(message(UPB_LINKARR_NAME(name, $j)))                  \
   __pragma(section(UPB_LINKARR_NAME(name, $a), read))            \
@@ -667,13 +716,13 @@ Error, UINTPTR_MAX is undefined
             type __stop_linkarr_##name;                          \
   UPB_LINKARR_APPEND(name)                                       \
   __declspec(selectany) type UPB_linkarr_internal_empty_##name[1] = {0}
-// clang-format on
+  // clang-format on
 #define UPB_LINKARR_START(name) (&__start_linkarr_##name)
 #define UPB_LINKARR_STOP(name) (&__stop_linkarr_##name)
 
 #else
 
-// Linker arrays are not supported on this platform.  Make macros no-ops.
+  // Linker arrays are not supported on this platform.  Make macros no-ops.
 #define UPB_LINKARR_APPEND(name)
 #define UPB_LINKARR_DECLARE(name, type)          \
   UPB_STATIC_ASSERT(sizeof("__la_" #name) <= 17, \

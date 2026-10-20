@@ -498,14 +498,22 @@ void GenerateMessageFunctionsInHeader(Context& c, upb::MessageDefPtr message) {
         UPB_INLINE char* $msg_type$_serialize(const $msg_type$* msg,
                                               upb_Arena* arena, size_t* len) {
           char* ptr;
-          (void)upb_Encode(UPB_UPCAST(msg), $mini_table$, 0, arena, &ptr, len);
+          upb_EncodeStatus status =
+              upb_Encode(UPB_UPCAST(msg), $mini_table$, 0, arena, &ptr, len);
+          if (status != kUpb_EncodeStatus_Ok) {
+            return NULL;
+          }
           return ptr;
         }
         UPB_INLINE char* $msg_type$_serialize_ex(const $msg_type$* msg,
                                                  int options, upb_Arena* arena,
                                                  size_t* len) {
           char* ptr;
-          (void)upb_Encode(UPB_UPCAST(msg), $mini_table$, options, arena, &ptr, len);
+          upb_EncodeStatus status = upb_Encode(UPB_UPCAST(msg), $mini_table$,
+                                               options, arena, &ptr, len);
+          if (status != kUpb_EncodeStatus_Ok) {
+            return NULL;
+          }
           return ptr;
         }
       )cc");
@@ -1429,7 +1437,7 @@ class CGenerator : public google::protobuf::compiler::CodeGenerator {
     return google::protobuf::Edition::EDITION_PROTO2;
   }
   google::protobuf::Edition GetMaximumEdition() const override {
-    return google::protobuf::Edition::EDITION_2024;
+    return google::protobuf::Edition::EDITION_2026;
   }
 };
 
