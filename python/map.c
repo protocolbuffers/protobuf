@@ -323,7 +323,8 @@ static PyObject* PyUpb_MapContainer_Subscript(PyObject* self, PyObject* key) {
 #endif
 }
 
-static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
+static int PyUpb_MapContainer_ContainsUnprotected(PyObject* _self,
+                                                  PyObject* key) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   if (!map) return 0;
@@ -337,6 +338,23 @@ static int PyUpb_MapContainer_Contains(PyObject* _self, PyObject* key) {
   } else {
     return 0;
   }
+}
+
+static int PyUpb_MapContainer_Contains(PyObject* self, PyObject* key) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_MapContainer_ContainsUnprotected(self, key);
+#else
+  PyObject* arena = ((PyUpb_MapContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  int result = PyUpb_MapContainer_ContainsUnprotected(self, key);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_MapContainer_ClearUnprotected(PyObject* _self,
@@ -428,8 +446,9 @@ static PyObject* PyUpb_MessageMapContainer_Setdefault(PyObject* self,
   return NULL;
 }
 
-static PyObject* PyUpb_MapContainer_Get(PyObject* _self, PyObject* args,
-                                        PyObject* kwargs) {
+static PyObject* PyUpb_MapContainer_GetUnprotected(PyObject* _self,
+                                                   PyObject* args,
+                                                   PyObject* kwargs) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   static const char* kwlist[] = {"key", "default", NULL};
   PyObject* key;
@@ -456,6 +475,24 @@ static PyObject* PyUpb_MapContainer_Get(PyObject* _self, PyObject* args,
   Py_RETURN_NONE;
 }
 
+static PyObject* PyUpb_MapContainer_Get(PyObject* self, PyObject* args,
+                                        PyObject* kwargs) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_MapContainer_GetUnprotected(self, args, kwargs);
+#else
+  PyObject* arena = ((PyUpb_MapContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_MapContainer_GetUnprotected(self, args, kwargs);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
+}
+
 static PyObject* PyUpb_MapContainer_GetEntryClass(PyObject* _self,
                                                   PyObject* arg) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
@@ -465,10 +502,27 @@ static PyObject* PyUpb_MapContainer_GetEntryClass(PyObject* _self,
   return PyUpb_Descriptor_GetClass(pool, entry_m);
 }
 
-static Py_ssize_t PyUpb_MapContainer_Length(PyObject* _self) {
+static Py_ssize_t PyUpb_MapContainer_LengthUnprotected(PyObject* _self) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   return map ? upb_Map_Size(map) : 0;
+}
+
+static Py_ssize_t PyUpb_MapContainer_Length(PyObject* self) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_MapContainer_LengthUnprotected(self);
+#else
+  PyObject* arena = ((PyUpb_MapContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  Py_ssize_t result = PyUpb_MapContainer_LengthUnprotected(self);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
