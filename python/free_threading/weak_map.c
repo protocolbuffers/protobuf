@@ -51,6 +51,7 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
 }
 
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) {
+  if (!map) return;
   PyUpb_Mutex_Destroy(&map->mutex);
   upb_Arena_Free(map->arena);
 }

@@ -30,6 +30,7 @@ struct PyUpb_WeakMap;
 typedef struct PyUpb_WeakMap PyUpb_WeakMap;
 
 PyUpb_WeakMap* PyUpb_WeakMap_New(void);
+// Accepts NULL for cleanup of partially initialized objects.
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map);
 
 // Returns the number of entries in the map.

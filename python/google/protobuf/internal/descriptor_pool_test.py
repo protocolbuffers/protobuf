@@ -20,6 +20,7 @@ from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
 from google.protobuf import symbol_database
+from google.protobuf.internal import allocation_count
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import descriptor_pool_test1_pb2
 from google.protobuf.internal import descriptor_pool_test2_pb2
@@ -47,6 +48,37 @@ warnings.simplefilter('error', DeprecationWarning)
 
 # Enable this to run the benchmarks.
 ALSO_RUN_BENCHMARKS = False
+
+
+class DescriptorPoolAllocationTest(unittest.TestCase):
+
+  @unittest.skipUnless(
+      allocation_count.is_available(),
+      'Requires Debug-only allocation_count API',
+  )
+  def testConstructionAllocationFailures(self):
+    self.addCleanup(allocation_count.reset)
+    # Warm up the module cache before counting construction allocations.
+    descriptor_pool.DescriptorPool()
+    allocation_count.reset()
+    pool = descriptor_pool.DescriptorPool()
+    total = allocation_count.get()
+    del pool
+    self.assertGreater(total, 0)
+
+    for i in range(total):
+      with self.subTest(allocation=i):
+        allocation_count.reset()
+        allocation_count.fail_on(i)
+        try:
+          with self.assertRaises(MemoryError):
+            descriptor_pool.DescriptorPool()
+        finally:
+          allocation_count.reset()
+        # Cleanup after a failed construction must leave the cache usable.
+        pool = descriptor_pool.DescriptorPool()
+        self.assertIsNotNone(pool)
+        del pool
 
 
 class DescriptorPoolTestBase(object):
