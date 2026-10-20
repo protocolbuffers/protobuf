@@ -944,6 +944,11 @@ class MessageTest(unittest.TestCase):
 
   def testAddRepeatedNestedFieldReentrantFailure(self, message_module):
     msg = message_module.TestAllTypes()
+    reject_overlapping_access = (
+        api_implementation.Type() == 'upb'
+        and hasattr(sys, '_is_gil_enabled')
+        and not sys._is_gil_enabled()
+    )
 
     class ClearOnIndex:
 
@@ -951,8 +956,12 @@ class MessageTest(unittest.TestCase):
         msg.repeated_nested_message.clear()
         raise ValueError('clear during add')
 
-    with self.assertRaises(ValueError):
-      msg.repeated_nested_message.add(bb=ClearOnIndex())
+    if reject_overlapping_access:
+      with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+        msg.repeated_nested_message.add(bb=ClearOnIndex())
+    else:
+      with self.assertRaises(ValueError):
+        msg.repeated_nested_message.add(bb=ClearOnIndex())
     self.assertEqual(len(msg.repeated_nested_message), 0)
 
     leaked = []
@@ -963,9 +972,14 @@ class MessageTest(unittest.TestCase):
         leaked.append(list(msg.repeated_nested_message))
         raise ValueError('leak during add')
 
-    with self.assertRaises(ValueError):
-      msg.repeated_nested_message.add(bb=LeakOnIndex())
-    self.assertEqual(leaked, [[]])
+    if reject_overlapping_access:
+      with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+        msg.repeated_nested_message.add(bb=LeakOnIndex())
+      self.assertEqual(leaked, [])
+    else:
+      with self.assertRaises(ValueError):
+        msg.repeated_nested_message.add(bb=LeakOnIndex())
+      self.assertEqual(leaked, [[]])
     self.assertEqual(len(msg.repeated_nested_message), 0)
     sub = msg.repeated_nested_message.add(bb=7)
     self.assertEqual(sub.bb, 7)
