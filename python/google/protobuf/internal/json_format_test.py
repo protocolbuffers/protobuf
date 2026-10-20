@@ -22,6 +22,7 @@ from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import test_proto3_optional_pb2
 
 from google.protobuf import any_pb2
+from google.protobuf import descriptor_pb2
 from google.protobuf import duration_pb2
 from google.protobuf import field_mask_pb2
 from google.protobuf import struct_pb2
@@ -88,20 +89,30 @@ class JsonFormatBase(parameterized.TestCase):
 class JsonFormatTest(JsonFormatBase):
 
   def testMessageToDictLegacyDefaultFieldKeyword(self):
-    for message in (
-        json_format_proto3_pb2.TestMessage(),
-        unittest_pb2.TestAllTypes(),
-    ):
-      for enabled in (False, True):
-        with self.subTest(message=type(message).__name__, enabled=enabled):
-          self.assertEqual(
-              json_format.MessageToDict(
-                  message, always_print_fields_with_no_presence=enabled
-              ),
-              json_format.MessageToDict(
-                  message, including_default_value_fields=enabled
-              ),
-          )
+    proto3 = json_format_proto3_pb2.TestMessage()
+    for enabled in (False, True):
+      with self.subTest(enabled=enabled):
+        self.assertEqual(
+            json_format.MessageToDict(
+                proto3, always_print_fields_with_no_presence=enabled
+            ),
+            json_format.MessageToDict(
+                proto3, including_default_value_fields=enabled
+            ),
+        )
+
+    # The legacy option deliberately includes unset proto2 primitive defaults;
+    # the newer option excludes all fields with presence.
+    proto2 = descriptor_pb2.FileDescriptorProto()
+    legacy = json_format.MessageToDict(
+        proto2, including_default_value_fields=True
+    )
+    modern = json_format.MessageToDict(
+        proto2, always_print_fields_with_no_presence=True
+    )
+    self.assertEqual(legacy['name'], '')
+    self.assertNotIn('name', modern)
+    self.assertEqual(json_format.MessageToDict(proto2), {})
 
     with self.assertRaisesRegex(ValueError, 'only one'):
       json_format.MessageToDict(

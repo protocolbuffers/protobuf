@@ -153,18 +153,15 @@ def MessageToDict(
     unquote_int64_if_possible: If True, unquote int64 fields for values that are
       safe to emit as numbers (all values smaller than 2^53 and a sparse set of
       values that are larger).
-    including_default_value_fields: Compatibility spelling of
-      always_print_fields_with_no_presence. Prefer the latter in new code.
+    including_default_value_fields: Legacy behavior: print singular primitive
+      defaults, repeated fields, and maps, including proto2 fields with
+      presence. Prefer always_print_fields_with_no_presence in new code.
 
   Returns:
     A dict representation of the protocol buffer message.
   """
-  if including_default_value_fields is not None:
-    if always_print_fields_with_no_presence:
-      raise ValueError(
-          'Specify only one default-field printing option.'
-      )
-    always_print_fields_with_no_presence = including_default_value_fields
+  if including_default_value_fields is not None and always_print_fields_with_no_presence:
+    raise ValueError('Specify only one default-field printing option.')
 
   printer = _Printer(
       preserving_proto_field_name,
@@ -172,6 +169,7 @@ def MessageToDict(
       descriptor_pool,
       always_print_fields_with_no_presence,
       unquote_int64_if_possible=unquote_int64_if_possible,
+      including_default_value_fields=including_default_value_fields,
   )
   # pylint: disable=protected-access
   return printer._MessageToJsonObject(message)
@@ -196,10 +194,12 @@ class _Printer(object):
       always_print_fields_with_no_presence=False,
       *,
       unquote_int64_if_possible=False,
+      including_default_value_fields=None,
   ):
     self.always_print_fields_with_no_presence = (
         always_print_fields_with_no_presence
     )
+    self.including_default_value_fields = including_default_value_fields
     self.preserving_proto_field_name = preserving_proto_field_name
     self.use_integers_for_enums = use_integers_for_enums
     self.descriptor_pool = descriptor_pool
@@ -282,15 +282,18 @@ class _Printer(object):
           js[name] = self._FieldToJsonObject(field, value)
 
       # Serialize default value if including_default_value_fields is True.
-      if (
-          self.always_print_fields_with_no_presence
-      ):
+      if self.always_print_fields_with_no_presence or self.including_default_value_fields:
         message_descriptor = message.DESCRIPTOR
         for field in message_descriptor.fields:
-
-          # always_print_fields_with_no_presence doesn't apply to
-          # any field which supports presence.
-          if self.always_print_fields_with_no_presence and field.has_presence:
+          if self.including_default_value_fields:
+            # The old option includes proto2 primitive defaults even though
+            # those fields have presence. It excludes message and oneof fields.
+            if (
+                (not field.is_repeated and field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE)
+                or field.containing_oneof
+            ):
+              continue
+          elif field.has_presence:
             continue
 
           if self.preserving_proto_field_name:
