@@ -35,9 +35,24 @@ extern "C" {
 // instead of performing a deep copy. Strings and unknown fields are aliased
 // from the input message.
 //
-// Fields present in the source but not the destination will be encoded and
-// added to the destination's unknown fields (or extensions, if the extension
-// registry allows it).
+// Fields present in the source but not the destination are added to the
+// destination's unknown fields (or extensions, if the extension registry allows
+// it). In particular:
+//
+//   * Repeated fields, sub-messages, and strings of at least
+//     `sizeof(upb_MiniTableField)` bytes are kept in parsed form as
+//     non-canonical extensions that alias the source's data. Each is described
+//     by a copy of the source `upb_MiniTable`'s field (allocated on `arena`)
+//     that refers to the source's sub-message and enum tables, so those tables
+//     must outlive the result.
+//   * Map fields and other scalar fields are encoded into unknown field bytes.
+//
+// Non-canonical extensions of the source (e.g. from a previous conversion) are
+// converted like the fields they describe. One that the destination doesn't
+// know either is kept as a non-canonical extension that shares the source's
+// field descriptor, so like the source's strings and unknown fields, that
+// descriptor (allocated on the source's arena by a previous conversion) must
+// outlive the result.
 //
 // Returns a new message on success, or NULL on failure. This function may
 // return NULL even for valid inputs, if it encounters a case it does not
