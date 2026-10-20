@@ -1058,7 +1058,8 @@ static int PyUpb_RepeatedContainer_AssignSubscript(PyObject* self,
 #endif
 }
 
-static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
+static PyObject* PyUpb_RepeatedContainer_PopUnprotected(PyObject* _self,
+                                                       PyObject* args) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   Py_ssize_t index = -1;
   if (!PyArg_ParseTuple(args, "|n", &index)) return NULL;
@@ -1066,10 +1067,34 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   if (!arr) return NULL;
   size_t size = upb_Array_Size(arr);
   if (index < 0) index += size;
-  PyObject* ret = PyUpb_RepeatedContainer_Item(_self, index);
+#if PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
+#else
+  if (index >= size) {
+    PyErr_WarnEx(PyExc_FutureWarning, "pop index out of range", 1);
+    index = size - 1;
+  }
+#endif  // PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
+  PyObject* ret = PyUpb_RepeatedContainer_ItemUnprotected(_self, index);
   if (!ret) return NULL;
   upb_Array_Delete(self->ptr.arr, index, 1);
   return ret;
+}
+
+static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* self, PyObject* args) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_RepeatedContainer_PopUnprotected(self, args);
+#else
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_PopUnprotected(self, args);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_RepeatedContainer_Remove(PyObject* _self,
@@ -1168,7 +1193,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
   return ret;
 }
 
-static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
+static PyObject* PyUpb_RepeatedContainer_ReverseUnprotected(PyObject* _self) {
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
   if (!arr) return NULL;
   size_t n = upb_Array_Size(arr);
@@ -1183,8 +1208,25 @@ static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* _self) {
   Py_RETURN_NONE;
 }
 
-static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* _self) {
-  Py_ssize_t size = PyUpb_RepeatedContainer_Length(_self);
+static PyObject* PyUpb_RepeatedContainer_Reverse(PyObject* self) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_RepeatedContainer_ReverseUnprotected(self);
+#else
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_ReverseUnprotected(self);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
+}
+
+static PyObject* PyUpb_RepeatedContainer_ClearUnprotected(PyObject* _self) {
+  Py_ssize_t size = PyUpb_RepeatedContainer_LengthUnprotected(_self);
   // TODO: b/517235198 - Reify even for empty sequences.
   if (size == 0) Py_RETURN_NONE;
 
@@ -1193,6 +1235,23 @@ static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* _self) {
   if (!arr) return NULL;
   upb_Array_Delete(self->ptr.arr, 0, size);
   Py_RETURN_NONE;
+}
+
+static PyObject* PyUpb_RepeatedContainer_Clear(PyObject* self) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_RepeatedContainer_ClearUnprotected(self);
+#else
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_ClearUnprotected(self);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_RepeatedContainer_MergeFrom(PyObject* _self,
