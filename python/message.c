@@ -1464,16 +1464,37 @@ static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
     case kUpb_WellKnown_Struct: {
       // For WKT Struct, check if the key is in the fields.
       PyUpb_Message* self = (void*)_self;
-      if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
+      PyObject* arena = self->arena;
+      Py_INCREF(arena);
+      if (!PyUpb_Arena_TryRead(arena)) {
+        Py_DECREF(arena);
+        return NULL;
+      }
+      if (PyUpb_Message_IsStub(self)) {
+        PyUpb_Arena_EndRead(arena);
+        Py_DECREF(arena);
+        Py_RETURN_FALSE;
+      }
       upb_Message* msg = PyUpb_Message_GetMsg(self);
       const upb_FieldDef* f = upb_MessageDef_FindFieldByName(msgdef, "fields");
       const upb_Map* map = upb_Message_GetFieldByDef(msg, f).map_val;
-      if (!map || upb_Map_Size(map) == 0) Py_RETURN_FALSE;
+      if (!map || upb_Map_Size(map) == 0) {
+        PyUpb_Arena_EndRead(arena);
+        Py_DECREF(arena);
+        Py_RETURN_FALSE;
+      }
       const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
       const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
       upb_MessageValue u_key;
-      if (!PyUpb_PyToUpb(arg, key_f, &u_key, NULL)) return NULL;
-      return PyBool_FromLong(upb_Map_Get(map, u_key, NULL));
+      if (!PyUpb_PyToUpb(arg, key_f, &u_key, NULL)) {
+        PyUpb_Arena_EndRead(arena);
+        Py_DECREF(arena);
+        return NULL;
+      }
+      PyObject* result = PyBool_FromLong(upb_Map_Get(map, u_key, NULL));
+      PyUpb_Arena_EndRead(arena);
+      Py_DECREF(arena);
+      return result;
     }
     case kUpb_WellKnown_ListValue: {
       // For WKT ListValue, check if the key is in the items.
@@ -1526,6 +1547,12 @@ static PyObject* PyUpb_Message_IsInitialized(PyObject* _self, PyObject* args) {
   } else {
     // We just need to return a boolean "true" or "false" for whether all
     // required fields are set.
+    PyObject* arena = ((PyUpb_Message*)_self)->arena;
+    Py_INCREF(arena);
+    if (!PyUpb_Arena_TryRead(arena)) {
+      Py_DECREF(arena);
+      return NULL;
+    }
     upb_Message* msg = PyUpb_Message_GetIfReified(_self);
     const upb_MessageDef* m = PyUpb_Message_GetMsgdef(_self);
     const upb_DefPool* symtab = upb_FileDef_Pool(upb_MessageDef_File(m));
@@ -1533,6 +1560,8 @@ static PyObject* PyUpb_Message_IsInitialized(PyObject* _self, PyObject* args) {
     upb_Status_Clear(&status);
     bool initialized =
         !upb_util_HasUnsetRequired(msg, m, symtab, NULL, &status);
+    PyUpb_Arena_EndRead(arena);
+    Py_DECREF(arena);
     if (!upb_Status_IsOk(&status)) {
       PyErr_SetNone(PyExc_MemoryError);
       return NULL;
@@ -2155,8 +2184,8 @@ static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
   Py_RETURN_NONE;
 }
 
-static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* _self,
-                                                        PyObject* arg) {
+static PyObject* PyUpb_Message_FindInitializationErrorsUnprotected(
+    PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
@@ -2207,6 +2236,21 @@ realloc_err:
 err:
   Py_CLEAR(ret);
   goto done;
+}
+
+static PyObject* PyUpb_Message_FindInitializationErrors(PyObject* self,
+                                                        PyObject* arg) {
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_FindInitializationErrorsUnprotected(self,
+                                                                       arg);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 static PyObject* PyUpb_Message_FromString(PyObject* cls, PyObject* serialized) {
@@ -2398,7 +2442,8 @@ static PyObject* PyUpb_Message_WhichOneof(PyObject* _self, PyObject* name) {
   return result;
 }
 
-PyObject* PyUpb_Message_Clone(PyObject* _self, PyObject* args) {
+static PyObject* PyUpb_Message_CloneUnprotected(PyObject* _self,
+                                               PyObject* args) {
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
   const upb_MessageDef* def = PyUpb_Message_GetMsgdef(_self);
   const upb_MiniTable* mini_table = upb_MessageDef_MiniTable(def);
@@ -2419,6 +2464,19 @@ PyObject* PyUpb_Message_Clone(PyObject* _self, PyObject* args) {
   Py_DECREF(arena);
 
   return ret;
+}
+
+PyObject* PyUpb_Message_Clone(PyObject* self, PyObject* args) {
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_CloneUnprotected(self, args);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 void PyUpb_Message_ClearExtensionDict(PyObject* _self, PyObject* wrapper) {
