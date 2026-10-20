@@ -222,10 +222,18 @@ PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
 #endif
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   PyObject* name = PyUnicode_FromString(PYUPB_MODULE_NAME);
-  if (!name) return NULL;
+  if (!name) {
+    // This lookup also runs from deallocators during interpreter shutdown.
+    // They must not leave an exception pending if module state is unavailable.
+    PyErr_Clear();
+    return NULL;
+  }
   PyObject* module = PyImport_GetModule(name);
   Py_DECREF(name);
-  if (!module) return NULL;
+  if (!module) {
+    PyErr_Clear();
+    return NULL;
+  }
   PyUpb_ModuleState* state = PyModule_GetState(module);
   Py_DECREF(module);
   return state;
