@@ -545,7 +545,7 @@ static PyObject* PyUpb_MapContainer_MergeFrom(PyObject* _self, PyObject* _arg) {
   Py_RETURN_NONE;
 }
 
-static PyObject* PyUpb_MapContainer_Repr(PyObject* _self) {
+static PyObject* PyUpb_MapContainer_ReprUnprotected(PyObject* _self) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   upb_Map* map = PyUpb_MapContainer_GetIfReified(self);
   PyObject* dict = PyDict_New();
@@ -573,6 +573,19 @@ static PyObject* PyUpb_MapContainer_Repr(PyObject* _self) {
   PyObject* repr = PyObject_Repr(dict);
   Py_DECREF(dict);
   return repr;
+}
+
+static PyObject* PyUpb_MapContainer_Repr(PyObject* self) {
+  PyObject* arena = ((PyUpb_MapContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_MapContainer_ReprUnprotected(self);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
