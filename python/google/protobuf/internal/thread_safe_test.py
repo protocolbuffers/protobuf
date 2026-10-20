@@ -21,6 +21,7 @@ from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
+from google.protobuf import unknown_fields
 from google.protobuf.message import DecodeError
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import test_proto2_pb2
@@ -1572,6 +1573,13 @@ class FreeThreadingTest(unittest.TestCase):
         lambda number: composite_repeated.__init__(
             items=[{'value': str(number)}]),
         lambda _: composite_repeated.SerializePartialToString(),
+    )), 2)
+
+    unknown = unittest_pb2.TestAllTypes.FromString(b'\x80\x3e\x01')
+    self.assertEqual(len(Race(
+        lambda _: (unknown.DiscardUnknownFields(),
+                   unknown.MergeFromString(b'\x80\x3e\x01')),
+        lambda _: list(unknown_fields.UnknownFieldSet(unknown)),
     )), 2)
 
   def testIsolatedSubinterpreterNativeLifecycle(self):
