@@ -31,7 +31,7 @@
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/global_test_environment.h"
-#include "conformance/test_manager.h"
+#include "conformance/result_ledger.h"
 #include "conformance/testee.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
@@ -47,8 +47,8 @@ namespace {
 
 using ::conformance::ConformanceResponse;
 using ::conformance::WireFormat;
-using ::google::protobuf::conformance::internal::GetGlobalTestManager;
-using ::google::protobuf::conformance::internal::TestManager;
+using ::google::protobuf::conformance::internal::GetGlobalResultLedger;
+using ::google::protobuf::conformance::internal::ResultLedger;
 using ::google::protobuf::conformance::internal::TestResult;
 
 // Implements EqualsTextProto() and EqualsBinaryProto(): matches a message
@@ -482,10 +482,10 @@ bool RawPayloadMatcher::MatchPayload(
 }
 
 // Implements Yields().  This is the single matcher that talks to the global
-// TestManager; see matchers.h for the policy it applies.
+// ResultLedger; see matchers.h for the policy it applies.
 //
-// The TestManager must only hear about each test once.  It remembers the
-// names it was told (TestManager::WasReported()), and a result it already
+// The ResultLedger must only hear about each test once.  It remembers the
+// names it was told (ResultLedger::WasReported()), and a result it already
 // knows is not evaluated again.  gtest evaluates a failing matcher a second
 // time, through the same matcher object, to explain the failure.  The matcher
 // keeps its last failed verdict for that rerun.  Anything else that checks a
@@ -510,7 +510,7 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
         return false;
       }
     }
-    if (GetGlobalTestManager().WasReported(result.name())) {
+    if (GetGlobalResultLedger().WasReported(result.name())) {
       *listener << "TestResult for " << result.name()
                 << " was already checked; each result may be checked exactly "
                    "once";
@@ -541,18 +541,18 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
   }
 
  private:
-  // Reports `result` to the global TestManager and returns the gtest verdict:
+  // Reports `result` to the global ResultLedger and returns the gtest verdict:
   // OK if the test passes, otherwise an error whose message explains why not.
   absl::Status Evaluate(const TestResult& result) const {
-    TestManager& manager = GetGlobalTestManager();
+    ResultLedger& ledger = GetGlobalResultLedger();
     const std::string name(result.name());
     const ConformanceResponse& response = result.response();
 
-    // A skip is decided here; the inner matcher never sees it.  The manager
+    // A skip is decided here; the inner matcher never sees it.  The ledger
     // marks a listed entry as seen and returns an error for it, so this is the
     // only place that reports a listed test the testee skipped.
     if (response.result_case() == ConformanceResponse::kSkipped) {
-      absl::Status status = manager.ReportSkip(name, response.skipped());
+      absl::Status status = ledger.ReportSkip(name, response.skipped());
       ABSL_LOG(INFO) << "Skipping test " << name << ": " << response.skipped();
       return status;
     }
@@ -562,7 +562,7 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
     std::string message = inner_listener.str();
 
     if (matched) {
-      return manager.ReportSuccess(name);
+      return ledger.ReportSuccess(name);
     }
 
     if (message.empty()) {
@@ -571,10 +571,10 @@ class YieldsMatcherImpl : public testing::MatcherInterface<const TestResult&> {
           testing::DescribeMatcher<const TestResult&>(inner_), ")");
     }
 
-    // The manager decides whether the failure is expected (listed), tolerated
+    // The ledger decides whether the failure is expected (listed), tolerated
     // (above the enforcement level) or unexpected, and logs the first two.
     absl::Status status =
-        manager.ReportFailure(name, result.priority(), message);
+        ledger.ReportFailure(name, result.priority(), message);
     if (status.ok()) {
       return status;
     }

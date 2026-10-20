@@ -244,7 +244,7 @@ void upb_Message_Freeze(upb_Message* msg, const upb_MiniTable* m) {
         break;
       }
       case kUpb_FieldMode_Map:
-        UPB_UNREACHABLE();  // Maps cannot be extensions.
+        UPB_UNREACHABLE();
         break;
       case kUpb_FieldMode_Scalar:
         if (upb_MiniTableField_IsSubMessage(f)) {

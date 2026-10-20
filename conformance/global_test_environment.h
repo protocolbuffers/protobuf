@@ -15,18 +15,18 @@
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_GLOBAL_TEST_ENVIRONMENT_H__
 #define GOOGLE_PROTOBUF_CONFORMANCE_GLOBAL_TEST_ENVIRONMENT_H__
 
-#include "conformance/test_manager.h"
+#include "conformance/result_ledger.h"
 
 namespace google {
 namespace protobuf {
 namespace conformance {
 namespace internal {
 
-// Returns the process-wide TestManager that records test results against the
+// Returns the process-wide ResultLedger that records test results against the
 // expected-failure list.  Yields() reports the outcome of every test here.
 // That lets the failure list be validated and regenerated, and the enforcement
-// level be applied (see TestManager::set_enforcement_level()).
-TestManager& GetGlobalTestManager();
+// level be applied (see ResultLedger::set_enforcement_level()).
+ResultLedger& GetGlobalResultLedger();
 
 }  // namespace internal
 }  // namespace conformance

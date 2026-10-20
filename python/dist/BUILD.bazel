@@ -233,6 +233,24 @@ selects.config_setting_group(
     ],
 )
 
+selects.config_setting_group(
+    name = "windows_x86_64_mingw",
+    match_all = [
+        ":windows_x86_64",
+        "@bazel_tools//tools/cpp:mingw",
+    ],
+    visibility = ["//python:__subpackages__"],
+)
+
+selects.config_setting_group(
+    name = "windows_x86_32_mingw",
+    match_all = [
+        ":windows_x86_32",
+        "@bazel_tools//tools/cpp:mingw",
+    ],
+    visibility = ["//python:__subpackages__"],
+)
+
 pkg_files(
     name = "generated_bootstrap",
     srcs = [

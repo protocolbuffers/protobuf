@@ -240,15 +240,15 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
 
   [[nodiscard]] const char* ReadMicroString(const char* ptr, MicroString& str,
                                             size_t inline_capacity,
-                                            Arena* arena);
+                                            const MessageLite& parent);
   [[nodiscard]] const char* ReadMicroStringWithSize(const char* ptr, int size,
                                                     MicroString& str,
                                                     size_t inline_capacity,
-                                                    Arena* arena);
+                                                    const MessageLite& parent);
   [[nodiscard]] const char* ReadMicroStringFallback(const char* ptr, int size,
                                                     MicroString& str,
                                                     size_t inline_capacity,
-                                                    Arena* arena);
+                                                    const MessageLite& parent);
 
   // Implemented in arenastring.cc
   [[nodiscard]] const char* ReadArenaString(const char* ptr, ArenaStringPtr* s,
@@ -1481,24 +1481,23 @@ inline const char* ParseContext::ReadSizeAndPushLimitAndDepthInlined(
   return ptr;
 }
 
-inline const char* EpsCopyInputStream::ReadMicroString(const char* ptr,
-                                                       MicroString& str,
-                                                       size_t inline_capacity,
-                                                       Arena* arena) {
+inline const char* EpsCopyInputStream::ReadMicroString(
+    const char* ptr, MicroString& str, size_t inline_capacity,
+    const MessageLite& parent) {
   int size = ReadSize(&ptr);
   if (!ptr) return nullptr;
 
-  return ReadMicroStringWithSize(ptr, size, str, inline_capacity, arena);
+  return ReadMicroStringWithSize(ptr, size, str, inline_capacity, parent);
 }
 
 inline const char* EpsCopyInputStream::ReadMicroStringWithSize(
     const char* ptr, int size, MicroString& str, size_t inline_capacity,
-    Arena* arena) {
+    const MessageLite& parent) {
   if (size <= BytesAvailable(ptr)) {
-    str.Set(absl::string_view(ptr, size), arena, inline_capacity);
+    str.Set(absl::string_view(ptr, size), parent, inline_capacity);
     return ptr + size;
   }
-  return ReadMicroStringFallback(ptr, size, str, inline_capacity, arena);
+  return ReadMicroStringFallback(ptr, size, str, inline_capacity, parent);
 }
 
 template <typename Tag, typename T>

@@ -3078,8 +3078,8 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalFloat": 3.402823e+38})",
                    "optional_float: 3.402823e+38");
   RunValidJsonTest("FloatFieldMinNegativeValue", REQUIRED,
-                   R"({"optionalFloat": 3.402823e+38})",
-                   "optional_float: 3.402823e+38");
+                   R"({"optionalFloat": -3.402823e+38})",
+                   "optional_float: -3.402823e+38");
   // Values can be quoted.
   RunValidJsonTest("FloatFieldQuotedValue", REQUIRED,
                    R"({"optionalFloat": "1"})", "optional_float: 1");
@@ -3478,7 +3478,7 @@ void BinaryAndJsonConformanceSuiteImpl<
       R"({"repeatedString": ["1", "2", false, "4"]})");
   ExpectParseFailureForJson(
       "RepeatedFieldWrongElementTypeExpectingStringsGotMessage", REQUIRED,
-      R"({"repeatedString": ["1", 2, "3", {"a": 4}]})");
+      R"({"repeatedString": ["1", "2", "3", {"a": 4}]})");
   ExpectParseFailureForJson(
       "RepeatedFieldWrongElementTypeExpectingMessagesGotInt", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1}, 2]})");

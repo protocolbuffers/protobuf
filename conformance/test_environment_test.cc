@@ -37,8 +37,8 @@
 #include "conformance/global_test_environment.h"
 #include "conformance/matchers.h"
 #include "conformance/mock_test_runner.h"
+#include "conformance/result_ledger.h"
 #include "conformance/test_environment_testing.h"
-#include "conformance/test_manager.h"
 #include "conformance/testee.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
 #include "google/protobuf/text_format.h"
@@ -233,23 +233,22 @@ class ConformanceEnvironmentTest : public ::testing::Test {
 
 TEST_F(ConformanceEnvironmentTest, ScopedEnvironmentIsTheGlobalOne) {
   internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
-  EXPECT_EQ(&internal::GetGlobalTestManager(), &env->test_manager());
+  EXPECT_EQ(&internal::GetGlobalResultLedger(), &env->ledger());
 }
 
-TEST_F(ConformanceEnvironmentTest, EnforcementLevelIsPassedToTestManager) {
+TEST_F(ConformanceEnvironmentTest, EnforcementLevelIsPassedToTheLedger) {
   {
     // Every priority is enforced by default.
     internal::ScopedGlobalConformanceEnvironment env(
         {/*runner=*/&fake_runner_});
-    EXPECT_THAT(env->test_manager().ReportFailure("P1.x", kP1, "boom"),
-                Not(IsOk()));
+    EXPECT_THAT(env->ledger().ReportFailure("P1.x", kP1, "boom"), Not(IsOk()));
   }
   {
     ConformanceEnvironmentOptions options;
     options.runner = &fake_runner_;
     options.enforcement_level = kP0;
     internal::ScopedGlobalConformanceEnvironment env(std::move(options));
-    EXPECT_THAT(env->test_manager().ReportFailure("P1.x", kP1, "boom"), IsOk());
+    EXPECT_THAT(env->ledger().ReportFailure("P1.x", kP1, "boom"), IsOk());
   }
 }
 
@@ -263,8 +262,8 @@ TEST_F(ConformanceEnvironmentTest, TesteeRoutesToRunner) {
   EXPECT_THAT(RunP0("Foo"),
               Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
 
-  EXPECT_EQ(env->test_manager().expected_successes(), 1);
-  EXPECT_EQ(env->test_manager().unexpected_failures(), 0);
+  EXPECT_EQ(env->ledger().expected_successes(), 1);
+  EXPECT_EQ(env->ledger().unexpected_failures(), 0);
   env->TearDown();
 }
 
@@ -275,7 +274,7 @@ TEST_F(ConformanceEnvironmentTest, UnexpectedFailureFailsTheTest) {
   EXPECT_NONFATAL_FAILURE(EXPECT_THAT(RunP0("Foo"), Yields(IsParseError())),
                           "Should have failed to parse, but didn't.");
 
-  EXPECT_EQ(env->test_manager().unexpected_failures(), 1);
+  EXPECT_EQ(env->ledger().unexpected_failures(), 1);
   env->TearDown();
 }
 
@@ -291,8 +290,8 @@ TEST_F(ConformanceEnvironmentTest, ExpectedFailureFromFailureListPasses) {
 
   EXPECT_THAT(RunP0("Foo"), Yields(IsParseError()));
 
-  EXPECT_EQ(env->test_manager().expected_failures(), 1);
-  EXPECT_EQ(env->test_manager().unexpected_failures(), 0);
+  EXPECT_EQ(env->ledger().expected_failures(), 1);
+  EXPECT_EQ(env->ledger().unexpected_failures(), 0);
   env->TearDown();
 }
 
@@ -309,7 +308,7 @@ TEST_F(ConformanceEnvironmentTest, LoadsMultipleFailureLists) {
   EXPECT_THAT(RunP0("Foo"), Yields(IsParseError()));
   EXPECT_THAT(RunP0("Bar"), Yields(IsParseError()));
 
-  EXPECT_EQ(env->test_manager().expected_failures(), 2);
+  EXPECT_EQ(env->ledger().expected_failures(), 2);
   env->TearDown();
 }
 
@@ -348,9 +347,9 @@ TEST_F(ConformanceEnvironmentTest, P1FailureIsToleratedWhenNotEnforced) {
 
   EXPECT_THAT(RunP1("Foo"), Yields(IsParseError()));
 
-  EXPECT_EQ(env->test_manager().tolerated_failures(), 1);
-  EXPECT_EQ(env->test_manager().skipped(), 0);
-  EXPECT_EQ(env->test_manager().unexpected_failures(), 0);
+  EXPECT_EQ(env->ledger().tolerated_failures(), 1);
+  EXPECT_EQ(env->ledger().skipped(), 0);
+  EXPECT_EQ(env->ledger().unexpected_failures(), 0);
   env->TearDown();
 }
 
@@ -369,8 +368,8 @@ TEST_F(ConformanceEnvironmentTest,
 
   EXPECT_THAT(RunP1("Foo"), Yields(IsParseError()));
 
-  EXPECT_EQ(env->test_manager().expected_failures(), 1);
-  EXPECT_EQ(env->test_manager().tolerated_failures(), 0);
+  EXPECT_EQ(env->ledger().expected_failures(), 1);
+  EXPECT_EQ(env->ledger().tolerated_failures(), 0);
   // ...and so it isn't unseen either.
   internal::ScopedPartialRunOverride full_run(false);
   env->TearDown();
@@ -426,7 +425,7 @@ TEST_F(ConformanceEnvironmentTest, UnseenExpectedFailuresAreFineInPartialRun) {
 
   internal::ScopedPartialRunOverride partial_run(true);
   env->TearDown();
-  EXPECT_THAT(env->test_manager().Finalize().message(),
+  EXPECT_THAT(env->ledger().Finalize().message(),
               HasSubstr(absl::StrCat("were not seen: ", kFooTestName)));
 }
 
@@ -442,7 +441,7 @@ TEST_F(ConformanceEnvironmentTest, UnseenCheckCanBeDisabled) {
 
   internal::ScopedPartialRunOverride full_run(false);
   env->TearDown();
-  EXPECT_THAT(env->test_manager().Finalize().message(),
+  EXPECT_THAT(env->ledger().Finalize().message(),
               HasSubstr(absl::StrCat("were not seen: ", kFooTestName)));
 }
 
@@ -627,7 +626,7 @@ TEST_F(ConformanceEnvironmentTest, FixReportsWriteFailures) {
 TEST_F(ConformanceEnvironmentTest, StatisticsSnapshotAndDelta) {
   internal::ScopedGlobalConformanceEnvironment env({/*runner=*/&fake_runner_});
   env->SetUp();
-  internal::Statistics before = internal::Statistics::From(env->test_manager());
+  internal::Statistics before = internal::Statistics::From(env->ledger());
 
   EXPECT_THAT(RunP0("Foo"),
               Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
@@ -635,7 +634,7 @@ TEST_F(ConformanceEnvironmentTest, StatisticsSnapshotAndDelta) {
                           "Should have failed to parse");
 
   internal::Statistics delta =
-      internal::Statistics::From(env->test_manager()) - before;
+      internal::Statistics::From(env->ledger()) - before;
   EXPECT_EQ(delta.expected_successes, 1);
   EXPECT_EQ(delta.unexpected_failures, 1);
   EXPECT_EQ(delta.expected_failures, 0);
@@ -661,7 +660,7 @@ TEST_F(ConformanceEnvironmentTest, StatisticsCountListedSkips) {
   options.failure_list_files = {failure_list};
   internal::ScopedGlobalConformanceEnvironment env(std::move(options));
   env->SetUp();
-  internal::Statistics before = internal::Statistics::From(env->test_manager());
+  internal::Statistics before = internal::Statistics::From(env->ledger());
 
   // A listed test the testee skips fails (see matchers.h) and is both a skip
   // and a listed skip, but neither an expected nor an unexpected anything.
@@ -672,7 +671,7 @@ TEST_F(ConformanceEnvironmentTest, StatisticsCountListedSkips) {
       "is in the failure list but was skipped by the testee");
 
   internal::Statistics delta =
-      internal::Statistics::From(env->test_manager()) - before;
+      internal::Statistics::From(env->ledger()) - before;
   EXPECT_EQ(delta.skipped_tests, 1);
   EXPECT_EQ(delta.listed_skips, 1);
   EXPECT_EQ(delta.expected_failures, 0);
@@ -731,7 +730,7 @@ TEST_F(ConformanceEnvironmentTest, TearDownShutsDownTheOwnedRunner) {
   env->TearDown();
   EXPECT_TRUE(destroyed);
   // The statistics survive the testee.
-  EXPECT_EQ(env->test_manager().expected_successes(), 1);
+  EXPECT_EQ(env->ledger().expected_successes(), 1);
 }
 
 TEST_F(ConformanceEnvironmentTest, TearDownWithoutSetUpOnlyReleasesTheTestee) {
@@ -755,7 +754,7 @@ TEST_F(ConformanceEnvironmentTest, TearDownWithoutSetUpOnlyReleasesTheTestee) {
   EXPECT_TRUE(destroyed);
   EXPECT_FALSE(File::Exists(fixed));
   EXPECT_THAT(ReadFile(failure_list), HasSubstr("never seen"));
-  EXPECT_EQ(env->test_manager().expected_failures(), 0);
+  EXPECT_EQ(env->ledger().expected_failures(), 0);
 }
 
 TEST_F(ConformanceEnvironmentTest, OwnedRunnerDiesWithTheEnvironment) {

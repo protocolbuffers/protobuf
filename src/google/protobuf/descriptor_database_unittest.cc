@@ -17,6 +17,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <thread>  // NOLINT
 #include <utility>
 #include <vector>
 
@@ -24,6 +25,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/text_format.h"
@@ -87,6 +89,23 @@ class SimpleDescriptorDatabaseTestCase : public DescriptorDatabaseTestCase {
 
  private:
   SimpleDescriptorDatabase database_;
+};
+
+// Specialization for SimpleThreadSafeDescriptorDatabase.
+class SimpleThreadSafeDescriptorDatabaseTestCase
+    : public DescriptorDatabaseTestCase {
+ public:
+  static DescriptorDatabaseTestCase* New() {
+    return new SimpleThreadSafeDescriptorDatabaseTestCase;
+  }
+
+  DescriptorDatabase* GetDatabase() override { return &database_; }
+  bool AddToDatabase(const FileDescriptorProto& file) override {
+    return database_.Add(file);
+  }
+
+ private:
+  SimpleThreadSafeDescriptorDatabase database_;
 };
 
 // Specialization for EncodedDescriptorDatabase.
@@ -516,6 +535,9 @@ INSTANTIATE_TEST_SUITE_P(
     Simple, DescriptorDatabaseTest,
     testing::Values(&SimpleDescriptorDatabaseTestCase::New));
 INSTANTIATE_TEST_SUITE_P(
+    SimpleThreadSafe, DescriptorDatabaseTest,
+    testing::Values(&SimpleThreadSafeDescriptorDatabaseTestCase::New));
+INSTANTIATE_TEST_SUITE_P(
     MemoryConserving, DescriptorDatabaseTest,
     testing::Values(&EncodedDescriptorDatabaseTestCase::New));
 INSTANTIATE_TEST_SUITE_P(Pool, DescriptorDatabaseTest,
@@ -695,6 +717,98 @@ TEST(SimpleDescriptorDatabaseExtraTest, AddUnowned) {
   std::vector<std::string> messages;
   EXPECT_TRUE(db.FindAllMessageNames(&messages));
   EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
+}
+
+TEST(SimpleThreadSafeDescriptorDatabaseExtraTest, ExtraMethods) {
+  auto f = std::make_unique<FileDescriptorProto>();
+  f->set_name("foo.proto");
+  f->set_package("foo");
+  f->add_message_type()->set_name("Foo");
+  f->add_service()->set_name("FooService");
+
+  FileDescriptorProto b;
+  b.set_name("bar.proto");
+  b.set_package("");
+  b.add_message_type()->set_name("Bar");
+
+  SimpleThreadSafeDescriptorDatabase db;
+  EXPECT_TRUE(db.AddAndOwn(f.release()));
+  EXPECT_TRUE(db.AddUnowned(&b));
+
+  std::vector<std::string> all_files;
+  ASSERT_TRUE(db.FindAllFileNames(&all_files));
+  EXPECT_THAT(all_files,
+              ::testing::UnorderedElementsAre("foo.proto", "bar.proto"));
+
+  std::vector<std::string> packages;
+  EXPECT_TRUE(db.FindAllPackageNames(&packages));
+  EXPECT_THAT(packages, ::testing::UnorderedElementsAre("foo", ""));
+
+  std::vector<std::string> messages;
+  EXPECT_TRUE(db.FindAllMessageNames(&messages));
+  EXPECT_THAT(messages, ::testing::UnorderedElementsAre("foo.Foo", "Bar"));
+
+}
+
+TEST(SimpleThreadSafeDescriptorDatabaseExtraTest, ConcurrentAddAndFind) {
+  SimpleThreadSafeDescriptorDatabase db;
+  static constexpr int kNumThreads = 8;
+  static constexpr int kFilesPerThread = 50;
+
+  std::vector<std::thread> threads;
+  threads.reserve(kNumThreads);
+  for (int t = 0; t < kNumThreads; ++t) {
+    threads.emplace_back([&db, t]() {
+      for (int i = 0; i < kFilesPerThread; ++i) {
+        std::string file_name = absl::StrCat("file_", t, "_", i, ".proto");
+        std::string pkg_name = absl::StrCat("pkg_", t);
+        std::string msg_name = absl::StrCat("Msg_", i);
+        std::string full_msg_name = absl::StrCat(pkg_name, ".", msg_name);
+
+        FileDescriptorProto f;
+        f.set_name(file_name);
+        f.set_package(pkg_name);
+        auto* msg = f.add_message_type();
+        msg->set_name(msg_name);
+        auto* range = msg->add_extension_range();
+        range->set_start(1);
+        range->set_end(100);
+        auto* ext = f.add_extension();
+        ext->set_name(absl::StrCat("ext_", i));
+        ext->set_extendee(absl::StrCat(".", full_msg_name));
+        ext->set_number(i + 1);
+        ext->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+        ext->set_type(FieldDescriptorProto::TYPE_INT32);
+
+        EXPECT_TRUE(db.Add(f));
+
+        FileDescriptorProto out;
+        EXPECT_TRUE(db.FindFileByName(file_name, &out));
+        EXPECT_EQ(out.name(), file_name);
+
+        EXPECT_TRUE(db.FindFileContainingSymbol(full_msg_name, &out));
+        EXPECT_EQ(out.name(), file_name);
+
+        EXPECT_TRUE(db.FindFileContainingExtension(full_msg_name, i + 1, &out));
+        EXPECT_EQ(out.name(), file_name);
+
+        std::vector<int> ext_numbers;
+        EXPECT_TRUE(db.FindAllExtensionNumbers(full_msg_name, &ext_numbers));
+        EXPECT_THAT(ext_numbers, ElementsAre(i + 1));
+
+        std::vector<std::string> file_names;
+        EXPECT_TRUE(db.FindAllFileNames(&file_names));
+        EXPECT_FALSE(file_names.empty());
+      }
+    });
+  }
+  for (auto& thread : threads) {
+    thread.join();
+  }
+
+  std::vector<std::string> all_files;
+  ASSERT_TRUE(db.FindAllFileNames(&all_files));
+  EXPECT_EQ(all_files.size(), kNumThreads * kFilesPerThread);
 }
 
 TEST(DescriptorPoolDatabaseTest, PreserveSourceCodeInfo) {

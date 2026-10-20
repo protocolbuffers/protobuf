@@ -391,7 +391,7 @@ void UPB_PRIVATE(_upb_MessageDebugString)(txtenc* e, const upb_Message* msg,
     // It is not sufficient to only pass |f| as we lose valuable information
     // about sub-messages. It is required that we pass |ext|.
     if (upb_MiniTableField_IsMap(f)) {
-      UPB_UNREACHABLE();  // Maps cannot be extensions.
+      UPB_UNREACHABLE();
       break;
     } else if (upb_MiniTableField_IsArray(f)) {
       _upb_ArrayDebugString(e, val_ext.array_val, f, mt, ext);

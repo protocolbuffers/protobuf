@@ -112,4 +112,33 @@ public class IterableByteBufferInputStreamTest {
       assertThat(in.read()).isEqualTo(-1);
     }
   }
+
+  @Test
+  public void testAvailable() throws Exception {
+    ByteBuffer buf1 = ByteBuffer.allocateDirect(3);
+    buf1.put(new byte[] {1, 2, 3}).flip();
+    ByteBuffer buf2 = ByteBuffer.wrap(new byte[0]);
+    ByteBuffer buf3 = ByteBuffer.wrap(new byte[] {4, 5, 6, 7});
+
+    try (InputStream in = new IterableByteBufferInputStream(Arrays.asList(buf1, buf2, buf3))) {
+      assertThat(in.available()).isEqualTo(7);
+
+      assertThat(in.read()).isEqualTo(1);
+      assertThat(in.available()).isEqualTo(6);
+
+      byte[] output = new byte[4];
+      int read = in.read(output, 0, 4);
+      assertThat(read).isEqualTo(2);
+      assertThat(in.available()).isEqualTo(4);
+
+      long skipped = in.skip(2);
+      assertThat(skipped).isEqualTo(2);
+      assertThat(in.available()).isEqualTo(2);
+
+      read = in.read(output, 0, 4);
+      assertThat(read).isEqualTo(2);
+      assertThat(in.available()).isEqualTo(0);
+      assertThat(in.read()).isEqualTo(-1);
+    }
+  }
 }

@@ -2241,7 +2241,7 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
 
   // TODO: After supporting arena agnostic delete or let map entry
   // handle heap allocation, this could be removed.
-  if (message.GetArena() != nullptr) {
+  if (internal::HasArena(message)) {
     entry_int32_int32.release();
     entry_int32_double.release();
     entry_string_string.release();

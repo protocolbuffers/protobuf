@@ -72,6 +72,8 @@ set(libprotobuf_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_field.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/naming_style.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.cc
@@ -262,6 +264,7 @@ set(libprotobuf_lite_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/io/zero_copy_stream_impl_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/message_lite.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/metadata_lite.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/micro_string.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/offset_ptr.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/parse_context.cc
@@ -1439,6 +1442,7 @@ set(compiler_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/field_chunk_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/file_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/generator_unittest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/helpers_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/ifndef_guard_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/message_size_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/cpp/metadata_test.cc

@@ -230,9 +230,8 @@ bool ReflectionOps::IsInitialized(const Message& message, bool check_fields,
     }
   }
   if (check_descendants && reflection->HasExtensionSet(message)) {
-    // Note that "extendee" is only referenced if the extension is lazily parsed
-    // (e.g. LazyMessageExtensionImpl), which requires a verification function
-    // to be generated.
+    // Note that "extendee" is only referenced if the extension is lazily
+    // parsed, which requires a verification function to be generated.
     //
     // Dynamic messages would get null prototype from the generated message
     // factory but their verification functions are not generated. Therefore, it
@@ -426,7 +425,7 @@ void ReflectionOps::FindInitializationErrors(const Message& message,
 void GenericSwap(Message* lhs, Message* rhs) {
   if (!internal::DebugHardenForceCopyInSwap()) {
     ABSL_DCHECK(lhs->GetArena() != rhs->GetArena());
-    ABSL_DCHECK(lhs->GetArena() != nullptr || rhs->GetArena() != nullptr);
+    ABSL_DCHECK(internal::HasArena(*lhs) || internal::HasArena(*rhs));
   }
   // At least one of these must have an arena, so make `rhs` point to it.
   Arena* arena = rhs->GetArena();

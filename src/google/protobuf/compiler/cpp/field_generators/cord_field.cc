@@ -11,11 +11,9 @@
 
 #include <memory>
 #include <string>
-#include <tuple>
 
 #include "absl/container/flat_hash_map.h"
 #include "absl/log/absl_check.h"
-#include "absl/memory/memory.h"
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -66,6 +64,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
 
   void GeneratePrivateMembers(io::Printer* p) const override;
   void GenerateAccessorDeclarations(io::Printer* p) const override;
+  void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
@@ -74,7 +73,6 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateArenaDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
-  void GenerateAggregateInitializer(io::Printer* p) const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
   ArenaDtorNeeds NeedsArenaDestructor() const override {
     return ArenaDtorNeeds::kRequired;
@@ -163,8 +161,7 @@ void CordFieldGenerator::GeneratePrivateMembers(io::Printer* p) const {
 
 void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
   auto vars = p->WithVars(variables_);
-  auto v = p->WithVars(AnnotatedAccessors(
-      field_, {"", "_internal_", "_internal_mutable_", "_internal_set_"}));
+  auto v = p->WithVars(AnnotatedAccessors(field_, {""}));
   auto vs =
       p->WithVars(AnnotatedAccessors(field_, {"set_", "add_"}, Semantic::kSet));
   auto va =
@@ -174,13 +171,19 @@ void CordFieldGenerator::GenerateAccessorDeclarations(io::Printer* p) const {
     [[nodiscard]] $DEPRECATED$ const ::absl::Cord& $name$() const;
     $DEPRECATED$void $set_name$(::absl::Cord value);
     $DEPRECATED$void $set_name$(::absl::string_view value);
+  )cc");
+}
 
-    private:
+void CordFieldGenerator::GeneratePrivateAccessorDeclarations(
+    io::Printer* p) const {
+  auto vars = p->WithVars(variables_);
+  auto v = p->WithVars(AnnotatedAccessors(
+      field_, {"_internal_", "_internal_mutable_", "_internal_set_"}));
+
+  p->Emit(R"cc(
     const ::absl::Cord& $_internal_name$() const;
     void $_internal_set_name$(::absl::Cord value);
     ::absl::Cord* $nonnull$ $_internal_mutable_name$();
-
-    public:
   )cc");
 }
 
@@ -248,11 +251,11 @@ void CordFieldGenerator::GenerateMessageClearingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   if (field_->default_value_string().empty()) {
     p->Emit(R"cc(
-      $this_field$.Clear();
+      $this_mutable_field$.Clear();
     )cc");
   } else {
     p->Emit(R"cc(
-      $this_field$ = ::absl::string_view($default$, $default_length$);
+      $this_mutable_field$ = ::absl::string_view($default$, $default_length$);
     )cc");
   }
 }
@@ -275,7 +278,7 @@ void CordFieldGenerator::GenerateArenaDestructorCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   // this_ is the object being destructed (we are inside a static method here).
   p->Emit(R"cc(
-    $this_field$.::absl::Cord::~Cord();
+    $this_mutable_field$.::absl::Cord::~Cord();
   )cc");
 }
 
@@ -314,18 +317,6 @@ void CordFieldGenerator::GenerateConstexprAggregateInitializer(
           /*decltype($field_$)*/ {::absl::strings_internal::MakeStringConstant(
               $Msg$::Impl_::$Split$_default_$name$_func_{})},
         )cc");
-  }
-}
-
-void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){},
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      decltype($field_$){},
-    )cc");
   }
 }
 
@@ -438,7 +429,7 @@ bool CordOneofFieldGenerator::RequiresArena(GeneratorFunction func) const {
 void CordOneofFieldGenerator::GenerateClearingCode(io::Printer* p) const {
   auto v = p->WithVars(variables_);
   p->Emit(R"cc(
-    if (GetArena() == nullptr) {
+    if (!$pbi$::HasArena(*this)) {
       delete $field_$;
     }
   )cc");
@@ -457,9 +448,9 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
 void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* p) const {
   p->Emit(R"cc(
     if (oneof_needs_init) {
-      $this_field$ = $pb$::Arena::Create<absl::Cord>(arena);
+      $this_mutable_field$ = $pb$::Arena::Create<absl::Cord>(arena);
     }
-    *$this_field$ = *$from_field$;
+    *$this_mutable_field$ = *$from_field$;
   )cc");
 }
 

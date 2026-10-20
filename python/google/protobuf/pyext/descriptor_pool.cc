@@ -8,11 +8,13 @@
 // Implements the DescriptorPool, which collects all descriptors.
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "absl/base/const_init.h"
+#include "absl/base/thread_annotations.h"
 
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
@@ -72,33 +74,68 @@ namespace cdescriptor_pool {
 // propagated in the python exception instead of only living in ERROR logs.
 class BuildFileErrorCollector : public DescriptorPool::ErrorCollector {
  public:
-  BuildFileErrorCollector() : error_message(""), had_errors_(false) {}
+  class ErrorState {
+   public:
+    explicit ErrorState(BuildFileErrorCollector* collector)
+        : collector_(collector) {
+      if (collector_ != nullptr) {
+        FreeThreadingLockGuard lock(collector_->mutex_);
+        collector_->thread_errors_[GetThreadId()] = this;
+      }
+    }
+    ErrorState(const ErrorState&) = delete;
+    ErrorState& operator=(const ErrorState&) = delete;
+    ~ErrorState() {
+      if (collector_ != nullptr) {
+        FreeThreadingLockGuard lock(collector_->mutex_);
+        collector_->thread_errors_.erase(GetThreadId());
+      }
+    }
+
+    const std::optional<std::string>& error_message() const {
+      return error_message_;
+    }
+
+   private:
+    friend BuildFileErrorCollector;
+
+    BuildFileErrorCollector* collector_;
+    std::optional<std::string> error_message_;
+  };
+
+  BuildFileErrorCollector() = default;
 
   void RecordError(absl::string_view filename, absl::string_view element_name,
                    const Message* descriptor, ErrorLocation location,
                    absl::string_view message) override {
+    FreeThreadingLockGuard lock(mutex_);
+    auto it = thread_errors_.find(GetThreadId());
+    if (it == thread_errors_.end()) return;
+    ErrorState& state = *it->second;
     // Replicates the logging behavior that happens in the C++ implementation
     // when an error collector is not passed in.
-    if (!had_errors_) {
-      absl::StrAppend(&error_message, "Invalid proto descriptor for file \"",
-                      filename, "\":\n");
-      had_errors_ = true;
+    if (!state.error_message_.has_value()) {
+      state.error_message_ = absl::StrCat(
+          "Invalid proto descriptor for file \"", filename, "\":\n");
     }
     // As this only happens on failure and will result in the program not
     // running at all, no effort is made to optimize this string manipulation.
-    absl::StrAppend(&error_message, "  ", element_name, ": ", message, "\n");
+    absl::StrAppend(&*state.error_message_, "  ", element_name, ": ", message,
+                    "\n");
   }
-
-  void Clear() {
-    had_errors_ = false;
-    error_message = "";
-  }
-
-  std::string error_message;
 
  private:
-  bool had_errors_;
+  static const void* GetThreadId() {
+    static thread_local bool dummy_id = false;
+    return &dummy_id;
+  }
+
+  FreeThreadingMutex mutex_;
+  absl::flat_hash_map<const void*, ErrorState*> thread_errors_
+      ABSL_GUARDED_BY(mutex_);
 };
+
+using ErrorState = BuildFileErrorCollector::ErrorState;
 
 // Create a Python DescriptorPool object, but does not fill the "pool"
 // attribute.
@@ -250,14 +287,11 @@ static int GcClear(PyObject* pself) {
   return 0;
 }
 
-PyObject* SetErrorFromCollector(DescriptorPool::ErrorCollector* self,
-                                PyObject* arg, const char* error_type) {
-  BuildFileErrorCollector* error_collector =
-      reinterpret_cast<BuildFileErrorCollector*>(self);
-  if (error_collector && !error_collector->error_message.empty()) {
+PyObject* SetErrorFromCollector(const ErrorState& error_state, PyObject* arg,
+                                const char* error_type) {
+  if (error_state.error_message().has_value()) {
     PyErr_Format(PyExc_KeyError, "Couldn't build file for %s %S\n%s",
-                 error_type, arg, error_collector->error_message.c_str());
-    error_collector->Clear();
+                 error_type, arg, error_state.error_message()->c_str());
     return nullptr;
   }
   PyErr_Format(PyExc_KeyError, "Couldn't find %s %S", error_type, arg);
@@ -271,21 +305,18 @@ static PyObject* FindMessageByName(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  ErrorState error_state(py_pool->error_collector);
   const Descriptor* message_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)
-          ->pool->get()
-          ->FindMessageTypeByName(absl::string_view(name, name_size));
+      py_pool->pool->get()->FindMessageTypeByName(
+          absl::string_view(name, name_size));
 
   if (message_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "message");
+    return SetErrorFromCollector(error_state, arg, "message");
   }
-
 
   return PyMessageDescriptor_FromDescriptor(message_descriptor);
 }
-
 
 static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
   Py_ssize_t name_size;
@@ -295,11 +326,12 @@ static PyObject* FindFileByName(PyObject* self, PyObject* arg) {
   }
 
   PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  ErrorState error_state(py_pool->error_collector);
   const FileDescriptor* file_descriptor =
       py_pool->pool->get()->FindFileByName(absl::string_view(name, name_size));
 
   if (file_descriptor == nullptr) {
-    return SetErrorFromCollector(py_pool->error_collector, arg, "file");
+    return SetErrorFromCollector(error_state, arg, "file");
   }
   return PyFileDescriptor_FromDescriptor(file_descriptor);
 }
@@ -311,12 +343,12 @@ PyObject* FindFieldByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
+  ErrorState error_state(self->error_collector);
   const FieldDescriptor* field_descriptor =
       self->pool->get()->FindFieldByName(absl::string_view(name, name_size));
   if (field_descriptor == nullptr) {
-    return SetErrorFromCollector(self->error_collector, arg, "field");
+    return SetErrorFromCollector(error_state, arg, "field");
   }
-
 
   return PyFieldDescriptor_FromDescriptor(field_descriptor);
 }
@@ -332,13 +364,13 @@ PyObject* FindExtensionByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
+  ErrorState error_state(self->error_collector);
   const FieldDescriptor* field_descriptor =
       self->pool->get()->FindExtensionByName(
           absl::string_view(name, name_size));
   if (field_descriptor == nullptr) {
-    return SetErrorFromCollector(self->error_collector, arg, "extension field");
+    return SetErrorFromCollector(error_state, arg, "extension field");
   }
-
 
   return PyFieldDescriptor_FromDescriptor(field_descriptor);
 }
@@ -354,12 +386,12 @@ PyObject* FindEnumTypeByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
+  ErrorState error_state(self->error_collector);
   const EnumDescriptor* enum_descriptor =
       self->pool->get()->FindEnumTypeByName(absl::string_view(name, name_size));
   if (enum_descriptor == nullptr) {
-    return SetErrorFromCollector(self->error_collector, arg, "enum");
+    return SetErrorFromCollector(error_state, arg, "enum");
   }
-
 
   return PyEnumDescriptor_FromDescriptor(enum_descriptor);
 }
@@ -375,12 +407,12 @@ PyObject* FindOneofByName(PyDescriptorPool* self, PyObject* arg) {
     return nullptr;
   }
 
+  ErrorState error_state(self->error_collector);
   const OneofDescriptor* oneof_descriptor =
       self->pool->get()->FindOneofByName(absl::string_view(name, name_size));
   if (oneof_descriptor == nullptr) {
-    return SetErrorFromCollector(self->error_collector, arg, "oneof");
+    return SetErrorFromCollector(error_state, arg, "oneof");
   }
-
 
   return PyOneofDescriptor_FromDescriptor(oneof_descriptor);
 }
@@ -396,15 +428,14 @@ static PyObject* FindServiceByName(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  ErrorState error_state(py_pool->error_collector);
   const ServiceDescriptor* service_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindServiceByName(
+      py_pool->pool->get()->FindServiceByName(
           absl::string_view(name, name_size));
   if (service_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "service");
+    return SetErrorFromCollector(error_state, arg, "service");
   }
-
 
   return PyServiceDescriptor_FromDescriptor(service_descriptor);
 }
@@ -416,15 +447,14 @@ static PyObject* FindMethodByName(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  ErrorState error_state(py_pool->error_collector);
   const MethodDescriptor* method_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)->pool->get()->FindMethodByName(
+      py_pool->pool->get()->FindMethodByName(
           absl::string_view(name, name_size));
   if (method_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "method");
+    return SetErrorFromCollector(error_state, arg, "method");
   }
-
 
   return PyMethodDescriptor_FromDescriptor(method_descriptor);
 }
@@ -436,16 +466,14 @@ static PyObject* FindFileContainingSymbol(PyObject* self, PyObject* arg) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  ErrorState error_state(py_pool->error_collector);
   const FileDescriptor* file_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)
-          ->pool->get()
-          ->FindFileContainingSymbol(absl::string_view(name, name_size));
+      py_pool->pool->get()->FindFileContainingSymbol(
+          absl::string_view(name, name_size));
   if (file_descriptor == nullptr) {
-    return SetErrorFromCollector(
-        reinterpret_cast<PyDescriptorPool*>(self)->error_collector, arg,
-        "symbol");
+    return SetErrorFromCollector(error_state, arg, "symbol");
   }
-
 
   return PyFileDescriptor_FromDescriptor(file_descriptor);
 }
@@ -462,24 +490,19 @@ static PyObject* FindExtensionByNumber(PyObject* self, PyObject* args) {
     return nullptr;
   }
 
+  PyDescriptorPool* py_pool = reinterpret_cast<PyDescriptorPool*>(self);
+  ErrorState error_state(py_pool->error_collector);
   const FieldDescriptor* extension_descriptor =
-      reinterpret_cast<PyDescriptorPool*>(self)
-          ->pool->get()
-          ->FindExtensionByNumber(descriptor, number);
+      py_pool->pool->get()->FindExtensionByNumber(descriptor, number);
   if (extension_descriptor == nullptr) {
-    BuildFileErrorCollector* error_collector =
-        reinterpret_cast<BuildFileErrorCollector*>(
-            reinterpret_cast<PyDescriptorPool*>(self)->error_collector);
-    if (error_collector && !error_collector->error_message.empty()) {
+    if (error_state.error_message().has_value()) {
       PyErr_Format(PyExc_KeyError, "Couldn't build file for Extension %.d\n%s",
-                   number, error_collector->error_message.c_str());
-      error_collector->Clear();
+                   number, error_state.error_message()->c_str());
       return nullptr;
     }
     PyErr_Format(PyExc_KeyError, "Couldn't find Extension %d", number);
     return nullptr;
   }
-
 
   return PyFieldDescriptor_FromDescriptor(extension_descriptor);
 }
@@ -551,6 +574,7 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   }
 
   BuildFileErrorCollector error_collector;
+  ErrorState error_state(&error_collector);
   const FileDescriptor* descriptor =
       // Pool is mutable, we can remove the "const".
       const_cast<DescriptorPool*>(self->pool->get())
@@ -558,7 +582,9 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   if (descriptor == nullptr) {
     PyErr_Format(PyExc_TypeError,
                  "Couldn't build proto file into descriptor pool!\n%s",
-                 error_collector.error_message.c_str());
+                 error_state.error_message().has_value()
+                     ? error_state.error_message()->c_str()
+                     : "");
     return nullptr;
   }
 

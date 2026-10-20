@@ -280,6 +280,14 @@ constexpr bool EnableStableExperiments() {
 #endif
 }
 
+// In some cases we can generate extra compile time harderning in protoc just to
+// make sure our code generation is consistent. Since this can be noop code
+// bloat that we want to avoid in normal builds we only turn it on during
+// test-only builds.
+constexpr bool GenerateCompileTimeHardeningInProtoc() {
+  return EnableStableExperiments();
+}
+
 constexpr bool EnableExperimentalMicroString() {
 #if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
   return true;

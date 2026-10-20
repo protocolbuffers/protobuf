@@ -269,6 +269,9 @@ class SooRep {
 
 // The untyped common base class for `RepeatedField`.
 class RepeatedFieldBase {
+ public:
+  bool empty() const { return soo_rep_.size() == 0; }
+
  protected:
   constexpr RepeatedFieldBase() = default;
   constexpr explicit RepeatedFieldBase(internal::InternalMetadataOffset offset)
@@ -898,7 +901,7 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 
 template <typename Element>
 inline bool RepeatedField<Element>::empty() const {
-  return size() == 0;
+  return RepeatedFieldBase::empty();
 }
 
 template <typename Element>

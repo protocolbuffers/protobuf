@@ -10,13 +10,16 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstring>
+#include <string>
 #include <type_traits>
+#include <utility>
 
-#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/port.h"
 
 // must be last:
 #include "google/protobuf/port_def.inc"
@@ -188,69 +191,76 @@ class PROTOBUF_EXPORT MicroString {
   }
 
   // Sets the payload to `other`. Copy behavior depends on the kind of payload.
-  void Set(const MicroString& other, Arena* arena) {
-    SetFromOtherImpl(*this, other, arena);
+  void Set(const MicroString& other, const MessageLite& parent) {
+    SetFromOtherImpl(*this, other, parent);
   }
 
-  void Set(const MicroString& other, Arena* arena, size_t inline_capacity) {
+  void Set(const MicroString& other, const MessageLite& parent,
+           size_t inline_capacity) {
     // Unowned property gets propagated, even if we have a rep already.
     if (other.is_large_rep() && other.large_rep_kind() == kUnowned) {
-      if (arena == nullptr) Destroy();
+      if (GetArena(parent) == nullptr) Destroy();
       rep_ = other.rep_;
       return;
     }
-    Set(other.Get(), arena, inline_capacity);
+    Set(other.Get(), parent, inline_capacity);
   }
 
   // Sets the payload to `data`. Always copies the data.
   void Set(absl::string_view data, Arena* arena) {
     SetMaybeConstant(*this, data, arena);
   }
+  void Set(absl::string_view data, const MessageLite& parent) {
+    SetMaybeConstant(*this, data, parent);
+  }
 
-  void Set(const absl::Cord& value, Arena* arena) {
-    SetInChunks(value.size(), arena, [&value](auto append) {
+  void Set(const absl::Cord& value, const MessageLite& parent) {
+    SetInChunks(value.size(), parent, [&value](auto append) {
       for (absl::string_view chunk : value.Chunks()) {
         append(chunk);
       }
     });
   }
-  void Set(absl::string_view data, Arena* arena, size_t inline_capacity) {
-    SetImpl(data, arena, inline_capacity);
+  void Set(absl::string_view data, const MessageLite& parent,
+           size_t inline_capacity) {
+    SetImpl(data, parent, inline_capacity);
   }
 
   // Extra overloads to allow for other implicit conversions.
   // Eg types that convert to `std::string` (like
   // `std::reference_wrapper<std::string>`).
   template <typename... Args>
-  void Set(const std::string& data, Args... args) {
-    Set(absl::string_view(data), args...);
+  void Set(const std::string& data, Args&&... args) {
+    Set(absl::string_view(data), std::forward<Args>(args)...);
   }
   template <typename... Args>
-  void Set(std::string&& data, Args... args) {
-    SetString(std::move(data), args...);
+  void Set(std::string&& data, Args&&... args) {
+    SetString(std::move(data), std::forward<Args>(args)...);
   }
   template <typename... Args>
-  void Set(const char* data, Args... args) {
-    Set(absl::string_view(data), args...);
+  void Set(const char* data, Args&&... args) {
+    Set(absl::string_view(data), std::forward<Args>(args)...);
   }
 
   // Sets the payload to `data`. Might copy the data or alias the input buffer.
-  void SetAlias(absl::string_view data, Arena* arena,
+  void SetAlias(absl::string_view data, const MessageLite& parent,
                 size_t inline_capacity = kInlineCapacity);
 
   // Set the payload to `unowned`. Will not allocate memory, but might free
   // memory if already set.
-  void SetUnowned(const UnownedPayload& unowned_input, Arena* arena);
+  void SetUnowned(const UnownedPayload& unowned_input,
+                  const MessageLite& parent);
 
   // To match the API of ArenaStringPtr.
   // It resets the value to the passed default, trying to keep preexisting
   // buffer if we are on an arena. This reduces arena bloat when reusing a
   // message.
-  void ClearToDefault(const UnownedPayload& unowned_input, Arena* arena);
+  void ClearToDefault(const UnownedPayload& unowned_input,
+                      const MessageLite& parent);
 
   // Like above, but takes a prototype `MicroString` that has the unowned rep.
   // Used for reflection that does not have access to the `UnownedPayload`.
-  void ClearToDefault(const MicroString& other, Arena* arena);
+  void ClearToDefault(const MicroString& other, const MessageLite& parent);
 
   // Set the string, but the input comes in individual chunks.
   // This function is designed to be called from the parser.
@@ -272,7 +282,7 @@ class PROTOBUF_EXPORT MicroString {
   // The callback approach reduces the dispatch overhead to be done only once
   // instead of on each append call.
   template <typename F>
-  void SetInChunks(size_t size, Arena* arena, F setter,
+  void SetInChunks(size_t size, const MessageLite& parent, F setter,
                    size_t inline_capacity = kInlineCapacity);
 
   // The capacity for write access of this string.
@@ -420,15 +430,17 @@ class PROTOBUF_EXPORT MicroString {
   MicroString(FromOtherTag, const Self& other, Arena* arena) {
     if (other.is_inline()) {
       static_cast<Self&>(*this) = other;
-      return;
+    } else if (other.is_large_rep() && other.large_rep_kind() == kUnowned) {
+      rep_ = other.rep_;
+    } else {
+      InitDefault();
+      SetImpl(other.Get(), arena, Self::kInlineCapacity);
     }
-    // Init as empty and run the slow path.
-    InitDefault();
-    SetFromOtherSlow(other, arena, Self::kInlineCapacity);
   }
 
   template <typename Self>
-  static void SetFromOtherImpl(Self& self, const Self& other, Arena* arena) {
+  static void SetFromOtherImpl(Self& self, const Self& other,
+                               const MessageLite& parent) {
     // If inline, just memcpy directly.
     // Use bitwise and because we don't want short circuiting. It adds extra
     // branches. Cast to `int` to silence -Wbitwise-instead-of-logical.
@@ -437,21 +449,21 @@ class PROTOBUF_EXPORT MicroString {
       self = other;
       return;
     }
-    self.SetFromOtherSlow(other, arena, Self::kInlineCapacity);
+    self.SetFromOtherSlow(other, parent, Self::kInlineCapacity);
   }
 
   // Sets the payload to `str`. Might copy the data or take ownership of `str`.
-  void SetString(std::string&& data, Arena* arena,
+  void SetString(std::string&& data, const MessageLite& parent,
                  size_t inline_capacity = kInlineCapacity);
 
-  void SetFromOtherSlow(const MicroString& other, Arena* arena,
+  void SetFromOtherSlow(const MicroString& other, const MessageLite& parent,
                         size_t inline_capacity);
 
   void ClearSlow();
 
-  template <typename Self>
+  template <typename Self, typename ArenaProvider>
   static void SetMaybeConstant(Self& self, absl::string_view data,
-                               Arena* arena) {
+                               ArenaProvider& arena_provider) {
     const size_t size = data.size();
     if (PROTOBUF_BUILTIN_CONSTANT_P(size <= Self::kInlineCapacity) &&
         size <= Self::kInlineCapacity && self.is_inline()) {
@@ -465,9 +477,11 @@ class PROTOBUF_EXPORT MicroString {
       self = tmp;
       return;
     }
-    self.SetImpl(data, arena, Self::kInlineCapacity);
+    self.SetImpl(data, arena_provider, Self::kInlineCapacity);
   }
   void SetImpl(absl::string_view data, Arena* arena, size_t inline_capacity);
+  void SetImpl(absl::string_view data, const MessageLite& parent,
+               size_t inline_capacity);
 
   void DestroySlow();
 
@@ -484,7 +498,7 @@ class PROTOBUF_EXPORT MicroString {
 };
 
 template <typename F>
-void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
+void MicroString::SetInChunks(size_t size, const MessageLite& parent, F setter,
                               size_t inline_capacity) {
   const auto invoke_setter = [&](char* p) {
     char* start = p;
@@ -545,6 +559,7 @@ void MicroString::SetInChunks(size_t size, Arena* arena, F setter,
   }
 
   // We didn't have space for it, so allocate the space and dispatch.
+  Arena* arena = GetArena(parent);
   if (arena == nullptr) Destroy();
 
   if (size <= inline_capacity) {
@@ -609,24 +624,24 @@ class MicroStringExtraImpl : private MicroString {
 
   using MicroString::Get;
   // Redefine the setters, passing the extended inline capacity.
-  void Set(const MicroStringExtraImpl& other, Arena* arena) {
-    SetFromOtherImpl(*this, other, arena);
+  void Set(const MicroStringExtraImpl& other, const MessageLite& parent) {
+    SetFromOtherImpl(*this, other, parent);
   }
-  void Set(absl::string_view data, Arena* arena) {
-    SetMaybeConstant(*this, data, arena);
+  void Set(absl::string_view data, const MessageLite& parent) {
+    SetMaybeConstant(*this, data, parent);
   }
-  void Set(const std::string& data, Arena* arena) {
-    Set(absl::string_view(data), arena);
+  void Set(const std::string& data, const MessageLite& parent) {
+    Set(absl::string_view(data), parent);
   }
-  void Set(const char* data, Arena* arena) {
-    Set(absl::string_view(data), arena);
+  void Set(const char* data, const MessageLite& parent) {
+    Set(absl::string_view(data), parent);
   }
-  void Set(std::string&& str, Arena* arena) {
-    MicroString::SetString(std::move(str), arena, kInlineCapacity);
+  void Set(std::string&& str, const MessageLite& parent) {
+    MicroString::SetString(std::move(str), parent, kInlineCapacity);
   }
 
-  void SetAlias(absl::string_view data, Arena* arena) {
-    MicroString::SetAlias(data, arena, kInlineCapacity);
+  void SetAlias(absl::string_view data, const MessageLite& parent) {
+    MicroString::SetAlias(data, parent, kInlineCapacity);
   }
 
   using MicroString::Destroy;
@@ -656,7 +671,7 @@ class MicroStringExtraImpl : private MicroString {
 // inline strings are enabled in this platform.
 // If inline strings are not enabled in this platform, then the argument is
 // ignored and no inline space is provided.
-// It could be rouneded up to prevent padding.
+// It could be rounded up to prevent padding.
 template <size_t InlineCapacity>
 using MicroStringExtra =
     std::conditional_t<(!MicroString::kAllowExtraCapacity ||
