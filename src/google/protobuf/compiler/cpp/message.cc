@@ -1283,7 +1283,7 @@ void MessageGenerator::EmitUpdateByteSizeForField(
     const FieldDescriptor* field, io::Printer* p,
     int& cached_has_word_index) const {
   p->Emit(
-      {{"comment", [&] { PrintFieldComment(Formatter{p}, field, options_); }},
+      {{"comment", [&] { PrintFieldComment(p, field, options_); }},
        {"update_cached_has_bits",
         [&] { MaybeEmitUpdateCachedHasbits(field, p, cached_has_word_index); }},
        {"check_and_update_byte_size_for_field",
@@ -1312,7 +1312,7 @@ void MessageGenerator::GenerateFieldAccessorDefinitions(io::Printer* p) {
     const auto accessor_verifier =
         p->WithSubstitutionListener(AccessorVerifier(field));
 
-    PrintFieldComment(Formatter{p}, field, options_);
+    PrintFieldComment(p, field, options_);
 
     auto v = p->WithVars(FieldVars(field, options_));
     auto t = p->WithVars(MakeTrackerCalls(field, options_));
@@ -4252,7 +4252,7 @@ void MessageGenerator::GenerateSerializeOneField(io::Printer* p,
     field_generators_.get(field).GenerateSerializeWithCachedSizesToArray(p);
   };
 
-  PrintFieldComment(Formatter{p}, field, options_);
+  PrintFieldComment(p, field, options_);
   if (HasHasbit(field, options_)) {
     int has_bit_index = field_layout_.GetHasBitIndex(field).value();
     int has_word_index = field_layout_.GetHasWordIndex(field).value();
@@ -4997,7 +4997,7 @@ void MessageGenerator::GenerateByteSize(io::Printer* p) {
                  {"case_per_field",
                   [&] {
                     for (auto field : internal::FieldRange(oneof)) {
-                      PrintFieldComment(Formatter{p}, field, options_);
+                      PrintFieldComment(p, field, options_);
                       p->Emit(
                           {{"field_name",
                             UnderscoresToCamelCase(field->name(), true)},
@@ -5086,7 +5086,7 @@ void MessageGenerator::EmitOneofFields(io::Printer* p, const T& emitter) const {
              {"case_per_field",
               [&] {
                 for (auto field : internal::FieldRange(oneof)) {
-                  PrintFieldComment(Formatter{p}, field, options_);
+                  PrintFieldComment(p, field, options_);
                   p->Emit({{"field_name",
                             UnderscoresToCamelCase(field->name(), true)},
                            {"field_byte_size", [&] { emitter(p, field); }}},

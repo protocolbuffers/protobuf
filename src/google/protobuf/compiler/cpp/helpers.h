@@ -1077,9 +1077,10 @@ std::string FieldComment(const T* field, const Options& options) {
 }
 
 template <class T>
-void PrintFieldComment(const Formatter& format, const T* field,
-                       const Options& options) {
-  format("// $1$\n", FieldComment(field, options));
+void PrintFieldComment(io::Printer* p, const T* field, const Options& options) {
+  p->Emit({{"comment", FieldComment(field, options)}}, R"cc(
+    // $comment$
+  )cc");
 }
 
 class PROTOC_EXPORT NamespaceOpener {
