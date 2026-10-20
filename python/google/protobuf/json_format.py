@@ -132,6 +132,7 @@ def MessageToDict(
     descriptor_pool=None,
     *,
     unquote_int64_if_possible=False,
+    including_default_value_fields=None,
 ):
   """Converts protobuf message to a dictionary.
 
@@ -152,10 +153,19 @@ def MessageToDict(
     unquote_int64_if_possible: If True, unquote int64 fields for values that are
       safe to emit as numbers (all values smaller than 2^53 and a sparse set of
       values that are larger).
+    including_default_value_fields: Compatibility spelling of
+      always_print_fields_with_no_presence. Prefer the latter in new code.
 
   Returns:
     A dict representation of the protocol buffer message.
   """
+  if including_default_value_fields is not None:
+    if always_print_fields_with_no_presence:
+      raise ValueError(
+          'Specify only one default-field printing option.'
+      )
+    always_print_fields_with_no_presence = including_default_value_fields
+
   printer = _Printer(
       preserving_proto_field_name,
       use_integers_for_enums,

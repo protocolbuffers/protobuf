@@ -87,6 +87,29 @@ class JsonFormatBase(parameterized.TestCase):
 
 class JsonFormatTest(JsonFormatBase):
 
+  def testMessageToDictLegacyDefaultFieldKeyword(self):
+    for message in (
+        json_format_proto3_pb2.TestMessage(),
+        unittest_pb2.TestAllTypes(),
+    ):
+      for enabled in (False, True):
+        with self.subTest(message=type(message).__name__, enabled=enabled):
+          self.assertEqual(
+              json_format.MessageToDict(
+                  message, always_print_fields_with_no_presence=enabled
+              ),
+              json_format.MessageToDict(
+                  message, including_default_value_fields=enabled
+              ),
+          )
+
+    with self.assertRaisesRegex(ValueError, 'only one'):
+      json_format.MessageToDict(
+          json_format_proto3_pb2.TestMessage(),
+          always_print_fields_with_no_presence=True,
+          including_default_value_fields=True,
+      )
+
   def testEmptyMessageToJson(self):
     message = json_format_proto3_pb2.TestMessage()
     self.assertEqual(json_format.MessageToJson(message), '{}')
