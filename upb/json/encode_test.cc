@@ -302,3 +302,21 @@ TEST(JsonTest, EncodeBytesWebSafeBase64RoundTripsThroughDecoder) {
   const upb_StringView data = upb_test_Box_data(decoded);
   EXPECT_EQ(std::string(kData, kSize), std::string(data.data, data.size));
 }
+
+TEST(JsonTest, EncodeAnyPreservesExtensions) {
+  upb::Arena a;
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  ASSERT_NE(m, nullptr);
+
+  const std::string json_in =
+      R"({"anyVal":{"@type":"type.googleapis.com/upb_test.Box","[upb_test.ext_tag]":42}})";
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json_in.data(), json_in.size(),
+                             UPB_UPCAST(decoded), m, defpool.ptr(), 0, a.ptr(),
+                             status.ptr()))
+      << status.error_message();
+
+  EXPECT_EQ(json_in, JsonEncode(decoded, 0));
+}
