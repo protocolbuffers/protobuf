@@ -56,6 +56,10 @@ const upb_MessageDef* PyUpb_Message_GetMsgdef(PyObject* self);
 
 // Functions that match the corresponding methods on the message object.
 PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg);
+// Caller already owns the target arena writer. This is not a Python entry point.
+PyObject* PyUpb_Message_MergeFromPreAdmittedTarget(PyObject* self,
+                                                   PyObject* arg,
+                                                   PyObject* target_arena);
 PyObject* PyUpb_Message_MergeFromString(PyObject* self, PyObject* arg);
 PyObject* PyUpb_Message_SerializeToString(PyObject* self, PyObject* args,
                                           PyObject* kwargs);

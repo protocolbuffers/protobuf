@@ -48,6 +48,8 @@
 static const upb_MessageDef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls);
 static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name);
 static PyObject* PyUpb_Message_GetDescriptor(PyObject* self);
+static PyObject* PyUpb_Message_SerializeInternalUnprotected(
+    PyObject* self, PyObject* args, PyObject* kwargs, bool check_required);
 
 // -----------------------------------------------------------------------------
 // CPythonBits
@@ -1575,7 +1577,8 @@ err:
 }
 
 static PyObject* PyUpb_Message_MergeFromImpl(PyObject* self, PyObject* arg,
-                                             bool admit_target) {
+                                             bool admit_target,
+                                             PyObject* preadmitted_arena) {
   if (self->ob_type != arg->ob_type) {
     PyErr_Format(PyExc_TypeError,
                  "Parameter to MergeFrom() must be instance of same class: "
@@ -1585,8 +1588,18 @@ static PyObject* PyUpb_Message_MergeFromImpl(PyObject* self, PyObject* arg,
   }
   // OPT: exit if src is empty.
   PyObject* subargs = PyTuple_New(0);
-  PyObject* serialized =
-      PyUpb_Message_SerializePartialToString(arg, subargs, NULL);
+  PyObject* serialized;
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  if (preadmitted_arena && ((PyUpb_Message*)arg)->arena == preadmitted_arena) {
+    serialized =
+        PyUpb_Message_SerializeInternalUnprotected(arg, subargs, NULL, false);
+  } else
+#else
+  (void)preadmitted_arena;
+#endif
+  {
+    serialized = PyUpb_Message_SerializePartialToString(arg, subargs, NULL);
+  }
   Py_DECREF(subargs);
   if (!serialized) return NULL;
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
@@ -1617,11 +1630,18 @@ static PyObject* PyUpb_Message_MergeFromImpl(PyObject* self, PyObject* arg,
 }
 
 PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
-  return PyUpb_Message_MergeFromImpl(self, arg, false);
+  return PyUpb_Message_MergeFromImpl(self, arg, false, NULL);
 }
 
 static PyObject* PyUpb_Message_MergeFromPublic(PyObject* self, PyObject* arg) {
-  return PyUpb_Message_MergeFromImpl(self, arg, true);
+  return PyUpb_Message_MergeFromImpl(self, arg, true, NULL);
+}
+
+PyObject* PyUpb_Message_MergeFromPreAdmittedTarget(PyObject* self,
+                                                   PyObject* arg,
+                                                   PyObject* target_arena) {
+  assert(((PyUpb_Message*)self)->arena == target_arena);
+  return PyUpb_Message_MergeFromImpl(self, arg, false, target_arena);
 }
 
 static PyObject* PyUpb_Message_CopyFromUnprotected(PyObject* _self,
