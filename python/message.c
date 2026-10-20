@@ -1574,7 +1574,8 @@ err:
   return NULL;
 }
 
-PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
+static PyObject* PyUpb_Message_MergeFromImpl(PyObject* self, PyObject* arg,
+                                             bool admit_target) {
   if (self->ob_type != arg->ob_type) {
     PyErr_Format(PyExc_TypeError,
                  "Parameter to MergeFrom() must be instance of same class: "
@@ -1588,11 +1589,39 @@ PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
       PyUpb_Message_SerializePartialToString(arg, subargs, NULL);
   Py_DECREF(subargs);
   if (!serialized) return NULL;
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* arena = NULL;
+  if (admit_target) {
+    arena = ((PyUpb_Message*)self)->arena;
+    Py_INCREF(arena);
+    if (!PyUpb_Arena_TryWrite(arena)) {
+      Py_DECREF(arena);
+      Py_DECREF(serialized);
+      return NULL;
+    }
+  }
+#else
+  (void)admit_target;
+#endif
   PyObject* ret = PyUpb_Message_MergeFromString(self, serialized);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  if (arena) {
+    PyUpb_Arena_EndWrite(arena);
+    Py_DECREF(arena);
+  }
+#endif
   Py_DECREF(serialized);
   if (!ret) return NULL;
   Py_DECREF(ret);
   Py_RETURN_NONE;
+}
+
+PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg) {
+  return PyUpb_Message_MergeFromImpl(self, arg, false);
+}
+
+static PyObject* PyUpb_Message_MergeFromPublic(PyObject* self, PyObject* arg) {
+  return PyUpb_Message_MergeFromImpl(self, arg, true);
 }
 
 static PyObject* PyUpb_Message_CopyFrom(PyObject* _self, PyObject* arg) {
@@ -2319,7 +2348,7 @@ static PyMethodDef PyUpb_Message_Methods[] = {
      "Checks if all required fields of a protocol message are set."},
     {"ListFields", PyUpb_Message_ListFields, METH_NOARGS,
      "Lists all set fields of a message."},
-    {"MergeFrom", PyUpb_Message_MergeFrom, METH_O,
+    {"MergeFrom", PyUpb_Message_MergeFromPublic, METH_O,
      "Merges a protocol message into the current message."},
     {"MergeFromString", PyUpb_Message_MergeFromStringPublic, METH_O,
      "Merges a serialized message into the current message."},
