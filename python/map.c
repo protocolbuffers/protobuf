@@ -700,7 +700,7 @@ typedef struct {
   int version;
 } PyUpb_MapIterator;
 
-static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map) {
+static PyObject* PyUpb_MapIterator_NewUnprotected(PyUpb_MapContainer* map) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
   PyUpb_MapIterator* iter =
       (void*)PyType_GenericAlloc(state->map_iterator_type, 0);
@@ -712,13 +712,30 @@ static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map) {
   return &iter->ob_base;
 }
 
+static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_MapIterator_NewUnprotected(map);
+#else
+  PyObject* arena = map->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_MapIterator_NewUnprotected(map);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
+}
+
 static void PyUpb_MapIterator_Dealloc(void* _self) {
   PyUpb_MapIterator* self = (PyUpb_MapIterator*)_self;
   Py_DECREF(&self->map->ob_base);
   PyUpb_Dealloc(_self);
 }
 
-static PyObject* PyUpb_MapIterator_IterNext(PyObject* _self) {
+static PyObject* PyUpb_MapIterator_IterNextUnprotected(PyObject* _self) {
   PyUpb_MapIterator* self = (PyUpb_MapIterator*)_self;
   if (self->version != self->map->version) {
     return PyErr_Format(PyExc_RuntimeError, "Map modified during iteration.");
@@ -731,6 +748,24 @@ static PyObject* PyUpb_MapIterator_IterNext(PyObject* _self) {
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* key_f = upb_MessageDef_Field(entry_m, 0);
   return PyUpb_UpbToPy(key, key_f, self->map->arena);
+}
+
+static PyObject* PyUpb_MapIterator_IterNext(PyObject* self) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_MapIterator_IterNextUnprotected(self);
+#else
+  PyUpb_MapIterator* iter = (PyUpb_MapIterator*)self;
+  PyObject* arena = iter->map->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_MapIterator_IterNextUnprotected(self);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyType_Slot PyUpb_MapIterator_Slots[] = {
