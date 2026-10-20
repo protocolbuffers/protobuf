@@ -761,4 +761,46 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
   UPB_IGNORE_DEPRECATION_STOP
   EXPECT_EQ(kUpb_FindUnknown_NotPresent, found.status);
 }
+
+// Non-canonical extensions are matched by field number only, so one with a
+// Message CType may be a repeated field that holds a upb_Array* rather than a
+// upb_Message*. Promotion must fail gracefully rather than reinterpret it.
+TEST(GeneratedCode, PromoteRepeatedNonCanonicalExtensionFails) {
+  upb::Arena arena;
+
+  // Build a repeated message extension with the same field number as
+  // ModelExtension1.model_ext.
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.EncodeExtension(kUpb_FieldType_Message, 1547,
+                                kUpb_FieldModifier_IsRepeated));
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTableExtension* repeated_ext = upb_MiniTableExtension_BuildMessage(
+      e.data().data(), e.data().size(),
+      &upb_0test__ModelWithExtensions_msg_init,
+      &upb_0test__ModelExtension1_msg_init, arena.ptr(), &status);
+  ASSERT_NE(repeated_ext, nullptr) << status.msg;
+  ASSERT_TRUE(
+      upb_MiniTableField_IsArray(upb_MiniTableExtension_ToField(repeated_ext)));
+
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_test_ModelExtension1* sub = upb_test_ModelExtension1_new(arena.ptr());
+  upb_test_ModelExtension1_set_str(sub, upb_StringView_FromString("World"));
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Message);
+  ASSERT_NE(arr, nullptr);
+  upb_MessageValue elem;
+  elem.msg_val = UPB_UPCAST(sub);
+  ASSERT_TRUE(upb_Array_Append(arr, elem, arena.ptr()));
+
+  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      UPB_UPCAST(msg), repeated_ext, &arr, arena.ptr()));
+
+  upb_MessageValue val;
+  upb_GetExtension_Status promote_status = upb_Message_GetOrPromoteExtension(
+      UPB_UPCAST(msg), upb_test_ModelExtension1_model_ext_ext,
+      kUpb_DecodeOption_AliasString, arena.ptr(), &val);
+  EXPECT_EQ(kUpb_GetExtension_ParseError, promote_status);
+  EXPECT_EQ(0, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
+}
 }  // namespace
