@@ -139,7 +139,12 @@ cc_library(
         "//src/google/protobuf",
         "//src/google/protobuf:port",
         "@abseil-cpp//absl/strings",
-    ],
+    ] + select({
+        "//bazel/flags:internal_do_not_use_require_prebuilt_protoc.flag_set": [
+            "//bazel/private/oss/toolchains/prebuilt:building_protoc_from_source_is_disallowed",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 cc_library(
