@@ -31,6 +31,37 @@ The binary wheel will build against whatever version of Python is installed on
 your system. The source package is always the same and does not depend on a
 local version of Python.
 
+### Experimental free-threaded Python build
+
+This fork has an opt-in build for CPython 3.14t experiments:
+
+```
+$ bazel build //python/dist:binary_wheel \
+    --//python:limited_api=false \
+    --//python:experimental_free_threading=true
+```
+
+Run Bazel with the free-threaded Python interpreter selected as the system
+`python3`. The build rejects regular Python headers and the limited API. A
+successful build produces a `cp314t` wheel whose native upb extension declares
+that it can run without the GIL. Verify both the backend and runtime state in
+the installed environment:
+
+```python
+import sys
+from google.protobuf.internal import api_implementation
+
+assert api_implementation.Type() == "upb"
+assert not sys._is_gil_enabled()
+```
+
+This opt-in is **not a release or general thread-safety claim**. Concurrent
+mutation and serialization of the same mutable message currently produces a
+native data race under ThreadSanitizer. Do not share mutable messages across
+threads without application-level synchronization. Subinterpreter support and
+arbitrary late interpreter teardown are also unqualified. The ordinary build
+keeps the experimental declaration disabled.
+
 ## Building from `setup.py`
 
 We support building from `setup.py`, but only from a Python source package.
