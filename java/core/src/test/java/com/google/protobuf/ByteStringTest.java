@@ -133,24 +133,114 @@ public class ByteStringTest {
   }
 
   @Test
+  public void testCompare_boundedByteStrings_thorough() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    // Matching slices at different non-zero offsets with opposite sentinel bytes outside the bounds
+    ByteString b1 =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, (byte) 0xFF})
+            .substring(1, 11);
+    ByteString b2 =
+        ByteString.copyFrom(new byte[] {0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0}).substring(2, 12);
+    assertWithMessage("Bounded slices with identical contents at different offsets are equal")
+        .that(comparator.compare(b1, b2))
+        .isEqualTo(0);
+
+    // Matching prefixes, different lengths
+    ByteString b3 =
+        ByteString.copyFrom(new byte[] {99, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 99})
+            .substring(1, 12);
+    assertWithMessage("Shorter bounded prefix string is less")
+        .that(comparator.compare(b1, b3) < 0)
+        .isTrue();
+    assertWithMessage("Longer bounded string is greater")
+        .that(comparator.compare(b3, b1) > 0)
+        .isTrue();
+
+    // Unsigned byte comparison within bounded slices: 0x00 < 0x7F < 0x80 < 0xFF
+    ByteString unsignedLow =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 0x7F, (byte) 0xFF}).substring(1, 4);
+    ByteString unsignedHigh =
+        ByteString.copyFrom(new byte[] {0, 0, 1, 2, (byte) 0x80, 0}).substring(2, 5);
+    assertWithMessage("Bounded slice treats 0x7F < 0x80 as unsigned")
+        .that(comparator.compare(unsignedLow, unsignedHigh) < 0)
+        .isTrue();
+    assertWithMessage("Bounded slice treats 0x80 > 0x7F as unsigned")
+        .that(comparator.compare(unsignedHigh, unsignedLow) > 0)
+        .isTrue();
+  }
+
+  @Test
+  public void testCompare_literalAndBoundedByteStrings() throws Exception {
+    Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
+
+    ByteString literal = ByteString.copyFrom(new byte[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10});
+    // Substring with non-zero offset and sentinel bytes outside [offset, offset + length)
+    ByteString boundedEqual =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0})
+            .substring(1, 11);
+    ByteString boundedGreater =
+        ByteString.copyFrom(new byte[] {0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, (byte) 0x80, 0})
+            .substring(2, 12);
+    ByteString boundedPrefix =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 1, 2, 3, 4, 5, (byte) 0xFF}).substring(1, 6);
+
+    assertWithMessage("Literal vs Bounded equal")
+        .that(comparator.compare(literal, boundedEqual))
+        .isEqualTo(0);
+    assertWithMessage("Bounded vs Literal equal")
+        .that(comparator.compare(boundedEqual, literal))
+        .isEqualTo(0);
+    assertWithMessage("Literal vs Bounded less")
+        .that(comparator.compare(literal, boundedGreater) < 0)
+        .isTrue();
+    assertWithMessage("Bounded vs Literal greater")
+        .that(comparator.compare(boundedGreater, literal) > 0)
+        .isTrue();
+    assertWithMessage("Literal vs shorter Bounded prefix")
+        .that(comparator.compare(literal, boundedPrefix) > 0)
+        .isTrue();
+    assertWithMessage("Shorter Bounded prefix vs Literal")
+        .that(comparator.compare(boundedPrefix, literal) < 0)
+        .isTrue();
+  }
+
+  @Test
   public void testCompare_heterogeneousByteStrings_fallbackPath() throws Exception {
     Comparator<ByteString> comparator = ByteString.unsignedLexicographicalComparator();
 
-    byte[] raw = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    byte[] raw = new byte[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, (byte) 0x80};
     ByteString literal = ByteString.copyFrom(raw);
-    // Substring creates BoundedByteString (LeafByteString but NOT LiteralByteString)
-    ByteString bounded1 = ByteString.copyFrom(raw).substring(0, 10);
-    ByteString bounded2 = ByteString.copyFrom(raw).substring(1, 11);
+    ByteString bounded =
+        ByteString.copyFrom(new byte[] {(byte) 0xFF, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, (byte) 0x80, 0})
+            .substring(1, 12);
+    ByteString ropeEqual =
+        RopeByteString.newInstanceForTest(literal.substring(0, 5), literal.substring(5, 11));
+    ByteString ropeSmaller =
+        RopeByteString.newInstanceForTest(
+            literal.substring(0, 10), ByteString.copyFrom(new byte[] {0x7F}));
+    ByteString ropePrefix =
+        RopeByteString.newInstanceForTest(literal.substring(0, 4), literal.substring(4, 8));
 
-    // Test Literal vs Bounded
-    assertWithMessage("Literal vs Bounded equal")
-        .that(comparator.compare(literal.substring(0, 10), bounded1))
+    // Exercise the ByteIterator fallback path with RopeByteString against Literal, Bounded, and
+    // Rope
+    assertWithMessage("Literal vs Rope equal")
+        .that(comparator.compare(literal, ropeEqual))
         .isEqualTo(0);
-    assertWithMessage("Literal vs Bounded different")
-        .that(comparator.compare(literal.substring(0, 10), bounded2) < 0)
+    assertWithMessage("Rope vs Bounded equal")
+        .that(comparator.compare(ropeEqual, bounded))
+        .isEqualTo(0);
+    assertWithMessage("Rope vs Rope different (unsigned byte 0x7F < 0x80)")
+        .that(comparator.compare(ropeSmaller, ropeEqual) < 0)
         .isTrue();
-    assertWithMessage("Bounded vs Literal different")
-        .that(comparator.compare(bounded2, literal.substring(0, 10)) > 0)
+    assertWithMessage("Bounded vs Rope different (unsigned byte 0x80 > 0x7F)")
+        .that(comparator.compare(bounded, ropeSmaller) > 0)
+        .isTrue();
+    assertWithMessage("Rope prefix vs Literal")
+        .that(comparator.compare(ropePrefix, literal) < 0)
+        .isTrue();
+    assertWithMessage("Bounded vs Rope prefix")
+        .that(comparator.compare(bounded, ropePrefix) > 0)
         .isTrue();
   }
 
@@ -343,6 +433,35 @@ public class ByteStringTest {
       assertWithMessage("Should throw").fail();
     } catch (IndexOutOfBoundsException expected) {
     }
+  }
+
+  // A substring is a window onto a larger array, but asReadOnlyByteBuffer() must still hand back a
+  // buffer bounded to the substring, like every other ByteString implementation does.
+  @Test
+  public void testAsReadOnlyByteBuffer_substringIsBoundedToTheSubstring() {
+    ByteString substring = ByteString.copyFrom(getTestBytes(24)).substring(5, 21);
+
+    ByteBuffer buffer = substring.asReadOnlyByteBuffer();
+
+    assertThat(buffer.position()).isEqualTo(0);
+    assertThat(buffer.limit()).isEqualTo(16);
+    assertThat(buffer.capacity()).isEqualTo(16);
+    // Absolute reads are indexed from the start of the substring, not of the backing array.
+    assertThat(buffer.get(0)).isEqualTo(substring.byteAt(0));
+  }
+
+  // Because the buffer is bounded, rewinding it cannot expose the bytes preceding the substring.
+  @Test
+  public void testAsReadOnlyByteBuffer_substringSurvivesRepositioning() {
+    ByteString substring = ByteString.copyFrom(getTestBytes(24)).substring(5, 21);
+
+    ByteBuffer buffer = substring.asReadOnlyByteBuffer();
+    buffer.position(0);
+
+    assertThat(buffer.remaining()).isEqualTo(16);
+    byte[] roundTripBytes = new byte[16];
+    buffer.get(roundTripBytes);
+    assertThat(roundTripBytes).isEqualTo(substring.toByteArray());
   }
 
   @Test
@@ -1091,5 +1210,195 @@ public class ByteStringTest {
     assertWithMessage(byteArrayCopier.toString())
         .that(byteArrayCopier.getClass().getSimpleName().endsWith("ArraysByteArrayCopier"))
         .isTrue();
+  }
+
+  private static ByteString wrapDirectNonArrayBacked(byte[] bytes) {
+    ByteBuffer directBuffer = ByteBuffer.allocateDirect(bytes.length);
+    directBuffer.put(bytes);
+    directBuffer.flip();
+    return ByteString.wrap(
+        directBuffer.hasArray() ? directBuffer.asReadOnlyBuffer() : directBuffer,
+        /* copyOffHeap= */ false);
+  }
+
+  @Test
+  public void testBoundedByteStringWithNonZeroOffset_equalsRange() {
+    byte[] backing = new byte[30];
+    for (int i = 0; i < backing.length; i++) {
+      backing[i] = (byte) (i + 1);
+    }
+
+    // Case 1: offset (20) > length (6), content is [21, 22, 23, 24, 25, 26].
+    // Previously threw IndexOutOfBoundsException because substringNoCopy(this.offset,
+    // this.offset + length) exceeded this.length.
+    ByteString.LeafByteString boundedLargeOffset =
+        (ByteString.LeafByteString) ByteString.copyFrom(backing).substring(20, 26);
+    byte[] targetBytes1 =
+        new byte[] {
+          99,
+          99,
+          99,
+          99, // [0..4): padding
+          21,
+          22,
+          23,
+          24,
+          25,
+          26, // [4..10): full match
+          21,
+          22,
+          23,
+          24,
+          99,
+          99, // [10..16): 4-byte prefix match, full mismatch
+          88,
+          88,
+          88,
+          88 // [16..20): padding
+        };
+    ByteString rope1 =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(targetBytes1, 0, 7),
+            ByteString.copyFrom(targetBytes1, 7, targetBytes1.length - 7));
+    ByteString nonArrayBacked1 = wrapDirectNonArrayBacked(targetBytes1);
+
+    for (ByteString other : new ByteString[] {rope1, nonArrayBacked1}) {
+      // Full length (length == boundedLargeOffset.size())
+      assertThat(boundedLargeOffset.equalsRange(other, 4, 6)).isTrue();
+      assertThat(boundedLargeOffset.equalsRange(other, 10, 6)).isFalse();
+      assertThat(boundedLargeOffset.equalsRange(other, 0, 6)).isFalse();
+
+      // Partial length (length < boundedLargeOffset.size())
+      assertThat(boundedLargeOffset.equalsRange(other, 4, 4)).isTrue();
+      assertThat(boundedLargeOffset.equalsRange(other, 10, 4)).isTrue();
+      assertThat(boundedLargeOffset.equalsRange(other, 0, 4)).isFalse();
+    }
+
+    // Case 2: 0 < offset (3) < length (12), content is [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].
+    // For partial length 5 (offset + 5 <= 12), previously compared the wrong slice at 2 * offset
+    // ([7, 8, 9, 10, 11]) instead of [4, 5, 6, 7, 8].
+    ByteString.LeafByteString boundedSmallOffset =
+        (ByteString.LeafByteString) ByteString.copyFrom(backing).substring(3, 15);
+    byte[] targetBytes2 =
+        new byte[] {
+          99,
+          99, // [0..2): padding
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15, // [2..14): full 12-byte match
+          7,
+          8,
+          9,
+          10,
+          11, // [14..19): bytes at 2 * offset (must not match)
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          99 // [19..31): 12-byte mismatch at last byte
+        };
+    ByteString rope2 =
+        RopeByteString.newInstanceForTest(
+            ByteString.copyFrom(targetBytes2, 0, 8),
+            ByteString.copyFrom(targetBytes2, 8, targetBytes2.length - 8));
+    ByteString nonArrayBacked2 = wrapDirectNonArrayBacked(targetBytes2);
+
+    for (ByteString other : new ByteString[] {rope2, nonArrayBacked2}) {
+      // Full length (length == boundedSmallOffset.size())
+      assertThat(boundedSmallOffset.equalsRange(other, 2, 12)).isTrue();
+      assertThat(boundedSmallOffset.equalsRange(other, 19, 12)).isFalse();
+
+      // Partial length (length < boundedSmallOffset.size(), offset + length <= size())
+      assertThat(boundedSmallOffset.equalsRange(other, 2, 5)).isTrue();
+      assertThat(boundedSmallOffset.equalsRange(other, 14, 5)).isFalse();
+    }
+  }
+
+  private static void assertByteIteratorMatches(ByteString byteString, byte[] expected) {
+    // Test unboxed iteration via nextByte()
+    ByteString.ByteIterator iter = byteString.iterator();
+    for (int i = 0; i < expected.length; i++) {
+      assertThat(iter.hasNext()).isTrue();
+      assertThat(iter.nextByte()).isEqualTo(expected[i]);
+    }
+    assertThat(iter.hasNext()).isFalse();
+    try {
+      byte unused = iter.nextByte();
+      assertWithMessage("Expected NoSuchElementException from nextByte()").fail();
+    } catch (NoSuchElementException expectedException) {
+      // Expected
+    }
+
+    // Test boxed iteration via next() and remove()
+    ByteString.ByteIterator boxedIter = byteString.iterator();
+    try {
+      boxedIter.remove();
+      assertWithMessage("Expected UnsupportedOperationException from remove()").fail();
+    } catch (UnsupportedOperationException expectedException) {
+      // Expected
+    }
+    for (int i = 0; i < expected.length; i++) {
+      assertThat(boxedIter.hasNext()).isTrue();
+      assertThat(boxedIter.next()).isEqualTo(expected[i]);
+    }
+    assertThat(boxedIter.hasNext()).isFalse();
+    try {
+      Byte unused = boxedIter.next();
+      assertWithMessage("Expected NoSuchElementException from next()").fail();
+    } catch (NoSuchElementException expectedException) {
+      // Expected
+    }
+  }
+
+  @Test
+  public void testIterator_empty() {
+    assertByteIteratorMatches(ByteString.EMPTY, new byte[0]);
+  }
+
+  @Test
+  public void testIterator_literalByteString() {
+    byte[] expected = getTestBytes(256, 12345L);
+    ByteString literal = ByteString.copyFrom(expected);
+    assertByteIteratorMatches(literal, expected);
+  }
+
+  @Test
+  public void testIterator_boundedByteString() {
+    byte[] full = getTestBytes(256, 67890L);
+    int offset = 37;
+    int length = 149;
+    byte[] expected = Arrays.copyOfRange(full, offset, offset + length);
+    ByteString bounded = ByteString.copyFrom(full).substring(offset, offset + length);
+    assertByteIteratorMatches(bounded, expected);
+  }
+
+  @Test
+  public void testIterator_ropeByteString() {
+    byte[] expected = getTestBytes(1024, 54321L);
+    List<ByteString> pieces = makeConcretePieces(expected);
+    ByteString rope = ByteString.copyFrom(pieces);
+    // Also test a RopeByteString containing BoundedByteString leaves
+    ByteString boundedLeft = ByteString.copyFrom(expected).substring(10, 300);
+    ByteString boundedRight = ByteString.copyFrom(expected).substring(300, 900);
+    ByteString boundedRope = RopeByteString.newInstanceForTest(boundedLeft, boundedRight);
+
+    assertByteIteratorMatches(rope, expected);
+    assertByteIteratorMatches(boundedRope, Arrays.copyOfRange(expected, 10, 900));
   }
 }

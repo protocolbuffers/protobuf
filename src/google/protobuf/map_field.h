@@ -319,6 +319,17 @@ class PROTOBUF_EXPORT MapFieldBase : public MapFieldBaseForParse {
   ~MapFieldBase();
 
  public:
+  // Same as the base class, but without the dynamic dispatch.
+  const UntypedMapBase& GetMap() const {
+    SyncMapWithRepeatedField();
+    return GetMapRaw();
+  }
+  UntypedMapBase* MutableMap() {
+    SyncMapWithRepeatedField();
+    SetMapDirty();
+    return &GetMapRaw();
+  }
+
   // Returns reference to internal repeated field. Data written using
   // Map's api prior to calling this function is guarantted to be
   // included in repeated field.
@@ -822,7 +833,7 @@ class PROTOBUF_EXPORT MapValueRef final : public MapValueConstRef {
 #undef TYPE_CHECK
 
 template <bool kIsMutable>
-class PROTOBUF_EXPORT MapIteratorBase {
+class MapIteratorBase {
   using MessageT =
       std::conditional_t<kIsMutable, google::protobuf::Message, const google::protobuf::Message>;
   using MapFieldBase = std::conditional_t<kIsMutable, internal::MapFieldBase,
@@ -866,8 +877,10 @@ class PROTOBUF_EXPORT MapIteratorBase {
   ValueRef value_;
 };
 
-extern template class MapIteratorBase</*kIsMutable=*/false>;
-extern template class MapIteratorBase</*kIsMutable=*/true>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    MapIteratorBase</*kIsMutable=*/false>;
+extern template class PROTOBUF_EXPORT_TEMPLATE_DECLARE
+    MapIteratorBase</*kIsMutable=*/true>;
 
 class PROTOBUF_EXPORT ConstMapIterator final
     : public MapIteratorBase</*kIsMutable=*/false> {

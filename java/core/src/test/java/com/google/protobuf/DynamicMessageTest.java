@@ -13,16 +13,22 @@ import static org.junit.Assert.assertThrows;
 import com.google.protobuf.Descriptors.EnumDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.OneofDescriptor;
+import com.google.protobuf.test.UnittestImport.ImportMessage;
+import com.google.protobuf.testing.proto.TestProto3Optional;
 import dynamicmessagetest.DynamicMessageTestProto.EmptyMessage;
 import dynamicmessagetest.DynamicMessageTestProto.MessageWithMapFields;
+import map_test.MapTestProto.TestMap;
 import proto2_unittest.UnittestMset.TestMessageSetExtension2;
 import proto2_unittest.UnittestProto;
 import proto2_unittest.UnittestProto.TestAllExtensions;
 import proto2_unittest.UnittestProto.TestAllTypes;
 import proto2_unittest.UnittestProto.TestAllTypes.NestedMessage;
 import proto2_unittest.UnittestProto.TestEmptyMessage;
+import proto2_unittest.UnittestProto.TestFieldOrderings;
+import proto2_unittest.UnittestProto.TestOneof2;
 import proto2_unittest.UnittestProto.TestPackedTypes;
 import proto2_wireformat_unittest.UnittestMsetWireFormat.TestMessageSet;
+import proto3_unittest.UnittestProto3;
 import java.util.ArrayList;
 import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
@@ -424,5 +430,146 @@ public class DynamicMessageTest {
 
     assertThat(complicatedlyBuiltMessage).isEqualTo(expectedMessage);
     assertThat(roundtrippedMessage).isEqualTo(expectedMessage);
+  }
+
+  @Test
+  public void hashCode_matchesGeneratedMessage_defaultInstanceWithImplicitPresence() {
+    UnittestProto3.TestAllTypes proto3Default = UnittestProto3.TestAllTypes.getDefaultInstance();
+    assertThat(
+            DynamicMessage.getDefaultInstance(UnittestProto3.TestAllTypes.getDescriptor())
+                .hashCode())
+        .isEqualTo(proto3Default.hashCode());
+    assertThat(
+            DynamicMessage.newBuilder(UnittestProto3.TestAllTypes.getDescriptor())
+                .build()
+                .hashCode())
+        .isEqualTo(proto3Default.hashCode());
+
+    TestProto3Optional proto3OptionalDefault = TestProto3Optional.getDefaultInstance();
+    assertThat(DynamicMessage.getDefaultInstance(TestProto3Optional.getDescriptor()).hashCode())
+        .isEqualTo(proto3OptionalDefault.hashCode());
+    assertThat(DynamicMessage.newBuilder(TestProto3Optional.getDescriptor()).build().hashCode())
+        .isEqualTo(proto3OptionalDefault.hashCode());
+  }
+
+  @Test
+  public void hashCode_matchesGeneratedMessage_proto3ImplicitAndExplicitPresenceAndOneof()
+      throws Exception {
+    UnittestProto3.TestAllTypes generated =
+        UnittestProto3.TestAllTypes.newBuilder()
+            .setOptionalInt32(100)
+            .setOptionalInt64(9999999999L)
+            .setOptionalFloat(2.5f)
+            .setOptionalDouble(3.14)
+            .setOptionalBool(true)
+            .setOptionalString("hello")
+            .setOptionalBytes(ByteString.copyFromUtf8("world"))
+            .setOptionalNestedMessage(
+                UnittestProto3.TestAllTypes.NestedMessage.getDefaultInstance())
+            .setOptionalNestedEnum(UnittestProto3.TestAllTypes.NestedEnum.BAR)
+            // Field 115 is declared before repeated fields 31..57 and oneof 111..114.
+            .setOptionalLazyImportMessage(ImportMessage.newBuilder().setD(42).build())
+            .addRepeatedString("a")
+            .addRepeatedString("b")
+            .addRepeatedNestedEnum(UnittestProto3.TestAllTypes.NestedEnum.FOO)
+            .addRepeatedNestedEnumValue(999)
+            .setOneofString("oneof_val")
+            .setUnknownFields(
+                UnknownFieldSet.newBuilder()
+                    .addField(999, UnknownFieldSet.Field.newBuilder().addVarint(77).build())
+                    .build())
+            .build();
+
+    DynamicMessage dynamicFromCopy = DynamicMessage.newBuilder(generated).build();
+    DynamicMessage dynamicFromBytes =
+        DynamicMessage.parseFrom(
+            UnittestProto3.TestAllTypes.getDescriptor(), generated.toByteString());
+
+    assertThat(dynamicFromCopy.hashCode()).isEqualTo(generated.hashCode());
+    assertThat(dynamicFromBytes.hashCode()).isEqualTo(generated.hashCode());
+
+    TestProto3Optional proto3Optional =
+        TestProto3Optional.newBuilder()
+            .setOptionalInt32(0)
+            .setOptionalString("")
+            .setOptionalNestedMessage(TestProto3Optional.NestedMessage.getDefaultInstance())
+            .setSingularInt32(0)
+            .setSingularInt64(123L)
+            .build();
+    assertThat(DynamicMessage.newBuilder(proto3Optional).build().hashCode())
+        .isEqualTo(proto3Optional.hashCode());
+    assertThat(
+            DynamicMessage.parseFrom(
+                    TestProto3Optional.getDescriptor(), proto3Optional.toByteString())
+                .hashCode())
+        .isEqualTo(proto3Optional.hashCode());
+  }
+
+  @Test
+  public void hashCode_matchesGeneratedMessage_outOfOrderFieldsOneofsExtensionsAndMaps()
+      throws Exception {
+    ExtensionRegistry registry = TestUtil.getFullExtensionRegistry();
+
+    TestFieldOrderings fieldOrderings =
+        TestFieldOrderings.newBuilder()
+            .setMyString("str")
+            .setMyInt(12345L)
+            .setMyFloat(1.5f)
+            .setOptionalNestedMessage(
+                TestFieldOrderings.NestedMessage.newBuilder().setOo(2).setBb(1).build())
+            .setExtension(UnittestProto.myExtensionInt, 5)
+            .setExtension(UnittestProto.myExtensionString, "ext")
+            .setUnknownFields(
+                UnknownFieldSet.newBuilder()
+                    .addField(999, UnknownFieldSet.Field.newBuilder().addVarint(77).build())
+                    .build())
+            .build();
+    assertThat(DynamicMessage.newBuilder(fieldOrderings).build().hashCode())
+        .isEqualTo(fieldOrderings.hashCode());
+    assertThat(
+            DynamicMessage.parseFrom(
+                    TestFieldOrderings.getDescriptor(), fieldOrderings.toByteString(), registry)
+                .hashCode())
+        .isEqualTo(fieldOrderings.hashCode());
+
+    TestOneof2 oneof2 =
+        TestOneof2.newBuilder()
+            .setFooBytesCord(ByteString.copyFromUtf8("cord"))
+            .setBarString("bar")
+            .setBazInt(42)
+            .setBazString("baz")
+            .build();
+    assertThat(DynamicMessage.newBuilder(oneof2).build().hashCode()).isEqualTo(oneof2.hashCode());
+    assertThat(
+            DynamicMessage.parseFrom(TestOneof2.getDescriptor(), oneof2.toByteString()).hashCode())
+        .isEqualTo(oneof2.hashCode());
+
+    TestMap testMap =
+        TestMap.newBuilder()
+            .putInt32ToInt32Field(1, 10)
+            .putInt32ToInt32Field(2, 20)
+            .putInt32ToStringField(1, "a")
+            .putInt32ToEnumField(1, TestMap.EnumValue.BAR)
+            .putInt32ToMessageField(1, TestMap.MessageValue.getDefaultInstance())
+            .putInt32ToMessageField(2, TestMap.MessageValue.newBuilder().setValue(99).build())
+            .putStringToInt32Field("k", 7)
+            .build();
+    assertThat(DynamicMessage.newBuilder(testMap).build().hashCode()).isEqualTo(testMap.hashCode());
+    assertThat(DynamicMessage.parseFrom(TestMap.getDescriptor(), testMap.toByteString()).hashCode())
+        .isEqualTo(testMap.hashCode());
+  }
+
+  @Test
+  public void hashCode_matchesGeneratedMessage_unknownEnumValueInImplicitPresenceField()
+      throws Exception {
+    UnittestProto3.TestAllTypes generated =
+        UnittestProto3.TestAllTypes.newBuilder().setOptionalNestedEnumValue(12345).build();
+    DynamicMessage dynamicFromCopy = DynamicMessage.newBuilder(generated).build();
+    DynamicMessage dynamicFromBytes =
+        DynamicMessage.parseFrom(
+            UnittestProto3.TestAllTypes.getDescriptor(), generated.toByteString());
+
+    assertThat(dynamicFromCopy.hashCode()).isEqualTo(generated.hashCode());
+    assertThat(dynamicFromBytes.hashCode()).isEqualTo(generated.hashCode());
   }
 }

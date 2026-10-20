@@ -1,0 +1,43 @@
+#include <string>
+
+#include "absl/log/absl_check.h"
+#include "google/protobuf/descriptor.h"
+#include "google/protobuf/message.h"
+#include "google/protobuf/message_lite.h"
+#include "rust/cpp_kernel/strings.h"
+#include "google/protobuf/text_format.h"
+
+extern "C" {
+
+// Returns the full name of the message from its Descriptor.
+google::protobuf::rust::PtrAndLen proto2_rust_Descriptor_full_name(
+    const google::protobuf::Descriptor* desc) {
+  ABSL_CHECK(desc != nullptr) << "Descriptor is null.";
+  return google::protobuf::rust::PtrAndLen{desc->full_name().data(),
+                                 desc->full_name().size()};
+}
+
+// Converts a message to its TextFormat representation.
+google::protobuf::rust::RustStringRawParts proto2_rust_Message_print_to_text_format(
+    const google::protobuf::MessageLite* m, bool single_line, bool hide_unknown_fields) {
+  const auto* msg = google::protobuf::DynamicCastMessage<google::protobuf::Message>(m);
+  // This should always hold because the Rust API requires `WithReflection`.
+  ABSL_CHECK(msg != nullptr) << "Message does not support reflection.";
+  google::protobuf::TextFormat::Printer printer;
+  printer.SetSingleLineMode(single_line);
+  printer.SetHideUnknownFields(hide_unknown_fields);
+  std::string text;
+  ABSL_CHECK(printer.PrintToString(*msg, &text));
+  return google::protobuf::rust::RustStringRawParts(text);
+}
+
+// Parses a message from its TextFormat representation.
+bool proto2_rust_Message_parse_from_text_format(google::protobuf::MessageLite* m,
+                                                google::protobuf::rust::PtrAndLen input) {
+  auto* msg = google::protobuf::DynamicCastMessage<google::protobuf::Message>(m);
+  // This should always hold because the Rust API requires `WithReflection`.
+  ABSL_CHECK(msg != nullptr) << "Message does not support reflection.";
+  return google::protobuf::TextFormat::ParseFromString(input.AsStringView(), msg);
+}
+
+}  // extern "C"

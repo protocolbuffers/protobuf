@@ -21,6 +21,9 @@ import proto2_unittest.NestedExtension.MyNestedExtension;
 import proto2_unittest.NonNestedExtension;
 import proto2_unittest.NonNestedExtension.MessageToBeExtended;
 import proto2_unittest.NonNestedExtension.MyNonNestedExtension;
+import proto2_unittest.NonNestedExtensionLite;
+import proto2_unittest.NonNestedExtensionLite.MessageLiteToBeExtended;
+import proto2_unittest.NonNestedExtensionLite.MyNonNestedExtensionLite;
 import proto2_unittest.OuterClassNameTest2OuterClass;
 import proto2_unittest.OuterClassNameTest3OuterClass;
 import proto2_unittest.OuterClassNameTestOuterClass;
@@ -1038,6 +1041,47 @@ public class GeneratedMessageTest {
     ObjectInputStream in = new ObjectInputStream(bais);
     TestAllTypes actual = (TestAllTypes) in.readObject();
     assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testSerializationWithExtension() throws Exception {
+    MessageLiteToBeExtended messageWithExtension =
+        MessageLiteToBeExtended.newBuilder()
+            .setExtension(
+                NonNestedExtensionLite.nonNestedExtensionLite,
+                MyNonNestedExtensionLite.getDefaultInstance())
+            .build();
+
+    byte[] serializedMessage = serializeMessage(messageWithExtension);
+    MessageLiteToBeExtended deserializedMessage =
+        deserializeMessage(MessageLiteToBeExtended.class, serializedMessage);
+
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    NonNestedExtensionLite.registerAllExtensions(registry);
+    assertThat(MessageLiteToBeExtended.parseFrom(deserializedMessage.toByteString(), registry))
+        .isEqualTo(messageWithExtension);
+  }
+
+  private static <T extends MessageLite> T deserializeMessage(
+      Class<T> clazz, byte[] serializedMessage) {
+    try (ByteArrayInputStream inByteArrayStream = new ByteArrayInputStream(serializedMessage);
+        ObjectInputStream inStream = new ObjectInputStream(inByteArrayStream)) {
+      return clazz.cast(inStream.readObject());
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static byte[] serializeMessage(MessageLite message) {
+    byte[] serializedMessage;
+    try (ByteArrayOutputStream outByteArrayStream = new ByteArrayOutputStream();
+        ObjectOutputStream outStream = new ObjectOutputStream(outByteArrayStream)) {
+      outStream.writeObject(message);
+      serializedMessage = outByteArrayStream.toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return serializedMessage;
   }
 
   @Test

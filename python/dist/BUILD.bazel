@@ -233,6 +233,24 @@ selects.config_setting_group(
     ],
 )
 
+selects.config_setting_group(
+    name = "windows_x86_64_mingw",
+    match_all = [
+        ":windows_x86_64",
+        "@bazel_tools//tools/cpp:mingw",
+    ],
+    visibility = ["//python:__subpackages__"],
+)
+
+selects.config_setting_group(
+    name = "windows_x86_32_mingw",
+    match_all = [
+        ":windows_x86_32",
+        "@bazel_tools//tools/cpp:mingw",
+    ],
+    visibility = ["//python:__subpackages__"],
+)
+
 pkg_files(
     name = "generated_bootstrap",
     srcs = [
@@ -363,7 +381,7 @@ py_wheel(
         "//:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
-    license = "3-Clause BSD License",
+    license = "BSD-3-Clause",
     platform = select({
         ":linux_x86_64_local": "linux_x86_64",
         ":linux_x86_64_release": "manylinux2014_x86_64",
@@ -423,7 +441,7 @@ py_wheel(
         "//:LICENSE": "LICENSE",
     },
     homepage = "https://developers.google.com/protocol-buffers/",
-    license = "3-Clause BSD License",
+    license = "BSD-3-Clause",
     platform = "any",
     python_requires = ">=3.10",
     python_tag = "py3",

@@ -149,6 +149,7 @@ rb_bundle_fetch(
     name = "protobuf_bundle",
     srcs = [
         "//ruby:google-protobuf.gemspec",
+        "//ruby/lib/google:protobuf/version.rb",
     ],
     gem_checksums = {
         "bigdecimal-3.1.9": "2ffc742031521ad69c2dfc815a98e426a230a3d22aeac1995826a75dabfad8cc",

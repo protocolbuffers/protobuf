@@ -18,6 +18,7 @@
 #include "upb/base/status.hpp"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
+#include "upb/json/decode.h"
 #include "upb/json/test.upb.h"
 #include "upb/json/test.upbdefs.h"
 #include "upb/mem/arena.h"
@@ -248,4 +249,56 @@ TEST(JsonTest, EncodeFieldMaskEscapedPaths) {
   const std::string expected =
       R"({"maskVal":"fooBar,path\n,path\t,pathA\n,path\"quote"})";
   EXPECT_EQ(expected, JsonEncode(foo, 0));
+}
+
+static upb_test_Box* NewBoxWithData(upb_Arena* arena, const char* data,
+                                    size_t size) {
+  upb_test_Box* box = upb_test_Box_new(arena);
+  upb_test_Box_set_data(box, upb_StringView_FromDataAndSize(data, size));
+  return box;
+}
+
+TEST(JsonTest, EncodeBytesUsesStandardBase64ByDefault) {
+  // Each encoding uses alphabet index 62 and/or 63, the only entries that
+  // differ between the standard ('+', '/') and web-safe ('-', '_') alphabets.
+  // Input lengths 3, 2 and 1 cover no padding, "=" and "==".
+  upb::Arena a;
+  EXPECT_EQ(R"({"data":"+/+/"})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff\xbf", 3), 0));
+  EXPECT_EQ(R"({"data":"+/8="})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff", 2), 0));
+  EXPECT_EQ(R"({"data":"/w=="})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xff", 1), 0));
+}
+
+TEST(JsonTest, EncodeBytesWebSafeBase64) {
+  // Same inputs as EncodeBytesUsesStandardBase64ByDefault.
+  upb::Arena a;
+  EXPECT_EQ(R"({"data":"-_-_"})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff\xbf", 3),
+                       upb_JsonEncode_WebSafeBase64));
+  EXPECT_EQ(R"({"data":"-_8="})",
+            JsonEncode(NewBoxWithData(a.ptr(), "\xfb\xff", 2),
+                       upb_JsonEncode_WebSafeBase64));
+  EXPECT_EQ(R"({"data":"_w=="})", JsonEncode(NewBoxWithData(a.ptr(), "\xff", 1),
+                                             upb_JsonEncode_WebSafeBase64));
+}
+
+TEST(JsonTest, EncodeBytesWebSafeBase64RoundTripsThroughDecoder) {
+  upb::Arena a;
+  const char kData[] = "\x00\xfb\xff\xbf\x10";
+  const size_t kSize = sizeof(kData) - 1;
+  const std::string json = JsonEncode(NewBoxWithData(a.ptr(), kData, kSize),
+                                      upb_JsonEncode_WebSafeBase64);
+  EXPECT_EQ(R"({"data":"APv_vxA="})", json);
+
+  upb::DefPool defpool;
+  upb::Status status;
+  const upb_MessageDef* m = upb_test_Box_getmsgdef(defpool.ptr());
+  upb_test_Box* decoded = upb_test_Box_new(a.ptr());
+  ASSERT_TRUE(upb_JsonDecode(json.data(), json.size(), UPB_UPCAST(decoded), m,
+                             defpool.ptr(), 0, a.ptr(), status.ptr()))
+      << status.error_message();
+  const upb_StringView data = upb_test_Box_data(decoded);
+  EXPECT_EQ(std::string(kData, kSize), std::string(data.data, data.size));
 }

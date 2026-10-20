@@ -8,7 +8,6 @@
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_cc//cc:defs.bzl", "cc_library")
-load("@rules_python//python:defs.bzl", "py_binary")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
 load("//upb/bazel/private:upb_proto_library_internal/copts.bzl", "upb_proto_library_copts")
 load("//upb/bazel/private/oss:amalgamation.bzl", "upb_amalgamation")  # buildifier: disable=bzl-visibility
@@ -186,6 +185,8 @@ upb_amalgamation(
         "//upb/reflection:descriptor_upb_proto",
         "//upb/reflection:json_enumvalue_options_upb_proto",
         "//upb/reflection:internal",
+        "//upb/reflection:def_pool_init",
+        "//upb/text",
         "//upb/text:debug",
         "//upb/text:internal",
         "//upb/wire",

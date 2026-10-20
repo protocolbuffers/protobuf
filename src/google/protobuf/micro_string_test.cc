@@ -20,15 +20,17 @@
 #include <vector>
 
 #include <gtest/gtest.h>
-#include "absl/base/config.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/unittest.pb.h"
 
 
 namespace google {
@@ -45,6 +47,24 @@ namespace {
 constexpr size_t kMicroRepSize = sizeof(uint8_t) * 2;
 constexpr size_t kLargeRepSize = sizeof(char*) + 2 * sizeof(uint32_t);
 
+class MicroStringTest : public testing::Test {
+ protected:
+  MicroStringTest()
+      : arena_message_(
+            Arena::Create<proto2_unittest::TestEmptyMessage>(&arena_)),
+        heap_message_(std::make_unique<proto2_unittest::TestEmptyMessage>()) {}
+
+  Arena* arena() { return &arena_; }
+
+  const MessageLite& arena_message() { return *arena_message_; }
+  const MessageLite& heap_message() { return *heap_message_; }
+
+ private:
+  Arena arena_;
+  proto2_unittest::TestEmptyMessage* arena_message_;
+  std::unique_ptr<proto2_unittest::TestEmptyMessage> heap_message_;
+};
+
 enum PreviousState { kInline, kMicroRep, kOwned, kUnowned, kString, kAlias };
 
 static constexpr auto kUnownedPayload =
@@ -56,7 +76,10 @@ static constexpr auto kInlineInput =
 class MicroStringPrevTest
     : public testing::TestWithParam<std::tuple<bool, PreviousState>> {
  protected:
-  MicroStringPrevTest() : str_(MakeFromState(prev_state(), arena())) {}
+  MicroStringPrevTest()
+      : parent_message_(
+            Arena::MakeUnique<proto2_unittest::TestEmptyMessage>(arena())),
+        str_(MakeFromState(prev_state())) {}
 
   ~MicroStringPrevTest() override {
     if (!has_arena()) {
@@ -64,27 +87,27 @@ class MicroStringPrevTest
     }
   }
 
-  static MicroString MakeFromState(PreviousState state, Arena* arena) {
+  MicroString MakeFromState(PreviousState state) {
     MicroString str;
     switch (state) {
       case kInline: {
         std::string input(MicroString::kInlineCapacity, 'x');
-        str.Set(input, arena);
+        str.Set(input, parent_message());
         ABSL_CHECK_EQ(str.Get(), input);
         break;
       }
       case kMicroRep:
-        str.Set("Very long string", arena);
+        str.Set("Very long string", parent_message());
         ABSL_CHECK_EQ(str.Get(), "Very long string");
         break;
       case kOwned: {
         std::string very_very_long(MicroString::kMaxMicroRepCapacity + 1, 'x');
-        str.Set(very_very_long, arena);
+        str.Set(very_very_long, parent_message());
         ABSL_CHECK_EQ(str.Get(), very_very_long);
         break;
       }
       case kUnowned:
-        str.SetUnowned(kUnownedPayload, arena);
+        str.SetUnowned(kUnownedPayload, parent_message());
         ABSL_CHECK_EQ(str.Get(), "0123456789");
         break;
 
@@ -92,12 +115,12 @@ class MicroStringPrevTest
         static constexpr absl::string_view value =
             "This is a very long string too, which "
             "won't use std::string's inline rep.";
-        str.Set(std::string(value), arena);
+        str.Set(std::string(value), parent_message());
         ABSL_CHECK_EQ(str.Get(), value);
         break;
       }
       case kAlias:
-        str.SetAlias("Another long string, but aliased", arena);
+        str.SetAlias("Another long string, but aliased", parent_message());
         ABSL_CHECK_EQ(str.Get(), "Another long string, but aliased");
         break;
     }
@@ -134,7 +157,10 @@ class MicroStringPrevTest
   size_t arena_space_used() { return has_arena() ? arena()->SpaceUsed() : 0; }
   Arena* arena() { return has_arena() ? &arena_ : nullptr; }
 
+  const MessageLite& parent_message() { return *parent_message_; }
+
   Arena arena_;
+  Arena::UniquePtr<proto2_unittest::TestEmptyMessage> parent_message_;
   MicroString str_;
 };
 
@@ -161,16 +187,16 @@ INSTANTIATE_TEST_SUITE_P(MicroStringTransitionTest, MicroStringPrevTest,
                                                           kString, kAlias)),
                          Printer{});
 
-TEST(MicroStringTest, CheckExpectedInlineBufferSize) {
+TEST_F(MicroStringTest, CheckExpectedInlineBufferSize) {
   EXPECT_EQ(MicroString::kInlineCapacity, sizeof(MicroString) - 1);
 }
 
-TEST(MicroStringTest, DefaultIsEmpty) {
+TEST_F(MicroStringTest, DefaultIsEmpty) {
   MicroString str;
   EXPECT_EQ(str.Get(), "");
 }
 
-TEST(MicroStringTest, ArenaConstructor) {
+TEST_F(MicroStringTest, ArenaConstructor) {
   MicroString str(static_cast<Arena*>(nullptr));
   EXPECT_EQ(str.Get(), "");
 
@@ -179,24 +205,24 @@ TEST(MicroStringTest, ArenaConstructor) {
   EXPECT_EQ(str2.Get(), "");
 }
 
-TEST(MicroStringTest, InitDefault) {
+TEST_F(MicroStringTest, InitDefault) {
   alignas(MicroString) char buffer[sizeof(MicroString)];
   // Scribble the memory.
   memset(buffer, 0xCD, sizeof(buffer));
   MicroString* str = reinterpret_cast<MicroString*>(buffer);
   str->InitDefault();
   EXPECT_EQ(str->Get(), "");
-  str->Set("Foo", nullptr);
+  str->Set("Foo", heap_message());
   EXPECT_EQ(str->Get(), "Foo");
   str->Destroy();
 }
 
-TEST(MicroStringTest, HasConstexprDefaultConstructor) {
+TEST_F(MicroStringTest, HasConstexprDefaultConstructor) {
   constexpr MicroString str;
   EXPECT_EQ(str.Get(), "");
 }
 
-TEST(MicroStringTest, ConstexprUnownedGlobal) {
+TEST_F(MicroStringTest, ConstexprUnownedGlobal) {
   static constexpr auto payload = MicroString::MakeUnownedPayload("0123456789");
   static constexpr MicroString global_instance(payload);
 
@@ -209,11 +235,12 @@ template <typename T>
 void TestInline() {
   Arena arena;
   for (Arena* a : {static_cast<Arena*>(nullptr), &arena}) {
+    auto parent = Arena::MakeUnique<proto2_unittest::TestEmptyMessage>(a);
     for (size_t size = 0; size <= T::kInlineCapacity; ++size) {
       const absl::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ", size);
       T str;
       size_t used = arena.SpaceUsed();
-      str.Set(input, a);
+      str.Set(input, *parent);
       EXPECT_EQ(str.Get(), input);
       EXPECT_EQ(used, arena.SpaceUsed());
       EXPECT_EQ(0, str.SpaceUsedExcludingSelfLong());
@@ -224,7 +251,7 @@ void TestInline() {
   }
 }
 
-TEST(MicroStringTest, SetInlineFromClear) {
+TEST_F(MicroStringTest, SetInlineFromClear) {
   TestInline<MicroString>();
   TestInline<MicroStringExtra<8>>();
   TestInline<MicroStringExtra<16>>();
@@ -244,8 +271,9 @@ void SupportsExpectedInputType(T&& t) {
   const std::string control = MakeControl(t);
 
   Arena arena;
+  auto* parent = Arena::Create<proto2_unittest::TestEmptyMessage>(&arena);
   S str;
-  str.Set(std::forward<T>(t), &arena);
+  str.Set(std::forward<T>(t), *parent);
   EXPECT_EQ(str.Get(), control);
 }
 
@@ -271,32 +299,31 @@ void SupportsExpectedInputTypes() {
   SupportsExpectedInputType<S>(std::cref(str));
 }
 
-TEST(MicroStringTest, SupportsExpectedInputTypes) {
+TEST_F(MicroStringTest, SupportsExpectedInputTypes) {
   SupportsExpectedInputTypes<MicroString>();
   SupportsExpectedInputTypes<MicroStringExtra<15>>();
 }
 
-TEST(MicroStringTest, CapacityIsRoundedUpOnArena) {
-  Arena arena;
+TEST_F(MicroStringTest, CapacityIsRoundedUpOnArena) {
   MicroString str;
 
-  str.Set("0123456789", &arena);
-  size_t used = arena.SpaceUsed();
+  str.Set("0123456789", arena_message());
+  size_t used = arena()->SpaceUsed();
   EXPECT_EQ(str.Capacity(), 16 - kMicroRepSize);
-  str.Set("01234567890123", &arena);
-  EXPECT_EQ(used, arena.SpaceUsed());
+  str.Set("01234567890123", arena_message());
+  EXPECT_EQ(used, arena()->SpaceUsed());
 
   std::string long_input(1001, 'x');
-  str.Set(long_input, &arena);
-  used = arena.SpaceUsed();
+  str.Set(long_input, arena_message());
+  used = arena()->SpaceUsed();
   const size_t expected_capacity = 1008 - (kLargeRepSize % 8);
   EXPECT_EQ(str.Capacity(), expected_capacity);
   long_input = std::string(expected_capacity, 'x');
-  str.Set(long_input, &arena);
-  EXPECT_EQ(used, arena.SpaceUsed());
+  str.Set(long_input, arena_message());
+  EXPECT_EQ(used, arena()->SpaceUsed());
 }
 
-TEST(MicroStringTest, CapacityIsRoundedUpOnHeap) {
+TEST_F(MicroStringTest, CapacityIsRoundedUpOnHeap) {
   MicroString str;
 
   // We don't know the exact buffer size the allocator will give us so try a few
@@ -305,14 +332,14 @@ TEST(MicroStringTest, CapacityIsRoundedUpOnHeap) {
 
   // For MicroRep
   for (size_t i = 10; i < 20; ++i) {
-    str.Set(absl::string_view(very_long).substr(0, i), nullptr);
+    str.Set(absl::string_view(very_long).substr(0, i), heap_message());
     EXPECT_GE(str.Capacity(), i);
     EXPECT_EQ((str.Capacity() + kMicroRepSize) % sizeof(void*), 0);
   }
 
   // For OwnedRep
   for (size_t i = 300; i < 340; ++i) {
-    str.Set(absl::string_view(very_long).substr(0, i), nullptr);
+    str.Set(absl::string_view(very_long).substr(0, i), heap_message());
     EXPECT_GE(str.Capacity(), i);
     EXPECT_EQ((str.Capacity() + kLargeRepSize) % sizeof(void*), 0);
   }
@@ -320,11 +347,11 @@ TEST(MicroStringTest, CapacityIsRoundedUpOnHeap) {
   str.Destroy();
 }
 
-TEST(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
+TEST_F(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
   const auto get_capacity_for_size = [&](size_t size) {
     MicroString str;
     std::string input = std::string(size, 'x');
-    str.Set(input, nullptr);
+    str.Set(input, heap_message());
     EXPECT_EQ(str.Get(), input);
     size_t cap = str.Capacity();
     str.Destroy();
@@ -342,7 +369,7 @@ TEST(MicroStringTest, CapacityRoundingUpStaysWithinBoundsForMicroRep) {
   EXPECT_GE(get_capacity_for_size(255), 256);
 }
 
-TEST(MicroStringTest, PoisonsTheUnusedCapacity) {
+TEST_F(MicroStringTest, PoisonsTheUnusedCapacity) {
   if (!internal::HasMemoryPoisoning()) {
     GTEST_SKIP() << "Memory poisoning is not enabled.";
   }
@@ -359,7 +386,7 @@ TEST(MicroStringTest, PoisonsTheUnusedCapacity) {
     EXPECT_TRUE(internal::IsMemoryPoisoned(str.Get().data() + size));
   };
   const auto set = [&](size_t size) {
-    str.Set(absl::string_view(buf).substr(0, size), nullptr);
+    str.Set(absl::string_view(buf).substr(0, size), heap_message());
     check(size);
   };
 
@@ -392,14 +419,14 @@ TEST(MicroStringTest, PoisonsTheUnusedCapacity) {
 TEST_P(MicroStringPrevTest, SetNullView) {
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
-  str_.Set(absl::string_view(), arena());
+  str_.Set(absl::string_view(), parent_message());
   EXPECT_EQ(str_.Get(), "");
   EXPECT_EQ(used, arena_space_used());
   EXPECT_GE(self_used, str_.SpaceUsedExcludingSelfLong());
 
   // Again but with a non-constant size to avoid the CONSTANT_P path.
   size_t zero = time(nullptr) == 0;
-  str_.Set(absl::string_view(nullptr, zero), arena());
+  str_.Set(absl::string_view(nullptr, zero), parent_message());
   EXPECT_EQ(str_.Get(), "");
   EXPECT_EQ(used, arena_space_used());
   EXPECT_GE(self_used, str_.SpaceUsedExcludingSelfLong());
@@ -415,7 +442,7 @@ TEST_P(MicroStringPrevTest, Clear) {
 
   EXPECT_EQ(used, arena_space_used());
 
-  str_.Set(control, arena());
+  str_.Set(control, parent_message());
   EXPECT_EQ(str_.Get(), control);
 
   // Resetting to the original string should not use more memory.
@@ -425,25 +452,24 @@ TEST_P(MicroStringPrevTest, Clear) {
   }
 }
 
-TEST(MicroStringTest, ClearOnAliasReusesSpace) {
-  Arena arena;
+TEST_F(MicroStringTest, ClearOnAliasReusesSpace) {
   MicroString str;
-  str.SetAlias("Some arbitrary string to alias here.", &arena);
+  str.SetAlias("Some arbitrary string to alias here.", arena_message());
   const size_t available_space = kLargeRepSize - kMicroRepSize;
-  const size_t used = arena.SpaceUsed();
+  const size_t used = arena()->SpaceUsed();
   str.Clear();
   EXPECT_EQ(str.Get(), "");
   EXPECT_EQ(kLargeRepSize, str.SpaceUsedExcludingSelfLong());
 
   std::string input(available_space, 'a');
   // No new space.
-  str.Set(input, &arena);
-  EXPECT_EQ(used, arena.SpaceUsed());
+  str.Set(input, arena_message());
+  EXPECT_EQ(used, arena()->SpaceUsed());
   EXPECT_EQ(kLargeRepSize, str.SpaceUsedExcludingSelfLong());
 
   // Now we have to realloc
-  str.Set(absl::StrCat(input, "A"), &arena);
-  EXPECT_LT(used, arena.SpaceUsed());
+  str.Set(absl::StrCat(input, "A"), arena_message());
+  EXPECT_LT(used, arena()->SpaceUsed());
   EXPECT_LT(kLargeRepSize, str.SpaceUsedExcludingSelfLong());
 }
 
@@ -451,7 +477,7 @@ TEST_P(MicroStringPrevTest, SetInline) {
   const absl::string_view input = kInlineInput;
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
-  str_.Set(input, arena());
+  str_.Set(input, parent_message());
   EXPECT_EQ(str_.Get(), input);
   // We never use more space than before, regardless of the previous state of
   // the class.
@@ -465,7 +491,7 @@ TEST_P(MicroStringPrevTest, SetMicro) {
     const size_t used = arena_space_used();
     const size_t self_used = str_.SpaceUsedExcludingSelfLong();
     const bool will_reuse = str_.Capacity() >= input.size();
-    str_.Set(input, arena());
+    str_.Set(input, parent_message());
     EXPECT_EQ(str_.Get(), input);
 
     if (will_reuse) {
@@ -483,7 +509,7 @@ TEST_P(MicroStringPrevTest, SetOwned) {
     const size_t used = arena_space_used();
     const size_t self_used = str_.SpaceUsedExcludingSelfLong();
     const bool will_reuse = str_.Capacity() >= input.size();
-    str_.Set(input, arena());
+    str_.Set(input, parent_message());
     EXPECT_EQ(str_.Get(), input);
 
     if (will_reuse) {
@@ -499,7 +525,7 @@ TEST_P(MicroStringPrevTest, SetAliasSmall) {
 
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
-  str_.SetAlias(input, arena());
+  str_.SetAlias(input, parent_message());
   auto out = str_.Get();
   if (prev_state() == kAlias) {
     // If we had an alias, we reuse the LargeRep to point to the new alias
@@ -522,7 +548,7 @@ TEST_P(MicroStringPrevTest, SetAliasLarge) {
   const absl::string_view input("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
 
   const size_t used = arena_space_used();
-  str_.SetAlias(input, arena());
+  str_.SetAlias(input, parent_message());
   auto out = str_.Get();
   // Don't use op==, we want to check it points to the exact same buffer.
   EXPECT_EQ(out.data(), input.data());
@@ -543,7 +569,7 @@ TEST_P(MicroStringPrevTest, SetUnowned) {
       MicroString::MakeUnownedPayload("This one is unowned.");
 
   const size_t used = arena_space_used();
-  str_.SetUnowned(kUnownedPayload, arena());
+  str_.SetUnowned(kUnownedPayload, parent_message());
   auto out = str_.Get();
   // Don't use op==, we want to check it points to the exact same buffer.
   EXPECT_EQ(out.data(), kUnownedPayload.payload.payload);
@@ -558,7 +584,7 @@ TEST_P(MicroStringPrevTest, SetStringSmall) {
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   const bool will_reuse = str_.Capacity() >= input.size();
-  str_.Set(std::move(input), arena());
+  str_.Set(std::move(input), parent_message());
   // NOLINTNEXTLINE: We really didn't move from the input, so this is fine.
   EXPECT_EQ(str_.Get(), input);
 
@@ -570,7 +596,7 @@ TEST_P(MicroStringPrevTest, SetStringMedium) {
   std::string input(16, 'a');
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
-  str_.Set(std::move(input), arena());
+  str_.Set(std::move(input), parent_message());
   // NOLINTNEXTLINE: We really didn't move from the input, so this is fine.
   EXPECT_EQ(str_.Get(), input);
 
@@ -589,7 +615,7 @@ TEST_P(MicroStringPrevTest, SetStringLarge) {
   std::string copy = input;
   const char* copy_data = copy.data();
   const size_t used = arena_space_used();
-  str_.Set(std::move(copy), arena());
+  str_.Set(std::move(copy), parent_message());
   EXPECT_EQ(str_.Get(), input);
 
   // Verify that the string was moved.
@@ -613,7 +639,7 @@ TEST_P(MicroStringPrevTest, SelfSetView) {
   const bool will_reuse = str_.Capacity() != 0;
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
 
-  str_.Set(str_.Get(), arena());
+  str_.Set(str_.Get(), parent_message());
   EXPECT_EQ(str_.Get(), control);
 
   if (will_reuse) {
@@ -631,7 +657,7 @@ TEST_P(MicroStringPrevTest, SelfSetSubstrView) {
   const bool will_reuse = str_.Capacity() != 0;
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
 
-  str_.Set(str_.Get().substr(1), arena());
+  str_.Set(str_.Get().substr(1), parent_message());
   EXPECT_EQ(str_.Get(), absl::string_view(control).substr(1));
 
   if (will_reuse) {
@@ -652,7 +678,7 @@ TEST_P(MicroStringPrevTest, SelfSetSubstrViewConstantSize) {
   // Here we test the fastpath in SetMaybeConstant.
   // The input is an aliasing substr that overlaps with the destination, but
   // with constant size to trigger the fastpath.
-  str_.Set(str_.Get().substr(1, 2), arena());
+  str_.Set(str_.Get().substr(1, 2), parent_message());
   EXPECT_EQ(str_.Get(), absl::string_view(control).substr(1, 2));
 
   if (will_reuse) {
@@ -661,7 +687,7 @@ TEST_P(MicroStringPrevTest, SelfSetSubstrViewConstantSize) {
 }
 
 TEST_P(MicroStringPrevTest, InternalSwap) {
-  MicroString other = MakeFromState(kOwned, arena());
+  MicroString other = MakeFromState(kOwned);
 
   const std::string control_lhs(str_.Get());
   const std::string control_rhs(other.Get());
@@ -701,7 +727,7 @@ TEST_P(MicroStringPrevTest, CopyConstruct) {
   if (!has_arena()) copy.Destroy();
 }
 
-TEST(MicroStringTest, UnownedIsPropagated) {
+TEST_F(MicroStringTest, UnownedIsPropagated) {
   MicroString src(kUnownedPayload);
 
   ASSERT_EQ(src.Get().data(), kUnownedPayload.payload.payload);
@@ -714,28 +740,28 @@ TEST(MicroStringTest, UnownedIsPropagated) {
   {
     MicroString str;
     EXPECT_NE(str.Get().data(), src.Get().data());
-    str.SetUnowned(kUnownedPayload, nullptr);
+    str.SetUnowned(kUnownedPayload, heap_message());
     ASSERT_EQ(str.Get().data(), src.Get().data());
     EXPECT_EQ(0, str.SpaceUsedExcludingSelfLong());
   }
 }
 
 TEST_P(MicroStringPrevTest, AssignmentViaSetInline) {
-  MicroString source = MakeFromState(kInline, arena());
+  MicroString source = MakeFromState(kInline);
   size_t used = arena_space_used();
-  str_.Set(source, arena());
+  str_.Set(source, parent_message());
   EXPECT_EQ(str_.Get(), source.Get());
   // No new memory should be used.
   EXPECT_EQ(used, arena_space_used());
 }
 
 TEST_P(MicroStringPrevTest, AssignmentViaSetMicroRep) {
-  MicroString source = MakeFromState(kMicroRep, arena());
+  MicroString source = MakeFromState(kMicroRep);
 
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   const bool will_reuse = str_.Capacity() >= source.Get().size();
-  str_.Set(source, arena());
+  str_.Set(source, parent_message());
   EXPECT_EQ(str_.Get(), source.Get());
   if (will_reuse) {
     ExpectMemoryUsed(used, false, self_used);
@@ -747,12 +773,12 @@ TEST_P(MicroStringPrevTest, AssignmentViaSetMicroRep) {
 }
 
 TEST_P(MicroStringPrevTest, AssignmentViaSetOwned) {
-  MicroString source = MakeFromState(kOwned, arena());
+  MicroString source = MakeFromState(kOwned);
 
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   const bool will_reuse = str_.Capacity() >= source.Get().size();
-  str_.Set(source, arena());
+  str_.Set(source, parent_message());
   EXPECT_EQ(str_.Get(), source.Get());
   if (will_reuse) {
     ExpectMemoryUsed(used, false, self_used);
@@ -764,9 +790,9 @@ TEST_P(MicroStringPrevTest, AssignmentViaSetOwned) {
 }
 
 TEST_P(MicroStringPrevTest, AssignmentViaSetUnowned) {
-  MicroString source = MakeFromState(kUnowned, arena());
+  MicroString source = MakeFromState(kUnowned);
   const size_t used = arena_space_used();
-  str_.Set(source, arena());
+  str_.Set(source, parent_message());
   EXPECT_EQ(str_.Get(), source.Get());
   // No new memory should be used when setting an unowned value.
   EXPECT_EQ(used, arena_space_used());
@@ -774,12 +800,12 @@ TEST_P(MicroStringPrevTest, AssignmentViaSetUnowned) {
 }
 
 TEST_P(MicroStringPrevTest, AssignmentViaSetString) {
-  MicroString source = MakeFromState(kString, arena());
+  MicroString source = MakeFromState(kString);
 
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   const bool will_reuse = str_.Capacity() >= source.Get().size();
-  str_.Set(source, arena());
+  str_.Set(source, parent_message());
   EXPECT_EQ(str_.Get(), source.Get());
   if (will_reuse) {
     ExpectMemoryUsed(used, false, self_used);
@@ -791,12 +817,12 @@ TEST_P(MicroStringPrevTest, AssignmentViaSetString) {
 }
 
 TEST_P(MicroStringPrevTest, AssignmentViaSetAlias) {
-  MicroString source = MakeFromState(kAlias, arena());
+  MicroString source = MakeFromState(kAlias);
 
   const size_t used = arena_space_used();
   const size_t self_used = str_.SpaceUsedExcludingSelfLong();
   const bool will_reuse = str_.Capacity() >= source.Get().size();
-  str_.Set(source, arena());
+  str_.Set(source, parent_message());
   EXPECT_EQ(str_.Get(), source.Get());
   if (will_reuse) {
     ExpectMemoryUsed(used, false, self_used);
@@ -826,10 +852,11 @@ constexpr absl::string_view kPi =
 
 void SetInChunksTest(size_t size) {
   MicroString str;
+  auto heap_message = std::make_unique<proto2_unittest::TestEmptyMessage>();
 
   const auto pi = kPi.substr(0, size);
   const size_t chunk_size = std::max(size / 10, size_t{1});
-  str.SetInChunks(size, nullptr, [&](auto append) {
+  str.SetInChunks(size, *heap_message, [&](auto append) {
     for (auto input = pi; !input.empty();) {
       const auto chunk = input.substr(0, chunk_size);
       input.remove_prefix(chunk.size());
@@ -841,12 +868,12 @@ void SetInChunksTest(size_t size) {
   str.Destroy();
 }
 
-TEST(MicroStringTest, SetInChunksInline) { SetInChunksTest(5); }
-TEST(MicroStringTest, SetInChunksMicro) { SetInChunksTest(50); }
-TEST(MicroStringTest, SetInChunksOwned) { SetInChunksTest(500); }
+TEST_F(MicroStringTest, SetInChunksInline) { SetInChunksTest(5); }
+TEST_F(MicroStringTest, SetInChunksMicro) { SetInChunksTest(50); }
+TEST_F(MicroStringTest, SetInChunksOwned) { SetInChunksTest(500); }
 
 TEST_P(MicroStringPrevTest, SetInChunksWithExistingState) {
-  str_.SetInChunks(5, arena(), [](auto append) {
+  str_.SetInChunks(5, parent_message(), [](auto append) {
     append("C");
     append("H");
     append("U");
@@ -858,14 +885,14 @@ TEST_P(MicroStringPrevTest, SetInChunksWithExistingState) {
 
 TEST_P(MicroStringPrevTest, SetInChunksWithExistingStateAfterClear) {
   str_.Clear();
-  str_.SetInChunks(3, arena(), [](auto append) { append("BAR"); });
+  str_.SetInChunks(3, parent_message(), [](auto append) { append("BAR"); });
   EXPECT_EQ(str_.Get(), "BAR");
 }
 
 TEST_P(MicroStringPrevTest, SetInChunksKeepsSizeValidEvenIfWeDontWriteAll) {
   // Here we say 5 bytes, but only append 4.
   // The final size should still be 4.
-  str_.SetInChunks(5, arena(), [](auto append) {
+  str_.SetInChunks(5, parent_message(), [](auto append) {
     append("C");
     append("H");
     append("N");
@@ -874,9 +901,10 @@ TEST_P(MicroStringPrevTest, SetInChunksKeepsSizeValidEvenIfWeDontWriteAll) {
   EXPECT_EQ(str_.Get(), "CHNK");
 }
 
-TEST(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
+TEST_F(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
   MicroString str;
-  str.SetInChunks(1'000'000'000, nullptr, [](auto append) {
+  auto heap_message = std::make_unique<proto2_unittest::TestEmptyMessage>();
+  str.SetInChunks(1'000'000'000, *heap_message, [](auto append) {
     append("first");
     append(" and ");
     append("third");
@@ -887,7 +915,7 @@ TEST(MicroStringTest, SetInChunksWontPreallocateForVeryLargeFakeSize) {
   str.Destroy();
 }
 
-TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
+TEST_F(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
   if (!internal::RunLargeMemoryTests()) {
     GTEST_SKIP() << "Not enough memory for this test.";
   }
@@ -901,7 +929,8 @@ TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
   }
 
   MicroString str;
-  str.SetInChunks(total.size(), nullptr, [&](auto append) {
+  auto heap_message = std::make_unique<proto2_unittest::TestEmptyMessage>();
+  str.SetInChunks(total.size(), *heap_message, [&](auto append) {
     constexpr size_t kChunks = 1000;
     const size_t kChunkSize = total.size() / kChunks;
     for (size_t i = 0; i < kChunks; ++i) {
@@ -912,7 +941,7 @@ TEST(MicroStringTest, SetInChunksAllowsVeryLargeValues) {
   str.Destroy();
 }
 
-TEST(MicroStringTest, DefaultValueInstances) {
+TEST_F(MicroStringTest, DefaultValueInstances) {
   static constexpr absl::string_view kInput =
       "This is the input. It is long enough to not fit in inline space.";
   MicroString str = MicroString::MakeDefaultValuePrototype(kInput);
@@ -931,7 +960,7 @@ TEST(MicroStringTest, DefaultValueInstances) {
   EXPECT_EQ(0, copy.Capacity());
   EXPECT_EQ(0, copy.SpaceUsedExcludingSelfLong());
 
-  copy.Set("something else", nullptr);
+  copy.Set("something else", heap_message());
   EXPECT_EQ(copy.Get(), "something else");
   EXPECT_NE(static_cast<const void*>(str.Get().data()),
             static_cast<const void*>(copy.Get().data()));
@@ -939,7 +968,7 @@ TEST(MicroStringTest, DefaultValueInstances) {
   EXPECT_NE(0, copy.SpaceUsedExcludingSelfLong());
 
   // Reset to default.
-  copy.ClearToDefault(str, nullptr);
+  copy.ClearToDefault(str, heap_message());
   EXPECT_EQ(copy.Get(), kInput);
   EXPECT_EQ(static_cast<const void*>(str.Get().data()),
             static_cast<const void*>(copy.Get().data()));
@@ -969,15 +998,17 @@ class MicroStringTestDefaultValueCopy : public testing::Test {
 
 TEST_F(MicroStringTestDefaultValueCopy, ClearingReusesIfArena) {
   Arena arena;
+  auto* parent_message =
+      Arena::Create<proto2_unittest::TestEmptyMessage>(&arena);
   MicroString copy_arena(&arena, str_);
-  copy_arena.Set(kInput2, &arena);
+  copy_arena.Set(kInput2, *parent_message);
   ASSERT_EQ(copy_arena.Get(), kInput2);
   const void* head = copy_arena.Get().data();
   const size_t used = copy_arena.SpaceUsedExcludingSelfLong();
   EXPECT_NE(0, used);
 
   // Reset to default. We reuse the arena memory to avoid leaking it.
-  copy_arena.ClearToDefault(str_, &arena);
+  copy_arena.ClearToDefault(str_, *parent_message);
   EXPECT_EQ(copy_arena.Get(), kInput);
   EXPECT_EQ(static_cast<const void*>(copy_arena.Get().data()), head);
   EXPECT_EQ(used, copy_arena.SpaceUsedExcludingSelfLong());
@@ -985,17 +1016,18 @@ TEST_F(MicroStringTestDefaultValueCopy, ClearingReusesIfArena) {
 
 TEST_F(MicroStringTestDefaultValueCopy, ClearingFreesIfHeap) {
   MicroString copy_heap(nullptr, str_);
-  copy_heap.Set(kInput2, nullptr);
+  auto parent_message = std::make_unique<proto2_unittest::TestEmptyMessage>();
+  copy_heap.Set(kInput2, *parent_message);
   ASSERT_EQ(copy_heap.Get(), kInput2);
   EXPECT_NE(0, copy_heap.SpaceUsedExcludingSelfLong());
 
   // Reset to default. We are freeing the memory.
-  copy_heap.ClearToDefault(str_, nullptr);
+  copy_heap.ClearToDefault(str_, *parent_message);
   EXPECT_EQ(copy_heap.Get(), kInput);
   EXPECT_EQ(0, copy_heap.SpaceUsedExcludingSelfLong());
 }
 
-class MicroStringExtraTest : public testing::Test {
+class MicroStringExtraTest : public MicroStringTest {
  protected:
   void SetUp() override {
     if (!MicroString::kAllowExtraCapacity) {
@@ -1024,68 +1056,64 @@ TEST_F(MicroStringExtraTest, ExtraRequestedInlineSpace) {
 }
 
 TEST_F(MicroStringExtraTest, SettersWithinInline) {
-  Arena arena;
-  size_t used = arena.SpaceUsed();
+  size_t used = arena()->SpaceUsed();
   size_t expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 16);
   MicroStringExtra<15> str15;
   // Setting 15 chars should work fine.
-  str15.Set("123456789012345", &arena);
+  str15.Set("123456789012345", arena_message());
   EXPECT_EQ("123456789012345", str15.Get());
-  EXPECT_EQ(used, arena.SpaceUsed());
+  EXPECT_EQ(used, arena()->SpaceUsed());
   EXPECT_EQ(0, str15.SpaceUsedExcludingSelfLong());
   // But 16 should go in the heap.
-  str15.Set("1234567890123456", &arena);
+  str15.Set("1234567890123456", arena_message());
   EXPECT_EQ("1234567890123456", str15.Get());
-  EXPECT_EQ(used + expected_use, arena.SpaceUsed());
+  EXPECT_EQ(used + expected_use, arena()->SpaceUsed());
   EXPECT_EQ(expected_use, str15.SpaceUsedExcludingSelfLong());
 
-  used = arena.SpaceUsed();
+  used = arena()->SpaceUsed();
   expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 24);
   // Same but a larger buffer.
   MicroStringExtra<23> str23;
   // Setting 15 chars should work fine.
-  str23.Set("12345678901234567890123", &arena);
+  str23.Set("12345678901234567890123", arena_message());
   EXPECT_EQ("12345678901234567890123", str23.Get());
-  EXPECT_EQ(used, arena.SpaceUsed());
+  EXPECT_EQ(used, arena()->SpaceUsed());
   EXPECT_EQ(0, str23.SpaceUsedExcludingSelfLong());
   // But 24 should go in the heap.
-  str23.Set("123456789012345678901234", &arena);
+  str23.Set("123456789012345678901234", arena_message());
   EXPECT_EQ("123456789012345678901234", str23.Get());
-  EXPECT_EQ(used + expected_use, arena.SpaceUsed());
+  EXPECT_EQ(used + expected_use, arena()->SpaceUsed());
   EXPECT_EQ(expected_use, str23.SpaceUsedExcludingSelfLong());
 }
 
 TEST_F(MicroStringExtraTest, CopyConstructWithinInline) {
-  Arena arena;
-  const size_t used = arena.SpaceUsed();
+  const size_t used = arena()->SpaceUsed();
   MicroStringExtra<16> inline_str;
   constexpr absl::string_view kStr10 = "1234567890";
   ASSERT_GT(kStr10.size(), MicroString::kInlineCapacity);
   ASSERT_LE(kStr10.size(), MicroStringExtra<16>::kInlineCapacity);
-  inline_str.Set(kStr10, &arena);
-  EXPECT_EQ(used, arena.SpaceUsed());
+  inline_str.Set(kStr10, arena_message());
+  EXPECT_EQ(used, arena()->SpaceUsed());
   MicroStringExtra<16> copy(nullptr, inline_str);
   EXPECT_EQ(kStr10, copy.Get());
   // Should not have used any extra memory.
-  EXPECT_EQ(used, arena.SpaceUsed());
+  EXPECT_EQ(used, arena()->SpaceUsed());
   EXPECT_EQ(0, copy.SpaceUsedExcludingSelfLong());
 }
 
 TEST_F(MicroStringExtraTest, SetStringUsesInlineSpace) {
-  Arena arena;
-
   MicroStringExtra<40> str;
-  const size_t used = arena.SpaceUsed();
-  str.Set(std::string(40, 'x'), &arena);
+  const size_t used = arena()->SpaceUsed();
+  str.Set(std::string(40, 'x'), arena_message());
   // we can fit the chars in the inline space, so copy it.
-  EXPECT_EQ(used, arena.SpaceUsed());
+  EXPECT_EQ(used, arena()->SpaceUsed());
 
   std::string large(100, 'x');
   const size_t used_in_string = StringSpaceUsedExcludingSelfLong(large);
-  str.Set(std::move(large), &arena);
+  str.Set(std::move(large), arena_message());
   // This one is too big, so we move the whole std::string.
   EXPECT_EQ(ArenaAlignDefault::Ceil(kLargeRepSize + sizeof(std::string)),
-            arena.SpaceUsed() - used);
+            arena()->SpaceUsed() - used);
   EXPECT_EQ(kLargeRepSize + sizeof(std::string) + used_in_string,
             str.SpaceUsedExcludingSelfLong());
 }
@@ -1097,8 +1125,8 @@ TEST_F(MicroStringExtraTest, InternalSwap) {
   constexpr absl::string_view rhs_value = "123456789012345";
 
   MicroStringExtra<15> lhs, rhs;
-  lhs.Set(lhs_value, nullptr);
-  rhs.Set(rhs_value, nullptr);
+  lhs.Set(lhs_value, heap_message());
+  rhs.Set(rhs_value, heap_message());
 
   const size_t used_lhs = lhs.SpaceUsedExcludingSelfLong();
   const size_t used_rhs = rhs.SpaceUsedExcludingSelfLong();
@@ -1124,8 +1152,7 @@ size_t SpaceUsedExcludingSelfLong(const ArenaStringPtr& str) {
                                StringSpaceUsedExcludingSelfLong(str.Get());
 }
 
-TEST(MicroStringTest, MemoryUsageComparison) {
-  Arena arena;
+TEST_F(MicroStringTest, MemoryUsageComparison) {
   MicroString micro_str;
   ArenaStringPtr arena_str;
   arena_str.InitDefault();
@@ -1149,8 +1176,8 @@ TEST(MicroStringTest, MemoryUsageComparison) {
   };
   for (size_t i = 1; i < input.size(); ++i) {
     absl::string_view this_input(input.data(), i);
-    micro_str.Set(this_input, &arena);
-    arena_str.Set(this_input, &arena);
+    micro_str.Set(this_input, arena_message());
+    arena_str.Set(this_input, arena_message());
 
     int64_t this_micro_str_used = micro_str.SpaceUsedExcludingSelfLong();
     int64_t this_arena_str_used = SpaceUsedExcludingSelfLong(arena_str);
@@ -1185,6 +1212,10 @@ TEST(MicroStringTest, MemoryUsageComparison) {
 }  // namespace protobuf
 }  // namespace google
 
+const google::protobuf::MessageLite& ParentMessage() {
+  return proto2_unittest::TestEmptyMessage::default_instance();
+}
+
 absl::string_view CodegenMicroStringGet(google::protobuf::internal::MicroString& str) {
   return str.Get();
 }
@@ -1194,18 +1225,18 @@ absl::string_view CodegenArenaStringPtrGet(
 }
 void CodegenMicroStringSet(google::protobuf::internal::MicroString& str,
                            absl::string_view input) {
-  str.Set(input, nullptr);
+  str.Set(input, ParentMessage());
 }
 void CodegenArenaStringPtrSet(google::protobuf::internal::ArenaStringPtr& str,
                               absl::string_view input) {
-  str.Set(input, nullptr);
+  str.Set(input, ParentMessage());
 }
 void CodegenMicroStringSetConstant(google::protobuf::internal::MicroString& str) {
-  str.Set("value", nullptr);
+  str.Set("value", ParentMessage());
 }
 void CodegenMicroStringExtraSetConstant(
     google::protobuf::internal::MicroStringExtra<8>& str) {
-  str.Set("larger_value", nullptr);
+  str.Set("larger_value", ParentMessage());
 }
 void CodegenMicroStringInitOther(google::protobuf::internal::MicroString& str,
                                  const google::protobuf::internal::MicroString& other) {
@@ -1218,12 +1249,12 @@ void CodegenMicroStringExtraInitOther(
 }
 void CodegenMicroStringSetOther(google::protobuf::internal::MicroString& str,
                                 const google::protobuf::internal::MicroString& other) {
-  str.Set(other, nullptr);
+  str.Set(other, ParentMessage());
 }
 void CodegenMicroStringExtraSetOther(
     google::protobuf::internal::MicroStringExtra<8>& str,
     const google::protobuf::internal::MicroStringExtra<8>& other) {
-  str.Set(other, nullptr);
+  str.Set(other, ParentMessage());
 }
 
 int odr [[maybe_unused]] =

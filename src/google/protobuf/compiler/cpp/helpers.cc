@@ -936,7 +936,12 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
       } else if (value != value) {
         return "::std::numeric_limits<double>::quiet_NaN()";
       } else {
-        return io::SimpleDtoa(value);
+        std::string double_value = io::SimpleDtoa(value);
+        // Make sure it is a double literal.
+        if (double_value.find_first_of(".eE") == std::string::npos) {
+          double_value.push_back('.');
+        }
+        return double_value;
       }
     }
     case FieldDescriptor::CPPTYPE_FLOAT: {
@@ -949,12 +954,11 @@ std::string DefaultValue(const Options& options, const FieldDescriptor* field) {
         return "::std::numeric_limits<float>::quiet_NaN()";
       } else {
         std::string float_value = io::SimpleFtoa(value);
-        // If floating point value contains a period (.) or an exponent
-        // (either E or e), then append suffix 'f' to make it a float
-        // literal.
-        if (float_value.find_first_of(".eE") != std::string::npos) {
-          float_value.push_back('f');
+        // Make sure it is a float literal.
+        if (float_value.find_first_of(".eE") == std::string::npos) {
+          float_value.push_back('.');
         }
+        float_value.push_back('f');
         return float_value;
       }
     }
@@ -1006,9 +1010,6 @@ std::string UniqueName(absl::string_view name, absl::string_view filename,
 std::string QualifiedFileLevelSymbol(const FileDescriptor* file,
                                      absl::string_view name,
                                      const Options& options) {
-  if (file->package().empty()) {
-    return absl::StrCat("::", name);
-  }
   return absl::StrCat(Namespace(file), "::", name);
 }
 
@@ -1759,31 +1760,16 @@ MessageAnalysis MessageSCCAnalyzer::GetSCCAnalysis(const SCC* scc) {
         result.contains_weak = true;
       }
       switch (field->type()) {
-        case FieldDescriptor::TYPE_STRING:
-        case FieldDescriptor::TYPE_BYTES: {
-          if (field->cpp_string_type() ==
-              FieldDescriptor::CppStringType::kCord) {
-            result.contains_cord = true;
-          }
-          break;
-        }
         case FieldDescriptor::TYPE_GROUP:
         case FieldDescriptor::TYPE_MESSAGE: {
           const SCC* child = analyzer_.GetSCC(field->message_type());
           if (child != scc) {
             MessageAnalysis analysis = GetSCCAnalysis(child);
-            result.contains_cord |= analysis.contains_cord;
             result.contains_extension |= analysis.contains_extension;
             if (!ShouldIgnoreRequiredFieldCheck(field, options_)) {
               result.contains_required |= analysis.contains_required;
             }
             result.contains_weak |= analysis.contains_weak;
-          } else {
-            // This field points back into the same SCC hence the messages
-            // in the SCC are recursive. Note if SCC contains more than two
-            // nodes it has to be recursive, however this test also works for
-            // a single node that is recursive.
-            result.is_recursive = true;
           }
           break;
         }
@@ -2014,7 +2000,7 @@ static bool HasBootstrapProblem(const FileDescriptor* file,
   };
   static auto& bootstrap_cache = *new BootstrapGlobals();
 
-  absl::MutexLock lock(&bootstrap_cache.mutex);
+  absl::MutexLock lock(bootstrap_cache.mutex);
   if (bootstrap_cache.cached.contains(file)) return true;
   if (bootstrap_cache.non_cached.contains(file)) return false;
 

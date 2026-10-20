@@ -25,6 +25,15 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
             "//python/dist:windows_x86_32": ["-static-libgcc"],
             "//conditions:default": [],
         }) + select({
+            "//python/dist:windows_x86_64_mingw": [
+                "-Wl,--dynamicbase",
+                "-Wl,--nxcompat",
+                "-Wl,--high-entropy-va",
+            ],
+            "//python/dist:windows_x86_32_mingw": [
+                "-Wl,--dynamicbase",
+                "-Wl,--nxcompat",
+            ],
             "//conditions:default": [],
         }),
         linkshared = True,
