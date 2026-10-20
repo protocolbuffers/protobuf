@@ -390,6 +390,12 @@ cc_binary(
     deps = ["//src/google/protobuf/compiler:protoc_lib_stage1"],
 )
 
+alias(
+    name = "update_prebuilts",
+    actual = "//pkg:update_prebuilts",
+    visibility = ["//visibility:public"],
+)
+
 ################################################################################
 # C++ runtime
 ################################################################################
@@ -607,7 +613,10 @@ proto_lang_toolchain(
         "//:json_enumvalue_options_proto",
     ],
     command_line = "--cpp_out=$(OUT)",
-    plugin = "//src/google/protobuf/compiler/cpp:protoc-gen-cpp",
+    plugin = select({
+        "//bazel/flags:prefer_prebuilt_protoc.flag_set": None,
+        "//conditions:default": "//src/google/protobuf/compiler/cpp:protoc-gen-cpp",
+    }),
     plugin_format_flag = "--plugin=protoc-gen-cpp=%s",
     protoc_minimal_do_not_use = select({
         # Set minimal protoc if prefer_prebuilt_protoc.flag_set is true since a prebuilt for protoc_minimal is not available
