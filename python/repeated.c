@@ -1197,16 +1197,24 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
     }
   }
 
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   if (PyUpb_RepeatedContainer_IsFrozen((PyUpb_RepeatedContainer*)pself)) {
     if (!PyUpb_CheckFrozen(true, "Container is immutable")) {
       return NULL;
     }
   }
+#endif
 
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   PyObject* arena = ((PyUpb_RepeatedContainer*)pself)->arena;
   Py_INCREF(arena);
   if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  if (PyUpb_RepeatedContainer_IsFrozen((PyUpb_RepeatedContainer*)pself) &&
+      !PyUpb_CheckFrozen(true, "Container is immutable")) {
+    PyUpb_Arena_EndRead(arena);
     Py_DECREF(arena);
     return NULL;
   }

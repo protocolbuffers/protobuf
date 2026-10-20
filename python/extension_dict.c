@@ -87,12 +87,19 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
   // Extension numbers are positive and fit in an int, so anything else (which
   // the cast below could otherwise wrap onto a valid number) has no extension.
   if (overflow != 0 || number < 0 || number > INT32_MAX) Py_RETURN_NONE;
+  PyObject* pool = PyUpb_Message_GetPool(self->msg);
+  const upb_FieldDef* f = NULL;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pool);
+#endif
   const upb_MiniTableExtension* ext =
-      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l,
-                                                            (uint32_t)number);
-  if (ext) {
-    const upb_FieldDef* f = upb_DefPool_FindExtensionByMiniTable(symtab, ext);
-    PyObject* pool = PyUpb_Message_GetPool(self->msg);
+      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(
+          reg, l, (uint32_t)number);
+  if (ext) f = upb_DefPool_FindExtensionByMiniTable(symtab, ext);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  if (f) {
     return PyUpb_FieldDescriptor_Get(pool, f);
   } else {
     Py_RETURN_NONE;
@@ -193,7 +200,20 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return -1;
-  if (PyUpb_Message_IsFrozen(self->msg)) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  bool is_frozen = PyUpb_Message_IsFrozen(self->msg);
+#else
+  PyObject* arena = PyUpb_Message_GetArena(self->msg);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  bool is_frozen = PyUpb_Message_IsFrozen(self->msg);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+#endif
+  if (is_frozen) {
     if (!PyUpb_CheckFrozen(true, "Message is immutable.")) {
       return -1;
     }

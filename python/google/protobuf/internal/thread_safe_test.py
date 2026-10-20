@@ -1548,6 +1548,13 @@ class FreeThreadingTest(unittest.TestCase):
         lambda _: stable.repeated_int32 == changing.repeated_int32,
     )), 2)
 
+    sortable = unittest_pb2.TestAllTypes()
+    sortable.repeated_int32.extend([3, 1, 2])
+    self.assertEqual(len(Race(
+        lambda number: sortable.repeated_int32.__setitem__(0, number),
+        lambda _: sortable.repeated_int32.sort(),
+    )), 2)
+
     reinit = unittest_pb2.TestAllTypes(optional_int32=1)
     self.assertEqual(len(Race(
         lambda number: reinit.__init__(optional_int32=number),
