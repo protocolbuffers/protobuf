@@ -177,10 +177,27 @@ static PyTypeObject* PyUpb_RepeatedContainer_GetClass(const upb_FieldDef* f) {
                                       : state->repeated_scalar_container_type;
 }
 
-static Py_ssize_t PyUpb_RepeatedContainer_Length(PyObject* self) {
+static Py_ssize_t PyUpb_RepeatedContainer_LengthUnprotected(PyObject* self) {
   upb_Array* arr =
       PyUpb_RepeatedContainer_GetIfReified((PyUpb_RepeatedContainer*)self);
   return arr ? upb_Array_Size(arr) : 0;
+}
+
+static Py_ssize_t PyUpb_RepeatedContainer_Length(PyObject* self) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_RepeatedContainer_LengthUnprotected(self);
+#else
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  Py_ssize_t result = PyUpb_RepeatedContainer_LengthUnprotected(self);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
@@ -621,8 +638,8 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
 #endif
 }
 
-static PyObject* PyUpb_RepeatedContainer_Item(PyObject* _self,
-                                              Py_ssize_t index) {
+static PyObject* PyUpb_RepeatedContainer_ItemUnprotected(PyObject* _self,
+                                                         Py_ssize_t index) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   Py_ssize_t size = arr ? upb_Array_Size(arr) : 0;
@@ -634,7 +651,25 @@ static PyObject* PyUpb_RepeatedContainer_Item(PyObject* _self,
   return PyUpb_UpbToPy(upb_Array_Get(arr, index), f, self->arena);
 }
 
-PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
+static PyObject* PyUpb_RepeatedContainer_Item(PyObject* self,
+                                              Py_ssize_t index) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_RepeatedContainer_ItemUnprotected(self, index);
+#else
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_ItemUnprotected(self, index);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
+}
+
+static PyObject* PyUpb_RepeatedContainer_ToListUnprotected(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   if (!arr) return PyList_New(0);
@@ -651,6 +686,23 @@ PyObject* PyUpb_RepeatedContainer_ToList(PyObject* _self) {
     PyList_SetItem(list, i, val);
   }
   return list;
+}
+
+PyObject* PyUpb_RepeatedContainer_ToList(PyObject* self) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_RepeatedContainer_ToListUnprotected(self);
+#else
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_ToListUnprotected(self);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_RepeatedContainer_Repr(PyObject* _self) {
@@ -681,8 +733,8 @@ static PyObject* PyUpb_RepeatedContainer_RichCompare(PyObject* _self,
   return ret;
 }
 
-static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
-                                                   PyObject* key) {
+static PyObject* PyUpb_RepeatedContainer_SubscriptUnprotected(PyObject* _self,
+                                                              PyObject* key) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   upb_Array* arr = PyUpb_RepeatedContainer_GetIfReified(self);
   Py_ssize_t size = arr ? upb_Array_Size(arr) : 0;
@@ -704,6 +756,24 @@ static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* _self,
     }
     return list;
   }
+}
+
+static PyObject* PyUpb_RepeatedContainer_Subscript(PyObject* self,
+                                                   PyObject* key) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_RepeatedContainer_SubscriptUnprotected(self, key);
+#else
+  PyObject* arena = ((PyUpb_RepeatedContainer*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_SubscriptUnprotected(self, key);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 typedef struct {
