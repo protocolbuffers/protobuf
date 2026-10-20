@@ -1369,7 +1369,20 @@ __attribute__((flatten)) static PyObject* PyUpb_Message_GetAttr(
   // Lookup field by name.
   const upb_FieldDef* field;
   if (PyUpb_Message_LookupName(self, attr, &field, NULL, NULL)) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+    PyObject* arena = self->arena;
+    Py_INCREF(arena);
+    if (!PyUpb_Arena_TryRead(arena)) {
+      Py_DECREF(arena);
+      return NULL;
+    }
+    PyObject* result = PyUpb_Message_GetFieldValue(_self, field);
+    PyUpb_Arena_EndRead(arena);
+    Py_DECREF(arena);
+    return result;
+#else
     return PyUpb_Message_GetFieldValue(_self, field);
+#endif
   }
 
   // Check base class attributes.
@@ -1429,11 +1442,20 @@ static PyObject* PyUpb_Message_HasField(PyObject* _self, PyObject* arg) {
     return NULL;
   }
 
-  if (PyUpb_Message_IsStub(self)) Py_RETURN_FALSE;
-
-  return PyBool_FromLong(
-      field ? upb_Message_HasFieldByDef(self->ptr.msg, field)
-            : upb_Message_WhichOneofByDef(self->ptr.msg, oneof) != NULL);
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result =
+      PyBool_FromLong(!PyUpb_Message_IsStub(self) &&
+                      (field ? upb_Message_HasFieldByDef(self->ptr.msg, field)
+                             : upb_Message_WhichOneofByDef(self->ptr.msg,
+                                                            oneof) != NULL));
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 static PyObject* PyUpb_Message_Contains(PyObject* _self, PyObject* arg) {
@@ -1569,7 +1591,8 @@ err:
   return ok;
 }
 
-static PyObject* PyUpb_Message_ListFields(PyObject* _self, PyObject* arg) {
+static PyObject* PyUpb_Message_ListFieldsUnprotected(PyObject* _self,
+                                                    PyObject* arg) {
   PyObject* list = PyList_New(0);
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
   if (!msg) return list;
@@ -1613,6 +1636,19 @@ err:
   Py_XDECREF(tuple);
   Py_DECREF(list);
   return NULL;
+}
+
+static PyObject* PyUpb_Message_ListFields(PyObject* self, PyObject* arg) {
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_ListFieldsUnprotected(self, arg);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 static PyObject* PyUpb_Message_MergeFromImpl(PyObject* self, PyObject* arg,
@@ -2347,11 +2383,19 @@ static PyObject* PyUpb_Message_WhichOneof(PyObject* _self, PyObject* name) {
   if (!PyUpb_Message_LookupName(self, name, NULL, &o, PyExc_ValueError)) {
     return NULL;
   }
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
   upb_Message* msg = PyUpb_Message_GetIfReified(_self);
-  if (!msg) Py_RETURN_NONE;
-  const upb_FieldDef* f = upb_Message_WhichOneofByDef(msg, o);
-  if (!f) Py_RETURN_NONE;
-  return PyUnicode_FromString(upb_FieldDef_Name(f));
+  const upb_FieldDef* f = msg ? upb_Message_WhichOneofByDef(msg, o) : NULL;
+  PyObject* result = f ? PyUnicode_FromString(upb_FieldDef_Name(f))
+                       : Py_NewRef(Py_None);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 PyObject* PyUpb_Message_Clone(PyObject* _self, PyObject* args) {
