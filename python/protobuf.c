@@ -184,12 +184,27 @@ static PyMethodDef PyUpb_ModuleMethods[] = {
      "Configures allocation failure at the N-th allocation."},
     {NULL, NULL}};
 
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+static int PyUpb_ModuleExec(PyObject* m);
+static PyModuleDef_Slot module_slots[] = {
+    {Py_mod_exec, PyUpb_ModuleExec},
+    {Py_mod_multiple_interpreters,
+     (void*)Py_MOD_PER_INTERPRETER_GIL_SUPPORTED},
+    {Py_mod_gil, (void*)Py_MOD_GIL_NOT_USED},
+    {0, NULL},
+};
+#endif
+
 static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
                                         PYUPB_MODULE_NAME,
                                         "Protobuf Module",
                                         sizeof(PyUpb_ModuleState),
                                         PyUpb_ModuleMethods,  // m_methods
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+                                        module_slots,         // m_slots
+#else
                                         NULL,                 // m_slots
+#endif
                                         PyUpb_ModuleTraverse, // m_traverse
                                         PyUpb_ModuleClear,    // m_clear
                                         PyUpb_ModuleDealloc};
@@ -205,8 +220,19 @@ PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
     return NULL;
   }
 #endif
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* name = PyUnicode_FromString(PYUPB_MODULE_NAME);
+  if (!name) return NULL;
+  PyObject* module = PyImport_GetModule(name);
+  Py_DECREF(name);
+  if (!module) return NULL;
+  PyUpb_ModuleState* state = PyModule_GetState(module);
+  Py_DECREF(module);
+  return state;
+#else
   PyObject* module = PyState_FindModule(&module_def);
   return module ? PyModule_GetState(module) : NULL;
+#endif
 }
 
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
@@ -217,9 +243,15 @@ PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
 }
 
 PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  assert(state);
+  return state;
+#else
   PyObject* module = PyState_FindModule(&module_def);
   assert(module);
   return PyUpb_ModuleState_GetFromModule(module);
+#endif
 }
 
 static PyObject* PyUpb_InitWktBases(void* unused) {
@@ -239,11 +271,26 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state) {
   // Preserve the private module attribute used by the existing implementation.
   // Concurrent stores are safe Python dictionary operations and all store the
   // same CAS-selected object.
-  PyObject* m = PyState_FindModule(&module_def);
+  PyObject* m = NULL;
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* module_name = PyUnicode_FromString(PYUPB_MODULE_NAME);
+  if (module_name) {
+    m = PyImport_GetModule(module_name);
+    Py_DECREF(module_name);
+  }
+#else
+  m = PyState_FindModule(&module_def);
+#endif
   if (!m || PyModule_AddObjectRef(m, "__internal_wktbases", wkt_bases) < 0) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+    Py_XDECREF(m);
+#endif
     Py_DECREF(wkt_bases);
     return NULL;
   }
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  Py_DECREF(m);
+#endif
   Py_DECREF(wkt_bases);
   return PyUpb_LazyPtr_RawGet(&state->wkt_bases);
 }
@@ -610,18 +657,7 @@ bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg) {
 // Module Entry Point
 // -----------------------------------------------------------------------------
 
-PyMODINIT_FUNC PyInit__message(void) {
-  PyObject* m = PyModule_Create(&module_def);
-  if (!m) return NULL;
-#if defined(Py_GIL_DISABLED) && \
-    defined(PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING)
-  // Keep this opt-in until the complete upb safety and stress matrix passes.
-  if (PyUnstable_Module_SetGIL(m, Py_MOD_GIL_NOT_USED) < 0) {
-    Py_DECREF(m);
-    return NULL;
-  }
-#endif
-
+static int PyUpb_ModuleExec(PyObject* m) {
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
 
   upb_Atomic_Init(&state->allow_oversize_protos, false);
@@ -631,8 +667,7 @@ PyMODINIT_FUNC PyInit__message(void) {
       !google_protobuf_FileDescriptorProto_getmsgdef(
           state->c_descriptor_symtab)) {
     PyErr_NoMemory();
-    Py_DECREF(m);
-    return NULL;
+    return -1;
   }
 
   if (!PyUpb_InitDescriptorContainers(m) || !PyUpb_InitDescriptorPool(m) ||
@@ -640,15 +675,28 @@ PyMODINIT_FUNC PyInit__message(void) {
       !PyUpb_InitExtensionDict(m) || !PyUpb_Map_Init(m) ||
       !PyUpb_InitMessage(m) || !PyUpb_Repeated_Init(m) ||
       !PyUpb_UnknownFields_Init(m)) {
-    Py_DECREF(m);
-    return NULL;
+    return -1;
   }
 
   // Temporary: an cookie we can use in the tests to ensure we are testing upb
   // and not another protobuf library on the system.
-  PyModule_AddIntConstant(m, "_IS_UPB", 1);
+  if (PyModule_AddIntConstant(m, "_IS_UPB", 1) < 0) return -1;
 
+  return 0;
+}
+
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+PyMODINIT_FUNC PyInit__message(void) { return PyModuleDef_Init(&module_def); }
+#else
+PyMODINIT_FUNC PyInit__message(void) {
+  PyObject* m = PyModule_Create(&module_def);
+  if (!m) return NULL;
+  if (PyUpb_ModuleExec(m) < 0) {
+    Py_DECREF(m);
+    return NULL;
+  }
   return m;
 }
+#endif
 
 #include "upb/port/undef.inc"
