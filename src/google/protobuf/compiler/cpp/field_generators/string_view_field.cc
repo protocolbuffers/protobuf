@@ -425,13 +425,6 @@ void SingularStringView::GenerateDestructorCode(io::Printer* p) const {
     return;
   }
 
-  if (should_split()) {
-    p->Emit(R"cc(
-      $cached_split_ptr$->$name$_.Destroy();
-    )cc");
-    return;
-  }
-
   p->Emit(R"cc(
     $this_mutable_field$.Destroy();
   )cc");

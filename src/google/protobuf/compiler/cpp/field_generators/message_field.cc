@@ -370,15 +370,9 @@ void SingularMessage::GenerateSwappingCode(io::Printer* p) const {
 }
 
 void SingularMessage::GenerateDestructorCode(io::Printer* p) const {
-  if (should_split()) {
-    p->Emit(R"cc(
-      delete $cached_split_ptr$->$name$_;
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      delete $this_mutable_field$;
-    )cc");
-  }
+  p->Emit(R"cc(
+    delete $this_mutable_field$;
+  )cc");
 }
 
 void SingularMessage::GenerateSerializeWithCachedSizesToArray(

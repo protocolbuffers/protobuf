@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -133,12 +134,7 @@ class Map : public FieldGeneratorBase {
   }
 
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        $cached_split_ptr$->$name$_.~$MapField$();
-      )cc");
-      return;
-    }
+    ABSL_DCHECK(!should_split());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;
