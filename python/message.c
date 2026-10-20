@@ -2302,13 +2302,31 @@ bool PyUpb_Message_DoClearField(PyObject* _self, const upb_FieldDef* f) {
   return true;
 }
 
-static PyObject* PyUpb_Message_ClearExtension(PyObject* _self, PyObject* arg) {
+static PyObject* PyUpb_Message_ClearExtensionUnprotected(PyObject* _self,
+                                                         PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
   if (!PyUpb_Message_AssureWritable(self)) return NULL;
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(_self, arg);
   if (!f) return NULL;
   if (!PyUpb_Message_DoClearField(_self, f)) return NULL;
   Py_RETURN_NONE;
+}
+
+static PyObject* PyUpb_Message_ClearExtension(PyObject* self, PyObject* arg) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_ClearExtensionUnprotected(self, arg);
+#else
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_ClearExtensionUnprotected(self, arg);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_Message_ClearFieldUnprotected(PyObject* _self,

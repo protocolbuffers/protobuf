@@ -1533,6 +1533,12 @@ class FreeThreadingTest(unittest.TestCase):
         lambda _: msg.HasExtension(extension),
     )), 2)
 
+    self.assertEqual(len(Race(
+        lambda number: (msg.Extensions.__setitem__(extension, number),
+                        msg.ClearExtension(extension)),
+        lambda _: msg.SerializePartialToString(),
+    )), 2)
+
     stable = unittest_pb2.TestAllTypes()
     stable.repeated_int32.append(1)
     changing = unittest_pb2.TestAllTypes()
