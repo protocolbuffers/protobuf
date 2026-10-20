@@ -130,6 +130,8 @@ filegroup(
         "descriptor_pool.h",
         "extension_dict.c",
         "extension_dict.h",
+        "free_threading/access.c",
+        "free_threading/access.h",
         "free_threading/lazy_ptr.c",
         "free_threading/lazy_ptr.h",
         "free_threading/mutex.h",

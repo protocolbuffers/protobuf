@@ -1893,7 +1893,8 @@ static PyObject* PyUpb_Message_ClearExtension(PyObject* _self, PyObject* arg) {
   Py_RETURN_NONE;
 }
 
-static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
+static PyObject* PyUpb_Message_ClearFieldUnprotected(PyObject* _self,
+                                                     PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
 
   // We always need AssureWritable() here (even for an unset message) to
@@ -1914,6 +1915,23 @@ static PyObject* PyUpb_Message_ClearField(PyObject* _self, PyObject* arg) {
     if (!PyUpb_Message_DoClearField(_self, f)) return NULL;
   }
   Py_RETURN_NONE;
+}
+
+static PyObject* PyUpb_Message_ClearField(PyObject* self, PyObject* arg) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_ClearFieldUnprotected(self, arg);
+#else
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_ClearFieldUnprotected(self, arg);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
@@ -2049,9 +2067,8 @@ done:
   Py_DECREF(errors);
 }
 
-PyObject* PyUpb_Message_SerializeInternal(PyObject* _self, PyObject* args,
-                                          PyObject* kwargs,
-                                          bool check_required) {
+static PyObject* PyUpb_Message_SerializeInternalUnprotected(
+    PyObject* _self, PyObject* args, PyObject* kwargs, bool check_required) {
   PyUpb_Message* self = (void*)_self;
   if (!PyUpb_Message_Verify((PyObject*)self)) return NULL;
   static const char* kwlist[] = {"deterministic", NULL};
@@ -2114,6 +2131,27 @@ PyObject* PyUpb_Message_SerializeInternal(PyObject* _self, PyObject* args,
 done:
   upb_Arena_Free(arena);
   return ret;
+}
+
+PyObject* PyUpb_Message_SerializeInternal(PyObject* self, PyObject* args,
+                                          PyObject* kwargs,
+                                          bool check_required) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_SerializeInternalUnprotected(self, args, kwargs,
+                                                     check_required);
+#else
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_SerializeInternalUnprotected(
+      self, args, kwargs, check_required);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 PyObject* PyUpb_Message_SerializeToString(PyObject* _self, PyObject* args,

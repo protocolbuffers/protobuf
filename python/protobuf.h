@@ -128,6 +128,14 @@ PyObject* PyUpb_Arena_New(PyObject* pool);
 PyObject* PyUpb_Arena_GetPool(PyObject* arena);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
 
+// Nonblocking admission for native storage shared by message/container aliases.
+// Successful calls must be paired with the corresponding End call on every
+// exit path. Only the experimental free-threaded build enforces admission.
+bool PyUpb_Arena_TryRead(PyObject* arena);
+bool PyUpb_Arena_TryWrite(PyObject* arena);
+void PyUpb_Arena_EndRead(PyObject* arena);
+void PyUpb_Arena_EndWrite(PyObject* arena);
+
 bool PyUpb_Arena_CacheAdd(PyObject* arena, const void* key, PyObject** py_obj);
 bool PyUpb_Arena_CacheUniqueAdd(PyObject* arena, const void* key,
                                 PyObject* py_obj);

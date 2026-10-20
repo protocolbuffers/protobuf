@@ -565,7 +565,8 @@ static bool PyUpb_ExtendBulkCb(const void* data, Py_ssize_t count,
   return true;
 }
 
-PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
+static PyObject* PyUpb_RepeatedContainer_ExtendUnprotected(PyObject* _self,
+                                                            PyObject* value) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(self);
   upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(_self);
@@ -600,6 +601,24 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
     return NULL;
   }
   Py_RETURN_NONE;
+}
+
+PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_RepeatedContainer_ExtendUnprotected(_self, value);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#else
+  return PyUpb_RepeatedContainer_ExtendUnprotected(_self, value);
+#endif
 }
 
 static PyObject* PyUpb_RepeatedContainer_Item(PyObject* _self,

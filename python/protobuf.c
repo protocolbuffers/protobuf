@@ -28,6 +28,7 @@
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
 #include "python/extension_dict.h"
+#include "python/free_threading/access.h"
 #include "python/free_threading/weak_map.h"
 #include "python/map.h"
 #include "python/message.h"
@@ -259,6 +260,9 @@ typedef struct {
   PyObject* pool;
   PyUpb_WeakMap* obj_cache;
   PyUpb_AtomicInt32 frozen;
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_Access access;
+#endif
 } PyUpb_Arena;
 
 #ifdef __GLIBC__
@@ -333,6 +337,9 @@ PyObject* PyUpb_Arena_New(PyObject* pool) {
   arena->pool = pool;
   Py_INCREF(pool);
   upb_Atomic_Init(&arena->frozen, false);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_Access_Init(&arena->access);
+#endif
   return &arena->ob_base;
 }
 
@@ -367,6 +374,48 @@ bool PyUpb_Arena_IsFrozen(PyObject* arena) {
 void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen) {
   upb_Atomic_Store(&((PyUpb_Arena*)arena)->frozen, frozen,
                    memory_order_release);
+}
+
+bool PyUpb_Arena_TryRead(PyObject* arena) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  if (!PyUpb_Access_TryRead(&((PyUpb_Arena*)arena)->access)) {
+    PyErr_SetString(PyExc_RuntimeError,
+                    "concurrent mutation of a protobuf message");
+    return false;
+  }
+#else
+  (void)arena;
+#endif
+  return true;
+}
+
+bool PyUpb_Arena_TryWrite(PyObject* arena) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  if (!PyUpb_Access_TryWrite(&((PyUpb_Arena*)arena)->access)) {
+    PyErr_SetString(PyExc_RuntimeError,
+                    "concurrent mutation of a protobuf message");
+    return false;
+  }
+#else
+  (void)arena;
+#endif
+  return true;
+}
+
+void PyUpb_Arena_EndRead(PyObject* arena) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_Access_EndRead(&((PyUpb_Arena*)arena)->access);
+#else
+  (void)arena;
+#endif
+}
+
+void PyUpb_Arena_EndWrite(PyObject* arena) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_Access_EndWrite(&((PyUpb_Arena*)arena)->access);
+#else
+  (void)arena;
+#endif
 }
 
 bool PyUpb_Arena_CacheAdd(PyObject* _arena, const void* key,
