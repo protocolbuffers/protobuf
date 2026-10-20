@@ -3886,7 +3886,10 @@ bool MessageGenerator::RequiresArena(GeneratorFunction function,
   return false;
 }
 
-bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
+void MessageGenerator::GenerateMergeImplForField(io::Printer* p,
+                                                 const FieldDescriptor* field,
+                                                 bool is_split,
+                                                 int cached_has_word_index) {
   const auto prepare_split = [&] {
     if (is_split) {
       p->Emit(R"cc(
@@ -3894,6 +3897,55 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
       )cc");
     }
   };
+  const auto& generator = field_generators_.get(field);
+
+  auto field_vars = p->WithVars(FieldVars(field, options_));
+
+  if (!field->is_required() && !HasHasbit(field, options_)) {
+    // Merge semantics without true field presence: primitive fields are
+    // merged only if non-zero (numeric) or non-empty (string).
+    MayEmitMutableIfNonDefaultCheck(
+        p, "from.", field, is_split, options_,
+        /*emit_body=*/
+        [&]() {
+          prepare_split();
+          generator.GenerateMergingCode(p);
+        },
+        /*with_enclosing_braces_always=*/true);
+  } else {
+    // Check hasbit, using cached bits.
+    ABSL_CHECK_EQ(field_layout_.GetHasWordIndex(field), cached_has_word_index);
+    int has_bit_index = field_layout_.GetHasBitIndex(field).value();
+
+    p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForField(
+                               has_bit_index, field, options_)},
+             {"merge_field",
+              [&] {
+                prepare_split();
+                if (GetFieldHasbitMode(field, options_) ==
+                    HasbitMode::kHintHasbit) {
+                  // Merge semantics without true field presence: primitive
+                  // fields are merged only if non-zero (numeric) or
+                  // non-empty (string).
+                  MayEmitMutableIfNonDefaultCheck(
+                      p, "from.", field, is_split, options_,
+                      /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
+                      /*with_enclosing_braces_always=*/false);
+                } else {
+                  ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
+                              HasbitMode::kTrueHasbit);
+                  generator.GenerateMergingCode(p);
+                }
+              }}},
+            R"cc(
+              if ($condition$) {
+                $merge_field$;
+              }
+            )cc");
+  }
+}
+
+bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
   // cached_has_word_index maintains that:
   //   cached_has_bits = from._has_bits_[cached_has_word_index]
   // for cached_has_word_index >= 0
@@ -3929,54 +3981,7 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
 
     // Go back and emit merging code for each of the fields we processed.
     for (const auto* field : fields) {
-      const auto& generator = field_generators_.get(field);
-
-      auto field_vars = p->WithVars(FieldVars(field, options_));
-
-      if (!field->is_required() && !HasHasbit(field, options_)) {
-        // Merge semantics without true field presence: primitive fields are
-        // merged only if non-zero (numeric) or non-empty (string).
-        MayEmitMutableIfNonDefaultCheck(
-            p, "from.", field, is_split, options_,
-            /*emit_body=*/
-            [&]() {
-              prepare_split();
-              generator.GenerateMergingCode(p);
-            },
-            /*with_enclosing_braces_always=*/true);
-      } else {
-        // Check hasbit, using cached bits.
-        ABSL_CHECK_EQ(field_layout_.GetHasWordIndex(field),
-                      cached_has_word_index);
-        int has_bit_index = field_layout_.GetHasBitIndex(field).value();
-
-        p->Emit(
-            {{"condition", GenerateConditionMaybeWithProbabilityForField(
-                               has_bit_index, field, options_)},
-             {"merge_field",
-              [&] {
-                prepare_split();
-                if (GetFieldHasbitMode(field, options_) ==
-                    HasbitMode::kHintHasbit) {
-                  // Merge semantics without true field presence: primitive
-                  // fields are merged only if non-zero (numeric) or
-                  // non-empty (string).
-                  MayEmitMutableIfNonDefaultCheck(
-                      p, "from.", field, is_split, options_,
-                      /*emit_body=*/[&]() { generator.GenerateMergingCode(p); },
-                      /*with_enclosing_braces_always=*/false);
-                } else {
-                  ABSL_DCHECK(GetFieldHasbitMode(field, options_) ==
-                              HasbitMode::kTrueHasbit);
-                  generator.GenerateMergingCode(p);
-                }
-              }}},
-            R"cc(
-              if ($condition$) {
-                $merge_field$;
-              }
-            )cc");
-      }
+      GenerateMergeImplForField(p, field, is_split, cached_has_word_index);
     }
 
     if (check_has_word) {
