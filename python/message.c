@@ -302,6 +302,10 @@ upb_Message* PyUpb_Message_GetIfReified(PyObject* _self) {
   return PyUpb_Message_IsStub(self) ? NULL : self->ptr.msg;
 }
 
+PyObject* PyUpb_Message_GetArena(PyObject* self) {
+  return ((PyUpb_Message*)self)->arena;
+}
+
 static PyObject* PyUpb_Message_New(PyObject* cls, PyObject* unused_args,
                                    PyObject* unused_kwargs) {
   const upb_MessageDef* msgdef = PyUpb_MessageMeta_GetMsgdef(cls);

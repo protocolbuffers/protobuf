@@ -42,6 +42,9 @@ bool PyUpb_Message_Verify(PyObject* self);
 // Otherwise returns NULL.
 upb_Message* PyUpb_Message_GetIfReified(PyObject* _self);
 
+// Borrowed reference to the arena shared by this message and its aliases.
+PyObject* PyUpb_Message_GetArena(PyObject* self);
+
 // Returns the `PyUpb_DescriptorPool` for a given Message instance or class.
 PyObject* PyUpb_Message_GetPool(PyObject* self);
 PyObject* PyUpb_MessageClass_GetPool(PyObject* cls);
