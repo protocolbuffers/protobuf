@@ -7,6 +7,16 @@
 
 #include "python/protobuf.h"
 
+#if defined(PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING) && \
+    !defined(Py_GIL_DISABLED)
+#error "Experimental free threading requires a CPython free-threaded build"
+#endif
+
+#if defined(PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING) && \
+    defined(Py_LIMITED_API)
+#error "Experimental free threading requires --//python:limited_api=false"
+#endif
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
