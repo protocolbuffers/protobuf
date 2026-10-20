@@ -1541,6 +1541,39 @@ class FreeThreadingTest(unittest.TestCase):
         lambda _: stable.repeated_int32 == changing.repeated_int32,
     )), 2)
 
+    reinit = unittest_pb2.TestAllTypes(optional_int32=1)
+    self.assertEqual(len(Race(
+        lambda number: reinit.__init__(optional_int32=number),
+        lambda _: reinit.SerializePartialToString(),
+    )), 2)
+
+    nested = unittest_pb2.TestAllTypes(optional_nested_message={'bb': 1})
+    self.assertEqual(len(Race(
+        lambda number: nested.__init__(optional_nested_message={'bb': number}),
+        lambda _: nested.SerializePartialToString(),
+    )), 2)
+
+    mapped = test_proto2_pb2.MessageWithRepeatedAndMap(
+        map_items={'key': {'value': 'one'}})
+    self.assertEqual(len(Race(
+        lambda number: mapped.__init__(
+            map_items={'key': {'value': str(number)}}),
+        lambda _: mapped.SerializePartialToString(),
+    )), 2)
+
+    scalar_repeated = unittest_pb2.TestAllTypes()
+    self.assertEqual(len(Race(
+        lambda number: scalar_repeated.__init__(repeated_int32=[number]),
+        lambda _: scalar_repeated.SerializePartialToString(),
+    )), 2)
+
+    composite_repeated = test_proto2_pb2.MessageWithRepeatedComposite()
+    self.assertEqual(len(Race(
+        lambda number: composite_repeated.__init__(
+            items=[{'value': str(number)}]),
+        lambda _: composite_repeated.SerializePartialToString(),
+    )), 2)
+
   def testIsolatedSubinterpreterNativeLifecycle(self):
     if api_implementation.Type() != 'upb' or getattr(
         sys, '_is_gil_enabled', lambda: True

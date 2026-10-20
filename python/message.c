@@ -390,11 +390,28 @@ static bool PyUpb_Message_LookupName(PyUpb_Message* self, PyObject* py_name,
   return true;
 }
 
-static bool PyUpb_Message_InitMessageMapEntry(PyObject* dst, PyObject* src) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+static int PyUpb_Message_InitAttributesPublic(PyObject* _self, PyObject* args,
+                                             PyObject* kwargs);
+#endif
+
+static bool PyUpb_Message_InitMessageMapEntry(PyObject* dst, PyObject* src,
+                                              bool admit_child) {
   if (!src || !dst) return false;
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  (void)admit_child;
+#endif
 
   if (PyDict_Check(src)) {
-    bool ok = PyUpb_Message_InitAttributes(dst, NULL, src) >= 0;
+    bool ok;
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+    if (admit_child) {
+      ok = PyUpb_Message_InitAttributesPublic(dst, NULL, src) >= 0;
+    } else
+#endif
+    {
+      ok = PyUpb_Message_InitAttributes(dst, NULL, src) >= 0;
+    }
     if (!ok) return false;
   } else {
     PyObject* ok = PyObject_CallMethod(dst, "CopyFrom", "O", src);
@@ -405,8 +422,9 @@ static bool PyUpb_Message_InitMessageMapEntry(PyObject* dst, PyObject* src) {
   return true;
 }
 
-int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
-                                    const upb_FieldDef* f) {
+static int PyUpb_Message_InitMapAttributesImpl(PyObject* map, PyObject* value,
+                                               const upb_FieldDef* f,
+                                               bool admit_child) {
   const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(f);
   const upb_FieldDef* val_f = upb_MessageDef_Field(entry_m, 1);
   PyObject* it = NULL;
@@ -424,7 +442,7 @@ int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
       PyObject* src = PyObject_GetItem(value, e);
       PyObject* dst = PyObject_GetItem(map, e);
       Py_DECREF(e);
-      bool ok = PyUpb_Message_InitMessageMapEntry(dst, src);
+      bool ok = PyUpb_Message_InitMessageMapEntry(dst, src, admit_child);
       Py_XDECREF(src);
       Py_XDECREF(dst);
       if (!ok) goto err;
@@ -441,13 +459,20 @@ err:
   return ret;
 }
 
+int PyUpb_Message_InitMapAttributes(PyObject* map, PyObject* value,
+                                    const upb_FieldDef* f) {
+  return PyUpb_Message_InitMapAttributesImpl(map, value, f, true);
+}
+
 bool PyUpb_Message_AssureWritable(PyUpb_Message* self);
 
 static bool PyUpb_Message_InitMapAttribute(PyObject* _self, PyObject* name,
                                            const upb_FieldDef* f,
-                                           PyObject* value) {
+                                           PyObject* value,
+                                           bool admit_child) {
   PyObject* map = PyUpb_Message_GetAttr(_self, name);
-  int ok = PyUpb_Message_InitMapAttributes(map, value, f);
+  if (!map) return false;
+  int ok = PyUpb_Message_InitMapAttributesImpl(map, value, f, admit_child);
   Py_DECREF(map);
   return ok >= 0;
 }
@@ -559,7 +584,7 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
                                                const upb_FieldDef* field,
                                                PyObject* value) {
   PyObject* submsg = PyUpb_Message_GetAttr(_self, name);
-  if (!submsg) return -1;
+  if (!submsg) return false;
   bool ok;
   const upb_MessageDef* m_def = upb_FieldDef_MessageSubDef(field);
   if (PyDict_Check(value) &&
@@ -571,6 +596,25 @@ static bool PyUpb_Message_InitMessageAttribute(PyObject* _self, PyObject* name,
   Py_DECREF(submsg);
   return ok;
 }
+
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+static bool PyUpb_Message_InitMessageAttributePublic(
+    PyObject* _self, PyObject* name, const upb_FieldDef* field,
+    PyObject* value) {
+  PyObject* submsg = PyUpb_Message_GetAttr(_self, name);
+  if (!submsg) return false;
+  const upb_MessageDef* m_def = upb_FieldDef_MessageSubDef(field);
+  bool ok;
+  if (PyDict_Check(value) &&
+      upb_MessageDef_WellKnownType(m_def) != kUpb_WellKnown_Struct) {
+    ok = PyUpb_Message_InitAttributesPublic(submsg, NULL, value) >= 0;
+  } else {
+    ok = PyUpb_Message_InitWKTOrMerge(m_def, submsg, value);
+  }
+  Py_DECREF(submsg);
+  return ok;
+}
+#endif
 
 static bool PyUpb_Message_InitScalarAttribute(upb_Message* msg,
                                               const upb_FieldDef* f,
@@ -611,7 +655,9 @@ int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
     if (value == Py_None) continue;  // Ignored.
 
     if (upb_FieldDef_IsMap(f)) {
-      if (!PyUpb_Message_InitMapAttribute(_self, name, f, value)) return -1;
+      if (!PyUpb_Message_InitMapAttribute(_self, name, f, value, false)) {
+        return -1;
+      }
     } else if (upb_FieldDef_IsRepeated(f)) {
       if (!PyUpb_Message_InitRepeatedAttribute(_self, name, value)) return -1;
     } else if (upb_FieldDef_IsSubMessage(f)) {
@@ -626,6 +672,75 @@ int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
   return 0;
 }
 
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+// Public __init__ can be called again on a message shared with other threads.
+// Admit each native write separately: map/repeated/submessage initialization
+// invokes Python callbacks and must not hold a non-recursive arena writer.
+// Internal callers retain InitAttributes() for freshly-created or already
+// admitted child messages.
+static int PyUpb_Message_InitAttributesPublic(PyObject* _self, PyObject* args,
+                                             PyObject* kwargs) {
+  if (args != NULL && PyTuple_Size(args) != 0) {
+    PyErr_SetString(PyExc_TypeError, "No positional arguments allowed");
+    return -1;
+  }
+  if (kwargs == NULL) return 0;
+
+  PyUpb_Message* self = (PyUpb_Message*)_self;
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  bool writable = PyUpb_Message_AssureWritable(self);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  if (!writable) return -1;
+
+  Py_ssize_t pos = 0;
+  PyObject* name;
+  PyObject* value;
+  while (PyDict_Next(kwargs, &pos, &name, &value)) {
+    const upb_FieldDef* f;
+    if (!PyUpb_Message_LookupName(self, name, &f, NULL, PyExc_ValueError)) {
+      return -1;
+    }
+    if (value == Py_None) continue;
+
+    if (upb_FieldDef_IsMap(f)) {
+      if (!PyUpb_Message_InitMapAttribute(_self, name, f, value, true)) {
+        return -1;
+      }
+    } else if (upb_FieldDef_IsRepeated(f)) {
+      PyObject* repeated = PyUpb_Message_GetAttr(_self, name);
+      if (!repeated) return -1;
+      bool ok;
+      if (upb_FieldDef_IsSubMessage(f)) {
+        ok = PyUpb_Message_InitRepeatedMessageAttribute(_self, repeated,
+                                                        value, f);
+      } else {
+        PyObject* tmp = PyUpb_RepeatedContainer_Extend(repeated, value);
+        ok = tmp != NULL;
+        Py_XDECREF(tmp);
+      }
+      Py_DECREF(repeated);
+      if (!ok) return -1;
+    } else if (upb_FieldDef_IsSubMessage(f)) {
+      if (!PyUpb_Message_InitMessageAttributePublic(_self, name, f, value)) {
+        return -1;
+      }
+    } else {
+      if (PyUpb_Message_SetFieldValue(_self, f, value, PyExc_ValueError) < 0) {
+        return -1;
+      }
+    }
+    if (PyErr_Occurred()) return -1;
+  }
+  return PyErr_Occurred() ? -1 : 0;
+}
+#endif
+
 static int PyUpb_Message_Init(PyObject* _self, PyObject* args,
                               PyObject* kwargs) {
   if (args != NULL && PyTuple_Size(args) != 0) {
@@ -633,7 +748,11 @@ static int PyUpb_Message_Init(PyObject* _self, PyObject* args,
     return -1;
   }
 
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_InitAttributesPublic(_self, args, kwargs);
+#else
   return PyUpb_Message_InitAttributes(_self, args, kwargs);
+#endif
 }
 
 static PyObject* PyUpb_Message_NewStub(PyObject* parent, const upb_FieldDef* f,
