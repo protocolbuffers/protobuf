@@ -1797,11 +1797,29 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
   return PyLong_FromSsize_t(size);
 }
 
-static PyObject* PyUpb_Message_ParseFromString(PyObject* self, PyObject* arg) {
+static PyObject* PyUpb_Message_ParseFromStringUnprotected(PyObject* self,
+                                                           PyObject* arg) {
   PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)self);
   if (!tmp) return NULL;
   Py_DECREF(tmp);
   return PyUpb_Message_MergeFromString(self, arg);
+}
+
+static PyObject* PyUpb_Message_ParseFromString(PyObject* self, PyObject* arg) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_ParseFromStringUnprotected(self, arg);
+#else
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_ParseFromStringUnprotected(self, arg);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_Message_ByteSize(PyObject* self, PyObject* args) {
