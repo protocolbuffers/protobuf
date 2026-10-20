@@ -8,10 +8,11 @@
 #ifndef GOOGLE_PROTOBUF_METADATA_LITE_H__
 #define GOOGLE_PROTOBUF_METADATA_LITE_H__
 
+#include <cstdint>
 #include <string>
+#include <utility>
 
 #include "absl/base/optimization.h"
-#include "absl/log/absl_check.h"
 #include "google/protobuf/arena.h"
 
 // Must be included last.
@@ -58,44 +59,29 @@ class PROTOBUF_EXPORT InternalMetadata {
   template <typename T>
   void Delete() {
     // Note that Delete<> should be called not more than once.
-    if (have_unknown_fields()) {
+    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
       DeleteOutOfLineHelper<T>();
     }
   }
 
   PROTOBUF_NDEBUG_INLINE Arena* arena() const {
-    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
-      return PtrValue<ContainerBase>()->arena;
-    } else {
-      return PtrValue<Arena>();
-    }
+    return reinterpret_cast<Arena*>(ptr_ & kPtrValueMask);
   }
 
   PROTOBUF_NDEBUG_INLINE bool have_unknown_fields() const {
     return HasUnknownFieldsTag();
   }
 
-  PROTOBUF_NDEBUG_INLINE void* raw_arena_ptr() const {
-    return reinterpret_cast<void*>(ptr_);
-  }
-
   template <typename T>
   PROTOBUF_NDEBUG_INLINE const T& unknown_fields(
       const T& (*default_instance)()) const {
-    if (ABSL_PREDICT_FALSE(have_unknown_fields())) {
-      return PtrValue<Container<T>>()->unknown_fields;
-    } else {
-      return default_instance();
-    }
+    if (ABSL_PREDICT_TRUE(!have_unknown_fields())) return default_instance();
+    return unknown_fields_slow<T>();
   }
 
   template <typename T>
   PROTOBUF_NDEBUG_INLINE T* mutable_unknown_fields() {
-    if (ABSL_PREDICT_TRUE(have_unknown_fields())) {
-      return &PtrValue<Container<T>>()->unknown_fields;
-    } else {
-      return mutable_unknown_fields_slow<T>();
-    }
+    return mutable_unknown_fields_slow<T>();
   }
 
   template <typename T>
@@ -113,7 +99,12 @@ class PROTOBUF_EXPORT InternalMetadata {
 
   PROTOBUF_NDEBUG_INLINE void InternalSwap(
       InternalMetadata* PROTOBUF_RESTRICT other) {
-    std::swap(ptr_, other->ptr_);
+    if (ABSL_PREDICT_FALSE(have_unknown_fields() ||
+                           other->have_unknown_fields())) {
+      SwapSlow(other);
+    } else {
+      std::swap(ptr_, other->ptr_);
+    }
   }
 
   template <typename T>
@@ -143,52 +134,16 @@ class PROTOBUF_EXPORT InternalMetadata {
     return ptr_ & kUnknownFieldsTagMask;
   }
 
-  template <typename U>
-  U* PtrValue() const {
-    if constexpr (std::is_same_v<U, Arena>) {
-      // No mask to remove.
-      ABSL_DCHECK_EQ(ptr_ & kPtrTagMask, 0);
-      return reinterpret_cast<U*>(ptr_);
-    } else {
-      static_assert(kPtrTagMask == 1);
-      ABSL_DCHECK_EQ(ptr_ & kPtrTagMask, kPtrTagMask);
-      // We can remove the mask via -1, which is smaller asm and can be merged
-      // with other arithmetic operations.
-      // Eg PtrValue<Container>()->unknown_fields can merge the offset into the
-      // mask removal.
-      return reinterpret_cast<U*>(ptr_ - kPtrTagMask);
-    }
-  }
-
-  // If ptr_'s tag is kTagContainer, it points to an instance of this struct.
-  struct ContainerBase {
-    Arena* arena;
-  };
+  template <typename T>
+  void DeleteOutOfLineHelper();
 
   template <typename T>
-  struct Container : public ContainerBase {
-    T unknown_fields;
-  };
+  T* mutable_unknown_fields_slow();
 
   template <typename T>
-  PROTOBUF_NOINLINE void DeleteOutOfLineHelper() {
-    delete PtrValue<Container<T>>();
-    // TODO:  This store is load-bearing.  Since we are destructing
-    // the message at this point, see if we can eliminate it.
-    ptr_ = 0;
-  }
+  const T& unknown_fields_slow() const;
 
-  template <typename T>
-  PROTOBUF_NOINLINE T* mutable_unknown_fields_slow() {
-    Arena* my_arena = arena();
-    Container<T>* container = Arena::Create<Container<T>>(my_arena);
-    // Two-step assignment works around a bug in clang's static analyzer:
-    // https://bugs.llvm.org/show_bug.cgi?id=34198.
-    ptr_ = reinterpret_cast<intptr_t>(container);
-    ptr_ |= kUnknownFieldsTagMask;
-    container->arena = my_arena;
-    return &(container->unknown_fields);
-  }
+  void SwapSlow(InternalMetadata* other);
 
   // Templated functions.
 
@@ -220,6 +175,12 @@ PROTOBUF_EXPORT void InternalMetadata::DoMergeFrom<std::string>(
     const std::string& other);
 template <>
 PROTOBUF_EXPORT void InternalMetadata::DoSwap<std::string>(std::string* other);
+extern template PROTOBUF_EXPORT void
+InternalMetadata::DeleteOutOfLineHelper<std::string>();
+extern template PROTOBUF_EXPORT std::string*
+InternalMetadata::mutable_unknown_fields_slow<std::string>();
+extern template PROTOBUF_EXPORT const std::string&
+InternalMetadata::unknown_fields_slow<std::string>() const;
 
 // Instantiated once in message.cc (where the definition of UnknownFieldSet is
 // known) to prevent much duplication across translation units of a large build.
@@ -233,6 +194,8 @@ extern template PROTOBUF_EXPORT void
 InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
 extern template PROTOBUF_EXPORT UnknownFieldSet*
 InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
+extern template PROTOBUF_EXPORT const UnknownFieldSet&
+InternalMetadata::unknown_fields_slow<UnknownFieldSet>() const;
 
 // This helper RAII class is needed to efficiently parse unknown fields. We
 // should only call mutable_unknown_fields if there are actual unknown fields.

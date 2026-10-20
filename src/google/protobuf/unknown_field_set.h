@@ -426,22 +426,6 @@ inline void UnknownField::SetType(Type type) { type_ = type; }
 
 extern template void UnknownFieldSet::AddLengthDelimited(int, std::string&&);
 
-namespace internal {
-
-// Add specialization of InternalMetadata::Container to provide arena support.
-template <>
-struct InternalMetadata::Container<UnknownFieldSet>
-    : public InternalMetadata::ContainerBase {
-  UnknownFieldSet unknown_fields;
-
-  explicit Container(Arena* input_arena)
-      : unknown_fields(InternalVisibility{}, input_arena) {}
-
-  using InternalArenaConstructable_ = void;
-  using DestructorSkippable_ = void;
-};
-}  // namespace internal
-
 
 }  // namespace protobuf
 }  // namespace google
