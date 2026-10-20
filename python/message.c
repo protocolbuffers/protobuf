@@ -1337,8 +1337,8 @@ __attribute__((flatten)) static PyObject* PyUpb_Message_GetAttr(
  * Implements:
  *   msg.foo = foo
  */
-static int PyUpb_Message_SetAttr(PyObject* _self, PyObject* attr,
-                                 PyObject* value) {
+static int PyUpb_Message_SetAttrUnprotected(PyObject* _self, PyObject* attr,
+                                            PyObject* value) {
   PyUpb_Message* self = (void*)_self;
 
   if (value == NULL) {
@@ -1353,6 +1353,24 @@ static int PyUpb_Message_SetAttr(PyObject* _self, PyObject* attr,
   }
 
   return PyUpb_Message_SetFieldValue(_self, field, value, PyExc_AttributeError);
+}
+
+static int PyUpb_Message_SetAttr(PyObject* self, PyObject* attr,
+                                PyObject* value) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_Message_SetAttrUnprotected(self, attr, value);
+#else
+  PyObject* arena = ((PyUpb_Message*)self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  int result = PyUpb_Message_SetAttrUnprotected(self, attr, value);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+#endif
 }
 
 static PyObject* PyUpb_Message_HasField(PyObject* _self, PyObject* arg) {
