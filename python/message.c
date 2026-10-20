@@ -974,7 +974,7 @@ static bool PyUpb_Message_SyncSubobjs(PyUpb_Message* self) {
                                      self->arena, self);
 }
 
-static PyObject* PyUpb_Message_ToString(PyUpb_Message* self) {
+static PyObject* PyUpb_Message_ToStringUnprotected(PyUpb_Message* self) {
   if (PyUpb_Message_IsStub(self)) {
     return PyUnicode_FromStringAndSize(NULL, 0);
   }
@@ -996,6 +996,19 @@ static PyObject* PyUpb_Message_ToString(PyUpb_Message* self) {
   }
 }
 
+static PyObject* PyUpb_Message_ToString(PyUpb_Message* self) {
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_ToStringUnprotected(self);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+}
+
 static PyObject* PyUpb_Message_RichCompare(PyObject* _self, PyObject* other,
                                            int opid) {
   PyUpb_Message* self = (void*)_self;
@@ -1014,7 +1027,26 @@ static PyObject* PyUpb_Message_RichCompare(PyObject* _self, PyObject* other,
     Py_INCREF(Py_NotImplemented);
     return Py_NotImplemented;
   }
+  PyObject* self_arena = self->arena;
+  PyObject* other_arena = ((PyUpb_Message*)other)->arena;
+  Py_INCREF(self_arena);
+  Py_INCREF(other_arena);
+  if (!PyUpb_Arena_TryRead(self_arena)) {
+    Py_DECREF(self_arena);
+    Py_DECREF(other_arena);
+    return NULL;
+  }
+  if (other_arena != self_arena && !PyUpb_Arena_TryRead(other_arena)) {
+    PyUpb_Arena_EndRead(self_arena);
+    Py_DECREF(self_arena);
+    Py_DECREF(other_arena);
+    return NULL;
+  }
   bool ret = PyUpb_Message_IsEqual(self, other);
+  if (other_arena != self_arena) PyUpb_Arena_EndRead(other_arena);
+  PyUpb_Arena_EndRead(self_arena);
+  Py_DECREF(self_arena);
+  Py_DECREF(other_arena);
   if (opid == Py_NE) ret = !ret;
   return PyBool_FromLong(ret);
 }
@@ -1820,7 +1852,16 @@ fail:
 
 static PyObject* PyUpb_Message_SetInParent(PyObject* _self, PyObject* arg) {
   PyUpb_Message* self = (void*)_self;
-  if (!PyUpb_Message_AssureWritable(self)) return NULL;
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  bool writable = PyUpb_Message_AssureWritable(self);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  if (!writable) return NULL;
   Py_RETURN_NONE;
 }
 
@@ -2093,6 +2134,19 @@ static PyObject* PyUpb_Message_Clear(PyUpb_Message* self) {
   Py_RETURN_NONE;
 }
 
+static PyObject* PyUpb_Message_ClearPublic(PyObject* _self, PyObject* arg) {
+  PyObject* arena = ((PyUpb_Message*)_self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_Clear((PyUpb_Message*)_self);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
+}
+
 bool PyUpb_Message_DoClearField(PyObject* _self, const upb_FieldDef* f) {
   PyUpb_Message* self = (void*)_self;
   if (!PyUpb_Message_AssureWritable((PyUpb_Message*)self)) return false;
@@ -2179,13 +2233,27 @@ static PyObject* PyUpb_Message_ClearField(PyObject* self, PyObject* arg) {
 #endif
 }
 
-static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
-                                                    PyObject* arg) {
+static PyObject* PyUpb_Message_DiscardUnknownFieldsUnprotected(
+    PyUpb_Message* self, PyObject* arg) {
   if (!PyUpb_Message_AssureWritable(self)) return NULL;
   const upb_MessageDef* msgdef = _PyUpb_Message_GetMsgdef(self);
   const upb_DefPool* ext_pool = upb_FileDef_Pool(upb_MessageDef_File(msgdef));
   upb_Message_DiscardUnknown(self->ptr.msg, msgdef, ext_pool, 64);
   Py_RETURN_NONE;
+}
+
+static PyObject* PyUpb_Message_DiscardUnknownFields(PyUpb_Message* self,
+                                                    PyObject* arg) {
+  PyObject* arena = self->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_DiscardUnknownFieldsUnprotected(self, arg);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 static PyObject* PyUpb_Message_FindInitializationErrorsUnprotected(
@@ -2300,7 +2368,6 @@ const upb_FieldDef* PyUpb_Message_GetExtensionDef(PyObject* _self,
 
 static PyObject* PyUpb_Message_HasExtension(PyObject* _self,
                                             PyObject* ext_desc) {
-  upb_Message* msg = PyUpb_Message_GetIfReified(_self);
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(_self, ext_desc);
   if (!f) return NULL;
   if (upb_FieldDef_IsRepeated(f)) {
@@ -2308,8 +2375,17 @@ static PyObject* PyUpb_Message_HasExtension(PyObject* _self,
                     "Field is repeated. A singular method is required.");
     return NULL;
   }
-  if (!msg) Py_RETURN_FALSE;
-  return PyBool_FromLong(upb_Message_HasFieldByDef(msg, f));
+  PyObject* arena = ((PyUpb_Message*)_self)->arena;
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  upb_Message* msg = PyUpb_Message_GetIfReified(_self);
+  PyObject* result = PyBool_FromLong(msg && upb_Message_HasFieldByDef(msg, f));
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 void PyUpb_Message_ReportInitializationErrors(const upb_MessageDef* msgdef,
@@ -2524,7 +2600,7 @@ static PyMethodDef PyUpb_Message_Methods[] = {
      "Checks if a message field is set."},
     {"ByteSize", (PyCFunction)PyUpb_Message_ByteSize, METH_NOARGS,
      "Returns the size of the message in bytes."},
-    {"Clear", (PyCFunction)PyUpb_Message_Clear, METH_NOARGS,
+    {"Clear", PyUpb_Message_ClearPublic, METH_NOARGS,
      "Clears the message."},
     {"ClearExtension", PyUpb_Message_ClearExtension, METH_O,
      "Clears a message field."},

@@ -1480,6 +1480,58 @@ class FreeThreadingTest(unittest.TestCase):
 
     self.assertEqual(errors, [])
 
+  def testMessageSurfaceRejectsOverlappingMutation(self):
+    if api_implementation.Type() != 'upb' or getattr(
+        sys, '_is_gil_enabled', lambda: True
+    )():
+      self.skipTest('requires the experimental GIL-off upb backend')
+
+    def Race(writer, reader):
+      barrier = threading.Barrier(2)
+
+      def Run(operation):
+        rejected = 0
+        barrier.wait(timeout=30)
+        for number in range(1000):
+          try:
+            operation(number)
+          except RuntimeError as exc:
+            self.assertIn('concurrent mutation', str(exc))
+            rejected += 1
+        return rejected
+
+      with futures.ThreadPoolExecutor(max_workers=2) as executor:
+        jobs = [executor.submit(Run, writer), executor.submit(Run, reader)]
+        return [job.result() for job in jobs]
+
+    msg = unittest_pb2.TestAllTypes(optional_int32=1)
+    other = unittest_pb2.TestAllTypes(optional_int32=1)
+    self.assertEqual(len(Race(
+        lambda number: (setattr(msg, 'optional_int32', number), msg.Clear()),
+        lambda _: (str(msg), msg == other),
+    )), 2)
+
+    msg = unittest_pb2.TestAllTypes()
+    child = msg.optional_nested_message
+    self.assertEqual(len(Race(
+        lambda _: child.SetInParent(),
+        lambda _: msg.SerializePartialToString(),
+    )), 2)
+
+    msg = unittest_pb2.TestAllTypes()
+    self.assertEqual(len(Race(
+        lambda _: (msg.MergeFromString(b'\xa8\x01\x7f'),
+                   msg.DiscardUnknownFields()),
+        lambda _: msg.SerializePartialToString(),
+    )), 2)
+
+    msg = unittest_pb2.TestAllExtensions()
+    extension = unittest_pb2.optional_int32_extension
+    self.assertEqual(len(Race(
+        lambda number: msg.Extensions.__setitem__(extension, number),
+        lambda _: msg.HasExtension(extension),
+    )), 2)
+
   def testIsolatedSubinterpreterNativeLifecycle(self):
     if api_implementation.Type() != 'upb' or getattr(
         sys, '_is_gil_enabled', lambda: True
