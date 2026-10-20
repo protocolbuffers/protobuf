@@ -1480,6 +1480,40 @@ class FreeThreadingTest(unittest.TestCase):
 
     self.assertEqual(errors, [])
 
+  def testIsolatedSubinterpreterNativeLifecycle(self):
+    if api_implementation.Type() != 'upb' or getattr(
+        sys, '_is_gil_enabled', lambda: True
+    )():
+      self.skipTest('requires the experimental GIL-off upb backend')
+    try:
+      import _interpreters
+    except ImportError:
+      self.skipTest('isolated subinterpreters are unavailable')
+
+    for iteration in range(3):
+      child = _interpreters.create('isolated')
+      try:
+        code = f'''
+import sys
+sys.path[:] = {sys.path!r}
+from google.protobuf import descriptor_pb2, descriptor_pool, message_factory
+from google.protobuf.internal import api_implementation
+assert api_implementation.Type() == 'upb'
+assert not sys._is_gil_enabled()
+file = descriptor_pb2.FileDescriptorProto(name='isolated_{iteration}.proto')
+field = file.message_type.add(name='Isolated').field.add()
+field.name, field.number, field.type, field.label = 'value', 1, 5, 1
+pool = descriptor_pool.DescriptorPool()
+pool.Add(file)
+cls = message_factory.GetMessageClass(
+    pool.FindMessageTypeByName('Isolated'))
+value = cls(value={iteration})
+assert cls.FromString(value.SerializeToString()) == value
+'''
+        self.assertIsNone(_interpreters.run_string(child, code))
+      finally:
+        _interpreters.destroy(child)
+
 
 if __name__ == '__main__':
   print(
