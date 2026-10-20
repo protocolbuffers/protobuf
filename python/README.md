@@ -55,12 +55,16 @@ assert api_implementation.Type() == "upb"
 assert not sys._is_gil_enabled()
 ```
 
-This opt-in is **not a release or general thread-safety claim**. Concurrent
-mutation and serialization of the same mutable message currently produces a
-native data race under ThreadSanitizer. Do not share mutable messages across
-threads without application-level synchronization. Subinterpreter support and
-arbitrary late interpreter teardown are also unqualified. The ordinary build
-keeps the experimental declaration disabled.
+This opt-in is **not a release or general thread-safety claim**. Audited native
+message paths reject overlapping access to a mutable arena with `RuntimeError`
+instead of locking or copying the message. That includes field mutation,
+serialization, parsing, message clearing, extension clearing, and unknown-field
+snapshotting, with targeted ThreadSanitizer regression coverage. This coverage
+is still incomplete: do not share mutable messages across threads without
+application-level synchronization. Native isolated-subinterpreter lifecycle
+has targeted sanitizer coverage, but arbitrary interpreter teardown and full
+distribution qualification remain open. The ordinary build keeps the
+experimental declaration disabled.
 
 ## Building from `setup.py`
 
