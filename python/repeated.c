@@ -1770,13 +1770,63 @@ static PyObject* PyUpb_RepeatedScalarContainer_AsNpArray(PyObject* _self,
   static const char* kwlist[] = {"dtype", "copy", NULL};
   PyObject* dtype_requested = NULL;
   PyObject* copy = NULL;
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   PyObject* return_value = NULL;
-  PyObject* default_dtype = NULL;
   PyObject* nparray = NULL;
+#endif
+  PyObject* default_dtype = NULL;
   if (!PyArg_ParseTupleAndKeywords(args, kwargs, "|OO", (char**)kwlist,
                                    &dtype_requested, &copy)) {
     return NULL;
   }
+
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  // Never expose an upb_Array_DataPtr-backed view after read admission ends.
+  // NumPy instead receives an owned, stable snapshot of Python scalar values.
+  PyObject* snapshot = PyUpb_RepeatedContainer_ToList(_self);
+  if (!snapshot) return NULL;
+  PyObject* np_module = PyImport_ImportModule("numpy");
+  PyObject* array_method =
+      np_module ? PyObject_GetAttrString(np_module, "array") : NULL;
+  PyObject* call_args = array_method ? PyTuple_Pack(1, snapshot) : NULL;
+  PyObject* call_kwargs = call_args ? PyDict_New() : NULL;
+  PyObject* result = NULL;
+  if (!np_module && PyErr_ExceptionMatches(PyExc_ImportError)) {
+    PyErr_Clear();
+    PyErr_SetString(PyExc_ImportError, "Unable to import numpy.");
+  }
+  if (!call_kwargs) goto snapshot_done;
+  const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(
+      (PyUpb_RepeatedContainer*)_self);
+  upb_CType c_type = upb_FieldDef_CType(f);
+  if (!dtype_requested) {
+    const char* default_name = c_type == kUpb_CType_String ? "str" :
+                               c_type == kUpb_CType_Bytes  ? "S" :
+                               GetDefaultDTypeStr(c_type);
+    if (!default_name) {
+      PyErr_SetString(PyExc_SystemError,
+                      "Implementation error: Unhandled repeated field type.");
+      goto snapshot_done;
+    }
+    default_dtype = PyUnicode_FromString(default_name);
+    if (!default_dtype) goto snapshot_done;
+    dtype_requested = default_dtype;
+  }
+  if (PyDict_SetItemString(call_kwargs, "dtype", dtype_requested) < 0 ||
+      PyDict_SetItemString(call_kwargs, "copy", Py_True) < 0) {
+    goto snapshot_done;
+  }
+  result = PyObject_Call(array_method, call_args, call_kwargs);
+
+snapshot_done:
+  Py_XDECREF(default_dtype);
+  Py_XDECREF(call_kwargs);
+  Py_XDECREF(call_args);
+  Py_XDECREF(array_method);
+  Py_XDECREF(np_module);
+  Py_DECREF(snapshot);
+  return result;
+#else
 
   PyObject* np_module = PyImport_ImportModule("numpy");
   if (np_module == NULL) {
@@ -1833,6 +1883,7 @@ ret:
   Py_XDECREF(nparray);
   Py_DECREF(np_module);
   return return_value;
+#endif
 }
 
 static PyMethodDef PyUpb_RepeatedScalarContainer_Methods[] = {
