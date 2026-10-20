@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include "google/protobuf/descriptor.upb_minitable.h"
+#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -193,7 +194,11 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
     upb_Message_ClearFieldByDef(opts2, field);
   }
 
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
   upb_Message_Freeze(opts2, opts2_layout);
+#else
+  PyUpb_Arena_SetFrozen(py_arena, true);
+#endif
   PyObject* val = PyUpb_Message_Get(default_pool, opts2, m, py_arena);
   Py_DECREF(py_arena);
   return val;

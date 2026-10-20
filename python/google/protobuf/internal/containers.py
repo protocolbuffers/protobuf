@@ -19,6 +19,7 @@ are:
 import collections.abc
 import copy
 import pickle
+import warnings
 from typing import (
     Any,
     Iterable,
@@ -44,7 +45,12 @@ from google.protobuf import message
 
 def _CheckFrozen(is_frozen: bool, msg: str) -> None:
   if is_frozen:
-    raise message.FrozenInstanceError(msg)
+    warnings.warn(
+        'Mutating messages or containers returned by GetOptions() is'
+        ' deprecated and will raise an exception in a future release.',
+        category=FutureWarning,
+        stacklevel=3,
+    )
 
 
 class BaseContainer(Sequence[_T]):

@@ -1238,7 +1238,8 @@ bool PyUpb_Message_IsFrozen(PyObject* _self) {
   while (PyUpb_Message_IsStub(self)) {
     self = self->ptr.parent;
   }
-  bool is_frozen = upb_Message_IsFrozen(self->ptr.msg);
+  bool is_frozen =
+      upb_Message_IsFrozen(self->ptr.msg) || PyUpb_Arena_IsFrozen(self->arena);
   // Invariant: Since we only store the parent *message* (and not any parent
   // repeated field or map) in a stub's `ptr.parent`, we wouldn't correctly
   // handle the case where a parent message is unfrozen but a containing

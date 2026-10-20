@@ -167,7 +167,7 @@ bool PyUpb_MapContainer_IsFrozen(PyUpb_MapContainer* self) {
   if (PyUpb_MapContainer_IsStub(self)) {
     return PyUpb_Message_IsFrozen(self->ptr.parent);
   } else {
-    return upb_Map_IsFrozen(self->ptr.map);
+    return upb_Map_IsFrozen(self->ptr.map) || PyUpb_Arena_IsFrozen(self->arena);
   }
 }
 
