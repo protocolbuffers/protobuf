@@ -1532,6 +1532,15 @@ class FreeThreadingTest(unittest.TestCase):
         lambda _: msg.HasExtension(extension),
     )), 2)
 
+    stable = unittest_pb2.TestAllTypes()
+    stable.repeated_int32.append(1)
+    changing = unittest_pb2.TestAllTypes()
+    changing.repeated_int32.append(1)
+    self.assertEqual(len(Race(
+        lambda number: changing.repeated_int32.__setitem__(0, number),
+        lambda _: stable.repeated_int32 == changing.repeated_int32,
+    )), 2)
+
   def testIsolatedSubinterpreterNativeLifecycle(self):
     if api_implementation.Type() != 'upb' or getattr(
         sys, '_is_gil_enabled', lambda: True

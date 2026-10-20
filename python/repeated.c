@@ -737,10 +737,15 @@ static PyObject* PyUpb_RepeatedContainer_RichCompare(PyObject* _self,
     return Py_NotImplemented;
   }
   PyObject* list1 = PyUpb_RepeatedContainer_ToList(_self);
+  if (!list1) return NULL;
   PyObject* list2 = _other;
   PyObject* del = NULL;
   if (PyObject_TypeCheck(_other, _self->ob_type)) {
     del = list2 = PyUpb_RepeatedContainer_ToList(_other);
+    if (!list2) {
+      Py_DECREF(list1);
+      return NULL;
+    }
   }
   PyObject* ret = PyObject_RichCompare(list1, list2, opid);
   Py_DECREF(list1);
