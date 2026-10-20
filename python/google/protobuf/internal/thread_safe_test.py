@@ -9,6 +9,7 @@
 
 from concurrent import futures
 import gc
+import os
 import subprocess
 import sys
 import threading
@@ -30,6 +31,15 @@ from google.protobuf import unittest_proto3_pb2
 
 # Enable this to run the benchmarks.
 ALSO_RUN_BENCHMARKS = False
+
+
+def _subprocess_env():
+  # Bazel's Python launcher sets up runfiles on sys.path, but `python -S`
+  # children do not inherit that in-process setup. Keep the test's exact
+  # generated protos and native extension visible to child interpreters.
+  env = os.environ.copy()
+  env['PYTHONPATH'] = os.pathsep.join(os.path.abspath(path) for path in sys.path)
+  return env
 
 
 @testing_refleaks.TestCase
@@ -90,6 +100,7 @@ setattr(_message, "MapIterator", refs["MapIterator"]())
     result = subprocess.run(
         [sys.executable, '-S', '-c', script, 'nogil' if nogil else 'gil'],
         capture_output=True, text=True, timeout=60, check=False,
+        env=_subprocess_env(),
     )
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
@@ -126,6 +137,7 @@ atexit.register(collect_at_exit)
         [sys.executable, '-S', '-c', script, api_implementation.Type(),
          'nogil' if nogil else 'gil'],
         capture_output=True, text=True, timeout=60, check=False,
+        env=_subprocess_env(),
     )
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
     self.assertEqual(result.stdout.count('native shutdown finalizer completed'), 1)
@@ -163,6 +175,7 @@ if sys.argv[2] == "nogil":
         [sys.executable, '-S', '-c', script, api_implementation.Type(),
          'nogil' if nogil else 'gil'],
         capture_output=True, text=True, timeout=90, check=False,
+        env=_subprocess_env(),
     )
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
