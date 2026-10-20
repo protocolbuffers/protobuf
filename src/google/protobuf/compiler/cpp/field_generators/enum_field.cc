@@ -86,7 +86,7 @@ class SingularEnum : public FieldGeneratorBase {
 
   void GenerateMergingCode(io::Printer* p) const override {
     p->Emit(R"cc(
-      $this_mutable_field$ = $from_field$;
+      this_.$field_$ = $from_field$;
     )cc");
   }
 

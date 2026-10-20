@@ -275,7 +275,7 @@ void EmitNonDefaultCheckForString(io::Printer* p, absl::string_view prefix,
       R"cc(
         if ($condition$) {
           $emit_body$;
-        } else if ($this_field$.IsDefault()) {
+        } else if (this_.$field_$.IsDefault()) {
           this_._internal_set_$name$("");
         }
       )cc");
@@ -3316,15 +3316,15 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   // TODO:  Let the CppFieldGenerator decide this somehow.
   const auto emit_memset = [&](const FieldDescriptor* start,
                                const FieldDescriptor* end) {
+    auto v = p->WithVars(FieldVars(start, options_));
     p->Emit(
         {
             {"Impl", is_split ? "Impl_::Split" : "Impl_"},
-            {"start", FieldMemberName(start, is_split)},
             {"start_field", FieldName(start)},
             {"end_field", FieldName(end)},
         },
         R"cc(
-          ::memset(&this_.$start$, 0,
+          ::memset(&$this_mutable_field$, 0,
                    PROTOBUF_FIELD_OFFSET($Impl$, $end_field$_) -
                        PROTOBUF_FIELD_OFFSET($Impl$, $start_field$_) +
                        sizeof($Impl$::$end_field$_));
@@ -5314,16 +5314,19 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                     delete $cached_split_ptr$;
                   }
                   PROTOBUF_NOINLINE static void MergeSplit($Msg$& this_, const $Msg$& from) {
+                    auto* const from_cached_split_ptr = from._impl_._split_;
                     $get_arena_merge$;
                     ::uint32_t cached_has_bits [[maybe_unused]] = 0;
                     $merge_fields$;
                   }
                   PROTOBUF_NOINLINE static void ClearSplit($Msg$& this_) {
+                    auto* const $cached_split_ptr$ = this_._impl_._split_;
                     ::uint32_t cached_has_bits [[maybe_unused]] = 0;
                     $clear_fields$;
                   }
 
                   PROTOBUF_NOINLINE static ::size_t ByteSizeSplit(const $Msg$& this_) {
+                    auto* const $cached_split_ptr$ [[maybe_unused]] = this_._impl_._split_;
                     ::size_t total_size = 0;
                     ::uint32_t cached_has_bits [[maybe_unused]] = 0;
                     $byte_size_fields$;

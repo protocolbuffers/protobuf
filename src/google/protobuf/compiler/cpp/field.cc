@@ -65,11 +65,16 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
-      {"this_field",
-       add_as_const(absl::StrCat("this_.", FieldMemberName(field, split)))},
+      {"this_field", split ? add_as_const(absl::StrCat("cached_split_ptr->",
+                                                       FieldName(field), "_"))
+                           : add_as_const(absl::StrCat(
+                                 "this_.", FieldMemberName(field, split)))},
       {"this_mutable_field",
-       absl::StrCat("this_.", FieldMemberName(field, split))},
-      {"from_field", absl::StrCat("from.", FieldMemberName(field, split))},
+       split ? absl::StrCat("cached_split_ptr->", FieldName(field), "_")
+             : absl::StrCat("this_.", FieldMemberName(field, split))},
+      {"from_field",
+       split ? absl::StrCat("from_cached_split_ptr->", FieldName(field), "_")
+             : absl::StrCat("from.", FieldMemberName(field, split))},
 
       {"field_", FieldMemberName(field, split)},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
