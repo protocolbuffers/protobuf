@@ -124,12 +124,17 @@ TEST_F(AccessTest, NativeStorageIsProtectedUnderContention) {
   }
   start.store(true, std::memory_order_release);
   for (auto& worker : workers) worker.join();
-  // Fail-fast admission promises neither writer priority nor eventual success:
-  // uninterrupted overlapping readers may reject every writer attempt. The
-  // deterministic handoff test below separately requires successful writers.
-  EXPECT_GT(reads.load(), 0);
+  // Fail-fast admission promises neither reader nor writer fairness. Either
+  // group can exhaust its finite attempts while another group owns admission.
+  // Require aggregate progress here; the deterministic handoff test below
+  // separately requires successful reads and writes on every iteration.
+  EXPECT_GT(reads.load() + writes.load(), 0);
   EXPECT_EQ(value, writes.load());
   EXPECT_EQ(value, mirror);
+  // No rejected attempt may leak ownership: both modes must work after join.
+  ASSERT_TRUE(PyUpb_Access_TryRead(access));
+  EXPECT_EQ(value, mirror);
+  PyUpb_Access_EndRead(access);
   ASSERT_TRUE(PyUpb_Access_TryWrite(access));
   PyUpb_Access_EndWrite(access);
 }

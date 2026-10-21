@@ -1009,6 +1009,106 @@ if sys.argv[2] == "nogil":
       self.assertEqual(first.result(timeout=60).name, 'first.proto')
       self.assertEqual(second.result(timeout=60), 'second.proto')
 
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testOpposingCopiesAndPoolCallbacksComplete(self):
+    # A subprocess bounds interpreter/executor cleanup as well as each future.
+    script = r"""
+from concurrent.futures import ThreadPoolExecutor
+import gc
+import threading
+from google.protobuf import descriptor_database, descriptor_pb2, descriptor_pool
+from google.protobuf import unittest_pb2
+
+# Two threads enter different pool critical sections, then call into the
+# opposite pool. A non-suspendable pool lock would form an AB/BA cycle.
+barrier = threading.Barrier(2)
+pools = []
+class Database(descriptor_database.DescriptorDatabase):
+  def __init__(self, index):
+    self.index = index
+  def FindFileByName(self, name):
+    if name.startswith('outer'):
+      barrier.wait(timeout=10)
+      other = pools[1 - self.index]
+      assert other.FindFileByName('leaf.proto').name == 'leaf.proto'
+    return descriptor_pb2.FileDescriptorProto(name=name)
+
+pools.extend(descriptor_pool.DescriptorPool(Database(i)) for i in range(2))
+with ThreadPoolExecutor(max_workers=2) as workers:
+  tasks = [workers.submit(pool.FindFileByName, f'outer{i}.proto')
+           for i, pool in enumerate(pools)]
+  assert [t.result(timeout=20).name for t in tasks] == [
+      'outer0.proto', 'outer1.proto']
+
+# CopyFrom acquires destination-write and source-read admission. Opposing
+# copies must fail fast or complete, never wait for each other's ownership.
+messages = [unittest_pb2.TestAllTypes(optional_int32=i) for i in range(2)]
+barrier = threading.Barrier(2)
+def copy(index):
+  barrier.wait(timeout=10)
+  completed = rejected = 0
+  for _ in range(2000):
+    try:
+      messages[index].CopyFrom(messages[1 - index])
+      completed += 1
+    except RuntimeError as error:
+      assert 'concurrent mutation' in str(error)
+      rejected += 1
+  return completed, rejected
+with ThreadPoolExecutor(max_workers=2) as workers:
+  results = [workers.submit(copy, i) for i in range(2)]
+  counts = [t.result(timeout=20) for t in results]
+assert sum(sum(c) for c in counts) == 4000
+for message in messages:
+  message.Clear()
+  message.optional_int32 = 7
+  assert message.SerializeToString()
+del pools, messages
+gc.collect()
+print('opposing acquisitions completed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], capture_output=True,
+        text=True, timeout=60, check=False, env=_subprocess_env())
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('opposing acquisitions completed', result.stdout)
+
+  def testDescriptorDatabaseFinalizerReentersPool(self):
+    script = r"""
+from concurrent.futures import ThreadPoolExecutor
+import gc
+from google.protobuf import descriptor_database, descriptor_pb2, descriptor_pool
+pool = descriptor_pool.DescriptorPool()
+pool.Add(descriptor_pb2.FileDescriptorProto(name='finalizer_target.proto'))
+events = []
+errors = []
+with ThreadPoolExecutor(max_workers=1) as workers:
+  class Database(descriptor_database.DescriptorDatabase):
+    def __del__(self):
+      try:
+        result = workers.submit(
+            pool.FindFileByName, 'finalizer_target.proto').result(timeout=10)
+        events.append(result.name)
+      except BaseException as error:
+        errors.append(repr(error))
+  for _ in range(50):
+    owner = descriptor_pool.DescriptorPool(Database())
+    del owner
+    gc.collect()
+  assert not errors, errors
+  assert events == ['finalizer_target.proto'] * 50, events
+print('database finalizers completed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], capture_output=True,
+        text=True, timeout=90, check=False, env=_subprocess_env())
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('database finalizers completed', result.stdout)
+
   def testConcurrentOptionsCacheIdentity(self):
     pool = descriptor_pool.DescriptorPool()
     proto = descriptor_pb2.FileDescriptorProto(name='option_identity.proto')
