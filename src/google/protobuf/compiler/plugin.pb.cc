@@ -1364,7 +1364,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
 
 void CodeGeneratorResponse_File::clear_generated_code_info() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.generated_code_info_ != nullptr) _impl_.generated_code_info_->Clear();
+  if (auto* sub = _impl_.generated_code_info_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)

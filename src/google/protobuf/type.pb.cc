@@ -1025,7 +1025,7 @@ PROTOBUF_CONSTINIT const uint32_t Syntax_internal_data_[] = {
 
 void Type::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
+  if (auto* sub = _impl_.source_context_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
 }
 Type::Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -1910,7 +1910,7 @@ void Field::InternalSwap(Field* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 
 void Enum::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
+  if (auto* sub = _impl_.source_context_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
 }
 Enum::Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -2559,7 +2559,7 @@ void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 
 void Option::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.value_ != nullptr) _impl_.value_->Clear();
+  if (auto* sub = _impl_.value_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 Option::Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)

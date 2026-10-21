@@ -28,6 +28,7 @@
 #include "absl/base/call_once.h"
 #include "absl/base/casts.h"
 #include "absl/base/const_init.h"
+#include "absl/base/optimization.h"
 #include "absl/container/flat_hash_set.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
@@ -1877,36 +1878,44 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
       };
   // Core functionality difference depending on the value of kForIsEmpty. If we
   // encounter a set field, either return 1, or push it back into the vector.
-#define PROTO_REFLECTION_APPEND_OR_RETURN() \
-  do {                                      \
-    if constexpr (kForIsEmpty) {            \
-      return 1;                             \
-    } else {                                \
-      append_to_output(field);              \
-    }                                       \
+  // `set_field` is only evaluated when collecting fields.
+#define PROTO_REFLECTION_APPEND_OR_RETURN(set_field) \
+  do {                                               \
+    if constexpr (kForIsEmpty) {                     \
+      return 1;                                      \
+    } else {                                         \
+      append_to_output(set_field);                   \
+    }                                                \
   } while (false)
 
-  int i = -1;
-  for (const FieldDescriptor* field : internal::FieldRange(&descriptor)) {
-    ++i;
-    const OneofDescriptor* containing_oneof = field->containing_oneof();
-    if (schema_.InRealOneof(field)) {
-      uint32_t oneof_case = GetConstRefAtOffset<uint32_t>(
-          message, schema_.GetOneofCaseOffset(containing_oneof));
-      // Equivalent to: HasOneofField(message, field)
-      if (static_cast<int64_t>(oneof_case) == field->number()) {
-        PROTO_REFLECTION_APPEND_OR_RETURN();
+  const int field_count = descriptor.field_count();
+  for (int i = 0; i < field_count; ++i) {
+    const FieldDescriptor* field = descriptor.field(i);
+    // Taken once per oneof rather than once per member (see below), so this is
+    // the rare branch for almost every message.
+    if (ABSL_PREDICT_FALSE(schema_.InRealOneof(field))) {
+      const OneofDescriptor* containing_oneof = field->containing_oneof();
+      // Members of a oneof are declared consecutively, so this is the first
+      // member, and at most one member can be set. Rather than checking each
+      // member in turn, find the set member (if any) from the oneof case and
+      // skip over the rest, which is much faster for oneofs with many members.
+      ABSL_DCHECK_EQ(field, containing_oneof->field(0));
+      i += containing_oneof->field_count() - 1;
+      if (int oneof_case = GetOneofCase(message, containing_oneof);
+          oneof_case != 0) {
+        // Equivalent to: GetOneofFieldDescriptor(message, containing_oneof)
+        PROTO_REFLECTION_APPEND_OR_RETURN(
+            descriptor.FindFieldByNumber(oneof_case));
       }
-
     } else if (uint32_t hasbit_index =
                    schema_.HasBitIndex(field, /*field_index=*/i);
                hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
       // Equivalent to: HasFieldSingular(message, field)
       if (IsFieldPresentGivenHasbits(message, field, has_bits, hasbit_index)) {
-        PROTO_REFLECTION_APPEND_OR_RETURN();
+        PROTO_REFLECTION_APPEND_OR_RETURN(field);
       }
     } else if (HasFieldWithHasbits(message, field)) {
-      PROTO_REFLECTION_APPEND_OR_RETURN();
+      PROTO_REFLECTION_APPEND_OR_RETURN(field);
     }
   }
 #undef PROTO_REFLECTION_APPEND_OR_RETURN

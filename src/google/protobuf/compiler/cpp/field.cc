@@ -54,6 +54,9 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
                ? absl::StrFormat("::std::as_const(%s)", str)
                : str;
   };
+
+  auto split_address = absl::StrCat("&Impl_::Split::", FieldName(field), "_");
+
   std::vector<Sub> vars = {
       // This will eventually be renamed to "field", once the existing "field"
       // variable is replaced with "field_" everywhere.
@@ -65,26 +68,11 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
       {"number", field->number()},
       {"pkg.Msg.field", field->full_name()},
 
-      {"this_field", split ? add_as_const(absl::StrCat("cached_split_ptr->",
-                                                       FieldName(field), "_"))
-                           : add_as_const(absl::StrCat(
-                                 "this_.", FieldMemberName(field, split)))},
-      {"this_mutable_field",
-       split ? absl::StrCat("cached_split_ptr->", FieldName(field), "_")
-             : absl::StrCat("this_.", FieldMemberName(field, split))},
-      {"from_field",
-       split ? absl::StrCat("from_cached_split_ptr->", FieldName(field), "_")
-             : absl::StrCat("from.", FieldMemberName(field, split))},
-
-      {"field_", FieldMemberName(field, split)},
       {"DeclaredType", DeclaredTypeMethodName(field->type())},
       {"Oneof", field->real_containing_oneof() ? "Oneof" : ""},
       {"Utf8", IsStrictUtf8String(field, opts) ? "Utf8" : "Raw"},
       {"StrType", IsStrictUtf8String(field, opts) ? "String" : "Bytes"},
       {"kTagBytes", WireFormat::TagSize(field->number(), field->type())},
-      Sub("PrepareSplitMessageForWrite",
-          split ? "PrepareSplitMessageForWrite();" : "")
-          .WithSuffix(";"),
       Sub("DEPRECATED", DeprecatedAttribute(opts, field)).WithSuffix(" "),
 
       // These variables are placeholders to pick out the beginning and ends of
@@ -111,6 +99,48 @@ std::vector<Sub> FieldVars(const FieldDescriptor* field, const Options& opts) {
               : "")
           .WithSuffix(";"),
   };
+
+  // There are two kinds of field accesses here:
+  //  - field_, ensure_mutable_field_, try_mutable_field_
+  //    These access take a message prefix (or no prefix for `this`).
+  //    Eg `this_.$field_$`.
+  //
+  //    They will do the full lookup of the member.
+  //    Used when we are not iterating the object. Eg in a setter.
+  //
+  //  - this_field, this_mutable_field, from_field
+  //    These access the field directly from potentially a partial dereference.
+  //    You can't use a prefix on these.
+  //    They are optimized for full message iteration. Eg during ByteSize.
+  //    `this_mutable_field` on works when iterating the `this` object mutably,
+  //    and `from_field` only works when iterating a "from" object.
+  if (split) {
+    vars.push_back(
+        {"field_", absl::StrCat("GetSplitField_(", split_address, ")")});
+    vars.push_back({"ensure_mutable_field_",
+                    absl::StrCat("MutableSplitField_(", split_address, ")")});
+    vars.push_back({"try_mutable_field_", absl::StrCat("TryMutableSplitField_(",
+                                                       split_address, ")")});
+
+    vars.push_back(
+        {"this_field", add_as_const(absl::StrCat("cached_split_ptr->",
+                                                 FieldName(field), "_"))});
+    vars.push_back({"this_mutable_field",
+                    absl::StrCat("cached_split_ptr->", FieldName(field), "_")});
+    vars.push_back({"from_field", absl::StrCat("from_cached_split_ptr->",
+                                               FieldName(field), "_")});
+  } else {
+    vars.push_back({"field_", FieldMemberName(field, split)});
+    vars.push_back({"ensure_mutable_field_", FieldMemberName(field, split)});
+
+    vars.push_back(
+        {"this_field",
+         add_as_const(absl::StrCat("this_.", FieldMemberName(field, split)))});
+    vars.push_back({"this_mutable_field",
+                    absl::StrCat("this_.", FieldMemberName(field, split))});
+    vars.push_back(
+        {"from_field", absl::StrCat("from.", FieldMemberName(field, split))});
+  }
 
   if (const auto* oneof = field->containing_oneof()) {
     auto field_name = UnderscoresToCamelCase(field->name(), true);

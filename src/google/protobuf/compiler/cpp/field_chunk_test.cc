@@ -1,18 +1,23 @@
 #include "google/protobuf/compiler/cpp/field_chunk.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <numeric>
+#include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "absl/algorithm/container.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_layout.h"
+#include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/has_bits.h"
 #include "google/protobuf/unittest.pb.h"
+
 
 namespace google {
 namespace protobuf {
@@ -20,7 +25,7 @@ namespace compiler {
 namespace cpp {
 namespace {
 
-using proto2_unittest::TestAllTypes;
+using ::proto2_unittest::TestAllTypes;
 
 template <typename ProtoT>
 std::vector<const google::protobuf::FieldDescriptor*> CreateFieldArray(
@@ -130,6 +135,44 @@ TEST(GenChunkMaskTest, FullWordMaskFromFields) {
   EXPECT_EQ(GenChunkMask(hasbit_fields.subspan(0, 32), exact_word_layout),
             ~uint32_t{0});
 }
+
+FieldChunk CreateChunkWithFirstNFields(const Descriptor* descriptor, int n,
+                                       bool has_hasbit = true) {
+  ABSL_CHECK_LE(n, descriptor->field_count());
+  FieldChunk chunk(has_hasbit);
+  for (int i = 0; i < n; ++i) {
+    chunk.fields.push_back(descriptor->field(i));
+  }
+  return chunk;
+}
+
+std::vector<std::vector<int>> ExtractBatchFieldIndices(
+    absl::Span<const FieldChunk> chunks) {
+  std::vector<std::vector<int>> batches;
+
+  for (const FieldChunk& chunk : chunks) {
+    std::vector<int>& batch = batches.emplace_back();
+    absl::c_transform(chunk.fields, std::back_inserter(batch),
+                      [](const FieldDescriptor* f) { return f->index(); });
+  }
+
+  return batches;
+}
+
+TEST(PartitionToMinimizeExpectedBranchesTest,
+     DefaultOptionsBatchesAllFieldsTogether) {
+  FieldChunk chunk =
+      CreateChunkWithFirstNFields(TestAllTypes::GetDescriptor(), 4);
+
+  // Without a profile, default presence probability is 0.0 (absence 1.0), so
+  // batching all fields together costs 1.0 expected branch check.
+  std::vector<FieldChunk> partitioned =
+      PartitionToMinimizeExpectedBranches(chunk, Options{});
+
+  std::vector<std::vector<int>> expected = {{0, 1, 2, 3}};
+  EXPECT_EQ(ExtractBatchFieldIndices(partitioned), expected);
+}
+
 
 }  // namespace
 }  // namespace cpp
