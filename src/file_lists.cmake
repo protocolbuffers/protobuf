@@ -1090,7 +1090,9 @@ set(common_test_srcs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/command_line_interface_tester.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/compiler/mock_code_generator.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/get_type_name.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.cc
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/protobuf_test.cc
 )
 
 # @//pkg:common_test
@@ -1100,7 +1102,9 @@ set(common_test_hdrs
   ${protobuf_SOURCE_DIR}/src/google/protobuf/internal_visibility_for_testing.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_textproto.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/file.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/get_type_name.h
   ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/googletest.h
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/testing/protobuf_test.h
 )
 
 # @//pkg:lite_test_util
