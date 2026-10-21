@@ -6,7 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
-load("@rules_cc//cc:defs.bzl", "cc_library", "cc_test")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load("//python:build_targets.bzl", "build_targets")
 load("//python:cc_link_bundle.bzl", "py_extension_with_bundled_deps")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
@@ -214,5 +214,32 @@ cc_test(
         ":free_threading_access",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
+    ],
+)
+
+
+# Native fault-injection fixture; never included in a protobuf wheel.
+cc_binary(
+    name = "free_threading/_weak_map_test.so",
+    testonly = True,
+    target_compatible_with = select({
+        ":experimental_free_threading_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    srcs = [
+        "free_threading/weak_map_test.c",
+        "free_threading/weak_map.c",
+        "free_threading/weak_map.h",
+        "free_threading/mutex.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    linkshared = True,
+    linkstatic = True,
+    deps = [
+        "//upb/hash",
+        "//upb/mem",
+        "//upb/port",
+        "@system_python//:python_headers",
     ],
 )

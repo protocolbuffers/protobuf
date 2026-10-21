@@ -1,68 +1,114 @@
-# Native Python/upb lock review — 2026-10-21
+# Native Python/upb lock review — second pass, 2026-10-21
 
-Runtime reviewed: b630c7965485eed019e5afd3e6fa67176e3123bd.
 Scope: the experimental CPython 3.14t native upb backend, its C implementation,
-and the native C++ admission tests. This is not an audit of the separate legacy
-C++ Python backend or of arbitrary application callbacks.
+and native test fixtures. This does not audit the legacy C++ Python backend or
+arbitrary application locks. The initial review of b630c7965 is retained in
+Git history; the second pass resolves its cache/exception reentrancy concern.
 
-## Findings
+## Findings and corrections
 
-No blocking lock cycle was identified in the reviewed normal operation paths.
-This is a bounded code review and test result, not a proof of deadlock freedom.
-The runtime remains experimental.
+Two bounded native probes reproduced hangs against the original weak-map
+implementation. Both exceeded a 10-second subprocess timeout:
 
-The first sustained campaign stopped after 1,486 successful steps at
-2026-10-21 16:42:43 UTC. The failing step completed in 33 ms and reported
-`reads == 0` in NativeStorageIsProtectedUnderContention; it did not report a
-timeout or sanitizer diagnostic. Fail-fast admission has no fairness guarantee:
-all finite attempts by either readers or writers can be rejected. The test now
-requires aggregate progress, verifies both admission modes after workers join,
-and retains the deterministic 2,000-iteration writer/reader handoff test.
-No runtime implementation changes were required for this test correction.
+1. A weak-map iterator retained its non-recursive mutex while its consumer
+   reentered the map. Real iterator consumers perform reification, native
+   allocation and Python exception construction; holding the mutex across
+   those operations exposed an avoidable reentrancy boundary.
+2. Failed cache insertion constructed MemoryError under the mutex. A native
+   fault-injection probe installed a pending exception whose finalizer
+   reentered the map; replacing that exception deadlocked.
 
-## Synchronization and ordering
+These are controlled native reentrancy/failure-path reproductions. They do
+not establish that a public Python API workload has triggered either hang,
+and the pending-exception injection deliberately exercises a defensive edge.
 
-| Area | Mechanism | Ordering/lifetime assessment |
+The implementation now snapshots live cache entries with strong references
+under the mutex and releases it before running any iterator consumer. Snapshot
+cleanup decrefs without a mutex. Deletion checks key and object identity so a
+newer cache entry cannot be removed by an older snapshot. Cache insertion now
+constructs MemoryError only after unlocking. Snapshot allocation failures also
+unlock before constructing an exception.
+
+This removes the unset-cache → arena-cache nested acquisition previously
+present during reification. No consumer, Python exception constructor, or
+reference retirement remains inside a raw weak-map mutex region.
+
+## Synchronization audit
+
+| Area | Mechanism | Assessment |
 | --- | --- | --- |
-| Mutable arena access (`free_threading/access.c`) | Atomic reader count and exclusive writer sentinel | Writer and upgrade attempts return immediately on conflict. Reader CAS retries only while the state changes; this is lock-free, not wait-free. There is no fairness or bounded per-thread progress guarantee. |
-| Cross-message copy/merge (`message.c`) | Source read and destination write admissions | Failure releases admissions already acquired; aliases avoid duplicate admission. These are not blocking acquisitions, so opposite copy directions cannot wait on each other's arena ownership. |
-| Wrapper caches (`free_threading/weak_map.c`) | Non-recursive PyMutex | Ordinary get/add/erase operations release the mutex before dropping cached or losing wrapper references. Iteration retains visited wrappers and defers their decrefs until after unlock. |
-| Stub reification (`message.c`, `map.c`, `repeated.c`) | Unset-subobject cache mutex may nest an arena-cache mutex | Reviewed direction is unset cache → arena cache. Ordinary cache operations release their mutex before parent/arena reference retirement; no reverse overlapping acquisition was found. SyncStubSubobjs explicitly pins the parent through iterator cleanup; Clear retains its call receiver. |
-| Descriptor pools (`descriptor_pool.c`) | CPython suspendable object critical sections | Database callbacks and nested imports may suspend the outer critical section when blocking. No raw cache mutex is held across the database callback. Opposing two-pool callbacks are now tested explicitly. |
-| Shared iterators (`descriptor_containers.c`, `map.c`, `extension_dict.c`) | Object critical section around cursor changes; arena read admission where applicable | Read admission precedes iterator critical section and is retired on exit. Competing writers fail instead of waiting for readers. |
-| Lazy publication (`free_threading/lazy_ptr.c`) | Atomic pointer publication | Initialization occurs before CAS; losing values are freed without a publication mutex held. Reentrancy does not wait for an initialization owner. |
-| Destruction/module ownership | Strong references to arenas, pools and defining modules | Message/container cache erasure returns before parent/arena decref. Pool database retirement and weakref callbacks occur outside cache mutex ownership. Existing module-removal, subinterpreter, atexit, and concurrent wrapper-deallocation tests cover representative lifetimes. |
+| Mutable arena access | Atomic reader count / exclusive writer sentinel | Writes and upgrades fail immediately on conflict. Reader CAS retries on state changes; lock-free, not wait-free or fair. No blocking arena-owner acquisition. |
+| Copy/merge across arenas | Read/source and write/destination admission, or source serialization before target mutation | Partial admission is unwound on failure; alias paths avoid duplicate acquisition. Opposing copies are covered by bounded tests. |
+| Wrapper caches | PyMutex around native table operations and snapshot acquisition | No Python call, exception creation, decref or other cache acquisition while held. TryIncRef uses CPython atomic reference operations. The runtime cache allocator is native malloc/realloc, not a Python callback. |
+| Stub reification | Strong-reference snapshot plus existing arena admission | Cache mutex is released before reification. Snapshot entries keep wrappers alive; callers retain the owner. Delete is identity-checked under a short separate lock. |
+| Descriptor pools | CPython suspendable critical sections | Database callbacks and import waits can suspend outer sections. Opposing pool callbacks are tested. No raw cache mutex is held across those callbacks. |
+| Shared iterators | CPython critical sections around cursor changes | Arena admission is taken before the iterator section where required and retired on exit. Conflicting writers fail rather than waiting on readers. |
+| Lazy publication | Atomic pointer CAS | Initialization precedes publication; loser retirement runs without a publication mutex. |
+| Destruction and module ownership | Strong arena/pool/module ownership; short cache erasure | Parent/arena decrefs follow cache unlock. Database and weakref finalizers run without a cache mutex held. Existing teardown, module-removal, subinterpreter and wrapper-deallocation tests remain enabled. |
+| Native arena fusion | Atomic root linking | upb orders roots by address to avoid parent cycles. No additional binding-level blocking lock is introduced. |
 
-## Callback behavior
+## Regression coverage
 
-Scalar conversion callbacks running under arena admission must receive
-RuntimeError for conflicting reentry rather than waiting. Existing bounded
-callback tests exercise that behavior. WKT/public initialization and sorting
-have explicitly separated callback phases; immutable snapshots or admissions
-protect native accesses around those phases.
+The test-only `free_threading/_weak_map_test.so` fixture is excluded from
+distribution targets and incompatible with the ordinary nonexperimental
+configuration. Each probe runs in a separate subprocess, bounded at 30 seconds;
+the allocation hook is used only in these isolated test processes.
 
-New subprocess-bounded tests exercise:
-- Two simultaneous descriptor database callbacks entering the opposite pool.
-- 4,000 opposing CopyFrom attempts, with successful post-contention reuse.
-- Database destruction that waits for a worker to look up another pool.
+Probes cover iterator reentry, exception-finalizer reentry on failed insertion,
+replacement preservation, deferred snapshot-object retirement, empty snapshots,
+and reentry on snapshot allocation failure. Existing tests cover opposing
+descriptor pool callbacks, opposing copies, scalar callbacks, shared iterator
+cursors, cache churn, GC, atexit and native module lifetime.
 
-## Remaining limits
+The original 10-second timeout evidence is preserved separately. An optional
+hang-dump experiment using faulthandler triggered a CPython traceback-reader TSan
+diagnostic; it is retained as diagnostic evidence, not attributed to protobuf.
+Regression tests use parent-process timeouts, without that in-process timer or
+any new sanitizer suppression.
 
-- User callbacks can create their own application-lock or executor dependency
-  cycles. The package cannot guarantee progress for arbitrary callback code.
-- Allocation-failure paths have not been systematically fault-injected here.
-  MemoryError construction is still present inside cache/reification lock
-  regions; this review does not establish safety for arbitrary allocator or GC
-  reentrancy under memory exhaustion. This is a residual review concern, not a
-  reproduced deadlock, and prevents an unconditional deadlock-free claim.
-- Sanitizers and finite stress runs do not enumerate all interleavings.
-  Instrumented CPython is used for TSan; ASan instruments the extension, with
-  Python leak detection disabled. Native ASan tests retain leak detection.
-- The initial campaign is failed, not passed. A fresh 18-hour run must record its
-  own final outcome; elapsed time from the stopped run is not credited to it.
+## Qualification limits
 
-## Immediate validation
+No remaining blocking cycle was identified in the reviewed binding paths after
+these changes. This is not proof of deadlock freedom for every interleaving,
+every interpreter implementation, or arbitrary user callbacks.
 
-- Expanded Python concurrency suite: 69 tests, 2 skips, passed under both TSan and ASan with natural GIL-off.
-- Native admission suite: all 7 tests passed for 500 repetitions under each sanitizer (7,000 native test executions total).
-- Runtime implementation and pinned wheel remain unchanged; this revision changes tests and review documentation only.
+Injected allocation failures cover cache insertion and snapshot allocation;
+they do not exhaust every allocation site in protobuf or CPython. Application
+locks or callbacks that wait indefinitely can still deadlock application code.
+Arena admission makes no fairness guarantee.
+
+The older 18-hour campaign tests b630c7965 and cannot qualify this runtime
+change. A fresh pinned campaign, including the native reentrancy probes, must
+record its own final result. Prior benchmark numbers also describe b630c7965,
+not the changed runtime.
+
+## Validation of the correction
+
+| Suite | TSan | ASan | Classic CPython 3.11 / limited API |
+| --- | --- | --- | --- |
+| Native reentrancy/failure probes | 5 passed | 5 passed | Not applicable (no raw cache mutex) |
+| Python concurrency | 69 tests, 2 skipped, passed | 69 tests, 2 skipped, passed | 69 tests, 12 skipped, passed |
+| Message behavior | 367 tests, 11 skipped, passed | 367 tests, 11 skipped, passed | 367 tests, 11 skipped, passed |
+| Descriptors | 122 tests, 4 skipped, passed | Not rerun | Not rerun |
+| Descriptor pools | 135 tests, 7 skipped, passed | Not rerun | Not rerun |
+
+TSan uses instrumented CPython and extension; ASan uses an instrumented extension
+with Python leak detection disabled. No force-GIL-off override was used.
+The first classic build attempt selected missing system Python headers; the
+successful build explicitly selected the existing Python 3.10 limited-API
+headers and ran under CPython 3.11.
+
+Build the standalone native fixture with the experimental flag and full Python
+headers, then run it with the matching free-threaded interpreter:
+
+```sh
+bazel build --//python:limited_api=false \
+  --//python:experimental_free_threading=true \
+  //python:free_threading/_weak_map_test.so
+python3.14t -S python/free_threading/weak_map_test.py \
+  bazel-bin/python/free_threading/_weak_map_test.so
+```
+
+Sanitizer builds additionally require their matching interpreter/runtime
+environment. A distribution wheel and the fresh sustained campaign are separate
+qualification gates; the bounded results above do not imply their completion.
