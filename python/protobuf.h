@@ -109,6 +109,9 @@ typedef struct {
 PyUpb_ModuleState* PyUpb_ModuleState_Get(void);
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module);
 
+// Native types retain their defining module, independently of sys.modules.
+PyUpb_ModuleState* PyUpb_ModuleState_GetFromType(PyTypeObject* type);
+
 // Returns NULL if module state is not yet available (during startup).
 // Any use of the module state during startup needs to be passed explicitly.
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void);

@@ -419,6 +419,41 @@ print('callback admissions completed')
         task.result(timeout=30)
     self.assertIn(child.bb, (7, 9))
 
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native module lifetime')
+  def testNativeTypeRetainsModule(self):
+    script = r"""
+import gc
+import importlib.util
+import weakref
+from google._upb import _message
+spec = importlib.util.find_spec('google._upb._message')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+assert module is not _message
+native_type = module.DescriptorPool
+ref = weakref.ref(module)
+del module
+gc.collect()
+assert ref() is not None, 'Native type lost its defining module'
+pool = native_type()
+del native_type
+gc.collect()
+assert ref() is not None, 'Native pool lost its defining module'
+del pool
+for _ in range(3):
+    gc.collect()
+assert ref() is None, 'Unused module/type cycle was not collected'
+print('module ownership and collection passed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], env=_subprocess_env(),
+        capture_output=True, text=True, timeout=30)
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('module ownership and collection passed', result.stdout)
+
   def testSharedMapIterator(self):
     message = test_proto2_pb2.MessageWithRepeatedAndMap()
     message.scalar_map.update({str(i): str(i) for i in range(1000)})

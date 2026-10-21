@@ -40,6 +40,8 @@ typedef struct {
   // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
   PyUpb_WeakMap* obj_cache;
+  // Keep the cache owner alive even after GC clears the heap type's module.
+  PyObject* module;
 } PyUpb_DescriptorPool;
 
 static PyObject* PyUpb_DescriptorPool_AsPyObj(PyUpb_DescriptorPool* pool) {
@@ -62,6 +64,11 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
     PyTypeObject* type, PyObject* db, PyUpb_WeakMap* obj_cache) {
   PyUpb_DescriptorPool* pool = (void*)PyType_GenericAlloc(type, 0);
   if (!pool) goto err;
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  pool->module = PyType_GetModule(type);
+  if (!pool->module) goto err;
+  Py_INCREF(pool->module);
+#endif
   pool->symtab = upb_DefPool_New();
   if (!pool->symtab) {
     PyErr_SetNone(PyExc_MemoryError);
@@ -88,7 +95,8 @@ err:
 
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
                                                PyObject* db) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(type);
+  if (!state) return NULL;
   return PyUpb_DescriptorPool_DoCreateWithCache(type, db, state->obj_cache);
 }
 
@@ -98,7 +106,9 @@ upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
 
 static int PyUpb_DescriptorPool_Traverse(PyUpb_DescriptorPool* self,
                                          visitproc visit, void* arg) {
+  Py_VISIT(Py_TYPE(self));
   Py_VISIT(self->db);
+  Py_VISIT(self->module);
   return 0;
 }
 
@@ -124,11 +134,17 @@ static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
 #endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_ModuleState* state = self->module
+      ? PyUpb_ModuleState_GetFromModule(self->module) : NULL;
+#else
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+#endif
   if (state && state->obj_cache) {
     PyUpb_WeakMap_EraseIfEqual(state->obj_cache, self->symtab, &self->ob_base);
   }
   PyUpb_WeakMap_Free(self->obj_cache);
+  Py_CLEAR(self->module);
   upb_DefPool_Free(self->symtab);
   PyUpb_Dealloc(self);
 }

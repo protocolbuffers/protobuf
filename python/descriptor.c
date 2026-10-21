@@ -322,6 +322,8 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
 
 static int PyUpb_Descriptor_Traverse(PyUpb_DescriptorBase* base,
                                      visitproc visit, void* arg) {
+  Py_VISIT(Py_TYPE(base));
+  Py_VISIT(base->pool);
   Py_VISIT(PyUpb_LazyPtr_RawGet(&base->message_meta));
   return 0;
 }

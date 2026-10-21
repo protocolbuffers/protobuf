@@ -250,6 +250,16 @@ PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
   return state;
 }
 
+PyUpb_ModuleState* PyUpb_ModuleState_GetFromType(PyTypeObject* type) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* module = PyType_GetModule(type);
+  if (!module) return NULL;
+  return PyUpb_ModuleState_GetFromModule(module);
+#else
+  return PyUpb_ModuleState_Get();
+#endif
+}
+
 PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
@@ -534,7 +544,11 @@ static bool PyUpb_InitArena(PyObject* m) {
 // -----------------------------------------------------------------------------
 
 PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec) {
+  #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* type = PyType_FromModuleAndSpec(m, spec, NULL);
+#else
   PyObject* type = PyType_FromSpec(spec);
+#endif
   if (!type) return NULL;
   if (PyModule_AddObjectRef(m, name, type) < 0) {
     Py_DECREF(type);
@@ -554,7 +568,11 @@ static const char* PyUpb_GetClassName(PyType_Spec* spec) {
 }
 
 PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec) {
+  #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* type = PyType_FromModuleAndSpec(m, spec, NULL);
+#else
   PyObject* type = PyType_FromSpec(spec);
+#endif
   if (!type) return NULL;
   const char* name = PyUpb_GetClassName(spec);
   if (PyModule_AddObjectRef(m, name, type) < 0) {
@@ -566,7 +584,11 @@ PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec) {
 
 PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
                                       PyObject* bases) {
+  #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* type = PyType_FromModuleAndSpec(m, spec, bases);
+#else
   PyObject* type = PyType_FromSpecWithBases(spec, bases);
+#endif
   if (!type) return NULL;
   const char* name = PyUpb_GetClassName(spec);
   if (PyModule_AddObjectRef(m, name, type) < 0) {
@@ -579,7 +601,11 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
 PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
                                          PyObject* virtual_base,
                                          const char** methods) {
+  #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* type = PyType_FromModuleAndSpec(m, spec, NULL);
+#else
   PyObject* type = PyType_FromSpec(spec);
+#endif
   if (!type) return NULL;
   PyObject* ret1 = PyObject_CallMethod(virtual_base, "register", "O", type);
   if (!ret1) {

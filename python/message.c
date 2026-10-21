@@ -3202,19 +3202,23 @@ static PyType_Spec PyUpb_MessageMeta_Spec = {
     PyUpb_MessageMeta_Slots,
 };
 
-static PyObject* PyUpb_MessageMeta_CreateType(void) {
+static PyObject* PyUpb_MessageMeta_CreateType(PyObject* module) {
   PyObject* bases = Py_BuildValue("(O)", &PyType_Type);
   if (!bases) return NULL;
   PyType_Spec spec = PyUpb_MessageMeta_Spec;
   spec.basicsize = cpython_bits.type_basicsize + sizeof(PyUpb_MessageMeta);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* type = PyType_FromModuleAndSpec(module, &spec, bases);
+#else
   PyObject* type = PyType_FromSpecWithBases(&spec, bases);
+#endif
   Py_DECREF(bases);
   return type;
 }
 
 bool PyUpb_InitMessage(PyObject* m) {
   if (!PyUpb_CPythonBits_Get()) return false;
-  PyObject* message_meta_type = PyUpb_MessageMeta_CreateType();
+  PyObject* message_meta_type = PyUpb_MessageMeta_CreateType(m);
 
   PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
   state->cmessage_type = PyUpb_AddClass(m, &PyUpb_Message_Spec);
