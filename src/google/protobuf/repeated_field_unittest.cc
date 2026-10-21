@@ -1820,6 +1820,57 @@ TEST(RepeatedFieldIsFullTest, DISABLED_MergeFromPacked) {
 
 }  // namespace
 
+// Clang only emits available_externally function bodies for inline extern
+// template methods when OptimizationLevel > 0 (defined(__OPTIMIZE__)).
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline) && defined(__clang__) && \
+    defined(__OPTIMIZE__) && !defined(PROTOBUF_NO_INLINE_CALL)
+enum ExternTemplateTestEnum : int { kVal1 = 1, kVal2 = 2 };
+enum ExternTemplateTestDtorEnum : int { kDtorVal1 = 1 };
+template <>
+struct is_proto_enum<ExternTemplateTestEnum> : std::true_type {};
+template <>
+struct is_proto_enum<ExternTemplateTestDtorEnum> : std::true_type {};
+
+extern template RepeatedField<ExternTemplateTestEnum>::RepeatedField(
+    const ExternTemplateTestEnum*, const ExternTemplateTestEnum*);
+extern template RepeatedField<ExternTemplateTestDtorEnum>::~RepeatedField();
+extern template void RepeatedField<ExternTemplateTestEnum>::ExtractSubrange(
+    int, int, ExternTemplateTestEnum*);
+extern template void RepeatedField<ExternTemplateTestEnum>::Swap(
+    RepeatedField<ExternTemplateTestEnum>*);
+extern template void RepeatedField<ExternTemplateTestEnum>::SwapElements(int,
+                                                                         int);
+
+namespace {
+
+__attribute__((flatten)) void ExerciseExternTemplateRepeatedField() {
+  RepeatedField<ExternTemplateTestDtorEnum> f_dtor;
+  f_dtor.Add(kDtorVal1);
+  EXPECT_EQ(f_dtor.Get(0), kDtorVal1);
+
+  const ExternTemplateTestEnum init[] = {kVal1, kVal2};
+  RepeatedField<ExternTemplateTestEnum> f1(std::begin(init), std::end(init));
+  RepeatedField<ExternTemplateTestEnum> f2;
+  f1.SwapElements(0, 1);
+  EXPECT_EQ(f1.Get(0), kVal2);
+  EXPECT_EQ(f1.Get(1), kVal1);
+  f1.Swap(&f2);
+  EXPECT_EQ(f1.size(), 0);
+  EXPECT_EQ(f2.size(), 2);
+  f2.Swap(&f1);
+  ExternTemplateTestEnum extracted[1];
+  f1.ExtractSubrange(0, 1, extracted);
+  EXPECT_EQ(extracted[0], kVal2);
+  EXPECT_EQ(f1.size(), 1);
+}
+
+TEST(RepeatedField, ExternTemplateMethodsCanBeInlined) {
+  ExerciseExternTemplateRepeatedField();
+}
+
+}  // namespace
+#endif
+
 }  // namespace protobuf
 }  // namespace google
 

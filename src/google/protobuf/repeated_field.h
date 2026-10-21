@@ -835,14 +835,14 @@ inline RepeatedField<Element>::RepeatedField(
 
 template <typename Element>
 template <typename Iter, typename>
-RepeatedField<Element>::RepeatedField(Iter begin, Iter end) {
+inline RepeatedField<Element>::RepeatedField(Iter begin, Iter end) {
   StaticValidityCheck();
   AnnotateSize(kSooCapacityElements, 0);
   Add(begin, end);
 }
 
 template <typename Element>
-RepeatedField<Element>::~RepeatedField() {
+inline RepeatedField<Element>::~RepeatedField() {
   StaticValidityCheck();
   const bool is_soo = this->is_soo();
 
@@ -1204,7 +1204,7 @@ inline void RepeatedField<Element>::AddWithArena(ArenaProvider arena_provider,
 
 template <typename Element>
 template <typename... Args>
-typename RepeatedField<Element>::pointer
+inline typename RepeatedField<Element>::pointer
 RepeatedField<Element>::EmplaceWithArena(Arena* arena, Args&&... args) {
   return ::new (AddUninitializedWithArena(arena))
       Element(std::forward<Args>(args)...);
@@ -1220,8 +1220,8 @@ inline void RepeatedField<Element>::RemoveLast() {
 }
 
 template <typename Element>
-void RepeatedField<Element>::ExtractSubrange(int start, int num,
-                                             Element* elements) {
+inline void RepeatedField<Element>::ExtractSubrange(int start, int num,
+                                                    Element* elements) {
   internal::RuntimeAssertInBoundsGE(start, 0);
   internal::RuntimeAssertInBoundsGE(num, 0);
   const bool is_soo = this->is_soo();
@@ -1336,7 +1336,7 @@ void RepeatedField<Element>::SwapFallbackWithTemp(
 }
 
 template <typename Element>
-void RepeatedField<Element>::Swap(RepeatedField* other) {
+inline void RepeatedField<Element>::Swap(RepeatedField* other) {
   if (this == other) return;
   Arena* arena = GetArena();
   Arena* other_arena = other->GetArena();
@@ -1363,14 +1363,14 @@ void RepeatedField<Element>::Swap(RepeatedField* other) {
 }
 
 template <typename Element>
-void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
+inline void RepeatedField<Element>::UnsafeArenaSwap(RepeatedField* other) {
   if (this == other) return;
   ABSL_DCHECK_EQ(GetArena(), other->GetArena());
   InternalSwap(other);
 }
 
 template <typename Element>
-void RepeatedField<Element>::SwapElements(int index1, int index2) {
+inline void RepeatedField<Element>::SwapElements(int index1, int index2) {
   internal::RuntimeAssertInBounds(index1, size());
   internal::RuntimeAssertInBounds(index2, size());
   Element* elem = elements(is_soo());
@@ -1539,8 +1539,8 @@ inline void RepeatedField<Element>::Reserve(int new_size) {
 
 template <typename Element>
 template <typename ArenaProvider>
-void RepeatedField<Element>::ReserveWithArena(ArenaProvider arena_provider,
-                                              int new_size) {
+inline void RepeatedField<Element>::ReserveWithArena(
+    ArenaProvider arena_provider, int new_size) {
   const bool was_soo = is_soo();
   if (ABSL_PREDICT_FALSE(new_size > Capacity(was_soo))) {
     Grow(arena_provider, was_soo, size(), new_size);
