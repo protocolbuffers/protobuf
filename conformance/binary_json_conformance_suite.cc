@@ -866,6 +866,9 @@ void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
     return;
   }
   Json::CharReaderBuilder builder;
+  // jsoncpp's defaults accept comments, trailing commas, duplicate keys and
+  // trailing garbage, none of which are valid JSON (RFC 8259).
+  Json::CharReaderBuilder::strictMode(&builder.settings_);
   Json::Value value;
   Json::String err;
   const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
