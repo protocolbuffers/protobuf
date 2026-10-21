@@ -9,6 +9,7 @@
 #import "GPBDescriptor_PackagePrivate.h"
 
 #import <objc/runtime.h>
+#import <stdatomic.h>
 
 #import "GPBBootstrap.h"
 #import "GPBMessage.h"
@@ -1226,5 +1227,30 @@ uint32_t GPBFieldAlternateTag(GPBFieldDescriptor *self) {
 }
 
 @end
+
+// See GPBDescriptor_PackagePrivate.h for full details on section-based
+// extension registration and atomic descriptor resolution.
+GPBExtensionDescriptor *GPBResolveExtensionSectionEntry(GPBExtensionSectionEntry *entry,
+                                                        const int32_t *runtimeSupport) {
+  _Atomic(GPBExtensionDescriptor *) *descriptorPtr =
+      (_Atomic(GPBExtensionDescriptor *) *)&entry->descriptor;
+  GPBExtensionDescriptor *descriptor = atomic_load(descriptorPtr);
+  if (descriptor) {
+    return descriptor;
+  }
+
+  GPBExtensionDescriptor *expected = nil;
+  GPBExtensionDescriptor *created =
+      [[GPBExtensionDescriptor alloc] initWithExtensionDescription:entry->description
+                                                    runtimeSupport:runtimeSupport];
+  if (atomic_compare_exchange_strong(descriptorPtr, &expected, created)) {
+    // Value was set, return it.
+    return created;
+  }
+
+  // Some other thread set it, release the one created and return what got set.
+  [created release];
+  return expected;
+}
 
 #pragma clang diagnostic pop

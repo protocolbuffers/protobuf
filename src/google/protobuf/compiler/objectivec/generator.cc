@@ -314,6 +314,25 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "experimental_global_extension_registry") {
+      // This is an experimental option, and could be removed or change at any
+      // time; it is not documented in the README.md for that reason.
+      //
+      // When enabled, each C function extension records its description in the
+      // extension registration Mach-O section (see
+      // GPBDescriptor_PackagePrivate.h), so the extension can be found by
+      // +[GPBExtensionRegistry globalExtensionRegistry] if it is linked into
+      // the process. Requires `extension_generation_mode=c_function`. Default
+      // is "no", which generates the same code as before this option existed.
+      if (!StringToBool(
+              options[i].second,
+              &generation_options.experimental_global_extension_registry)) {
+        *error = absl::StrCat(
+            "error: Unknown value for "
+            "experimental_global_extension_registry: ",
+            options[i].second);
+        return false;
+      }
     } else if (options[i].first == "annotation_pragma_name") {
       generation_options.annotation_pragma_name = options[i].second;
     } else if (options[i].first == "annotation_guard_name") {
@@ -371,6 +390,15 @@ bool ObjectiveCGenerator::GenerateAll(
   }
   if (generation_options.experimental_strip_nonfunctional_codegen) {
     generation_options.generate_minimal_imports = true;
+  }
+  if (generation_options.experimental_global_extension_registry) {
+    if (generation_options.extension_generation_mode !=
+        ExtensionGenerationMode::kCFunction) {
+      *error =
+          "error: experimental_global_extension_registry requires "
+          "extension_generation_mode=c_function.";
+      return false;
+    }
   }
 
   // -----------------------------------------------------------------
