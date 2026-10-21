@@ -37,6 +37,8 @@
 #define PyUpb_SUPPORT_BUFFER_VIEW 1
 #endif
 
+static PyObject* PyUpb_RepeatedContainer_ToList(PyObject* self);
+
 static PyObject* PyUpb_RepeatedCompositeContainer_AppendUnprotected(
     PyObject* _self, PyObject* value);
 static PyObject* PyUpb_RepeatedScalarContainer_Append(PyObject* _self,
@@ -668,16 +670,28 @@ static PyObject* PyUpb_RepeatedContainer_ExtendUnprotected(PyObject* _self,
 
 PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  // Materialize composite-container aliases before admitting the destination.
+  // Iterating one under the destination write admission would reject its read
+  // (and self-extension must not iterate the elements it is appending).
+  PyObject* snapshot = NULL;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  if (Py_TYPE(value) == state->repeated_composite_container_type) {
+    snapshot = PyUpb_RepeatedContainer_ToList(value);
+    if (!snapshot) return NULL;
+    value = snapshot;
+  }
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   PyObject* arena = self->arena;
   Py_INCREF(arena);
   if (!PyUpb_Arena_TryWrite(arena)) {
     Py_DECREF(arena);
+    Py_XDECREF(snapshot);
     return NULL;
   }
   PyObject* result = PyUpb_RepeatedContainer_ExtendUnprotected(_self, value);
   PyUpb_Arena_EndWrite(arena);
   Py_DECREF(arena);
+  Py_XDECREF(snapshot);
   return result;
 #else
   return PyUpb_RepeatedContainer_ExtendUnprotected(_self, value);
@@ -734,7 +748,7 @@ static PyObject* PyUpb_RepeatedContainer_ToListUnprotected(PyObject* _self) {
   return list;
 }
 
-PyObject* PyUpb_RepeatedContainer_ToList(PyObject* self) {
+static PyObject* PyUpb_RepeatedContainer_ToList(PyObject* self) {
 #ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   return PyUpb_RepeatedContainer_ToListUnprotected(self);
 #else

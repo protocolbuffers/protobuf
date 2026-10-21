@@ -221,6 +221,72 @@ class ThreadSafeTest(unittest.TestCase):
       for task in tasks:
         task.result(timeout=30)
 
+  def testCompositeSelfExtension(self):
+    message = unittest_pb2.TestAllTypes()
+    values = message.repeated_nested_message
+    values.add(bb=1)
+    values.add(bb=2)
+    values.extend(values)
+    self.assertEqual([item.bb for item in values], [1, 2, 1, 2])
+    values[0].bb = 3
+    self.assertEqual([item.bb for item in values], [3, 2, 1, 2])
+    values.MergeFrom(values)
+    self.assertEqual([item.bb for item in values], [3, 2, 1, 2] * 2)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testCallbacksRejectConflictsWithoutDeadlock(self):
+    # A subprocess timeout also bounds executor teardown if a regression
+    # blocks a worker forever, rather than merely timing out its Future.
+    script = r"""
+from concurrent.futures import ThreadPoolExecutor
+import sys
+from google.protobuf import unittest_pb2
+assert not sys._is_gil_enabled()
+message = unittest_pb2.TestAllTypes(repeated_int32=[3, 1, 2])
+values = message.repeated_int32
+with ThreadPoolExecutor(max_workers=1) as workers:
+  def rejected(operation):
+    try:
+      workers.submit(operation).result(timeout=5)
+    except RuntimeError as error:
+      assert 'concurrent mutation' in str(error)
+    else:
+      raise AssertionError('Overlapping access succeeded')
+
+  class Index:
+    def __index__(self):
+      rejected(message.SerializeToString)
+      rejected(lambda: values.append(4))
+      raise ValueError('conversion failed')
+
+  try:
+    message.optional_int32 = Index()
+  except ValueError as error:
+    assert str(error) == 'conversion failed'
+  else:
+    raise AssertionError('Conversion did not fail')
+  message.optional_int32 = 7
+
+  def key(value):
+    rejected(lambda: values.append(4))
+    assert workers.submit(message.SerializeToString).result(timeout=5)
+    return value
+
+  values.sort(key=key)
+  assert list(values) == [1, 2, 3]
+  values.append(4)
+  assert message.optional_int32 == 7
+print('callback admissions completed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], capture_output=True,
+        text=True, timeout=30, check=False, env=_subprocess_env())
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('callback admissions completed', result.stdout)
+
   def testSharedMapIterator(self):
     message = test_proto2_pb2.MessageWithRepeatedAndMap()
     message.scalar_map.update({str(i): str(i) for i in range(1000)})
