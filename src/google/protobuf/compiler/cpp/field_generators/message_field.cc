@@ -195,13 +195,31 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
          )cc");
        }},
   };
+  if (should_split()) {
+    ABSL_CHECK(has_hasbit_);
+    // Split uses the hasbit to avoid loading memory that we don't need if
+    // unset, which is the expected case.
+    p->Emit(R"cc(
+      inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
+        $TsanDetectConcurrentRead$;
+        $StrongRef$;
+        if (CheckHasBit($has_bits_array$, $has_mask$)) {
+          return *$member_to_field$($field_$);
+        }
+        return $kDefaultRef$;
+      }
+    )cc");
+  } else {
+    p->Emit(R"cc(
+      inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
+        $TsanDetectConcurrentRead$;
+        $StrongRef$;
+        const $Submsg$* p = $member_to_field$($field_$);
+        return p != nullptr ? *p : $kDefaultRef$;
+      }
+    )cc");
+  }
   absl::string_view code = R"cc(
-    inline const $Submsg$& $Msg$::_internal_$name_internal$() const {
-      $TsanDetectConcurrentRead$;
-      $StrongRef$;
-      const $Submsg$* p = $member_to_field$($field_$);
-      return p != nullptr ? *p : $kDefaultRef$;
-    }
     inline const $Submsg$& $Msg$::$name$() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
       $WeakDescriptorSelfPin$;
       $annotate_get$;
