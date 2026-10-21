@@ -48,6 +48,10 @@
 static const upb_MessageDef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls);
 static PyObject* PyUpb_MessageMeta_GetAttr(PyObject* self, PyObject* name);
 static PyObject* PyUpb_Message_GetDescriptor(PyObject* self);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+static PyObject* PyUpb_Message_MergeFromPublic(PyObject* self, PyObject* arg);
+static PyObject* PyUpb_Message_ClearPublic(PyObject* self, PyObject* arg);
+#endif
 static PyObject* PyUpb_Message_SerializeInternalUnprotected(
     PyObject* self, PyObject* args, PyObject* kwargs, bool check_required);
 
@@ -487,7 +491,11 @@ static bool PyUpb_Message_InitMapAttribute(PyObject* _self, PyObject* name,
 static bool PyUpb_Message_InitWKTOrMerge(const upb_MessageDef* msgdef,
                                          PyObject* msg, PyObject* value) {
   if (PyObject_TypeCheck(value, Py_TYPE(msg))) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+    PyObject* merged = PyUpb_Message_MergeFromPublic(msg, value);
+#else
     PyObject* merged = PyUpb_Message_MergeFrom(msg, value);
+#endif
     if (!merged) return false;
     Py_DECREF(merged);
     return true;
@@ -495,16 +503,29 @@ static bool PyUpb_Message_InitWKTOrMerge(const upb_MessageDef* msgdef,
 
   if (PyDict_Check(value) &&
       (upb_MessageDef_WellKnownType(msgdef) == kUpb_WellKnown_Struct)) {
-    bool ok = PyObject_CallMethod(msg, "_internal_assign", "O", value);
+    PyObject* assigned = PyObject_CallMethod(msg, "_internal_assign", "O", value);
+    bool ok = assigned != NULL;
+    Py_XDECREF(assigned);
     if (!ok && PyDict_Size(value) == 1) {
       PyObject* fields_str = PyUnicode_FromString("fields");
       if (PyDict_Contains(value, fields_str)) {
         // Fall back to init as normal message field.
         PyErr_Clear();
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+        PyObject* tmp = PyUpb_Message_ClearPublic(msg, NULL);
+#else
         PyObject* tmp = PyUpb_Message_Clear((PyUpb_Message*)msg);
-        if (!tmp) return false;
+#endif
+        if (!tmp) {
+          Py_DECREF(fields_str);
+          return false;
+        }
         Py_DECREF(tmp);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+        ok = PyUpb_Message_InitAttributesPublic(msg, NULL, value) >= 0;
+#else
         ok = PyUpb_Message_InitAttributes(msg, NULL, value) >= 0;
+#endif
       }
       Py_DECREF(fields_str);
     }
@@ -512,7 +533,10 @@ static bool PyUpb_Message_InitWKTOrMerge(const upb_MessageDef* msgdef,
   }
   if (upb_MessageDef_WellKnownType(msgdef) != kUpb_WellKnown_Unspecified &&
       PyObject_HasAttrString(msg, "_internal_assign")) {
-    return PyObject_CallMethod(msg, "_internal_assign", "O", value);
+    PyObject* assigned = PyObject_CallMethod(msg, "_internal_assign", "O", value);
+    bool ok = assigned != NULL;
+    Py_XDECREF(assigned);
+    return ok;
   }
 
   PyErr_Format(PyExc_TypeError,

@@ -280,7 +280,16 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
   PyObject* serialized =
       PyUpb_DescriptorBase_GetSerializedProto(_self, func, layout);
   if (!serialized) return NULL;
+  PyObject* arena = PyUpb_Message_GetArena(py_proto);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    Py_DECREF(serialized);
+    return NULL;
+  }
   PyObject* ret = PyUpb_Message_MergeFromString(py_proto, serialized);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
   Py_DECREF(serialized);
   return ret;
 }

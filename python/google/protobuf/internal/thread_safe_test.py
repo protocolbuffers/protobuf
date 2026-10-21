@@ -314,6 +314,10 @@ print('callback admissions completed')
     self.assertEqual(len(message.children), 1)
     self.assertEqual(message.children.add(time=time), child)
 
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL initializer snapshots')
   def testNestedInitializerOwnsDictionarySnapshot(self):
     proto = descriptor_pb2.FileDescriptorProto(name='initializer_snapshot.proto')
     child = proto.message_type.add(name='Child')
@@ -361,6 +365,59 @@ print('callback admissions completed')
       tasks = [workers.submit(replace), workers.submit(compare)]
       for task in tasks:
         task.result(timeout=30)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testDescriptorCopyRejectsActiveTargetWriter(self):
+    target = descriptor_pb2.DescriptorProto()
+    target_range = target.extension_range.add()
+    field = unittest_pb2.TestAllTypes.DESCRIPTOR
+    entered = threading.Event()
+    release = threading.Event()
+
+    class BlockingInt:
+      def __index__(self):
+        entered.set()
+        if not release.wait(timeout=30):
+          raise TimeoutError('Writer was not released')
+        return 7
+
+    with futures.ThreadPoolExecutor(max_workers=1) as workers:
+      writer = workers.submit(setattr, target_range, 'start', BlockingInt())
+      try:
+        self.assertTrue(entered.wait(timeout=30))
+        with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+          field.CopyToProto(target)
+      finally:
+        release.set()
+      writer.result(timeout=30)
+    field.CopyToProto(target)
+    self.assertEqual(target.name, field.name)
+
+  def testNestedMessageInitializerDuringMutation(self):
+    message = unittest_pb2.TestAllTypes()
+    child = message.optional_nested_message
+    source = unittest_pb2.TestAllTypes.NestedMessage(bb=7)
+    start = threading.Barrier(2)
+
+    def run(operation):
+      start.wait(timeout=30)
+      for _ in range(2000):
+        try:
+          operation()
+        except RuntimeError as error:
+          self.assertIn('concurrent mutation', str(error))
+
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      tasks = [
+          workers.submit(run, lambda: setattr(child, 'bb', 9)),
+          workers.submit(run, lambda: message.__init__(optional_nested_message=source)),
+      ]
+      for task in tasks:
+        task.result(timeout=30)
+    self.assertIn(child.bb, (7, 9))
 
   def testSharedMapIterator(self):
     message = test_proto2_pb2.MessageWithRepeatedAndMap()
