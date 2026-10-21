@@ -8,7 +8,6 @@
 #include "google/protobuf/arena.h"
 #include "google/protobuf/internal_metadata_locator.h"
 #include "google/protobuf/internal_visibility.h"
-#include "google/protobuf/metadata_lite.h"
 
 // Must be included last.
 #include "google/protobuf/port_def.inc"
@@ -46,11 +45,10 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
  public:
   using InternalArenaConstructable_ = void;
 
-  constexpr FieldWithArena() : field_() {}
+  constexpr FieldWithArena() : field_(), arena_(nullptr) {}
 
   template <typename... Args>
-  explicit FieldWithArena(Arena* arena, Args&&... args)
-      : _internal_metadata_(arena) {
+  explicit FieldWithArena(Arena* arena, Args&&... args) : arena_(arena) {
     StaticallyVerifyLayout();
     // Construct `T` after setting `_internal_metadata_` so that `T` can safely
     // call ResolveArena().
@@ -75,7 +73,7 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
 
   // Returns the arena that the field is allocated on. This is cheaper than
   // calling `field().GetArena()`.
-  Arena* GetArena() const { return _internal_metadata_.arena(); }
+  Arena* GetArena() const { return arena_; }
 
  private:
   friend InternalMetadataOffset;
@@ -96,15 +94,12 @@ class FieldWithArena : public ContainerDestructorSkippableBase<T> {
     T field_;
   };
 
-  // Note that the name of this field must be `_internal_metadata_`, as
-  // `InternalMetadataOffset` expects a field with this name.
-  const InternalMetadata _internal_metadata_;
+  Arena* const arena_;
 };
 
 template <typename T>
 constexpr InternalMetadataOffset FieldWithArena<T>::BuildOffset() {
-  return InternalMetadataOffset::Build<FieldWithArena,
-                                       offsetof(FieldWithArena, field_)>();
+  return InternalMetadataOffset::BuildForFieldWithArena<FieldWithArena>();
 }
 
 template <typename Element>
