@@ -79,7 +79,7 @@ static const upb_FieldDef* PyUpb_RepeatedContainer_GetField(
 static PyObject* PyUpb_RepeatedContainer_GetPool(
     PyUpb_RepeatedContainer* self) {
   PyObject* pool = PyUpb_Arena_GetPool(self->arena);
-  if (!pool) pool = PyUpb_DescriptorPool_GetDefaultPool();
+  assert(pool);
   return pool;
 }
 
@@ -146,7 +146,7 @@ bool PyUpb_RepeatedContainer_IsFrozen(PyUpb_RepeatedContainer* self) {
 upb_Array* PyUpb_RepeatedContainer_AssureWritable(PyObject* _self) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
   if (PyUpb_RepeatedContainer_IsFrozen(self)) {
-    if (!PyUpb_CheckFrozen(true, "Container is immutable")) {
+    if (!PyUpb_CheckFrozen(_self, true, "Container is immutable")) {
       return NULL;
     }
   }
@@ -171,9 +171,10 @@ static void PyUpb_RepeatedContainer_Dealloc(PyObject* _self) {
   PyUpb_Dealloc(self);
 }
 
-static PyTypeObject* PyUpb_RepeatedContainer_GetClass(const upb_FieldDef* f) {
+static PyTypeObject* PyUpb_RepeatedContainer_GetClass(const upb_FieldDef* f,
+                                                   PyObject* arena) {
   assert(upb_FieldDef_IsRepeated(f) && !upb_FieldDef_IsMap(f));
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(PyUpb_Arena_GetPool(arena));
   if (!state) return NULL;
   return upb_FieldDef_IsSubMessage(f) ? state->repeated_composite_container_type
                                       : state->repeated_scalar_container_type;
@@ -205,7 +206,7 @@ static Py_ssize_t PyUpb_RepeatedContainer_Length(PyObject* self) {
 PyObject* PyUpb_RepeatedContainer_NewStub(PyObject* parent,
                                           const upb_FieldDef* f,
                                           PyObject* arena) {
-  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f, arena);
   if (!cls) {
     PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
     return NULL;
@@ -233,7 +234,7 @@ PyObject* PyUpb_RepeatedContainer_GetOrCreateWrapper(upb_Array* arr,
   PyObject* ret = PyUpb_Arena_CacheGet(arena, arr);
   if (ret) return ret;
 
-  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_RepeatedContainer_GetClass(f, arena);
   if (!cls) {
     PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
     return NULL;
@@ -337,7 +338,7 @@ static PyUpb_TryResult PyUpb_IterInputTryRepeatedContainerUnprotected(
     PyObject* value, const upb_FieldDef* field, upb_Arena* arena,
     PyUpb_BulkCb bulk_cb, void* ctx) {
   // Detect if value is a repeated scalar container of a compatible field type.
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromObject(value);
   if (state == NULL ||
       Py_TYPE(value) != state->repeated_scalar_container_type) {
     return kPyUpb_TryResult_NotSupported;
@@ -376,8 +377,8 @@ static PyUpb_TryResult PyUpb_IterInputTryRepeatedContainer(
     PyObject* value, const upb_FieldDef* field, upb_Arena* arena,
     PyUpb_BulkCb bulk_cb, void* ctx) {
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  if (Py_TYPE(value) != state->repeated_scalar_container_type) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromObject(value);
+  if (!state || Py_TYPE(value) != state->repeated_scalar_container_type) {
     return kPyUpb_TryResult_NotSupported;
   }
   PyObject* source_arena = ((PyUpb_RepeatedContainer*)value)->arena;
@@ -674,8 +675,8 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   // Iterating one under the destination write admission would reject its read
   // (and self-extension must not iterate the elements it is appending).
   PyObject* snapshot = NULL;
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  if (Py_TYPE(value) == state->repeated_composite_container_type) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromObject(value);
+  if (state && Py_TYPE(value) == state->repeated_composite_container_type) {
     snapshot = PyUpb_RepeatedContainer_ToList(value);
     if (!snapshot) return NULL;
     value = snapshot;
@@ -1255,7 +1256,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
 
 #ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   if (PyUpb_RepeatedContainer_IsFrozen((PyUpb_RepeatedContainer*)pself)) {
-    if (!PyUpb_CheckFrozen(true, "Container is immutable")) {
+    if (!PyUpb_CheckFrozen(pself, true, "Container is immutable")) {
       return NULL;
     }
   }
@@ -1269,7 +1270,7 @@ static PyObject* PyUpb_RepeatedContainer_Sort(PyObject* pself, PyObject* args,
     return NULL;
   }
   if (PyUpb_RepeatedContainer_IsFrozen((PyUpb_RepeatedContainer*)pself) &&
-      !PyUpb_CheckFrozen(true, "Container is immutable")) {
+      !PyUpb_CheckFrozen(pself, true, "Container is immutable")) {
     PyUpb_Arena_EndRead(arena);
     Py_DECREF(arena);
     return NULL;

@@ -18,6 +18,7 @@
 #include "python/free_threading/weak_map.h"
 #include "python/message.h"
 #include "python/protobuf.h"
+#include "python/descriptor_pool.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
@@ -84,9 +85,10 @@ static void PyUpb_MapContainer_Dealloc(void* _self) {
   PyUpb_Dealloc(_self);
 }
 
-static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f) {
+static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f,
+                                                   PyObject* arena) {
   assert(upb_FieldDef_IsMap(f));
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(PyUpb_Arena_GetPool(arena));
   if (!state) return NULL;
   const upb_FieldDef* val =
       upb_MessageDef_Field(upb_FieldDef_MessageSubDef(f), 1);
@@ -97,7 +99,7 @@ static PyTypeObject* PyUpb_MapContainer_GetClass(const upb_FieldDef* f) {
 
 PyObject* PyUpb_MapContainer_NewStub(PyObject* parent, const upb_FieldDef* f,
                                      PyObject* arena) {
-  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f, arena);
   if (!cls) {
     PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
     return NULL;
@@ -178,7 +180,7 @@ bool PyUpb_MapContainer_IsFrozen(PyUpb_MapContainer* self) {
 upb_Map* PyUpb_MapContainer_AssureWritable(PyObject* _self) {
   PyUpb_MapContainer* self = (PyUpb_MapContainer*)_self;
   if (PyUpb_MapContainer_IsFrozen(self)) {
-    if (!PyUpb_CheckFrozen(true, "Map is immutable")) {
+    if (!PyUpb_CheckFrozen(_self, true, "Map is immutable")) {
       return NULL;
     }
   }
@@ -606,7 +608,7 @@ PyObject* PyUpb_MapContainer_GetOrCreateWrapper(upb_Map* map,
   PyObject* ret = PyUpb_Arena_CacheGet(arena, map);
   if (ret) return ret;
 
-  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f);
+  PyTypeObject* cls = PyUpb_MapContainer_GetClass(f, arena);
   if (!cls) {
     PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
     return NULL;
@@ -726,7 +728,8 @@ typedef struct {
 } PyUpb_MapIterator;
 
 static PyObject* PyUpb_MapIterator_NewUnprotected(PyUpb_MapContainer* map) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+      PyUpb_Arena_GetPool(map->arena));
   PyUpb_MapIterator* iter =
       (void*)PyType_GenericAlloc(state->map_iterator_type, 0);
   if (!iter) return NULL;

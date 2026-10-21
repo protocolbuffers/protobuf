@@ -72,7 +72,7 @@ const void* PyUpb_AnyDescriptor_GetDef(PyObject* desc) {
 
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
     PyUpb_DescriptorType type, const void* def, PyObject* pool) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(pool);
   PyTypeObject* type_obj = state->descriptor_types[type];
   assert(def);
   assert(pool);
@@ -110,11 +110,20 @@ static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
   return py_base;
 }
 
+static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base);
+
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
     PyObject* obj, PyUpb_DescriptorType type) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (!state) {
-    return (PyUpb_DescriptorBase*)obj;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromType(Py_TYPE(obj));
+  if (!state || !state->descriptor_types[type]) {
+    // Type/module metadata can be cleared before a native descriptor is
+    // destroyed. Never interpret an unrelated object's storage as a descriptor.
+    if (PyType_GetSlot(Py_TYPE(obj), Py_tp_dealloc) ==
+        (void*)PyUpb_DescriptorBase_Dealloc) {
+      return (PyUpb_DescriptorBase*)obj;
+    }
+    PyErr_Format(PyExc_TypeError, "Expected a descriptor, but got %R", obj);
+    return NULL;
   }
   PyTypeObject* type_obj = state->descriptor_types[type];
   if (!PyObject_TypeCheck(obj, type_obj)) {
@@ -143,10 +152,20 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   // Normally this just costs a sys.modules lookup, since DescriptorPool has
   // already eagerly imported descriptor_pb2 for every file except
   // descriptor.proto.
-  if (!PyUpb_ImportDescriptorModule()) return NULL;
+  PyObject* module = PyImport_ImportModule(PYUPB_DESCRIPTOR_MODULE);
+  if (!module) return NULL;
+  PyObject* descriptor = PyObject_GetAttrString(module, "DESCRIPTOR");
+  Py_DECREF(module);
+  if (!descriptor) return NULL;
+  if (!PyUpb_FileDescriptor_GetDef(descriptor)) {
+    Py_DECREF(descriptor);
+    return NULL;
+  }
 
-  // Find the correct options message.
-  PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();
+  // descriptor_pb2 may belong to another instance of the native module.
+  // Its actual pool owns the runtime schema used to materialize options.
+  PyObject* default_pool = PyUpb_AnyDescriptor_GetPool(descriptor);
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(default_pool);
   const upb_DefPool* symtab = PyUpb_DescriptorPool_GetSymtab(default_pool);
   const upb_MessageDef* m;
 #ifdef Py_GIL_DISABLED
@@ -173,7 +192,7 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
     if (es == kUpb_EncodeStatus_OutOfMemory) {
       PyErr_SetNone(PyExc_MemoryError);
     } else {
-      PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+      PyErr_Format(state->decode_error_class,
                    "Error parsing descriptor: %s", upb_EncodeStatus_String(es));
     }
     goto err;
@@ -191,7 +210,7 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
     if (ds == kUpb_DecodeStatus_OutOfMemory) {
       PyErr_SetNone(PyExc_MemoryError);
     } else {
-      PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+      PyErr_Format(state->decode_error_class,
                    "Error parsing descriptor: %s", upb_DecodeStatus_String(ds));
     }
     goto err;
@@ -207,10 +226,12 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   upb_Message_Freeze(opts2, opts2_layout);
   PyObject* val = PyUpb_Message_Get(default_pool, opts2, m, py_arena);
   Py_DECREF(py_arena);
+  Py_DECREF(descriptor);
   return val;
 
 err:
   Py_XDECREF(py_arena);
+  Py_DECREF(descriptor);
   return NULL;
 }
 
@@ -354,7 +375,7 @@ PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m) {
       PyUpb_DescriptorPool_CacheGet(pool, upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(pool);
   if (!state) {
     PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
     return NULL;

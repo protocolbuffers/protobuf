@@ -48,13 +48,8 @@ static PyObject* PyUpb_DescriptorPool_AsPyObj(PyUpb_DescriptorPool* pool) {
   return pool ? &pool->ob_base : NULL;
 }
 
-PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  return s->default_pool;
-}
-
-const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(void) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(PyObject* pool) {
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   assert(s->c_descriptor_symtab);
   return google_protobuf_FileDescriptorProto_getmsgdef(
       s->c_descriptor_symtab);
@@ -100,6 +95,15 @@ static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
   return PyUpb_DescriptorPool_DoCreateWithCache(type, db, state->obj_cache);
 }
 
+PyUpb_ModuleState* PyUpb_DescriptorPool_GetModuleState(PyObject* pool) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_ModuleState_GetFromModule(
+      ((PyUpb_DescriptorPool*)pool)->module);
+#else
+  return PyUpb_ModuleState_Get();
+#endif
+}
+
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
   return ((PyUpb_DescriptorPool*)pool)->symtab;
 }
@@ -115,17 +119,6 @@ static int PyUpb_DescriptorPool_Traverse(PyUpb_DescriptorPool* self,
 static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
   Py_CLEAR(self->db);
   return 0;
-}
-
-PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  PyObject* pool = PyUpb_WeakMap_Get(state->obj_cache, symtab);
-  assert(pool
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
-         || Py_IsFinalizing()
-#endif
-  );
-  return pool;
 }
 
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
@@ -341,7 +334,7 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
       PyErr_SetNone(PyExc_MemoryError);
       goto done;
     }
-    const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
+    const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef(_self);
     const int options = kUpb_CompareOption_IncludeUnknownFields;
     if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
                                  options)) {

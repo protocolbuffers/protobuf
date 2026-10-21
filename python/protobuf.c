@@ -134,7 +134,7 @@ PyObject* PyUpb_SetAllowOversizeProtos(PyObject* m, PyObject* arg) {
                     "Argument to SetAllowOversizeProtos must be boolean");
     return NULL;
   }
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromModule(m);
   upb_Atomic_Store(&state->allow_oversize_protos, PyObject_IsTrue(arg),
                    memory_order_relaxed);
   Py_INCREF(arg);
@@ -213,35 +213,15 @@ static struct PyModuleDef module_def = {PyModuleDef_HEAD_INIT,
 // ModuleState
 // -----------------------------------------------------------------------------
 
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void) {
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
-  /* Calling `PyState_FindModule` during interpreter shutdown causes a crash. */
-  if (Py_IsFinalizing()) {
-    return NULL;
-  }
+#if PY_VERSION_HEX >= 0x030D0000
+  if (Py_IsFinalizing()) return NULL;
 #endif
-#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
-  PyObject* name = PyUnicode_FromString(PYUPB_MODULE_NAME);
-  if (!name) {
-    // This lookup also runs from deallocators during interpreter shutdown.
-    // They must not leave an exception pending if module state is unavailable.
-    PyErr_Clear();
-    return NULL;
-  }
-  PyObject* module = PyImport_GetModule(name);
-  Py_DECREF(name);
-  if (!module) {
-    PyErr_Clear();
-    return NULL;
-  }
-  PyUpb_ModuleState* state = PyModule_GetState(module);
-  Py_DECREF(module);
-  return state;
-#else
   PyObject* module = PyState_FindModule(&module_def);
   return module ? PyModule_GetState(module) : NULL;
-#endif
 }
+#endif
 
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
   PyUpb_ModuleState* state = PyModule_GetState(module);
@@ -252,7 +232,7 @@ PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module) {
 
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromType(PyTypeObject* type) {
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
-  PyObject* module = PyType_GetModule(type);
+  PyObject* module = PyType_GetModuleByDef(type, &module_def);
   if (!module) return NULL;
   return PyUpb_ModuleState_GetFromModule(module);
 #else
@@ -260,17 +240,42 @@ PyUpb_ModuleState* PyUpb_ModuleState_GetFromType(PyTypeObject* type) {
 #endif
 }
 
-PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
+// Unlike MRO lookup, direct type association is safe after type_clear().
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGetFromType(PyTypeObject* type) {
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  assert(state);
+  PyObject* error = PyErr_GetRaisedException();
+  PyObject* module = PyType_GetModule(type);
+  PyUpb_ModuleState* state =
+      module && PyModule_GetDef(module) == &module_def
+          ? PyModule_GetState(module) : NULL;
+  PyErr_Clear();
+  PyErr_SetRaisedException(error);
   return state;
 #else
+  return PyUpb_ModuleState_MaybeGet();
+#endif
+}
+
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGetFromObject(PyObject* object) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyObject* error = PyErr_GetRaisedException();
+  PyObject* module = PyType_GetModuleByDef(Py_TYPE(object), &module_def);
+  PyUpb_ModuleState* state = module ? PyModule_GetState(module) : NULL;
+  PyErr_Clear();
+  PyErr_SetRaisedException(error);
+  return state;
+#else
+  return PyUpb_ModuleState_MaybeGet();
+#endif
+}
+
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+PyUpb_ModuleState* PyUpb_ModuleState_Get(void) {
   PyObject* module = PyState_FindModule(&module_def);
   assert(module);
   return PyUpb_ModuleState_GetFromModule(module);
-#endif
 }
+#endif
 
 static PyObject* PyUpb_InitWktBases(void* unused) {
   PyObject* wkt_module = PyImport_ImportModule(PYUPB_PROTOBUF_INTERNAL_PACKAGE
@@ -380,7 +385,11 @@ static upb_Arena* PyUpb_NewArena(void) {
 
 PyObject* PyUpb_Arena_New(PyObject* pool) {
   assert(pool != NULL);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(pool);
+#else
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+#endif
   if (!state) {
     PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
     return NULL;
@@ -683,20 +692,33 @@ bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
   return true;
 }
 
-PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+PyObject* PyUpb_SetFrozenErrorWithMsg(PyObject* owner, const char* msg) {
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromObject(owner);
+  assert(state);
   PyErr_SetString(state->frozen_instance_error_class, msg);
   return NULL;
 }
 
-PyObject* PyUpb_SetFrozenError(void) {
-  return PyUpb_SetFrozenErrorWithMsg("Message is immutable.");
+PyObject* PyUpb_SetFrozenError(PyObject* owner) {
+  return PyUpb_SetFrozenErrorWithMsg(owner, "Message is immutable.");
 }
 
-bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg) {
+int PyUpb_WarnFrozen(void) {
+  return PyErr_WarnEx(
+      PyExc_FutureWarning,
+      "Mutating messages or containers returned by GetOptions() is deprecated"
+      " and will raise an exception in a future release.",
+      3);
+}
+
+bool PyUpb_CheckFrozen(PyObject* owner, bool is_frozen, const char* error_msg) {
   if (is_frozen) {
-    PyUpb_SetFrozenErrorWithMsg(error_msg);
+#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
+    PyUpb_SetFrozenErrorWithMsg(owner, error_msg);
     return false;
+#else
+    return PyUpb_WarnFrozen() >= 0;
+#endif
   }
   return true;
 }

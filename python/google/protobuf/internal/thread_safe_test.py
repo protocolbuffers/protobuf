@@ -433,6 +433,15 @@ spec = importlib.util.find_spec('google._upb._message')
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 assert module is not _message
+from google.protobuf import descriptor_pb2
+proto = descriptor_pb2.FileDescriptorProto(name='second_module.proto')
+proto.message_type.add(name='Example')
+pool = module.DescriptorPool()
+file = pool.AddSerializedFile(proto.SerializeToString())
+descriptor = file.message_types_by_name['Example']
+assert descriptor.GetOptions() is not None
+assert descriptor._GetFeatures() is not None
+del descriptor, file, pool
 native_type = module.DescriptorPool
 ref = weakref.ref(module)
 del module
@@ -453,6 +462,48 @@ print('module ownership and collection passed')
         capture_output=True, text=True, timeout=30)
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
     self.assertIn('module ownership and collection passed', result.stdout)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native module ownership')
+  def testMessageRetainsStateWithoutImportRegistryEntry(self):
+    script = r"""
+import sys
+from google._upb import _message
+from google.protobuf import unittest_pb2, unknown_fields
+from google.protobuf.internal import test_proto2_pb2
+value = unittest_pb2.TestAllTypes(optional_int32=7)
+mapped = test_proto2_pb2.MessageWithRepeatedAndMap()
+expected = value.SerializeToString()
+module = sys.modules.pop('google._upb._message')
+try:
+    assert value.SerializeToString() == expected
+    value.ParseFromString(expected)
+    copy = unittest_pb2.TestAllTypes()
+    copy.ParseFromString(expected)
+    assert copy.optional_int32 == 7
+    copy.repeated_int32.extend([1, 2])
+    copy.repeated_int32.extend(copy.repeated_int32)
+    assert list(copy.repeated_int32) == [1, 2, 1, 2]
+    copy.optional_nested_message.bb = 9
+    assert copy.ListFields()
+    assert 'optional_int32' in list(copy.DESCRIPTOR.fields_by_name)
+    assert list(copy.DESCRIPTOR.fields_by_number)
+    assert list(copy.DESCRIPTOR.fields)
+    assert list(unknown_fields.UnknownFieldSet(copy)) == []
+    mapped.scalar_map['key'] = 'value'
+    assert list(mapped.scalar_map) == ['key']
+    _message.SetAllowOversizeProtos(False)
+finally:
+    sys.modules['google._upb._message'] = module
+print('message owner state passed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], env=_subprocess_env(),
+        capture_output=True, text=True, timeout=30)
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('message owner state passed', result.stdout)
 
   def testSharedMapIterator(self):
     message = test_proto2_pb2.MessageWithRepeatedAndMap()

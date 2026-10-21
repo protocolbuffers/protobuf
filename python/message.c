@@ -291,7 +291,8 @@ static upb_Message* PyUpb_Message_GetMsg(PyUpb_Message* self) {
 }
 
 bool PyUpb_Message_TryCheck(PyObject* self) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromObject(
+      (PyObject*)Py_TYPE(self));
   if (!state) return false;
   PyObject* type = (PyObject*)Py_TYPE(self);
   return Py_TYPE(type) == state->message_meta_type;
@@ -936,7 +937,7 @@ static bool PyUpb_Message_SetField(PyUpb_Message* parent, const upb_FieldDef* f,
  */
 bool PyUpb_Message_AssureWritable(PyUpb_Message* self) {
   if (PyUpb_Message_IsFrozen((PyObject*)self)) {
-    if (!PyUpb_CheckFrozen(true, "Message is immutable.")) {
+    if (!PyUpb_CheckFrozen((PyObject*)self, true, "Message is immutable.")) {
       return false;
     }
   }
@@ -1807,8 +1808,8 @@ static PyObject* PyUpb_Message_CheckCalledFromGeneratedFile(
   return NULL;
 }
 
-static bool PyUpb_Message_SortFieldList(PyObject* list) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+static bool PyUpb_Message_SortFieldList(PyObject* list,
+                                       PyUpb_ModuleState* state) {
   bool ok = false;
   PyObject* args = PyTuple_New(0);
   PyObject* kwargs = PyDict_New();
@@ -1865,7 +1866,9 @@ static PyObject* PyUpb_Message_ListFieldsUnprotected(PyObject* _self,
   }
 
   // Users rely on fields being returned in field number order.
-  if (!in_order && !PyUpb_Message_SortFieldList(list)) goto err;
+  if (!in_order && !PyUpb_Message_SortFieldList(
+          list, PyUpb_DescriptorPool_GetModuleState(
+                    PyUpb_Message_GetPool(_self)))) goto err;
 
   return list;
 
@@ -2175,7 +2178,8 @@ PyObject* PyUpb_Message_MergeFromString(PyObject* _self, PyObject* arg) {
       upb_DefPool_ExtensionRegistry(upb_FileDef_Pool(file));
   const upb_MiniTable* layout = upb_MessageDef_MiniTable(msgdef);
   upb_Arena* arena = PyUpb_Arena_Get(self->arena);
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+      PyUpb_Message_GetPool((PyObject*)self));
   int options =
       upb_DecodeOptions_MaxDepth(
           upb_Atomic_Load(&state->allow_oversize_protos,
@@ -2610,7 +2614,8 @@ static PyObject* PyUpb_Message_SerializeInternalUnprotected(
   if (PyUpb_Message_IsStub(self)) {
     // Nothing to serialize, but we do have to check whether the message is
     // initialized.
-    PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+    PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+        PyUpb_Message_GetPool(_self));
     PyObject* errors = PyUpb_Message_FindInitializationErrors(_self, NULL);
     if (!errors) return NULL;
     if (PyList_Size(errors) == 0) {
@@ -2642,7 +2647,8 @@ static PyObject* PyUpb_Message_SerializeInternalUnprotected(
     if (status == kUpb_EncodeStatus_OutOfMemory) {
       PyErr_SetNone(PyExc_MemoryError);
     } else {
-      PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+      PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+          PyUpb_Message_GetPool(_self));
       PyObject* errors = PyUpb_Message_FindInitializationErrors(_self, NULL);
       if (PyList_Size(errors) != 0) {
         PyUpb_Message_ReportInitializationErrors(msgdef, errors,
@@ -2887,8 +2893,9 @@ typedef struct {
 // by adding the appropriate number of bytes.
 static PyUpb_MessageMeta* PyUpb_GetMessageMeta(PyObject* cls) {
 #ifndef NDEBUG
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  assert(!state || Py_TYPE(cls) == state->message_meta_type);
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromType(Py_TYPE(cls));
+  assert(!state || !state->message_meta_type ||
+         Py_TYPE(cls) == state->message_meta_type);
 #endif
   return (PyUpb_MessageMeta*)((char*)cls + cpython_bits.type_basicsize);
 }
@@ -2922,7 +2929,11 @@ static const upb_MessageDef* PyUpb_MessageMeta_GetMsgdef(PyObject* cls) {
 
 PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
                                           PyObject* name, PyObject* dict) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state =
+      PyUpb_ModuleState_MaybeGetFromObject(py_descriptor);
+  if (!state) {
+    return PyErr_Format(PyExc_TypeError, "Expected a message Descriptor");
+  }
   PyTypeObject* descriptor_type = state->descriptor_types[kPyUpb_Descriptor];
   if (!PyObject_TypeCheck(py_descriptor, descriptor_type)) {
     return PyErr_Format(PyExc_TypeError, "Expected a message Descriptor");
@@ -2987,7 +2998,8 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
 
 static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
                                        PyObject* kwargs) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(type);
+  if (!state) return NULL;
   static const char* kwlist[] = {"name", "bases", "dict", 0};
   PyObject *name, *bases, *dict;
 
@@ -3102,7 +3114,7 @@ static PyObject* PyUpb_MessageMeta_GetDynamicAttr(PyObject* self,
     ret = PyUpb_Descriptor_GetClass(pool, nested);
   } else if ((enumdef = PyUpb_DefLookup_Message(msgdef, name_buf,
                                                kPyUpb_LookupEnum))) {
-    PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+    PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(pool);
     PyObject* klass = state->enum_type_wrapper_class;
     PyObject* enum_descriptor = PyUpb_EnumDescriptor_Get(pool, enumdef);
     if (enum_descriptor) {

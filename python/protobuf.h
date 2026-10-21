@@ -106,15 +106,23 @@ typedef struct {
 
 // Returns the global state object from the current interpreter. The current
 // interpreter is looked up from thread-local state.
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
 PyUpb_ModuleState* PyUpb_ModuleState_Get(void);
+#endif
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module);
 
 // Native types retain their defining module, independently of sys.modules.
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromType(PyTypeObject* type);
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGetFromType(PyTypeObject* type);
+// For live objects only: a cleared heap type can have no MRO during GC.
+// Preserve the caller's exception when the object is not one of our types.
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGetFromObject(PyObject* object);
 
 // Returns NULL if module state is not yet available (during startup).
 // Any use of the module state during startup needs to be passed explicitly.
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void);
+#endif
 
 // Returns:
 //   from google.protobuf.internal.well_known_types import WKTBASES
@@ -222,12 +230,13 @@ bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
 
 // Sets a Python FrozenInstanceError with the default error message
 // ("Message is immutable.") and returns NULL.
-PyObject* PyUpb_SetFrozenError(void);
+PyObject* PyUpb_SetFrozenError(PyObject* owner);
 // Sets a Python FrozenInstanceError with the given custom message and returns
 // NULL.
-PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg);
-// If `is_frozen` is true, sets a Python FrozenInstanceError with the given
-// message and returns false. Otherwise, returns true.
-bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg);
+PyObject* PyUpb_SetFrozenErrorWithMsg(PyObject* owner, const char* msg);
+// Emits a DeprecationWarning when mutating a frozen message or container in
+// OSS.
+int PyUpb_WarnFrozen(void);
+bool PyUpb_CheckFrozen(PyObject* owner, bool is_frozen, const char* error_msg);
 
 #endif  // PYUPB_PROTOBUF_H__

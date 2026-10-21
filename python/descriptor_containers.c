@@ -8,6 +8,7 @@
 #include "python/descriptor_containers.h"
 
 #include "python/descriptor.h"
+#include "python/descriptor_pool.h"
 #include "python/protobuf.h"
 #include "upb/reflection/def.h"
 
@@ -27,9 +28,13 @@ err:
   return ret;
 }
 
-#define CHECK_TYPE(obj, state_member)                                   \
-  assert(PyUpb_ModuleState_MaybeGet() == NULL || /* During shutdown. */ \
-         Py_TYPE(obj) == PyUpb_ModuleState_Get()->state_member)
+#define CHECK_TYPE(obj, state_member)                                      \
+  do {                                                                    \
+    PyUpb_ModuleState* state =                                             \
+        PyUpb_ModuleState_MaybeGetFromType(Py_TYPE(obj));                   \
+    assert(!state || !state->state_member ||                               \
+           Py_TYPE(obj) == state->state_member);                           \
+  } while (0)
 
 typedef enum {
   kPyUpb_CompareEqual,
@@ -65,7 +70,7 @@ static void PyUpb_ByNameIterator_Dealloc(PyObject* _self) {
 
 static PyObject* PyUpb_ByNameIterator_New(const PyUpb_ByNameMap_Funcs* funcs,
                                           const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNameIterator* iter =
       (void*)PyType_GenericAlloc(s->by_name_iterator_type, 0);
   if (!iter) return NULL;
@@ -135,7 +140,7 @@ static void PyUpb_ByNumberIterator_Dealloc(PyObject* _self) {
 
 static PyObject* PyUpb_ByNumberIterator_New(
     const PyUpb_ByNumberMap_Funcs* funcs, const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNumberIterator* iter =
       (void*)PyType_GenericAlloc(s->by_number_iterator_type, 0);
   if (!iter) return NULL;
@@ -208,9 +213,10 @@ static void PyUpb_GenericSequence_Dealloc(PyObject* _self) {
 
 PyObject* PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs* funcs,
                                     const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_GenericSequence* seq =
       (PyUpb_GenericSequence*)PyType_GenericAlloc(s->generic_sequence_type, 0);
+  if (!seq) return NULL;
   seq->funcs = funcs;
   seq->parent = parent;
   seq->pool = pool;
@@ -431,8 +437,9 @@ static void PyUpb_ByNameMap_Dealloc(PyObject* _self) {
 
 PyObject* PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs* funcs,
                               const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNameMap* map = (void*)PyType_GenericAlloc(s->by_name_map_type, 0);
+  if (!map) return NULL;
   map->funcs = funcs;
   map->parent = parent;
   map->pool = pool;
@@ -668,8 +675,9 @@ static PyObject* PyUpb_ByNumberMap_AsPyObj(PyUpb_ByNumberMap* self) {
 
 PyObject* PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs* funcs,
                                 const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNumberMap* map = (void*)PyType_GenericAlloc(s->by_number_map_type, 0);
+  if (!map) return NULL;
   map->funcs = funcs;
   map->parent = parent;
   map->pool = pool;

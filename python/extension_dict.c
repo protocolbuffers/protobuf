@@ -14,6 +14,7 @@
 #include "google/protobuf/breaking_changes.h"
 #include "python/descriptor.h"
 #include "python/message.h"
+#include "python/descriptor_pool.h"
 #include "python/protobuf.h"
 #include "upb/message/array.h"
 #include "upb/message/message.h"
@@ -35,7 +36,8 @@ typedef struct {
 } PyUpb_ExtensionDict;
 
 PyObject* PyUpb_ExtensionDict_New(PyObject* msg) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+      PyUpb_Message_GetPool(msg));
   PyUpb_ExtensionDict* ext_dict =
       (void*)PyType_GenericAlloc(state->extension_dict_type, 0);
   if (!ext_dict) return NULL;
@@ -214,7 +216,7 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   Py_DECREF(arena);
 #endif
   if (is_frozen) {
-    if (!PyUpb_CheckFrozen(true, "Message is immutable.")) {
+    if (!PyUpb_CheckFrozen(self->msg, true, "Message is immutable.")) {
       return -1;
     }
   }
@@ -280,7 +282,8 @@ typedef struct {
 
 static PyObject* PyUpb_ExtensionIterator_New(PyObject* _ext_dict) {
   PyUpb_ExtensionDict* ext_dict = (PyUpb_ExtensionDict*)_ext_dict;
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+      PyUpb_Message_GetPool(ext_dict->msg));
   PyUpb_ExtensionIterator* iter =
       (void*)PyType_GenericAlloc(state->extension_iterator_type, 0);
   if (!iter) return NULL;
