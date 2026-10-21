@@ -36,7 +36,7 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "2.3.20")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "2.3.0")
+bazel_dep(name = "rules_python", version = "2.3.4")
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
@@ -174,12 +174,27 @@ local_runtime_toolchains_repo(
     name = "local_toolchains",
     dev_dependency = True,
     runtimes = ["local_python3"],
+    target_settings = {
+        "local_python3": ["@//python:is_system_python"],
+    },
 )
 
 register_toolchains(
     "@local_toolchains//:all",
     dev_dependency = True,
 )
+
+# register python toolchains from rules_python for the versions we support.
+# Used only by tests, doesn't affect downstream consumers of protobuf.
+python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
+
+[
+    python.toolchain(
+        is_default = (python_version == "3.10"),
+        python_version = python_version,
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
 
