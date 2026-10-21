@@ -103,7 +103,7 @@ std::string JoinPaths(absl::Span<const absl::string_view> paths) {
   return absl::StrJoin(paths, kPathSeparator);
 }
 
-std::string CreatePluginArg() {
+std::string GetTestPluginPath() {
   std::string plugin_path;
 #ifdef GOOGLE_PROTOBUF_TEST_PLUGIN_PATH
   plugin_path = GOOGLE_PROTOBUF_TEST_PLUGIN_PATH;
@@ -140,6 +140,14 @@ std::string CreatePluginArg() {
     ABSL_LOG(ERROR)
         << "Plugin executable not found.  Plugin tests are likely to fail. "
         << plugin_path;
+    return "";
+  }
+  return plugin_path;
+}
+
+std::string CreatePluginArg() {
+  const std::string plugin_path = GetTestPluginPath();
+  if (plugin_path.empty()) {
     return "";
   }
   return absl::StrCat("--plugin=prefix-gen-plug=", plugin_path);
@@ -4853,8 +4861,9 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
                  "syntax = \"proto2\";\n"
                  "message Foo {}\n");
 
+  // A relative path names a location, so PATH is not searched.
   Run("protocol_compiler --badplug_out=TestParameter:$tmpdir "
-      "--plugin=prefix-gen-badplug=no_such_file "
+      "--plugin=prefix-gen-badplug=./no_such_file "
       "--proto_path=$tmpdir error.proto");
 
 #ifdef _WIN32
@@ -4865,9 +4874,9 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
   // Error written to stdout by child process after exec() fails.
   ExpectErrorSubstring("no_such_file: program not found or is not executable");
 
-  // The plugin was registered with an explicit path (--plugin=name=path), so
-  // it is run by exact name and the PATH is never consulted. The suggestion
-  // must not point at the PATH, which would be misleading here.
+  // The plugin was registered with a relative path
+  // (--plugin=name=./no_such_file), so it is run by exact name and the PATH
+  // is never consulted. The suggestion must not point at the PATH.
   ExpectErrorSubstring(
       "Please specify a program using an absolute path or a path "
       "relative to the current working directory");
@@ -4876,6 +4885,86 @@ TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFound) {
   ExpectErrorSubstring(
       "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
 #endif
+}
+
+TEST_F(CommandLineInterfaceTest, GeneratorPluginBareNameNotFound) {
+  // A bare filename registered with --plugin is resolved on PATH. When it is
+  // missing, the error is the SEARCH_PATH failure, not the exact-file one.
+
+  CreateTempFile("error.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  Run("protocol_compiler --badplug_out=TestParameter:$tmpdir "
+      "--plugin=prefix-gen-badplug=no_such_bare_plugin "
+      "--proto_path=$tmpdir error.proto");
+
+#ifdef _WIN32
+  // On Windows a PATH-searched plugin is launched through `cmd.exe /c`, which
+  // starts successfully and then fails to find the plugin, exiting nonzero.
+  // cmd.exe's own "not recognized" message is locale dependent, so assert on
+  // the stable status-code line protoc emits for the failed child.
+  ExpectErrorSubstring(
+      "--badplug_out: prefix-gen-badplug: Plugin failed with status code");
+#else
+  ExpectErrorSubstring(
+      "no_such_bare_plugin: program not found or is not executable");
+  ExpectErrorSubstring(
+      "Please specify a program using absolute path or make sure "
+      "the program is available in your PATH system variable");
+  ExpectErrorSubstring(
+      "--badplug_out: prefix-gen-badplug: Plugin failed with status code 1.");
+#endif
+}
+
+TEST_F(CommandLineInterfaceTest, PluginBareFilenameFromSearchPath) {
+  // `--plugin=name=bare_filename` finds the program on PATH.
+  CreateTempFile("foo.proto",
+                 "syntax = \"proto2\";\n"
+                 "message Foo {}\n");
+
+  const std::string plugin_path = GetTestPluginPath();
+  ASSERT_FALSE(plugin_path.empty());
+
+#ifdef _WIN32
+  const std::string wrapper_basename = "bare_plugin.bat";
+  CreateTempFile(wrapper_basename,
+                 absl::StrCat("@echo off\r\n\"", plugin_path, "\"\r\n",
+                              "exit /b %errorlevel%\r\n"));
+#else
+  const std::string wrapper_basename = "bare_plugin";
+  CreateTempFile(wrapper_basename,
+                 absl::StrCat("#!/bin/sh\nexec '", plugin_path, "'\n"));
+  ASSERT_EQ(0,
+            chmod(absl::StrCat(temp_directory(), "/", wrapper_basename).c_str(),
+                  0777));
+#endif
+
+  const char* old_path_cstr = getenv("PATH");
+  const std::string old_path = old_path_cstr ? old_path_cstr : "";
+  const std::string new_path = JoinPaths({temp_directory(), old_path});
+#ifdef _WIN32
+  _putenv_s("PATH", new_path.c_str());
+#else
+  setenv("PATH", new_path.c_str(), 1);
+#endif
+
+  // Run() would append --plugin=prefix-gen-plug=<exact path> and hide the
+  // bare-name lookup, so invoke protoc directly.
+  AllowPlugins("prefix-");
+  RunProtoc(absl::StrCat(
+      "protocol_compiler --plug_out=$tmpdir --proto_path=$tmpdir "
+      "--plugin=prefix-gen-plug=",
+      wrapper_basename, " foo.proto"));
+
+#ifdef _WIN32
+  _putenv_s("PATH", old_path.c_str());
+#else
+  setenv("PATH", old_path.c_str(), 1);
+#endif
+
+  ExpectNoErrors();
+  ExpectGenerated("test_plugin", "", "foo.proto", "Foo");
 }
 
 TEST_F(CommandLineInterfaceTest, GeneratorPluginNotFoundInPath) {

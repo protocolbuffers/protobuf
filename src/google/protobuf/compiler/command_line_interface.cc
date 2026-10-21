@@ -150,6 +150,24 @@ static bool IsWindowsAbsolutePath(absl::string_view text) {
   return StartsWithWindowsAbsolutePath(text) && text.find_last_of(':') == 1;
 }
 
+// A --plugin value that names a location is executed as that exact file.
+// A bare filename has no directory separator and no Windows drive prefix, so
+// it is resolved on PATH. An empty value stays exact: there is nothing to
+// search for.
+static bool PluginPathIsExactFile(absl::string_view path) {
+  if (path.empty() || path.find_first_of("/\\") != absl::string_view::npos) {
+    return true;
+  }
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__) || \
+    defined(__MSYS2__)
+  // "C:plugin" is relative to the current directory on that drive.
+  if (path.size() >= 2 && path[1] == ':' && absl::ascii_isalpha(path[0])) {
+    return true;
+  }
+#endif
+  return false;
+}
+
 void SetFdToTextMode(int fd) {
 #ifdef _WIN32
   if (setmode(fd, _O_TEXT) == -1) {
@@ -2976,7 +2994,9 @@ Parse PROTO_FILES and generate output based on the options given:
                               Additionally, EXECUTABLE may be of the form
                               NAME=PATH, in which case the given plugin name
                               is mapped to the given executable even if
-                              the executable's own name differs.
+                              the executable's own name differs. A bare
+                              filename is looked up on PATH; a path that
+                              contains a directory is used as given.
   --<lang>_prefix=COMMAND     Runs the plugin used by --<lang>_out via
                               COMMAND. protoc executes "COMMAND <plugin>"
                               instead of invoking the plugin binary directly.
@@ -3363,8 +3383,13 @@ bool CommandLineInterface::GeneratePluginOutput(
 
   const auto prefix_it = plugin_command_prefixes_.find(plugin_name);
   if (prefix_it == plugin_command_prefixes_.end()) {
-    subprocess.Start(executable, has_registered_path ? Subprocess::EXACT_NAME
-                                                     : Subprocess::SEARCH_PATH);
+    // A registered path that names a location stays exact, so "./plugin" and
+    // absolute paths cannot be replaced by a different binary on PATH. A bare
+    // filename is looked up on PATH, the same way an unregistered plugin is.
+    const bool exact_file =
+        has_registered_path && PluginPathIsExactFile(executable);
+    subprocess.Start(executable, exact_file ? Subprocess::EXACT_NAME
+                                            : Subprocess::SEARCH_PATH);
   } else {
     // When a prefix is provided, we always execute the prefix first and pass
     // the plugin executable as an argument. If a custom path was registered, we
