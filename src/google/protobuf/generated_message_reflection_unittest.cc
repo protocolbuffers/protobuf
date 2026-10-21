@@ -1589,6 +1589,50 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
                "Field does not match message type");
 }
 
+TEST(GeneratedMessageReflectionTest, MapApiForeignFieldCheck) {
+  unittest::TestMap message;
+  const Reflection* reflection = message.GetReflection();
+
+  // A map field that belongs to a different message type. It passes the
+  // "field is a map field" check, so only the message type check can reject
+  // it. Without that check the foreign field's index is used to subscript
+  // this message's offsets array, which reads out of bounds whenever the
+  // foreign index is past this message's field count.
+  const FieldDescriptor* foreign_field =
+      unittest::TestSameTypeMap::descriptor()->FindFieldByName("map1");
+  ASSERT_NE(foreign_field, nullptr);
+  ASSERT_TRUE(foreign_field->is_map());
+  ASSERT_NE(foreign_field->containing_type(), message.GetDescriptor());
+
+  MapKey key;
+  MapValueConstRef value;
+
+  EXPECT_DEATH(reflection->ContainsMapKey(message, foreign_field, key),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->InsertOrLookupMapValue(&message, foreign_field, key),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->LookupMapValue(message, foreign_field, key, &value),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->DeleteMapValue(&message, foreign_field, key),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->MapBegin(&message, foreign_field),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->MapEnd(&message, foreign_field),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->ConstMapBegin(&message, foreign_field),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->ConstMapEnd(&message, foreign_field),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->MapSize(message, foreign_field),
+               "Field does not match message type");
+  EXPECT_DEATH(reflection->GetMapData(&message, foreign_field),
+               "Field does not match message type");
+  EXPECT_DEATH(
+      static_cast<const Reflection*>(reflection)->GetMapData(message,
+                                                             foreign_field),
+      "Field does not match message type");
+}
+
 #endif  // GTEST_HAS_DEATH_TEST
 
 class GeneratedMessageReflectionCordAccessorsTest : public testing::Test {
