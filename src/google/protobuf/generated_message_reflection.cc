@@ -3044,6 +3044,7 @@ bool Reflection::ContainsMapKey(const Message& message,
                                 const MapKey& key) const {
   USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
               "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(LookupMapValue);
   return GetRaw<MapFieldBase>(message, field).ContainsMapKey(key);
 }
 
@@ -3053,6 +3054,7 @@ bool Reflection::InsertOrLookupMapValue(Message* message,
                                         MapValueRef* val) const {
   USAGE_CHECK(IsMapFieldInApi(field), InsertOrLookupMapValue,
               "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(InsertOrLookupMapValue);
   val->SetType(field->message_type()->map_value()->cpp_type());
   SetHasBit(message, field);
   return MutableRaw<MapFieldBase>(message, field)
@@ -3064,6 +3066,7 @@ bool Reflection::LookupMapValue(const Message& message,
                                 MapValueConstRef* val) const {
   USAGE_CHECK(IsMapFieldInApi(field), LookupMapValue,
               "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(LookupMapValue);
   val->SetType(field->message_type()->map_value()->cpp_type());
   return GetRaw<MapFieldBase>(message, field).LookupMapValue(key, val);
 }
@@ -3072,6 +3075,7 @@ bool Reflection::DeleteMapValue(Message* message, const FieldDescriptor* field,
                                 const MapKey& key) const {
   USAGE_CHECK(IsMapFieldInApi(field), DeleteMapValue,
               "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(DeleteMapValue);
   return MutableRaw<MapFieldBase>(message, field)
       ->DeleteMapValue(message->GetArena(), key);
 }
@@ -3079,6 +3083,7 @@ bool Reflection::DeleteMapValue(Message* message, const FieldDescriptor* field,
 MapIterator Reflection::MapBegin(Message* message,
                                  const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), MapBegin, "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(MapBegin);
   MapIterator iter(message, field);
   GetRaw<MapFieldBase>(*message, field).MapBegin(&iter);
   return iter;
@@ -3087,6 +3092,7 @@ MapIterator Reflection::MapBegin(Message* message,
 MapIterator Reflection::MapEnd(Message* message,
                                const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), MapEnd, "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(MapEnd);
   MapIterator iter(message, field);
   GetRaw<MapFieldBase>(*message, field).MapEnd(&iter);
   return iter;
@@ -3096,6 +3102,7 @@ ConstMapIterator Reflection::ConstMapBegin(const Message* message,
                                            const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), ConstMapBegin,
               "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(ConstMapBegin);
   ConstMapIterator iter(message, field);
   GetRaw<MapFieldBase>(*message, field).ConstMapBegin(&iter);
   return iter;
@@ -3104,6 +3111,7 @@ ConstMapIterator Reflection::ConstMapBegin(const Message* message,
 ConstMapIterator Reflection::ConstMapEnd(const Message* message,
                                          const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), ConstMapEnd, "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(ConstMapEnd);
   ConstMapIterator iter(message, field);
   GetRaw<MapFieldBase>(*message, field).ConstMapEnd(&iter);
   return iter;
@@ -3112,6 +3120,7 @@ ConstMapIterator Reflection::ConstMapEnd(const Message* message,
 int Reflection::MapSize(const Message& message,
                         const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), MapSize, "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(MapSize);
   return GetRaw<MapFieldBase>(message, field).size();
 }
 
@@ -3625,6 +3634,7 @@ void* Reflection::RepeatedFieldData(Message* message,
 MapFieldBase* Reflection::MutableMapData(Message* message,
                                          const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(GetMapData);
   SetHasBit(message, field);
   auto* map = MutableRaw<MapFieldBase>(message, field);
   map->MutableAccess();
@@ -3634,6 +3644,7 @@ MapFieldBase* Reflection::MutableMapData(Message* message,
 const MapFieldBase* Reflection::GetMapData(const Message& message,
                                            const FieldDescriptor* field) const {
   USAGE_CHECK(IsMapFieldInApi(field), GetMapData, "Field is not a map field.");
+  USAGE_CHECK_MESSAGE_TYPE(GetMapData);
   const auto* map = &(GetRaw<MapFieldBase>(message, field));
   map->ConstAccess();
   return map;
