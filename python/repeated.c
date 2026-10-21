@@ -331,7 +331,7 @@ typedef bool (*PyUpb_ElemCb)(upb_MessageValue val, void* ctx);
 typedef bool (*PyUpb_BulkCb)(const void* data, Py_ssize_t count,
                              Py_ssize_t itemsize, void* ctx);
 
-static PyUpb_TryResult PyUpb_IterInputTryRepeatedContainer(
+static PyUpb_TryResult PyUpb_IterInputTryRepeatedContainerUnprotected(
     PyObject* value, const upb_FieldDef* field, upb_Arena* arena,
     PyUpb_BulkCb bulk_cb, void* ctx) {
   // Detect if value is a repeated scalar container of a compatible field type.
@@ -370,11 +370,42 @@ static PyUpb_TryResult PyUpb_IterInputTryRepeatedContainer(
   return ok ? kPyUpb_TryResult_Success : kPyUpb_TryResult_Failure;
 }
 
+static PyUpb_TryResult PyUpb_IterInputTryRepeatedContainer(
+    PyObject* value, const upb_FieldDef* field, upb_Arena* arena,
+    PyUpb_BulkCb bulk_cb, void* ctx) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  if (Py_TYPE(value) != state->repeated_scalar_container_type) {
+    return kPyUpb_TryResult_NotSupported;
+  }
+  PyObject* source_arena = ((PyUpb_RepeatedContainer*)value)->arena;
+  // The destination already owns write admission. Aliases in that arena must
+  // reuse it; a distinct source must remain readable through the raw copy.
+  bool distinct = PyUpb_Arena_Get(source_arena) != arena;
+  if (distinct && !PyUpb_Arena_TryRead(source_arena)) {
+    return kPyUpb_TryResult_Failure;
+  }
+  PyUpb_TryResult result = PyUpb_IterInputTryRepeatedContainerUnprotected(
+      value, field, arena, bulk_cb, ctx);
+  if (distinct) PyUpb_Arena_EndRead(source_arena);
+  return result;
+#else
+  return PyUpb_IterInputTryRepeatedContainerUnprotected(
+      value, field, arena, bulk_cb, ctx);
+#endif
+}
+
 #if PyUpb_SUPPORT_BUFFER_VIEW
 static PyUpb_TryResult PyUpb_IterInputTryBufferView(
     PyObject* value, const upb_FieldDef* field, upb_Arena* arena,
     PyUpb_SizeCb size_cb, PyUpb_ElemCb elem_cb, PyUpb_BulkCb bulk_cb,
     void* ctx) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  // A buffer export pins storage, but does not prevent concurrent writes to
+  // it (or protect object-pointer elements). Use the exporter's Python
+  // iteration API for mutable inputs instead of reading raw native storage.
+  if (!PyBytes_Check(value)) return kPyUpb_TryResult_NotSupported;
+#endif
   Py_buffer view;
   if (PyObject_GetBuffer(value, &view, PyBUF_RECORDS_RO) != 0) {
     PyErr_Clear();
@@ -1796,7 +1827,13 @@ static PyObject* PyUpb_RepeatedScalarContainer_AsNpArray(PyObject* _self,
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
   // Never expose an upb_Array_DataPtr-backed view after read admission ends.
   // NumPy instead receives an owned, stable snapshot of Python scalar values.
+  PyObject* snapshot_arena = ((PyUpb_RepeatedContainer*)_self)->arena;
+  if (!PyUpb_Arena_TryRead(snapshot_arena)) return NULL;
+  const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(
+      (PyUpb_RepeatedContainer*)_self);
+  upb_CType c_type = upb_FieldDef_CType(f);
   PyObject* snapshot = PyUpb_RepeatedContainer_ToList(_self);
+  PyUpb_Arena_EndRead(snapshot_arena);
   if (!snapshot) return NULL;
   PyObject* np_module = PyImport_ImportModule("numpy");
   PyObject* array_method =
@@ -1809,9 +1846,6 @@ static PyObject* PyUpb_RepeatedScalarContainer_AsNpArray(PyObject* _self,
     PyErr_SetString(PyExc_ImportError, "Unable to import numpy.");
   }
   if (!call_kwargs) goto snapshot_done;
-  const upb_FieldDef* f = PyUpb_RepeatedContainer_GetField(
-      (PyUpb_RepeatedContainer*)_self);
-  upb_CType c_type = upb_FieldDef_CType(f);
   if (!dtype_requested) {
     const char* default_name = c_type == kUpb_CType_String ? "str" :
                                c_type == kUpb_CType_Bytes  ? "S" :

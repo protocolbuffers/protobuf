@@ -49,6 +49,209 @@ class ThreadSafeTest(unittest.TestCase):
   def setUp(self):
     self.success = 0
 
+  def _CheckSharedIterator(self, values):
+    expected = list(values)
+    for _ in range(10):
+      shared = iter(values)
+      start = threading.Barrier(4)
+
+      def consume():
+        observed = []
+        start.wait(timeout=30)
+        while True:
+          try:
+            observed.append(next(shared))
+          except StopIteration:
+            return observed
+
+      with futures.ThreadPoolExecutor(max_workers=4) as workers:
+        tasks = [workers.submit(consume) for _ in range(4)]
+        actual = [value for task in tasks for value in task.result(timeout=30)]
+      self.assertCountEqual(actual, expected)
+      for _ in range(4):
+        self.assertRaises(StopIteration, next, shared)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testMutableArenaRejectsOverlappingAccess(self):
+    message = unittest_pb2.TestAllTypes()
+    repeated = message.repeated_int32
+    child = message.optional_nested_message
+    entered = threading.Event()
+    release = threading.Event()
+
+    class BlockingInt:
+      def __index__(self):
+        entered.set()
+        if not release.wait(timeout=30):
+          raise TimeoutError('Writer was not released')
+        return 7
+
+    operations = {
+        'field read': lambda: message.optional_int32,
+        'field write': lambda: setattr(message, 'optional_int32', 8),
+        'serialize': message.SerializeToString,
+        'size': message.ByteSize,
+        'parse': lambda: message.ParseFromString(b''),
+        'merge bytes': lambda: message.MergeFromString(b''),
+        'clear': message.Clear,
+        'clear field': lambda: message.ClearField('optional_int32'),
+        'presence': lambda: message.HasField('optional_int32'),
+        'list fields': message.ListFields,
+        'initialized': message.IsInitialized,
+        'initialization errors': message.FindInitializationErrors,
+        'unknown fields': lambda: unknown_fields.UnknownFieldSet(message),
+        'discard unknown': message.DiscardUnknownFields,
+        'compare': lambda: message == unittest_pb2.TestAllTypes(),
+        'string': lambda: str(message),
+        'repeated read': lambda: len(repeated),
+        'repeated write': lambda: repeated.append(1),
+        'child read': lambda: child.bb,
+        'child write': lambda: setattr(child, 'bb', 1),
+    }
+    with futures.ThreadPoolExecutor(max_workers=1) as workers:
+      writer = workers.submit(setattr, message, 'optional_int32', BlockingInt())
+      try:
+        self.assertTrue(entered.wait(timeout=30))
+        for name, operation in operations.items():
+          with self.subTest(operation=name):
+            with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+              operation()
+      finally:
+        release.set()
+      writer.result(timeout=30)
+    # Failed admissions must leave the owner and all aliases usable.
+    self.assertEqual(message.optional_int32, 7)
+    repeated.append(2)
+    child.bb = 3
+    self.assertEqual(list(repeated), [2])
+    self.assertEqual(message.optional_nested_message.bb, 3)
+
+  def testStubMetadataDuringReification(self):
+    # Field and method lookup precede arena admission. Resolving the schema
+    # must not read the stub tag while a writer replaces it with a message def.
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      for _ in range(200):
+        parent = unittest_pb2.TestAllTypes()
+        child = parent.optional_nested_message
+        start = threading.Barrier(2)
+
+        def write():
+          start.wait(timeout=30)
+          try:
+            child.bb = 42
+          except RuntimeError as error:
+            self.assertIn('concurrent mutation', str(error))
+
+        def read():
+          start.wait(timeout=30)
+          for _ in range(20):
+            # Method lookup also goes through the native field-name resolver.
+            self.assertTrue(callable(child.SerializeToString))
+            try:
+              self.assertIn(child.bb, (0, 42))
+            except RuntimeError as error:
+              self.assertIn('concurrent mutation', str(error))
+
+        tasks = [workers.submit(write), workers.submit(read)]
+        for task in tasks:
+          task.result(timeout=30)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testRepeatedBulkCopyRejectsActiveSourceWriter(self):
+    source = unittest_pb2.TestAllTypes(repeated_int32=[1, 2, 3])
+    target = unittest_pb2.TestAllTypes(repeated_int32=[4, 5, 6])
+    source_values = source.repeated_int32
+    target_values = target.repeated_int32
+    entered = threading.Event()
+    release = threading.Event()
+
+    class BlockingInt:
+      def __index__(self):
+        entered.set()
+        if not release.wait(timeout=30):
+          raise TimeoutError('Writer was not released')
+        return 7
+
+    with futures.ThreadPoolExecutor(max_workers=1) as workers:
+      writer = workers.submit(source_values.append, BlockingInt())
+      try:
+        self.assertTrue(entered.wait(timeout=30))
+        with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+          target_values.extend(source_values)
+        with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+          target_values[:] = source_values
+        self.assertEqual(list(target_values), [4, 5, 6])
+      finally:
+        release.set()
+      writer.result(timeout=30)
+    target_values.extend(source_values)
+    self.assertEqual(list(target_values), [4, 5, 6, 1, 2, 3, 7])
+    # Same-arena copies already own the write admission and must not reject
+    # themselves by attempting a nested read admission.
+    source_values.extend(source_values)
+    self.assertEqual(list(source_values), [1, 2, 3, 7] * 2)
+    source_values[:] = source_values
+    self.assertEqual(list(source_values), [1, 2, 3, 7] * 2)
+
+  def testRepeatedCopyFromMutableBuffer(self):
+    data = bytearray(4096)
+    start = threading.Barrier(2)
+
+    def mutate():
+      start.wait(timeout=30)
+      for i in range(1000):
+        data[:] = bytes([i % 2]) * len(data)
+
+    def copy():
+      message = unittest_pb2.TestAllTypes()
+      start.wait(timeout=30)
+      for _ in range(100):
+        message.repeated_int32[:] = data
+        self.assertEqual(len(message.repeated_int32), len(data))
+        self.assertTrue(set(message.repeated_int32).issubset({0, 1}))
+
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      tasks = [workers.submit(mutate), workers.submit(copy)]
+      for task in tasks:
+        task.result(timeout=30)
+
+  def testSharedMapIterator(self):
+    message = test_proto2_pb2.MessageWithRepeatedAndMap()
+    message.scalar_map.update({str(i): str(i) for i in range(1000)})
+    self._CheckSharedIterator(message.scalar_map)
+
+  def testSharedDescriptorIterators(self):
+    proto = descriptor_pb2.FileDescriptorProto(name='shared_iterator.proto')
+    message = proto.message_type.add(name='Message')
+    for i in range(1000):
+      message.field.add(name='field_%d' % i, number=i + 1,
+                        type=5, label=1)
+    descriptor = descriptor_pool.DescriptorPool().AddSerializedFile(
+        proto.SerializeToString()).message_types_by_name['Message']
+    self._CheckSharedIterator(descriptor.fields_by_name)
+    self._CheckSharedIterator(descriptor.fields_by_number)
+
+  def testSharedExtensionIterator(self):
+    proto = descriptor_pb2.FileDescriptorProto(name='shared_extensions.proto')
+    message = proto.message_type.add(name='Message')
+    message.extension_range.add(start=1, end=1001)
+    for i in range(1000):
+      proto.extension.add(name='extension_%d' % i, number=i + 1,
+                          type=5, label=1, extendee='.Message')
+    file = descriptor_pool.DescriptorPool().AddSerializedFile(
+        proto.SerializeToString())
+    instance = message_factory.GetMessageClass(
+        file.message_types_by_name['Message'])()
+    for extension in file.extensions_by_name.values():
+      instance.Extensions[extension] = 1
+    self._CheckSharedIterator(instance.Extensions)
+
   @unittest.skipUnless(api_implementation.Type() == 'upb', 'Native module GC')
   def testModuleTraversesOwnedReferences(self):
     from google._upb import _message

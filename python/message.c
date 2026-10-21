@@ -265,9 +265,16 @@ const upb_FieldDef* PyUpb_Message_GetFieldDef(PyUpb_Message* msg) {
 }
 
 static const upb_MessageDef* _PyUpb_Message_GetMsgdef(PyUpb_Message* msg) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  // Schema lookup also runs before arena admission (including method lookup).
+  // The instance's tagged def changes when a stub is reified; the class's
+  // descriptor is immutable and owns the same schema throughout that change.
+  return PyUpb_MessageMeta_GetMsgdef((PyObject*)Py_TYPE(msg));
+#else
   return PyUpb_Message_IsStub(msg)
              ? upb_FieldDef_MessageSubDef(PyUpb_Message_GetFieldDef(msg))
              : (void*)msg->def;
+#endif
 }
 
 const upb_MessageDef* PyUpb_Message_GetMsgdef(PyObject* self) {

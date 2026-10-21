@@ -319,7 +319,14 @@ PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* self) {
     Py_DECREF(arena);
     return NULL;
   }
-  PyObject* result = PyUpb_ExtensionIterator_IterNextUnprotected(self);
+  PyObject* result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+  result = PyUpb_ExtensionIterator_IterNextUnprotected(self);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
   PyUpb_Arena_EndRead(arena);
   Py_DECREF(arena);
   return result;

@@ -68,6 +68,7 @@ static PyObject* PyUpb_ByNameIterator_New(const PyUpb_ByNameMap_Funcs* funcs,
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   PyUpb_ByNameIterator* iter =
       (void*)PyType_GenericAlloc(s->by_name_iterator_type, 0);
+  if (!iter) return NULL;
   iter->funcs = funcs;
   iter->parent = parent;
   iter->pool = pool;
@@ -79,9 +80,17 @@ static PyObject* PyUpb_ByNameIterator_New(const PyUpb_ByNameMap_Funcs* funcs,
 static PyObject* PyUpb_ByNameIterator_IterNext(PyObject* _self) {
   PyUpb_ByNameIterator* self = PyUpb_ByNameIterator_Self(_self);
   int size = self->funcs->base.get_elem_count(self->parent);
-  if (self->index >= size) return NULL;
-  const void* elem = self->funcs->base.index(self->parent, self->index);
-  self->index++;
+  const void* elem = NULL;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(_self);
+#endif
+  if (self->index < size) {
+    elem = self->funcs->base.index(self->parent, self->index++);
+  }
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  if (!elem) return NULL;
   return PyUnicode_FromString(self->funcs->get_elem_name(elem));
 }
 
@@ -129,6 +138,7 @@ static PyObject* PyUpb_ByNumberIterator_New(
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   PyUpb_ByNumberIterator* iter =
       (void*)PyType_GenericAlloc(s->by_number_iterator_type, 0);
+  if (!iter) return NULL;
   iter->funcs = funcs;
   iter->parent = parent;
   iter->pool = pool;
@@ -140,9 +150,17 @@ static PyObject* PyUpb_ByNumberIterator_New(
 static PyObject* PyUpb_ByNumberIterator_IterNext(PyObject* _self) {
   PyUpb_ByNumberIterator* self = PyUpb_ByNumberIterator_Self(_self);
   int size = self->funcs->base.get_elem_count(self->parent);
-  if (self->index >= size) return NULL;
-  const void* elem = self->funcs->base.index(self->parent, self->index);
-  self->index++;
+  const void* elem = NULL;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(_self);
+#endif
+  if (self->index < size) {
+    elem = self->funcs->base.index(self->parent, self->index++);
+  }
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  if (!elem) return NULL;
   return PyLong_FromLong(self->funcs->get_elem_num(elem));
 }
 
