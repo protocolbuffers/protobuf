@@ -30,6 +30,11 @@ bool proto2_rust_Message_serialize(const google::protobuf::MessageLite* m,
   return google::protobuf::rust::SerializeMsg(m, output);
 }
 
+bool proto2_rust_Message_serialize_deterministic(
+    const google::protobuf::MessageLite* m, google::protobuf::rust::SerializedData* output) {
+  return google::protobuf::rust::SerializeMsg(m, output, /*deterministic=*/true);
+}
+
 size_t proto2_rust_Message_serialized_len(const google::protobuf::MessageLite* m) {
   return m->ByteSizeLong();
 }

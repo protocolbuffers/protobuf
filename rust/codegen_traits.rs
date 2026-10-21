@@ -193,6 +193,15 @@ pub(crate) mod read {
 
     pub trait Serialize: SealedInternal {
         fn serialize(&self) -> Result<Vec<u8>, crate::SerializeError>;
+
+        /// Serializes the message deterministically to Protobuf wire format bytes.
+        ///
+        /// For a given binary, equal messages (including map fields populated in
+        /// different orders) will serialize to the same byte sequence. Note that
+        /// deterministic serialization is not canonical across different languages,
+        /// runtimes, or builds of the binary.
+        fn serialize_deterministic(&self) -> Result<Vec<u8>, crate::SerializeError>;
+
         fn serialized_len(&self) -> usize;
     }
 }

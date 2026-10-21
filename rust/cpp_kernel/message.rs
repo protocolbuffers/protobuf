@@ -7,6 +7,10 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_parse_dont_enforce_required(m: RawMessage, input: PtrAndLen)
         -> bool;
     pub fn proto2_rust_Message_serialize(m: RawMessage, output: &mut SerializedData) -> bool;
+    pub fn proto2_rust_Message_serialize_deterministic(
+        m: RawMessage,
+        output: &mut SerializedData,
+    ) -> bool;
     pub fn proto2_rust_Message_serialized_len(m: RawMessage) -> usize;
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
@@ -323,6 +327,21 @@ impl<T: CppGetRawMessage> Serialize for T {
         let mut serialized_data = SerializedData::new();
         let success = unsafe {
             proto2_rust_Message_serialize(self.get_raw_message(Private), &mut serialized_data)
+        };
+        if success {
+            Ok(serialized_data.into_vec())
+        } else {
+            Err(SerializeError)
+        }
+    }
+
+    fn serialize_deterministic(&self) -> Result<Vec<u8>, SerializeError> {
+        let mut serialized_data = SerializedData::new();
+        let success = unsafe {
+            proto2_rust_Message_serialize_deterministic(
+                self.get_raw_message(Private),
+                &mut serialized_data,
+            )
         };
         if success {
             Ok(serialized_data.into_vec())
