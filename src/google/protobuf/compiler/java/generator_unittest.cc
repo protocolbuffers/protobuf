@@ -648,6 +648,264 @@ TEST_F(JavaGeneratorTest, OneofHasBitsBuildPartial) {
       "parseOneofMsg(input, extensionRegistry);"));
 }
 
+TEST_F(JavaGeneratorTest, StripDocComments) {
+  CreateTempFile("strip_comments.proto",
+                 R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    option java_outer_classname = "StripCommentsProto";
+    option java_generic_services = true;
+
+    // Leading comment on enum StripEnum.
+    enum StripEnum {
+      // Leading comment on enum value ZERO.
+      ZERO = 0;
+    }
+
+    // Leading comment on message StripFoo.
+    message StripFoo {
+      // Leading comment on field bar.
+      optional int32 bar = 1;
+      // Leading comment on deprecated field baz.
+      optional string baz = 2 [deprecated = true];
+      // Leading comment on oneof choice.
+      oneof choice {
+        // Leading comment on oneof field pick.
+        int32 pick = 3;
+      }
+      // Leading comment on map field labels.
+      map<string, int32> labels = 4;
+      optional StripEnum status = 5;
+    }
+
+    // Leading comment on service StripService.
+    service StripService {
+      // Leading comment on rpc Call.
+      rpc Call(StripFoo) returns (StripFoo);
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "strip_comments.proto");
+  ExpectNoErrors();
+
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "Leading comment on message StripFoo."));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "Leading comment on field bar."));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "Leading comment on enum StripEnum."));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "Leading comment on enum value ZERO."));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "Leading comment on oneof field pick."));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "Leading comment on map field labels."));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "proto2_unittest/StripCommentsProto.java",
+      "Leading comment on service StripService."));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "Leading comment on rpc Call."));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/StripCommentsProto.java",
+                                    "See strip_comments.proto;l="));
+
+  // Now compile in both full and lite modes with strip_doc_comments into
+  // separate directories so full and lite outputs never overwrite one another.
+  CreateTempDir("strip_full");
+  CreateTempDir("strip_lite");
+  struct JavaStripCase {
+    const char* java_out;
+    const char* out_prefix;
+  };
+  for (const JavaStripCase test_case :
+       {JavaStripCase{"--java_out=strip_doc_comments:$tmpdir/strip_full",
+                      "strip_full/"},
+        JavaStripCase{"--java_out=lite,strip_doc_comments:$tmpdir/strip_lite",
+                      "strip_lite/"}}) {
+    std::string cmd = absl::StrCat("protocol_compiler --proto_path=$tmpdir ",
+                                   test_case.java_out, " strip_comments.proto");
+    RunProtoc(cmd);
+    ExpectNoErrors();
+
+    std::string proto_java =
+        absl::StrCat(test_case.out_prefix, PACKAGE_PREFIX,
+                     "proto2_unittest/StripCommentsProto.java");
+    EXPECT_FALSE(FileContainsSubstring(proto_java,
+                                       "Leading comment on message StripFoo."));
+    EXPECT_FALSE(
+        FileContainsSubstring(proto_java, "Leading comment on field bar."));
+    EXPECT_FALSE(FileContainsSubstring(proto_java,
+                                       "Leading comment on enum StripEnum."));
+    EXPECT_FALSE(FileContainsSubstring(proto_java,
+                                       "Leading comment on enum value ZERO."));
+    EXPECT_FALSE(FileContainsSubstring(proto_java,
+                                       "Leading comment on oneof field pick."));
+    EXPECT_FALSE(FileContainsSubstring(proto_java,
+                                       "Leading comment on map field labels."));
+    EXPECT_FALSE(FileContainsSubstring(
+        proto_java, "Leading comment on service StripService."));
+    EXPECT_FALSE(
+        FileContainsSubstring(proto_java, "Leading comment on rpc Call."));
+    EXPECT_TRUE(
+        FileContainsSubstring(proto_java, "See strip_comments.proto\n"));
+    EXPECT_FALSE(
+        FileContainsSubstring(proto_java, "See strip_comments.proto;l="));
+  }
+}
+
+TEST_F(JavaGeneratorTest, StripDocCommentsBitForBitIdentical) {
+  CreateTempDir("out1");
+  CreateTempDir("out2");
+  CreateTempDir("lite_out1");
+  CreateTempDir("lite_out2");
+
+  CreateTempFile("identical.proto",
+                 R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    option java_outer_classname = "IdenticalProto";
+    option java_generic_services = true;
+
+    // Version 1 enum comment.
+    enum IdenticalEnum {
+      // Version 1 value comment.
+      UNKNOWN = 0;
+    }
+
+    // Version 1 message comment.
+    message TestMessage {
+      // Version 1 field comment.
+      optional int32 val = 1;
+      // Version 1 deprecated comment.
+      optional string name = 2 [deprecated = true];
+      // Version 1 oneof comment.
+      oneof kind {
+        // Version 1 branch comment.
+        int32 code = 3;
+      }
+      // Version 1 map comment.
+      map<string, int32> counts = 4;
+      optional IdenticalEnum state = 5;
+    }
+
+    // Version 1 service comment.
+    service IdenticalService {
+      // Version 1 rpc comment.
+      rpc Invoke(TestMessage) returns (TestMessage);
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--java_out=strip_doc_comments:$tmpdir/out1 "
+      "identical.proto");
+  ExpectNoErrors();
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--java_out=lite,strip_doc_comments:$tmpdir/lite_out1 "
+      "identical.proto");
+  ExpectNoErrors();
+
+  // Rewrite identical.proto with different comments and line shifts.
+  CreateTempFile("identical.proto",
+                 R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    option java_outer_classname = "IdenticalProto";
+    option java_generic_services = true;
+
+    // Multi-line Version 2 enum comment.
+    // Extra line shifting everything below.
+    enum IdenticalEnum {
+      // Multi-line Version 2 value comment.
+      // Another line.
+      UNKNOWN = 0;
+    }
+
+    // Completely rewritten Version 2 message comment.
+    // An additional comment line.
+    // A third comment line.
+    message TestMessage {
+      // Different comment on val with more explanation.
+      optional int32 val = 1;
+
+      // Rewritten deprecated comment.
+      // Another line.
+      // Yet another line.
+      optional string name = 2 [deprecated = true];
+
+      // Multi-line oneof comment.
+      // Second line.
+      oneof kind {
+        // Multi-line branch comment.
+        // Second line.
+        int32 code = 3;
+      }
+
+      // Multi-line map comment.
+      // Second line.
+      map<string, int32> counts = 4;
+      optional IdenticalEnum state = 5;
+    }
+
+    // Multi-line service comment.
+    // Second line.
+    service IdenticalService {
+      // Multi-line rpc comment.
+      // Second line.
+      rpc Invoke(TestMessage) returns (TestMessage);
+    }
+  )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--java_out=strip_doc_comments:$tmpdir/out2 "
+      "identical.proto");
+  ExpectNoErrors();
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--java_out=lite,strip_doc_comments:$tmpdir/lite_out2 "
+      "identical.proto");
+  ExpectNoErrors();
+
+  std::string content1;
+  std::string content2;
+  EXPECT_TRUE(
+      File::GetContents(absl::StrCat(temp_directory(), "/out1/", PACKAGE_PREFIX,
+                                     "proto2_unittest/IdenticalProto.java"),
+                        &content1, true)
+          .ok());
+  EXPECT_TRUE(
+      File::GetContents(absl::StrCat(temp_directory(), "/out2/", PACKAGE_PREFIX,
+                                     "proto2_unittest/IdenticalProto.java"),
+                        &content2, true)
+          .ok());
+  EXPECT_EQ(content1, content2);
+
+  std::string lite_content1;
+  std::string lite_content2;
+  EXPECT_TRUE(File::GetContents(
+                  absl::StrCat(temp_directory(), "/lite_out1/", PACKAGE_PREFIX,
+                               "proto2_unittest/IdenticalProto.java"),
+                  &lite_content1, true)
+                  .ok());
+  EXPECT_TRUE(File::GetContents(
+                  absl::StrCat(temp_directory(), "/lite_out2/", PACKAGE_PREFIX,
+                               "proto2_unittest/IdenticalProto.java"),
+                  &lite_content2, true)
+                  .ok());
+  EXPECT_EQ(lite_content1, lite_content2);
+}
+
 }  // namespace
 }  // namespace java
 }  // namespace compiler

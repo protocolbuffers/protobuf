@@ -127,6 +127,9 @@ static void WriteDocCommentBodyForLocation(io::Printer* printer,
                                            const SourceLocation& location,
                                            const Options options,
                                            const bool kdoc) {
+  if (options.strip_doc_comments) {
+    return;
+  }
   if (options.strip_nonfunctional_codegen) {
     // TODO: Remove once prototiller can avoid making
     // extraneous formatting changes to comments.
@@ -184,6 +187,9 @@ template <typename DescriptorType>
 static void WriteDocCommentBody(io::Printer* printer,
                                 const DescriptorType* descriptor,
                                 const Options options, const bool kdoc) {
+  if (options.strip_doc_comments) {
+    return;
+  }
   SourceLocation location;
   if (descriptor->GetSourceLocation(&location)) {
     WriteDocCommentBodyForLocation(printer, location, options, kdoc);
@@ -258,17 +264,20 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
     return;
   }
 
-  std::string startLine = "0";
-  SourceLocation location;
-  if (field->GetSourceLocation(&location)) {
-    startLine = std::to_string(location.start_line);
-  }
-
   printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
                  field->full_name());
   if (!options.strip_nonfunctional_codegen) {
-    printer->Print(" *     See $file$;l=$line$\n", "file",
-                   field->file()->name(), "line", startLine);
+    if (options.strip_doc_comments) {
+      printer->Print(" *     See $file$\n", "file", field->file()->name());
+    } else {
+      std::string startLine = "0";
+      SourceLocation location;
+      if (field->GetSourceLocation(&location)) {
+        startLine = std::to_string(location.start_line);
+      }
+      printer->Print(" *     See $file$;l=$line$\n", "file",
+                     field->file()->name(), "line", startLine);
+    }
   }
 }
 
