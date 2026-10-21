@@ -1454,6 +1454,17 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([1], m.repeated_int32)
     self.assertEqual(2, m.optional_nested_message.bb)
 
+  def testRepeatedStringExtendFromContainer(self, message_module):
+    src = message_module.TestAllTypes()
+    dst = message_module.TestAllTypes()
+    dst.repeated_string.extend(src.repeated_string)
+    dst.repeated_string.MergeFrom(src.repeated_string)
+    self.assertEqual([], dst.repeated_string)
+    src.repeated_string.extend(['a', 'b'])
+    dst.repeated_string.extend(src.repeated_string)
+    dst.repeated_string.MergeFrom(src.repeated_string)
+    self.assertEqual(['a', 'b', 'a', 'b'], dst.repeated_string)
+
   def testMergeFromStringDecodeErrorSync(self, message_module):
     m = message_module.NestedTestAllTypes()
     s1 = m.child
