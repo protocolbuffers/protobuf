@@ -16,11 +16,15 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "absl/strings/string_view.h"
 #include "google/protobuf/map.h"
 #include "google/protobuf/map_field.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
+#include "google/protobuf/pyext/free_threading/guarded.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/repeated_composite_container.h"
@@ -59,7 +63,9 @@ struct MapIterator {
   // clang-format off
   PyObject_HEAD
 
-  std::unique_ptr<::google::protobuf::ConstMapIterator> iter;
+  // Null if the map was empty when iteration started. Protected by
+  // iter_guard.
+  Guarded<std::unique_ptr<::google::protobuf::ConstMapIterator>> iter;
   // clang-format on
 
   // A pointer back to the container, so we can notice changes to the version.
@@ -83,13 +89,10 @@ struct MapIterator {
   // We store this so that if the map is modified during iteration we can throw
   // an error.
   uint64_t version;
+
+  // Protects concurrent calls to IterNext on the same MapIterator object.
+  AccessGuard iter_guard;
 };
-
-const Message* MapContainer::GetReadOnlyMessage() { return parent->message; }
-
-Message* MapContainer::GetMutableMessage() {
-  return cmessage::AssureWritable(parent);
-}
 
 static bool PythonToMapKey(MapContainer* self, PyObject* obj, MapKey* key) {
   const FieldDescriptor* field_descriptor =
@@ -278,30 +281,55 @@ static MapContainer* GetMap(PyObject* obj) {
 
 Py_ssize_t MapReflectionFriend::Length(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  const google::protobuf::Message* message = self->parent->message;
-  return message->GetReflection()->MapSize(*message,
-                                           self->parent_field_descriptor);
+  return self->WithRead(-1, [&](const ReadAccess& r) {
+    const Message* message = self->TargetMessage(r);
+    return message->GetReflection()->MapSize(*message,
+                                             self->parent_field_descriptor);
+  });
 }
 
 PyObject* Clear(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  Message* message = self->GetMutableMessage();
-  if (message == nullptr) return nullptr;
-  const Reflection* reflection = message->GetReflection();
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    CMessage* parent = self->parent.Get(w);
+    Message* message = self->TargetMessage(w);
+    if (CMessage::SubMessagesMap* subs = parent->child_submessages.TryGet();
+        subs != nullptr) {
+      std::vector<Message*> to_release;
+      subs->ForEach([&](const void* key, PyObject* value) {
+        CMessage* child = reinterpret_cast<CMessage*>(value);
+        if (child->parent_field_descriptor == self->parent_field_descriptor) {
+          // Keys are elements of this map field, which is mutable here: the
+          // parent was promoted by WithWrite() (go/pdlazy-cast).
+          to_release.push_back(
+              const_cast<Message*>(  // NOLINT(google3-runtime-proto-const-cast)
+                  static_cast<const Message*>(key)));
+        }
+      });
+      for (Message* sub_message : to_release) {
+        parent->DetachSubMessage(sub_message, w);
+      }
+    }
+    const Reflection* reflection = message->GetReflection();
 
-  reflection->ClearField(message, self->parent_field_descriptor);
-  self->version++;
+    reflection->ClearField(message, self->parent_field_descriptor);
+    self->version++;
 
-  Py_RETURN_NONE;
+    Py_RETURN_NONE;
+  });
 }
 
 PyObject* GetEntryClass(PyObject* _self) {
   MapContainer* self = GetMap(_self);
-  CMessageClass* message_class = message_factory::GetMessageClass(
-      cmessage::GetFactoryForMessage(self->parent),
-      self->parent_field_descriptor->message_type());
-  Py_XINCREF(message_class);
-  return reinterpret_cast<PyObject*>(message_class);
+  return self->WithRead(nullptr, [&](const ReadAccess& r) {
+    // Equivalent to cmessage::GetFactoryForMessage(parent), which only reads
+    // the (immutable) Python type of the parent.
+    CMessageClass* message_class = message_factory::GetMessageClass(
+        self->parent.Get(r)->GetMessageClass()->py_message_factory,
+        self->parent_field_descriptor->message_type());
+    Py_XINCREF(message_class);
+    return reinterpret_cast<PyObject*>(message_class);
+  });
 }
 
 PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
@@ -312,44 +340,95 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
     return nullptr;
   }
   MapContainer* other_map = GetMap(arg);
-  Message* message = self->GetMutableMessage();
-  if (message == nullptr) return nullptr;
-  const Message* other_message = other_map->parent->message;
-  const Reflection* reflection = message->GetReflection();
-  const Reflection* other_reflection = other_message->GetReflection();
-  internal::MapFieldBase* field =
-      reflection->MutableMapData(message, self->parent_field_descriptor);
-  const internal::MapFieldBase* other_field = other_reflection->GetMapData(
-      *other_message, other_map->parent_field_descriptor);
-  field->MergeFrom(message->GetArena(), *other_field);
-  self->version++;
-  Py_RETURN_NONE;
+  const Descriptor* self_entry = self->parent_field_descriptor->message_type();
+  const Descriptor* other_entry =
+      other_map->parent_field_descriptor->message_type();
+  if (self_entry->map_key()->cpp_type() != other_entry->map_key()->cpp_type() ||
+      self_entry->map_value()->cpp_type() !=
+          other_entry->map_value()->cpp_type() ||
+      self_entry->map_value()->message_type() !=
+          other_entry->map_value()->message_type() ||
+      self_entry->map_value()->enum_type() !=
+          other_entry->map_value()->enum_type()) {
+    PyErr_SetString(PyExc_AttributeError, "Map fields have incompatible types");
+    return nullptr;
+  }
+  return MapContainer::WithWriteRead(
+      self, other_map, nullptr,
+      [&](const WriteAccess& w, const ReadAccess& r) -> PyObject* {
+        CMessage* parent = self->parent.Get(w);
+        Message* message = self->TargetMessage(w);
+        const Message* other_message = other_map->TargetMessage(r);
+        const Reflection* reflection = message->GetReflection();
+        const Reflection* other_reflection = other_message->GetReflection();
+        internal::MapFieldBase* field =
+            reflection->MutableMapData(message, self->parent_field_descriptor);
+        const internal::MapFieldBase* other_field =
+            other_reflection->GetMapData(*other_message,
+                                         other_map->parent_field_descriptor);
+        if (field == other_field) {
+          // Self-merge is not supported (MapFieldBase::MergeFrom() would
+          // destroy entries of the map that it is iterating over). Raise
+          // AssertionError, as for message self-merge. This is checked after
+          // WithWriteRead() promotes the parent, so that merging a frozen map
+          // into itself raises FrozenInstanceError.
+          PyErr_SetString(PyExc_AssertionError,
+                          "Cannot merge a map into itself.");
+          return nullptr;
+        }
+        if (CMessage::SubMessagesMap* subs = parent->child_submessages.TryGet();
+            subs != nullptr && !subs->IsEmpty() &&
+            self->parent_field_descriptor->message_type()
+                    ->map_value()
+                    ->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+          for (google::protobuf::ConstMapIterator it = other_reflection->ConstMapBegin(
+                   other_message, other_map->parent_field_descriptor);
+               it != other_reflection->ConstMapEnd(
+                         other_message, other_map->parent_field_descriptor);
+               ++it) {
+            if (reflection->ContainsMapKey(
+                    *message, self->parent_field_descriptor, it.GetKey())) {
+              MapValueRef value;
+              reflection->InsertOrLookupMapValue(
+                  message, self->parent_field_descriptor, it.GetKey(), &value);
+              parent->DetachSubMessage(value.MutableMessageValue(), w);
+            }
+          }
+        }
+        field->MergeFrom(message->GetArena(), *other_field);
+        self->version++;
+        Py_RETURN_NONE;
+      });
 }
 
 int MapReflectionFriend::Contains(PyObject* _self, PyObject* key) {
   MapContainer* self = GetMap(_self);
 
-  const Message* message = self->parent->message;
-  const Reflection* reflection = message->GetReflection();
   MapKey map_key;
-
   if (!PythonToMapKey(self, key, &map_key)) {
     return -1;
   }
 
-  if (reflection->ContainsMapKey(*message, self->parent_field_descriptor,
-                                 map_key)) {
-    return 1;
-  } else {
-    return 0;
-  }
+  return self->WithRead(-1, [&](const ReadAccess& r) {
+    const Message* message = self->TargetMessage(r);
+    const Reflection* reflection = message->GetReflection();
+    if (reflection->ContainsMapKey(*message, self->parent_field_descriptor,
+                                   map_key)) {
+      return 1;
+    } else {
+      return 0;
+    }
+  });
 }
 
 // ScalarMap ///////////////////////////////////////////////////////////////////
 
 MapContainer* NewScalarMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
+  if (parent->GetDescriptor() != parent_field_descriptor->containing_type()) {
+    PyErr_Format(PyExc_KeyError, "Field '%s' does not belong to message '%s'",
+                 std::string(parent_field_descriptor->full_name()).c_str(),
+                 std::string(parent->GetDescriptor()->full_name()).c_str());
     return nullptr;
   }
 
@@ -361,9 +440,10 @@ MapContainer* NewScalarMapContainer(
 
   MapContainer* self = GetMap(obj);
 
-  self->SetTree(parent->GetTree());
+  // self is freshly allocated and not yet published to any other thread.
   Py_INCREF(parent);
-  self->parent = parent;
+  self->parent.SetQuiescent(parent);
+  self->InitTreeQuiescent(parent->GetTree());
   self->parent_field_descriptor = parent_field_descriptor;
   self->version = 0;
 
@@ -375,80 +455,80 @@ PyObject* MapReflectionFriend::ScalarMapGetItem(PyObject* _self,
   MapContainer* self = GetMap(_self);
 
   MapKey map_key;
-
   if (!PythonToMapKey(self, key, &map_key)) {
     return nullptr;
   }
   // 1. Read-only lookup without mutation if key exists.
-  const Message* message = self->GetReadOnlyMessage();
-  const Reflection* reflection = message->GetReflection();
-  MapValueConstRef value;
-  if (reflection->LookupMapValue(*message, self->parent_field_descriptor,
-                                 map_key, &value)) {
-    return MapValueRefToPython(self, value);
+  PyObject* item = nullptr;
+  if (!self->WithRead(false, [&](const ReadAccess& r) {
+        const Message* message = self->TargetMessage(r);
+        const Reflection* reflection = message->GetReflection();
+        MapValueConstRef value;
+        if (reflection->LookupMapValue(*message, self->parent_field_descriptor,
+                                       map_key, &value)) {
+          item = MapValueRefToPython(self, value);
+        }
+        return true;
+      })) {
+    return nullptr;
+  }
+  if (item != nullptr) {
+    return item;
   }
 
-  // 2. Frozen path: read-only lookup failed and message is frozen.
-  if (self->parent->state == MESSAGE_FROZEN) {
-    return SetMessageFrozenError();
-  }
-
-  // 3. Mutable path: insert default value for missing key.
-  if (Message* mutable_message = self->GetMutableMessage();
-      mutable_message != nullptr) {
+  // 2. Mutable path: insert default value for missing key.
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    Message* message = self->TargetMessage(w);
     MapValueRef mutable_value;
-    const Reflection* mutable_reflection = mutable_message->GetReflection();
-    if (mutable_reflection->InsertOrLookupMapValue(
-            mutable_message, self->parent_field_descriptor, map_key,
-            &mutable_value)) {
+    if (message->GetReflection()->InsertOrLookupMapValue(
+            message, self->parent_field_descriptor, map_key, &mutable_value)) {
       self->version++;
     }
     return MapValueRefToPython(self, mutable_value);
-  }
-
-  return nullptr;
+  });
 }
 
 int MapReflectionFriend::ScalarMapSetItem(PyObject* _self, PyObject* key,
                                           PyObject* v) {
   MapContainer* self = GetMap(_self);
 
-  Message* message = self->GetMutableMessage();
-  if (message == nullptr) return -1;
-  const Reflection* reflection = message->GetReflection();
   MapKey map_key;
-  MapValueRef value;
-
   if (!PythonToMapKey(self, key, &map_key)) {
     return -1;
   }
 
-  if (v) {
-    // Set item to v.
-    if (reflection->InsertOrLookupMapValue(
-            message, self->parent_field_descriptor, map_key, &value)) {
-      self->version++;
-    }
+  return self->WithWrite(-1, [&](const WriteAccess& w) -> int {
+    Message* message = self->TargetMessage(w);
+    const Reflection* reflection = message->GetReflection();
+    MapValueRef value;
 
-    if (!PythonToMapValueRef(self, v,
-                             !self->parent_field_descriptor->message_type()
-                                  ->map_value()
-                                  ->legacy_enum_field_treated_as_closed(),
-                             &value)) {
-      return -1;
-    }
-    return 0;
-  } else {
-    // Delete key from map.
-    if (reflection->DeleteMapValue(message, self->parent_field_descriptor,
-                                   map_key)) {
-      self->version++;
+    if (v) {
+      // Set item to v.
+      if (reflection->InsertOrLookupMapValue(
+              message, self->parent_field_descriptor, map_key, &value)) {
+        self->version++;
+      }
+
+      if (!PythonToMapValueRef(self, v,
+                               !self->parent_field_descriptor->message_type()
+                                    ->map_value()
+                                    ->legacy_enum_field_treated_as_closed(),
+                               &value)) {
+        return -1;
+      }
       return 0;
     } else {
-      PyErr_Format(PyExc_KeyError, "Key not present in map");
-      return -1;
+      // Delete key from map.
+      if (reflection->DeleteMapValue(message, self->parent_field_descriptor,
+                                     map_key)) {
+        self->version++;
+        return 0;
+      } else {
+        PyErr_Format(PyExc_KeyError, "Key not present in map");
+        return -1;
+      }
     }
-  }
+  });
 }
 
 static PyObject* ScalarMapSetdefault(PyObject* self, PyObject* args) {
@@ -517,25 +597,27 @@ PyObject* MapReflectionFriend::ScalarMapToStr(PyObject* _self) {
   ScopedPyObjectPtr value;
 
   MapContainer* self = GetMap(_self);
-  const Message* message = self->GetReadOnlyMessage();
-  const Reflection* reflection = message->GetReflection();
-  for (google::protobuf::ConstMapIterator it =
-           reflection->ConstMapBegin(message, self->parent_field_descriptor);
-       it != reflection->ConstMapEnd(message, self->parent_field_descriptor);
-       ++it) {
-    key.reset(MapKeyToPython(self, it.GetKey()));
-    if (key == nullptr) {
-      return nullptr;
+  return self->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    const Message* message = self->TargetMessage(r);
+    const Reflection* reflection = message->GetReflection();
+    for (google::protobuf::ConstMapIterator it =
+             reflection->ConstMapBegin(message, self->parent_field_descriptor);
+         it != reflection->ConstMapEnd(message, self->parent_field_descriptor);
+         ++it) {
+      key.reset(MapKeyToPython(self, it.GetKey()));
+      if (key == nullptr) {
+        return nullptr;
+      }
+      value.reset(MapValueRefToPython(self, it.GetValueRef()));
+      if (value == nullptr) {
+        return nullptr;
+      }
+      if (PyDict_SetItem(dict.get(), key.get(), value.get()) < 0) {
+        return nullptr;
+      }
     }
-    value.reset(MapValueRefToPython(self, it.GetValueRef()));
-    if (value == nullptr) {
-      return nullptr;
-    }
-    if (PyDict_SetItem(dict.get(), key.get(), value.get()) < 0) {
-      return nullptr;
-    }
-  }
-  return PyObject_Repr(dict.get());
+    return PyObject_Repr(dict.get());
+  });
 }
 
 static void ScalarMapDealloc(PyObject* _self) {
@@ -592,19 +674,25 @@ static MessageMapContainer* GetMessageMap(PyObject* obj) {
   return reinterpret_cast<MessageMapContainer*>(obj);
 }
 
-// Get or create the CMessage object corresponding to this message.
-static PyObject* GetCMessage(MessageMapContainer* self, const Message* message,
-                             MessageMutabilityState state) {
-  return self->parent
+// Get or create the CMessage object corresponding to this message. `parent` is
+// self's parent message, obtained by the caller under the tree lock.
+static PyObject* GetCMessage(MessageMapContainer* self, const CMessage* parent,
+                             const Message* message,
+                             MessageMutabilityState state,
+                             const ReadAccess& access) {
+  return parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, message,
-                                   self->message_class, state)
+                                   self->message_class, state, access)
       ->AsPyObject();
 }
 
 MessageMapContainer* NewMessageMapContainer(
     CMessage* parent, const google::protobuf::FieldDescriptor* parent_field_descriptor,
     CMessageClass* message_class) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
+  if (parent->GetDescriptor() != parent_field_descriptor->containing_type()) {
+    PyErr_Format(PyExc_KeyError, "Field '%s' does not belong to message '%s'",
+                 std::string(parent_field_descriptor->full_name()).c_str(),
+                 std::string(parent->GetDescriptor()->full_name()).c_str());
     return nullptr;
   }
 
@@ -616,9 +704,10 @@ MessageMapContainer* NewMessageMapContainer(
 
   MessageMapContainer* self = GetMessageMap(obj);
 
-  self->SetTree(parent->GetTree());
+  // self is freshly allocated and not yet published to any other thread.
   Py_INCREF(parent);
-  self->parent = parent;
+  self->parent.SetQuiescent(parent);
+  self->InitTreeQuiescent(parent->GetTree());
   self->parent_field_descriptor = parent_field_descriptor;
   self->version = 0;
 
@@ -639,43 +728,39 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
   // Now we know that this is a delete, not a set.
 
   MessageMapContainer* self = GetMessageMap(_self);
-  Message* message = self->GetMutableMessage();
-  if (message == nullptr) return -1;
-  const Reflection* reflection = message->GetReflection();
+
   MapKey map_key;
-
-  self->version++;
-
   if (!PythonToMapKey(self, key, &map_key)) {
     return -1;
   }
 
-  // Delete key from map.
-  if (reflection->ContainsMapKey(*message, self->parent_field_descriptor,
-                                 map_key)) {
-    // Delete key from CMessage dict.
-    MapValueRef value;
-    reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
-                                       map_key, &value);
-    Message* sub_message = value.MutableMessageValue();
-    // If there is a living weak reference to an item, we "Release" it,
-    // otherwise we just discard the C++ value.
-    if (CMessage* released =
-            self->parent->MaybeReleaseSubMessage(sub_message)) {
-      Message* msg = cmessage::AssureWritable(released);
-      if (msg == nullptr) return 0;
-      Message* new_msg = msg->New();
-      released->message = new_msg;
-      msg->GetReflection()->Swap(msg, new_msg);
-    }
+  return self->WithWrite(-1, [&](const WriteAccess& w) -> int {
+    CMessage* parent = self->parent.Get(w);
+    Message* message = self->TargetMessage(w);
+    const Reflection* reflection = message->GetReflection();
+    self->version++;
 
     // Delete key from map.
-    reflection->DeleteMapValue(message, self->parent_field_descriptor, map_key);
-    return 0;
-  } else {
-    PyErr_Format(PyExc_KeyError, "Key not present in map");
-    return -1;
-  }
+    if (reflection->ContainsMapKey(*message, self->parent_field_descriptor,
+                                   map_key)) {
+      // Delete key from CMessage dict.
+      MapValueRef value;
+      reflection->InsertOrLookupMapValue(message, self->parent_field_descriptor,
+                                         map_key, &value);
+      Message* sub_message = value.MutableMessageValue();
+      // If there is a living weak reference to an item, we "Release" it,
+      // otherwise we just discard the C++ value.
+      parent->DetachSubMessage(sub_message, w);
+
+      // Delete key from map.
+      reflection->DeleteMapValue(message, self->parent_field_descriptor,
+                                 map_key);
+      return 0;
+    } else {
+      PyErr_Format(PyExc_KeyError, "Key not present in map");
+      return -1;
+    }
+  });
 }
 
 // For mutable messages, subscript access has get-or-create semantics: looking
@@ -688,31 +773,35 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
   MessageMapContainer* self = GetMessageMap(_self);
 
   MapKey map_key;
-
   if (!PythonToMapKey(self, key, &map_key)) {
     return nullptr;
   }
 
   // 1. Read-only lookup without mutation if key exists.
-  const Message* message = self->GetReadOnlyMessage();
-  const Reflection* reflection = message->GetReflection();
-  MapValueConstRef value;
-  if (reflection->LookupMapValue(*message, self->parent_field_descriptor,
-                                 map_key, &value)) {
-    MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
-                                       ? MESSAGE_FROZEN
-                                       : MESSAGE_UNPROMOTED;
-    return GetCMessage(self, &value.GetMessageValue(), state);
+  PyObject* item = nullptr;
+  if (!self->WithRead(false, [&](const ReadAccess& r) {
+        const CMessage* parent = self->parent.Get(r);
+        const Message* message = self->TargetMessage(r);
+        const Reflection* reflection = message->GetReflection();
+        MapValueConstRef value;
+        if (reflection->LookupMapValue(*message, self->parent_field_descriptor,
+                                       map_key, &value)) {
+          MessageMutabilityState state = parent->state.Get(r) == MESSAGE_FROZEN
+                                             ? MESSAGE_FROZEN
+                                             : MESSAGE_UNPROMOTED;
+          item = GetCMessage(self, parent, &value.GetMessageValue(), state, r);
+        }
+        return true;
+      })) {
+    return nullptr;
+  }
+  if (item != nullptr) {
+    return item;
   }
 
-  // 2. Frozen path: read-only lookup failed and message is frozen.
-  if (self->parent->state == MESSAGE_FROZEN) {
-    return SetMessageFrozenError();
-  }
-
-  // 3. Mutable path: insert default submessage for missing key.
-  if (Message* mutable_message = self->GetMutableMessage();
-      mutable_message != nullptr) {
+  // 2. Mutable path: insert default submessage for missing key.
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    Message* mutable_message = self->TargetMessage(w);
     const Reflection* mutable_reflection = mutable_message->GetReflection();
     MapValueRef mutable_value;
     if (mutable_reflection->InsertOrLookupMapValue(
@@ -720,11 +809,9 @@ PyObject* MapReflectionFriend::MessageMapGetItem(PyObject* _self,
             &mutable_value)) {
       self->version++;
     }
-    return GetCMessage(self, mutable_value.MutableMessageValue(),
-                       MESSAGE_MUTABLE);
-  }
-
-  return nullptr;
+    return GetCMessage(self, self->parent.Get(w),
+                       mutable_value.MutableMessageValue(), MESSAGE_MUTABLE, w);
+  });
 }
 
 PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
@@ -736,31 +823,35 @@ PyObject* MapReflectionFriend::MessageMapToStr(PyObject* _self) {
   ScopedPyObjectPtr value;
 
   MessageMapContainer* self = GetMessageMap(_self);
-  const Message* message = self->GetReadOnlyMessage();
-  const Reflection* reflection = message->GetReflection();
-  // Wrap const map messages as MESSAGE_UNPROMOTED so string formatting does not
-  // mutate parent state, while ensuring any subsequent write will promote the
-  // parent hierarchy (including lazy fields) via AssureWritable.
-  MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
-                                     ? MESSAGE_FROZEN
-                                     : MESSAGE_UNPROMOTED;
-  for (google::protobuf::ConstMapIterator it =
-           reflection->ConstMapBegin(message, self->parent_field_descriptor);
-       it != reflection->ConstMapEnd(message, self->parent_field_descriptor);
-       ++it) {
-    key.reset(MapKeyToPython(self, it.GetKey()));
-    if (key == nullptr) {
-      return nullptr;
+  return self->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    const CMessage* parent = self->parent.Get(r);
+    const Message* message = self->TargetMessage(r);
+    const Reflection* reflection = message->GetReflection();
+    // Wrap const map messages as MESSAGE_UNPROMOTED so string formatting does
+    // not mutate parent state, while ensuring any subsequent write will promote
+    // the parent hierarchy (including lazy fields) via AssureWritable.
+    MessageMutabilityState state = parent->state.Get(r) == MESSAGE_FROZEN
+                                       ? MESSAGE_FROZEN
+                                       : MESSAGE_UNPROMOTED;
+    for (google::protobuf::ConstMapIterator it =
+             reflection->ConstMapBegin(message, self->parent_field_descriptor);
+         it != reflection->ConstMapEnd(message, self->parent_field_descriptor);
+         ++it) {
+      key.reset(MapKeyToPython(self, it.GetKey()));
+      if (key == nullptr) {
+        return nullptr;
+      }
+      value.reset(GetCMessage(self, parent, &it.GetValueRef().GetMessageValue(),
+                              state, r));
+      if (value == nullptr) {
+        return nullptr;
+      }
+      if (PyDict_SetItem(dict.get(), key.get(), value.get()) < 0) {
+        return nullptr;
+      }
     }
-    value.reset(GetCMessage(self, &it.GetValueRef().GetMessageValue(), state));
-    if (value == nullptr) {
-      return nullptr;
-    }
-    if (PyDict_SetItem(dict.get(), key.get(), value.get()) < 0) {
-      return nullptr;
-    }
-  }
-  return PyObject_Repr(dict.get());
+    return PyObject_Repr(dict.get());
+  });
 }
 
 Message* MapReflectionFriend::PromoteConstMapValueMessage(
@@ -876,62 +967,80 @@ static MapIterator* GetIter(PyObject* obj) {
 PyObject* MapReflectionFriend::GetIterator(PyObject* _self) {
   MapContainer* self = GetMap(_self);
 
-  ScopedPyObjectPtr obj(PyType_GenericAlloc(&MapIterator_Type, 0));
-  if (obj == nullptr) {
-    return PyErr_Format(PyExc_KeyError, "Could not allocate iterator");
-  }
+  return self->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    // The iterator holds a strong reference to the parent message.
+    CMessage* parent = const_cast<CMessage*>(self->parent.Get(r));
+    const Message* message = self->TargetMessage(r);
+    ScopedPyObjectPtr obj(PyType_GenericAlloc(&MapIterator_Type, 0));
+    if (obj == nullptr) {
+      return PyErr_Format(PyExc_KeyError, "Could not allocate iterator");
+    }
 
-  MapIterator* iter = GetIter(obj.get());
+    MapIterator* iter = GetIter(obj.get());
+    new (&iter->iter_guard) AccessGuard();
 
-  Py_INCREF(self);
-  iter->container = self;
-  iter->version = self->version;
-  Py_INCREF(self->parent);
-  iter->parent = self->parent;
+    Py_INCREF(self);
+    iter->container = self;
+    iter->version = self->version;
+    Py_INCREF(parent);
+    iter->parent = parent;
 
-  if (MapReflectionFriend::Length(_self) > 0) {
-    const Message* message = self->GetReadOnlyMessage();
     const Reflection* reflection = message->GetReflection();
+    std::unique_ptr<::google::protobuf::ConstMapIterator> map_iter;
+    if (reflection->MapSize(*message, self->parent_field_descriptor) > 0) {
+      map_iter = std::make_unique<::google::protobuf::ConstMapIterator>(
+          reflection->ConstMapBegin(message, self->parent_field_descriptor));
+    }
+    new (&iter->iter) Guarded<std::unique_ptr<::google::protobuf::ConstMapIterator>>(
+        std::move(map_iter), iter->iter_guard);
 
-    iter->iter = std::make_unique<::google::protobuf::ConstMapIterator>(
-        reflection->ConstMapBegin(message, self->parent_field_descriptor));
-  }
-
-  return obj.release();
+    return obj.release();
+  });
 }
 
 PyObject* MapReflectionFriend::IterNext(PyObject* _self) {
   MapIterator* self = GetIter(_self);
 
-  if (self->version != self->container->version) {
-    return PyErr_Format(PyExc_RuntimeError, "Map modified during iteration.");
-  }
-  if (self->parent != self->container->parent) {
-    return PyErr_Format(PyExc_RuntimeError, "Map cleared during iteration.");
-  }
+  return self->iter_guard.WithWrite(
+      nullptr, [&](const WriteAccess& iw) -> PyObject* {
+        ::google::protobuf::ConstMapIterator* iter = self->iter.Get(iw);
+        return self->container->WithRead(
+            nullptr, [&](const ReadAccess& r) -> PyObject* {
+              if (self->version != self->container->version) {
+                return PyErr_Format(PyExc_RuntimeError,
+                                    "Map modified during iteration.");
+              }
+              if (self->parent != self->container->parent.Get(r)) {
+                return PyErr_Format(PyExc_RuntimeError,
+                                    "Map cleared during iteration.");
+              }
 
-  if (self->iter == nullptr) {
-    return nullptr;
-  }
+              if (iter == nullptr) {
+                return nullptr;
+              }
 
-  const Message* message = self->container->GetReadOnlyMessage();
-  const Reflection* reflection = message->GetReflection();
+              const Message* message = self->container->TargetMessage(r);
+              const Reflection* reflection = message->GetReflection();
 
-  if (*self->iter == reflection->ConstMapEnd(
-                         message, self->container->parent_field_descriptor)) {
-    return nullptr;
-  }
+              if (*iter ==
+                  reflection->ConstMapEnd(
+                      message, self->container->parent_field_descriptor)) {
+                return nullptr;
+              }
 
-  PyObject* ret = MapKeyToPython(self->container, self->iter->GetKey());
+              PyObject* ret = MapKeyToPython(self->container, iter->GetKey());
 
-  ++(*self->iter);
+              ++(*iter);
 
-  return ret;
+              return ret;
+            });
+      });
 }
 
 static void DeallocMapIterator(PyObject* _self) {
   MapIterator* self = GetIter(_self);
-  self->iter.reset();
+  // Destroys the owned ConstMapIterator (placement-new'd in GetIterator()).
+  self->iter.~Guarded();
   Py_CLEAR(self->container);
   Py_CLEAR(self->parent);
   Py_TYPE(_self)->tp_free(_self);

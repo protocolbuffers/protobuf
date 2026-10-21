@@ -16,6 +16,7 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/message_tree.h"
@@ -38,9 +39,11 @@ static Py_ssize_t Length(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  const Message* message = self->parent->message;
-  return message->GetReflection()->FieldSize(*message,
-                                             self->parent_field_descriptor);
+  return self->WithRead(-1, [&](const ReadAccess& r) {
+    const Message* message = self->TargetMessage(r);
+    return message->GetReflection()->FieldSize(*message,
+                                               self->parent_field_descriptor);
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -48,22 +51,29 @@ static Py_ssize_t Length(PyObject* pself) {
 
 static PyObject* AttachQuiescentMessage(RepeatedCompositeContainer* self,
                                         ScopedPyObjectPtr child) {
-  Message* parent_msg = cmessage::AssureWritable(self->parent);
-  if (parent_msg == nullptr) return nullptr;
-
-  CMessage* cmsg = reinterpret_cast<CMessage*>(child.get());
-  parent_msg->GetReflection()->UnsafeArenaAddAllocatedMessage(
-      parent_msg, self->parent_field_descriptor, cmsg->GetQuiescent());
-  MessageTree* old_tree = cmsg->GetTree();
-  MessageTree* new_tree = self->GetTree();
-  cmessage::UpdateSubtreeTree(cmsg, new_tree);
-  old_tree->Unref();
-  Py_INCREF(self->parent);
-  cmsg->parent = self->parent;
-  cmsg->parent_field_descriptor = self->parent_field_descriptor;
-  cmsg->has_mutable_map_ancestor = self->parent->has_mutable_map_ancestor;
-  cmessage::SetSubmessage(self->parent, cmsg);
-  return child.release();
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    Message* message = self->TargetMessage(w);
+    CMessage* cmsg = reinterpret_cast<CMessage*>(child.get());
+    CMessage* parent = self->parent.Get(w);
+    message->GetReflection()->UnsafeArenaAddAllocatedMessage(
+        message, self->parent_field_descriptor, cmsg->GetQuiescent());
+    MessageTree* old_tree = cmsg->GetTree();
+    MessageTree* new_tree = self->GetTree();
+    // cmsg is quiescent (uniquely referenced by this thread, no parent, and
+    // hence no live child wrappers, which would hold a reference to it), so no
+    // other thread can reach it: its Guarded fields can be written without a
+    // token before binding them to self's tree guard.
+    Py_INCREF(parent);
+    cmsg->parent.SetQuiescent(parent);
+    cmsg->parent_field_descriptor = self->parent_field_descriptor;
+    cmsg->has_mutable_map_ancestor.SetQuiescent(
+        parent->has_mutable_map_ancestor.Get(w));
+    cmsg->InitTreeQuiescent(new_tree);
+    // A standalone cmsg owned the only reference to its tree.
+    old_tree->Unref();
+    cmessage::SetSubmessage(parent, cmsg);
+    return child.release();
+  });
 }
 
 PyObject* Add(RepeatedCompositeContainer* self, PyObject* args,
@@ -123,26 +133,68 @@ static PyObject* Insert(PyObject* pself, PyObject* args) {
   }
 
   // Swap the element to right position.
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
-  const Reflection* reflection = message->GetReflection();
-  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
-  Py_ssize_t length = reflection->FieldSize(*message, field_descriptor) - 1;
-  Py_ssize_t end_index = index;
-  if (end_index < 0) end_index += length;
-  if (end_index < 0) end_index = 0;
-  for (Py_ssize_t i = length; i > end_index; i--) {
-    reflection->SwapElements(message, field_descriptor, i, i - 1);
-  }
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    Message* message = self->TargetMessage(w);
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+    Py_ssize_t length = reflection->FieldSize(*message, field_descriptor) - 1;
+    if (length > 0) {
+      Py_ssize_t end_index = index;
+      if (end_index < 0) end_index += length;
+      if (end_index < 0) end_index = 0;
+      for (Py_ssize_t i = length; i > end_index; i--) {
+        reflection->SwapElements(message, field_descriptor, i, i - 1);
+      }
+    }
 
-  Py_RETURN_NONE;
+    Py_RETURN_NONE;
+  });
 }
 
 // ---------------------------------------------------------------------
 // extend()
 
 PyObject* Extend(RepeatedCompositeContainer* self, PyObject* value) {
-  if (cmessage::AssureWritable(self->parent) == nullptr) return nullptr;
+  bool lock_failed = false;
+  auto on_fail = [&]() {
+    lock_failed = true;
+    return false;
+  };
+  bool is_self_extend;
+  if (Py_TYPE(value) == &RepeatedCompositeContainer_Type &&
+      value != reinterpret_cast<PyObject*>(self)) {
+    // Read other's parent under its own tree guard (a single write lock if both
+    // containers share a tree).
+    RepeatedCompositeContainer* other =
+        reinterpret_cast<RepeatedCompositeContainer*>(value);
+    is_self_extend = RepeatedCompositeContainer::WithWriteRead(
+        self, other, on_fail, [&](const WriteAccess& w, const ReadAccess& r) {
+          return other->parent.Get(r) == self->parent.Get(w) &&
+                 other->parent_field_descriptor ==
+                     self->parent_field_descriptor;
+        });
+  } else {
+    // Still acquire write access so that the parent is promoted even if
+    // value turns out to be empty.
+    is_self_extend = self->WithWrite(on_fail, [&](const WriteAccess&) {
+      return value == reinterpret_cast<PyObject*>(self);
+    });
+  }
+  if (lock_failed) {
+    return nullptr;
+  }
+  ScopedPyObjectPtr self_copy;
+  if (is_self_extend) {
+    ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
+    if (full_slice == nullptr) {
+      return nullptr;
+    }
+    self_copy.reset(Subscript(self, full_slice.get()));
+    if (self_copy == nullptr) {
+      return nullptr;
+    }
+    value = self_copy.get();
+  }
   ScopedPyObjectPtr iter(PyObject_GetIter(value));
   if (iter == nullptr) {
     PyErr_SetString(PyExc_TypeError, "Value must be iterable");
@@ -179,8 +231,8 @@ static PyObject* MergeFromMethod(PyObject* self, PyObject* other) {
 
 // This function does not check the bounds.
 static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
-                         Py_ssize_t length = -1) {
-  const Message* message = self->parent->message;
+                         const ReadAccess& r, Py_ssize_t length = -1) {
+  const Message* message = self->TargetMessage(r);
   const Reflection* reflection = message->GetReflection();
   if (length == -1) {
     length = reflection->FieldSize(*message, self->parent_field_descriptor);
@@ -198,53 +250,61 @@ static PyObject* GetItem(RepeatedCompositeContainer* self, Py_ssize_t index,
   // 2. Any subsequent write on the child triggers AssureWritable, which
   //    promotes the entire parent hierarchy (e.g., marking LazyField ancestors
   //    dirty).
-  MessageMutabilityState state = self->parent->state == MESSAGE_FROZEN
+  const CMessage* parent = self->parent.Get(r);
+  MessageMutabilityState state = parent->state.Get(r) == MESSAGE_FROZEN
                                      ? MESSAGE_FROZEN
                                      : MESSAGE_UNPROMOTED;
-  return self->parent
+  return parent
       ->BuildSubMessageFromPointer(self->parent_field_descriptor, sub_message,
-                                   self->child_message_class, state)
+                                   self->child_message_class, state, r)
       ->AsPyObject();
 }
 
 PyObject* Subscript(RepeatedCompositeContainer* self, PyObject* item) {
-  const Message* message = self->parent->message;
-  const Reflection* reflection = message->GetReflection();
-  Py_ssize_t length =
-      reflection->FieldSize(*message, self->parent_field_descriptor);
+  return self->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    const Message* message = self->TargetMessage(r);
+    const Reflection* reflection = message->GetReflection();
+    Py_ssize_t length =
+        reflection->FieldSize(*message, self->parent_field_descriptor);
 
-  if (PyIndex_Check(item)) {
-    Py_ssize_t index;
-    index = PyNumber_AsSsize_t(item, PyExc_IndexError);
-    if (index == -1 && PyErr_Occurred()) return nullptr;
-    if (index < 0) index += length;
-    return GetItem(self, index, length);
-  } else if (PySlice_Check(item)) {
-    Py_ssize_t from, to, step, slicelength, cur, i;
-    PyObject* result;
+    if (PyIndex_Check(item)) {
+      Py_ssize_t index;
+      index = PyNumber_AsSsize_t(item, PyExc_IndexError);
+      if (index == -1 && PyErr_Occurred()) return nullptr;
+      if (index < 0) index += length;
+      return GetItem(self, index, r, length);
+    } else if (PySlice_Check(item)) {
+      Py_ssize_t from, to, step, slicelength, cur, i;
+      PyObject* result;
 
-    if (PySlice_GetIndicesEx(item, length, &from, &to, &step, &slicelength) ==
-        -1) {
-      return nullptr;
-    }
-
-    if (slicelength <= 0) {
-      return PyList_New(0);
-    } else {
-      result = PyList_New(slicelength);
-      if (!result) return nullptr;
-
-      for (cur = from, i = 0; i < slicelength; cur += step, i++) {
-        PyList_SET_ITEM(result, i, GetItem(self, cur, length));
+      if (PySlice_GetIndicesEx(item, length, &from, &to, &step, &slicelength) ==
+          -1) {
+        return nullptr;
       }
 
-      return result;
+      if (slicelength <= 0) {
+        return PyList_New(0);
+      } else {
+        result = PyList_New(slicelength);
+        if (!result) return nullptr;
+
+        for (cur = from, i = 0; i < slicelength; cur += step, i++) {
+          PyObject* elem = GetItem(self, cur, r, length);
+          if (elem == nullptr) {
+            Py_DECREF(result);
+            return nullptr;
+          }
+          PyList_SET_ITEM(result, i, elem);
+        }
+
+        return result;
+      }
+    } else {
+      PyErr_Format(PyExc_TypeError, "indices must be integers, not %.200s",
+                   item->ob_type->tp_name);
+      return nullptr;
     }
-  } else {
-    PyErr_Format(PyExc_TypeError, "indices must be integers, not %.200s",
-                 item->ob_type->tp_name);
-    return nullptr;
-  }
+  });
 }
 
 static PyObject* SubscriptMethod(PyObject* self, PyObject* slice) {
@@ -259,15 +319,14 @@ int AssignSubscript(RepeatedCompositeContainer* self, PyObject* slice,
   }
 
   // TODO: b/517235198 - Reify even for empty sequences.
-  int status = cmessage::CheckRepeatedFieldDeletion(
-      self->parent, self->parent_field_descriptor, slice);
+  int status = cmessage::CheckRepeatedFieldDeletion(self, slice);
   if (status < 0) return -1;
   if (status > 0) return 0;
 
-  if (cmessage::AssureWritable(self->parent) == nullptr) return -1;
-
-  return cmessage::DeleteRepeatedField(self->parent,
-                                       self->parent_field_descriptor, slice);
+  return self->WithWrite(-1, [&](const WriteAccess& w) {
+    return cmessage::DeleteRepeatedField(
+        self->parent.Get(w), self->parent_field_descriptor, slice, w);
+  });
 }
 
 static int AssignSubscriptMethod(PyObject* self, PyObject* slice,
@@ -280,14 +339,16 @@ static PyObject* Remove(PyObject* pself, PyObject* value) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
   Py_ssize_t len = Length(reinterpret_cast<PyObject*>(self));
+  if (len < 0) return nullptr;
 
   for (Py_ssize_t i = 0; i < len; i++) {
-    ScopedPyObjectPtr item(GetItem(self, i, len));
+    ScopedPyObjectPtr item(self->WithRead(
+        nullptr, [&](const ReadAccess& r) { return GetItem(self, i, r); }));
     if (item == nullptr) {
       return nullptr;
     }
@@ -356,37 +417,64 @@ static PyObject* ToStr(PyObject* pself) {
 // ---------------------------------------------------------------------
 // sort()
 
-static void ReorderAttached(RepeatedCompositeContainer* self,
-                            PyObject* child_list) {
-  const Py_ssize_t length = Length(reinterpret_cast<PyObject*>(self));
-  if (length == 0) return;
+static int ReorderAttached(RepeatedCompositeContainer* self,
+                           PyObject* child_list) {
+  return self->WithWrite(-1, [&](const WriteAccess& w) -> int {
+    Message* message = self->TargetMessage(w);
+    CMessage* parent = self->parent.Get(w);
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* descriptor = self->parent_field_descriptor;
+    const Py_ssize_t length = reflection->FieldSize(*message, descriptor);
+    if (length != PyList_GET_SIZE(child_list)) {
+      PyErr_SetString(
+          PyExc_RuntimeError,
+          "RepeatedCompositeContainer modified during sort/reverse");
+      return -1;
+    }
+    if (length == 0) return 0;
 
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return;
-  const Reflection* reflection = message->GetReflection();
-  const FieldDescriptor* descriptor = self->parent_field_descriptor;
+    MessageTree* self_tree = self->GetTree();
+    for (Py_ssize_t i = 0; i < length; ++i) {
+      CMessage* child_cmsg =
+          reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i));
+      // Check the tree first: child_cmsg's Guarded fields may only be read
+      // with w if it belongs to self's tree.
+      if (child_cmsg->GetTree() != self_tree ||
+          child_cmsg->parent.Get(w) != parent ||
+          child_cmsg->parent_field_descriptor != descriptor) {
+        PyErr_SetString(
+            PyExc_RuntimeError,
+            "RepeatedCompositeContainer modified during sort/reverse");
+        return -1;
+      }
+    }
 
-  // We need to rearrange things to match python's sort order.
-  for (Py_ssize_t i = 0; i < length; ++i) {
-    reflection->UnsafeArenaReleaseLast(message, descriptor);
-  }
-  for (Py_ssize_t i = 0; i < length; ++i) {
-    CMessage* child_cmsg =
-        reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i));
-    // const_cast is safe because each child_cmsg originated from this mutable
-    // parent's repeated field (released above) and is already an allocated,
-    // mutable Message object in memory.
-    reflection->UnsafeArenaAddAllocatedMessage(
-        message, descriptor, const_cast<Message*>(child_cmsg->message));
-  }
+    // We need to rearrange things to match python's sort order.
+    for (Py_ssize_t i = 0; i < length; ++i) {
+      reflection->UnsafeArenaReleaseLast(message, descriptor);
+    }
+    for (Py_ssize_t i = 0; i < length; ++i) {
+      CMessage* child_cmsg =
+          reinterpret_cast<CMessage*>(PyList_GET_ITEM(child_list, i));
+      // Each child_cmsg originated from this mutable parent's repeated field
+      // (released above) and is already an allocated, mutable Message object in
+      // memory.
+      reflection->UnsafeArenaAddAllocatedMessage(message, descriptor,
+                                                 child_cmsg->message.Get(w));
+    }
+    return 0;
+  });
 }
 
 // Returns 0 if successful; returns -1 and sets an exception if
 // unsuccessful.
 static int SortPythonMessages(RepeatedCompositeContainer* self, PyObject* args,
                               PyObject* kwds) {
-  ScopedPyObjectPtr child_list(
-      PySequence_List(reinterpret_cast<PyObject*>(self)));
+  ScopedPyObjectPtr full_slice(PySlice_New(nullptr, nullptr, nullptr));
+  if (full_slice == nullptr) {
+    return -1;
+  }
+  ScopedPyObjectPtr child_list(Subscript(self, full_slice.get()));
   if (child_list == nullptr) {
     return -1;
   }
@@ -394,15 +482,14 @@ static int SortPythonMessages(RepeatedCompositeContainer* self, PyObject* args,
   if (m == nullptr) return -1;
   if (ScopedPyObjectPtr(PyObject_Call(m.get(), args, kwds)) == nullptr)
     return -1;
-  ReorderAttached(self, child_list.get());
-  return 0;
+  return ReorderAttached(self, child_list.get());
 }
 
 static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
@@ -419,7 +506,9 @@ static PyObject* Sort(PyObject* pself, PyObject* args, PyObject* kwds) {
   }
 
   // TODO: b/517235198 - Reify even for empty sequences.
-  if (Length(pself) == 0) {
+  Py_ssize_t length = Length(pself);
+  if (length < 0) return nullptr;
+  if (length == 0) {
     Py_RETURN_NONE;
   }
 
@@ -436,24 +525,27 @@ static PyObject* Reverse(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
   // TODO: b/517235198 - Reify even for empty sequences.
-  if (Length(pself) == 0) {
+  Py_ssize_t length = Length(pself);
+  if (length < 0) return nullptr;
+  if (length == 0) {
     Py_RETURN_NONE;
   }
 
-  Message* message = cmessage::AssureWritable(self->parent);
-  if (message == nullptr) return nullptr;
-  const Reflection* reflection = message->GetReflection();
-  const FieldDescriptor* descriptor = self->parent_field_descriptor;
-  Py_ssize_t length = reflection->FieldSize(*message, descriptor);
-  for (Py_ssize_t i = 0; i < length / 2; ++i) {
-    reflection->SwapElements(message, descriptor, i, length - 1 - i);
-  }
-  Py_RETURN_NONE;
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    Message* message = self->TargetMessage(w);
+    const Reflection* reflection = message->GetReflection();
+    const FieldDescriptor* descriptor = self->parent_field_descriptor;
+    length = reflection->FieldSize(*message, descriptor);
+    for (Py_ssize_t i = 0; i < length / 2; ++i) {
+      reflection->SwapElements(message, descriptor, i, length - 1 - i);
+    }
+    Py_RETURN_NONE;
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -461,31 +553,35 @@ static PyObject* Clear(PyObject* pself) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
   // TODO: b/517235198 - Reify even for empty sequences.
-  if (Length(pself) == 0) {
+  Py_ssize_t len = Length(pself);
+  if (len < 0) return nullptr;
+  if (len == 0) {
     Py_RETURN_NONE;
   }
 
-  CMessage* cmessage = self->parent;
-  Message* message = cmessage::AssureWritable(cmessage);
-  if (message == nullptr) return nullptr;
-  const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
-  const Reflection* reflection = message->GetReflection();
-  Py_ssize_t length = reflection->FieldSize(*message, field_descriptor);
-  cmessage::DeleteLastRepeatedWithSize(cmessage, field_descriptor, length);
-  Py_RETURN_NONE;
+  return self->WithWrite(nullptr, [&](const WriteAccess& w) -> PyObject* {
+    CMessage* cmessage = self->parent.Get(w);
+    Message* message = self->TargetMessage(w);
+    const FieldDescriptor* field_descriptor = self->parent_field_descriptor;
+    const Reflection* reflection = message->GetReflection();
+    Py_ssize_t length = reflection->FieldSize(*message, field_descriptor);
+    cmessage::DeleteLastRepeatedWithSize(cmessage, field_descriptor, length, w);
+    Py_RETURN_NONE;
+  });
 }
 
 static PyObject* Item(PyObject* pself, Py_ssize_t index) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
-  return GetItem(self, index);
+  return self->WithRead(
+      nullptr, [&](const ReadAccess& r) { return GetItem(self, index, r); });
 }
 
 static PyObject* Pop(PyObject* pself, PyObject* args) {
   RepeatedCompositeContainer* self =
       reinterpret_cast<RepeatedCompositeContainer*>(pself);
 
-  if (CheckFrozen(self->parent, "Container is immutable") < 0) {
+  if (!self->CheckParentNotFrozen()) {
     return nullptr;
   }
 
@@ -493,14 +589,19 @@ static PyObject* Pop(PyObject* pself, PyObject* args) {
   if (!PyArg_ParseTuple(args, "|n", &index)) {
     return nullptr;
   }
-  Py_ssize_t length = Length(pself);
-  if (index < 0) index += length;
-  PyObject* item = GetItem(self, index, length);
+  PyObject* item = self->WithRead(nullptr, [&](const ReadAccess& r) {
+    const Message* message = self->TargetMessage(r);
+    Py_ssize_t length = message->GetReflection()->FieldSize(
+        *message, self->parent_field_descriptor);
+    if (index < 0) index += length;
+    return GetItem(self, index, r, length);
+  });
   if (item == nullptr) {
     return nullptr;
   }
   ScopedPyObjectPtr py_index(PyLong_FromSsize_t(index));
   if (AssignSubscript(self, py_index.get(), nullptr) < 0) {
+    Py_DECREF(item);
     return nullptr;
   }
   return item;
@@ -514,7 +615,11 @@ PyObject* DeepCopy(PyObject* pself, PyObject* arg) {
 RepeatedCompositeContainer* NewContainer(
     CMessage* parent, const FieldDescriptor* parent_field_descriptor,
     CMessageClass* child_message_class) {
-  if (!CheckFieldBelongsToMessage(parent_field_descriptor, parent->message)) {
+  bool belongs = parent->WithRead(false, [&](const ReadAccess& r) {
+    return CheckFieldBelongsToMessage(parent_field_descriptor,
+                                      parent->message.Get(r));
+  });
+  if (!belongs) {
     return nullptr;
   }
 
@@ -525,9 +630,10 @@ RepeatedCompositeContainer* NewContainer(
     return nullptr;
   }
 
-  self->SetTree(parent->GetTree());
+  // self is newly allocated and not yet published to other threads.
   Py_INCREF(parent);
-  self->parent = parent;
+  self->parent.SetQuiescent(parent);
+  self->InitTreeQuiescent(parent->GetTree());
   self->parent_field_descriptor = parent_field_descriptor;
   Py_INCREF(child_message_class);
   self->child_message_class = child_message_class;

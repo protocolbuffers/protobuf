@@ -15,9 +15,10 @@
 
 #include "google/protobuf/message.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
-#include "google/protobuf/wire_format_lite.h"
 
 namespace google {
 namespace protobuf {
@@ -75,21 +76,24 @@ PyObject* New(PyTypeObject* type, PyObject* args, PyObject* kwargs) {
     return nullptr;
   }
 
-  PyUnknownFieldSet* self = reinterpret_cast<PyUnknownFieldSet*>(
-      PyType_GenericAlloc(&PyUnknownFieldSet_Type, 0));
-  if (self == nullptr) {
-    return nullptr;
-  }
-
-  // Top UnknownFieldSet should set parent nullptr.
-  self->parent = nullptr;
-
   // Copy c_message's UnknownFieldSet.
-  const Message* message = reinterpret_cast<CMessage*>(c_message)->message;
-  const Reflection* reflection = message->GetReflection();
-  self->fields = new google::protobuf::UnknownFieldSet;
-  self->fields->MergeFrom(reflection->GetUnknownFields(*message));
-  return reinterpret_cast<PyObject*>(self);
+  CMessage* cmsg = reinterpret_cast<CMessage*>(c_message);
+  return cmsg->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    const Message* message = cmsg->message.Get(r);
+    PyUnknownFieldSet* self = reinterpret_cast<PyUnknownFieldSet*>(
+        PyType_GenericAlloc(&PyUnknownFieldSet_Type, 0));
+    if (self == nullptr) {
+      return nullptr;
+    }
+
+    // Top UnknownFieldSet should set parent nullptr.
+    self->parent = nullptr;
+
+    const Reflection* reflection = message->GetReflection();
+    self->fields = new google::protobuf::UnknownFieldSet;
+    self->fields->MergeFrom(reflection->GetUnknownFields(*message));
+    return reinterpret_cast<PyObject*>(self);
+  });
 }
 
 PyObject* NewPyUnknownField(PyUnknownFieldSet* parent, Py_ssize_t index) {

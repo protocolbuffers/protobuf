@@ -22,6 +22,8 @@
 #include "google/protobuf/message.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
+#include "google/protobuf/pyext/free_threading/guarded.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
 #include "google/protobuf/pyext/repeated_composite_container.h"
@@ -45,8 +47,13 @@ namespace extension_dict {
 static Py_ssize_t len(ExtensionDict* self) {
   Py_ssize_t size = 0;
   std::vector<const FieldDescriptor*> fields;
-  self->parent->message->GetReflection()->ListFields(*self->parent->message,
-                                                     &fields);
+  if (!self->parent->WithRead(false, [&](const ReadAccess& r) {
+        const Message* message = self->parent->message.Get(r);
+        message->GetReflection()->ListFields(*message, &fields);
+        return true;
+      })) {
+    return -1;
+  }
 
   for (size_t i = 0; i < fields.size(); ++i) {
     if (fields[i]->is_extension()) {
@@ -71,8 +78,16 @@ static Py_ssize_t len(ExtensionDict* self) {
 struct ExtensionIterator {
   // clang-format off
   PyObject_HEAD
-  Py_ssize_t index;
-  // clang-format on
+      // clang-format on
+
+      // Guards the iterator's own mutable state. Sharing one iterator across
+      // threads is not supported: concurrent next() calls fail with a
+      // RuntimeError.
+      AccessGuard guard;
+
+  // The current index into fields. Protected by guard.
+  Guarded<Py_ssize_t> index{0, guard};
+
   std::vector<const FieldDescriptor*> fields;
 
   // Owned reference, to keep the FieldDescriptors alive.
@@ -94,11 +109,16 @@ PyObject* GetIter(PyObject* _self) {
   // std::vector<...> fields will be called.
   new (iter) ExtensionIterator;
 
-  self->parent->message->GetReflection()->ListFields(*self->parent->message,
-                                                     &iter->fields);
-  iter->index = 0;
   Py_INCREF(self);
   iter->extension_dict = self;
+
+  if (!self->parent->WithRead(false, [&](const ReadAccess& r) {
+        const Message* message = self->parent->message.Get(r);
+        message->GetReflection()->ListFields(*message, &iter->fields);
+        return true;
+      })) {
+    return nullptr;
+  }
 
   return obj.release();
 }
@@ -117,75 +137,78 @@ PyObject* subscript(ExtensionDict* self, PyObject* key) {
   if (descriptor == nullptr) {
     return nullptr;
   }
-  if (!CheckFieldBelongsToMessage(descriptor, self->parent->message)) {
+  if (!descriptor->is_repeated() &&
+      descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
+    return self->parent->WithRead(
+        nullptr, [&](const ReadAccess& r) -> PyObject* {
+          const Message* message = self->parent->message.Get(r);
+          if (!CheckFieldBelongsToMessage(descriptor, message)) {
+            return nullptr;
+          }
+          return cmessage::InternalGetScalar(message, descriptor);
+        });
+  }
+  if (!self->parent->WithRead(false, [&](const ReadAccess& r) {
+        return CheckFieldBelongsToMessage(descriptor,
+                                          self->parent->message.Get(r));
+      })) {
     return nullptr;
   }
 
-  if (!descriptor->is_repeated() &&
-      descriptor->cpp_type() != FieldDescriptor::CPPTYPE_MESSAGE) {
-    return cmessage::InternalGetScalar(self->parent->message, descriptor);
-  }
-
-  CMessage::CompositeFieldsMap* parent_fields =
-      self->parent->composite_fields.Get();
-  if (PyObject* value = parent_fields->Get(descriptor, nullptr)) {
+  CMessage* parent = self->parent;
+  if (PyObject* value =
+          parent->composite_fields.Get()->Get(descriptor, nullptr)) {
     return value;
   }
 
-  if (!descriptor->is_repeated() &&
-      descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-    // TODO: consider building the class on the fly!
-    ContainerBase* sub_message =
-        cmessage::InternalGetSubMessage(self->parent, descriptor);
-    if (sub_message == nullptr) {
+  // Look up the message class first: this may run Python code, so it must not
+  // happen while holding the tree lock.
+  //
+  // On the fly message class creation is needed to support the following
+  // situation:
+  // 1- add FileDescriptor to the pool that contains extensions of a message
+  //    defined by another proto file. Do not create any message classes.
+  // 2- instantiate an extended message, and access the extension using
+  //    the field descriptor.
+  // 3- the extension submessage fails to be returned, because no class has
+  //    been created.
+  // It happens when deserializing text proto format, or when enumerating
+  // fields of a deserialized message.
+  CMessageClass* message_class = nullptr;
+  ScopedPyObjectPtr message_class_owner;
+  if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    message_class = message_factory::GetOrCreateMessageClass(
+        cmessage::GetFactoryForMessage(parent), descriptor->message_type());
+    message_class_owner.reset(reinterpret_cast<PyObject*>(message_class));
+    if (message_class == nullptr) {
       return nullptr;
     }
-    PyObject* value = sub_message->AsPyObject();
-    parent_fields->TrySet(descriptor, value);
-    return value;
   }
 
-  if (descriptor->is_repeated()) {
-    if (descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
-      // On the fly message class creation is needed to support the following
-      // situation:
-      // 1- add FileDescriptor to the pool that contains extensions of a message
-      //    defined by another proto file. Do not create any message classes.
-      // 2- instantiate an extended message, and access the extension using
-      //    the field descriptor.
-      // 3- the extension submessage fails to be returned, because no class has
-      //    been created.
-      // It happens when deserializing text proto format, or when enumerating
-      // fields of a deserialized message.
-      CMessageClass* message_class = message_factory::GetOrCreateMessageClass(
-          cmessage::GetFactoryForMessage(self->parent),
-          descriptor->message_type());
-      ScopedPyObjectPtr message_class_handler(
-          reinterpret_cast<PyObject*>(message_class));
-      if (message_class == nullptr) {
-        return nullptr;
-      }
-      ContainerBase* py_container = repeated_composite_container::NewContainer(
-          self->parent, descriptor, message_class);
-      if (py_container == nullptr) {
-        return nullptr;
-      }
-      PyObject* value = py_container->AsPyObject();
-      parent_fields->TrySet(descriptor, value);
-      return value;
+  auto create = [&](const ReadAccess& r) -> PyObject* {
+    ContainerBase* py_container = nullptr;
+    if (!descriptor->is_repeated()) {
+      py_container =
+          cmessage::InternalGetSubMessage(parent, descriptor, message_class, r);
+    } else if (message_class != nullptr) {
+      py_container = repeated_composite_container::NewContainer(
+          parent, descriptor, message_class);
     } else {
-      ContainerBase* py_container =
-          repeated_scalar_container::NewContainer(self->parent, descriptor);
-      if (py_container == nullptr) {
-        return nullptr;
-      }
-      PyObject* value = py_container->AsPyObject();
-      parent_fields->TrySet(descriptor, value);
-      return value;
+      py_container =
+          repeated_scalar_container::NewContainer(parent, descriptor);
     }
+    if (py_container == nullptr) {
+      return nullptr;
+    }
+    return py_container->AsPyObject();
+  };
+  PyObject* value = parent->WithRead(nullptr, create);
+  if (value == nullptr) {
+    return nullptr;
   }
-  PyErr_SetString(PyExc_ValueError, "control reached unexpected line");
-  return nullptr;
+  // If another thread registered a wrapper first, value is replaced by it.
+  parent->composite_fields.Get()->TrySet(descriptor, value);
+  return value;
 }
 
 int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
@@ -193,7 +216,10 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
   if (descriptor == nullptr) {
     return -1;
   }
-  if (!CheckFieldBelongsToMessage(descriptor, self->parent->message)) {
+  if (!self->parent->WithRead(false, [&](const ReadAccess& r) {
+        return CheckFieldBelongsToMessage(descriptor,
+                                          self->parent->message.Get(r));
+      })) {
     return -1;
   }
 
@@ -201,7 +227,10 @@ int ass_subscript(ExtensionDict* self, PyObject* key, PyObject* value) {
     return cmessage::ClearFieldByDescriptor(self->parent, descriptor);
   }
 
-  if (cmessage::AssureWritable(self->parent) == nullptr) return -1;
+  if (!self->parent->WithWrite(false,
+                               [](const WriteAccess&) { return true; })) {
+    return -1;
+  }
 
   if (descriptor->is_repeated() || descriptor->is_required() ||
       descriptor->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
@@ -274,8 +303,8 @@ PyObject* _FindExtensionByNumber(ExtensionDict* self, PyObject* arg) {
 
   PyDescriptorPool* pool = cmessage::GetFactoryForMessage(self->parent)->pool;
   const FieldDescriptor* message_extension =
-      pool->pool->get()->FindExtensionByNumber(
-          self->parent->message->GetDescriptor(), static_cast<int>(number));
+      pool->pool->get()->FindExtensionByNumber(self->parent->GetDescriptor(),
+                                               static_cast<int>(number));
   if (message_extension == nullptr) {
     Py_RETURN_NONE;
   }
@@ -297,19 +326,21 @@ static int Contains(PyObject* _self, PyObject* key) {
     return -1;
   }
 
-  const Message* message = self->parent->message;
-  const Reflection* reflection = message->GetReflection();
-  if (field_descriptor->is_repeated()) {
-    if (reflection->FieldSize(*message, field_descriptor) > 0) {
-      return 1;
+  return self->parent->WithRead(-1, [&](const ReadAccess& r) -> int {
+    const Message* message = self->parent->message.Get(r);
+    const Reflection* reflection = message->GetReflection();
+    if (field_descriptor->is_repeated()) {
+      if (reflection->FieldSize(*message, field_descriptor) > 0) {
+        return 1;
+      }
+    } else {
+      if (reflection->HasField(*message, field_descriptor)) {
+        return 1;
+      }
     }
-  } else {
-    if (reflection->HasField(*message, field_descriptor)) {
-      return 1;
-    }
-  }
 
-  return 0;
+    return 0;
+  });
 }
 
 ExtensionDict* NewExtensionDict(CMessage* parent) {
@@ -416,14 +447,15 @@ PyTypeObject ExtensionDict_Type = {
     nullptr,                                   //  tp_init
 };
 
-PyObject* IterNext(PyObject* _self) {
-  extension_dict::ExtensionIterator* self =
-      reinterpret_cast<extension_dict::ExtensionIterator*>(_self);
+static PyObject* IterNextLocked(extension_dict::ExtensionIterator* self,
+                                const WriteAccess& access) {
   Py_ssize_t total_size = self->fields.size();
-  Py_ssize_t index = self->index;
-  while (self->index < total_size) {
-    index = self->index;
-    ++self->index;
+  while (true) {
+    Py_ssize_t index = self->index.Get(access);
+    if (index >= total_size) {
+      return nullptr;
+    }
+    self->index.Set(index + 1, access);
     if (self->fields[index]->is_extension()) {
       // When using the default descriptor pool, avoid exposing extensions that
       // happened to be linked in from C++ but not imported via Python.  This is
@@ -441,8 +473,14 @@ PyObject* IterNext(PyObject* _self) {
       return PyFieldDescriptor_FromDescriptor(self->fields[index]);
     }
   }
+}
 
-  return nullptr;
+PyObject* IterNext(PyObject* _self) {
+  extension_dict::ExtensionIterator* self =
+      reinterpret_cast<extension_dict::ExtensionIterator*>(_self);
+  return self->guard.WithWrite(nullptr, [&](const WriteAccess& access) {
+    return IterNextLocked(self, access);
+  });
 }
 
 PyTypeObject ExtensionIterator_Type = {

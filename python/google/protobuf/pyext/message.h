@@ -20,7 +20,9 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/pyext/container_base.h"
 #include "google/protobuf/pyext/free_threading/access_guard.h"
+#include "google/protobuf/pyext/free_threading/guarded.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 #include "google/protobuf/pyext/message_tree.h"
 #include "google/protobuf/pyext/weak_value_map.h"
@@ -40,6 +42,7 @@ namespace python {
 struct ExtensionDict;
 struct PyMessageFactory;
 struct CMessageClass;
+struct CMessage;
 
 // Most of the complexity of the Message class comes from the "Release"
 // behavior:
@@ -76,57 +79,18 @@ enum MessageMutabilityState : uint8_t {
   MESSAGE_FROZEN = 2,
 };
 
-struct ContainerBase {
-  // clang-format off
-  PyObject_HEAD
-
-  // Shared pointer to the message tree containing the AccessGuard for the
-  // root of this hierarchy. Never null for an initialized CMessage or
-  // container. Atomic because a sub-message's or container's tree pointer is
-  // updated when it is detached or reparented from its parent.
-  std::atomic<MessageTree*> tree;
-
-  // Strong reference to a parent message object. For a CMessage there are three
-  // cases:
-  // - For a top-level message, this pointer is NULL.
-  // - For a sub-message, this points to the parent message.
-  // - For a message managed externally, this is a owned reference to Py_None.
-  //
-  // For all other types: repeated containers, maps, it always point to a
-  // valid parent CMessage.
-  struct CMessage* parent;
-  // clang-format on
-
-  MessageTree* GetTree() const { return tree.load(std::memory_order_acquire); }
-  void SetTree(MessageTree* t) { tree.store(t, std::memory_order_release); }
-
-  // If this object belongs to a parent message, describes which field it comes
-  // from.
-  // The pointer is owned by the DescriptorPool (which is kept alive
-  // through the message's Python class)
-  const FieldDescriptor* parent_field_descriptor;
-
-  PyObject* AsPyObject() { return reinterpret_cast<PyObject*>(this); }
-
-  // The Three methods below are only used by Repeated containers, and Maps.
-
-  // This implementation works for all containers which have a parent.
-  PyObject* DeepCopy();
-  // Delete this container object from its parent. Does not work for messages.
-  void RemoveFromParentCache();
-};
-
-typedef struct CMessage : public ContainerBase {
-  // Pointer to the C++ Message object for this CMessage.
+typedef struct CMessage : public TreeLockable<CMessage> {
+  // Pointer to the C++ Message object for this CMessage, protected by the tree
+  // guard.
   // - If this object has no parent, we own this pointer.
   // - If this object has a parent message, the parent owns this pointer.
-  const Message* message;
+  Guarded<Message*> message;
 
   // Indicates the mutability state of this CMessage wrapper.
-  MessageMutabilityState state;
+  Guarded<MessageMutabilityState> state;
 
   // Whether there is a map ancestor anywhere in the hierarchy.
-  bool has_mutable_map_ancestor;
+  Guarded<bool> has_mutable_map_ancestor;
 
   // A mapping indexed by field, containing weak references to contained objects
   // which need to implement the "Release" mechanism:
@@ -147,7 +111,7 @@ typedef struct CMessage : public ContainerBase {
   PyObject* weakreflist;
 
   // Return a *borrowed* reference to the message class.
-  CMessageClass* GetMessageClass() {
+  CMessageClass* GetMessageClass() const {
     return reinterpret_cast<CMessageClass*>(Py_TYPE(this));
   }
 
@@ -164,26 +128,67 @@ typedef struct CMessage : public ContainerBase {
 #else
     if (Py_REFCNT(this) != 1) return false;
 #endif
-    return parent == nullptr;
+    return parent.GetQuiescent() == nullptr;
   }
 
   // Returns the underlying mutable Message* without locking. Must ONLY be used
   // when this CMessage is quiescent.
   Message* GetQuiescent() const {
     ABSL_DCHECK(IsQuiescent());
-    ABSL_DCHECK_EQ(state, MESSAGE_MUTABLE);
-    // Cast away constness is safe because of the checks above.
-    return const_cast<Message*>(message);
+    ABSL_DCHECK_EQ(state.GetQuiescent(), MESSAGE_MUTABLE);
+    return message.GetQuiescent();
+  }
+
+  // Return the C++ Descriptor for this message from its Python type.
+  const Descriptor* GetDescriptor() const;
+
+  // A message is a view of its own contents (see TreeLockable).
+  CMessage* Owner(const ReadAccess&) const {
+    return const_cast<CMessage*>(this);
   }
 
   // For container containing messages, return a Python object for the given
-  // pointer to a message.
+  // pointer to a message. Requires (at least) read access to this message's
+  // tree. This is a const operation on the message tree: it only updates this
+  // wrapper's internally synchronized child cache and Python refcount.
   CMessage* BuildSubMessageFromPointer(const FieldDescriptor* field_descriptor,
                                        const Message* sub_message,
                                        CMessageClass* message_class,
-                                       MessageMutabilityState state);
-  CMessage* MaybeReleaseSubMessage(const Message* sub_message);
+                                       MessageMutabilityState state,
+                                       const ReadAccess& access) const;
+  bool MaybeReleaseSubMessage(Message* sub_message, const WriteAccess& lock,
+                              bool swap_to_new = false);
+
+  // Detaches the live Python wrapper (if any) for `sub_message`, a message
+  // value in one of this message's map fields that is about to be overwritten
+  // or deleted: the wrapper becomes a standalone message that owns the value's
+  // current contents, which are moved into a new message.
+  //
+  // Note that ClearField() cannot call this, because it also must handle
+  // repeated and map fields, and their wrappers always need a parent message.
+  void DetachSubMessage(Message* sub_message, const WriteAccess& lock);
 } CMessage;
+
+// Base class of the containers that are views of a field of their parent
+// message: MapContainer, RepeatedCompositeContainer and
+// RepeatedScalarContainer.
+struct FieldContainer : public TreeLockable<FieldContainer> {
+  // A container is a view of its parent message (see TreeLockable). Requires
+  // access to this container's tree (the parent is on the same tree).
+  CMessage* Owner(const ReadAccess& access) const;
+
+  // Acquires a read lock on this container's tree and verifies that the parent
+  // message is not frozen. Returns true if writable, false (with a Python
+  // exception set) if frozen or on concurrent modification.
+  bool CheckParentNotFrozen(
+      const char* error_msg = "Container is immutable") const;
+
+  // Makes a new parent message, copies the field into it, and returns the
+  // new parent's container for the field.
+  PyObject* DeepCopy();
+  // Delete this container object from its parent.
+  void RemoveFromParentCache();
+};
 
 // The (meta) type of all Messages classes.
 // It allows us to cache some C++ pointers in the class object itself, they are
@@ -210,6 +215,10 @@ struct CMessageClass {
   PyObject* AsPyObject() { return reinterpret_cast<PyObject*>(this); }
 };
 
+inline const Descriptor* CMessage::GetDescriptor() const {
+  return GetMessageClass()->message_descriptor;
+}
+
 extern PyTypeObject* CMessageClass_Type;
 extern PyTypeObject* CMessage_Type;
 
@@ -230,29 +239,32 @@ const FieldDescriptor* GetExtensionDescriptor(PyObject* extension);
 // Initializes a new CMessage instance for a submessage. Only called once per
 // submessage as the result is cached in composite_fields.
 //
+// Requires read access to self's tree.
+//
 // Corresponds to reflection api method GetMessage.
 CMessage* InternalGetSubMessage(CMessage* self,
-                                const FieldDescriptor* field_descriptor);
+                                const FieldDescriptor* field_descriptor,
+                                CMessageClass* message_class,
+                                const ReadAccess& access);
 
 // Delete the last n items in a repeated field.
 void DeleteLastRepeatedWithSize(CMessage* self,
                                 const FieldDescriptor* field_descriptor,
-                                Py_ssize_t n);
+                                Py_ssize_t n, const WriteAccess& access);
 
 // Deletes a range of items in a repeated field (following a
 // removal in a RepeatedCompositeContainer).
 //
 // Corresponds to reflection api method RemoveLast.
 int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
-                        PyObject* slice);
+                        PyObject* slice, const WriteAccess& lock);
 
 // Check if a deletion operation on a repeated field is a no-op, valid or error.
 // Returns:
 //  1 if the deletion is a no-op (empty slice deletion).
 //  0 if the deletion is valid and requires mutating the container.
 // -1 if an error occurred.
-int CheckRepeatedFieldDeletion(CMessage* parent,
-                               const FieldDescriptor* field_descriptor,
+int CheckRepeatedFieldDeletion(const FieldContainer* container,
                                PyObject* slice);
 
 // Sets the specified scalar value to the message.
@@ -271,7 +283,7 @@ PyObject* InternalGetScalar(const Message* message,
                             const FieldDescriptor* field_descriptor);
 
 bool SetCompositeField(CMessage* self, const FieldDescriptor* field,
-                       ContainerBase* value);
+                       PyObject*& value);
 
 bool SetSubmessage(CMessage* self, CMessage*& submessage);
 
@@ -317,9 +329,11 @@ int SetFieldValue(CMessage* self, const FieldDescriptor* field_descriptor,
 
 PyObject* FindInitializationErrors(CMessage* self);
 
-Message* AssureWritable(CMessage* self);
+Message* AssureWritable(CMessage* self, const WriteAccess& lock);
 
-void UpdateSubtreeTree(CMessage* cmsg, MessageTree* new_tree);
+void UpdateSubtreeTree(CMessage* cmsg, MessageTree* new_tree,
+                       const WriteAccess& old_access,
+                       const WriteAccess& new_access);
 
 // Returns the message factory for the given message.
 // This is equivalent to message.MESSAGE_FACTORY
@@ -330,8 +344,18 @@ void UpdateSubtreeTree(CMessage* cmsg, MessageTree* new_tree);
 PyMessageFactory* GetFactoryForMessage(CMessage* message);
 
 PyObject* SetAllowOversizeProtos(PyObject* m, PyObject* arg);
+PyObject* InternalSetAccessGuardEnabled(PyObject* m, PyObject* arg);
 
 }  // namespace cmessage
+
+inline CMessage* FieldContainer::Owner(const ReadAccess& access) const {
+  // Containers always have a real parent message while reachable (only
+  // CMessages can have a null or Py_None parent).
+  CMessage* parent_message = const_cast<CMessage*>(parent.Get(access));
+  ABSL_DCHECK(parent_message != nullptr &&
+              parent_message->AsPyObject() != Py_None);
+  return parent_message;
+}
 
 /* Is 64bit */
 #define IS_64BIT (SIZEOF_LONG == 8)
@@ -414,10 +438,17 @@ PyObject* SetFrozenError(const char* msg);
 // Sets a Python FrozenInstanceError with the default error message for messages
 // type and returns nullptr.
 PyObject* SetMessageFrozenError();
-// Returns 0 if `parent` is writable.
-// Returns -1 if `parent` is frozen (sets a Python FrozenInstanceError with
+// Returns 0 if `message` is writable.
+// Returns -1 if `message` is frozen (sets a Python FrozenInstanceError with
 // `error_msg`).
-int CheckFrozen(CMessage* parent, const char* error_msg);
+int CheckFrozen(const CMessage* message, const ReadAccess& access,
+                const char* error_msg);
+
+inline bool FieldContainer::CheckParentNotFrozen(const char* error_msg) const {
+  return WithRead(false, [&](const ReadAccess& r) {
+    return CheckFrozen(Owner(r), r, error_msg) == 0;
+  });
+}
 
 PyObject* PyMessage_New(const Descriptor* descriptor,
                         PyObject* py_message_factory);

@@ -40,7 +40,10 @@
 //     drop their parent reference as their final step so child cleanup never
 //     accesses a destroyed tree.
 //   * Locking any node in the hierarchy locks the tree's `AccessGuard`,
-//     protecting the entire tree.
+//     protecting the entire tree. The resulting `ReadAccess` / `WriteAccess`
+//     token can be used to access any `Guarded<T>` field (e.g. `message`,
+//     `parent`, `state`) of any node within that same tree via `Get()` /
+//     `Set()` with zero extra atomic operations.
 
 #ifndef GOOGLE_PROTOBUF_PYEXT_MESSAGE_TREE_H__
 #define GOOGLE_PROTOBUF_PYEXT_MESSAGE_TREE_H__
@@ -84,13 +87,13 @@ namespace python {
 // Example (creating and sharing a `MessageTree`):
 //
 //   // Top-level message allocates a new tree (starts with refcount == 1):
-//   root_cmsg->SetTree(new MessageTree());
+//   root_cmsg->InitTreeQuiescent(new MessageTree());
 //
 //   // Child message or container shares the parent's tree without Ref():
-//   child_cmsg->SetTree(root_cmsg->GetTree());
+//   child_cmsg->InitTreeQuiescent(root_cmsg->GetTree());
 //
 //   // On destruction (tp_dealloc), only root messages release their reference:
-//   if (self->parent == nullptr) {
+//   if (self->parent.GetQuiescent() == nullptr) {
 //     self->GetTree()->Unref();
 //   }
 //
@@ -99,8 +102,13 @@ namespace python {
 //
 //   MessageTree* old_tree = parent->GetTree();
 //   MessageTree* new_tree = new MessageTree(old_tree);  // Refs old_tree.
-//   // Points child and all of its descendants at new_tree:
-//   cmessage::UpdateSubtreeTree(child, new_tree);
+//   // Lock new_tree's guard during the transition so concurrent accesses to
+//   // already-migrated nodes fail immediately:
+//   new_tree->guard().WithWrite([&](const WriteAccess& new_w) {
+//     // Moves child and its descendants (via MoveToTree()) from old_w's guard
+//     // to new_tree's guard, rebinding every Guarded<T> field:
+//     cmessage::UpdateSubtreeTree(child, new_tree, old_w, new_w);
+//   });
 class MessageTree {
  public:
   // Creates a new tree with a reference count of 1, owned by the caller.

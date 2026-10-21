@@ -7,27 +7,29 @@
 
 // Implements the DescriptorPool, which collects all descriptors.
 
+#include "google/protobuf/pyext/descriptor_pool.h"
+
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+
 #include <memory>
 #include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "google/protobuf/descriptor.pb.h"
 #include "absl/base/const_init.h"
 #include "absl/base/thread_annotations.h"
-
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
-
-#include "google/protobuf/descriptor.pb.h"
 #include "absl/container/flat_hash_map.h"
 #include "absl/status/status.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor_database.h"
 #include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_database.h"
-#include "google/protobuf/pyext/descriptor_pool.h"
+#include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/free_threading_mutex.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
@@ -620,25 +622,25 @@ static PyObject* SetFeatureSetDefaults(PyObject* pself, PyObject* pdefaults) {
   }
 
   CMessage* defaults = reinterpret_cast<CMessage*>(pdefaults);
-  if (defaults->message->GetDescriptor() !=
-      FeatureSetDefaults::GetDescriptor()) {
-    PyErr_Format(
-        PyExc_TypeError,
-        "SetFeatureSetDefaults called with invalid type: "
-        " got %s.",
-        std::string(defaults->message->GetDescriptor()->full_name()).c_str());
+  if (defaults->GetDescriptor() != FeatureSetDefaults::GetDescriptor()) {
+    PyErr_Format(PyExc_TypeError,
+                 "SetFeatureSetDefaults called with invalid type: "
+                 " got %s.",
+                 std::string(defaults->GetDescriptor()->full_name()).c_str());
     return nullptr;
   }
 
-  absl::Status status =
-      const_cast<DescriptorPool*>(self->pool->get())
-          ->SetFeatureSetDefaults(
-              *reinterpret_cast<const FeatureSetDefaults*>(defaults->message));
-  if (!status.ok()) {
-    PyErr_SetString(PyExc_ValueError, std::string(status.message()).c_str());
-    return nullptr;
-  }
-  Py_RETURN_NONE;
+  return defaults->WithRead(nullptr, [&](const ReadAccess& r) -> PyObject* {
+    absl::Status status = const_cast<DescriptorPool*>(self->pool->get())
+                              ->SetFeatureSetDefaults(
+                                  *reinterpret_cast<const FeatureSetDefaults*>(
+                                      defaults->message.Get(r)));
+    if (!status.ok()) {
+      PyErr_SetString(PyExc_ValueError, std::string(status.message()).c_str());
+      return nullptr;
+    }
+    Py_RETURN_NONE;
+  });
 }
 
 static PyMethodDef Methods[] = {

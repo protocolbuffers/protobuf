@@ -28,13 +28,7 @@ struct CMessageClass;
 
 // This struct is used directly for ScalarMap, and is the base class of
 // MessageMapContainer, which is used for MessageMap.
-struct MapContainer : public ContainerBase {
-  // Use to get a message for read-only operations.
-  const Message* GetReadOnlyMessage();
-
-  // Use to get a mutable message when necessary.
-  Message* GetMutableMessage();
-
+struct MapContainer : public FieldContainer {
   // We bump this whenever we perform a mutation, to invalidate existing
   // iterators.
   uint64_t version;
