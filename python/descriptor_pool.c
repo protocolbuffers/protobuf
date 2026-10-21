@@ -42,6 +42,10 @@ typedef struct {
   PyUpb_WeakMap* obj_cache;
 } PyUpb_DescriptorPool;
 
+static PyObject* PyUpb_DescriptorPool_AsPyObj(PyUpb_DescriptorPool* pool) {
+  return pool ? &pool->ob_base : NULL;
+}
+
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   return s->default_pool;
@@ -79,7 +83,7 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   }
   return self_obj;
 err:
-  Py_XDECREF(pool);
+  Py_XDECREF(PyUpb_DescriptorPool_AsPyObj(pool));
   return NULL;
 }
 

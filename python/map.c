@@ -48,6 +48,10 @@ typedef struct {
 
 static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map);
 
+static PyObject* PyUpb_MapContainer_AsPyObj(PyUpb_MapContainer* self) {
+  return &self->ob_base;
+}
+
 static bool PyUpb_MapContainer_IsStub(PyUpb_MapContainer* self) {
   return self->field & 1;
 }
@@ -553,7 +557,7 @@ static PyObject* PyUpb_MapIterator_New(PyUpb_MapContainer* map) {
   iter->map = map;
   iter->iter = kUpb_Map_Begin;
   iter->version = map->version;
-  Py_INCREF(map);
+  Py_INCREF(PyUpb_MapContainer_AsPyObj(map));
   return &iter->ob_base;
 }
 

@@ -178,6 +178,10 @@ PyUpb_GenericSequence* PyUpb_GenericSequence_Self(PyObject* obj) {
   return (PyUpb_GenericSequence*)obj;
 }
 
+static PyObject* PyUpb_GenericSequence_AsPyObj(PyUpb_GenericSequence* self) {
+  return &self->ob_base;
+}
+
 static void PyUpb_GenericSequence_Dealloc(PyObject* _self) {
   PyUpb_GenericSequence* self = PyUpb_GenericSequence_Self(_self);
   Py_CLEAR(self->pool);
@@ -221,7 +225,7 @@ static PyObject* PyUpb_GenericSequence_GetItem(PyObject* _self,
 static PyUpb_CompareResult PyUpb_GenericSequence_IsEqual(
     PyUpb_GenericSequence* self, PyObject* other) {
   // Check the identity of C++ pointers.
-  if (PyObject_TypeCheck(other, Py_TYPE(self))) {
+  if (PyObject_TypeCheck(other, Py_TYPE(PyUpb_GenericSequence_AsPyObj(self)))) {
     PyUpb_GenericSequence* other_seq = (void*)other;
     if (self->parent == other_seq->parent && self->funcs == other_seq->funcs) {
       return kPyUpb_CompareEqual;
@@ -388,6 +392,10 @@ PyUpb_ByNameMap* PyUpb_ByNameMap_Self(PyObject* obj) {
   return (PyUpb_ByNameMap*)obj;
 }
 
+static PyObject* PyUpb_ByNameMap_AsPyObj(PyUpb_ByNameMap* self) {
+  return &self->ob_base;
+}
+
 static void PyUpb_ByNameMap_Dealloc(PyObject* _self) {
   PyUpb_ByNameMap* self = PyUpb_ByNameMap_Self(_self);
   Py_CLEAR(self->pool);
@@ -536,7 +544,7 @@ error:
 static PyUpb_CompareResult PyUpb_ByNameMap_IsEqual(PyUpb_ByNameMap* self,
                                                    PyObject* other) {
   // Check the identity of C++ pointers.
-  if (PyObject_TypeCheck(other, Py_TYPE(self))) {
+  if (PyObject_TypeCheck(other, Py_TYPE(PyUpb_ByNameMap_AsPyObj(self)))) {
     PyUpb_ByNameMap* other_map = (void*)other;
     if (self->parent == other_map->parent && self->funcs == other_map->funcs) {
       return kPyUpb_CompareEqual;
@@ -625,6 +633,10 @@ typedef struct {
 PyUpb_ByNumberMap* PyUpb_ByNumberMap_Self(PyObject* obj) {
   CHECK_TYPE(obj, by_number_map_type);
   return (PyUpb_ByNumberMap*)obj;
+}
+
+static PyObject* PyUpb_ByNumberMap_AsPyObj(PyUpb_ByNumberMap* self) {
+  return &self->ob_base;
 }
 
 PyObject* PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs* funcs,
@@ -780,7 +792,7 @@ static int PyUpb_ByNumberMap_Contains(PyObject* _self, PyObject* key) {
 static PyUpb_CompareResult PyUpb_ByNumberMap_IsEqual(PyUpb_ByNumberMap* self,
                                                      PyObject* other) {
   // Check the identity of C++ pointers.
-  if (PyObject_TypeCheck(other, Py_TYPE(self))) {
+  if (PyObject_TypeCheck(other, Py_TYPE(PyUpb_ByNumberMap_AsPyObj(self)))) {
     PyUpb_ByNumberMap* other_map = (void*)other;
     if (self->parent == other_map->parent && self->funcs == other_map->funcs) {
       return kPyUpb_CompareEqual;
