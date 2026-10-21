@@ -35,6 +35,9 @@ jobs:
           - "--incompatible_enable_proto_toolchain_resolution=false"
           # Uses protoc from source.
           - "--@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc=false"
+        include:
+          - runner: macos
+            continuous-only: true
         exclude:
           - bazelversion: '9.2.0'
             bzlmod: false

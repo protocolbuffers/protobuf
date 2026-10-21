@@ -87,30 +87,35 @@ jobs:
           - version: "3.14"
             continuous-only: true
 
-    name: MacOS ${{ matrix.type }} ${{ matrix.version }}
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS ${{ matrix.type }} ${{ matrix.version }}
     runs-on: macos-15
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v7
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           ref: ${{ inputs.safe-checkout }}
 
       - name: Pin Python version
         uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         with:
           python-version: ${{ matrix.version }}
           cache: pip
           cache-dependency-path: 'python/requirements.txt'
 
       - name: Validate version
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: python3 --version | grep ${{ matrix.version }} || (echo "Invalid Python version - $(python3 --version)" && exit 1)
 
       - name: Create and start virtual environment
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         run: |
           python3 -m venv venv
           source venv/bin/activate
 
       - name: Run tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
         uses: protocolbuffers/protobuf-ci/bazel@v7
         env:
           KOKORO_PYTHON_VERSION: ${{ matrix.version }}
