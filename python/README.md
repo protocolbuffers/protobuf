@@ -55,6 +55,19 @@ assert api_implementation.Type() == "upb"
 assert not sys._is_gil_enabled()
 ```
 
+After installing the wheel in a fresh free-threaded virtual environment, run
+this standalone check using that environment's Python:
+
+```
+$ /path/to/venv/bin/python python/free_threading/wheel_smoke_test.py
+```
+
+It requires the native backend and the GIL to be naturally disabled, reports
+the loaded extension path, and exercises parallel parse/JSON round trips,
+composite self-extension, well-known-type initialization, and shared reads.
+It uses only schemas shipped in the wheel and dynamically built test schemas.
+Use an external timeout when running it in automation.
+
 This opt-in is **not a release or general thread-safety claim**. Audited native
 message paths reject overlapping access to a mutable arena with `RuntimeError`
 instead of locking or copying the message. That includes field mutation,
