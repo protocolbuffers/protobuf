@@ -648,7 +648,7 @@ void Api::clear_options() {
 }
 void Api::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
+  if (auto* sub = _impl_.source_context_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000040U);
 }
 Api::Api(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
