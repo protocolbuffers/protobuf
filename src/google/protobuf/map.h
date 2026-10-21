@@ -19,12 +19,12 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <limits>  // To support Visual Studio 2008
 #include <new>     // IWYU pragma: keep for ::operator new.
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -42,7 +42,6 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
-#include "google/protobuf/wire_format_lite.h"
 
 
 #ifdef SWIG
@@ -1112,11 +1111,107 @@ class RustMapHelper {
   }
 };
 
+#ifdef PROTOBUF_FUTURE_CUSTOM_MAP_PAIR
+
+template <typename Key, typename T>
+struct MapPairImpl {
+  using first_type = const Key;
+  using second_type = T;
+
+  MapPairImpl(Key&& key, T&& value)
+      : first(std::move(key)), second(std::move(value)) {}
+  MapPairImpl(const Key& key, T&& value)
+      : first(key), second(std::move(value)) {}
+  MapPairImpl(const Key& key, const T& value) : first(key), second(value) {}
+  MapPairImpl(const Key& key, const T& value, Arena* arena)
+      : first(key), second(value) {}
+
+  // Allow implicit conversion to std::pair
+  template <typename U, typename V>
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  operator std::pair<U, V>() const {
+    return std::make_pair(first, second);
+  }
+
+  bool operator==(const MapPairImpl& other) const {
+    return first == other.first && second == other.second;
+  }
+  bool operator!=(const MapPairImpl& other) const { return !(*this == other); }
+
+  const Key first;
+  T second;
+};
+
+#endif
+
 }  // namespace internal
+
+#ifdef PROTOBUF_FUTURE_CUSTOM_MAP_PAIR
 
 // This is the class for Map's internal value_type.
 template <typename Key, typename T>
+struct MapPair : internal::MapPairImpl<Key, T> {
+  using internal::MapPairImpl<Key, T>::MapPairImpl;
+};
+
+}  // namespace protobuf
+}  // namespace google
+
+template <typename Key, typename T>
+struct std::tuple_size<google::protobuf::MapPair<Key, T>>
+    : std::integral_constant<size_t, 2> {};
+
+template <typename Key, typename T>
+struct std::tuple_element<0, google::protobuf::MapPair<Key, T>> {
+  using type = const Key;
+};
+
+template <typename Key, typename T>
+struct std::tuple_element<1, google::protobuf::MapPair<Key, T>> {
+  using type = T;
+};
+
+namespace google {
+namespace protobuf {
+
+template <size_t I, typename Key, typename T>
+std::tuple_element_t<I, MapPair<Key, T>>& get(MapPair<Key, T>& p) {
+  if constexpr (I == 0) {
+    return p.first;
+  } else if constexpr (I == 1) {
+    return p.second;
+  } else {
+    static_assert(false, "Index out of bounds");
+  }
+}
+
+template <size_t I, typename Key, typename T>
+const std::tuple_element_t<I, MapPair<Key, T>>& get(const MapPair<Key, T>& p) {
+  if constexpr (I == 0) {
+    return p.first;
+  } else if constexpr (I == 1) {
+    return p.second;
+  } else {
+    static_assert(false, "Index out of bounds");
+  }
+}
+
+template <size_t I, typename Key, typename T>
+std::tuple_element_t<I, MapPair<Key, T>>&& get(MapPair<Key, T>&& p) {
+  if constexpr (I == 0) {
+    return std::move(p.first);
+  } else if constexpr (I == 1) {
+    return std::move(p.second);
+  } else {
+    static_assert(false, "Index out of bounds");
+  }
+}
+
+#else   // !PROTOBUF_FUTURE_CUSTOM_MAP_PAIR
+// This is the class for Map's internal value_type.
+template <typename Key, typename T>
 using MapPair = std::pair<const Key, T>;
+#endif  // !PROTOBUF_FUTURE_CUSTOM_MAP_PAIR
 
 // Like C++20's std::erase_if, for Map
 template <typename Key, typename T, typename Pred>
@@ -1357,8 +1452,9 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Map
     }
 
     // Allow implicit conversion to const_iterator.
-    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD operator const_iterator()
-        const {  // NOLINT(google-explicit-constructor)
+    //
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    PROTOBUF_FUTURE_ADD_EARLY_NODISCARD operator const_iterator() const {
       return const_iterator(static_cast<const BaseIt&>(*this));
     }
 
