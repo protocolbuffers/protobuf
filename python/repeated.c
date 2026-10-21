@@ -694,6 +694,17 @@ PyObject* PyUpb_RepeatedContainer_Extend(PyObject* _self, PyObject* value) {
   Py_XDECREF(snapshot);
   return result;
 #else
+  // Composite self-extension must iterate the original elements, even with
+  // the GIL: a live iterator would otherwise consume the appended copies too.
+  if (_self == value &&
+      Py_TYPE(value) ==
+          PyUpb_ModuleState_Get()->repeated_composite_container_type) {
+    PyObject* snapshot = PyUpb_RepeatedContainer_ToList(value);
+    if (!snapshot) return NULL;
+    PyObject* result = PyUpb_RepeatedContainer_ExtendUnprotected(_self, snapshot);
+    Py_DECREF(snapshot);
+    return result;
+  }
   return PyUpb_RepeatedContainer_ExtendUnprotected(_self, value);
 #endif
 }
