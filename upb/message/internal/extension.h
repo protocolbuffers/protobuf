@@ -75,7 +75,7 @@ UPB_API_INLINE const upb_MiniTableField* upb_Extension_MiniTableField(
 UPB_API_INLINE void upb_Extension_GetField(const upb_Extension* ext,
                                            void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
-  UPB_ASSUME(upb_MiniTableField_IsExtension(f));
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
   const void* data =
       UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), const void);
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, val, data);
@@ -87,7 +87,7 @@ UPB_API_INLINE void upb_Extension_GetField(const upb_Extension* ext,
 UPB_API_INLINE void upb_Extension_SetField(upb_Extension* ext,
                                            const void* val) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
-  UPB_ASSUME(upb_MiniTableField_IsExtension(f));
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
   void* data = UPB_PTR_AT(ext, UPB_ONLYBITS(kUpb_Extension_DataOffset), void);
   UPB_PRIVATE(_upb_MiniTableField_DataCopy)(f, data, val);
 }
@@ -368,7 +368,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
 // so that the extension can be zeroed with _upb_Message_AlignedMemsetZero().
 UPB_NODISCARD UPB_INLINE size_t
 UPB_PRIVATE(_upb_Extension_Size)(const upb_MiniTableField* f) {
-  UPB_ASSERT(upb_MiniTableField_IsExtension(f));
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
   static const uint8_t rep_sizes[] = {
       1,                       // kUpb_FieldRep_1Byte
       4,                       // kUpb_FieldRep_4Byte

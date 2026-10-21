@@ -51,7 +51,9 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
@@ -295,6 +297,8 @@ TEST(MessageTest, LargeMessageSetExtension) {
   upb_MiniTableExtension ext;
   memset(&ext, 0, sizeof(ext));
   ext.UPB_PRIVATE(field).UPB_ONLYBITS(number) = (1 << 29) + 5;
+  ext.UPB_PRIVATE(field).UPB_ONLYBITS(mode) =
+      kUpb_FieldMode_Scalar | kUpb_LabelFlags_IsExtension;
   ext.UPB_PRIVATE(extendee) = &upb_0test__TestMessageSet_msg_init;
 
   EXPECT_EQ(upb_ExtensionRegistry_Add(reg, &ext),
@@ -1070,6 +1074,139 @@ TEST(MessageTest, AppendNonCanonicalExtensionDuplicates) {
     }
   }
   EXPECT_EQ(count, 2);
+}
+
+// A copy of a regular field of another message with its offset and presence
+// cleared, followed by a copy of its sub (if any) that `submsg_ofs` points at.
+struct RegularFieldCopy {
+  upb_MiniTableField field;
+  upb_MiniTableSubInternal sub;
+};
+
+static RegularFieldCopy CopyRegularField(const upb_MiniTableField* src) {
+  RegularFieldCopy copy;
+  memset(&copy, 0, sizeof(copy));
+  copy.field = *src;
+  copy.field.UPB_PRIVATE(offset) = 0;
+  copy.field.presence = 0;
+  if (src->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
+    copy.sub = *UPB_PRIVATE(_upb_MiniTableField_Sub)(src);
+    copy.field.UPB_PRIVATE(submsg_ofs) =
+        offsetof(RegularFieldCopy, sub) / kUpb_SubmsgOffsetBytes;
+  }
+  return copy;
+}
+
+// A non-canonical extension may be described by a regular field, i.e. a field
+// that is not flagged as an extension and is not followed by an `extendee`.
+// Like for every extension, its offset and presence are 0.
+TEST(MessageTest, NonCanonicalExtensionFromRegularField) {
+  upb::Arena arena;
+  const upb_MiniTable* src_mt =
+      &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init;
+  const upb_MiniTable* dst_mt = &upb_0test__TestExtensions_msg_init;
+  upb_Message* dst = upb_Message_New(dst_mt, arena.ptr());
+  ASSERT_NE(dst, nullptr);
+
+  const upb_MiniTableField* src_str_f =
+      upb_MiniTable_FindFieldByNumber(src_mt, 14);
+  const upb_MiniTableField* src_msg_f =
+      upb_MiniTable_FindFieldByNumber(src_mt, 18);
+  const upb_MiniTableField* src_arr_f =
+      upb_MiniTable_FindFieldByNumber(src_mt, 31);
+  ASSERT_NE(src_str_f, nullptr);
+  ASSERT_NE(src_msg_f, nullptr);
+  ASSERT_NE(src_arr_f, nullptr);
+  const RegularFieldCopy str_copy = CopyRegularField(src_str_f);
+  const RegularFieldCopy msg_copy = CopyRegularField(src_msg_f);
+  const RegularFieldCopy arr_copy = CopyRegularField(src_arr_f);
+  const upb_MiniTableField* str_f = &str_copy.field;
+  const upb_MiniTableField* msg_f = &msg_copy.field;
+  const upb_MiniTableField* arr_f = &arr_copy.field;
+  for (const upb_MiniTableField* f : {str_f, msg_f, arr_f}) {
+    ASSERT_FALSE(upb_MiniTableField_IsExtension(f));
+  }
+
+  upb_StringView str = upb_StringView_FromString("longer than twelve bytes");
+  protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage* sub =
+      protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage_new(
+          arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage_set_a(sub,
+                                                                       123);
+  upb_Array* arr = upb_Array_New(arena.ptr(), kUpb_CType_Int32);
+  ASSERT_NE(arr, nullptr);
+  upb_MessageValue elem;
+  elem.int32_val = 7;
+  ASSERT_TRUE(upb_Array_Append(arr, elem, arena.ptr()));
+  elem.int32_val = 8;
+  ASSERT_TRUE(upb_Array_Append(arr, elem, arena.ptr()));
+
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      dst, (const upb_MiniTableExtension*)str_f, &str, arena.ptr()));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      dst, (const upb_MiniTableExtension*)msg_f, &sub, arena.ptr()));
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      dst, (const upb_MiniTableExtension*)arr_f, &arr, arena.ptr()));
+
+  // Field-level accessors work, and there is no extendee.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  int count = 0;
+  while (upb_Message_NextUnknown2(dst, &unknown, &iter)) {
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+    const upb_MiniTableExtension* e =
+        upb_Extension_MiniTableExtension(unknown.value.extension);
+    EXPECT_EQ(upb_MiniTableExtension_Extendee(e), nullptr);
+    if (upb_MiniTableExtension_Number(e) == 18) {
+      EXPECT_EQ(upb_MiniTableExtension_GetSubMessage(e),
+                upb_MiniTable_SubMessage(src_msg_f));
+    }
+    count++;
+  }
+  EXPECT_EQ(count, 3);
+
+  // Wire encoding round-trips through the original schema.
+  char* buf;
+  size_t size;
+  ASSERT_EQ(upb_Encode(dst, dst_mt, 0, arena.ptr(), &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  protobuf_test_messages_proto3_TestAllTypesProto3* parsed =
+      protobuf_test_messages_proto3_TestAllTypesProto3_parse(buf, size,
+                                                             arena.ptr());
+  ASSERT_NE(parsed, nullptr);
+  upb_StringView parsed_str =
+      protobuf_test_messages_proto3_TestAllTypesProto3_optional_string(parsed);
+  EXPECT_EQ(absl::string_view(parsed_str.data, parsed_str.size),
+            "longer than twelve bytes");
+  const protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage*
+      parsed_sub =
+          protobuf_test_messages_proto3_TestAllTypesProto3_optional_nested_message(
+              parsed);
+  ASSERT_NE(parsed_sub, nullptr);
+  EXPECT_EQ(protobuf_test_messages_proto3_TestAllTypesProto3_NestedMessage_a(
+                parsed_sub),
+            123);
+  size_t arr_size;
+  const int32_t* parsed_arr =
+      protobuf_test_messages_proto3_TestAllTypesProto3_repeated_int32(
+          parsed, &arr_size);
+  ASSERT_EQ(arr_size, 2u);
+  EXPECT_EQ(parsed_arr[0], 7);
+  EXPECT_EQ(parsed_arr[1], 8);
+
+  // Unknown field comparison encodes each non-canonical extension.
+  upb_Message* reparsed = upb_Message_New(dst_mt, arena.ptr());
+  ASSERT_NE(reparsed, nullptr);
+  ASSERT_EQ(upb_Decode(buf, size, reparsed, dst_mt, nullptr, 0, arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  EXPECT_TRUE(upb_Message_IsEqual(dst, reparsed, dst_mt,
+                                  kUpb_CompareOption_IncludeUnknownFields));
+
+  // Text encoding resolves the sub-message through the field.
+  char text[512];
+  size_t text_size = upb_DebugString(dst, dst_mt, 0, text, sizeof(text));
+  ASSERT_LT(text_size, sizeof(text));
+  EXPECT_NE(std::string(text, text_size).find("123"), std::string::npos);
 }
 
 TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtension) {
