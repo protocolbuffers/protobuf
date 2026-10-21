@@ -267,9 +267,18 @@ static PyUpb_CompareResult PyUpb_GenericSequence_IsEqual(
   PyObject* item1;
   for (int i = 0; i < n; i++) {
     item1 = PyUpb_GenericSequence_GetItem((PyObject*)self, i);
+#ifdef Py_GIL_DISABLED
+    PyObject* item2 = PyList_GetItemRef(other, i);
+#else
     PyObject* item2 = PyList_GetItem(other, i);
-    if (!item1 || !item2) goto error;
+    Py_XINCREF(item2);
+#endif
+    if (!item1 || !item2) {
+      Py_XDECREF(item2);
+      goto error;
+    }
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
+    Py_DECREF(item2);
     Py_DECREF(item1);
     if (cmp < 0) return kPyUpb_CompareError;
     if (cmp == 0) return kPyUpb_CompareNotEqual;

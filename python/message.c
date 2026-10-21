@@ -398,7 +398,7 @@ static bool PyUpb_Message_LookupName(PyUpb_Message* self, PyObject* py_name,
 }
 
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
-static int PyUpb_Message_InitAttributesPublic(PyObject* _self, PyObject* args,
+int PyUpb_Message_InitAttributesPublic(PyObject* _self, PyObject* args,
                                              PyObject* kwargs);
 #endif
 
@@ -636,7 +636,7 @@ static bool PyUpb_Message_InitScalarAttribute(upb_Message* msg,
   return true;
 }
 
-int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
+static int PyUpb_Message_InitAttributesImpl(PyObject* _self, PyObject* args,
                                  PyObject* kwargs) {
   if (args != NULL && PyTuple_Size(args) != 0) {
     PyErr_SetString(PyExc_TypeError, "No positional arguments allowed");
@@ -679,14 +679,29 @@ int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
   return 0;
 }
 
+int PyUpb_Message_InitAttributes(PyObject* self, PyObject* args,
+                                 PyObject* kwargs) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  // Nested initializer dictionaries can be shared with other threads. A
+  // private snapshot retains keys/values across conversions and callbacks.
+  PyObject* snapshot = kwargs ? PyDict_Copy(kwargs) : NULL;
+  if (kwargs && !snapshot) return -1;
+  int result = PyUpb_Message_InitAttributesImpl(self, args, snapshot);
+  Py_XDECREF(snapshot);
+  return result;
+#else
+  return PyUpb_Message_InitAttributesImpl(self, args, kwargs);
+#endif
+}
+
 #ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
 // Public __init__ can be called again on a message shared with other threads.
 // Admit each native write separately: map/repeated/submessage initialization
 // invokes Python callbacks and must not hold a non-recursive arena writer.
 // Internal callers retain InitAttributes() for freshly-created or already
 // admitted child messages.
-static int PyUpb_Message_InitAttributesPublic(PyObject* _self, PyObject* args,
-                                             PyObject* kwargs) {
+static int PyUpb_Message_InitAttributesPublicImpl(
+    PyObject* _self, PyObject* args, PyObject* kwargs) {
   if (args != NULL && PyTuple_Size(args) != 0) {
     PyErr_SetString(PyExc_TypeError, "No positional arguments allowed");
     return -1;
@@ -746,6 +761,15 @@ static int PyUpb_Message_InitAttributesPublic(PyObject* _self, PyObject* args,
   }
   return PyErr_Occurred() ? -1 : 0;
 }
+int PyUpb_Message_InitAttributesPublic(PyObject* self, PyObject* args,
+                                       PyObject* kwargs) {
+  PyObject* snapshot = kwargs ? PyDict_Copy(kwargs) : NULL;
+  if (kwargs && !snapshot) return -1;
+  int result = PyUpb_Message_InitAttributesPublicImpl(self, args, snapshot);
+  Py_XDECREF(snapshot);
+  return result;
+}
+
 #endif
 
 static int PyUpb_Message_Init(PyObject* _self, PyObject* args,
@@ -2898,8 +2922,14 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
   //    (Message, Message, WktBase)   # For well-known types
   PyObject* wkt_bases = PyUpb_GetWktBases(state);
   if (!wkt_bases) return NULL;
-  PyObject* wkt_base =
-      PyDict_GetItemString(wkt_bases, upb_MessageDef_FullName(msgdef));
+  PyObject* wkt_base = NULL;
+#ifdef Py_GIL_DISABLED
+  if (PyDict_GetItemStringRef(wkt_bases, upb_MessageDef_FullName(msgdef),
+                             &wkt_base) < 0) return NULL;
+#else
+  wkt_base = PyDict_GetItemString(wkt_bases, upb_MessageDef_FullName(msgdef));
+  Py_XINCREF(wkt_base);
+#endif
   PyObject* args;
   if (wkt_base == NULL) {
     args = Py_BuildValue("O(OO)O", name, state->cmessage_type,
@@ -2909,6 +2939,8 @@ PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
                          state->message_class, wkt_base, dict);
   }
 
+  Py_XDECREF(wkt_base);
+  if (!args) return NULL;
   PyObject* ret = cpython_bits.type_new(state->message_meta_type, args, NULL);
   Py_DECREF(args);
   if (!ret) return NULL;
@@ -2953,7 +2985,15 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
   }
 
   // Check dict['DESCRIPTOR']
-  PyObject* py_descriptor = PyDict_GetItemString(dict, "DESCRIPTOR");
+  PyObject* py_descriptor = NULL;
+#ifdef Py_GIL_DISABLED
+  if (PyDict_GetItemStringRef(dict, "DESCRIPTOR", &py_descriptor) < 0) {
+    return NULL;
+  }
+#else
+  py_descriptor = PyDict_GetItemString(dict, "DESCRIPTOR");
+  Py_XINCREF(py_descriptor);
+#endif
   if (py_descriptor == NULL) {
     PyErr_SetString(PyExc_TypeError, "Message class has no DESCRIPTOR");
     return NULL;
@@ -2961,12 +3001,16 @@ static PyObject* PyUpb_MessageMeta_New(PyTypeObject* type, PyObject* args,
 
   const upb_MessageDef* m = PyUpb_Descriptor_GetDef(py_descriptor);
   // The error message already been filled by the function above.
-  if (m == NULL) return NULL;
+  if (m == NULL) {
+    Py_DECREF(py_descriptor);
+    return NULL;
+  }
   PyObject* pool = PyUpb_AnyDescriptor_GetPool(py_descriptor);
   PyObject* ret =
       PyUpb_DescriptorPool_CacheGet(pool, upb_MessageDef_MiniTable(m));
-  if (ret) return ret;
-  return PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
+  if (!ret) ret = PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
+  Py_DECREF(py_descriptor);
+  return ret;
 }
 
 static void PyUpb_MessageMeta_Dealloc(PyObject* self) {

@@ -1413,6 +1413,7 @@ static PyObject* PyUpb_RepeatedCompositeContainer_NewMessage(
                            self->arena);
 }
 
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
 static PyObject* PyUpb_RepeatedCompositeContainer_AddUnprotected(
     PyObject* _self, PyObject* args, PyObject* kwargs) {
   PyUpb_RepeatedContainer* self = (PyUpb_RepeatedContainer*)_self;
@@ -1436,6 +1437,8 @@ static PyObject* PyUpb_RepeatedCompositeContainer_AddUnprotected(
   return py_msg;
 }
 
+#endif
+
 PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* self, PyObject* args,
                                                PyObject* kwargs) {
 #ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
@@ -1447,10 +1450,46 @@ PyObject* PyUpb_RepeatedCompositeContainer_Add(PyObject* self, PyObject* args,
     Py_DECREF(arena);
     return NULL;
   }
-  PyObject* result =
-      PyUpb_RepeatedCompositeContainer_AddUnprotected(self, args, kwargs);
+  PyUpb_RepeatedContainer* container = (PyUpb_RepeatedContainer*)self;
+  upb_Array* arr = PyUpb_RepeatedContainer_AssureWritable(self);
+  upb_Message* msg = NULL;
+  PyObject* result = arr ? PyUpb_RepeatedCompositeContainer_NewMessage(
+                              container, PyUpb_Arena_Get(arena), &msg)
+                        : NULL;
+  // Empty add() has no conversion callbacks and can commit in this admission.
+  if (result && (!args || PyTuple_Size(args) == 0) &&
+      (!kwargs || PyDict_Size(kwargs) == 0)) {
+    upb_MessageValue msgval = {.msg_val = msg};
+    if (!upb_Array_Append(arr, msgval, PyUpb_Arena_Get(arena))) {
+      PyErr_SetNone(PyExc_MemoryError);
+      Py_CLEAR(result);
+    }
+    PyUpb_Arena_EndWrite(arena);
+    Py_DECREF(arena);
+    return result;
+  }
+  PyUpb_Arena_EndWrite(arena);
+  if (!result) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+
+  // The child is not yet in the repeated field. Initialize it with public
+  // field admission so WKT callbacks can write its fields without trying to
+  // nest a write admission held by add(). Reacquire the array at commit time.
+  if (PyUpb_Message_InitAttributesPublic(result, args, kwargs) < 0 ||
+      !PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(result);
+    Py_DECREF(arena);
+    return NULL;
+  }
+  arr = PyUpb_RepeatedContainer_AssureWritable(self);
+  upb_MessageValue msgval = {.msg_val = msg};
+  bool ok = arr && upb_Array_Append(arr, msgval, PyUpb_Arena_Get(arena));
+  if (arr && !ok) PyErr_SetNone(PyExc_MemoryError);
   PyUpb_Arena_EndWrite(arena);
   Py_DECREF(arena);
+  if (!ok) Py_CLEAR(result);
   return result;
 #endif
 }

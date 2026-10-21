@@ -70,6 +70,13 @@ PyObject* PyUpb_Message_SerializePartialToString(PyObject* self, PyObject* args,
                                                  PyObject* kwargs);
 
 // Sets fields of the message according to the attribuges in `kwargs`.
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+// Initialize through individually admitted field operations, allowing WKT
+// callbacks to use the public message API without nested write admission.
+int PyUpb_Message_InitAttributesPublic(PyObject* self, PyObject* args,
+                                       PyObject* kwargs);
+#endif
+
 int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
                                  PyObject* kwargs);
 

@@ -287,6 +287,81 @@ print('callback admissions completed')
     self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
     self.assertIn('callback admissions completed', result.stdout)
 
+  def testCompositeAddInitializesWellKnownTypes(self):
+    from datetime import datetime, timezone
+    from google.protobuf import timestamp_pb2
+
+    proto = descriptor_pb2.FileDescriptorProto(
+        name='repeated_wkt.proto',
+        dependency=['google/protobuf/timestamp.proto'])
+    child = proto.message_type.add(name='Child')
+    child.field.add(name='time', number=1, label=1, type=11,
+                    type_name='.google.protobuf.Timestamp')
+    parent = proto.message_type.add(name='Parent')
+    parent.field.add(name='children', number=1, label=3, type=11,
+                     type_name='.Child')
+    pool = descriptor_pool.DescriptorPool()
+    pool.AddSerializedFile(timestamp_pb2.DESCRIPTOR.serialized_pb)
+    file = pool.AddSerializedFile(proto.SerializeToString())
+    message = message_factory.GetMessageClass(
+        file.message_types_by_name['Parent'])()
+    time = datetime(2026, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+    child = message.children.add(time=time)
+    self.assertIs(child, message.children[0])
+    self.assertEqual(child.time.ToDatetime(tzinfo=timezone.utc), time)
+    with self.assertRaises((TypeError, AttributeError)):
+      message.children.add(time=object())
+    self.assertEqual(len(message.children), 1)
+    self.assertEqual(message.children.add(time=time), child)
+
+  def testNestedInitializerOwnsDictionarySnapshot(self):
+    proto = descriptor_pb2.FileDescriptorProto(name='initializer_snapshot.proto')
+    child = proto.message_type.add(name='Child')
+    child.field.add(name='first', number=1, label=1, type=5)
+    child.field.add(name='second', number=2, label=1, type=5)
+    parent = proto.message_type.add(name='Parent')
+    parent.field.add(name='child', number=1, label=1, type=11,
+                     type_name='.Child')
+    file = descriptor_pool.DescriptorPool().AddSerializedFile(
+        proto.SerializeToString())
+    cls = message_factory.GetMessageClass(file.message_types_by_name['Parent'])
+    source = {}
+
+    class ClearingInt:
+      def __index__(self):
+        source.clear()
+        return 3
+
+    source.update(first=ClearingInt(), second=7)
+    message = cls(child=source)
+    self.assertEqual(message.child.first, 3)
+    self.assertEqual(message.child.second, 7)
+    self.assertEqual(source, {})
+
+  def testDescriptorComparisonDuringListReplacement(self):
+    fields = unittest_pb2.TestAllTypes.DESCRIPTOR.fields
+    other = list(fields)
+    start = threading.Barrier(2)
+
+    class Comparable:
+      def __eq__(self, other):
+        return False
+
+    def replace():
+      start.wait(timeout=30)
+      for _ in range(1000):
+        other[0] = Comparable()
+
+    def compare():
+      start.wait(timeout=30)
+      for _ in range(1000):
+        self.assertIsInstance(fields == other, bool)
+
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      tasks = [workers.submit(replace), workers.submit(compare)]
+      for task in tasks:
+        task.result(timeout=30)
+
   def testSharedMapIterator(self):
     message = test_proto2_pb2.MessageWithRepeatedAndMap()
     message.scalar_map.update({str(i): str(i) for i in range(1000)})
