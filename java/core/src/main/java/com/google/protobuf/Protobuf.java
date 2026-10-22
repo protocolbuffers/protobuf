@@ -85,6 +85,16 @@ final class Protobuf {
     return schemaFor((Class<T>) message.getClass());
   }
 
+  /** Clears all cached schemas from the runtime schema cache. */
+  void clearSchemaCache() {
+    schemaCache.clear();
+  }
+
+  /** Returns the number of cached schemas in the runtime schema cache. */
+  int getSchemaCacheSize() {
+    return schemaCache.size();
+  }
+
   private Protobuf() {
     schemaFactory = new ManifestSchemaFactory();
   }
