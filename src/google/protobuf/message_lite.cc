@@ -751,30 +751,6 @@ absl::Cord MessageLite::SerializePartialAsCord() const {
   return output;
 }
 
-namespace internal {
-
-// Non-inline variants of std::string specializations for
-// various InternalMetadata routines.
-template <>
-void InternalMetadata::DoClear<std::string>() {
-  mutable_unknown_fields<std::string>()->clear();
-}
-
-template <>
-void InternalMetadata::DoMergeFrom<std::string>(const std::string& other) {
-  mutable_unknown_fields<std::string>()->append(other);
-}
-
-template <>
-void InternalMetadata::DoSwap<std::string>(std::string* other) {
-  mutable_unknown_fields<std::string>()->swap(*other);
-}
-
-template UnknownFieldSet*
-InternalMetadata::mutable_unknown_fields_slow<UnknownFieldSet>();
-
-}  // namespace internal
-
 std::string ShortFormat(const MessageLite& message_lite) {
   return message_lite.DebugString();
 }

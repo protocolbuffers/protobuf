@@ -16,6 +16,7 @@
 #include <type_traits>
 #include <utility>
 
+#include "absl/base/attributes.h"
 #include "absl/log/absl_check.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
@@ -110,40 +111,38 @@ class PROTOBUF_EXPORT TaggedStringPtr {
 
   // Sets the value to `p`, tagging the value as being a 'default' value.
   // See documentation for kDefault for more info.
-  inline const std::string* SetDefault(const std::string* p) {
+  const std::string* SetDefault(const std::string* p) {
     return TagAs(kDefault, const_cast<std::string*>(p));
   }
 
   // Sets the value to `p`, tagging the value as a heap allocated value.
   // Allocated strings are mutable and (as the name implies) owned.
   // `p` must not be null
-  inline std::string* SetAllocated(std::string* p) {
-    return TagAs(kAllocated, p);
-  }
+  std::string* SetAllocated(std::string* p) { return TagAs(kAllocated, p); }
 
   // Sets the value to `p`, tagging the value as a fixed size arena string.
   // See documentation for kFixedSizeArena for more info.
   // `p` must not be null
-  inline std::string* SetFixedSizeArena(std::string* p) {
+  std::string* SetFixedSizeArena(std::string* p) {
     return TagAs(kFixedSizeArena, p);
   }
 
   // Sets the value to `p`, tagging the value as a mutable arena string.
   // See documentation for kMutableArena for more info.
   // `p` must not be null
-  inline std::string* SetMutableArena(std::string* p) {
+  std::string* SetMutableArena(std::string* p) {
     return TagAs(kMutableArena, p);
   }
 
   // Returns true if the contents of the current string are fully mutable.
-  inline bool IsMutable() const { return as_int() & kMutableBit; }
+  bool IsMutable() const { return as_int() & kMutableBit; }
 
   // Returns true if the current string is an immutable default value.
-  inline bool IsDefault() const { return (as_int() & kMask) == kDefault; }
+  bool IsDefault() const { return (as_int() & kMask) == kDefault; }
 
   // If the current string is a heap-allocated mutable value, returns a pointer
   // to it.  Returns nullptr otherwise.
-  inline std::string* GetIfAllocated() const {
+  std::string* GetIfAllocated() const {
     auto allocated = as_int() ^ kAllocated;
     if (allocated & kMask) return nullptr;
 
@@ -154,22 +153,22 @@ class PROTOBUF_EXPORT TaggedStringPtr {
 
   // Returns true if the current string is an arena allocated value.
   // This means it's either a mutable or fixed size arena string.
-  inline bool IsArena() const { return as_int() & kArenaBit; }
+  bool IsArena() const { return as_int() & kArenaBit; }
 
   // Returns true if the current string is a fixed size arena allocated value.
-  inline bool IsFixedSizeArena() const {
+  bool IsFixedSizeArena() const {
     return (as_int() & kMask) == kFixedSizeArena;
   }
 
   // Returns the contained string pointer.
-  inline std::string* Get() const {
+  std::string* Get() const {
     return reinterpret_cast<std::string*>(as_int() & ~kMask);
   }
 
   // Returns true if the contained pointer is null, indicating some error.
   // The Null value is only used during parsing for temporary values.
   // A persisted ArenaStringPtr value is never null.
-  inline bool IsNull() const { return ptr_ == nullptr; }
+  bool IsNull() const { return ptr_ == nullptr; }
 
   // Returns a copy of this instance. In debug builds, the returned value may be
   // a forced copy regardless if the current instance is a compile time default.
@@ -181,7 +180,7 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   TaggedStringPtr Copy(Arena* arena, const LazyString& default_value) const;
 
  private:
-  static inline void assert_aligned(const void* p) {
+  static void assert_aligned(const void* p) {
     static_assert(kMask <= alignof(void*), "Pointer underaligned for bit mask");
     static_assert(kMask <= alignof(std::string),
                   "std::string underaligned for bit mask");
@@ -191,7 +190,7 @@ class PROTOBUF_EXPORT TaggedStringPtr {
   // Creates a heap or arena allocated copy of this instance.
   TaggedStringPtr ForceCopy(Arena* arena) const;
 
-  inline std::string* TagAs(Type type, std::string* p) {
+  std::string* TagAs(Type type, std::string* p) {
     ABSL_DCHECK(p != nullptr);
     assert_aligned(p);
     ptr_ = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(p) | type);
@@ -228,7 +227,8 @@ static_assert(std::is_standard_layout_v<TaggedStringPtr>,
 //
 // See TaggedStringPtr for more information about the types of string values
 // being held, and the mutable and ownership invariants for each type.
-struct PROTOBUF_EXPORT ArenaStringPtr {
+class PROTOBUF_EXPORT ArenaStringPtr {
+ public:
   // Default constructor, leaves current instance uninitialized (does nothing)
   ArenaStringPtr() = default;
 
@@ -295,7 +295,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // `arena` is not null, else, `str` will be owned by ArenaStringPtr. This
   // function should only be used to initialize a ArenaStringPtr or on an
   // instance known to not carry any heap allocated value.
-  inline void InitAllocated(std::string* str, Arena* arena);
+  inline void InitAllocated(std::string* str, const MessageLite& parent);
 
   void SetFromDefault(absl::string_view value, Arena* arena);
 
@@ -362,7 +362,7 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   // Takes a std::string that is heap-allocated, and takes ownership. The
   // std::string's destructor is registered with the arena. Used to implement
   // set_allocated_<field> in generated classes.
-  void SetAllocated(std::string* value, Arena* arena);
+  void SetAllocated(std::string* value, const MessageLite& parent);
 
   // Frees storage (if not on an arena).
   void Destroy();
@@ -399,11 +399,11 @@ struct PROTOBUF_EXPORT ArenaStringPtr {
   std::string* UnsafeMutablePointer() ABSL_ATTRIBUTE_RETURNS_NONNULL;
 
   // Returns true if this instances holds an immutable default value.
-  inline bool IsDefault() const { return tagged_ptr_.IsDefault(); }
+  bool IsDefault() const { return tagged_ptr_.IsDefault(); }
 
  private:
   template <typename... Args>
-  inline std::string* NewString(Arena* arena, Args&&... args) {
+  std::string* NewString(Arena* arena, Args&&... args) {
     if (arena == nullptr) {
       auto* s = new std::string(std::forward<Args>(args)...);
       return tagged_ptr_.SetAllocated(s);
@@ -467,7 +467,9 @@ inline void ArenaStringPtr::InitExternal(const std::string* str) {
   tagged_ptr_.SetDefault(str);
 }
 
-inline void ArenaStringPtr::InitAllocated(std::string* str, Arena* arena) {
+inline void ArenaStringPtr::InitAllocated(std::string* str,
+                                          const MessageLite& parent) {
+  Arena* arena = GetArena(parent);
   if (arena != nullptr) {
     tagged_ptr_.SetMutableArena(str);
     arena->Own(str);

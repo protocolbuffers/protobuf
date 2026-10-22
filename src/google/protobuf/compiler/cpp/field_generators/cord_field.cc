@@ -73,7 +73,6 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateArenaDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateByteSize(io::Printer* p) const override;
-  void GenerateAggregateInitializer(io::Printer* p) const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
   ArenaDtorNeeds NeedsArenaDestructor() const override {
     return ArenaDtorNeeds::kRequired;
@@ -318,18 +317,6 @@ void CordFieldGenerator::GenerateConstexprAggregateInitializer(
           /*decltype($field_$)*/ {::absl::strings_internal::MakeStringConstant(
               $Msg$::Impl_::$Split$_default_$name$_func_{})},
         )cc");
-  }
-}
-
-void CordFieldGenerator::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){},
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      decltype($field_$){},
-    )cc");
   }
 }
 

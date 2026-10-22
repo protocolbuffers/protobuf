@@ -207,8 +207,7 @@ UPB_NODISCARD static bool upb_DecodeFast_GetFunctionData(
           ? UPB_PRIVATE(_upb_MiniTableField_OneofOffset)(field)
           : 0;
   uint64_t subofs = 0;
-  if (upb_MiniTableField_IsSubMessage(field) ||
-      upb_MiniTableField_IsClosedEnum(field)) {
+  if (UPB_PRIVATE(_upb_MiniTableField_HasSub)(field)) {
     subofs = upb_DecodeFast_GetSubofs(m, field);
   }
 

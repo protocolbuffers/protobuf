@@ -875,8 +875,7 @@ void ExtensionSet::InternalMergeFromSlow(Arena* arena,
     }
   }
   other.ForEach(
-      [extendee, this, arena, &other, other_arena](int number,
-                                                   const Extension& ext) {
+      [extendee, this, arena, other_arena](int number, const Extension& ext) {
         this->InternalExtensionMergeFrom(arena, extendee, number, ext,
                                          other_arena);
       },
@@ -1535,7 +1534,6 @@ bool ExtensionSet::Extension::IsInitialized(const ExtensionSet* ext_set,
   ABSL_DCHECK(!is_lazy);
   return ptr.message_value->IsInitialized();
 }
-
 
 const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (IsCompletelyEmpty()) {

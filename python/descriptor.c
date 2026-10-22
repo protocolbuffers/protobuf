@@ -16,7 +16,6 @@
 #include <string.h>
 
 #include "google/protobuf/descriptor.upb_minitable.h"
-#include "google/protobuf/breaking_changes.h"
 #include "python/convert.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -55,6 +54,10 @@ typedef struct {
   PYUPB_LAZYPTR(PyObject) features;  // NULL if not present or not cached.
   PyObject* message_meta;            // We own a ref.
 } PyUpb_DescriptorBase;
+
+static PyObject* PyUpb_DescriptorBase_AsPyObj(PyUpb_DescriptorBase* base) {
+  return &base->ob_base;
+}
 
 PyObject* PyUpb_AnyDescriptor_GetPool(PyObject* desc) {
   PyUpb_DescriptorBase* base = (void*)desc;
@@ -194,11 +197,7 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
     upb_Message_ClearFieldByDef(opts2, field);
   }
 
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
   upb_Message_Freeze(opts2, opts2_layout);
-#else
-  PyUpb_Arena_SetFrozen(py_arena, true);
-#endif
   PyObject* val = PyUpb_Message_Get(default_pool, opts2, m, py_arena);
   Py_DECREF(py_arena);
   return val;
@@ -287,7 +286,8 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   // methods) at any time. This also means we *must* stop GC from tracking
   // instances of them before we start destructing the object. In Python
   // 3.11, failing to do so would raise a runtime warning.
-  if (PyType_HasFeature(Py_TYPE(base), Py_TPFLAGS_HAVE_GC)) {
+  if (PyType_HasFeature(Py_TYPE(PyUpb_DescriptorBase_AsPyObj(base)),
+                        Py_TPFLAGS_HAVE_GC)) {
     PyObject_GC_UnTrack(base);
   }
   PyUpb_DescriptorPool_CacheEraseIfEqual(base->pool, base->def,
@@ -348,16 +348,15 @@ PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m) {
   // in the future, we could make PyUpb_Descriptor_Get() append the descriptor
   // to an internal list in DescriptorPool, let the pool keep descriptors alive.
   PyObject* py_descriptor = PyUpb_Descriptor_Get(pool, m);
-  if (py_descriptor == NULL) return NULL;
-  const char* name = upb_MessageDef_Name(m);
+  PyObject* name = PyUnicode_FromString(upb_MessageDef_Name(m));
   PyObject* dict = PyDict_New();
-  if (dict == NULL) goto err;
-  int status = PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor);
-  if (status < 0) goto err;
+  if (!py_descriptor || !name || !dict) goto err;
+  if (PyDict_SetItemString(dict, "DESCRIPTOR", py_descriptor) < 0) goto err;
   ret = PyUpb_MessageMeta_DoCreateClass(py_descriptor, name, dict);
 
 err:
   Py_XDECREF(py_descriptor);
+  Py_XDECREF(name);
   Py_XDECREF(dict);
   return ret;
 }

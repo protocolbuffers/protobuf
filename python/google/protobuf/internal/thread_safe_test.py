@@ -7,11 +7,13 @@
 
 """Unittest for thread safe"""
 
+import sys
 import threading
 import time
 import timeit
 import unittest
 
+from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
@@ -418,6 +420,71 @@ class FreeThreadingTest(unittest.TestCase):
       t.start()
     for t in threads:
       t.join()
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'BuildFileErrorCollector only exists in the cpp implementation.',
+  )
+  @unittest.skipIf(
+      getattr(sys, '_is_gil_enabled', lambda: True)(),
+      'Requires free-threaded Python (GIL-enabled runs deadlock in'
+      ' PyDescriptorDatabase).',
+  )
+  def testConcurrentBuildFileErrorCollectorRaisesKeyError(self):
+    db = descriptor_database.DescriptorDatabase()
+    num_threads = 10
+    for i in range(num_threads):
+      f_proto = descriptor_pb2.FileDescriptorProto(
+          name=f'bad_{i}.proto', package=f'pkg_{i}'
+      )
+      msg = f_proto.message_type.add(name='BadMessage')
+      msg.field.add(
+          name='bad_field',
+          number=1,
+          label=descriptor_pb2.FieldDescriptorProto.LABEL_OPTIONAL,
+          type=descriptor_pb2.FieldDescriptorProto.TYPE_MESSAGE,
+          type_name='UndefinedSubMessage',
+      )
+      db.Add(f_proto)
+
+    pool = descriptor_pool.DescriptorPool(db)
+    barrier = threading.Barrier(num_threads)
+    errors = []
+
+    def Worker(thread_id):
+      barrier.wait()
+      try:
+        for i in range(20):
+          idx = (thread_id + i) % num_threads
+          bad_file = f'bad_{idx}.proto'
+          with self.assertRaises(KeyError) as exc:
+            pool.FindFileByName(bad_file)
+          self.assertIn('Invalid proto descriptor', str(exc.exception))
+          self.assertIn(bad_file, str(exc.exception))
+
+          with self.assertRaises(KeyError) as exc:
+            pool.FindMessageTypeByName(f'pkg_{idx}.BadMessage')
+          self.assertIn('Invalid proto descriptor', str(exc.exception))
+          self.assertIn(bad_file, str(exc.exception))
+
+          with self.assertRaises(KeyError) as exc:
+            pool.FindFileByName(f'missing_{idx}.proto')
+          self.assertNotIn('Invalid proto descriptor', str(exc.exception))
+
+          with self.assertRaises(KeyError) as exc:
+            pool.FindMessageTypeByName(f'pkg_{idx}.MissingMessage')
+          self.assertNotIn('Invalid proto descriptor', str(exc.exception))
+      except Exception as e:  # pylint: disable=broad-exception-caught
+        errors.append(e)
+
+    threads = [
+        threading.Thread(target=Worker, args=(i,)) for i in range(num_threads)
+    ]
+    for t in threads:
+      t.start()
+    for t in threads:
+      t.join()
+    self.assertEqual([], errors)
 
   def testConcurrentDescriptorDeallocRace(self):
     """Tests descriptor cache interning under concurrent deallocation."""

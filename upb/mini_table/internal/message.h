@@ -141,13 +141,19 @@ UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_GetFieldByIndex(
   return &m->UPB_ONLYBITS(fields)[i];
 }
 
+// Returns the sub-message or sub-enum storage for `f`, which must have one
+// (ie. `submsg_ofs != kUpb_NoSub`).
+UPB_INLINE upb_MiniTableSubInternal* UPB_PRIVATE(_upb_MiniTableField_Sub)(
+    const struct upb_MiniTableField* f) {
+  UPB_ASSERT(f->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub);
+  return UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
+                    upb_MiniTableSubInternal);
+}
+
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_GetSubMessageTable(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
-  upb_MiniTableSubInternal* sub =
-      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-                 upb_MiniTableSubInternal);
-  return sub->UPB_PRIVATE(submsg);
+  return UPB_PRIVATE(_upb_MiniTableField_Sub)(f)->UPB_PRIVATE(submsg);
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_SubMessage(
@@ -319,9 +325,7 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
   UPB_STATIC_ASSERT(sizeof(upb_MiniTableSubInternal) == sizeof(void*),
                     "SubInternal size must be pointer sized.");
   if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
-    upb_MiniTableSubInternal* sub = UPB_PTR_AT(
-        field, field->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-        upb_MiniTableSubInternal);
+    upb_MiniTableSubInternal* sub = UPB_PRIVATE(_upb_MiniTableField_Sub)(field);
     // Type punning via union is legal in C and we're just checking if it's NULL
     // but it's UB in C++, and this header could be included in C++.
     void* sub_ptr;
@@ -402,10 +406,7 @@ UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_MapEntrySubMessage(
 UPB_API_INLINE const struct upb_MiniTableEnum* upb_MiniTable_GetSubEnumTable(
     const struct upb_MiniTableField* f) {
   UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Enum);
-  upb_MiniTableSubInternal* sub =
-      UPB_PTR_AT(f, f->UPB_PRIVATE(submsg_ofs) * kUpb_SubmsgOffsetBytes,
-                 upb_MiniTableSubInternal);
-  return sub->UPB_PRIVATE(subenum);
+  return UPB_PRIVATE(_upb_MiniTableField_Sub)(f)->UPB_PRIVATE(subenum);
 }
 
 UPB_API_INLINE const struct upb_MiniTableField* upb_MiniTable_MapKey(

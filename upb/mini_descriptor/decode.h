@@ -53,8 +53,10 @@ UPB_NODISCARD UPB_API_INLINE upb_MiniTable* upb_MiniTable_Build(
 }
 
 // Initializes a MiniTableExtension buffer that has already been allocated.
-// This is needed by upb_FileDef and upb_MessageDef, which allocate all of the
-// extensions together in a single contiguous array.
+// If the extension is a sub-message or closed enum, its sub is stored directly
+// after the upb_MiniTableExtension, so the buffer must be at least
+// `sizeof(upb_MiniTableExtension) + sizeof(upb_MiniTableSub)` bytes. Prefer
+// upb_MiniTableExtension_Build(), which sizes the allocation automatically.
 UPB_NODISCARD const char* _upb_MiniTableExtension_Init(
     const char* data, size_t len, upb_MiniTableExtension* ext,
     const upb_MiniTable* extendee, upb_MiniTableSub sub,

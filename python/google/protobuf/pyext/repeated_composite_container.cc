@@ -10,18 +10,15 @@
 
 #include "google/protobuf/pyext/repeated_composite_container.h"
 
-#include <memory>
 #include <utility>
 
 #include "google/protobuf/descriptor.h"
-#include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/reflection.h"
-#include "google/protobuf/breaking_changes.h"
-#include "google/protobuf/pyext/descriptor.h"
 #include "google/protobuf/pyext/descriptor_pool.h"
 #include "google/protobuf/pyext/message.h"
 #include "google/protobuf/pyext/message_factory.h"
+#include "google/protobuf/pyext/message_tree.h"
 #include "google/protobuf/pyext/scoped_pyobject_ptr.h"
 
 // Must include last.
@@ -57,6 +54,10 @@ static PyObject* AttachQuiescentMessage(RepeatedCompositeContainer* self,
   CMessage* cmsg = reinterpret_cast<CMessage*>(child.get());
   parent_msg->GetReflection()->UnsafeArenaAddAllocatedMessage(
       parent_msg, self->parent_field_descriptor, cmsg->GetQuiescent());
+  MessageTree* old_tree = cmsg->GetTree();
+  MessageTree* new_tree = self->GetTree();
+  cmessage::UpdateSubtreeTree(cmsg, new_tree);
+  old_tree->Unref();
   Py_INCREF(self->parent);
   cmsg->parent = self->parent;
   cmsg->parent_field_descriptor = self->parent_field_descriptor;
@@ -524,6 +525,7 @@ RepeatedCompositeContainer* NewContainer(
     return nullptr;
   }
 
+  self->SetTree(parent->GetTree());
   Py_INCREF(parent);
   self->parent = parent;
   self->parent_field_descriptor = parent_field_descriptor;

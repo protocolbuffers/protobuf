@@ -635,8 +635,7 @@ jobs:
           image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: cpp_linux/abseil_head
-          # Remove deprecation supression after clean up
-          bazel: test //src/... --override_module=abseil-cpp=abseil-cpp-head --copt="-Wno-deprecated-declarations"
+          bazel: test //src/... --override_module=abseil-cpp=abseil-cpp-head
 
   # Runs tests against unreleased Bazel HEAD (last_green) to catch regressions early.
   linux-bazel-last-green:

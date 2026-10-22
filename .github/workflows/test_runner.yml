@@ -208,16 +208,6 @@ jobs:
       safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
     secrets: inherit
 
-  objectivec:
-    name: Objective-C
-    needs: [set-vars]
-    uses: ./.github/workflows/test_objectivec.yml
-    with:
-      continuous-run: ${{ needs.set-vars.outputs.continuous-run }}
-      safe-checkout: ${{ needs.set-vars.outputs.checkout-sha }}
-      continuous-prefix: ${{ needs.set-vars.outputs.continuous-prefix }}
-    secrets: inherit
-
   rust:
     name: Rust
     needs: [set-vars]
@@ -258,7 +248,7 @@ jobs:
   # This test depends on all blocking tests and indicates whether they all suceeded.
   all-blocking-tests:
     name: All Blocking Tests${{ github.event_name == 'pull_request_target' && ' (fork)' || ''}}
-    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, objectivec, rust, upb, hpb, staleness]
+    needs: [set-vars, validate-yaml, bazel, cpp, java, python, ruby, php, php-ext, csharp, rust, upb, hpb, staleness]
     runs-on: ubuntu-latest
     steps:
       - name: Check test results

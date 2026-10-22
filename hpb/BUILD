@@ -5,13 +5,26 @@
 # license that can be found in the LICENSE file or at
 # https://developers.google.com/open-source/licenses/bsd
 
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_cc//cc:cc_test.bzl", "cc_test")
 load("@rules_cc//cc:defs.bzl", "cc_library")
+load("//hpb:hpb_users.bzl", "HPB_USERS")
 
 package(default_applicable_licenses = ["//:license"])
 
 licenses(["notice"])
+
+package_group(
+    name = "hpb_users",
+    packages = HPB_USERS,
+)
+
+bzl_library(
+    name = "hpb_users_bzl",
+    srcs = ["hpb_users.bzl"],
+    visibility = ["//hpb:__subpackages__"],
+)
 
 string_flag(
     name = "hpb_backend",
@@ -20,7 +33,7 @@ string_flag(
         "upb",
         "cpp",
     ],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
 )
 
 config_setting(
@@ -28,7 +41,7 @@ config_setting(
     flag_values = {
         ":hpb_backend": "upb",
     },
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
 )
 
 config_setting(
@@ -36,7 +49,7 @@ config_setting(
     flag_values = {
         ":hpb_backend": "cpp",
     },
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
 )
 
 cc_library(
@@ -44,7 +57,7 @@ cc_library(
     hdrs = [
         "hpb.h",
     ],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
     deps = [
         ":arena",
         ":extension",
@@ -88,7 +101,7 @@ cc_library(
     hdrs = [
         "repeated_field.h",
     ],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
     deps = [
         ":multibackend",
         ":ptr",
@@ -122,19 +135,19 @@ cc_library(
 cc_library(
     name = "requires",
     hdrs = ["requires.h"],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
 )
 
 cc_library(
     name = "ptr",
     hdrs = ["ptr.h"],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
 )
 
 cc_library(
     name = "arena",
     hdrs = ["arena.h"],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
     deps = [
         ":multibackend",
         "//hpb/backend:types",
@@ -152,7 +165,7 @@ cc_library(
     name = "status",
     srcs = ["status.cc"],
     hdrs = ["status.h"],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
     deps = [
         ":multibackend",
         "//hpb/backend:types",
@@ -182,7 +195,7 @@ cc_library(
     name = "extension",
     srcs = ["extension.cc"],
     hdrs = ["extension.h"],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
     deps = [
         ":arena",
         ":multibackend",
@@ -205,7 +218,7 @@ cc_library(
 cc_library(
     name = "options",
     hdrs = ["options.h"],
-    visibility = ["//visibility:public"],
+    visibility = [":hpb_users"],
     deps = [
         "//hpb:extension",
         "//hpb:multibackend",

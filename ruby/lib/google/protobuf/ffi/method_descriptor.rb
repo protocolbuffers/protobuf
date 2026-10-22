@@ -30,7 +30,7 @@ module Google
         end
 
         ##
-        # @param service_def [::FFI::Pointer] MethodDef pointer to be wrapped
+        # @param method_def [::FFI::Pointer] MethodDef pointer to be wrapped
         # @param _ [Object] Unused
         def from_native(method_def, _ = nil)
           return nil if method_def.nil? or method_def.null?

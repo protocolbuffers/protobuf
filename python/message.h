@@ -90,7 +90,7 @@ int PyUpb_Message_SetFieldValue(PyObject* _self, const upb_FieldDef* field,
 
 // Creates message meta class.
 PyObject* PyUpb_MessageMeta_DoCreateClass(PyObject* py_descriptor,
-                                          const char* name, PyObject* dict);
+                                          PyObject* name, PyObject* dict);
 
 // Returns the version associated with this message.  The version will be
 // incremented when the message changes.

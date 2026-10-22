@@ -255,15 +255,6 @@ namespace internal {
 //  (2)/(3) `lowercase` offset/size. The data bytes could be shared.
 //  (4)/(5) `camelcase` offset/size. The data bytes could be shared.
 //  (6)/(7) `json_name` offset/size. The data bytes could be shared.
-//
-//  NOTE ABOUT NULL TERMINATION:
-//  The name accessors were migrated from `std::string` to `absl::string_view`,
-//  which caused valid code to break. In particular, there are previously
-//  correct callers calling `foo.name().data()` and using it as a NULL
-//  terminated C-string.
-//  To prevent further breakage we are adding null termination on all these
-//  names even though it is outside the contract for `absl::string_view`.
-//  This might change in the future.
 class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
  public:
   // Uninitialized, to support `= default` of descriptor types.
@@ -283,16 +274,14 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
 
   // The full name is just before `payload_`, and the name is the suffix of it.
   // We don't need a special offset for them.
-  // NOTE: the sizes don't include the null terminator, so add +1 to the offset.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view name() const {
-    return get(get_size(0) + 1, get_size(0));
+    return get(get_size(0), get_size(0));
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view full_name() const {
-    return get(get_size(1) + 1, get_size(1));
+    return get(get_size(1), get_size(1));
   }
 
   // Only available for `FieldDescriptor`. This is not checked at runtime.
-  // NOTE: The offsets here already take into account the null terminator.
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD absl::string_view lowercase_name() const {
     return get(get_size(2), get_size(3));
   }
@@ -305,7 +294,7 @@ class PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorNames {
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static constexpr size_t
   AllocationSizeForSimpleNames(size_t full_name_size) {
-    return full_name_size + /* \0 */ 1 + 2 * sizeof(uint16_t);
+    return full_name_size + 2 * sizeof(uint16_t);
   }
 
  private:

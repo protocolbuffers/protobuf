@@ -72,7 +72,7 @@ std::string CurrentTestSuiteName() {
 
 void ConformanceTest::SetUp() {
   ConformanceEnvironment& environment = ConformanceEnvironment::Get();
-  initial_statistics_ = Statistics::From(environment.test_manager());
+  initial_statistics_ = Statistics::From(environment.ledger());
   // TODO: Transitional.  Goes away with the in-binary
   // performance mode, see ConformanceEnvironmentOptions::performance.
   if (IsPerformanceTest() && !environment.options().performance) {
@@ -90,9 +90,8 @@ void ConformanceTest::SetUp() {
 }
 
 void ConformanceTest::TearDown() {
-  Statistics delta =
-      Statistics::From(ConformanceEnvironment::Get().test_manager()) -
-      initial_statistics_;
+  Statistics delta = Statistics::From(ConformanceEnvironment::Get().ledger()) -
+                     initial_statistics_;
   delta.RecordProperties();
   SuiteStatistics()[CurrentTestSuiteName()] += delta;
 }

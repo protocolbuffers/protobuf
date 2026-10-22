@@ -267,7 +267,6 @@ bool DescriptorPoolExtensionFinder::Find(int number, ExtensionInfo* output) {
   }
 }
 
-
 bool ExtensionSet::FindExtension(int wire_type, uint32_t field,
                                  const Message* extendee,
                                  const internal::ParseContext* ctx,

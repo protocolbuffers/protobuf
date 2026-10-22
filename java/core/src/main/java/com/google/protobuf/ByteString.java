@@ -202,6 +202,33 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
     }
   }
 
+  private static final class ArrayByteIterator extends AbstractByteIterator {
+    private final byte[] bytes;
+    private int position;
+    private final int limit;
+
+    ArrayByteIterator(byte[] bytes, int offset, int length) {
+      this.bytes = bytes;
+      this.position = offset;
+      this.limit = offset + length;
+    }
+
+    @Override
+    public boolean hasNext() {
+      return position < limit;
+    }
+
+    @Override
+    public byte nextByte() {
+      int currentPos = position;
+      if (currentPos >= limit) {
+        throw new NoSuchElementException();
+      }
+      position = currentPos + 1;
+      return bytes[currentPos];
+    }
+  }
+
   /**
    * Gets the number of bytes.
    *
@@ -1527,6 +1554,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return bytes.length;
     }
 
+    @Override
+    public ByteIterator iterator() {
+      return new ArrayByteIterator(bytes, 0, bytes.length);
+    }
+
     // =================================================================
     // ByteString -> substring
 
@@ -1732,6 +1764,11 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
       return length;
     }
 
+    @Override
+    public ByteIterator iterator() {
+      return new ArrayByteIterator(bytes, offset, length);
+    }
+
     // =================================================================
     // ByteString -> substring
     @Override
@@ -1835,9 +1872,7 @@ public abstract class ByteString implements Iterable<Byte>, Serializable {
         return subArrayEquals(bytes, this.offset, lbsOther.bytes, lbsOther.offset + offset, length);
       }
 
-      return other
-          .substringNoCopy(offset, offset + length)
-          .equals(substringNoCopy(this.offset, this.offset + length));
+      return other.substringNoCopy(offset, offset + length).equals(substringNoCopy(0, length));
     }
 
     @Override
