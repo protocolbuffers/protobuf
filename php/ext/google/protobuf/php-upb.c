@@ -11895,6 +11895,13 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   upb_MtDecoder_ParseMessage(d, data, len);
   upb_MtDecoder_AssignHasbits(d);
 
+  // Map entries are never extendable, but the map encoding shares the message
+  // parser, which accepts the extendable message modifier.
+  if (UPB_UNLIKELY(UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(&d->table) !=
+                   kUpb_ExtMode_NonExtendable)) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Map entry cannot be extendable");
+  }
+
   if (UPB_UNLIKELY(d->table.UPB_PRIVATE(field_count) != 2)) {
     upb_MdDecoder_ErrorJmp(&d->base, "%hu fields in map",
                            d->table.UPB_PRIVATE(field_count));
