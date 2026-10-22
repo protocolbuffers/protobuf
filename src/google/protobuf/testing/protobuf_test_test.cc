@@ -637,7 +637,8 @@ PB_TEST(ProtobufMisuseTest, ChooseValueInUnrelatedClassFails) {
   EXPECT_NONFATAL_FAILURE(
       EXPECT_EQ(helper.Choose(), 1),
       "PB_TEST_CHOOSE_VALUE(...) called from a class that is neither the "
-      "current PB_TEST nor its direct fixture base class");
+      "current PB_TEST, nor its PB_TEST_F fixture, nor a base of that fixture "
+      "declaring PB_TEST_FIXTURE_BASE");
 }
 
 class ProtobufGrandparentFixture : public ::testing::Test {
@@ -645,15 +646,116 @@ class ProtobufGrandparentFixture : public ::testing::Test {
   int ChooseInGrandparent() { return PB_TEST_CHOOSE_VALUE((1, 2)); }
 };
 
-class ProtobufChildOfGrandparentFixture : public ProtobufGrandparentFixture {};
+class ProtobufGrandchildFixture : public ProtobufGrandparentFixture {};
 
-PB_TEST_F(ProtobufChildOfGrandparentFixture,
-          ChooseValueInGrandparentFixtureFails) {
+PB_TEST_F(ProtobufGrandchildFixture, UnmarkedGrandparentChooseValueFails) {
   EXPECT_NONFATAL_FAILURE(
       EXPECT_EQ(ChooseInGrandparent(), 1),
       "PB_TEST_CHOOSE_VALUE(...) called from a class that is neither the "
-      "current PB_TEST nor its direct fixture base class");
+      "current PB_TEST, nor its PB_TEST_F fixture, nor a base of that fixture "
+      "declaring PB_TEST_FIXTURE_BASE");
 }
+
+class ProtobufFixtureBase : public ::testing::Test {
+ public:
+  PB_TEST_FIXTURE_BASE();
+
+  static std::vector<std::string>& runs() {
+    static auto* const r = new std::vector<std::string>();
+    return *r;
+  }
+
+ protected:
+  int base_ = PB_TEST_CHOOSE_VALUE((1, 2), "base");
+};
+
+class ProtobufFixtureMiddle : public ProtobufFixtureBase {
+ protected:
+  PB_TEST_FIXTURE_BASE();
+
+  void SetUp() override { middle_ = PB_TEST_CHOOSE_VALUE((10, 20), "middle"); }
+
+  int middle_ = 0;
+};
+
+class ProtobufFixtureLeaf : public ProtobufFixtureMiddle {};
+
+class ProtobufFixturePlainMiddle : public ProtobufFixtureBase {
+ protected:
+  void SetUp() override { plain_ = base_ * 100; }
+
+  int plain_ = 0;
+};
+
+class ProtobufFixtureViaPlain : public ProtobufFixturePlainMiddle {
+ protected:
+  int leaf_ = PB_TEST_CHOOSE_VALUE((30, 40), "leaf");
+};
+
+class ProtobufFixtureMarkedBelowPlain : public ProtobufFixturePlainMiddle {
+ protected:
+  PB_TEST_FIXTURE_BASE();
+
+  int below_ = PB_TEST_CHOOSE_VALUE((3, 4), "below");
+};
+
+class ProtobufFixtureBelowPlain : public ProtobufFixtureMarkedBelowPlain {};
+
+PB_TEST_F(ProtobufFixtureBase, DirectlyOnFixtureBase) {
+  runs().push_back(absl::StrCat(
+      base_, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
+PB_TEST_F(ProtobufFixtureMiddle, DirectlyOnDerivedFixtureBase) {
+  runs().push_back(absl::StrCat(
+      base_, ":", middle_, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
+PB_TEST_F(ProtobufFixtureLeaf, InheritsBaseDimensions) {
+  int body = PB_TEST_CHOOSE_VALUE((100, 200), "body");
+  runs().push_back(absl::StrCat(
+      base_, ":", middle_, ":", body, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
+PB_TEST_F(ProtobufFixtureViaPlain, InheritsAcrossPlainMiddle) {
+  EXPECT_EQ(plain_, base_ * 100);
+  runs().push_back(absl::StrCat(
+      base_, ":", plain_, ":", leaf_, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
+PB_TEST_F(ProtobufFixtureBelowPlain, InheritsAllBaseDimensions) {
+  EXPECT_EQ(plain_, base_ * 100);
+  runs().push_back(absl::StrCat(
+      base_, ":", plain_, ":", below_, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
+static_assert(
+    std::is_same_v<
+        FixtureBasesOf<
+            ProtobufGrandchildFixture_UnmarkedGrandparentChooseValueFails>,
+        std::tuple<>>);
+static_assert(
+    std::is_same_v<FixtureBasesOf<ProtobufFixtureBase_DirectlyOnFixtureBase>,
+                   std::tuple<ProtobufFixtureBase*>>);
+static_assert(
+    std::is_same_v<
+        FixtureBasesOf<ProtobufFixtureMiddle_DirectlyOnDerivedFixtureBase>,
+        std::tuple<ProtobufFixtureMiddle*, ProtobufFixtureBase*>>);
+static_assert(
+    std::is_same_v<FixtureBasesOf<ProtobufFixtureLeaf_InheritsBaseDimensions>,
+                   std::tuple<ProtobufFixtureMiddle*, ProtobufFixtureBase*>>);
+static_assert(std::is_same_v<
+              FixtureBasesOf<ProtobufFixtureViaPlain_InheritsAcrossPlainMiddle>,
+              std::tuple<ProtobufFixtureBase*>>);
+static_assert(
+    std::is_same_v<
+        FixtureBasesOf<ProtobufFixtureBelowPlain_InheritsAllBaseDimensions>,
+        std::tuple<ProtobufFixtureMarkedBelowPlain*, ProtobufFixtureBase*>>);
 
 TEST(ProtobufDeathTest, EmptyChooseValueDimensionTerminates) {
   EXPECT_DEATH(
@@ -869,6 +971,30 @@ class VerificationEnvironment : public ::testing::Environment {
             "ctor/double/body_200",
             "1:2:20:200:double:CombinedWithBodyValueAndType/setup_2/extra_20/"
             "ctor/double/body_200"));
+    EXPECT_THAT(
+        ProtobufFixtureBase::runs(),
+        ElementsAre("1:DirectlyOnFixtureBase/base_1",
+                    "2:DirectlyOnFixtureBase/base_2",
+                    "1:10:DirectlyOnDerivedFixtureBase/base_1/middle_10",
+                    "2:10:DirectlyOnDerivedFixtureBase/base_2/middle_10",
+                    "1:20:DirectlyOnDerivedFixtureBase/base_1/middle_20",
+                    "2:20:DirectlyOnDerivedFixtureBase/base_2/middle_20",
+                    "1:10:100:InheritsBaseDimensions/base_1/middle_10/body_100",
+                    "2:10:100:InheritsBaseDimensions/base_2/middle_10/body_100",
+                    "1:20:100:InheritsBaseDimensions/base_1/middle_20/body_100",
+                    "2:20:100:InheritsBaseDimensions/base_2/middle_20/body_100",
+                    "1:10:200:InheritsBaseDimensions/base_1/middle_10/body_200",
+                    "2:10:200:InheritsBaseDimensions/base_2/middle_10/body_200",
+                    "1:20:200:InheritsBaseDimensions/base_1/middle_20/body_200",
+                    "2:20:200:InheritsBaseDimensions/base_2/middle_20/body_200",
+                    "1:100:30:InheritsAcrossPlainMiddle/base_1/leaf_30",
+                    "2:200:30:InheritsAcrossPlainMiddle/base_2/leaf_30",
+                    "1:100:40:InheritsAcrossPlainMiddle/base_1/leaf_40",
+                    "2:200:40:InheritsAcrossPlainMiddle/base_2/leaf_40",
+                    "1:100:3:InheritsAllBaseDimensions/base_1/below_3",
+                    "2:200:3:InheritsAllBaseDimensions/base_2/below_3",
+                    "1:100:4:InheritsAllBaseDimensions/base_1/below_4",
+                    "2:200:4:InheritsAllBaseDimensions/base_2/below_4"));
     EXPECT_THAT(RecordedBools(), ElementsAre(false, true));
     EXPECT_THAT(RecordedEnums(),
                 ElementsAre(FOREIGN_FOO, FOREIGN_BAR, FOREIGN_BAZ,
@@ -1089,11 +1215,13 @@ TEST(ProtobufTestRegistryTest, RegistersExpectedTestsWithoutDummySuite) {
 
   EXPECT_THAT(
       suite_names,
-      UnorderedElementsAre("ProtobufTestFixture", "ProtobufValueInFixtureTest",
-                           "ProtobufStandaloneTest", "ProtobufTestRegistryTest",
-                           "ProtobufDeathTest", "ProtobufMisuseTest",
-                           "ProtobufRegularTestFFixture",
-                           "ProtobufChildOfGrandparentFixture"));
+      UnorderedElementsAre(
+          "ProtobufTestFixture", "ProtobufValueInFixtureTest",
+          "ProtobufStandaloneTest", "ProtobufTestRegistryTest",
+          "ProtobufDeathTest", "ProtobufMisuseTest",
+          "ProtobufRegularTestFFixture", "ProtobufGrandchildFixture",
+          "ProtobufFixtureBase", "ProtobufFixtureMiddle", "ProtobufFixtureLeaf",
+          "ProtobufFixtureViaPlain", "ProtobufFixtureBelowPlain"));
 
   ASSERT_NE(standalone_suite, nullptr);
   std::vector<std::string> test_names;

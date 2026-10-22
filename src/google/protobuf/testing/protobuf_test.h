@@ -31,6 +31,14 @@
 //     inside `TestFixtureName`'s constructor, default member initializers,
 //     `SetUp()`, or helper methods.
 //
+//   PB_TEST_FIXTURE_BASE()
+//     Declared in a `protected` or `public` section of a base class of
+//     `PB_TEST_F` fixtures so that `PB_TEST_CHOOSE_VALUE` calls in that class
+//     (constructor, default member initializers, `SetUp()`, or helper methods)
+//     also apply to `PB_TEST_F` tests on fixtures derived from it. Only needed
+//     in such base classes: the fixture named in `PB_TEST_F` itself never needs
+//     it.
+//
 //   PB_TEST_CHOOSE_VALUE((v1, v2, ...))
 //   PB_TEST_CHOOSE_VALUE((v1, v2, ...), "prefix")
 //   PB_TEST_CHOOSE_VALUE((v1, v2, ...), printer)
@@ -50,9 +58,9 @@
 //     `PB_TEST_CHOOSE_TYPE` in the same test; parenthesized value expressions
 //     may also capture local variables or fixture members (`this`).
 //     May also be used inside the constructor, default member initializers,
-//     `SetUp()`, or helper methods of the direct `PB_TEST_F` fixture class `F`
-//     (not in base/grandparent classes of `F`), in which case all `PB_TEST_F`
-//     tests on `F` inherit those value dimensions.
+//     `SetUp()`, or helper methods of the `PB_TEST_F` fixture class `F`, or of
+//     a base class of `F` that declares `PB_TEST_FIXTURE_BASE`, in which case
+//     all `PB_TEST_F` tests on `F` inherit those value dimensions.
 //     An optional `"prefix"` string literal can be provided to prepend
 //     `<prefix>_` to each value's test name suffix.
 //     To customize value names, pass either:
@@ -161,11 +169,14 @@
 //   - `PB_TEST_CHOOSE_TYPE` and `PB_TEST_CHOOSE_CONSTEXPR` must be written
 //     lexically inside the `PB_TEST` / `PB_TEST_F` body.
 //   - `PB_TEST_CHOOSE_VALUE` must only be evaluated during a `PB_TEST` or
-//     `PB_TEST_F` test, and only within the test itself or the direct fixture
-//     class of a `PB_TEST_F` (constructor, default member initializers,
+//     `PB_TEST_F` test, and only within the test itself, the fixture class of
+//     a `PB_TEST_F`, or a base class of that fixture declaring
+//     `PB_TEST_FIXTURE_BASE` (constructor, default member initializers,
 //     `SetUp()`, or helper methods). Fixtures that evaluate
 //     `PB_TEST_CHOOSE_VALUE` in their constructor or `SetUp()` must be used
 //     with `PB_TEST_F`, not `TEST_F`.
+//   - A fixture may derive from only one chain of `PB_TEST_FIXTURE_BASE`
+//     classes; two unrelated such bases make `PB_TEST_F` fail to compile.
 //   - Do NOT mix `PB_TEST_F` or `PB_TEST_CHOOSE_VALUE` with `TEST_P`
 //     (`WithParamInterface` / `TestWithParam`) fixtures.
 //   - Iterable arguments to `PB_TEST_CHOOSE_VALUE` and arguments to
@@ -222,6 +233,15 @@
 
 #define PB_TEST_F(test_suite_name, test_name) \
   PB_TEST_(test_suite_name, test_name, test_suite_name)
+
+// Must be declared in a `protected` or `public` section and followed by a
+// semicolon.
+#define PB_TEST_FIXTURE_BASE()                                            \
+  auto InternalPrevFixtureBases_() -> decltype(InternalFixtureBaseProbe_( \
+      ::google::protobuf::internal::ADLImporter{}));                                \
+  auto InternalFixtureBaseProbe_(::google::protobuf::internal::ADLImporter)         \
+      ->decltype(::std::tuple_cat(::std::tuple<decltype(this)>{},         \
+                                  InternalPrevFixtureBases_()))
 
 #define PB_TEST_CHOOSE_VALUE(...)                                   \
   (::google::protobuf::internal::TestChooseValueSelector<                     \
@@ -303,15 +323,25 @@ inline constexpr bool kIsValidProtobufTestFixture =
 #define PB_TEST_CHOOSE_CONSTEXPR_ARGS_(...) \
   PB_TEST_STRIP_PREFIX_(PB_TEST_PARENS_TO_CONSTEXPR_ __VA_ARGS__)
 
+namespace adl_detail {
 struct ADLImporter {};
 template <typename Sig>
 struct Signature {
   constexpr Signature(ADLImporter) {}  // NOLINT
 };
 
-// This function is called via ADL if we can't see it redeclared inside the
-// fixture.
+// These functions are called via ADL when not shadowed in lexical/base scope.
+// Placing them in a sub-namespace avoids GCC's `-Wchanges-meaning` when
+// `PB_TEST_FIXTURE_BASE` is used inside `namespace google::protobuf::internal`.
 inline Signature<void()> InternalIndicesProbe_(ADLImporter p) { return p; }
+std::tuple<> InternalFixtureBaseProbe_(ADLImporter);
+}  // namespace adl_detail
+using adl_detail::ADLImporter;
+using adl_detail::Signature;
+
+template <typename Fixture>
+using FixtureBasesOf =
+    decltype(std::declval<Fixture&>().InternalFixtureBases_());
 
 #define PB_TEST_IMPL_(test_suite_name, test_name, self_class, parent_class)    \
   static_assert(sizeof(GTEST_STRINGIFY_(test_suite_name)) > 1,                 \
@@ -325,6 +355,8 @@ inline Signature<void()> InternalIndicesProbe_(ADLImporter p) { return p; }
    public:                                                                     \
     using InternalParent_ = parent_class;                                      \
     using InternalSelf_ = self_class;                                          \
+    auto InternalFixtureBases_() -> decltype(InternalFixtureBaseProbe_(        \
+        ::google::protobuf::internal::ADLImporter{}));                                   \
                                                                                \
     template <typename Indices>                                                \
     explicit self_class(Indices*, size_t idx)                                  \
@@ -516,7 +548,8 @@ class PartialTestRegistry {
     pf.test_name = test_name;
     pf.file = file;
     pf.line = line;
-    pf.parent_key = kKey<typename Fixture::InternalParent_>;
+    pf.parent_keys = MakeParentKeys<typename Fixture::InternalParent_>(
+        static_cast<FixtureBasesOf<Fixture>*>(nullptr));
     AddDoRegister<Fixture, void()>();
   }
 
@@ -686,6 +719,11 @@ class PartialTestRegistry {
  private:
   PartialTestRegistry() = default;
 
+  template <typename Parent, typename... Bases>
+  static std::vector<const void*> MakeParentKeys(std::tuple<Bases*...>*) {
+    return {kKey<Parent>, kKey<Bases>...};
+  }
+
   template <typename... I>
   static std::vector<PerCounterIndex> IndexAsVector(void (*)(I...)) {
     return {I::value...};
@@ -702,7 +740,10 @@ class PartialTestRegistry {
     absl::string_view test_name;
     absl::string_view file;
     int line = 0;
-    const void* parent_key = nullptr;
+    // Set on tests only: the keys of the `PB_TEST_F` fixture (or
+    // `::testing::Test` for `PB_TEST`) and any `PB_TEST_FIXTURE_BASE` classes
+    // above it. Empty on fixture entries.
+    std::vector<const void*> parent_keys;
     absl::flat_hash_map<CounterT, Location> locations;
 
     struct PerInstantiation {
