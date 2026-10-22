@@ -170,32 +170,28 @@ def _forward_providers(ctx, label_val, target = None, extra_providers = []):
     return providers
 
 def _compat_label_rule_impl(ctx):
+    # Only used when the label_flag created by `compat_label_flag` is not set,
+    # see `compat_label_flag`.
     target = ctx.attr.default_value
     label_val = target.label
 
-    starlark_val = ctx.build_setting_value
-
-    # 1. Starlark flag takes precedence if explicitly passed (not "default")
-    if starlark_val != "default":
-        label_val = Label(starlark_val)
-
-        # 2. Native flag fallback (if HAS_NATIVE_PROTO_FLAGS and _native_target present on ctx.attr)
-    elif HAS_NATIVE_PROTO_FLAGS and hasattr(ctx.attr, "_native_target") and ctx.attr._native_target:
+    # 1. Native flag fallback (if HAS_NATIVE_PROTO_FLAGS and _native_target present on ctx.attr)
+    if HAS_NATIVE_PROTO_FLAGS and hasattr(ctx.attr, "_native_target") and ctx.attr._native_target:
         native_target = ctx.attr._native_target
         if native_target.label != target.label:
             target = native_target
             label_val = native_target.label
 
+    # 2. Default fallback
     return _forward_providers(ctx, label_val, target = target)
 
 def _compat_executable_label_rule_impl(ctx):
+    # Only used when the label_flag created by `compat_label_flag` is not set,
+    # see `compat_label_flag`.
     target = ctx.attr.default_value
     label_val = target.label
 
-    starlark_val = ctx.build_setting_value
-    if starlark_val != "default":
-        label_val = Label(starlark_val)
-    elif HAS_NATIVE_PROTO_FLAGS and hasattr(ctx.attr, "_native_target") and ctx.attr._native_target:
+    if HAS_NATIVE_PROTO_FLAGS and hasattr(ctx.attr, "_native_target") and ctx.attr._native_target:
         native_target = ctx.attr._native_target
         if native_target.label != target.label:
             target = native_target
@@ -224,7 +220,6 @@ _COMMON_LABEL_FLAG_ATTRS = {
     "fragment_field": attr.string(),
     "default_value": attr.label(allow_files = True),
     "runtime": attr.label(allow_files = True),
-    "scope": attr.string(),
 }
 
 def _make_label_rule(fragment_name, executable = False):
@@ -236,7 +231,6 @@ def _make_label_rule(fragment_name, executable = False):
         )
     return rule(
         implementation = _compat_executable_label_rule_impl if executable else _compat_label_rule_impl,
-        build_setting = config.string(flag = True),
         executable = executable,
         fragments = ["proto"] if HAS_NATIVE_PROTO_FLAGS and fragment_name else [],
         attrs = attrs,
@@ -269,12 +263,18 @@ def compat_label_flag(
         **kwargs):
     """Creates a custom label build setting reconciling Starlark/fragments.
 
+    The flag itself is a `label_flag`, so setting it (directly or through a
+    flag alias) forwards the providers of the target it is set to. When the flag
+    is not set, it points to a `<name>_default` target, which forwards the target
+    of the native flag in `ctx.fragments.proto` (if supported and set to a
+    non-default value) or else `build_setting_default`.
+
     Args:
         name: The target name for the Starlark build setting flag.
         fragment_field: The field name in ctx.fragments.proto, if any.
         build_setting_default: Fallback default label target.
         executable: Whether the label setting points to an executable target.
-        **kwargs: Additional rule arguments (such as `scope`).
+        **kwargs: Additional `label_flag` arguments (such as `scope`).
     """
     if fragment_field != None and (fragment_field, executable) not in _LABEL_RULES:
         fail("Unsupported fragment_field '%s' for compat_label_flag. Supported values are: %s" % (
@@ -284,10 +284,14 @@ def compat_label_flag(
 
     rule_func = _LABEL_RULES.get((fragment_field, executable), _LABEL_RULES[(None, executable)])
     rule_func(
-        name = name,
-        build_setting_default = "default",
+        name = name + "_default",
         fragment_field = fragment_field or "",
         default_value = build_setting_default,
         runtime = build_setting_default,
+        visibility = ["//visibility:private"],
+    )
+    native.label_flag(
+        name = name,
+        build_setting_default = ":" + name + "_default",
         **kwargs
     )
