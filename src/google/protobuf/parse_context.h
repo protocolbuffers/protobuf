@@ -1531,30 +1531,39 @@ const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
   ABSL_DCHECK_EQ(parent.GetArena(), out->GetArena());
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int nbytes = BytesAvailable(ptr);
-  while (size > nbytes) {
-    int num = nbytes / sizeof(T);
-    int old_entries = out->size();
-    out->ReserveWithArena(&parent, old_entries + num);
-    int block_size = num * sizeof(T);
-    auto dst = out->AddNAlreadyReserved(num);
+  if (size > nbytes) {
+    if (ABSL_PREDICT_TRUE(size % sizeof(T) == 0 &&
+                          HasEnoughTillLimit(size, ptr))) {
+      out->ReserveWithArena(
+          &parent, internal::CheckedAdd(out->size(),
+                                        std::min<int>(size, kSafeStringSize) /
+                                            static_cast<int>(sizeof(T))));
+    }
+    do {
+      int num = nbytes / sizeof(T);
+      int old_entries = out->size();
+      out->ReserveWithArena(&parent, internal::CheckedAdd(old_entries, num));
+      int block_size = num * sizeof(T);
+      auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
-    std::memcpy(dst, ptr, block_size);
+      std::memcpy(dst, ptr, block_size);
 #else
-    for (int i = 0; i < num; i++)
-      dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
+      for (int i = 0; i < num; i++)
+        dst[i] = UnalignedLoad<T>(ptr + i * sizeof(T));
 #endif
-    size -= block_size;
-    if (limit_ <= kSlopBytes) return nullptr;
-    ptr = Next();
-    if (ptr == nullptr) return nullptr;
-    ptr += kSlopBytes - (nbytes - block_size);
-    nbytes = BytesAvailable(ptr);
+      size -= block_size;
+      if (limit_ <= kSlopBytes) return nullptr;
+      ptr = Next();
+      if (ptr == nullptr) return nullptr;
+      ptr += kSlopBytes - (nbytes - block_size);
+      nbytes = BytesAvailable(ptr);
+    } while (size > nbytes);
   }
   int num = size / sizeof(T);
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
-  out->ReserveWithArena(&parent, old_entries + num);
+  out->ReserveWithArena(&parent, internal::CheckedAdd(old_entries, num));
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
