@@ -14,8 +14,10 @@
 #include <limits>
 #include <random>
 #include <string>
+#include <tuple>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -312,7 +314,7 @@ TEST(MapTest, EraseIf) {
       2, google::protobuf::erase_if(m, [&](auto& p) {
         // Verify that we get a const input.
         EXPECT_TRUE((std::is_same_v<decltype(p),
-                                    const std::pair<const int, std::string>&>));
+                                    const google::protobuf::MapPair<int, std::string>&>));
         return absl::StrContains(p.second, "bar");
       }));
   EXPECT_THAT(m, UnorderedElementsAre(Pair(1, "foo"), Pair(3, "baz")));
@@ -479,6 +481,195 @@ TEST(MapTest, IteratorNodeFieldIsNullPtrAtEnd) {
   EXPECT_EQ(internal::UntypedMapIterator::FromTyped(map.cend()).node_, nullptr);
 }
 
+
+// MapPair ====================================================================
+//
+// `MapPair<Key, T>` is either an alias for `std::pair<const Key, T>` or a
+// custom struct, depending on PROTOBUF_FUTURE_CUSTOM_MAP_PAIR. These tests
+// verify that, either way, it supports the parts of the `std::pair` API that
+// users rely on. They must pass with and without the macro.
+
+using IntStringPair = MapPair<int32_t, std::string>;
+using StringStringPair = MapPair<std::string, std::string>;
+
+TEST(MapPairTest, MemberTypes) {
+  EXPECT_TRUE((std::is_same_v<IntStringPair::first_type, const int32_t>));
+  EXPECT_TRUE((std::is_same_v<IntStringPair::second_type, std::string>));
+  EXPECT_TRUE((std::is_same_v<decltype(IntStringPair::first), const int32_t>));
+  EXPECT_TRUE((std::is_same_v<decltype(IntStringPair::second), std::string>));
+}
+
+TEST(MapPairTest, ConstructFromLvalues) {
+  const int32_t key = 1;
+  const std::string value = "one";
+  IntStringPair p(key, value);
+  EXPECT_EQ(p.first, 1);
+  EXPECT_EQ(p.second, "one");
+  // The source is copied, not moved.
+  EXPECT_EQ(value, "one");
+}
+
+TEST(MapPairTest, ConstructMovesRvalues) {
+  // Long enough to defeat SSO, so a move keeps the same buffer.
+  std::string key(100, 'k');
+  std::string value(100, 'v');
+  const char* key_data = key.data();
+  const char* value_data = value.data();
+
+  StringStringPair p(std::move(key), std::move(value));
+
+  EXPECT_EQ(p.first, std::string(100, 'k'));
+  EXPECT_EQ(p.second, std::string(100, 'v'));
+  EXPECT_EQ(p.first.data(), key_data);
+  EXPECT_EQ(p.second.data(), value_data);
+}
+
+TEST(MapPairTest, ConstructFromConstKeyAndRvalueValue) {
+  const std::string key = "key";
+  std::string value(100, 'v');
+  const char* value_data = value.data();
+
+  StringStringPair p(key, std::move(value));
+
+  EXPECT_EQ(p.first, "key");
+  EXPECT_EQ(key, "key");
+  EXPECT_EQ(p.second.data(), value_data);
+}
+
+TEST(MapPairTest, BraceInitialization) {
+  IntStringPair direct{1, "one"};
+  EXPECT_EQ(direct.first, 1);
+  EXPECT_EQ(direct.second, "one");
+
+  IntStringPair copy_list = {2, "two"};
+  EXPECT_EQ(copy_list.first, 2);
+  EXPECT_EQ(copy_list.second, "two");
+}
+
+TEST(MapPairTest, CopyAndMoveConstruction) {
+  EXPECT_TRUE(std::is_copy_constructible_v<IntStringPair>);
+  EXPECT_TRUE(std::is_move_constructible_v<IntStringPair>);
+
+  IntStringPair original(1, std::string(100, 'v'));
+  IntStringPair copy = original;
+  EXPECT_EQ(copy.first, 1);
+  EXPECT_EQ(copy.second, std::string(100, 'v'));
+  EXPECT_EQ(original.second, std::string(100, 'v'));
+
+  const char* value_data = original.second.data();
+  IntStringPair moved = std::move(original);
+  EXPECT_EQ(moved.first, 1);
+  EXPECT_EQ(moved.second.data(), value_data);
+}
+
+TEST(MapPairTest, Equality) {
+  const IntStringPair p(1, "one");
+  EXPECT_TRUE(p == IntStringPair(1, "one"));
+  EXPECT_FALSE(p != IntStringPair(1, "one"));
+
+  EXPECT_FALSE(p == IntStringPair(2, "one"));
+  EXPECT_TRUE(p != IntStringPair(2, "one"));
+
+  EXPECT_FALSE(p == IntStringPair(1, "uno"));
+  EXPECT_TRUE(p != IntStringPair(1, "uno"));
+
+  EXPECT_EQ(p, IntStringPair(1, "one"));
+  EXPECT_NE(p, IntStringPair(1, "uno"));
+}
+
+TEST(MapPairTest, TupleSizeAndElement) {
+  EXPECT_EQ(std::tuple_size_v<IntStringPair>, 2);
+  EXPECT_EQ(std::tuple_size_v<const IntStringPair>, 2);
+  EXPECT_TRUE((std::is_same_v<
+               std::remove_const_t<std::tuple_element_t<0, IntStringPair>>,
+               int32_t>));
+  EXPECT_TRUE(
+      (std::is_same_v<std::tuple_element_t<1, IntStringPair>, std::string>));
+  EXPECT_TRUE((std::is_same_v<std::tuple_element_t<1, const IntStringPair>,
+                              const std::string>));
+}
+
+TEST(MapPairTest, Get) {
+  // `get` is found via ADL for the custom struct and via `std::get` for
+  // `std::pair`.
+  using std::get;
+
+  IntStringPair p(1, "one");
+  EXPECT_EQ(get<0>(p), 1);
+  EXPECT_EQ(get<1>(p), "one");
+  EXPECT_EQ(&get<0>(p), &p.first);
+  EXPECT_EQ(&get<1>(p), &p.second);
+
+  // Mutable access through `get<1>`.
+  get<1>(p) = "uno";
+  EXPECT_EQ(p.second, "uno");
+  EXPECT_TRUE((std::is_same_v<decltype(get<1>(p)), std::string&>));
+
+  // Const access.
+  const IntStringPair& const_p = p;
+  EXPECT_EQ(get<1>(const_p), "uno");
+  EXPECT_TRUE((std::is_same_v<decltype(get<1>(const_p)), const std::string&>));
+
+  // Rvalue access.
+  EXPECT_TRUE((std::is_same_v<decltype(get<1>(std::move(p))), std::string&&>));
+  std::string moved = get<1>(std::move(p));
+  EXPECT_EQ(moved, "uno");
+}
+
+TEST(MapPairTest, StructuredBindings) {
+  IntStringPair p(1, "one");
+
+  // By reference: aliases the members.
+  auto& [key_ref, value_ref] = p;
+  EXPECT_EQ(&key_ref, &p.first);
+  EXPECT_EQ(&value_ref, &p.second);
+  value_ref = "uno";
+  EXPECT_EQ(p.second, "uno");
+
+  // By const reference.
+  const auto& [const_key, const_value] = p;
+  EXPECT_EQ(const_key, 1);
+  EXPECT_EQ(const_value, "uno");
+  EXPECT_TRUE(
+      (std::is_const_v<std::remove_reference_t<decltype(const_value)>>));
+
+  // By value: a copy.
+  auto [key_copy, value_copy] = p;
+  value_copy = "eins";
+  EXPECT_EQ(key_copy, 1);
+  EXPECT_EQ(p.second, "uno");
+}
+
+void TakesStdPair(const std::pair<int32_t, std::string>& p) {
+  EXPECT_EQ(p.first, 1);
+  EXPECT_EQ(p.second, "one");
+}
+
+TEST(MapPairTest, ConvertsToStdPair) {
+  const IntStringPair p(1, "one");
+
+  std::pair<int32_t, std::string> non_const_key = p;
+  EXPECT_EQ(non_const_key.first, 1);
+  EXPECT_EQ(non_const_key.second, "one");
+
+  std::pair<const int32_t, std::string> const_key = p;
+  EXPECT_EQ(const_key.first, 1);
+  EXPECT_EQ(const_key.second, "one");
+
+  // Converting to a pair of different but convertible types.
+  std::pair<int64_t, std::string> widened = p;
+  EXPECT_EQ(widened.first, 1);
+  EXPECT_EQ(widened.second, "one");
+
+  // Implicit conversion when passed to a function.
+  TakesStdPair(p);
+}
+
+TEST(MapPairTest, WorksWithGMockMatchers) {
+  const IntStringPair p(1, "one");
+  EXPECT_THAT(p, Pair(1, "one"));
+  EXPECT_THAT(p, FieldsAre(1, "one"));
+}
 
 
 }  // namespace

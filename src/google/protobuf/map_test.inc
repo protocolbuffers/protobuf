@@ -4434,6 +4434,99 @@ TEST(NonUtf8Test, BytesValuePassesInProto3) {
   EXPECT_EQ((*message.mutable_map_bytes())[1], "\xFF");
 }
 
+// MapPair as Map::value_type ==================================================
+//
+// Map's elements are `MapPair<Key, T>`, which is either
+// `std::pair<const Key, T>` or a custom struct (PROTOBUF_FUTURE_CUSTOM_MAP_PAIR).
+// Either way, elements must behave like the `std::pair<const Key, T>` elements
+// of `std::unordered_map`.
+
+TEST(MapValueTypeTest, ValueTypeIsMapPair) {
+  using M = Map<int32_t, std::string>;
+  EXPECT_TRUE((std::is_same_v<M::value_type, MapPair<int32_t, std::string>>));
+  EXPECT_TRUE((std::is_same_v<decltype(*std::declval<M::iterator>()),
+                              M::value_type&>));
+  EXPECT_TRUE((std::is_same_v<decltype(*std::declval<M::const_iterator>()),
+                              const M::value_type&>));
+}
+
+TEST(MapValueTypeTest, KeyIsNotAssignableThroughIterator) {
+  // As with `std::unordered_map`, modifying a key in place would corrupt the
+  // map, so it must not be possible through a mutable iterator.
+  using M = Map<int32_t, std::string>;
+  EXPECT_FALSE((std::is_assignable_v<
+                decltype((std::declval<M::iterator>()->first)), int32_t>));
+  EXPECT_TRUE((std::is_assignable_v<
+               decltype((std::declval<M::iterator>()->second)), std::string>));
+}
+
+TEST(MapValueTypeTest, RangeForWithStructuredBindings) {
+  Map<int32_t, std::string> m;
+  m[1] = "one";
+  m[2] = "two";
+
+  for (auto& [key, value] : m) {
+    absl::StrAppend(&value, "-", key);
+  }
+  EXPECT_THAT(m, ::testing::UnorderedElementsAre(Pair(1, "one-1"),
+                                                 Pair(2, "two-2")));
+
+  int32_t key_sum = 0;
+  for (const auto& [key, value] : m) key_sum += key;
+  EXPECT_EQ(key_sum, 3);
+}
+
+TEST(MapValueTypeTest, GetOnElements) {
+  using std::get;
+  Map<int32_t, std::string> m;
+  m[1] = "one";
+
+  EXPECT_EQ(get<0>(*m.begin()), 1);
+  get<1>(*m.begin()) = "uno";
+  EXPECT_EQ(m[1], "uno");
+}
+
+TEST(MapValueTypeTest, ElementsConvertToStdPair) {
+  Map<int32_t, std::string> m;
+  m[1] = "one";
+
+  std::pair<int32_t, std::string> p = *m.begin();
+  EXPECT_EQ(p, (std::pair<int32_t, std::string>(1, "one")));
+
+  std::vector<std::pair<int32_t, std::string>> v(m.begin(), m.end());
+  EXPECT_THAT(v, ElementsAre(Pair(1, "one")));
+}
+
+TEST(MapValueTypeTest, InsertAndEmplaceValueType) {
+  using M = Map<int32_t, std::string>;
+  M source;
+  source[1] = "one";
+
+  M m;
+  EXPECT_TRUE(m.insert(*source.begin()).second);
+  // Inserting a duplicate range is a no-op.
+  m.insert(source.begin(), source.end());
+  EXPECT_TRUE(m.emplace(M::value_type(2, "two")).second);
+  EXPECT_FALSE(m.emplace(M::value_type(2, "zwei")).second);
+
+  EXPECT_THAT(m, ::testing::UnorderedElementsAre(Pair(1, "one"),
+                                                 Pair(2, "two")));
+}
+
+TEST(MapValueTypeTest, EraseIfPredicateReceivesConstValueType) {
+  using M = Map<int32_t, std::string>;
+  M m;
+  m[1] = "a";
+  m[2] = "b";
+
+  EXPECT_EQ(1, google::protobuf::erase_if(m, [](auto& p) {
+              EXPECT_TRUE(
+                  (std::is_same_v<decltype(p), const M::value_type&>));
+              return p.first == 1;
+            }));
+  EXPECT_THAT(m, ElementsAre(Pair(2, "b")));
+}
+
 }  // namespace
 }  // namespace internal
 }  // namespace protobuf

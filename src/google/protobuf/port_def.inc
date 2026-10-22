@@ -132,6 +132,11 @@
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
+// Changes google::protobuf::MapPair from an alias to std::pair<const Key, T> to a custom
+// class.
+// Owner: cknittel@
+#define PROTOBUF_FUTURE_CUSTOM_MAP_PAIR 1
+
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
