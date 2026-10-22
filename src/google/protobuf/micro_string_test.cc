@@ -21,6 +21,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -1134,6 +1135,26 @@ TEST_F(MicroStringExtraTest, SetStringUsesInlineSpace) {
             arena()->SpaceUsed() - used);
   EXPECT_EQ(kLargeRepSize + sizeof(std::string) + used_in_string,
             str.SpaceUsedExcludingSelfLong());
+}
+
+TEST_F(MicroStringExtraTest, SetCordUsesInlineSpace) {
+  MicroStringExtra<23> str;
+  const size_t used = arena()->SpaceUsed();
+  absl::Cord fits("0123456789");
+  fits.Append(absl::MakeCordFromExternal("abcdefghijklm", [] {}));
+  ASSERT_EQ(fits.size(), 23);
+  str.Set(fits, arena_message());
+  EXPECT_EQ(str.Get(), fits);
+  EXPECT_EQ(used, arena()->SpaceUsed());
+  EXPECT_EQ(0, str.SpaceUsedExcludingSelfLong());
+
+  absl::Cord spills = fits;
+  spills.Append("x");
+  str.Set(spills, arena_message());
+  EXPECT_EQ(str.Get(), spills);
+  const size_t expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 24);
+  EXPECT_EQ(used + expected_use, arena()->SpaceUsed());
+  EXPECT_EQ(expected_use, str.SpaceUsedExcludingSelfLong());
 }
 
 TEST_F(MicroStringExtraTest, InternalSwap) {

@@ -216,11 +216,18 @@ class PROTOBUF_EXPORT MicroString {
   }
 
   void Set(const absl::Cord& value, const MessageLite& parent) {
-    SetInChunks(value.size(), parent, [&value](auto append) {
-      for (absl::string_view chunk : value.Chunks()) {
-        append(chunk);
-      }
-    });
+    Set(value, parent, kInlineCapacity);
+  }
+  void Set(const absl::Cord& value, const MessageLite& parent,
+           size_t inline_capacity) {
+    SetInChunks(
+        value.size(), parent,
+        [&value](auto append) {
+          for (absl::string_view chunk : value.Chunks()) {
+            append(chunk);
+          }
+        },
+        inline_capacity);
   }
   void Set(absl::string_view data, const MessageLite& parent,
            size_t inline_capacity) {
@@ -637,6 +644,9 @@ class MicroStringExtraImpl : private MicroString {
   }
   void Set(absl::string_view data, const MessageLite& parent) {
     SetMaybeConstant(*this, data, parent);
+  }
+  void Set(const absl::Cord& value, const MessageLite& parent) {
+    MicroString::Set(value, parent, kInlineCapacity);
   }
   void Set(const std::string& data, const MessageLite& parent) {
     Set(absl::string_view(data), parent);
