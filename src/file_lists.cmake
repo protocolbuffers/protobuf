@@ -1365,6 +1365,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_inlined_string.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_micro_string.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/lazy_field_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/proto_with_many_options.proto
