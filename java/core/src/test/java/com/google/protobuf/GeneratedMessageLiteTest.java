@@ -80,7 +80,7 @@ public class GeneratedMessageLiteTest {
         TestAllExtensionsLite.newBuilder()
             .setExtension(UnittestLite.optionalInt32ExtensionLite, 1)
             .build();
-    TestAllExtensionsLite merged = TestAllExtensionsLite.newBuilder().mergeFrom(original).build();
+    TestAllExtensionsLite merged = original.toBuilder().build();
     assertThat(merged.hasExtension(UnittestLite.optionalInt32ExtensionLite)).isTrue();
     assertThat((int) merged.getExtension(UnittestLite.optionalInt32ExtensionLite)).isEqualTo(1);
   }
