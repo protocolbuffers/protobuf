@@ -31,6 +31,13 @@
 //     inside `TestFixtureName`'s constructor, default member initializers,
 //     `SetUp()`, or helper methods.
 //
+//   PB_TEST_FIXTURE_BASE(FixtureBaseName)
+//     Declared inside a base class of `PB_TEST_F` fixtures so that
+//     `PB_TEST_CHOOSE_VALUE` calls in that class (constructor, default member
+//     initializers, `SetUp()`, or helper methods) also apply to `PB_TEST_F`
+//     tests on fixtures derived from it. Only needed in such base classes: the
+//     fixture named in `PB_TEST_F` itself never needs it.
+//
 //   PB_TEST_CHOOSE_VALUE((v1, v2, ...))
 //   PB_TEST_CHOOSE_VALUE((v1, v2, ...), "prefix")
 //   PB_TEST_CHOOSE_VALUE((v1, v2, ...), printer)
@@ -50,9 +57,9 @@
 //     `PB_TEST_CHOOSE_TYPE` in the same test; parenthesized value expressions
 //     may also capture local variables or fixture members (`this`).
 //     May also be used inside the constructor, default member initializers,
-//     `SetUp()`, or helper methods of the direct `PB_TEST_F` fixture class `F`
-//     (not in base/grandparent classes of `F`), in which case all `PB_TEST_F`
-//     tests on `F` inherit those value dimensions.
+//     `SetUp()`, or helper methods of the `PB_TEST_F` fixture class `F`, or of
+//     a base class of `F` that declares `PB_TEST_FIXTURE_BASE`, in which case
+//     all `PB_TEST_F` tests on `F` inherit those value dimensions.
 //     An optional `"prefix"` string literal can be provided to prepend
 //     `<prefix>_` to each value's test name suffix.
 //     To customize value names, pass either:
@@ -161,11 +168,14 @@
 //   - `PB_TEST_CHOOSE_TYPE` and `PB_TEST_CHOOSE_CONSTEXPR` must be written
 //     lexically inside the `PB_TEST` / `PB_TEST_F` body.
 //   - `PB_TEST_CHOOSE_VALUE` must only be evaluated during a `PB_TEST` or
-//     `PB_TEST_F` test, and only within the test itself or the direct fixture
-//     class of a `PB_TEST_F` (constructor, default member initializers,
+//     `PB_TEST_F` test, and only within the test itself, the fixture class of
+//     a `PB_TEST_F`, or a base class of that fixture declaring
+//     `PB_TEST_FIXTURE_BASE` (constructor, default member initializers,
 //     `SetUp()`, or helper methods). Fixtures that evaluate
 //     `PB_TEST_CHOOSE_VALUE` in their constructor or `SetUp()` must be used
 //     with `PB_TEST_F`, not `TEST_F`.
+//   - A fixture may derive from only one chain of `PB_TEST_FIXTURE_BASE`
+//     classes; two unrelated such bases make `PB_TEST_F` fail to compile.
 //   - Do NOT mix `PB_TEST_F` or `PB_TEST_CHOOSE_VALUE` with `TEST_P`
 //     (`WithParamInterface` / `TestWithParam`) fixtures.
 //   - Iterable arguments to `PB_TEST_CHOOSE_VALUE` and arguments to
@@ -222,6 +232,13 @@
 
 #define PB_TEST_F(test_suite_name, test_name) \
   PB_TEST_(test_suite_name, test_name, test_suite_name)
+
+// Must be followed by a semicolon, like `FRIEND_TEST`. See `FixtureBaseAbove`.
+#define PB_TEST_FIXTURE_BASE(fixture_base_name)                \
+  friend ::google::protobuf::internal::FixtureBaseTag<fixture_base_name> \
+  InternalFixtureBaseProbe_(                                   \
+      const fixture_base_name*,                                \
+      ::google::protobuf::internal::FixtureBaseMatch<fixture_base_name>)
 
 #define PB_TEST_CHOOSE_VALUE(...)                                   \
   (::google::protobuf::internal::TestChooseValueSelector<                     \
@@ -312,6 +329,38 @@ struct Signature {
 // This function is called via ADL if we can't see it redeclared inside the
 // fixture.
 inline Signature<void()> InternalIndicesProbe_(ADLImporter p) { return p; }
+
+// `PB_TEST_FIXTURE_BASE(Base)` declares the hidden friend
+// `FixtureBaseTag<Base> InternalFixtureBaseProbe_(const Base*,
+// FixtureBaseMatch<Base>)`, which ADL finds from any class derived from `Base`.
+// `FixtureBaseAbove<T>` calls the probe with a `const T*` and a
+// `FixtureBaseQuery<T>`: converting the pointer to a nearer base is a better
+// conversion, so overload resolution picks the nearest base declaring the
+// macro. `T` itself is skipped because `FixtureBaseMatch<T>` is not
+// constructible from `FixtureBaseQuery<T>`, and the `const void*` fallback
+// below yields `void` when no base declares the macro.
+template <typename Base>
+struct FixtureBaseTag {
+  using type = Base;
+};
+template <typename T>
+struct FixtureBaseQuery {};
+template <typename Base>
+struct FixtureBaseMatch {
+  template <typename T, typename = std::enable_if_t<!std::is_same_v<T, Base>>>
+  constexpr FixtureBaseMatch(FixtureBaseQuery<T>) {}  // NOLINT
+};
+struct FixtureBaseFallback {
+  template <typename T>
+  constexpr FixtureBaseFallback(FixtureBaseQuery<T>) {}  // NOLINT
+};
+FixtureBaseTag<void> InternalFixtureBaseProbe_(const void*,
+                                               FixtureBaseFallback);
+
+// The nearest base class of `T` declaring `PB_TEST_FIXTURE_BASE`, or `void`.
+template <typename T>
+using FixtureBaseAbove = typename decltype(InternalFixtureBaseProbe_(
+    static_cast<const T*>(nullptr), FixtureBaseQuery<T>{}))::type;
 
 #define PB_TEST_IMPL_(test_suite_name, test_name, self_class, parent_class)    \
   static_assert(sizeof(GTEST_STRINGIFY_(test_suite_name)) > 1,                 \
@@ -511,12 +560,14 @@ class PartialTestRegistry {
   template <typename Fixture>
   void SetPrimary(const char* test_suite_name, const char* test_name,
                   const char* file, int line) {
+    using Parent = typename Fixture::InternalParent_;
+    LinkFixtureBases<Parent>();
     auto& pf = fixtures_[kKey<Fixture>];
     pf.test_suite_name = test_suite_name;
     pf.test_name = test_name;
     pf.file = file;
     pf.line = line;
-    pf.parent_key = kKey<typename Fixture::InternalParent_>;
+    pf.parent_key = kKey<Parent>;
     AddDoRegister<Fixture, void()>();
   }
 
@@ -686,6 +737,17 @@ class PartialTestRegistry {
  private:
   PartialTestRegistry() = default;
 
+  // Links `T` and each `PB_TEST_FIXTURE_BASE` class above it to the nearest
+  // such base, so that `RegisterAll()` can push their dimensions down.
+  template <typename T>
+  void LinkFixtureBases() {
+    using Base = FixtureBaseAbove<T>;
+    if constexpr (!std::is_void_v<Base>) {
+      fixtures_[kKey<T>].base_key = kKey<Base>;
+      LinkFixtureBases<Base>();
+    }
+  }
+
   template <typename... I>
   static std::vector<PerCounterIndex> IndexAsVector(void (*)(I...)) {
     return {I::value...};
@@ -702,7 +764,12 @@ class PartialTestRegistry {
     absl::string_view test_name;
     absl::string_view file;
     int line = 0;
+    // Set on tests only: the key of the `PB_TEST_F` fixture (or
+    // `::testing::Test` for `PB_TEST`).
     const void* parent_key = nullptr;
+    // Set on fixtures only: the key of the nearest base class declaring
+    // `PB_TEST_FIXTURE_BASE`, if any.
+    const void* base_key = nullptr;
     absl::flat_hash_map<CounterT, Location> locations;
 
     struct PerInstantiation {

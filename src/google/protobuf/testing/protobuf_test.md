@@ -65,6 +65,12 @@ Include the header and depend on `//third_party/protobuf/testing:protobuf_test`:
     Supports all `PB_TEST_CHOOSE_*` macros in the test body, as well as
     `PB_TEST_CHOOSE_VALUE` inside `TestFixtureName`'s default member
     initializers, constructor, `SetUp()`, or helper methods.
+*   `PB_TEST_FIXTURE_BASE(FixtureBaseName)` Declared (followed by a semicolon)
+    inside the body of a base class of `PB_TEST_F` fixtures, so that
+    `PB_TEST_CHOOSE_VALUE` inside that class's default member initializers,
+    constructor, `SetUp()`, or helper methods also applies to `PB_TEST_F` tests
+    on fixtures derived from it. It is only needed in such base classes; the
+    fixture named in `PB_TEST_F` itself never needs it.
 
 ### Parameter Selection Macros
 
@@ -286,6 +292,29 @@ PB_TEST_F(LazyFieldTest, ParseAndSerialize) {
 }
 ```
 
+To share such a dimension across several fixtures, move it to a common base
+class that declares `PB_TEST_FIXTURE_BASE`; every `PB_TEST_F` on a derived
+fixture then runs with it:
+
+```c++ {.good}
+class ArenaTest : public ::testing::Test {
+ protected:
+  PB_TEST_FIXTURE_BASE(ArenaTest);
+
+  Arena arena_;
+  bool use_arena_ = PB_TEST_CHOOSE_VALUE(testing::Bool(), "arena");
+  Arena* GetArena() { return use_arena_ ? &arena_ : nullptr; }
+};
+
+// The derived fixtures need no macro; only the base owning the dimension does.
+class LazyFieldTest : public ArenaTest {};
+class MapFieldTest : public ArenaTest {};
+
+PB_TEST_F(LazyFieldTest, ParseAndSerialize) {  // Runs with and without arena.
+  ...
+}
+```
+
 ### 3. Replacing `TYPED_TEST` and Mixing Types with Values
 
 GoogleTest's `TYPED_TEST` requires defining a fixture template, a
@@ -493,15 +522,16 @@ PB_TEST_F(MyStringFixture, HandlesStrings) {
     helper functions; pass the chosen type `T` or `constexpr` value as a
     template argument or function parameter to helpers instead).
 *   **`PB_TEST_CHOOSE_VALUE`** may be used inside a `PB_TEST` / `PB_TEST_F` body
-    or inside the **direct** `PB_TEST_F` fixture's default member initializers,
-    constructor, `SetUp()`, or helper methods. Base classes of a `PB_TEST_F`
-    fixture (grandparent fixtures) can share normal setup and state, but cannot
-    themselves call `PB_TEST_CHOOSE_VALUE` (only the direct fixture class `F`
-    passed to `PB_TEST_F(F, ...)` is linked to the test). Any fixture that
-    evaluates `PB_TEST_CHOOSE_VALUE` during construction or `SetUp()` **must**
-    be used directly with `PB_TEST_F`, not `TEST_F` or a derived fixture
-    (calling `PB_TEST_CHOOSE_VALUE` outside an active `PB_TEST` / `PB_TEST_F` or
-    its direct fixture fails the test).
+    or inside the default member initializers, constructor, `SetUp()`, or helper
+    methods of the fixture class `F` passed to `PB_TEST_F(F, ...)`, or of a base
+    class of `F` that declares `PB_TEST_FIXTURE_BASE`. Other base classes of `F`
+    can share normal setup and state, but cannot themselves call
+    `PB_TEST_CHOOSE_VALUE`. A fixture may derive from only one chain of
+    `PB_TEST_FIXTURE_BASE` classes (two unrelated such bases fail to compile).
+    Any fixture that evaluates `PB_TEST_CHOOSE_VALUE` during construction or
+    `SetUp()` **must** be used with `PB_TEST_F`, not `TEST_F` (calling
+    `PB_TEST_CHOOSE_VALUE` outside an active `PB_TEST` / `PB_TEST_F`, its
+    fixture, or a `PB_TEST_FIXTURE_BASE` base of that fixture fails the test).
 *   **Do not define `PB_TEST` or `PB_TEST_F` in header files.**
 
 ### 4. Capturing Local State in Value Expressions

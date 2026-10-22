@@ -200,7 +200,8 @@ size_t PartialTestRegistry::GetValueIndex(CounterT id, const void*,
 
   ADD_FAILURE_AT(loc.file, loc.line)
       << "PB_TEST_CHOOSE_VALUE(...) called from a class that is neither the "
-         "current PB_TEST nor its direct fixture base class.";
+         "current PB_TEST, nor its PB_TEST_F fixture, nor a base of that "
+         "fixture declaring PB_TEST_FIXTURE_BASE.";
   return 0;
 }
 
@@ -375,19 +376,23 @@ static auto Sort(const Map& map, F func) {
 }
 
 void PartialTestRegistry::RegisterAll() {
-  // Push all the parent dimensions to their children.
+  // Push the dimensions of each test's fixture, and of the fixture's
+  // `PB_TEST_FIXTURE_BASE` classes, to the test.
   for (auto& [k, fixture] : fixtures_) {
-    auto it = fixtures_.find(fixture.parent_key);
-    if (it == fixtures_.end()) continue;
+    if (fixture.parent_key == nullptr) continue;
+    for (const void* key = fixture.parent_key; key != nullptr;) {
+      auto it = fixtures_.find(key);
+      if (it == fixtures_.end()) break;
+      const PerFixture& base = it->second;
 
-    fixture.locations.insert(it->second.locations.begin(),
-                             it->second.locations.end());
-    auto& parent_dimensions =
-        it->second.per_instantiation.begin()->second.dimensions;
-
-    for (auto& [ik, inst] : fixture.per_instantiation) {
-      inst.dimensions.insert(parent_dimensions.begin(),
-                             parent_dimensions.end());
+      fixture.locations.insert(base.locations.begin(), base.locations.end());
+      for (const auto& [bk, base_inst] : base.per_instantiation) {
+        for (auto& [ik, inst] : fixture.per_instantiation) {
+          inst.dimensions.insert(base_inst.dimensions.begin(),
+                                 base_inst.dimensions.end());
+        }
+      }
+      key = base.base_key;
     }
   }
 
