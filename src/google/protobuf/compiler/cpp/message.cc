@@ -2248,9 +2248,9 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
              {"class_data", [&] { GenerateClassData(p); }}},
             R"cc(
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-              $Msg$::$Msg$() : Super_(&$globals$.class_data) {}
+              $Msg$::$Msg$() : Super_($globals$.class_data()) {}
               $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
-                  : Super_(arena, &$globals$.class_data) {}
+                  : Super_(arena, $globals$.class_data()) {}
 #else   // PROTOBUF_CUSTOM_VTABLE
               $Msg$::$Msg$() : Super_() {}
               $Msg$::$Msg$($pb$::Arena* $nullable$ arena) : Super_(arena) {}
@@ -2363,7 +2363,7 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
               // Same as the base class, but it avoids virtual dispatch.
               p->Emit(R"cc(
                 $pb$::Metadata $Msg$::GetMetadata() const {
-                  return Super_::GetMetadataImpl($globals$.class_data);
+                  return Super_::GetMetadataImpl(*$globals$.class_data());
                 }
               )cc");
             }},
@@ -3104,7 +3104,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
                 //~ force alignment
                 const $Msg$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-                : Super_(arena, &$globals$.class_data) {
+                : Super_(arena, $globals$.class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
                 : Super_(arena) {
@@ -3146,7 +3146,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
       R"cc(
         $Msg$::$Msg$($pb$::Arena* $nullable$ arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-            : Super_(arena, &$globals$.class_data) {
+            : Super_(arena, $globals$.class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
             : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3175,7 +3175,7 @@ void MessageGenerator::GenerateStructors(io::Printer* p) {
           //~ Force alignment
           $pb$::Arena* $nullable$ arena, const $Msg$& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-          : Super_(arena, &$globals$.class_data),
+          : Super_(arena, $globals$.class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
           : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -3766,8 +3766,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               $pin_weak_descriptor$;
               $pbi$::PrefetchToLocalCache(&$globals$);
               $pbi$::PrefetchToLocalCache(
-                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
-              return &$globals$.class_data;
+                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$.impl));
+              return $globals$.class_data();
             }
           )cc");
     } else {
@@ -3781,8 +3781,8 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
               $pin_weak_descriptor$;
               $pbi$::PrefetchToLocalCache(&$globals$);
               $pbi$::PrefetchToLocalCache(
-                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$));
-              return &$globals$.class_data;
+                  $pbi$::MessageGlobalsBase::ToParseTableBase(&$globals$.impl));
+              return $globals$.class_data();
             }
           )cc");
     }
@@ -3791,7 +3791,7 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
         R"cc(
           PROTOBUF_ATTRIBUTE_WEAK const $pbi$::ClassData* $nonnull$
           $Msg$::GetClassData() const {
-            return &$globals$.class_data;
+            return $globals$.class_data();
           }
         )cc");
   }
@@ -5320,6 +5320,13 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
   GenerateNewOp(p);
   GenerateInternalGenerateClassData(p);
 
+  constexpr absl::string_view kConditionalConstexpr =
+      R"cc(
+#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
+    constexpr
+#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
+      )cc";
+
   const bool use_implicit_weak_descriptor =
       UsingImplicitWeakDescriptor(descriptor_->file(), options_);
   const bool is_file_descriptor_proto =
@@ -5327,104 +5334,113 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
   // Note that unused class_data #ifndef PROTOBUF_CUSTOM_VTABLE is ignored and
   // incurs no overhead for constexpr constructors.
   p->Emit(
-      {
-          {"constexpr",
-           [&] {
-             if (!is_file_descriptor_proto) {
-               p->Emit(R"cc(constexpr)cc");
-             } else {
-               p->Emit(R"cc(
+      {{"constexpr",
+        is_file_descriptor_proto ? kConditionalConstexpr : R"cc(constexpr)cc"},
+       Sub({"default_init",
+            [&] {
+              if (!is_file_descriptor_proto) {
+                p->Emit(R"cc(
+                  _default(::_pbi::ConstantInitialized{}, GetClassData()),
+                )cc");
+                return;
+              }
+              // Without constant initialization the default instance is
+              // built by Init() alone, which may run before or after this
+              // constructor.
+              p->Emit(R"cc(
 #if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-                 constexpr
+                _default(::_pbi::ConstantInitialized{}, GetClassData()),
 #endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-               )cc");
-             }
-           }},
-          {"default_init",
-           [&] {
-             if (!is_file_descriptor_proto) {
-               p->Emit(R"cc(
-                 _default(::_pbi::ConstantInitialized{}, GetClassData()),
-               )cc");
-               return;
-             }
-             // Without constant initialization the default instance is built
-             // by Init() alone, which may run before or after this constructor.
-             p->Emit(R"cc(
-#if defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-               _default(::_pbi::ConstantInitialized{}, GetClassData()),
-#endif  // PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-             )cc");
-           }},
-          {"file_descriptor_proto_init",
-           [&] {
-             if (!is_file_descriptor_proto) return;
-             p->Emit(R"cc(
+              )cc");
+            }})
+           .WithSuffix(","),
+       {"file_descriptor_proto_init",
+        [&] {
+          if (!is_file_descriptor_proto) return;
+          p->Emit(R"cc(
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
-               void Init() {
-                 ::new (this) $globals_type$();
-                 ::new (&_default) $Msg$(::_pbi::ConstantInitialized{}, GetClassData());
-               }
+            void Init() {
+              ::new (this) $globals_type$();
+              ::new (&this->impl._default)
+                  $Msg$(::_pbi::ConstantInitialized{}, impl.GetClassData());
+            }
 #endif  // !PROTOBUF_CONSTINIT_DEFAULT_INSTANCES
-             )cc");
-           }},
-          {"implicit_weak_descriptor_tail",
-           [&] {
-             if (!use_implicit_weak_descriptor) return;
-             p->Emit({{"index", index_in_file_messages_}}, R"cc(
-               ::_pbi::WeakDescriptorDefaultTail tail = {
-                   file_message_globals + $index$, sizeof($globals_type$)};
-             )cc");
-           }},
-          Sub({"SECTION",
-               [&] {
-                 if (use_implicit_weak_descriptor) {
-                   p->Emit(
-                       {{"section",
-                         WeakDefaultInstanceSection(
-                             descriptor_, index_in_file_messages_, options_)}},
-                       R"cc(ABSL_ATTRIBUTE_SECTION_VARIABLE($section$))cc");
-                   return;
-                 }
-                 // File descriptor proto is mutable.
-                 if (is_file_descriptor_proto) return;
+          )cc");
+        }},
+       {"implicit_weak_descriptor_tail",
+        [&] {
+          if (!use_implicit_weak_descriptor) return;
+          p->Emit({{"index", index_in_file_messages_}}, R"cc(
+            [[maybe_unused]] char
+                _padding[::_pbi::MessageGlobalsTailPadding<$globals_type$>()]{};
+            ::_pbi::WeakDescriptorDefaultTail tail = {
+                file_message_globals + $index$, sizeof($globals_type$)};
+          )cc");
+        }},
+       {"implicit_weak_descriptor_assertions",
+        [&] {
+          if (!use_implicit_weak_descriptor) return;
+          p->Emit(R"cc(
+            //~ Ensure that the tail is at the very end of the globals struct.
+            static_assert(PROTOBUF_FIELD_OFFSET($globals_type$, tail) ==
+                          sizeof($globals_type$) -
+                              sizeof(::_pbi::WeakDescriptorDefaultTail));
+            //~ Ensure that padding is as small as possible.
+            static_assert(sizeof($globals_type$::_padding) < ::_pbi::kClassDataAlignment);
+          )cc");
+        }},
+       Sub({"SECTION",
+            [&] {
+              if (use_implicit_weak_descriptor) {
+                p->Emit({{"section",
+                          WeakDefaultInstanceSection(
+                              descriptor_, index_in_file_messages_, options_)}},
+                        R"cc(ABSL_ATTRIBUTE_SECTION_VARIABLE($section$))cc");
+                return;
+              }
+              // File descriptor proto is mutable.
+              if (is_file_descriptor_proto) return;
 
-                 p->Emit({{"section_name",
-                           !IsProfileDriven(options_) ||
-                                   IsPresentMessage(descriptor_, options_)
-                               ? ".data.rel.ro"
-                               : ".data.rel.ro.unlikely"}},
-                         "PROTOBUF_MESSAGE_GLOBALS_SECTION($section_name$)");
-               }})
-              .WithSuffix(""),
-          {
-              "const",
-              is_file_descriptor_proto ? "" : "const",
-          },
-      },
+              p->Emit({{"section_name",
+                        !IsProfileDriven(options_) ||
+                                IsPresentMessage(descriptor_, options_)
+                            ? ".data.rel.ro"
+                            : ".data.rel.ro.unlikely"}},
+                      "PROTOBUF_MESSAGE_GLOBALS_SECTION($section_name$)");
+            }})
+           .WithSuffix(""),
+       {
+           "const",
+           is_file_descriptor_proto ? "" : "const",
+       }},
       R"cc(
-        struct $globals_type$ : ::_pbi::MessageGlobalsBase {
-          $constexpr$ $globals_type$()
-              : MessageGlobalsBase(
-                    ::_pbi::PrivateAccess::GenerateClassData<$Msg$>()),
-                $default_init$ _table(
-                    ::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
-                        GetClassData())) {}
+        struct alignas(::_pbi::kClassDataAlignment) $globals_type$ {
+          struct Impl : ::_pbi::MessageGlobalsBase {
+            $constexpr $Impl()
+                : ::_pbi::MessageGlobalsBase(
+                      ::_pbi::PrivateAccess::GenerateClassData<$Msg$>()),
+                  $default_init$,
+                  _table(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
+                      GetClassData())) {}
+            ~Impl() {}
+            //~ _default must be the first member.
+            union {
+              alignas(::_pbi::kMaxMessageAlignment) $Msg$ _default;
+            };
+            decltype(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
+                ::std::declval<const ::_pbi::ClassData*>())) _table;
+          };
           //~ File descriptor proto only initializer.
           $file_descriptor_proto_init$;
-          ~$globals_type$() {}
-          //~ _default must be the first member.
-          union {
-            alignas(::_pbi::kMaxMessageAlignment) $Msg$ _default;
-          };
-          decltype(::_pbi::PrivateAccess::GenerateParseTable<$Msg$>(
-              ::std::declval<const ::_pbi::ClassData*>())) _table;
+          const ::_pbi::ClassData* class_data() const { return &impl.class_data; }
+          Impl impl;
           //~ Implicit weak descriptor depends on "tail" at the end of the
           //~ struct.
           $implicit_weak_descriptor_tail$;
         };
-        static_assert(PROTOBUF_FIELD_OFFSET($globals_type$, _default) ==
+        static_assert(PROTOBUF_FIELD_OFFSET($globals_type$, impl._default) ==
                       ::_pbi::MessageGlobalsBase::OffsetToDefault());
+        $implicit_weak_descriptor_assertions$;
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
             PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const $$globals_type$ $globals$

@@ -45,6 +45,8 @@ class LazyField;
 struct TcParseTableBase;
 struct DescriptorMethods;
 
+constexpr size_t kClassDataAlignment = 64;
+
 class MessageCreator {
  public:
   using Func = void* PROTOBUF_NONNULL (*PROTOBUF_NULLABLE)(

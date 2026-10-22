@@ -839,9 +839,13 @@ class PROTOBUF_EXPORT MessageLite {
 
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   explicit constexpr MessageLite(const internal::ClassData* data)
-      : _class_data_(data) {}
+      : _class_data_(data) {
+    ABSL_DCHECK(internal::PtrIsAligned(data, internal::kClassDataAlignment));
+  }
   explicit MessageLite(Arena* arena, const internal::ClassData* data)
-      : _internal_metadata_(arena), _class_data_(data) {}
+      : _internal_metadata_(arena), _class_data_(data) {
+    ABSL_DCHECK(internal::PtrIsAligned(data, internal::kClassDataAlignment));
+  }
 #else   // PROTOBUF_CUSTOM_VTABLE
   constexpr MessageLite() {}
   explicit MessageLite(Arena* arena) : _internal_metadata_(arena) {}

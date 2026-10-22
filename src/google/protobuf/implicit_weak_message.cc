@@ -70,7 +70,8 @@ void ImplicitWeakMessage::ClearImpl(MessageLite& msg) {
   static_cast<ImplicitWeakMessage&>(msg).data_->clear();
 }
 
-struct ImplicitWeakMessageDefaultType : MessageGlobalsBase {
+struct PROTOBUF_ALIGNAS(kClassDataAlignment) ImplicitWeakMessageDefaultType
+    : MessageGlobalsBase {
   constexpr ImplicitWeakMessageDefaultType()
       : MessageGlobalsBase(ImplicitWeakPrivateAccess::GenerateClassData()),
         _default(ConstantInitialized{}),
