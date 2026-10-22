@@ -30,6 +30,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/unittest.pb.h"
 
 
@@ -229,6 +230,23 @@ TEST_F(MicroStringTest, ConstexprUnownedGlobal) {
   EXPECT_EQ("0123456789", global_instance.Get());
   EXPECT_EQ(static_cast<const void*>(payload.payload.payload),
             static_cast<const void*>(global_instance.Get().data()));
+}
+
+PB_TEST_F(MicroStringTest,
+          UnownedPayloadTaggedPtrIsConstexprAndTagsPayloadAddress) {
+  constexpr absl::string_view kInput = PB_TEST_CHOOSE_CONSTEXPR(
+      ("", "abc", "0123456789abcdefghijklmnopqrstuvwxyz"),
+      {"empty", "small", "large"});
+  static constexpr auto kPayload = MicroString::MakeUnownedPayload(kInput);
+  static constexpr const void* kTaggedPtr = kPayload.tagged_ptr();
+  static_assert(kTaggedPtr != nullptr);
+
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(kTaggedPtr) & 0x1, uintptr_t{1});
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(kTaggedPtr),
+            reinterpret_cast<uintptr_t>(&kPayload) | 0x1);
+  static constexpr MicroString kStr(kPayload);
+  EXPECT_EQ(kStr.Get(), kInput);
+  EXPECT_EQ(kStr.Get().data(), kPayload.get().data());
 }
 
 template <typename T>

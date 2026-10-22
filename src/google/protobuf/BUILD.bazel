@@ -686,6 +686,7 @@ cc_test(
         ":micro_string",
         ":port",
         ":protobuf_lite",
+        "//src/google/protobuf/testing:protobuf_test",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
         "@abseil-cpp//absl/strings:str_format",
