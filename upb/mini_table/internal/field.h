@@ -56,6 +56,9 @@ typedef enum {
   //   - for Bytes, this indicates that the actual type is String (but does
   //     not require any UTF-8 check).
   kUpb_LabelFlags_IsAlternate = 16,
+  // Indicates that this repeated or map field is compatible with fasttable
+  // decoding, but is missing a fasttable entry due to a slot collision.
+  kUpb_LabelFlags_IsFastTableCollision = 32,
 } upb_LabelFlags;
 
 // Note: we sort by this number when calculating layout order.
@@ -81,6 +84,12 @@ UPB_PRIVATE(_upb_MiniTableField_Mode)(const struct upb_MiniTableField* f) {
   return (upb_FieldMode)(f->UPB_ONLYBITS(mode) & kUpb_FieldMode_Mask);
 }
 
+// Check field mode base info, excluding fasttable state info.
+UPB_INLINE uint8_t
+UPB_PRIVATE(_upb_MiniTableField_ModeBase)(const struct upb_MiniTableField* f) {
+  return f->UPB_ONLYBITS(mode) & ~kUpb_LabelFlags_IsFastTableCollision;
+}
+
 UPB_INLINE upb_FieldRep
 UPB_PRIVATE(_upb_MiniTableField_GetRep)(const struct upb_MiniTableField* f) {
   return (upb_FieldRep)(f->UPB_ONLYBITS(mode) >> kUpb_FieldRep_Shift);
@@ -104,6 +113,21 @@ UPB_API_INLINE bool upb_MiniTableField_IsScalar(
 UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsAlternate)(
     const struct upb_MiniTableField* f) {
   return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsAlternate) != 0;
+}
+
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsFastTableCollision)(
+    const struct upb_MiniTableField* f) {
+  return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsFastTableCollision) != 0;
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_SetIsFastTableCollision)(
+    struct upb_MiniTableField* f) {
+  f->UPB_ONLYBITS(mode) |= kUpb_LabelFlags_IsFastTableCollision;
+}
+
+UPB_INLINE void UPB_PRIVATE(_upb_MiniTableField_ClearIsFastTableCollision)(
+    struct upb_MiniTableField* f) {
+  f->UPB_ONLYBITS(mode) &= ~kUpb_LabelFlags_IsFastTableCollision;
 }
 
 UPB_API_INLINE bool upb_MiniTableField_IsExtension(

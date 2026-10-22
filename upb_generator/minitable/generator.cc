@@ -193,6 +193,10 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
 
   std::string struct_name = MessageVarName(message) + "_Fields";
 
+  upb_DecodeFast_TableEntry table_entries[32];
+  int table_size = upb_DecodeFast_BuildTable(mt_64, table_entries);
+  uint8_t table_mask = upb_DecodeFast_GetTableMask(table_size);
+
   if (field_count > 0) {
     // Create a custom struct for the fields/subs, with arrays that are
     // precisely the right size
@@ -223,10 +227,6 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     }
     output("}};\n\n");
   }
-
-  upb_DecodeFast_TableEntry table_entries[32];
-  int table_size = upb_DecodeFast_BuildTable(mt_64, table_entries);
-  uint8_t table_mask = upb_DecodeFast_GetTableMask(table_size);
 
   std::string msgext = "kUpb_ExtMode_NonExtendable";
 

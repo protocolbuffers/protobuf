@@ -54,7 +54,8 @@ std::string ArchDependentSize(int64_t size32, int64_t size64) {
 std::string GetModeInit(const upb_MiniTableField* field32,
                         const upb_MiniTableField* field64) {
   std::string ret;
-  uint8_t mode32 = UPB_SIZE(field32, field64)->UPB_PRIVATE(mode);
+  uint8_t mode32 =
+      UPB_PRIVATE(_upb_MiniTableField_ModeBase)(UPB_SIZE(field32, field64));
   switch (mode32 & kUpb_FieldMode_Mask) {
     case kUpb_FieldMode_Map:
       ret = "(int)kUpb_FieldMode_Map";
@@ -79,6 +80,10 @@ std::string GetModeInit(const upb_MiniTableField* field32,
 
   if (mode32 & kUpb_LabelFlags_IsAlternate) {
     absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsAlternate");
+  }
+
+  if (UPB_PRIVATE(_upb_MiniTableField_IsFastTableCollision)(field64)) {
+    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsFastTableCollision");
   }
 
   absl::StrAppend(&ret, " | ((int)", GetFieldRep(field32, field64),

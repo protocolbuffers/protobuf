@@ -43,7 +43,8 @@ static upb_MiniTableEquals_Status upb_deep_check(const upb_MiniTable* src,
     if (upb_MiniTableField_CType(src_field) !=
         upb_MiniTableField_CType(dst_field))
       return false;
-    if (src_field->UPB_PRIVATE(mode) != dst_field->UPB_PRIVATE(mode))
+    if (UPB_PRIVATE(_upb_MiniTableField_ModeBase)(src_field) !=
+        UPB_PRIVATE(_upb_MiniTableField_ModeBase)(dst_field))
       return false;
     if (src_field->UPB_PRIVATE(offset) != dst_field->UPB_PRIVATE(offset))
       return false;

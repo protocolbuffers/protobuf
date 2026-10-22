@@ -11,14 +11,18 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/message.h"
 #include "upb/wire/decode.h"
 #include "upb/wire/decode_fast/cardinality.h"
+#include "upb/wire/decode_fast/combinations.h"
 #include "upb/wire/decode_fast/data.h"
 #include "upb/wire/decode_fast/dispatch.h"
 #include "upb/wire/decode_fast/field_helpers.h"
 #include "upb/wire/decode_fast/field_parsers.h"
+#include "upb/wire/decode_fast/function_array.h"
+#include "upb/wire/decode_fast/select.h"
 #include "upb/wire/internal/decoder.h"
 #include "upb/wire/internal/eps_copy_input_stream.h"
 #include "upb/wire/internal/reader.h"
@@ -97,6 +101,58 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeLongTag(
   UPB_DECODEFAST_NEXT(ret);
 }
 
+UPB_FORCEINLINE _upb_FieldParser* _upb_FastDecoder_TryGetFieldParser(
+    const upb_MiniTable* table, const upb_MiniTableField* field,
+    const char* ptr, uint64_t* data, uint64_t* data2, upb_DecodeFastNext* ret) {
+  UPB_ASSUME(upb_MiniTableField_IsMap(field) ||
+             upb_MiniTableField_IsArray(field));
+  bool supported_tag_size;
+  upb_DecodeFast_TableEntry entry;
+  bool ok =
+      upb_DecodeFast_TryFillEntry(table, field, &supported_tag_size, &entry);
+  UPB_ASSUME(ok);
+  uint16_t actual_tag = _upb_FastDecoder_LoadTag(ptr);
+  uint16_t expected_tag =
+      upb_DecodeFastData_GetExpectedTag(entry.function_data);
+  upb_DecodeFast_TagSize tag_size =
+      expected_tag > 0x7f ? kUpb_DecodeFast_Tag2Byte : kUpb_DecodeFast_Tag1Byte;
+  uint64_t new_data2 = upb_DecodeFastData2_PackOriginalTag(*data2, actual_tag);
+  if (UPB_UNLIKELY(
+          !upb_DecodeFast_TagMatches(expected_tag, actual_tag, tag_size))) {
+    if (upb_MiniTableField_IsMap(field)) {
+      UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+      return NULL;
+    }
+    upb_DecodeFast_Type type = upb_DecodeFast_GetType(entry.function_idx);
+    upb_DecodeFast_Cardinality card =
+        upb_DecodeFast_GetCardinality(entry.function_idx);
+    if (upb_DecodeFast_WireType(type) == kUpb_WireType_Delimited ||
+        !upb_DecodeFast_TryFlipPacked(type, card, tag_size,
+                                      &entry.function_data, new_data2)) {
+      UPB_DECODEFAST_EXIT(kUpb_DecodeFastNext_FallbackToMiniTable, ret);
+      return NULL;
+    }
+    entry.function_idx ^= (kUpb_DecodeFast_Repeated ^ kUpb_DecodeFast_Packed)
+                          << 1;
+  }
+  UPB_ASSERT(upb_DecodeFastData2_GetTagLen(*data2) <= 2);
+  *data = entry.function_data;
+  *data2 = new_data2;
+  *ret = kUpb_DecodeFastNext_TailCallUnpacked;
+  return upb_DecodeFast_GetFunctionPointer(entry.function_idx);
+}
+
+UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCollidingField(
+    struct upb_Decoder* d, const char* ptr, upb_Message* msg,
+    const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
+    uint64_t data2) {
+  const upb_MiniTableField* field = (const upb_MiniTableField*)(uintptr_t)data;
+  upb_DecodeFastNext ret;
+  _upb_FieldParser* parser = _upb_FastDecoder_TryGetFieldParser(
+      table, field, ptr, &data, &data2, &ret);
+  UPB_DECODEFAST_NEXTMAYBEPACKED(ret, parser, upb_DecodeFast_Unreachable);
+}
+
 UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
     struct upb_Decoder* d, const char* ptr, upb_Message* msg,
     const upb_MiniTable* table, uint64_t hasbits, uint64_t data,
@@ -112,11 +168,15 @@ UPB_PRESERVE_NONE upb_FastDecoder_Return _upb_FastDecoder_DecodeCheckMiniTable(
   UPB_ASSERT(ptr + upb_DecodeFastData2_GetTagLen(data2) == read);
 #endif
   uint32_t gap_lo, gap_hi;
+  const upb_MiniTableField* field;
   upb_DecodeFastNext ret;
-  if (UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(table, field_num, &gap_lo,
-                                                 &gap_hi)) {
+  if (UPB_PRIVATE(_upb_MiniTable_FindFieldOrUnknownGap)(
+          table, field_num, &gap_lo, &gap_hi, &field)) {
     data = upb_DecodeFast_PackGaps(gap_lo, gap_hi);
     ret = kUpb_DecodeFastNext_DecodeUnknownValue;
+  } else if (UPB_PRIVATE(_upb_MiniTableField_IsFastTableCollision)(field)) {
+    data = (uintptr_t)field;
+    ret = kUpb_DecodeFastNext_DecodeCollidingField;
   } else {
     ret = kUpb_DecodeFastNext_FallbackToMiniTable;
   }

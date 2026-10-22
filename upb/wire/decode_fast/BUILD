@@ -45,8 +45,12 @@ cc_library(
         "field_string.c",
         "field_unknown.c",
         "field_varint.c",
+        "function_array.c",
     ],
-    hdrs = ["field_parsers.h"],
+    hdrs = [
+        "field_parsers.h",
+        "function_array.h",
+    ],
     copts = FASTTABLE_COPTS,
     defines = select({
         ":debug_trace_setting": ["UPB_TRACE_FASTDECODER=1"],
@@ -129,10 +133,13 @@ cc_test(
     srcs = ["select_test.cc"],
     deps = [
         ":combinations",
+        ":data",
         ":select",
         "//upb/mem",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
+        "//upb/test:test_proto_upb_minitable",
         "//upb/wire",  # buildcleaner: keep
         "//upb/wire/test_util:field_types",
         "//upb/wire/test_util:make_mini_table",
@@ -175,7 +182,6 @@ cc_library(
 
 cc_library(
     name = "function_array",
-    srcs = ["function_array.c"],
     hdrs = ["function_array.h"],
     copts = FASTTABLE_COPTS,
     features = UPB_DEFAULT_FEATURES,

@@ -200,6 +200,9 @@ static void upb_MiniTablePrinter_PrintField(upb_MiniTablePrinter* p,
   if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsAlternate) {
     upb_MiniTablePrinter_Printf(p, " | Alternate");
   }
+  if (UPB_PRIVATE(_upb_MiniTableField_IsFastTableCollision)(field)) {
+    upb_MiniTablePrinter_Printf(p, " | FastTableCollision");
+  }
 
   upb_MiniTablePrinter_Printf(p, ")\n");
 
