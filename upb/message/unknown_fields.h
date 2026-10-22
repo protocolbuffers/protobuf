@@ -15,7 +15,9 @@
 #include "upb/mem/internal/arena.h"
 #include "upb/message/internal/extension.h"  // IWYU pragma: export
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/non_canonical_field.h"
 #include "upb/message/internal/types.h"
+#include "upb/mini_table/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -24,23 +26,63 @@
 extern "C" {
 #endif
 
+// A non-canonical field: a parsed field value whose schema is known but is not
+// part of the schema of the message holding it. It is semantically an unknown
+// field, but is kept in parsed form to lazily defer serialization.
+//
+// It is described only by a upb_MiniTableField (the field of an extension, or a
+// regular field of another message), never by a upb_MiniTableExtension, and has
+// no extendee.
+//
+// NOTE: Non-canonical fields are being introduced to replace non-canonical
+// extensions (b/569995025). Not all readers handle them yet, and nothing
+// creates them yet outside of tests.
+typedef struct upb_NonCanonicalField upb_NonCanonicalField;
+
+// Returns the MiniTableField that describes this non-canonical field. Never
+// NULL.
+UPB_API_INLINE const upb_MiniTableField* upb_NonCanonicalField_MiniTableField(
+    const upb_NonCanonicalField* f);
+
+// Copies the value of `f` into `val`, which must point to storage of the
+// appropriate type for the field's representation.
+UPB_API_INLINE void upb_NonCanonicalField_GetField(
+    const upb_NonCanonicalField* f, void* val);
+
+// Returns the value of this non-canonical field.
+//
+// For a repeated field, the resulting struct upb_Array* can be NULL if a
+// struct upb_Array has not been allocated yet.
+UPB_API_INLINE upb_MessageValue
+upb_NonCanonicalField_GetValue(const upb_NonCanonicalField* f);
+
 typedef enum {
   kUpb_MessageUnknownType_StringView,
+  // TODO: Remove kUpb_MessageUnknownType_NonCanonicalExtension
+  // once kUpb_MessageUnknownType_NonCanonicalField is used everywhere.
   kUpb_MessageUnknownType_NonCanonicalExtension,
+  kUpb_MessageUnknownType_NonCanonicalField,
 } upb_MessageUnknownType;
 
 // Represents an unknown field in a message, whether it's in a serialized
-// (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+// (upb_StringView), parsed non-canonical extension (upb_Extension*), or parsed
+// non-canonical field (upb_NonCanonicalField*) format.
+//
+// See upb_NonCanonicalField above for non-canonical fields.
 typedef struct upb_MessageUnknown {
   uint8_t type;
   union {
     upb_StringView bytes;
+    // TODO: Remove extension once
+    // kUpb_MessageUnknownType_NonCanonicalField is used everywhere.
     const upb_Extension* extension;
+    const upb_NonCanonicalField* field;
   } value;
 } upb_MessageUnknown;
 
 // Support iteration over unknown (upb_MessageUnknown*), including unknown
-// upb_StringView and non-canonical extensions (upb_Extension*).
+// upb_StringView, non-canonical extensions (upb_Extension*) and non-canonical
+// fields (upb_NonCanonicalField*).
 UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
                                          struct upb_MessageUnknown* data,
                                          uintptr_t* iter) {
@@ -58,6 +100,11 @@ UPB_INLINE bool upb_Message_NextUnknown2(const struct upb_Message* msg,
         data->type = kUpb_MessageUnknownType_NonCanonicalExtension;
         data->value.extension =
             upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+        *iter = i;
+        return true;
+      } else if (upb_TaggedAuxPtr_IsNonCanonicalField(tagged_ptr)) {
+        data->type = kUpb_MessageUnknownType_NonCanonicalField;
+        data->value.field = upb_TaggedAuxPtr_NonCanonicalField(tagged_ptr);
         *iter = i;
         return true;
       }

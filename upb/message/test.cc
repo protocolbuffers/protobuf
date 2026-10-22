@@ -39,6 +39,7 @@
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/types.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
@@ -1106,6 +1107,89 @@ TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtension) {
     }
     EXPECT_TRUE(found);
   }
+}
+
+TEST(MessageTest, TaggedAuxPtrNonCanonicalField) {
+  alignas(8) char storage[16];
+  const upb_NonCanonicalField* ncf =
+      reinterpret_cast<const upb_NonCanonicalField*>(storage);
+  upb_TaggedAuxPtr ptr = upb_TaggedAuxPtr_MakeNonCanonicalField(ncf);
+  EXPECT_EQ(upb_TaggedAuxPtr_Type(ptr), kUpb_TaggedAuxType_NonCanonicalField);
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsNonCanonicalField(ptr));
+  EXPECT_EQ(upb_TaggedAuxPtr_NonCanonicalField(ptr), ncf);
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsCanonicalExtension(ptr));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsExtension(ptr));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsUnknownStringView(ptr));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsUnknownAliased(ptr));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsSemanticallyKnown(ptr));
+
+  // The other kinds are not non-canonical fields.
+  const upb_Extension* ext = reinterpret_cast<const upb_Extension*>(storage);
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsNonCanonicalField(
+      upb_TaggedAuxPtr_MakeNonCanonicalExtension(ext)));
+  EXPECT_TRUE(upb_TaggedAuxPtr_IsNonCanonicalExtension(
+      upb_TaggedAuxPtr_MakeNonCanonicalExtension(ext)));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsNonCanonicalField(
+      upb_TaggedAuxPtr_MakeCanonicalExtension(ext)));
+  const upb_StringView* sv = reinterpret_cast<const upb_StringView*>(storage);
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsNonCanonicalField(
+      upb_TaggedAuxPtr_MakeUnknownData(sv)));
+  EXPECT_FALSE(upb_TaggedAuxPtr_IsNonCanonicalField(
+      upb_TaggedAuxPtr_MakeUnknownDataAliased(sv)));
+}
+
+TEST(MessageTest, NonCanonicalFieldFromRegularField) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+
+  // A regular field of another message (MessageSetMember.optional_int32 = 1).
+  const upb_MiniTableField* f =
+      upb_MiniTable_FindFieldByNumber(&upb_0test__MessageSetMember_msg_init, 1);
+  ASSERT_NE(f, nullptr);
+
+  int32_t val = 42;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddNonCanonicalField)(msg, f, &val,
+                                                             arena.ptr()));
+  int32_t val2 = 43;
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddNonCanonicalField)(msg, f, &val2,
+                                                             arena.ptr()));
+
+  // Non-canonical fields accumulate, and are reported as unknowns.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(msg, &unknown, &iter));
+  ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalField);
+  EXPECT_EQ(upb_NonCanonicalField_MiniTableField(unknown.value.field), f);
+  EXPECT_EQ(upb_NonCanonicalField_GetValue(unknown.value.field).int32_val, 42);
+  ASSERT_TRUE(upb_Message_NextUnknown2(msg, &unknown, &iter));
+  ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalField);
+  int32_t got;
+  upb_NonCanonicalField_GetField(unknown.value.field, &got);
+  EXPECT_EQ(got, 43);
+  EXPECT_FALSE(upb_Message_NextUnknown2(msg, &unknown, &iter));
+
+  // They are not extensions.
+  EXPECT_EQ(upb_Message_ExtensionCount(msg), 0);
+  EXPECT_TRUE(upb_Message_HasUnknown(msg));
+
+  // They are discarded with unknown fields.
+  _upb_Message_DiscardUnknown_shallow(msg);
+  iter = kUpb_Message_UnknownBegin;
+  EXPECT_FALSE(upb_Message_NextUnknown2(msg, &unknown, &iter));
+  EXPECT_FALSE(upb_Message_HasUnknown(msg));
+}
+
+TEST(MessageTest, NonCanonicalFieldSize) {
+  // The value is stored after the field pointer and sized by the field's
+  // representation, like for upb_Extension.
+  const upb_MiniTableField* int32_f =
+      upb_MiniTable_FindFieldByNumber(&upb_0test__MessageSetMember_msg_init, 1);
+  ASSERT_NE(int32_f, nullptr);
+  EXPECT_EQ(UPB_PRIVATE(_upb_NonCanonicalField_Size)(int32_f),
+            UPB_ALIGN_UP(UPB_ONLYBITS(kUpb_NonCanonicalField_DataOffset) + 4,
+                         kUpb_Message_Align));
 }
 
 TEST(MessageTest, CoexistCanonicalAndNonCanonicalExtensionReverse) {

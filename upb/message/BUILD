@@ -136,6 +136,7 @@ cc_library(
     srcs = [
         "internal/extension.c",
         "internal/message.c",
+        "internal/non_canonical_field.c",
         "value.h",
     ],
     hdrs = [
@@ -146,6 +147,7 @@ cc_library(
         "internal/map.h",
         "internal/map_sorter.h",
         "internal/message.h",
+        "internal/non_canonical_field.h",
     ],
     copts = UPB_DEFAULT_COPTS,
     features = UPB_DEFAULT_FEATURES,
@@ -589,6 +591,7 @@ cc_test(
         ":message_test_upb_proto",
         ":message_test_upb_proto_reflection",
         ":message_unknowns",
+        ":types",
         "//upb/base",
         "//upb/json",
         "//upb/mem",
