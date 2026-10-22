@@ -15,6 +15,14 @@ load("//bazel/common:proto_info.bzl", "ProtoInfo")
 
 _STRIP_IMPORT_PREFIX = "/bazel"
 
+def _strip_config(path):
+    segments = path.split("/")
+    segments[1] = "cfg"
+    return "/".join(segments)
+
+def _strip_config_if_enabled(path):
+    return path
+
 def bazel_proto_library_test_suite(name):
     tests = [
         _test_creates_descriptor_sets,
@@ -53,6 +61,7 @@ def bazel_proto_library_test_suite(name):
     # Flipping experimental flag in test requires Bazel 8
     if bazel_features.rules.analysis_tests_can_transition_on_experimental_incompatible_flags:
         tests.append(_test_experimental_proto_descriptor_sets_include_source_info)
+        tests.append(_test_path_mapping)
 
     test_suite(
         name = name,
@@ -95,9 +104,10 @@ def _test_descriptor_sets_rule_with_srcs_calls_protoc_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
+    action.execution_info().contains_at_least({"supports-path-mapping": "1"})
     action.argv().contains_at_least([
         "-I.",
-        "--descriptor_set_out=" + action.actual.outputs.to_list()[0].path,
+        "--descriptor_set_out=" + _strip_config_if_enabled(action.actual.outputs.to_list()[0].path),
         "{package}/foo.proto",
     ])
 
@@ -327,7 +337,7 @@ def _test_strip_import_prefix_without_deps_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    action.argv().contains("-I" + _strip_config_if_enabled(env.ctx.bin_dir.path) + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
 
 def _test_strict_public_imports_enabled(name):
     util.helper_target(proto_library, name = name + "_foo", srcs = ["foo.proto"])
@@ -509,7 +519,7 @@ def _test_relative_strip_import_prefix_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    action.argv().contains("-I" + _strip_config_if_enabled(env.ctx.bin_dir.path) + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
 
 def _test_absolute_strip_import_prefix(name):
     util.helper_target(
@@ -529,7 +539,7 @@ def _test_absolute_strip_import_prefix_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    action.argv().contains("-I" + _strip_config_if_enabled(env.ctx.bin_dir.path) + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
 
 def _test_absolute_strip_import_prefix_with_slash(name):
     util.helper_target(
@@ -549,7 +559,7 @@ def _test_absolute_strip_import_prefix_with_slash_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains("-I" + env.ctx.bin_dir.path + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
+    action.argv().contains("-I" + _strip_config_if_enabled(env.ctx.bin_dir.path) + "/" + target.label.package + "/_virtual_imports/" + target.label.name)
 
 def _test_dot_in_strip_import_prefix(name):
     util.helper_target(
@@ -704,7 +714,7 @@ def _test_source_and_generated_proto_files_impl(env, target):
     action = env.expect.that_target(target).action_generating(
         "{package}/{name}-descriptor-set.proto.bin",
     )
-    action.argv().contains_at_least(["-I.", "-I" + env.ctx.genfiles_dir.path])
+    action.argv().contains_at_least(["-I.", "-I" + _strip_config_if_enabled(env.ctx.genfiles_dir.path)])
 
 def _test_proto_library(name):
     util.helper_target(
@@ -820,3 +830,46 @@ def _test_strict_proto_deps_starlark_off_native_on(name):
             "@@//bazel/flags:strict_proto_deps": "off",
         },
     )
+
+def _test_path_mapping(name):
+    util.helper_target(
+        native.genrule,
+        name = name + "_gen",
+        outs = ["gen.proto"],
+        cmd = "",
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_gen_proto",
+        srcs = [":gen.proto"],
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_strip_proto",
+        srcs = ["c/d.proto"],
+        strip_import_prefix = "c",
+        deps = [name + "_gen_proto"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_strip_proto",
+        impl = _test_path_mapping_impl,
+        config_settings = {
+            "//command_line_option:experimental_output_paths": "strip",
+        },
+    )
+
+def _test_path_mapping_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}-descriptor-set.proto.bin",
+    )
+    cfg_stripped_bindir = _strip_config(env.ctx.bin_dir.path)
+    action.execution_info().contains_at_least({"supports-path-mapping": "1"})
+    action.argv().contains_at_least([
+        "--descriptor_set_out=" + cfg_stripped_bindir + "/{package}/{name}-descriptor-set.proto.bin",
+        "-I" + cfg_stripped_bindir + "/{package}/_virtual_imports/{name}",
+        "-I" + _strip_config(env.ctx.genfiles_dir.path),
+        "-I.",
+        cfg_stripped_bindir + "/{package}/_virtual_imports/{name}/d.proto",
+    ])

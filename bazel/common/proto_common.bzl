@@ -11,28 +11,34 @@ load("@proto_bazel_features//:features.bzl", "bazel_features")
 load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-def _import_virtual_proto_path(path):
+def _proto_path(proto_file):
+    """Returns the proto source root path of a .proto file."""
+    return proto_file.path.removesuffix(_get_import_path(proto_file)).removesuffix("/")
+
+def _import_virtual_proto_path(proto_file):
     """Imports all paths for virtual imports.
 
       They're of the form:
       'bazel-out/k8-fastbuild/bin/external/foo/e/_virtual_imports/e' or
       'bazel-out/foo/k8-fastbuild/bin/e/_virtual_imports/e'"""
+    path = _proto_path(proto_file)
     if path.count("/") > 4:
         return "-I%s" % path
     return None
 
-def _import_repo_proto_path(path):
+def _import_repo_proto_path(proto_file):
     """Imports all paths for generated files in external repositories.
 
       They are of the form:
       'bazel-out/k8-fastbuild/bin/external/foo' or
       'bazel-out/foo/k8-fastbuild/bin'"""
+    path = _proto_path(proto_file)
     path_count = path.count("/")
     if path_count > 2 and path_count <= 4:
         return "-I%s" % path
     return None
 
-def _import_main_output_proto_path(path):
+def _import_main_output_proto_path(proto_file):
     """Imports all paths for generated files or source files in external repositories.
 
       They're of the form:
@@ -40,7 +46,8 @@ def _import_main_output_proto_path(path):
       'external/foo'
       '../foo'
     """
-    if path.count("/") <= 2 and path != ".":
+    path = _proto_path(proto_file)
+    if path.count("/") <= 2 and path != "" and path != ".":
         return "-I%s" % path
     return None
 
@@ -137,7 +144,8 @@ def _compile(
         resource_set = None,
         experimental_exec_group = None,
         experimental_progress_message = None,
-        experimental_output_files = "legacy"):
+        experimental_output_files = "legacy",
+        execution_requirements = None):
     """Creates proto compile action for compiling *.proto files to language specific sources.
 
     Args:
@@ -166,6 +174,7 @@ def _compile(
         Don't use this parameter. It's only intended for the transition.
       experimental_output_files: (str) Overwrites output_files from the toolchain.
         Don't use this parameter. It's only intended for the transition.
+      execution_requirements: (dict[str, str]) Information for scheduling the action.
     """
     if type(generated_files) != type([]):
         fail("generated_files is expected to be a list of Files")
@@ -206,9 +215,9 @@ def _compile(
     # For example: 'bazel-out/k8-fastbuild/bin/external/foo' needs to be listed
     # before 'bazel-out/k8-fastbuild/bin'. If not, protoc will discover file under
     # the shorter path and use 'external/foo/...' as its package path.
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_virtual_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_repo_proto_path)
-    args.add_all(proto_info.transitive_proto_path, map_each = _import_main_output_proto_path)
+    args.add_all(proto_info.transitive_sources, map_each = _import_virtual_proto_path, uniquify = True)
+    args.add_all(proto_info.transitive_sources, map_each = _import_repo_proto_path, uniquify = True)
+    args.add_all(proto_info.transitive_sources, map_each = _import_main_output_proto_path, uniquify = True)
     args.add("-I.")  # Needs to come last
 
     args.add_all(proto_lang_toolchain_info.protoc_opts)
@@ -233,6 +242,7 @@ def _compile(
         resource_set = resource_set,
         exec_group = experimental_exec_group,
         toolchain = _toolchain_type(proto_lang_toolchain_info),
+        execution_requirements = execution_requirements,
     )
 
 _BAZEL_TOOLS_PREFIX = "external/bazel_tools/"
