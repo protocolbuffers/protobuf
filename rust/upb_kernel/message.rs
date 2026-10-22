@@ -415,10 +415,15 @@ impl<T> Serialize for T
 where
     Self: UpbGetMessagePtr,
 {
-    fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
+    fn serialize_with_options(&self, options: SerializeOptions) -> Result<Vec<u8>, SerializeError> {
+        let mut encode_options = 0;
+        if options.deterministic {
+            encode_options |= upb::wire::encode_options::DETERMINISTIC;
+        }
         //~ TODO: This discards the info we have about the reason
         //~ of the failure, we should try to keep it instead.
-        upb::wire::encode(self.get_ptr(Private)).map_err(|_| SerializeError)
+        upb::wire::encode_with_options(self.get_ptr(Private), encode_options)
+            .map_err(|_| SerializeError)
     }
 
     fn serialized_len(&self) -> usize {

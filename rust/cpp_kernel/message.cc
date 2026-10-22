@@ -26,8 +26,9 @@ bool proto2_rust_Message_parse_dont_enforce_required(
 }
 
 bool proto2_rust_Message_serialize(const google::protobuf::MessageLite* m,
-                                   google::protobuf::rust::SerializedData* output) {
-  return google::protobuf::rust::SerializeMsg(m, output);
+                                   google::protobuf::rust::SerializedData* output,
+                                   bool deterministic) {
+  return google::protobuf::rust::SerializeMsg(m, output, deterministic);
 }
 
 size_t proto2_rust_Message_serialized_len(const google::protobuf::MessageLite* m) {
