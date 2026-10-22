@@ -156,9 +156,10 @@ class PROTOBUF_EXPORT MicroString {
 
     // To match the LazyString API.
     auto get() const { return payload.view(); }
+
+    [[nodiscard]] constexpr const void* tagged_ptr() const;
   };
-  constexpr MicroString(const UnownedPayload& unowned_input)  // NOLINT
-      : rep_(const_cast<char*>(unowned_input.for_tag + kIsLargeRepTag)) {}
+  constexpr MicroString(const UnownedPayload& unowned_input);  // NOLINT
 
   // Like the constructor above, but for DynamicMessage where we don't have a
   // generated UnownedPayload to pass.
@@ -496,6 +497,13 @@ class PROTOBUF_EXPORT MicroString {
 
   void* rep_;
 };
+
+constexpr const void* MicroString::UnownedPayload::tagged_ptr() const {
+  return for_tag + kIsLargeRepTag;
+}
+
+constexpr MicroString::MicroString(const UnownedPayload& unowned_input)
+    : rep_(const_cast<void*>(unowned_input.tagged_ptr())) {}
 
 template <typename F>
 void MicroString::SetInChunks(size_t size, const MessageLite& parent, F setter,

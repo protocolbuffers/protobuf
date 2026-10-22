@@ -1,4 +1,4 @@
-#include "conformance/test_manager.h"
+#include "conformance/result_ledger.h"
 
 #include <algorithm>
 #include <cctype>
@@ -81,14 +81,14 @@ std::string ReformatLine(size_t alignment, absl::string_view line) {
 
 }  // namespace
 
-TestManager::~TestManager() {
+ResultLedger::~ResultLedger() {
   if (!finalized_) {
     ABSL_LOG(FATAL)
-        << "TestManager::Finalize() was not called before destruction.";
+        << "ResultLedger::Finalize() was not called before destruction.";
   }
 }
 
-absl::Status TestManager::LoadFailureList(absl::string_view filename) {
+absl::Status ResultLedger::LoadFailureList(absl::string_view filename) {
   std::ifstream infile(std::string{filename});
 
   if (!infile.is_open()) {
@@ -133,7 +133,7 @@ absl::Status TestManager::LoadFailureList(absl::string_view filename) {
   return absl::OkStatus();
 }
 
-absl::Status TestManager::AddExpectedFailure(
+absl::Status ResultLedger::AddExpectedFailure(
     absl::string_view test_name, absl::string_view failure_message) {
   if (absl::Status status = expected_failure_list_.Insert(test_name);
       !status.ok()) {
@@ -149,7 +149,7 @@ absl::Status TestManager::AddExpectedFailure(
   return absl::OkStatus();
 }
 
-absl::Status TestManager::SaveFailureList(absl::string_view filename) const {
+absl::Status ResultLedger::SaveFailureList(absl::string_view filename) const {
   std::ofstream outfile(std::string{filename}, std::ios::binary);
   if (!outfile.is_open()) {
     return absl::InternalError(absl::StrCat(
@@ -202,7 +202,7 @@ absl::Status TestManager::SaveFailureList(absl::string_view filename) const {
   return absl::OkStatus();
 }
 
-absl::Status TestManager::ReportSuccess(absl::string_view test_name) {
+absl::Status ResultLedger::ReportSuccess(absl::string_view test_name) {
   bool unique = InsertUniqueTest(seen_tests_, test_name);
   absl::optional<std::string> failure_match = MarkMatched(test_name);
 
@@ -226,9 +226,9 @@ absl::Status TestManager::ReportSuccess(absl::string_view test_name) {
   return absl::OkStatus();
 }
 
-absl::Status TestManager::ReportFailure(absl::string_view test_name,
-                                        TestPriority priority,
-                                        absl::string_view failure_message) {
+absl::Status ResultLedger::ReportFailure(absl::string_view test_name,
+                                         TestPriority priority,
+                                         absl::string_view failure_message) {
   bool unique = InsertUniqueTest(seen_tests_, test_name);
   absl::optional<std::string> failure_match = MarkMatched(test_name);
 
@@ -263,7 +263,7 @@ absl::Status TestManager::ReportFailure(absl::string_view test_name,
       expected_failure_messages_.at(*failure_match);
   if (!absl::StartsWith(formatted_failure_message, expected_failure_message)) {
     record_unexpected_failure();
-    // TODO: b/563659620 - Keying the replacement by the (possibly wildcard)
+    // TODO: Keying the replacement by the (possibly wildcard)
     // entry duplicates the line if another test later matches the entry with
     // the expected message: with `foo.*.bar # abc` listed,
     // ReportFailure("foo.a.bar", "xyz") + ReportFailure("foo.b.bar", "abc")
@@ -294,8 +294,8 @@ absl::Status TestManager::ReportFailure(absl::string_view test_name,
   return absl::OkStatus();
 }
 
-absl::Status TestManager::ReportSkip(absl::string_view test_name,
-                                     absl::string_view skip_reason) {
+absl::Status ResultLedger::ReportSkip(absl::string_view test_name,
+                                      absl::string_view skip_reason) {
   bool unique = InsertUniqueTest(seen_tests_, test_name);
   IncrementIfUnique(unique, skipped_);
   absl::optional<std::string> failure_match = MarkMatched(test_name);
@@ -320,12 +320,12 @@ absl::Status TestManager::ReportSkip(absl::string_view test_name,
       ".  Remove its match from the failure list."));
 }
 
-void TestManager::ReportNotSelected(absl::string_view test_name) {
+void ResultLedger::ReportNotSelected(absl::string_view test_name) {
   seen_tests_.emplace(test_name);
   MarkMatched(test_name);
 }
 
-absl::optional<std::string> TestManager::MarkMatched(
+absl::optional<std::string> ResultLedger::MarkMatched(
     absl::string_view test_name) {
   absl::optional<std::string> failure_match =
       expected_failure_list_.WalkDownMatch(test_name);
@@ -335,21 +335,21 @@ absl::optional<std::string> TestManager::MarkMatched(
   return failure_match;
 }
 
-std::vector<std::string> TestManager::UnseenExpectedFailures() const {
+std::vector<std::string> ResultLedger::UnseenExpectedFailures() const {
   std::vector<std::string> unseen(unseen_expected_failures_.begin(),
                                   unseen_expected_failures_.end());
   absl::c_sort(unseen);
   return unseen;
 }
 
-std::vector<std::string> TestManager::UnmatchedExpectedFailures() const {
+std::vector<std::string> ResultLedger::UnmatchedExpectedFailures() const {
   std::vector<std::string> unmatched(unmatched_expected_failures_.begin(),
                                      unmatched_expected_failures_.end());
   absl::c_sort(unmatched);
   return unmatched;
 }
 
-std::vector<UnexpectedResult> TestManager::UnexpectedFailures() const {
+std::vector<UnexpectedResult> ResultLedger::UnexpectedFailures() const {
   std::vector<UnexpectedResult> failures;
   failures.reserve(unexpected_failure_messages_.size());
   // The map is ordered by test name.
@@ -361,7 +361,7 @@ std::vector<UnexpectedResult> TestManager::UnexpectedFailures() const {
   return failures;
 }
 
-std::vector<UnexpectedResult> TestManager::UnexpectedSuccesses() const {
+std::vector<UnexpectedResult> ResultLedger::UnexpectedSuccesses() const {
   std::vector<UnexpectedResult> successes;
   successes.reserve(unexpected_success_matches_.size());
   // The map is ordered by test name.
@@ -374,14 +374,14 @@ std::vector<UnexpectedResult> TestManager::UnexpectedSuccesses() const {
   return successes;
 }
 
-std::vector<std::pair<std::string, std::string>> TestManager::ListedSkips()
+std::vector<std::pair<std::string, std::string>> ResultLedger::ListedSkips()
     const {
   // The map is ordered by test name.
   return std::vector<std::pair<std::string, std::string>>(
       listed_skip_matches_.begin(), listed_skip_matches_.end());
 }
 
-absl::Status TestManager::Finalize() {
+absl::Status ResultLedger::Finalize() {
   finalized_ = true;
   std::vector<std::string> unseen = UnseenExpectedFailures();
   if (!unseen.empty()) {

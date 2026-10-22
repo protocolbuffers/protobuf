@@ -14,6 +14,7 @@
 #include "upb/message/internal/message.h"
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -41,6 +42,7 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a,
     upb_TaggedAuxType tag) {
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(!upb_MiniTableField_IsMap(upb_MiniTableExtension_ToField(e)));
   // For Canonical Extensions, we check whether the extension has already been
   // set. If we find an extension with the same pointer and tag, we reuse it to
   // prevent duplicate entries for the same extension.

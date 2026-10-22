@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/log/absl_check.h"
 #include "absl/strings/ascii.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
@@ -114,10 +115,6 @@ class Map : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    GenerateMergingCode(p);
-  }
-
   void GenerateIsInitialized(io::Printer* p) const override {
     if (!NeedsIsInitialized()) return;
 
@@ -136,36 +133,8 @@ class Map : public FieldGeneratorBase {
     )cc");
   }
 
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    // MapField has no move constructor, which prevents explicit aggregate
-    // initialization pre-C++17.
-    p->Emit(R"cc(
-      /* decltype($field_$) */ {},
-    )cc");
-  }
-
-  void GenerateAggregateInitializer(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        /* decltype($Msg$::Split::$name$_) */ {
-            $pbi$::ArenaInitialized(),
-            arena,
-        },
-      )cc");
-    } else {
-      p->Emit(R"cc(
-        /* decltype($field_$) */ {$pbi$::ArenaInitialized(), arena},
-      )cc");
-    }
-  }
-
   void GenerateDestructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        $cached_split_ptr$->$name$_.~$MapField$();
-      )cc");
-      return;
-    }
+    ABSL_DCHECK(!should_split());
   }
 
   void GeneratePrivateMembers(io::Printer* p) const override;

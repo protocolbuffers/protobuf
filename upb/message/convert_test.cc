@@ -19,11 +19,15 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
+#include "upb/mem/arena.h"
 #include "upb/mem/arena.hpp"
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/convert_test.upb.h"
 #include "upb/message/convert_test.upb_minitable.h"
+#include "upb/message/convert_test.upbdefs.h"
+#include "upb/message/copy.h"
+#include "upb/message/internal/accessors.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -33,7 +37,10 @@
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
+#include "upb/reflection/def.h"
+#include "upb/reflection/internal/def_pool.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/encode_extension.h"
 
 // Must be last to ensure UPB_PRIVATE is defined.
 #include "upb/port/def.inc"
@@ -1075,6 +1082,194 @@ TEST(ConvertTest, NonCanonicalToNonCanonical) {
             1000);
   EXPECT_EQ(upb_Extension_GetInt32(ext_found), 123);
   EXPECT_FALSE(upb_Message_NextUnknown2(converted, &unknown, &iter));
+}
+
+// Returns a new DefPool with convert_test.proto loaded and its minitables
+// rebuilt at runtime (the same way benchmark.cc does), so that the minitables
+// are owned by the DefPool instead of being statically allocated.
+upb_DefPool* NewConvertTestDefPoolWithRuntimeMiniTables() {
+  upb_DefPool* defpool = upb_DefPool_New();
+  EXPECT_TRUE(_upb_DefPool_LoadDefInitEx(
+      defpool, &upb_message_convert_test_proto_upbdefinit,
+      /*rebuild_minitable=*/true));
+  return defpool;
+}
+
+// Regression test for a lifetime bug: a non-canonical extension (NCE) created
+// by `upb_Message_Convert` points at the *source* extension's
+// `upb_MiniTableExtension`. `upb_Message_DeepClone` must not copy that pointer
+// into the clone, otherwise the clone silently depends on the source schema's
+// lifetime.
+//
+// Lifetimes (X -> Y means "X must not outlive Y"):
+//   msg1 -> A (ext minitable), msg2 -> B, msg2 -> msg1, msg3 -> B
+// After cloning msg2 into msg3, freeing msg1, msg2 and A must be safe, since
+// msg3 only depends on B.
+TEST(ConvertTest, DeepCloneNonCanonicalExtensionOutlivesSourceMiniTable) {
+  // Schema A: runtime-built minitables owned by `schema_a`.
+  upb_DefPool* schema_a = NewConvertTestDefPoolWithRuntimeMiniTables();
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+  upb_Arena* arena3 = upb_Arena_New();
+
+  const upb_MessageDef* src_md = upb_DefPool_FindMessageByName(
+      schema_a, "upb.test.convert.MessageWithExtension");
+  ASSERT_NE(src_md, nullptr);
+  const upb_MiniTable* src_mt = upb_MessageDef_MiniTable(src_md);
+  ASSERT_NE(src_mt, &upb__test__convert__MessageWithExtension_msg_init);
+  const upb_FieldDef* ext_def = upb_DefPool_FindExtensionByName(
+      schema_a, "upb.test.convert.ext_field_int32");
+  ASSERT_NE(ext_def, nullptr);
+  const upb_MiniTableExtension* ext = upb_FieldDef_MiniTableExtension(ext_def);
+  ASSERT_NE(ext, upb_test_convert_ext_field_int32_ext);
+
+  // Schema B: statically allocated.
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  // msg1 (type A) with a canonical extension.
+  upb_Message* msg1 = upb_Message_New(src_mt, arena1);
+  ASSERT_NE(msg1, nullptr);
+  upb_MessageValue ext_val;
+  ext_val.int32_val = 123;
+  ASSERT_TRUE(upb_Message_SetExtension(msg1, ext, &ext_val, arena1));
+
+  // msg2 (type B): the extension becomes non-canonical, pointing at `ext`.
+  const upb_Message* msg2 =
+      upb_Message_Convert(msg1, src_mt, dst_mt, nullptr, 0, 0, arena2);
+  ASSERT_NE(msg2, nullptr);
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg2, &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  }
+
+  // msg3: a deep clone of msg2. It should only depend on B.
+  upb_Message* msg3 = upb_Message_DeepClone(msg2, dst_mt, arena3);
+  ASSERT_NE(msg3, nullptr);
+
+  // Free everything msg3 should *not* depend on.
+  upb_Arena_Free(arena2);
+  upb_Arena_Free(arena1);
+  upb_DefPool_Free(schema_a);
+
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(msg3, &unknown, &iter));
+  // The clone must not reference A's minitable, so the non-canonical extension
+  // is serialized into unknown bytes owned by msg3's arena.
+  ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  // Field 1000, wire type varint: tag 8000 = 0xC0 0x3E; value 123 = 0x7B.
+  EXPECT_EQ(
+      std::string_view(unknown.value.bytes.data, unknown.value.bytes.size),
+      "\xC0\x3E\x7B");
+  EXPECT_FALSE(upb_Message_NextUnknown2(msg3, &unknown, &iter));
+
+  upb_Arena_Free(arena3);
+}
+
+// Same as above, but the NCE is message-typed, so its sub-message minitable
+// also belongs to A's schema.
+TEST(ConvertTest, DeepCloneMessageNonCanonicalExtensionOutlivesSourceSchema) {
+  upb_DefPool* schema_a = NewConvertTestDefPoolWithRuntimeMiniTables();
+  upb_Arena* arena1 = upb_Arena_New();
+  upb_Arena* arena2 = upb_Arena_New();
+  upb_Arena* arena3 = upb_Arena_New();
+
+  const upb_MessageDef* src_md = upb_DefPool_FindMessageByName(
+      schema_a, "upb.test.convert.MessageWithExtension");
+  ASSERT_NE(src_md, nullptr);
+  const upb_MiniTable* src_mt = upb_MessageDef_MiniTable(src_md);
+  ASSERT_NE(src_mt, &upb__test__convert__MessageWithExtension_msg_init);
+  const upb_FieldDef* ext_def = upb_DefPool_FindExtensionByName(
+      schema_a, "upb.test.convert.ext_field_msg");
+  ASSERT_NE(ext_def, nullptr);
+  const upb_MiniTableExtension* ext = upb_FieldDef_MiniTableExtension(ext_def);
+  ASSERT_NE(ext, upb_test_convert_ext_field_msg_ext);
+  const upb_MiniTable* sub_mt = upb_MiniTableExtension_GetSubMessage(ext);
+  ASSERT_NE(sub_mt, nullptr);
+  ASSERT_NE(sub_mt, &upb__test__convert__MessageWithInt32_msg_init);
+
+  const upb_MiniTable* dst_mt =
+      &upb__test__convert__AnotherMessageWithExtension_msg_init;
+
+  upb_Message* sub = upb_Message_New(sub_mt, arena1);
+  ASSERT_NE(sub, nullptr);
+  upb_Message_SetBaseFieldInt32(sub, upb_MiniTable_FindFieldByNumber(sub_mt, 1),
+                                456);
+  upb_Message* msg1 = upb_Message_New(src_mt, arena1);
+  ASSERT_NE(msg1, nullptr);
+  upb_MessageValue ext_val;
+  ext_val.msg_val = sub;
+  ASSERT_TRUE(upb_Message_SetExtension(msg1, ext, &ext_val, arena1));
+
+  const upb_Message* msg2 =
+      upb_Message_Convert(msg1, src_mt, dst_mt, nullptr, 0, 0, arena2);
+  ASSERT_NE(msg2, nullptr);
+  {
+    uintptr_t iter = kUpb_Message_UnknownBegin;
+    upb_MessageUnknown unknown;
+    ASSERT_TRUE(upb_Message_NextUnknown2(msg2, &unknown, &iter));
+    ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  }
+  upb_Message* msg3 = upb_Message_DeepClone(msg2, dst_mt, arena3);
+  ASSERT_NE(msg3, nullptr);
+
+  upb_Arena_Free(arena2);
+  upb_Arena_Free(arena1);
+  upb_DefPool_Free(schema_a);
+
+  // Encoding walks every unknown/extension entry; it must not touch A.
+  char* buf;
+  size_t size;
+  ASSERT_EQ(upb_Encode(msg3, dst_mt, 0, arena3, &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  // Field 1002, wire type LEN: tag 8018 = 0xD2 0x3E; len 3;
+  // sub field 1 varint: tag 0x08; value 456 = 0xC8 0x03.
+  EXPECT_EQ(std::string_view(buf, size), "\xD2\x3E\x03\x08\xC8\x03");
+
+  upb_Arena_Free(arena3);
+}
+
+// A non-canonical extension can encode to zero bytes (e.g. an empty repeated
+// field). Deep clone must not add an empty unknown entry for it.
+TEST(ConvertTest, DeepCloneEmptyNonCanonicalExtension) {
+  upb::Arena src_arena;
+  const upb_MiniTable* mt = &upb__test__convert__MessageWithExtension_msg_init;
+  upb_Message* msg = upb_Message_New(mt, src_arena.ptr());
+  ASSERT_NE(msg, nullptr);
+  upb_Array* empty = upb_Array_New(src_arena.ptr(), kUpb_CType_Int32);
+  ASSERT_NE(empty, nullptr);
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+      msg, upb_test_convert_ext_repeated_int32_ext, &empty, src_arena.ptr()));
+
+  // The non-canonical extension itself encodes to zero bytes.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(msg, &unknown, &iter));
+  ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  upb_StringView encoded;
+  ASSERT_EQ(upb_EncodeExtension(
+                static_cast<const upb_Extension*>(unknown.value.extension),
+                src_arena.ptr(), &encoded, /*encode_options=*/0),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(encoded.size, 0);
+
+  upb::Arena dst_arena;
+  upb_Message* clone = upb_Message_DeepClone(msg, mt, dst_arena.ptr());
+  ASSERT_NE(clone, nullptr);
+
+  // No unknown entry (not even an empty one) and no extension in the clone.
+  iter = kUpb_Message_UnknownBegin;
+  EXPECT_FALSE(upb_Message_NextUnknown2(clone, &unknown, &iter));
+  EXPECT_EQ(upb_Message_ExtensionCount(clone), 0);
+
+  char* buf;
+  size_t size;
+  ASSERT_EQ(upb_Encode(clone, mt, 0, dst_arena.ptr(), &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(size, 0);
 }
 
 TEST(ConvertTest, NonCanonicalToCanonical) {

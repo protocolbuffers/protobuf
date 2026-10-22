@@ -15,7 +15,14 @@ package google.protobuf.internal;
 message TestMessageSet {
   option message_set_wire_format = true;
 
-  extensions 4 to max;
+  extensions 4 to 529999999;
+
+  extensions 530000000 to max
+  [declaration = {
+    number: 2147483646,
+    full_name: ".google.protobuf.internal.max_number_extension",
+    type: ".google.protobuf.internal.TestExtension"
+  }];
 }
 
 message TestMessageSetExtension1 {
@@ -46,6 +53,12 @@ message TestExtension {
 
 extend TestMessageSet {
   optional TestMessageSetExtension3 message_set_extension3 = 98418655;
+}
+
+// MessageSet extension numbers can be larger than the normal maximum field
+// number (2^29 - 1): this is the largest one that `extensions 4 to max` allows.
+extend TestMessageSet {
+  optional TestExtension max_number_extension = 2147483646;
 }
 
 // This message was used to generate

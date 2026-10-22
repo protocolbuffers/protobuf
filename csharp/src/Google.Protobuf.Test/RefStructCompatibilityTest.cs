@@ -50,7 +50,10 @@ namespace Google.Protobuf
             // We suppress CS1691, which flags a warning for the generated line of
             // #pragma warning disable 1591, 0612, 3021, 8981
             // because CS8981 is unknown to this version of the compiler.
-            var args = $"-langversion:3 -nologo -nowarn:1691 -target:library {compatibilityFlag} -reference:netstandard.dll -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{testProtosOutputDir}\\TestProtos.RefStructCompatibilityTest.OldCompiler.dll {string.Join(" ", sources)}";
+            // Use a unique output file name to avoid collisions when multi-targeted test runners execute concurrently.
+            var outputFileName = $"TestProtos.RefStructCompatibilityTest.OldCompiler.{Guid.NewGuid():N}.dll";
+            var outputFilePath = $"{testProtosOutputDir}\\{outputFileName}";
+            var args = $"-langversion:3 -nologo -nowarn:1691 -target:library {compatibilityFlag} -reference:netstandard.dll -reference:{testProtosOutputDir}\\Google.Protobuf.dll -out:{outputFilePath} {string.Join(" ", sources)}";
             RunOldCsharpCompilerAndCheckSuccess(args, testProtosProjectDir);
         }
 

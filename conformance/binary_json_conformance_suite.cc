@@ -866,6 +866,9 @@ void BinaryAndJsonConformanceSuite::RunValidJsonTestWithValidator(
     return;
   }
   Json::CharReaderBuilder builder;
+  // jsoncpp's defaults accept comments, trailing commas, duplicate keys and
+  // trailing garbage, none of which are valid JSON (RFC 8259).
+  Json::CharReaderBuilder::strictMode(&builder.settings_);
   Json::Value value;
   Json::String err;
   const std::unique_ptr<Json::CharReader> reader(builder.newCharReader());
@@ -3078,8 +3081,8 @@ void BinaryAndJsonConformanceSuiteImpl<
                    R"({"optionalFloat": 3.402823e+38})",
                    "optional_float: 3.402823e+38");
   RunValidJsonTest("FloatFieldMinNegativeValue", REQUIRED,
-                   R"({"optionalFloat": 3.402823e+38})",
-                   "optional_float: 3.402823e+38");
+                   R"({"optionalFloat": -3.402823e+38})",
+                   "optional_float: -3.402823e+38");
   // Values can be quoted.
   RunValidJsonTest("FloatFieldQuotedValue", REQUIRED,
                    R"({"optionalFloat": "1"})", "optional_float: 1");
@@ -3478,7 +3481,7 @@ void BinaryAndJsonConformanceSuiteImpl<
       R"({"repeatedString": ["1", "2", false, "4"]})");
   ExpectParseFailureForJson(
       "RepeatedFieldWrongElementTypeExpectingStringsGotMessage", REQUIRED,
-      R"({"repeatedString": ["1", 2, "3", {"a": 4}]})");
+      R"({"repeatedString": ["1", "2", "3", {"a": 4}]})");
   ExpectParseFailureForJson(
       "RepeatedFieldWrongElementTypeExpectingMessagesGotInt", REQUIRED,
       R"({"repeatedNestedMessage": [{"a": 1}, 2]})");

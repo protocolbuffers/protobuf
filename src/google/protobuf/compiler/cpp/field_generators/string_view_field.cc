@@ -116,7 +116,7 @@ class SingularStringView : public FieldGeneratorBase {
       )cc");
     } else {
       p->Emit(R"cc(
-        this_._internal_set_$name$(from._internal_$name$());
+        this_._internal_set_$name$($from_field$.Get());
       )cc");
     }
   }
@@ -133,14 +133,8 @@ class SingularStringView : public FieldGeneratorBase {
 
   void GenerateByteSize(io::Printer* p) const override {
     p->Emit(R"cc(
-      total_size += $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size(
-                                      this_._internal_$name$());
-    )cc");
-  }
-
-  void GenerateCopyAggregateInitializer(io::Printer* p) const override {
-    p->Emit(R"cc(
-      decltype($field_$){},
+      total_size +=
+          $kTagBytes$ + $pbi$::WireFormatLite::$DeclaredType$Size($this_field$);
     )cc");
   }
 
@@ -198,11 +192,9 @@ class SingularStringView : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateSwappingCode(io::Printer* p) const override;
-  void GenerateCopyConstructorCode(io::Printer* p) const override;
   void GenerateDestructorCode(io::Printer* p) const override;
   void GenerateSerializeWithCachedSizesToArray(io::Printer* p) const override;
   void GenerateConstexprAggregateInitializer(io::Printer* p) const override;
-  void GenerateAggregateInitializer(io::Printer* p) const override;
 
  private:
   bool EmptyDefault() const { return field_->default_value_string().empty(); }
@@ -304,9 +296,8 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
         PROTOBUF_ALWAYS_INLINE void $Msg$::set_$name$(Arg_&& arg) {
           $WeakDescriptorSelfPin$;
           $TsanDetectConcurrentMutation$;
-          $PrepareSplitMessageForWrite$;
           $update_hasbit$;
-          $field_$.Set(static_cast<Arg_&&>(arg), *this);
+          $ensure_mutable_field_$.Set(static_cast<Arg_&&>(arg), *this);
           $annotate_set$;
           // @@protoc_insertion_point(field_set:$pkg.Msg.field$)
         }
@@ -317,7 +308,7 @@ void SingularStringView::GenerateInlineAccessorDefinitions(
         }
         inline void $Msg$::_internal_set_$name_internal$(::absl::string_view value) {
           $TsanDetectConcurrentMutation$;
-          $field_$.Set(value, *this);
+          $ensure_mutable_field_$.Set(value, *this);
         }
       )cc");
 }
@@ -332,6 +323,27 @@ void SingularStringView::GenerateClearingCode(io::Printer* p) const {
     }
     p->Emit(R"cc(
       $field_$.Destroy();
+    )cc");
+    return;
+  }
+
+  if (should_split()) {
+    if (EmptyDefault()) {
+      if (use_micro_string()) {
+        p->Emit(R"cc(
+          if (auto* f = $try_mutable_field_$) f->Clear();
+        )cc");
+        return;
+      }
+      p->Emit(R"cc(
+        if (auto* f = $try_mutable_field_$) f->ClearToEmpty();
+      )cc");
+      return;
+    }
+    ABSL_DCHECK(!is_inlined());
+    p->Emit(R"cc(
+      if (auto* f = $try_mutable_field_$)
+        f->ClearToDefault($lazy_var$, *this);
     )cc");
     return;
   }
@@ -427,55 +439,9 @@ void SingularStringView::GenerateSwappingCode(io::Printer* p) const {
   )cc");
 }
 
-void SingularStringView::GenerateCopyConstructorCode(io::Printer* p) const {
-  if (!(is_inlined() && EmptyDefault()) && !is_oneof() && !use_micro_string()) {
-    ABSL_DCHECK(!is_inlined());
-
-    p->Emit(R"cc(
-      $field_$.InitDefault();
-    )cc");
-
-    if (EmptyDefault()) {
-      p->Emit(R"cc(
-        if ($pbi$::DebugHardenForceCopyDefaultString()) {
-          $field_$.Set("", *this);
-        }
-      )cc");
-    }
-  }
-
-  if (is_inlined()) {
-    p->Emit(R"cc(
-      new (&$this_mutable_field$)::_pbi::InlinedStringField;
-    )cc");
-  }
-
-  p->Emit(
-      {{"hazzer",
-        [&] {
-          if (HasHasbit(field_, options_)) {
-            p->Emit(R"cc(CheckHasBit(from.$has_bits_array$, $has_mask$))cc");
-          } else {
-            p->Emit(R"cc(!from._internal_$name$().empty())cc");
-          }
-        }}},
-      R"cc(
-        if ($hazzer$) {
-          $this_mutable_field$.Set(from._internal_$name$(), this_);
-        }
-      )cc");
-}
-
 void SingularStringView::GenerateDestructorCode(io::Printer* p) const {
   if (is_inlined()) {
     ABSL_DCHECK(!should_split());
-    return;
-  }
-
-  if (should_split()) {
-    p->Emit(R"cc(
-      $cached_split_ptr$->$name$_.Destroy();
-    )cc");
     return;
   }
 
@@ -525,23 +491,6 @@ void SingularStringView::GenerateConstexprAggregateInitializer(
   }
 }
 
-void SingularStringView::GenerateAggregateInitializer(io::Printer* p) const {
-  if (should_split()) {
-    ABSL_CHECK(!is_inlined());
-    p->Emit(R"cc(
-      decltype(Impl_::Split::$name$_){},
-    )cc");
-  } else if (!is_inlined()) {
-    p->Emit(R"cc(
-      decltype($field_$){},
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      decltype($field_$){arena},
-    )cc");
-  }
-}
-
 class RepeatedStringView : public FieldGeneratorBase {
  public:
   RepeatedStringView(const FieldDescriptor* field, const Options& opts)
@@ -574,7 +523,7 @@ class RepeatedStringView : public FieldGeneratorBase {
 
   void GenerateClearingCode(io::Printer* p) const override {
     if (should_split()) {
-      p->Emit("$field_$.ClearIfNotDefault();\n");
+      p->Emit("if (auto* f = $try_mutable_field_$) f->Clear();\n");
     } else {
       p->Emit("$field_$.Clear();\n");
     }
@@ -589,24 +538,12 @@ class RepeatedStringView : public FieldGeneratorBase {
   }
 
   void GenerateMergingCode(io::Printer* p) const override {
-    // TODO: experiment with simplifying this to be
-    // `if (!from.empty()) { body(); }` for both split and non-split cases.
-    auto body = [&] {
-      p->Emit(R"cc(
+    p->Emit(R"cc(
+      if (const auto& sub = $from_field$; !sub.empty()) {
         this_._internal_mutable_$name$()->InternalMergeFromWithArena(
-            $pb$::MessageLite::internal_visibility(), arena,
-            from._internal_$name$());
-      )cc");
-    };
-    if (!should_split()) {
-      body();
-    } else {
-      p->Emit({{"body", body}}, R"cc(
-        if (!$from_field$.IsDefault()) {
-          $body$;
-        }
-      )cc");
-    }
+            $pb$::MessageLite::internal_visibility(), arena, sub);
+      }
+    )cc");
   }
 
   void GenerateSwappingCode(io::Printer* p) const override {
@@ -620,18 +557,6 @@ class RepeatedStringView : public FieldGeneratorBase {
     if (should_split()) {
       p->Emit(R"cc(
         $this_mutable_field$.DeleteIfNotDefault();
-      )cc");
-    }
-  }
-
-  void GenerateCopyConstructorCode(io::Printer* p) const override {
-    if (should_split()) {
-      p->Emit(R"cc(
-        if (!from._internal_$name$().empty()) {
-          _internal_mutable_$name$()->InternalMergeFromWithArena(
-              $pb$::MessageLite::internal_visibility(), arena,
-              from._internal_$name$());
-        }
       )cc");
     }
   }
@@ -806,39 +731,18 @@ void RepeatedStringView::GenerateInlineAccessorDefinitions(
       break;
   }
 
-  if (should_split()) {
-    p->Emit(R"cc(
-      inline const $pb$::RepeatedPtrField<::std::string>&
-      $Msg$::_internal_$name_internal$() const {
-        $TsanDetectConcurrentRead$;
-        return *$field_$;
-      }
-      inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
-      $Msg$::_internal_mutable_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        $PrepareSplitMessageForWrite$;
-        if ($field_$.IsDefault()) {
-          $field_$.Set(
-              $pb$::Arena::Create<$pb$::RepeatedPtrField<::std::string>>(
-                  GetArena()));
-        }
-        return $field_$.Get();
-      }
-    )cc");
-  } else {
-    p->Emit(R"cc(
-      inline const $pb$::RepeatedPtrField<::std::string>&
-      $Msg$::_internal_$name_internal$() const {
-        $TsanDetectConcurrentRead$;
-        return $field_$;
-      }
-      inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
-      $Msg$::_internal_mutable_$name_internal$() {
-        $TsanDetectConcurrentRead$;
-        return &$field_$;
-      }
-    )cc");
-  }
+  p->Emit(R"cc(
+    inline const $pb$::RepeatedPtrField<::std::string>&
+    $Msg$::_internal_$name_internal$() const {
+      $TsanDetectConcurrentRead$;
+      return $field_$;
+    }
+    inline $pb$::RepeatedPtrField<::std::string>* $nonnull$
+    $Msg$::_internal_mutable_$name_internal$() {
+      $TsanDetectConcurrentRead$;
+      return &$ensure_mutable_field_$;
+    }
+  )cc");
 }
 
 void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
@@ -850,7 +754,7 @@ void RepeatedStringView::GenerateSerializeWithCachedSizesToArray(
                   "s.data(), static_cast<int>(s.length()),");
             }}},
           R"cc(
-            for (const auto& s : $this_field$) {
+            for (const auto& s : this_.$field_$) {
               $utf8_check$;
               target = stream->Write$DeclaredType$($number$, s, target);
             }

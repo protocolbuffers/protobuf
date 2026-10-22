@@ -1,11 +1,9 @@
 #include "google/protobuf/compiler/cpp/field_chunk.h"
 
 #include <cstdint>
-#include <vector>
 
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
-#include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/field_layout.h"
 #include "google/protobuf/descriptor.h"
@@ -19,38 +17,6 @@ namespace compiler {
 namespace cpp {
 
 namespace {
-
-// Returns the (common) hasbit index offset. Callers must guarantee "fields" is
-// not empty. Debug-check fails if it sees different hasbit index offset in
-// "fields".
-int GetCommonHasbitIndexOffset(absl::Span<const FieldDescriptor*> fields,
-                               const FieldLayout& field_layout) {
-  ABSL_CHECK(!fields.empty());
-
-  int word_idx = field_layout.GetHasWordIndex(fields.front()).value();
-  for (auto* field : fields) {
-    ABSL_DCHECK_EQ(word_idx, field_layout.GetHasWordIndex(field).value());
-  }
-  return word_idx;
-}
-
-// Asserts that chunks in [it, end) share hasbit index offset and returns it.
-int GetSameHasbitIndexOffset(ChunkIterator it, ChunkIterator end,
-                             const FieldLayout& field_layout) {
-  ABSL_CHECK(it != end);
-  absl::optional<int> prev_offset;
-  for (; it != end; ++it) {
-    // Skip empty chunks (likely due to extraction).
-    if (it->fields.empty()) continue;
-
-    int offset =
-        GetCommonHasbitIndexOffset(absl::MakeSpan(it->fields), field_layout);
-    ABSL_CHECK(!prev_offset.has_value() || *prev_offset == offset);
-    prev_offset = offset;
-  }
-  ABSL_CHECK(prev_offset.has_value());
-  return *prev_offset;
-}
 
 uint32_t GenRawChunkMask(absl::Span<const FieldDescriptor* const> fields,
                          int first_index_offset,
@@ -88,22 +54,6 @@ uint32_t GenChunkMask(absl::Span<const FieldDescriptor* const> fields,
   int first_index_offset = field_layout.GetHasWordIndex(fields.front()).value();
   uint32_t chunk_mask =
       GenRawChunkMask(fields, first_index_offset, field_layout);
-
-  return SimplifyChunkMask(chunk_mask, first_index_offset, field_layout);
-}
-
-// Returns a bit mask based on has_bit index of "fields" in chunks in [it, end).
-// Assumes that all chunks share the same hasbit word.
-uint32_t GenChunkMask(ChunkIterator it, ChunkIterator end,
-                      const FieldLayout& field_layout) {
-  ABSL_CHECK(it != end);
-
-  int first_index_offset = GetSameHasbitIndexOffset(it, end, field_layout);
-
-  uint32_t chunk_mask = 0;
-  for (; it != end; ++it) {
-    chunk_mask |= GenRawChunkMask(it->fields, first_index_offset, field_layout);
-  }
 
   return SimplifyChunkMask(chunk_mask, first_index_offset, field_layout);
 }

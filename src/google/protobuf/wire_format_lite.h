@@ -667,6 +667,16 @@ class PROTOBUF_EXPORT WireFormatLite {
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t BytesSize(
       absl::string_view value);
 
+  // To simplify codegen:
+  template <typename T>
+  [[nodiscard]] static size_t StringSize(const T& value) {
+    return StringSize(value.Get());
+  }
+  template <typename T>
+  [[nodiscard]] static size_t BytesSize(const T& value) {
+    return BytesSize(value.Get());
+  }
+
   template <typename MessageType>
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t GroupSize(
       const MessageType& value);

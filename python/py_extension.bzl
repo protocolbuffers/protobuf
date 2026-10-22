@@ -1,9 +1,17 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2022 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Macro to support py_extension """
 
 load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
 load("@rules_python//python:py_library.bzl", "py_library")
 
+# TODO: Remove this file once _message has successfully switched to OSS rules_python's py_extension.
 def py_extension(name, srcs, copts, deps = [], **kwargs):
     """Creates a C++ library to extend python
 
@@ -25,14 +33,23 @@ def py_extension(name, srcs, copts, deps = [], **kwargs):
             "//python/dist:windows_x86_32": ["-static-libgcc"],
             "//conditions:default": [],
         }) + select({
+            "//python/dist:windows_x86_64_mingw": [
+                "-Wl,--dynamicbase",
+                "-Wl,--nxcompat",
+                "-Wl,--high-entropy-va",
+            ],
+            "//python/dist:windows_x86_32_mingw": [
+                "-Wl,--dynamicbase",
+                "-Wl,--nxcompat",
+            ],
             "//conditions:default": [],
         }),
         linkshared = True,
         linkstatic = True,
         deps = deps + select({
-            "//python:limited_api_3.10": ["@python-3.10.0//:python_headers"],
-            "//python:limited_api_3.10_win32": ["@nuget_python_i686_3.10.0//:python_limited_api"],
-            "//python:limited_api_3.10_win64": ["@nuget_python_x86-64_3.10.0//:python_limited_api"],
+            "//python:limited_api_3.11": ["@python-3.11.0//:python_headers"],
+            "//python:limited_api_3.11_win32": ["@nuget_python_i686_3.11.0//:python_limited_api"],
+            "//python:limited_api_3.11_win64": ["@nuget_python_x86-64_3.11.0//:python_limited_api"],
             "//conditions:default": ["@system_python//:python_headers"],
         }),
         **kwargs

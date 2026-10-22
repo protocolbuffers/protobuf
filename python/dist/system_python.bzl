@@ -1,5 +1,5 @@
-# Copyright (c) 2009-2021, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2009 Google LLC
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -269,7 +269,7 @@ system_python = repository_rule(
     implementation = _system_python_impl,
     local = True,
     attrs = {
-        "minimum_python_version": attr.string(default = "3.10"),
+        "minimum_python_version": attr.string(default = "3.11"),
     },
 )
 

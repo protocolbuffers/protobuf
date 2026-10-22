@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2022 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Rules to create python distribution files and properly name them"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
@@ -77,7 +84,7 @@ def _declare_module_file(ctx, module_name, python_version, limited_api):
 #
 #   py_dist_module(
 #       name = "message_mod",
-#       extension = "//python:_message_binary",
+#       extension = "//python:google/_upb/_message",
 #       module_name = "google._upb._message",
 #   )
 #

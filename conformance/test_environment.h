@@ -8,19 +8,20 @@
 // The process-wide plumbing shared by every gtest-based conformance suite.
 //
 // ConformanceEnvironment is the process-global state of a conformance test
-// binary.  It owns the testee connection and the TestManager, records
+// binary.  It owns the testee connection and the ResultLedger, records
 // statistics, and checks or regenerates the failure list at the end of the
-// run.  Exactly one is installed per test binary, before RUN_ALL_TESTS();
-// Install() hooks it into gtest.  Nothing in this header is meant for the
-// conformance suites themselves.
+// run.  Exactly one is installed per test binary, normally by
+// test_environment_main.cc from command-line flags (see
+// test_environment_flags.h).  Install() hooks it into gtest.  Nothing in this
+// header is meant for the conformance suites themselves.
 //
 // Everything here is single-threaded.  Use it only from gtest's main thread:
 // test bodies, fixtures and the environment hooks.  The global environment is
-// a plain pointer and TestManager isn't thread-safe, so tests must not create
+// a plain pointer and ResultLedger isn't thread-safe, so tests must not create
 // or run conformance Tests from other threads.
 //
 // --gtest_repeat is not supported.  Each conformance test result is recorded
-// in the TestManager exactly once, so a repeated run would see every test as
+// in the ResultLedger exactly once, so a repeated run would see every test as
 // already recorded and the statistics and failure-list checks would be wrong.
 
 #ifndef GOOGLE_PROTOBUF_CONFORMANCE_TEST_ENVIRONMENT_H__
@@ -34,7 +35,7 @@
 #include <gtest/gtest.h>
 #include "absl/base/nullability.h"
 #include "absl/types/optional.h"
-#include "conformance/test_manager.h"
+#include "conformance/result_ledger.h"
 #include "conformance/test_runner.h"
 #include "conformance/testee.h"
 
@@ -43,7 +44,9 @@ namespace protobuf {
 namespace conformance {
 namespace internal {
 
-// Options for a ConformanceEnvironment.
+// Options for a ConformanceEnvironment.  Normally populated from command-line
+// flags by test_environment_main.cc (see OptionsFromFlags() in
+// test_environment_flags.h).
 struct ConformanceEnvironmentOptions {
   // Exactly one of `runner`, `owned_runner` or `testee_binary` must be set.
   //
@@ -63,7 +66,7 @@ struct ConformanceEnvironmentOptions {
   std::vector<std::string> testee_args;
 
   // Failure list files to load.  All of them are loaded into a single
-  // TestManager, so entries must not overlap between files.  SetUp() fails
+  // ResultLedger, so entries must not overlap between files.  SetUp() fails
   // fatally if they do.
   std::vector<std::string> failure_list_files;
 
@@ -121,11 +124,11 @@ struct ConformanceEnvironmentOptions {
   // conformance_test_runner --test flag behaves the same way.
   //
   // The merged runner sets this to false.  It reports the unmatched entries
-  // itself (see TestManager::UnmatchedExpectedFailures).
+  // itself (see ResultLedger::UnmatchedExpectedFailures).
   bool check_unseen_expected_failures = true;
 };
 
-// A snapshot of the TestManager's counters.  Used to report per-test and
+// A snapshot of the ResultLedger's counters.  Used to report per-test and
 // per-suite deltas as test properties.
 struct Statistics {
   int skipped_tests = 0;
@@ -136,7 +139,7 @@ struct Statistics {
   int expected_successes = 0;
   int unexpected_successes = 0;
 
-  static Statistics From(const TestManager& manager);
+  static Statistics From(const ResultLedger& ledger);
   Statistics operator-(const Statistics& other) const;
   Statistics& operator+=(const Statistics& other);
 
@@ -160,7 +163,7 @@ class ScopedPartialRunOverride;
 // to make sure of that.  gtest deletes the environments registered with it at
 // the end of RUN_ALL_TESTS() (see RunAllTests in gtest.cc).  The installed
 // instance must outlive that, because the transitional merged runner
-// (conformance_test_main.cc) reads test_manager() afterwards.  Install()
+// (conformance_test_main.cc) reads ledger() afterwards.  Install()
 // therefore registers a private proxy with gtest that forwards to SetUp() and
 // TearDown().  The environment object itself is intentionally leaked.  The
 // testee is not: TearDown() releases it.
@@ -181,7 +184,7 @@ class ConformanceEnvironment : public testing::Environment {
   // makes it the process-global instance.  Must be called exactly once, before
   // RUN_ALL_TESTS():
   //
-  //   ConformanceEnvironment::Install(std::move(options));
+  //   ConformanceEnvironment::Install(OptionsFromFlags());
   //   return RUN_ALL_TESTS();
   //
   // The environment itself is never destroyed (see the class comment), but
@@ -189,7 +192,7 @@ class ConformanceEnvironment : public testing::Environment {
   static ConformanceEnvironment& Install(ConformanceEnvironmentOptions options);
 
   // Returns the process-global instance.  Check-fails if Install() hasn't been
-  // called.
+  // called, which typically means test_environment_main wasn't linked in.
   static ConformanceEnvironment& Get();
 
   // Loads the failure lists.  Any failure here is fatal, so no tests run.
@@ -214,7 +217,7 @@ class ConformanceEnvironment : public testing::Environment {
 
   // Where the tests' outcomes are recorded.  The transitional merged runner
   // (conformance_test_main.cc) reads it after RUN_ALL_TESTS().
-  TestManager& test_manager() { return test_manager_; }
+  ResultLedger& ledger() { return ledger_; }
 
   // The connection to the testee.  Check-fails once TearDown() has released
   // it.
@@ -238,7 +241,7 @@ class ConformanceEnvironment : public testing::Environment {
   // Null when using the caller's `runner`.  Released in TearDown().
   std::unique_ptr<ConformanceTestRunner> owned_runner_;
 
-  TestManager test_manager_;
+  ResultLedger ledger_;
 
   // Null once TearDown() has released it.
   std::unique_ptr<Testee> testee_;
