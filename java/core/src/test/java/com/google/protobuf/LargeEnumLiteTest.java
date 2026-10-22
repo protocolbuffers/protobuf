@@ -13,6 +13,10 @@ import static org.junit.Assert.assertThrows;
 import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnum;
 import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnumParent;
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -38,6 +42,22 @@ public class LargeEnumLiteTest {
   @Test
   public void testUnrecognizedGetNumberThrows() throws Exception {
     assertThrows(IllegalArgumentException.class, LargeOpenEnum.UNRECOGNIZED::getNumber);
+  }
+
+  @Test
+  public void testJavaSerializationPreservesSingletons() throws Exception {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    try (ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+      oos.writeObject(LargeOpenEnum.LARGE_ENUM1);
+      oos.writeObject(LargeOpenEnum.LARGE_ENUM1060);
+      oos.writeObject(LargeOpenEnum.UNRECOGNIZED);
+    }
+    try (ObjectInputStream ois =
+        new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()))) {
+      assertThat(ois.readObject()).isSameInstanceAs(LargeOpenEnum.LARGE_ENUM1);
+      assertThat(ois.readObject()).isSameInstanceAs(LargeOpenEnum.LARGE_ENUM1060);
+      assertThat(ois.readObject()).isSameInstanceAs(LargeOpenEnum.UNRECOGNIZED);
+    }
   }
 
   @Test
