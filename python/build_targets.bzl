@@ -472,7 +472,7 @@ def build_targets(name):
             "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "upb",
             "PROTOCOL_BUFFERS_PYTHON_INTERNAL_FORCE_IMPLEMENTATION": "1",
         },
-        deps = [":_message"],
+        deps = [":google/_upb/_message"],
     )
 
     # Keep the default Bazel runtime unchanged, but qualify the native backend
@@ -494,7 +494,7 @@ def build_targets(name):
                 "PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "upb",
                 "PROTOCOL_BUFFERS_PYTHON_INTERNAL_FORCE_IMPLEMENTATION": "1",
             },
-            deps = [":_message"],
+            deps = [":google/_upb/_message"],
         )
 
     internal_py_test(
