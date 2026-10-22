@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
 #include <new>  // IWYU pragma: keep for operator new().
 #include <string>
 #include <type_traits>
@@ -21,6 +22,8 @@
 #include <vector>
 
 #include "absl/base/macros.h"
+#include "absl/base/nullability.h"
+#include "absl/types/optional.h"
 #include "google/protobuf/internal_visibility.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
@@ -83,6 +86,14 @@ SerialArena* PROTOBUF_NULLABLE GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
 template <typename Type>
 class GenericTypeHandler;  // defined in repeated_field.h
+
+// Returns true if the message is on an arena. As a free function, we can call
+// it in contexts where `MessageLite` is incomplete. Use this instead of
+// `message.GetArena() == nullptr`.
+bool HasArena(const MessageLite& message);
+
+// Defined in message_lite.h
+Arena* PROTOBUF_NULLABLE GetArena(const MessageLite& message);
 
 // This struct maps field types to the types that we will use to represent them
 // when allocated on an arena. This is necessary because fields no longer own an
@@ -182,7 +193,7 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // An initial block of memory for the arena to use, or nullptr for none. If
   // provided, the block must live at least as long as the arena itself. The
   // creator of the Arena retains ownership of the block after the Arena is
-  // destroyed.
+  // destroyed. Must be aligned to at least 8 bytes.
   char* PROTOBUF_NULLABLE initial_block = nullptr;
 
   // The size of the initial block, if provided.
@@ -192,7 +203,8 @@ struct ABSL_ATTRIBUTE_WARN_UNUSED ArenaOptions final {
   // requested. By default, it contains a ptr to the malloc function.
   //
   // NOTE: block_alloc and dealloc functions are expected to behave like
-  // malloc and free, including Asan poisoning.
+  // malloc and free, including Asan poisoning. Returned blocks must be aligned
+  // to at least 8 bytes.
   void* PROTOBUF_NONNULL (*PROTOBUF_NULLABLE block_alloc)(size_t) = nullptr;
   // A function pointer to a dealloc method that takes ownership of the blocks
   // from the arena. By default, it contains a ptr to a wrapper function that
@@ -291,13 +303,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   // Default constructor with sensible default options, tuned for average
   // use-cases.
-  inline Arena() : impl_() {}
+  Arena() : impl_() {}
 
   // Construct an arena with default options, except for the supplied
   // initial block. It is more efficient to use this constructor
   // instead of passing ArenaOptions if the only configuration needed
   // by the caller is supplying an initial block.
-  inline Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
+  Arena(char* PROTOBUF_NULLABLE initial_block, size_t initial_block_size)
       : impl_(initial_block, initial_block_size) {}
 
   // Arena constructor taking custom options. See ArenaOptions above for
@@ -316,7 +328,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       internal::ThreadSafeArena::kBlockHeaderSize +
       internal::ThreadSafeArena::kSerialArenaSize;
 
-  inline ~Arena() = default;
+  ~Arena() = default;
 
   // Allocates an object type T if the arena passed in is not nullptr;
   // otherwise, returns a heap-allocated object.
@@ -642,7 +654,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
     return InternalHelper<T>::GetArena(p);
   }
 
-  // Helper typetraits that indicates support for arenas in a type T at compile
+  // Helper type traits that indicates support for arenas in a type T at compile
   // time. This is public only to allow construction of higher-level templated
   // utilities.
   //
@@ -858,13 +870,12 @@ struct ArenaPtrCmpBase {
   }
 
   template <typename T>
-  static auto PROTOBUF_NULLABLE
-  Unpack(const typename Arena::UniquePtr<T>& ptr) {
+  static T* PROTOBUF_NULLABLE Unpack(const typename Arena::UniquePtr<T>& ptr) {
     return ptr.get();
   }
 
   template <typename T>
-  static auto PROTOBUF_NONNULL
+  static T* PROTOBUF_NONNULL
   Unpack(const typename Arena::template Ptr<T>& ptr) {
     return ptr.get();
   }
@@ -1213,6 +1224,20 @@ inline SerialArena* PROTOBUF_NULLABLE
 GetSerialArena(const MessageLite* PROTOBUF_NONNULL elem) {
   const auto* dependent_elem = (delay, ..., elem);
   return GetSerialArena(dependent_elem->GetArena());
+}
+
+inline Arena* PROTOBUF_NULLABLE GetArena(Arena* PROTOBUF_NULLABLE arena) {
+  return arena;
+}
+
+// Using a template to make member access type dependent and delay it until
+// instantiation when `MessageLite` will be complete.
+// Not really a generic function.
+template <auto... delay>
+inline Arena* PROTOBUF_NULLABLE
+GetArena(const MessageLite* PROTOBUF_NONNULL elem) {
+  const auto* dependent_elem = (delay, ..., elem);
+  return dependent_elem->GetArena();
 }
 
 // This class is used to define `DestructorSkippable_` for some containing type

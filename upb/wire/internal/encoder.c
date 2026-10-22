@@ -666,6 +666,11 @@ static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
 static char* encode_msgset_item(char* ptr, upb_encstate* e,
                                 const upb_MiniTableExtension* ext,
                                 const upb_MessageValue ext_val) {
+  // MessageSet items are always singular submessages. This holds for canonical
+  // extensions of a MessageSet, but must also hold for any non-canonical
+  // extension that is encoded as a MessageSet item.
+  UPB_ASSERT(upb_MiniTableField_IsScalar(upb_MiniTableExtension_ToField(ext)));
+  UPB_ASSERT(upb_MiniTableExtension_CType(ext) == kUpb_CType_Message);
   size_t size;
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
   ptr = encode_message(ptr, e, ext_val.msg_val,
@@ -717,7 +722,8 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-      ptr = encode_ext(ptr, e, ext->ext, ext->data,
+      ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+                       upb_Extension_GetValue(ext),
                        UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                            kUpb_ExtMode_IsMessageSet);
     }
@@ -761,7 +767,8 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
       } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
-        ptr = encode_ext(ptr, e, ext->ext, ext->data,
+        ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+                         upb_Extension_GetValue(ext),
                          UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                              kUpb_ExtMode_IsMessageSet);
       }

@@ -406,10 +406,7 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   const char* shortname = upb_FieldDef_Name(f);
   const size_t shortnamelen = strlen(shortname);
 
-  upb_value v = upb_value_constptr(f);
-
-  upb_value existing_v;
-  if (upb_strtable_lookup(&m->ntof, shortname, &existing_v)) {
+  if (upb_strtable_lookup(&m->ntof, shortname, NULL)) {
     _upb_DefBuilder_Errf(ctx, "duplicate field name (%s)", shortname);
   }
 
@@ -424,13 +421,13 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   if (!skip_json_conflicts && strcmp(shortname, json_name) != 0 &&
       google_protobuf_FeatureSet_json_format(m->resolved_features) ==
           google_protobuf_FeatureSet_ALLOW &&
-      upb_strtable_lookup(&m->ntof, json_name, &v)) {
+      upb_strtable_lookup(&m->ntof, json_name, NULL)) {
     _upb_DefBuilder_Errf(
         ctx, "duplicate json_name for (%s) with original field name (%s)",
         shortname, json_name);
   }
 
-  if (upb_strtable_lookup(&m->jtof, json_name, &v)) {
+  if (upb_strtable_lookup(&m->jtof, json_name, NULL)) {
     if (!skip_json_conflicts) {
       _upb_DefBuilder_Errf(ctx, "duplicate json_name (%s)", json_name);
     }
@@ -445,7 +442,8 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
     _upb_DefBuilder_Errf(ctx, "duplicate field number (%u)", field_number);
   }
 
-  ok = upb_inttable_insert(&m->itof, field_number, v, ctx->arena);
+  ok = upb_inttable_insert(&m->itof, field_number, upb_value_constptr(f),
+                           ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 

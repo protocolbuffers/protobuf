@@ -167,6 +167,14 @@ UPB_API_INLINE bool upb_MiniTableField_IsSubMessage(
          f->UPB_PRIVATE(descriptortype) == kUpb_FieldType_Group;
 }
 
+// Returns true if the field's type requires sub storage (ie. it is a
+// sub-message or closed enum), in which case `submsg_ofs` locates the sub.
+UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_HasSub)(
+    const struct upb_MiniTableField* f) {
+  return upb_MiniTableField_IsSubMessage(f) ||
+         upb_MiniTableField_IsClosedEnum(f);
+}
+
 UPB_API_INLINE bool upb_MiniTableField_HasPresence(
     const struct upb_MiniTableField* f) {
   if (upb_MiniTableField_IsExtension(f)) {

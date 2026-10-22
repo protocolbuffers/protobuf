@@ -13,7 +13,15 @@
 
 use super::*;
 
-pub trait KernelWithReflection: MessageDescriptorInterop {}
+pub trait KernelWithReflection: MessageDescriptorInterop {
+    fn kernel_full_name(_private: Private) -> &'static str {
+        let desc = Self::__unstable_get_descriptor();
+        // SAFETY:
+        // - This function is only called via `WithReflection::full_name`. Gencode only implements
+        //   `WithReflection` for messages with reflection, so `desc` is a real descriptor.
+        unsafe { std::str::from_utf8_unchecked(proto2_rust_Descriptor_full_name(desc).as_ref()) }
+    }
+}
 impl<T: MessageDescriptorInterop> KernelWithReflection for T {}
 
 #[cfg(not(lite_runtime))]
@@ -21,27 +29,39 @@ unsafe extern "C" {
     /// From reflection.cc
     ///
     /// # Safety
-    /// - `m` is a legally dereferenceable MessageLite* that supports
-    ///   reflection.
-    fn proto2_rust_Message_print_to_text_format(m: RawMessage) -> RustStringRawParts;
+    /// - `desc` points to a valid `proto2::Descriptor`.
+    fn proto2_rust_Descriptor_full_name(desc: *const std::ffi::c_void) -> PtrAndLen;
 
     /// From reflection.cc
     ///
     /// # Safety
-    /// - `m` is a legally dereferenceable and mutable MessageLite* that
-    ///   supports reflection.
-    /// - `input` is a valid `PtrAndLen` pointing to readable memory for its
-    ///   length.
+    /// - `m` is a legally dereferenceable MessageLite* that supports reflection.
+    fn proto2_rust_Message_print_to_text_format(
+        m: RawMessage,
+        single_line: bool,
+        hide_unknown_fields: bool,
+    ) -> RustStringRawParts;
+
+    /// From reflection.cc
+    ///
+    /// # Safety
+    /// - `m` is a legally dereferenceable and mutable MessageLite* that supports reflection.
+    /// - `input` is a valid `PtrAndLen` pointing to readable memory for its length.
     fn proto2_rust_Message_parse_from_text_format(m: RawMessage, input: PtrAndLen) -> bool;
 }
 
-/// Returns the protobuf TextFormat representation of `msg`.
+/// Returns the protobuf TextFormat representation of `msg` with custom options.
 #[cfg(not(lite_runtime))]
-pub fn print_to_text_format<T: crate::WithReflection>(msg: &T) -> String {
+pub fn print_to_text_format<T: crate::WithReflection>(
+    msg: &T,
+    single_line: bool,
+    hide_unknown_fields: bool,
+) -> String {
     let raw = msg.as_view().get_raw_message(Private);
     // SAFETY: `raw` points to a live message, and `WithReflection` guarantees it
     // supports reflection.
-    unsafe { proto2_rust_Message_print_to_text_format(raw) }.into()
+    unsafe { proto2_rust_Message_print_to_text_format(raw, single_line, hide_unknown_fields) }
+        .into()
 }
 
 /// Parses a message from its protobuf TextFormat representation.
@@ -50,8 +70,8 @@ pub fn parse_from_text_format<T: crate::WithReflection>(input: &str) -> Result<T
     let mut msg = T::default();
     let raw = msg.get_raw_message_mut(Private);
     // SAFETY:
-    // - `raw` points to a live, mutable message, and `WithReflection`
-    //   guarantees it supports reflection.
+    // - `raw` points to a live, mutable message, and `WithReflection` guarantees it supports
+    //   reflection.
     // - `input` is converted from a valid `&str` slice.
     unsafe { proto2_rust_Message_parse_from_text_format(raw, input.as_bytes().into()) }
         .then_some(msg)

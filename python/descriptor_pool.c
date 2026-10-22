@@ -42,6 +42,10 @@ typedef struct {
   PyUpb_WeakMap* obj_cache;
 } PyUpb_DescriptorPool;
 
+static PyObject* PyUpb_DescriptorPool_AsPyObj(PyUpb_DescriptorPool* pool) {
+  return pool ? &pool->ob_base : NULL;
+}
+
 PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
   PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
   return s->default_pool;
@@ -79,7 +83,7 @@ static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
   }
   return self_obj;
 err:
-  Py_XDECREF(pool);
+  Py_XDECREF(PyUpb_DescriptorPool_AsPyObj(pool));
   return NULL;
 }
 
@@ -303,6 +307,14 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
   }
 
   upb_StringView name = google_protobuf_FileDescriptorProto_name(proto);
+  if (!upb_StringView_IsEqual(
+          name, upb_StringView_FromString("google/protobuf/descriptor.proto"))
+  ) {
+    // Ensure descriptor_pb2 is imported at AddSerializedFile time (matching
+    // pure Python) so subsequent GetOptions()/GetFeatures() calls do not
+    // trigger lazy imports at runtime.
+    if (!PyUpb_ImportDescriptorModule()) goto done;
+  }
   const upb_FileDef* file =
       upb_DefPool_FindFileByNameWithSize(self->symtab, name.data, name.size);
 

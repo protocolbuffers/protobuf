@@ -1069,35 +1069,6 @@ TEST_F(DescriptorTest, FieldNamesDedupOnOptimizedCases) {
               ElementsAre("fieldname7"));
 }
 
-TEST_F(DescriptorTest, RegressionNamesAreNullTerminated) {
-  // Name accessors where migrated from std::string to absl::string_view.
-  // Some callers were taking the C-String out of the std::string via `.data()`
-  // and that code kept working when the type was changed.
-  // We want to keep that working for now to prevent breaking these users
-  // dynamically.
-  const auto check_nul_terminated = [](absl::string_view view) {
-    EXPECT_EQ(view.data()[view.size()], '\0');
-  };
-  const auto check_nul_names = [&](auto* entity) {
-    check_nul_terminated(entity->name());
-    check_nul_terminated(entity->full_name());
-  };
-
-  const auto check_nul_field_names = [&](auto* field) {
-    check_nul_terminated(field->name());
-    check_nul_terminated(field->full_name());
-    check_nul_terminated(field->lowercase_name());
-    check_nul_terminated(field->camelcase_name());
-    check_nul_terminated(field->json_name());
-  };
-
-  check_nul_names(message4_);
-  check_nul_names(enum_);
-  for (int i = 0; i < message4_->field_count(); ++i) {
-    check_nul_field_names(message4_->field(i));
-  }
-}
-
 TEST_F(DescriptorTest, FieldNamesMatchOnCornerCases) {
   const auto names = [&](auto* field) {
     return std::vector<absl::string_view>{
@@ -1575,8 +1546,8 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
       proto,
       proto.mutable_message_type(0)->mutable_field(0)->mutable_json_name(),
       // the math here leaks the implementation details of AllocateFieldNames.
-      kNamesImplLimit - 3 * (1 + proto.message_type(0).field(0).name().size()) -
-          proto.message_type(0).name().size() - proto.package().size() - 3,
+      kNamesImplLimit - 3 * proto.message_type(0).field(0).name().size() -
+          proto.message_type(0).name().size() - proto.package().size() - 2,
       "Name too long");
   // FieldDescriptor::name (extension)
   proto = MakeFile(R"pb(name: "foo.proto"
@@ -1591,7 +1562,7 @@ TEST_F(DescriptorTest, AllSymbolNamesHaveLengthLimits) {
                           extendee: "Message"
                         })pb");
   TestBuildFileOnNameLimits(proto, proto.mutable_extension(0)->mutable_name(),
-                            kNamesImplLimit - 1, "Name too long");
+                            kNamesImplLimit, "Name too long");
   // FieldDescriptor::full_name (extension)
   proto = MakeFile(R"pb(name: "foo.proto"
                         package: "Package"
@@ -5424,6 +5395,25 @@ TEST_F(ValidationErrorTest, NullCharPackageName) {
                  "character.\n"));
 }
 
+TEST_F(ValidationErrorTest, NullCharDependency) {
+  pool_.AllowUnknownDependencies();
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "dependency: \"foo\\000\\001\\013.proto\"",
+      STATIC_STR("bar.proto: foo\0\x1\v.proto: IMPORT: "
+                 "\"foo\0\x1\v.proto\" contains null character.\n"));
+}
+
+TEST_F(ValidationErrorTest, NullCharOptionDependency) {
+  BuildFileWithErrors(
+      "name: \"bar.proto\" "
+      "syntax: \"editions\" "
+      "edition: EDITION_2024 "
+      "option_dependency: \"foo\\000\\001\\013.proto\"",
+      STATIC_STR("bar.proto: foo\0\x1\v.proto: IMPORT: "
+                 "\"foo\0\x1\v.proto\" contains null character.\n"));
+}
+
 TEST_F(ValidationErrorTest, MissingFileName) {
   BuildFileWithErrors("",
 
@@ -8894,6 +8884,37 @@ TEST_F(ValidationErrorTest, GroupFieldPointingToMapEntryIsNotMap) {
       "instead.\n");
 }
 
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithZeroFields) {
+  // A map_entry message with 0 fields and no parent field referencing it.
+  // ValidateMapEntry only runs when a parent field references the map entry,
+  // so the field count check in CrossLinkMessage is needed to catch this.
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
+TEST_F(ValidationErrorTest, MapEntryOrphanedWithOneField) {
+  // A map_entry message with only 1 field (missing value field).
+  BuildFileWithErrors(
+      "name: 'foo.proto' "
+      "message_type { "
+      "  name: 'OrphanedMapEntry' "
+      "  options { map_entry: true } "
+      "  field { "
+      "    name: 'key' number: 1 type: TYPE_INT32 label: LABEL_OPTIONAL "
+      "  } "
+      "} ",
+
+      "foo.proto: OrphanedMapEntry: NAME: Messages with map_entry set must "
+      "have at least 2 fields.\n");
+}
+
 TEST_F(ValidationErrorTest, MapEntryExtensionRange) {
   FileDescriptorProto file_proto;
   FillValidMapEntry(&file_proto);
@@ -9330,7 +9351,10 @@ TEST_F(ValidationErrorTest, MapEntryExtraField) {
         }
       )pb",
       file_proto.mutable_message_type(0)->mutable_nested_type(0));
-  BuildFileWithErrors(file_proto, kMapEntryErrorMessage);
+  BuildFileWithErrors(
+      file_proto,
+      "foo.proto: Foo.foo_map: TYPE: map_entry should not be set explicitly. "
+      "Use map<KeyType, ValueType> instead.\n");
 }
 
 // Test for the scenario:

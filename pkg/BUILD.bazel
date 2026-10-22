@@ -362,5 +362,7 @@ cc_dist_library(
         "//src/google/protobuf/compiler:mock_code_generator",
         "//src/google/protobuf/testing",
         "//src/google/protobuf/testing:file",
+        "//src/google/protobuf/testing:get_type_name",
+        "//src/google/protobuf/testing:protobuf_test",
     ],
 )

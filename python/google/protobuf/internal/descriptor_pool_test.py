@@ -767,7 +767,9 @@ class DescriptorPoolTestBase(object):
     conflict_fd = copy.deepcopy(unittest_fd)
     conflict_fd.name = 'other_file'
     if api_implementation.Type() != 'python':
-        pass
+      with self.assertRaises(TypeError):
+        self.pool.Add(unittest_fd)
+        self.pool.Add(conflict_fd)
     else:
       pool = copy.deepcopy(self.pool)
       file_descriptor = unittest_pb2.DESCRIPTOR

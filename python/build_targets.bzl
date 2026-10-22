@@ -121,6 +121,7 @@ def build_targets(name):
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
+            "google/protobuf/pyext/free_threading/*.h",
         ]),
         copts = COPTS + [
             "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
@@ -581,6 +582,7 @@ def build_targets(name):
             "google/protobuf/internal/*.cc",
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
+            "google/protobuf/pyext/free_threading/*.h",
         ]) + [
             "BUILD.bazel",
             "MANIFEST.in",

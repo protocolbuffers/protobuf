@@ -269,6 +269,9 @@ class SooRep {
 
 // The untyped common base class for `RepeatedField`.
 class RepeatedFieldBase {
+ public:
+  bool empty() const { return soo_rep_.size() == 0; }
+
  protected:
   constexpr RepeatedFieldBase() = default;
   constexpr explicit RepeatedFieldBase(internal::InternalMetadataOffset offset)
@@ -898,7 +901,7 @@ inline RepeatedField<Element>& RepeatedField<Element>::operator=(
 
 template <typename Element>
 inline bool RepeatedField<Element>::empty() const {
-  return size() == 0;
+  return RepeatedFieldBase::empty();
 }
 
 template <typename Element>
@@ -1417,7 +1420,8 @@ inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
              : 0;
 }
 
-// Like C++20's std::erase_if, for RepeatedField
+// Like C++20's std::erase_if, for RepeatedField. The order of calls to the
+// predicate is not specified.
 template <typename T, typename Pred>
 size_t erase_if(RepeatedField<T>& cont, Pred pred) {
   // Intentionally decay `elem` to avoid exposing a reference to elements of the

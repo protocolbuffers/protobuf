@@ -55,7 +55,6 @@ namespace {
 // messages and enums of a `dep`. This should only be
 // called for 'import public' deps.
 void EmitPublicImportsForDepFile(Context& ctx, const FileDescriptor* dep) {
-  std::string crate_name = GetCrateName(ctx, *dep);
   for (int i = 0; i < dep->message_type_count(); ++i) {
     auto* msg = dep->message_type(i);
     auto path = RsTypePath(ctx, *msg);

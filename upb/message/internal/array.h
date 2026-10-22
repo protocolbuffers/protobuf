@@ -67,6 +67,27 @@ UPB_PRIVATE(_upb_Array_ElemSizeLg2)(const struct upb_Array* array) {
   return lg2;
 }
 
+// Copies an element of 1 << lg2 bytes (see _upb_Array_ElemSizeLg2()), without
+// calling the library memcpy() for its variable size.
+UPB_INLINE void UPB_PRIVATE(_upb_Array_CopyElem)(void* to, const void* from,
+                                                 size_t lg2) {
+  switch (lg2) {
+    case 0:
+      UPB_MEMCPY_INLINE(to, from, 1);
+      return;
+    case 2:
+      UPB_MEMCPY_INLINE(to, from, 4);
+      return;
+    case 3:
+      UPB_MEMCPY_INLINE(to, from, 8);
+      return;
+    case 4:
+      UPB_MEMCPY_INLINE(to, from, 16);
+      return;
+  }
+  UPB_UNREACHABLE();
+}
+
 UPB_API_INLINE const void* upb_Array_DataPtr(const struct upb_Array* array) {
   UPB_PRIVATE(_upb_Array_ElemSizeLg2)(array);  // Check assertions.
   return (void*)(array->UPB_ONLYBITS(data) & ~(uintptr_t)_UPB_ARRAY_MASK_ALL);
@@ -111,6 +132,7 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   // Pool miss: perform contiguous single allocation for header + initial data.
   const size_t array_size =
       UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+  if (init_capacity > (SIZE_MAX - array_size) >> elem_size_lg2) return NULL;
   const size_t bytes = array_size + elem_bytes;
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
   if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;

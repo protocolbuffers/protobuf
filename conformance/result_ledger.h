@@ -1,5 +1,5 @@
-#ifndef GOOGLE_PROTOBUF_CONFORMANCE_TEST_MANAGER_H__
-#define GOOGLE_PROTOBUF_CONFORMANCE_TEST_MANAGER_H__
+#ifndef GOOGLE_PROTOBUF_CONFORMANCE_RESULT_LEDGER_H__
+#define GOOGLE_PROTOBUF_CONFORMANCE_RESULT_LEDGER_H__
 
 #include <string>
 #include <utility>
@@ -21,13 +21,13 @@ namespace conformance {
 namespace internal {
 
 // A test whose result contradicted the failure list.  See
-// TestManager::UnexpectedFailures() and TestManager::UnexpectedSuccesses().
-// TODO: b/563707827 - Remove with conformance_test_runner.
+// ResultLedger::UnexpectedFailures() and ResultLedger::UnexpectedSuccesses().
+// TODO: Remove with conformance_test_runner.
 struct UnexpectedResult {
-  // The full name of the test, as reported to the TestManager.
+  // The full name of the test, as reported to the ResultLedger.
   std::string test_name;
   // For an unexpected failure, the test's failure message as
-  // TestManager::SaveFailureList() would write it.  For an unexpected success,
+  // ResultLedger::SaveFailureList() would write it.  For an unexpected success,
   // the message of the failure list entry that matched the test.
   std::string failure_message;
   // For an unexpected success, the failure list entry that matched
@@ -37,19 +37,19 @@ struct UnexpectedResult {
 };
 
 // Tracks the expected failures and the actual results of a test suite.  The
-// conformance matchers (next CL) report the outcome of every test here.  The
-// test environment reads the results back and reports them as test
+// conformance matchers (see matchers.h) report the outcome of every test
+// here.  The test environment reads the results back and reports them as test
 // properties.  Under --fix the results also populate the new failure list.
-class TestManager {
+class ResultLedger {
  public:
-  TestManager() : expected_failure_list_("root") {}
-  ~TestManager();
+  ResultLedger() : expected_failure_list_("root") {}
+  ~ResultLedger();
 
-  // The highest priority level whose failures fail the suite, 0 for kP0 or 1
-  // for kP1 (see TestPriority in testee.h).  ReportFailure() tolerates a
-  // failing test above this level unless it is in the failure list.  Defaults
-  // to kEnforceAllPriorities.
-  void set_enforcement_level(int level) { enforcement_level_ = level; }
+  // The lowest priority whose failures fail the suite (see TestPriority in
+  // testee.h).  ReportFailure() tolerates a failing test of a lower priority
+  // unless it is in the failure list.  Defaults to kLowestPriority, which
+  // enforces every priority.
+  void set_enforcement_level(TestPriority level) { enforcement_level_ = level; }
 
   // Loads a failure list from disk and adds its entries to the ones loaded so
   // far.  Each line that isn't blank or a comment names one expected failure,
@@ -87,20 +87,25 @@ class TestManager {
   // SaveFailureList() keeps it, but the skip is not an expected failure.  A
   // listed test that is skipped is recorded (see ListedSkips()) and returns an
   // error that names the matched entry, like an unexpected success.  Whether
-  // that error fails the test is the caller's policy.  The matchers, next CL,
-  // fail such a test.
+  // that error fails the test is the caller's policy.  The matchers fail such
+  // a test.
   absl::Status ReportSkip(absl::string_view test_name,
                           absl::string_view skip_reason);
 
-  // Reports a test the runner didn't run because it wasn't selected.  Its
-  // response was skipped with kTestNotSelectedSkipReason, added with the
-  // matchers in the next CL.  The original conformance_test_runner matches a
-  // test name against the failure list before checking whether the test was
-  // selected.  Like it, this only marks the entry the name matches, if any, as
-  // matched for UnmatchedExpectedFailures().  The test is not counted by any
-  // statistic and its entry stays unseen.
-  // TODO: b/563707827 - Remove with conformance_test_runner.
+  // Reports a test the runner didn't run because it wasn't selected.
+  // The original conformance_test_runner matches a test name against the
+  // failure list before checking whether the test was selected.  Like it,
+  // this only marks the entry the name matches, if any, as matched for
+  // UnmatchedExpectedFailures().  The test is not counted by any statistic
+  // and its entry stays unseen.
+  // TODO: Remove with conformance_test_runner.
   void ReportNotSelected(absl::string_view test_name);
+
+  // Whether any of the Report*() methods has been called for `test_name`.
+  // Yields() checks this to reject a second check of the same test.
+  bool WasReported(absl::string_view test_name) const {
+    return seen_tests_.contains(test_name);
+  }
 
   // Runs sanity checks over the failure list to make sure everything we
   // expected to run was reported.  Returns an error naming the sorted expected
@@ -114,7 +119,7 @@ class TestManager {
   // wildcard entry counts as matched once it has matched any test name.
   // Unlike the unseen entries Finalize() reports, an entry whose test was not
   // selected is not returned.  It is a real test, only not run here.
-  // TODO: b/563707827 - Remove with conformance_test_runner.
+  // TODO: Remove with conformance_test_runner.
   std::vector<std::string> UnmatchedExpectedFailures() const;
 
   // Returns the tests reported as unexpected failures so far, sorted by test
@@ -123,24 +128,24 @@ class TestManager {
   // its `matched_entry` is unset.  This includes tests that were expected to
   // fail, but with a different message.  SaveFailureList() replaces their
   // entry, so adding these lines to the failure list would duplicate it.
-  // TODO: b/563707827 - Remove with conformance_test_runner.
+  // TODO: Remove with conformance_test_runner.
   std::vector<UnexpectedResult> UnexpectedFailures() const;
 
   // Returns the tests reported as unexpected successes so far, sorted by test
   // name.  These are the tests unexpected_successes() counts.  Each result's
   // `matched_entry` is the failure list entry the test matched, and
   // `failure_message` is that entry's message.
-  // TODO: b/563707827 - Remove with conformance_test_runner.
+  // TODO: Remove with conformance_test_runner.
   std::vector<UnexpectedResult> UnexpectedSuccesses() const;
 
   // Returns the tests the testee skipped although they are in the failure
   // list, sorted by test name.  These are the tests listed_skips() counts.
   // Each pair is the test name and the failure list entry it matched.  Such a
-  // test fails the gtest run: the matchers, next CL, fail it with the error
+  // test fails the gtest run: the matchers fail it with the error
   // ReportSkip() returns.  It is not an unexpected failure or success.  Its
   // entry is kept as is, also by SaveFailureList() under --fix, so removing
   // the entry is up to the user.
-  // TODO: b/563707827 - Remove with conformance_test_runner.
+  // TODO: Remove with conformance_test_runner.
   std::vector<std::pair<std::string, std::string>> ListedSkips() const;
 
   // The number of tests that were reported skipped.  This includes the listed
@@ -193,8 +198,8 @@ class TestManager {
   absl::flat_hash_set<std::string> seen_unexpected_successes_;
   absl::flat_hash_map<std::string, int> number_of_matches_;
 
-  // Every test name reported so far, so that a test reported more than once
-  // is only counted once.  The matchers prevent that, but nothing else does.
+  // Every test name reported so far (see WasReported()), so that a test
+  // reported more than once is only counted once.
   absl::flat_hash_set<std::string> seen_tests_;
 
   // The tests counted by unexpected_failures_, mapped to their formatted
@@ -216,7 +221,7 @@ class TestManager {
   int expected_successes_ = 0;
   int unexpected_successes_ = 0;
   bool finalized_ = false;
-  int enforcement_level_ = kEnforceAllPriorities;
+  TestPriority enforcement_level_ = kLowestPriority;
 };
 
 }  // namespace internal
@@ -224,4 +229,4 @@ class TestManager {
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_CONFORMANCE_TEST_MANAGER_H__
+#endif  // GOOGLE_PROTOBUF_CONFORMANCE_RESULT_LEDGER_H__

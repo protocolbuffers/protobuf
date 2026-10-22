@@ -1455,6 +1455,7 @@ RepeatedScalarContainer* NewContainer(
     return nullptr;
   }
 
+  self->SetTree(parent->GetTree());
   Py_INCREF(parent);
   self->parent = parent;
   self->parent_field_descriptor = parent_field_descriptor;

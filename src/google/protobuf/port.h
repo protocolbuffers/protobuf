@@ -280,6 +280,14 @@ constexpr bool EnableStableExperiments() {
 #endif
 }
 
+// In some cases we can generate extra compile time harderning in protoc just to
+// make sure our code generation is consistent. Since this can be noop code
+// bloat that we want to avoid in normal builds we only turn it on during
+// test-only builds.
+constexpr bool GenerateCompileTimeHardeningInProtoc() {
+  return EnableStableExperiments();
+}
+
 constexpr bool EnableExperimentalMicroString() {
 #if defined(PROTOBUF_ENABLE_EXPERIMENTAL_MICRO_STRING)
   return true;
@@ -496,7 +504,7 @@ struct PrefetchOpts {
 
 // NOTE: Enable prefetching with Clang only: various problems with other
 // compilers, especially old ones.
-#if defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#if ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 namespace detail {
 
@@ -607,7 +615,7 @@ inline void PrefetchToLocalCache(const void* ptr) {
   Prefetch<kOpts>(ptr);
 }
 
-#else  // defined(__clang__) || ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#else  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
 template <const PrefetchOpts& kOpts, typename T, typename U>
 PROTOBUF_ALWAYS_INLINE void Prefetch(const void*) {}
@@ -615,9 +623,9 @@ PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom7Lines(const void* ptr) {}
 PROTOBUF_ALWAYS_INLINE void Prefetch5LinesFrom1Line(const void* ptr) {}
 inline void PrefetchToLocalCache(const void* ptr) {}
 
-#endif  // defined(__clang__) && ABSL_HAVE_BUILTIN(__builtin_prefetch)
+#endif  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
-#if defined(NDEBUG) && ABSL_HAVE_BUILTIN(__builtin_unreachable)
+#if ABSL_HAVE_BUILTIN(__builtin_unreachable) && defined(NDEBUG)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();
 }
@@ -658,7 +666,7 @@ inline void UnpoisonMemoryRegion([[maybe_unused]] const void* p,
     // There is no official API for this, so we just probe.
     alignas(8) char buf[8];
     ASAN_POISON_MEMORY_REGION(buf, sizeof(buf));
-    bool res = __asan_address_is_poisoned(buf);
+    bool res = __asan_address_is_poisoned(buf) != 0;
     ASAN_UNPOISON_MEMORY_REGION(buf, sizeof(buf));
     return res;
   }();

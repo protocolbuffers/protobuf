@@ -570,8 +570,8 @@ UPB_FORCEINLINE
 void upb_DecodeFast_InlineMemcpy(void* dst, const char* src, size_t size) {
   // Disabled for now because we haven't yet measured a benefit to justify
   // the additional complexity.
-#if false && defined(__x86_64__) && defined(__GNUC__) && \
-    !UPB_HAS_FEATURE(memory_sanitizer)
+#if !UPB_HAS_FEATURE(memory_sanitizer) && false && defined(__x86_64__) && \
+    defined(__GNUC__)
   // This is nearly as fast as memcpy(), but saves us from calling an external
   // function and spilling all our registers.
   __asm__ __volatile__("rep movsb"
