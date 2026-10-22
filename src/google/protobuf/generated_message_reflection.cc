@@ -4175,7 +4175,9 @@ void AssignDescriptorsImpl(const DescriptorTable* table, bool eager) {
   for (int i = 0; i < file->enum_type_count(); i++) {
     helper.AssignEnumDescriptor(file->enum_type(i));
   }
-  if (file->options().cc_generic_services()) {
+  // `cc_generic_services` alone doesn't mean protoc generated services (see
+  // `allow_legacy_generic_services`), so check the table from the gencode.
+  if (table->file_level_service_descriptors != nullptr) {
     for (int i = 0; i < file->service_count(); i++) {
       table->file_level_service_descriptors[i] = file->service(i);
     }

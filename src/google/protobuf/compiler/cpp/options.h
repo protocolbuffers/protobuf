@@ -58,6 +58,7 @@ struct Options {
   bool bootstrap = false;
   bool opensource_runtime = false;
   bool annotate_accessor = false;
+  bool allow_legacy_generic_services = false;
   bool force_split = false;
   bool force_eagerly_verified_lazy =
       google::protobuf::internal::ForceEagerlyVerifiedLazyInProtoc();

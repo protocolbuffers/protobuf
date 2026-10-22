@@ -396,6 +396,8 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       common_file_options.strip_nonfunctional_codegen = true;
     } else if (key == "experimental_cpp_micro_string") {
       common_file_options.experimental_use_micro_string = true;
+    } else if (key == "allow_legacy_generic_services") {
+      common_file_options.allow_legacy_generic_services = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", key);
       return false;

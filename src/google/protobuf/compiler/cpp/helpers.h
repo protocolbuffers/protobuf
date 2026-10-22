@@ -542,7 +542,7 @@ inline bool HasDescriptorMethods(const FileDescriptor* file,
 // Should we generate generic services for this file?
 inline bool HasGenericServices(const FileDescriptor* file,
                                const Options& options) {
-  return file->service_count() > 0 &&
+  return options.allow_legacy_generic_services && file->service_count() > 0 &&
          GetOptimizeFor(file, options) != FileOptions::LITE_RUNTIME &&
          file->options().cc_generic_services();
 }

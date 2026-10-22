@@ -536,6 +536,35 @@ TEST_F(CppGeneratorTest, MapOptionsDeterministicSerialization) {
   EXPECT_EQ(file_content1, file_content2);
 }
 
+constexpr char kGenericServicesProto[] = R"schema(
+    syntax = "proto2";
+    option cc_generic_services = true;
+    message Foo {}
+    service TestService {
+      rpc Method(Foo) returns (Foo);
+    })schema";
+
+TEST_F(CppGeneratorTest, GenericServicesDefault) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  ExpectFileContentNotContainsSubstring("foo.pb.cc", "TestService_Stub");
+}
+
+TEST_F(CppGeneratorTest, GenericServicesGeneratedWithLegacyOption) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --cpp_out=$tmpdir "
+      "--cpp_opt=allow_legacy_generic_services foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  ExpectFileContentContainsSubstring("foo.pb.cc", "TestService_Stub");
+}
+
 
 }  // namespace
 }  // namespace cpp
