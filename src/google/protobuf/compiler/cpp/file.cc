@@ -1425,16 +1425,11 @@ class FileGenerator::ForwardDeclarations {
             extern template void* $nonnull$ Arena::CopyConstruct<$class$>(Arena* $nullable$, const void* $nonnull$);
           )");
         }
-        // We can't make a constexpr pointer to the global if we have DLL
-        // linkage so skip this.
-        // The fallback traits are slower, but correct.
-        if (options.dllexport_decl.empty()) {
-          p->Emit(R"cc(
-            template <>
-            internal::GeneratedMessageTraitsT<&$default_name$>
-                internal::MessageTraitsImpl::value<$class$>;
-          )cc");
-        }
+        p->Emit(R"cc(
+          template <>
+          internal::GeneratedMessageTraitsT<&$default_name$>
+              internal::MessageTraitsImpl::value<$class$>;
+        )cc");
       }
     }
   }

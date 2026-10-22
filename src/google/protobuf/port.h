@@ -79,8 +79,8 @@ PROTOBUF_ALWAYS_INLINE void StrongPointer() {
 
 template <typename T, typename TraitsImpl = MessageTraitsImpl>
 PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  static constexpr auto ptr =
-      decltype(TraitsImpl::template value<T>)::StrongPointer();
+  static constexpr auto ptr = decltype(TraitsImpl::template value<
+                                       std::remove_cv_t<T>>)::StrongPointer();
   // This is identical to the implementation of StrongPointer() above, but it
   // has to be explicitly inlined here or else Clang 19 will raise an error in
   // some configurations.
@@ -96,8 +96,8 @@ PROTOBUF_ALWAYS_INLINE void StrongPointer() {
 
 template <typename T, typename TraitsImpl = MessageTraitsImpl>
 PROTOBUF_ALWAYS_INLINE void StrongReferenceToType() {
-  return StrongPointer(
-      decltype(TraitsImpl::template value<T>)::StrongPointer());
+  return StrongPointer(decltype(TraitsImpl::template value<
+                                std::remove_cv_t<T>>)::StrongPointer());
 }
 #endif  // .reloc
 
