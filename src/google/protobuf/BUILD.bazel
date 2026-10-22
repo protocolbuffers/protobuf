@@ -2666,7 +2666,10 @@ cc_test(
     name = "parse_context_test",
     srcs = ["parse_context_test.cc"],
     deps = [
+        ":arena",
+        ":arena_align",
         ":cc_test_protos",
+        ":port",
         ":protobuf",
         ":protobuf_lite",
         "//src/google/protobuf/io",
