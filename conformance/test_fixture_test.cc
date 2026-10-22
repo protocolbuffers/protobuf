@@ -7,8 +7,10 @@
 
 #include "conformance/test_fixture.h"
 
+#include <cstddef>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "google/protobuf/descriptor.pb.h"
 #include <gmock/gmock.h>
@@ -17,6 +19,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/strip.h"
+#include "absl/types/optional.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
 #include "conformance/matchers.h"
@@ -29,6 +32,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/text_format.h"
 
 namespace google {
@@ -64,23 +68,21 @@ class FakeTestRunner : public NiceMock<MockTestRunner> {
 };
 
 // A ConformanceTest whose global environment is set up by the fixture itself,
-// before SetUp() runs, so it can be exercised inside this test binary.
+// in SetUp() before ConformanceTest::SetUp() runs, so it can be exercised
+// inside this test binary.  Subclasses may adjust `options_` before that.
 class FixtureTest : public ConformanceTest {
  protected:
-  FixtureTest() : FixtureTest(ConformanceEnvironmentOptions()) {}
-  explicit FixtureTest(ConformanceEnvironmentOptions options)
-      : env_(WithRunner(std::move(options))) {}
-
-  FakeTestRunner runner_;
-
- private:
-  ConformanceEnvironmentOptions WithRunner(
-      ConformanceEnvironmentOptions options) {
-    options.runner = &runner_;
-    return options;
+  void SetUp() override {
+    options_.runner = &runner_;
+    env_.emplace(std::move(options_));
+    ConformanceTest::SetUp();
   }
 
-  internal::ScopedGlobalConformanceEnvironment env_;
+  FakeTestRunner runner_;
+  ConformanceEnvironmentOptions options_;
+
+ private:
+  absl::optional<internal::ScopedGlobalConformanceEnvironment> env_;
 };
 
 // --- Testee() ----------------------------------------------------------------
@@ -128,62 +130,48 @@ TEST_F(TesteeDeathTest, AfterTearDown) {
 // SetUp() skips a test whose MessageUnderTest() is from an edition newer than
 // --maximum_edition.  EDITION_UNSTABLE counts as supported from EDITION_2023
 // on.
+enum Outcome { kRuns, kSkipped };
+
 struct EditionGatingCase {
   const Descriptor* message;
   Edition maximum_edition;
-  bool supported;
+  Outcome outcome;
 };
 
-class EditionGatingTest
-    : public FixtureTest,
-      public testing::WithParamInterface<EditionGatingCase> {
+class EditionGatingTest : public FixtureTest {
  protected:
-  EditionGatingTest()
-      : FixtureTest(WithMaximumEdition(GetParam().maximum_edition)) {}
-
   void SetUp() override {
-    ConformanceTest::SetUp();
-    EXPECT_EQ(IsSkipped(), !GetParam().supported);
+    options_.maximum_edition = test_case_.maximum_edition;
+    FixtureTest::SetUp();
+    EXPECT_EQ(IsSkipped(), test_case_.outcome == kSkipped);
   }
+
+  const EditionGatingCase test_case_ = PB_TEST_CHOOSE_VALUE(
+      std::vector<EditionGatingCase>{
+          {TestAllTypesProto2::descriptor(), EDITION_PROTO3, kRuns},
+          {TestAllTypesProto3::descriptor(), EDITION_PROTO3, kRuns},
+          {TestAllTypesEdition2023::descriptor(), EDITION_PROTO3, kSkipped},
+          {TestAllTypesEdition2023::descriptor(), EDITION_2023, kRuns},
+          {TestAllTypesEditionUnstable::descriptor(), EDITION_PROTO3, kSkipped},
+          {TestAllTypesEditionUnstable::descriptor(), EDITION_2023, kRuns},
+          {TestAllTypesEditionUnstable::descriptor(), EDITION_2024, kRuns},
+      },
+      [](const EditionGatingCase& c, size_t) {
+        return absl::StrCat(
+            absl::StripPrefix(c.message->name(), "TestAllTypes"), "_",
+            Edition_Name(c.maximum_edition));
+      });
 
  private:
-  static ConformanceEnvironmentOptions WithMaximumEdition(Edition edition) {
-    ConformanceEnvironmentOptions options;
-    options.maximum_edition = edition;
-    return options;
-  }
-
   const Descriptor* MessageUnderTest() const override {
-    return GetParam().message;
+    return test_case_.message;
   }
 };
 
-TEST_P(EditionGatingTest, SetUpSkipsUnsupportedMessages) {
-  EXPECT_TRUE(GetParam().supported) << "SetUp() should have skipped this test.";
+PB_TEST_F(EditionGatingTest, SetUpSkipsUnsupportedMessages) {
+  EXPECT_EQ(test_case_.outcome, kRuns)
+      << "SetUp() should have skipped this test.";
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All, EditionGatingTest,
-    testing::Values(
-        EditionGatingCase{TestAllTypesProto2::descriptor(), EDITION_PROTO3,
-                          /*supported=*/true},
-        EditionGatingCase{TestAllTypesProto3::descriptor(), EDITION_PROTO3,
-                          /*supported=*/true},
-        EditionGatingCase{TestAllTypesEdition2023::descriptor(), EDITION_PROTO3,
-                          /*supported=*/false},
-        EditionGatingCase{TestAllTypesEdition2023::descriptor(), EDITION_2023,
-                          /*supported=*/true},
-        EditionGatingCase{TestAllTypesEditionUnstable::descriptor(),
-                          EDITION_PROTO3, /*supported=*/false},
-        EditionGatingCase{TestAllTypesEditionUnstable::descriptor(),
-                          EDITION_2023, /*supported=*/true},
-        EditionGatingCase{TestAllTypesEditionUnstable::descriptor(),
-                          EDITION_2024, /*supported=*/true}),
-    [](const testing::TestParamInfo<EditionGatingCase>& info) {
-      return absl::StrCat(
-          absl::StripPrefix(info.param.message->name(), "TestAllTypes"), "_",
-          Edition_Name(info.param.maximum_edition));
-    });
 
 // --- ConformanceTest fixture -------------------------------------------------
 
@@ -196,9 +184,6 @@ TEST_F(FixtureTest, RunsWithoutMessageUnderTest) {
 }
 
 class Edition2023MessageTest : public FixtureTest {
- protected:
-  using FixtureTest::FixtureTest;
-
  private:
   const Descriptor* MessageUnderTest() const override {
     return TestAllTypesEdition2023::descriptor();
@@ -225,7 +210,7 @@ TEST_F(PerformanceFixtureTest, IsSkippedWithoutPerformanceMode) {
 class SkipAwareSetUpTest : public Edition2023MessageTest {
  protected:
   void SetUp() override {
-    ConformanceTest::SetUp();
+    FixtureTest::SetUp();
     EXPECT_TRUE(IsSkipped());
     if (IsSkipped()) return;
     FAIL() << "Unreachable.";
