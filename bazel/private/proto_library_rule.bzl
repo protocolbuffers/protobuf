@@ -261,6 +261,7 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         # TODO: Fix protoc to actually use the transitive descriptor sets.
         additional_inputs = dependencies_descriptor_sets,
         additional_args = args,
+        execution_requirements = {"supports-path-mapping": "1"},
     )
 
 _extra_doc = ""
