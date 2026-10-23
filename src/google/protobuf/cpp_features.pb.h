@@ -239,7 +239,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     return Super_::DefaultConstruct<CppFeatures>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const CppFeatures& from);
+  void CopyFrom(const CppFeatures& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const CppFeatures& from) { CppFeatures::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {

@@ -415,7 +415,6 @@ JavaFeatures_NestInFileClassFeature::GetClassData() const {
 
 
 
-
 ::google::protobuf::Metadata JavaFeatures_NestInFileClassFeature::GetMetadata() const {
   return Super_::GetMetadataImpl(JavaFeatures_NestInFileClassFeature_globals_.class_data);
 }
@@ -625,13 +624,6 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void JavaFeatures::CopyFrom(const JavaFeatures& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:pb.JavaFeatures)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 

@@ -151,7 +151,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CSharpFeatures final 
     return Super_::DefaultConstruct<CSharpFeatures>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const CSharpFeatures& from);
+  void CopyFrom(const CSharpFeatures& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const CSharpFeatures& from) { CSharpFeatures::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {

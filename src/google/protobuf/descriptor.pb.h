@@ -1165,7 +1165,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     return Super_::DefaultConstruct<UninterpretedOption_NamePart>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const UninterpretedOption_NamePart& from);
+  void CopyFrom(const UninterpretedOption_NamePart& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const UninterpretedOption_NamePart& from) { UninterpretedOption_NamePart::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -1370,7 +1370,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
     return Super_::DefaultConstruct<SourceCodeInfo_Location>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const SourceCodeInfo_Location& from);
+  void CopyFrom(const SourceCodeInfo_Location& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const SourceCodeInfo_Location& from) { SourceCodeInfo_Location::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -1633,7 +1633,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
     return Super_::DefaultConstruct<GeneratedCodeInfo_Annotation>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const GeneratedCodeInfo_Annotation& from);
+  void CopyFrom(const GeneratedCodeInfo_Annotation& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const GeneratedCodeInfo_Annotation& from) { GeneratedCodeInfo_Annotation::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -1894,7 +1894,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
     return Super_::DefaultConstruct<FieldOptions_FeatureSupport>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FieldOptions_FeatureSupport& from);
+  void CopyFrom(const FieldOptions_FeatureSupport& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FieldOptions_FeatureSupport& from) { FieldOptions_FeatureSupport::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -2133,7 +2133,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
     return Super_::DefaultConstruct<FieldOptions_EditionDefault>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FieldOptions_EditionDefault& from);
+  void CopyFrom(const FieldOptions_EditionDefault& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FieldOptions_EditionDefault& from) { FieldOptions_EditionDefault::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -2633,7 +2633,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
     return Super_::DefaultConstruct<FeatureSet>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FeatureSet& from);
+  void CopyFrom(const FeatureSet& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FeatureSet& from) { FeatureSet::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -3244,7 +3244,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     return Super_::DefaultConstruct<ExtensionRangeOptions_Declaration>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const ExtensionRangeOptions_Declaration& from);
+  void CopyFrom(const ExtensionRangeOptions_Declaration& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const ExtensionRangeOptions_Declaration& from) { ExtensionRangeOptions_Declaration::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -3483,7 +3483,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     return Super_::DefaultConstruct<EnumDescriptorProto_EnumReservedRange>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from);
+  void CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const EnumDescriptorProto_EnumReservedRange& from) { EnumDescriptorProto_EnumReservedRange::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -3682,7 +3682,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
     return Super_::DefaultConstruct<DescriptorProto_ReservedRange>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const DescriptorProto_ReservedRange& from);
+  void CopyFrom(const DescriptorProto_ReservedRange& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const DescriptorProto_ReservedRange& from) { DescriptorProto_ReservedRange::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -3881,7 +3881,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
     return Super_::DefaultConstruct<UninterpretedOption>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const UninterpretedOption& from);
+  void CopyFrom(const UninterpretedOption& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const UninterpretedOption& from) { UninterpretedOption::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -4153,7 +4153,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
     return Super_::DefaultConstruct<SourceCodeInfo>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const SourceCodeInfo& from);
+  void CopyFrom(const SourceCodeInfo& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const SourceCodeInfo& from) { SourceCodeInfo::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -4540,7 +4540,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
     return Super_::DefaultConstruct<GeneratedCodeInfo>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const GeneratedCodeInfo& from);
+  void CopyFrom(const GeneratedCodeInfo& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const GeneratedCodeInfo& from) { GeneratedCodeInfo::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -4736,7 +4736,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
     return Super_::DefaultConstruct<FeatureSetDefaults_FeatureSetEditionDefault>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from);
+  void CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) { FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -4954,7 +4954,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
     return Super_::DefaultConstruct<ServiceOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const ServiceOptions& from);
+  void CopyFrom(const ServiceOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const ServiceOptions& from) { ServiceOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -5364,7 +5364,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
     return Super_::DefaultConstruct<OneofOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const OneofOptions& from);
+  void CopyFrom(const OneofOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const OneofOptions& from) { OneofOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -5764,7 +5764,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
     return Super_::DefaultConstruct<MethodOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const MethodOptions& from);
+  void CopyFrom(const MethodOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const MethodOptions& from) { MethodOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -6205,7 +6205,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
     return Super_::DefaultConstruct<MessageOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const MessageOptions& from);
+  void CopyFrom(const MessageOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const MessageOptions& from) { MessageOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -6655,7 +6655,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
     return Super_::DefaultConstruct<FileOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FileOptions& from);
+  void CopyFrom(const FileOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FileOptions& from) { FileOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -7316,7 +7316,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     return Super_::DefaultConstruct<FieldOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FieldOptions& from);
+  void CopyFrom(const FieldOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FieldOptions& from) { FieldOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -7944,7 +7944,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
     return Super_::DefaultConstruct<FeatureSetDefaults>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FeatureSetDefaults& from);
+  void CopyFrom(const FeatureSetDefaults& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FeatureSetDefaults& from) { FeatureSetDefaults::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -8161,7 +8161,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
     return Super_::DefaultConstruct<ExtensionRangeOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const ExtensionRangeOptions& from);
+  void CopyFrom(const ExtensionRangeOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const ExtensionRangeOptions& from) { ExtensionRangeOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -8608,7 +8608,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
     return Super_::DefaultConstruct<EnumValueOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const EnumValueOptions& from);
+  void CopyFrom(const EnumValueOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const EnumValueOptions& from) { EnumValueOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -9042,7 +9042,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
     return Super_::DefaultConstruct<EnumOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const EnumOptions& from);
+  void CopyFrom(const EnumOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const EnumOptions& from) { EnumOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -9472,7 +9472,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
     return Super_::DefaultConstruct<OneofDescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const OneofDescriptorProto& from);
+  void CopyFrom(const OneofDescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const OneofDescriptorProto& from) { OneofDescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -9681,7 +9681,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
     return Super_::DefaultConstruct<MethodDescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const MethodDescriptorProto& from);
+  void CopyFrom(const MethodDescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const MethodDescriptorProto& from) { MethodDescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -9940,7 +9940,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
     return Super_::DefaultConstruct<FieldDescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FieldDescriptorProto& from);
+  void CopyFrom(const FieldDescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FieldDescriptorProto& from) { FieldDescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -10316,7 +10316,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
     return Super_::DefaultConstruct<EnumValueDescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const EnumValueDescriptorProto& from);
+  void CopyFrom(const EnumValueDescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const EnumValueDescriptorProto& from) { EnumValueDescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -10535,7 +10535,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
     return Super_::DefaultConstruct<DescriptorProto_ExtensionRange>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const DescriptorProto_ExtensionRange& from);
+  void CopyFrom(const DescriptorProto_ExtensionRange& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const DescriptorProto_ExtensionRange& from) { DescriptorProto_ExtensionRange::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -10749,7 +10749,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
     return Super_::DefaultConstruct<ServiceDescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const ServiceDescriptorProto& from);
+  void CopyFrom(const ServiceDescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const ServiceDescriptorProto& from) { ServiceDescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -10974,7 +10974,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
     return Super_::DefaultConstruct<EnumDescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const EnumDescriptorProto& from);
+  void CopyFrom(const EnumDescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const EnumDescriptorProto& from) { EnumDescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -11248,7 +11248,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
     return Super_::DefaultConstruct<DescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const DescriptorProto& from);
+  void CopyFrom(const DescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const DescriptorProto& from) { DescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -11603,7 +11603,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
     return Super_::DefaultConstruct<FileDescriptorProto>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FileDescriptorProto& from);
+  void CopyFrom(const FileDescriptorProto& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FileDescriptorProto& from) { FileDescriptorProto::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -12004,7 +12004,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
     return Super_::DefaultConstruct<FileDescriptorSet>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const FileDescriptorSet& from);
+  void CopyFrom(const FileDescriptorSet& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const FileDescriptorSet& from) { FileDescriptorSet::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {

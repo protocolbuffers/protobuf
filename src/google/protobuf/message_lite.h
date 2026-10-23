@@ -831,6 +831,11 @@ class PROTOBUF_EXPORT MessageLite {
         CopyConstruct(arena, reinterpret_cast<const MessageLite&>(from)));
   }
 
+  static void CopyImpl(MessageLite& to, const MessageLite& from);
+  static void CopyWithSizeCheck(MessageLite& to, const MessageLite& from) {
+    CopyImpl(to, from);
+  }
+
   const internal::TcParseTableBase* GetTcParseTable() const {
     auto* data = GetClassData();
     ABSL_DCHECK(data != nullptr);

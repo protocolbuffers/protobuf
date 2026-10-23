@@ -147,7 +147,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
     return Super_::DefaultConstruct<CppFileOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const CppFileOptions& from);
+  void CopyFrom(const CppFileOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const CppFileOptions& from) { CppFileOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
