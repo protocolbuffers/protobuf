@@ -19,10 +19,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "upb/base/internal/log2.h"
 #include "upb/base/string_view.h"
 #include "upb/mem/arena.h"
 #include "upb/message/internal/extension.h"
+#include "upb/message/internal/non_canonical_field.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/extension.h"
@@ -48,15 +48,19 @@ typedef struct upb_TaggedAuxPtr {
   // Three lowest bits form a tag:
   // 000 - non-aliased unknown data (upb_StringView*)
   // 100 - aliased unknown data (upb_StringView*)
+  // TODO: Remove non-canonical extensions once it's migrated to
+  // non-canonical fields.
   // 001 - non-canonical extension (upb_Extension*)
   // 011 - canonical extension (upb_Extension*)
+  // 101 - non-canonical field (upb_NonCanonicalField*)
   //
   // Bit 0 (lowest bit): Represents the data format in memory (1 for parsed
   //   form, 0 for serialized form).
   // Bit 1 (middle bit): Represents whether the data is semantically known or
   //   not (1 for known, 0 for unknown).
-  // Bit 2 (highest bit): Aliased/Non-aliased (1 for aliased, 0 for
-  //   non-aliased).
+  // Bit 2 (highest bit): For serialized data, aliased/non-aliased (1 for
+  //   aliased, 0 for non-aliased). For parsed data, field/extension (1 for a
+  //   upb_NonCanonicalField, 0 for a upb_Extension).
   //
   // Following this tag structure, we can later use tag `010` for lazy
   // extensions.
@@ -87,6 +91,11 @@ typedef struct upb_TaggedAuxPtr {
   //   - The extension is described by a upb_MiniTableExtension whose field is
   //     flagged as an extension.
   //   - The field is never a map, since protobuf does not allow map extensions.
+  //
+  // A non-canonical field is also a parsed value that should be treated like
+  // an unknown field, but it is described only by a upb_MiniTableField and has
+  // no extendee. See upb_NonCanonicalField for its invariants. It is being
+  // introduced to replace non-canonical extensions (b/569995025).
   uintptr_t ptr;
 } upb_TaggedAuxPtr;
 
@@ -109,12 +118,17 @@ UPB_INLINE bool upb_TaggedAuxPtr_IsCanonicalExtension(upb_TaggedAuxPtr ptr) {
 }
 
 UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalExtension(upb_TaggedAuxPtr ptr) {
-  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 3) == 1);
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 7) == 1);
 }
 
-// Returns true if the entry is a canonical or non-canonical extension.
+UPB_INLINE bool upb_TaggedAuxPtr_IsNonCanonicalField(upb_TaggedAuxPtr ptr) {
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 7) == 5);
+}
+
+// Returns true if the entry is a canonical or non-canonical extension (but not
+// a non-canonical field).
 UPB_INLINE bool upb_TaggedAuxPtr_IsExtension(upb_TaggedAuxPtr ptr) {
-  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 1) != 0);
+  return !upb_TaggedAuxPtr_IsNull(ptr) && ((ptr.ptr & 5) == 1);
 }
 
 // Returns true if the entry is aliased/non-aliased unknown data.
@@ -136,6 +150,12 @@ UPB_INLINE upb_Extension* upb_TaggedAuxPtr_NonCanonicalExtension(
     upb_TaggedAuxPtr ptr) {
   UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalExtension(ptr));
   return (upb_Extension*)(ptr.ptr & ~7ULL);
+}
+
+UPB_INLINE struct upb_NonCanonicalField* upb_TaggedAuxPtr_NonCanonicalField(
+    upb_TaggedAuxPtr ptr) {
+  UPB_ASSERT(upb_TaggedAuxPtr_IsNonCanonicalField(ptr));
+  return (struct upb_NonCanonicalField*)(ptr.ptr & ~7ULL);
 }
 
 UPB_INLINE upb_Extension* upb_TaggedAuxPtr_Extension(upb_TaggedAuxPtr ptr) {
@@ -165,6 +185,7 @@ UPB_INLINE upb_StringView* upb_TaggedPtrAux_StringViewRepr(
 
 typedef union {
   upb_Extension* extension;
+  struct upb_NonCanonicalField* non_canonical_field;
   const upb_StringView* unknown_data;
 } upb_TaggedAux;
 
@@ -209,6 +230,14 @@ upb_TaggedAuxPtr_MakeNonCanonicalExtension(const upb_Extension* e) {
   return ptr;
 }
 
+UPB_INLINE upb_TaggedAuxPtr
+upb_TaggedAuxPtr_MakeNonCanonicalField(const struct upb_NonCanonicalField* f) {
+  UPB_ASSERT(((uintptr_t)f & 7) == 0);
+  upb_TaggedAuxPtr ptr;
+  ptr.ptr = (uintptr_t)f | kUpb_TaggedAuxType_NonCanonicalField;
+  return ptr;
+}
+
 // This tag means that the original allocation for this field starts with the
 // string view and ends with the end of the content referenced by the string
 // view.
@@ -234,7 +263,7 @@ typedef struct upb_Message_Internal {
   // Total number of entries set in aux_data
   uint32_t size;
   uint32_t capacity;
-  // Tagged pointers to upb_StringView or upb_Extension
+  // Tagged pointers to upb_StringView, upb_Extension or upb_NonCanonicalField
   upb_TaggedAuxPtr aux_data[];
 } upb_Message_Internal;
 

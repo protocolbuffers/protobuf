@@ -21,6 +21,7 @@
 #include "upb/message/internal/field_data.h"
 #include "upb/message/internal/map.h"
 #include "upb/message/internal/message.h"
+#include "upb/message/internal/non_canonical_field.h"
 #include "upb/message/internal/types.h"
 #include "upb/message/value.h"
 #include "upb/mini_table/enum.h"
@@ -316,6 +317,25 @@ UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
       UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(msg, e, a);
   if (!ext) return false;
   upb_Extension_SetField(ext, val);
+  return true;
+}
+
+// Appends a new non-canonical field described by `f` to `msg` (see
+// _upb_Message_CreateNonCanonicalField()), with the value that `val` points to
+// (see upb_Message_SetExtension()).
+//
+// Like unknown fields added through `_upb_Message_AddUnknown`, non-canonical
+// fields accumulate. Returns false on allocation failure.
+UPB_NODISCARD UPB_API_INLINE bool UPB_PRIVATE(
+    _upb_Message_AddNonCanonicalField)(struct upb_Message* msg,
+                                       const upb_MiniTableField* f,
+                                       const void* val, upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  UPB_ASSERT(a);
+  struct upb_NonCanonicalField* ncf =
+      UPB_PRIVATE(_upb_Message_CreateNonCanonicalField)(msg, f, a);
+  if (!ncf) return false;
+  UPB_PRIVATE(_upb_NonCanonicalField_SetField)(ncf, val);
   return true;
 }
 
