@@ -896,4 +896,34 @@ size_t WireFormatLite::EnumSizeWithPackedTagSize(
 }  // namespace protobuf
 }  // namespace google
 
+namespace google {
+namespace protobuf {
+namespace internal {
+size_t WireFormatLite::SInt64SizePlusOne(int64_t value) {
+  return io::CodedOutputStream::VarintSize64PlusOne(ZigZagEncode64(value));
+}
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+namespace google {
+namespace protobuf {
+namespace internal {
+size_t WireFormatLite::EnumSizePlusOne(int value) {
+  return io::CodedOutputStream::VarintSize32SignExtendedPlusOne(value);
+}
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
+namespace google {
+namespace protobuf {
+namespace internal {
+size_t WireFormatLite::BytesSize(const std::string& value) {
+  return StringSize(value);
+}
+}  // namespace internal
+}  // namespace protobuf
+}  // namespace google
+
 #include "google/protobuf/port_undef.inc"

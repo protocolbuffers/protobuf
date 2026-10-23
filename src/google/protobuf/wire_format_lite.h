@@ -603,10 +603,9 @@ class PROTOBUF_EXPORT WireFormatLite {
       uint64_t value);
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t SInt32SizePlusOne(
       int32_t value);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t SInt64SizePlusOne(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t SInt64SizePlusOne(
       int64_t value);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t EnumSizePlusOne(
-      int value);
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t EnumSizePlusOne(int value);
 
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t Int32Size(
       const RepeatedField<int32_t>& value);
@@ -658,7 +657,7 @@ class PROTOBUF_EXPORT WireFormatLite {
       const std::string& value);
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t StringSize(
       const absl::Cord& value);
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t BytesSize(
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static size_t BytesSize(
       const std::string& value);
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD static inline size_t BytesSize(
       const absl::Cord& value);
@@ -1576,18 +1575,9 @@ inline size_t WireFormatLite::UInt64SizePlusOne(uint64_t value) {
 inline size_t WireFormatLite::SInt32SizePlusOne(int32_t value) {
   return io::CodedOutputStream::VarintSize32PlusOne(ZigZagEncode32(value));
 }
-inline size_t WireFormatLite::SInt64SizePlusOne(int64_t value) {
-  return io::CodedOutputStream::VarintSize64PlusOne(ZigZagEncode64(value));
-}
-inline size_t WireFormatLite::EnumSizePlusOne(int value) {
-  return io::CodedOutputStream::VarintSize32SignExtendedPlusOne(value);
-}
 
 inline size_t WireFormatLite::StringSize(const std::string& value) {
   return LengthDelimitedSize(value.size());
-}
-inline size_t WireFormatLite::BytesSize(const std::string& value) {
-  return StringSize(value);
 }
 
 inline size_t WireFormatLite::BytesSize(const absl::Cord& value) {
