@@ -23,6 +23,11 @@
 #include "defs.h"
 #include "ruby-upb.h"
 
+#ifndef HAVE_RB_LEN_T
+typedef long rb_len_t;
+#define NUM2LEN NUM2LONG
+#endif
+
 // These operate on a map field (i.e., a repeated field of submessages whose
 // submessage type is a map-entry msgdef).
 const upb_FieldDef* map_field_key(const upb_FieldDef* field);
