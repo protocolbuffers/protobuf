@@ -23,6 +23,8 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto2.upb_minitable.h"
+#include "upb/base/descriptor_constants.h"
+#include "upb/base/status.h"
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
@@ -33,12 +35,17 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/unknown_fields.h"
+#include "upb/mini_descriptor/decode.h"
+#include "upb/mini_descriptor/internal/encode.hpp"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
+#include "upb/wire/decode.h"
 #include "upb/wire/encode.h"
+#include "upb/wire/internal/constants.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -677,6 +684,163 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
                              upb_StringView_FromString("LifecycleValue")));
 
   upb_Arena_Free(arena);
+}
+
+// Returns a TestAllTypesProto2 with `depth` levels of `recursive_message`
+// nested below it. If `bottom` is non-null, it is set to the innermost message.
+protobuf_test_messages_proto2_TestAllTypesProto2* MakeRecursiveChain(
+    upb_Arena* arena, int depth,
+    protobuf_test_messages_proto2_TestAllTypesProto2** bottom = nullptr) {
+  protobuf_test_messages_proto2_TestAllTypesProto2* top =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg = top;
+  for (int i = 0; i < depth; ++i) {
+    msg =
+        protobuf_test_messages_proto2_TestAllTypesProto2_mutable_recursive_message(
+            msg, arena);
+  }
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(msg, 1);
+  if (bottom != nullptr) *bottom = msg;
+  return top;
+}
+
+bool EncodesWithDefaultDepthLimit(const upb_Message* msg,
+                                  const upb_MiniTable* mt, upb_Arena* arena) {
+  char* buf;
+  size_t size;
+  return upb_Encode(msg, mt, /*options=*/0, arena, &buf, &size) ==
+         kUpb_EncodeStatus_Ok;
+}
+
+bool DecodesWithDefaultDepthLimit(const upb_Message* msg,
+                                  const upb_MiniTable* mt, upb_Arena* arena) {
+  char* buf;
+  size_t size;
+  if (upb_Encode(
+          msg, mt,
+          upb_EncodeOptions_MaxDepth(kUpb_WireFormat_DefaultDepthLimit + 10),
+          arena, &buf, &size) != kUpb_EncodeStatus_Ok) {
+    ADD_FAILURE() << "Encoding with a generous depth limit failed";
+    return false;
+  }
+  upb_Message* decoded = upb_Message_New(mt, arena);
+  return decoded != nullptr &&
+         upb_Decode(buf, size, decoded, mt, nullptr, /*options=*/0, arena) ==
+             kUpb_DecodeStatus_Ok;
+}
+
+TEST(GeneratedCode, DeepCloneRespectsDepthLimit) {
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+  for (int depth : {99, 100, 101, 102}) {
+    upb_Arena* arena = upb_Arena_New();
+    protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+        MakeRecursiveChain(arena, depth);
+
+    bool cloned = upb_Message_DeepClone(UPB_UPCAST(msg), mt, arena) != nullptr;
+    EXPECT_EQ(cloned, depth <= kUpb_WireFormat_DefaultDepthLimit) << depth;
+    // Deep clone enforces the same limit as the decoder and encoder.
+    EXPECT_EQ(cloned, DecodesWithDefaultDepthLimit(UPB_UPCAST(msg), mt, arena))
+        << depth;
+    EXPECT_EQ(cloned, EncodesWithDefaultDepthLimit(UPB_UPCAST(msg), mt, arena))
+        << depth;
+
+    upb_Message* dst = upb_Message_New(mt, arena);
+    ASSERT_NE(dst, nullptr);
+    EXPECT_EQ(upb_Message_DeepCopy(dst, UPB_UPCAST(msg), mt, arena), cloned)
+        << depth;
+
+    upb_Arena_Free(arena);
+  }
+}
+
+// A non-canonical extension is serialized during deep clone. The nesting
+// inside it must count against the depth already consumed by the enclosing
+// messages, not start over with a fresh limit.
+TEST(GeneratedCode, DeepCloneNonCanonicalExtensionRespectsDepthLimit) {
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+  upb_Arena* schema_arena = upb_Arena_New();
+  // A message-typed extension whose value is itself a TestAllTypesProto2.
+  upb::MtDataEncoder enc;
+  ASSERT_TRUE(enc.EncodeExtension(kUpb_FieldType_Message, 150, 0));
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb_MiniTableExtension* ext = upb_MiniTableExtension_BuildMessage(
+      enc.data().data(), enc.data().size(), mt, mt, schema_arena, &status);
+  ASSERT_NE(ext, nullptr) << upb_Status_ErrorMessage(&status);
+
+  // The non-canonical extension sits `kOuterDepth` levels below the top, and
+  // its value has `value_depth` more levels below it, so the total nesting is
+  // kOuterDepth + 1 + value_depth. With a fresh limit for the extension, only
+  // 1 + value_depth would count, and every case below would succeed.
+  constexpr int kOuterDepth = 50;
+  for (int value_depth : {48, 49, 50, 51}) {
+    upb_Arena* arena = upb_Arena_New();
+    protobuf_test_messages_proto2_TestAllTypesProto2* bottom;
+    protobuf_test_messages_proto2_TestAllTypesProto2* top =
+        MakeRecursiveChain(arena, kOuterDepth, &bottom);
+    protobuf_test_messages_proto2_TestAllTypesProto2* value =
+        MakeRecursiveChain(arena, value_depth);
+    ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+        UPB_UPCAST(bottom), ext, &value, arena));
+
+    int total_depth = kOuterDepth + 1 + value_depth;
+    bool cloned = upb_Message_DeepClone(UPB_UPCAST(top), mt, arena) != nullptr;
+    EXPECT_EQ(cloned, total_depth <= kUpb_WireFormat_DefaultDepthLimit)
+        << value_depth;
+    EXPECT_EQ(cloned, EncodesWithDefaultDepthLimit(UPB_UPCAST(top), mt, arena))
+        << value_depth;
+
+    upb_Arena_Free(arena);
+  }
+  upb_Arena_Free(schema_arena);
+}
+
+// A non-canonical extension on a message that is already at the depth limit:
+// a scalar value still fits, but a message value would exceed the limit.
+TEST(GeneratedCode, DeepCloneNonCanonicalExtensionAtDepthLimit) {
+  const upb_MiniTable* mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init;
+  upb_Arena* schema_arena = upb_Arena_New();
+  upb_Status status;
+  upb_Status_Clear(&status);
+  upb::MtDataEncoder msg_enc;
+  ASSERT_TRUE(msg_enc.EncodeExtension(kUpb_FieldType_Message, 150, 0));
+  upb_MiniTableExtension* msg_ext = upb_MiniTableExtension_BuildMessage(
+      msg_enc.data().data(), msg_enc.data().size(), mt, mt, schema_arena,
+      &status);
+  ASSERT_NE(msg_ext, nullptr) << upb_Status_ErrorMessage(&status);
+  upb::MtDataEncoder int_enc;
+  ASSERT_TRUE(int_enc.EncodeExtension(kUpb_FieldType_Int32, 151, 0));
+  upb_MiniTableExtension* int_ext = upb_MiniTableExtension_Build(
+      int_enc.data().data(), int_enc.data().size(), mt, schema_arena, &status);
+  ASSERT_NE(int_ext, nullptr) << upb_Status_ErrorMessage(&status);
+
+  for (bool message_value : {false, true}) {
+    SCOPED_TRACE(message_value ? "message value" : "scalar value");
+    upb_Arena* arena = upb_Arena_New();
+    protobuf_test_messages_proto2_TestAllTypesProto2* bottom;
+    protobuf_test_messages_proto2_TestAllTypesProto2* top =
+        MakeRecursiveChain(arena, kUpb_WireFormat_DefaultDepthLimit, &bottom);
+    if (message_value) {
+      protobuf_test_messages_proto2_TestAllTypesProto2* value =
+          protobuf_test_messages_proto2_TestAllTypesProto2_new(arena);
+      ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+          UPB_UPCAST(bottom), msg_ext, &value, arena));
+    } else {
+      int32_t value = 42;
+      ASSERT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
+          UPB_UPCAST(bottom), int_ext, &value, arena));
+    }
+
+    bool cloned = upb_Message_DeepClone(UPB_UPCAST(top), mt, arena) != nullptr;
+    EXPECT_EQ(cloned, !message_value);
+    EXPECT_EQ(cloned, EncodesWithDefaultDepthLimit(UPB_UPCAST(top), mt, arena));
+
+    upb_Arena_Free(arena);
+  }
+  upb_Arena_Free(schema_arena);
 }
 
 }  // namespace
