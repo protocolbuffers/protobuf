@@ -736,9 +736,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
     return ptr + size;
   }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD uint8_t* WriteBytesMaybeAliased(
-      uint32_t num, absl::string_view s, uint8_t* ptr) {
-    return WriteStringMaybeAliased(num, s, ptr);
-  }
+      uint32_t num, absl::string_view s, uint8_t* ptr);
 
   template <typename T>
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD PROTOBUF_ALWAYS_INLINE uint8_t*
@@ -876,12 +874,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
     return end_ + kSlopBytes - ptr;
   }
 
-  uint8_t* Error() {
-    had_error_ = true;
-    // We use the patch buffer to always guarantee space to write to.
-    end_ = buffer_ + kSlopBytes;
-    return buffer_;
-  }
+  uint8_t* Error();
 
   static constexpr int TagSize(uint32_t tag) {
     return (tag < (1 << 7))    ? 1
@@ -1704,24 +1697,12 @@ inline void CodedOutputStream::InitEagerly(Stream* stream) {
   }
 }
 
-inline uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
-                                                        uint8_t* target) {
-  return EpsCopyOutputStream::UnsafeVarint(value, target);
-}
 
-inline uint8_t* CodedOutputStream::WriteVarint64ToArray(uint64_t value,
-                                                        uint8_t* target) {
-  return EpsCopyOutputStream::UnsafeVarint(value, target);
-}
 
 inline void CodedOutputStream::WriteVarint32SignExtended(int32_t value) {
   WriteVarint64(static_cast<uint64_t>(value));
 }
 
-inline uint8_t* CodedOutputStream::WriteVarint32SignExtendedToArray(
-    int32_t value, uint8_t* target) {
-  return WriteVarint64ToArray(static_cast<uint64_t>(value), target);
-}
 
 inline uint8_t* CodedOutputStream::WriteLittleEndian16ToArray(uint16_t value,
                                                               uint8_t* target) {

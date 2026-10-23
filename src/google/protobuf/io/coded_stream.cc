@@ -1039,4 +1039,62 @@ uint8_t* CodedOutputStream::WriteStringWithSizeToArray(absl::string_view str,
 }  // namespace protobuf
 }  // namespace google
 
+
+namespace google {
+namespace protobuf {
+namespace io {
+uint8_t* EpsCopyOutputStream::WriteBytesMaybeAliased(
+      uint32_t num, absl::string_view s, uint8_t* ptr) {
+    return WriteStringMaybeAliased(num, s, ptr);
+  }
+}  // namespace io
+}  // namespace protobuf
+}  // namespace google
+
+namespace google {
+namespace protobuf {
+namespace io {
+uint8_t* EpsCopyOutputStream::Error() {
+    had_error_ = true;
+    // We use the patch buffer to always guarantee space to write to.
+    end_ = buffer_ + kSlopBytes;
+    return buffer_;
+  }
+}  // namespace io
+}  // namespace protobuf
+}  // namespace google
+
+namespace google {
+namespace protobuf {
+namespace io {
+uint8_t* CodedOutputStream::WriteVarint32ToArray(uint32_t value,
+                                                        uint8_t* target) {
+  return EpsCopyOutputStream::UnsafeVarint(value, target);
+}
+}  // namespace io
+}  // namespace protobuf
+}  // namespace google
+
+namespace google {
+namespace protobuf {
+namespace io {
+uint8_t* CodedOutputStream::WriteVarint64ToArray(uint64_t value,
+                                                        uint8_t* target) {
+  return EpsCopyOutputStream::UnsafeVarint(value, target);
+}
+}  // namespace io
+}  // namespace protobuf
+}  // namespace google
+
+namespace google {
+namespace protobuf {
+namespace io {
+uint8_t* CodedOutputStream::WriteVarint32SignExtendedToArray(
+    int32_t value, uint8_t* target) {
+  return WriteVarint64ToArray(static_cast<uint64_t>(value), target);
+}
+}  // namespace io
+}  // namespace protobuf
+}  // namespace google
+
 #include "google/protobuf/port_undef.inc"
