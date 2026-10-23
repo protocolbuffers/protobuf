@@ -654,6 +654,62 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   return &a->head;
 }
 
+// Drops one reference on the arena `a`. If that was the last reference, returns
+// the root of the fused list that must now be freed (with refcount still 1),
+// otherwise returns NULL.
+static upb_ArenaInternal* _upb_Arena_Release(upb_Arena* a) {
+  upb_ArenaInternal* ai = upb_Arena_Internal(a);
+  // Cannot be replaced with _upb_Arena_FindRoot, as that provides only a
+  // relaxed read of the refcount if ai is already the root.
+  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
+retry:
+  while (_upb_Arena_IsTaggedPointer(poc)) {
+    ai = _upb_Arena_PointerFromTagged(poc);
+    UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(ai));
+    poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
+  }
+
+  // compare_exchange or fetch_sub are RMW operations, which are more
+  // expensive then direct loads.  As an optimization, we only do RMW ops
+  // when we need to update things for other threads to see.
+  if (poc == _upb_Arena_TaggedFromRefcount(1)) {
+#ifdef UPB_TRACING_ENABLED
+    upb_Arena_LogFree(a);
+#endif
+    return ai;
+  }
+
+  if (upb_Atomic_CompareExchangeWeak(
+          &ai->parent_or_count, &poc,
+          _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) - 1),
+          memory_order_release, memory_order_acquire)) {
+    // We were >1 and we decremented it successfully, so we are done.
+    return NULL;
+  }
+
+  // We failed our update, so someone has done something, retry the whole
+  // process, but the failed exchange reloaded `poc` for us.
+  goto retry;
+}
+
+// Returns the last node of the fused list starting at `root`.
+static upb_ArenaInternal* _upb_Arena_FindListTail(upb_ArenaInternal* root) {
+  uintptr_t previous_or_tail =
+      upb_Atomic_Load(&root->previous_or_tail, memory_order_relaxed);
+  // The tail pointer is best effort, so it may not be the true tail, but it is
+  // always a node in the list.
+  upb_ArenaInternal* tail = _upb_Arena_IsTaggedTail(previous_or_tail)
+                                ? _upb_Arena_TailFromTagged(previous_or_tail)
+                                : root;
+  while (true) {
+    UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(tail));
+    upb_ArenaInternal* next =
+        (upb_ArenaInternal*)upb_Atomic_Load(&tail->next, memory_order_relaxed);
+    if (next == NULL) return tail;
+    tail = next;
+  }
+}
+
 static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 1);
   while (ai != NULL) {
@@ -675,9 +731,18 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
       upb_MemBlock* next_block = block->next;
       if (block->size == 0) {
         // If the block is an arena ref, then we need to release our ref on the
-        // referenced arena.
+        // referenced arena. If that was the last ref, the referenced arena's
+        // fused list is spliced in ahead of next_arena rather than freed by
+        // recursing, so a long chain of refs cannot overflow the stack.
         upb_ArenaRef* ref = (upb_ArenaRef*)block;
-        upb_Arena_DecRefFor((upb_Arena*)ref->arena, ai);
+        upb_ArenaInternal* released =
+            _upb_Arena_Release((upb_Arena*)ref->arena);
+        if (released != NULL) {
+          upb_ArenaInternal* tail = _upb_Arena_FindListTail(released);
+          UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(tail));
+          upb_Atomic_Store(&tail->next, next_arena, memory_order_relaxed);
+          next_arena = released;
+        }
       } else {
         upb_free_sized(block_alloc, block, block->size);
       }
@@ -691,39 +756,8 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
 }
 
 void upb_Arena_Free(upb_Arena* a) {
-  upb_ArenaInternal* ai = upb_Arena_Internal(a);
-  // Cannot be replaced with _upb_Arena_FindRoot, as that provides only a
-  // relaxed read of the refcount if ai is already the root.
-  uintptr_t poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
-retry:
-  while (_upb_Arena_IsTaggedPointer(poc)) {
-    ai = _upb_Arena_PointerFromTagged(poc);
-    UPB_PRIVATE(upb_Xsan_AccessReadOnly)(UPB_XSAN(ai));
-    poc = upb_Atomic_Load(&ai->parent_or_count, memory_order_acquire);
-  }
-
-  // compare_exchange or fetch_sub are RMW operations, which are more
-  // expensive then direct loads.  As an optimization, we only do RMW ops
-  // when we need to update things for other threads to see.
-  if (poc == _upb_Arena_TaggedFromRefcount(1)) {
-#ifdef UPB_TRACING_ENABLED
-    upb_Arena_LogFree(a);
-#endif
-    _upb_Arena_DoFree(ai);
-    return;
-  }
-
-  if (upb_Atomic_CompareExchangeWeak(
-          &ai->parent_or_count, &poc,
-          _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) - 1),
-          memory_order_release, memory_order_acquire)) {
-    // We were >1 and we decremented it successfully, so we are done.
-    return;
-  }
-
-  // We failed our update, so someone has done something, retry the whole
-  // process, but the failed exchange reloaded `poc` for us.
-  goto retry;
+  upb_ArenaInternal* root = _upb_Arena_Release(a);
+  if (root != NULL) _upb_Arena_DoFree(root);
 }
 
 // Logically performs the following operation, in a way that is safe against
