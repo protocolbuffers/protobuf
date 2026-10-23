@@ -188,6 +188,8 @@ GeneratorOptions Generator::ParseParameter(absl::string_view parameter,
       options.annotate_pyi = true;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       options.strip_nonfunctional_codegen = true;
+    } else if (option.first == "allow_legacy_generic_services") {
+      options.allow_legacy_generic_services = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
     }
@@ -211,6 +213,9 @@ bool Generator::Generate(const FileDescriptor* file,
     }
     if (options.strip_nonfunctional_codegen) {
       pyi_options.push_back("experimental_strip_nonfunctional_codegen");
+    }
+    if (options.allow_legacy_generic_services) {
+      pyi_options.push_back("allow_legacy_generic_services");
     }
     if (!pyi_generator.Generate(file, absl::StrJoin(pyi_options, ","), context,
                                 error)) {
@@ -322,7 +327,7 @@ bool Generator::Generate(const FileDescriptor* file,
   SetSerializedPbInterval(proto_);
 
   printer_->Outdent();
-  if (HasGenericServices(file)) {
+  if (HasGenericServices(file, options.allow_legacy_generic_services)) {
     printer_->Print(
         "_builder.BuildServices(DESCRIPTOR, '$module_name$', _globals)\n",
         "module_name", module_name);

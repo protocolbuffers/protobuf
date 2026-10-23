@@ -255,7 +255,7 @@ void PyiGenerator::PrintImports() const {
                     "public_package", PublicPackage());
   }
   if (opensource_runtime_) {
-    if (HasGenericServices(file_)) {
+    if (HasGenericServices(file_, allow_legacy_generic_services_)) {
       printer_->Print("from $public_package$ import service as _service\n",
                       "public_package", PublicPackage());
     }
@@ -633,6 +633,7 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   std::string filename;
   bool annotate_code = false;
   strip_nonfunctional_codegen_ = false;
+  allow_legacy_generic_services_ = false;
   for (const std::pair<std::string, std::string>& option : options) {
     if (option.first == "annotate_code") {
       annotate_code = true;
@@ -640,6 +641,8 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
       filename = option.first;
     } else if (option.first == "experimental_strip_nonfunctional_codegen") {
       strip_nonfunctional_codegen_ = true;
+    } else if (option.first == "allow_legacy_generic_services") {
+      allow_legacy_generic_services_ = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
@@ -683,7 +686,8 @@ bool PyiGenerator::Generate(const FileDescriptor* file,
   PrintExtensions(*file_);
   PrintMessages();
 
-  if (opensource_runtime_ && HasGenericServices(file)) {
+  if (opensource_runtime_ &&
+      HasGenericServices(file, allow_legacy_generic_services_)) {
     PrintServices();
   }
   return true;

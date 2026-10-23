@@ -70,8 +70,10 @@ std::string GetFileName(const FileDescriptor* file_des,
   return filename;
 }
 
-bool HasGenericServices(const FileDescriptor* file) {
-  return file->service_count() > 0 && file->options().py_generic_services();
+bool HasGenericServices(const FileDescriptor* file,
+                        bool allow_legacy_generic_services) {
+  return allow_legacy_generic_services && file->service_count() > 0 &&
+         file->options().py_generic_services();
 }
 
 std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations) {
