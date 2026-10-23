@@ -8,6 +8,7 @@
 #include "google/protobuf/json/json.h"
 
 #include <cstdint>
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -385,6 +386,141 @@ TEST_P(JsonTest, QuotedIntegerExponentValue) {
   )json");
   ASSERT_OK(m);
   EXPECT_THAT(m->int32_value(), 100);
+}
+
+TEST_P(JsonTest, QuotedInt64DecimalAndExponentArePrecise) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int64Value": "9007199254740993.0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), int64_t{9007199254740993});
+
+  m = ToProto<TestMessage>(R"json(
+    {"int64Value": "9007199254740993e0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), int64_t{9007199254740993});
+
+  m = ToProto<TestMessage>(R"json(
+    {"int64Value": "18014398509481984e0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), int64_t{18014398509481984});
+
+  m = ToProto<TestMessage>(R"json(
+    {"int64Value": "-9007199254740993.0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), int64_t{-9007199254740993});
+}
+
+TEST_P(JsonTest, QuotedUInt64DecimalAndExponentArePrecise) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"uint64Value": "9007199254740993.0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->uint64_value(), uint64_t{9007199254740993});
+
+  m = ToProto<TestMessage>(R"json(
+    {"uint64Value": "9007199254740993e0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->uint64_value(), uint64_t{9007199254740993});
+}
+
+TEST_P(JsonTest, DecimalAndExponentIntegerBounds) {
+  auto m = ToProto<TestMessage>(R"json(
+    {"int64Value": "9223372036854775807.0",
+     "uint64Value": 1.8446744073709551615e19}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), std::numeric_limits<int64_t>::max());
+  EXPECT_EQ(m->uint64_value(), std::numeric_limits<uint64_t>::max());
+
+  m = ToProto<TestMessage>(R"json(
+    {"int64Value": -9.223372036854775808e18, "uint64Value": "0.0",
+     "int32Value": "-2147483648.0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), std::numeric_limits<int64_t>::min());
+  EXPECT_EQ(m->uint64_value(), 0u);
+  EXPECT_EQ(m->int32_value(), std::numeric_limits<int32_t>::min());
+
+  m = ToProto<TestMessage>(R"json(
+    {"int64Value": "92233720368547758.07e2", "uint32Value": "4294967295.0"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), std::numeric_limits<int64_t>::max());
+  EXPECT_EQ(m->uint32_value(), std::numeric_limits<uint32_t>::max());
+
+  for (const char* bad : {
+           R"json({"int64Value": "9223372036854775808.0"})json",
+           R"json({"int64Value": "-9223372036854775809.0"})json",
+           R"json({"int64Value": 9.223372036854775808e18})json",
+           R"json({"uint64Value": "18446744073709551616.0"})json",
+           R"json({"uint64Value": "-1.0"})json",
+           R"json({"uint64Value": "1e400"})json",
+           R"json({"int32Value": "2147483648.0"})json",
+           R"json({"uint32Value": "4294967296e0"})json",
+       }) {
+    EXPECT_THAT(ToProto<TestMessage>(bad),
+                StatusIs(absl::StatusCode::kInvalidArgument))
+        << bad;
+  }
+}
+
+TEST_P(JsonTest, DecimalAndExponentIntegerRejectsFraction) {
+  for (const char* bad : {
+           R"json({"int64Value": "9007199254740993.5"})json",
+           R"json({"int64Value": 9007199254740993.5})json",
+           R"json({"uint64Value": "1e-1"})json",
+           R"json({"int64Value": "12345e-5"})json",
+           R"json({"int32Value": "1.0000000000000000000001"})json",
+           R"json({"int32Value": "1e"})json",
+           R"json({"int32Value": "1.5e+"})json",
+           R"json({"int32Value": "."})json",
+           R"json({"int32Value": "e5"})json",
+           R"json({"int32Value": "1e5x"})json",
+           R"json({"int32Value": "inf"})json",
+           R"json({"int32Value": "nan"})json",
+       }) {
+    EXPECT_THAT(ToProto<TestMessage>(bad),
+                StatusIs(absl::StatusCode::kInvalidArgument))
+        << bad;
+  }
+
+  auto m = ToProto<TestMessage>(R"json(
+    {"int64Value": "12300e-2", "int32Value": "0e999999999999"}
+  )json");
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), 123);
+  EXPECT_EQ(m->int32_value(), 0);
+
+  // Exponents far beyond any integer's range, with a nonzero mantissa.
+  for (const char* bad : {
+           R"json({"int64Value": "1e999999999999"})json",
+           R"json({"uint64Value": "1e-999999999999"})json",
+       }) {
+    EXPECT_THAT(ToProto<TestMessage>(bad),
+                StatusIs(absl::StatusCode::kInvalidArgument))
+        << bad;
+  }
+}
+
+TEST_P(JsonTest, DecimalAndExponentIntegerLongMantissaAndExponent) {
+  // 0.00...01e1500001 is exactly 1, however many digits the fraction has.
+  const std::string zeros(1500000, '0');
+  std::string exact = absl::StrCat(R"json({"int64Value": "0.)json", zeros,
+                                   R"json(1e1500001"})json");
+  auto m = ToProto<TestMessage>(exact);
+  ASSERT_OK(m);
+  EXPECT_EQ(m->int64_value(), 1);
+
+  // The same digits with an exponent one short are 0.1, not an integer.
+  std::string json = absl::StrCat(R"json({"int64Value": "0.)json", zeros,
+                                  R"json(1e1500000"})json");
+  EXPECT_THAT(ToProto<TestMessage>(json),
+              StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
 TEST_P(JsonTest, TestInvalidIntegerValue) {
