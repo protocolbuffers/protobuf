@@ -530,6 +530,74 @@ TEST_F(JavaGeneratorTest, ExtensionsPublicImportsAreKnown) {
 }
 
 
+TEST_F(JavaGeneratorTest, BitFieldsAreTransient) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    message Foo {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/Foo.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX "proto2_unittest/Foo.java",
+                                    "private transient int bitField0_;"));
+}
+
+TEST_F(JavaGeneratorTest, MultipleBitFieldsAreTransient) {
+  std::string schema = R"schema(
+    edition = "2024";
+    package proto2_unittest;
+    message MultiBitField {
+  )schema";
+  for (int i = 1; i <= 33; ++i) {
+    absl::StrAppend(&schema, "  int32 f", i, " = ", i, ";\n");
+  }
+  absl::StrAppend(&schema, "}\n");
+  CreateTempFile("multi.proto", schema);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir multi.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(
+      FileGenerated(PACKAGE_PREFIX "proto2_unittest/MultiBitField.java"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/MultiBitField.java",
+                                    "private transient int bitField0_;"));
+  EXPECT_TRUE(FileContainsSubstring(PACKAGE_PREFIX
+                                    "proto2_unittest/MultiBitField.java",
+                                    "private transient int bitField1_;"));
+}
+
+TEST_F(JavaGeneratorTest, AllowlistedBitFieldsAreNotTransient) {
+  CreateTempFile("allowlisted.proto",
+                 R"schema(
+    edition = "2024";
+    package com.google.gson.protobuf;
+    message TestAllTypes {
+      int32 bar = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "allowlisted.proto");
+
+  ExpectNoErrors();
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX
+                            "com/google/gson/protobuf/TestAllTypes.java"));
+  EXPECT_TRUE(FileContainsSubstring(
+      PACKAGE_PREFIX "com/google/gson/protobuf/TestAllTypes.java",
+      "private int bitField0_;"));
+  EXPECT_FALSE(FileContainsSubstring(
+      PACKAGE_PREFIX "com/google/gson/protobuf/TestAllTypes.java",
+      "private transient int bitField0_;"));
+}
+
 TEST_F(JavaGeneratorTest, OneofHasBitsBuildPartial) {
   CreateTempFile("oneof_has_bits.proto",
                  R"schema(
