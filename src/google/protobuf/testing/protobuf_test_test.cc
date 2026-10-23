@@ -23,6 +23,8 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/testing/protobuf_test_test_fixture_a.h"
+#include "google/protobuf/testing/protobuf_test_test_fixture_b.h"
 #include "google/protobuf/unittest.pb.h"
 
 namespace google {
@@ -734,6 +736,22 @@ PB_TEST_F(ProtobufFixtureBelowPlain, InheritsAllBaseDimensions) {
       ::testing::UnitTest::GetInstance()->current_test_info()->name()));
 }
 
+// `ProtobufSharedFixtureB` is also used by protobuf_test_test_tu2.cc. This
+// translation unit includes protobuf_test_test_fixture_a.h first, so the
+// `__COUNTER__` values of B's `PB_TEST_CHOOSE_VALUE` calls differ between the
+// two translation units; each call site must still register one dimension.
+PB_TEST_F(ProtobufSharedFixtureA, FirstTu) {
+  SharedFixtureRuns().push_back(absl::StrCat(
+      "A1:", a_, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
+PB_TEST_F(ProtobufSharedFixtureB, FirstTu) {
+  SharedFixtureRuns().push_back(absl::StrCat(
+      "B1:", base_b_, ":", b_, ":",
+      ::testing::UnitTest::GetInstance()->current_test_info()->name()));
+}
+
 static_assert(
     std::is_same_v<
         FixtureBasesOf<
@@ -995,6 +1013,20 @@ class VerificationEnvironment : public ::testing::Environment {
                     "2:200:3:InheritsAllBaseDimensions/base_2/below_3",
                     "1:100:4:InheritsAllBaseDimensions/base_1/below_4",
                     "2:200:4:InheritsAllBaseDimensions/base_2/below_4"));
+    EXPECT_THAT(SharedFixtureRuns(),
+                ElementsAre("A1:1:FirstTu/a_1", "A1:2:FirstTu/a_2",
+                            "B1:10:3:FirstTu/base_b_10/b_3",
+                            "B1:20:3:FirstTu/base_b_20/b_3",
+                            "B1:10:4:FirstTu/base_b_10/b_4",
+                            "B1:20:4:FirstTu/base_b_20/b_4",
+                            "B2:10:3:100:SecondTu/base_b_10/b_3/body_100",
+                            "B2:20:3:100:SecondTu/base_b_20/b_3/body_100",
+                            "B2:10:4:100:SecondTu/base_b_10/b_4/body_100",
+                            "B2:20:4:100:SecondTu/base_b_20/b_4/body_100",
+                            "B2:10:3:200:SecondTu/base_b_10/b_3/body_200",
+                            "B2:20:3:200:SecondTu/base_b_20/b_3/body_200",
+                            "B2:10:4:200:SecondTu/base_b_10/b_4/body_200",
+                            "B2:20:4:200:SecondTu/base_b_20/b_4/body_200"));
     EXPECT_THAT(RecordedBools(), ElementsAre(false, true));
     EXPECT_THAT(RecordedEnums(),
                 ElementsAre(FOREIGN_FOO, FOREIGN_BAR, FOREIGN_BAZ,
@@ -1221,7 +1253,8 @@ TEST(ProtobufTestRegistryTest, RegistersExpectedTestsWithoutDummySuite) {
           "ProtobufDeathTest", "ProtobufMisuseTest",
           "ProtobufRegularTestFFixture", "ProtobufGrandchildFixture",
           "ProtobufFixtureBase", "ProtobufFixtureMiddle", "ProtobufFixtureLeaf",
-          "ProtobufFixtureViaPlain", "ProtobufFixtureBelowPlain"));
+          "ProtobufFixtureViaPlain", "ProtobufFixtureBelowPlain",
+          "ProtobufSharedFixtureA", "ProtobufSharedFixtureB"));
 
   ASSERT_NE(standalone_suite, nullptr);
   std::vector<std::string> test_names;
