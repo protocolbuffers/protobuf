@@ -27,7 +27,8 @@ bool IsPythonKeyword(absl::string_view name);
 std::string ResolveKeyword(absl::string_view name);
 std::string GetFileName(const FileDescriptor* file_des,
                         absl::string_view suffix);
-bool HasGenericServices(const FileDescriptor* file);
+bool HasGenericServices(const FileDescriptor* file,
+                        bool allow_legacy_generic_services);
 std::string GeneratedCodeToBase64(const GeneratedCodeInfo& annotations);
 std::string PrintImport(const FileDescriptor* file, bool* has_importlib);
 

@@ -247,15 +247,6 @@ class DescriptorTest(unittest.TestCase):
     desc2 = descriptor_pool.Default().AddSerializedFile(serialized)
     self.assertEqual(desc1, desc2)
 
-  def testFindMethodByName(self):
-    service_descriptor = (
-        unittest_custom_options_pb2.TestServiceWithCustomOptions.DESCRIPTOR
-    )
-    method_descriptor = service_descriptor.FindMethodByName('Foo')
-    self.assertEqual(method_descriptor.name, 'Foo')
-    with self.assertRaises(KeyError):
-      service_descriptor.FindMethodByName('MethodDoesNotExist')
-
   def testEnumValueName(self):
     self.assertEqual(
         self.my_message.EnumValueName('ForeignEnum', 4), 'FOREIGN_FOO'
@@ -529,10 +520,6 @@ class DescriptorTest(unittest.TestCase):
     other_enum_value_descriptor = message_descriptor.enum_values_by_name[
         'ANENUM_VAL1'
     ]
-    service_descriptor = (
-        unittest_custom_options_pb2.TestServiceWithCustomOptions.DESCRIPTOR
-    )
-    method_descriptor = service_descriptor.FindMethodByName('Foo')
 
     file_options = file_descriptor.GetOptions()
     file_opt1 = unittest_custom_options_pb2.file_opt1
@@ -554,17 +541,6 @@ class DescriptorTest(unittest.TestCase):
     enum_value_options = enum_value_descriptor.GetOptions()
     enum_value_opt1 = unittest_custom_options_pb2.enum_value_opt1
     self.assertEqual(123, enum_value_options.Extensions[enum_value_opt1])
-
-    service_options = service_descriptor.GetOptions()
-    service_opt1 = unittest_custom_options_pb2.service_opt1
-    self.assertEqual(-9876543210, service_options.Extensions[service_opt1])
-    self.assertTrue(method_descriptor.has_options)
-    method_options = method_descriptor.GetOptions()
-    method_opt1 = unittest_custom_options_pb2.method_opt1
-    self.assertEqual(
-        unittest_custom_options_pb2.METHODOPT1_VAL2,
-        method_options.Extensions[method_opt1],
-    )
 
     message_descriptor = (
         unittest_custom_options_pb2.DummyMessageContainingEnum.DESCRIPTOR
@@ -832,8 +808,6 @@ class DescriptorTest(unittest.TestCase):
     field_descriptor = message_descriptor.fields_by_name['fieldname']
     enum_descriptor = unittest_custom_options_pb2.AggregateEnum.DESCRIPTOR
     enum_value_descriptor = enum_descriptor.values_by_name['VALUE']
-    service_descriptor = unittest_custom_options_pb2.AggregateService.DESCRIPTOR
-    method_descriptor = service_descriptor.FindMethodByName('Method')
 
     # Tests for the different types of data embedded in fileopt
     file_options = file_descriptor.GetOptions().Extensions[
@@ -876,18 +850,6 @@ class DescriptorTest(unittest.TestCase):
         'EnumValueAnnotation',
         enum_value_descriptor.GetOptions()
         .Extensions[unittest_custom_options_pb2.enumvalopt]
-        .s,
-    )
-    self.assertEqual(
-        'ServiceAnnotation',
-        service_descriptor.GetOptions()
-        .Extensions[unittest_custom_options_pb2.serviceopt]
-        .s,
-    )
-    self.assertEqual(
-        'MethodAnnotation',
-        method_descriptor.GetOptions()
-        .Extensions[unittest_custom_options_pb2.methodopt]
         .s,
     )
 
@@ -1496,39 +1458,6 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
         UNITTEST_IMPORT_FILE_DESCRIPTOR_ASCII,
     )
 
-  def testCopyToProto_ServiceDescriptor(self):
-    TEST_SERVICE_ASCII = """
-      name: 'TestService'
-      method: <
-        name: 'Foo'
-        input_type: '.proto2_unittest.FooRequest'
-        output_type: '.proto2_unittest.FooResponse'
-      >
-      method: <
-        name: 'Bar'
-        input_type: '.proto2_unittest.BarRequest'
-        output_type: '.proto2_unittest.BarResponse'
-      >
-      """
-    self._InternalTestCopyToProto(
-        unittest_pb2.TestService.DESCRIPTOR,
-        descriptor_pb2.ServiceDescriptorProto,
-        TEST_SERVICE_ASCII,
-    )
-
-  def testCopyToProto_MethodDescriptor(self):
-    expected_ascii = """
-      name: 'Foo'
-      input_type: '.proto2_unittest.FooRequest'
-      output_type: '.proto2_unittest.FooResponse'
-    """
-    method_descriptor = unittest_pb2.TestService.DESCRIPTOR.FindMethodByName(
-        'Foo'
-    )
-    self._InternalTestCopyToProto(
-        method_descriptor, descriptor_pb2.MethodDescriptorProto, expected_ascii
-    )
-
   def testCopyToProto_TypeError(self):
     file_proto = descriptor_pb2.FileDescriptorProto()
     self.assertRaises(
@@ -1538,14 +1467,6 @@ class DescriptorCopyToProtoTest(unittest.TestCase):
     )
     self.assertRaises(
         TypeError, unittest_pb2.ForeignEnum.DESCRIPTOR.CopyToProto, file_proto
-    )
-    self.assertRaises(
-        TypeError, unittest_pb2.TestService.DESCRIPTOR.CopyToProto, file_proto
-    )
-    self.assertRaises(
-        TypeError,
-        unittest_pb2.TestService.DESCRIPTOR.FindMethodByName('Foo').CopyToProto,
-        file_proto,
     )
     proto = descriptor_pb2.DescriptorProto()
     self.assertRaises(
