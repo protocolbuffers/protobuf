@@ -8248,8 +8248,11 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   return &a->head;
 }
 
+static upb_ArenaInternal* _upb_Arena_DecRef(const upb_Arena* a);
+
 static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 1);
+  upb_ArenaInternal* roots_to_free = NULL;
   while (ai != NULL) {
     UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(ai));
     // Load first since arena itself is likely from one of its blocks. Relaxed
@@ -8271,7 +8274,19 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
         // If the block is an arena ref, then we need to release our ref on the
         // referenced arena.
         upb_ArenaRef* ref = (upb_ArenaRef*)block;
-        upb_Arena_DecRefFor((upb_Arena*)ref->arena, ai);
+        upb_ArenaInternal* to_free = _upb_Arena_DecRef(ref->arena);
+        if (to_free != NULL) {
+          // The arena is ready to be freed, but we want to avoid a recursive
+          // free to avoid stack overflow in the case of long ref chains.
+          // To that end, we prepend it to a linked list for later processing.
+          // We pick an arbitrary member `previous_or_tail` as the "next"
+          // pointer -- any member would work as long as it is not read during
+          // deletion.
+          UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(to_free));
+          upb_Atomic_Store(&to_free->previous_or_tail, (uintptr_t)roots_to_free,
+                           memory_order_relaxed);
+          roots_to_free = to_free;
+        }
       } else {
         upb_free_sized(block_alloc, block, block->size);
       }
@@ -8280,11 +8295,23 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
     if (block_alloc && block_alloc->cleanup != NULL) {
       block_alloc->cleanup(block_alloc);
     }
+    if (next_arena == NULL && roots_to_free != NULL) {
+      next_arena = roots_to_free;
+      roots_to_free = (upb_ArenaInternal*)upb_Atomic_Load(
+          &next_arena->previous_or_tail, memory_order_relaxed);
+    }
     ai = next_arena;
   }
 }
 
 void upb_Arena_Free(upb_Arena* a) {
+  upb_ArenaInternal* ai = _upb_Arena_DecRef(a);
+  if (ai != NULL) {
+    _upb_Arena_DoFree(ai);
+  }
+}
+
+static upb_ArenaInternal* _upb_Arena_DecRef(const upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   // Cannot be replaced with _upb_Arena_FindRoot, as that provides only a
   // relaxed read of the refcount if ai is already the root.
@@ -8303,8 +8330,7 @@ retry:
 #ifdef UPB_TRACING_ENABLED
     upb_Arena_LogFree(a);
 #endif
-    _upb_Arena_DoFree(ai);
-    return;
+    return ai;
   }
 
   if (upb_Atomic_CompareExchangeWeak(
@@ -8312,7 +8338,7 @@ retry:
           _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) - 1),
           memory_order_release, memory_order_acquire)) {
     // We were >1 and we decremented it successfully, so we are done.
-    return;
+    return NULL;
   }
 
   // We failed our update, so someone has done something, retry the whole
