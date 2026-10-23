@@ -340,6 +340,9 @@ UPB_NODISCARD upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
 // Adds the given non-canonical extension data to the given message.
 // |ext| is copied into the message instance.
 // This logically replaces any previously-added extension with this number.
+//
+// A non-canonical extension is never a MessageSet item: |ext| must not extend
+// a MessageSet, and |msg| must not be a MessageSet.
 UPB_NODISCARD upb_Extension* UPB_PRIVATE(
     _upb_Message_CreateNonCanonicalExtension)(struct upb_Message* msg,
                                               const upb_MiniTableExtension* ext,

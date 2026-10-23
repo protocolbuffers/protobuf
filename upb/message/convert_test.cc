@@ -14,6 +14,7 @@
 #include <string_view>
 
 #include <gtest/gtest.h>
+#include "google/protobuf/test_messages_proto2.upb.h"
 #include "google/protobuf/test_messages_proto3.upb.h"
 #include "google/protobuf/test_messages_proto3.upb_minitable.h"
 #include "upb/base/descriptor_constants.h"
@@ -30,6 +31,7 @@
 #include "upb/message/internal/accessors.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
+#include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/unknown_fields.h"
 #include "upb/mini_table/extension_registry.h"
@@ -1442,6 +1444,58 @@ TEST(ConvertTest, NonCanonicalToUnknownBytes) {
   EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
   EXPECT_GT(unknown.value.bytes.size, 0);
   EXPECT_FALSE(upb_Message_NextUnknown2(decoded, &unknown, &iter));
+}
+
+TEST(ConvertTest, UnknownMessageSetItemToUnknownBytes) {
+  upb::Arena arena;
+  upb_test_TestMessageSet* msg = upb_test_TestMessageSet_new(arena.ptr());
+  upb_test_MessageSetMember* member =
+      upb_test_MessageSetMember_new(arena.ptr());
+  upb_test_MessageSetMember_set_optional_int32(member, 123);
+  upb_test_MessageSetMember_set_message_set_extension(msg, member, arena.ptr());
+
+  const upb_MiniTable* src_mt = &upb_0test__TestMessageSet_msg_init;
+  // Another MessageSet, which does not have the extension of the source.
+  const upb_MiniTable* dst_mt =
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2__MessageSetCorrect_msg_init;
+  const upb_Message* dst_msg = upb_Message_Convert(
+      UPB_UPCAST(msg), src_mt, dst_mt, nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst_msg, nullptr);
+
+  // A non-canonical extension is never created for an extension of a
+  // MessageSet, so the item is kept as unknown bytes, which are the MessageSet
+  // encoding of the source.
+  char* buf;
+  size_t size;
+  ASSERT_EQ(upb_Encode(UPB_UPCAST(msg), src_mt, 0, arena.ptr(), &buf, &size),
+            kUpb_EncodeStatus_Ok);
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+  ASSERT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(
+      std::string_view(unknown.value.bytes.data, unknown.value.bytes.size),
+      std::string_view(buf, size));
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst_msg, &unknown, &iter));
+}
+
+TEST(ConvertTest, MessageSetAndRegularMessageAreIncompatible) {
+  upb::Arena arena;
+  const upb_MiniTable* mset_mt = &upb_0test__TestMessageSet_msg_init;
+  const upb_MiniTable* regular_mt =
+      &upb__test__convert__MessageWithExtension_msg_init;
+
+  upb_Message* mset = upb_Message_New(mset_mt, arena.ptr());
+  ASSERT_NE(mset, nullptr);
+  EXPECT_EQ(upb_Message_Convert(mset, mset_mt, regular_mt, nullptr, 0, 0,
+                                arena.ptr()),
+            nullptr);
+
+  upb_Message* regular = upb_Message_New(regular_mt, arena.ptr());
+  ASSERT_NE(regular, nullptr);
+  EXPECT_EQ(upb_Message_Convert(regular, regular_mt, mset_mt, nullptr, 0, 0,
+                                arena.ptr()),
+            nullptr);
 }
 
 TEST(ConvertTest, OneofDemotion) {

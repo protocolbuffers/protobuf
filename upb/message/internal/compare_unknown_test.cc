@@ -296,46 +296,6 @@ TEST(CompareTest, MessageIsEqualWithNonCanonicalExtensionMatchingRawUnknown) {
   EXPECT_TRUE(is_equal);
 }
 
-TEST(CompareTest, MessageSetNonCanonicalExtMatchesUnknown) {
-  upb::Arena arena;
-
-  // 1. Create custom sub-message (MessageSetMember)
-  upb_test_MessageSetMember* extension1 =
-      upb_test_MessageSetMember_new(arena.ptr());
-  upb_test_MessageSetMember_set_optional_int32(extension1, 123);
-
-  // 2. Obtain encoded raw wire bytes of Extension A by serializing tmp_msg
-  upb_test_TestMessageSet* tmp_msg = upb_test_TestMessageSet_new(arena.ptr());
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(tmp_msg), upb_test_MessageSetMember_message_set_extension_ext,
-      &extension1, arena.ptr()));
-
-  char* buf;
-  size_t size;
-  upb_EncodeStatus enc_status =
-      upb_Encode(UPB_UPCAST(tmp_msg), &upb_0test__TestMessageSet_msg_init, 0,
-                 arena.ptr(), &buf, &size);
-  ASSERT_EQ(enc_status, kUpb_EncodeStatus_Ok);
-  ASSERT_GT(size, 0u);
-
-  // 3. Create msg1 with non-canonical extension A
-  upb_test_TestMessageSet* msg1 = upb_test_TestMessageSet_new(arena.ptr());
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_SetNonCanonicalExtension)(
-      UPB_UPCAST(msg1), upb_test_MessageSetMember_message_set_extension_ext,
-      &extension1, arena.ptr()));
-
-  // 4. Create msg2 with raw unknown bytes representing A
-  upb_test_TestMessageSet* msg2 = upb_test_TestMessageSet_new(arena.ptr());
-  EXPECT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
-      UPB_UPCAST(msg2), buf, size, arena.ptr(), kUpb_AddUnknown_Copy));
-
-  // 5. Verify they compare equal under IncludeUnknownFields
-  bool is_equal = upb_Message_IsEqual(UPB_UPCAST(msg1), UPB_UPCAST(msg2),
-                                      &upb_0test__TestMessageSet_msg_init,
-                                      kUpb_CompareOption_IncludeUnknownFields);
-  EXPECT_TRUE(is_equal);
-}
-
 TEST(CompareTest, MessageIsEqualWithCanonicalAndNonCanonicalExtensions) {
   upb::Arena arena;
 

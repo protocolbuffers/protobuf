@@ -22,18 +22,22 @@
 // Must be last.
 #include "upb/port/def.inc"
 
+// The signature of _upb_Encode_Extension() and
+// _upb_Encode_MessageSetExtension().
+typedef upb_EncodeStatus upb_EncodeExtensionFunc(
+    upb_encstate* e, const upb_MiniTableExtension* ext,
+    upb_MessageValue ext_val, char** buf, size_t* size, int options);
+
 static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
                                               const struct upb_Extension* ext,
-                                              bool is_message_set,
+                                              upb_EncodeExtensionFunc* encode,
                                               upb_StringView* view,
                                               int encode_options) {
   if (UPB_SETJMP(*encoder->err) == 0) {
     char* buf = ptr;
     size_t size = 0;
-    UPB_PRIVATE(_upb_Encode_Extension)(
-        encoder, upb_Extension_MiniTableExtension(ext),
-        upb_Extension_GetValue(ext), is_message_set, &buf, &size,
-        encode_options);
+    encode(encoder, upb_Extension_MiniTableExtension(ext),
+           upb_Extension_GetValue(ext), &buf, &size, encode_options);
     view->data = buf;
     view->size = size;
   } else {
@@ -49,13 +53,23 @@ static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
 upb_EncodeStatus upb_EncodeExtension(const struct upb_Extension* ext,
                                      struct upb_Arena* arena,
                                      upb_StringView* view, int encode_options) {
-  const upb_MiniTable* extendee =
-      upb_MiniTableExtension_Extendee(upb_Extension_MiniTableExtension(ext));
-  bool is_message_set =
-      extendee != NULL && upb_MiniTable_IsMessageSet(extendee);
   upb_encstate e;
   jmp_buf err;
   char* ptr = UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
-  return upb_DoEncodeExtension(&e, ptr, ext, is_message_set, view,
-                               encode_options);
+  return upb_DoEncodeExtension(
+      &e, ptr, ext, &UPB_PRIVATE(_upb_Encode_Extension), view, encode_options);
+}
+
+upb_EncodeStatus upb_EncodeMessageSetExtension(const struct upb_Extension* ext,
+                                               struct upb_Arena* arena,
+                                               upb_StringView* view,
+                                               int encode_options) {
+  UPB_ASSERT(upb_MiniTable_IsMessageSet(
+      upb_MiniTableExtension_Extendee(upb_Extension_MiniTableExtension(ext))));
+  upb_encstate e;
+  jmp_buf err;
+  char* ptr = UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
+  return upb_DoEncodeExtension(&e, ptr, ext,
+                               &UPB_PRIVATE(_upb_Encode_MessageSetExtension),
+                               view, encode_options);
 }
