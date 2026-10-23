@@ -64,6 +64,16 @@ TEST_F(SampleConformanceTest, DISABLED_SampleDisabled) {
       Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
 }
 
+// Runs a conformance test but never checks its result with Yields(), which
+// fails the test.  Only runs when asked for by name (see
+// test_environment_integration_test.cc), so that the other runs stay clean.
+TEST_F(SampleConformanceTest, DISABLED_SampleUncheckedResult) {
+  auto unchecked =
+      Testee("SampleUncheckedResult")
+          .ParseBinary(TestAllTypesProto3::descriptor(), VarintField(1, 99))
+          .SerializeBinary();
+}
+
 }  // namespace
 }  // namespace conformance
 }  // namespace protobuf

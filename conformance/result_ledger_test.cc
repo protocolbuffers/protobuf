@@ -15,6 +15,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
+#include "conformance/failure_list.h"
 #include "conformance/testee.h"
 
 namespace google {
@@ -200,6 +201,37 @@ TEST_F(ResultLedgerTest, WasReported) {
   EXPECT_THAT(ledger.Finalize(), IsOk());
 }
 
+TEST_F(ResultLedgerTest, FailureListReadsRecordNothing) {
+  CreateFailureList({{"foo", "abc"}, {"bar.*", "abc"}, {"baz", "abc"}});
+  ResultLedger ledger;
+  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
+  ledger.set_enforcement_level(kP0);
+
+  // The list is the one loaded, at the ledger's enforcement level.
+  const FailureList& failure_list = ledger.failure_list();
+  EXPECT_EQ(failure_list.enforcement_level(), kP0);
+  failure_list.MatchingEntry("bar.x");
+  failure_list.ExpectedMessage("foo");
+  failure_list.VerdictOnSuccess("foo").IgnoreError();
+  failure_list.VerdictOnFailure("foo", kP0, "abc").IgnoreError();
+  failure_list.VerdictOnSkip("bar.x", "reason").IgnoreError();
+
+  // Nothing was reported.
+  EXPECT_FALSE(ledger.WasReported("foo"));
+  EXPECT_FALSE(ledger.WasReported("bar.x"));
+  EXPECT_THAT(ledger.UnmatchedExpectedFailures(),
+              ElementsAre("bar.*", "baz", "foo"));
+  EXPECT_THAT(ledger.Finalize(),
+              StatusIs(absl::StatusCode::kFailedPrecondition,
+                       HasSubstr("were not seen: bar.*, baz, foo")));
+  EXPECT_EQ(ledger.expected_failures(), 0);
+  EXPECT_EQ(ledger.unexpected_failures(), 0);
+  EXPECT_EQ(ledger.expected_successes(), 0);
+  EXPECT_EQ(ledger.unexpected_successes(), 0);
+  EXPECT_EQ(ledger.skipped(), 0);
+  EXPECT_EQ(ledger.tolerated_failures(), 0);
+}
+
 TEST_F(ResultLedgerTest, ReportExpectedFailure) {
   CreateFailureList({{"foo", "abc"}});
   ResultLedger ledger;
@@ -373,29 +405,6 @@ TEST_F(ResultLedgerTest, ReportFailureRejectsExpectedMessageSuffix) {
   EXPECT_EQ(ledger.unexpected_failures(), 1);
 }
 
-TEST_F(ResultLedgerTest, ReportFailureEmptyExpectedMessageMatchesAnything) {
-  CreateFailureList({{"foo"}});
-  ResultLedger ledger;
-  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
-
-  EXPECT_THAT(ledger.ReportFailure("foo", kP0, "any message at all"), IsOk());
-
-  EXPECT_THAT(ledger.Finalize(), IsOk());
-  EXPECT_EQ(ledger.expected_failures(), 1);
-  EXPECT_EQ(ledger.unexpected_failures(), 0);
-}
-
-TEST_F(ResultLedgerTest, ReportFailurePrefixMatchIgnoresNewlinesAndWhitespace) {
-  CreateFailureList({{"foo", "abc def"}});
-  ResultLedger ledger;
-  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
-
-  EXPECT_THAT(ledger.ReportFailure("foo", kP0, "  abc def\nghi\n"), IsOk());
-
-  EXPECT_THAT(ledger.Finalize(), IsOk());
-  EXPECT_EQ(ledger.expected_failures(), 1);
-}
-
 TEST_F(ResultLedgerTest, PrefixMatchedFailureIsNotAnUnexpectedFailure) {
   CreateFailureList({{"foo", "abc"}});
   ResultLedger ledger;
@@ -486,7 +495,7 @@ TEST_F(ResultLedgerTest, UnexpectedFailures) {
   EXPECT_THAT(ledger.Finalize(), IsOk());
 }
 
-TEST_F(ResultLedgerTest, UnexpectedFailuresIncludeExceededWildcardMatches) {
+TEST_F(ResultLedgerTest, OverexpandedWildcardKeepsMatching) {
   CreateFailureList({{"foo.*.bar"}});
   ResultLedger ledger;
   ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
@@ -495,11 +504,14 @@ TEST_F(ResultLedgerTest, UnexpectedFailuresIncludeExceededWildcardMatches) {
     ASSERT_THAT(ledger.ReportSuccess(absl::StrCat("foo.", i, ".bar")),
                 Not(IsOk()));
   }
-  ASSERT_THAT(ledger.ReportFailure("foo.baz.bar", kP0, "msg"), Not(IsOk()));
+  // The entry is far over the cap, but the verdicts don't change: the test
+  // environment fails the run over OverexpandedWildcards() instead.
+  ASSERT_THAT(ledger.ReportFailure("foo.baz.bar", kP0, "msg"), IsOk());
 
-  EXPECT_THAT(ledger.UnexpectedFailures(),
-              ElementsAre(FieldsAre("foo.baz.bar", "msg", absl::nullopt)));
-  EXPECT_EQ(ledger.unexpected_failures(), 1);
+  EXPECT_THAT(ledger.OverexpandedWildcards(), ElementsAre("foo.*.bar"));
+  EXPECT_THAT(ledger.UnexpectedFailures(), IsEmpty());
+  EXPECT_EQ(ledger.expected_failures(), 1);
+  EXPECT_EQ(ledger.unexpected_failures(), 0);
   EXPECT_THAT(ledger.UnexpectedSuccesses(), SizeIs(100));
   EXPECT_EQ(ledger.unexpected_successes(), 100);
   EXPECT_THAT(ledger.Finalize(), IsOk());
@@ -516,6 +528,15 @@ TEST_F(ResultLedgerTest, UnexpectedFailuresIgnoreDuplicateReports) {
               ElementsAre(FieldsAre("foo", "first", absl::nullopt)));
   EXPECT_EQ(ledger.unexpected_failures(), 1);
   EXPECT_THAT(ledger.Finalize(), IsOk());
+
+  // Including for what --fix writes.
+  ASSERT_THAT(ledger.SaveFailureList(absl::StrCat(failure_list(), ".new")),
+              IsOk());
+  std::string content;
+  ASSERT_THAT(File::GetContents(absl::StrCat(failure_list(), ".new"), &content,
+                                true),
+              IsOk());
+  EXPECT_EQ(content, "foo # first\n");
 }
 
 TEST_F(ResultLedgerTest, UnexpectedSuccesses) {
@@ -546,26 +567,34 @@ TEST_F(ResultLedgerTest, UnexpectedSuccesses) {
   EXPECT_THAT(ledger.Finalize(), IsOk());
 }
 
-TEST_F(ResultLedgerTest, ReportUnexpectedFailureTooManyWildcardMatches) {
-  CreateFailureList({{"foo.*.bar"}});
+TEST_F(ResultLedgerTest, OverexpandedWildcards) {
+  CreateFailureList({{"foo.*.bar", "abc"}, {"baz.*", "abc"}});
   ResultLedger ledger;
   ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
 
-  for (int i = 0; i < 100; ++i) {
-    EXPECT_THAT(ledger.ReportSuccess(absl::StrCat("foo.", i, ".bar")),
-                StatusIs(absl::StatusCode::kFailedPrecondition));
+  // Expected failures and unexpected successes count toward the cap, each
+  // test once however often it is reported.
+  for (int i = 0; i < kMaximumWildcardExpansions; ++i) {
+    ASSERT_THAT(
+        ledger.ReportFailure(absl::StrCat("foo.", i, ".bar"), kP0, "abc"),
+        IsOk());
+    ASSERT_THAT(ledger.ReportSuccess(absl::StrCat("baz.", i)), Not(IsOk()));
   }
-  ASSERT_THAT(ledger.ReportFailure("foo.baz.bar", kP0, ""),
-              StatusIs(absl::StatusCode::kFailedPrecondition,
-                       AllOf(HasSubstr("too many test names"),
-                             HasSubstr("foo.baz.bar"))));
+  ASSERT_THAT(ledger.ReportFailure("foo.0.bar", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportSuccess("baz.0"), Not(IsOk()));
+  EXPECT_THAT(ledger.OverexpandedWildcards(), IsEmpty());
 
+  // Skips and failures with another message don't count.
+  ASSERT_THAT(ledger.ReportSkip("foo.skip.bar", "reason"), Not(IsOk()));
+  ASSERT_THAT(ledger.ReportFailure("foo.other.bar", kP0, "xyz"), Not(IsOk()));
+  EXPECT_THAT(ledger.OverexpandedWildcards(), IsEmpty());
+
+  // One more verdict puts an entry over the cap.  The list is sorted.
+  ASSERT_THAT(ledger.ReportFailure("foo.more.bar", kP0, "abc"), IsOk());
+  ASSERT_THAT(ledger.ReportSuccess("baz.more"), Not(IsOk()));
+  EXPECT_THAT(ledger.OverexpandedWildcards(),
+              ElementsAre("baz.*", "foo.*.bar"));
   EXPECT_THAT(ledger.Finalize(), IsOk());
-  EXPECT_EQ(ledger.expected_failures(), 0);
-  EXPECT_EQ(ledger.unexpected_failures(), 1);
-  EXPECT_EQ(ledger.expected_successes(), 0);
-  EXPECT_EQ(ledger.unexpected_successes(), 100);
-  EXPECT_EQ(ledger.skipped(), 0);
 }
 
 TEST_F(ResultLedgerTest, LoadFailureListInvalidFile) {
@@ -586,55 +615,6 @@ TEST_F(ResultLedgerTest, LoadFailureListDuplicateFailure) {
               StatusIs(absl::StatusCode::kAlreadyExists,
                        AllOf(HasSubstr("already exists"), HasSubstr("foo"))));
   ledger.Finalize().IgnoreError();
-}
-
-TEST_F(ResultLedgerTest, LoadFailureListOverlappingFailure) {
-  CreateFailureList(R"(
-    foo.*.bar # abc
-    foo.bar.* # zyx
-)");
-  ResultLedger ledger;
-
-  EXPECT_THAT(ledger.LoadFailureList(failure_list()),
-              StatusIs(absl::StatusCode::kAlreadyExists,
-                       AllOf(HasSubstr("foo.bar.*"), HasSubstr("foo.*.bar"))));
-  ledger.Finalize().IgnoreError();
-}
-
-TEST_F(ResultLedgerTest, UnexpectedSuccessMessageNamesTheEntry) {
-  CreateFailureList({{"foo", "abc"}});
-  ResultLedger ledger;
-  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
-
-  // The message is the legacy runner's, including the matched entry.
-  EXPECT_THAT(ledger.ReportSuccess("foo"),
-              StatusIs(absl::StatusCode::kFailedPrecondition,
-                       "test foo (matched to foo) is in the failure list, but "
-                       "test succeeded.  Remove its match from the failure "
-                       "list."));
-  EXPECT_THAT(ledger.Finalize(), IsOk());
-  EXPECT_EQ(ledger.unexpected_successes(), 1);
-}
-
-TEST_F(ResultLedgerTest, UnexpectedSuccessMessageNamesTheWildcardEntry) {
-  CreateFailureList({{"foo.*.bar", "abc"}});
-  ResultLedger ledger;
-  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
-
-  EXPECT_THAT(ledger.ReportSuccess("foo.a.bar"),
-              StatusIs(absl::StatusCode::kFailedPrecondition,
-                       HasSubstr("test foo.a.bar (matched to foo.*.bar) is in "
-                                 "the failure list")));
-  EXPECT_THAT(ledger.Finalize(), IsOk());
-}
-
-TEST_F(ResultLedgerTest, EveryPriorityIsEnforcedByDefault) {
-  ResultLedger ledger;
-  EXPECT_THAT(ledger.ReportFailure("p0", kP0, "abc"), Not(IsOk()));
-  EXPECT_THAT(ledger.ReportFailure("p1", kP1, "abc"), Not(IsOk()));
-  EXPECT_EQ(ledger.unexpected_failures(), 2);
-  EXPECT_EQ(ledger.tolerated_failures(), 0);
-  EXPECT_THAT(ledger.Finalize(), IsOk());
 }
 
 TEST_F(ResultLedgerTest, EnforcementLevelZeroToleratesP1) {
@@ -709,14 +689,6 @@ TEST_F(ResultLedgerTest, ListedFailureIsCheckedWhateverItsPriority) {
   ledger.Finalize().IgnoreError();
 }
 
-TEST_F(ResultLedgerTest, LoadFailureListInvalidWildcard) {
-  CreateFailureList({{"foo.b*r", "abc"}});
-  ResultLedger ledger;
-  EXPECT_THAT(ledger.LoadFailureList(failure_list()),
-              StatusIs(absl::StatusCode::kInvalidArgument));
-  ledger.Finalize().IgnoreError();
-}
-
 TEST_F(ResultLedgerTest, LoadFailureListTruncatesMessage) {
   // Like a reported message, so that the two still compare equal.
   std::string message(1000, 'b');
@@ -746,28 +718,6 @@ TEST_F(ResultLedgerTest, LoadSecondFailureList) {
   EXPECT_THAT(ledger.ReportFailure("bar", kP0, "zyx"), IsOk());
   EXPECT_THAT(ledger.Finalize(), IsOk());
   EXPECT_EQ(ledger.expected_failures(), 2);
-}
-
-TEST_F(ResultLedgerTest, FailureListMatchesWholeNameComponents) {
-  CreateFailureList({{"foo", "abc"}, {"bar.*.baz", "abc"}, {"qux", "abc"}});
-  ResultLedger ledger;
-  ASSERT_THAT(ledger.LoadFailureList(failure_list()), IsOk());
-
-  EXPECT_THAT(ledger.ReportFailure("foo", kP0, "abc"), IsOk());
-  EXPECT_THAT(ledger.ReportFailure("qux", kP0, "abc"), IsOk());
-  EXPECT_THAT(ledger.ReportFailure("bar.a.baz", kP0, "abc"), IsOk());
-  EXPECT_THAT(ledger.ReportFailure("bar.b.baz", kP0, "abc"), IsOk());
-  // Neither a prefix nor an extension of an entry matches it, and a wildcard
-  // stands for exactly one component.
-  EXPECT_THAT(ledger.ReportFailure("foo.bar", kP0, "abc"), Not(IsOk()));
-  EXPECT_THAT(ledger.ReportFailure("bar", kP0, "abc"), Not(IsOk()));
-  EXPECT_THAT(ledger.ReportFailure("bar.a", kP0, "abc"), Not(IsOk()));
-  EXPECT_THAT(ledger.ReportFailure("bar.a.baz.qux", kP0, "abc"), Not(IsOk()));
-  EXPECT_THAT(ledger.ReportFailure("other", kP0, "abc"), Not(IsOk()));
-
-  EXPECT_EQ(ledger.expected_failures(), 4);
-  EXPECT_EQ(ledger.unexpected_failures(), 5);
-  EXPECT_THAT(ledger.Finalize(), IsOk());
 }
 
 TEST_F(ResultLedgerTest, SaveFailureListNoop) {

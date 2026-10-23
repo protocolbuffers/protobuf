@@ -7,6 +7,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/numbers.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "conformance/binary_wireformat.h"
 #include "conformance/conformance.pb.h"
@@ -55,6 +56,7 @@ std::string GetTestName(absl::string_view test_name, TestPriority priority,
     absl::string_view test_name, const ConformanceRequest& request) {
   ABSL_CHECK(test_names_ran_.emplace(test_name).second)
       << "Duplicated test name: " << test_name;
+  tests_run_.emplace_back(test_name);
 
   std::string serialized_request;
   // TODO: Remove this suppression.

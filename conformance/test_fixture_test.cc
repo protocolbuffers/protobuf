@@ -7,6 +7,7 @@
 
 #include "conformance/test_fixture.h"
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -29,6 +30,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
 #include "google/protobuf/test_messages_proto3.pb.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/text_format.h"
 
 namespace google {
@@ -105,12 +107,11 @@ TEST_F(FixtureTest, InfersTestNameFromCurrentTest) {
       Yields(WhenParsed(EqualsTextProto(R"pb(optional_int32: 99)pb"))));
 }
 
-// A ConformanceTest whose SetUp() and TearDown() leave the global environment
-// alone, so that Testee() can be called without one.
+// A ConformanceTest whose SetUp() leaves the global environment alone, so
+// that Testee() can be called without one.
 class TesteeDeathTest : public ConformanceTest {
  protected:
   void SetUp() override {}
-  void TearDown() override {}
 };
 
 TEST_F(TesteeDeathTest, WithoutInstall) { EXPECT_DEATH(Testee(), "Install"); }
@@ -134,19 +135,46 @@ struct EditionGatingCase {
   bool supported;
 };
 
-class EditionGatingTest
-    : public FixtureTest,
-      public testing::WithParamInterface<EditionGatingCase> {
+std::vector<EditionGatingCase> EditionGatingCases() {
+  return {
+      {TestAllTypesProto2::descriptor(), EDITION_PROTO3, /*supported=*/true},
+      {TestAllTypesProto3::descriptor(), EDITION_PROTO3, /*supported=*/true},
+      {TestAllTypesEdition2023::descriptor(), EDITION_PROTO3,
+       /*supported=*/false},
+      {TestAllTypesEdition2023::descriptor(), EDITION_2023, /*supported=*/true},
+      {TestAllTypesEditionUnstable::descriptor(), EDITION_PROTO3,
+       /*supported=*/false},
+      {TestAllTypesEditionUnstable::descriptor(), EDITION_2023,
+       /*supported=*/true},
+      {TestAllTypesEditionUnstable::descriptor(), EDITION_2024,
+       /*supported=*/true},
+  };
+}
+
+std::string EditionGatingCaseName(const EditionGatingCase& test_case, size_t) {
+  return absl::StrCat(
+      absl::StripPrefix(test_case.message->name(), "TestAllTypes"), "_",
+      Edition_Name(test_case.maximum_edition));
+}
+
+class EditionGatingTest : public FixtureTest {
  protected:
   EditionGatingTest()
-      : FixtureTest(WithMaximumEdition(GetParam().maximum_edition)) {}
+      : EditionGatingTest(PB_TEST_CHOOSE_VALUE(EditionGatingCases(),
+                                               EditionGatingCaseName)) {}
 
   void SetUp() override {
     ConformanceTest::SetUp();
-    EXPECT_EQ(IsSkipped(), !GetParam().supported);
+    EXPECT_EQ(IsSkipped(), !test_case_.supported);
   }
 
+  const EditionGatingCase test_case_;
+
  private:
+  explicit EditionGatingTest(const EditionGatingCase& test_case)
+      : FixtureTest(WithMaximumEdition(test_case.maximum_edition)),
+        test_case_(test_case) {}
+
   static ConformanceEnvironmentOptions WithMaximumEdition(Edition edition) {
     ConformanceEnvironmentOptions options;
     options.maximum_edition = edition;
@@ -154,36 +182,13 @@ class EditionGatingTest
   }
 
   const Descriptor* MessageUnderTest() const override {
-    return GetParam().message;
+    return test_case_.message;
   }
 };
 
-TEST_P(EditionGatingTest, SetUpSkipsUnsupportedMessages) {
-  EXPECT_TRUE(GetParam().supported) << "SetUp() should have skipped this test.";
+PB_TEST_F(EditionGatingTest, SetUpSkipsUnsupportedMessages) {
+  EXPECT_TRUE(test_case_.supported) << "SetUp() should have skipped this test.";
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    All, EditionGatingTest,
-    testing::Values(
-        EditionGatingCase{TestAllTypesProto2::descriptor(), EDITION_PROTO3,
-                          /*supported=*/true},
-        EditionGatingCase{TestAllTypesProto3::descriptor(), EDITION_PROTO3,
-                          /*supported=*/true},
-        EditionGatingCase{TestAllTypesEdition2023::descriptor(), EDITION_PROTO3,
-                          /*supported=*/false},
-        EditionGatingCase{TestAllTypesEdition2023::descriptor(), EDITION_2023,
-                          /*supported=*/true},
-        EditionGatingCase{TestAllTypesEditionUnstable::descriptor(),
-                          EDITION_PROTO3, /*supported=*/false},
-        EditionGatingCase{TestAllTypesEditionUnstable::descriptor(),
-                          EDITION_2023, /*supported=*/true},
-        EditionGatingCase{TestAllTypesEditionUnstable::descriptor(),
-                          EDITION_2024, /*supported=*/true}),
-    [](const testing::TestParamInfo<EditionGatingCase>& info) {
-      return absl::StrCat(
-          absl::StripPrefix(info.param.message->name(), "TestAllTypes"), "_",
-          Edition_Name(info.param.maximum_edition));
-    });
 
 // --- ConformanceTest fixture -------------------------------------------------
 
