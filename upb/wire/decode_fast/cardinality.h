@@ -82,6 +82,9 @@ typedef enum {
   // Tail call for decoding an unknown value; ptr points to the start of the
   // tag.
   kUpb_DecodeFastNext_DecodeUnknownValue = 12,
+
+  // Tail call for decoding a colliding repeated or map field via fasttable.
+  kUpb_DecodeFastNext_DecodeCollidingField = 13,
 } upb_DecodeFastNext;
 
 UPB_INLINE bool upb_DecodeFast_SetExit(upb_DecodeFastNext* next,
@@ -149,6 +152,9 @@ UPB_INLINE bool upb_DecodeFast_SetError(upb_Decoder* d,
           UPB_PARSE_ARGS);                                                     \
     case kUpb_DecodeFastNext_DecodeLongTag:                                    \
       UPB_MUSTTAIL return _upb_FastDecoder_DecodeLongTag(UPB_PARSE_ARGS);      \
+    case kUpb_DecodeFastNext_DecodeCollidingField:                             \
+      UPB_MUSTTAIL return _upb_FastDecoder_DecodeCollidingField(               \
+          UPB_PARSE_ARGS);                                                     \
     default:                                                                   \
       UPB_UNREACHABLE();                                                       \
   }

@@ -103,6 +103,13 @@ message ModelWithMaps {
   map<int32, ModelWithRequiredFields> map_im_required = 6;
 }
 
+message ModelWithCollidingMaps {
+  optional uint32 scalar_field = 60;
+  optional uint32 colliding_scalar_field = 76;
+  map<int32, uint32> map_field = 108;
+  map<bool, uint32> bool_map_field = 124;
+}
+
 message ExtremeDefaults {
   optional int64 int64_min = 1 [default = -9223372036854775808];
 }

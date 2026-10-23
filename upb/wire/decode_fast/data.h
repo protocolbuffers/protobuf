@@ -30,10 +30,11 @@
 //    start into the subs array (or 0 if no sub).
 // - `expected_tag` is the expected value of the tag for this field.
 
-UPB_INLINE bool upb_DecodeFast_MakeData(uint64_t offset, uint64_t case_offset,
-                                        uint64_t presence, uint64_t subofs,
-                                        uint64_t expected_tag,
-                                        uint64_t* out_data) {
+UPB_FORCEINLINE bool upb_DecodeFast_MakeData(uint64_t offset,
+                                             uint64_t case_offset,
+                                             uint64_t presence, uint64_t subofs,
+                                             uint64_t expected_tag,
+                                             uint64_t* out_data) {
   if (offset > 0xffff || case_offset > 0xffff || presence > 0xff ||
       subofs > 0xff || expected_tag > 0xffff) {
     return false;
@@ -110,7 +111,7 @@ enum {
 
 // `key_size` and `val_size` are upb_Map::key_size / upb_Map::val_size, i.e. the
 // kSizeInMap[] values from decode.c (UPB_MAPTYPE_STRING for string/bytes).
-UPB_INLINE bool upb_DecodeFast_MakeMapData(
+UPB_FORCEINLINE bool upb_DecodeFast_MakeMapData(
     uint64_t offset, bool key_is_zigzag, bool val_is_zigzag, bool is_tag2,
     bool is_str_map, bool key_validate_utf8, bool val_validate_utf8,
     bool val_is_message, uint64_t key_wire_type, uint64_t val_wire_type,

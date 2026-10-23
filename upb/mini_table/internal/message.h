@@ -321,7 +321,8 @@ const struct upb_MiniTableField* upb_MiniTable_FindFieldByNumber(
 
 UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
     const struct upb_MiniTableField* field, uint32_t number,
-    uint32_t* out_gap_lo, uint32_t* out_gap_hi) {
+    uint32_t* out_gap_lo, uint32_t* out_gap_hi,
+    const struct upb_MiniTableField** out_field) {
   UPB_STATIC_ASSERT(sizeof(upb_MiniTableSubInternal) == sizeof(void*),
                     "SubInternal size must be pointer sized.");
   if (field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub) {
@@ -337,25 +338,26 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
       return true;
     }
   }
+  if (out_field != NULL) *out_field = field;
   return false;
 }
 
 // Given a tag number, finds the known field tags bounding the gap of unknown
-// fields containing it. Returns false and does not set bounds if the tag number
-// matches a known field and it is linked or primitive. Otherwise returns true
-// and sets out_gap_lo and out_gap_hi (exclusive/exclusive) to define the range
-// of unknown fields (out_gap_lo, out_gap_hi). Unlinked submessages are treated
-// as gaps.
-UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
+// fields containing it. Returns false, sets *out_field (if non-NULL), and does
+// not set bounds if the tag number matches a known field and it is linked or
+// primitive. Otherwise returns true and sets out_gap_lo and out_gap_hi
+// (exclusive/exclusive) to define the range of unknown fields
+// (out_gap_lo, out_gap_hi). Unlinked submessages are treated as gaps.
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindFieldOrUnknownGap)(
     const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
-    uint32_t* out_gap_hi) {
+    uint32_t* out_gap_hi, const struct upb_MiniTableField** out_field) {
   UPB_ASSERT(number != 0);
   UPB_ASSERT(number < ((uint32_t)1 << 29));
   const uint32_t i = number - 1;
   if (i < m->UPB_PRIVATE(dense_below)) {
     // Dense field; we know it's present.
     return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
-        &m->UPB_ONLYBITS(fields)[i], number, out_gap_lo, out_gap_hi);
+        &m->UPB_ONLYBITS(fields)[i], number, out_gap_lo, out_gap_hi, out_field);
   }
 
   uint32_t hi = m->UPB_ONLYBITS(field_count);
@@ -379,8 +381,8 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
 
   uint32_t candidate_num = candidate->UPB_ONLYBITS(number);
   if (candidate_num == number) {
-    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(candidate, number,
-                                                     out_gap_lo, out_gap_hi);
+    return UPB_PRIVATE(_upb_MiniTable_GapIfUnlinked)(
+        candidate, number, out_gap_lo, out_gap_hi, out_field);
   }
 
   if (candidate_num < number) {
@@ -394,6 +396,13 @@ UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
     *out_gap_hi = candidate_num;
   }
   return true;
+}
+
+UPB_FORCEINLINE bool UPB_PRIVATE(_upb_MiniTable_FindUnknownGap)(
+    const struct upb_MiniTable* m, uint32_t number, uint32_t* out_gap_lo,
+    uint32_t* out_gap_hi) {
+  return UPB_PRIVATE(_upb_MiniTable_FindFieldOrUnknownGap)(
+      m, number, out_gap_lo, out_gap_hi, NULL);
 }
 
 UPB_API_INLINE const struct upb_MiniTable* upb_MiniTable_MapEntrySubMessage(

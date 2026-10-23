@@ -22,30 +22,9 @@
                            kUpb_DecodeFast_##size)                         \
   ? &UPB_DECODEFAST_FUNCNAME(type, card, size) : _upb_FastDecoder_DecodeGeneric,
 
-static _upb_FieldParser* funcs[] = {UPB_DECODEFAST_FUNCTIONS(ADDR_OF_FUNC)};
+_upb_FieldParser* const UPB_PRIVATE(_upb_DecodeFast_FunctionArray)[] = {
+    UPB_DECODEFAST_FUNCTIONS(ADDR_OF_FUNC)};
 
 #undef ADDR_OF_FUNC
-
-_upb_FieldParser* upb_DecodeFast_GetFunctionPointer(uint32_t function_idx) {
-  switch (function_idx) {
-    case UINT32_MAX:
-      return &_upb_FastDecoder_DecodeGeneric;
-    case kUpb_DecodeFast_Unknown:
-      return &_upb_FastDecoder_DecodeUnknown;
-    case kUpb_DecodeFast_ExtensionOrUnknown:
-      return &_upb_FastDecoder_DecodeExtensionOrUnknown;
-    case kUpb_DecodeFast_IntMap_Tag1Byte:
-      return &upb_DecodeFast_IntMap_Tag1Byte;
-    case kUpb_DecodeFast_IntMap_Tag2Byte:
-      return &upb_DecodeFast_IntMap_Tag2Byte;
-    case kUpb_DecodeFast_StrMap_Tag1Byte:
-      return &upb_DecodeFast_StrMap_Tag1Byte;
-    case kUpb_DecodeFast_StrMap_Tag2Byte:
-      return &upb_DecodeFast_StrMap_Tag2Byte;
-    default:
-      UPB_ASSERT(function_idx < UPB_ARRAY_SIZE(funcs));
-      return funcs[function_idx];
-  }
-}
 
 #include "upb/port/undef.inc"

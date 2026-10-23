@@ -73,6 +73,10 @@ UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return _upb_FastDecoder_DecodeLongTag(PARSE_PARAMS);
 
 UPB_PRESERVE_NONE
+struct upb_FastDecoder_Return _upb_FastDecoder_DecodeCollidingField(
+    PARSE_PARAMS);
+
+UPB_PRESERVE_NONE
 struct upb_FastDecoder_Return upb_DecodeFast_IntMap_Tag1Byte(PARSE_PARAMS);
 
 UPB_PRESERVE_NONE

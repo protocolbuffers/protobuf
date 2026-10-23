@@ -67,34 +67,6 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
         field->UPB_PRIVATE(mode) =
             (field->UPB_PRIVATE(mode) & ~kUpb_FieldMode_Mask) |
             kUpb_FieldMode_Map;
-
-#if UPB_FASTTABLE
-        // Update fasttable entry with specialized map decoder function pointer
-        // and metadata.
-        int size = table->UPB_PRIVATE(table_mask) == 0xff
-                       ? 0
-                       : ((table->UPB_PRIVATE(table_mask) >> 3) + 1);
-        for (int i = 0; i < size; i++) {
-          _upb_FastTable_Entry* entry = &table->UPB_PRIVATE(fasttable)[i];
-          uint32_t field_number =
-              upb_DecodeFastData_GetFieldNumber(entry->field_data);
-          if (field_number == upb_MiniTableField_Number(field)) {
-            uint16_t expected_tag =
-                upb_DecodeFastData_GetExpectedTag(entry->field_data);
-            uint64_t subofs = upb_DecodeFastData_GetSubofs(entry->field_data);
-            upb_DecodeFast_TableEntry fast_entry;
-            if (upb_DecodeFast_TryFillMapEntry(field, sub, expected_tag, subofs,
-                                               &fast_entry)) {
-              entry->field_parser =
-                  upb_DecodeFast_GetFunctionPointer(fast_entry.function_idx);
-              entry->field_data = fast_entry.function_data;
-            } else {
-              entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
-              entry->field_data = 0;
-            }
-          }
-        }
-#endif
       } else if (table_is_map) {
         // If table is a map entry, only field 2 (value) can be a submessage.
         if (UPB_UNLIKELY(upb_MiniTableField_Number(field) != 2)) {
@@ -115,6 +87,45 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
       UPB_PRIVATE(_upb_MiniTableField_Sub)(field);
   UPB_ASSERT(upb_MiniTable_GetSubMessageTable(field) == NULL);
   table_sub->UPB_PRIVATE(submsg) = sub;
+
+#if UPB_FASTTABLE
+  if (sub_is_map) {
+    if (UPB_PRIVATE(_upb_MiniTableField_IsFastTableCollision)(field)) {
+      bool supported_tag_size;
+      upb_DecodeFast_TableEntry fast_entry;
+      if (!upb_DecodeFast_TryFillEntry(table, field, &supported_tag_size,
+                                       &fast_entry)) {
+        UPB_PRIVATE(_upb_MiniTableField_ClearIsFastTableCollision)(field);
+      }
+    } else {
+      // Update fasttable entry with specialized map decoder function pointer
+      // and metadata.
+      int size = table->UPB_PRIVATE(table_mask) == 0xff
+                     ? 0
+                     : ((table->UPB_PRIVATE(table_mask) >> 3) + 1);
+      for (int i = 0; i < size; i++) {
+        _upb_FastTable_Entry* entry = &table->UPB_PRIVATE(fasttable)[i];
+        uint32_t field_number =
+            upb_DecodeFastData_GetFieldNumber(entry->field_data);
+        if (field_number == upb_MiniTableField_Number(field)) {
+          uint16_t expected_tag =
+              upb_DecodeFastData_GetExpectedTag(entry->field_data);
+          uint64_t subofs = upb_DecodeFastData_GetSubofs(entry->field_data);
+          upb_DecodeFast_TableEntry fast_entry;
+          if (upb_DecodeFast_TryFillMapEntry(field, sub, expected_tag, subofs,
+                                             &fast_entry)) {
+            entry->field_parser =
+                upb_DecodeFast_GetFunctionPointer(fast_entry.function_idx);
+            entry->field_data = fast_entry.function_data;
+          } else {
+            entry->field_parser = &_upb_FastDecoder_DecodeGeneric;
+            entry->field_data = 0;
+          }
+        }
+      }
+    }
+  }
+#endif
   return true;
 }
 

@@ -2938,6 +2938,287 @@ TEST(DecodeTest, FailedOneofStringLeavesPreviousMember) {
   }
 }
 
+// Builds a MiniTable where scalar field 60 (uint32) and map field 108
+// (map<int32, uint32>) collide on fasttable slot 28, with an additional
+// trailing bytes field 1 to keep the map entries before the 16-byte stream
+// slop boundary.
+const upb_MiniTable* BuildCollidingScalarAndMapTable(bool extensible,
+                                                     upb_Arena* arena) {
+  MtDataEncoder entry_enc;
+  entry_enc.EncodeMap(kUpb_FieldType_Int32, kUpb_FieldType_UInt32, 0, 0);
+  Status status;
+  upb_MiniTable* entry_table = upb_MiniTable_Build(
+      entry_enc.data().data(), entry_enc.data().size(), arena, status.ptr());
+  ABSL_CHECK(entry_table != nullptr);
+
+  MtDataEncoder msg_enc;
+  msg_enc.StartMessage(extensible ? kUpb_MessageModifier_IsExtendable : 0);
+  msg_enc.PutField(kUpb_FieldType_Bytes, 1, 0);
+  msg_enc.PutField(kUpb_FieldType_UInt32, 60, 0);
+  msg_enc.PutField(kUpb_FieldType_Message, 108, kUpb_FieldModifier_IsRepeated);
+  upb_MiniTable* msg_table = upb_MiniTable_Build(
+      msg_enc.data().data(), msg_enc.data().size(), arena, status.ptr());
+  ABSL_CHECK(msg_table != nullptr);
+
+  upb_MiniTableField* map_field = const_cast<upb_MiniTableField*>(
+      upb_MiniTable_FindFieldByNumber(msg_table, 108));
+  ABSL_CHECK(upb_MiniTable_SetSubMessage(msg_table, map_field, entry_table));
+  return msg_table;
+}
+
+TEST(DecodeTest, DecodeCollidingMapViaTagMismatchFastPath) {
+  for (bool extensible : {false, true}) {
+    SCOPED_TRACE(extensible);
+    Arena mt_arena;
+    const upb_MiniTable* mt =
+        BuildCollidingScalarAndMapTable(extensible, mt_arena.ptr());
+    const upb_MiniTableField* bytes_field =
+        upb_MiniTable_FindFieldByNumber(mt, 1);
+    const upb_MiniTableField* scalar_field =
+        upb_MiniTable_FindFieldByNumber(mt, 60);
+    const upb_MiniTableField* map_field =
+        upb_MiniTable_FindFieldByNumber(mt, 108);
+    const upb_MiniTable* entry_mt = upb_MiniTable_GetSubMessageTable(map_field);
+
+    Arena enc_arena;
+    upb_Message* src = upb_Message_New(mt, enc_arena.ptr());
+    upb_Message_SetBaseFieldUInt32(src, scalar_field, 0x12345678u);
+    upb_Map* src_map = upb_Message_GetOrCreateMutableMap(
+        src, entry_mt, map_field, enc_arena.ptr());
+    ASSERT_NE(src_map, nullptr);
+    for (int32_t k : {10, 20, 30}) {
+      ASSERT_TRUE(upb_Map_Set(src_map, MsgVal(k),
+                              MsgVal(static_cast<uint32_t>(k * 100)),
+                              enc_arena.ptr()));
+    }
+    // Encode the message (fields 60 and 108) and append a 20-byte field 1 at
+    // the end so all map entries of field 108 precede the 16-byte stream slop.
+    char* prefix_buf = nullptr;
+    size_t prefix_size = 0;
+    ASSERT_EQ(upb_Encode(src, mt, kUpb_EncodeOption_Deterministic,
+                         enc_arena.ptr(), &prefix_buf, &prefix_size),
+              kUpb_EncodeStatus_Ok);
+    std::string tail = ToBinaryPayload(wire_types::WireMessage{
+        {1, wire_types::Delimited{std::string(20, 'x')}}});
+    std::string payload =
+        absl::StrCat(absl::string_view(prefix_buf, prefix_size), tail);
+
+    for (int options : GetDecodeOptionsToTest()) {
+      SCOPED_TRACE(options);
+      Arena msg_arena;
+      char trace_buf[64] = {0};
+      upb_Message* dst = upb_Message_New(mt, msg_arena.ptr());
+      upb_DecodeStatus result = upb_DecodeWithTrace(
+          payload.data(), payload.size(), dst, mt, nullptr, options,
+          msg_arena.ptr(), trace_buf, sizeof(trace_buf));
+      ASSERT_EQ(result, kUpb_DecodeStatus_Ok)
+          << upb_DecodeStatus_String(result);
+
+      EXPECT_EQ(upb_Message_GetUInt32(dst, scalar_field, 0), 0x12345678u);
+      upb_StringView got_bytes = upb_Message_GetString(
+          dst, bytes_field, upb_StringView_FromDataAndSize(nullptr, 0));
+      EXPECT_EQ(absl::string_view(got_bytes.data, got_bytes.size),
+                std::string(20, 'x'));
+      const upb_Map* dst_map = upb_Message_GetMap(dst, map_field);
+      ASSERT_NE(dst_map, nullptr);
+      EXPECT_EQ(upb_Map_Size(dst_map), 3u);
+      for (int32_t k : {10, 20, 30}) {
+        upb_MessageValue val;
+        ASSERT_TRUE(upb_Map_Get(dst_map, MsgVal(k), &val));
+        EXPECT_EQ(val.uint32_val, static_cast<uint32_t>(k * 100));
+      }
+
+#if !defined(NDEBUG) && UPB_FASTTABLE
+      if (!(options & kUpb_DecodeOption_DisableFastTable)) {
+        // Field 60 ("DF"), field 108 via slot mismatch ("DmFFF"), field 1
+        // ("DF"). No fallback ('<' or 'M') to the MiniTable decoder.
+        EXPECT_EQ(absl::string_view(trace_buf), "DFDmFFFDF");
+      }
+#endif
+    }
+  }
+}
+
+TEST(DecodeTest, DecodeTwoCollidingMapsBothUseFastPath) {
+  Arena mt_arena;
+  Status status;
+  MtDataEncoder int_entry_enc;
+  int_entry_enc.EncodeMap(kUpb_FieldType_Int32, kUpb_FieldType_UInt32, 0, 0);
+  upb_MiniTable* int_entry_table = upb_MiniTable_Build(
+      int_entry_enc.data().data(), int_entry_enc.data().size(), mt_arena.ptr(),
+      status.ptr());
+  ASSERT_TRUE(status.ok());
+
+  MtDataEncoder str_entry_enc;
+  str_entry_enc.EncodeMap(kUpb_FieldType_String, kUpb_FieldType_String,
+                          kUpb_FieldModifier_ValidateUtf8,
+                          kUpb_FieldModifier_ValidateUtf8);
+  upb_MiniTable* str_entry_table = upb_MiniTable_Build(
+      str_entry_enc.data().data(), str_entry_enc.data().size(), mt_arena.ptr(),
+      status.ptr());
+  ASSERT_TRUE(status.ok());
+
+  // Field 44 and field 108 both map to fasttable slot 28.
+  MtDataEncoder msg_enc;
+  msg_enc.StartMessage(0);
+  msg_enc.PutField(kUpb_FieldType_Bytes, 1, 0);
+  msg_enc.PutField(kUpb_FieldType_Message, 44, kUpb_FieldModifier_IsRepeated);
+  msg_enc.PutField(kUpb_FieldType_Message, 108, kUpb_FieldModifier_IsRepeated);
+  upb_MiniTable* mt =
+      upb_MiniTable_Build(msg_enc.data().data(), msg_enc.data().size(),
+                          mt_arena.ptr(), status.ptr());
+  ASSERT_TRUE(status.ok());
+
+  upb_MiniTableField* map44 =
+      const_cast<upb_MiniTableField*>(upb_MiniTable_FindFieldByNumber(mt, 44));
+  upb_MiniTableField* map108 =
+      const_cast<upb_MiniTableField*>(upb_MiniTable_FindFieldByNumber(mt, 108));
+  ASSERT_TRUE(upb_MiniTable_SetSubMessage(mt, map44, int_entry_table));
+  ASSERT_TRUE(upb_MiniTable_SetSubMessage(mt, map108, str_entry_table));
+
+  Arena enc_arena;
+  upb_Message* src = upb_Message_New(mt, enc_arena.ptr());
+  upb_Map* src_map44 = upb_Message_GetOrCreateMutableMap(
+      src, int_entry_table, map44, enc_arena.ptr());
+  ASSERT_TRUE(upb_Map_Set(src_map44, MsgVal(1), MsgVal(10u), enc_arena.ptr()));
+  ASSERT_TRUE(upb_Map_Set(src_map44, MsgVal(2), MsgVal(20u), enc_arena.ptr()));
+
+  upb_Map* src_map108 = upb_Message_GetOrCreateMutableMap(
+      src, str_entry_table, map108, enc_arena.ptr());
+  ASSERT_TRUE(upb_Map_Set(src_map108, MsgVal(upb_StringView_FromString("k1")),
+                          MsgVal(upb_StringView_FromString("v1")),
+                          enc_arena.ptr()));
+  ASSERT_TRUE(upb_Map_Set(src_map108, MsgVal(upb_StringView_FromString("k2")),
+                          MsgVal(upb_StringView_FromString("v2")),
+                          enc_arena.ptr()));
+
+  char* prefix_buf = nullptr;
+  size_t prefix_size = 0;
+  ASSERT_EQ(upb_Encode(src, mt, kUpb_EncodeOption_Deterministic,
+                       enc_arena.ptr(), &prefix_buf, &prefix_size),
+            kUpb_EncodeStatus_Ok);
+  std::string tail = ToBinaryPayload(wire_types::WireMessage{
+      {1, wire_types::Delimited{std::string(20, 'y')}}});
+  std::string payload =
+      absl::StrCat(absl::string_view(prefix_buf, prefix_size), tail);
+
+  Arena msg_arena;
+  char trace_buf[64] = {0};
+  upb_Message* dst = upb_Message_New(mt, msg_arena.ptr());
+  ASSERT_EQ(
+      upb_DecodeWithTrace(payload.data(), payload.size(), dst, mt, nullptr, 0,
+                          msg_arena.ptr(), trace_buf, sizeof(trace_buf)),
+      kUpb_DecodeStatus_Ok);
+
+  const upb_Map* dst_map44 = upb_Message_GetMap(dst, map44);
+  const upb_Map* dst_map108 = upb_Message_GetMap(dst, map108);
+  ASSERT_NE(dst_map44, nullptr);
+  ASSERT_NE(dst_map108, nullptr);
+  EXPECT_EQ(upb_Map_Size(dst_map44), 2u);
+  EXPECT_EQ(upb_Map_Size(dst_map108), 2u);
+
+#if !defined(NDEBUG) && UPB_FASTTABLE
+  // Map 44 ("DFF"), map 108 via slot mismatch ("DmFF"), field 1 ("DF").
+  EXPECT_EQ(absl::string_view(trace_buf), "DFFDmFFDF");
+#endif
+}
+
+TEST(DecodeTest, DecodeCollidingScalarAndRepeatedViaTagMismatchFastPath) {
+  Arena mt_arena;
+  MtDataEncoder msg_enc;
+  msg_enc.StartMessage(0);
+  // Fields 17, 33, 49, and 65 all have 2-byte tags that map to slot 17.
+  msg_enc.PutField(kUpb_FieldType_Int32, 17, 0);
+  msg_enc.PutField(kUpb_FieldType_Int32, 33, 0);
+  msg_enc.PutField(kUpb_FieldType_Int32, 49, kUpb_FieldModifier_IsRepeated);
+  msg_enc.PutField(kUpb_FieldType_Int32, 65,
+                   kUpb_FieldModifier_IsRepeated | kUpb_FieldModifier_IsPacked);
+  Status status;
+  const upb_MiniTable* mt =
+      upb_MiniTable_Build(msg_enc.data().data(), msg_enc.data().size(),
+                          mt_arena.ptr(), status.ptr());
+  ASSERT_TRUE(status.ok());
+
+  const upb_MiniTableField* f17 = upb_MiniTable_FindFieldByNumber(mt, 17);
+  const upb_MiniTableField* f33 = upb_MiniTable_FindFieldByNumber(mt, 33);
+  const upb_MiniTableField* f49 = upb_MiniTable_FindFieldByNumber(mt, 49);
+  const upb_MiniTableField* f65 = upb_MiniTable_FindFieldByNumber(mt, 65);
+
+  // 1. Canonical wire types for colliding scalar (33, which falls back to the
+  // MiniTable decoder), unpacked repeated (49, fast path), and packed repeated
+  // (65, fast path).
+  {
+    std::string payload = ToBinaryPayload(wire_types::WireMessage{
+        {17, wire_types::Varint{170}},
+        {33, wire_types::Varint{330}},
+        {49, wire_types::Varint{1}},
+        {49, wire_types::Varint{2}},
+        {65, wire_types::Delimited{"\x03\x04"}},
+    });
+    Arena msg_arena;
+    char trace_buf[64] = {0};
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    ASSERT_EQ(
+        upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                            msg_arena.ptr(), trace_buf, sizeof(trace_buf)),
+        kUpb_DecodeStatus_Ok);
+    EXPECT_EQ(upb_Message_GetInt32(msg, f17, 0), 170);
+    EXPECT_EQ(upb_Message_GetInt32(msg, f33, 0), 330);
+    EXPECT_EQ(GetRepeatedField<int32_t>(msg, f49),
+              (std::vector<int32_t>{1, 2}));
+    EXPECT_EQ(GetRepeatedField<int32_t>(msg, f65),
+              (std::vector<int32_t>{3, 4}));
+#if !defined(NDEBUG) && UPB_FASTTABLE
+    EXPECT_EQ(absl::string_view(trace_buf), "DFrm<MDmFFDmF");
+#endif
+  }
+
+  // 2. Flipped packed/unpacked wire types on colliding repeated fields (49
+  // encoded as packed, 65 encoded as unpacked).
+  {
+    std::string payload = ToBinaryPayload(wire_types::WireMessage{
+        {49, wire_types::Delimited{"\x05\x06"}},
+        {65, wire_types::Varint{7}},
+        {65, wire_types::Varint{8}},
+    });
+    Arena msg_arena;
+    char trace_buf[64] = {0};
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    ASSERT_EQ(
+        upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                            msg_arena.ptr(), trace_buf, sizeof(trace_buf)),
+        kUpb_DecodeStatus_Ok);
+    EXPECT_EQ(GetRepeatedField<int32_t>(msg, f49),
+              (std::vector<int32_t>{5, 6}));
+    EXPECT_EQ(GetRepeatedField<int32_t>(msg, f65),
+              (std::vector<int32_t>{7, 8}));
+#if !defined(NDEBUG) && UPB_FASTTABLE
+    EXPECT_EQ(absl::string_view(trace_buf), "DmFDmFF");
+#endif
+  }
+
+  // 3. Wire-type mismatch on colliding repeated field 49 (Fixed32 instead of
+  // Varint/Delimited): must fall back to the MiniTable decoder and be treated
+  // as an unknown field rather than re-entering the fast parser in a loop.
+  {
+    std::string payload = ToBinaryPayload(wire_types::WireMessage{
+        {49, wire_types::Fixed32{0xdeadbeef}},
+    });
+    Arena msg_arena;
+    char trace_buf[64] = {0};
+    upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+    ASSERT_EQ(
+        upb_DecodeWithTrace(payload.data(), payload.size(), msg, mt, nullptr, 0,
+                            msg_arena.ptr(), trace_buf, sizeof(trace_buf)),
+        kUpb_DecodeStatus_Ok);
+    EXPECT_EQ(GetRepeatedField<int32_t>(msg, f49), (std::vector<int32_t>{}));
+    EXPECT_TRUE(upb_Message_HasUnknown(msg));
+#if !defined(NDEBUG) && UPB_FASTTABLE
+    EXPECT_EQ(absl::string_view(trace_buf), "Dm<M");
+#endif
+  }
+}
+
 }  // namespace
 
 }  // namespace test
