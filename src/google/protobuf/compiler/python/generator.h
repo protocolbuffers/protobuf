@@ -51,6 +51,7 @@ struct GeneratorOptions {
   bool annotate_pyi = false;
   bool bootstrap = false;
   bool strip_nonfunctional_codegen = false;
+  bool allow_legacy_generic_services = false;
 };
 
 class PROTOC_EXPORT Generator : public CodeGenerator {

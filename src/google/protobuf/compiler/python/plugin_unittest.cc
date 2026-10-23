@@ -253,6 +253,41 @@ TEST_P(PythonGeneratorTest, PyiMessageFieldsUseFullyTypedMappingInitType) {
       " -> None: ...");
 }
 
+constexpr char kGenericServicesProto[] = R"schema(
+    syntax = "proto2";
+    package foo;
+    option py_generic_services = true;
+    message Foo {}
+    service TestService {
+      rpc Method(Foo) returns (Foo);
+    })schema";
+
+TEST_P(PythonGeneratorTest, GenericServicesDefault) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --python_out=$tmpdir "
+      "--python_opt=pyi_out foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  ExpectFileContentNotContainsSubstring("foo_pb2.py",
+                                        "_builder.BuildServices(");
+  ExpectFileContentNotContainsSubstring("foo_pb2.pyi", "_service.service");
+}
+
+TEST_P(PythonGeneratorTest, GenericServicesGeneratedWithLegacyOption) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --python_out=$tmpdir "
+      "--python_opt=pyi_out,allow_legacy_generic_services foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  ExpectFileContentContainsSubstring("foo_pb2.py", "_builder.BuildServices(");
+  ExpectFileContentContainsSubstring("foo_pb2.pyi",
+                                     "class TestService(_service.service)");
+}
+
 INSTANTIATE_TEST_SUITE_P(PythonGeneratorTest, PythonGeneratorTest,
                          testing::Bool());
 
