@@ -35,6 +35,7 @@
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
 #include "google/protobuf/test_messages_proto2.pb.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/text_format.h"
 
 namespace google {
@@ -82,10 +83,8 @@ using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::PrintToString;
 using ::testing::Return;
-using ::testing::TestParamInfo;
 using ::testing::Truly;
 using ::testing::Value;
-using ::testing::Values;
 
 // Creates a result for the leaf matcher tests by running a kP0 test with the
 // given input format and requested output format (and, for text output,
@@ -364,39 +363,29 @@ TEST(PayloadMatcherTest, EmptyResponse) {
               Rejects("Response didn't have any field in the Response."));
 }
 
-struct ErrorResponseCase {
-  absl::string_view name;
-  absl::string_view response;
+class PayloadMatcherErrorResponseTest : public testing::Test {
+ protected:
+  const absl::string_view response_ = PB_TEST_CHOOSE_VALUE(
+      (R"pb(parse_error: "foo")pb", R"pb(serialize_error: "foo")pb",
+       R"pb(runtime_error: "foo")pb", R"pb(timeout_error: "foo")pb"),
+      {"ParseError", "SerializeError", "RuntimeError", "TimeoutError"});
 };
 
-class PayloadMatcherErrorResponseTest
-    : public testing::TestWithParam<ErrorResponseCase> {};
-
-TEST_P(PayloadMatcherErrorResponseTest, IsAFailureForWhenParsed) {
-  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
-                                   ResponseFromText(GetParam().response));
+PB_TEST_F(PayloadMatcherErrorResponseTest, IsAFailureForWhenParsed) {
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF, ResponseFromText(response_));
 
   EXPECT_THAT(Explain(WhenParsed(_), result),
               Rejects("Failed to parse input or produce output."));
 }
 
-TEST_P(PayloadMatcherErrorResponseTest, IsAFailureForPayload) {
-  TestResult result = CreateResult("foo", ::conformance::PROTOBUF,
-                                   ResponseFromText(GetParam().response));
+PB_TEST_F(PayloadMatcherErrorResponseTest, IsAFailureForPayload) {
+  TestResult result =
+      CreateResult("foo", ::conformance::PROTOBUF, ResponseFromText(response_));
 
   EXPECT_THAT(Explain(RawPayload(Wire()), result),
               Rejects("Failed to parse input or produce output."));
 }
-
-INSTANTIATE_TEST_SUITE_P(
-    ErrorResponses, PayloadMatcherErrorResponseTest,
-    Values(ErrorResponseCase{"ParseError", R"pb(parse_error: "foo")pb"},
-           ErrorResponseCase{"SerializeError", R"pb(serialize_error: "foo")pb"},
-           ErrorResponseCase{"RuntimeError", R"pb(runtime_error: "foo")pb"},
-           ErrorResponseCase{"TimeoutError", R"pb(timeout_error: "foo")pb"}),
-    [](const TestParamInfo<ErrorResponseCase>& info) {
-      return std::string(info.param.name);
-    });
 
 TEST(PayloadMatcherTest, Skipped) {
   TestResult result =

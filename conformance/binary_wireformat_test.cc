@@ -1,5 +1,6 @@
 #include "conformance/binary_wireformat.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <utility>
@@ -9,6 +10,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/testing/protobuf_test.h"
 
 namespace google {
 namespace protobuf {
@@ -90,25 +92,19 @@ struct TagTestCase {
   std::string expected;
 };
 
-class TagTest : public testing::TestWithParam<TagTestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    TagTest, TagTest,
-    testing::ValuesIn(std::vector<TagTestCase>{
-        {"Varint", 1, WireType::kVarint, "\010"},
-        {"Fixed32", 2, WireType::kFixed32, "\025"},
-        {"Fixed64", 3, WireType::kFixed64, "\031"},
-        {"LengthPrefixed", 4, WireType::kLengthPrefixed, "\042"},
-        {"StartGroup", 5, WireType::kStartGroup, "\053"},
-        {"EndGroup", 6, WireType::kEndGroup, "\064"},
-        {"TwoByteTag", 256, WireType::kStartGroup, "\203\020"},
-        {"ThreeByteTag", 0xFFFF, WireType::kStartGroup, "\373\377\037"}}),
-    [](const testing::TestParamInfo<TagTest::ParamType>& info) {
-      return info.param.name;
-    });
-
-TEST_P(TagTest, Check) {
-  auto& param = GetParam();
+PB_TEST(TagTest, Check) {
+  const TagTestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<TagTestCase>{
+          {"Varint", 1, WireType::kVarint, "\010"},
+          {"Fixed32", 2, WireType::kFixed32, "\025"},
+          {"Fixed64", 3, WireType::kFixed64, "\031"},
+          {"LengthPrefixed", 4, WireType::kLengthPrefixed, "\042"},
+          {"StartGroup", 5, WireType::kStartGroup, "\053"},
+          {"EndGroup", 6, WireType::kEndGroup, "\064"},
+          {"TwoByteTag", 256, WireType::kStartGroup, "\203\020"},
+          {"ThreeByteTag", 0xFFFF, WireType::kStartGroup, "\373\377\037"},
+      },
+      [](const TagTestCase& c, size_t) { return c.name; });
   EXPECT_EQ(Tag(param.fieldnum, param.wire_type), Wire(param.expected));
 }
 
@@ -117,23 +113,17 @@ struct VarintTestCase {
   std::string expected;
 };
 
-class VarintTest : public testing::TestWithParam<VarintTestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    VarintTest, VarintTest,
-    testing::ValuesIn(std::vector<VarintTestCase>{
-        {0, std::string("\000", 1)},
-        {1, "\001"},
-        {127, "\177"},
-        {128, "\200\001"},
-        {128 * 128, "\200\200\001"},
-        {128 * 128 * 128, "\200\200\200\001"}}),
-    [](const testing::TestParamInfo<VarintTest::ParamType>& info) {
-      return absl::StrCat(info.param.value);
-    });
-
-TEST_P(VarintTest, Check) {
-  auto& param = GetParam();
+PB_TEST(VarintTest, Check) {
+  const VarintTestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<VarintTestCase>{
+          {0, std::string("\000", 1)},
+          {1, "\001"},
+          {127, "\177"},
+          {128, "\200\001"},
+          {128 * 128, "\200\200\001"},
+          {128 * 128 * 128, "\200\200\200\001"},
+      },
+      [](const VarintTestCase& c, size_t) { return absl::StrCat(c.value); });
   EXPECT_EQ(Varint(param.value), Wire(param.expected));
 }
 
@@ -143,22 +133,18 @@ struct LongVarintTestCase {
   std::string expected;
 };
 
-class LongVarintTest : public testing::TestWithParam<LongVarintTestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    LongVarintTest, LongVarintTest,
-    testing::ValuesIn(std::vector<LongVarintTestCase>{
-        {0, 1, std::string("\000", 1)},
-        {1, 1, std::string("\201\000", 2)},
-        {1, 4, std::string("\201\200\200\200\000", 5)},
-        {127, 1, std::string("\377\000", 2)},
-        {128, 1, std::string("\200\201\000", 3)}}),
-    [](const testing::TestParamInfo<LongVarintTest::ParamType>& info) {
-      return absl::StrCat(info.param.value, "_", info.param.extra);
-    });
-
-TEST_P(LongVarintTest, Check) {
-  auto& param = GetParam();
+PB_TEST(LongVarintTest, Check) {
+  const LongVarintTestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<LongVarintTestCase>{
+          {0, 1, std::string("\000", 1)},
+          {1, 1, std::string("\201\000", 2)},
+          {1, 4, std::string("\201\200\200\200\000", 5)},
+          {127, 1, std::string("\377\000", 2)},
+          {128, 1, std::string("\200\201\000", 3)},
+      },
+      [](const LongVarintTestCase& c, size_t) {
+        return absl::StrCat(c.value, "_", c.extra);
+      });
   EXPECT_EQ(LongVarint(param.value, param.extra), Wire(param.expected));
 }
 
@@ -167,21 +153,16 @@ struct SInt32TestCase {
   std::string expected;
 };
 
-class SInt32Test : public testing::TestWithParam<SInt32TestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    SInt32Test, SInt32Test,
-    testing::ValuesIn(std::vector<SInt32TestCase>{
-        {0, std::string("\000", 1)},  //
-        {1, "\002"},
-        {-1, "\001"}}),
-    [](const testing::TestParamInfo<SInt32Test::ParamType>& info) {
-      return absl::StrReplaceAll(absl::StrCat(info.param.value),
-                                 {{"-", "neg"}});
-    });
-
-TEST_P(SInt32Test, Check) {
-  auto& param = GetParam();
+PB_TEST(SInt32Test, Check) {
+  const SInt32TestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<SInt32TestCase>{
+          {0, std::string("\000", 1)},
+          {1, "\002"},
+          {-1, "\001"},
+      },
+      [](const SInt32TestCase& c, size_t) {
+        return absl::StrReplaceAll(absl::StrCat(c.value), {{"-", "neg"}});
+      });
   EXPECT_EQ(SInt32(param.value), Wire(param.expected));
 }
 
@@ -190,21 +171,16 @@ struct SInt64TestCase {
   std::string expected;
 };
 
-class SInt64Test : public testing::TestWithParam<SInt64TestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    SInt64Test, SInt64Test,
-    testing::ValuesIn(std::vector<SInt64TestCase>{
-        {0, std::string("\000", 1)},  //
-        {1, "\002"},
-        {-1, "\001"}}),
-    [](const testing::TestParamInfo<SInt64Test::ParamType>& info) {
-      return absl::StrReplaceAll(absl::StrCat(info.param.value),
-                                 {{"-", "neg"}});
-    });
-
-TEST_P(SInt64Test, Check) {
-  auto& param = GetParam();
+PB_TEST(SInt64Test, Check) {
+  const SInt64TestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<SInt64TestCase>{
+          {0, std::string("\000", 1)},
+          {1, "\002"},
+          {-1, "\001"},
+      },
+      [](const SInt64TestCase& c, size_t) {
+        return absl::StrReplaceAll(absl::StrCat(c.value), {{"-", "neg"}});
+      });
   EXPECT_EQ(SInt64(param.value), Wire(param.expected));
 }
 
@@ -213,23 +189,16 @@ struct Fixed32TestCase {
   std::string expected;
 };
 
-class Fixed32Test : public testing::TestWithParam<Fixed32TestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    Fixed32Test, Fixed32Test,
-    testing::ValuesIn(std::vector<Fixed32TestCase>{
-        {0, std::string(4, '\0')},
-        {128, std::string("\200\0\0\0", 4)},
-        {0x80000000U, std::string("\0\0\0\200", 4)},
-        {0xFEDCBA98U, "\x98\xba\xdc\xfe"},
-        {0xFFFFFFFFU, "\xff\xff\xff\xff"},
-    }),
-    [](const testing::TestParamInfo<Fixed32Test::ParamType>& info) {
-      return absl::StrCat(info.param.value);
-    });
-
-TEST_P(Fixed32Test, Check) {
-  auto& param = GetParam();
+PB_TEST(Fixed32Test, Check) {
+  const Fixed32TestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<Fixed32TestCase>{
+          {0, std::string(4, '\0')},
+          {128, std::string("\200\0\0\0", 4)},
+          {0x80000000U, std::string("\0\0\0\200", 4)},
+          {0xFEDCBA98U, "\x98\xba\xdc\xfe"},
+          {0xFFFFFFFFU, "\xff\xff\xff\xff"},
+      },
+      [](const Fixed32TestCase& c, size_t) { return absl::StrCat(c.value); });
   EXPECT_EQ(Fixed32(param.value), Wire(param.expected));
 }
 
@@ -238,23 +207,16 @@ struct Fixed64TestCase {
   std::string expected;
 };
 
-class Fixed64Test : public testing::TestWithParam<Fixed64TestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    Fixed64Test, Fixed64Test,
-    testing::ValuesIn(std::vector<Fixed64TestCase>{
-        {0, std::string(8, '\0')},
-        {128, std::string("\200\0\0\0\0\0\0\0", 8)},
-        {0x8000000000000000UL, std::string("\0\0\0\0\0\0\0\200", 8)},
-        {0xFEDCBA9876543210UL, "\x10\x32\x54\x76\x98\xba\xdc\xfe"},
-        {0xFFFFFFFFFFFFFFFFUL, "\xff\xff\xff\xff\xff\xff\xff\xff"},
-    }),
-    [](const testing::TestParamInfo<Fixed64Test::ParamType>& info) {
-      return absl::StrCat(info.param.value);
-    });
-
-TEST_P(Fixed64Test, Check) {
-  auto& param = GetParam();
+PB_TEST(Fixed64Test, Check) {
+  const Fixed64TestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<Fixed64TestCase>{
+          {0, std::string(8, '\0')},
+          {128, std::string("\200\0\0\0\0\0\0\0", 8)},
+          {0x8000000000000000UL, std::string("\0\0\0\0\0\0\0\200", 8)},
+          {0xFEDCBA9876543210UL, "\x10\x32\x54\x76\x98\xba\xdc\xfe"},
+          {0xFFFFFFFFFFFFFFFFUL, "\xff\xff\xff\xff\xff\xff\xff\xff"},
+      },
+      [](const Fixed64TestCase& c, size_t) { return absl::StrCat(c.value); });
   EXPECT_EQ(Fixed64(param.value), Wire(param.expected));
 }
 
@@ -263,24 +225,19 @@ struct FloatTestCase {
   std::string expected;
 };
 
-class FloatTest : public testing::TestWithParam<FloatTestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    FloatTest, FloatTest,
-    testing::ValuesIn(std::vector<FloatTestCase>{
-        {0, std::string(4, '\0')},
-        {-1, std::string("\0\0\200\277", 4)},
-        {1, std::string("\0\0\200\077", 4)},
-        {1.5, std::string("\0\0\300\077", 4)},
-        {1.123456, "\150\315\217\077"},
-    }),
-    [](const testing::TestParamInfo<FloatTest::ParamType>& info) {
-      return absl::StrReplaceAll(absl::StrCat(info.param.value),
-                                 {{".", "_"}, {"-", "neg"}});
-    });
-
-TEST_P(FloatTest, Check) {
-  auto& param = GetParam();
+PB_TEST(FloatTest, Check) {
+  const FloatTestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<FloatTestCase>{
+          {0, std::string(4, '\0')},
+          {-1, std::string("\0\0\200\277", 4)},
+          {1, std::string("\0\0\200\077", 4)},
+          {1.5, std::string("\0\0\300\077", 4)},
+          {1.123456, "\150\315\217\077"},
+      },
+      [](const FloatTestCase& c, size_t) {
+        return absl::StrReplaceAll(absl::StrCat(c.value),
+                                   {{".", "_"}, {"-", "neg"}});
+      });
   EXPECT_EQ(Float(param.value), Wire(param.expected));
 }
 
@@ -289,24 +246,19 @@ struct DoubleTestCase {
   std::string expected;
 };
 
-class DoubleTest : public testing::TestWithParam<DoubleTestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    DoubleTest, DoubleTest,
-    testing::ValuesIn(std::vector<DoubleTestCase>{
-        {0, std::string(8, '\0')},
-        {-1, std::string("\0\0\0\0\0\0\360\277", 8)},
-        {1, std::string("\0\0\0\0\0\0\360\077", 8)},
-        {1.5, std::string("\0\0\0\0\0\0\370\077", 8)},
-        {1.123456, "\154\353\247\377\254\371\361\077"},
-    }),
-    [](const testing::TestParamInfo<DoubleTest::ParamType>& info) {
-      return absl::StrReplaceAll(absl::StrCat(info.param.value),
-                                 {{".", "_"}, {"-", "neg"}});
-    });
-
-TEST_P(DoubleTest, Check) {
-  auto& param = GetParam();
+PB_TEST(DoubleTest, Check) {
+  const DoubleTestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<DoubleTestCase>{
+          {0, std::string(8, '\0')},
+          {-1, std::string("\0\0\0\0\0\0\360\277", 8)},
+          {1, std::string("\0\0\0\0\0\0\360\077", 8)},
+          {1.5, std::string("\0\0\0\0\0\0\370\077", 8)},
+          {1.123456, "\154\353\247\377\254\371\361\077"},
+      },
+      [](const DoubleTestCase& c, size_t) {
+        return absl::StrReplaceAll(absl::StrCat(c.value),
+                                   {{".", "_"}, {"-", "neg"}});
+      });
   EXPECT_EQ(Double(param.value), Wire(param.expected));
 }
 
@@ -316,27 +268,19 @@ struct LengthPrefixedTestCase {
   std::string expected;
 };
 
-class LengthPrefixedTest
-    : public testing::TestWithParam<LengthPrefixedTestCase> {};
-
-INSTANTIATE_TEST_SUITE_P(
-    LengthPrefixedTest, LengthPrefixedTest,
-    testing::ValuesIn(std::vector<LengthPrefixedTestCase>{
-        {"Empty", "", std::string("\0", 1)},
-        {"Ascii", "abc", "\003abc"},
-        {"NonAscii", "\x80\x81\x82", "\003\x80\x81\x82"},
-        {"Long", std::string(128, 'a'), "\200\001" + std::string(128, 'a')},
-    }),
-    [](const testing::TestParamInfo<LengthPrefixedTest::ParamType>& info) {
-      return info.param.name;
-    });
-
-TEST_P(LengthPrefixedTest, Check) {
-  auto& param = GetParam();
+PB_TEST(LengthPrefixedTest, Check) {
+  const LengthPrefixedTestCase param = PB_TEST_CHOOSE_VALUE(
+      std::vector<LengthPrefixedTestCase>{
+          {"Empty", "", std::string("\0", 1)},
+          {"Ascii", "abc", "\003abc"},
+          {"NonAscii", "\x80\x81\x82", "\003\x80\x81\x82"},
+          {"Long", std::string(128, 'a'), "\200\001" + std::string(128, 'a')},
+      },
+      [](const LengthPrefixedTestCase& c, size_t) { return c.name; });
   EXPECT_EQ(LengthPrefixed(param.value), Wire(param.expected));
 }
 
-TEST_F(LengthPrefixedTest, Nested) {
+TEST(LengthPrefixedTest, Nested) {
   EXPECT_EQ(LengthPrefixed(Wire("foo")), Wire("\003foo"));
 }
 
