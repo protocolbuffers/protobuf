@@ -491,6 +491,11 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             return name;
           }
 
+          java.lang.Object readResolve() {
+            $classname$ result = forNumber(value);
+            return result != null ? result : UNRECOGNIZED;
+          }
+
           public static com.google.protobuf.Internal.EnumLiteMap<$classname$> internalGetValueMap() {
             return internalValueMap;
           }
