@@ -1,6 +1,5 @@
 load("@bazel_skylib//lib:versions.bzl", "versions")
 load("@rules_cc//cc:defs.bzl", "objc_library")
-load("@rules_python//python:defs.bzl", "py_library")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
@@ -56,12 +55,6 @@ def _ObjcOuts(srcs, out_type):
     if out_type == "srcs":
         return _ObjcSrcs(srcs)
     return _ObjcHdrs(srcs) + _ObjcSrcs(srcs)
-
-def _PyOuts(srcs, use_grpc_plugin = False):
-    ret = [s[:-len(".proto")] + "_pb2.py" for s in srcs]
-    if use_grpc_plugin:
-        ret += [s[:-len(".proto")] + "_pb2_grpc.py" for s in srcs]
-    return ret
 
 def _RubyOuts(srcs):
     return [s[:-len(".proto")] + "_pb.rb" for s in srcs]
@@ -159,7 +152,6 @@ def _proto_gen_impl(ctx):
                 path = f.replace("-I", "")
                 import_flags_real.append("-I$(realpath -s %s)" % path)
 
-        use_grpc_plugin = (ctx.attr.plugin_language == "grpc" and ctx.attr.plugin)
         path_tpl = "$(realpath %s)" if in_gen_dir else "%s"
 
         outs = []
@@ -168,8 +160,6 @@ def _proto_gen_impl(ctx):
                 outs.extend(_CsharpOuts([src.basename]))
             elif lang == "objc":
                 outs.extend(_ObjcOuts([src.basename], out_type = out_type))
-            elif lang == "python":
-                outs.extend(_PyOuts([src.basename], use_grpc_plugin = use_grpc_plugin))
             elif lang == "ruby":
                 outs.extend(_RubyOuts([src.basename]))
             elif lang == "rbs":
@@ -612,96 +602,6 @@ def internal_rbs_proto_library(
         visibility = visibility,
         includes = includes,
         **kwargs
-    )
-
-# When canonical labels are in use, use additional "@" prefix
-_canonical_label_prefix = "@" if str(Label("//:protoc")).startswith("@@") else ""
-
-def _to_label(label_str):
-    """Converts a string to a label using the repository of the calling thread"""
-    if type(label_str) == type(Label("//:foo")):
-        return label_str
-    return Label(_canonical_label_prefix + native.repository_name() + "//" + native.package_name() + ":foo").relative(label_str)
-
-def internal_py_proto_library(
-        name,
-        srcs = [],
-        deps = [],
-        py_libs = [],
-        py_extra_srcs = [],
-        include = None,
-        default_runtime = Label("//:protobuf_python"),
-        protoc = None,
-        use_grpc_plugin = False,
-        testonly = None,
-        **kargs):
-    """Bazel rule to create a Python protobuf library from proto source files
-
-    NOTE: the rule is is only an internal workaround to generate protos.  It is deprecated and will
-    be removed in the next minor release.  Users should migrate to the py_proto_library rule from
-    bazel/py_proto_library.bzl instead.
-
-    Args:
-      name: the name of the py_proto_library.
-      srcs: the .proto files of the py_proto_library.
-      deps: a list of dependency labels; must be py_proto_library.
-      py_libs: a list of other py_library targets depended by the generated
-          py_library.
-      py_extra_srcs: extra source files that will be added to the output
-          py_library. This attribute is used for internal bootstrapping.
-      include: a string indicating the include path of the .proto files.
-      default_runtime: the implicitly default runtime which will be depended on by
-          the generated py_library target.
-      protoc: the label of the protocol compiler to generate the sources.
-      use_grpc_plugin: a flag to indicate whether to call the Python C++ plugin
-          when processing the proto files.
-      testonly: common rule attribute (see:
-          https://bazel.build/reference/be/common-definitions#common-attributes)
-      **kargs: other keyword arguments that are passed to py_library.
-
-    """
-    includes = []
-    if include != None:
-        includes = [include]
-
-    grpc_python_plugin = None
-    if use_grpc_plugin:
-        grpc_python_plugin = "//external:grpc_python_plugin"
-        # Note: Generated grpc code depends on Python grpc module. This dependency
-        # is not explicitly listed in py_libs. Instead, host system is assumed to
-        # have grpc installed.
-
-    _proto_gen(
-        name = name + "_genproto",
-        testonly = testonly,
-        srcs = srcs,
-        deps = [s + "_genproto" for s in deps],
-        includes = includes,
-        protoc = protoc,
-        langs = ["python"],
-        visibility = ["//visibility:public"],
-        plugin = grpc_python_plugin,
-        plugin_language = "grpc",
-    )
-
-    if default_runtime:
-        # Resolve non-local labels
-        labels = [_to_label(lib) for lib in py_libs + deps]
-        if not _to_label(default_runtime) in labels:
-            py_libs = py_libs + [default_runtime]
-
-    if "deprecation" not in kargs:
-        kargs["deprecation"] = (
-            "internal_py_proto_library is deprecated and will be removed in 2027 Q1. Migrate to py_proto_library from @protobuf//bazel/py_proto_library.bzl."
-        )
-
-    py_library(
-        name = name,
-        testonly = testonly,
-        srcs = [name + "_genproto"] + py_extra_srcs,
-        deps = py_libs + deps,
-        imports = includes,
-        **kargs
     )
 
 def _source_proto_library(

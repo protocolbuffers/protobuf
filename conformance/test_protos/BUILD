@@ -3,12 +3,12 @@ load(
     "internal_csharp_proto_library",
     "internal_objc_proto_library",
     "internal_php_proto_library",
-    "internal_py_proto_library",
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
 
 package(
     default_testonly = True,
@@ -133,23 +133,19 @@ cc_proto_library(
     deps = [":test_messages_edition_unstable_proto"],
 )
 
-internal_py_proto_library(
+py_proto_library(
     name = "test_messages_edition2023_py_pb2",
-    srcs = [":test_messages_edition2023.proto"],
-    srcs_version = "PY2AND3",
+    deps = [":test_messages_edition2023_proto"],
 )
 
-internal_py_proto_library(
+py_proto_library(
     name = "test_messages_edition2026_py_pb2",
-    srcs = [":test_messages_edition2026.proto"],
-    srcs_version = "PY2AND3",
-    deps = ["//python:well_known_types_py_pb2"],
+    deps = [":test_messages_edition2026_proto"],
 )
 
-internal_py_proto_library(
+py_proto_library(
     name = "test_messages_edition_unstable_py_pb2",
-    srcs = [":test_messages_edition_unstable.proto"],
-    srcs_version = "PY2AND3",
+    deps = [":test_messages_edition_unstable_proto"],
 )
 
 internal_objc_proto_library(

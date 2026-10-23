@@ -35,8 +35,7 @@ def _internal_copy_files_impl(ctx):
     for src in ctx.files.srcs:
         short_path = _remove_cross_repo_path(src.short_path)
         if short_path[:len(strip_prefix)] != strip_prefix:
-            fail("Source does not start with %s: %s" %
-                 (strip_prefix, short_path))
+            continue
         dest = ctx.actions.declare_file(short_path[len(strip_prefix):])
         src_dests.append([src, dest])
 
