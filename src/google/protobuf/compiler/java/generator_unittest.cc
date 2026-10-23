@@ -135,6 +135,7 @@ TEST_F(JavaGeneratorTest, NestInFileClassFeatureDefaultEdition2024) {
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "--java_opt=allow_legacy_generic_services "
       "--experimental_editions foo.proto");
 
   ExpectWarningSubstring("Generic services");
@@ -244,6 +245,7 @@ TEST_F(JavaGeneratorTest, SplitNestInFileClassServiceFeatureEdition2024) {
 
   RunProtoc(
       "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "--java_opt=allow_legacy_generic_services "
       "--experimental_editions foo.proto");
 
   ExpectWarningSubstring("Generic services");
@@ -283,6 +285,38 @@ TEST_F(JavaGeneratorTest, SplitNestInFileClassEnumFeatureEdition2024) {
       FileGenerated(PACKAGE_PREFIX "proto2_unittest/UnnestedEnum.java"));
   EXPECT_FALSE(FileGenerated(PACKAGE_PREFIX
                              "proto2_unittest/NestedInFileClassEnum.java"));
+}
+
+constexpr char kGenericServicesProto[] = R"schema(
+    syntax = "proto2";
+    package proto2_unittest;
+    option java_generic_services = true;
+    option java_multiple_files = true;
+    message Foo {}
+    service TestService {
+      rpc Method(Foo) returns (Foo);
+    })schema";
+
+TEST_F(JavaGeneratorTest, GenericServicesDefault) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  EXPECT_FALSE(
+      FileGenerated(PACKAGE_PREFIX "proto2_unittest/TestService.java"));
+}
+
+TEST_F(JavaGeneratorTest, GenericServicesGeneratedWithLegacyOption) {
+  CreateTempFile("foo.proto", kGenericServicesProto);
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir "
+      "--java_opt=allow_legacy_generic_services foo.proto");
+
+  ExpectWarningSubstring("Generic services");
+  EXPECT_TRUE(FileGenerated(PACKAGE_PREFIX "proto2_unittest/TestService.java"));
 }
 
 TEST_F(JavaGeneratorTest, LargeClosedEnumDisallowedEdition2024) {

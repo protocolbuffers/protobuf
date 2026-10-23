@@ -436,7 +436,7 @@ void FileGenerator::Generate(io::Printer* printer) {
       message_generators_[i]->Generate(printer);
     }
   }
-  if (HasGenericServices(file_, context_->EnforceLite())) {
+  if (HasGenericServices(file_, context_->options())) {
     for (int i = 0; i < file_->service_count(); i++) {
       if (NestedInFileClass(*file_->service(i), immutable_api_)) {
         std::unique_ptr<ServiceGenerator> generator(
@@ -715,7 +715,7 @@ void FileGenerator::GenerateSiblings(
         message_generators_[i].get(), google::protobuf::internal::IsOss(),
         &MessageGenerator::Generate);
   }
-  if (HasGenericServices(file_, context_->EnforceLite())) {
+  if (HasGenericServices(file_, context_->options())) {
     for (int i = 0; i < file_->service_count(); i++) {
       if (NestedInFileClass(*file_->service(i), immutable_api_)) continue;
       std::unique_ptr<ServiceGenerator> generator(
