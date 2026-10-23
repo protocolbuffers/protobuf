@@ -1882,4 +1882,18 @@ public abstract class GeneratedMessageLite<
     }
     return message;
   }
+
+  /**
+   * Clears all cached {@link Schema} instances from the Protobuf Lite runtime schema cache.
+   *
+   * <p>Schemas for messages used subsequently will be lazily recreated on demand.
+   */
+  public static void clearSchemaCache() {
+    Protobuf.getInstance().clearSchemaCache();
+  }
+
+  /** Returns the current number of cached {@link Schema} instances in the runtime schema cache. */
+  public static int getSchemaCacheSize() {
+    return Protobuf.getInstance().getSchemaCacheSize();
+  }
 }
