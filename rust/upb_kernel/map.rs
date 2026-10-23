@@ -24,10 +24,9 @@ where
     // SAFETY:
     // - The map is empty and never mutated.
     // - The value type is never used.
-    // - The size of the key type is used when `get()` computes the hash of the key.
-    //   The map is empty, therefore it doesn't matter what hash is computed, but we
-    //   have to use `bool` type as the smallest key possible (otherwise UPB would
-    //   read more bytes than Rust allocated).
+    // - The size of the key type is used when `get()` computes the hash of the key. The map is
+    //   empty, therefore it doesn't matter what hash is computed, but we have to use `bool` type as
+    //   the smallest key possible (otherwise UPB would read more bytes than Rust allocated).
     unsafe {
         MapView::from_raw(Private, EMPTY_MAP_VIEW.get_or_init(Map::new).as_view().as_raw(Private))
     }
@@ -105,8 +104,7 @@ impl RawMapIter {
     }
 
     /// # Safety
-    /// - `self.map` must be valid, and remain valid while the return value is
-    ///   in use.
+    /// - `self.map` must be valid, and remain valid while the return value is in use.
     pub unsafe fn next_unchecked(&mut self) -> Option<(upb_MessageValue, upb_MessageValue)> {
         let mut key = MaybeUninit::uninit();
         let mut value = MaybeUninit::uninit();
@@ -115,6 +113,13 @@ impl RawMapIter {
             // SAFETY: if upb_Map_Next returns true, then key and value have been populated.
             .then(|| unsafe { (key.assume_init(), value.assume_init()) })
     }
+}
+
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn map_insert_failed() -> ! {
+    panic!("map insert failed (alloc should be infallible)")
 }
 
 impl<MessageType> MapValue for MessageType
@@ -160,9 +165,7 @@ where
         match insert_status {
             upb::MapInsertStatus::Inserted => true,
             upb::MapInsertStatus::Replaced => false,
-            upb::MapInsertStatus::OutOfMemory => {
-                panic!("map insert failed (alloc should be infallible)")
-            }
+            upb::MapInsertStatus::OutOfMemory => map_insert_failed(),
         }
     }
 

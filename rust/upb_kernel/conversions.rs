@@ -1,6 +1,13 @@
 use super::*;
 use crate::Enum;
 
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn upb_array_resize_failed() -> ! {
+    panic!("upb_Array_Resize failed (alloc should be infallible)")
+}
+
 pub trait UpbTypeConversions<Tag>: Proxied {
     fn upb_type() -> upb::CType;
 
@@ -23,6 +30,7 @@ pub trait UpbTypeConversions<Tag>: Proxied {
     /// - `raw` must be the correct variant for `Self`.
     /// - `raw` pointers must point to memory valid for `'msg` lifetime.
     #[allow(unused_variables)]
+    #[track_caller]
     unsafe fn from_message_mut<'msg>(raw: RawMessage, arena: &'msg Arena) -> Mut<'msg, Self>
     where
         Self: Message,
@@ -84,7 +92,7 @@ where
         unsafe {
             let size = upb_Array_Size(src);
             if !upb_Array_Resize(dest, size, arena) {
-                panic!("upb_Array_Resize failed (alloc should be infallible)");
+                upb_array_resize_failed();
             }
             for i in 0..size {
                 let src_msg =
@@ -170,8 +178,8 @@ macro_rules! impl_upb_type_conversions_for_scalars {
                     //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
                     unsafe {
                         let len = upb_Array_Size(src);
-                        if (!upb_Array_Resize(dest, len, arena)) {
-                            panic!("upb_Array_Resize failed (alloc should be infallible)");
+                        if !upb_Array_Resize(dest, len, arena) {
+                            upb_array_resize_failed();
                         }
                         ptr::copy_nonoverlapping(
                           upb_Array_DataPtr(src).cast::<u8>(),
@@ -275,16 +283,16 @@ unsafe fn copy_repeated_bytes(src: RawArray, dest: RawArray, arena: RawArena) {
     // SAFETY:
     // - `upb_Array_Resize` is unsafe but assumed to be always sound to call.
     // - `upb_Array` ensures its elements are never uninitialized memory.
-    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans
-    //   of memory that are valid for at least `len` elements of PtrAndLen.
-    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers
-    //   are valid, the pointers are `#[repr(u8)]`, and the size is correct.
+    // - The `DataPtr` and `MutableDataPtr` functions return pointers to spans of memory that are
+    //   valid for at least `len` elements of PtrAndLen.
+    // - `copy_nonoverlapping` is unsafe but here we guarantee that both pointers are valid, the
+    //   pointers are `#[repr(u8)]`, and the size is correct.
     // - The bytes held within a valid array are valid.
     unsafe {
         let len = upb_Array_Size(src);
         let arena = ManuallyDrop::new(Arena::from_raw(arena));
         if !upb_Array_Resize(dest, len, arena.raw()) {
-            panic!("upb_Array_Resize failed (alloc should be infallible)");
+            upb_array_resize_failed();
         }
         let src_ptrs: &[PtrAndLen] = slice::from_raw_parts(upb_Array_DataPtr(src).cast(), len);
         let dest_ptrs: &mut [PtrAndLen] =

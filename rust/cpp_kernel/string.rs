@@ -69,15 +69,24 @@ pub struct PtrAndLen {
     pub len: usize,
 }
 
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn null_slice_with_nonzero_len(len: usize) -> ! {
+    panic!("Non-empty slice with null data pointer (len: {len})");
+}
+
 impl PtrAndLen {
     /// Unsafely dereference this slice.
     ///
     /// # Safety
-    /// - `self.ptr` must be dereferenceable and immutable for `self.len` bytes
-    ///   for the lifetime `'a`. It can be null or dangling if `self.len == 0`.
+    /// - `self.ptr` must be dereferenceable and immutable for `self.len` bytes for the lifetime
+    ///   `'a`. It can be null or dangling if `self.len == 0`.
     pub unsafe fn as_ref<'a>(self) -> &'a [u8] {
         if self.ptr.is_null() {
-            assert_eq!(self.len, 0, "Non-empty slice with null data pointer");
+            if self.len != 0 {
+                null_slice_with_nonzero_len(self.len);
+            }
             &[]
         } else {
             // SAFETY:
@@ -124,8 +133,8 @@ impl SerializedData {
     /// # Safety
     /// - `data` must be readable for `len` bytes.
     /// - `data` must be an owned pointer and valid until deallocated.
-    /// - `data` must have been allocated by the Rust global allocator with a
-    ///   size of `len` and align of 1.
+    /// - `data` must have been allocated by the Rust global allocator with a size of `len` and
+    ///   align of 1.
     pub unsafe fn from_raw_parts(data: NonNull<u8>, len: usize) -> Self {
         Self { data, len }
     }
@@ -153,11 +162,9 @@ impl SerializedData {
             // - The allocated size was `len`.
             // - The length and capacity are equal.
             // - All `len` bytes are initialized.
-            // - The capacity (`len` in this case) is the size the pointer was allocated
-            //   with.
-            // - The allocated size is no more than isize::MAX, because the protobuf
-            //   serializer will refuse to serialize a message if the output would exceed
-            //   2^31 - 1 bytes.
+            // - The capacity (`len` in this case) is the size the pointer was allocated with.
+            // - The allocated size is no more than isize::MAX, because the protobuf serializer will
+            //   refuse to serialize a message if the output would exceed 2^31 - 1 bytes.
             Vec::<u8>::from_raw_parts(s.data.as_ptr(), s.len, s.len)
         }
     }
@@ -188,10 +195,10 @@ impl fmt::Debug for SerializedData {
 
 /// A type to transfer an owned Rust string across the FFI boundary:
 ///   * This struct is ABI-compatible with the equivalent C struct.
-///   * It owns its data but does not drop it. Immediately turn it into a
-///     `String` by calling `.into()` on it.
-///   * `.data` points to a valid UTF-8 string that has been allocated with the
-///     Rust allocator and is 1-byte aligned.
+///   * It owns its data but does not drop it. Immediately turn it into a `String` by calling
+///     `.into()` on it.
+///   * `.data` points to a valid UTF-8 string that has been allocated with the Rust allocator and
+///     is 1-byte aligned.
 ///   * `.data` contains exactly `.len` bytes.
 ///   * The empty string is represented as `.data.is_null() == true`.
 #[repr(C)]
@@ -208,10 +215,9 @@ impl From<RustStringRawParts> for String {
             return String::new();
         }
         // SAFETY:
-        //  - `value.data` contains valid UTF-8 bytes as promised by
-        //    `RustStringRawParts`.
-        //  - `value.data` has been allocated with the Rust allocator and is 1-byte
-        //    aligned as promised by `RustStringRawParts`.
+        //  - `value.data` contains valid UTF-8 bytes as promised by `RustStringRawParts`.
+        //  - `value.data` has been allocated with the Rust allocator and is 1-byte aligned as
+        //    promised by `RustStringRawParts`.
         //  - `value.data` contains and is allocated for exactly `value.len` bytes.
         unsafe { String::from_raw_parts(value.data as *mut u8, value.len, value.len) }
     }

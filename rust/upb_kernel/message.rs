@@ -439,6 +439,20 @@ where
     }
 }
 
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn deep_copy_failed() -> ! {
+    panic!("upb_Message_DeepCopy failed (alloc should be infallible)");
+}
+
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn merge_from_failed() -> ! {
+    panic!("upb_Message_MergeFrom failed (alloc should be infallible)");
+}
+
 impl<T> CopyFrom for T
 where
     Self: AsView + UpbGetArena + UpbGetMessagePtr,
@@ -449,12 +463,14 @@ where
         // SAFETY: self and src are both valid `T`s associated with
         // `Self::mini_table()`.
         unsafe {
-            assert!(upb_Message_DeepCopy(
+            if !upb_Message_DeepCopy(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
-                self.get_arena(Private).raw()
-            ));
+                self.get_arena(Private).raw(),
+            ) {
+                deep_copy_failed();
+            }
         }
     }
 }
@@ -468,13 +484,15 @@ where
     fn merge_from(&mut self, src: impl AsView<Proxied = Self::Proxied>) {
         // SAFETY: self and src are both valid `T`s.
         unsafe {
-            assert!(upb_Message_MergeFrom(
+            if !upb_Message_MergeFrom(
                 self.get_ptr(Private).raw(),
                 src.as_view().get_ptr(Private).raw(),
                 <Self::Proxied as AssociatedMiniTable>::mini_table(),
                 generated_extension_registry().as_ptr(),
-                self.get_arena(Private).raw()
-            ));
+                self.get_arena(Private).raw(),
+            ) {
+                merge_from_failed();
+            }
         }
     }
 }
