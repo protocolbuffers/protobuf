@@ -65,7 +65,7 @@ def compat_bool_flag(
 
     Args:
         name: The target name for the Starlark build setting flag.
-        fragment_field: The field name in ctx.fragments.proto (e.g. "strict_proto_deps"), if any.
+        fragment_field: The field name in ctx.fragments.proto (e.g. "strict_public_imports"), if any.
         build_setting_default: Fallback default boolean value if neither Starlark nor fragment is set.
         values: Dict mapping booleans (True/False) to lists of accepted string flag values.
             Defaults to {True: ["true", "TRUE", "1"], False: ["false", "FALSE", "0"]}.

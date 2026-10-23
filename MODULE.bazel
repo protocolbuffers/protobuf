@@ -400,11 +400,6 @@ flag_alias(
 )
 
 flag_alias(
-    name = "strict_proto_deps",
-    starlark_flag = "@//bazel/flags:strict_proto_deps",
-)
-
-flag_alias(
     name = "strict_public_imports",
     starlark_flag = "@//bazel/flags:strict_public_imports",
 )
