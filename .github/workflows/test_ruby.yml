@@ -189,7 +189,7 @@ jobs:
           - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: NATIVE }
           - { name: Ruby 3.2, ruby: ruby-3.2.6, ffi: FFI }
           - { name: Ruby 3.3, ruby: ruby-3.3.6, continuous-only: true }
-          - { name: Ruby 3.4, ruby: ruby-3.4.1, continuous-only: true }
+          - { name: Ruby 3.4, ruby: ruby-3.4.1, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic:latest-pr199' }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: NATIVE }
           - { name: Ruby 4.0, ruby: ruby-4.0.0, ffi: FFI }
           - { name: Ruby 4.0 bazel 8, ruby: ruby-4.0.0, ffi: NATIVE, image: 'us-docker.pkg.dev/protobuf-build/containers/test/linux/ruby:8.7.0-ruby-4.0.0-5bb1a8fdfc30f8c21c1b38cf053d2db9fca865a7 ' }
