@@ -128,17 +128,9 @@
 // Owner: shaod@, gberg@
 #define PROTOBUF_FUTURE_DESCRIPTOR_EXTENSION_DECL 1
 
-// Marks several logically constant operations on Repeated*Field as nodiscard.
-// Owner: ckennelly@, mkruskal@
-#define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
-
 // Deletes UnknownFieldSet::MergeToInternalMetadata.
 // Owner: cknittel@
 #define PROTOBUF_FUTURE_DELETE_UFS_MERGE_TO_MESSAGE 1
-
-#else
-
-#define PROTOBUF_FUTURE_ADD_NODISCARD
 
 #endif
 
