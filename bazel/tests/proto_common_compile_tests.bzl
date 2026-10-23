@@ -7,11 +7,11 @@
 #
 """Tests for `proto_common.compile` function."""
 
-load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@rules_testing//lib:analysis_test.bzl", "analysis_test", "test_suite")
 load("@rules_testing//lib:truth.bzl", "matching")
 load("@rules_testing//lib:util.bzl", "util")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel/common:proto_lang_toolchain_info.bzl", "ProtoLangToolchainInfo")
 load("//bazel/tests/testdata:compile_rule.bzl", "compile_rule")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 
@@ -449,9 +449,8 @@ def _test_proto_compiler_flag_override(name):
     )
 
 def _test_proto_compiler_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_compiler")
+    # The flag must forward the overriding compiler, not just report its label.
+    env.expect.that_str(target[DefaultInfo].files_to_run.executable.basename).contains("_custom_compiler")
 
 def _test_proto_compiler_native_flag_override(name):
     util.helper_target(
@@ -469,9 +468,7 @@ def _test_proto_compiler_native_flag_override(name):
     )
 
 def _test_proto_compiler_native_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_compiler_native")
+    env.expect.that_str(target[DefaultInfo].files_to_run.executable.basename).contains("_custom_compiler_native")
 
 def _test_proto_toolchain_for_cc_flag_override(name):
     util.helper_target(
@@ -491,9 +488,8 @@ def _test_proto_toolchain_for_cc_flag_override(name):
     )
 
 def _test_proto_toolchain_for_cc_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_cc_toolchain")
+    # The flag must forward the overriding toolchain, not just report its label.
+    env.expect.that_str(target[ProtoLangToolchainInfo].mnemonic).equals("CustomCcMnemonic")
 
 def _test_proto_toolchain_for_cc_native_flag_override(name):
     util.helper_target(
@@ -513,9 +509,7 @@ def _test_proto_toolchain_for_cc_native_flag_override(name):
     )
 
 def _test_proto_toolchain_for_cc_native_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_cc_toolchain_native")
+    env.expect.that_str(target[ProtoLangToolchainInfo].mnemonic).equals("CustomCcMnemonicNative")
 
 def _test_proto_toolchain_for_java_flag_override(name):
     util.helper_target(
@@ -535,9 +529,8 @@ def _test_proto_toolchain_for_java_flag_override(name):
     )
 
 def _test_proto_toolchain_for_java_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_java_toolchain")
+    # The flag must forward the overriding toolchain, not just report its label.
+    env.expect.that_str(target[ProtoLangToolchainInfo].mnemonic).equals("CustomJavaMnemonic")
 
 def _test_proto_toolchain_for_java_native_flag_override(name):
     util.helper_target(
@@ -557,9 +550,7 @@ def _test_proto_toolchain_for_java_native_flag_override(name):
     )
 
 def _test_proto_toolchain_for_java_native_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_java_toolchain_native")
+    env.expect.that_str(target[ProtoLangToolchainInfo].mnemonic).equals("CustomJavaMnemonicNative")
 
 def _test_proto_toolchain_for_javalite_flag_override(name):
     util.helper_target(
@@ -579,9 +570,8 @@ def _test_proto_toolchain_for_javalite_flag_override(name):
     )
 
 def _test_proto_toolchain_for_javalite_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_javalite_toolchain")
+    # The flag must forward the overriding toolchain, not just report its label.
+    env.expect.that_str(target[ProtoLangToolchainInfo].mnemonic).equals("CustomJavaLiteMnemonic")
 
 def _test_proto_toolchain_for_javalite_native_flag_override(name):
     util.helper_target(
@@ -601,6 +591,4 @@ def _test_proto_toolchain_for_javalite_native_flag_override(name):
     )
 
 def _test_proto_toolchain_for_javalite_native_flag_override_impl(env, target):
-    env.expect.that_target(target).has_provider(BuildSettingInfo)
-    val = target[BuildSettingInfo].value
-    env.expect.that_str(str(val)).contains("_custom_javalite_toolchain_native")
+    env.expect.that_str(target[ProtoLangToolchainInfo].mnemonic).equals("CustomJavaLiteMnemonicNative")
