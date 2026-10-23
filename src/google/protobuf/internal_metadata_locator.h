@@ -54,9 +54,21 @@ class InternalMetadataOffset {
             int64_t{INT32_MAX},
         "Offset from `_internal_metadata_` is overflowing an int32_t, "
         "likely meaning your message body is too large.");
+    static_assert(
+        kInternalMetadataOffset < kFieldOffset,
+        "The relative offset must be negative. Positive offsets are reserved "
+        "for FieldWithArena, which holds a raw arena pointer as opposed to "
+        "InternalMetadata.");
 
     return InternalMetadataOffset(
         static_cast<int32_t>(kInternalMetadataOffset - kFieldOffset));
+  }
+
+  template <typename T>
+  static constexpr PROTOBUF_ALWAYS_INLINE InternalMetadataOffset
+  BuildForFieldWithArena() {
+    return InternalMetadataOffset(
+        static_cast<int32_t>(PROTOBUF_FIELD_OFFSET(T, arena_)));
   }
 
   // Builds an `InternalMetadataOffset` from a dynamic offset from the start of
@@ -202,19 +214,23 @@ class TaggedInternalMetadataResolver {
   // the `this` pointer to the field contained by that type.
   template <typename T,
             TaggedInternalMetadataResolver<kTaggedBits> T::* Resolver>
-  static inline Arena* FindArena(const T* object) {
+  static Arena* FindArena(const T* object) {
     auto& resolver = object->*Resolver;
-    if (resolver.Offset() == 0) {
+    int32_t offset = resolver.Offset();
+    if (offset == 0) {
       return nullptr;
+    } else if (offset > 0) {
+      return *reinterpret_cast<Arena* const*>(
+          reinterpret_cast<const char*>(object) + offset);
+    } else {
+      return resolver.FindInternalMetadata(object).arena();
     }
-    return resolver.FindInternalMetadata(object).arena();
   }
 
   // Finds the `InternalMetadata` by adding the offset to the address of the
   // start of the field.
-  inline const InternalMetadata& FindInternalMetadata(
-      const void* object) const {
-    ABSL_DCHECK_NE(Offset(), 0);
+  const InternalMetadata& FindInternalMetadata(const void* object) const {
+    ABSL_DCHECK_LT(Offset(), 0);
     return *reinterpret_cast<const InternalMetadata*>(
         reinterpret_cast<const char*>(object) + Offset());
   }
