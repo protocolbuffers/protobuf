@@ -148,7 +148,8 @@ class LongVarintTest : public testing::TestWithParam<LongVarintTestCase> {};
 INSTANTIATE_TEST_SUITE_P(
     LongVarintTest, LongVarintTest,
     testing::ValuesIn(std::vector<LongVarintTestCase>{
-        {0, 1, std::string("\000", 1)},
+        {0, 1, std::string("\200\000", 2)},
+        {0, 2, std::string("\200\200\000", 3)},
         {1, 1, std::string("\201\000", 2)},
         {1, 4, std::string("\201\200\200\200\000", 5)},
         {127, 1, std::string("\377\000", 2)},
@@ -347,7 +348,16 @@ TEST(PackedTest, Empty) {
 
 TEST(PackedTest, OneFixed32) {
   EXPECT_EQ(Packed(Fixed32<int>, {9}),
-            Wire(absl::string_view("\001\011\000\000\000", 5)));
+            Wire(absl::string_view("\004\011\000\000\000", 5)));
+}
+
+TEST(PackedTest, TwoFixed32s) {
+  EXPECT_EQ(Packed(Fixed32<int>, {9, 8}),
+            Wire(absl::string_view("\010\011\000\000\000\010\000\000\000", 9)));
+}
+
+TEST(PackedTest, MultiByteVarints) {
+  EXPECT_EQ(Packed(Varint<int>, {128, 1}), Wire("\003\200\001\001"));
 }
 
 TEST(PackedTest, Varints) {
