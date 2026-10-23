@@ -217,6 +217,14 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
                                          descriptor->name());
           }
         }},
+       {"unrecognized",
+        [&] {
+          if (!descriptor->is_closed()) {
+            printer->Emit(R"(
+              public static final $classname$ UNRECOGNIZED = new $classname$(-1, $unrecognized_index$, "UNRECOGNIZED");
+            )");
+          }
+        }},
        {"get_number_func",
         [&] {
           if (!descriptor->is_closed()) {
@@ -286,8 +294,10 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
         }},
        {"canonical_values_func",
         [&] {
-          // All of the canonical values, plus an UNRECOGNIZED.
-          printer->Emit({{"values_size", num_canonical_values + 1}},
+          // All of the canonical values, plus an UNRECOGNIZED for open enums.
+          int values_size = descriptor->is_closed() ? num_canonical_values
+                                                    : num_canonical_values + 1;
+          printer->Emit({{"values_size", values_size}},
                         R"(
               int ordinal = 0;
               $classname$[] values = new $classname$[$values_size$];
@@ -300,8 +310,12 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
               ordinal += values$count$.length;
             )");
           }
-          printer->Emit({{"unrecognized_index", num_canonical_values}}, R"(
-              values[$unrecognized_index$] = UNRECOGNIZED;
+          if (!descriptor->is_closed()) {
+            printer->Emit({{"unrecognized_index", num_canonical_values}}, R"(
+                values[$unrecognized_index$] = UNRECOGNIZED;
+            )");
+          }
+          printer->Emit(R"(
               return values;
           )");
         }},
@@ -428,7 +442,7 @@ void GenerateLarge(io::Printer* printer, const EnumDescriptor* descriptor,
             $gen_code_version_validator$
           }
 
-          public static final $classname$ UNRECOGNIZED = new $classname$(-1, $unrecognized_index$, "UNRECOGNIZED");
+          $unrecognized$
 
           $deprecated_value_of_func$
 
