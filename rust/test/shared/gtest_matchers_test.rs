@@ -12,6 +12,7 @@ use protobuf::proto;
 use protobuf_gtest_matchers::{proto_eq, proto_partially_eq};
 use unittest_proto3_rust_proto::test_all_types::NestedMessage;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
+use unittest_rust_proto::NestedTestAllTypes;
 use unittest_rust_proto::TestAllTypes;
 
 macro_rules! generate_eq_msgs_tests {
@@ -185,8 +186,6 @@ generate_partially_map_tests!((TestMap, editions));
 
 #[gtest]
 fn proto_eq_works_on_view() {
-    // This exercises the `impl<T> Matcher<T> for MessageMatcher<T>
-    // where T: MatcherEq + Copy` implementation.
     let msg = proto!(TestAllTypesProto3 {
         repeated_nested_message: [
             NestedMessage { bb: 10 },
@@ -203,4 +202,45 @@ fn proto_eq_works_on_view() {
             proto_eq(proto!(NestedMessage { bb: 30 }).as_view()),
         ]
     );
+}
+
+#[gtest]
+fn proto_eq_owned_expected_matches_view_elements() {
+    let msg = proto!(TestAllTypesProto3 {
+        repeated_nested_message: [NestedMessage { bb: 10 }, NestedMessage { bb: 20 }]
+    });
+
+    expect_that!(
+        msg.repeated_nested_message(),
+        unordered_elements_are![
+            proto_eq(proto!(NestedMessage { bb: 20 })),
+            proto_eq(proto!(NestedMessage { bb: 10 })),
+        ]
+    );
+}
+
+#[gtest]
+fn proto_eq_owned_expected_matches_submessage_view() {
+    let msg = proto!(TestAllTypesProto3 { optional_nested_message: NestedMessage { bb: 10 } });
+    let expected = proto!(NestedMessage { bb: 10 });
+
+    expect_that!(msg.optional_nested_message(), proto_eq(proto!(NestedMessage { bb: 10 })));
+    expect_that!(msg.optional_nested_message(), proto_eq(&expected));
+    expect_that!(&msg.optional_nested_message(), proto_eq(&expected));
+    expect_that!(msg.optional_nested_message(), not(proto_eq(proto!(NestedMessage { bb: 20 }))));
+    expect_that!(expected, proto_eq(msg.optional_nested_message()));
+}
+
+#[gtest]
+fn proto_partially_eq_owned_expected_matches_submessage_view() {
+    let msg = proto!(NestedTestAllTypes {
+        payload: TestAllTypes { optional_int32: 1, optional_int64: 42 }
+    });
+
+    expect_that!(msg.payload(), proto_partially_eq(proto!(TestAllTypes { optional_int32: 1 })));
+    expect_that!(
+        msg.payload(),
+        not(proto_partially_eq(proto!(TestAllTypes { optional_int32: 2 })))
+    );
+    expect_that!(msg.payload(), not(proto_eq(proto!(TestAllTypes { optional_int32: 1 }))));
 }
