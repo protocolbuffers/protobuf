@@ -122,6 +122,7 @@ bool upb_Array_Insert(upb_Array* arr, size_t i, size_t count,
   size_t new_size;
   const bool ok = !upb_AddOverflow(arr->UPB_PRIVATE(size), count, &new_size);
   UPB_ASSERT(ok);
+  if (UPB_UNLIKELY(!ok)) return false;
   const size_t oldsize = arr->UPB_PRIVATE(size);
   if (!UPB_PRIVATE(_upb_Array_ResizeUninitialized)(arr, new_size, arena)) {
     return false;

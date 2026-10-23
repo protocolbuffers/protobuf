@@ -105,6 +105,13 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   UPB_ASSERT(elem_size_lg2 != 1);
   UPB_ASSERT(elem_size_lg2 <= 4);
 
+  const size_t array_size =
+      UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
+  const size_t max_bytes =
+      SIZE_MAX - (UPB_MALLOC_ALIGN - 1) - UPB_PRIVATE(kUpb_Asan_GuardSize);
+  if (UPB_UNLIKELY(init_capacity > (max_bytes - array_size) >> elem_size_lg2)) {
+    return NULL;
+  }
   const size_t elem_bytes = init_capacity << elem_size_lg2;
 
   // Try to obtain a recycled backing buffer from the arena pool first.
@@ -130,9 +137,6 @@ UPB_NODISCARD UPB_INLINE struct upb_Array* UPB_PRIVATE(
   }
 
   // Pool miss: perform contiguous single allocation for header + initial data.
-  const size_t array_size =
-      UPB_ALIGN_UP(sizeof(struct upb_Array), UPB_MALLOC_ALIGN);
-  if (init_capacity > (SIZE_MAX - array_size) >> elem_size_lg2) return NULL;
   const size_t bytes = array_size + elem_bytes;
   size_t span = UPB_PRIVATE(_upb_Arena_AllocSpan)(bytes);
   if (!allow_slow && UPB_PRIVATE(_upb_ArenaHas)(arena) < span) return NULL;
@@ -165,6 +169,9 @@ UPB_NODISCARD bool UPB_PRIVATE(_upb_Array_Realloc)(struct upb_Array* array,
 UPB_NODISCARD UPB_FORCEINLINE bool UPB_PRIVATE(_upb_Array_TryFastRealloc)(
     struct upb_Array* array, size_t capacity, int elem_size_lg2,
     upb_Arena* arena) {
+  const size_t max_bytes =
+      SIZE_MAX - (UPB_MALLOC_ALIGN - 1) - UPB_PRIVATE(kUpb_Asan_GuardSize);
+  if (UPB_UNLIKELY(capacity > max_bytes >> elem_size_lg2)) return false;
   size_t old_bytes = array->UPB_PRIVATE(capacity) << elem_size_lg2;
   size_t new_bytes = capacity << elem_size_lg2;
   UPB_ASSUME(new_bytes > old_bytes);
