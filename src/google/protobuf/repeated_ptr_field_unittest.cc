@@ -2229,6 +2229,39 @@ TEST_F(RepeatedPtrFieldIsFullTest, ExtractSubrangeNegativeNum) {
 }
 
 }  // namespace internal
+
+// Clang only emits available_externally function bodies for inline extern
+// template methods when OptimizationLevel > 0 (defined(__OPTIMIZE__)).
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline) && defined(__clang__) && \
+    defined(__OPTIMIZE__) && !defined(PROTOBUF_NO_INLINE_CALL)
+extern template RepeatedPtrField<
+    proto2_unittest_import::ImportMessage>::~RepeatedPtrField();
+extern template void
+RepeatedPtrField<proto2_unittest_import::ImportMessage>::resize(int);
+extern template void
+RepeatedPtrField<proto2_unittest_import::ImportMessage>::resize(
+    int, const proto2_unittest_import::ImportMessage&);
+
+namespace internal {
+
+__attribute__((flatten)) void ExerciseExternTemplateRepeatedPtrField() {
+  RepeatedPtrField<proto2_unittest_import::ImportMessage> field;
+  field.resize(1);
+  EXPECT_EQ(field.size(), 1);
+  proto2_unittest_import::ImportMessage val;
+  val.set_d(42);
+  field.resize(2, val);
+  EXPECT_EQ(field.size(), 2);
+  EXPECT_EQ(field.Get(1).d(), 42);
+}
+
+TEST_F(RepeatedPtrFieldTest, ExternTemplateMethodsCanBeInlined) {
+  ExerciseExternTemplateRepeatedPtrField();
+}
+
+}  // namespace internal
+#endif
+
 }  // namespace protobuf
 }  // namespace google
 

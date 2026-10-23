@@ -1046,7 +1046,7 @@ PROTOBUF_NOINLINE void RepeatedPtrFieldBase::SwapFallback(
 }
 
 template <typename TypeHandler, typename AddOne>
-void RepeatedPtrFieldBase::ResizeImpl(int new_size, AddOne add_one) {
+inline void RepeatedPtrFieldBase::ResizeImpl(int new_size, AddOne add_one) {
   internal::RuntimeAssertInBoundsGE(new_size, 0);
   int diff = new_size - size();
   if (diff > 0) {
@@ -1684,7 +1684,7 @@ PROTOBUF_ALWAYS_INLINE RepeatedPtrField<Element>::RepeatedPtrField(Iter begin,
 }
 
 template <typename Element>
-RepeatedPtrField<Element>::~RepeatedPtrField() {
+inline RepeatedPtrField<Element>::~RepeatedPtrField() {
   StaticValidityCheck();
   if (!NeedsDestroy()) return;
   if constexpr (std::is_base_of_v<MessageLite, Element>) {
@@ -1704,7 +1704,7 @@ RepeatedPtrField<Element>::~RepeatedPtrField() {
 }
 
 template <typename Element>
-void RepeatedPtrField<Element>::resize(size_type new_size) {
+inline void RepeatedPtrField<Element>::resize(size_type new_size) {
   static_assert(!std::is_same_v<Element, Message>);
   static_assert(!std::is_same_v<Element, MessageLite>);
   ResizeImpl<TypeHandler>(new_size,
@@ -1712,8 +1712,8 @@ void RepeatedPtrField<Element>::resize(size_type new_size) {
 }
 
 template <typename Element>
-void RepeatedPtrField<Element>::resize(size_type new_size,
-                                       CopyConstructReferenceType value) {
+inline void RepeatedPtrField<Element>::resize(
+    size_type new_size, CopyConstructReferenceType value) {
   const auto adder = [&] {
     if constexpr (std::is_base_of_v<MessageLite, Element>) {
       return GetAdderFromPrototype<TypeHandler>(&value);
