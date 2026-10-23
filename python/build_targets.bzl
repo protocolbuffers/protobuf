@@ -445,11 +445,6 @@ def build_targets(name):
     )
 
     internal_py_test(
-        name = "service_reflection_test",
-        srcs = ["google/protobuf/internal/service_reflection_test.py"],
-    )
-
-    internal_py_test(
         name = "symbol_database_test",
         srcs = ["google/protobuf/internal/symbol_database_test.py"],
     )
