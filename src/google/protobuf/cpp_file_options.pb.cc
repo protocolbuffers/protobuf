@@ -131,22 +131,25 @@ constexpr auto CppFileOptions::_Internal::GenerateClassData() {
       &file_reflection_data[0],
   };
 }
-struct CppFileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr CppFileOptionsGlobalsTypeInternal()
-      : MessageGlobalsBase(
-            ::_pbi::PrivateAccess::GenerateClassData<CppFileOptions>()),
-        _default(::_pbi::ConstantInitialized{}, GetClassData()),
-         _table(
-            ::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
-                GetClassData())) {}
-  ~CppFileOptionsGlobalsTypeInternal() {}
-  union {
-    alignas(::_pbi::kMaxMessageAlignment) CppFileOptions _default;
+struct CppFileOptionsGlobalsTypeInternal {
+  struct Impl : ::_pbi::MessageGlobalsBase {
+    constexpr Impl()
+        : ::_pbi::MessageGlobalsBase(
+              ::_pbi::PrivateAccess::GenerateClassData<CppFileOptions>()),
+          _default(::_pbi::ConstantInitialized{}, GetClassData()),
+          _table(::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
+              GetClassData())) {}
+    ~Impl() {}
+    union {
+      alignas(::_pbi::kMaxMessageAlignment) CppFileOptions _default;
+    };
+    decltype(::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
+        ::std::declval<const ::_pbi::ClassData*>())) _table;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<CppFileOptions>(
-      ::std::declval<const ::_pbi::ClassData*>())) _table;
+  const ::_pbi::ClassData* class_data() const { return &impl.class_data; }
+  Impl impl;
 };
-static_assert(PROTOBUF_FIELD_OFFSET(CppFileOptionsGlobalsTypeInternal, _default) ==
+static_assert(PROTOBUF_FIELD_OFFSET(CppFileOptionsGlobalsTypeInternal, impl._default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
@@ -174,7 +177,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::pb::file::CppFileOptions_globals_,
+        &::pb::file::CppFileOptions_globals_.impl,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcpp_5ffile_5foptions_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -212,7 +215,7 @@ namespace file {
 
 CppFileOptions::CppFileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CppFileOptions_globals_.class_data) {
+    : Super_(arena, CppFileOptions_globals_.class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -230,7 +233,7 @@ CppFileOptions::CppFileOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const CppFileOptions& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CppFileOptions_globals_.class_data) {
+    : Super_(arena, CppFileOptions_globals_.class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -270,8 +273,8 @@ PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_
 CppFileOptions::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CppFileOptions_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CppFileOptions_globals_));
-  return &CppFileOptions_globals_.class_data;
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CppFileOptions_globals_.impl));
+  return CppFileOptions_globals_.class_data();
 }
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 void CppFileOptions::Clear(MessageLite& base) {
@@ -391,7 +394,7 @@ void CppFileOptions::InternalSwap(CppFileOptions* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata CppFileOptions::GetMetadata() const {
-  return Super_::GetMetadataImpl(CppFileOptions_globals_.class_data);
+  return Super_::GetMetadataImpl(*CppFileOptions_globals_.class_data());
 }
 PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<

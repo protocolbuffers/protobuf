@@ -156,22 +156,25 @@ constexpr auto Version::_Internal::GenerateClassData() {
       &file_reflection_data[0],
   };
 }
-struct VersionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr VersionGlobalsTypeInternal()
-      : MessageGlobalsBase(
-            ::_pbi::PrivateAccess::GenerateClassData<Version>()),
-        _default(::_pbi::ConstantInitialized{}, GetClassData()),
-         _table(
-            ::_pbi::PrivateAccess::GenerateParseTable<Version>(
-                GetClassData())) {}
-  ~VersionGlobalsTypeInternal() {}
-  union {
-    alignas(::_pbi::kMaxMessageAlignment) Version _default;
+struct VersionGlobalsTypeInternal {
+  struct Impl : ::_pbi::MessageGlobalsBase {
+    constexpr Impl()
+        : ::_pbi::MessageGlobalsBase(
+              ::_pbi::PrivateAccess::GenerateClassData<Version>()),
+          _default(::_pbi::ConstantInitialized{}, GetClassData()),
+          _table(::_pbi::PrivateAccess::GenerateParseTable<Version>(
+              GetClassData())) {}
+    ~Impl() {}
+    union {
+      alignas(::_pbi::kMaxMessageAlignment) Version _default;
+    };
+    decltype(::_pbi::PrivateAccess::GenerateParseTable<Version>(
+        ::std::declval<const ::_pbi::ClassData*>())) _table;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<Version>(
-      ::std::declval<const ::_pbi::ClassData*>())) _table;
+  const ::_pbi::ClassData* class_data() const { return &impl.class_data; }
+  Impl impl;
 };
-static_assert(PROTOBUF_FIELD_OFFSET(VersionGlobalsTypeInternal, _default) ==
+static_assert(PROTOBUF_FIELD_OFFSET(VersionGlobalsTypeInternal, impl._default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
@@ -291,22 +294,25 @@ constexpr auto CodeGeneratorResponse_File::_Internal::GenerateClassData() {
       &file_reflection_data[2],
   };
 }
-struct CodeGeneratorResponse_FileGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr CodeGeneratorResponse_FileGlobalsTypeInternal()
-      : MessageGlobalsBase(
-            ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse_File>()),
-        _default(::_pbi::ConstantInitialized{}, GetClassData()),
-         _table(
-            ::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
-                GetClassData())) {}
-  ~CodeGeneratorResponse_FileGlobalsTypeInternal() {}
-  union {
-    alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse_File _default;
+struct CodeGeneratorResponse_FileGlobalsTypeInternal {
+  struct Impl : ::_pbi::MessageGlobalsBase {
+    constexpr Impl()
+        : ::_pbi::MessageGlobalsBase(
+              ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse_File>()),
+          _default(::_pbi::ConstantInitialized{}, GetClassData()),
+          _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
+              GetClassData())) {}
+    ~Impl() {}
+    union {
+      alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse_File _default;
+    };
+    decltype(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
+        ::std::declval<const ::_pbi::ClassData*>())) _table;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse_File>(
-      ::std::declval<const ::_pbi::ClassData*>())) _table;
+  const ::_pbi::ClassData* class_data() const { return &impl.class_data; }
+  Impl impl;
 };
-static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_FileGlobalsTypeInternal, _default) ==
+static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_FileGlobalsTypeInternal, impl._default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
@@ -436,22 +442,25 @@ constexpr auto CodeGeneratorResponse::_Internal::GenerateClassData() {
       &file_reflection_data[3],
   };
 }
-struct CodeGeneratorResponseGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr CodeGeneratorResponseGlobalsTypeInternal()
-      : MessageGlobalsBase(
-            ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse>()),
-        _default(::_pbi::ConstantInitialized{}, GetClassData()),
-         _table(
-            ::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
-                GetClassData())) {}
-  ~CodeGeneratorResponseGlobalsTypeInternal() {}
-  union {
-    alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse _default;
+struct CodeGeneratorResponseGlobalsTypeInternal {
+  struct Impl : ::_pbi::MessageGlobalsBase {
+    constexpr Impl()
+        : ::_pbi::MessageGlobalsBase(
+              ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorResponse>()),
+          _default(::_pbi::ConstantInitialized{}, GetClassData()),
+          _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
+              GetClassData())) {}
+    ~Impl() {}
+    union {
+      alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorResponse _default;
+    };
+    decltype(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
+        ::std::declval<const ::_pbi::ClassData*>())) _table;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorResponse>(
-      ::std::declval<const ::_pbi::ClassData*>())) _table;
+  const ::_pbi::ClassData* class_data() const { return &impl.class_data; }
+  Impl impl;
 };
-static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponseGlobalsTypeInternal, _default) ==
+static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorResponseGlobalsTypeInternal, impl._default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
@@ -588,22 +597,25 @@ constexpr auto CodeGeneratorRequest::_Internal::GenerateClassData() {
       &file_reflection_data[1],
   };
 }
-struct CodeGeneratorRequestGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr CodeGeneratorRequestGlobalsTypeInternal()
-      : MessageGlobalsBase(
-            ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorRequest>()),
-        _default(::_pbi::ConstantInitialized{}, GetClassData()),
-         _table(
-            ::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
-                GetClassData())) {}
-  ~CodeGeneratorRequestGlobalsTypeInternal() {}
-  union {
-    alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorRequest _default;
+struct CodeGeneratorRequestGlobalsTypeInternal {
+  struct Impl : ::_pbi::MessageGlobalsBase {
+    constexpr Impl()
+        : ::_pbi::MessageGlobalsBase(
+              ::_pbi::PrivateAccess::GenerateClassData<CodeGeneratorRequest>()),
+          _default(::_pbi::ConstantInitialized{}, GetClassData()),
+          _table(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
+              GetClassData())) {}
+    ~Impl() {}
+    union {
+      alignas(::_pbi::kMaxMessageAlignment) CodeGeneratorRequest _default;
+    };
+    decltype(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
+        ::std::declval<const ::_pbi::ClassData*>())) _table;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<CodeGeneratorRequest>(
-      ::std::declval<const ::_pbi::ClassData*>())) _table;
+  const ::_pbi::ClassData* class_data() const { return &impl.class_data; }
+  Impl impl;
 };
-static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorRequestGlobalsTypeInternal, _default) ==
+static_assert(PROTOBUF_FIELD_OFFSET(CodeGeneratorRequestGlobalsTypeInternal, impl._default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
@@ -678,10 +690,10 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::google::protobuf::compiler::Version_globals_,
-        &::google::protobuf::compiler::CodeGeneratorRequest_globals_,
-        &::google::protobuf::compiler::CodeGeneratorResponse_File_globals_,
-        &::google::protobuf::compiler::CodeGeneratorResponse_globals_,
+        &::google::protobuf::compiler::Version_globals_.impl,
+        &::google::protobuf::compiler::CodeGeneratorRequest_globals_.impl,
+        &::google::protobuf::compiler::CodeGeneratorResponse_File_globals_.impl,
+        &::google::protobuf::compiler::CodeGeneratorResponse_globals_.impl,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fplugin_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -745,7 +757,7 @@ PROTOBUF_CONSTINIT const uint32_t CodeGeneratorResponse_Feature_internal_data_[]
 
 Version::Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &Version_globals_.class_data) {
+    : Super_(arena, Version_globals_.class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -763,7 +775,7 @@ Version::Version(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const Version& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &Version_globals_.class_data) {
+    : Super_(arena, Version_globals_.class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -816,8 +828,8 @@ PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_
 Version::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&Version_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Version_globals_));
-  return &Version_globals_.class_data;
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&Version_globals_.impl));
+  return Version_globals_.class_data();
 }
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 void Version::Clear(MessageLite& base) {
@@ -995,7 +1007,7 @@ void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 }
 
 ::google::protobuf::Metadata Version::GetMetadata() const {
-  return Super_::GetMetadataImpl(Version_globals_.class_data);
+  return Super_::GetMetadataImpl(*Version_globals_.class_data());
 }
 // ===================================================================
 
@@ -1011,7 +1023,7 @@ void CodeGeneratorRequest::clear_source_file_descriptors() {
 }
 CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorRequest_globals_.class_data) {
+    : Super_(arena, CodeGeneratorRequest_globals_.class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1050,7 +1062,7 @@ CodeGeneratorRequest::CodeGeneratorRequest(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const CodeGeneratorRequest& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorRequest_globals_.class_data) {
+    : Super_(arena, CodeGeneratorRequest_globals_.class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -1111,8 +1123,8 @@ PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_
 CodeGeneratorRequest::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorRequest_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CodeGeneratorRequest_globals_));
-  return &CodeGeneratorRequest_globals_.class_data;
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CodeGeneratorRequest_globals_.impl));
+  return CodeGeneratorRequest_globals_.class_data();
 }
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 void CodeGeneratorRequest::Clear(MessageLite& base) {
@@ -1358,7 +1370,7 @@ void CodeGeneratorRequest::InternalSwap(CodeGeneratorRequest* PROTOBUF_RESTRICT 
 }
 
 ::google::protobuf::Metadata CodeGeneratorRequest::GetMetadata() const {
-  return Super_::GetMetadataImpl(CodeGeneratorRequest_globals_.class_data);
+  return Super_::GetMetadataImpl(*CodeGeneratorRequest_globals_.class_data());
 }
 // ===================================================================
 
@@ -1369,7 +1381,7 @@ void CodeGeneratorResponse_File::clear_generated_code_info() {
 }
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorResponse_File_globals_.class_data) {
+    : Super_(arena, CodeGeneratorResponse_File_globals_.class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1389,7 +1401,7 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const CodeGeneratorResponse_File& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorResponse_File_globals_.class_data) {
+    : Super_(arena, CodeGeneratorResponse_File_globals_.class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -1439,8 +1451,8 @@ PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_
 CodeGeneratorResponse_File::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorResponse_File_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CodeGeneratorResponse_File_globals_));
-  return &CodeGeneratorResponse_File_globals_.class_data;
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CodeGeneratorResponse_File_globals_.impl));
+  return CodeGeneratorResponse_File_globals_.class_data();
 }
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 void CodeGeneratorResponse_File::Clear(MessageLite& base) {
@@ -1632,13 +1644,13 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOB
 }
 
 ::google::protobuf::Metadata CodeGeneratorResponse_File::GetMetadata() const {
-  return Super_::GetMetadataImpl(CodeGeneratorResponse_File_globals_.class_data);
+  return Super_::GetMetadataImpl(*CodeGeneratorResponse_File_globals_.class_data());
 }
 // ===================================================================
 
 CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorResponse_globals_.class_data) {
+    : Super_(arena, CodeGeneratorResponse_globals_.class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -1663,7 +1675,7 @@ CodeGeneratorResponse::CodeGeneratorResponse(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
     const CodeGeneratorResponse& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CodeGeneratorResponse_globals_.class_data) {
+    : Super_(arena, CodeGeneratorResponse_globals_.class_data()) {
 
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
@@ -1721,8 +1733,8 @@ PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_
 CodeGeneratorResponse::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CodeGeneratorResponse_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CodeGeneratorResponse_globals_));
-  return &CodeGeneratorResponse_globals_.class_data;
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CodeGeneratorResponse_globals_.impl));
+  return CodeGeneratorResponse_globals_.class_data();
 }
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 void CodeGeneratorResponse::Clear(MessageLite& base) {
@@ -1930,7 +1942,7 @@ void CodeGeneratorResponse::InternalSwap(CodeGeneratorResponse* PROTOBUF_RESTRIC
 }
 
 ::google::protobuf::Metadata CodeGeneratorResponse::GetMetadata() const {
-  return Super_::GetMetadataImpl(CodeGeneratorResponse_globals_.class_data);
+  return Super_::GetMetadataImpl(*CodeGeneratorResponse_globals_.class_data());
 }
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace compiler
