@@ -166,6 +166,62 @@ TEST_P(MiniTableTest, AllScalarTypesOneof) {
   EXPECT_EQ(0, table->UPB_PRIVATE(required_count));
 }
 
+// All fields share oneof storage so the field index boundary is independent
+// of the message size and presence bit limits.
+TEST_P(MiniTableTest, OneofFieldIndexLargestAccepted) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  constexpr uint32_t kFieldCount = UINT16_MAX - 3;
+  for (uint32_t i = 1; i <= kFieldCount; ++i) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+  }
+  ASSERT_TRUE(e.StartOneof());
+  for (uint32_t i = 1; i <= kFieldCount; ++i) {
+    ASSERT_TRUE(e.PutOneofField(i));
+  }
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  ASSERT_NE(nullptr, table) << status.error_message();
+  EXPECT_TRUE(status.ok());
+  EXPECT_EQ(kFieldCount, upb_MiniTable_FieldCount(table));
+  const upb_MiniTableField* first = upb_MiniTable_GetFieldByIndex(table, 0);
+  const upb_MiniTableField* last =
+      upb_MiniTable_GetFieldByIndex(table, kFieldCount - 1);
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(first));
+  EXPECT_TRUE(upb_MiniTableField_IsInOneof(last));
+  EXPECT_EQ(first->UPB_PRIVATE(offset), last->UPB_PRIVATE(offset));
+  EXPECT_EQ(first->presence, last->presence);
+}
+
+TEST_P(MiniTableTest, OneofFieldIndexOutOfRange) {
+  // A field index plus kOneofBase must remain below the uint16_t sentinel.
+  for (uint32_t field_count = UINT16_MAX - 2; field_count <= UINT16_MAX;
+       ++field_count) {
+    upb::Arena arena;
+    upb::MtDataEncoder e;
+    ASSERT_TRUE(e.StartMessage(0));
+    for (uint32_t i = 1; i <= field_count; ++i) {
+      ASSERT_TRUE(e.PutField(kUpb_FieldType_Bool, i, 0));
+    }
+    ASSERT_TRUE(e.StartOneof());
+    // Put this case's final index first to exercise each rejected value.
+    ASSERT_TRUE(e.PutOneofField(field_count));
+    for (uint32_t i = 1; i < field_count; ++i) {
+      ASSERT_TRUE(e.PutOneofField(i));
+    }
+    upb::Status status;
+    upb_MiniTable* table = _upb_MiniTable_Build(
+        e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+    EXPECT_EQ(nullptr, table);
+    EXPECT_FALSE(status.ok());
+    EXPECT_NE(std::string_view::npos,
+              std::string_view(status.error_message())
+                  .find("Too many fields for oneof layout"));
+  }
+}
+
 TEST_P(MiniTableTest, FieldCountOverflow) {
   upb::Arena arena;
   upb::MtDataEncoder e;
