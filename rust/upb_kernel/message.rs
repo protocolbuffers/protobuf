@@ -421,6 +421,14 @@ where
         upb::wire::encode(self.get_ptr(Private)).map_err(|_| SerializeError)
     }
 
+    fn serialize_deterministic(&self) -> Result<Vec<u8>, SerializeError> {
+        upb::wire::encode_with_options(
+            self.get_ptr(Private),
+            upb::wire::encode_options::DETERMINISTIC,
+        )
+        .map_err(|_| SerializeError)
+    }
+
     fn serialized_len(&self) -> usize {
         upb::wire::byte_size(self.get_ptr(Private))
     }

@@ -14,6 +14,7 @@ use googletest::prelude::*;
 use protobuf::prelude::*;
 use protobuf::View;
 
+use map_unittest_rust_proto::{TestMap, TestMapWithMessages};
 use paste::paste;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
@@ -33,6 +34,15 @@ macro_rules! generate_parameterized_serialization_test {
                 assert_that!(serialized.len(), eq(0));
 
                 let serialized = msg.as_mut().serialize().unwrap();
+                assert_that!(serialized.len(), eq(0));
+
+                let serialized = msg.serialize_deterministic().unwrap();
+                assert_that!(serialized.len(), eq(0));
+
+                let serialized = msg.as_view().serialize_deterministic().unwrap();
+                assert_that!(serialized.len(), eq(0));
+
+                let serialized = msg.as_mut().serialize_deterministic().unwrap();
                 assert_that!(serialized.len(), eq(0));
             }
 
@@ -223,4 +233,60 @@ fn test_clear_and_parse_clears_on_error_oneof_partial() {
     expect_that!(msg.oneof_uint32_opt(), eq(None));
     expect_that!(msg.oneof_bytes_opt(), eq(None));
     expect_that!(msg.oneof_string_opt(), eq(None));
+}
+
+#[gtest]
+fn test_map_serialization_deterministic() {
+    let mut forward = TestMap::new();
+    for i in 0..32 {
+        forward.map_int32_int32_mut().insert(-i - 1, i * 10);
+        forward
+            .map_string_string_mut()
+            .insert(format!("key_{i}").as_str(), format!("val_{i}").as_str());
+    }
+
+    let mut reverse = TestMap::new();
+    for i in (0..32).rev() {
+        reverse.map_int32_int32_mut().insert(-i - 1, i * 10);
+        reverse
+            .map_string_string_mut()
+            .insert(format!("key_{i}").as_str(), format!("val_{i}").as_str());
+    }
+
+    let forward_bytes = forward.serialize_deterministic().unwrap();
+    let reverse_bytes = reverse.serialize_deterministic().unwrap();
+    assert_that!(forward_bytes, eq(&reverse_bytes));
+    assert_that!(forward.as_view().serialize_deterministic().unwrap(), eq(&reverse_bytes));
+    assert_that!(forward.as_mut().serialize_deterministic().unwrap(), eq(&reverse_bytes));
+
+    let roundtrip = TestMap::parse(&forward_bytes).unwrap();
+    for i in 0..32 {
+        assert_that!(roundtrip.map_int32_int32().get(-i - 1), eq(Some(i * 10)));
+        assert_that!(
+            roundtrip.map_string_string().get(format!("key_{i}").as_str()),
+            eq(Some(format!("val_{i}").as_str().into()))
+        );
+    }
+}
+
+#[gtest]
+fn test_nested_map_serialization_deterministic() {
+    let mut forward = TestMapWithMessages::new();
+    for i in 0..16 {
+        let mut val = TestAllTypes::new();
+        val.set_optional_int32(i * 100);
+        forward.map_int32_all_types_mut().insert(-i - 1, val);
+    }
+
+    let mut reverse = TestMapWithMessages::new();
+    for i in (0..16).rev() {
+        let mut val = TestAllTypes::new();
+        val.set_optional_int32(i * 100);
+        reverse.map_int32_all_types_mut().insert(-i - 1, val);
+    }
+
+    assert_that!(
+        forward.serialize_deterministic().unwrap(),
+        eq(&reverse.serialize_deterministic().unwrap())
+    );
 }

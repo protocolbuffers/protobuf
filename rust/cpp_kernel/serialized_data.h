@@ -15,6 +15,8 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/rust_alloc_for_cpp_api.h"
 
@@ -36,7 +38,8 @@ extern "C" struct SerializedData {
   size_t len;
 };
 
-inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedData* out) {
+inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedData* out,
+                         bool deterministic = false) {
   ABSL_DCHECK(msg->IsInitialized());
   size_t len = msg->ByteSizeLong();
   if (len > INT_MAX) {
@@ -48,7 +51,17 @@ inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedDat
   if (bytes == nullptr) {
     ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
   }
-  if (!msg->SerializeWithCachedSizesToArray(bytes)) {
+  if (deterministic) {
+    if (len > 0) {
+      io::ArrayOutputStream array_stream(bytes, static_cast<int>(len));
+      io::CodedOutputStream output_stream(&array_stream);
+      output_stream.SetSerializationDeterministic(true);
+      msg->SerializeWithCachedSizes(&output_stream);
+      if (output_stream.HadError()) {
+        return false;
+      }
+    }
+  } else if (!msg->SerializeWithCachedSizesToArray(bytes)) {
     return false;
   }
   out->data = bytes;
