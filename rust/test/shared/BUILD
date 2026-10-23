@@ -134,7 +134,9 @@ rust_test(
         "//rust:protobuf_cpp_export": "protobuf",
     },
     edition = "2024",
-    rustc_flags = ["--cfg=bzl"],
+    rustc_flags = ["--cfg=bzl"] + select({
+        "//conditions:default": [],
+    }),
     deps = [
         "//rust:protobuf_cpp_export",
         "//rust/test:enums_cpp_rust_proto",
@@ -150,7 +152,9 @@ rust_test(
         "//rust:protobuf_upb_export": "protobuf",
     },
     edition = "2024",
-    rustc_flags = ["--cfg=bzl"],
+    rustc_flags = ["--cfg=bzl"] + select({
+        "//conditions:default": [],
+    }),
     deps = [
         "//rust:protobuf_upb_export",
         "//rust/test:enums_upb_rust_proto",

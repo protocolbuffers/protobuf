@@ -35,7 +35,7 @@ pub use crate::proxied::{
 };
 #[allow(deprecated)]
 pub use crate::proxied::{MutProxied, Proxied};
-pub use crate::r#enum::{Enum, UnknownEnumValue};
+pub use crate::r#enum::{Enum, EnumNames, UnknownEnumValue};
 pub use crate::repeated::{Repeated, RepeatedIter, RepeatedMut, RepeatedView};
 pub use crate::singular::Singular;
 pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};

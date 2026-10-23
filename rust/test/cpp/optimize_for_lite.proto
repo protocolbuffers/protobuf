@@ -8,3 +8,8 @@ option optimize_for = LITE_RUNTIME;
 message OptimizeForLiteTestMessage {
   string value = 1;
 }
+
+enum OptimizeForLiteTestEnum {
+  OPTIMIZE_FOR_LITE_TEST_ENUM_UNSPECIFIED = 0;
+  OPTIMIZE_FOR_LITE_TEST_ENUM_FOO = 1;
+}

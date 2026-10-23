@@ -56,3 +56,18 @@ rust_test(
         "@crate_index//:googletest",
     ],
 )
+
+rust_test(
+    name = "lite_enum_test",
+    srcs = ["lite_enum_test.rs"],
+    aliases = {
+        "//rust:protobuf_cpp_export": "protobuf",
+    },
+    edition = "2024",
+    deps = [
+        ":optimize_for_lite_cpp_rust_proto",
+        "//rust:protobuf_cpp_export",
+        "//rust/test:enums_cpp_rust_proto",
+        "@crate_index//:googletest",
+    ],
+)
