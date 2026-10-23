@@ -4,12 +4,34 @@ load(
     "pkg_files",
 )
 load("@rules_pkg//pkg:zip.bzl", "pkg_zip")
+load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
 load("//:protobuf_release.bzl", "package_naming")
+load("//:protobuf_version.bzl", "PROTOC_VERSION")
+load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 load(":build_systems.bzl", "gen_file_lists")
 load(":cc_dist_library.bzl", "cc_dist_library")
 
+# Define a config_setting for each supported release platform in PROTOBUF_PLATFORMS
+# so that :protobuf_pkg_naming can resolve the release archive's {platform} suffix
+# (e.g., "linux-x86_64", "osx-aarch_64", "win64") on standard host builds when not
+# using the custom cross-compilation C++ toolchains in //toolchain.
+[
+    config_setting(
+        name = "is_" + platform.replace("-", "_"),
+        constraint_values = meta["compatible_with"],
+        visibility = ["//visibility:private"],
+    )
+    for platform, meta in PROTOBUF_PLATFORMS.items()
+]
+
 package_naming(
     name = "protobuf_pkg_naming",
+    platform = select({
+        ":is_" + platform.replace("-", "_"): platform
+        for platform in PROTOBUF_PLATFORMS.keys()
+    } | {
+        "//conditions:default": "unknown",
+    }),
 )
 
 pkg_files(
@@ -91,6 +113,17 @@ pkg_zip(
     ],
     package_file_name = "protoc-{version}-{platform}.zip",
     package_variables = ":protobuf_pkg_naming",
+)
+
+sh_binary(
+    name = "update_prebuilts",
+    srcs = ["update_prebuilts.sh"],
+    args = [
+        "$(rootpath :protoc_release)",
+        PROTOC_VERSION,
+    ],
+    data = [":protoc_release"],
+    visibility = ["//visibility:public"],
 )
 
 ################################################################################

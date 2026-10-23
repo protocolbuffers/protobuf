@@ -159,7 +159,10 @@ bzl_library(
     srcs = [
         "toolchain_helpers.bzl",
     ],
-    visibility = ["//bazel:__subpackages__"],
+    visibility = [
+        "//bazel:__subpackages__",
+        "//editions:__subpackages__",
+    ],
     deps = [
         ":native_bzl",
         "//bazel/common:proto_lang_toolchain_info_bzl",
