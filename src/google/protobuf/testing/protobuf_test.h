@@ -158,14 +158,18 @@
 // Test Naming:
 //   Registered test names have the form:
 //     `<TestName>/<p1>/<p2>/...`
-//   ordered by lexical order of the `PB_TEST_CHOOSE_*` calls (omitting the
-//   suffix when no parameters are present), with common
+//   ordered by lexical order of the `PB_TEST_CHOOSE_*` calls, those of
+//   `PB_TEST_FIXTURE_BASE` classes first (outermost base first), then the
+//   fixture's, then the test body's (omitting the suffix when no parameters
+//   are present), with common
 //   qualification/member prefixes (`ns::`, `obj.`, `ptr->`) and unambiguous
 //   namespace qualifiers stripped, and names automatically sanitized and
 //   disambiguated.
 //
 // Restrictions:
-//   - Do NOT define `PB_TEST` or `PB_TEST_F` in header files.
+//   - Do NOT define `PB_TEST` or `PB_TEST_F` in header files. Fixtures and
+//     `PB_TEST_FIXTURE_BASE` classes may be defined in headers shared by
+//     several translation units of a test binary.
 //   - `PB_TEST_CHOOSE_TYPE` and `PB_TEST_CHOOSE_CONSTEXPR` must be written
 //     lexically inside the `PB_TEST` / `PB_TEST_F` body.
 //   - `PB_TEST_CHOOSE_VALUE` must only be evaluated during a `PB_TEST` or
@@ -260,19 +264,20 @@
 #define PB_TEST_CHOOSE_CONSTEXPR(...)                                        \
   (::google::protobuf::internal::TestChooseConstexprSelector<                          \
       InternalSelf_, static_cast<::google::protobuf::internal::CounterT>(__COUNTER__), \
-      InternalIndices_>([] { return #__VA_ARGS__; },                         \
-                        [] {                                                 \
-                          return ::google::protobuf::internal::ChooseConstexprImpl(    \
-                              PB_TEST_CHOOSE_CONSTEXPR_ARGS_(__VA_ARGS__));  \
-                        }))
+      __LINE__, InternalIndices_>(                                           \
+      [] { return #__VA_ARGS__; },                                           \
+      [] {                                                                   \
+        return ::google::protobuf::internal::ChooseConstexprImpl(                      \
+            PB_TEST_CHOOSE_CONSTEXPR_ARGS_(__VA_ARGS__));                    \
+      }))
 
-#define PB_TEST_CHOOSE_TYPE(...)                              \
-  typename ::google::protobuf::internal::TestChooseTypeSelector<        \
-      InternalSelf_,                                          \
-      decltype(::google::protobuf::internal::TestChooseTypeParams<      \
-               PB_TEST_CHOOSE_TYPE_ARGS_(__VA_ARGS__)>()),    \
-      PB_TEST_CHOOSE_TYPE_LITERAL_(__VA_ARGS__),              \
-      static_cast<::google::protobuf::internal::CounterT>(__COUNTER__), \
+#define PB_TEST_CHOOSE_TYPE(...)                                        \
+  typename ::google::protobuf::internal::TestChooseTypeSelector<                  \
+      InternalSelf_,                                                    \
+      decltype(::google::protobuf::internal::TestChooseTypeParams<                \
+               PB_TEST_CHOOSE_TYPE_ARGS_(__VA_ARGS__)>()),              \
+      PB_TEST_CHOOSE_TYPE_LITERAL_(__VA_ARGS__),                        \
+      static_cast<::google::protobuf::internal::CounterT>(__COUNTER__), __LINE__, \
       InternalIndices_>::type
 
 // =============================================================================
@@ -611,17 +616,34 @@ class PartialTestRegistry {
     absl::string_view literal;
     Location loc;
   };
+  // Identifies a `PB_TEST_CHOOSE_VALUE` call site. Unlike its `__COUNTER__`,
+  // it is the same in every translation unit compiling the call site, so a
+  // fixture defined in a header registers each dimension once per binary.
+  struct CallSite {
+    absl::string_view file;
+    int line;
+    absl::string_view literal;
+
+    static CallSite Of(const SourceInfo& info) {
+      return {info.loc.file, info.loc.line, info.literal};
+    }
+    friend bool operator==(const CallSite& a, const CallSite& b) {
+      return a.line == b.line && a.file == b.file && a.literal == b.literal;
+    }
+    template <typename H>
+    friend H AbslHashValue(H h, const CallSite& c) {
+      return H::combine(std::move(h), c.file, c.line, c.literal);
+    }
+  };
 
   template <typename Fixture>
   void AddValueDimension(CounterT id, const void* instantiation_key,
                          size_t size, SourceInfo info) {
     ABSL_CHECK_GT(size, 0u)
         << "PB_TEST_CHOOSE_VALUE requires at least one element";
-    auto& pf = fixtures_[kKey<Fixture>];
-    pf.locations.try_emplace(id, info.loc);
-    auto& d = pf.per_instantiation[instantiation_key].dimensions[id];
-    if (!d.names.empty()) return;
-    d = {ParseNamesFromLiteral(info.literal, size), DimensionKind::kValue};
+    Dimension* d = NewValueDimension<Fixture>(id, instantiation_key, info);
+    if (d == nullptr) return;
+    d->names = ParseNamesFromLiteral(info.literal, size);
   }
 
   template <typename Fixture, typename T, size_t N, typename Printer>
@@ -629,33 +651,32 @@ class PartialTestRegistry {
                          ChooseValues<T, N, Printer> values, SourceInfo info) {
     ABSL_CHECK(!values.values.empty())
         << "PB_TEST_CHOOSE_VALUE requires at least one element";
-    auto& pf = fixtures_[kKey<Fixture>];
-    pf.locations.try_emplace(id, info.loc);
-    auto& d = pf.per_instantiation[instantiation_key].dimensions[id];
-    if (!d.names.empty()) return;
-    d.kind = DimensionKind::kValue;
+    Dimension* d = NewValueDimension<Fixture>(id, instantiation_key, info);
+    if (d == nullptr) return;
     absl::optional<std::vector<std::string>> literal_names;
     const size_t size = values.values.size();
     for (size_t i = 0; i < size; ++i) {
-      d.names.push_back(
+      d->names.push_back(
           GetValueElementName<Printer, T>(values.printer, values.values[i], i,
                                           size, info.literal, literal_names));
     }
-    SanitizeNames(d.names, values.name_prefix,
+    SanitizeNames(d->names, values.name_prefix,
                   std::is_same_v<T, bool> &&
                       std::is_same_v<Printer, DefaultValuePrinter>);
   }
 
-  template <typename Fixture, CounterT id, typename Tuple, typename Printer>
+  template <typename Fixture, CounterT id, int line, typename Tuple,
+            typename Printer>
   void AddConstexprDimension(const void* instantiation_key,
                              ChooseConstexpr<Tuple, Printer> values,
                              absl::string_view literal) {
     static constexpr size_t kSize = std::tuple_size_v<Tuple>;
     auto& d = fixtures_[kKey<Fixture>]
                   .per_instantiation[instantiation_key]
-                  .dimensions[id];
+                  .dimensions[DimensionKey{0, line, id}];
     if (!d.names.empty()) return;
     d.kind = DimensionKind::kConstexprValue;
+    d.info = {literal, {"", line}};
     absl::optional<std::vector<std::string>> literal_names;
     bool is_bool = false;
     std::apply(
@@ -674,15 +695,17 @@ class PartialTestRegistry {
     SanitizeNames(d.names, values.name_prefix, is_bool);
   }
 
-  template <typename Fixture, CounterT id, typename Printer, typename... Types>
+  template <typename Fixture, CounterT id, int line, typename Printer,
+            typename... Types>
   void AddTypeDimension(const void* instantiation_key, std::tuple<Types...>*,
                         absl::optional<absl::string_view> name_prefix,
                         absl::string_view literal) {
     auto& d = fixtures_[kKey<Fixture>]
                   .per_instantiation[instantiation_key]
-                  .dimensions[id];
+                  .dimensions[DimensionKey{0, line, id}];
     if (!d.names.empty()) return;
     d.kind = DimensionKind::kType;
+    d.info = {literal, {"", line}};
     absl::optional<std::vector<std::string>> literal_names;
     const auto get_name = [&](absl::optional<std::string> name, size_t i) {
       if (name.has_value()) return *std::move(name);
@@ -702,7 +725,7 @@ class PartialTestRegistry {
     SanitizeNames(d.names, name_prefix);
   }
 
-  size_t GetValueIndex(CounterT id, const void*, Location loc);
+  size_t GetValueIndex(const void*, const SourceInfo& info);
 
   void RegisterAll();
 
@@ -733,6 +756,22 @@ class PartialTestRegistry {
   struct Dimension {
     std::vector<std::string> names;
     DimensionKind kind = DimensionKind::kValue;
+    SourceInfo info;
+  };
+  // Orders the dimensions of a test: those of its `PB_TEST_FIXTURE_BASE`
+  // classes first (outermost base first), then its fixture's, then the test
+  // body's, each class's in lexical order.
+  struct DimensionKey {
+    // 0 on the class owning the dimension; `RegisterAll` lowers it for the
+    // dimensions it merges into a test from the test's fixture and bases.
+    int level;
+    int line;
+    CounterT counter;
+
+    friend bool operator<(const DimensionKey& a, const DimensionKey& b) {
+      return std::tuple(a.level, a.line, a.counter) <
+             std::tuple(b.level, b.line, b.counter);
+    }
   };
 
   struct PerFixture {
@@ -744,7 +783,6 @@ class PartialTestRegistry {
     // `::testing::Test` for `PB_TEST`) and any `PB_TEST_FIXTURE_BASE` classes
     // above it. Empty on fixture entries.
     std::vector<const void*> parent_keys;
-    absl::flat_hash_map<CounterT, Location> locations;
 
     struct PerInstantiation {
       absl::AnyInvocable<void(size_t index) const&> do_register;
@@ -758,17 +796,34 @@ class PartialTestRegistry {
       std::vector<PerCounterIndex> instantiation_key;
 
       // We want these sorted.
-      absl::btree_map<CounterT, Dimension> dimensions;
+      absl::btree_map<DimensionKey, Dimension> dimensions;
+
+      // The value dimension registered for `site`, if any.
+      Dimension* FindValueDimension(const CallSite& site);
     };
     absl::flat_hash_map<const void*, PerInstantiation> per_instantiation;
   };
+
+  // Returns the new value dimension for call site `info` of `Fixture`, or null
+  // if another translation unit already registered it.
+  template <typename Fixture>
+  Dimension* NewValueDimension(CounterT id, const void* instantiation_key,
+                               SourceInfo info) {
+    auto& inst = fixtures_[kKey<Fixture>].per_instantiation[instantiation_key];
+    if (inst.FindValueDimension(CallSite::Of(info)) != nullptr) return nullptr;
+    Dimension& d = inst.dimensions[DimensionKey{0, info.loc.line, id}];
+    d.kind = DimensionKind::kValue;
+    d.info = info;
+    return &d;
+  }
+
   // We need pointer stability.
   absl::flat_hash_map<const void*, PerFixture> fixtures_;
   const PerFixture* current_fixture_ = nullptr;
   const PerFixture::PerInstantiation* current_test_ = nullptr;
   size_t current_test_index_ = ~size_t{};
   absl::Mutex used_values_mu_;
-  absl::flat_hash_set<CounterT> used_values_ ABSL_GUARDED_BY(used_values_mu_);
+  absl::flat_hash_set<CallSite> used_values_ ABSL_GUARDED_BY(used_values_mu_);
 };
 
 template <size_t N>
@@ -972,7 +1027,7 @@ auto TestChooseValueSelector(Literal, Signature<Indices>, F f) {
     };
     static const auto* const values = new auto(f().values);
     return (*values)[PartialTestRegistry::Get().GetValueIndex(
-        id, &Run<decltype(reg)>, kDefault<Literal>().loc)];
+        &Run<decltype(reg)>, kDefault<Literal>())];
   } else {
     static_assert(ChooseValueT::kSize != ~size_t{},
                   "Iterable in PB_TEST_CHOOSE_VALUE cannot capture local "
@@ -985,7 +1040,7 @@ auto TestChooseValueSelector(Literal, Signature<Indices>, F f) {
           kDefault<Literal>());
     };
     return f().values[PartialTestRegistry::Get().GetValueIndex(
-        id, &Run<decltype(reg)>, kDefault<Literal>().loc)];
+        &Run<decltype(reg)>, kDefault<Literal>())];
   }
 }
 
@@ -1097,8 +1152,8 @@ void InstantiateAllTypes() {
   }
 }
 
-template <typename Fixture, CounterT id, typename Indices, typename Literal,
-          typename F>
+template <typename Fixture, CounterT id, int line, typename Indices,
+          typename Literal, typename F>
 constexpr auto TestChooseConstexprSelector(Literal, F f) {
   using ChooseT = std::invoke_result_t<F>;
   using Tuple = typename ChooseT::tuple_type;
@@ -1106,7 +1161,7 @@ constexpr auto TestChooseConstexprSelector(Literal, F f) {
   static_assert(kSize > 0,
                 "PB_TEST_CHOOSE_CONSTEXPR requires at least one element");
   constexpr auto reg = []() {
-    PartialTestRegistry::Get().AddConstexprDimension<Fixture, id>(
+    PartialTestRegistry::Get().AddConstexprDimension<Fixture, id, line>(
         PartialTestRegistry::kKey<Indices>, kDefault<F>(), kDefault<Literal>());
     InstantiateAllTypes<Fixture, id, 0, std::tuple_size_v<Tuple>, Indices>();
     PartialTestRegistry::Get().AddDoRegister<Fixture, Indices>();
@@ -1118,11 +1173,11 @@ constexpr auto TestChooseConstexprSelector(Literal, F f) {
 }
 
 template <typename Fixture, typename Types, typename Literal, CounterT id,
-          typename Indices>
+          int line, typename Indices>
 struct TestChooseTypeSelector {
   static constexpr auto reg = []() {
     PartialTestRegistry::Get()
-        .AddTypeDimension<Fixture, id, typename Types::printer>(
+        .AddTypeDimension<Fixture, id, line, typename Types::printer>(
             PartialTestRegistry::kKey<Indices>,
             static_cast<typename Types::types*>(nullptr), Types::prefix(),
             kDefault<Literal>());

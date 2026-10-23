@@ -167,8 +167,10 @@ Registered GoogleTest names have the form:
 TestSuiteName.TestName/<p1>/<p2>/...
 ```
 
-ordered by the lexical order of the `PB_TEST_CHOOSE_*` calls (if a test has no
-`PB_TEST_CHOOSE_*` calls, the `/...` suffix is omitted):
+ordered by the lexical order of the `PB_TEST_CHOOSE_*` calls, those of
+`PB_TEST_FIXTURE_BASE` classes first (outermost base first), then the fixture's,
+then the test body's (if a test has no `PB_TEST_CHOOSE_*` calls, the `/...`
+suffix is omitted):
 
 1.  **Values (`PB_TEST_CHOOSE_VALUE` / `PB_TEST_CHOOSE_CONSTEXPR`)**:
     *   Uses explicit names `{"name1", ...}` or `printer(value, index)` if
@@ -293,8 +295,8 @@ PB_TEST_F(LazyFieldTest, ParseAndSerialize) {
 ```
 
 To share such a dimension across several fixtures, move it to a common base
-class that declares `PB_TEST_FIXTURE_BASE`; every `PB_TEST_F` on a derived
-fixture then runs with it:
+class that declares `PB_TEST_FIXTURE_BASE` (typically in a header shared by
+several test files); every `PB_TEST_F` on a derived fixture then runs with it:
 
 ```c++ {.good}
 class ArenaTest : public ::testing::Test {
@@ -532,7 +534,9 @@ PB_TEST_F(MyStringFixture, HandlesStrings) {
     `SetUp()` **must** be used with `PB_TEST_F`, not `TEST_F` (calling
     `PB_TEST_CHOOSE_VALUE` outside an active `PB_TEST` / `PB_TEST_F`, its
     fixture, or a `PB_TEST_FIXTURE_BASE` base of that fixture fails the test).
-*   **Do not define `PB_TEST` or `PB_TEST_F` in header files.**
+*   **Do not define `PB_TEST` or `PB_TEST_F` in header files.** Fixtures and
+    `PB_TEST_FIXTURE_BASE` classes may be defined in headers shared by several
+    translation units of a test binary.
 
 ### 4. Capturing Local State in Value Expressions
 
