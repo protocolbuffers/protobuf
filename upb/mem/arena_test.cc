@@ -395,6 +395,41 @@ TEST(ArenaTest, FixedInitialBlockNoAlloc) {
   upb_Arena_Free(arena);
 }
 
+TEST(ArenaTest, OverflowAllocationRejected) {
+  // Each size below is rejected by an overflow check before the block
+  // allocator is called, so the result does not depend on how the system or
+  // sanitizer allocator handles a huge request. The second size is the
+  // smallest whose alignment rounding wraps to zero, and the third is the
+  // largest that rounds without wrapping.
+  const size_t kOverflowSizes[] = {SIZE_MAX, SIZE_MAX - (UPB_MALLOC_ALIGN - 2),
+                                   SIZE_MAX - (UPB_MALLOC_ALIGN - 1)};
+  CustomAlloc alloc = {{&CustomAllocFunc, &CustomAllocCleanup}, 0, false};
+  upb_alloc* block_alloc = reinterpret_cast<upb_alloc*>(&alloc);
+  upb_Arena* arena = upb_Arena_Init(nullptr, 0, block_alloc);
+  ASSERT_NE(arena, nullptr);
+
+  char* small = static_cast<char*>(upb_Arena_Malloc(arena, 64));
+  ASSERT_NE(small, nullptr);
+  memset(small, 0x5a, 64);
+  const int allocs_before = alloc.counter;
+  const uintptr_t space_before = upb_Arena_SpaceAllocated(arena, nullptr);
+
+  for (size_t size : kOverflowSizes) {
+    EXPECT_EQ(upb_Arena_Malloc(arena, size), nullptr) << size;
+    EXPECT_FALSE(upb_Arena_TryExtend(arena, small, 64, size)) << size;
+    EXPECT_EQ(upb_Arena_Realloc(arena, small, 64, size), nullptr) << size;
+    EXPECT_EQ(upb_Arena_Init(nullptr, size, block_alloc), nullptr) << size;
+  }
+  EXPECT_EQ(alloc.counter, allocs_before);
+  EXPECT_EQ(upb_Arena_SpaceAllocated(arena, nullptr), space_before);
+  for (int i = 0; i < 64; ++i) {
+    EXPECT_EQ(small[i], 0x5a);
+  }
+
+  upb_Arena_Free(arena);
+  EXPECT_TRUE(alloc.ran_cleanup);
+}
+
 class Environment {
  public:
   void RandomNewFree(absl::BitGen& gen, size_t min_index = 0) {
