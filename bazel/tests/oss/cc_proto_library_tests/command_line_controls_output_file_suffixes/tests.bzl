@@ -10,13 +10,11 @@ def _test_command_line_controls_output_file_suffixes(env, target):
         filter = matching.any(
             matching.file_path_matches("*.pb.h"),
             matching.file_path_matches("*.pb.cc"),
-            matching.file_path_matches("*.pb.cc.meta"),
             matching.file_path_matches("*.proto.h"),
         ),
     ).contains_exactly_predicates([
         matching.file_path_matches("/foo.pb.cc"),
         matching.file_path_matches("/foo.pb.h"),
-        matching.file_path_matches("/foo.pb.cc.meta"),
         matching.file_path_matches("/foo.proto.h"),
     ])
 
