@@ -6,6 +6,7 @@
 #include <cstdint>
 
 #include <gtest/gtest.h>
+#include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
 #include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
@@ -22,6 +23,7 @@
 #include "upb/wire/encode_test.upb.h"
 #include "upb/wire/encode_test.upb_minitable.h"
 #include "upb/wire/internal/back_alloc.h"
+#include "upb/wire/internal/constants.h"
 #include "upb/wire/internal/encoder.h"
 
 // Must be last.
@@ -120,8 +122,11 @@ TEST(EncodeTest, EncodeFieldMaxDepthExceeded) {
   jmp_buf err;
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
+  // Two levels of nesting below `msg` exceed a depth limit of 1.
   upb_wire_test_TestRecursive* sub_msg = upb_wire_test_TestRecursive_new(arena);
   upb_wire_test_TestRecursive_set_recursive(msg, sub_msg);
+  upb_wire_test_TestRecursive_set_recursive(
+      sub_msg, upb_wire_test_TestRecursive_new(arena));
 
   const upb_MiniTable* mt = &upb_0wire_0test__TestRecursive_msg_init;
   const upb_MiniTableField* field = upb_MiniTable_FindFieldByNumber(mt, 1);
@@ -132,6 +137,67 @@ TEST(EncodeTest, EncodeFieldMaxDepthExceeded) {
 
   _upb_mapsorter_destroy(&e.sorter);
   upb_Arena_Free(arena);
+}
+
+// Returns a TestRecursive with `depth` levels of `recursive` nested below it.
+upb_wire_test_TestRecursive* MakeRecursiveChain(upb_Arena* arena, int depth) {
+  upb_wire_test_TestRecursive* top = upb_wire_test_TestRecursive_new(arena);
+  upb_wire_test_TestRecursive* msg = top;
+  for (int i = 0; i < depth; ++i) {
+    upb_wire_test_TestRecursive* child = upb_wire_test_TestRecursive_new(arena);
+    upb_wire_test_TestRecursive_set_recursive(msg, child);
+    msg = child;
+  }
+  return top;
+}
+
+// The encoder and decoder must agree on the depth limit, so that any message
+// the decoder accepts can be re-encoded with the same limit.
+TEST(EncodeTest, DepthLimitMatchesDecoder) {
+  const upb_MiniTable* mt = &upb_0wire_0test__TestRecursive_msg_init;
+  // 0 selects the default limit.
+  for (int limit : {0, 1, 2, 10}) {
+    int effective_limit =
+        limit == 0 ? kUpb_WireFormat_DefaultDepthLimit : limit;
+    for (int depth :
+         {effective_limit - 1, effective_limit, effective_limit + 1}) {
+      SCOPED_TRACE(testing::Message()
+                   << "limit=" << limit << " depth=" << depth);
+      upb_Arena* arena = upb_Arena_New();
+      upb_wire_test_TestRecursive* msg = MakeRecursiveChain(arena, depth);
+      bool within_limit = depth <= effective_limit;
+
+      char* buf;
+      size_t size;
+      EXPECT_EQ(
+          upb_Encode(UPB_UPCAST(msg), mt, upb_EncodeOptions_MaxDepth(limit),
+                     arena, &buf, &size),
+          within_limit ? kUpb_EncodeStatus_Ok
+                       : kUpb_EncodeStatus_MaxDepthExceeded);
+
+      // Serialize with a generous limit, then decode with `limit`.
+      ASSERT_EQ(upb_Encode(UPB_UPCAST(msg), mt,
+                           upb_EncodeOptions_MaxDepth(effective_limit + 10),
+                           arena, &buf, &size),
+                kUpb_EncodeStatus_Ok);
+      upb_Message* decoded = upb_Message_New(mt, arena);
+      ASSERT_NE(decoded, nullptr);
+      EXPECT_EQ(upb_Decode(buf, size, decoded, mt, nullptr,
+                           upb_DecodeOptions_MaxDepth(limit), arena),
+                within_limit ? kUpb_DecodeStatus_Ok
+                             : kUpb_DecodeStatus_MaxDepthExceeded);
+
+      // A message that decodes with `limit` re-encodes with the same limit.
+      if (within_limit) {
+        char* reencoded;
+        size_t reencoded_size;
+        EXPECT_EQ(upb_Encode(decoded, mt, upb_EncodeOptions_MaxDepth(limit),
+                             arena, &reencoded, &reencoded_size),
+                  kUpb_EncodeStatus_Ok);
+      }
+      upb_Arena_Free(arena);
+    }
+  }
 }
 
 TEST(EncodeTest, EncodeExtensionSuccess) {
@@ -202,8 +268,12 @@ TEST(EncodeTest, EncodeExtensionMaxDepthExceeded) {
   UPB_PRIVATE(_upb_encstate_init)(&e, &err, arena);
 
   const upb_MiniTableExtension* ext = upb_wire_test_ext_recursive_ext;
+  // The extension value plus one level of nesting exceed a depth limit of 1.
+  upb_wire_test_TestRecursive* value = upb_wire_test_TestRecursive_new(arena);
+  upb_wire_test_TestRecursive_set_recursive(
+      value, upb_wire_test_TestRecursive_new(arena));
   upb_MessageValue ext_val;
-  ext_val.msg_val = (upb_Message*)upb_wire_test_TestRecursive_new(arena);
+  ext_val.msg_val = (upb_Message*)value;
 
   char* buf = e.alloc.limit;
   size_t size;
