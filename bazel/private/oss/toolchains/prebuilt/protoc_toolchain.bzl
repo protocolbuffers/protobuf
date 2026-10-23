@@ -4,8 +4,8 @@ load("//toolchain:platforms.bzl", "PROTOBUF_PLATFORMS")
 load(":tool_integrity.bzl", "RELEASED_BINARY_INTEGRITY", "RELEASE_VERSION")
 
 def release_version_to_artifact_name(release_version, platform):
-    # versions have a "v" prefix like "v28.0"
-    stripped_version = release_version.removeprefix("v")
+    # versions have a "v" prefix like "v28.0" and dev versions have a "-dev" suffix
+    stripped_version = release_version.removeprefix("v").removesuffix("-dev")
 
     # release candidate versions like "v29.0-rc3" have artifact names
     # like "protoc-29.0-rc-3-osx-x86_64.zip"
@@ -22,12 +22,10 @@ def _prebuilt_protoc_repo_impl(rctx):
         RELEASE_VERSION,
         rctx.attr.platform,
     )
+    artifact = RELEASED_BINARY_INTEGRITY[filename]
     rctx.download_and_extract(
-        url = "https://github.com/protocolbuffers/protobuf/releases/download/{}/{}".format(
-            RELEASE_VERSION,
-            filename,
-        ),
-        sha256 = RELEASED_BINARY_INTEGRITY[filename],
+        url = artifact["url"],
+        sha256 = artifact["sha256"],
     )
 
     rctx.file("BUILD.bazel", """\
