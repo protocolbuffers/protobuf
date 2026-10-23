@@ -1175,8 +1175,26 @@ def _ConvertFloat(value, field):
       # pylint: disable=protected-access
       if value < type_checkers._FLOAT_MIN:
         raise ParseError('Float value too small')
-  if value == 'nan':
-    raise ParseError('Couldn\'t parse float "nan", use "NaN" instead')
+  # The proto3 JSON mapping only allows the exact spellings "NaN", "Infinity"
+  # and "-Infinity".  Python's float() accepts many other spellings ("NAN",
+  # "+nan", "inf", "INF", "+Infinity", " NaN ", ...), which no other
+  # implementation accepts, so reject them here.
+  if isinstance(value, str) and value.strip().lower() in (
+      'nan',
+      'inf',
+      'infinity',
+      '+nan',
+      '+inf',
+      '+infinity',
+      '-nan',
+      '-inf',
+      '-infinity',
+  ):
+    if value not in (_NAN, _INFINITY, _NEG_INFINITY):
+      raise ParseError(
+          'Couldn\'t parse float "%s", use "NaN", "Infinity" or "-Infinity"'
+          ' instead' % value
+      )
   try:
     # Assume Python compatible syntax.
     return float(value)
