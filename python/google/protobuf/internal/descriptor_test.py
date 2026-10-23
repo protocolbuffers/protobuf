@@ -10,6 +10,7 @@
 __author__ = 'robinson@google.com (Will Robinson)'
 
 import gc
+import sys
 import unittest
 import warnings
 
@@ -129,6 +130,18 @@ class DescriptorTest(unittest.TestCase):
     gc.collect()
 
     self.assertEqual(0, pool._obj_cache_count)
+
+  @unittest.skipUnless(
+      sys.implementation.name == 'cpython' and sys.version_info >= (3, 14),
+      'Requires CPython 3.14+ immortal reference counts',
+  )
+  def testNoneRefcount(self):
+    field = self.my_message.fields_by_name['bb']
+    self.assertIsNone(field.message_type)
+    before = sys.getrefcount(None)
+    for _ in range(1000):
+      self.assertIsNone(field.message_type)
+    self.assertEqual(sys.getrefcount(None), before)
 
   def testMissingPackage(self):
     file_proto = descriptor_pb2.FileDescriptorProto(
