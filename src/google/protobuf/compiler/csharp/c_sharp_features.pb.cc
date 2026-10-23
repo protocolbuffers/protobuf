@@ -125,22 +125,25 @@ constexpr auto CSharpFeatures::_Internal::GenerateClassData() {
       &file_reflection_data[0],
   };
 }
-struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
-  constexpr CSharpFeaturesGlobalsTypeInternal()
-      : MessageGlobalsBase(
-            ::_pbi::PrivateAccess::GenerateClassData<CSharpFeatures>()),
-        _default(::_pbi::ConstantInitialized{}, GetClassData()),
-         _table(
-            ::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
-                GetClassData())) {}
-  ~CSharpFeaturesGlobalsTypeInternal() {}
-  union {
-    alignas(::_pbi::kMaxMessageAlignment) CSharpFeatures _default;
+struct CSharpFeaturesGlobalsTypeInternal {
+  struct Impl : ::_pbi::MessageGlobalsBase {
+    constexpr Impl()
+        : ::_pbi::MessageGlobalsBase(
+              ::_pbi::PrivateAccess::GenerateClassData<CSharpFeatures>()),
+          _default(::_pbi::ConstantInitialized{}, GetClassData()),
+          _table(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
+              GetClassData())) {}
+    ~Impl() {}
+    union {
+      alignas(::_pbi::kMaxMessageAlignment) CSharpFeatures _default;
+    };
+    decltype(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
+        ::std::declval<const ::_pbi::ClassData*>())) _table;
   };
-  decltype(::_pbi::PrivateAccess::GenerateParseTable<CSharpFeatures>(
-      ::std::declval<const ::_pbi::ClassData*>())) _table;
+  const ::_pbi::ClassData* class_data() const { return &impl.class_data; }
+  Impl impl;
 };
-static_assert(PROTOBUF_FIELD_OFFSET(CSharpFeaturesGlobalsTypeInternal, _default) ==
+static_assert(PROTOBUF_FIELD_OFFSET(CSharpFeaturesGlobalsTypeInternal, impl._default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
@@ -167,7 +170,7 @@ static const ::_pbi::MigrationSchema
 };
 static const ::_pbi::MessageGlobalsBase* PROTOBUF_NONNULL const
     file_message_globals[] = {
-        &::pb::CSharpFeatures_globals_,
+        &::pb::CSharpFeatures_globals_.impl,
 };
 const char descriptor_table_protodef_google_2fprotobuf_2fcompiler_2fcsharp_2fc_5fsharp_5ffeatures_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
@@ -206,7 +209,7 @@ namespace pb {
 
 CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CSharpFeatures_globals_.class_data) {
+    : Super_(arena, CSharpFeatures_globals_.class_data()) {
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -216,7 +219,7 @@ CSharpFeatures::CSharpFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 CSharpFeatures::CSharpFeatures(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CSharpFeatures& from)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CSharpFeatures_globals_.class_data),
+    : Super_(arena, CSharpFeatures_globals_.class_data()),
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena),
 #endif  // PROTOBUF_CUSTOM_VTABLE
@@ -252,8 +255,8 @@ PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_
 CSharpFeatures::GetClassData() const {
   ::google::protobuf::internal::PrefetchToLocalCache(&CSharpFeatures_globals_);
   ::google::protobuf::internal::PrefetchToLocalCache(
-      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CSharpFeatures_globals_));
-  return &CSharpFeatures_globals_.class_data;
+      ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&CSharpFeatures_globals_.impl));
+  return CSharpFeatures_globals_.class_data();
 }
 PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 void CSharpFeatures::Clear(MessageLite& base) {
@@ -361,7 +364,7 @@ void CSharpFeatures::InternalSwap(CSharpFeatures* PROTOBUF_RESTRICT PROTOBUF_NON
 }
 
 ::google::protobuf::Metadata CSharpFeatures::GetMetadata() const {
-  return Super_::GetMetadataImpl(CSharpFeatures_globals_.class_data);
+  return Super_::GetMetadataImpl(*CSharpFeatures_globals_.class_data());
 }
 PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY2 ::_pbi::ExtensionIdentifier<
