@@ -13,7 +13,8 @@ load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@rules_python//python/cc:py_extension.bzl", "py_extension")
-load("//:protobuf.bzl", "internal_py_proto_library")
+load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//bazel/toolchains:proto_lang_toolchain.bzl", "proto_lang_toolchain")
 load("//build_defs:arch_tests.bzl", "aarch64_test", "x86_64_test")
 load("//build_defs:cpp_opts.bzl", "COPTS")
@@ -51,16 +52,45 @@ def build_targets(name):
         },
     )
 
-    internal_py_proto_library(
-        name = "well_known_types_py_pb2",
+    proto_library(
+        name = "well_known_types_proto",
         srcs = [":copied_wkt_proto_files"],
-        include = ".",
-        default_runtime = "",
+        strip_import_prefix = "/python",
+    )
+
+    _WELL_KNOWN_TYPES = [
+        "any",
+        "api",
+        "compiler/plugin",
+        "descriptor",
+        "duration",
+        "empty",
+        "field_mask",
+        "json_enumvalue_options",
+        "json_options",
+        "source_context",
+        "struct",
+        "timestamp",
+        "type",
+        "wrappers",
+    ]
+
+    native.genrule(
+        name = "gen_well_known_protos_py",
+        srcs = [":copied_wkt_proto_files"],
+        outs = ["google/protobuf/" + w + "_pb2.py" for w in _WELL_KNOWN_TYPES],
+        cmd = "$(execpath //:protoc) --python_out=$(RULEDIR) --proto_path=$(RULEDIR) $(SRCS)",
+        tools = ["//:protoc"],
+        visibility = ["//visibility:private"],
+    )
+
+    py_library(
+        name = "well_known_types_py_pb2",
+        srcs = [":gen_well_known_protos_py"],
+        imports = ["."],
         srcs_version = "PY2AND3",
         visibility = [
             "//:__pkg__",
-            "//conformance:__subpackages__",
-            "//editions:__pkg__",
             "//upb:__subpackages__",
         ],
     )
@@ -308,59 +338,98 @@ def build_targets(name):
         strip_prefix = "src",
     )
 
-    internal_py_proto_library(
-        name = "test_dependency_proto_py_pb2",
+    proto_library(
+        name = "python_common_test_protos_proto",
+        testonly = 1,
         srcs = [
             ":copied_cpp_features_test_dependency_proto_files",
             ":copied_java_features_test_dependency_proto_files",
+            ":copied_test_proto_files",
             ":copied_unittest_custom_options_unlinked_proto_files",
         ],
-        include = ".",
-        default_runtime = "",
+        strip_import_prefix = "/python",
+        deps = [":well_known_types_proto"],
+    )
+
+    py_proto_library(
+        name = "python_common_test_protos_py_pb2",
+        testonly = 1,
+        deps = [":python_common_test_protos_proto"],
+    )
+
+    internal_copy_files(
+        name = "copied_python_common_test_protos",
+        testonly = 1,
+        srcs = [":python_common_test_protos_py_pb2"],
+        strip_prefix = "python/_virtual_imports/python_common_test_protos_proto",
+    )
+
+    py_library(
+        name = "python_common_test_protos",
+        testonly = 1,
+        srcs = [":copied_python_common_test_protos"],
+        imports = ["."],
         srcs_version = "PY2AND3",
-        visibility = [
-            "//:__pkg__",
-            "//upb:__subpackages__",
-        ],
+        visibility = ["//:__pkg__"],
         deps = [":well_known_types_py_pb2"],
     )
 
-    internal_py_proto_library(
-        name = "python_common_test_protos",
-        testonly = 1,
-        srcs = [":copied_test_proto_files"],
-        include = ".",
-        default_runtime = "",
-        srcs_version = "PY2AND3",
-        visibility = ["//:__pkg__"],
-        deps = [":well_known_types_py_pb2", ":test_dependency_proto_py_pb2"],
-    )
-
-    internal_py_proto_library(
-        name = "python_specific_test_protos",
+    proto_library(
+        name = "python_specific_test_protos_proto",
         testonly = 1,
         srcs = native.glob([
             "google/protobuf/internal/*.proto",
             "google/protobuf/internal/import_test_package/*.proto",
         ]),
-        include = ".",
-        default_runtime = ":protobuf_python",
-        srcs_version = "PY2AND3",
-        visibility = ["//:__pkg__"],
-        deps = [":python_common_test_protos"],
+        strip_import_prefix = "/python",
+        deps = [
+            ":python_common_test_protos_proto",
+            ":well_known_types_proto",
+        ],
     )
 
-    internal_py_proto_library(
-        name = "conformance_test_py_proto",
+    py_proto_library(
+        name = "python_specific_test_protos_py_pb2",
+        testonly = 1,
+        deps = [":python_specific_test_protos_proto"],
+    )
+
+    internal_copy_files(
+        name = "copied_python_specific_test_protos",
+        testonly = 1,
+        srcs = [":python_specific_test_protos_py_pb2"],
+        strip_prefix = "python/_virtual_imports/python_specific_test_protos_proto",
+    )
+
+    py_library(
+        name = "python_specific_test_protos",
+        testonly = 1,
+        srcs = [":copied_python_specific_test_protos"],
+        imports = ["."],
+        srcs_version = "PY2AND3",
+        visibility = ["//:__pkg__"],
+        deps = [
+            ":protobuf_python",
+            ":python_common_test_protos",
+        ],
+    )
+
+    proto_library(
+        name = "conformance_test_proto",
         testonly = 1,
         srcs = [":copied_conformance_test_files"],
-        include = ".",
-        default_runtime = "//:protobuf_python",
+        strip_import_prefix = "/python",
+        deps = [":well_known_types_proto"],
+    )
+
+    py_proto_library(
+        name = "conformance_test_py_proto",
+        testonly = 1,
         visibility = [
             "//conformance:__pkg__",
             "//python:__subpackages__",
         ],
-        deps = [":well_known_types_py_pb2"],
+        deps = [":conformance_test_proto"],
     )
 
     py_library(

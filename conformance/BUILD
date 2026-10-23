@@ -16,12 +16,12 @@ load(
     "internal_csharp_proto_library",
     "internal_objc_proto_library",
     "internal_php_proto_library",
-    "internal_py_proto_library",
 )
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
 load("//bazel:java_lite_proto_library.bzl", "java_lite_proto_library")
 load("//bazel:java_proto_library.bzl", "java_proto_library")
 load("//bazel:proto_library.bzl", "proto_library")
+load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//build_defs:internal_shell.bzl", "inline_sh_binary")
 
 exports_files([
@@ -784,13 +784,12 @@ internal_objc_proto_library(
     ],
 )
 
-internal_py_proto_library(
+py_proto_library(
     name = "conformance_py_proto",
-    srcs = ["conformance.proto"],
-    srcs_version = "PY2AND3",
     visibility = [
         "//python:__subpackages__",
     ],
+    deps = [":conformance_proto"],
 )
 
 internal_php_proto_library(
