@@ -129,8 +129,13 @@ cc_test(
     srcs = ["select_test.cc"],
     deps = [
         ":combinations",
+        ":data",
         ":select",
+        "//upb/base",
         "//upb/mem",
+        "//upb/mini_descriptor",
+        "//upb/mini_descriptor:internal",
+        "//upb/mini_table",
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire",  # buildcleaner: keep

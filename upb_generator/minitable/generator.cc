@@ -224,8 +224,20 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
     output("}};\n\n");
   }
 
+  // The fasttable is only used on 64-bit platforms, so it is built from the
+  // 64-bit MiniTable. That table is only linked when the generator runs on a
+  // 64-bit host, so map fields are identified from the defs instead.
+  std::vector<const upb_MiniTable*> map_entries(field_count, nullptr);
+  for (int i = 0; i < field_count; i++) {
+    upb::FieldDefPtr field = message.FindFieldByNumber(
+        upb_MiniTableField_Number(&mt_64->UPB_PRIVATE(fields)[i]));
+    if (field.IsMap()) {
+      map_entries[i] = pools.GetMiniTable64(field.message_type());
+    }
+  }
   upb_DecodeFast_TableEntry table_entries[32];
-  int table_size = upb_DecodeFast_BuildTable(mt_64, table_entries);
+  int table_size =
+      upb_DecodeFast_BuildTable(mt_64, map_entries.data(), table_entries);
   uint8_t table_mask = upb_DecodeFast_GetTableMask(table_size);
 
   std::string msgext = "kUpb_ExtMode_NonExtendable";
