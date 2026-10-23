@@ -3497,6 +3497,11 @@ void Reflection::ClearOneofField(Message* message,
 
 void Reflection::ClearOneof(Message* message,
                             const OneofDescriptor* oneof_descriptor) const {
+  if (oneof_descriptor->containing_type() != descriptor_) {
+    ReportReflectionUsageError(descriptor_, oneof_descriptor->field(0),
+                               "ClearOneof",
+                               "OneofDescriptor does not match message type.");
+  }
   if (oneof_descriptor->is_synthetic()) {
     ClearField(message, oneof_descriptor->field(0));
     return;
