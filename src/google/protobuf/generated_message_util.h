@@ -294,9 +294,9 @@ class MapSorterPtr {
   // separate instantiations of sort.
   using storage_type = const void*;
 
-  // This const_iterator dereferenes the map entry pointer stored in the sorting
-  // array. This is the same interface as the Map::const_iterator type, and
-  // allows generated code to use the same loop body with either form:
+  // This const_iterator dereferences the map entry pointer stored in the
+  // sorting array. This is the same interface as the Map::const_iterator type,
+  // and allows generated code to use the same loop body with either form:
   //   for (const auto& entry : map) { ... }
   //   for (const auto& entry : MapSorterPtr(map)) { ... }
   struct const_iterator : public MapSorterIt<storage_type> {
@@ -335,6 +335,16 @@ struct WeakDescriptorDefaultTail {
   const MessageGlobalsBase** target;
   size_t size;
 };
+
+template <typename T, size_t Alignment = kClassDataAlignment>
+constexpr size_t MessageGlobalsTailPadding() {
+  static_assert(alignof(typename T::Impl) ==
+                alignof(WeakDescriptorDefaultTail));
+  size_t message_globals_size =
+      sizeof(typename T::Impl) + sizeof(WeakDescriptorDefaultTail);
+  return kClassDataAlignment - 1 -
+         (message_globals_size - 1) % kClassDataAlignment;
+}
 
 // Tag to distinguish overloads below:
 //  - if last argument is `BytesTag tag = BytesTag{}` then the overload is

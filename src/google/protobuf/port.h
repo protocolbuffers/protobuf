@@ -148,6 +148,15 @@ PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* Allocate(size_t size) {
 #endif
 }
 
+PROTOBUF_ALWAYS_INLINE PROTOBUF_MALLOC void* AllocateAligned(
+    size_t size, std::align_val_t alignment) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_new)
+  return __builtin_operator_new(size, alignment);
+#else
+  return ::operator new(size, alignment);
+#endif
+}
+
 // Allocates at least `size` bytes. This function follows the c++ language
 // proposal from D0901R10 (http://wg21.link/D0901R10) and will be implemented
 // in terms of the new operator new semantics when available. The allocated
@@ -178,6 +187,17 @@ inline void SizedArrayDelete(void* p, size_t size) {
   // Avoid -Wunused-parameter
   (void)size;
   ::operator delete[](p);
+#endif
+}
+inline void SizedAlignedDelete(void* p, size_t size,
+                               std::align_val_t alignment) {
+#if ABSL_HAVE_BUILTIN(__builtin_operator_delete) && \
+    defined(__cpp_sized_deallocation)
+  __builtin_operator_delete(p, size, alignment);
+#else
+  // Avoid -Wunused-parameter
+  (void)size;
+  ::operator delete(p, alignment);
 #endif
 }
 
@@ -377,6 +397,14 @@ constexpr bool DebugHardenCheckHasBitConsistency() {
   return true;
 #endif
   return false;
+}
+
+constexpr bool PtrIsAligned(const void* ptr, size_t alignment) {
+#if ABSL_HAVE_BUILTIN(__builtin_is_aligned)
+  return __builtin_is_aligned(ptr, alignment);
+#else
+  return true;
+#endif
 }
 
 // Reads n bytes from p, if PerformDebugChecks() is true. This allows ASAN to
