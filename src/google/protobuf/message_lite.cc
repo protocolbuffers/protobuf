@@ -58,6 +58,13 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
   return res;
 }
 
+void MessageLite::CopyImpl(MessageLite& to, const MessageLite& from) {
+  if (&from == &to) return;
+  to.Clear();
+  to.GetClassData()->MergeToFrom(to, from);
+}
+
+
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   class_data()->destroy_message(*this);

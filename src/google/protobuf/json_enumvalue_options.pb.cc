@@ -375,13 +375,6 @@ void JsonEnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void JsonEnumValueOptions::CopyFrom(const JsonEnumValueOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:pb.enumvalue.JsonEnumValueOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 
 void JsonEnumValueOptions::InternalSwap(JsonEnumValueOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;

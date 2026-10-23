@@ -971,13 +971,6 @@ void Version::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void Version::CopyFrom(const Version& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.Version)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 
 void Version::InternalSwap(Version* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
@@ -1327,13 +1320,6 @@ void CodeGeneratorRequest::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void CodeGeneratorRequest::CopyFrom(const CodeGeneratorRequest& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorRequest)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool CodeGeneratorRequest::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const CodeGeneratorRequest&>(msg);
@@ -1609,13 +1595,6 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_m
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void CodeGeneratorResponse_File::CopyFrom(const CodeGeneratorResponse_File& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse.File)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 
@@ -1903,13 +1882,6 @@ void CodeGeneratorResponse::MergeImpl(::google::protobuf::MessageLite& to_msg,
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void CodeGeneratorResponse::CopyFrom(const CodeGeneratorResponse& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.compiler.CodeGeneratorResponse)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 

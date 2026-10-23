@@ -375,6 +375,7 @@ void Message::MergeFrom(const Message& from) {
   }
 }
 
+
 void Message::CopyFrom(const Message& from) {
   if (&from == this) return;
 

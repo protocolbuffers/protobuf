@@ -451,6 +451,10 @@ class PROTOBUF_EXPORT Message : public MessageLite {
 
   // Reflection based version for reflection based types.
   static void MergeImpl(MessageLite& to, const MessageLite& from);
+  using MessageLite::CopyImpl;
+  static void CopyWithSourceCheck(Message& to, const Message& from) {
+    CopyImpl(to, from);
+  }
   static void ClearImpl(MessageLite& msg);
   static size_t ByteSizeLongImpl(const MessageLite& msg);
   static uint8_t* _InternalSerializeImpl(const MessageLite& msg,

@@ -391,7 +391,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     return Super_::DefaultConstruct<JavaFeatures>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const JavaFeatures& from);
+  void CopyFrom(const JavaFeatures& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const JavaFeatures& from) { JavaFeatures::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {

@@ -147,7 +147,7 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
     return Super_::DefaultConstruct<JsonEnumValueOptions>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const JsonEnumValueOptions& from);
+  void CopyFrom(const JsonEnumValueOptions& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const JsonEnumValueOptions& from) { JsonEnumValueOptions::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {

@@ -1836,31 +1836,37 @@ void MessageGenerator::GenerateClassDefinition(io::Printer* p) {
              if (!HasGeneratedMethods(descriptor_->file(), options_)) return;
 
              if (HasDescriptorMethods(descriptor_->file(), options_)) {
-               if (!HasSimpleBaseClass(descriptor_, options_)) {
-                 // Use Message's built-in MergeFrom and CopyFrom when the
-                 // passed-in argument is a generic Message instance, and
-                 // only define the custom MergeFrom and CopyFrom
-                 // instances when the source of the merge/copy is known
-                 // to be the same class as the destination.
-                 p->Emit(R"cc(
-                   using Super_::CopyFrom;
-                   void CopyFrom(const $Msg$& from);
-                   using Super_::MergeFrom;
-                   void MergeFrom(const $Msg$& from) { $Msg$::MergeImpl(*this, from); }
-                 )cc");
-               } else {
-                 p->Emit(R"cc(
-                   using Super_::CopyFrom;
-                   void CopyFrom(const $Msg$& from) { Super_::CopyImpl(*this, from); }
-                   using Super_::MergeFrom;
-                   void MergeFrom(const $Msg$& from) { Super_::MergeImpl(*this, from); }
-                 )cc");
-               }
+               // Use Message's built-in MergeFrom and CopyFrom when the
+               // passed-in argument is a generic Message instance, and
+               // only define the custom MergeFrom and CopyFrom
+               // instances when the source of the merge/copy is known
+               // to be the same class as the destination.
+               p->Emit(
+                   {{"copy_impl",
+                     !options_.opensource_runtime &&
+                             HasMessageFieldOrExtension(descriptor_)
+                         ? "CopyWithSourceCheck"
+                         : "CopyImpl"},
+                    {"merge_owner", HasSimpleBaseClass(descriptor_, options_)
+                                        ? "Super_"
+                                        : ClassName(descriptor_, false)}},
+                   R"cc(
+                     using Super_::CopyFrom;
+                     void CopyFrom(const $Msg$& from) { Super_::$copy_impl$(*this, from); }
+                     using Super_::MergeFrom;
+                     void MergeFrom(const $Msg$& from) { $merge_owner$::MergeImpl(*this, from); }
+                   )cc");
              } else {
-               p->Emit(R"cc(
-                 void CopyFrom(const $Msg$& from);
-                 void MergeFrom(const $Msg$& from) { $Msg$::MergeImpl(*this, from); }
-               )cc");
+               p->Emit(
+                   {{"copy_impl",
+                     !options_.opensource_runtime &&
+                             HasMessageFieldOrExtension(descriptor_)
+                         ? "CopyWithSizeCheck"
+                         : "CopyImpl"}},
+                   R"cc(
+                     void CopyFrom(const $Msg$& from) { Super_::$copy_impl$(*this, from); }
+                     void MergeFrom(const $Msg$& from) { $Msg$::MergeImpl(*this, from); }
+                   )cc");
              }
 
              if (NeedsIsInitialized()) {
@@ -2318,9 +2324,6 @@ void MessageGenerator::GenerateClassMethods(io::Printer* p) {
     p->Emit("\n");
 
     GenerateClassSpecificMergeImpl(p);
-    p->Emit("\n");
-
-    GenerateCopyFrom(p);
     p->Emit("\n");
 
     GenerateIsInitialized(p);
@@ -4050,76 +4053,6 @@ void MessageGenerator::GenerateClassSpecificMergeImpl(io::Printer* p) {
           $merge_extensions$;
           this_._internal_metadata_.MergeFrom<$unknown_fields_type$>(
               from._internal_metadata_);
-        }
-      )cc");
-}
-
-void MessageGenerator::GenerateCopyFrom(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
-  if (HasDescriptorMethods(descriptor_->file(), options_)) {
-    // We don't override the generalized CopyFrom (aka that which
-    // takes in the Message base class as a parameter); instead we just
-    // let the base Message::CopyFrom take care of it.  The base MergeFrom
-    // knows how to quickly confirm the types exactly match, and if so, will
-    // use GetClassData() to get the address of Message::CopyWithSourceCheck,
-    // which calls Clear() and then MergeFrom(), as well as making sure that
-    // clearing the destination message doesn't alter the source, when in debug
-    // builds. Most callers avoid this by passing a "from" message that is the
-    // same type as the message being merged into, rather than a generic
-    // Message.
-  }
-
-  // Generate the class-specific CopyFrom.
-  p->Emit(
-      {{"clear",
-        [&] {
-          if (!options_.opensource_runtime &&
-              HasMessageFieldOrExtension(descriptor_)) {
-            // This check is disabled in the open source release because we're
-            // concerned that many users do not define NDEBUG in their release
-            // builds. It is also disabled if a message has neither message
-            // fields nor extensions, as it's impossible to copy from its
-            // descendant.
-            //
-            // Note that IsDescendant is implemented by reflection and not
-            // available for lite runtime. In that case, check if the size of
-            // the source has changed after Clear.
-            if (HasDescriptorMethods(descriptor_->file(), options_)) {
-              p->Emit(R"cc(
-                $DCHK$(!::_pbi::IsDescendant(*this, from))
-                    << "Source of CopyFrom cannot be a descendant of the "
-                       "target.";
-                $DCHK$(!::_pbi::IsDescendant(from, *this))
-                    << "Target of CopyFrom cannot be a descendant of the "
-                       "source.";
-                Clear();)cc");
-            } else {
-              p->Emit(R"cc(
-#ifndef NDEBUG
-                ::size_t from_size = from.ByteSizeLong();
-#endif
-                Clear();
-#ifndef NDEBUG
-                $CHK$_EQ(from_size, from.ByteSizeLong())
-                    << "Source of CopyFrom changed when clearing target.  "
-                       "Either "
-                       "source is a nested message in target (not allowed), or "
-                       "another thread is modifying the source.";
-#endif
-              )cc");
-            }
-          } else {
-            p->Emit(R"cc(
-              Clear();
-            )cc");
-          }
-        }}},
-      R"cc(
-        void $Msg$::CopyFrom(const $Msg$& from) {
-          // @@protoc_insertion_point(class_specific_copy_from_start:$full_name$)
-          if (&from == this) return;
-          $clear$;
-          MergeFrom(from);
         }
       )cc");
 }

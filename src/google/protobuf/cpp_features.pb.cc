@@ -456,13 +456,6 @@ void CppFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void CppFeatures::CopyFrom(const CppFeatures& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:pb.CppFeatures)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 
 void CppFeatures::InternalSwap(CppFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;

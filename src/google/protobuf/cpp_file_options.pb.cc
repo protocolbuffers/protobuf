@@ -373,13 +373,6 @@ void CppFileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void CppFileOptions::CopyFrom(const CppFileOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:pb.file.CppFileOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 
 void CppFileOptions::InternalSwap(CppFileOptions* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;

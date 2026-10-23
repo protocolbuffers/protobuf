@@ -345,13 +345,6 @@ void CSharpFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void CSharpFeatures::CopyFrom(const CSharpFeatures& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:pb.CSharpFeatures)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 
 void CSharpFeatures::InternalSwap(CSharpFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;

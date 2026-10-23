@@ -206,7 +206,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
     return Super_::DefaultConstruct<Version>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const Version& from);
+  void CopyFrom(const Version& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const Version& from) { Version::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -430,7 +430,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return Super_::DefaultConstruct<CodeGeneratorResponse_File>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const CodeGeneratorResponse_File& from);
+  void CopyFrom(const CodeGeneratorResponse_File& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse_File& from) { CodeGeneratorResponse_File::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -668,7 +668,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
     return Super_::DefaultConstruct<CodeGeneratorResponse>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const CodeGeneratorResponse& from);
+  void CopyFrom(const CodeGeneratorResponse& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorResponse& from) { CodeGeneratorResponse::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {
@@ -930,7 +930,7 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
     return Super_::DefaultConstruct<CodeGeneratorRequest>(arena);
   }
   using Super_::CopyFrom;
-  void CopyFrom(const CodeGeneratorRequest& from);
+  void CopyFrom(const CodeGeneratorRequest& from) { Super_::CopyImpl(*this, from); }
   using Super_::MergeFrom;
   void MergeFrom(const CodeGeneratorRequest& from) { CodeGeneratorRequest::MergeImpl(*this, from); }
   [[nodiscard]] bool IsInitialized() const {

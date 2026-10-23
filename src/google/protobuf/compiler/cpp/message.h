@@ -140,7 +140,6 @@ class MessageGenerator {
   void GenerateClassSpecificMergeImpl(io::Printer* p);
   void GenerateMergeImplForField(io::Printer* p, const FieldDescriptor* field,
                                  bool is_split, int cached_has_word_index);
-  void GenerateCopyFrom(io::Printer* p);
   void GenerateSwap(io::Printer* p);
   void GenerateIsInitialized(io::Printer* p);
   bool NeedsIsInitialized();

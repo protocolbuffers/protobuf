@@ -6848,13 +6848,6 @@ void FileDescriptorSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void FileDescriptorSet::CopyFrom(const FileDescriptorSet& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorSet)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool FileDescriptorSet::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FileDescriptorSet&>(msg);
@@ -7479,13 +7472,6 @@ void FileDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void FileDescriptorProto::CopyFrom(const FileDescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileDescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool FileDescriptorProto::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FileDescriptorProto&>(msg);
@@ -7765,13 +7751,6 @@ void DescriptorProto_ExtensionRange::MergeImpl(::google::protobuf::MessageLite& 
       from._internal_metadata_);
 }
 
-void DescriptorProto_ExtensionRange::CopyFrom(const DescriptorProto_ExtensionRange& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ExtensionRange)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool DescriptorProto_ExtensionRange::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const DescriptorProto_ExtensionRange&>(msg);
@@ -7971,13 +7950,6 @@ void DescriptorProto_ReservedRange::MergeImpl(::google::protobuf::MessageLite& t
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void DescriptorProto_ReservedRange::CopyFrom(const DescriptorProto_ReservedRange& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto.ReservedRange)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 
@@ -8528,13 +8500,6 @@ void DescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void DescriptorProto::CopyFrom(const DescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.DescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool DescriptorProto::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const DescriptorProto&>(msg);
@@ -8823,13 +8788,6 @@ void ExtensionRangeOptions_Declaration::MergeImpl(::google::protobuf::MessageLit
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void ExtensionRangeOptions_Declaration::CopyFrom(const ExtensionRangeOptions_Declaration& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions.Declaration)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 
@@ -9146,13 +9104,6 @@ void ExtensionRangeOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                                from._impl_._extensions_, from.GetArena());
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void ExtensionRangeOptions::CopyFrom(const ExtensionRangeOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ExtensionRangeOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ExtensionRangeOptions::IsInitializedImpl(
@@ -9565,13 +9516,6 @@ void FieldDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void FieldDescriptorProto::CopyFrom(const FieldDescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldDescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool FieldDescriptorProto::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FieldDescriptorProto&>(msg);
@@ -9809,13 +9753,6 @@ void OneofDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void OneofDescriptorProto::CopyFrom(const OneofDescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofDescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool OneofDescriptorProto::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const OneofDescriptorProto&>(msg);
@@ -10013,13 +9950,6 @@ void EnumDescriptorProto_EnumReservedRange::MergeImpl(::google::protobuf::Messag
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void EnumDescriptorProto_EnumReservedRange::CopyFrom(const EnumDescriptorProto_EnumReservedRange& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto.EnumReservedRange)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 
@@ -10380,13 +10310,6 @@ void EnumDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void EnumDescriptorProto::CopyFrom(const EnumDescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumDescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool EnumDescriptorProto::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const EnumDescriptorProto&>(msg);
@@ -10645,13 +10568,6 @@ void EnumValueDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void EnumValueDescriptorProto::CopyFrom(const EnumValueDescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueDescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumValueDescriptorProto::IsInitializedImpl(
@@ -10923,13 +10839,6 @@ void ServiceDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void ServiceDescriptorProto::CopyFrom(const ServiceDescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceDescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ServiceDescriptorProto::IsInitializedImpl(
@@ -11238,13 +11147,6 @@ void MethodDescriptorProto::MergeImpl(::google::protobuf::MessageLite& to_msg,
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void MethodDescriptorProto::CopyFrom(const MethodDescriptorProto& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodDescriptorProto)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool MethodDescriptorProto::IsInitializedImpl(
@@ -11833,13 +11735,6 @@ void FileOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void FileOptions::CopyFrom(const FileOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FileOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool FileOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FileOptions&>(msg);
@@ -12191,13 +12086,6 @@ void MessageOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void MessageOptions::CopyFrom(const MessageOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MessageOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool MessageOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const MessageOptions&>(msg);
@@ -12414,13 +12302,6 @@ void FieldOptions_EditionDefault::MergeImpl(::google::protobuf::MessageLite& to_
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void FieldOptions_EditionDefault::CopyFrom(const FieldOptions_EditionDefault& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions.EditionDefault)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 
@@ -12687,13 +12568,6 @@ void FieldOptions_FeatureSupport::MergeImpl(::google::protobuf::MessageLite& to_
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void FieldOptions_FeatureSupport::CopyFrom(const FieldOptions_FeatureSupport& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions.FeatureSupport)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 
@@ -13185,13 +13059,6 @@ void FieldOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void FieldOptions::CopyFrom(const FieldOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FieldOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool FieldOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FieldOptions&>(msg);
@@ -13462,13 +13329,6 @@ void OneofOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                                from._impl_._extensions_, from.GetArena());
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void OneofOptions::CopyFrom(const OneofOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.OneofOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool OneofOptions::IsInitializedImpl(
@@ -13783,13 +13643,6 @@ void EnumOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                                from._impl_._extensions_, from.GetArena());
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void EnumOptions::CopyFrom(const EnumOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool EnumOptions::IsInitializedImpl(
@@ -14134,13 +13987,6 @@ void EnumValueOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void EnumValueOptions::CopyFrom(const EnumValueOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.EnumValueOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool EnumValueOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const EnumValueOptions&>(msg);
@@ -14429,13 +14275,6 @@ void ServiceOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
                                from._impl_._extensions_, from.GetArena());
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void ServiceOptions::CopyFrom(const ServiceOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.ServiceOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool ServiceOptions::IsInitializedImpl(
@@ -14752,13 +14591,6 @@ void MethodOptions::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void MethodOptions::CopyFrom(const MethodOptions& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.MethodOptions)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool MethodOptions::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const MethodOptions&>(msg);
@@ -14971,13 +14803,6 @@ void UninterpretedOption_NamePart::MergeImpl(::google::protobuf::MessageLite& to
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void UninterpretedOption_NamePart::CopyFrom(const UninterpretedOption_NamePart& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption.NamePart)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool UninterpretedOption_NamePart::IsInitializedImpl(
@@ -15309,13 +15134,6 @@ void UninterpretedOption::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void UninterpretedOption::CopyFrom(const UninterpretedOption& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.UninterpretedOption)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool UninterpretedOption::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const UninterpretedOption&>(msg);
@@ -15384,7 +15202,6 @@ FeatureSet_VisibilityFeature::GetClassData() const {
 
 
 
-
 ::google::protobuf::Metadata FeatureSet_VisibilityFeature::GetMetadata() const {
   return Super_::GetMetadataImpl(FeatureSet_VisibilityFeature_globals_.class_data);
 }
@@ -15421,7 +15238,6 @@ FeatureSet_ProtoLimitsFeature::GetClassData() const {
       ::google::protobuf::internal::MessageGlobalsBase::ToParseTableBase(&FeatureSet_ProtoLimitsFeature_globals_));
   return &FeatureSet_ProtoLimitsFeature_globals_.class_data;
 }
-
 
 
 
@@ -15744,13 +15560,6 @@ void FeatureSet::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void FeatureSet::CopyFrom(const FeatureSet& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSet)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool FeatureSet::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FeatureSet&>(msg);
@@ -16019,13 +15828,6 @@ void FeatureSetDefaults_FeatureSetEditionDefault::MergeImpl(::google::protobuf::
       from._internal_metadata_);
 }
 
-void FeatureSetDefaults_FeatureSetEditionDefault::CopyFrom(const FeatureSetDefaults_FeatureSetEditionDefault& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 PROTOBUF_NOINLINE bool FeatureSetDefaults_FeatureSetEditionDefault::IsInitializedImpl(
     const MessageLite& msg) {
   auto& this_ = static_cast<const FeatureSetDefaults_FeatureSetEditionDefault&>(msg);
@@ -16285,13 +16087,6 @@ void FeatureSetDefaults::MergeImpl(::google::protobuf::MessageLite& to_msg,
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void FeatureSetDefaults::CopyFrom(const FeatureSetDefaults& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.FeatureSetDefaults)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool FeatureSetDefaults::IsInitializedImpl(
@@ -16621,13 +16416,6 @@ void SourceCodeInfo_Location::MergeImpl(::google::protobuf::MessageLite& to_msg,
       from._internal_metadata_);
 }
 
-void SourceCodeInfo_Location::CopyFrom(const SourceCodeInfo_Location& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo.Location)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 
 void SourceCodeInfo_Location::InternalSwap(SourceCodeInfo_Location* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
@@ -16839,13 +16627,6 @@ void SourceCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
                                from._impl_._extensions_, from.GetArena());
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void SourceCodeInfo::CopyFrom(const SourceCodeInfo& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.SourceCodeInfo)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 PROTOBUF_NOINLINE bool SourceCodeInfo::IsInitializedImpl(
@@ -17138,13 +16919,6 @@ void GeneratedCodeInfo_Annotation::MergeImpl(::google::protobuf::MessageLite& to
       from._internal_metadata_);
 }
 
-void GeneratedCodeInfo_Annotation::CopyFrom(const GeneratedCodeInfo_Annotation& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo.Annotation)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
 
 void GeneratedCodeInfo_Annotation::InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
   using ::std::swap;
@@ -17346,13 +17120,6 @@ void GeneratedCodeInfo::MergeImpl(::google::protobuf::MessageLite& to_msg,
   this_._impl_._has_bits_[0] |= cached_has_bits;
   this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-}
-
-void GeneratedCodeInfo::CopyFrom(const GeneratedCodeInfo& from) {
-  // @@protoc_insertion_point(class_specific_copy_from_start:google.protobuf.GeneratedCodeInfo)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
 }
 
 
