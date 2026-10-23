@@ -143,12 +143,12 @@ code now looks something like this:
 
 ```python
 # main_pb2.py
-from google3.net.proto2.python.internal import builder as _builder
-from google3.net.proto2.python.public import descriptor_pool as _descriptor_pool
+from google.protobuf.internal import builder as _builder
+from google.protobuf import descriptor_pool as _descriptor_pool
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile("<...>")
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
-_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'google3.main_pb2', globals())
+_builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'main_pb2', globals())
 ```
 
 This is all the runtime needs to create all of the classes for messages defined
@@ -158,8 +158,8 @@ methods a user can expect to be available:
 
 ```python
 # main_pb2.pyi
-from google3.net.proto2.python.public import descriptor as _descriptor
-from google3.net.proto2.python.public import message as _message
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
 from typing import ClassVar as _ClassVar, Optional as _Optional
 
 DESCRIPTOR: _descriptor.FileDescriptor
