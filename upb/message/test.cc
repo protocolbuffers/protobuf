@@ -36,6 +36,7 @@
 #include "upb/message/accessors.h"
 #include "upb/message/array.h"
 #include "upb/message/compare.h"
+#include "upb/message/compat.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/extension.h"
 #include "upb/message/internal/message.h"
@@ -265,10 +266,10 @@ TEST(MessageTest, DecodeErrorInRepeatedExtensionLeavesMessageValid) {
   EXPECT_NE(status, kUpb_DecodeStatus_Ok);
 
   // The partially-decoded message must still be safe to inspect.
-  const upb_MiniTableExtension* e;
+  const upb_MiniTableField* f;
   upb_MessageValue v;
   uintptr_t iter = kUpb_Message_ExtensionBegin;
-  while (upb_Message_NextExtension(UPB_UPCAST(msg), &e, &v, &iter)) {
+  while (upb_Message_NextExtensionField(UPB_UPCAST(msg), &f, &v, &iter)) {
   }
   size_t size;
   EXPECT_NE(upb_test_TestExtensions_serialize(msg, arena.ptr(), &size),
@@ -299,6 +300,53 @@ TEST(MessageTest, LargeMessageSetExtension) {
 
   EXPECT_EQ(upb_ExtensionRegistry_Add(reg, &ext),
             kUpb_ExtensionRegistryStatus_Ok);
+}
+
+TEST(MessageTest, NextExtensionField) {
+  upb::Arena arena;
+  upb_test_TestExtensions* ext_msg = upb_test_TestExtensions_new(arena.ptr());
+  upb_Message* msg = UPB_UPCAST(ext_msg);
+  upb_test_TestExtensions_set_optional_int32_ext(ext_msg, 123, arena.ptr());
+  protobuf_test_messages_proto3_TestAllTypesProto3* submsg =
+      protobuf_test_messages_proto3_TestAllTypesProto3_new(arena.ptr());
+  upb_test_set_optional_msg_ext(ext_msg, submsg, arena.ptr());
+
+  const upb_MiniTableField* int32_f = upb_MiniTableExtension_ToField(
+      upb_test_TestExtensions_optional_int32_ext_ext);
+  const upb_MiniTableField* msg_f =
+      upb_MiniTableExtension_ToField(upb_test_optional_msg_ext_ext);
+
+  // Wire order.
+  std::vector<const upb_MiniTableField*> fields;
+  const upb_MiniTableField* f;
+  upb_MessageValue val;
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  while (upb_Message_NextExtensionField(msg, &f, &val, &iter)) {
+    fields.push_back(f);
+    if (f == int32_f) {
+      EXPECT_EQ(val.int32_val, 123);
+    } else {
+      EXPECT_EQ(val.msg_val, UPB_UPCAST(submsg));
+    }
+  }
+  EXPECT_THAT(fields, testing::ElementsAre(int32_f, msg_f));
+
+  // Reverse wire order.
+  fields.clear();
+  iter = kUpb_Message_ExtensionBegin;
+  while (upb_Message_NextExtensionFieldReverse(msg, &f, &iter)) {
+    fields.push_back(f);
+  }
+  EXPECT_THAT(fields, testing::ElementsAre(msg_f, int32_f));
+
+  // Find by number.
+  EXPECT_EQ(upb_Message_FindExtensionFieldByNumber(
+                msg, upb_MiniTableField_Number(int32_f)),
+            int32_f);
+  EXPECT_EQ(upb_Message_FindExtensionFieldByNumber(
+                msg, upb_MiniTableField_Number(msg_f)),
+            msg_f);
+  EXPECT_EQ(upb_Message_FindExtensionFieldByNumber(msg, 1), nullptr);
 }
 
 TEST(MessageTest, MessageSet) {
