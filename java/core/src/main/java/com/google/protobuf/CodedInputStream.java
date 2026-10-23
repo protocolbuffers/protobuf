@@ -2915,9 +2915,7 @@ public abstract class CodedInputStream {
     private ByteString readBytesSlowPath(final int size, boolean requireUtf8) throws IOException {
       final byte[] result = readRawBytesSlowPathOneChunk(size);
       if (result != null) {
-        // We must copy as the byte array was handed off to the InputStream and a malicious
-        // implementation could retain a reference.
-        return ByteString.copyFrom(result, 0, result.length, requireUtf8);
+        return ByteString.wrap(result, requireUtf8);
       }
 
       final int originalBufferPos = pos;
