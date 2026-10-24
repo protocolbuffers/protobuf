@@ -85,9 +85,9 @@ constexpr CppFileOptions::ParseTableT_ CppFileOptions::_Internal::GenerateParseT
     }},
     // no aux_entries
     {{
-      "\26\11\0\0\0\0\0\0"
-      "pb.file.CppFileOptions"
-      "namespace"
+        "\26\11\0\0\0\0\0\0"
+        "pb.file.CppFileOptions"
+        "namespace"
     }},
   };
 }

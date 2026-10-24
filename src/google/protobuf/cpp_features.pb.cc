@@ -104,8 +104,7 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
         {0, 3},
         {0, 2},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 

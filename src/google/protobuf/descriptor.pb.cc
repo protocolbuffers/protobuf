@@ -139,7 +139,7 @@ constexpr UninterpretedOption_NamePart::ParseTableT_ UninterpretedOption_NamePar
       offsetof(ParseTableT_, field_entries),
       2,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -161,8 +161,7 @@ constexpr UninterpretedOption_NamePart::ParseTableT_ UninterpretedOption_NamePar
       {PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_.is_extension_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     }},
     // no aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -265,7 +264,7 @@ constexpr SourceCodeInfo_Location::ParseTableT_ SourceCodeInfo_Location::_Intern
       offsetof(ParseTableT_, field_entries),
       5,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -308,8 +307,7 @@ constexpr SourceCodeInfo_Location::ParseTableT_ SourceCodeInfo_Location::_Intern
       {PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.leading_detached_comments_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcRepeated | ::_fl::kBytes | ::_fl::kRepSString)},
     }},
     // no aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -474,8 +472,7 @@ constexpr GeneratedCodeInfo_Annotation::ParseTableT_ GeneratedCodeInfo_Annotatio
     {{
         {0, 2},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -632,8 +629,7 @@ constexpr FieldOptions_FeatureSupport::ParseTableT_ FieldOptions_FeatureSupport:
         {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
         {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -765,8 +761,7 @@ constexpr FieldOptions_EditionDefault::ParseTableT_ FieldOptions_EditionDefault:
     {{
         {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -864,10 +859,10 @@ constexpr FeatureSet_VisibilityFeature::ParseTableT_ FeatureSet_VisibilityFeatur
       0, 0,  // max_field_number, fast_idx_mask
       offsetof(ParseTableT_, field_lookup_table),
       4294967295,  // skipmap
-      offsetof(ParseTableT_, field_names),  // no field_entries
+      0,  // no field_entries
       0,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -876,8 +871,7 @@ constexpr FeatureSet_VisibilityFeature::ParseTableT_ FeatureSet_VisibilityFeatur
     }}, {{
       65535, 65535
     }}, // no field_entries, or aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -965,10 +959,10 @@ constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ FeatureSet_ProtoLimitsFeat
       0, 0,  // max_field_number, fast_idx_mask
       offsetof(ParseTableT_, field_lookup_table),
       4294967295,  // skipmap
-      offsetof(ParseTableT_, field_names),  // no field_entries
+      0,  // no field_entries
       0,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -977,8 +971,7 @@ constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ FeatureSet_ProtoLimitsFeat
     }}, {{
       65535, 65535
     }}, // no field_entries, or aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -1152,8 +1145,7 @@ constexpr FeatureSet::ParseTableT_ FeatureSet::_Internal::GenerateParseTable(con
         {0, 4},
         {0, 2},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -1261,7 +1253,7 @@ constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_
       offsetof(ParseTableT_, field_entries),
       5,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -1304,8 +1296,7 @@ constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_
       {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_.repeated_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
     }},
     // no aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -1413,7 +1404,7 @@ constexpr EnumDescriptorProto_EnumReservedRange::ParseTableT_ EnumDescriptorProt
       offsetof(ParseTableT_, field_entries),
       2,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -1435,8 +1426,7 @@ constexpr EnumDescriptorProto_EnumReservedRange::ParseTableT_ EnumDescriptorProt
       {PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_.end_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     }},
     // no aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -1537,7 +1527,7 @@ constexpr DescriptorProto_ReservedRange::ParseTableT_ DescriptorProto_ReservedRa
       offsetof(ParseTableT_, field_entries),
       2,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -1559,8 +1549,7 @@ constexpr DescriptorProto_ReservedRange::ParseTableT_ DescriptorProto_ReservedRa
       {PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_.end_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
     }},
     // no aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -1716,8 +1705,7 @@ constexpr UninterpretedOption::ParseTableT_ UninterpretedOption::_Internal::Gene
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_NamePart_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -1851,8 +1839,7 @@ constexpr SourceCodeInfo::ParseTableT_ SourceCodeInfo::_Internal::GenerateParseT
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceCodeInfo_Location_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -1974,8 +1961,7 @@ constexpr GeneratedCodeInfo::ParseTableT_ GeneratedCodeInfo::_Internal::Generate
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::GeneratedCodeInfo_Annotation_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -2112,8 +2098,7 @@ constexpr FeatureSetDefaults_FeatureSetEditionDefault::ParseTableT_ FeatureSetDe
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
         {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -2251,8 +2236,7 @@ constexpr ServiceOptions::ParseTableT_ ServiceOptions::_Internal::GenerateParseT
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -2387,8 +2371,7 @@ constexpr OneofOptions::ParseTableT_ OneofOptions::_Internal::GenerateParseTable
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -2539,8 +2522,7 @@ constexpr MethodOptions::ParseTableT_ MethodOptions::_Internal::GenerateParseTab
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
         {0, 2},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -2699,8 +2681,7 @@ constexpr MessageOptions::ParseTableT_ MessageOptions::_Internal::GenerateParseT
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -2953,8 +2934,7 @@ constexpr FileOptions::ParseTableT_ FileOptions::_Internal::GenerateParseTable(c
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
         {1, 3},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -3193,8 +3173,7 @@ constexpr FieldOptions::ParseTableT_ FieldOptions::_Internal::GenerateParseTable
         {0, 2},
         {0, 9},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -3347,8 +3326,7 @@ constexpr FeatureSetDefaults::ParseTableT_ FeatureSetDefaults::_Internal::Genera
         {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
         {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -3498,8 +3476,7 @@ constexpr ExtensionRangeOptions::ParseTableT_ ExtensionRangeOptions::_Internal::
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
         {0, 1},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -3659,8 +3636,7 @@ constexpr EnumValueOptions::ParseTableT_ EnumValueOptions::_Internal::GeneratePa
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_FeatureSupport_globals_},
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -3813,8 +3789,7 @@ constexpr EnumOptions::ParseTableT_ EnumOptions::_Internal::GenerateParseTable(c
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
         {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -3946,8 +3921,7 @@ constexpr OneofDescriptorProto::ParseTableT_ OneofDescriptorProto::_Internal::Ge
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::OneofOptions_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -4100,8 +4074,7 @@ constexpr MethodDescriptorProto::ParseTableT_ MethodDescriptorProto::_Internal::
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::MethodOptions_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -4294,8 +4267,7 @@ constexpr FieldDescriptorProto::ParseTableT_ FieldDescriptorProto::_Internal::Ge
         {1, 3},
         {1, 18},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -4446,8 +4418,7 @@ constexpr EnumValueDescriptorProto::ParseTableT_ EnumValueDescriptorProto::_Inte
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValueOptions_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -4582,8 +4553,7 @@ constexpr DescriptorProto_ExtensionRange::ParseTableT_ DescriptorProto_Extension
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::ExtensionRangeOptions_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -4717,8 +4687,7 @@ constexpr ServiceDescriptorProto::ParseTableT_ ServiceDescriptorProto::_Internal
         {::_pbi::FieldAuxClassData(), &::google::protobuf::MethodDescriptorProto_globals_},
         {::_pbi::FieldAuxClassData(), &::google::protobuf::ServiceOptions_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -4879,8 +4848,7 @@ constexpr EnumDescriptorProto::ParseTableT_ EnumDescriptorProto::_Internal::Gene
         {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumDescriptorProto_EnumReservedRange_globals_},
         {0, 2},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -5090,8 +5058,7 @@ constexpr DescriptorProto::ParseTableT_ DescriptorProto::_Internal::GeneratePars
         {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_ReservedRange_globals_},
         {0, 2},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -5339,8 +5306,7 @@ constexpr FileDescriptorProto::ParseTableT_ FileDescriptorProto::_Internal::Gene
         {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceCodeInfo_globals_},
         {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -5509,8 +5475,7 @@ constexpr FileDescriptorSet::ParseTableT_ FileDescriptorSet::_Internal::Generate
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FileDescriptorProto_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 

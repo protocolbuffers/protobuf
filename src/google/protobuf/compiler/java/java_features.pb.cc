@@ -64,10 +64,10 @@ constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInF
       0, 0,  // max_field_number, fast_idx_mask
       offsetof(ParseTableT_, field_lookup_table),
       4294967295,  // skipmap
-      offsetof(ParseTableT_, field_names),  // no field_entries
+      0,  // no field_entries
       0,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -76,8 +76,7 @@ constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInF
     }}, {{
       65535, 65535
     }}, // no field_entries, or aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -205,8 +204,7 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::_Internal::GenerateParseTable
         {0, 2},
         {0, 3},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 

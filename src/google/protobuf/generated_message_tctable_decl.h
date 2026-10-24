@@ -20,6 +20,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/types/span.h"
 #include "google/protobuf/arena.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
@@ -511,6 +512,13 @@ static_assert(sizeof(TcParseTableBase::FastFieldEntry) <= 16,
 static_assert(sizeof(TcParseTableBase::FieldEntry) <= 16,
               "Field entry is too big.");
 
+// Concrete type for all parse tables.
+//
+// Specializations below are used to omit members for zero-sized arrays. To make
+// offset calculations portable, we need empty members to behave consistently.
+// In C++, arrays cannot have length 0, but (C++11) std::array<T, 0> is valid.
+// However, different implementations have different sizeof(std::array<T, 0>).
+// To avoid this issue, we skip the member entirely when the size is 0.
 template <size_t kFastTableSizeLog2, size_t kNumFieldEntries = 0,
           size_t kNumFieldAux = 0, size_t kNameTableSize = 0,
           size_t kFieldLookupSize = 2>
@@ -531,13 +539,23 @@ struct TcParseTable {
   // Entries for all fields:
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
   std::array<TcParseTableBase::FieldAux, kNumFieldAux> aux_entries;
-  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
+  std::array<char, kNameTableSize> field_names;
 };
 
-// Partial specialization: if there are no aux entries, there will be no array.
-// In C++, arrays cannot have length 0, but (C++11) std::array<T, 0> is valid.
-// However, different implementations have different sizeof(std::array<T, 0>).
-// Skipping the member makes offset computations portable.
+// Partial specialization for if there are no field names.
+template <size_t kFastTableSizeLog2, size_t kNumFieldEntries,
+          size_t kNumFieldAux, size_t kFieldLookupSize>
+struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, kNumFieldAux, 0,
+                    kFieldLookupSize> {
+  TcParseTableBase header;
+  std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
+      fast_entries;
+  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
+  std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
+  std::array<TcParseTableBase::FieldAux, kNumFieldAux> aux_entries;
+};
+
+// Partial specialization if there are no aux entries.
 template <size_t kFastTableSizeLog2, size_t kNumFieldEntries,
           size_t kNameTableSize, size_t kFieldLookupSize>
 struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, kNameTableSize,
@@ -547,11 +565,22 @@ struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, kNameTableSize,
       fast_entries;
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
   std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
-  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
+  std::array<char, kNameTableSize> field_names;
 };
 
-// Partial specialization: if there are no fields at all, then we can save space
-// by skipping the field numbers and entries.
+// Partial specialization for if there are no aux entries or field names.
+template <size_t kFastTableSizeLog2, size_t kNumFieldEntries,
+          size_t kFieldLookupSize>
+struct TcParseTable<kFastTableSizeLog2, kNumFieldEntries, 0, 0,
+                    kFieldLookupSize> {
+  TcParseTableBase header;
+  std::array<TcParseTableBase::FastFieldEntry, (1 << kFastTableSizeLog2)>
+      fast_entries;
+  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
+  std::array<TcParseTableBase::FieldEntry, kNumFieldEntries> field_entries;
+};
+
+// Partial specialization for if there are no field entries.
 template <size_t kNameTableSize, size_t kFieldLookupSize>
 struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
   TcParseTableBase header;
@@ -559,7 +588,17 @@ struct TcParseTable<0, 0, 0, kNameTableSize, kFieldLookupSize> {
   // The fast parsing loop will always use this entry, so it must be present.
   std::array<TcParseTableBase::FastFieldEntry, 1> fast_entries;
   std::array<uint16_t, kFieldLookupSize> field_lookup_table;
-  std::array<char, kNameTableSize == 0 ? 1 : kNameTableSize> field_names;
+  std::array<char, kNameTableSize> field_names;
+};
+
+// Partial specialization for if there are no field entries or field names.
+template <size_t kFieldLookupSize>
+struct TcParseTable<0, 0, 0, 0, kFieldLookupSize> {
+  TcParseTableBase header;
+  // N.B.: the fast entries are sized by log2, so 2**0 fields = 1 entry.
+  // The fast parsing loop will always use this entry, so it must be present.
+  std::array<TcParseTableBase::FastFieldEntry, 1> fast_entries;
+  std::array<uint16_t, kFieldLookupSize> field_lookup_table;
 };
 
 static_assert(std::is_standard_layout<TcParseTable<1>>::value,
