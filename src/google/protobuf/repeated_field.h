@@ -603,6 +603,8 @@ class ABSL_ATTRIBUTE_WARN_UNUSED PROTOBUF_DECLSPEC_EMPTY_BASES
   template <typename ArenaProvider>
   void ReserveWithArena(ArenaProvider arena_provider, int new_size);
 
+  void TryShrinkToFit(internal::SerialArena* arena);
+
   template <typename ArenaProvider>
   void* AddUninitializedWithArena(ArenaProvider arena_provider);
 
@@ -1414,10 +1416,9 @@ RepeatedField<Element>::cend() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
 
 template <typename Element>
 inline size_t RepeatedField<Element>::SpaceUsedExcludingSelfLong() const {
-  const int capacity = Capacity();
-  return capacity > kSooCapacityElements
-             ? capacity * sizeof(Element) + kHeapRepHeaderSize
-             : 0;
+  return is_soo() ? 0
+                  : Capacity(/*is_soo=*/false) * sizeof(Element) +
+                        kHeapRepHeaderSize;
 }
 
 // Like C++20's std::erase_if, for RepeatedField. The order of calls to the
@@ -1535,6 +1536,30 @@ inline int CalculateReserveSize(int capacity, int new_size) {
 template <typename Element>
 inline void RepeatedField<Element>::Reserve(int new_size) {
   ReserveWithArena(SelfArena{}, new_size);
+}
+
+template <typename Element>
+void RepeatedField<Element>::TryShrinkToFit(internal::SerialArena* arena) {
+  if (arena == nullptr || is_soo()) return;
+
+  internal::HeapRep* rep = heap_rep();
+  Element* tail = rep->elements<Element>() + rep->capacity();
+
+  // Array memory returned to the arena has the invariant that it has to be at
+  // least 16 bytes. We can't break that here so don't shrink the array too
+  // much.
+  const int size_to_use = std::max<int>(
+      size(),
+      (internal::SerialArena::kMinimumReturnedArraySize - kHeapRepHeaderSize) /
+          sizeof(Element));
+
+  // We must Ceil to make sure the new tail is properly aligned.
+  Element* new_tail =
+      internal::ArenaAlignDefault::Ceil(rep->elements<Element>() + size_to_use);
+
+  if (arena->TryTrimTail(tail, new_tail)) {
+    rep->set_capacity(new_tail - rep->elements<Element>());
+  }
 }
 
 template <typename Element>
