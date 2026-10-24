@@ -424,9 +424,10 @@ class PROTOC_EXPORT CommandLineInterface {
   absl::flat_hash_map<std::string, std::vector<std::string>>
       plugin_command_prefixes_;
 
-  // Maps specific plugin names to files.  When executing a plugin, this map
-  // is searched first to find the plugin executable.  If not found here, the
-  // PATH (or other OS-specific search strategy) is searched.
+  // Maps specific plugin names to executables given with --plugin. A value
+  // that names a location (it contains a directory, or on Windows a drive
+  // prefix) is executed as that exact file. A bare filename is resolved on
+  // PATH. Plugin names that are not in this map are also resolved on PATH.
   absl::flat_hash_map<std::string, std::string> plugins_;
 
   // Stuff parsed from command line.
