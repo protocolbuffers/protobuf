@@ -55,8 +55,12 @@ struct upb_DefPool {
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
-  upb_GeneratedRegistry_Release(s->generated_extreg);
-  upb_Arena_Free(s->arena);
+  if (s->generated_extreg) {
+    upb_GeneratedRegistry_Release(s->generated_extreg);
+  }
+  if (s->arena) {
+    upb_Arena_Free(s->arena);
+  }
   upb_gfree(s->scratch_data);
   upb_gfree(s);
 }
@@ -66,8 +70,10 @@ static const char serialized_defaults[] = UPB_INTERNAL_UPB_EDITION_DEFAULTS;
 upb_DefPool* upb_DefPool_New(void) {
   upb_DefPool* s = upb_gmalloc(sizeof(*s));
   if (!s) return NULL;
+  memset(s, 0, sizeof(*s));
 
   s->arena = upb_Arena_New();
+  if (!s->arena) goto err;
   s->bytes_loaded = 0;
   s->disable_closed_enum_checking = false;
   s->disable_implicit_field_presence = false;
@@ -495,6 +501,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
   }
 
   arena = upb_Arena_New();
+  if (!arena) return false;
 
   for (; *deps; deps++) {
     if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
