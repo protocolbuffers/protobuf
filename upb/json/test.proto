@@ -33,4 +33,10 @@ message Box {
   optional bytes data = 11;
   optional google.protobuf.Any any_val = 12;
   optional google.protobuf.FieldMask mask_val = 13;
+
+  extensions 100 to 199;
+}
+
+extend Box {
+  optional int32 ext_tag = 100;
 }
