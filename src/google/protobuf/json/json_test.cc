@@ -1619,6 +1619,30 @@ TEST_P(JsonTest, MalformedLengthDelimitedField) {
   ASSERT_THAT(s, StatusIs(absl::StatusCode::kInvalidArgument));
 }
 
+TEST_P(JsonTest, KnownMessageOversizedLengthRejected) {
+  std::string out;
+  // Known TYPE_MESSAGE with a valid small length, then a sibling.
+  absl::Status honest = BinaryToJsonString(
+      resolver_.get(), "type.googleapis.com/proto3.TestMessage",
+      "\x5a\x02\x08\x07\x20\x01", &out);
+  ASSERT_OK(honest);
+  EXPECT_THAT(out, ContainsRegex("messageValue"));
+  EXPECT_THAT(out, ContainsRegex("uint32Value"));
+
+  // Same fields with length prefix 0x80000000.
+  out.clear();
+  absl::Status evil_threshold = BinaryToJsonString(
+      resolver_.get(), "type.googleapis.com/proto3.TestMessage",
+      "\x5a\x80\x80\x80\x80\x08\x08\x07\x20\x01", &out);
+  ASSERT_THAT(evil_threshold, StatusIs(absl::StatusCode::kInvalidArgument));
+
+  out.clear();
+  absl::Status evil_max = BinaryToJsonString(
+      resolver_.get(), "type.googleapis.com/proto3.TestMessage",
+      "\x5a\xff\xff\xff\xff\x0f\x08\x07\x20\x01", &out);
+  ASSERT_THAT(evil_max, StatusIs(absl::StatusCode::kInvalidArgument));
+}
+
 TEST_P(JsonTest, DeeplyNestedGroupsRejected) {
   // Verify that deeply nested TYPE_GROUP fields are rejected with an error
   // rather than causing unbounded stack recursion.
