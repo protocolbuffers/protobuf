@@ -6,9 +6,13 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::upb_reflection::{self, DefPool, DefPoolInitPtr, MessageDef};
-use super::{MiniTableEnumPtr, MiniTableExtensionPtr, MiniTablePtr, THREAD_LOCAL_ARENA};
+use super::{
+    MiniTableEnumPtr, MiniTableExtensionInitPtr, MiniTableExtensionPtr, MiniTablePtr,
+    EXTENSION_MINI_TABLE_TO_DEF_INITS, THREAD_LOCAL_ARENA,
+};
+use std::collections::HashMap;
 use std::ffi::CStr;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
 #[derive(Clone, Copy)]
 pub struct DefPoolInit(DefPoolInitPtr);
@@ -26,10 +30,50 @@ impl MessageDefCached {
     }
 }
 
-struct GlobalDefPool(DefPool);
+pub(super) struct GlobalDefPool(pub(super) DefPool);
 unsafe impl Send for GlobalDefPool {}
 // There is only one global, singleton DefPool, protected by a Mutex.
 static POOL: OnceLock<Mutex<GlobalDefPool>> = OnceLock::new();
+
+// Maps each extension's MiniTable pointer to the `def_init` function of the file that declares it.
+type ExtMiniTableToDefInit = HashMap<MiniTableExtensionInitPtr, fn() -> DefPoolInit>;
+
+static EXT_MT_TO_DEF_INIT: OnceLock<ExtMiniTableToDefInit> = OnceLock::new();
+
+/// Returns a global, static map of each extension's MiniTable pointer to the `def_init` function of
+/// the file that declares it. If the map does not yet exist, creates it.
+fn ext_mt_to_def_init() -> &'static ExtMiniTableToDefInit {
+    EXT_MT_TO_DEF_INIT.get_or_init(|| {
+        let mut map = ExtMiniTableToDefInit::new();
+        for ext in EXTENSION_MINI_TABLE_TO_DEF_INITS {
+            map.insert(**ext.mini_table, ext.def_init);
+        }
+        map
+    })
+}
+
+// A C-compatible fallback hook to resolve missing extension inits by looking them up in the
+// `ext_mt_to_def_init` map.
+extern "C" fn resolve_ext_def_init(ext: MiniTableExtensionPtr) -> Option<DefPoolInitPtr> {
+    let def_init = ext_mt_to_def_init().get(&MiniTableExtensionInitPtr(ext))?;
+    Some(def_init().0)
+}
+
+// Returns a lock guard of the global DefPool. If the pool does not yet exist, creates it.
+pub(super) fn global_def_pool() -> MutexGuard<'static, GlobalDefPool> {
+    POOL.get_or_init(|| {
+        let mut pool = DefPool::new();
+        // SAFETY:
+        // - `resolve_ext_def_init` returns either `None` or the generated init of the file that
+        //   declares the extension, whose layout contains that extension's MiniTable.
+        // - Generated inits, their deps and their layouts are never freed.
+        // - `resolve_ext_def_init` never accesses the pool.
+        unsafe { pool.set_ext_init_resolver(resolve_ext_def_init) };
+        Mutex::new(GlobalDefPool(pool))
+    })
+    .lock()
+    .expect("global DefPool mutex should not be poisoned")
+}
 
 /// A message of which a MessageDef and DefPoolInit can be looked up. This trait must be
 /// implemented in Rust gencode for every message that needs reflection support.
@@ -82,10 +126,7 @@ pub fn message_def<T: UpbWithReflection>() -> MessageDef<'static> {
         // Eventually calls `build_def_init` emitted for `T`.
         let init = T::def_init();
 
-        let mut pool = POOL
-            .get_or_init(|| Mutex::new(GlobalDefPool(DefPool::new())))
-            .lock()
-            .expect("global DefPool mutex should not be poisoned");
+        let mut pool = global_def_pool();
 
         // Load the descriptor into the global DefPool. If it was already loaded, this would be a
         // no-op.

@@ -9,6 +9,7 @@
 #define UPB_REFLECTION_DEF_POOL_INTERNAL_H_
 
 #include "upb/mini_descriptor/decode.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/reflection/def.h"
 
@@ -43,6 +44,12 @@ typedef struct _upb_DefPool_Init {
 } _upb_DefPool_Init;
 
 bool _upb_DefPool_LoadDefInit(upb_DefPool* s, const _upb_DefPool_Init* init);
+
+typedef const _upb_DefPool_Init* _upb_DefPool_ExtInitResolver(
+    const upb_MiniTableExtension* ext);
+
+void _upb_DefPool_SetExtInitResolver(upb_DefPool* s,
+                                     _upb_DefPool_ExtInitResolver* resolver);
 
 // Should only be directly called by tests. This variant lets us suppress
 // the use of compiled-in tables, forcing a rebuild of the tables at runtime.

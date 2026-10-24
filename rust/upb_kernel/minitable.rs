@@ -20,7 +20,7 @@ unsafe impl Send for MiniTableEnumInitPtr {}
 unsafe impl Sync for MiniTableEnumInitPtr {}
 
 // Same as above, but for extension minitables.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MiniTableExtensionInitPtr(pub MiniTableExtensionPtr);
 unsafe impl Send for MiniTableExtensionInitPtr {}
 unsafe impl Sync for MiniTableExtensionInitPtr {}

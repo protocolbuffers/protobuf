@@ -42,11 +42,6 @@ namespace {
 
 using Sub = ::google::protobuf::io::Printer::Sub;
 
-bool HasReflectionSupport(Context& ctx, const Descriptor& msg) {
-  return !ctx.opts().force_lite_runtime &&
-         msg.file()->options().optimize_for() != FileOptions::LITE_RUNTIME;
-}
-
 bool HasExtensions(const Descriptor& msg) {
   if (msg.extension_count() > 0) return true;
   for (int i = 0; i < msg.nested_type_count(); ++i) {

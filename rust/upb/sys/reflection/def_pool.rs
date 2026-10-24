@@ -28,6 +28,8 @@ pub type RawDefPoolInit = NonNull<upb_DefPool_Init>;
 opaque_pointee!(upb_MiniTableFile);
 pub type RawMiniTableFile = NonNull<upb_MiniTableFile>;
 
+pub type ExtInitResolver = unsafe extern "C" fn(RawMiniTableExtension) -> Option<RawDefPoolInit>;
+
 unsafe extern "C" {
     /// Creates a new upb_DefPool.
     ///
@@ -88,6 +90,19 @@ unsafe extern "C" {
     #[link_name = "_upb_DefPool_LoadDefInit"]
     pub fn upb_DefPool_LoadDefInit(s: RawDefPool, init: *const upb_DefPool_Init) -> bool;
 
+    /// Sets a callback on `s` to resolve an extension's `upb_DefPool_Init` on demand when
+    /// `upb_DefPool_FindExtensionByMiniTable` does not find it in the pool.
+    ///
+    /// # Safety
+    /// - `s` must be a valid pointer to a `upb_DefPool` that has not been freed yet.
+    /// - `resolver` must return either `None`, or the init of the .proto file that declares the
+    ///   given extension, whose layout contains that exact extension MiniTable.
+    /// - A returned init must be valid as `upb_DefPool_LoadDefInit` requires, and it, the inits it
+    ///   depends on, and their layouts must outlive `s`.
+    /// - `resolver` runs inside lookups on `s`, so it must not access `s` itself.
+    #[link_name = "_upb_DefPool_SetExtInitResolver"]
+    pub fn upb_DefPool_SetExtInitResolver(s: RawDefPool, resolver: ExtInitResolver);
+
     /// Looks up a message by fully-qualified name.
     ///
     /// # Safety
@@ -112,6 +127,7 @@ mod tests {
         assert_linked!(super::upb_MiniTableFile_New);
         assert_linked!(super::upb_DefPool_Init_New);
         assert_linked!(super::upb_DefPool_LoadDefInit);
+        assert_linked!(super::upb_DefPool_SetExtInitResolver);
         assert_linked!(super::upb_DefPool_FindMessageByNameWithSize);
     }
 }

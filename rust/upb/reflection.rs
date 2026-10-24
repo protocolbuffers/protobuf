@@ -18,7 +18,8 @@ use super::sys::reflection;
 
 use reflection::def_pool::{
     upb_DefPool_FindMessageByNameWithSize, upb_DefPool_Free, upb_DefPool_Init_New,
-    upb_DefPool_LoadDefInit, upb_DefPool_New, upb_MiniTableFile_New, RawDefPool,
+    upb_DefPool_LoadDefInit, upb_DefPool_New, upb_DefPool_SetExtInitResolver,
+    upb_MiniTableFile_New, RawDefPool,
 };
 use reflection::message_def::RawMessageDef;
 use reflection::upb_TextEncode;
@@ -29,6 +30,7 @@ use upb::{
 };
 
 pub use reflection::def_pool::upb_DefPool_Init;
+pub use reflection::def_pool::ExtInitResolver;
 pub use reflection::def_pool::RawDefPoolInit as DefPoolInitPtr;
 pub use reflection::def_pool::RawMiniTableFile as MiniTableFilePtr;
 
@@ -65,6 +67,22 @@ impl DefPool {
         // - `self.raw` is a live pool; only `Drop` frees it.
         // - `init` is valid per the safety requirements of this function.
         unsafe { upb_DefPool_LoadDefInit(self.raw, init) }
+    }
+
+    /// Sets a callback to resolve and load extension descriptors on demand.
+    ///
+    /// When a lookup of an extension by its MiniTable misses (e.g. in `text_encode`), upb calls
+    /// `resolver` with that MiniTable and loads the init it returns into this pool.
+    ///
+    /// # Safety
+    /// - `resolver` must return either `None`, or the init of the .proto file that declares the
+    ///   given extension, whose layout contains that exact extension MiniTable.
+    /// - A returned init must be valid as `load_def_init` requires, and it, the inits it depends
+    ///   on, and their layouts must outlive this pool.
+    /// - `resolver` runs inside lookups on this pool, so it must not access this pool itself.
+    pub unsafe fn set_ext_init_resolver(&mut self, resolver: ExtInitResolver) {
+        // SAFETY: `self.raw` is a live pool; only `Drop` frees it.
+        unsafe { upb_DefPool_SetExtInitResolver(self.raw, resolver) }
     }
 
     /// Looks up a message by fully-qualified name in the pool.
