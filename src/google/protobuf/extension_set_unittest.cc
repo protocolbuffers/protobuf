@@ -27,6 +27,7 @@
 #include "absl/strings/cord.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.h"
@@ -34,6 +35,7 @@
 #include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/test_protos/recursive_message_set.pb.h"
@@ -350,6 +352,28 @@ TEST_F(ExtensionSetTest, ArenaUnsafeArenaReleaseOfHeapAlloc) {
   EXPECT_EQ(extension, released_extension);
   EXPECT_FALSE(
       message->HasExtension(unittest::optional_foreign_message_extension));
+}
+
+std::string MakeMessageSetItemWire(uint32_t type_id, absl::string_view payload,
+                                   bool payload_before_type_id) {
+  std::string out;
+  io::StringOutputStream zcos(&out);
+  io::CodedOutputStream cos(&zcos);
+  cos.WriteTag(WireFormatLite::kMessageSetItemStartTag);
+  if (payload_before_type_id) {
+    WireFormatLite::WriteBytes(WireFormatLite::kMessageSetMessageNumber,
+                               std::string(payload), &cos);
+    WireFormatLite::WriteUInt32(WireFormatLite::kMessageSetTypeIdNumber,
+                                type_id, &cos);
+  } else {
+    WireFormatLite::WriteUInt32(WireFormatLite::kMessageSetTypeIdNumber,
+                                type_id, &cos);
+    WireFormatLite::WriteBytes(WireFormatLite::kMessageSetMessageNumber,
+                               std::string(payload), &cos);
+  }
+  cos.WriteTag(WireFormatLite::kMessageSetItemEndTag);
+  cos.Trim();
+  return out;
 }
 
 
@@ -2121,6 +2145,38 @@ TEST_F(ExtensionSetTest, MessageSetRecursionLimitIsConsistent) {
       EXPECT_LE(depth, io::CodedInputStream::GetDefaultRecursionLimit());
     }
   }
+}
+
+TEST_F(ExtensionSetTest, OutOfOrderMessageSetItemMissingRequiredField) {
+  const std::string wire = MakeMessageSetItemWire(
+      unittest::TestMessageSetExtension3::kMessageSetExtensionFieldNumber, "",
+      /*payload_before_type_id=*/true);
+
+  proto2_wireformat_unittest::TestMessageSet full;
+  EXPECT_FALSE(full.ParseFromString(wire));
+
+  proto2_wireformat_unittest::TestMessageSet partial;
+  ASSERT_TRUE(partial.ParsePartialFromString(wire));
+  EXPECT_FALSE(partial.IsInitialized());
+}
+
+TEST_F(ExtensionSetTest,
+       DynamicMessageOutOfOrderMessageSetItemMissingRequiredField) {
+  const std::string wire = MakeMessageSetItemWire(
+      unittest::TestMessageSetExtension3::kMessageSetExtensionFieldNumber, "",
+      /*payload_before_type_id=*/true);
+
+  DynamicMessageFactory factory;
+  const Message* prototype = factory.GetPrototype(
+      proto2_wireformat_unittest::TestMessageSet::descriptor());
+  ASSERT_NE(prototype, nullptr);
+
+  std::unique_ptr<Message> full(prototype->New());
+  EXPECT_FALSE(full->ParseFromString(wire));
+
+  std::unique_ptr<Message> partial(prototype->New());
+  ASSERT_TRUE(partial->ParsePartialFromString(wire));
+  EXPECT_FALSE(partial->IsInitialized());
 }
 
 TEST_F(ExtensionSetTest, MergeLargeExtensionSetToEmpty) {
