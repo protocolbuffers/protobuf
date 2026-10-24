@@ -1,0 +1,173 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package proto2_unittest;
+
+message BatchStringSubMessage {
+  optional int32 id = 1;
+  optional string name = 2;
+  optional string value = 3;
+  optional string extra = 4;
+}
+
+// Message with many string fields (some consecutive, some separated by
+// non-string fields, non-empty default strings, cords, submessages, and
+// primitives in both layout and has_bits) spanning multiple 32-bit has_bits
+// words and multiple tag sizes (1-byte, 2-byte, and 3-byte tags).
+message TestBatchStringFields {
+  // Fast-parse eligible string fields (1-byte tags) with non-eligible string
+  // variants mixed in.
+  optional string str1 = 1;
+  optional string str2 = 2;
+  optional string str_def1 = 3 [default = "default_one"];
+  optional int32 int1 = 4;
+  optional string str3 = 5;
+  optional bool bool1 = 6;
+  optional string str_cord1 = 7 [ctype = CORD];
+  optional string str4 = 8;
+  optional int64 int2 = 9;
+  optional bytes bytes1 = 10;
+  optional BatchStringSubMessage sub1 = 11;
+  optional string str5 = 12;
+  optional string str6 = 13;
+  optional double double1 = 14;
+  optional string str7 = 15;
+
+  // 2-byte tag fields (16..2047).
+  optional string str8 = 16;
+  optional int32 int3 = 17;
+  optional string str_def2 = 18 [default = "default_two"];
+  optional string str9 = 19;
+  optional bytes bytes2 = 20;
+  optional bool bool2 = 21;
+  optional string str10 = 22;
+  optional BatchStringSubMessage sub2 = 23;
+  optional uint32 uint1 = 24;
+  optional string str11 = 25;
+  optional string str12 = 26;
+  optional fixed64 fixed1 = 27;
+  optional string str13 = 28;
+  repeated string rep_str = 29;
+
+  // 3-byte tag fields (>= 2048) are not eligible for fast-parse, so when total
+  // fields with hasbits exceed 32, these are placed in the kHot partition after
+  // the kFastParse primitives/messages, interleaving primitives/messages
+  // between the kFastParse strings and kHot strings in _has_bits_[0] and Impl_.
+  optional string hot_str1 = 2048;
+  optional int32 hot_int1 = 2049;
+  optional string hot_str2 = 2050;
+  optional string hot_str_def = 2051 [default = "hot_default"];
+  optional string hot_str3 = 2052;
+  optional bool hot_bool1 = 2053;
+  optional bytes hot_bytes1 = 2054;
+  optional string hot_str4 = 2055;
+  optional int64 hot_int2 = 2056;
+  optional string hot_str5 = 2057;
+  optional BatchStringSubMessage hot_sub1 = 2058;
+  optional string hot_str6 = 2059;
+  optional string hot_str7 = 2060;
+  optional int32 hot_int3 = 2061;
+  optional string hot_str8 = 2062;
+  optional string hot_str9 = 2063;
+  optional string hot_str10 = 2064;
+  optional int32 hot_int4 = 2065;
+
+  oneof test_oneof {
+    string oneof_str = 3000;
+    int32 oneof_int = 3001;
+  }
+}
+
+// Identical schema to TestBatchStringFields, but its name ends with "Fallback"
+// so the C++ code generator uses the unbatched per-field implementation.
+message TestBatchStringFieldsFallback {
+  optional string str1 = 1;
+  optional string str2 = 2;
+  optional string str_def1 = 3 [default = "default_one"];
+  optional int32 int1 = 4;
+  optional string str3 = 5;
+  optional bool bool1 = 6;
+  optional string str_cord1 = 7 [ctype = CORD];
+  optional string str4 = 8;
+  optional int64 int2 = 9;
+  optional bytes bytes1 = 10;
+  optional BatchStringSubMessage sub1 = 11;
+  optional string str5 = 12;
+  optional string str6 = 13;
+  optional double double1 = 14;
+  optional string str7 = 15;
+
+  optional string str8 = 16;
+  optional int32 int3 = 17;
+  optional string str_def2 = 18 [default = "default_two"];
+  optional string str9 = 19;
+  optional bytes bytes2 = 20;
+  optional bool bool2 = 21;
+  optional string str10 = 22;
+  optional BatchStringSubMessage sub2 = 23;
+  optional uint32 uint1 = 24;
+  optional string str11 = 25;
+  optional string str12 = 26;
+  optional fixed64 fixed1 = 27;
+  optional string str13 = 28;
+  repeated string rep_str = 29;
+
+  optional string hot_str1 = 2048;
+  optional int32 hot_int1 = 2049;
+  optional string hot_str2 = 2050;
+  optional string hot_str_def = 2051 [default = "hot_default"];
+  optional string hot_str3 = 2052;
+  optional bool hot_bool1 = 2053;
+  optional bytes hot_bytes1 = 2054;
+  optional string hot_str4 = 2055;
+  optional int64 hot_int2 = 2056;
+  optional string hot_str5 = 2057;
+  optional BatchStringSubMessage hot_sub1 = 2058;
+  optional string hot_str6 = 2059;
+  optional string hot_str7 = 2060;
+  optional int32 hot_int3 = 2061;
+  optional string hot_str8 = 2062;
+  optional string hot_str9 = 2063;
+  optional string hot_str10 = 2064;
+  optional int32 hot_int4 = 2065;
+
+  oneof test_oneof {
+    string oneof_str = 3000;
+    int32 oneof_int = 3001;
+  }
+}
+
+// Message where the first eligible string field is at a non-zero has_bit index
+// (because bit 0 is occupied by a non-empty-default string field) and has gaps
+// in the middle and non-string fields after the last string field.
+message TestNonZeroFirstBitStrings {
+  optional string lead_def = 1 [default = "leading_default"];
+  optional string s1 = 2;
+  optional string mid_cord = 3 [ctype = CORD];
+  optional string s2 = 4;
+  optional string mid_def = 5 [default = "middle_default"];
+  optional bytes b1 = 6;
+  optional string s3 = 7;
+  optional string tail_def = 8 [default = "trailing_default"];
+  optional int32 tail_int1 = 9;
+  optional int64 tail_int2 = 10;
+}
+
+message TestNonZeroFirstBitStringsFallback {
+  optional string lead_def = 1 [default = "leading_default"];
+  optional string s1 = 2;
+  optional string mid_cord = 3 [ctype = CORD];
+  optional string s2 = 4;
+  optional string mid_def = 5 [default = "middle_default"];
+  optional bytes b1 = 6;
+  optional string s3 = 7;
+  optional string tail_def = 8 [default = "trailing_default"];
+  optional int32 tail_int1 = 9;
+  optional int64 tail_int2 = 10;
+}

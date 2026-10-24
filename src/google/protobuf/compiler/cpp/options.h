@@ -63,6 +63,7 @@ struct Options {
       google::protobuf::internal::ForceEagerlyVerifiedLazyInProtoc();
   bool force_inline_string = google::protobuf::internal::ForceInlineStringInProtoc();
   bool strip_nonfunctional_codegen = false;
+  bool batch_string_fields = true;
   bool experimental_use_micro_string =
       google::protobuf::internal::EnableExperimentalMicroString();
 };

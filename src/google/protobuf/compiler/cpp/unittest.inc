@@ -2073,6 +2073,61 @@ TEST_F(OneofTest, MergeFrom) {
 
 }
 
+TEST(GENERATED_MESSAGE_TEST_NAME, ManyOptionalStringOperations) {
+  UNITTEST::ManyOptionalString msg1, msg2;
+  msg1.set_str1("");
+  msg1.set_str3("short");
+  msg1.set_str15(std::string(200, 'a'));
+  msg1.set_str16(std::string(200, 'b'));
+  msg1.set_str32("last");
+
+  msg2.set_str2("two");
+  msg2.set_str15("override_15");
+  msg2.set_str31("");
+
+  UNITTEST::ManyOptionalString copy1(msg1);
+  EXPECT_TRUE(copy1.has_str1());
+  EXPECT_EQ(copy1.str1(), "");
+  EXPECT_FALSE(copy1.has_str2());
+  EXPECT_TRUE(copy1.has_str3());
+  EXPECT_EQ(copy1.str3(), "short");
+  EXPECT_TRUE(copy1.has_str15());
+  EXPECT_EQ(copy1.str15(), std::string(200, 'a'));
+  EXPECT_TRUE(copy1.has_str16());
+  EXPECT_EQ(copy1.str16(), std::string(200, 'b'));
+  EXPECT_TRUE(copy1.has_str32());
+  EXPECT_EQ(copy1.str32(), "last");
+  EXPECT_EQ(copy1.ByteSizeLong(), msg1.ByteSizeLong());
+  EXPECT_EQ(copy1.SerializeAsString(), msg1.SerializeAsString());
+
+  copy1.MergeFrom(msg2);
+  EXPECT_TRUE(copy1.has_str1());
+  EXPECT_TRUE(copy1.has_str2());
+  EXPECT_EQ(copy1.str2(), "two");
+  EXPECT_EQ(copy1.str15(), "override_15");
+  EXPECT_TRUE(copy1.has_str31());
+  EXPECT_EQ(copy1.str31(), "");
+  EXPECT_TRUE(copy1.has_str32());
+
+  copy1.Swap(&msg2);
+  EXPECT_TRUE(msg2.has_str1());
+  EXPECT_TRUE(msg2.has_str32());
+  EXPECT_FALSE(copy1.has_str1());
+  EXPECT_FALSE(copy1.has_str32());
+
+  msg2.Clear();
+  EXPECT_FALSE(msg2.has_str1());
+  EXPECT_FALSE(msg2.has_str2());
+  EXPECT_FALSE(msg2.has_str15());
+  EXPECT_FALSE(msg2.has_str32());
+  EXPECT_EQ(msg2.ByteSizeLong(), 0u);
+
+  Arena arena;
+  auto* arena_msg = Arena::Create<UNITTEST::ManyOptionalString>(&arena, msg1);
+  EXPECT_EQ(arena_msg->ByteSizeLong(), msg1.ByteSizeLong());
+  EXPECT_EQ(arena_msg->SerializeAsString(), msg1.SerializeAsString());
+}
+
 TEST(HELPERS_TEST_NAME, TestSCC) {
   UNITTEST::TestMutualRecursionA a;
   MessageSCCAnalyzer scc_analyzer((Options()));

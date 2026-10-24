@@ -567,6 +567,32 @@ inline std::string* ArenaStringPtr::UnsafeMutablePointer() {
   return tagged_ptr_.Get();
 }
 
+PROTOBUF_EXPORT void ClearStringFields(uint32_t mask, ArenaStringPtr* first_str,
+                                       const uint16_t* offsets);
+
+PROTOBUF_EXPORT void DestroyStringFields(uint32_t mask,
+                                         ArenaStringPtr* first_str,
+                                         const uint16_t* offsets);
+
+PROTOBUF_EXPORT void MergeStringFields(uint32_t mask,
+                                       ArenaStringPtr* dst_first_str,
+                                       const ArenaStringPtr* src_first_str,
+                                       const uint16_t* offsets, Arena* arena);
+
+PROTOBUF_EXPORT void CopyStringFields(uint32_t mask,
+                                      ArenaStringPtr* dst_first_str,
+                                      const ArenaStringPtr* src_first_str,
+                                      const uint16_t* offsets, Arena* arena);
+
+PROTOBUF_EXPORT void SwapStringFields(uint32_t mask,
+                                      ArenaStringPtr* lhs_first_str,
+                                      ArenaStringPtr* rhs_first_str,
+                                      const uint16_t* offsets, Arena* arena);
+
+PROTOBUF_EXPORT size_t ByteSizeStringFields(uint32_t mask,
+                                            const ArenaStringPtr* first_str,
+                                            const uint16_t* offsets);
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google
