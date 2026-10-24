@@ -19,6 +19,7 @@
 #include "upb/base/descriptor_constants.h"
 #include "upb/base/status.h"
 #include "upb/mem/alloc.h"
+#include "upb/port/overflow.h"
 #include "upb/message/array.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
@@ -170,11 +171,24 @@ static void upb_FieldPathVector_Reserve(upb_FindContext* ctx,
                                         upb_FieldPathVector* vec,
                                         size_t elems) {
   if (vec->cap - vec->size < elems) {
-    const int oldsize = vec->cap * sizeof(*vec->path);
-    size_t need = vec->size + elems;
+    size_t oldsize;
+    if (upb_MulOverflow(vec->cap, sizeof(*vec->path), &oldsize)) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
+    size_t need;
+    if (upb_AddOverflow(vec->size, elems, &need)) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
     vec->cap = UPB_MAX(4, vec->cap);
-    while (vec->cap < need) vec->cap *= 2;
-    const int newsize = vec->cap * sizeof(*vec->path);
+    while (vec->cap < need) {
+      if (upb_MulOverflow((uint32_t)2, vec->cap, &vec->cap)) {
+        UPB_LONGJMP(ctx->err, 1);
+      }
+    }
+    size_t newsize;
+    if (upb_MulOverflow(vec->cap, sizeof(*vec->path), &newsize)) {
+      UPB_LONGJMP(ctx->err, 1);
+    }
     vec->path = upb_grealloc(vec->path, oldsize, newsize);
     if (!vec->path) {
       UPB_LONGJMP(ctx->err, 1);
