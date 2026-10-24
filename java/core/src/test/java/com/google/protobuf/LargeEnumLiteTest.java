@@ -10,6 +10,8 @@ package com.google.protobuf;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertThrows;
 
+import com.google.protobuf.large.closedenum.edition.LargeClosedEnum;
+import com.google.protobuf.large.closedenum.edition.LargeClosedEnumParent;
 import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnum;
 import com.google.protobuf.large.openaliasingenum.edition.LargeOpenAliasingEnumParent;
 import com.google.protobuf.large.openenum.edition.LargeOpenEnum;
@@ -19,6 +21,38 @@ import org.junit.runners.JUnit4;
 
 @RunWith(JUnit4.class)
 public class LargeEnumLiteTest {
+  @Test
+  public void testClosedLargeEnum() throws Exception {
+    assertThat(LargeClosedEnum.LARGE_ENUM_UNSPECIFIED.getNumber()).isEqualTo(0);
+    assertThat(LargeClosedEnum.LARGE_ENUM1.getNumber()).isEqualTo(1);
+    assertThat(LargeClosedEnum.LARGE_ENUM2.getNumber()).isEqualTo(2);
+    assertThat(LargeClosedEnum.LARGE_ENUM2_ALIAS).isSameInstanceAs(LargeClosedEnum.LARGE_ENUM2);
+    assertThat(LargeClosedEnum.forNumber(999)).isNull();
+    assertThrows(
+        NoSuchFieldException.class, () -> LargeClosedEnum.class.getDeclaredField("UNRECOGNIZED"));
+    assertThat(LargeClosedEnum.values())
+        .isEqualTo(
+            new LargeClosedEnum[] {
+              LargeClosedEnum.LARGE_ENUM_UNSPECIFIED,
+              LargeClosedEnum.LARGE_ENUM1,
+              LargeClosedEnum.LARGE_ENUM2
+            });
+    for (LargeClosedEnum value : LargeClosedEnum.values()) {
+      assertThat(LargeClosedEnum.forNumber(value.getNumber())).isSameInstanceAs(value);
+    }
+
+    LargeClosedEnumParent msg =
+        LargeClosedEnumParent.newBuilder()
+            .setOptionalValue(LargeClosedEnum.LARGE_ENUM1)
+            .addValues(LargeClosedEnum.LARGE_ENUM1)
+            .addValues(LargeClosedEnum.LARGE_ENUM2_ALIAS)
+            .build();
+    LargeClosedEnumParent roundTrip =
+        LargeClosedEnumParent.parseFrom(
+            msg.toByteArray(), ExtensionRegistryLite.getEmptyRegistry());
+    assertThat(roundTrip).isEqualTo(msg);
+  }
+
   @Test
   public void testLargeEnumRoundTrip() throws Exception {
     LargeOpenAliasingEnumParent msg =

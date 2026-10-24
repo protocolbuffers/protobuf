@@ -285,7 +285,7 @@ TEST_F(JavaGeneratorTest, SplitNestInFileClassEnumFeatureEdition2024) {
                              "proto2_unittest/NestedInFileClassEnum.java"));
 }
 
-TEST_F(JavaGeneratorTest, LargeClosedEnumDisallowedEdition2024) {
+TEST_F(JavaGeneratorTest, LargeClosedEnumAllowedEdition2024) {
   CreateTempFile("foo.proto",
                  R"schema(
     edition = "2024";
@@ -306,10 +306,7 @@ TEST_F(JavaGeneratorTest, LargeClosedEnumDisallowedEdition2024) {
       "protocol_compiler --proto_path=$tmpdir --java_out=$tmpdir foo.proto "
       "--experimental_editions");
 
-  ExpectErrorSubstring(
-      "foo.proto: Bar is a closed enum and can not be used with the large_enum "
-      "feature.  Please migrate to an open enum first, which is a better fit "
-      "for extremely large enums.");
+  ExpectNoErrors();
 }
 
 TEST_F(JavaGeneratorTest, LargeOpenEnumAllowedEdition2024) {
