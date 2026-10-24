@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Bazel 8 workaround: bundle all of `_message`'s deps into a single cc_shared_library node.
 
 Only used in OSS, where `_message` is built with rules_python's py_extension, which links
