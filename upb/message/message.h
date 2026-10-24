@@ -74,14 +74,32 @@ UPB_INLINE bool upb_Message_HasUnknown(const upb_Message* msg) {
 size_t upb_Message_ExtensionCount(const upb_Message* msg);
 
 // Iterates extensions in wire order
+//
+// DEPRECATED: Use upb_Message_NextExtensionField() instead, which returns the
+// upb_MiniTableField that describes each extension (b/569995025).
 UPB_INLINE bool upb_Message_NextExtension(const upb_Message* msg,
                                           const upb_MiniTableExtension** out_e,
                                           upb_MessageValue* out_v,
                                           uintptr_t* iter);
 
+// Iterates extensions in wire order, like upb_Message_NextExtension(), but
+// returns the upb_MiniTableField that describes each extension instead of its
+// upb_MiniTableExtension. Prefer this when only field properties (number, type,
+// sub-message, etc.) are needed.
+UPB_INLINE bool upb_Message_NextExtensionField(const upb_Message* msg,
+                                               const upb_MiniTableField** out_f,
+                                               upb_MessageValue* out_v,
+                                               uintptr_t* iter);
+
 // Iterates extensions in reverse wire order
 UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionReverse)(
     const struct upb_Message* msg, const upb_MiniTableExtension** out_e,
+    upb_MessageValue* out_v, uintptr_t* iter);
+
+// Iterates extensions in reverse wire order, returning the upb_MiniTableField
+// that describes each extension.
+UPB_INLINE bool UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(
+    const struct upb_Message* msg, const upb_MiniTableField** out_f,
     upb_MessageValue* out_v, uintptr_t* iter);
 
 #define kUpb_Message_SerializableFieldBegin 0
