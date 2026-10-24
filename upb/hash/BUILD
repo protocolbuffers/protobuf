@@ -15,11 +15,13 @@ cc_library(
     name = "hash",
     srcs = [
         "common.c",
+        "published_map.c",
     ],
     hdrs = [
         "common.h",
         "ext_table.h",
         "int_table.h",
+        "published_map.h",
         "str_table.h",
     ],
     copts = UPB_DEFAULT_COPTS,

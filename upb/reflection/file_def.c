@@ -12,6 +12,7 @@
 #include <string.h>
 
 #include "upb/base/string_view.h"
+#include "upb/hash/str_table.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/file.h"
@@ -45,6 +46,8 @@ struct upb_FileDef {
   const upb_ServiceDef* services;
   const upb_MiniTableExtension** ext_layouts;
   const upb_DefPool* symtab;
+  // Contains only this file's symbols and is immutable after construction.
+  upb_strtable symbols;
 
   int dep_count;
   int public_dep_count;
@@ -92,6 +95,19 @@ const char* upb_FileDef_Package(const upb_FileDef* f) {
 google_protobuf_Edition upb_FileDef_Edition(const upb_FileDef* f) { return f->edition; }
 
 const char* _upb_FileDef_RawPackage(const upb_FileDef* f) { return f->package; }
+
+bool _upb_FileDef_InsertSymbol(upb_FileDef* f, const char* name, size_t size,
+                              upb_value value, upb_Arena* arena) {
+  return upb_strtable_insert(&f->symbols, name, size, value, arena);
+}
+
+const void* _upb_FileDef_FindSymbol(const upb_FileDef* f, const char* name,
+                                   size_t size, upb_deftype_t type) {
+  upb_value value;
+  return upb_strtable_lookup2(&f->symbols, name, size, &value)
+             ? _upb_DefType_Unpack(value, type)
+             : NULL;
+}
 
 int upb_FileDef_TopLevelMessageCount(const upb_FileDef* f) {
   return f->top_lvl_msg_count;
@@ -288,6 +304,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
                          const google_protobuf_FileDescriptorProto* file_proto) {
   upb_FileDef* file = _upb_DefBuilder_Alloc(ctx, sizeof(upb_FileDef));
   ctx->file = file;
+  if (!upb_strtable_init(&file->symbols, 8, ctx->arena)) {
+    _upb_DefBuilder_OomErr(ctx);
+  }
 
   const google_protobuf_DescriptorProto* const* msgs;
   const google_protobuf_EnumDescriptorProto* const* enums;
@@ -308,6 +327,11 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
     ext_count += count_exts_in_msg(msgs[i]);
   }
   file->ext_count = ext_count;
+  if (ext_count) {
+    ctx->extension_batch =
+        upb_PublicationBatch_New(_upb_DefPool_Arena(ctx->symtab));
+    if (!ctx->extension_batch) _upb_DefBuilder_OomErr(ctx);
+  }
 
   if (ctx->layout) {
     // We are using the ext layouts that were passed in.
@@ -482,8 +506,9 @@ void _upb_FileDef_Create(upb_DefBuilder* ctx,
   }
 
   if (file->ext_count) {
-    upb_ExtensionRegistryStatus status = upb_ExtensionRegistry_AddArray(
-        _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count);
+    upb_ExtensionRegistryStatus status = _upb_ExtensionRegistry_AddArrayPending(
+        _upb_DefPool_ExtReg(ctx->symtab), file->ext_layouts, file->ext_count,
+        ctx->extension_batch);
     if (status != kUpb_ExtensionRegistryStatus_Ok) {
       if (status == kUpb_ExtensionRegistryStatus_OutOfMemory) {
         _upb_DefBuilder_OomErr(ctx);

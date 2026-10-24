@@ -8,7 +8,7 @@
 """Rules to create python distribution files and properly name them"""
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+load("@system_python//:version.bzl", "SYSTEM_PYTHON_EXT_SUFFIX", "SYSTEM_PYTHON_GIL_DISABLED", "SYSTEM_PYTHON_VERSION")
 
 def _get_os_name(ctx):
     for name, label in ctx.attr._os_constraints.items():
@@ -24,6 +24,11 @@ def _get_cpu_name(ctx):
 
 def _get_suffix(ctx, limited_api, python_version):
     """Computes an ABI version tag for an extension module per PEP 3149."""
+    if python_version == "system":
+        if SYSTEM_PYTHON_GIL_DISABLED and limited_api:
+            fail("Free-threaded CPython requires --//python:limited_api=false; its extension does not support abi3.")
+        if not limited_api:
+            return SYSTEM_PYTHON_EXT_SUFFIX
     os = _get_os_name(ctx)
     cpu = _get_cpu_name(ctx)
     if os == "windows":

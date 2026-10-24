@@ -40,29 +40,30 @@ typedef struct {
   // clang-format on
   PyObject* db;  // The DescriptorDatabase underlying this pool.  May be NULL.
   PyUpb_WeakMap* obj_cache;
+  // Keep the cache owner alive even after GC clears the heap type's module.
+  PyObject* module;
 } PyUpb_DescriptorPool;
 
 static PyObject* PyUpb_DescriptorPool_AsPyObj(PyUpb_DescriptorPool* pool) {
   return pool ? &pool->ob_base : NULL;
 }
 
-PyObject* PyUpb_DescriptorPool_GetDefaultPool(void) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  return s->default_pool;
-}
-
-const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(void) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
-  if (!s->c_descriptor_symtab) {
-    s->c_descriptor_symtab = upb_DefPool_New();
-  }
-  return google_protobuf_FileDescriptorProto_getmsgdef(s->c_descriptor_symtab);
+const upb_MessageDef* PyUpb_DescriptorPool_GetFileProtoDef(PyObject* pool) {
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
+  assert(s->c_descriptor_symtab);
+  return google_protobuf_FileDescriptorProto_getmsgdef(
+      s->c_descriptor_symtab);
 }
 
 static PyObject* PyUpb_DescriptorPool_DoCreateWithCache(
     PyTypeObject* type, PyObject* db, PyUpb_WeakMap* obj_cache) {
   PyUpb_DescriptorPool* pool = (void*)PyType_GenericAlloc(type, 0);
   if (!pool) goto err;
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  pool->module = PyType_GetModule(type);
+  if (!pool->module) goto err;
+  Py_INCREF(pool->module);
+#endif
   pool->symtab = upb_DefPool_New();
   if (!pool->symtab) {
     PyErr_SetNone(PyExc_MemoryError);
@@ -89,8 +90,18 @@ err:
 
 static PyObject* PyUpb_DescriptorPool_DoCreate(PyTypeObject* type,
                                                PyObject* db) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_ModuleState_GetFromType(type);
+  if (!state) return NULL;
   return PyUpb_DescriptorPool_DoCreateWithCache(type, db, state->obj_cache);
+}
+
+PyUpb_ModuleState* PyUpb_DescriptorPool_GetModuleState(PyObject* pool) {
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  return PyUpb_ModuleState_GetFromModule(
+      ((PyUpb_DescriptorPool*)pool)->module);
+#else
+  return PyUpb_ModuleState_Get();
+#endif
 }
 
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
@@ -99,7 +110,9 @@ upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool) {
 
 static int PyUpb_DescriptorPool_Traverse(PyUpb_DescriptorPool* self,
                                          visitproc visit, void* arg) {
+  Py_VISIT(Py_TYPE(self));
   Py_VISIT(self->db);
+  Py_VISIT(self->module);
   return 0;
 }
 
@@ -108,28 +121,23 @@ static int PyUpb_DescriptorPool_Clear(PyUpb_DescriptorPool* self) {
   return 0;
 }
 
-PyObject* PyUpb_DescriptorPool_Get(const upb_DefPool* symtab) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
-  PyObject* pool = PyUpb_WeakMap_Get(state->obj_cache, symtab);
-  assert(pool
-#if PY_VERSION_HEX >= 0x030D0000  // >= 3.13
-         || Py_IsFinalizing()
-#endif
-  );
-  return pool;
-}
-
 static void PyUpb_DescriptorPool_Dealloc(PyUpb_DescriptorPool* self) {
 #if PY_VERSION_HEX >= 0x030C0000
   PyObject_ClearWeakRefs((PyObject*)self);
 #endif
   PyObject_GC_UnTrack(self);
   PyUpb_DescriptorPool_Clear(self);
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  PyUpb_ModuleState* state = self->module
+      ? PyUpb_ModuleState_GetFromModule(self->module) : NULL;
+#else
   PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+#endif
   if (state && state->obj_cache) {
     PyUpb_WeakMap_EraseIfEqual(state->obj_cache, self->symtab, &self->ob_base);
   }
   PyUpb_WeakMap_Free(self->obj_cache);
+  Py_CLEAR(self->module);
   upb_DefPool_Free(self->symtab);
   PyUpb_Dealloc(self);
 }
@@ -326,7 +334,7 @@ static PyObject* PyUpb_DescriptorPool_DoAddSerializedFile(
       PyErr_SetNone(PyExc_MemoryError);
       goto done;
     }
-    const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef();
+    const upb_MessageDef* m = PyUpb_DescriptorPool_GetFileProtoDef(_self);
     const int options = kUpb_CompareOption_IncludeUnknownFields;
     if (upb_Message_IsEqualByDef(UPB_UPCAST(proto), UPB_UPCAST(existing), m,
                                  options)) {
@@ -768,36 +776,71 @@ done:
   return ret;
 }
 
+// The registry is mutable even when all message objects are thread-confined:
+// unrelated generated modules register their files under distinct import locks.
+// Use CPython's suspendable object critical sections so database callbacks and
+// recursive descriptor imports cannot deadlock while waiting on Python locks.
+// No message mutex is added, and classic Python retains the original calls.
+#ifdef Py_GIL_DISABLED
+#define PYUPB_POOL_METHOD(name) PyUpb_DescriptorPool_##name##_Critical
+#define PYUPB_POOL_WRAP(name)                                             \
+  static PyObject* PYUPB_POOL_METHOD(name)(PyObject* self, PyObject* arg) { \
+    PyObject* result;                                                    \
+    Py_BEGIN_CRITICAL_SECTION(self);                                     \
+    result = PyUpb_DescriptorPool_##name(self, arg);                       \
+    Py_END_CRITICAL_SECTION();                                           \
+    return result;                                                      \
+  }
+PYUPB_POOL_WRAP(Add)
+PYUPB_POOL_WRAP(AddSerializedFile)
+PYUPB_POOL_WRAP(SetFeatureSetDefaults)
+PYUPB_POOL_WRAP(FindFileByName)
+PYUPB_POOL_WRAP(FindMessageTypeByName)
+PYUPB_POOL_WRAP(FindFieldByName)
+PYUPB_POOL_WRAP(FindExtensionByName)
+PYUPB_POOL_WRAP(FindEnumTypeByName)
+PYUPB_POOL_WRAP(FindOneofByName)
+PYUPB_POOL_WRAP(FindServiceByName)
+PYUPB_POOL_WRAP(FindMethodByName)
+PYUPB_POOL_WRAP(FindFileContainingSymbol)
+PYUPB_POOL_WRAP(FindExtensionByNumber)
+PYUPB_POOL_WRAP(FindAllExtensions)
+#undef PYUPB_POOL_WRAP
+#else
+#define PYUPB_POOL_METHOD(name) PyUpb_DescriptorPool_##name
+#endif
+
 static PyMethodDef PyUpb_DescriptorPool_Methods[] = {
-    {"Add", PyUpb_DescriptorPool_Add, METH_O,
+    {"Add", PYUPB_POOL_METHOD(Add), METH_O,
      "Adds the FileDescriptorProto and its types to this pool."},
-    {"AddSerializedFile", PyUpb_DescriptorPool_AddSerializedFile, METH_O,
+    {"AddSerializedFile", PYUPB_POOL_METHOD(AddSerializedFile), METH_O,
      "Adds a serialized FileDescriptorProto to this pool."},
-    {"SetFeatureSetDefaults", PyUpb_DescriptorPool_SetFeatureSetDefaults,
+    {"SetFeatureSetDefaults", PYUPB_POOL_METHOD(SetFeatureSetDefaults),
      METH_O, "Sets the default feature mappings used during the build."},
-    {"FindFileByName", PyUpb_DescriptorPool_FindFileByName, METH_O,
+    {"FindFileByName", PYUPB_POOL_METHOD(FindFileByName), METH_O,
      "Searches for a file descriptor by its .proto name."},
-    {"FindMessageTypeByName", PyUpb_DescriptorPool_FindMessageTypeByName,
+    {"FindMessageTypeByName", PYUPB_POOL_METHOD(FindMessageTypeByName),
      METH_O, "Searches for a message descriptor by full name."},
-    {"FindFieldByName", PyUpb_DescriptorPool_FindFieldByName, METH_O,
+    {"FindFieldByName", PYUPB_POOL_METHOD(FindFieldByName), METH_O,
      "Searches for a field descriptor by full name."},
-    {"FindExtensionByName", PyUpb_DescriptorPool_FindExtensionByName, METH_O,
+    {"FindExtensionByName", PYUPB_POOL_METHOD(FindExtensionByName), METH_O,
      "Searches for extension descriptor by full name."},
-    {"FindEnumTypeByName", PyUpb_DescriptorPool_FindEnumTypeByName, METH_O,
+    {"FindEnumTypeByName", PYUPB_POOL_METHOD(FindEnumTypeByName), METH_O,
      "Searches for enum type descriptor by full name."},
-    {"FindOneofByName", PyUpb_DescriptorPool_FindOneofByName, METH_O,
+    {"FindOneofByName", PYUPB_POOL_METHOD(FindOneofByName), METH_O,
      "Searches for oneof descriptor by full name."},
-    {"FindServiceByName", PyUpb_DescriptorPool_FindServiceByName, METH_O,
+    {"FindServiceByName", PYUPB_POOL_METHOD(FindServiceByName), METH_O,
      "Searches for service descriptor by full name."},
-    {"FindMethodByName", PyUpb_DescriptorPool_FindMethodByName, METH_O,
+    {"FindMethodByName", PYUPB_POOL_METHOD(FindMethodByName), METH_O,
      "Searches for method descriptor by full name."},
-    {"FindFileContainingSymbol", PyUpb_DescriptorPool_FindFileContainingSymbol,
+    {"FindFileContainingSymbol", PYUPB_POOL_METHOD(FindFileContainingSymbol),
      METH_O, "Gets the FileDescriptor containing the specified symbol."},
-    {"FindExtensionByNumber", PyUpb_DescriptorPool_FindExtensionByNumber,
+    {"FindExtensionByNumber", PYUPB_POOL_METHOD(FindExtensionByNumber),
      METH_VARARGS, "Gets the extension descriptor for the given number."},
-    {"FindAllExtensions", PyUpb_DescriptorPool_FindAllExtensions, METH_O,
+    {"FindAllExtensions", PYUPB_POOL_METHOD(FindAllExtensions), METH_O,
      "Gets all known extensions of the given message descriptor."},
     {NULL}};
+#undef PYUPB_POOL_METHOD
 
 static PyObject* PyUpb_DescriptorPool_GetObjCacheCount(
     PyUpb_DescriptorPool* self, void* closure) {
@@ -846,5 +889,5 @@ bool PyUpb_InitDescriptorPool(PyObject* m) {
   state->default_pool = PyUpb_DescriptorPool_DoCreateWithCache(
       state->descriptor_pool_type, NULL, state->obj_cache);
   return state->default_pool &&
-         PyModule_AddObject(m, "default_pool", state->default_pool) == 0;
+         PyModule_AddObjectRef(m, "default_pool", state->default_pool) == 0;
 }

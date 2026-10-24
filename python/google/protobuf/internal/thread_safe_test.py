@@ -7,6 +7,10 @@
 
 """Unittest for thread safe"""
 
+from concurrent import futures
+import gc
+import os
+import subprocess
 import sys
 import threading
 import time
@@ -17,6 +21,8 @@ from google.protobuf import descriptor_database
 from google.protobuf import descriptor_pb2
 from google.protobuf import descriptor_pool
 from google.protobuf import message_factory
+from google.protobuf import unknown_fields
+from google.protobuf.message import DecodeError
 from google.protobuf.internal import api_implementation
 from google.protobuf.internal import test_proto2_pb2
 from google.protobuf.internal import testing_refleaks
@@ -28,11 +34,1122 @@ from google.protobuf import unittest_proto3_pb2
 ALSO_RUN_BENCHMARKS = False
 
 
+def _subprocess_env():
+  # Bazel's Python launcher sets up runfiles on sys.path, but `python -S`
+  # children do not inherit that in-process setup. Keep the test's exact
+  # generated protos and native extension visible to child interpreters.
+  env = os.environ.copy()
+  env['PYTHONPATH'] = os.pathsep.join(os.path.abspath(path) for path in sys.path)
+  return env
+
+
 @testing_refleaks.TestCase
 class ThreadSafeTest(unittest.TestCase):
 
   def setUp(self):
     self.success = 0
+
+  def _CheckSharedIterator(self, values):
+    expected = list(values)
+    for _ in range(10):
+      shared = iter(values)
+      start = threading.Barrier(4)
+
+      def consume():
+        observed = []
+        start.wait(timeout=30)
+        while True:
+          try:
+            observed.append(next(shared))
+          except StopIteration:
+            return observed
+
+      with futures.ThreadPoolExecutor(max_workers=4) as workers:
+        tasks = [workers.submit(consume) for _ in range(4)]
+        actual = [value for task in tasks for value in task.result(timeout=30)]
+      self.assertCountEqual(actual, expected)
+      for _ in range(4):
+        self.assertRaises(StopIteration, next, shared)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testMutableArenaRejectsOverlappingAccess(self):
+    message = unittest_pb2.TestAllTypes()
+    repeated = message.repeated_int32
+    child = message.optional_nested_message
+    entered = threading.Event()
+    release = threading.Event()
+
+    class BlockingInt:
+      def __index__(self):
+        entered.set()
+        if not release.wait(timeout=30):
+          raise TimeoutError('Writer was not released')
+        return 7
+
+    operations = {
+        'field read': lambda: message.optional_int32,
+        'field write': lambda: setattr(message, 'optional_int32', 8),
+        'serialize': message.SerializeToString,
+        'size': message.ByteSize,
+        'parse': lambda: message.ParseFromString(b''),
+        'merge bytes': lambda: message.MergeFromString(b''),
+        'clear': message.Clear,
+        'clear field': lambda: message.ClearField('optional_int32'),
+        'presence': lambda: message.HasField('optional_int32'),
+        'list fields': message.ListFields,
+        'initialized': message.IsInitialized,
+        'initialization errors': message.FindInitializationErrors,
+        'unknown fields': lambda: unknown_fields.UnknownFieldSet(message),
+        'discard unknown': message.DiscardUnknownFields,
+        'compare': lambda: message == unittest_pb2.TestAllTypes(),
+        'string': lambda: str(message),
+        'repeated read': lambda: len(repeated),
+        'repeated write': lambda: repeated.append(1),
+        'child read': lambda: child.bb,
+        'child write': lambda: setattr(child, 'bb', 1),
+    }
+    with futures.ThreadPoolExecutor(max_workers=1) as workers:
+      writer = workers.submit(setattr, message, 'optional_int32', BlockingInt())
+      try:
+        self.assertTrue(entered.wait(timeout=30))
+        for name, operation in operations.items():
+          with self.subTest(operation=name):
+            with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+              operation()
+      finally:
+        release.set()
+      writer.result(timeout=30)
+    # Failed admissions must leave the owner and all aliases usable.
+    self.assertEqual(message.optional_int32, 7)
+    repeated.append(2)
+    child.bb = 3
+    self.assertEqual(list(repeated), [2])
+    self.assertEqual(message.optional_nested_message.bb, 3)
+
+  def testStubMetadataDuringReification(self):
+    # Field and method lookup precede arena admission. Resolving the schema
+    # must not read the stub tag while a writer replaces it with a message def.
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      for _ in range(200):
+        parent = unittest_pb2.TestAllTypes()
+        child = parent.optional_nested_message
+        start = threading.Barrier(2)
+
+        def write():
+          start.wait(timeout=30)
+          try:
+            child.bb = 42
+          except RuntimeError as error:
+            self.assertIn('concurrent mutation', str(error))
+
+        def read():
+          start.wait(timeout=30)
+          for _ in range(20):
+            # Method lookup also goes through the native field-name resolver.
+            self.assertTrue(callable(child.SerializeToString))
+            try:
+              self.assertIn(child.bb, (0, 42))
+            except RuntimeError as error:
+              self.assertIn('concurrent mutation', str(error))
+
+        tasks = [workers.submit(write), workers.submit(read)]
+        for task in tasks:
+          task.result(timeout=30)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testRepeatedBulkCopyRejectsActiveSourceWriter(self):
+    source = unittest_pb2.TestAllTypes(repeated_int32=[1, 2, 3])
+    target = unittest_pb2.TestAllTypes(repeated_int32=[4, 5, 6])
+    source_values = source.repeated_int32
+    target_values = target.repeated_int32
+    entered = threading.Event()
+    release = threading.Event()
+
+    class BlockingInt:
+      def __index__(self):
+        entered.set()
+        if not release.wait(timeout=30):
+          raise TimeoutError('Writer was not released')
+        return 7
+
+    with futures.ThreadPoolExecutor(max_workers=1) as workers:
+      writer = workers.submit(source_values.append, BlockingInt())
+      try:
+        self.assertTrue(entered.wait(timeout=30))
+        with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+          target_values.extend(source_values)
+        with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+          target_values[:] = source_values
+        self.assertEqual(list(target_values), [4, 5, 6])
+      finally:
+        release.set()
+      writer.result(timeout=30)
+    target_values.extend(source_values)
+    self.assertEqual(list(target_values), [4, 5, 6, 1, 2, 3, 7])
+    # Same-arena copies already own the write admission and must not reject
+    # themselves by attempting a nested read admission.
+    source_values.extend(source_values)
+    self.assertEqual(list(source_values), [1, 2, 3, 7] * 2)
+    source_values[:] = source_values
+    self.assertEqual(list(source_values), [1, 2, 3, 7] * 2)
+
+  def testRepeatedCopyFromMutableBuffer(self):
+    data = bytearray(4096)
+    start = threading.Barrier(2)
+
+    def mutate():
+      start.wait(timeout=30)
+      for i in range(1000):
+        data[:] = bytes([i % 2]) * len(data)
+
+    def copy():
+      message = unittest_pb2.TestAllTypes()
+      start.wait(timeout=30)
+      for _ in range(100):
+        message.repeated_int32[:] = data
+        self.assertEqual(len(message.repeated_int32), len(data))
+        self.assertTrue(set(message.repeated_int32).issubset({0, 1}))
+
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      tasks = [workers.submit(mutate), workers.submit(copy)]
+      for task in tasks:
+        task.result(timeout=30)
+
+  def testCompositeSelfExtension(self):
+    message = unittest_pb2.TestAllTypes()
+    values = message.repeated_nested_message
+    values.add(bb=1)
+    values.add(bb=2)
+    values.extend(values)
+    self.assertEqual([item.bb for item in values], [1, 2, 1, 2])
+    values[0].bb = 3
+    self.assertEqual([item.bb for item in values], [3, 2, 1, 2])
+    values.MergeFrom(values)
+    self.assertEqual([item.bb for item in values], [3, 2, 1, 2] * 2)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testCallbacksRejectConflictsWithoutDeadlock(self):
+    # A subprocess timeout also bounds executor teardown if a regression
+    # blocks a worker forever, rather than merely timing out its Future.
+    script = r"""
+from concurrent.futures import ThreadPoolExecutor
+import sys
+from google.protobuf import unittest_pb2
+assert not sys._is_gil_enabled()
+message = unittest_pb2.TestAllTypes(repeated_int32=[3, 1, 2])
+values = message.repeated_int32
+with ThreadPoolExecutor(max_workers=1) as workers:
+  def rejected(operation):
+    try:
+      workers.submit(operation).result(timeout=5)
+    except RuntimeError as error:
+      assert 'concurrent mutation' in str(error)
+    else:
+      raise AssertionError('Overlapping access succeeded')
+
+  class Index:
+    def __index__(self):
+      rejected(message.SerializeToString)
+      rejected(lambda: values.append(4))
+      raise ValueError('conversion failed')
+
+  try:
+    message.optional_int32 = Index()
+  except ValueError as error:
+    assert str(error) == 'conversion failed'
+  else:
+    raise AssertionError('Conversion did not fail')
+  message.optional_int32 = 7
+
+  def key(value):
+    rejected(lambda: values.append(4))
+    assert workers.submit(message.SerializeToString).result(timeout=5)
+    return value
+
+  values.sort(key=key)
+  assert list(values) == [1, 2, 3]
+  values.append(4)
+  assert message.optional_int32 == 7
+print('callback admissions completed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], capture_output=True,
+        text=True, timeout=30, check=False, env=_subprocess_env())
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('callback admissions completed', result.stdout)
+
+  def testCompositeAddInitializesWellKnownTypes(self):
+    from datetime import datetime, timezone
+    from google.protobuf import timestamp_pb2
+
+    proto = descriptor_pb2.FileDescriptorProto(
+        name='repeated_wkt.proto',
+        dependency=['google/protobuf/timestamp.proto'])
+    child = proto.message_type.add(name='Child')
+    child.field.add(name='time', number=1, label=1, type=11,
+                    type_name='.google.protobuf.Timestamp')
+    parent = proto.message_type.add(name='Parent')
+    parent.field.add(name='children', number=1, label=3, type=11,
+                     type_name='.Child')
+    pool = descriptor_pool.DescriptorPool()
+    pool.AddSerializedFile(timestamp_pb2.DESCRIPTOR.serialized_pb)
+    file = pool.AddSerializedFile(proto.SerializeToString())
+    message = message_factory.GetMessageClass(
+        file.message_types_by_name['Parent'])()
+    time = datetime(2026, 1, 2, 3, 4, 5, tzinfo=timezone.utc)
+    child = message.children.add(time=time)
+    self.assertIs(child, message.children[0])
+    self.assertEqual(child.time.ToDatetime(tzinfo=timezone.utc), time)
+    with self.assertRaises((TypeError, AttributeError)):
+      message.children.add(time=object())
+    self.assertEqual(len(message.children), 1)
+    self.assertEqual(message.children.add(time=time), child)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL initializer snapshots')
+  def testNestedInitializerOwnsDictionarySnapshot(self):
+    proto = descriptor_pb2.FileDescriptorProto(name='initializer_snapshot.proto')
+    child = proto.message_type.add(name='Child')
+    child.field.add(name='first', number=1, label=1, type=5)
+    child.field.add(name='second', number=2, label=1, type=5)
+    parent = proto.message_type.add(name='Parent')
+    parent.field.add(name='child', number=1, label=1, type=11,
+                     type_name='.Child')
+    file = descriptor_pool.DescriptorPool().AddSerializedFile(
+        proto.SerializeToString())
+    cls = message_factory.GetMessageClass(file.message_types_by_name['Parent'])
+    source = {}
+
+    class ClearingInt:
+      def __index__(self):
+        source.clear()
+        return 3
+
+    source.update(first=ClearingInt(), second=7)
+    message = cls(child=source)
+    self.assertEqual(message.child.first, 3)
+    self.assertEqual(message.child.second, 7)
+    self.assertEqual(source, {})
+
+  def testDescriptorComparisonDuringListReplacement(self):
+    fields = unittest_pb2.TestAllTypes.DESCRIPTOR.fields
+    other = list(fields)
+    start = threading.Barrier(2)
+
+    class Comparable:
+      def __eq__(self, other):
+        return False
+
+    def replace():
+      start.wait(timeout=30)
+      for _ in range(1000):
+        other[0] = Comparable()
+
+    def compare():
+      start.wait(timeout=30)
+      for _ in range(1000):
+        self.assertIsInstance(fields == other, bool)
+
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      tasks = [workers.submit(replace), workers.submit(compare)]
+      for task in tasks:
+        task.result(timeout=30)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testDescriptorCopyRejectsActiveTargetWriter(self):
+    target = descriptor_pb2.DescriptorProto()
+    target_range = target.extension_range.add()
+    field = unittest_pb2.TestAllTypes.DESCRIPTOR
+    entered = threading.Event()
+    release = threading.Event()
+
+    class BlockingInt:
+      def __index__(self):
+        entered.set()
+        if not release.wait(timeout=30):
+          raise TimeoutError('Writer was not released')
+        return 7
+
+    with futures.ThreadPoolExecutor(max_workers=1) as workers:
+      writer = workers.submit(setattr, target_range, 'start', BlockingInt())
+      try:
+        self.assertTrue(entered.wait(timeout=30))
+        with self.assertRaisesRegex(RuntimeError, 'concurrent mutation'):
+          field.CopyToProto(target)
+      finally:
+        release.set()
+      writer.result(timeout=30)
+    field.CopyToProto(target)
+    self.assertEqual(target.name, field.name)
+
+  def testNestedMessageInitializerDuringMutation(self):
+    message = unittest_pb2.TestAllTypes()
+    child = message.optional_nested_message
+    source = unittest_pb2.TestAllTypes.NestedMessage(bb=7)
+    start = threading.Barrier(2)
+
+    def run(operation):
+      start.wait(timeout=30)
+      for _ in range(2000):
+        try:
+          operation()
+        except RuntimeError as error:
+          self.assertIn('concurrent mutation', str(error))
+
+    with futures.ThreadPoolExecutor(max_workers=2) as workers:
+      tasks = [
+          workers.submit(run, lambda: setattr(child, 'bb', 9)),
+          workers.submit(run, lambda: message.__init__(optional_nested_message=source)),
+      ]
+      for task in tasks:
+        task.result(timeout=30)
+    self.assertIn(child.bb, (7, 9))
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native module lifetime')
+  def testNativeTypeRetainsModule(self):
+    script = r"""
+import gc
+import importlib.util
+import weakref
+from google._upb import _message
+spec = importlib.util.find_spec('google._upb._message')
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+assert module is not _message
+from google.protobuf import descriptor_pb2
+proto = descriptor_pb2.FileDescriptorProto(name='second_module.proto')
+proto.message_type.add(name='Example')
+pool = module.DescriptorPool()
+file = pool.AddSerializedFile(proto.SerializeToString())
+descriptor = file.message_types_by_name['Example']
+assert descriptor.GetOptions() is not None
+assert descriptor._GetFeatures() is not None
+del descriptor, file, pool
+native_type = module.DescriptorPool
+ref = weakref.ref(module)
+del module
+gc.collect()
+assert ref() is not None, 'Native type lost its defining module'
+pool = native_type()
+del native_type
+gc.collect()
+assert ref() is not None, 'Native pool lost its defining module'
+del pool
+for _ in range(3):
+    gc.collect()
+assert ref() is None, 'Unused module/type cycle was not collected'
+print('module ownership and collection passed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], env=_subprocess_env(),
+        capture_output=True, text=True, timeout=30)
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('module ownership and collection passed', result.stdout)
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native module ownership')
+  def testMessageRetainsStateWithoutImportRegistryEntry(self):
+    script = r"""
+import sys
+from google._upb import _message
+from google.protobuf import unittest_pb2, unknown_fields
+from google.protobuf.internal import test_proto2_pb2
+value = unittest_pb2.TestAllTypes(optional_int32=7)
+mapped = test_proto2_pb2.MessageWithRepeatedAndMap()
+expected = value.SerializeToString()
+module = sys.modules.pop('google._upb._message')
+try:
+    assert value.SerializeToString() == expected
+    value.ParseFromString(expected)
+    copy = unittest_pb2.TestAllTypes()
+    copy.ParseFromString(expected)
+    assert copy.optional_int32 == 7
+    copy.repeated_int32.extend([1, 2])
+    copy.repeated_int32.extend(copy.repeated_int32)
+    assert list(copy.repeated_int32) == [1, 2, 1, 2]
+    copy.optional_nested_message.bb = 9
+    assert copy.ListFields()
+    assert 'optional_int32' in list(copy.DESCRIPTOR.fields_by_name)
+    assert list(copy.DESCRIPTOR.fields_by_number)
+    assert list(copy.DESCRIPTOR.fields)
+    assert list(unknown_fields.UnknownFieldSet(copy)) == []
+    mapped.scalar_map['key'] = 'value'
+    assert list(mapped.scalar_map) == ['key']
+    _message.SetAllowOversizeProtos(False)
+finally:
+    sys.modules['google._upb._message'] = module
+print('message owner state passed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], env=_subprocess_env(),
+        capture_output=True, text=True, timeout=30)
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('message owner state passed', result.stdout)
+
+  def testSharedMapIterator(self):
+    message = test_proto2_pb2.MessageWithRepeatedAndMap()
+    message.scalar_map.update({str(i): str(i) for i in range(1000)})
+    self._CheckSharedIterator(message.scalar_map)
+
+  def testSharedDescriptorIterators(self):
+    proto = descriptor_pb2.FileDescriptorProto(name='shared_iterator.proto')
+    message = proto.message_type.add(name='Message')
+    for i in range(1000):
+      message.field.add(name='field_%d' % i, number=i + 1,
+                        type=5, label=1)
+    descriptor = descriptor_pool.DescriptorPool().AddSerializedFile(
+        proto.SerializeToString()).message_types_by_name['Message']
+    self._CheckSharedIterator(descriptor.fields_by_name)
+    self._CheckSharedIterator(descriptor.fields_by_number)
+
+  def testSharedExtensionIterator(self):
+    proto = descriptor_pb2.FileDescriptorProto(name='shared_extensions.proto')
+    message = proto.message_type.add(name='Message')
+    message.extension_range.add(start=1, end=1001)
+    for i in range(1000):
+      proto.extension.add(name='extension_%d' % i, number=i + 1,
+                          type=5, label=1, extendee='.Message')
+    file = descriptor_pool.DescriptorPool().AddSerializedFile(
+        proto.SerializeToString())
+    instance = message_factory.GetMessageClass(
+        file.message_types_by_name['Message'])()
+    for extension in file.extensions_by_name.values():
+      instance.Extensions[extension] = 1
+    self._CheckSharedIterator(instance.Extensions)
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'Native module GC')
+  def testModuleTraversesOwnedReferences(self):
+    from google._upb import _message
+
+    maps = test_proto2_pb2.MessageWithRepeatedAndMap()
+    unknown = _message.UnknownFieldSet(
+        unittest_pb2.TestAllTypes.FromString(b'\x80\x3e\x01'))
+    owned = gc.get_referents(_message)
+    for reference in (
+        type(maps.map_items), type(maps.scalar_map), type(unknown[0]),
+        unittest_pb2.TestAllTypes._ListFieldsItemKey, DecodeError,
+        _message.Arena, _message.MapIterator, _message.MessageMeta,
+        _message.DescriptorPool, _message.default_pool,
+    ):
+      self.assertTrue(any(item is reference for item in owned), reference)
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'Native module state')
+  def testModuleStateRetainsTypesWithoutPublicAttributes(self):
+    # Isolate destructive attribute removal; do not leave a test process with
+    # invalid pointers if the regression reappears. Check weakrefs before using
+    # native APIs, so the old implementation fails without dereferencing them.
+    script = '''
+import gc
+import sys
+import weakref
+from google._upb import _message
+from google.protobuf.internal import api_implementation, test_proto2_pb2
+assert api_implementation.Type() == "upb"
+if sys.argv[1] == "nogil":
+  assert not sys._is_gil_enabled()
+refs = {name: weakref.ref(value) for name, value in vars(_message).items()
+        if isinstance(value, type)}
+for name in refs:
+  delattr(_message, name)
+gc.collect()
+lost = [name for name, ref in refs.items() if ref() is None]
+assert not lost, f"Native state lost its retained classes: {lost}"
+for name, ref in refs.items():
+  if name != "MapIterator":
+    setattr(_message, name, ref())
+# Python code may require its public exports, but the native iterator factory
+# must use its owned state pointer, independent of the removed attribute.
+msg = test_proto2_pb2.MessageWithRepeatedAndMap()
+msg.scalar_map["key"] = "value"
+assert list(msg.scalar_map) == ["key"]
+assert type(iter(msg.scalar_map)) is refs["MapIterator"]()
+setattr(_message, "MapIterator", refs["MapIterator"]())
+'''
+    nogil = hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled()
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script, 'nogil' if nogil else 'gil'],
+        capture_output=True, text=True, timeout=60, check=False,
+        env=_subprocess_env(),
+    )
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+  def testNativeAtexitFinalizer(self):
+    script = '''
+import atexit
+import gc
+import os
+import sys
+from google.protobuf import unittest_pb2
+from google.protobuf.internal import api_implementation
+assert api_implementation.Type() == sys.argv[1]
+if sys.argv[2] == "nogil":
+  assert not sys._is_gil_enabled()
+def unraisable(error, exit_process=os._exit):
+  exit_process(91)
+sys.unraisablehook = unraisable
+class LateFinalizer:
+  def __init__(self):
+    self.cycle = self
+  def __del__(self, cls=unittest_pb2.TestAllTypes, write=os.write):
+    value = cls.FromString(b"\\x08\\x01")
+    assert value.optional_int32 == 1
+    assert value.SerializeToString() == b"\\x08\\x01"
+    write(1, b"native shutdown finalizer completed\\n")
+late = LateFinalizer()
+def collect_at_exit(namespace=globals(), collect=gc.collect):
+  namespace.pop("late")
+  collect()
+atexit.register(collect_at_exit)
+'''
+    nogil = hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled()
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script, api_implementation.Type(),
+         'nogil' if nogil else 'gil'],
+        capture_output=True, text=True, timeout=60, check=False,
+        env=_subprocess_env(),
+    )
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertEqual(result.stdout.count('native shutdown finalizer completed'), 1)
+
+  def testConcurrentColdImports(self):
+    # A fresh process is essential: this module has already imported the
+    # generated types. Propagate every worker exception to the parent test.
+    script = '''
+from concurrent import futures
+import importlib
+import sys
+import threading
+barrier = threading.Barrier(8)
+names = ("any", "duration", "empty", "field_mask", "struct", "timestamp",
+         "type", "wrappers")
+def load(index):
+  barrier.wait(timeout=30)
+  # Distinct module locks must not accidentally serialize registration into
+  # the shared default descriptor pool.
+  importlib.import_module("google.protobuf." + names[index] + "_pb2")
+  modules = [importlib.import_module(name) for name in (
+      "google.protobuf.descriptor_pb2", "google.protobuf.json_format",
+      "google.protobuf.internal.test_proto2_pb2")]
+  return modules[0].FileDescriptorProto(name="cold.proto").SerializeToString()
+with futures.ThreadPoolExecutor(max_workers=8) as executor:
+  results = list(executor.map(load, range(8)))
+assert all(result == results[0] for result in results)
+from google.protobuf.internal import api_implementation
+assert api_implementation.Type() == sys.argv[1]
+if sys.argv[2] == "nogil":
+  assert not sys._is_gil_enabled()
+'''
+    nogil = hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled()
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script, api_implementation.Type(),
+         'nogil' if nogil else 'gil'],
+        capture_output=True, text=True, timeout=90, check=False,
+        env=_subprocess_env(),
+    )
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+  def testConcurrentDescriptorPoolLifetimes(self):
+    barrier = threading.Barrier(8)
+
+    def ExercisePools(worker):
+      barrier.wait(timeout=30)
+      for iteration in range(32):
+        pool = descriptor_pool.DescriptorPool()
+        proto = descriptor_pb2.FileDescriptorProto(
+            name=f'lifetime_{worker}_{iteration}.proto'
+        )
+        proto.message_type.add(name='LifetimeMessage').field.add(
+            name='value', number=1, type=5, label=1
+        )
+        pool.Add(proto)
+        desc = pool.FindMessageTypeByName('LifetimeMessage')
+        cls = message_factory.GetMessageClass(desc)
+        value = cls(value=iteration)
+        # Keep descendants alive while releasing their originating references.
+        field = desc.fields_by_name['value']
+        del pool, desc, cls
+        if iteration % 8 == 0:
+          gc.collect()
+        self.assertEqual(field.containing_type.name, 'LifetimeMessage')
+        self.assertEqual(
+            type(value).FromString(value.SerializeToString()), value
+        )
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(ExercisePools, range(8))))
+
+  def testConcurrentDescriptorPoolRegistrationAndLookup(self):
+    pool = descriptor_pool.DescriptorPool()
+    seed = descriptor_pb2.FileDescriptorProto(name='seed.proto')
+    seed.message_type.add(name='Seed')
+    pool.Add(seed)
+    barrier = threading.Barrier(8)
+
+    def AccessPool(worker):
+      barrier.wait(timeout=30)
+      for iteration in range(64):
+        if worker < 4:
+          name = f'Registered_{worker}_{iteration}'
+          proto = descriptor_pb2.FileDescriptorProto(name=name + '.proto')
+          proto.message_type.add(name=name)
+          pool.Add(proto)
+          self.assertEqual(pool.FindMessageTypeByName(name).name, name)
+        else:
+          self.assertEqual(pool.FindFileByName('seed.proto').name, 'seed.proto')
+          self.assertEqual(pool.FindMessageTypeByName('Seed').name, 'Seed')
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(AccessPool, range(8))))
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'upb lookup semantics')
+  def testDescriptorTreeLookupsDuringRegistration(self):
+    pool = descriptor_pool.DescriptorPool()
+    proto = descriptor_pb2.FileDescriptorProto(
+        name='tree.proto', package='lookup', syntax='proto2'
+    )
+    outer = proto.message_type.add(name='Outer')
+    outer.nested_type.add(name='Inner').nested_type.add(name='Deep')
+    outer.enum_type.add(name='Kind').value.add(name='NESTED_VALUE', number=0)
+    outer.extension_range.add(start=100, end=200)
+    outer.extension.add(
+        name='extra', number=100, type=5, label=1, extendee='.lookup.Outer'
+    )
+    proto.service.add(name='Example')
+    pool.Add(proto)
+    desc = pool.FindMessageTypeByName('lookup.Outer')
+    cls = message_factory.GetMessageClass(desc)
+    file = desc.file
+    barrier = threading.Barrier(8)
+
+    def AccessTree(worker):
+      barrier.wait(timeout=30)
+      for iteration in range(128):
+        if worker < 4:
+          added = descriptor_pb2.FileDescriptorProto(
+              name=f'tree_add_{worker}_{iteration}.proto'
+          )
+          added.message_type.add(name=f'TreeAdded_{worker}_{iteration}')
+          pool.Add(added)
+        else:
+          inner = desc.nested_types_by_name['Inner']
+          deep = desc.nested_types_by_name['Inner.Deep']
+          self.assertIs(deep.containing_type, inner)
+          self.assertIs(file.message_types_by_name['Outer.Inner'], inner)
+          self.assertIs(file.enum_types_by_name['Outer.Kind'],
+                        desc.enum_types_by_name['Kind'])
+          self.assertIs(file.extensions_by_name['Outer.extra'],
+                        desc.extensions_by_name['extra'])
+          self.assertEqual(file.services_by_name['Example'].name, 'Example')
+          self.assertEqual(cls.NESTED_VALUE, 0)
+          self.assertIsNone(getattr(cls, 'missing_attribute', None))
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(AccessTree, range(8))))
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'upb lookup semantics')
+  def testLongDescriptorLookupNamesAndKinds(self):
+    for package in ('', 'long_package_' * 24):
+      with self.subTest(package=package):
+        pool = descriptor_pool.DescriptorPool()
+        proto = descriptor_pb2.FileDescriptorProto(name='long.proto',
+                                                   package=package)
+        outer = proto.message_type.add(name='Outer')
+        outer.nested_type.add(name='Child')
+        outer.enum_type.add(name='Kind').value.add(name='VALUE', number=0)
+        pool.Add(proto)
+        name = (package + '.' if package else '') + 'Outer'
+        desc = pool.FindMessageTypeByName(name)
+        child = desc.nested_types_by_name['Child']
+        self.assertIs(desc.file.message_types_by_name['Outer.Child'], child)
+        self.assertIs(child.containing_type, desc)
+        cls = message_factory.GetMessageClass(desc)
+        self.assertIs(cls.Child.DESCRIPTOR, child)
+        self.assertEqual(cls.Kind.Name(0), 'VALUE')
+        for mapping, key in ((desc.nested_types_by_name, 'Kind'),
+                             (desc.enum_types_by_name, 'Child'),
+                             (desc.file.message_types_by_name, 'Outer.Kind')):
+          with self.assertRaises(KeyError):
+            mapping[key]
+
+  def testParsingExtensionsDuringRegistration(self):
+    pool = descriptor_pool.DescriptorPool()
+    proto = descriptor_pb2.FileDescriptorProto(name='ext_base.proto',
+                                               syntax='proto2')
+    proto.message_type.add(name='ExtTarget').extension_range.add(
+        start=100, end=1000000
+    )
+    pool.Add(proto)
+    seed = descriptor_pb2.FileDescriptorProto(name='seed_ext.proto',
+                                              dependency=['ext_base.proto'])
+    seed.extension.add(name='seed', number=100, type=5, label=1,
+                       extendee='.ExtTarget')
+    pool.Add(seed)
+    extension = pool.FindExtensionByName('seed')
+    cls = message_factory.GetMessageClass(
+        pool.FindMessageTypeByName('ExtTarget')
+    )
+    message = cls()
+    message.Extensions[extension] = 123
+    payload = message.SerializeToString()
+    barrier = threading.Barrier(8)
+
+    def UseRegistry(worker):
+      barrier.wait(timeout=30)
+      if worker < 4:
+        for iteration in range(128):
+          name = f'extension_{worker}_{iteration}'
+          added = descriptor_pb2.FileDescriptorProto(
+              name=name + '.proto', dependency=['ext_base.proto']
+          )
+          added.extension.add(name=name, number=101 + worker * 1000 + iteration,
+                              type=5, label=1, extendee='.ExtTarget')
+          pool.Add(added)
+      else:
+        local = cls()
+        for iteration in range(2000):
+          local.ParseFromString(payload)
+          self.assertEqual(local.Extensions[extension], 123)
+          if iteration % 100 == 0 and api_implementation.Type() == 'upb':
+            self.assertIs(local.Extensions._FindExtensionByName('seed'), extension)
+            self.assertIs(local.Extensions._FindExtensionByNumber(100), extension)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      self.assertTrue(all(executor.map(UseRegistry, range(8))))
+
+  @unittest.skipUnless(api_implementation.Type() == 'upb', 'upb rollback semantics')
+  def testFailedExtensionRegistrationDuringParsing(self):
+    pool = descriptor_pool.DescriptorPool()
+    base = descriptor_pb2.FileDescriptorProto(name='rollback_base.proto')
+    base.message_type.add(name='RollbackTarget').extension_range.add(
+        start=100, end=1000
+    )
+    base.extension.add(name='known', number=100, type=5, label=1,
+                       extendee='.RollbackTarget')
+    pool.Add(base)
+    known = pool.FindExtensionByName('known')
+    cls = message_factory.GetMessageClass(
+        pool.FindMessageTypeByName('RollbackTarget')
+    )
+    seed = cls()
+    seed.Extensions[known] = 123
+    # Field 101 must remain unknown: its declaration always belongs to a
+    # rejected file whose storage can be reclaimed immediately after failure.
+    payload = seed.SerializeToString() + b'\xa8\x06\x01'
+    barrier = threading.Barrier(4)
+
+    def AccessRegistry(worker):
+      barrier.wait(timeout=30)
+      if worker == 0:
+        for _ in range(128):
+          failed = descriptor_pb2.FileDescriptorProto(
+              name='rejected.proto', dependency=['rollback_base.proto']
+          )
+          failed.extension.add(name='rejected', number=101, type=5, label=1,
+                               extendee='.RollbackTarget')
+          failed.extension.add(name='duplicate', number=100, type=5, label=1,
+                               extendee='.RollbackTarget')
+          with self.assertRaisesRegex(TypeError, 'duplicate extension'):
+            pool.Add(failed)
+      else:
+        for _ in range(2000):
+          local = cls.FromString(payload)
+          self.assertEqual(local.Extensions[known], 123)
+          self.assertEqual(len(local.ListFields()), 1)
+          self.assertEqual(local.SerializeToString(), payload)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=4) as executor:
+      self.assertTrue(all(executor.map(AccessRegistry, range(4))))
+    with self.assertRaises(KeyError):
+      pool.FindExtensionByName('rejected')
+
+  def testDefaultPoolOptionsDuringRegistration(self):
+    pool = descriptor_pool.Default()
+    prefix = f'options_registration_{time.time_ns()}'
+    proto = descriptor_pb2.FileDescriptorProto(name=prefix + '.proto',
+                                               package=prefix)
+    for i in range(256):
+      proto.message_type.add(name=f'Options{i}').options.deprecated = True
+    pool.Add(proto)
+    descriptors = [pool.FindMessageTypeByName(f'{prefix}.Options{i}')
+                   for i in range(256)]
+    barrier = threading.Barrier(6)
+
+    def AccessOptions(worker):
+      barrier.wait(timeout=30)
+      if worker < 2:
+        for iteration in range(128):
+          name = f'{prefix}_{worker}_{iteration}'
+          added = descriptor_pb2.FileDescriptorProto(name=name + '.proto')
+          added.message_type.add(name=name)
+          pool.Add(added)
+      else:
+        for desc in descriptors[worker - 2::4]:
+          self.assertTrue(desc.GetOptions().deprecated)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=6) as executor:
+      self.assertTrue(all(executor.map(AccessOptions, range(6))))
+
+  def testParsingBytearrayDuringResize(self):
+    data = b'x' * 65536
+    payload = unittest_pb2.TestAllTypes(optional_bytes=data).SerializeToString()
+    shared = bytearray(payload)
+    barrier = threading.Barrier(4)
+
+    def UseBuffer(worker):
+      barrier.wait(timeout=30)
+      if worker == 0:
+        for _ in range(1000):
+          shared.clear()
+          shared.extend(payload)
+      else:
+        for _ in range(700):
+          local = unittest_pb2.TestAllTypes.FromString(shared)
+          self.assertIn(local.optional_bytes, (b'', data))
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=4) as executor:
+      self.assertTrue(all(executor.map(UseBuffer, range(4))))
+
+  def testParsingMemoryviewDuringExporterMutation(self):
+    values = (b'x' * 65536, b'y' * 65536)
+    payloads = [unittest_pb2.TestAllTypes(optional_bytes=value).SerializeToString()
+                for value in values]
+    shared = bytearray(payloads[0])
+    view = memoryview(shared).toreadonly()
+    barrier = threading.Barrier(4)
+
+    def UseView(worker):
+      barrier.wait(timeout=30)
+      if worker == 0:
+        for iteration in range(1000):
+          shared[:] = payloads[iteration % 2]
+      else:
+        for _ in range(700):
+          parsed = unittest_pb2.TestAllTypes.FromString(view)
+          self.assertIn(parsed.optional_bytes, values)
+      return True
+
+    with futures.ThreadPoolExecutor(max_workers=4) as executor:
+      self.assertTrue(all(executor.map(UseView, range(4))))
+    view.release()
+    shared.clear()  # No parse export may survive the call.
+
+  def testParsingMemoryviewShapesAndFailureCleanup(self):
+    payload = unittest_pb2.TestAllTypes(optional_bytes=b'buffer').SerializeToString()
+    expanded = bytearray(len(payload) * 2)
+    expanded[::2] = payload
+    views = (memoryview(payload), memoryview(expanded)[::2],
+             memoryview(payload[::-1])[::-1])
+    for view in views:
+      with self.subTest(strides=view.strides):
+        parsed = unittest_pb2.TestAllTypes.FromString(view)
+        self.assertEqual(parsed.optional_bytes, b'buffer')
+        view.release()
+    expanded.clear()
+    bad = bytearray(b'\x80')
+    view = memoryview(bad)
+    with self.assertRaises(DecodeError):
+      unittest_pb2.TestAllTypes.FromString(view)
+    view.release()
+    bad.clear()
+    with self.assertRaises(ValueError):
+      unittest_pb2.TestAllTypes.FromString(view)
+
+  def testDescriptorDatabaseCallbackAllowsOtherThread(self):
+    entered = threading.Event()
+    finished = threading.Event()
+
+    class Database(descriptor_database.DescriptorDatabase):
+
+      def FindFileByName(self, name):
+        if name == 'first.proto':
+          entered.set()
+          if not finished.wait(timeout=30):
+            raise RuntimeError('Pool critical section blocked database callback')
+        return descriptor_pb2.FileDescriptorProto(name=name)
+
+    pool = descriptor_pool.DescriptorPool(Database())
+
+    def FindSecond():
+      if not entered.wait(timeout=30):
+        raise RuntimeError('Database callback did not start')
+      try:
+        return pool.FindFileByName('second.proto').name
+      finally:
+        finished.set()
+
+    with futures.ThreadPoolExecutor(max_workers=2) as executor:
+      second = executor.submit(FindSecond)
+      first = executor.submit(pool.FindFileByName, 'first.proto')
+      self.assertEqual(first.result(timeout=60).name, 'first.proto')
+      self.assertEqual(second.result(timeout=60), 'second.proto')
+
+
+  @unittest.skipUnless(
+      api_implementation.Type() == 'upb' and
+      hasattr(sys, '_is_gil_enabled') and not sys._is_gil_enabled(),
+      'Experimental native no-GIL admission')
+  def testOpposingCopiesAndPoolCallbacksComplete(self):
+    # A subprocess bounds interpreter/executor cleanup as well as each future.
+    script = r"""
+from concurrent.futures import ThreadPoolExecutor
+import gc
+import threading
+from google.protobuf import descriptor_database, descriptor_pb2, descriptor_pool
+from google.protobuf import unittest_pb2
+
+# Two threads enter different pool critical sections, then call into the
+# opposite pool. A non-suspendable pool lock would form an AB/BA cycle.
+barrier = threading.Barrier(2)
+pools = []
+class Database(descriptor_database.DescriptorDatabase):
+  def __init__(self, index):
+    self.index = index
+  def FindFileByName(self, name):
+    if name.startswith('outer'):
+      barrier.wait(timeout=10)
+      other = pools[1 - self.index]
+      assert other.FindFileByName('leaf.proto').name == 'leaf.proto'
+    return descriptor_pb2.FileDescriptorProto(name=name)
+
+pools.extend(descriptor_pool.DescriptorPool(Database(i)) for i in range(2))
+with ThreadPoolExecutor(max_workers=2) as workers:
+  tasks = [workers.submit(pool.FindFileByName, f'outer{i}.proto')
+           for i, pool in enumerate(pools)]
+  assert [t.result(timeout=20).name for t in tasks] == [
+      'outer0.proto', 'outer1.proto']
+
+# CopyFrom acquires destination-write and source-read admission. Opposing
+# copies must fail fast or complete, never wait for each other's ownership.
+messages = [unittest_pb2.TestAllTypes(optional_int32=i) for i in range(2)]
+barrier = threading.Barrier(2)
+def copy(index):
+  barrier.wait(timeout=10)
+  completed = rejected = 0
+  for _ in range(2000):
+    try:
+      messages[index].CopyFrom(messages[1 - index])
+      completed += 1
+    except RuntimeError as error:
+      assert 'concurrent mutation' in str(error)
+      rejected += 1
+  return completed, rejected
+with ThreadPoolExecutor(max_workers=2) as workers:
+  results = [workers.submit(copy, i) for i in range(2)]
+  counts = [t.result(timeout=20) for t in results]
+assert sum(sum(c) for c in counts) == 4000
+for message in messages:
+  message.Clear()
+  message.optional_int32 = 7
+  assert message.SerializeToString()
+del pools, messages
+gc.collect()
+print('opposing acquisitions completed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], capture_output=True,
+        text=True, timeout=60, check=False, env=_subprocess_env())
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('opposing acquisitions completed', result.stdout)
+
+  def testDescriptorDatabaseFinalizerReentersPool(self):
+    script = r"""
+from concurrent.futures import ThreadPoolExecutor
+import gc
+from google.protobuf import descriptor_database, descriptor_pb2, descriptor_pool
+pool = descriptor_pool.DescriptorPool()
+pool.Add(descriptor_pb2.FileDescriptorProto(name='finalizer_target.proto'))
+events = []
+errors = []
+with ThreadPoolExecutor(max_workers=1) as workers:
+  class Database(descriptor_database.DescriptorDatabase):
+    def __del__(self):
+      try:
+        result = workers.submit(
+            pool.FindFileByName, 'finalizer_target.proto').result(timeout=10)
+        events.append(result.name)
+      except BaseException as error:
+        errors.append(repr(error))
+  for _ in range(50):
+    owner = descriptor_pool.DescriptorPool(Database())
+    del owner
+    gc.collect()
+  assert not errors, errors
+  assert events == ['finalizer_target.proto'] * 50, events
+print('database finalizers completed')
+"""
+    result = subprocess.run(
+        [sys.executable, '-S', '-c', script], capture_output=True,
+        text=True, timeout=90, check=False, env=_subprocess_env())
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+    self.assertIn('database finalizers completed', result.stdout)
+
+  def testConcurrentOptionsCacheIdentity(self):
+    pool = descriptor_pool.DescriptorPool()
+    proto = descriptor_pb2.FileDescriptorProto(name='option_identity.proto')
+    proto.message_type.add(name='OptionsMessage').options.deprecated = True
+    pool.Add(proto)
+    desc = pool.FindMessageTypeByName('OptionsMessage')
+    barrier = threading.Barrier(8)
+
+    def GetOptions(unused):
+      barrier.wait(timeout=30)
+      options = desc.GetOptions()
+      for _ in range(100):
+        self.assertIs(options, desc.GetOptions())
+        self.assertTrue(options.deprecated)
+      return options
+
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      options = list(executor.map(GetOptions, range(8)))
+    for value in options:
+      self.assertIs(value, options[0])
+
+  def testConcurrentCreationReturnsOneMessageClass(self):
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='class_identity.proto')
+    for i in range(32):
+      file_proto.message_type.add(name=f'IdentityMessage{i}')
+    pool.Add(file_proto)
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      for i in range(32):
+        desc = pool.FindMessageTypeByName(f'IdentityMessage{i}')
+        barrier = threading.Barrier(8)
+
+        def CreateClass():
+          barrier.wait(timeout=30)
+          return message_factory.GetMessageClass(desc)
+
+        pending = [executor.submit(CreateClass) for _ in range(8)]
+        classes = [result.result(timeout=30) for result in pending]
+        for cls in classes:
+          self.assertIs(cls, classes[0])
+        self.assertIs(desc._concrete_class, classes[0])
 
   def testConcurrentMessageObjectIdentity(self):
     msg = unittest_pb2.TestAllTypes()
@@ -49,6 +1166,40 @@ class ThreadSafeTest(unittest.TestCase):
     t2.join()
 
     self.assertIs(sub_objs[0], sub_objs[1])
+
+  def testConcurrentExtensionWrapperIdentityAndRetirement(self):
+    for _ in range(16):
+      shared = unittest_pb2.TestAllExtensions()
+      barrier = threading.Barrier(8)
+
+      def ReadExtensions(worker):
+        barrier.wait(timeout=30)
+        wrappers = [shared.Extensions for _ in range(32)]
+        self.assertTrue(all(wrapper is wrappers[0] for wrapper in wrappers))
+        return wrappers[0]
+
+      with futures.ThreadPoolExecutor(max_workers=8) as executor:
+        wrappers = list(executor.map(ReadExtensions, range(8)))
+      self.assertTrue(all(wrapper is wrappers[0] for wrapper in wrappers))
+      del wrappers
+
+      # Repeated destruction/recreation must leave neither stale references
+      # nor a losing candidate that can evict the published wrapper.
+      def RetireExtensions(worker):
+        for _ in range(128):
+          self.assertEqual(len(shared.Extensions), 0)
+        return True
+
+      with futures.ThreadPoolExecutor(max_workers=8) as executor:
+        self.assertTrue(all(executor.map(RetireExtensions, range(8))))
+
+  def testExtensionWrapperOwnsMessage(self):
+    shared = unittest_pb2.TestAllExtensions()
+    wrappers = shared.Extensions
+    del shared
+    gc.collect()
+    wrappers[unittest_pb2.optional_int32_extension] = 42
+    self.assertEqual(wrappers[unittest_pb2.optional_int32_extension], 42)
 
   def testConcurrentDescriptorObjectIdentity(self):
     desc_objs = [None, None]
@@ -671,10 +1822,6 @@ class FreeThreadingTest(unittest.TestCase):
     for _ in range(500):
       RunRace()
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      'Upb has not been fixed to handle this case.',
-  )
   def testConcurrentRepeatedCompositeSubscript(self):
     msg = test_proto2_pb2.ContainerForRepeatedComposite()
     msg.submessage.items.add(value='foo')
@@ -921,6 +2068,164 @@ class FreeThreadingTest(unittest.TestCase):
 
     self.assertEqual(errors, [])
 
+  def testMessageSurfaceRejectsOverlappingMutation(self):
+    if api_implementation.Type() != 'upb' or getattr(
+        sys, '_is_gil_enabled', lambda: True
+    )():
+      self.skipTest('requires the experimental GIL-off upb backend')
+
+    def Race(writer, reader):
+      barrier = threading.Barrier(2)
+
+      def Run(operation):
+        rejected = 0
+        barrier.wait(timeout=30)
+        for number in range(1000):
+          try:
+            operation(number)
+          except RuntimeError as exc:
+            self.assertIn('concurrent mutation', str(exc))
+            rejected += 1
+        return rejected
+
+      with futures.ThreadPoolExecutor(max_workers=2) as executor:
+        jobs = [executor.submit(Run, writer), executor.submit(Run, reader)]
+        return [job.result() for job in jobs]
+
+    msg = unittest_pb2.TestAllTypes(optional_int32=1)
+    other = unittest_pb2.TestAllTypes(optional_int32=1)
+    self.assertEqual(len(Race(
+        lambda number: (setattr(msg, 'optional_int32', number), msg.Clear()),
+        lambda _: (str(msg), msg == other),
+    )), 2)
+
+    msg = unittest_pb2.TestAllTypes()
+    child = msg.optional_nested_message
+    self.assertEqual(len(Race(
+        lambda _: child.SetInParent(),
+        lambda _: msg.SerializePartialToString(),
+    )), 2)
+
+    msg = unittest_pb2.TestAllTypes()
+    self.assertEqual(len(Race(
+        lambda _: (msg.MergeFromString(b'\xa8\x01\x7f'),
+                   msg.DiscardUnknownFields()),
+        lambda _: msg.SerializePartialToString(),
+    )), 2)
+
+    msg = unittest_pb2.TestAllExtensions()
+    extension = unittest_pb2.optional_int32_extension
+    self.assertEqual(len(Race(
+        lambda number: msg.Extensions.__setitem__(extension, number),
+        lambda _: msg.HasExtension(extension),
+    )), 2)
+
+    self.assertEqual(len(Race(
+        lambda number: (msg.Extensions.__setitem__(extension, number),
+                        msg.ClearExtension(extension)),
+        lambda _: msg.SerializePartialToString(),
+    )), 2)
+
+    stable = unittest_pb2.TestAllTypes()
+    stable.repeated_int32.append(1)
+    changing = unittest_pb2.TestAllTypes()
+    changing.repeated_int32.append(1)
+    self.assertEqual(len(Race(
+        lambda number: changing.repeated_int32.__setitem__(0, number),
+        lambda _: stable.repeated_int32 == changing.repeated_int32,
+    )), 2)
+
+    sortable = unittest_pb2.TestAllTypes()
+    sortable.repeated_int32.extend([3, 1, 2])
+    self.assertEqual(len(Race(
+        lambda number: sortable.repeated_int32.__setitem__(0, number),
+        lambda _: sortable.repeated_int32.sort(),
+    )), 2)
+
+    reinit = unittest_pb2.TestAllTypes(optional_int32=1)
+    self.assertEqual(len(Race(
+        lambda number: reinit.__init__(optional_int32=number),
+        lambda _: reinit.SerializePartialToString(),
+    )), 2)
+
+    nested = unittest_pb2.TestAllTypes(optional_nested_message={'bb': 1})
+    self.assertEqual(len(Race(
+        lambda number: nested.__init__(optional_nested_message={'bb': number}),
+        lambda _: nested.SerializePartialToString(),
+    )), 2)
+
+    mapped = test_proto2_pb2.MessageWithRepeatedAndMap(
+        map_items={'key': {'value': 'one'}})
+    self.assertEqual(len(Race(
+        lambda number: mapped.__init__(
+            map_items={'key': {'value': str(number)}}),
+        lambda _: mapped.SerializePartialToString(),
+    )), 2)
+
+    scalar_repeated = unittest_pb2.TestAllTypes()
+    self.assertEqual(len(Race(
+        lambda number: scalar_repeated.__init__(repeated_int32=[number]),
+        lambda _: scalar_repeated.SerializePartialToString(),
+    )), 2)
+
+    composite_repeated = test_proto2_pb2.MessageWithRepeatedComposite()
+    self.assertEqual(len(Race(
+        lambda number: composite_repeated.__init__(
+            items=[{'value': str(number)}]),
+        lambda _: composite_repeated.SerializePartialToString(),
+    )), 2)
+
+    unknown = unittest_pb2.TestAllTypes.FromString(b'\x80\x3e\x01')
+    self.assertEqual(len(Race(
+        lambda _: (unknown.DiscardUnknownFields(),
+                   unknown.MergeFromString(b'\x80\x3e\x01')),
+        lambda _: list(unknown_fields.UnknownFieldSet(unknown)),
+    )), 2)
+
+  def testIsolatedSubinterpreterNativeLifecycle(self):
+    if api_implementation.Type() != 'upb' or getattr(
+        sys, '_is_gil_enabled', lambda: True
+    )():
+      self.skipTest('requires the experimental GIL-off upb backend')
+    try:
+      import _interpreters
+    except ImportError:
+      self.skipTest('isolated subinterpreters are unavailable')
+
+    for iteration in range(3):
+      child = _interpreters.create('isolated')
+      try:
+        code = f'''
+import sys
+sys.path[:] = {sys.path!r}
+from google.protobuf import descriptor_pb2, descriptor_pool, message_factory
+from google.protobuf.internal import api_implementation
+assert api_implementation.Type() == 'upb'
+assert not sys._is_gil_enabled()
+file = descriptor_pb2.FileDescriptorProto(name='isolated_{iteration}.proto')
+field = file.message_type.add(name='Isolated').field.add()
+field.name, field.number, field.type, field.label = 'value', 1, 5, 1
+pool = descriptor_pool.DescriptorPool()
+pool.Add(file)
+cls = message_factory.GetMessageClass(
+    pool.FindMessageTypeByName('Isolated'))
+value = cls(value={iteration})
+assert cls.FromString(value.SerializeToString()) == value
+'''
+        self.assertIsNone(_interpreters.run_string(child, code))
+      finally:
+        _interpreters.destroy(child)
+
 
 if __name__ == '__main__':
+  print(
+      'protobuf thread tests: backend=%s GIL=%s extension=%s'
+      % (
+          api_implementation.Type(),
+          getattr(sys, '_is_gil_enabled', lambda: True)(),
+          getattr(api_implementation._c_module, '__file__', None),
+      ),
+      file=sys.stderr,
+      flush=True,
+  )
   unittest.main()

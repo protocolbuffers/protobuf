@@ -30,6 +30,7 @@ struct PyUpb_WeakMap;
 typedef struct PyUpb_WeakMap PyUpb_WeakMap;
 
 PyUpb_WeakMap* PyUpb_WeakMap_New(void);
+// Accepts NULL for cleanup of partially initialized objects.
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map);
 
 // Returns the number of entries in the map.
@@ -61,18 +62,23 @@ bool PyUpb_WeakMap_EraseIfEqual(PyUpb_WeakMap* map, const void* key,
 PyObject* PyUpb_WeakMap_Get(PyUpb_WeakMap* map, const void* key);
 
 typedef struct {
+  const void* key;
+  PyObject* obj;
+} PyUpb_WeakMapEntry;
+
+typedef struct {
   PyUpb_WeakMap* map;
-  intptr_t iter;
-#ifdef Py_GIL_DISABLED
-  PyObject** deferred_decrefs;
+  PyUpb_WeakMapEntry* entries;
   size_t count;
-  size_t cap;
-#endif
+  size_t index;
 } PyUpb_WeakMapIter;
 
-// Iteration lifecycle: Begin locks map->mutex; End releases map->mutex and
-// decrefs any objects visited during iteration. Returns false and sets
-// MemoryError on allocation failure (leaving map->mutex unlocked).
+// Begin snapshots live entries with strong references under map->mutex, then
+// releases the mutex before returning. The caller must retain the map owner
+// until End. Mutating native wrapper state still requires arena admission.
+// End decrefs all snapshot objects without holding a cache mutex. Delete only
+// erases the current entry if the cache still contains that same object.
+// Returns false with MemoryError on allocation failure, with no mutex held.
 bool PyUpb_WeakMapIter_Begin(PyUpb_WeakMapIter* iter, PyUpb_WeakMap* map);
 bool PyUpb_WeakMapIter_Next(PyUpb_WeakMapIter* iter, const void** key,
                             PyObject** obj);

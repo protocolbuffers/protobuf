@@ -19,8 +19,7 @@
 // Given a Python DescriptorPool, returns the underlying symtab.
 upb_DefPool* PyUpb_DescriptorPool_GetSymtab(PyObject* pool);
 
-// Returns the default DescriptorPool (a global singleton).
-PyObject* PyUpb_DescriptorPool_GetDefaultPool(void);
+PyUpb_ModuleState* PyUpb_DescriptorPool_GetModuleState(PyObject* pool);
 
 bool PyUpb_DescriptorPool_CacheAdd(PyObject* pool, const void* key,
                                    PyObject** py_obj);

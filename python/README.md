@@ -31,6 +31,54 @@ The binary wheel will build against whatever version of Python is installed on
 your system. The source package is always the same and does not depend on a
 local version of Python.
 
+### Experimental free-threaded Python build
+
+This fork has an opt-in build for CPython 3.14t experiments:
+
+```
+$ bazel build //python/dist:binary_wheel \
+    --//python:limited_api=false \
+    --//python:experimental_free_threading=true
+```
+
+Run Bazel with the free-threaded Python interpreter selected as the system
+`python3`. The build rejects regular Python headers and the limited API. A
+successful build produces a `cp314t` wheel whose native upb extension declares
+that it can run without the GIL. Verify both the backend and runtime state in
+the installed environment:
+
+```python
+import sys
+from google.protobuf.internal import api_implementation
+
+assert api_implementation.Type() == "upb"
+assert not sys._is_gil_enabled()
+```
+
+After installing the wheel in a fresh free-threaded virtual environment, run
+this standalone check using that environment's Python:
+
+```
+$ /path/to/venv/bin/python python/free_threading/wheel_smoke_test.py
+```
+
+It requires the native backend and the GIL to be naturally disabled, reports
+the loaded extension path, and exercises parallel parse/JSON round trips,
+composite self-extension, well-known-type initialization, and shared reads.
+It uses only schemas shipped in the wheel and dynamically built test schemas.
+Use an external timeout when running it in automation.
+
+This opt-in is **not a release or general thread-safety claim**. Audited native
+message paths reject overlapping access to a mutable arena with `RuntimeError`
+instead of locking or copying the message. That includes field mutation,
+serialization, parsing, message clearing, extension clearing, and unknown-field
+snapshotting, with targeted ThreadSanitizer regression coverage. This coverage
+is still incomplete: do not share mutable messages across threads without
+application-level synchronization. Native isolated-subinterpreter lifecycle
+has targeted sanitizer coverage, but arbitrary interpreter teardown and full
+distribution qualification remain open. The ordinary build keeps the
+experimental declaration disabled.
+
 ## Building from `setup.py`
 
 We support building from `setup.py`, but only from a Python source package.

@@ -14,6 +14,7 @@
 #include "google/protobuf/breaking_changes.h"
 #include "python/descriptor.h"
 #include "python/message.h"
+#include "python/descriptor_pool.h"
 #include "python/protobuf.h"
 #include "upb/message/array.h"
 #include "upb/message/message.h"
@@ -35,7 +36,8 @@ typedef struct {
 } PyUpb_ExtensionDict;
 
 PyObject* PyUpb_ExtensionDict_New(PyObject* msg) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+      PyUpb_Message_GetPool(msg));
   PyUpb_ExtensionDict* ext_dict =
       (void*)PyType_GenericAlloc(state->extension_dict_type, 0);
   if (!ext_dict) return NULL;
@@ -55,9 +57,16 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByName(PyObject* _self,
   const upb_MessageDef* m = PyUpb_Message_GetMsgdef(self->msg);
   const upb_FileDef* file = upb_MessageDef_File(m);
   const upb_DefPool* symtab = upb_FileDef_Pool(file);
-  const upb_FieldDef* ext = upb_DefPool_FindExtensionByName(symtab, name);
+  PyObject* pool = PyUpb_Message_GetPool(self->msg);
+  const upb_FieldDef* ext;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pool);
+#endif
+  ext = upb_DefPool_FindExtensionByName(symtab, name);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
   if (ext) {
-    PyObject* pool = PyUpb_Message_GetPool(self->msg);
     return PyUpb_FieldDescriptor_Get(pool, ext);
   } else {
     Py_RETURN_NONE;
@@ -80,12 +89,19 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
   // Extension numbers are positive and fit in an int, so anything else (which
   // the cast below could otherwise wrap onto a valid number) has no extension.
   if (overflow != 0 || number < 0 || number > INT32_MAX) Py_RETURN_NONE;
+  PyObject* pool = PyUpb_Message_GetPool(self->msg);
+  const upb_FieldDef* f = NULL;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(pool);
+#endif
   const upb_MiniTableExtension* ext =
-      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(reg, l,
-                                                            (uint32_t)number);
-  if (ext) {
-    const upb_FieldDef* f = upb_DefPool_FindExtensionByMiniTable(symtab, ext);
-    PyObject* pool = PyUpb_Message_GetPool(self->msg);
+      (upb_MiniTableExtension*)upb_ExtensionRegistry_Lookup(
+          reg, l, (uint32_t)number);
+  if (ext) f = upb_DefPool_FindExtensionByMiniTable(symtab, ext);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  if (f) {
     return PyUpb_FieldDescriptor_Get(pool, f);
   } else {
     Py_RETURN_NONE;
@@ -93,7 +109,7 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
 }
 
 static void PyUpb_ExtensionDict_Dealloc(PyUpb_ExtensionDict* self) {
-  PyUpb_Message_ClearExtensionDict(self->msg);
+  PyUpb_Message_ClearExtensionDict(self->msg, (PyObject*)self);
   Py_DECREF(self->msg);
   PyUpb_Dealloc(self);
 }
@@ -115,7 +131,8 @@ static PyObject* PyUpb_ExtensionDict_RichCompare(PyObject* _self,
   return PyBool_FromLong(ret);
 }
 
-static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
+static int PyUpb_ExtensionDict_ContainsUnprotected(PyObject* _self,
+                                                  PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return -1;
@@ -130,17 +147,54 @@ static int PyUpb_ExtensionDict_Contains(PyObject* _self, PyObject* key) {
   }
 }
 
-static Py_ssize_t PyUpb_ExtensionDict_Length(PyObject* _self) {
+static int PyUpb_ExtensionDict_Contains(PyObject* self, PyObject* key) {
+  PyObject* arena =
+      PyUpb_Message_GetArena(((PyUpb_ExtensionDict*)self)->msg);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  int result = PyUpb_ExtensionDict_ContainsUnprotected(self, key);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
+}
+
+static Py_ssize_t PyUpb_ExtensionDict_LengthUnprotected(PyObject* _self) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   upb_Message* msg = PyUpb_Message_GetIfReified(self->msg);
   return msg ? upb_Message_ExtensionCount(msg) : 0;
+}
+
+static Py_ssize_t PyUpb_ExtensionDict_Length(PyObject* self) {
+  PyObject* arena =
+      PyUpb_Message_GetArena(((PyUpb_ExtensionDict*)self)->msg);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  Py_ssize_t result = PyUpb_ExtensionDict_LengthUnprotected(self);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 static PyObject* PyUpb_ExtensionDict_Subscript(PyObject* _self, PyObject* key) {
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return NULL;
-  return PyUpb_Message_GetFieldValue(self->msg, f);
+  PyObject* arena = PyUpb_Message_GetArena(self->msg);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result = PyUpb_Message_GetFieldValue(self->msg, f);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
@@ -148,16 +202,37 @@ static int PyUpb_ExtensionDict_AssignSubscript(PyObject* _self, PyObject* key,
   PyUpb_ExtensionDict* self = (PyUpb_ExtensionDict*)_self;
   const upb_FieldDef* f = PyUpb_Message_GetExtensionDef(self->msg, key);
   if (!f) return -1;
-  if (PyUpb_Message_IsFrozen(self->msg)) {
-    if (!PyUpb_CheckFrozen(true, "Message is immutable.")) {
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+  bool is_frozen = PyUpb_Message_IsFrozen(self->msg);
+#else
+  PyObject* arena = PyUpb_Message_GetArena(self->msg);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return -1;
+  }
+  bool is_frozen = PyUpb_Message_IsFrozen(self->msg);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+#endif
+  if (is_frozen) {
+    if (!PyUpb_CheckFrozen(self->msg, true, "Message is immutable.")) {
       return -1;
     }
   }
   if (val) {
     return PyUpb_Message_SetFieldValue(self->msg, f, val, PyExc_TypeError);
   } else {
-    if (!PyUpb_Message_DoClearField(self->msg, f)) return -1;
-    return 0;
+    PyObject* arena = PyUpb_Message_GetArena(self->msg);
+    Py_INCREF(arena);
+    if (!PyUpb_Arena_TryWrite(arena)) {
+      Py_DECREF(arena);
+      return -1;
+    }
+    bool ok = PyUpb_Message_DoClearField(self->msg, f);
+    PyUpb_Arena_EndWrite(arena);
+    Py_DECREF(arena);
+    return ok ? 0 : -1;
   }
 }
 
@@ -207,7 +282,8 @@ typedef struct {
 
 static PyObject* PyUpb_ExtensionIterator_New(PyObject* _ext_dict) {
   PyUpb_ExtensionDict* ext_dict = (PyUpb_ExtensionDict*)_ext_dict;
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(
+      PyUpb_Message_GetPool(ext_dict->msg));
   PyUpb_ExtensionIterator* iter =
       (void*)PyType_GenericAlloc(state->extension_iterator_type, 0);
   if (!iter) return NULL;
@@ -223,7 +299,7 @@ static void PyUpb_ExtensionIterator_Dealloc(void* _self) {
   PyUpb_Dealloc(_self);
 }
 
-PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* _self) {
+static PyObject* PyUpb_ExtensionIterator_IterNextUnprotected(PyObject* _self) {
   PyUpb_ExtensionIterator* self = (PyUpb_ExtensionIterator*)_self;
   upb_Message* msg = PyUpb_Message_GetIfReified(self->msg);
   if (!msg) return NULL;
@@ -236,6 +312,27 @@ PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* _self) {
     if (!upb_Message_Next(msg, m, symtab, &f, &val, &self->iter)) return NULL;
     if (upb_FieldDef_IsExtension(f)) return PyUpb_FieldDescriptor_Get(pool, f);
   }
+}
+
+PyObject* PyUpb_ExtensionIterator_IterNext(PyObject* self) {
+  PyObject* arena =
+      PyUpb_Message_GetArena(((PyUpb_ExtensionIterator*)self)->msg);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    return NULL;
+  }
+  PyObject* result;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+  result = PyUpb_ExtensionIterator_IterNextUnprotected(self);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  return result;
 }
 
 static PyType_Slot PyUpb_ExtensionIterator_Slots[] = {

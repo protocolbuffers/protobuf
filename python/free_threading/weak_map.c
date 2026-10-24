@@ -51,11 +51,17 @@ PyUpb_WeakMap* PyUpb_WeakMap_New(void) {
 }
 
 void PyUpb_WeakMap_Free(PyUpb_WeakMap* map) {
+  if (!map) return;
   PyUpb_Mutex_Destroy(&map->mutex);
   upb_Arena_Free(map->arena);
 }
 
-size_t PyUpb_WeakMap_Count(PyUpb_WeakMap* map) { return map->table.t.count; }
+size_t PyUpb_WeakMap_Count(PyUpb_WeakMap* map) {
+  PyUpb_Mutex_Lock(&map->mutex);
+  size_t count = map->table.t.count;
+  PyUpb_Mutex_Unlock(&map->mutex);
+  return count;
+}
 
 // To give better entropy in the table key, we shift away low bits that are
 // always zero.
@@ -114,13 +120,12 @@ bool PyUpb_WeakMap_Add(PyUpb_WeakMap* map, const void* key, PyObject** obj) {
   } else {
     const uintptr_t k = PyUpb_WeakMap_GetKey(key);
     ok = upb_inttable_insert(&map->table, k, upb_value_ptr(*obj), map->arena);
-    if (!ok) {
-      PyErr_SetNone(PyExc_MemoryError);
-    }
   }
 
   PyUpb_Mutex_Unlock(&map->mutex);
 
+  // Replacing an exception can retire user objects and reenter this map.
+  if (!ok) PyErr_SetNone(PyExc_MemoryError);
   if (to_decref) {
     // This can trigger a dealloc which calls back into this WeakMap, so it must
     // be after the unlock.
@@ -158,61 +163,73 @@ bool PyUpb_WeakMap_EraseIfEqual(PyUpb_WeakMap* map, const void* key,
 }
 
 bool PyUpb_WeakMapIter_Begin(PyUpb_WeakMapIter* iter, PyUpb_WeakMap* map) {
-  PyUpb_Mutex_Lock(&map->mutex);
   iter->map = map;
-  iter->iter = UPB_INTTABLE_BEGIN;
-#ifdef Py_GIL_DISABLED
-  size_t cap = PyUpb_WeakMap_Count(map);
-  if (cap > 0) {
-    iter->deferred_decrefs = upb_gmalloc(cap * sizeof(PyObject*));
-    if (!iter->deferred_decrefs) {
+  iter->entries = NULL;
+  iter->count = 0;
+  iter->index = 0;
+  PyUpb_Mutex_Lock(&map->mutex);
+  size_t cap = map->table.t.count;
+  if (cap > SIZE_MAX / sizeof(*iter->entries)) {
+    PyUpb_Mutex_Unlock(&map->mutex);
+    PyErr_SetNone(PyExc_MemoryError);
+    return false;
+  }
+  if (cap) {
+    iter->entries = upb_gmalloc(cap * sizeof(*iter->entries));
+    if (!iter->entries) {
       PyUpb_Mutex_Unlock(&map->mutex);
       PyErr_SetNone(PyExc_MemoryError);
       return false;
     }
-  } else {
-    iter->deferred_decrefs = NULL;
   }
-  iter->count = 0;
-  iter->cap = cap;
+  intptr_t cursor = UPB_INTTABLE_BEGIN;
+  uintptr_t key;
+  upb_value val;
+  while (upb_inttable_next(&map->table, &key, &val, &cursor)) {
+    PyObject* obj = upb_value_getptr(val);
+#ifdef Py_GIL_DISABLED
+    if (!PyUnstable_TryIncRef(obj)) {
+      upb_inttable_removeiter(&map->table, &cursor);
+      continue;
+    }
+#else
+    Py_INCREF(obj);
 #endif
+    assert(iter->count < cap);
+    iter->entries[iter->count++] = (PyUpb_WeakMapEntry){
+        (const void*)(key << PyUpb_PtrShift), obj};
+  }
+  // Reification, exception construction and reference retirement can reenter
+  // a cache. Never hold its non-recursive mutex while running the consumer.
+  PyUpb_Mutex_Unlock(&map->mutex);
   return true;
 }
 
 void PyUpb_WeakMapIter_End(PyUpb_WeakMapIter* iter) {
-  PyUpb_Mutex_Unlock(&iter->map->mutex);
-#ifdef Py_GIL_DISABLED
-  for (size_t i = 0; i < iter->count; i++) {
-    Py_DECREF(iter->deferred_decrefs[i]);
+  PyUpb_WeakMapEntry* entries = iter->entries;
+  size_t count = iter->count;
+  iter->entries = NULL;
+  iter->count = 0;
+  iter->index = 0;
+  for (size_t i = 0; i < count; i++) {
+    Py_DECREF(entries[i].obj);
   }
-  upb_gfree(iter->deferred_decrefs);
-#endif
+  upb_gfree(entries);
 }
 
 bool PyUpb_WeakMapIter_Next(PyUpb_WeakMapIter* iter, const void** key,
                             PyObject** obj) {
-  PyUpb_WeakMap* map = iter->map;
-  UPB_ASSERT(PyUpb_Mutex_IsLocked(&map->mutex));
-  uintptr_t u_key;
-  upb_value val;
-  while (upb_inttable_next(&map->table, &u_key, &val, &iter->iter)) {
-    PyObject* py_obj = upb_value_getptr(val);
-#ifdef Py_GIL_DISABLED
-    if (!PyUnstable_TryIncRef(py_obj)) {
-      // Object is being destroyed, remove it from the map and try again.
-      upb_inttable_removeiter(&map->table, &iter->iter);
-      continue;
-    }
-    assert(iter->count < iter->cap);
-    iter->deferred_decrefs[iter->count++] = py_obj;
-#endif
-    *key = (const void*)(u_key << PyUpb_PtrShift);
-    *obj = py_obj;
-    return true;
-  }
-  return false;
+  if (iter->index == iter->count) return false;
+  const PyUpb_WeakMapEntry* entry = &iter->entries[iter->index++];
+  *key = entry->key;
+  *obj = entry->obj;
+  return true;
 }
 
 void PyUpb_WeakMapIter_Delete(PyUpb_WeakMapIter* iter) {
-  upb_inttable_removeiter(&iter->map->table, &iter->iter);
+  assert(iter->index > 0 && iter->index <= iter->count);
+  const PyUpb_WeakMapEntry* entry = &iter->entries[iter->index - 1];
+  // A concurrent or reentrant replacement must not be erased by a stale
+  // snapshot entry. The snapshot owns obj until End().
+  PyUpb_WeakMap_EraseIfEqual(iter->map, entry->key, entry->obj);
 }

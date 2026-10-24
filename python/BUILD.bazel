@@ -6,6 +6,7 @@
 # https://developers.google.com/open-source/licenses/bsd
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag", "string_flag")
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
 load("//python:build_targets.bzl", "build_targets")
 load("//python:cc_link_bundle.bzl", "py_extension_with_bundled_deps")
 load("//upb/bazel:copts.bzl", "UPB_DEFAULT_COPTS", "UPB_DEFAULT_FEATURES")
@@ -27,6 +28,24 @@ LIMITED_API_FLAG_SELECT = {
 bool_flag(
     name = "limited_api",
     build_setting_default = True,
+)
+
+# Explicit opt-in for experimental CPython free-threading wheels. Keep this
+# disabled for ordinary builds until the native extension is fully qualified.
+bool_flag(
+    name = "experimental_free_threading",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "experimental_free_threading_enabled",
+    flag_values = {":experimental_free_threading": "True"},
+)
+
+config_setting(
+    name = "limited_api_enabled",
+    flag_values = {":limited_api": "True"},
+    visibility = ["//python:__subpackages__"],
 )
 
 string_flag(
@@ -101,6 +120,8 @@ filegroup(
         "buffer_convert.h",
         "convert.c",
         "convert.h",
+        "def_lookup.c",
+        "def_lookup.h",
         "descriptor.c",
         "descriptor.h",
         "descriptor_containers.c",
@@ -109,6 +130,8 @@ filegroup(
         "descriptor_pool.h",
         "extension_dict.c",
         "extension_dict.h",
+        "free_threading/access.c",
+        "free_threading/access.h",
         "free_threading/lazy_ptr.c",
         "free_threading/lazy_ptr.h",
         "free_threading/mutex.h",
@@ -132,7 +155,10 @@ filegroup(
 py_extension_with_bundled_deps(
     name = "google/_upb/_message",
     srcs = [":message_srcs"],
-    copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT),
+    copts = UPB_DEFAULT_COPTS + select(LIMITED_API_FLAG_SELECT) + select({
+        ":experimental_free_threading_enabled": ["-DPROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING"],
+        "//conditions:default": [],
+    }),
     features = UPB_DEFAULT_FEATURES,
     # copybara:uncomment py_limited_api = "3.10",
     target_compatible_with = select(_message_target_compatible_with),
@@ -155,6 +181,7 @@ py_extension_with_bundled_deps(
         "//upb/mini_table",
         "//upb/port",
         "//upb/reflection",
+        "//upb/reflection:internal",
         "//upb/text",
         "//upb/util:def_to_proto",
         "//upb/util:required_fields",
@@ -163,5 +190,56 @@ py_extension_with_bundled_deps(
         "//upb/wire:eps_copy_input_stream",
         "//upb/wire:reader",
         "@abseil-cpp//absl/base:core_headers",
+    ],
+)
+
+cc_library(
+    name = "free_threading_access",
+    srcs = ["free_threading/access.c"],
+    hdrs = ["free_threading/access.h"],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    deps = ["//upb/port"],
+)
+
+cc_test(
+    name = "free_threading_access_test",
+    size = "small",
+    srcs = [
+        "free_threading/access_test.cc",
+        "free_threading/access_test_util.c",
+        "free_threading/access_test_util.h",
+    ],
+    deps = [
+        ":free_threading_access",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+
+# Native fault-injection fixture; never included in a protobuf wheel.
+cc_binary(
+    name = "free_threading/_weak_map_test.so",
+    testonly = True,
+    target_compatible_with = select({
+        ":experimental_free_threading_enabled": [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    }),
+    srcs = [
+        "free_threading/weak_map_test.c",
+        "free_threading/weak_map.c",
+        "free_threading/weak_map.h",
+        "free_threading/mutex.h",
+    ],
+    copts = UPB_DEFAULT_COPTS,
+    features = UPB_DEFAULT_FEATURES,
+    linkshared = True,
+    linkstatic = True,
+    deps = [
+        "//upb/hash",
+        "//upb/mem",
+        "//upb/port",
+        "@system_python//:python_headers",
     ],
 )

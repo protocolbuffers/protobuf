@@ -12,7 +12,7 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files", "strip_prefix")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_python//python:packaging.bzl", "py_wheel")
 load("@rules_shell//shell:sh_binary.bzl", "sh_binary")
-load("@system_python//:version.bzl", "SYSTEM_PYTHON_VERSION")
+load("@system_python//:version.bzl", "SYSTEM_PYTHON_ABIFLAGS", "SYSTEM_PYTHON_VERSION")
 load("//:protobuf_version.bzl", "PROTOBUF_PYTHON_VERSION")
 load(":dist.bzl", "py_dist", "py_dist_module")
 load(":py_proto_library.bzl", "py_proto_library")
@@ -363,7 +363,8 @@ genrule(
 py_wheel(
     name = "binary_wheel",
     abi = select({
-        "//conditions:default": "abi3",
+        "//python:limited_api_enabled": "abi3",
+        "//conditions:default": "cp" + SYSTEM_PYTHON_VERSION + SYSTEM_PYTHON_ABIFLAGS,
     }),
     author = "protobuf@googlegroups.com",
     author_email = "protobuf@googlegroups.com",

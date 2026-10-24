@@ -25,6 +25,7 @@
 #include "upb/reflection/def_type.h"
 #include "upb/reflection/descriptor_bootstrap.h"
 #include "upb/reflection/internal/def_pool.h"
+#include "upb/reflection/internal/file_def.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -62,6 +63,7 @@ struct upb_DefBuilder {
   upb_FileDef* file;                   // File we are building.
   upb_Arena* arena;                    // Allocate defs here.
   upb_Arena* tmp_arena;                // For temporary allocations.
+  upb_PublicationBatch* extension_batch;  // Commits registry + reflection index.
   upb_Status* status;                  // Record errors here.
   const upb_MiniTableFile* layout;     // NULL if we should build layouts.
   upb_MiniTablePlatform platform;      // Platform we are targeting.
@@ -129,6 +131,9 @@ UPB_INLINE void _upb_DefBuilder_Add(upb_DefBuilder* ctx, const char* name,
   upb_StringView sym = {.data = name, .size = strlen(name)};
   bool ok = _upb_DefPool_InsertSym(ctx->symtab, sym, v, ctx->status);
   if (!ok) _upb_DefBuilder_FailJmp(ctx);
+  if (!_upb_FileDef_InsertSymbol(ctx->file, name, sym.size, v, ctx->arena)) {
+    _upb_DefBuilder_OomErr(ctx);
+  }
 }
 
 UPB_INLINE upb_Arena* _upb_DefBuilder_Arena(const upb_DefBuilder* ctx) {

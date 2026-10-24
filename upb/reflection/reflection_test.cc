@@ -25,6 +25,7 @@
 #include "upb/reflection/def.h"
 #include "upb/reflection/def.hpp"
 #include "upb/reflection/internal/def_pool.h"
+#include "upb/reflection/internal/file_def.h"
 #include "upb/test/parse_text_proto.h"
 
 namespace upb_test {
@@ -60,6 +61,61 @@ absl::StatusOr<upb::DefPool> LoadDescriptorProto(absl::string_view proto_text) {
   google::protobuf::FileDescriptorSet set;
   *set.add_file() = proto;
   return LoadDescriptorSetFromProto(set);
+}
+
+TEST(ReflectionTest, FileSymbolIndexIsCompleteAndImmutable) {
+  google::protobuf::FileDescriptorProto proto = ParseTextProtoOrDie(R"pb(
+    name: "index.proto"
+    package: "index"
+    syntax: "proto2"
+    message_type {
+      name: "Owner"
+      nested_type { name: "Child" }
+      enum_type { name: "Kind" value { name: "VALUE" number: 0 } }
+      extension_range { start: 100 end: 200 }
+      extension {
+        name: "extra" number: 100 label: LABEL_OPTIONAL type: TYPE_INT32
+        extendee: ".index.Owner"
+      }
+    }
+    service { name: "Service" }
+  )pb");
+  upb::Arena arena;
+  upb::DefPool pool;
+  upb::Status status;
+  upb::FileDefPtr file = pool.AddFile(ToUpbDescriptorSet(proto, arena), &status);
+  ASSERT_TRUE(file) << status.error_message();
+  struct Symbol {
+    const char* name;
+    upb_deftype_t type;
+  };
+  const Symbol symbols[] = {
+      {"index.Owner", UPB_DEFTYPE_MSG},
+      {"index.Owner.Child", UPB_DEFTYPE_MSG},
+      {"index.Owner.Kind", UPB_DEFTYPE_ENUM},
+      {"index.Owner.VALUE", UPB_DEFTYPE_ENUMVAL},
+      {"index.Owner.extra", UPB_DEFTYPE_EXT},
+      {"index.Service", UPB_DEFTYPE_SERVICE},
+  };
+  for (const auto& symbol : symbols) {
+    upb_value value;
+    ASSERT_TRUE(_upb_DefPool_LookupSym(pool.ptr(), symbol.name,
+                                      std::strlen(symbol.name), &value));
+    EXPECT_EQ(_upb_FileDef_FindSymbol(file.ptr(), symbol.name,
+                                     std::strlen(symbol.name), symbol.type),
+              _upb_DefType_Unpack(value, symbol.type));
+  }
+  EXPECT_EQ(_upb_FileDef_FindSymbol(file.ptr(), "index.Owner", 11,
+                                   UPB_DEFTYPE_ENUM), nullptr);
+  proto.Clear();
+  proto.set_name("later.proto");
+  proto.set_package("index");
+  proto.add_message_type()->set_name("Later");
+  ASSERT_TRUE(pool.AddFile(ToUpbDescriptorSet(proto, arena), &status));
+  EXPECT_EQ(_upb_FileDef_FindSymbol(file.ptr(), "index.Later", 11,
+                                   UPB_DEFTYPE_MSG), nullptr);
+  EXPECT_NE(_upb_FileDef_FindSymbol(file.ptr(), "index.Owner", 11,
+                                   UPB_DEFTYPE_MSG), nullptr);
 }
 
 TEST(ReflectionTest, OpenEnumWithNonZeroDefault) {
@@ -119,6 +175,68 @@ TEST(ReflectionTest, FailedAddFileDoesNotRetainExtensions) {
       upb_DefPool_GetAllExtensions(pool.ptr(), message.ptr(), &count);
   EXPECT_EQ(count, 0);
   upb_gfree(extensions);
+}
+
+TEST(ReflectionTest, PoolConstructionAllocationFailure) {
+  if (!upb_AllocationCount_IsAvailable()) GTEST_SKIP();
+  upb_AllocationCount_Reset();
+  auto* pool = upb_DefPool_New();
+  ASSERT_NE(pool, nullptr);
+  size_t allocations = upb_AllocationCount_Get();
+  upb_AllocationCount_Reset();
+  upb_DefPool_Free(pool);
+  for (size_t i = 0; i < allocations; i++) {
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(i);
+    pool = upb_DefPool_New();
+    upb_AllocationCount_Reset();
+    // Some optional allocations may recover. Both outcomes must clean up.
+    upb_DefPool_Free(pool);
+  }
+}
+
+TEST(ReflectionTest, ExtensionPublicationAllocationFailure) {
+  if (!upb_AllocationCount_IsAvailable()) GTEST_SKIP();
+  google::protobuf::FileDescriptorProto base = ParseTextProtoOrDie(R"pb(
+    name: "allocation_base.proto"
+    message_type { name: "Target" extension_range { start: 100 end: 200 } }
+    extension {
+      name: "seed" number: 100 label: LABEL_OPTIONAL type: TYPE_INT32
+      extendee: ".Target"
+    }
+  )pb");
+  google::protobuf::FileDescriptorProto added = ParseTextProtoOrDie(R"pb(
+    name: "allocation_added.proto"
+    dependency: "allocation_base.proto"
+    extension {
+      name: "added" number: 101 label: LABEL_OPTIONAL type: TYPE_INT32
+      extendee: ".Target"
+    }
+  )pb");
+  auto run = [&](size_t fail_on) {
+    upb::Arena arena;
+    upb::DefPool pool;
+    upb::Status status;
+    EXPECT_TRUE(pool.AddFile(ToUpbDescriptorSet(base, arena), &status));
+    auto* input = ToUpbDescriptorSet(added, arena);
+    EXPECT_NE(input, nullptr);
+    upb_AllocationCount_Reset();
+    upb_AllocationCount_FailOn(fail_on);
+    auto file = pool.AddFile(input, &status);
+    size_t allocations = upb_AllocationCount_Get();
+    upb_AllocationCount_Reset();
+    const auto* message = upb_DefPool_FindMessageByName(pool.ptr(), "Target");
+    EXPECT_NE(upb_DefPool_FindExtensionByNumber(pool.ptr(), message, 100), nullptr);
+    EXPECT_EQ(upb_DefPool_FindExtensionByNumber(pool.ptr(), message, 101) != nullptr,
+              static_cast<bool>(file));
+    EXPECT_EQ(upb_DefPool_FindExtensionByName(pool.ptr(), "added") != nullptr,
+              static_cast<bool>(file));
+    EXPECT_EQ(upb_ExtensionRegistry_Size(upb_DefPool_ExtensionRegistry(pool.ptr())),
+              file ? 2 : 1);
+    return allocations;
+  };
+  size_t allocations = run(SIZE_MAX);
+  for (size_t i = 0; i < allocations; i++) run(i);
 }
 
 TEST(ReflectionTest, EnumDefault) {

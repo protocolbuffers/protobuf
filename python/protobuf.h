@@ -17,9 +17,22 @@
 #include <stdint.h>
 
 #include "python/descriptor.h"
+#include "python/free_threading/lazy_ptr.h"
 #include "python/free_threading/weak_map.h"
 #include "upb/mem/arena.h"
+#include "upb/port/atomic.h"
 #include "upb/reflection/def.h"
+
+// Keep the upb atomic implementation detail local while exposing a type that
+// can safely be embedded in Python extension state.
+#include "upb/port/def.inc"
+typedef UPB_ATOMIC(int32_t) PyUpb_AtomicInt32;
+#ifdef Py_GIL_DISABLED
+typedef UPB_ATOMIC(PyObject*) PyUpb_LazyPyObjectPtr;
+#else
+typedef PyObject* PyUpb_LazyPyObjectPtr;
+#endif
+#include "upb/port/undef.inc"
 
 #define PYUPB_PROTOBUF_PUBLIC_PACKAGE "google.protobuf"
 #define PYUPB_PROTOBUF_INTERNAL_PACKAGE "google.protobuf.internal"
@@ -33,8 +46,12 @@
 // ModuleState
 // -----------------------------------------------------------------------------
 
-// We store all "global" state in this struct instead of using (C) global
-// variables. This makes this extension compatible with sub-interpreters.
+// We store state per module instead of in C globals. Interpreter isolation also
+// requires compatible module initialization and state lookup; per-module state
+// alone does not establish subinterpreter support.
+// Every non-NULL Python object/type pointer owns a reference independently of
+// public module attributes. Keep ModuleTraverse/ModuleClear in sync with any
+// ownership changes.
 
 typedef struct {
   // From descriptor.c
@@ -74,8 +91,8 @@ typedef struct {
   PyObject* listfields_item_key;
 
   // From protobuf.c
-  bool allow_oversize_protos;
-  PyObject* wkt_bases;
+  PyUpb_AtomicInt32 allow_oversize_protos;
+  PyUpb_LazyPyObjectPtr wkt_bases;
   PyTypeObject* arena_type;
 
   // From repeated.c
@@ -89,12 +106,23 @@ typedef struct {
 
 // Returns the global state object from the current interpreter. The current
 // interpreter is looked up from thread-local state.
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
 PyUpb_ModuleState* PyUpb_ModuleState_Get(void);
+#endif
 PyUpb_ModuleState* PyUpb_ModuleState_GetFromModule(PyObject* module);
+
+// Native types retain their defining module, independently of sys.modules.
+PyUpb_ModuleState* PyUpb_ModuleState_GetFromType(PyTypeObject* type);
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGetFromType(PyTypeObject* type);
+// For live objects only: a cleared heap type can have no MRO during GC.
+// Preserve the caller's exception when the object is not one of our types.
+PyUpb_ModuleState* PyUpb_ModuleState_MaybeGetFromObject(PyObject* object);
 
 // Returns NULL if module state is not yet available (during startup).
 // Any use of the module state during startup needs to be passed explicitly.
+#ifndef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
 PyUpb_ModuleState* PyUpb_ModuleState_MaybeGet(void);
+#endif
 
 // Returns:
 //   from google.protobuf.internal.well_known_types import WKTBASES
@@ -111,6 +139,17 @@ PyObject* PyUpb_Arena_New(PyObject* pool);
 PyObject* PyUpb_Arena_GetPool(PyObject* arena);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
 
+// Nonblocking admission for native storage shared by message/container aliases.
+// Successful calls must be paired with the corresponding End call on every
+// exit path. Only the experimental free-threaded build enforces admission.
+bool PyUpb_Arena_TryRead(PyObject* arena);
+bool PyUpb_Arena_TryWrite(PyObject* arena);
+// On success, replace one owned read admission with a write admission.
+// On failure, the caller still owns the read admission.
+bool PyUpb_Arena_TryUpgradeReadToWrite(PyObject* arena);
+void PyUpb_Arena_EndRead(PyObject* arena);
+void PyUpb_Arena_EndWrite(PyObject* arena);
+
 bool PyUpb_Arena_CacheAdd(PyObject* arena, const void* key, PyObject** py_obj);
 bool PyUpb_Arena_CacheUniqueAdd(PyObject* arena, const void* key,
                                 PyObject* py_obj);
@@ -125,6 +164,7 @@ bool PyUpb_Arena_CacheEraseIfEqual(PyObject* arena, const void* key,
 PyTypeObject* AddObject(PyObject* m, const char* name, PyType_Spec* spec);
 
 // Creates a Python type from `spec` and adds it to the given module `m`.
+// Returns an owned reference independent of the module dictionary.
 PyTypeObject* PyUpb_AddClass(PyObject* m, PyType_Spec* spec);
 
 // Like PyUpb_AddClass(), but allows you to specify a tuple of base classes
@@ -134,6 +174,8 @@ PyTypeObject* PyUpb_AddClassWithBases(PyObject* m, PyType_Spec* spec,
 
 // Like PyUpb_AddClass(), but allows you to specify a tuple of base classes in
 // `bases` to register as a "virtual subclass" with mixin methods.
+// Returns an owned reference; unlike PyUpb_AddClass(), the class is not added
+// to the module dictionary. Module state must traverse and clear this reference.
 PyTypeObject* PyUpb_AddClassWithRegister(PyObject* m, PyType_Spec* spec,
                                          PyObject* virtual_base,
                                          const char** methods);
@@ -188,12 +230,13 @@ bool PyUpb_IndexToRange(PyObject* index, Py_ssize_t size, Py_ssize_t* i,
 
 // Sets a Python FrozenInstanceError with the default error message
 // ("Message is immutable.") and returns NULL.
-PyObject* PyUpb_SetFrozenError(void);
+PyObject* PyUpb_SetFrozenError(PyObject* owner);
 // Sets a Python FrozenInstanceError with the given custom message and returns
 // NULL.
-PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg);
-// If `is_frozen` is true, sets a Python FrozenInstanceError with the given
-// message and returns false. Otherwise, returns true.
-bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg);
+PyObject* PyUpb_SetFrozenErrorWithMsg(PyObject* owner, const char* msg);
+// Emits a DeprecationWarning when mutating a frozen message or container in
+// OSS.
+int PyUpb_WarnFrozen(void);
+bool PyUpb_CheckFrozen(PyObject* owner, bool is_frozen, const char* error_msg);
 
 #endif  // PYUPB_PROTOBUF_H__

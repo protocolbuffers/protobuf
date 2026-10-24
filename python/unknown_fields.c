@@ -38,8 +38,7 @@ static void PyUpb_UnknownFieldSet_Dealloc(PyObject* _self) {
   PyUpb_Dealloc(self);
 }
 
-PyUpb_UnknownFieldSet* PyUpb_UnknownFieldSet_NewBare(void) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+PyUpb_UnknownFieldSet* PyUpb_UnknownFieldSet_NewBare(PyUpb_ModuleState* s) {
   PyUpb_UnknownFieldSet* self =
       (void*)PyType_GenericAlloc(s->unknown_fields_type, 0);
   if (!self) {
@@ -78,7 +77,7 @@ enum {
 static const char* PyUpb_UnknownFieldSet_BuildMessageSetItem(
     PyUpb_UnknownFieldSet* self, upb_EpsCopyInputStream* stream,
     const char* ptr) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_ModuleState_GetFromType(Py_TYPE(self));
   int type_id = 0;
   PyObject* msg = NULL;
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
@@ -195,7 +194,8 @@ static const char* PyUpb_UnknownFieldSet_BuildValue(
       return ptr;
     }
     case kUpb_WireType_StartGroup: {
-      PyUpb_UnknownFieldSet* sub = PyUpb_UnknownFieldSet_NewBare();
+      PyUpb_UnknownFieldSet* sub = PyUpb_UnknownFieldSet_NewBare(
+          PyUpb_ModuleState_GetFromType(Py_TYPE(self)));
       if (!sub) return NULL;
       *data = &sub->ob_base;
       return PyUpb_UnknownFieldSet_Build(sub, stream, ptr, field_number);
@@ -213,7 +213,7 @@ static const char* PyUpb_UnknownFieldSet_Build(PyUpb_UnknownFieldSet* self,
                                                upb_EpsCopyInputStream* stream,
                                                const char* ptr,
                                                int group_number) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_ModuleState_GetFromType(Py_TYPE(self));
   while (!upb_EpsCopyInputStream_IsDone(stream, &ptr)) {
     uint32_t tag;
     ptr = upb_WireReader_ReadTag(ptr, &tag, stream);
@@ -262,14 +262,22 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
   }
 
   if (!PyUpb_Message_Verify(py_msg)) return NULL;
-  PyUpb_UnknownFieldSet* self = PyUpb_UnknownFieldSet_NewBare();
+  PyUpb_UnknownFieldSet* self = PyUpb_UnknownFieldSet_NewBare(
+      PyUpb_ModuleState_GetFromType(type));
+  if (!self) return NULL;
+  PyObject* arena = PyUpb_Message_GetArena(py_msg);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryRead(arena)) {
+    Py_DECREF(arena);
+    Py_DECREF(&self->ob_base);
+    return NULL;
+  }
   upb_Message* msg = PyUpb_Message_GetIfReified(py_msg);
-  if (!msg) return &self->ob_base;
-
   uintptr_t iter = kUpb_Message_UnknownBegin;
   upb_StringView view;
   upb_Arena* upb_arena = NULL;
-  while (upb_Message_NextWireFormatUnknown(msg, &upb_arena, &view, &iter)) {
+  while (msg && upb_Message_NextWireFormatUnknown(msg, &upb_arena, &view,
+                                                 &iter)) {
     const char* ptr = view.data;
     upb_EpsCopyInputStream stream;
     upb_EpsCopyInputStream_Init(&stream, &ptr, view.size);
@@ -283,14 +291,21 @@ static PyObject* PyUpb_UnknownFieldSet_New(PyTypeObject* type, PyObject* args,
     }
 
     if (!ok) {
-      if (upb_arena) upb_Arena_Free(upb_arena);
-      Py_DECREF(&self->ob_base);
-      return NULL;
+      goto fail;
     }
   }
 
   if (upb_arena) upb_Arena_Free(upb_arena);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
   return &self->ob_base;
+
+fail:
+  if (upb_arena) upb_Arena_Free(upb_arena);
+  PyUpb_Arena_EndRead(arena);
+  Py_DECREF(arena);
+  Py_DECREF(&self->ob_base);
+  return NULL;
 }
 
 static Py_ssize_t PyUpb_UnknownFieldSet_Length(PyObject* _self) {

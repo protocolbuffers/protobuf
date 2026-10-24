@@ -977,7 +977,7 @@ void _upb_FieldDef_BuildMiniTableExtension(upb_DefBuilder* ctx,
     _upb_FileDef_SetExtensionMiniTable(ctx->file, f->layout_index, ext);
   }
 
-  bool ok = _upb_DefPool_InsertExt(ctx->symtab, ext, f);
+  bool ok = _upb_DefPool_InsertExt(ctx->symtab, ext, f, ctx->extension_batch);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 

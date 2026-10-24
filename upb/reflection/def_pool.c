@@ -43,6 +43,7 @@ struct upb_DefPool {
   upb_strtable syms;   // full_name -> packed def ptr
   upb_strtable files;  // file_name -> (upb_FileDef*)
   upb_inttable exts;   // (upb_MiniTableExtension*) -> (upb_FieldDef*)
+  upb_PublishedMap* extension_index;  // Concurrent reflection readers.
   upb_ExtensionRegistry* extreg;
   const upb_GeneratedRegistryRef* generated_extreg;
   const google_protobuf_FeatureSetDefaults* feature_set_defaults;
@@ -55,8 +56,9 @@ struct upb_DefPool {
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
+  if (!s) return;
   upb_GeneratedRegistry_Release(s->generated_extreg);
-  upb_Arena_Free(s->arena);
+  if (s->arena) upb_Arena_Free(s->arena);
   upb_gfree(s->scratch_data);
   upb_gfree(s);
 }
@@ -66,8 +68,10 @@ static const char serialized_defaults[] = UPB_INTERNAL_UPB_EDITION_DEFAULTS;
 upb_DefPool* upb_DefPool_New(void) {
   upb_DefPool* s = upb_gmalloc(sizeof(*s));
   if (!s) return NULL;
+  memset(s, 0, sizeof(*s));  // Partial-construction cleanup must be safe.
 
   s->arena = upb_Arena_New();
+  if (!s->arena) goto err;
   s->bytes_loaded = 0;
   s->disable_closed_enum_checking = false;
   s->disable_implicit_field_presence = false;
@@ -79,6 +83,8 @@ upb_DefPool* upb_DefPool_New(void) {
   if (!upb_strtable_init(&s->syms, 32, s->arena)) goto err;
   if (!upb_strtable_init(&s->files, 4, s->arena)) goto err;
   if (!upb_inttable_init(&s->exts, s->arena)) goto err;
+  s->extension_index = upb_PublishedMap_New(s->arena);
+  if (!s->extension_index) goto err;
 
   s->extreg = upb_ExtensionRegistry_New(s->arena);
   if (!s->extreg) goto err;
@@ -178,9 +184,11 @@ bool upb_DefPool_SetFeatureSetDefaults(upb_DefPool* s,
 }
 
 bool _upb_DefPool_InsertExt(upb_DefPool* s, const upb_MiniTableExtension* ext,
-                            const upb_FieldDef* f) {
-  return upb_inttable_insert(&s->exts, (uintptr_t)ext, upb_value_constptr(f),
-                             s->arena);
+                            const upb_FieldDef* f, upb_PublicationBatch* batch) {
+  if (!upb_inttable_insert(&s->exts, (uintptr_t)ext, upb_value_constptr(f),
+                           s->arena)) return false;
+  return upb_PublishedMap_Insert(s->extension_index, batch, ext, 0, f) ==
+         kUpb_PublishedMap_Ok;
 }
 
 bool _upb_DefPool_InsertSym(upb_DefPool* s, upb_StringView sym, upb_value v,
@@ -428,10 +436,13 @@ static const upb_FileDef* upb_DefBuilder_AddFileToPool(
     bool ok =
         upb_strtable_insert(&s->files, name.data, name.size,
                             upb_value_constptr(builder->file), builder->arena);
-    UPB_ASSERT(ok);
+    if (!ok) _upb_DefBuilder_OomErr(builder);
     UPB_ASSERT(upb_Status_IsOk(status));
     ok = upb_Arena_Fuse(s->arena, builder->arena);
     UPB_ASSERT(ok);
+    if (builder->extension_batch) {
+      upb_PublicationBatch_Commit(builder->extension_batch);
+    }
   }
 
   if (builder->arena) upb_Arena_Free(builder->arena);
@@ -466,6 +477,7 @@ static const upb_FileDef* _upb_DefPool_AddFile(
       .ext_count = 0,
       .status = status,
       .file = NULL,
+      .extension_batch = NULL,
       .arena = upb_Arena_New(),
       .tmp_arena = upb_Arena_New(),
   };
@@ -539,10 +551,10 @@ upb_Arena* _upb_DefPool_Arena(const upb_DefPool* s) { return s->arena; }
 
 const upb_FieldDef* upb_DefPool_FindExtensionByMiniTable(
     const upb_DefPool* s, const upb_MiniTableExtension* ext) {
-  upb_value v;
-  bool ok = upb_inttable_lookup(&s->exts, (uintptr_t)ext, &v);
-  UPB_ASSERT(ok);
-  return upb_value_getconstptr(v);
+  const upb_FieldDef* field =
+      upb_PublishedMap_Lookup(s->extension_index, ext, 0);
+  UPB_ASSERT(field);
+  return field;
 }
 
 const upb_FieldDef* upb_DefPool_FindExtensionByNumber(const upb_DefPool* s,

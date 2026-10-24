@@ -8,6 +8,7 @@
 #include "python/descriptor_containers.h"
 
 #include "python/descriptor.h"
+#include "python/descriptor_pool.h"
 #include "python/protobuf.h"
 #include "upb/reflection/def.h"
 
@@ -27,9 +28,13 @@ err:
   return ret;
 }
 
-#define CHECK_TYPE(obj, state_member)                                   \
-  assert(PyUpb_ModuleState_MaybeGet() == NULL || /* During shutdown. */ \
-         Py_TYPE(obj) == PyUpb_ModuleState_Get()->state_member)
+#define CHECK_TYPE(obj, state_member)                                      \
+  do {                                                                    \
+    PyUpb_ModuleState* state =                                             \
+        PyUpb_ModuleState_MaybeGetFromType(Py_TYPE(obj));                   \
+    assert(!state || !state->state_member ||                               \
+           Py_TYPE(obj) == state->state_member);                           \
+  } while (0)
 
 typedef enum {
   kPyUpb_CompareEqual,
@@ -65,9 +70,10 @@ static void PyUpb_ByNameIterator_Dealloc(PyObject* _self) {
 
 static PyObject* PyUpb_ByNameIterator_New(const PyUpb_ByNameMap_Funcs* funcs,
                                           const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNameIterator* iter =
       (void*)PyType_GenericAlloc(s->by_name_iterator_type, 0);
+  if (!iter) return NULL;
   iter->funcs = funcs;
   iter->parent = parent;
   iter->pool = pool;
@@ -79,9 +85,17 @@ static PyObject* PyUpb_ByNameIterator_New(const PyUpb_ByNameMap_Funcs* funcs,
 static PyObject* PyUpb_ByNameIterator_IterNext(PyObject* _self) {
   PyUpb_ByNameIterator* self = PyUpb_ByNameIterator_Self(_self);
   int size = self->funcs->base.get_elem_count(self->parent);
-  if (self->index >= size) return NULL;
-  const void* elem = self->funcs->base.index(self->parent, self->index);
-  self->index++;
+  const void* elem = NULL;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(_self);
+#endif
+  if (self->index < size) {
+    elem = self->funcs->base.index(self->parent, self->index++);
+  }
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  if (!elem) return NULL;
   return PyUnicode_FromString(self->funcs->get_elem_name(elem));
 }
 
@@ -126,9 +140,10 @@ static void PyUpb_ByNumberIterator_Dealloc(PyObject* _self) {
 
 static PyObject* PyUpb_ByNumberIterator_New(
     const PyUpb_ByNumberMap_Funcs* funcs, const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNumberIterator* iter =
       (void*)PyType_GenericAlloc(s->by_number_iterator_type, 0);
+  if (!iter) return NULL;
   iter->funcs = funcs;
   iter->parent = parent;
   iter->pool = pool;
@@ -140,9 +155,17 @@ static PyObject* PyUpb_ByNumberIterator_New(
 static PyObject* PyUpb_ByNumberIterator_IterNext(PyObject* _self) {
   PyUpb_ByNumberIterator* self = PyUpb_ByNumberIterator_Self(_self);
   int size = self->funcs->base.get_elem_count(self->parent);
-  if (self->index >= size) return NULL;
-  const void* elem = self->funcs->base.index(self->parent, self->index);
-  self->index++;
+  const void* elem = NULL;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(_self);
+#endif
+  if (self->index < size) {
+    elem = self->funcs->base.index(self->parent, self->index++);
+  }
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
+  if (!elem) return NULL;
   return PyLong_FromLong(self->funcs->get_elem_num(elem));
 }
 
@@ -190,9 +213,10 @@ static void PyUpb_GenericSequence_Dealloc(PyObject* _self) {
 
 PyObject* PyUpb_GenericSequence_New(const PyUpb_GenericSequence_Funcs* funcs,
                                     const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_GenericSequence* seq =
       (PyUpb_GenericSequence*)PyType_GenericAlloc(s->generic_sequence_type, 0);
+  if (!seq) return NULL;
   seq->funcs = funcs;
   seq->parent = parent;
   seq->pool = pool;
@@ -249,9 +273,18 @@ static PyUpb_CompareResult PyUpb_GenericSequence_IsEqual(
   PyObject* item1;
   for (int i = 0; i < n; i++) {
     item1 = PyUpb_GenericSequence_GetItem((PyObject*)self, i);
+#ifdef Py_GIL_DISABLED
+    PyObject* item2 = PyList_GetItemRef(other, i);
+#else
     PyObject* item2 = PyList_GetItem(other, i);
-    if (!item1 || !item2) goto error;
+    Py_XINCREF(item2);
+#endif
+    if (!item1 || !item2) {
+      Py_XDECREF(item2);
+      goto error;
+    }
     int cmp = PyObject_RichCompareBool(item1, item2, Py_EQ);
+    Py_DECREF(item2);
     Py_DECREF(item1);
     if (cmp < 0) return kPyUpb_CompareError;
     if (cmp == 0) return kPyUpb_CompareNotEqual;
@@ -404,8 +437,9 @@ static void PyUpb_ByNameMap_Dealloc(PyObject* _self) {
 
 PyObject* PyUpb_ByNameMap_New(const PyUpb_ByNameMap_Funcs* funcs,
                               const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNameMap* map = (void*)PyType_GenericAlloc(s->by_name_map_type, 0);
+  if (!map) return NULL;
   map->funcs = funcs;
   map->parent = parent;
   map->pool = pool;
@@ -641,8 +675,9 @@ static PyObject* PyUpb_ByNumberMap_AsPyObj(PyUpb_ByNumberMap* self) {
 
 PyObject* PyUpb_ByNumberMap_New(const PyUpb_ByNumberMap_Funcs* funcs,
                                 const void* parent, PyObject* pool) {
-  PyUpb_ModuleState* s = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* s = PyUpb_DescriptorPool_GetModuleState(pool);
   PyUpb_ByNumberMap* map = (void*)PyType_GenericAlloc(s->by_number_map_type, 0);
+  if (!map) return NULL;
   map->funcs = funcs;
   map->parent = parent;
   map->pool = pool;

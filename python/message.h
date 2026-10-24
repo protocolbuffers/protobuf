@@ -42,6 +42,9 @@ bool PyUpb_Message_Verify(PyObject* self);
 // Otherwise returns NULL.
 upb_Message* PyUpb_Message_GetIfReified(PyObject* _self);
 
+// Borrowed reference to the arena shared by this message and its aliases.
+PyObject* PyUpb_Message_GetArena(PyObject* self);
+
 // Returns the `PyUpb_DescriptorPool` for a given Message instance or class.
 PyObject* PyUpb_Message_GetPool(PyObject* self);
 PyObject* PyUpb_MessageClass_GetPool(PyObject* cls);
@@ -56,6 +59,10 @@ const upb_MessageDef* PyUpb_Message_GetMsgdef(PyObject* self);
 
 // Functions that match the corresponding methods on the message object.
 PyObject* PyUpb_Message_MergeFrom(PyObject* self, PyObject* arg);
+// Caller already owns the target arena writer. This is not a Python entry point.
+PyObject* PyUpb_Message_MergeFromPreAdmittedTarget(PyObject* self,
+                                                   PyObject* arg,
+                                                   PyObject* target_arena);
 PyObject* PyUpb_Message_MergeFromString(PyObject* self, PyObject* arg);
 PyObject* PyUpb_Message_SerializeToString(PyObject* self, PyObject* args,
                                           PyObject* kwargs);
@@ -63,6 +70,13 @@ PyObject* PyUpb_Message_SerializePartialToString(PyObject* self, PyObject* args,
                                                  PyObject* kwargs);
 
 // Sets fields of the message according to the attribuges in `kwargs`.
+#ifdef PROTOBUF_PYTHON_EXPERIMENTAL_FREE_THREADING
+// Initialize through individually admitted field operations, allowing WKT
+// callbacks to use the public message API without nested write admission.
+int PyUpb_Message_InitAttributesPublic(PyObject* self, PyObject* args,
+                                       PyObject* kwargs);
+#endif
+
 int PyUpb_Message_InitAttributes(PyObject* _self, PyObject* args,
                                  PyObject* kwargs);
 
@@ -74,9 +88,8 @@ const upb_FieldDef* PyUpb_Message_GetExtensionDef(PyObject* _self,
 // Clears the given field in this message.
 bool PyUpb_Message_DoClearField(PyObject* _self, const upb_FieldDef* f);
 
-// Clears the ExtensionDict from the message.  The message must have an
-// ExtensionDict set.
-void PyUpb_Message_ClearExtensionDict(PyObject* _self);
+// Removes the extension wrapper only if it is still the cached instance.
+void PyUpb_Message_ClearExtensionDict(PyObject* _self, PyObject* wrapper);
 
 // Implements the equivalent of getattr(msg, field), once `field` has
 // already been resolved to a `upb_FieldDef*`.

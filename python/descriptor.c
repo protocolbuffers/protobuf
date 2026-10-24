@@ -17,6 +17,7 @@
 
 #include "google/protobuf/descriptor.upb_minitable.h"
 #include "python/convert.h"
+#include "python/def_lookup.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
 #include "python/free_threading/lazy_ptr.h"
@@ -52,7 +53,7 @@ typedef struct {
   const void* def;  // Type depends on the class. Kept alive by "pool".
   PYUPB_LAZYPTR(PyObject) options;   // NULL if not present or not cached.
   PYUPB_LAZYPTR(PyObject) features;  // NULL if not present or not cached.
-  PyObject* message_meta;            // We own a ref.
+  PYUPB_LAZYPTR(PyObject) message_meta;  // We own a ref.
 } PyUpb_DescriptorBase;
 
 static PyObject* PyUpb_DescriptorBase_AsPyObj(PyUpb_DescriptorBase* base) {
@@ -71,7 +72,7 @@ const void* PyUpb_AnyDescriptor_GetDef(PyObject* desc) {
 
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_DoCreate(
     PyUpb_DescriptorType type, const void* def, PyObject* pool) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_Get();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(pool);
   PyTypeObject* type_obj = state->descriptor_types[type];
   assert(def);
   assert(pool);
@@ -109,11 +110,20 @@ static PyObject* PyUpb_DescriptorBase_Get(PyUpb_DescriptorType type,
   return py_base;
 }
 
+static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base);
+
 static PyUpb_DescriptorBase* PyUpb_DescriptorBase_Check(
     PyObject* obj, PyUpb_DescriptorType type) {
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
-  if (!state) {
-    return (PyUpb_DescriptorBase*)obj;
+  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGetFromType(Py_TYPE(obj));
+  if (!state || !state->descriptor_types[type]) {
+    // Type/module metadata can be cleared before a native descriptor is
+    // destroyed. Never interpret an unrelated object's storage as a descriptor.
+    if (PyType_GetSlot(Py_TYPE(obj), Py_tp_dealloc) ==
+        (void*)PyUpb_DescriptorBase_Dealloc) {
+      return (PyUpb_DescriptorBase*)obj;
+    }
+    PyErr_Format(PyExc_TypeError, "Expected a descriptor, but got %R", obj);
+    return NULL;
   }
   PyTypeObject* type_obj = state->descriptor_types[type];
   if (!PyObject_TypeCheck(obj, type_obj)) {
@@ -142,13 +152,29 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   // Normally this just costs a sys.modules lookup, since DescriptorPool has
   // already eagerly imported descriptor_pb2 for every file except
   // descriptor.proto.
-  if (!PyUpb_ImportDescriptorModule()) return NULL;
+  PyObject* module = PyImport_ImportModule(PYUPB_DESCRIPTOR_MODULE);
+  if (!module) return NULL;
+  PyObject* descriptor = PyObject_GetAttrString(module, "DESCRIPTOR");
+  Py_DECREF(module);
+  if (!descriptor) return NULL;
+  if (!PyUpb_FileDescriptor_GetDef(descriptor)) {
+    Py_DECREF(descriptor);
+    return NULL;
+  }
 
-  // Find the correct options message.
-  PyObject* default_pool = PyUpb_DescriptorPool_GetDefaultPool();
+  // descriptor_pb2 may belong to another instance of the native module.
+  // Its actual pool owns the runtime schema used to materialize options.
+  PyObject* default_pool = PyUpb_AnyDescriptor_GetPool(descriptor);
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(default_pool);
   const upb_DefPool* symtab = PyUpb_DescriptorPool_GetSymtab(default_pool);
-  const upb_MessageDef* m =
-      upb_DefPool_FindMessageByName(symtab, args->msg_name);
+  const upb_MessageDef* m;
+#ifdef Py_GIL_DISABLED
+  Py_BEGIN_CRITICAL_SECTION(default_pool);
+#endif
+  m = upb_DefPool_FindMessageByName(symtab, args->msg_name);
+#ifdef Py_GIL_DISABLED
+  Py_END_CRITICAL_SECTION();
+#endif
   assert(m);
 
   // Copy the options message from C to Python using serialize+parse.
@@ -166,7 +192,7 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
     if (es == kUpb_EncodeStatus_OutOfMemory) {
       PyErr_SetNone(PyExc_MemoryError);
     } else {
-      PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+      PyErr_Format(state->decode_error_class,
                    "Error parsing descriptor: %s", upb_EncodeStatus_String(es));
     }
     goto err;
@@ -184,7 +210,7 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
     if (ds == kUpb_DecodeStatus_OutOfMemory) {
       PyErr_SetNone(PyExc_MemoryError);
     } else {
-      PyErr_Format(PyUpb_ModuleState_Get()->decode_error_class,
+      PyErr_Format(state->decode_error_class,
                    "Error parsing descriptor: %s", upb_DecodeStatus_String(ds));
     }
     goto err;
@@ -200,10 +226,12 @@ static PyObject* PyUpb_DescriptorBase_CreateCachedOptions(void* _args) {
   upb_Message_Freeze(opts2, opts2_layout);
   PyObject* val = PyUpb_Message_Get(default_pool, opts2, m, py_arena);
   Py_DECREF(py_arena);
+  Py_DECREF(descriptor);
   return val;
 
 err:
   Py_XDECREF(py_arena);
+  Py_DECREF(descriptor);
   return NULL;
 }
 
@@ -273,7 +301,16 @@ static PyObject* PyUpb_DescriptorBase_CopyToProto(PyObject* _self,
   PyObject* serialized =
       PyUpb_DescriptorBase_GetSerializedProto(_self, func, layout);
   if (!serialized) return NULL;
+  PyObject* arena = PyUpb_Message_GetArena(py_proto);
+  Py_INCREF(arena);
+  if (!PyUpb_Arena_TryWrite(arena)) {
+    Py_DECREF(arena);
+    Py_DECREF(serialized);
+    return NULL;
+  }
   PyObject* ret = PyUpb_Message_MergeFromString(py_proto, serialized);
+  PyUpb_Arena_EndWrite(arena);
+  Py_DECREF(arena);
   Py_DECREF(serialized);
   return ret;
 }
@@ -297,7 +334,7 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   // arbitrary code, so any struct members we DECREF should be set to NULL
   // or a new value *before* calling Py_DECREF on them. The Py_CLEAR macro
   // (and Py_SETREF in Python 3.8+) takes care to do this safely.
-  Py_CLEAR(base->message_meta);
+  PyUpb_LazyPtr_Clear(&base->message_meta);
   Py_CLEAR(base->pool);
   PyUpb_LazyPtr_Clear(&base->options);
   PyUpb_LazyPtr_Clear(&base->features);
@@ -306,12 +343,14 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
 
 static int PyUpb_Descriptor_Traverse(PyUpb_DescriptorBase* base,
                                      visitproc visit, void* arg) {
-  Py_VISIT(base->message_meta);
+  Py_VISIT(Py_TYPE(base));
+  Py_VISIT(base->pool);
+  Py_VISIT(PyUpb_LazyPtr_RawGet(&base->message_meta));
   return 0;
 }
 
 static int PyUpb_Descriptor_Clear(PyUpb_DescriptorBase* base) {
-  Py_CLEAR(base->message_meta);
+  PyUpb_LazyPtr_Clear(&base->message_meta);
   return 0;
 }
 
@@ -336,7 +375,7 @@ PyObject* PyUpb_Descriptor_GetClass(PyObject* pool, const upb_MessageDef* m) {
       PyUpb_DescriptorPool_CacheGet(pool, upb_MessageDef_MiniTable(m));
   if (ret) return ret;
 
-  PyUpb_ModuleState* state = PyUpb_ModuleState_MaybeGet();
+  PyUpb_ModuleState* state = PyUpb_DescriptorPool_GetModuleState(pool);
   if (!state) {
     PyErr_SetString(PyExc_RuntimeError, "Interpreter is finalizing");
     return NULL;
@@ -361,54 +400,36 @@ err:
   return ret;
 }
 
-void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta) {
-  PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)py_descriptor;
-  Py_XINCREF(meta);
-  PyObject* tmp = base->message_meta;
-  base->message_meta = meta;
-  Py_XDECREF(tmp);
+static PyObject* PyUpb_Descriptor_InitClass(void* meta) {
+  Py_INCREF(meta);
+  return meta;
 }
 
-// The LookupNested*() functions provide name lookup for entities nested inside
-// a message.  This uses the symtab's table, which requires that the symtab is
-// not being mutated concurrently.  We can guarantee this for Python-owned
-// symtabs, but upb cannot guarantee it in general for an arbitrary
-// `const upb_MessageDef*`.
+void PyUpb_Descriptor_SetClass(PyObject* py_descriptor, PyObject* meta) {
+  assert(meta);
+  PyUpb_DescriptorBase* base = (PyUpb_DescriptorBase*)py_descriptor;
+  PyObject* selected = PyUpb_LazyPtr_LazyInitPyObj(
+      &base->message_meta, PyUpb_Descriptor_InitClass, meta);
+  assert(selected == meta);
+  Py_DECREF(selected);
+}
+
+// Resolve nested entities through immutable definition trees, not the pool's
+// mutable symbol table: unrelated modules may register new files concurrently.
 
 static const void* PyUpb_Descriptor_LookupNestedMessage(const upb_MessageDef* m,
                                                         const char* name) {
-  const upb_FileDef* filedef = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  PyObject* qname =
-      PyUnicode_FromFormat("%s.%s", upb_MessageDef_FullName(m), name);
-  const upb_MessageDef* ret = upb_DefPool_FindMessageByName(
-      symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-  Py_DECREF(qname);
-  return ret;
+  return PyUpb_DefLookup_Message(m, name, kPyUpb_LookupMessage);
 }
 
 static const void* PyUpb_Descriptor_LookupNestedEnum(const upb_MessageDef* m,
                                                      const char* name) {
-  const upb_FileDef* filedef = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  PyObject* qname =
-      PyUnicode_FromFormat("%s.%s", upb_MessageDef_FullName(m), name);
-  const upb_EnumDef* ret =
-      upb_DefPool_FindEnumByName(symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-  Py_DECREF(qname);
-  return ret;
+  return PyUpb_DefLookup_Message(m, name, kPyUpb_LookupEnum);
 }
 
 static const void* PyUpb_Descriptor_LookupNestedExtension(
     const upb_MessageDef* m, const char* name) {
-  const upb_FileDef* filedef = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  PyObject* qname =
-      PyUnicode_FromFormat("%s.%s", upb_MessageDef_FullName(m), name);
-  const upb_FieldDef* ret = upb_DefPool_FindExtensionByName(
-      symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-  Py_DECREF(qname);
-  return ret;
+  return PyUpb_DefLookup_Message(m, name, kPyUpb_LookupExtension);
 }
 
 static PyObject* PyUpb_Descriptor_GetExtensionRanges(PyObject* _self,
@@ -592,17 +613,8 @@ static PyObject* PyUpb_Descriptor_GetNestedTypesByName(PyObject* _self,
 
 static PyObject* PyUpb_Descriptor_GetContainingType(PyObject* _self,
                                                     void* closure) {
-  // upb does not natively store the lexical parent of a message type, but we
-  // can derive it with some string manipulation and a lookup.
   PyUpb_DescriptorBase* self = (void*)_self;
-  const upb_MessageDef* m = self->def;
-  const upb_FileDef* file = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(file);
-  const char* full_name = upb_MessageDef_FullName(m);
-  const char* last_dot = strrchr(full_name, '.');
-  if (!last_dot) Py_RETURN_NONE;
-  const upb_MessageDef* parent = upb_DefPool_FindMessageByNameWithSize(
-      symtab, full_name, last_dot - full_name);
+  const upb_MessageDef* parent = upb_MessageDef_ContainingType(self->def);
   if (!parent) Py_RETURN_NONE;
   return PyUpb_Descriptor_Get(self->pool, parent);
 }
@@ -1329,58 +1341,24 @@ PyObject* PyUpb_FileDescriptor_Get(PyObject* pool, const upb_FileDef* file) {
   return PyUpb_DescriptorBase_Get(kPyUpb_FileDescriptor, file, pool);
 }
 
-// These are not provided on upb_FileDef because they use the underlying
-// symtab's hash table. This works for Python because everything happens under
-// the GIL, but in general the caller has to guarantee that the symtab is not
-// being mutated concurrently.
-typedef const void* PyUpb_FileDescriptor_LookupFunc(const upb_DefPool*,
-                                                    const char*);
-
-static const void* PyUpb_FileDescriptor_NestedLookup(
-    const upb_FileDef* filedef, const char* name,
-    PyUpb_FileDescriptor_LookupFunc* func) {
-  const upb_DefPool* symtab = upb_FileDef_Pool(filedef);
-  const char* package = upb_FileDef_Package(filedef);
-  if (strlen(package)) {
-    PyObject* qname = PyUnicode_FromFormat("%s.%s", package, name);
-    const void* ret = func(symtab, PyUnicode_AsUTF8AndSize(qname, NULL));
-    Py_DECREF(qname);
-    return ret;
-  } else {
-    return func(symtab, name);
-  }
-}
-
 static const void* PyUpb_FileDescriptor_LookupMessage(
     const upb_FileDef* filedef, const char* name) {
-  const upb_MessageDef* m = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindMessageByName);
-  if (!m) return NULL;
-  return upb_MessageDef_File(m) == filedef ? m : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupMessage);
 }
 
 static const void* PyUpb_FileDescriptor_LookupEnum(const upb_FileDef* filedef,
                                                    const char* name) {
-  const upb_EnumDef* e = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindEnumByName);
-  if (!e) return NULL;
-  return upb_EnumDef_File(e) == filedef ? e : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupEnum);
 }
 
 static const void* PyUpb_FileDescriptor_LookupExtension(
     const upb_FileDef* filedef, const char* name) {
-  const upb_FieldDef* f = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindExtensionByName);
-  if (!f) return NULL;
-  return upb_FieldDef_File(f) == filedef ? f : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupExtension);
 }
 
 static const void* PyUpb_FileDescriptor_LookupService(
     const upb_FileDef* filedef, const char* name) {
-  const upb_ServiceDef* s = PyUpb_FileDescriptor_NestedLookup(
-      filedef, name, (void*)&upb_DefPool_FindServiceByName);
-  if (!s) return NULL;
-  return upb_ServiceDef_File(s) == filedef ? s : NULL;
+  return PyUpb_DefLookup_File(filedef, name, kPyUpb_LookupService);
 }
 
 static PyObject* PyUpb_FileDescriptor_GetName(PyUpb_DescriptorBase* self,
