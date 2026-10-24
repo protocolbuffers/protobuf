@@ -303,19 +303,36 @@ UPB_FORCEINLINE void _upb_Message_AlignedMemsetZero(void* dst, size_t size) {
 }
 #undef UPB_ARM_MOPS
 
-// Inline version upb_Message_New(), for internal use.
-UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
+// Returns the size of a message of `m`, including its upb_Message header.
+UPB_INLINE size_t _upb_Message_Size(const upb_MiniTable* m) {
+  const size_t size = m->UPB_PRIVATE(size);
+  // Message sizes are aligned up when constructing minitables, and include the
+  // header; telling the compiler this lets it skip alignment and size checks,
+  // e.g. on the malloc fast path and in memset/memcpy.
+  UPB_ASSUME(size % kUpb_Message_Align == 0);
+  UPB_ASSUME(size >= sizeof(struct upb_Message));
+  return size;
+}
+
+// Like _upb_Message_New(), but leaves the message uninitialized: the caller
+// must initialize all of it, including the upb_Message header, before using it.
+UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_NewUninit(
     const upb_MiniTable* m, upb_Arena* a) {
   UPB_PRIVATE(upb_MiniTable_CheckInvariants)(m);
 #ifdef UPB_TRACING_ENABLED
   upb_Message_LogNewMessage(m, a);
 #endif  // UPB_TRACING_ENABLED
 
-  const size_t size = m->UPB_PRIVATE(size);
-  // Message sizes are aligned up when constructing minitables; telling the
-  // compiler this avoids redoing alignment on the malloc fast path
-  UPB_ASSUME(size % kUpb_Message_Align == 0);
-  struct upb_Message* msg = (struct upb_Message*)upb_Arena_Malloc(a, size);
+  return (struct upb_Message*)upb_Arena_Malloc(a, _upb_Message_Size(m));
+}
+
+// Inline version upb_Message_New(), for internal use.
+UPB_NODISCARD UPB_INLINE struct upb_Message* _upb_Message_New(
+    const upb_MiniTable* m, upb_Arena* a) {
+  // Read the size before the allocation, which the compiler can't tell doesn't
+  // overwrite it.
+  const size_t size = _upb_Message_Size(m);
+  struct upb_Message* msg = _upb_Message_NewUninit(m, a);
   if (UPB_UNLIKELY(!msg)) return NULL;
   _upb_Message_AlignedMemsetZero(msg, size);
   return msg;
