@@ -14,7 +14,13 @@
 
 #ifdef PROTOBUF_PY_FUTURE_BREAKING_CHANGES
 
+// Make GetOptions() return immutable options.
+// Owner: runze@
+#define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 1
+
 #else
+
+#define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 0
 
 #endif
 
