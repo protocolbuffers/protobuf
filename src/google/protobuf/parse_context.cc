@@ -441,6 +441,7 @@ const char* EpsCopyInputStream::InitFrom(io::ZeroCopyInputStream* zcis) {
   const void* data;
   int size;
   limit_ = INT_MAX;
+  if (aliasing_ >= kNoDelta) aliasing_ = kOnPatch;
   if (zcis->Next(&data, &size)) {
     overall_limit_ -= size;
     if (size > kSlopBytes) {
