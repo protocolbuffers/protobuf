@@ -19,6 +19,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -586,9 +587,7 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
                 IsEntryForFieldNum(&table, field_num, table_field_numbers));
 
     absl::string_view name = FieldName(table, entry);
-    EXPECT_EQ(name.length(), field_num);
-    while (name[0] == '0') name.remove_prefix(1);  // strip leading zeores
-    EXPECT_EQ(name, absl::StrCat(field_num));
+    EXPECT_EQ(name, absl::StrFormat("%0*d", field_num, field_num));
   }
   for (int field_num : {0, 4, 112, 500000000}) {
     EXPECT_THAT(FindFieldEntry(table, field_num), Eq(nullptr));
