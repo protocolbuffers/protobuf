@@ -75,7 +75,7 @@ constexpr Version::ParseTableT_ Version::_Internal::GenerateParseTable(const ::_
       offsetof(ParseTableT_, field_entries),
       4,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -109,8 +109,7 @@ constexpr Version::ParseTableT_ Version::_Internal::GenerateParseTable(const ::_
       {PROTOBUF_FIELD_OFFSET(Version, _impl_.suffix_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
     }},
     // no aux_entries
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -240,8 +239,7 @@ constexpr CodeGeneratorResponse_File::ParseTableT_ CodeGeneratorResponse_File::_
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::GeneratedCodeInfo_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -384,8 +382,7 @@ constexpr CodeGeneratorResponse::ParseTableT_ CodeGeneratorResponse::_Internal::
     {{
         {::_pbi::FieldAuxClassData(), &::google::protobuf::compiler::CodeGeneratorResponse_File_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 
@@ -528,8 +525,7 @@ constexpr CodeGeneratorRequest::ParseTableT_ CodeGeneratorRequest::_Internal::Ge
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FileDescriptorProto_globals_},
         {::_pbi::FieldAuxClassData(), &::google::protobuf::FileDescriptorProto_globals_},
     }},
-    {{
-    }},
+    // no field_names
   };
 }
 

@@ -85,9 +85,9 @@ constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::_Internal::Ge
     }},
     // no aux_entries
     {{
-      "\41\6\0\0\0\0\0\0"
-      "pb.enumvalue.JsonEnumValueOptions"
-      "string"
+        "\41\6\0\0\0\0\0\0"
+        "pb.enumvalue.JsonEnumValueOptions"
+        "string"
     }},
   };
 }
