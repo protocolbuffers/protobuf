@@ -10782,6 +10782,7 @@ upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
   return clone;
 }
 
+
 #include "stddef.h"
 
 // Must be last.
