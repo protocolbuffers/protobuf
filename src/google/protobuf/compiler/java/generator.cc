@@ -11,10 +11,14 @@
 
 #include "google/protobuf/compiler/java/generator.h"
 
+#include <cstdint>
+#include <string>
 #include <utility>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/code_generator.h"
+#include "google/protobuf/io/printer.h"
 
 
 #include <memory>
