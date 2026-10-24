@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "absl/container/flat_hash_map.h"
 #include "absl/strings/str_cat.h"
 #include "google/protobuf/compiler/objectivec/field.h"
 #include "google/protobuf/compiler/objectivec/helpers.h"
