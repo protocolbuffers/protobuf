@@ -23,7 +23,8 @@
 
 #include "google/protobuf/compiler/cpp/unittest.h"
 
-#include "google/protobuf/test_util.h"
+#include <gtest/gtest.h>
+#include "google/protobuf/compiler/cpp/test_bad_identifiers_proto2.pb.h"
 #include "google/protobuf/unittest.pb.h"
 #include "google/protobuf/unittest_embed_optimize_for.pb.h"
 #include "google/protobuf/unittest_import.pb.h"
