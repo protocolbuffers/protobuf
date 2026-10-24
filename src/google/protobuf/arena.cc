@@ -770,6 +770,8 @@ ThreadSafeArena::~ThreadSafeArena() {
   } else if (mem.n > 0) {
     GetDeallocator(alloc_policy_.get())(mem);
   }
+
+  unknown_field_map_.Destroy();
 }
 
 SizedPtr ThreadSafeArena::Free() {
@@ -825,6 +827,8 @@ uint64_t ThreadSafeArena::Reset() {
   } else {
     first_arena_.Init(SentryArenaBlock(), 0);
   }
+
+  unknown_field_map_.Reset();
 
   // Since the first block and potential alloc_policy on the first block is
   // preserved, this can be initialized by Init().
