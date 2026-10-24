@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer.
 
 The consumers should use the following WORKSPACE snippet, which loads dependencies
