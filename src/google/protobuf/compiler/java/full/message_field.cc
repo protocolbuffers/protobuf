@@ -424,8 +424,7 @@ void ImmutableMessageFieldGenerator::GenerateBuilderParseMethod(
         "  internalGet$capitalized_name$FieldBuilder().getBuilder()\n"
         "      .mergeFrom(input, extensionRegistry);\n"
         "} else {\n"
-        "  $name$_ = $type$.parser().parsePartialFrom(input, "
-        "extensionRegistry);\n"
+        "  $name$_ = $type$.parsePartialFrom(input, extensionRegistry);\n"
         "}\n"
         "input.popLimitAfterMessage(oldLimit);\n"
         "$set_has_field_bit$\n");
@@ -1570,7 +1569,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderParsingCode(
   } else {
     printer->Print(variables_,
                    "final int oldLimit = input.pushLimitBeforeMessage();\n"
-                   "$type$ m = $type$.parser().parsePartialFrom(input, "
+                   "$type$ m = $type$.parsePartialFrom(input, "
                    "extensionRegistry);\n"
                    "input.popLimitAfterMessage(oldLimit);\n");
   }
