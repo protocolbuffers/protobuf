@@ -48,6 +48,8 @@ def bazel_proto_library_test_suite(name):
         _test_proto_library_with_mixed_sources,
         _test_strict_proto_deps_starlark_override_native,
         _test_strict_proto_deps_starlark_off_native_on,
+        _test_no_experimental_use_transitive_descriptor_sets,
+        _test_experimental_use_transitive_descriptor_sets,
     ]
 
     # Flipping experimental flag in test requires Bazel 8
@@ -680,6 +682,63 @@ def _test_experimental_proto_descriptor_sets_include_source_info_impl(env, targe
         "{package}/{name}-descriptor-set.proto.bin",
     )
     action.argv().contains("--include_source_info")
+
+def _test_no_experimental_use_transitive_descriptor_sets(name):
+    util.helper_target(
+        proto_library,
+        name = name + "_dep",
+        srcs = ["dep.proto"],
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_main",
+        srcs = ["main.proto"],
+        deps = [":" + name + "_dep"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_main",
+        impl = _test_no_experimental_use_transitive_descriptor_sets_impl,
+    )
+
+def _test_no_experimental_use_transitive_descriptor_sets_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}-descriptor-set.proto.bin",
+    )
+    action.argv().not_contains_predicate(matching.str_matches("--descriptor_set_in=*"))
+
+def _test_experimental_use_transitive_descriptor_sets(name):
+    util.helper_target(
+        proto_library,
+        name = name + "_dep",
+        srcs = ["dep.proto"],
+    )
+    util.helper_target(
+        proto_library,
+        name = name + "_main",
+        srcs = ["main.proto"],
+        deps = [":" + name + "_dep"],
+    )
+
+    analysis_test(
+        name = name,
+        target = name + "_main",
+        impl = _test_experimental_use_transitive_descriptor_sets_impl,
+        config_settings = {
+            "@@//bazel/flags:experimental_use_transitive_descriptor_sets": "true",
+        },
+    )
+
+def _test_experimental_use_transitive_descriptor_sets_impl(env, target):
+    action = env.expect.that_target(target).action_generating(
+        "{package}/{name}-descriptor-set.proto.bin",
+    )
+    action.argv().contains_predicate(matching.str_matches("--descriptor_set_in=*"))
+    action.inputs().not_contains_predicate(matching.file_basename_equals("dep.proto"))
+    action.inputs().contains_predicate(matching.file_basename_equals("main.proto"))
+    dep_name = target.label.name.removesuffix("_main") + "_dep-descriptor-set.proto.bin"
+    action.inputs().contains_predicate(matching.file_basename_equals(dep_name))
 
 def _test_source_and_generated_proto_files(name):
     util.helper_target(

@@ -181,6 +181,14 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         args.add("--include_source_info")
     args.add("--retain_options")
 
+    use_transitive_descriptor_sets = ctx.attr._experimental_use_transitive_descriptor_sets[BuildSettingInfo].value
+    if use_transitive_descriptor_sets and (deps or option_deps):
+        args.add_joined(
+            dependencies_descriptor_sets,
+            join_with = ctx.configuration.host_path_separator,
+            format_joined = "--descriptor_set_in=%s",
+        )
+
     strict_proto_deps = ctx.attr._strict_proto_deps[BuildSettingInfo].value
 
     if strict_proto_deps:
@@ -258,9 +266,9 @@ def _write_descriptor_set(ctx, proto_info, deps, option_deps, exports, descripto
         proto_info,
         proto_lang_toolchain_info,
         generated_files = [descriptor_set],
-        # TODO: Fix protoc to actually use the transitive descriptor sets.
         additional_inputs = dependencies_descriptor_sets,
         additional_args = args,
+        experimental_use_transitive_descriptor_sets = use_transitive_descriptor_sets,
     )
 
 _extra_doc = ""
@@ -387,6 +395,9 @@ for use with MessageSet.
         "licenses": attr.license() if hasattr(attr, "license") else attr.string_list(),
         "_experimental_proto_descriptor_sets_include_source_info": attr.label(
             default = Label("//bazel/flags:experimental_proto_descriptor_sets_include_source_info"),
+        ),
+        "_experimental_use_transitive_descriptor_sets": attr.label(
+            default = Label("//bazel/flags:experimental_use_transitive_descriptor_sets"),
         ),
         "_strict_proto_deps": attr.label(
             default = Label("//bazel/flags:strict_proto_deps"),
