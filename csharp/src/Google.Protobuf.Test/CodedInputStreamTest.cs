@@ -856,6 +856,7 @@ namespace Google.Protobuf
             Assert.Throws<ArgumentNullException>(() => new CodedInputStream((Stream) null));
             Assert.Throws<ArgumentOutOfRangeException>(() => new CodedInputStream(new byte[10], 100, 0));
             Assert.Throws<ArgumentOutOfRangeException>(() => new CodedInputStream(new byte[10], 5, 10));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new CodedInputStream(new byte[1], 1, int.MaxValue));
         }
 
         [Test]
