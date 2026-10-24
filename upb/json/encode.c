@@ -728,14 +728,17 @@ static void jsonenc_fieldval(jsonenc* e, const upb_FieldDef* f,
     // TODO: For MessageSet, I would have expected this to print the message
     // name here, but Python doesn't appear to do this. We should do more
     // research here about what various implementations do.
-    jsonenc_printf(e, "\"[%s]\":", upb_FieldDef_FullName(f));
+    jsonenc_putstr(e, "\"[");
+    jsonenc_stringbody(e, upb_StringView_FromString(upb_FieldDef_FullName(f)));
+    jsonenc_putstr(e, "]\":");
   } else {
     if (e->options & upb_JsonEncode_UseProtoNames) {
       name = upb_FieldDef_Name(f);
     } else {
       name = upb_FieldDef_JsonName(f);
     }
-    jsonenc_printf(e, "\"%s\":", name);
+    jsonenc_string(e, upb_StringView_FromString(name));
+    jsonenc_putstr(e, ":");
   }
 
   if (upb_FieldDef_IsMap(f)) {
