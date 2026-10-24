@@ -394,6 +394,8 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       common_file_options.force_eagerly_verified_lazy = true;
     } else if (key == "experimental_strip_nonfunctional_codegen") {
       common_file_options.strip_nonfunctional_codegen = true;
+    } else if (key == "no_batch_string_fields") {
+      common_file_options.batch_string_fields = false;
     } else if (key == "experimental_cpp_micro_string") {
       common_file_options.experimental_use_micro_string = true;
     } else {

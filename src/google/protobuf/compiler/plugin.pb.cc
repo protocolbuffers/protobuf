@@ -182,6 +182,15 @@ class CodeGeneratorResponse_File::_Internal {
   using HasBits = decltype(::std::declval<CodeGeneratorResponse_File>()._impl_._has_bits_);
   static constexpr ::int32_t kHasBitsOffset =
       8 * PROTOBUF_FIELD_OFFSET(CodeGeneratorResponse_File, _impl_._has_bits_);
+  static constexpr ::uint16_t kStringOffsets_0[] = {
+      0,
+      static_cast<::uint16_t>(
+          PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.insertion_point_) -
+          PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.name_)),
+      static_cast<::uint16_t>(
+          PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.content_) -
+          PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorResponse_File, _impl_.name_)),
+      };
 
   static constexpr CodeGeneratorResponse_File::ParseTableT_ GenerateParseTable(
       const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL class_data);
@@ -1381,9 +1390,9 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& from_msg)
       : _has_bits_{from._has_bits_},
-        name_(arena, from.name_),
-        insertion_point_(arena, from.insertion_point_),
-        content_(arena, from.content_) {}
+        name_(arena),
+        insertion_point_(arena),
+        content_(arena) {}
 
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -1399,6 +1408,10 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
+  if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+    ::_pbi::CopyStringFields((cached_has_bits & 0x00000007U), &_impl_.name_, &from._impl_.name_,
+                             _Internal::kStringOffsets_0, arena);
+  }
   _impl_.generated_code_info_ = (CheckHasBit(cached_has_bits, 0x00000008U))
                  ? Super_::CopyConstruct(arena, *from._impl_.generated_code_info_)
                  : nullptr;
@@ -1428,9 +1441,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE void CodeGeneratorResponse_File::SharedDtor(
   }
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(!::_pbi::HasArena(this_));
-  this_._impl_.name_.Destroy();
-  this_._impl_.insertion_point_.Destroy();
-  this_._impl_.content_.Destroy();
+  ::_pbi::DestroyStringFields(0x00000007U,
+                              &this_._impl_.name_,
+                              _Internal::kStringOffsets_0);
   delete this_._impl_.generated_code_info_;
   this_._impl_.~Impl_();
 }
@@ -1452,14 +1465,9 @@ void CodeGeneratorResponse_File::Clear(MessageLite& base) {
 
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._impl_.name_.ClearNonDefaultToEmpty();
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._impl_.insertion_point_.ClearNonDefaultToEmpty();
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      this_._impl_.content_.ClearNonDefaultToEmpty();
+    if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+      ::_pbi::ClearStringFields((cached_has_bits & 0x00000007U), &this_._impl_.name_,
+                                _Internal::kStringOffsets_0);
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(this_._impl_.generated_code_info_ != nullptr);
@@ -1542,20 +1550,9 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
-    // optional string name = 1;
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._impl_.name_.Get());
-    }
-    // optional string insertion_point = 2;
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._impl_.insertion_point_.Get());
-    }
-    // optional string content = 15;
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
-                                      this_._impl_.content_.Get());
+    if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+      total_size += ::_pbi::ByteSizeStringFields(
+          (cached_has_bits & 0x00000007U), &this_._impl_.name_, _Internal::kStringOffsets_0);
     }
     // optional .google.protobuf.GeneratedCodeInfo generated_code_info = 16;
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
@@ -1585,14 +1582,11 @@ void CodeGeneratorResponse_File::MergeImpl(::google::protobuf::MessageLite& to_m
 
   cached_has_bits = from._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
-    if (CheckHasBit(cached_has_bits, 0x00000001U)) {
-      this_._internal_set_name(from._impl_.name_.Get());
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._internal_set_insertion_point(from._impl_.insertion_point_.Get());
-    }
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      this_._internal_set_content(from._impl_.content_.Get());
+    if (BatchCheckHasBit(cached_has_bits, 0x00000007U)) {
+      ::_pbi::MergeStringFields((cached_has_bits & 0x00000007U),
+                                &this_._impl_.name_,
+                                &from._impl_.name_, _Internal::kStringOffsets_0,
+                                arena);
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       ABSL_DCHECK(from._impl_.generated_code_info_ != nullptr);
@@ -1625,9 +1619,13 @@ void CodeGeneratorResponse_File::InternalSwap(CodeGeneratorResponse_File* PROTOB
   ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.name_, &other->_impl_.name_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.insertion_point_, &other->_impl_.insertion_point_, arena);
-  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.content_, &other->_impl_.content_, arena);
+  if (::uint32_t mask =
+          (_impl_._has_bits_[0] | other->_impl_._has_bits_[0]) & 0x00000007U;
+      mask != 0) {
+    ::_pbi::SwapStringFields(mask, &_impl_.name_,
+                             &other->_impl_.name_, _Internal::kStringOffsets_0,
+                             arena);
+  }
   swap(_impl_.generated_code_info_, other->_impl_.generated_code_info_);
 }
 

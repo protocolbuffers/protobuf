@@ -19,7 +19,9 @@
 #include <vector>
 
 #include "absl/container/flat_hash_map.h"
+#include "absl/container/flat_hash_set.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/span.h"
 #include "google/protobuf/compiler/cpp/enum.h"
 #include "google/protobuf/compiler/cpp/extension.h"
 #include "google/protobuf/compiler/cpp/field.h"
@@ -227,6 +229,33 @@ class MessageGenerator {
   template <typename T>
   void EmitOneofFields(io::Printer* p, const T& emitter) const;
 
+  struct StringGroup {
+    bool is_split = false;
+    int has_word_index = 0;
+    int first_bit = 0;
+    int last_bit = 0;
+    uint32_t group_mask = 0;
+    uint32_t shifted_group_mask = 0;
+    const FieldDescriptor* first_field = nullptr;
+    std::vector<const FieldDescriptor*> fields;
+    std::string offsets_name;
+  };
+
+  bool ShouldBatchStringFields() const;
+  bool IsEligibleForStringBatching(const FieldDescriptor* field) const;
+  void BuildStringGroups();
+  bool IsInStringGroup(const FieldDescriptor* field) const;
+  bool IsNonFirstInStringGroup(const FieldDescriptor* field) const;
+  const StringGroup* GetStringGroupForFirstField(
+      const FieldDescriptor* field) const;
+  std::vector<const FieldDescriptor*> ExpandStringGroups(
+      absl::Span<const FieldDescriptor* const> fields) const;
+  void EmitClearStringGroup(io::Printer* p, const StringGroup& group) const;
+  void EmitMergeStringGroup(io::Printer* p, const StringGroup& group) const;
+  void EmitCopyStringGroup(io::Printer* p, const StringGroup& group) const;
+  void EmitSwapStringGroup(io::Printer* p, const StringGroup& group) const;
+  void EmitByteSizeStringGroup(io::Printer* p, const StringGroup& group) const;
+
   const Descriptor* descriptor_;
   int index_in_file_messages_;
   Options options_;
@@ -237,6 +266,8 @@ class MessageGenerator {
   int num_required_fields_ = 0;
 
   FieldLayout field_layout_;
+  std::vector<StringGroup> string_groups_;
+  absl::flat_hash_set<const FieldDescriptor*> string_group_fields_;
 
   std::unique_ptr<ParseFunctionGenerator> parse_function_generator_;
 

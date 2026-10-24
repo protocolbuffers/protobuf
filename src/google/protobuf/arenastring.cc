@@ -18,6 +18,7 @@
 #include "absl/base/const_init.h"
 #include "absl/base/optimization.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/arena.h"
@@ -25,6 +26,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/parse_context.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/wire_format_lite.h"
 
 // clang-format off
 #include "google/protobuf/port_def.inc"
@@ -293,6 +295,94 @@ const char* EpsCopyInputStream::ReadArenaString(const char* ptr,
   ptr = ReadString(ptr, size, str);
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   return ptr;
+}
+
+namespace {
+
+inline ArenaStringPtr* StringFieldAtOffset(ArenaStringPtr* first_str,
+                                           uint16_t offset) {
+  return reinterpret_cast<ArenaStringPtr*>(reinterpret_cast<char*>(first_str) +
+                                           offset);
+}
+
+inline const ArenaStringPtr* StringFieldAtOffset(
+    const ArenaStringPtr* first_str, uint16_t offset) {
+  return reinterpret_cast<const ArenaStringPtr*>(
+      reinterpret_cast<const char*>(first_str) + offset);
+}
+
+}  // namespace
+
+void ClearStringFields(uint32_t mask, ArenaStringPtr* first_str,
+                       const uint16_t* offsets) {
+  while (mask != 0) {
+    int bit = absl::countr_zero(mask);
+    mask &= mask - 1;
+    StringFieldAtOffset(first_str, offsets[bit])->ClearNonDefaultToEmpty();
+  }
+}
+
+void DestroyStringFields(uint32_t mask, ArenaStringPtr* first_str,
+                         const uint16_t* offsets) {
+  while (mask != 0) {
+    int bit = absl::countr_zero(mask);
+    mask &= mask - 1;
+    StringFieldAtOffset(first_str, offsets[bit])->Destroy();
+  }
+}
+
+void MergeStringFields(uint32_t mask, ArenaStringPtr* dst_first_str,
+                       const ArenaStringPtr* src_first_str,
+                       const uint16_t* offsets, Arena* arena) {
+  while (mask != 0) {
+    int bit = absl::countr_zero(mask);
+    mask &= mask - 1;
+    uint16_t offset = offsets[bit];
+    StringFieldAtOffset(dst_first_str, offset)
+        ->Set(StringFieldAtOffset(src_first_str, offset)->Get(), arena);
+  }
+}
+
+void CopyStringFields(uint32_t mask, ArenaStringPtr* dst_first_str,
+                      const ArenaStringPtr* src_first_str,
+                      const uint16_t* offsets, Arena* arena) {
+  while (mask != 0) {
+    int bit = absl::countr_zero(mask);
+    mask &= mask - 1;
+    uint16_t offset = offsets[bit];
+    ArenaStringPtr* dst = StringFieldAtOffset(dst_first_str, offset);
+    const ArenaStringPtr* src = StringFieldAtOffset(src_first_str, offset);
+    if (DebugHardenForceCopyDefaultString()) {
+      dst->Set(src->Get(), arena);
+    } else {
+      dst->SetFromDefault(src->Get(), arena);
+    }
+  }
+}
+
+void SwapStringFields(uint32_t mask, ArenaStringPtr* lhs_first_str,
+                      ArenaStringPtr* rhs_first_str, const uint16_t* offsets,
+                      Arena* arena) {
+  while (mask != 0) {
+    int bit = absl::countr_zero(mask);
+    mask &= mask - 1;
+    uint16_t offset = offsets[bit];
+    ArenaStringPtr::InternalSwap(StringFieldAtOffset(lhs_first_str, offset),
+                                 StringFieldAtOffset(rhs_first_str, offset),
+                                 arena);
+  }
+}
+
+size_t ByteSizeStringFields(uint32_t mask, const ArenaStringPtr* first_str,
+                            const uint16_t* offsets) {
+  size_t total_size = absl::popcount(mask);
+  while (mask != 0) {
+    int bit = absl::countr_zero(mask);
+    mask &= mask - 1;
+    total_size += WireFormatLite::StringSize(
+        StringFieldAtOffset(first_str, offsets[bit])->Get());
+  }
+  return total_size;
 }
 
 }  // namespace internal

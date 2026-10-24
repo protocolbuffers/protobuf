@@ -501,6 +501,276 @@ MessageGenerator::MessageGenerator(
   parse_function_generator_ = std::make_unique<ParseFunctionGenerator>(
       descriptor_, field_layout_.HasHasbits(), get_has_bit_index, options_,
       variables_, index_in_file_messages_);
+
+  BuildStringGroups();
+}
+
+bool MessageGenerator::ShouldBatchStringFields() const {
+  if (!options_.batch_string_fields) {
+    return false;
+  }
+  if (HasSimpleBaseClass(descriptor_, options_) ||
+      IsMapEntryMessage(descriptor_)) {
+    return false;
+  }
+  if (absl::EndsWith(descriptor_->name(), "Fallback")) {
+    return false;
+  }
+  return true;
+}
+
+bool MessageGenerator::IsEligibleForStringBatching(
+    const FieldDescriptor* field) const {
+  if (field->is_repeated() || field->real_containing_oneof() ||
+      field->is_extension()) {
+    return false;
+  }
+  if (field->cpp_type() != FieldDescriptor::CPPTYPE_STRING) {
+    return false;
+  }
+  if (!IsArenaStringPtr(field, options_) || IsStringInlined(field, options_)) {
+    return false;
+  }
+  if (!field->default_value_string().empty()) {
+    return false;
+  }
+  if (GetFieldHasbitMode(field, options_) != HasbitMode::kTrueHasbit ||
+      !field_layout_.GetHasBitIndex(field).has_value()) {
+    return false;
+  }
+  return true;
+}
+
+void MessageGenerator::BuildStringGroups() {
+  if (!ShouldBatchStringFields()) return;
+
+  struct CandidateGroup {
+    bool is_split;
+    int has_word_index;
+    std::vector<const FieldDescriptor*> fields;
+  };
+  std::vector<CandidateGroup> candidates;
+
+  for (const FieldDescriptor* field : field_layout_.optimized_order()) {
+    if (!IsEligibleForStringBatching(field)) continue;
+    bool is_split = ShouldSplit(field, options_);
+    int has_word_index = field_layout_.GetHasWordIndex(field).value();
+    auto it = absl::c_find_if(candidates, [&](const CandidateGroup& c) {
+      return c.is_split == is_split && c.has_word_index == has_word_index;
+    });
+    if (it == candidates.end()) {
+      candidates.push_back(CandidateGroup{is_split, has_word_index, {field}});
+    } else {
+      it->fields.push_back(field);
+    }
+  }
+
+  for (CandidateGroup& candidate : candidates) {
+    if (candidate.fields.size() < 3) continue;
+    StringGroup group;
+    group.is_split = candidate.is_split;
+    group.has_word_index = candidate.has_word_index;
+    group.first_field = candidate.fields.front();
+    group.fields = std::move(candidate.fields);
+    for (const FieldDescriptor* f : group.fields) {
+      int bit = field_layout_.GetHasBitIndex(f).value() % 32;
+      group.group_mask |= uint32_t{1} << bit;
+      string_group_fields_.insert(f);
+    }
+    group.first_bit = absl::countr_zero(group.group_mask);
+    group.last_bit = 31 - absl::countl_zero(group.group_mask);
+    group.shifted_group_mask = group.group_mask >> group.first_bit;
+    group.offsets_name = absl::StrCat(
+        group.is_split ? "kSplitStringOffsets_" : "kStringOffsets_",
+        group.has_word_index);
+    string_groups_.push_back(std::move(group));
+  }
+}
+
+bool MessageGenerator::IsInStringGroup(const FieldDescriptor* field) const {
+  return string_group_fields_.contains(field);
+}
+
+bool MessageGenerator::IsNonFirstInStringGroup(
+    const FieldDescriptor* field) const {
+  return IsInStringGroup(field) &&
+         GetStringGroupForFirstField(field) == nullptr;
+}
+
+const MessageGenerator::StringGroup*
+MessageGenerator::GetStringGroupForFirstField(
+    const FieldDescriptor* field) const {
+  for (const StringGroup& group : string_groups_) {
+    if (group.first_field == field) {
+      return &group;
+    }
+  }
+  return nullptr;
+}
+
+std::vector<const FieldDescriptor*> MessageGenerator::ExpandStringGroups(
+    absl::Span<const FieldDescriptor* const> fields) const {
+  std::vector<const FieldDescriptor*> expanded;
+  expanded.reserve(fields.size());
+  for (const FieldDescriptor* f : fields) {
+    if (const StringGroup* group = GetStringGroupForFirstField(f)) {
+      absl::c_copy(group->fields, std::back_inserter(expanded));
+    } else {
+      expanded.push_back(f);
+    }
+  }
+  return expanded;
+}
+
+namespace {
+
+std::string ShiftedGroupMaskExpr(uint32_t group_mask, int first_bit,
+                                 absl::string_view bits_var) {
+  std::string masked =
+      absl::StrFormat("(%s & 0x%08xU)", bits_var, group_mask);
+  if (first_bit == 0) {
+    return masked;
+  }
+  return absl::StrFormat("(%s >> %d)", masked, first_bit);
+}
+
+}  // namespace
+
+void MessageGenerator::EmitClearStringGroup(io::Printer* p,
+                                            const StringGroup& group) const {
+  auto v = p->WithVars(FieldVars(group.first_field, options_));
+  const std::string cond = GenerateConditionMaybeWithProbability(
+      group.group_mask,
+      GetFieldGroupPresenceProbability(group.fields, options_),
+      /*use_cached_has_bits=*/true,
+      /*has_array_index=*/absl::nullopt,
+      /*is_batch=*/true);
+  p->Emit({{"cond", cond},
+           {"shifted_mask",
+            ShiftedGroupMaskExpr(group.group_mask, group.first_bit,
+                                 "cached_has_bits")},
+           {"table", group.offsets_name}},
+          R"cc(
+            if ($cond$) {
+              ::_pbi::ClearStringFields($shifted_mask$, &$this_mutable_field$,
+                                        _Internal::$table$);
+            }
+          )cc");
+}
+
+void MessageGenerator::EmitMergeStringGroup(io::Printer* p,
+                                            const StringGroup& group) const {
+  auto v = p->WithVars(FieldVars(group.first_field, options_));
+  const std::string cond = GenerateConditionMaybeWithProbability(
+      group.group_mask,
+      GetFieldGroupPresenceProbability(group.fields, options_),
+      /*use_cached_has_bits=*/true,
+      /*has_array_index=*/absl::nullopt,
+      /*is_batch=*/true);
+  p->Emit({{"cond", cond},
+           {"shifted_mask",
+            ShiftedGroupMaskExpr(group.group_mask, group.first_bit,
+                                 "cached_has_bits")},
+           {"table", group.offsets_name}},
+          R"cc(
+            if ($cond$) {
+              ::_pbi::MergeStringFields($shifted_mask$,
+                                        &this_.$ensure_mutable_field_$,
+                                        &$from_field$, _Internal::$table$,
+                                        arena);
+            }
+          )cc");
+}
+
+void MessageGenerator::EmitCopyStringGroup(io::Printer* p,
+                                           const StringGroup& group) const {
+  ABSL_DCHECK(!group.is_split);
+  auto v = p->WithVars(FieldVars(group.first_field, options_));
+  const std::string cond = GenerateConditionMaybeWithProbability(
+      group.group_mask,
+      GetFieldGroupPresenceProbability(group.fields, options_),
+      /*use_cached_has_bits=*/true,
+      /*has_array_index=*/absl::nullopt,
+      /*is_batch=*/true);
+  p->Emit({{"cond", cond},
+           {"shifted_mask",
+            ShiftedGroupMaskExpr(group.group_mask, group.first_bit,
+                                 "cached_has_bits")},
+           {"table", group.offsets_name}},
+          R"cc(
+            if ($cond$) {
+              ::_pbi::CopyStringFields($shifted_mask$, &$field_$, &$from_field$,
+                                       _Internal::$table$, arena);
+            }
+          )cc");
+}
+
+void MessageGenerator::EmitSwapStringGroup(io::Printer* p,
+                                           const StringGroup& group) const {
+  ABSL_DCHECK(!group.is_split);
+  auto v = p->WithVars(FieldVars(group.first_field, options_));
+  std::string shifted_mask =
+      group.first_bit == 0 ? "mask" : absl::StrCat("mask >> ", group.first_bit);
+  p->Emit({{"w", group.has_word_index},
+           {"group_mask", absl::StrFormat("0x%08xU", group.group_mask)},
+           {"shifted_mask", shifted_mask},
+           {"table", group.offsets_name}},
+          R"cc(
+            if (::uint32_t mask =
+                    ($has_bits$[$w$] | other->$has_bits$[$w$]) & $group_mask$;
+                mask != 0) {
+              ::_pbi::SwapStringFields($shifted_mask$, &$field_$,
+                                       &other->$field_$, _Internal::$table$,
+                                       arena);
+            }
+          )cc");
+}
+
+void MessageGenerator::EmitByteSizeStringGroup(io::Printer* p,
+                                               const StringGroup& group) const {
+  auto v = p->WithVars(FieldVars(group.first_field, options_));
+  const std::string cond = GenerateConditionMaybeWithProbability(
+      group.group_mask,
+      GetFieldGroupPresenceProbability(group.fields, options_),
+      /*use_cached_has_bits=*/true,
+      /*has_array_index=*/absl::nullopt,
+      /*is_batch=*/true);
+  p->Emit(
+      {{"cond", cond},
+       {"shifted_mask",
+        ShiftedGroupMaskExpr(group.group_mask, group.first_bit,
+                             "cached_has_bits")},
+       {"table", group.offsets_name},
+       {"extra_tags",
+        [&] {
+          for (int extra_bytes = 1; extra_bytes <= 4; ++extra_bytes) {
+            uint32_t extra_mask = 0;
+            for (const FieldDescriptor* f : group.fields) {
+              const int tag_size = WireFormat::TagSize(f->number(), f->type());
+              if (tag_size - 1 == extra_bytes) {
+                int bit = field_layout_.GetHasBitIndex(f).value() % 32;
+                extra_mask |= uint32_t{1} << bit;
+              }
+            }
+            if (extra_mask == 0) continue;
+            p->Emit({{"mask", absl::StrFormat("0x%08xU", extra_mask)},
+                     {"popcount", absl::has_single_bit(extra_mask)
+                                      ? "static_cast<bool>"
+                                      : "::absl::popcount"},
+                     {"extra_bytes", extra_bytes}},
+                    R"cc(
+                      total_size +=
+                          $popcount$($mask$ & cached_has_bits) * $extra_bytes$;
+                    )cc");
+          }
+        }}},
+      R"cc(
+        if ($cond$) {
+          total_size += ::_pbi::ByteSizeStringFields(
+              $shifted_mask$, &$this_field$, _Internal::$table$);
+          $extra_tags$;
+        }
+      )cc");
 }
 
 bool MessageGenerator::ShouldGenerateEnclosingIf(
@@ -2629,7 +2899,11 @@ void MessageGenerator::GenerateImplMemberInit(io::Printer* p,
         case InitType::kArenaCopy:
           if (!generator.has_trivial_value()) {
             separator();
-            generator.GenerateMemberCopyConstructor(p);
+            if (IsInStringGroup(field)) {
+              generator.GenerateMemberConstructor(p);
+            } else {
+              generator.GenerateMemberCopyConstructor(p);
+            }
           }
           break;
       }
@@ -2722,6 +2996,23 @@ void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
              // optimized_order_ does not contain oneof fields.
              for (const auto* field : field_layout_.optimized_order()) {
                if (ShouldSplit(field, options_)) continue;
+               if (IsInStringGroup(field)) {
+                 if (const StringGroup* group =
+                         GetStringGroupForFirstField(field)) {
+                   auto v =
+                       p->WithVars(FieldVars(group->first_field, options_));
+                   p->Emit({{"mask",
+                             absl::StrFormat("0x%08xU",
+                                             group->shifted_group_mask)},
+                            {"table", group->offsets_name}},
+                           R"cc(
+                             ::_pbi::DestroyStringFields($mask$,
+                                                         &$this_mutable_field$,
+                                                         _Internal::$table$);
+                           )cc");
+                 }
+                 continue;
+               }
                field_generators_.get(field).GenerateDestructorCode(p);
              }
            }},
@@ -2976,6 +3267,12 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
       // Non trivial field values are copy constructed
       if (!gen.has_trivial_value() || gen.should_split()) {
         emit_pending_copy_fields(it);
+        if (!gen.should_split()) {
+          if (const StringGroup* group = GetStringGroupForFirstField(field)) {
+            load_has_bits(field);
+            EmitCopyStringGroup(p, *group);
+          }
+        }
         continue;
       }
 
@@ -3287,7 +3584,9 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
   // checks all hasbits in the chunk and skips it if none are set.
   std::vector<const FieldDescriptor*> enclosing_if_fields;
   absl::c_copy_if(fields, std::back_inserter(enclosing_if_fields),
-                  needs_enclosing_if);
+                  [&](const FieldDescriptor* f) {
+                    return needs_enclosing_if(f) && !IsNonFirstInStringGroup(f);
+                  });
   std::vector<FieldChunk> enclosing_if_chunks = CollectFields(
       enclosing_if_fields, options_, [&](const FieldDescriptor* f) {
         return field_layout_.GetHasWordIndex(f);
@@ -3311,6 +3610,10 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
 
     const auto print_clear_field_chunk = [&] {
       for (const auto& field : fields) {
+        if (const StringGroup* group = GetStringGroupForFirstField(field)) {
+          EmitClearStringGroup(p, *group);
+          continue;
+        }
         p->Emit({{"cond",
                   [&] {
                     PrintPresenceCheckCondition(field, field_layout_, p,
@@ -3328,13 +3631,15 @@ void MessageGenerator::EmitClearChunks(io::Printer* p, bool is_split) {
     // Whether we wrap this chunk in:
     //   if (cached_has_bits & <chunk hasbits>) { /* chunk. */ }
     if (fields.size() > 1) {
+      std::vector<const FieldDescriptor*> expanded_fields =
+          ExpandStringGroups(fields);
       // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
+      uint32_t chunk_mask = GenChunkMask(expanded_fields, field_layout_);
 
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
 
       const std::string cond = GenerateConditionMaybeWithProbabilityForGroup(
-          chunk_mask, fields, options_);
+          chunk_mask, expanded_fields, options_);
       p->Emit({{"cond", cond}, {"clear_field_chunk", print_clear_field_chunk}},
               R"cc(
                 if ($cond$) {
@@ -3497,6 +3802,12 @@ void MessageGenerator::GenerateSwap(io::Printer* p) {
     for (size_t i = 0; i < optimized_order.size(); ++i) {
       const FieldDescriptor* field = optimized_order[i];
       if (ShouldSplit(field, options_)) {
+        continue;
+      }
+      if (IsInStringGroup(field)) {
+        if (const StringGroup* group = GetStringGroupForFirstField(field)) {
+          EmitSwapStringGroup(p, *group);
+        }
         continue;
       }
       const auto it = runs.find(field);
@@ -3799,6 +4110,13 @@ void MessageGenerator::GenerateClassData(io::Printer* p) {
 
 bool MessageGenerator::RequiresArena(GeneratorFunction function,
                                      bool is_split) const {
+  if (function == GeneratorFunction::kMergeFrom) {
+    for (const StringGroup& group : string_groups_) {
+      if (group.is_split == is_split) {
+        return true;
+      }
+    }
+  }
   for (const FieldDescriptor* field : internal::FieldRange(descriptor_)) {
     auto& gen = field_generators_.get(field);
     if (gen.should_split() == is_split && gen.RequiresArena(function)) {
@@ -3880,13 +4198,15 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
     }
 
     if (check_has_word) {
+      std::vector<const FieldDescriptor*> expanded_fields =
+          ExpandStringGroups(fields);
       // Emit an if() that will let us skip the whole chunk if none are set.
-      uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
+      uint32_t chunk_mask = GenChunkMask(expanded_fields, field_layout_);
 
       ABSL_DCHECK_GE(absl::popcount(chunk_mask), 2);
 
       p->Emit({{"condition", GenerateConditionMaybeWithProbabilityForGroup(
-                                 chunk_mask, fields, options_)}},
+                                 chunk_mask, expanded_fields, options_)}},
               R"cc(
                 if ($condition$) {
               )cc");
@@ -3895,6 +4215,10 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
 
     // Go back and emit merging code for each of the fields we processed.
     for (const auto* field : fields) {
+      if (const StringGroup* group = GetStringGroupForFirstField(field)) {
+        EmitMergeStringGroup(p, *group);
+        continue;
+      }
       GenerateMergeImplForField(p, field, is_split, cached_has_word_index);
     }
 
@@ -3906,12 +4230,17 @@ bool MessageGenerator::EmitMergeChunks(io::Printer* p, bool is_split) {
     }
   };
 
+  std::vector<const FieldDescriptor*> merge_fields;
+  absl::c_copy_if(field_layout_.optimized_order(),
+                  std::back_inserter(merge_fields),
+                  [&](const FieldDescriptor* f) {
+                    return ShouldSplit(f, options_) == is_split &&
+                           !IsNonFirstInStringGroup(f);
+                  });
   std::vector<FieldChunk> chunks = CollectFields(
-      field_layout_.optimized_order(), options_,
-      [&](const FieldDescriptor* f) {
+      merge_fields, options_, [&](const FieldDescriptor* f) {
         return field_layout_.GetHasWordIndex(f);
-      },
-      [&](const auto* f) { return ShouldSplit(f, options_) == is_split; });
+      });
   chunks = PartitionToMinimizeExpectedBranches(std::move(chunks), options_);
 
   for (const FieldChunk& chunk : chunks) {
@@ -4709,6 +5038,7 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
   std::vector<const FieldDescriptor*> rest;
   for (auto* f : field_layout_.optimized_order()) {
     if (ShouldSplit(f, options_) != is_split) continue;
+    if (IsNonFirstInStringGroup(f)) continue;
     if (FixedSize(f).has_value()) {
       fixed.push_back(f);
     } else {
@@ -4793,6 +5123,13 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                 // Go back and emit checks for each of the fields we
                 // processed.
                 for (const auto* field : fields) {
+                  if (const StringGroup* group =
+                          GetStringGroupForFirstField(field)) {
+                    MaybeEmitUpdateCachedHasbits(field, p,
+                                                 cached_has_word_index);
+                    EmitByteSizeStringGroup(p, *group);
+                    continue;
+                  }
                   EmitUpdateByteSizeForField(field, p, cached_has_word_index);
                 }
               }},
@@ -4807,9 +5144,12 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
                   return;
                 }
 
+                std::vector<const FieldDescriptor*> expanded_fields =
+                    ExpandStringGroups(fields);
                 // Emit an if() that will let us skip the whole chunk
                 // if none are set.
-                uint32_t chunk_mask = GenChunkMask(fields, field_layout_);
+                uint32_t chunk_mask =
+                    GenChunkMask(expanded_fields, field_layout_);
 
                 // Check has_bits at a time if we have more than one field in
                 // this chunk.
@@ -4817,7 +5157,7 @@ void MessageGenerator::EmitByteSizeChunks(io::Printer* p, bool is_split) {
 
                 p->Emit({{"condition",
                           GenerateConditionMaybeWithProbabilityForGroup(
-                              chunk_mask, fields, options_)}},
+                              chunk_mask, expanded_fields, options_)}},
                         "if ($condition$)");
               }}},
             R"cc(
@@ -5194,6 +5534,50 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                   }
                 )cc");
           }},
+         {"string_offsets",
+          [&] {
+            for (const StringGroup& group : string_groups_) {
+              p->Emit(
+                  {{"table_name", group.offsets_name},
+                   {"first", FieldName(group.first_field)},
+                   {"entries",
+                    [&] {
+                      for (int bit = group.first_bit; bit <= group.last_bit;
+                           ++bit) {
+                        const FieldDescriptor* f = nullptr;
+                        for (const FieldDescriptor* candidate : group.fields) {
+                          if (field_layout_.GetHasBitIndex(candidate).value() %
+                                  32 ==
+                              bit) {
+                            f = candidate;
+                            break;
+                          }
+                        }
+                        if (f == nullptr || f == group.first_field) {
+                          p->Emit("0,\n");
+                        } else if (group.is_split) {
+                          p->Emit({{"field", FieldName(f)}},
+                                  R"cc(
+                                    static_cast<::uint16_t>(
+                                        PROTOBUF_FIELD_OFFSET($classtype$::Impl_::Split, $field$_) -
+                                        PROTOBUF_FIELD_OFFSET($classtype$::Impl_::Split, $first$_)),
+                                  )cc");
+                        } else {
+                          p->Emit({{"field", FieldName(f)}},
+                                  R"cc(
+                                    static_cast<::uint16_t>(
+                                        PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$field$_) -
+                                        PROTOBUF_FIELD_OFFSET($classtype$, _impl_.$first$_)),
+                                  )cc");
+                        }
+                      }
+                    }}},
+                  R"cc(
+                    static constexpr ::uint16_t $table_name$[] = {
+                        $entries$};
+                  )cc");
+            }
+          }},
          {"split",
           [&] {
             if (!ShouldSplit(descriptor_, options_)) return;
@@ -5203,6 +5587,23 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
                   [&] {
                     for (const auto* field : field_layout_.optimized_order()) {
                       if (!ShouldSplit(field, options_)) continue;
+                      if (IsInStringGroup(field)) {
+                        if (const StringGroup* group =
+                                GetStringGroupForFirstField(field)) {
+                          auto v = p->WithVars(
+                              FieldVars(group->first_field, options_));
+                          p->Emit({{"mask",
+                                    absl::StrFormat(
+                                        "0x%08xU", group->shifted_group_mask)},
+                                   {"table", group->offsets_name}},
+                                  R"cc(
+                                    ::_pbi::DestroyStringFields(
+                                        $mask$, &$this_mutable_field$,
+                                        _Internal::$table$);
+                                  )cc");
+                        }
+                        continue;
+                      }
                       field_generators_.get(field).GenerateDestructorCode(p);
                     }
                   }},
@@ -5254,6 +5655,7 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
             $has_bit$;
             $oneof$;
             $required$;
+            $string_offsets$;
             $split$;
 
             static constexpr $Msg$::ParseTableT_ GenerateParseTable(
