@@ -364,7 +364,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   static ::absl::string_view FullMessageName() { return "pb.CppFeatures"; }
 
   explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from);
+  CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CppFeatures_globals_)) {
+    CopyConstructImpl_(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl_(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                     const void* PROTOBUF_NONNULL from_msg);
+  explicit CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                 ::google::protobuf::internal::ConstructBaseOnly)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CppFeatures_globals_)) {}
   CppFeatures(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFeatures&& from) noexcept
       : CppFeatures(arena) {

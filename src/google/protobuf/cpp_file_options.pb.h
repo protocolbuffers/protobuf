@@ -212,7 +212,18 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFileOptions fina
   static ::absl::string_view FullMessageName() { return "pb.file.CppFileOptions"; }
 
   explicit CppFileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  CppFileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFileOptions& from);
+  CppFileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFileOptions& from)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CppFileOptions_globals_)) {
+    CopyConstructImpl_(this, arena, &from);
+  }
+  static void* PROTOBUF_NONNULL
+  CopyConstructImpl_(void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                     const void* PROTOBUF_NONNULL from_msg);
+  explicit CppFileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+                 ::google::protobuf::internal::ConstructBaseOnly)
+      : Super_(arena, ::google::protobuf::internal::MessageGlobalsBase::GetClassData(
+                          &CppFileOptions_globals_)) {}
   CppFileOptions(
       ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, CppFileOptions&& from) noexcept
       : CppFileOptions(arena) {

@@ -247,7 +247,7 @@ void FieldGeneratorBase::GenerateOneofCopyConstruct(io::Printer* p) const {
   ABSL_CHECK(!field_->is_extension()) << "Not supported";
   ABSL_CHECK(!field_->is_repeated()) << "Not supported";
   ABSL_CHECK(!field_->is_map()) << "Not supported";
-  p->Emit("$field_$ = $from_field$;\n");
+  p->Emit("$this_mutable_field$ = $from_field$;\n");
 }
 
 void FieldGeneratorBase::GenerateConstexprAggregateInitializer(

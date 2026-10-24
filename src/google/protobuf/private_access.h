@@ -71,6 +71,13 @@ struct PrivateAccess {
     return T::FullMessageName();
   }
 
+  // The out of line copy constructor body of a generated message. Also serves
+  // as the type erased copy function of `RepeatedPtrFieldBase::MergeFrom`.
+  template <typename T>
+  static constexpr auto CopyConstructFn() {
+    return &T::CopyConstructImpl_;
+  }
+
   template <typename T>
   using ImplTForTesting = typename T::Impl_;
 };

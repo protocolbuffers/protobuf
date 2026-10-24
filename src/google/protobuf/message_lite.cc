@@ -58,6 +58,17 @@ MessageLite* MessageLite::CopyConstruct(Arena* arena, const MessageLite& from) {
   return res;
 }
 
+PROTOBUF_NOINLINE MessageLite* internal::NewMessageNoInline(
+    const internal::ClassData* class_data, Arena* arena) {
+  return class_data->New(arena);
+}
+
+PROTOBUF_NOINLINE void* internal::AllocateMessageMemory(Arena* arena,
+                                                        size_t size) {
+  return arena != nullptr ? arena->AllocateAligned(size)
+                          : internal::Allocate(size);
+}
+
 void MessageLite::DestroyInstance() {
 #if defined(PROTOBUF_CUSTOM_VTABLE)
   class_data()->destroy_message(*this);

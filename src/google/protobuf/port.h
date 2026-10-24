@@ -625,6 +625,24 @@ inline void PrefetchToLocalCache(const void* ptr) {}
 
 #endif  // ABSL_HAVE_BUILTIN(__builtin_prefetch) && defined(__clang__)
 
+// Prefetches the part of `*from` that a copy of it is about to read: the rest
+// of the object or half of it, whichever is smaller, starting one cache line
+// in. Used on the allocating path of the generated copy constructors, where
+// the prefetch overlaps with the allocation of the new message.
+template <typename T>
+PROTOBUF_ALWAYS_INLINE void PrefetchCopySource(const T* from) {
+  if constexpr (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
+    constexpr size_t kHalf = sizeof(T) / 2;
+    constexpr size_t kRest = sizeof(T) - ABSL_CACHELINE_SIZE / 2;
+    static constexpr PrefetchOpts kOpts = {
+        /*num=*/{kHalf < kRest ? kHalf : kRest, PrefetchOpts::kBytes},
+        /*from=*/{1, PrefetchOpts::kLines},
+        /*locality=*/PrefetchOpts::kHigh,
+    };
+    Prefetch<kOpts, T, T>(from);
+  }
+}
+
 #if ABSL_HAVE_BUILTIN(__builtin_unreachable) && defined(NDEBUG)
 [[noreturn]] ABSL_ATTRIBUTE_COLD PROTOBUF_ALWAYS_INLINE void Unreachable() {
   __builtin_unreachable();

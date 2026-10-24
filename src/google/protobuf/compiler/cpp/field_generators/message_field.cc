@@ -84,6 +84,16 @@ std::vector<Sub> Vars(const FieldDescriptor* field, const Options& opts,
   };
 }
 
+// Without constexpr `MessageTraits` specializations (DLL linkage), constructing
+// a message through its `ClassData` needs the complete type, but a cross-file
+// message type may only be forward declared (proto_h). The accessors that
+// construct one are then defined in the .pb.cc, like `clear_$name$()` is for
+// cross-file messages.
+bool ConstructsSubmessageOutOfLine(const FieldDescriptor* field,
+                                   const Options& opts) {
+  return !HasConstexprMessageTraits(opts) && IsCrossFileMessage(field);
+}
+
 class SingularMessage : public FieldGeneratorBase {
  public:
   SingularMessage(const FieldDescriptor* field, const Options& opts)
@@ -110,6 +120,7 @@ class SingularMessage : public FieldGeneratorBase {
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
+  void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
@@ -135,12 +146,16 @@ class SingularMessage : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     p->Emit(R"cc(
-      $field_$ = Super_::CopyConstruct(arena, *$from_field$);
+      $this_mutable_field$ = Super_::CopyConstruct(arena, *$from_field$);
     )cc");
   }
 
  private:
   friend class OneofMessage;
+
+  // Emits `_internal_mutable_$name$()`, which constructs the submessage; inline
+  // in the header, or in the .pb.cc when `ConstructsSubmessageOutOfLine()`.
+  void GenerateInternalMutable(io::Printer* p, bool is_inline) const;
 
   const Options* opts_;
   bool has_required_;
@@ -193,6 +208,11 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
              $clear_hasbit$
            }
          )cc");
+       }},
+      {"internal_mutable",
+       [&] {
+         if (ConstructsSubmessageOutOfLine(field_, options_)) return;
+         GenerateInternalMutable(p, /*is_inline=*/true);
        }},
   };
   absl::string_view code = R"cc(
@@ -255,16 +275,7 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $clear_hasbit$;
       return $member_to_field$(::std::exchange($ensure_mutable_field_$, nullptr));
     }
-    inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
-      $TsanDetectConcurrentMutation$;
-      $StrongRef$;
-      auto*& sub = $ensure_mutable_field_$;
-      if (sub == nullptr) {
-        auto* p = Super_::DefaultConstruct<$Submsg$>(GetArena());
-        sub = $field_to_member$(p);
-      }
-      return $member_to_field$(sub);
-    }
+    $internal_mutable$;
     inline $Submsg$* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
       //~ TODO: add tests to make sure all write accessors are
@@ -303,6 +314,28 @@ void SingularMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc";
   p->Emit(subs, code);
+}
+
+void SingularMessage::GenerateInternalMutable(io::Printer* p,
+                                              bool is_inline) const {
+  p->Emit({{"inline", is_inline ? "inline" : ""}}, R"cc(
+    $inline $$Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
+      $TsanDetectConcurrentMutation$;
+      $StrongRef$;
+      auto*& sub = $ensure_mutable_field_$;
+      if (sub == nullptr) {
+        auto* p = Super_::DefaultConstruct<$Submsg$>(GetArena());
+        sub = $field_to_member$(p);
+      }
+      return $member_to_field$(sub);
+    }
+  )cc");
+}
+
+void SingularMessage::GenerateNonInlineAccessorDefinitions(
+    io::Printer* p) const {
+  if (!ConstructsSubmessageOutOfLine(field_, options_)) return;
+  GenerateInternalMutable(p, /*is_inline=*/false);
 }
 
 void SingularMessage::GenerateClearingCode(io::Printer* p) const {
@@ -489,10 +522,16 @@ class OneofMessage : public SingularMessage {
   bool RequiresArena(GeneratorFunction func) const override;
 
  private:
+  // As `SingularMessage::GenerateInternalMutable()`, for the oneof case.
+  void GenerateInternalMutable(io::Printer* p, bool is_inline) const;
+
   int num_message_fields_in_oneof_;
 };
 
 void OneofMessage::GenerateNonInlineAccessorDefinitions(io::Printer* p) const {
+  if (ConstructsSubmessageOutOfLine(field_, options_)) {
+    GenerateInternalMutable(p, /*is_inline=*/false);
+  }
   p->Emit(R"cc(
     void $Msg$::set_allocated_$name$($Submsg$* $nullable$ $name$) {
       $pb$::Arena* message_arena = GetArena();
@@ -582,18 +621,9 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       // @@protoc_insertion_point(field_unsafe_arena_set_allocated:$pkg.Msg.field$)
     }
   )cc");
-  p->Emit(R"cc(
-    inline $Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
-      $StrongRef$;
-      if ($not_has_field$) {
-        clear_$oneof_name$();
-        set_has_$name_internal$();
-        $field_$ =
-            $field_to_member$(Super_::DefaultConstruct<$Submsg$>(GetArena()));
-      }
-      return $cast_field_$;
-    }
-  )cc");
+  if (!ConstructsSubmessageOutOfLine(field_, options_)) {
+    GenerateInternalMutable(p, /*is_inline=*/true);
+  }
   p->Emit(R"cc(
     inline $Submsg$* $nonnull$ $Msg$::mutable_$name$()
         ABSL_ATTRIBUTE_LIFETIME_BOUND {
@@ -602,6 +632,22 @@ void OneofMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       $annotate_mutable$;
       // @@protoc_insertion_point(field_mutable:$pkg.Msg.field$)
       return _msg;
+    }
+  )cc");
+}
+
+void OneofMessage::GenerateInternalMutable(io::Printer* p,
+                                           bool is_inline) const {
+  p->Emit({{"inline", is_inline ? "inline" : ""}}, R"cc(
+    $inline $$Submsg$* $nonnull$ $Msg$::_internal_mutable_$name_internal$() {
+      $StrongRef$;
+      if ($not_has_field$) {
+        clear_$oneof_name$();
+        set_has_$name_internal$();
+        $field_$ =
+            $field_to_member$(Super_::DefaultConstruct<$Submsg$>(GetArena()));
+      }
+      return $cast_field_$;
     }
   )cc");
 }
@@ -691,6 +737,7 @@ class RepeatedMessage : public FieldGeneratorBase {
   void GenerateAccessorDeclarations(io::Printer* p) const override;
   void GeneratePrivateAccessorDeclarations(io::Printer* p) const override;
   void GenerateInlineAccessorDefinitions(io::Printer* p) const override;
+  void GenerateNonInlineAccessorDefinitions(io::Printer* p) const override;
   void GenerateClearingCode(io::Printer* p) const override;
   void GenerateMessageClearingCode(io::Printer* p) const override;
   void GenerateMergingCode(io::Printer* p) const override;
@@ -704,6 +751,10 @@ class RepeatedMessage : public FieldGeneratorBase {
   bool RequiresArena(GeneratorFunction function) const override;
 
  private:
+  // Emits `add_$name$()`, which constructs the new element; inline in the
+  // header, or in the .pb.cc when `ConstructsSubmessageOutOfLine()`.
+  void GenerateAdd(io::Printer* p, bool is_inline) const;
+
   const Options* opts_;
   bool has_required_;
   FieldDescriptor::CppRepeatedType cpp_repeated_type_;
@@ -804,20 +855,9 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
     }
   )cc");
 
-  p->Emit(R"cc(
-    inline $Submsg$* $nonnull$ $Msg$::add_$name$()
-        ABSL_ATTRIBUTE_LIFETIME_BOUND {
-      $WeakDescriptorSelfPin$;
-      $TsanDetectConcurrentMutation$;
-      $Submsg$* _add =
-          _internal_mutable_$name_internal$()->InternalAddWithArena(
-              $pb$::MessageLite::internal_visibility(), GetArena());
-      $set_hasbit$;
-      $annotate_add_mutable$;
-      // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
-      return _add;
-    }
-  )cc");
+  if (!ConstructsSubmessageOutOfLine(field_, options_)) {
+    GenerateAdd(p, /*is_inline=*/true);
+  }
 
   switch (cpp_repeated_type_) {
     case FieldDescriptor::CppRepeatedType::kRepeated:
@@ -897,6 +937,29 @@ void RepeatedMessage::GenerateInlineAccessorDefinitions(io::Printer* p) const {
       }
     )cc");
   }
+}
+
+void RepeatedMessage::GenerateAdd(io::Printer* p, bool is_inline) const {
+  p->Emit({{"inline", is_inline ? "inline" : ""}}, R"cc(
+    $inline $$Submsg$* $nonnull$ $Msg$::add_$name$()
+        ABSL_ATTRIBUTE_LIFETIME_BOUND {
+      $WeakDescriptorSelfPin$;
+      $TsanDetectConcurrentMutation$;
+      $Submsg$* _add =
+          _internal_mutable_$name_internal$()->InternalAddWithArena(
+              $pb$::MessageLite::internal_visibility(), GetArena());
+      $set_hasbit$;
+      $annotate_add_mutable$;
+      // @@protoc_insertion_point(field_add:$pkg.Msg.field$)
+      return _add;
+    }
+  )cc");
+}
+
+void RepeatedMessage::GenerateNonInlineAccessorDefinitions(
+    io::Printer* p) const {
+  if (!ConstructsSubmessageOutOfLine(field_, options_)) return;
+  GenerateAdd(p, /*is_inline=*/false);
 }
 
 void RepeatedMessage::GenerateMessageClearingCode(io::Printer* p) const {

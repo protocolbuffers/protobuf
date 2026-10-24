@@ -269,16 +269,20 @@ CppFeatures::CppFeatures(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
   SharedCtor(arena);
   // @@protoc_insertion_point(arena_constructor:pb.CppFeatures)
 }
-CppFeatures::CppFeatures(
-    ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const CppFeatures& from)
-#if defined(PROTOBUF_CUSTOM_VTABLE)
-    : Super_(arena, &CppFeatures_globals_.class_data),
-#else   // PROTOBUF_CUSTOM_VTABLE
-    : Super_(arena),
-#endif  // PROTOBUF_CUSTOM_VTABLE
-      _impl_(from._impl_) {
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+PROTOBUF_NOINLINE void* PROTOBUF_NONNULL CppFeatures::CopyConstructImpl_(
+    void* PROTOBUF_NULLABLE to, ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const void* PROTOBUF_NONNULL from_msg) {
+  const CppFeatures& from = *static_cast<const CppFeatures*>(from_msg);
+  if (to == nullptr) {
+    ::google::protobuf::internal::PrefetchCopySource(&from);
+    to = ::new (::google::protobuf::internal::AllocateMessageMemory(arena, sizeof(CppFeatures)))
+        CppFeatures(arena, ::google::protobuf::internal::ConstructBaseOnly());
+  }
+  CppFeatures& this_ = *static_cast<CppFeatures*>(to);
+  new (&this_._impl_) Impl_(from._impl_);
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
+  return &this_;
 }
 PROTOBUF_NDEBUG_INLINE CppFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
@@ -485,10 +489,6 @@ PROTOBUF_CONSTINIT PROTOBUF_EXPORT
         cpp(kCppFieldNumber, &::pb::CppFeatures_globals_);
 // @@protoc_insertion_point(namespace_scope)
 }  // namespace pb
-namespace google {
-namespace protobuf {
-}  // namespace protobuf
-}  // namespace google
 // @@protoc_insertion_point(global_scope)
 #include "google/protobuf/port_undef.inc"
 // clang-format on

@@ -41,6 +41,7 @@ using type_info = ::type_info;
 #include "absl/strings/str_format.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
+#include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/serial_arena.h"
 #include "google/protobuf/thread_safe_arena.h"
@@ -75,8 +76,6 @@ namespace internal {
 
 struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
-template <typename MessageType>
-class ByTemplate;            // defined in static_message_factory.h
 class EpsCopyInputStream;    // defined in parse_context.h
 class UntypedMapBase;        // defined in map.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
@@ -94,6 +93,13 @@ bool HasArena(const MessageLite& message);
 
 // Defined in message_lite.h
 Arena* PROTOBUF_NULLABLE GetArena(const MessageLite& message);
+
+// Creates a message through its `ClassData`. Kept out of line, so that the
+// inline callers (`Arena::Create<T>()`, `MessageLite::DefaultConstruct<T>()`,
+// ...) do not inline the message creator. Defined in message_lite.cc.
+PROTOBUF_EXPORT MessageLite* PROTOBUF_NONNULL
+NewMessageNoInline(const ClassData* PROTOBUF_NONNULL class_data,
+                   Arena* PROTOBUF_NULLABLE arena);
 
 // This struct maps field types to the types that we will use to represent them
 // when allocated on an arena. This is necessary because fields no longer own an
@@ -343,23 +349,20 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
       Create(Arena* PROTOBUF_NULLABLE arena, Args&&... args) {
     if constexpr (is_arena_constructable<T>::value) {
       using Type = std::remove_const_t<T>;
-      // DefaultConstruct/CopyConstruct are optimized for messages, which
-      // are both arena constructible and destructor skippable and they
-      // assume much. Don't use these functions unless the invariants
-      // hold.
-      if constexpr (is_destructor_skippable<T>::value) {
-        constexpr auto construct_type = GetConstructType<T, Args&&...>();
-        // We delegate to DefaultConstruct/CopyConstruct where appropriate
-        // because protobuf generated classes have external templates for
-        // these functions for code size reasons. When `if constexpr` is not
-        // available always use the fallback.
-        if constexpr (construct_type == ConstructType::kDefault) {
-          return static_cast<Type*>(DefaultConstruct<Type>(arena));
-        } else if constexpr (construct_type == ConstructType::kCopy) {
-          return static_cast<Type*>(CopyConstruct<Type>(arena, &args...));
-        }
+      // Generated messages are created through their `ClassData` and copied
+      // through their out of line `CopyConstructImpl_()`, so that no per type
+      // construction function is instantiated here. Everything else goes
+      // through the constructors.
+      constexpr auto construct_type = GetConstructType<Type, Args&&...>();
+      if constexpr (construct_type == ConstructType::kDefault) {
+        return static_cast<Type*>(internal::NewMessageNoInline(
+            internal::MessageTraits<Type>::class_data(), arena));
+      } else if constexpr (construct_type == ConstructType::kCopy) {
+        return static_cast<Type*>(
+            Type::CopyConstructImpl_(nullptr, arena, &args...));
+      } else {
+        return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
       }
-      return CreateArenaCompatible<Type>(arena, std::forward<Args>(args)...);
     } else {
       if (ABSL_PREDICT_FALSE(arena == nullptr)) {
         return new T(std::forward<Args>(args)...);
@@ -676,6 +679,13 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   internal::ThreadSafeArena impl_;
 
   enum class ConstructType { kUnknown, kDefault, kCopy, kMove };
+  // Generated messages define `CopyConstructImpl_()`, the out of line body of
+  // their copy constructor, which `Create()` also uses to copy them.
+  template <typename T, typename = void>
+  struct IsGeneratedMessage : std::false_type {};
+  template <typename T>
+  struct IsGeneratedMessage<T, std::void_t<decltype(&T::CopyConstructImpl_)>>
+      : std::true_type {};
   // Overload set to detect which kind of construction is going to happen for a
   // specific set of input arguments. This is used to dispatch to different
   // helper functions.
@@ -700,7 +710,7 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
 
   template <typename T, typename... Args>
   static constexpr auto GetConstructType() {
-    return std::is_base_of_v<MessageLite, T>
+    return IsGeneratedMessage<T>::value
                ? decltype(ProbeConstructType<T>(std::declval<Args>()...))::value
                : ConstructType::kUnknown;
   }
@@ -752,24 +762,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
           sizeof(T), alignof(T), &internal::cleanup::arena_destruct_object<T>);
     }
   }
-
-  // DefaultConstruct/CopyConstruct:
-  //
-  // Functions with a generic signature to support taking the address in generic
-  // contexts, like RepeatedPtrField, etc.
-  // These are also used as a hook for `extern template` instantiations where
-  // codegen can offload the instantiations to the respective .pb.cc files. This
-  // has two benefits:
-  //  - It reduces the library bloat as callers don't have to instantiate the
-  //  function.
-  //  - It allows the optimizer to see the constructors called to
-  //  further optimize the instantiation.
-  template <typename T>
-  static void* PROTOBUF_NONNULL
-  DefaultConstruct(Arena* PROTOBUF_NULLABLE arena);
-  template <typename T>
-  static void* PROTOBUF_NONNULL CopyConstruct(
-      Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from);
 
   template <typename T, typename... Args>
   PROTOBUF_NDEBUG_INLINE T* PROTOBUF_NONNULL DoCreateMessage(Args&&... args) {
@@ -841,8 +833,6 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   template <typename Type>
   friend class internal::GenericTypeHandler;
   friend class internal::InternalMetadata;    // For user_arena().
-  template <typename>
-  friend class internal::ByTemplate;          // For DefaultConstruct.
   friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
   friend class MessageLite;
@@ -1133,68 +1123,6 @@ class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
   T* PROTOBUF_NONNULL ptr_;
   Arena* PROTOBUF_NONNULL arena_;
 };
-
-// DefaultConstruct/CopyConstruct
-//
-// IMPORTANT: These have to be defined out of line and without an `inline`
-// keyword to make sure the `extern template` suppresses instantiations.
-template <typename T>
-PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
-Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
-  if constexpr (internal::FieldHasArenaOffset<T>()) {
-    if (arena != nullptr) {
-      using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
-      static_assert(is_destructor_skippable<ArenaRepT>::value);
-
-      void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
-      ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
-      return internal::FieldArenaRep<T>::Get(arena_rep);
-    } else {
-      static_assert(is_destructor_skippable<T>::value);
-      // Fields which use arena offsets don't have constructors that take an
-      // arena pointer. Since the arena is nullptr, it is safe to default
-      // construct the object.
-      return new (internal::Allocate(sizeof(T))) T();
-    }
-  } else {
-    static_assert(is_destructor_skippable<T>::value);
-    void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                 : internal::Allocate(sizeof(T));
-    if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
-      return new (mem) T(internal::InternalVisibility(), arena);
-    } else {
-      return new (mem) T(arena);
-    }
-  }
-}
-
-template <typename T>
-PROTOBUF_NOINLINE void* PROTOBUF_NONNULL Arena::CopyConstruct(
-    Arena* PROTOBUF_NULLABLE arena, const void* PROTOBUF_NONNULL from) {
-  const auto* typed_from = static_cast<const T*>(from);
-  // If the object is larger than half of a cache line, prefetch either the rest
-  // of it or half of it, whichiver is smaller, starting at 1-cache-line offset.
-  // This has shown the best benchmark results on average between several tested
-  // configurations.
-  if constexpr (sizeof(T) > ABSL_CACHELINE_SIZE / 2) {
-    using internal::PrefetchOpts;
-    static constexpr PrefetchOpts kPrefetchOpts = {
-        /*num=*/{std::min(sizeof(T) / 2, sizeof(T) - ABSL_CACHELINE_SIZE / 2),
-                 PrefetchOpts::kBytes},
-        /*from=*/{1, PrefetchOpts::kLines},
-        /*locality=*/PrefetchOpts::kHigh,
-    };
-    internal::Prefetch<kPrefetchOpts, T, T>(typed_from);
-  }
-  static_assert(is_destructor_skippable<T>::value, "");
-  void* mem;
-  if (arena != nullptr) {
-    mem = arena->AllocateAligned(sizeof(T));
-  } else {
-    mem = internal::Allocate(sizeof(T));
-  }
-  return new (mem) T(arena, *typed_from);
-}
 
 template <>
 inline void* PROTOBUF_NONNULL Arena::AllocateInternal<std::string>() {
