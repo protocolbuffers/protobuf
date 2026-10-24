@@ -20,6 +20,7 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/unittest.pb.h"
@@ -28,6 +29,8 @@
 namespace google {
 namespace protobuf {
 namespace internal {
+
+
 namespace {
 
 constexpr int kTooLargeSize =
