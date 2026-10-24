@@ -951,6 +951,22 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
 
   PROTOBUF_ALWAYS_INLINE static uint8_t* UnsafeWriteSize(uint32_t value,
                                                          uint8_t* ptr) {
+#if defined(__x86_64__)
+    if (ABSL_PREDICT_TRUE(value < 0x4000)) {
+      const uint32_t two_bytes = value >= 0x80;
+      const uint16_t encoded = static_cast<uint16_t>(
+          (value & 0x7f) | (two_bytes << 7) | ((value & 0x3f80) << 1));
+      std::memcpy(ptr, &encoded, sizeof(encoded));
+      return ptr + 1 + two_bytes;
+    }
+    do {
+      *ptr = static_cast<uint8_t>(value | 0x80);
+      value >>= 7;
+      ++ptr;
+    } while (ABSL_PREDICT_FALSE(value >= 0x80));
+    *ptr++ = static_cast<uint8_t>(value);
+    return ptr;
+#else
     while (ABSL_PREDICT_FALSE(value >= 0x80)) {
       *ptr = static_cast<uint8_t>(value | 0x80);
       value >>= 7;
@@ -958,6 +974,7 @@ class PROTOBUF_EXPORT PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED
     }
     *ptr++ = static_cast<uint8_t>(value);
     return ptr;
+#endif
   }
 
   template <int S>
