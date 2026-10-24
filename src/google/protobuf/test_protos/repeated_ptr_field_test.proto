@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 edition = "2024";
 
 package proto2_unittest;
@@ -9,4 +16,14 @@ message RepFieldSortMessage {
 
 message RepFieldWithBoolForFastOverflow {
   repeated bool b = 1 [features.repeated_field_encoding = EXPANDED];
+}
+
+message RepeatedStringTrim {
+  repeated string fast_string = 1;
+  repeated bytes fast_bytes = 2;
+  repeated string mini_string = 4096;
+  repeated bytes mini_bytes = 4097;
+
+  int32 i32 = 10;
+  RepeatedStringTrim msg = 11;
 }

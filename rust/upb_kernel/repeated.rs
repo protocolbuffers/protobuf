@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use super::*;
 
 /// The raw type-erased version of an owned `Repeated`.
@@ -87,6 +94,15 @@ where
         // SAFETY:
         // - `repeated.as_raw()` is a valid `upb_Array*`.
         unsafe { upb_Array_Resize(repeated.as_raw(Private), 0, repeated.raw_arena(Private)) };
+    }
+
+    fn repeated_truncate(_private: Private, mut repeated: Mut<Repeated<Self>>, new_len: usize) {
+        // SAFETY:
+        // - `repeated.as_raw()` is a valid `upb_Array*`.
+        unsafe {
+            debug_assert!(new_len <= upb_Array_Size(repeated.as_raw(Private)));
+            upb_Array_Resize(repeated.as_raw(Private), new_len, repeated.raw_arena(Private));
+        }
     }
 
     unsafe fn repeated_get_unchecked<'a>(
@@ -191,8 +207,8 @@ pub fn empty_array<T: Singular>() -> RepeatedView<'static, T> {
     static EMPTY_REPEATED_VIEW: OnceLock<Repeated<i32>> = OnceLock::new();
 
     // SAFETY:
-    // - Because the repeated is never mutated, the repeated type is unused and
-    //   therefore valid for `T`.
+    // - Because the repeated is never mutated, the repeated type is unused and therefore valid for
+    //   `T`.
     unsafe {
         RepeatedView::from_raw(
             Private,

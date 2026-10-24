@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer.
 
 The consumers should use the following WORKSPACE snippet, which loads dependencies
@@ -75,8 +82,8 @@ def protobuf_deps():
         _github_archive(
             name = "abseil-cpp",
             repo = "https://github.com/abseil/abseil-cpp",
-            commit = "76bb24329e8bf5f39704eb10d21b9a80befa7c81",  # Abseil LTS 20250512.1
-            integrity = "sha256-jF3/tZRlrthY/Y+cEgf1ljqPmtqNOcwVh392LHtERWA=",
+            commit = "d38452e1ee03523a208362186fd42248ff2609f6",  # Abseil LTS 20250814.1
+            integrity = "sha256-BUNu3xBtzGk1iFbWFyl1BU+PQZ0nmtXFLUh1CTGwxIE=",
         )
 
     if not native.existing_rule("zlib"):
@@ -139,7 +146,7 @@ def protobuf_deps():
     if not native.existing_rule("system_python"):
         system_python(
             name = "system_python",
-            minimum_python_version = "3.10",
+            minimum_python_version = "3.11",
         )
 
     if not native.existing_rule("rules_jvm_external"):
@@ -186,17 +193,17 @@ def protobuf_deps():
 
     # Python Downloads
     python_source_archive(
-        version = "3.10.0",
-        sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
+        version = "3.11.0",
+        sha256 = "64424e96e2457abbac899b90f9530985b51eef2905951febd935f0e73414caeb",
     )
     python_nuget_package(
-        version = "3.10.0",
+        version = "3.11.0",
         cpu = "i686",
-        sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
+        sha256 = "c5ceeef9556d6aa85fac5d6567d35418a978e9b349f2c71818ddc03f14dd5a6d",
     )
     python_nuget_package(
-        version = "3.10.0",
+        version = "3.11.0",
         cpu = "x86-64",
-        sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
+        sha256 = "e1236188a5841cfb9d14f7aac8b1fbdea10f82260d7f63610cc6260db76062a5",
     )
     native.register_toolchains("//bazel/private/oss/toolchains:all")

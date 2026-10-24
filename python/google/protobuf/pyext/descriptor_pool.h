@@ -25,6 +25,10 @@ struct PyMessageFactory;
 // The (meta) type of all Messages classes.
 struct CMessageClass;
 
+namespace cdescriptor_pool {
+class BuildFileErrorCollector;
+}  // namespace cdescriptor_pool
+
 // Wraps operations to the global DescriptorPool which contains information
 // about all messages and fields.
 //
@@ -47,7 +51,7 @@ typedef struct PyDescriptorPool {
 
   // The error collector to store error info. Can be NULL. This pointer is
   // owned.
-  DescriptorPool::ErrorCollector* error_collector;
+  cdescriptor_pool::BuildFileErrorCollector* error_collector;
 
   // The C++ pool acting as an underlay. Can be NULL.
   // This pointer is not owned and must stay alive.
@@ -71,7 +75,6 @@ typedef struct PyDescriptorPool {
 extern PyTypeObject PyDescriptorPool_Type;
 
 namespace cdescriptor_pool {
-
 
 // The functions below are also exposed as methods of the DescriptorPool type.
 

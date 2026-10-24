@@ -55,10 +55,10 @@ class TimestampTest(unittest.TestCase):
     naive_utc_epoch = datetime.datetime(1970, 1, 1)
     message = well_known_types_test_pb2.WKTMessage()
     message.optional_timestamp = naive_utc_epoch  # pyrefly: ignore[bad-assignment]
-    self.assertEqual(0, message.optional_timestamp.seconds)  # pytype: disable=attribute-error
-    self.assertEqual(0, message.optional_timestamp.nanos)  # pytype: disable=attribute-error
+    self.assertEqual(0, message.optional_timestamp.seconds)
+    self.assertEqual(0, message.optional_timestamp.nanos)
     self.assertEqual(
-        naive_utc_epoch, timestamp.to_datetime(message.optional_timestamp)  # pytype: disable=wrong-arg-types
+        naive_utc_epoch, timestamp.to_datetime(message.optional_timestamp)
     )
 
   def test_timstamp_construction(self):

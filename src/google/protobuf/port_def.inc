@@ -132,6 +132,10 @@
 // Owner: ckennelly@, mkruskal@
 #define PROTOBUF_FUTURE_ADD_NODISCARD [[nodiscard]]
 
+// Deletes UnknownFieldSet::MergeToInternalMetadata.
+// Owner: cknittel@
+#define PROTOBUF_FUTURE_DELETE_UFS_MERGE_TO_MESSAGE 1
+
 #else
 
 #define PROTOBUF_FUTURE_ADD_NODISCARD
@@ -169,8 +173,8 @@
 // This is useful for lambdas where it is not easy to specify ALWAYS_INLINE.
 // Use like:
 //   PROTOBUF_ALWAYS_INLINE_CALL res = SomeFunc(args...);
-#if defined(__clang__) && !defined(PROTOBUF_NO_INLINE_CALL) && \
-    ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline)
+#if ABSL_HAVE_CPP_ATTRIBUTE(clang::always_inline) && defined(__clang__) && \
+    !defined(PROTOBUF_NO_INLINE_CALL)
 #define PROTOBUF_ALWAYS_INLINE_CALL [[clang::always_inline]]
 #else
 #define PROTOBUF_ALWAYS_INLINE_CALL

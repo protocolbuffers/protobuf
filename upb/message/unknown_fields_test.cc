@@ -12,6 +12,7 @@
 
 #include <string.h>
 
+#include <climits>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -393,6 +394,22 @@ TEST(UnknownFieldsTest, MessageInternalPoolReuse) {
       UPB_PRIVATE(_upb_Message_GetInternal)(UPB_UPCAST(msg2));
   EXPECT_NE(in2, nullptr);
   EXPECT_TRUE(UPB_PRIVATE(upb_Xsan_PtrEq)((void*)in2, pooled_block));
+
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, FindUnknown2_NegativeDepthLimitOnGroup) {
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg = upb_test_ModelWithExtensions_new(arena);
+
+  // Field 13 StartGroup (0x6b) followed by Field 13 EndGroup (0x6c).
+  const char group_bytes[] = "\x6b\x6c";
+  ASSERT_TRUE(UPB_PRIVATE(_upb_Message_AddUnknown)(
+      UPB_UPCAST(msg), group_bytes, 2, arena, kUpb_AddUnknown_Copy));
+
+  upb_FindUnknownRet2 result =
+      upb_Message_FindUnknown2(UPB_UPCAST(msg), 13, INT_MIN);
+  EXPECT_EQ(kUpb_FindUnknown_ParseError, result.status);
 
   upb_Arena_Free(arena);
 }

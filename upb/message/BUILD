@@ -1,5 +1,5 @@
-# Copyright (c) 2009-2021, Google LLC
-# All rights reserved.
+# Protocol Buffers - Google's data interchange format
+# Copyright 2009 Google LLC
 #
 # Use of this source code is governed by a BSD-style
 # license that can be found in the LICENSE file or at
@@ -142,6 +142,7 @@ cc_library(
         "internal/accessors.h",
         "internal/array.h",
         "internal/extension.h",
+        "internal/field_data.h",
         "internal/map.h",
         "internal/map_sorter.h",
         "internal/message.h",
@@ -235,6 +236,7 @@ cc_library(
         "//upb/mini_table:internal",
         "//upb/port",
         "//upb/wire",
+        "//upb/wire:encode_extension",
     ],
 )
 
@@ -302,6 +304,8 @@ cc_test(
         ":convert",
         ":convert_test_upb_minitable_proto",
         ":convert_test_upb_proto",
+        ":convert_test_upb_proto_reflection",
+        ":copy",
         ":internal",
         ":message",
         ":message_test_upb_minitable_proto",
@@ -312,11 +316,14 @@ cc_test(
         "//upb/mem",
         "//upb/mini_table",
         "//upb/port",
+        "//upb/reflection",
+        "//upb/reflection:internal",
         "//upb/test:test_messages_proto2_upb_proto",
         "//upb/test:test_messages_proto3_upb_minitable",
         "//upb/test:test_messages_proto3_upb_proto",
         "//upb/test:test_upb_proto",
         "//upb/wire",
+        "//upb/wire:encode_extension",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
@@ -715,6 +722,12 @@ upb_minitable_proto_library(
 
 upb_c_proto_library(
     name = "convert_test_upb_proto",
+    testonly = 1,
+    deps = [":convert_test_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "convert_test_upb_proto_reflection",
     testonly = 1,
     deps = [":convert_test_proto"],
 )

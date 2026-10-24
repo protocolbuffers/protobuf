@@ -72,6 +72,15 @@ jobs:
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-version: 9.2.0
           command: |
+            if [[ "${{ matrix.platform }}" == "iOS" ]]; then
+              # Only iOS tests run in a simulator (macOS tests run directly on the host).
+              # Xcode 16's xcodebuild only waits about a minute for CoreSimulatorService to
+              # start. On a freshly started runner that is sometimes not enough, and it fails
+              # with "Unable to find a device matching the provided destination specifier".
+              # `simctl` blocks until the service is up, so talk to it first.
+              # See https://github.com/actions/runner-images/issues/12777
+              xcrun simctl list devices available
+            fi
             xcodebuild \
                 -project "objectivec/${{ matrix.xc_project }}" \
                 -scheme ProtocolBuffers \

@@ -19,6 +19,7 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/mini_table/sub.h"
@@ -110,12 +111,12 @@ bool Builder::LinkExtension(upb_MiniTableExtension* ext) {
   if (upb_MiniTableField_CType(field) == kUpb_CType_Message) {
     auto mt = NextMiniTable();
     if (!mt) field->UPB_PRIVATE(descriptortype) = kUpb_FieldType_Int32;
-    ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromMessage(mt);
+    upb_MiniTableExtension_SetSubMessage(ext, mt);
   }
   if (upb_MiniTableField_IsClosedEnum(field)) {
     auto et = NextEnumTable();
     if (!et) return false;
-    ext->UPB_PRIVATE(sub) = upb_MiniTableSub_FromEnum(et);
+    upb_MiniTableExtension_SetSubEnum(ext, et);
   }
   return true;
 }
@@ -132,7 +133,7 @@ void Builder::BuildExtensions(upb_ExtensionRegistry** exts) {
     // Iterate through the buffer, building extensions as long as we can.
     while (ptr < end) {
       upb_MiniTableExtension* ext = reinterpret_cast<upb_MiniTableExtension*>(
-          upb_Arena_Malloc(arena_, sizeof(*ext)));
+          upb_Arena_Malloc(arena_, sizeof(upb_MiniTableExtensionWithSub)));
       if (!ext) {
         *exts = nullptr;
         return;

@@ -110,8 +110,6 @@ PyObject* PyUpb_GetWktBases(PyUpb_ModuleState* state);
 PyObject* PyUpb_Arena_New(PyObject* pool);
 PyObject* PyUpb_Arena_GetPool(PyObject* arena);
 upb_Arena* PyUpb_Arena_Get(PyObject* arena);
-bool PyUpb_Arena_IsFrozen(PyObject* arena);
-void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen);
 
 bool PyUpb_Arena_CacheAdd(PyObject* arena, const void* key, PyObject** py_obj);
 bool PyUpb_Arena_CacheUniqueAdd(PyObject* arena, const void* key,
@@ -167,6 +165,16 @@ static inline PyObject* PyUpb_NewRef(PyObject* obj) {
   return obj;
 }
 
+// Ensures google.protobuf.descriptor_pb2 is imported. Returns false and sets a
+// Python exception on failure.
+static inline bool PyUpb_ImportDescriptorModule(void) {
+  PyObject* mod =
+      PyImport_ImportModuleLevel(PYUPB_DESCRIPTOR_MODULE, NULL, NULL, NULL, 0);
+  if (!mod) return false;
+  Py_DECREF(mod);
+  return true;
+}
+
 const char* PyUpb_GetStrData(PyObject* obj);
 const char* PyUpb_VerifyStrData(PyObject* obj);
 
@@ -184,9 +192,8 @@ PyObject* PyUpb_SetFrozenError(void);
 // Sets a Python FrozenInstanceError with the given custom message and returns
 // NULL.
 PyObject* PyUpb_SetFrozenErrorWithMsg(const char* msg);
-// Emits a DeprecationWarning when mutating a frozen message or container in
-// OSS.
-int PyUpb_WarnFrozen(void);
+// If `is_frozen` is true, sets a Python FrozenInstanceError with the given
+// message and returns false. Otherwise, returns true.
 bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg);
 
 #endif  // PYUPB_PROTOBUF_H__

@@ -796,9 +796,6 @@ class MessageTest(unittest.TestCase):
     with self.assertRaises(TypeError):
       msg.payload.repeated_string[:] = [1, 2, 3]
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'python', 'python has different behavior'
-  )
   def testAssignRepeatedFieldSliceWithStep(self, message_module):
     msg = message_module.NestedTestAllTypes()
     arr = [1, 2, 3, 4]
@@ -815,9 +812,19 @@ class MessageTest(unittest.TestCase):
     arr[::2] = [100, 200]
     self.assertEqual(arr, msg.payload.repeated_int32)
 
+    # Check negative step
+    msg.payload.repeated_int32[::-1] = [5, 6, 7, 8]
+    arr[::-1] = [5, 6, 7, 8]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
     # Check size mismatch raises ValueError
     with self.assertRaises(ValueError):
       msg.payload.repeated_int32[::2] = [1, 2, 3]
+    self.assertEqual(arr, msg.payload.repeated_int32)
+
+    # Check element type is still validated
+    with self.assertRaises(TypeError):
+      msg.payload.repeated_int32[::2] = ['a', 'b']
 
   def testAssignRepeatedFieldAllRangesArray(self, message_module):
     msg = message_module.NestedTestAllTypes()
@@ -1910,10 +1917,6 @@ class MessageTest(unittest.TestCase):
     self.assertEqual([1, 3], [n.bb for n in m.repeated_nested_message])
     self.assertEqual(3, m.repeated_nested_message.pop(-1).bb)
 
-  @unittest.skipIf(
-      api_implementation.Type() == 'upb',
-      "Currently broken in upb, will be fixed in the next breaking release"
-  )
   def testRepeatedPopOutOfBounds(self, message_module):
     m = message_module.TestAllTypes()
     m.repeated_int32.extend(range(5))
@@ -2452,6 +2455,33 @@ class Proto2Test(unittest.TestCase):
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()
     self.assertRaises(AttributeError, getattr, msg, 'Extensions')
+
+  def testFindExtensionByNumberOutOfIntRange(self):
+    msg = unittest_pb2.TestAllExtensions()
+    self.assertEqual(
+        unittest_pb2.optional_int32_extension,
+        msg.Extensions._FindExtensionByNumber(1),
+    )
+    # These numbers truncate to 1 when narrowed to a 32-bit int.
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(2**32 + 1))
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(-(2**32) + 1))
+    # These numbers do not even fit in 64 bits.
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(2**64 + 1))
+    self.assertIsNone(msg.Extensions._FindExtensionByNumber(-(2**64) + 1))
+
+  def testFindExtensionByNumberMaxMessageSetExtension(self):
+    msg = message_set_extensions_pb2.TestMessageSet()
+    ext = message_set_extensions_pb2.max_number_extension
+    max_number = 2**31 - 2
+    self.assertEqual(max_number, ext.number)
+    self.assertEqual(ext, msg.Extensions._FindExtensionByNumber(max_number))
+    # These numbers truncate to max_number when narrowed to a 32-bit int.
+    self.assertIsNone(
+        msg.Extensions._FindExtensionByNumber(max_number + 2**32)
+    )
+    self.assertIsNone(
+        msg.Extensions._FindExtensionByNumber(max_number - 2**32)
+    )
 
   def testMergeFromExtensions(self):
     msg1 = more_extensions_pb2.TopLevelMessage()

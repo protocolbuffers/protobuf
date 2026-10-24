@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """
 Protobuf Python runtime
 
@@ -121,6 +128,7 @@ def build_targets(name):
         srcs = native.glob([
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
+            "google/protobuf/pyext/free_threading/*.h",
         ]),
         copts = COPTS + [
             "-DGOOGLE_PROTOBUF_HAS_ONEOF=1",
@@ -581,6 +589,7 @@ def build_targets(name):
             "google/protobuf/internal/*.cc",
             "google/protobuf/pyext/*.cc",
             "google/protobuf/pyext/*.h",
+            "google/protobuf/pyext/free_threading/*.h",
         ]) + [
             "BUILD.bazel",
             "MANIFEST.in",

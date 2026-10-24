@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 # This package contains tests exercising C++/Rust interop in the cpp kernel.
 
 load("@rules_cc//cc:defs.bzl", "cc_library")
@@ -21,6 +28,7 @@ cc_library(
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings",
     ],
+    alwayslink = 1,
 )
 
 rust_test(
@@ -30,6 +38,17 @@ rust_test(
     deps = [
         ":interop_test_cpp_rust_proto",
         ":test_utils",
+        "//rust:protobuf_cpp",
+        "@crate_index//:googletest",
+    ],
+)
+
+rust_test(
+    name = "message_lite_test",
+    srcs = ["message_lite_test.rs"],
+    edition = "2024",
+    deps = [
+        ":interop_test_cpp_rust_proto",
         "//rust:protobuf_cpp",
         "@crate_index//:googletest",
     ],

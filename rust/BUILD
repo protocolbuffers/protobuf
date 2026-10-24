@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 # Protobuf Rust runtime packages.
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
@@ -110,6 +117,7 @@ ALL_RUST_SRCS = PROTOBUF_SHARED + [
     "upb_kernel/message.rs",
     "upb_kernel/minitable.rs",
     "upb_kernel/mod.rs",
+    "upb_kernel/reflection.rs",
     "upb_kernel/repeated.rs",
     "upb_kernel/string.rs",
     # go/keep-sorted end
@@ -131,6 +139,7 @@ rust_library(
         "upb_kernel/message.rs",
         "upb_kernel/minitable.rs",
         "upb_kernel/mod.rs",
+        "upb_kernel/reflection.rs",
         "upb_kernel/repeated.rs",
         "upb_kernel/string.rs",
     ],
@@ -283,6 +292,7 @@ cc_library(
     deps = [
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
         "//src/google/protobuf",
+        "//src/google/protobuf:message_traits",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
         "//src/google/protobuf/util:differencer",

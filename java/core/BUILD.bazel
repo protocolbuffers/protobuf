@@ -1,5 +1,6 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@rules_java//java:java_library.bzl", "java_library")
+load("@rules_java//java:java_test.bzl", "java_test")
 load("//:protobuf.bzl", "internal_gen_well_known_protos_java")
 load("//:protobuf_version.bzl", "PROTOBUF_JAVA_VERSION")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
@@ -429,25 +430,30 @@ conformance_test(
     text_format_failure_list = "//conformance:text_format_failure_list_java.txt",
 )
 
+# Tests excluded from core_tests, also reused by the v25 compatibility tests.
+FULL_TEST_EXCLUSIONS = [
+    "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
+    "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
+    "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
+    "src/test/java/com/google/protobuf/TestUtil.java",
+    "src/test/java/com/google/protobuf/TestUtilLite.java",
+    "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
+    "src/test/java/com/google/protobuf/ParserLiteTest.java",
+    "src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java",
+    # Defunct experimental schema tests
+    "src/test/java/com/google/protobuf/Proto2LiteSchemaTest.java",
+    "src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java",
+    "src/test/java/com/google/protobuf/Proto2ExtensionLiteLookupSchemaTest.java",
+    "src/test/java/com/google/protobuf/MessageSetLiteSchemaTest.java",
+    "src/test/java/com/google/protobuf/CodedAdapterTest.java",
+]
+
 junit_tests(
     name = "core_tests",
     size = "small",
     srcs = glob(
         ["src/test/java/**/*.java"],
-        exclude = [
-            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
-            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
-            "src/test/java/com/google/protobuf/TestUtil.java",
-            "src/test/java/com/google/protobuf/TestUtilLite.java",
-            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
-            "src/test/java/com/google/protobuf/ParserLiteTest.java",
-            # Defunct experimental schema tests
-            "src/test/java/com/google/protobuf/Proto2LiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/Proto2ExtensionLiteLookupSchemaTest.java",
-            "src/test/java/com/google/protobuf/MessageSetLiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/CodedAdapterTest.java",
-        ],
+        exclude = FULL_TEST_EXCLUSIONS,
     ),
     data = ["//src/google/protobuf:testdata"],
     deps = [
@@ -475,6 +481,25 @@ junit_tests(
         "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
         "src/test/java/com/google/protobuf/IsValidUtf8TestUtil.java",
     ],
+    deps = [
+        ":core",
+        "@protobuf_maven_dev//:com_google_guava_guava",
+        "@protobuf_maven_dev//:com_google_truth_truth",
+        "@protobuf_maven_dev//:junit_junit",
+    ],
+)
+
+java_test(
+    name = "IsValidUtf8FourByteTest",
+    size = "large",
+    timeout = "eternal",
+    srcs = [
+        "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
+        "src/test/java/com/google/protobuf/IsValidUtf8TestUtil.java",
+    ],
+    shard_count = 50,
+    tags = ["manual"],
+    test_class = "com.google.protobuf.IsValidUtf8FourByteTest",
     deps = [
         ":core",
         "@protobuf_maven_dev//:com_google_guava_guava",
@@ -544,6 +569,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/AbstractProto2SchemaTest.java",
     "src/test/java/com/google/protobuf/AnyTest.java",
     "src/test/java/com/google/protobuf/CodedInputStreamTest.java",
+    "src/test/java/com/google/protobuf/CompositeExtensionRegistryTest.java",
     "src/test/java/com/google/protobuf/DeprecatedFieldTest.java",
     "src/test/java/com/google/protobuf/ImportJavaFeaturesTest.java",
     "src/test/java/com/google/protobuf/DebugFormatTest.java",
@@ -560,6 +586,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/GeneratorNamesTest.java",
     "src/test/java/com/google/protobuf/ImportOptionTest.java",
     "src/test/java/com/google/protobuf/InternalLazyFieldTest.java",
+    "src/test/java/com/google/protobuf/IsValidUtf8FourByteTest.java",
     "src/test/java/com/google/protobuf/LargeEnumTest.java",
     "src/test/java/com/google/protobuf/LazilyParsedMessageSetTest.java",
     "src/test/java/com/google/protobuf/LazyFieldTest.java",
@@ -567,6 +594,7 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/LegacyUnredactedTextFormatTest.java",
     "src/test/java/com/google/protobuf/MapForProto2Test.java",
     "src/test/java/com/google/protobuf/MapTest.java",
+    "src/test/java/com/google/protobuf/MemoizingExtensionRegistryTest.java",
     "src/test/java/com/google/protobuf/MessageTest.java",
     "src/test/java/com/google/protobuf/NestedBuildersTest.java",
     "src/test/java/com/google/protobuf/PackedFieldTest.java",
@@ -588,7 +616,6 @@ LITE_TEST_EXCLUSIONS = [
     "src/test/java/com/google/protobuf/TestUtilLite.java",
     "src/test/java/com/google/protobuf/TypeRegistryTest.java",
     "src/test/java/com/google/protobuf/UnknownEnumValueTest.java",
-    "src/test/java/com/google/protobuf/UnknownFieldSetLiteTest.java",
     "src/test/java/com/google/protobuf/UnknownFieldSetPerformanceTest.java",
     "src/test/java/com/google/protobuf/UnknownFieldSetTest.java",
     "src/test/java/com/google/protobuf/UnredactedDebugFormatForTestTest.java",
@@ -655,20 +682,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
             "src/test/java/com/google/protobuf/ImportOptionTest.java",
             "src/test/java/com/google/protobuf/ImportJavaFeaturesTest.java",
-            # Excluded in core_tests
-            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
-            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
-            "src/test/java/com/google/protobuf/TestUtil.java",
-            "src/test/java/com/google/protobuf/TestUtilLite.java",
-            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
-            "src/test/java/com/google/protobuf/ParserLiteTest.java",
-            # Defunct experimental schema tests
-            "src/test/java/com/google/protobuf/Proto2LiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/Proto2ExtensionLiteLookupSchemaTest.java",
-            "src/test/java/com/google/protobuf/MessageSetLiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/CodedAdapterTest.java",
-        ],
+        ] + FULL_TEST_EXCLUSIONS,
     ),
     test_prefix = "v25SrcJar",
     deps = [
@@ -719,20 +733,7 @@ junit_tests(
             "src/test/java/com/google/protobuf/LargeEnumLiteTest.java",
             "src/test/java/com/google/protobuf/ImportOptionTest.java",
             "src/test/java/com/google/protobuf/ImportJavaFeaturesTest.java",
-            # Excluded in core_tests
-            "src/test/java/com/google/protobuf/DecodeUtf8Test.java",
-            "src/test/java/com/google/protobuf/IsValidUtf8Test.java",
-            "src/test/java/com/google/protobuf/TestUtil.java",
-            "src/test/java/com/google/protobuf/TestUtilLite.java",
-            "src/test/java/com/google/protobuf/RuntimeVersionTest.java",
-            "src/test/java/com/google/protobuf/ParserLiteTest.java",
-            # Defunct experimental schema tests
-            "src/test/java/com/google/protobuf/Proto2LiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/Proto3LiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/Proto2ExtensionLiteLookupSchemaTest.java",
-            "src/test/java/com/google/protobuf/MessageSetLiteSchemaTest.java",
-            "src/test/java/com/google/protobuf/CodedAdapterTest.java",
-        ],
+        ] + FULL_TEST_EXCLUSIONS,
     ),
     test_prefix = "v25Jar",
     deps = [

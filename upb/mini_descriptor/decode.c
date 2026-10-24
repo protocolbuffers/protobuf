@@ -26,6 +26,7 @@
 #include "upb/mini_descriptor/internal/wire_constants.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/extension.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
 #include "upb/mini_table/internal/sub.h"
@@ -144,8 +145,7 @@ static void upb_MiniTable_SetTypeAndSub(upb_MtDecoder* d,
 
   // We initially set `submsg_ofs` to the index of the sub in the list of subs.
   // Later, we'll update it to be a relative byte offset.
-  if (type == kUpb_FieldType_Message || type == kUpb_FieldType_Group ||
-      type == kUpb_FieldType_Enum) {
+  if (UPB_PRIVATE(_upb_MiniTableField_HasSub)(field)) {
     field->UPB_PRIVATE(submsg_ofs) = d->sub_count++;
   } else {
     field->UPB_PRIVATE(submsg_ofs) = kUpb_NoSub;
@@ -743,6 +743,13 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   upb_MtDecoder_ParseMessage(d, data, len);
   upb_MtDecoder_AssignHasbits(d);
 
+  // Map entries are never extendable, but the map encoding shares the message
+  // parser, which accepts the extendable message modifier.
+  if (UPB_UNLIKELY(UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(&d->table) !=
+                   kUpb_ExtMode_NonExtendable)) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Map entry cannot be extendable");
+  }
+
   if (UPB_UNLIKELY(d->table.UPB_PRIVATE(field_count) != 2)) {
     upb_MdDecoder_ErrorJmp(&d->base, "%hu fields in map",
                            d->table.UPB_PRIVATE(field_count));
@@ -830,7 +837,10 @@ done:
   upb_DecodeFast_TableEntry fasttable[32];
   int fasttable_size = 0;
   if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
-    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    // The table is not linked yet, so map fields cannot be identified; they
+    // are updated when linked (see upb_MiniTable_SetSubMessage()).
+    fasttable_size =
+        upb_DecodeFast_BuildTable(&decoder->table, NULL, fasttable);
     mt_size += fasttable_size * sizeof(fasttable[0]);
   }
 #endif
@@ -936,11 +946,26 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   f->UPB_PRIVATE(offset) = 0;
   f->presence = 0;
 
-  // In upb_MiniTableExtension, the `sub` member is a pointer-sized member that
-  // directly follows the `field` member.
-  f->UPB_PRIVATE(submsg_ofs) =
-      UPB_ALIGN_UP(sizeof(upb_MiniTableField), upb_MtDecoder_PtrSize(decoder)) /
-      kUpb_SubmsgOffsetBytes;
+  if (UPB_PRIVATE(_upb_MiniTableField_HasSub)(f)) {
+    // The sub is stored immediately after the upb_MiniTableExtension, whose
+    // layout is `field` followed by the pointer-sized `extendee`. Compute the
+    // offset for the target platform, since the generator emits it into
+    // generated code for both 32-bit and 64-bit builds.
+    size_t ptr_size = upb_MtDecoder_PtrSize(decoder);
+    size_t sub_ofs =
+        UPB_ALIGN_UP(sizeof(upb_MiniTableField), ptr_size) + ptr_size;
+    f->UPB_PRIVATE(submsg_ofs) = sub_ofs / kUpb_SubmsgOffsetBytes;
+    // Tables built for a non-native platform are only used to compute layouts
+    // for code generation; their in-memory layout does not match the target,
+    // so we must not write the sub at the target offset.
+    if (ptr_size == sizeof(void*)) {
+      UPB_ASSERT(sub_ofs ==
+                 offsetof(upb_MiniTableExtensionWithSub, UPB_PRIVATE(sub)));
+      *UPB_PRIVATE(_upb_MiniTableField_Sub)(f) = sub;
+    }
+  } else {
+    f->UPB_PRIVATE(submsg_ofs) = kUpb_NoSub;
+  }
 
   if (extendee->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMessageSet) {
     // Extensions of MessageSet must be messages.
@@ -951,7 +976,6 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
   }
 
   ext->UPB_PRIVATE(extendee) = extendee;
-  ext->UPB_PRIVATE(sub) = sub;
 
   return ret;
 }
@@ -988,12 +1012,17 @@ upb_MiniTableExtension* _upb_MiniTableExtension_Build(
     upb_MiniTableSub sub, upb_MiniTablePlatform platform, upb_Arena* arena,
     upb_Status* status) {
   upb_MiniTableExtension* ext =
-      upb_Arena_Malloc(arena, sizeof(upb_MiniTableExtension));
+      upb_Arena_Malloc(arena, sizeof(upb_MiniTableExtensionWithSub));
   if (UPB_UNLIKELY(!ext)) return NULL;
 
   const char* ptr = _upb_MiniTableExtension_Init(data, len, ext, extendee, sub,
                                                  platform, status);
   if (UPB_UNLIKELY(!ptr)) return NULL;
+
+  if (ext->UPB_PRIVATE(field).UPB_PRIVATE(submsg_ofs) == kUpb_NoSub) {
+    upb_Arena_ShrinkLast(arena, ext, sizeof(upb_MiniTableExtensionWithSub),
+                         sizeof(upb_MiniTableExtension));
+  }
 
   return ext;
 }

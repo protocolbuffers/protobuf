@@ -142,13 +142,13 @@ jobs:
         # Test both FFI and Native implementations on the highest and lowest
         # Ruby versions for CRuby.
         # Quote versions numbers otherwise 3.0 will render as 3
-        - { version: "3.2", ffi: NATIVE }
-        - { version: "3.2", ffi: FFI }
+        - { version: "3.2", ffi: NATIVE, continuous-only: true }
+        - { version: "3.2", ffi: FFI, continuous-only: true }
         - { version: "3.3", continuous-only: true }
-        - { version: "3.4", ffi: NATIVE }
-        - { version: "3.4", ffi: FFI }
+        - { version: "3.4", ffi: NATIVE, continuous-only: true }
+        - { version: "3.4", ffi: FFI, continuous-only: true }
         - { version: "4.0", ffi: NATIVE }
-        - { version: "4.0", ffi: FFI }
+        - { version: "4.0", ffi: FFI, continuous-only: true }
 
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} MacOS Ruby ${{ matrix.version }}${{ matrix.ffi == 'FFI' && ' FFI' || '' }}
     runs-on: macos-15

@@ -2154,6 +2154,10 @@ std::string TextFormat::FieldValuePrinter::PrintEnum(
     int32_t val, const std::string& name) const {
   FORWARD_IMPL(PrintEnum, val, name);
 }
+std::string TextFormat::FieldValuePrinter::PrintEnum(
+    int32_t val, absl::string_view name) const {
+  return PrintEnum(val, std::string(name));
+}
 std::string TextFormat::FieldValuePrinter::PrintFieldName(
     const Message& message, const Reflection* reflection,
     const FieldDescriptor* field) const {
@@ -2211,6 +2215,10 @@ void TextFormat::FastFieldValuePrinter::PrintEnum(
     int32_t /*val*/, const std::string& name,
     BaseTextGenerator* generator) const {
   generator->PrintString(name);
+}
+void TextFormat::FastFieldValuePrinter::PrintEnum(
+    int32_t val, absl::string_view name, BaseTextGenerator* generator) const {
+  PrintEnum(val, std::string(name), generator);
 }
 
 namespace {
@@ -2613,6 +2621,9 @@ void TextFormat::Printer::PrintMessage(const Message& message,
   const Reflection* reflection = message.GetReflection();
   std::vector<const FieldDescriptor*> fields;
   if (descriptor->options().map_entry()) {
+    ABSL_CHECK(descriptor->field_count() == 2)
+        << "map_entry message " << descriptor->full_name() << " has "
+        << descriptor->field_count() << " fields, expected 2";
     fields.push_back(descriptor->field(0));
     fields.push_back(descriptor->field(1));
   } else {
@@ -2736,14 +2747,14 @@ MapEntries MapFieldPrinterHelper::SortMap(const Message& message,
     const Descriptor* map_entry_desc = field->message_type();
     const Message* prototype =
         reflection->GetMessageFactory()->GetPrototype(map_entry_desc);
-    all_entries.reserve(reflection->MapSize(message, field));
-    owned_entries.reserve(reflection->MapSize(message, field));
-    for (ConstMapIterator iter = reflection->ConstMapBegin(&message, field);
-         iter != reflection->ConstMapEnd(&message, field); ++iter) {
+    auto map = *reflection->GetMap(message, field);
+    all_entries.reserve(map.size());
+    owned_entries.reserve(map.size());
+    for (auto entry : map) {
       std::unique_ptr<Message> map_entry_message =
           absl::WrapUnique(prototype->New());
-      CopyKey(iter.GetKey(), map_entry_message.get(), map_entry_desc->field(0));
-      CopyValue(iter.GetValueRef(), map_entry_message.get(),
+      CopyKey(entry.key(), map_entry_message.get(), map_entry_desc->field(0));
+      CopyValue(entry.value(), map_entry_message.get(),
                 map_entry_desc->field(1));
       all_entries.push_back(map_entry_message.get());
       owned_entries.push_back(std::move(map_entry_message));
@@ -3000,8 +3011,7 @@ void TextFormat::Printer::PrintFieldValue(const Message& message,
       const EnumValueDescriptor* enum_desc =
           field->enum_type()->FindValueByNumber(enum_value);
       if (enum_desc != nullptr) {
-        printer->PrintEnum(enum_value, internal::NameOfEnumAsString(enum_desc),
-                           generator);
+        printer->PrintEnum(enum_value, enum_desc->name(), generator);
       } else {
         // Ordinarily, enum_desc should not be null, because proto2 has the
         // invariant that set enum field values must be in-range, but with the
