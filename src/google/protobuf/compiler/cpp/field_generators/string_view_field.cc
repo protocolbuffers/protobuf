@@ -177,11 +177,13 @@ class SingularStringView : public FieldGeneratorBase {
 
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     if (is_inlined() || EmptyDefault() || use_micro_string()) {
-      p->Emit("new (&$field_$) decltype($field_$){arena, $from_field$};\n");
+      p->Emit(
+          "new (&$this_mutable_field$) decltype($this_mutable_field$){arena, "
+          "$from_field$};\n");
     } else {
       p->Emit(
-          "new (&$field_$) decltype($field_$){arena, $from_field$,"
-          " $default_variable_field$};\n");
+          "new (&$this_mutable_field$) decltype($this_mutable_field$){arena, "
+          "$from_field$, $default_variable_field$};\n");
     }
   }
 

@@ -395,8 +395,8 @@ JavaFeatures_NestInFileClassFeature::JavaFeatures_NestInFileClassFeature(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  JavaFeatures_NestInFileClassFeature& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  JavaFeatures_NestInFileClassFeature& this_ = *this;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
 
   // @@protoc_insertion_point(copy_constructor:pb.JavaFeatures.NestInFileClassFeature)

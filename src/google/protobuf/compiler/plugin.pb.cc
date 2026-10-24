@@ -768,11 +768,12 @@ Version::Version(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  Version& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  Version& this_ = *this;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&this_._impl_) +
                offsetof(Impl_, major_),
            reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, major_),
@@ -1055,14 +1056,15 @@ CodeGeneratorRequest::CodeGeneratorRequest(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  CodeGeneratorRequest& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  CodeGeneratorRequest& this_ = *this;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.compiler_version_ = (CheckHasBit(cached_has_bits, 0x00000008U))
-                 ? Super_::CopyConstruct(arena, *from._impl_.compiler_version_)
-                 : nullptr;
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::uint32_t cached_has_bits = this_._impl_._has_bits_[0];
+  this_._impl_.compiler_version_ =
+      (CheckHasBit(cached_has_bits, 0x00000008U)) ? Super_::CopyConstruct(arena, *from._impl_.compiler_version_)
+                  : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorRequest)
 }
@@ -1394,14 +1396,15 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  CodeGeneratorResponse_File& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  CodeGeneratorResponse_File& this_ = *this;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.generated_code_info_ = (CheckHasBit(cached_has_bits, 0x00000008U))
-                 ? Super_::CopyConstruct(arena, *from._impl_.generated_code_info_)
-                 : nullptr;
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::uint32_t cached_has_bits = this_._impl_._has_bits_[0];
+  this_._impl_.generated_code_info_ =
+      (CheckHasBit(cached_has_bits, 0x00000008U)) ? Super_::CopyConstruct(arena, *from._impl_.generated_code_info_)
+                  : nullptr;
 
   // @@protoc_insertion_point(copy_constructor:google.protobuf.compiler.CodeGeneratorResponse.File)
 }
@@ -1668,11 +1671,12 @@ CodeGeneratorResponse::CodeGeneratorResponse(
 #else   // PROTOBUF_CUSTOM_VTABLE
     : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-  CodeGeneratorResponse& this_ [[maybe_unused]] = *this;
-  _internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
+  CodeGeneratorResponse& this_ = *this;
+  this_._internal_metadata_.MergeFrom<::google::protobuf::UnknownFieldSet>(
       from._internal_metadata_);
-  new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
-  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+  ::new (&this_._impl_)
+      Impl_(internal_visibility(), arena, from._impl_, from);
+  ::memcpy(reinterpret_cast<char*>(&this_._impl_) +
                offsetof(Impl_, supported_features_),
            reinterpret_cast<const char*>(&from._impl_) +
                offsetof(Impl_, supported_features_),
