@@ -20,7 +20,6 @@
 #include "google/protobuf/test_textproto.h"
 #include "google/protobuf/test_util.h"
 #include "google/protobuf/unittest.pb.h"
-#include "google/protobuf/util/field_mask_util.h"
 #include "google/protobuf/util/field_mask_util_test.pb.h"
 
 
