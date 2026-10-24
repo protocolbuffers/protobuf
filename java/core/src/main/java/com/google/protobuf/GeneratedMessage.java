@@ -28,6 +28,7 @@ import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,6 +86,29 @@ public abstract class GeneratedMessage extends AbstractMessage implements Serial
   @Override
   public Parser<? extends GeneratedMessage> getParserForType() {
     throw new UnsupportedOperationException("This is supposed to be overridden by subclasses.");
+  }
+
+  protected static class DefaultInstanceBasedParser<T extends GeneratedMessage>
+      extends AbstractParser<T> {
+    private final T defaultInstance;
+
+    public DefaultInstanceBasedParser(T defaultInstance) {
+      this.defaultInstance = defaultInstance;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public T parsePartialFrom(
+        CodedInputStream input, ExtensionRegistryLite extensionRegistry)
+        throws InvalidProtocolBufferException {
+      Message.Builder builder = defaultInstance.newBuilderForType();
+      try {
+        builder.mergeFrom(input, extensionRegistry);
+      } catch (Exception e) {
+        wrapAndThrowParseException(e, builder);
+      }
+      return (T) builder.buildPartial();
+    }
   }
 
   /**
