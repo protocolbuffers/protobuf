@@ -20,6 +20,26 @@
 
 #include "Python.h"
 
+#if defined(Py_LIMITED_API) && PY_VERSION_HEX < 0x030C0000
+// Before Python 3.12, the inline reference counting helpers do not recognize
+// immortal objects. When an abi3 extension built with these headers runs on a
+// newer Python, use the runtime's reference counting functions instead.
+#undef Py_INCREF
+#define Py_INCREF(obj) Py_IncRef((PyObject*)(obj))
+#undef Py_DECREF
+#define Py_DECREF(obj) Py_DecRef((PyObject*)(obj))
+// These helpers inline Py_INCREF/Py_DECREF too, so redefining those alone is
+// insufficient. Py_IncRef/Py_DecRef accept NULL, like the X variants.
+#undef Py_XINCREF
+#define Py_XINCREF(obj) Py_IncRef((PyObject*)(obj))
+#undef Py_XDECREF
+#define Py_XDECREF(obj) Py_DecRef((PyObject*)(obj))
+#undef Py_NewRef
+#define Py_NewRef(obj) (Py_NewRef)((PyObject*)(obj))
+#undef Py_XNewRef
+#define Py_XNewRef(obj) (Py_XNewRef)((PyObject*)(obj))
+#endif
+
 // Ideally we could restrict ourselves to the limited API of 3.7, but this is
 // a very important function that was not officially added to the limited API
 // until 3.10.  Without this function, there is no way of getting data from a
