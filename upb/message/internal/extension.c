@@ -15,6 +15,7 @@
 #include "upb/message/internal/types.h"
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -71,6 +72,9 @@ upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
 
 upb_Extension* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
+  // A non-canonical extension is never a MessageSet item.
+  UPB_ASSERT(!upb_MiniTableExtension_Extendee(e) ||
+             !upb_MiniTable_IsMessageSet(upb_MiniTableExtension_Extendee(e)));
   return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
       msg, e, a, kUpb_TaggedAuxType_NonCanonicalExtension);
 }

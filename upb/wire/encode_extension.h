@@ -23,11 +23,18 @@ struct upb_Extension;
 
 // Encodes an extension (`upb_Extension*`) to bytes.
 //
-// This can be used to encode an extension into the provided arena.
+// This can be used to encode an extension into the provided arena. The
+// extension is always encoded as a regular field.
 // Returns `kUpb_EncodeStatus_Ok` on success.
 UPB_NODISCARD upb_EncodeStatus
 upb_EncodeExtension(const struct upb_Extension* ext, struct upb_Arena* arena,
                     upb_StringView* view, int encode_options);
+
+// Encodes an extension of a MessageSet (`upb_Extension*`) to bytes, as a
+// MessageSet item.
+UPB_NODISCARD upb_EncodeStatus upb_EncodeMessageSetExtension(
+    const struct upb_Extension* ext, struct upb_Arena* arena,
+    upb_StringView* view, int encode_options);
 
 #ifdef __cplusplus
 } /* extern "C" */

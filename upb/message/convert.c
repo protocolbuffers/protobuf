@@ -245,6 +245,22 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
                                         const upb_ExtensionRegistry* extreg,
                                         int depth);
 
+// Encodes the MessageSet item for extension `ext` with value `val` and adds it
+// to the MessageSet `dst` as an unknown field.
+static void upb_Message_AddMessageSetItemAsUnknown(
+    upb_Converter* c, upb_Message* dst, const upb_MiniTableExtension* ext,
+    upb_MessageValue val, int depth) {
+  upb_encstate* e = &c->encoder;
+  char* buf = upb_BackAlloc_Init(&e->alloc, e->alloc.arena);
+  size_t size;
+  UPB_PRIVATE(_upb_Encode_MessageSetExtension)
+  (e, ext, val, &buf, &size, upb_Encode_LimitDepth(c->encode_options, depth));
+  if (!UPB_PRIVATE(_upb_Message_AddUnknown)(dst, buf, size, e->alloc.arena,
+                                            kUpb_AddUnknown_Alias)) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+  }
+}
+
 static void upb_Array_DeepConvert(
     upb_Converter* c, upb_Array* dst, const upb_Array* src,
     const upb_MiniTable* dst_sub_mt, const upb_MiniTable* src_sub_mt,
@@ -618,6 +634,12 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
   }
 
   if (dst_f == NULL) {
+    if (upb_MiniTable_IsMessageSet(dst_mt)) {
+      // A non-canonical extension is never a MessageSet item, so an item that
+      // is not known in the destination schema is kept as unknown bytes.
+      upb_Message_AddMessageSetItemAsUnknown(c, dst, ext, val, depth);
+      return;
+    }
     // Since this extension is not known in the destination schema, convert it
     // to a non-canonical extension.
     upb_Extension* msg_ext = UPB_PRIVATE(
