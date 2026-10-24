@@ -335,12 +335,17 @@ static VALUE RepeatedField_index_set(VALUE _self, VALUE _index, VALUE val) {
 static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_Arena* arena = Arena_get(self->arena);
-  upb_Array* array = RepeatedField_GetMutable(_self);
   int i;
+
+  // Frozen check before any conversion, matching the previous behavior.
+  RepeatedField_GetMutable(_self);
 
   for (i = 0; i < argc; i++) {
     upb_MessageValue msgval =
         Convert_RubyToUpb(argv[i], "", self->type_info, arena);
+    // The conversion can run Ruby code that freezes the field; re-fetch (and
+    // re-check frozen) so the append never lands on a frozen array.
+    upb_Array* array = RepeatedField_GetMutable(_self);
     if (!upb_Array_Append(array, msgval, arena)) {
       Arena_raise_oom();
     }
@@ -360,9 +365,14 @@ static VALUE RepeatedField_push_vararg(int argc, VALUE* argv, VALUE _self) {
 static VALUE RepeatedField_push(VALUE _self, VALUE val) {
   RepeatedField* self = ruby_to_RepeatedField(_self);
   upb_Arena* arena = Arena_get(self->arena);
-  upb_Array* array = RepeatedField_GetMutable(_self);
+
+  // Frozen check before the conversion, matching the previous behavior.
+  RepeatedField_GetMutable(_self);
 
   upb_MessageValue msgval = Convert_RubyToUpb(val, "", self->type_info, arena);
+  // The conversion can run Ruby code that freezes the field; re-fetch (and
+  // re-check frozen) so the append never lands on a frozen array.
+  upb_Array* array = RepeatedField_GetMutable(_self);
   if (!upb_Array_Append(array, msgval, arena)) {
     Arena_raise_oom();
   }
