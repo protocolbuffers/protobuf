@@ -20,6 +20,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -424,11 +425,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
               // clang-format on
           );
         }},
-       {"field_names",
-        [&] {
-          Formatter format(p, variables_);
-          GenerateFieldNames(format);
-        }}},
+       {"field_names", [&] { GenerateFieldNames(p); }}},
       // Disable clang-format, as we want to generate a denser table
       // representation than what clang-format typically wants. clang would
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
@@ -580,7 +577,7 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
   }
 }
 
-void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
+void ParseFunctionGenerator::GenerateFieldNames(io::Printer* p) {
   if (tc_table_info_->field_name_data.empty()) {
     // No names to output.
     return;
@@ -592,24 +589,31 @@ void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
 
   const int total_sizes =
       static_cast<int>(((tc_table_info_->field_entries.size() + 1) + 7) & ~7u);
-  const uint8_t* p = tc_table_info_->field_name_data.data();
-  const uint8_t* sizes = p;
+  const uint8_t* data = tc_table_info_->field_name_data.data();
+  const uint8_t* sizes = data;
   const uint8_t* sizes_end = sizes + total_sizes;
 
   // First print all the sizes as octal
-  format("\"");
-  for (int i = 0; i < total_sizes; ++i) {
-    int size = *p++;
-    int octal_size = ((size >> 6) & 3) * 100 +  //
-                     ((size >> 3) & 7) * 10 +   //
-                     ((size >> 0) & 7);
-    format("\\$1$", octal_size);
-  }
-  format("\"\n");
+  p->Emit({{"octal_sizes",
+            [&] {
+              for (int i = 0; i < total_sizes; ++i) {
+                int size = *data++;
+                p->Emit({{"octal_size", absl::StrFormat("\\%o", size)}},
+                        R"cc($octal_size$)cc");
+              }
+            }}},
+          R"cc(
+            "$octal_sizes$"
+          )cc");
 
   // Then print each name in a line of its own
-  for (; sizes < sizes_end; p += *sizes++) {
-    if (*sizes != 0) format("\"$1$\"\n", std::string(p, p + *sizes));
+  for (; sizes < sizes_end; data += *sizes++) {
+    if (*sizes == 0) continue;
+    absl::string_view name(reinterpret_cast<const char*>(data),
+                           static_cast<size_t>(*sizes));
+    p->Emit({{"name", name}}, R"cc(
+      "$name$"
+    )cc");
   }
 }
 
