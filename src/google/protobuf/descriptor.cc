@@ -69,6 +69,7 @@
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
 #include "google/protobuf/any.h"
+#include "google/protobuf/arena.h"
 #include "google/protobuf/cpp_edition_defaults.h"
 #include "google/protobuf/cpp_features.pb.h"
 #include "google/protobuf/descriptor.pb.h"
@@ -98,6 +99,7 @@
 #include "google/protobuf/symbol_checker.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unknown_field_set.h"
+#include "google/protobuf/wire_format_lite.h"
 
 
 // Must be included last.
@@ -364,6 +366,62 @@ absl::optional<TypeMap<IntT, T...>> CalculateEnds(
   return out;
 }
 
+namespace {
+
+// If `encoded` begins with a length-delimited field `field_number`, returns its
+// value as a view into `encoded` and advances `encoded` past it.
+absl::optional<absl::string_view> ConsumeLeadingStringField(
+    absl::string_view& encoded, int field_number) {
+  io::CodedInputStream input(reinterpret_cast<const uint8_t*>(encoded.data()),
+                             static_cast<int>(encoded.size()));
+  uint32_t length;
+  if (input.ReadTagNoLastTag() !=
+          internal::WireFormatLite::MakeTag(
+              field_number,
+              internal::WireFormatLite::WIRETYPE_LENGTH_DELIMITED) ||
+      !input.ReadVarint32(&length)) {
+    return absl::nullopt;
+  }
+  const size_t offset = static_cast<size_t>(input.CurrentPosition());
+  if (length > encoded.size() - offset) return absl::nullopt;
+  absl::string_view value = encoded.substr(offset, length);
+  encoded.remove_prefix(offset + length);
+  return value;
+}
+
+// The strings of an encoded FileDescriptorProto that descriptors built from it
+// may alias instead of copying: the file's `name`, `package`, and
+// `option_dependency`, and the `reserved_name` and `default_value` fields of
+// its messages, enums, and fields.
+class EncodedFileStrings {
+ public:
+  explicit EncodedFileStrings(absl::string_view encoded) : encoded_(encoded) {
+    // protoc serializes `name` and `package` first, so most files need no scan.
+    absl::string_view rest = encoded_;
+    name_ =
+        ConsumeLeadingStringField(rest, FileDescriptorProto::kNameFieldNumber)
+            .value_or(absl::string_view());
+    package_ = ConsumeLeadingStringField(
+                   rest, FileDescriptorProto::kPackageFieldNumber)
+                   .value_or(absl::string_view());
+  }
+
+  // Returns a view into the encoded file equal to non-empty `value`, if any.
+  absl::optional<absl::string_view> Find(absl::string_view value) {
+    if (value == name_) return name_;
+    if (value == package_) return package_;
+    return absl::nullopt;
+  }
+
+ private:
+
+  absl::string_view encoded_;
+  absl::string_view name_;
+  absl::string_view package_;
+};
+
+}  // namespace
+
 // The implementation for FlatAllocator below.
 // This separate class template makes it easier to have methods that fold on
 // `T...`.
@@ -479,10 +537,30 @@ class FlatAllocatorImpl {
     return res;
   }
 
-  absl::string_view AllocateStringView(const absl::string_view name) {
-    char* res = AllocateArray<char>(name.size());
-    memcpy(res, name.data(), name.size());
-    return {res, name.size()};
+  // Strings found in `aliases` are aliased rather than copied.
+  void SetAliases(EncodedFileStrings* aliases) { aliases_ = aliases; }
+
+  void PlanStringView(const absl::string_view value) {
+    if (!FindAlias(value).has_value()) PlanArray<char>(value.size());
+  }
+
+  absl::string_view AllocateStringView(const absl::string_view value) {
+    if (auto alias = FindAlias(value); alias.has_value()) return *alias;
+    char* res = AllocateArray<char>(value.size());
+    memcpy(res, value.data(), value.size());
+    return {res, value.size()};
+  }
+
+  void PlanStringViewPtr(const absl::string_view value) {
+    PlanArray<absl::string_view>(1);
+    PlanStringView(value);
+  }
+
+  const absl::string_view* AllocateStringViewPtr(
+      const absl::string_view value) {
+    absl::string_view* res = AllocateArray<absl::string_view>(1);
+    *res = AllocateStringView(value);
+    return res;
   }
 
   // Allocate all 5 names of the field:
@@ -606,6 +684,12 @@ class FlatAllocatorImpl {
     return pointers_.template Get<char>() != nullptr;
   }
 
+  absl::optional<absl::string_view> FindAlias(absl::string_view value) const {
+    if (value.empty()) return absl::string_view();
+    if (aliases_ == nullptr) return absl::nullopt;
+    return aliases_->Find(value);
+  }
+
   enum class FieldNameCase { kAllLower, kSnakeCase, kOther };
   FieldNameCase GetFieldNameCase(const absl::string_view name) {
     if (!name.empty() && !absl::ascii_islower(name[0])) {
@@ -629,6 +713,7 @@ class FlatAllocatorImpl {
   }
 
   const FlatAllocation<T...>* flat_alloc_;
+  EncodedFileStrings* aliases_ = nullptr;
   TypeMap<PointerT, T...> pointers_;
   TypeMap<IntT, T...> total_;
   TypeMap<IntT, T...> used_;
@@ -2801,13 +2886,20 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
   // NOINLINE to reduce the stack cost of the operation in the caller.
   const auto find_file = [](DescriptorDatabase& database,
                             absl::string_view filename,
-                            FileDescriptorProto& output) PROTOBUF_NOINLINE {
-    return database.FindFileByName(std::string(filename), &output);
+                            FileDescriptorProto& output,
+                            absl::string_view& encoded_file) PROTOBUF_NOINLINE {
+    if (&database == GeneratedDatabase()) {
+      return GeneratedDatabase()->FindFileByName(filename, &output,
+                                                 &encoded_file);
+    }
+    return database.FindFileByName(filename, &output);
   };
 
   auto& file_proto = deferred_validation.CreateProto();
-  if (!find_file(*fallback_database_, name, file_proto) ||
-      BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
+  absl::string_view encoded_file;
+  if (!find_file(*fallback_database_, name, file_proto, encoded_file) ||
+      BuildFileFromDatabase(file_proto, deferred_validation, encoded_file) ==
+          nullptr) {
     tables_->AddKnownBadFile(name);
     return false;
   }
@@ -2842,6 +2934,7 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
   if (tables_->IsKnownBadSymbol(name)) return false;
 
   auto& file_proto = deferred_validation.CreateProto();
+  absl::string_view encoded_file;
   if (  // We skip looking in the fallback database if the name is a sub-symbol
         // of any descriptor that already exists in the descriptor pool (except
         // for package descriptors).  This is valid because all symbols except
@@ -2861,7 +2954,11 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
       IsSubSymbolOfBuiltType(name)
 
       // Look up file containing this symbol in fallback database.
-      || !fallback_database_->FindFileContainingSymbol(name, &file_proto)
+      ||
+      !(fallback_database_ == GeneratedDatabase()
+            ? GeneratedDatabase()->FindFileContainingSymbol(name, &file_proto,
+                                                            &encoded_file)
+            : fallback_database_->FindFileContainingSymbol(name, &file_proto))
 
       // Check if we've already built this file. If so, it apparently doesn't
       // contain the symbol we're looking for.  Some DescriptorDatabases
@@ -2869,7 +2966,8 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
       || tables_->FindFile(file_proto.name()) != nullptr
 
       // Build the file.
-      || BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
+      || BuildFileFromDatabase(file_proto, deferred_validation, encoded_file) ==
+             nullptr) {
     tables_->AddKnownBadSymbol(name);
     return false;
   }
@@ -2883,9 +2981,13 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
   if (fallback_database_ == nullptr) return false;
 
   auto& file_proto = deferred_validation.CreateProto();
-  if (!fallback_database_->FindFileContainingExtension(
-          std::string(containing_type->full_name()), field_number,
-          &file_proto)) {
+  absl::string_view encoded_file;
+  if (!(fallback_database_ == GeneratedDatabase()
+            ? GeneratedDatabase()->FindFileContainingExtension(
+                  containing_type->full_name(), field_number, &file_proto,
+                  &encoded_file)
+            : fallback_database_->FindFileContainingExtension(
+                  containing_type->full_name(), field_number, &file_proto))) {
     return false;
   }
 
@@ -2896,7 +2998,8 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
     return false;
   }
 
-  if (BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
+  if (BuildFileFromDatabase(file_proto, deferred_validation, encoded_file) ==
+      nullptr) {
     return false;
   }
 
@@ -4319,8 +4422,8 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 }
 
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
-    const FileDescriptorProto& proto,
-    DeferredValidation& deferred_validation) const {
+    const FileDescriptorProto& proto, DeferredValidation& deferred_validation,
+    absl::string_view encoded_file) const {
   mutex_->AssertHeld();
   build_started_ = true;
   if (tables_->IsKnownBadFile(proto.name())) {
@@ -4331,7 +4434,7 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
     result =
         internal::DescriptorBuilder::New(
             this, tables_.get(), deferred_validation, default_error_collector_)
-            ->BuildFile(proto);
+            ->BuildFile(proto, encoded_file);
   };
   if (dispatcher_ != nullptr) {
     (*dispatcher_)(build_file);
@@ -4767,7 +4870,7 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
   // Compute names.
   absl::string_view placeholder_full_name;
   absl::string_view placeholder_name;
-  const std::string* placeholder_package;
+  absl::string_view placeholder_package;
 
   if (!ValidateQualifiedName(name)) return Symbol();
   if (name[0] == '.') {
@@ -4777,10 +4880,21 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     placeholder_full_name = name;
   }
 
+  const std::string::size_type dotpos = placeholder_full_name.find_last_of('.');
+  if (dotpos != std::string::npos) {
+    placeholder_package = placeholder_full_name.substr(0, dotpos);
+    placeholder_name = placeholder_full_name.substr(dotpos + 1);
+  } else {
+    placeholder_name = placeholder_full_name;
+  }
+  const std::string placeholder_filename =
+      absl::StrCat(placeholder_full_name, ".placeholder.proto");
+
   // Create the placeholders.
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
-  alloc.PlanArray<std::string>(2);
+  alloc.PlanStringViewPtr(placeholder_filename);
+  alloc.PlanStringViewPtr(placeholder_package);
   if (placeholder_type == PLACEHOLDER_ENUM) {
     alloc.PlanArray<EnumDescriptor>(1);
     alloc.PlanArray<EnumValueDescriptor>(1);
@@ -4797,19 +4911,8 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
   }
   ABSL_CHECK(alloc.FinalizePlanning(tables_));
 
-  const std::string::size_type dotpos = placeholder_full_name.find_last_of('.');
-  if (dotpos != std::string::npos) {
-    placeholder_package =
-        alloc.AllocateStrings(placeholder_full_name.substr(0, dotpos));
-    placeholder_name = placeholder_full_name.substr(dotpos + 1);
-  } else {
-    placeholder_package = alloc.AllocateStrings("");
-    placeholder_name = placeholder_full_name;
-  }
-
   FileDescriptor* placeholder_file = NewPlaceholderFileWithMutexHeld(
-      absl::StrCat(placeholder_full_name, ".placeholder.proto"), alloc);
-  placeholder_file->package_ = placeholder_package;
+      placeholder_filename, placeholder_package, alloc);
 
   if (placeholder_type == PLACEHOLDER_ENUM) {
     placeholder_file->enum_type_count_ = 1;
@@ -4840,9 +4943,9 @@ Symbol DescriptorPool::NewPlaceholderWithMutexHeld(
     // Note that enum value names are siblings of their type, not children.
     placeholder_value->all_names_ = alloc.AllocateStrings(
         "PLACEHOLDER_VALUE",
-        placeholder_package->empty()
+        placeholder_package.empty()
             ? "PLACEHOLDER_VALUE"
-            : absl::StrCat(*placeholder_package, ".PLACEHOLDER_VALUE"));
+            : absl::StrCat(placeholder_package, ".PLACEHOLDER_VALUE"));
 
     placeholder_value->number_ = 0;
     placeholder_value->type_ = placeholder_enum;
@@ -4891,22 +4994,24 @@ FileDescriptor* DescriptorPool::NewPlaceholderFile(
   absl::MutexLockMaybe lock(mutex_);
   internal::FlatAllocator alloc;
   alloc.PlanArray<FileDescriptor>(1);
-  alloc.PlanArray<std::string>(1);
+  alloc.PlanStringViewPtr(name);
+  alloc.PlanStringViewPtr("");
   ABSL_CHECK(alloc.FinalizePlanning(tables_));
 
-  return NewPlaceholderFileWithMutexHeld(name, alloc);
+  return NewPlaceholderFileWithMutexHeld(name, "", alloc);
 }
 
 FileDescriptor* DescriptorPool::NewPlaceholderFileWithMutexHeld(
-    const absl::string_view name, internal::FlatAllocator& alloc) const {
+    const absl::string_view name, const absl::string_view package,
+    internal::FlatAllocator& alloc) const {
   if (mutex_) {
     mutex_->AssertHeld();
   }
   FileDescriptor* placeholder = alloc.AllocateArray<FileDescriptor>(1);
   memset(static_cast<void*>(placeholder), 0, sizeof(*placeholder));
 
-  placeholder->name_ = alloc.AllocateStrings(name);
-  placeholder->package_ = &internal::GetEmptyString();
+  placeholder->name_ = alloc.AllocateStringViewPtr(name);
+  placeholder->package_ = alloc.AllocateStringViewPtr(package);
   placeholder->pool_ = this;
   placeholder->options_ = nullptr;
   placeholder->proto_features_ = &FeatureSet::default_instance();
@@ -5380,8 +5485,8 @@ static void PlanAllocationSize(
     if (e.has_options()) alloc.PlanArray<EnumOptions>(1);
     PlanAllocationSize(e.value(), alloc);
     alloc.PlanArray<EnumDescriptor::ReservedRange>(e.reserved_range_size());
-    alloc.PlanArray<const std::string*>(e.reserved_name_size());
-    alloc.PlanArray<std::string>(e.reserved_name_size());
+    alloc.PlanArray<absl::string_view>(e.reserved_name_size());
+    for (const auto& name : e.reserved_name()) alloc.PlanStringView(name);
   }
 }
 
@@ -5397,6 +5502,20 @@ static void PlanAllocationSize(
   }
 }
 
+// Returns the value of `FieldDescriptor::default_value_string_` for a string or
+// bytes field, unescaping a bytes default into `scratch` if needed, or nullopt
+// if it is invalid. (`TYPE_STRING` defaults are already unescaped by the
+// `.proto` parser when constructing `FieldDescriptorProto`.)
+static absl::optional<absl::string_view> DefaultValueString(
+    const FieldDescriptorProto& proto, std::string& scratch) {
+  if (proto.type() != FieldDescriptorProto::TYPE_BYTES ||
+      !absl::StrContains(proto.default_value(), '\\')) {
+    return proto.default_value();
+  }
+  if (!absl::CUnescape(proto.default_value(), &scratch)) return absl::nullopt;
+  return scratch;
+}
+
 static void PlanAllocationSize(
     const RepeatedPtrField<FieldDescriptorProto>& fields,
     size_t parent_scope_size, internal::FlatAllocator& alloc) {
@@ -5409,7 +5528,9 @@ static void PlanAllocationSize(
         (field.type() == FieldDescriptorProto::TYPE_STRING ||
          field.type() == FieldDescriptorProto::TYPE_BYTES)) {
       // For the default string value.
-      alloc.PlanArray<std::string>(1);
+      std::string scratch;
+      alloc.PlanStringViewPtr(
+          DefaultValueString(field, scratch).value_or(absl::string_view()));
     }
   }
 }
@@ -5440,8 +5561,8 @@ static void PlanAllocationSize(
     PlanAllocationSize(message.extension(), full_name_size, alloc);
     PlanAllocationSize(message.extension_range(), alloc);
     alloc.PlanArray<Descriptor::ReservedRange>(message.reserved_range_size());
-    alloc.PlanArray<const std::string*>(message.reserved_name_size());
-    alloc.PlanArray<std::string>(message.reserved_name_size());
+    alloc.PlanArray<absl::string_view>(message.reserved_name_size());
+    for (const auto& name : message.reserved_name()) alloc.PlanStringView(name);
     PlanAllocationSize(message.enum_type(), full_name_size, alloc);
     PlanAllocationSize(message.oneof_decl(), full_name_size, alloc);
   }
@@ -5475,7 +5596,9 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
                                internal::FlatAllocator& alloc) {
   alloc.PlanArray<FileDescriptor>(1);
   alloc.PlanArray<FileDescriptorTables>(1);
-  alloc.PlanArray<std::string>(2);  // name + package
+  alloc.PlanStringViewPtr(proto.name());
+  alloc.PlanStringViewPtr(proto.has_package() ? proto.package()
+                                              : absl::string_view());
   if (proto.has_options()) alloc.PlanArray<FileOptions>(1);
   if (proto.has_source_code_info()) alloc.PlanArray<SourceCodeInfo>(1);
 
@@ -5489,7 +5612,7 @@ static void PlanAllocationSize(const FileDescriptorProto& proto,
   alloc.PlanArray<const FileDescriptor*>(proto.dependency_size());
   alloc.PlanArray<absl::string_view>(proto.option_dependency_size());
   for (int i = 0; i < proto.option_dependency_size(); i++) {
-    alloc.PlanArray<char>(proto.option_dependency(i).size());
+    alloc.PlanStringView(proto.option_dependency(i));
   }
 }
 
@@ -5500,6 +5623,11 @@ bool IsDefaultInstance(const OptionT& opt) {
 
 const FileDescriptor* internal::DescriptorBuilder::BuildFile(
     const FileDescriptorProto& proto) {
+  return BuildFile(proto, absl::string_view());
+}
+
+const FileDescriptor* internal::DescriptorBuilder::BuildFile(
+    const FileDescriptorProto& proto, absl::string_view encoded_file) {
   // Ensure the generated pool has been lazily initialized.  This is most
   // important for protos that use C++-specific features, since that extension
   // is only registered lazily and we always parse options into the generated
@@ -5588,6 +5716,8 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
   tables_->AddCheckpoint();
 
   auto alloc = std::make_unique<internal::FlatAllocator>();
+  EncodedFileStrings encoded_strings(encoded_file);
+  if (!encoded_file.empty()) alloc->SetAliases(&encoded_strings);
   PlanAllocationSize(proto, *alloc);
   FileDescriptor* result = nullptr;
   if (!alloc->FinalizePlanning(tables_)) {
@@ -5605,6 +5735,7 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
   } else {
     tables_->RollbackToLastCheckpoint(deferred_validation_);
   }
+  alloc->SetAliases(nullptr);
 
   return result;
 }
@@ -5657,15 +5788,15 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
              "Missing field: FileDescriptorProto.name.");
   }
 
-  result->name_ = alloc.AllocateStrings(proto.name());
+  result->name_ = alloc.AllocateStringViewPtr(proto.name());
   if (proto.has_package()) {
-    result->package_ = alloc.AllocateStrings(proto.package());
+    result->package_ = alloc.AllocateStringViewPtr(proto.package());
   } else {
     // We cannot rely on proto.package() returning a valid string if
     // proto.has_package() is false, because we might be running at static
     // initialization time, in which case default values have not yet been
     // initialized.
-    result->package_ = alloc.AllocateStrings("");
+    result->package_ = alloc.AllocateStringViewPtr("");
   }
   result->pool_ = pool_;
 
@@ -5755,10 +5886,11 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
             (!pool_->enforce_weak_ && weak_deps.contains(i)) || is_option_dep) {
           internal::FlatAllocator lazy_dep_alloc;
           lazy_dep_alloc.PlanArray<FileDescriptor>(1);
-          lazy_dep_alloc.PlanArray<std::string>(1);
+          lazy_dep_alloc.PlanStringViewPtr(name);
+          lazy_dep_alloc.PlanStringViewPtr("");
           ABSL_CHECK(lazy_dep_alloc.FinalizePlanning(tables_));
           dependency =
-              pool_->NewPlaceholderFileWithMutexHeld(name, lazy_dep_alloc);
+              pool_->NewPlaceholderFileWithMutexHeld(name, "", lazy_dep_alloc);
           if (is_option_dep) {
             // Store unknown option dependencies for deferred error checking
             // before option interpretation.
@@ -6127,14 +6259,15 @@ void internal::DescriptorBuilder::BuildMessage(const DescriptorProto& proto,
   // Copy reserved names.
   int reserved_name_count = proto.reserved_name_size();
   result->reserved_name_count_ = reserved_name_count;
-  result->reserved_names_ =
-      alloc.AllocateArray<const std::string*>(reserved_name_count);
+  absl::string_view* reserved_names =
+      alloc.AllocateArray<absl::string_view>(reserved_name_count);
+  result->reserved_names_ = reserved_names;
   for (int i = 0; i < reserved_name_count; ++i) {
     if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
       AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Reserved name too long.");
     }
-    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
+    reserved_names[i] = alloc.AllocateStringView(proto.reserved_name(i));
   }
 
   AddSymbol(result->full_name(), parent, result->name(), proto, Symbol(result));
@@ -6497,21 +6630,19 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
           // This will be filled in when cross-linking.
           result->default_value_enum_ = nullptr;
           break;
-        case FieldDescriptor::CPPTYPE_STRING:
-          if (result->type() == FieldDescriptor::TYPE_BYTES) {
-            std::string value;
-            if (absl::CUnescape(proto.default_value(), &value)) {
-              result->default_value_string_ = alloc.AllocateStrings(value);
-            } else {
-              AddError(result->full_name(), proto,
-                       DescriptorPool::ErrorCollector::DEFAULT_VALUE,
-                       "Invalid escaping in default value.");
-            }
-          } else {
-            result->default_value_string_ =
-                alloc.AllocateStrings(proto.default_value());
+        case FieldDescriptor::CPPTYPE_STRING: {
+          std::string scratch;
+          absl::optional<absl::string_view> value =
+              DefaultValueString(proto, scratch);
+          if (!value.has_value()) {
+            AddError(result->full_name(), proto,
+                     DescriptorPool::ErrorCollector::DEFAULT_VALUE,
+                     "Invalid escaping in default value.");
+            value.emplace();
           }
+          result->default_value_string_ = alloc.AllocateStringViewPtr(*value);
           break;
+        }
         case FieldDescriptor::CPPTYPE_MESSAGE:
           AddError(result->full_name(), proto,
                    DescriptorPool::ErrorCollector::DEFAULT_VALUE,
@@ -6561,9 +6692,11 @@ void internal::DescriptorBuilder::BuildFieldOrExtension(
           // This will be filled in when cross-linking.
           result->default_value_enum_ = nullptr;
           break;
-        case FieldDescriptor::CPPTYPE_STRING:
-          result->default_value_string_ = &internal::GetEmptyString();
+        case FieldDescriptor::CPPTYPE_STRING: {
+          static constexpr absl::string_view kEmpty;
+          result->default_value_string_ = &kEmpty;
           break;
+        }
         case FieldDescriptor::CPPTYPE_MESSAGE:
           result->generated_class_data_ = nullptr;
           break;
@@ -6922,14 +7055,15 @@ void internal::DescriptorBuilder::BuildEnum(const EnumDescriptorProto& proto,
   // Copy reserved names.
   int reserved_name_count = proto.reserved_name_size();
   result->reserved_name_count_ = reserved_name_count;
-  result->reserved_names_ =
-      alloc.AllocateArray<const std::string*>(reserved_name_count);
+  absl::string_view* reserved_names =
+      alloc.AllocateArray<absl::string_view>(reserved_name_count);
+  result->reserved_names_ = reserved_names;
   for (int i = 0; i < reserved_name_count; ++i) {
     if (proto.reserved_name(i).size() > internal::NameLimits::kReservedName) {
       AddError(result->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
                "Reserved name too long.");
     }
-    result->reserved_names_[i] = alloc.AllocateStrings(proto.reserved_name(i));
+    reserved_names[i] = alloc.AllocateStringView(proto.reserved_name(i));
   }
 
   // Copy options.
@@ -9193,6 +9327,27 @@ bool IsStringFieldWithPrivatizedAccessors(const FieldDescriptor& field) {
 Edition FileDescriptor::edition() const { return edition_; }
 
 namespace internal {
+const std::string& DefaultValueStringAsString(const FieldDescriptor* field) {
+  const absl::string_view value = field->default_value_string();
+  if (value.empty()) return GetEmptyString();
+  struct Projection {
+    absl::string_view operator()(absl::string_view s) const { return s; }
+    absl::string_view operator()(
+        const std::unique_ptr<const std::string>& s) const {
+      return *s;
+    }
+  };
+  static absl::Mutex mu(absl::kConstInit);
+  static auto* const interned = OnShutdownDelete(
+      new ProjectedSet<std::unique_ptr<const std::string>, Projection>());
+  absl::MutexLock lock(mu);
+  auto it = interned->find(value);
+  if (it == interned->end()) {
+    it = interned->insert(std::make_unique<const std::string>(value)).first;
+  }
+  return **it;
+}
+
 absl::string_view ShortEditionName(Edition edition) {
   return absl::StripPrefix(Edition_Name(edition), "EDITION_");
 }
