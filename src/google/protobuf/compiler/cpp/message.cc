@@ -2915,7 +2915,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
       if (first != last) {
         p->Emit({{"first", FieldName(first)}, {"last", FieldName(last)}},
                 R"cc(
-                  ::memcpy(reinterpret_cast<char*>(&_impl_) +
+                  ::memcpy(reinterpret_cast<char*>(&this_._impl_) +
                                offsetof(Impl_, $first$_),
                            reinterpret_cast<const char*>(&from._impl_) +
                                offsetof(Impl_, $first$_),
@@ -2926,7 +2926,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
       } else {
         p->Emit(FieldVars(first, options_),
                 R"cc(
-                  $field_$ = $from_field$;
+                  $this_mutable_field$ = $from_field$;
                 )cc");
       }
       first = nullptr;
@@ -2940,7 +2940,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     if (has_bit_word_index != has_word_index) {
       p->Emit({{"declare", has_bit_word_index < 0 ? "::uint32_t " : ""},
                {"index", has_word_index}},
-              "$declare$cached_has_bits = _impl_._has_bits_[$index$];\n");
+              "$declare$cached_has_bits = this_._impl_._has_bits_[$index$];\n");
       has_bit_word_index = has_word_index;
     }
   };
@@ -2961,9 +2961,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
     p->Emit({{"has_msg", [&] { has_message(field); }},
              {"submsg", FieldMessageTypeName(field, options_)}},
             R"cc(
-              $field_$ = ($has_msg$)
-                             ? Super_::CopyConstruct(arena, *$from_field$)
-                             : nullptr;
+              $this_mutable_field$ =
+                  ($has_msg$) ? Super_::CopyConstruct(arena, *$from_field$)
+                              : nullptr;
             )cc");
   };
 
@@ -3012,7 +3012,7 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
               }
             }}},
           R"cc(
-            switch ($name$_case()) {
+            switch (this_.$name$_case()) {
               case $NAME$_NOT_SET:
                 break;
                 $cases$;
@@ -3023,8 +3023,9 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
   if (descriptor_->extension_range_count() > 0) {
     p->Emit(R"cc(
-      _impl_._extensions_.MergeFrom(arena, this, from._impl_._extensions_,
-                                    from.GetArena());
+      this_._impl_._extensions_.MergeFrom(arena, &this_,
+                                          from._impl_._extensions_,
+                                          from.GetArena());
     )cc");
   }
 
@@ -3063,7 +3064,8 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   auto copy_construct_impl = [&] {
     if (!HasSimpleBaseClass(descriptor_, options_)) {
       p->Emit(R"cc(
-        new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
+        ::new (&this_._impl_)
+            Impl_(internal_visibility(), arena, from._impl_, from);
       )cc");
     }
   };
@@ -3072,7 +3074,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
     if (ShouldForceAllocationOnConstruction(descriptor_, options_)) {
       p->Emit(R"cc(
         if ($pbi$::DebugHardenForceAllocationOnConstruction()) {
-          $mutable_unknown_fields$;
+          this_.$mutable_unknown_fields$;
         }
       )cc");
     }
@@ -3083,7 +3085,7 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
       case ArenaDtorNeeds::kRequired: {
         p->Emit(R"cc(
           if (arena != nullptr) {
-            arena->OwnCustomDestructor(this, &$Msg$::ArenaDtor);
+            arena->OwnCustomDestructor(&this_, &$Msg$::ArenaDtor);
           }
         )cc");
         break;
@@ -3109,8 +3111,8 @@ void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
 #else   // PROTOBUF_CUSTOM_VTABLE
                 : Super_(arena) {
 #endif  // PROTOBUF_CUSTOM_VTABLE
-              $Msg$& this_ [[maybe_unused]] = *this;
-              _internal_metadata_.MergeFrom<$unknown_fields_type$>(
+              $Msg$& this_ = *this;
+              this_._internal_metadata_.MergeFrom<$unknown_fields_type$>(
                   from._internal_metadata_);
               $copy_construct_impl$;
               $copy_init_fields$;
