@@ -9,6 +9,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <locale.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -85,6 +86,54 @@ struct upb_FieldDef {
   upb_FieldType type_;
   upb_Label label_;
 };
+
+static double upb_NoLocaleStrtod(const char* str, char** end) {
+#if defined(_WIN32)
+  _locale_t c_locale = _create_locale(LC_NUMERIC, "C");
+  if (c_locale == NULL) {
+    return strtod(str, end);
+  }
+  double val = _strtod_l(str, end, c_locale);
+  _free_locale(c_locale);
+  return val;
+#elif defined(LC_NUMERIC_MASK)
+  locale_t c_locale = newlocale(LC_NUMERIC_MASK, "C", (locale_t)0);
+  if (c_locale == (locale_t)0) {
+    return strtod(str, end);
+  }
+  locale_t previous_locale = uselocale(c_locale);
+  double val = strtod(str, end);
+  uselocale(previous_locale);
+  freelocale(c_locale);
+  return val;
+#else
+  return strtod(str, end);
+#endif
+}
+
+static float upb_NoLocaleStrtof(const char* str, char** end) {
+#if defined(_WIN32)
+  _locale_t c_locale = _create_locale(LC_NUMERIC, "C");
+  if (c_locale == NULL) {
+    return strtof(str, end);
+  }
+  float val = _strtof_l(str, end, c_locale);
+  _free_locale(c_locale);
+  return val;
+#elif defined(LC_NUMERIC_MASK)
+  locale_t c_locale = newlocale(LC_NUMERIC_MASK, "C", (locale_t)0);
+  if (c_locale == (locale_t)0) {
+    return strtof(str, end);
+  }
+  locale_t previous_locale = uselocale(c_locale);
+  float val = strtof(str, end);
+  uselocale(previous_locale);
+  freelocale(c_locale);
+  return val;
+#else
+  return strtof(str, end);
+#endif
+}
 
 upb_FieldDef* _upb_FieldDef_At(const upb_FieldDef* f, int i) {
   return (upb_FieldDef*)&f[i];
@@ -483,7 +532,7 @@ static void parse_default(upb_DefBuilder* ctx, const char* str, size_t len,
       break;
     }
     case kUpb_CType_Double: {
-      double val = strtod(str, &end);
+      double val = upb_NoLocaleStrtod(str, &end);
       if (errno == ERANGE || *end) {
         goto invalid;
       }
@@ -491,7 +540,7 @@ static void parse_default(upb_DefBuilder* ctx, const char* str, size_t len,
       break;
     }
     case kUpb_CType_Float: {
-      float val = strtof(str, &end);
+      float val = upb_NoLocaleStrtof(str, &end);
       if (errno == ERANGE || *end) {
         goto invalid;
       }
