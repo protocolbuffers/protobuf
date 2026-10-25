@@ -180,13 +180,13 @@ struct AlignFactory<true, align> {
 // overloaded 'Align align` argument reducing the alignment operations on
 // `ArenaAlignDefault` implementations to no-ops.
 template <size_t align>
-inline constexpr auto ArenaAlignAs() {
+constexpr auto ArenaAlignAs() {
   return AlignFactory<align <= ArenaAlignDefault::align, align>::Create();
 }
 
 // Returns ArenaAlignAs<alignof(T)>
 template <typename T>
-inline constexpr auto ArenaAlignOf() {
+constexpr auto ArenaAlignOf() {
   return ArenaAlignAs<alignof(T)>();
 }
 
