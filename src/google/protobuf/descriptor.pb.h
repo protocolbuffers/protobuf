@@ -5825,8 +5825,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   enum : int {
     kUninterpretedOptionFieldNumber = 999,
     kFeaturesFieldNumber = 35,
-    kDeprecatedFieldNumber = 33,
     kIdempotencyLevelFieldNumber = 34,
+    kDeprecatedFieldNumber = 33,
   };
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
@@ -5847,16 +5847,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   void set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   void unsafe_arena_set_allocated_features(::google::protobuf::FeatureSet* PROTOBUF_NULLABLE value);
   ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE unsafe_arena_release_features();
-  // optional bool deprecated = 33 [default = false];
-  [[nodiscard]] bool has_deprecated() const;
-  void clear_deprecated() ;
-  [[nodiscard]] bool deprecated() const;
-  void set_deprecated(bool value);
   // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
   [[nodiscard]] bool has_idempotency_level() const;
   void clear_idempotency_level() ;
   [[nodiscard]] ::google::protobuf::MethodOptions_IdempotencyLevel idempotency_level() const;
   void set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value);
+  // optional bool deprecated = 33 [default = false];
+  [[nodiscard]] bool has_deprecated() const;
+  void clear_deprecated() ;
+  [[nodiscard]] bool deprecated() const;
+  void set_deprecated(bool value);
   template <typename _proto_TypeTraits, ::google::protobuf::internal::FieldType _field_type,
             bool _is_packed,
             typename = typename _proto_TypeTraits::Singular>
@@ -6092,12 +6092,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   // optional .google.protobuf.FeatureSet features = 35;
   const ::google::protobuf::FeatureSet& _internal_features() const;
   ::google::protobuf::FeatureSet* PROTOBUF_NONNULL _internal_mutable_features();
-  // optional bool deprecated = 33 [default = false];
-  bool _internal_deprecated() const;
-  void _internal_set_deprecated(bool value);
   // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
   ::google::protobuf::MethodOptions_IdempotencyLevel _internal_idempotency_level() const;
   void _internal_set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value);
+  // optional bool deprecated = 33 [default = false];
+  bool _internal_deprecated() const;
+  void _internal_set_deprecated(bool value);
 
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -6114,8 +6114,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
     ::google::protobuf::internal::CachedSize _cached_size_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     ::google::protobuf::FeatureSet* PROTOBUF_NULLABLE features_;
-    bool deprecated_;
     int idempotency_level_;
+    bool deprecated_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -6732,8 +6732,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
     kJavaGenerateEqualsAndHashFieldNumber = 20,
     kDeprecatedFieldNumber = 23,
     kJavaStringCheckUtf8FieldNumber = 27,
-    kOptimizeForFieldNumber = 9,
     kCcEnableArenasFieldNumber = 31,
+    kOptimizeForFieldNumber = 9,
     kUninterpretedOptionFieldNumber = 999,
   };
   // optional string java_package = 1;
@@ -6870,16 +6870,16 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   void clear_java_string_check_utf8() ;
   [[nodiscard]] bool java_string_check_utf8() const;
   void set_java_string_check_utf8(bool value);
-  // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-  [[nodiscard]] bool has_optimize_for() const;
-  void clear_optimize_for() ;
-  [[nodiscard]] ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
-  void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
   // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
   [[nodiscard]] bool has_cc_enable_arenas() const;
   void clear_cc_enable_arenas() ;
   [[nodiscard]] bool cc_enable_arenas() const;
   void set_cc_enable_arenas(bool value);
+  // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
+  [[nodiscard]] bool has_optimize_for() const;
+  void clear_optimize_for() ;
+  [[nodiscard]] ::google::protobuf::FileOptions_OptimizeMode optimize_for() const;
+  void set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   [[nodiscard]] int uninterpreted_option_size() const;
   void clear_uninterpreted_option() ;
@@ -7182,12 +7182,12 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   // optional bool java_string_check_utf8 = 27 [default = false];
   bool _internal_java_string_check_utf8() const;
   void _internal_set_java_string_check_utf8(bool value);
-  // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
-  ::google::protobuf::FileOptions_OptimizeMode _internal_optimize_for() const;
-  void _internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
   // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
   bool _internal_cc_enable_arenas() const;
   void _internal_set_cc_enable_arenas(bool value);
+  // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
+  ::google::protobuf::FileOptions_OptimizeMode _internal_optimize_for() const;
+  void _internal_set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value);
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
   int _internal_uninterpreted_option_size() const;
   const ::google::protobuf::RepeatedPtrField<::google::protobuf::UninterpretedOption>& _internal_uninterpreted_option() const;
@@ -7224,8 +7224,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
     bool java_generate_equals_and_hash_;
     bool deprecated_;
     bool java_string_check_utf8_;
-    int optimize_for_;
     bool cc_enable_arenas_;
+    int optimize_for_;
     ::google::protobuf::RepeatedPtrField< ::google::protobuf::UninterpretedOption > uninterpreted_option_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -7456,10 +7456,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     kDeprecatedFieldNumber = 3,
     kLazyFieldNumber = 5,
     kWeakFieldNumber = 10,
-    kJstypeFieldNumber = 6,
     kUnverifiedLazyFieldNumber = 15,
     kDebugRedactFieldNumber = 16,
     kRetentionFieldNumber = 17,
+    kJstypeFieldNumber = 6,
     kTargetsFieldNumber = 19,
   };
   // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
@@ -7525,11 +7525,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   [[deprecated]]  void clear_weak() ;
   [[nodiscard]] [[deprecated]] bool weak() const;
   [[deprecated]] void set_weak(bool value);
-  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  [[nodiscard]] bool has_jstype() const;
-  void clear_jstype() ;
-  [[nodiscard]] ::google::protobuf::FieldOptions_JSType jstype() const;
-  void set_jstype(::google::protobuf::FieldOptions_JSType value);
   // optional bool unverified_lazy = 15 [default = false];
   [[nodiscard]] bool has_unverified_lazy() const;
   void clear_unverified_lazy() ;
@@ -7545,6 +7540,11 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   void clear_retention() ;
   [[nodiscard]] ::google::protobuf::FieldOptions_OptionRetention retention() const;
   void set_retention(::google::protobuf::FieldOptions_OptionRetention value);
+  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
+  [[nodiscard]] bool has_jstype() const;
+  void clear_jstype() ;
+  [[nodiscard]] ::google::protobuf::FieldOptions_JSType jstype() const;
+  void set_jstype(::google::protobuf::FieldOptions_JSType value);
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   [[nodiscard]] int targets_size() const;
   void clear_targets() ;
@@ -7811,9 +7811,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   // optional bool weak = 10 [default = false, deprecated = true];
   bool _internal_weak() const;
   void _internal_set_weak(bool value);
-  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
-  ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
-  void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
   // optional bool unverified_lazy = 15 [default = false];
   bool _internal_unverified_lazy() const;
   void _internal_set_unverified_lazy(bool value);
@@ -7823,6 +7820,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
   ::google::protobuf::FieldOptions_OptionRetention _internal_retention() const;
   void _internal_set_retention(::google::protobuf::FieldOptions_OptionRetention value);
+  // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
+  ::google::protobuf::FieldOptions_JSType _internal_jstype() const;
+  void _internal_set_jstype(::google::protobuf::FieldOptions_JSType value);
   // repeated .google.protobuf.FieldOptions.OptionTargetType targets = 19;
   int _internal_targets_size() const;
   const ::google::protobuf::RepeatedField<int>& _internal_targets() const;
@@ -7850,10 +7850,10 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
     bool deprecated_;
     bool lazy_;
     bool weak_;
-    int jstype_;
     bool unverified_lazy_;
     bool debug_redact_;
     int retention_;
+    int jstype_;
     ::google::protobuf::RepeatedField<int> targets_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -16885,13 +16885,13 @@ inline void FileOptions::_internal_set_java_string_check_utf8(bool value) {
 
 // optional .google.protobuf.FileOptions.OptimizeMode optimize_for = 9 [default = SPEED];
 inline bool FileOptions::has_optimize_for() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00040000U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00080000U);
   return value;
 }
 inline void FileOptions::clear_optimize_for() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.optimize_for_ = 1;
-  ClearHasBit(_impl_._has_bits_[0], 0x00040000U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00080000U);
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.optimize_for)
@@ -16899,7 +16899,7 @@ inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::optimize_for() 
 }
 inline void FileOptions::set_optimize_for(::google::protobuf::FileOptions_OptimizeMode value) {
   _internal_set_optimize_for(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00040000U);
+  SetHasBit(_impl_._has_bits_[0], 0x00080000U);
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.optimize_for)
 }
 inline ::google::protobuf::FileOptions_OptimizeMode FileOptions::_internal_optimize_for() const {
@@ -17098,13 +17098,13 @@ inline void FileOptions::_internal_set_deprecated(bool value) {
 
 // optional bool cc_enable_arenas = 31 [default = true, feature_support = {
 inline bool FileOptions::has_cc_enable_arenas() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00080000U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00040000U);
   return value;
 }
 inline void FileOptions::clear_cc_enable_arenas() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.cc_enable_arenas_ = true;
-  ClearHasBit(_impl_._has_bits_[0], 0x00080000U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00040000U);
 }
 inline bool FileOptions::cc_enable_arenas() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FileOptions.cc_enable_arenas)
@@ -17112,7 +17112,7 @@ inline bool FileOptions::cc_enable_arenas() const {
 }
 inline void FileOptions::set_cc_enable_arenas(bool value) {
   _internal_set_cc_enable_arenas(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00080000U);
+  SetHasBit(_impl_._has_bits_[0], 0x00040000U);
   // @@protoc_insertion_point(field_set:google.protobuf.FileOptions.cc_enable_arenas)
 }
 inline bool FileOptions::_internal_cc_enable_arenas() const {
@@ -18473,13 +18473,13 @@ inline void FieldOptions::_internal_set_packed(bool value) {
 
 // optional .google.protobuf.FieldOptions.JSType jstype = 6 [default = JS_NORMAL];
 inline bool FieldOptions::has_jstype() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000200U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00001000U);
   return value;
 }
 inline void FieldOptions::clear_jstype() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.jstype_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00001000U);
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.jstype)
@@ -18487,7 +18487,7 @@ inline ::google::protobuf::FieldOptions_JSType FieldOptions::jstype() const {
 }
 inline void FieldOptions::set_jstype(::google::protobuf::FieldOptions_JSType value) {
   _internal_set_jstype(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
+  SetHasBit(_impl_._has_bits_[0], 0x00001000U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.jstype)
 }
 inline ::google::protobuf::FieldOptions_JSType FieldOptions::_internal_jstype() const {
@@ -18532,13 +18532,13 @@ inline void FieldOptions::_internal_set_lazy(bool value) {
 
 // optional bool unverified_lazy = 15 [default = false];
 inline bool FieldOptions::has_unverified_lazy() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000400U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000200U);
   return value;
 }
 inline void FieldOptions::clear_unverified_lazy() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.unverified_lazy_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000200U);
 }
 inline bool FieldOptions::unverified_lazy() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.unverified_lazy)
@@ -18546,7 +18546,7 @@ inline bool FieldOptions::unverified_lazy() const {
 }
 inline void FieldOptions::set_unverified_lazy(bool value) {
   _internal_set_unverified_lazy(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000400U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000200U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.unverified_lazy)
 }
 inline bool FieldOptions::_internal_unverified_lazy() const {
@@ -18616,13 +18616,13 @@ inline void FieldOptions::_internal_set_weak(bool value) {
 
 // optional bool debug_redact = 16 [default = false];
 inline bool FieldOptions::has_debug_redact() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000800U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000400U);
   return value;
 }
 inline void FieldOptions::clear_debug_redact() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.debug_redact_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000800U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000400U);
 }
 inline bool FieldOptions::debug_redact() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.debug_redact)
@@ -18630,7 +18630,7 @@ inline bool FieldOptions::debug_redact() const {
 }
 inline void FieldOptions::set_debug_redact(bool value) {
   _internal_set_debug_redact(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000800U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000400U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.debug_redact)
 }
 inline bool FieldOptions::_internal_debug_redact() const {
@@ -18644,13 +18644,13 @@ inline void FieldOptions::_internal_set_debug_redact(bool value) {
 
 // optional .google.protobuf.FieldOptions.OptionRetention retention = 17;
 inline bool FieldOptions::has_retention() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00001000U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000800U);
   return value;
 }
 inline void FieldOptions::clear_retention() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.retention_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00001000U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000800U);
 }
 inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::retention() const {
   // @@protoc_insertion_point(field_get:google.protobuf.FieldOptions.retention)
@@ -18658,7 +18658,7 @@ inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::retention(
 }
 inline void FieldOptions::set_retention(::google::protobuf::FieldOptions_OptionRetention value) {
   _internal_set_retention(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00001000U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000800U);
   // @@protoc_insertion_point(field_set:google.protobuf.FieldOptions.retention)
 }
 inline ::google::protobuf::FieldOptions_OptionRetention FieldOptions::_internal_retention() const {
@@ -19943,13 +19943,13 @@ ServiceOptions::_internal_mutable_uninterpreted_option() {
 
 // optional bool deprecated = 33 [default = false];
 inline bool MethodOptions::has_deprecated() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;
 }
 inline void MethodOptions::clear_deprecated() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.deprecated_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 inline bool MethodOptions::deprecated() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.deprecated)
@@ -19957,7 +19957,7 @@ inline bool MethodOptions::deprecated() const {
 }
 inline void MethodOptions::set_deprecated(bool value) {
   _internal_set_deprecated(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.deprecated)
 }
 inline bool MethodOptions::_internal_deprecated() const {
@@ -19971,13 +19971,13 @@ inline void MethodOptions::_internal_set_deprecated(bool value) {
 
 // optional .google.protobuf.MethodOptions.IdempotencyLevel idempotency_level = 34 [default = IDEMPOTENCY_UNKNOWN];
 inline bool MethodOptions::has_idempotency_level() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void MethodOptions::clear_idempotency_level() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.idempotency_level_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::idempotency_level() const {
   // @@protoc_insertion_point(field_get:google.protobuf.MethodOptions.idempotency_level)
@@ -19985,7 +19985,7 @@ inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::idempot
 }
 inline void MethodOptions::set_idempotency_level(::google::protobuf::MethodOptions_IdempotencyLevel value) {
   _internal_set_idempotency_level(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:google.protobuf.MethodOptions.idempotency_level)
 }
 inline ::google::protobuf::MethodOptions_IdempotencyLevel MethodOptions::_internal_idempotency_level() const {

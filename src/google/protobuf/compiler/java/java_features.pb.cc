@@ -166,24 +166,24 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::_Internal::GenerateParseTable
     }, {{
       {::_pbi::TcParser::MiniParse, {}},
       // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.legacy_closed_enum_), 1>(),
-       {8, 1, 0,
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.legacy_closed_enum_), 2>(),
+       {8, 2, 0,
         PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_)}},
       // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
       {::_pbi::TcParser::FastEr0S1,
        {16, 0, 2,
         PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)}},
       // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.large_enum_), 2>(),
-       {24, 2, 0,
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.large_enum_), 3>(),
+       {24, 3, 0,
         PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.large_enum_)}},
       // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.use_old_outer_classname_default_), 3>(),
-       {32, 3, 0,
+      {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(JavaFeatures, _impl_.use_old_outer_classname_default_), 4>(),
+       {32, 4, 0,
         PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_)}},
       // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
       {::_pbi::TcParser::FastEr0S1,
-       {40, 4, 3,
+       {40, 1, 3,
         PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_)}},
       {::_pbi::TcParser::MiniParse, {}},
       {::_pbi::TcParser::MiniParse, {}},
@@ -191,15 +191,15 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::_Internal::GenerateParseTable
       65535, 65535
     }}, {{
       // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.legacy_closed_enum_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
       // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.large_enum_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.large_enum_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_), _Internal::kHasBitsOffset + 4, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
+      {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
     }},
     {{
         {0, 2},
@@ -215,10 +215,10 @@ inline constexpr JavaFeatures::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
     ::_pbi::ConstantInitialized) noexcept
       : utf8_validation_{static_cast< ::pb::JavaFeatures_Utf8Validation >(0)},
+        nest_in_file_class_{static_cast< ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass >(0)},
         legacy_closed_enum_{false},
         large_enum_{false},
-        use_old_outer_classname_default_{false},
-        nest_in_file_class_{static_cast< ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass >(0)} {}
+        use_old_outer_classname_default_{false} {}
 
 template <typename>
 constexpr JavaFeatures::JavaFeatures(::_pbi::ConstantInitialized,
@@ -289,11 +289,11 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.large_enum_),
         PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.use_old_outer_classname_default_),
         PROTOBUF_FIELD_OFFSET(::pb::JavaFeatures, _impl_.nest_in_file_class_),
-        1,
-        0,
         2,
+        0,
         3,
         4,
+        1,
 };
 
 static const ::_pbi::MigrationSchema
@@ -451,9 +451,9 @@ inline void JavaFeatures::SharedCtor(::_pb::Arena* PROTOBUF_NULLABLE arena) {
   ::memset(reinterpret_cast<char*>(&_impl_) +
                offsetof(Impl_, utf8_validation_),
            0,
-           offsetof(Impl_, nest_in_file_class_) -
+           offsetof(Impl_, use_old_outer_classname_default_) -
                offsetof(Impl_, utf8_validation_) +
-               sizeof(Impl_::nest_in_file_class_));
+               sizeof(Impl_::use_old_outer_classname_default_));
 }
 JavaFeatures::~JavaFeatures() {
   // @@protoc_insertion_point(destructor:pb.JavaFeatures)
@@ -486,9 +486,9 @@ void JavaFeatures::Clear(MessageLite& base) {
   ::uint32_t cached_has_bits [[maybe_unused]] = 0;
 
   ::memset(&this_._impl_.utf8_validation_, 0,
-           PROTOBUF_FIELD_OFFSET(Impl_, nest_in_file_class_) -
+           PROTOBUF_FIELD_OFFSET(Impl_, use_old_outer_classname_default_) -
                PROTOBUF_FIELD_OFFSET(Impl_, utf8_validation_) +
-               sizeof(Impl_::nest_in_file_class_));
+               sizeof(Impl_::use_old_outer_classname_default_));
   this_._impl_._has_bits_.Clear();
   this_._internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
 }
@@ -511,7 +511,7 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
   cached_has_bits = this_._impl_._has_bits_[0];
   if (BatchCheckHasBit(cached_has_bits, 0xffffffffU)) {
     // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
           1, this_._internal_legacy_closed_enum(), target);
@@ -525,21 +525,21 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
     }
 
     // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (CheckHasBit(cached_has_bits, 0x00000004U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
           3, this_._internal_large_enum(), target);
     }
 
     // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
-    if (CheckHasBit(cached_has_bits, 0x00000008U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteBoolToArray(
           4, this_._internal_use_old_outer_classname_default(), target);
     }
 
     // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       target = stream->EnsureSpace(target);
       target = ::_pbi::WireFormatLite::WriteEnumToArray(
           5, this_._internal_nest_in_file_class(), target);
@@ -572,15 +572,15 @@ PROTOBUF_NO_CUSTOM_VTABLE_INLINE
 
   ::_pbi::Prefetch5LinesFrom7Lines(&this_);
   cached_has_bits = this_._impl_._has_bits_[0];
-  total_size += ::absl::popcount(0x0000000eU & cached_has_bits) * 2;
-  if (BatchCheckHasBit(cached_has_bits, 0x00000011U)) {
+  total_size += ::absl::popcount(0x0000001cU & cached_has_bits) * 2;
+  if (BatchCheckHasBit(cached_has_bits, 0x00000003U)) {
     // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
     if (CheckHasBit(cached_has_bits, 0x00000001U)) {
       total_size +=
           1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.utf8_validation_);
     }
     // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-    if (CheckHasBit(cached_has_bits, 0x00000010U)) {
+    if (CheckHasBit(cached_has_bits, 0x00000002U)) {
       total_size +=
           1 + ::_pbi::WireFormatLite::EnumSize(this_._impl_.nest_in_file_class_);
     }
@@ -610,16 +610,16 @@ void JavaFeatures::MergeImpl(::google::protobuf::MessageLite& to_msg,
       this_._impl_.utf8_validation_ = from._impl_.utf8_validation_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000002U)) {
-      this_._impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
+      this_._impl_.nest_in_file_class_ = from._impl_.nest_in_file_class_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000004U)) {
-      this_._impl_.large_enum_ = from._impl_.large_enum_;
+      this_._impl_.legacy_closed_enum_ = from._impl_.legacy_closed_enum_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000008U)) {
-      this_._impl_.use_old_outer_classname_default_ = from._impl_.use_old_outer_classname_default_;
+      this_._impl_.large_enum_ = from._impl_.large_enum_;
     }
     if (CheckHasBit(cached_has_bits, 0x00000010U)) {
-      this_._impl_.nest_in_file_class_ = from._impl_.nest_in_file_class_;
+      this_._impl_.use_old_outer_classname_default_ = from._impl_.use_old_outer_classname_default_;
     }
   }
   this_._impl_._has_bits_[0] |= cached_has_bits;
@@ -640,8 +640,8 @@ void JavaFeatures::InternalSwap(JavaFeatures* PROTOBUF_RESTRICT PROTOBUF_NONNULL
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
   ::google::protobuf::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_)
-      + sizeof(JavaFeatures::_impl_.nest_in_file_class_)
+      PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_)
+      + sizeof(JavaFeatures::_impl_.use_old_outer_classname_default_)
       - PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.utf8_validation_)>(
           reinterpret_cast<char*>(&_impl_.utf8_validation_),
           reinterpret_cast<char*>(&other->_impl_.utf8_validation_));

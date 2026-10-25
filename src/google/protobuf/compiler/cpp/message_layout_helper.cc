@@ -39,10 +39,8 @@ bool EndsWithMsgPtr(const std::vector<const FieldDescriptor*>& fields,
          !IsLazy(last_field, options) && !last_field->is_repeated();
 }
 
-auto FindIncompleteBlock(std::vector<FieldGroup>& aligned_to_8) {
-  return absl::c_find_if(aligned_to_8, [](const FieldGroup& fg) {
-    return fg.estimated_memory_size() <= 4;
-  });
+size_t AlignUp(size_t offset, size_t alignment) {
+  return (offset + alignment - 1) & ~(alignment - 1);
 }
 
 }  // namespace
@@ -66,7 +64,11 @@ bool FieldGroup::UpdatePreferredLocationAndInsertOtherFields(
   preferred_location_ = (preferred_location_ * fields_.size() +
                          (other.preferred_location_ * other.fields_.size())) /
                         (fields_.size() + other.fields_.size());
-  estimated_memory_size_ += other.estimated_memory_size_;
+  const size_t other_align =
+      static_cast<size_t>(EstimateAlignmentSize(other.fields_.front()));
+  estimated_memory_size_ =
+      static_cast<uint32_t>(AlignUp(estimated_memory_size_, other_align) +
+                            other.estimated_memory_size_);
 
   fields_.insert(fields_.end(), other.fields_.begin(), other.fields_.end());
 
@@ -75,11 +77,24 @@ bool FieldGroup::UpdatePreferredLocationAndInsertOtherFields(
 
 MessageLayoutHelper::FieldVector MessageLayoutHelper::DoOptimizeLayout(
     const FieldVector& fields, const Options& options) const {
+  // When a message has has-bits, Impl_ emits HasBits<words> (4 * words bytes)
+  // followed by CachedSize (4 bytes) ahead of field members, starting fields at
+  // offset 4 (mod 8) whenever words is positive and even.
+  const size_t has_bit_words = (static_cast<size_t>(absl::c_count_if(
+                                    fields,
+                                    [&options](const FieldDescriptor* field) {
+                                      return HasHasbit(field, options);
+                                    })) +
+                                31) /
+                               32;
+  const size_t initial_offset_mod_8 =
+      (has_bit_words > 0 && has_bit_words % 2 == 0) ? 4 : 0;
+
   auto field_alignment_groups = BuildFieldAlignmentGroups(fields, options);
   auto field_groups =
       MergeFieldAlignmentGroups(std::move(field_alignment_groups));
-  auto ordered_fields =
-      BuildFieldDescriptorOrder(std::move(field_groups), options);
+  auto ordered_fields = BuildFieldDescriptorOrder(
+      std::move(field_groups), initial_offset_mod_8, options);
   return ordered_fields;
 }
 
@@ -199,20 +214,32 @@ MessageLayoutHelper::MergeFieldAlignmentGroups(
     auto& aligned_to_4 = field_alignment_groups.aligned_to_4[f];
     auto& aligned_to_8 = field_alignment_groups.aligned_to_8[f];
 
-    // Group single-byte fields into groups of 4 bytes and combine them with the
-    // existing 4-byte groups.
+    // Group single-byte fields into 4-byte chunks. Hold back any trailing
+    // 1..3-byte group until 4-byte fields have paired into 8-byte words, so a
+    // partial bool group cannot sort between 4-byte fields and leave one
+    // unpaired.
     auto aligned_1_to_4 = ConsolidateAlignedFieldGroups(
         aligned_to_1, /*alignment=*/1, /*target_alignment=*/4);
+    std::array<FieldGroup, kMaxHotness> sub_4_groups;
     for (size_t h = 0; h < kMaxHotness; ++h) {
+      if (!aligned_1_to_4[h].empty() &&
+          aligned_1_to_4[h].back().estimated_memory_size() < 4) {
+        sub_4_groups[h] = std::move(aligned_1_to_4[h].back());
+        aligned_1_to_4[h].pop_back();
+      }
       aligned_to_4[h].insert(aligned_to_4[h].end(), aligned_1_to_4[h].begin(),
                              aligned_1_to_4[h].end());
     }
 
-    // Group 4-byte fields into groups of 8 bytes and combine them with the
-    // existing 8-byte groups.
+    // Group 4-byte fields into 8-byte words, keeping any leftover 1..3-byte
+    // group separate so BuildFieldDescriptorOrder can pack it independently
+    // across partition boundaries.
     auto aligned_4_to_8 = ConsolidateAlignedFieldGroups(
         aligned_to_4, /*alignment=*/4, /*target_alignment=*/8);
     for (size_t h = 0; h < kMaxHotness; ++h) {
+      if (sub_4_groups[h].num_fields() > 0) {
+        aligned_4_to_8[h].push_back(std::move(sub_4_groups[h]));
+      }
       aligned_to_8[h].insert(aligned_to_8[h].end(), aligned_4_to_8[h].begin(),
                              aligned_4_to_8[h].end());
     }
@@ -224,7 +251,8 @@ MessageLayoutHelper::MergeFieldAlignmentGroups(
 }
 
 MessageLayoutHelper::FieldVector MessageLayoutHelper::BuildFieldDescriptorOrder(
-    FieldPartitionArray&& field_groups, const Options& options) const {
+    FieldPartitionArray&& field_groups, size_t initial_offset_mod_8,
+    const Options& options) const {
   enum { kZeroLast = 0, kZeroFirst = 1, kRecipeMax };
   constexpr FieldFamily profiled_orders[kRecipeMax][kMaxFamily] = {
       {REPEATED, STRING, OTHER, MESSAGE, ZERO_INITIALIZABLE},
@@ -237,42 +265,75 @@ MessageLayoutHelper::FieldVector MessageLayoutHelper::BuildFieldDescriptorOrder(
 
   const bool has_profile = HasProfiledData();
   int recipe = kZeroLast;
-  bool incomplete_block_at_end = false;
+  size_t offset_mod_8 = initial_offset_mod_8;
   // Iterate from hottest to coldest partition, so the hottest fields are placed
   // at the top of the message.
   for (size_t h = kMaxHotness - 1; h < kMaxHotness; --h) {
+    if (h == FieldHotnessIndex(FieldHotness::kSplit)) {
+      // Split fields live in a separate struct.
+      offset_mod_8 = 0;
+    }
     for (size_t family_order_idx = 0; family_order_idx < kMaxFamily;
          ++family_order_idx) {
       const size_t f = has_profile ? profiled_orders[recipe][family_order_idx]
                                    : default_orders[family_order_idx];
       auto& partition = field_groups[f][h];
 
-      // If there is an incomplete 4-byte block, it should be placed at the
-      // beginning or end.
-      auto it = FindIncompleteBlock(partition);
-      if (it != partition.end()) {
-        // The goal is to minimize padding, and only ZERO_INITIALIZABLE and
-        // OTHER families can have primitive fields (alignment < 8). We lay
-        // out ZERO_INITIALIZABLE then OTHER, so only hoist the incomplete
-        // 4-byte block to the beginning if it's in the OTHER family,
-        // otherwise place it at the end.
-        if (incomplete_block_at_end) {
-          // Move incomplete 4-byte block to the beginning.  This is done to
-          // pair with the (possible) leftover blocks from the
-          // ZERO_INITIALIZABLE family.
-          it->SetPreferredLocation(-1);
-          incomplete_block_at_end = false;
-        } else {
-          // Move incomplete 4-byte block to the end.
-          it->SetPreferredLocation(double{FieldDescriptor::kMaxNumber});
-          incomplete_block_at_end = true;
+      auto can_hoist_to_front = [&](const FieldGroup& fg) {
+        (void)fg;
+        return true;
+      };
+
+      // Place sub-8-byte groups at the partition boundary rather than ahead of
+      // equal-access 8-byte fields. If the previous partition left trailing
+      // bytes in an 8-byte word, hoist top-access groups that fit into the
+      // open word (filling any sub-4-byte gap first); otherwise push sub-8-byte
+      // groups to the end of their access tier, keeping 4-byte-aligned groups
+      // ahead of 1-byte tails.
+      size_t sim_off = offset_mod_8;
+      double hoist_location = -10.0;
+      if (0 < sim_off && sim_off < 4) {
+        for (FieldGroup& fg : partition) {
+          if (fg.estimated_memory_size() < 4 && can_hoist_to_front(fg) &&
+              EstimateAlignmentSize(fg.fields().front()) == 1 &&
+              sim_off + fg.estimated_memory_size() <= 4) {
+            fg.SetPreferredLocation(hoist_location);
+            hoist_location += 1.0;
+            sim_off = (sim_off + fg.estimated_memory_size()) % 8;
+            break;
+          }
         }
-      } else if (!partition.empty()) {
-        incomplete_block_at_end = false;
+      }
+      for (FieldGroup& fg : partition) {
+        if (fg.estimated_memory_size() >= 8 || fg.preferred_location() < 0) {
+          continue;
+        }
+        const size_t first_align =
+            static_cast<size_t>(EstimateAlignmentSize(fg.fields().front()));
+        if (sim_off > 0 && can_hoist_to_front(fg) &&
+            AlignUp(sim_off, first_align) + fg.estimated_memory_size() <= 8) {
+          fg.SetPreferredLocation(hoist_location);
+          hoist_location += 1.0;
+          sim_off =
+              (AlignUp(sim_off, first_align) + fg.estimated_memory_size()) % 8;
+        } else {
+          const int tail_rank = fg.estimated_memory_size() % 4 == 0 ? 1
+                                : first_align == 4                  ? 2
+                                                                    : 3;
+          fg.SetPreferredLocation(
+              double{FieldDescriptor::kMaxNumber} * tail_rank +
+              std::min(fg.preferred_location(),
+                       double{FieldDescriptor::kMaxNumber} - 1.0));
+        }
       }
 
       std::stable_sort(partition.begin(), partition.end());
       for (const auto& aligned_fields : partition) {
+        for (const auto* field : aligned_fields.fields()) {
+          const size_t align =
+              static_cast<size_t>(EstimateAlignmentSize(field));
+          offset_mod_8 = (AlignUp(offset_mod_8, align) + align) % 8;
+        }
         fields.insert(fields.end(), aligned_fields.fields().begin(),
                       aligned_fields.fields().end());
       }
@@ -353,7 +414,10 @@ void MessageLayoutHelper::FillPaddingFromPartition(
        dst_it != dst_partition.end() && src_it != src_partition.end();
        ++dst_it) {
     while (src_it != src_partition.end() &&
-           dst_it->estimated_memory_size() + src_it->estimated_memory_size() >
+           AlignUp(dst_it->estimated_memory_size(),
+                   static_cast<size_t>(
+                       EstimateAlignmentSize(src_it->fields().front()))) +
+                   src_it->estimated_memory_size() >
                alignment) {
       ++src_it;
     }
