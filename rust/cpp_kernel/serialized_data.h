@@ -48,9 +48,10 @@ inline bool SerializeMsg(const google::protobuf::MessageLite* msg, SerializedDat
   if (bytes == nullptr) {
     ABSL_LOG(FATAL) << "Rust allocator failed to allocate memory.";
   }
-  if (!msg->SerializeWithCachedSizesToArray(bytes)) {
-    return false;
-  }
+  // `SerializeWithCachedSizesToArray` returns the end of the written data, not
+  // a success flag.
+  uint8_t* end = msg->SerializeWithCachedSizesToArray(bytes);
+  ABSL_DCHECK_EQ(static_cast<size_t>(end - bytes), len);
   out->data = bytes;
   out->len = len;
   return true;
