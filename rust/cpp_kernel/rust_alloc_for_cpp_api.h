@@ -12,6 +12,11 @@
 
 // Allocates memory using the current Rust global allocator.
 //
+// Never returns null: on allocation failure it calls Rust's
+// `std::alloc::handle_alloc_error`, which does not return (by default it aborts
+// the process). If `size` is 0, the result is a dangling, non-null pointer
+// aligned to `align`.
+//
 // This function is defined in `rust_alloc_for_cpp_api.rs`.
 extern "C" void* proto2_rust_alloc(size_t size, size_t align);
 
