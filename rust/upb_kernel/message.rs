@@ -389,6 +389,9 @@ where
     // - `msg` is a valid mutable message.
     // - `mini_table` is the one associated with `msg`
     // - `msg.arena().raw()` is held for the same lifetime as `msg`.
+    // - `generated_extension_registry()` is never mutated after its `LazyLock` initialization and
+    //   holds only extension mini tables that live for the rest of the process, so they outlive
+    //   `msg`.
     unsafe {
         upb::wire::decode_with_options(
             data,
