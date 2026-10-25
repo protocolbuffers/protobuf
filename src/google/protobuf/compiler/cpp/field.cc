@@ -356,12 +356,15 @@ void HasBitVars(const FieldDescriptor* field, const Options& opts,
 
   auto has_bits_array = absl::StrFormat("%s[%d]", has_bits, index);
   auto has = absl::StrFormat("CheckHasBit(%s, %s)", has_bits_array, mask);
+  auto from_has =
+      absl::StrFormat("CheckHasBit(from._has_bits_[%d], %s)", index, mask);
   auto set = absl::StrFormat("SetHasBit(%s, %s);", has_bits_array, mask);
   auto clr = absl::StrFormat("ClearHasBit(%s, %s);", has_bits_array, mask);
 
   vars.emplace_back("has_bits_array", has_bits_array);
   vars.emplace_back("has_mask", mask);
   vars.emplace_back("has_hasbit", has);
+  vars.emplace_back("from_has_hasbit", from_has);
   vars.emplace_back(Sub("set_hasbit", set).WithSuffix(";"));
   vars.emplace_back(Sub("clear_hasbit", clr).WithSuffix(";"));
   vars.emplace_back("exclude_mask",

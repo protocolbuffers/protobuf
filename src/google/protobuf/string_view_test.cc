@@ -14,8 +14,10 @@
 // clang-format off
 #include "absl/strings/string_view.h"
 // clang-format on
+#include "google/protobuf/arena.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/message.h"
+#include "google/protobuf/port.h"
 #include "google/protobuf/text_format.h"
 #include "google/protobuf/unittest_string_view.pb.h"
 
@@ -319,6 +321,36 @@ TEST(StringViewFieldTest, MergeAndClearEmptyImplicitPresence) {
   other.set_implicit_presence("");
   message.MergeFrom(other);
   message.Clear();
+}
+
+TEST(StringViewFieldTest, CopyClearedAndEmptyDoNotAllocate) {
+  if (internal::ForceInlineStringInProtoc() ||
+      internal::EnableExperimentalMicroString()) {
+    GTEST_SKIP() << "Applies to ArenaStringPtr fields.";
+  }
+
+  TestStringView untouched;
+  Arena baseline_arena;
+  (void)Arena::Create<TestStringView>(&baseline_arena, untouched);
+
+  TestStringView source;
+  source.set_singular_string("hello");
+  source.clear_singular_string();
+  source.set_implicit_presence("");
+
+  TestStringView heap_copy(source);
+  EXPECT_FALSE(heap_copy.has_singular_string());
+  EXPECT_THAT(heap_copy.singular_string(), StrEq(""));
+  EXPECT_THAT(heap_copy.implicit_presence(), StrEq(""));
+  heap_copy.Clear();
+
+  Arena arena;
+  auto* arena_copy = Arena::Create<TestStringView>(&arena, source);
+  EXPECT_FALSE(arena_copy->has_singular_string());
+  EXPECT_THAT(arena_copy->singular_string(), StrEq(""));
+  EXPECT_THAT(arena_copy->implicit_presence(), StrEq(""));
+  EXPECT_EQ(arena.SpaceUsed(), baseline_arena.SpaceUsed());
+  arena_copy->Clear();
 }
 
 }  // namespace

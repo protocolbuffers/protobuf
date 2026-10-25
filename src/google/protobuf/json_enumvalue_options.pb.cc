@@ -223,10 +223,12 @@ JsonEnumValueOptions::JsonEnumValueOptions(::google::protobuf::Arena* PROTOBUF_N
 }
 PROTOBUF_NDEBUG_INLINE JsonEnumValueOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::pb::enumvalue::JsonEnumValueOptions& from_msg)
       : _has_bits_{from._has_bits_},
-        string_(arena, from.string_) {}
+        string_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.string_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 JsonEnumValueOptions::JsonEnumValueOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,

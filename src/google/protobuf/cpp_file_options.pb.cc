@@ -221,10 +221,12 @@ CppFileOptions::CppFileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 }
 PROTOBUF_NDEBUG_INLINE CppFileOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::pb::file::CppFileOptions& from_msg)
       : _has_bits_{from._has_bits_},
-        namespace__(arena, from.namespace__) {}
+        namespace__(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.namespace__) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 CppFileOptions::CppFileOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
