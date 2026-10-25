@@ -1072,7 +1072,7 @@ class PROTOBUF_EXPORT ExtensionSet {
       Arena* arena, Extension& dst_extension, const MessageLite* extendee,
       int number, const Extension& other_extension, Arena* other_arena);
 
-  inline static bool is_packable(WireFormatLite::WireType type) {
+  static bool is_packable(WireFormatLite::WireType type) {
     switch (type) {
       case WireFormatLite::WIRETYPE_VARINT:
       case WireFormatLite::WIRETYPE_FIXED64:
@@ -1806,9 +1806,7 @@ class ExtensionIdentifier {
                                 typename TypeTraits::InitType default_value)
       : number_(number), default_value_(default_value) {}
 
-  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD inline int number() const {
-    return number_;
-  }
+  PROTOBUF_FUTURE_ADD_EARLY_NODISCARD int number() const { return number_; }
   PROTOBUF_FUTURE_ADD_EARLY_NODISCARD typename TypeTraits::ConstType
   default_value() const {
     return TypeTraits::FromInitType(default_value_);

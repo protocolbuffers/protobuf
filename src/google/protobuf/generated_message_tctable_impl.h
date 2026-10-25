@@ -694,7 +694,7 @@ class PROTOBUF_EXPORT TcParser final {
   // causes ICEs of gcc 7.5.
   // https://github.com/protocolbuffers/protobuf/issues/13715
   template <typename T>
-  static inline T& RefAt(void* x, size_t offset) {
+  static T& RefAt(void* x, size_t offset) {
     T* target = reinterpret_cast<T*>(static_cast<char*>(x) + offset);
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
     // Check the alignment in debug mode, except in 32-bit msvc because it does
@@ -709,7 +709,7 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   template <typename T>
-  static inline const T& RefAt(const void* x, size_t offset) {
+  static const T& RefAt(const void* x, size_t offset) {
     const T* target =
         reinterpret_cast<const T*>(static_cast<const char*>(x) + offset);
 #if !defined(NDEBUG) && !(defined(_MSC_VER) && defined(_M_IX86))
@@ -768,7 +768,7 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   template <typename T, bool is_split>
-  static inline RepeatedPtrField<T>& MutableRepeatedPtrField(
+  static RepeatedPtrField<T>& MutableRepeatedPtrField(
       MessageLite* msg, const TcParseTableBase* table,
       const TcParseTableBase::FieldEntry& entry) {
     return MutableRepeatedImpl<RepeatedPtrField<T>, is_split>(msg, table,
@@ -776,7 +776,7 @@ class PROTOBUF_EXPORT TcParser final {
   }
 
   template <typename T>
-  static inline T ReadAt(const void* x, size_t offset) {
+  static T ReadAt(const void* x, size_t offset) {
     T out;
     memcpy(&out, static_cast<const char*>(x) + offset, sizeof(T));
     return out;
