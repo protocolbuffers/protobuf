@@ -181,7 +181,7 @@ public class CompositeExtensionRegistryTest {
         new HashSet<ExtensionRegistry.ExtensionInfo>();
     expectedSet.add(extensionInfo);
     expectedSet.add(extensionInfo2);
-    assertThat(expectedSet).isEqualTo(registry.getAllMutableExtensionsByExtendedType("full_name"));
+    assertThat(registry.getAllMutableExtensionsByExtendedType("full_name")).isEqualTo(expectedSet);
   }
 
   @Test
@@ -207,8 +207,8 @@ public class CompositeExtensionRegistryTest {
         new HashSet<ExtensionRegistry.ExtensionInfo>();
     expectedSet.add(extensionInfo);
     expectedSet.add(extensionInfo2);
-    assertThat(expectedSet)
-        .isEqualTo(registry.getAllImmutableExtensionsByExtendedType("full_name"));
+    assertThat(registry.getAllImmutableExtensionsByExtendedType("full_name"))
+        .isEqualTo(expectedSet);
   }
 
   @Test
