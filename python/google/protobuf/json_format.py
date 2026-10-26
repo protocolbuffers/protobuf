@@ -1169,12 +1169,15 @@ def _ConvertFloat(value, field):
             'use quoted "-Infinity" instead'
         )
     if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_FLOAT:
-      # pylint: disable=protected-access
-      if value > type_checkers._FLOAT_MAX:
-        raise ParseError('Float value too large')
-      # pylint: disable=protected-access
-      if value < type_checkers._FLOAT_MIN:
-        raise ParseError('Float value too small')
+      # Reject only values that overflow when rounded to single precision.
+      # The shortest repr of FLT_MAX (3.4028235e+38) parses to a double
+      # slightly above FLT_MAX, but rounds to it.
+      try:
+        type_checkers.TruncateToFourByteFloat(value)
+      except OverflowError:
+        if value > 0:
+          raise ParseError('Float value too large') from None
+        raise ParseError('Float value too small') from None
   if value == 'nan':
     raise ParseError('Couldn\'t parse float "nan", use "NaN" instead')
   try:
