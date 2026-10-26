@@ -39,7 +39,7 @@ bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_python", version = "2.3.0")
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
-bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
+bazel_dep(name = "rules_ruby", version = "1.0.0-rc2", dev_dependency = True)
 
 # Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230
 # rules_fuzzing 0.5.3 is not yet available in BCR.
