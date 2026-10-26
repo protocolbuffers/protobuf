@@ -77,45 +77,12 @@ public final class TextFormat {
    */
   public static void printUnknownFieldValue(
       final int tag, final Object value, final Appendable output) throws IOException {
-    printUnknownFieldValue(tag, value, setSingleLineOutput(output, false), false);
-  }
-
-  private static void printUnknownFieldValue(
-      final int tag, final Object value, final TextGenerator generator, boolean redact)
-      throws IOException {
-    switch (WireFormat.getTagWireType(tag)) {
-      case WireFormat.WIRETYPE_VARINT:
-        generator.print(unsignedToString((Long) value));
-        break;
-      case WireFormat.WIRETYPE_FIXED32:
-        generator.print(String.format((Locale) null, "0x%08x", (Integer) value));
-        break;
-      case WireFormat.WIRETYPE_FIXED64:
-        generator.print(String.format((Locale) null, "0x%016x", (Long) value));
-        break;
-      case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-        try {
-          // Try to parse and print the field as an embedded message
-          UnknownFieldSet message = UnknownFieldSet.parseFrom((ByteString) value);
-          generator.print("{");
-          generator.eol();
-          generator.indent();
-          Printer.printUnknownFields(message, generator, redact);
-          generator.outdent();
-          generator.print("}");
-        } catch (InvalidProtocolBufferException e) {
-          // If not parseable as a message, print as a String
-          generator.print("\"");
-          generator.print(escapeBytes((ByteString) value));
-          generator.print("\"");
-        }
-        break;
-      case WireFormat.WIRETYPE_START_GROUP:
-        Printer.printUnknownFields((UnknownFieldSet) value, generator, redact);
-        break;
-      default:
-        throw new IllegalArgumentException("Bad tag: " + tag);
-    }
+    Printer.printUnknownFieldValue(
+        tag,
+        value,
+        setSingleLineOutput(output, false),
+        /* redact= */ false,
+        Printer.DEFAULT_UNKNOWN_FIELD_RECURSION_LIMIT);
   }
 
   /** Printer instance which escapes non-ASCII characters. */
@@ -135,6 +102,10 @@ public final class TextFormat {
 
   /** Helper class for converting protobufs to text. */
   public static final class Printer {
+
+    // Maximum depth of nested length-delimited unknown fields which will be speculatively parsed
+    // and printed as embedded messages. Matches kUnknownFieldRecursionLimit in text_format.cc.
+    private static final int DEFAULT_UNKNOWN_FIELD_RECURSION_LIMIT = 10;
 
     // Printer instance which escapes non-ASCII characters and prints in the text format.
     private static final Printer DEFAULT_TEXT_FORMAT =
@@ -395,7 +366,10 @@ public final class TextFormat {
     /** Outputs a textual representation of {@code fields} to {@code output}. */
     public void print(final UnknownFieldSet fields, final Appendable output) throws IOException {
       printUnknownFields(
-          fields, setSingleLineOutput(output, this.singleLine), this.enablingSafeDebugFormat);
+          fields,
+          setSingleLineOutput(output, this.singleLine),
+          this.enablingSafeDebugFormat,
+          DEFAULT_UNKNOWN_FIELD_RECURSION_LIMIT);
     }
 
     private void print(final MessageOrBuilder message, final TextGenerator generator)
@@ -745,7 +719,11 @@ public final class TextFormat {
     }
 
     private static void printUnknownFieldValue(
-        final int tag, final Object value, final TextGenerator generator, boolean redact)
+        final int tag,
+        final Object value,
+        final TextGenerator generator,
+        boolean redact,
+        int recursionBudget)
         throws IOException {
       switch (WireFormat.getTagWireType(tag)) {
         case WireFormat.WIRETYPE_VARINT:
@@ -767,28 +745,36 @@ public final class TextFormat {
                   : String.format((Locale) null, "0x%016x", (Long) value));
           break;
         case WireFormat.WIRETYPE_LENGTH_DELIMITED:
-          try {
-            // Try to parse and print the field as an embedded message
-            UnknownFieldSet message = UnknownFieldSet.parseFrom((ByteString) value);
-            generator.print("{");
-            generator.eol();
-            generator.indent();
-            printUnknownFields(message, generator, redact);
-            generator.outdent();
-            generator.print("}");
-          } catch (InvalidProtocolBufferException e) {
-            // If not parseable as a message, print as a String
-            if (redact) {
-              generator.print(String.format("UNKNOWN_STRING %s", REDACTED_MARKER));
+          if (recursionBudget > 0) {
+            try {
+              // Try to parse and print the field as an embedded message
+              CodedInputStream input = ((ByteString) value).newCodedInput();
+              input.setRecursionLimit(recursionBudget - 1);
+              UnknownFieldSet message = UnknownFieldSet.parseFrom(input);
+              input.checkLastTagWas(0);
+              generator.print("{");
+              generator.eol();
+              generator.indent();
+              printUnknownFields(message, generator, redact, recursionBudget - 1);
+              generator.outdent();
+              generator.print("}");
               break;
+            } catch (IOException e) {
+              // If not parseable as a message, fall through to print as a String
             }
-            generator.print("\"");
-            generator.print(escapeBytes((ByteString) value));
-            generator.print("\"");
           }
+          // If not parseable as a message (or out of recursion budget), print as a String
+          if (redact) {
+            generator.print(String.format("UNKNOWN_STRING %s", REDACTED_MARKER));
+            break;
+          }
+          generator.print("\"");
+          generator.print(escapeBytes((ByteString) value));
+          generator.print("\"");
           break;
         case WireFormat.WIRETYPE_START_GROUP:
-          printUnknownFields((UnknownFieldSet) value, generator, redact);
+          printUnknownFields(
+              (UnknownFieldSet) value, generator, redact, Math.max(0, recursionBudget - 1));
           break;
         default:
           throw new IllegalArgumentException("Bad tag: " + tag);
@@ -800,7 +786,11 @@ public final class TextFormat {
       for (Map.Entry<FieldDescriptor, Object> field : message.getAllFields().entrySet()) {
         printField(field.getKey(), field.getValue(), generator);
       }
-      printUnknownFields(message.getUnknownFields(), generator, this.enablingSafeDebugFormat);
+      printUnknownFields(
+          message.getUnknownFields(),
+          generator,
+          this.enablingSafeDebugFormat,
+          DEFAULT_UNKNOWN_FIELD_RECURSION_LIMIT);
     }
 
     private void printShortRepeatedField(
@@ -864,7 +854,10 @@ public final class TextFormat {
     }
 
     private static void printUnknownFields(
-        final UnknownFieldSet unknownFields, final TextGenerator generator, boolean redact)
+        final UnknownFieldSet unknownFields,
+        final TextGenerator generator,
+        boolean redact,
+        int recursionBudget)
         throws IOException {
       if (unknownFields.isEmpty()) {
         return;
@@ -873,24 +866,40 @@ public final class TextFormat {
         final int number = entry.getKey();
         final UnknownFieldSet.Field field = entry.getValue();
         printUnknownField(
-            number, WireFormat.WIRETYPE_VARINT, field.getVarintList(), generator, redact);
+            number,
+            WireFormat.WIRETYPE_VARINT,
+            field.getVarintList(),
+            generator,
+            redact,
+            recursionBudget);
         printUnknownField(
-            number, WireFormat.WIRETYPE_FIXED32, field.getFixed32List(), generator, redact);
+            number,
+            WireFormat.WIRETYPE_FIXED32,
+            field.getFixed32List(),
+            generator,
+            redact,
+            recursionBudget);
         printUnknownField(
-            number, WireFormat.WIRETYPE_FIXED64, field.getFixed64List(), generator, redact);
+            number,
+            WireFormat.WIRETYPE_FIXED64,
+            field.getFixed64List(),
+            generator,
+            redact,
+            recursionBudget);
         printUnknownField(
             number,
             WireFormat.WIRETYPE_LENGTH_DELIMITED,
             field.getLengthDelimitedList(),
             generator,
-            redact);
+            redact,
+            recursionBudget);
         for (final UnknownFieldSet value : field.getGroupList()) {
           generator.print(entry.getKey().toString());
           generator.maybePrintSilentMarker();
           generator.print("{");
           generator.eol();
           generator.indent();
-          printUnknownFields(value, generator, redact);
+          printUnknownFields(value, generator, redact, Math.max(0, recursionBudget - 1));
           generator.outdent();
           generator.print("}");
           generator.eol();
@@ -903,13 +912,14 @@ public final class TextFormat {
         final int wireType,
         final List<?> values,
         final TextGenerator generator,
-        boolean redact)
+        boolean redact,
+        int recursionBudget)
         throws IOException {
       for (final Object value : values) {
         generator.print(String.valueOf(number));
         generator.print(":");
         generator.maybePrintSilentMarker();
-        printUnknownFieldValue(wireType, value, generator, redact);
+        printUnknownFieldValue(wireType, value, generator, redact, recursionBudget);
         generator.eol();
       }
     }
