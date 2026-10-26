@@ -809,25 +809,28 @@ class PROTOBUF_EXPORT MessageDifferencer {
                             int unpacked_any, const FieldDescriptor* field,
                             std::vector<SpecificField>* parent_fields);
 
-  // Compares map fields, and report the error.
-  bool CompareMapField(const Message& message1, const Message& message2,
-                       int unpacked_any, const FieldDescriptor* field,
-                       std::vector<SpecificField>* parent_fields);
+  // Compares map fields, and report the error. Kept out of line to prevent
+  // SpecificField and map iterator locals from bloating recursive
+  // CompareWithFieldsInternal stack frames.
+  PROTOBUF_NOINLINE bool CompareMapField(
+      const Message& message1, const Message& message2, int unpacked_any,
+      const FieldDescriptor* field, std::vector<SpecificField>* parent_fields);
 
   // Helper for CompareRepeatedField and CompareMapField: compares and reports
   // differences element-wise. This is the implementation for non-map fields,
   // and can also compare map fields by using the underlying representation.
-  bool CompareRepeatedRep(const Message& message1, const Message& message2,
-                          int unpacked_any, const FieldDescriptor* field,
-                          std::vector<SpecificField>* parent_fields);
+  // Kept out of line to avoid bloating recursive CompareWithFieldsInternal
+  // stack frames.
+  PROTOBUF_NOINLINE bool CompareRepeatedRep(
+      const Message& message1, const Message& message2, int unpacked_any,
+      const FieldDescriptor* field, std::vector<SpecificField>* parent_fields);
 
   // Helper for CompareMapField: compare the map fields using map reflection
   // instead of sync to repeated.
-  bool CompareMapFieldByMapReflection(const Message& message1,
-                                      const Message& message2, int unpacked_any,
-                                      const FieldDescriptor* field,
-                                      std::vector<SpecificField>* parent_fields,
-                                      DefaultFieldComparator* comparator);
+  PROTOBUF_NOINLINE bool CompareMapFieldByMapReflection(
+      const Message& message1, const Message& message2, int unpacked_any,
+      const FieldDescriptor* field, std::vector<SpecificField>* parent_fields,
+      DefaultFieldComparator* comparator);
 
   // Shorthand for CompareFieldValueUsingParentFields with NULL parent_fields.
   bool CompareFieldValue(const Message& message1, const Message& message2,

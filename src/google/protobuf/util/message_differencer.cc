@@ -1071,7 +1071,7 @@ bool MessageDifferencer::IsMatch(
   return match;
 }
 
-bool MessageDifferencer::CompareMapFieldByMapReflection(
+PROTOBUF_NOINLINE bool MessageDifferencer::CompareMapFieldByMapReflection(
     const Message& message1, const Message& message2, int unpacked_any,
     const FieldDescriptor* map_field, std::vector<SpecificField>* parent_fields,
     DefaultFieldComparator* comparator) {
@@ -1150,7 +1150,7 @@ bool MessageDifferencer::CompareMapFieldByMapReflection(
   return true;
 }
 
-bool MessageDifferencer::CompareMapField(
+PROTOBUF_NOINLINE bool MessageDifferencer::CompareMapField(
     const Message& message1, const Message& message2, int unpacked_any,
     const FieldDescriptor* repeated_field,
     std::vector<SpecificField>* parent_fields) {
@@ -1202,7 +1202,7 @@ bool MessageDifferencer::CompareRepeatedField(
                             parent_fields);
 }
 
-bool MessageDifferencer::CompareRepeatedRep(
+PROTOBUF_NOINLINE bool MessageDifferencer::CompareRepeatedRep(
     const Message& message1, const Message& message2, int unpacked_any,
     const FieldDescriptor* repeated_field,
     std::vector<SpecificField>* parent_fields) {
