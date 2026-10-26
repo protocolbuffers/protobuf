@@ -67,7 +67,7 @@ constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseT
       offsetof(ParseTableT_, field_entries),
       1,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -81,9 +81,10 @@ constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseT
     }}, {{
       // optional bool nullable_reference_types = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_.nullable_reference_types_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }

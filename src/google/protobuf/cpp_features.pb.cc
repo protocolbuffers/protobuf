@@ -99,12 +99,11 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
       {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_), _Internal::kHasBitsOffset + 3, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    }},
-    {{
-        {0, 3},
-        {0, 2},
-    }},
-    {{
+    }}, {{
+      {0, 3},
+      {0, 2},
+    }}, {{
+      // no field_names
     }},
   };
 }

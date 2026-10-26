@@ -211,6 +211,19 @@
 #define PROTOBUF_NOINLINE __declspec(noinline)
 #endif
 
+#ifdef PROTOBUF_NO_UNIQUE_ADDRESS
+#error PROTOBUF_NO_UNIQUE_ADDRESS was previously defined
+#endif
+#if PROTOBUF_CPLUSPLUS_MIN(202002L)
+#if defined(_MSC_VER)
+#define PROTOBUF_NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#else
+#define PROTOBUF_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+#else
+#define PROTOBUF_NO_UNIQUE_ADDRESS
+#endif
+
 #ifdef PROTOBUF_MALLOC
 #error PROTOBUF_MALLOC was previously defined
 #endif

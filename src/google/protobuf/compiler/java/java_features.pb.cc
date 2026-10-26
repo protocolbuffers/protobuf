@@ -64,10 +64,10 @@ constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInF
       0, 0,  // max_field_number, fast_idx_mask
       offsetof(ParseTableT_, field_lookup_table),
       4294967295,  // skipmap
-      offsetof(ParseTableT_, field_names),  // no field_entries
+      0,  // no field_entries
       0,  // num_field_entries
       0,  // num_aux_entries
-      offsetof(ParseTableT_, field_names),  // no aux_entries
+      0,  // no aux_entries
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -75,8 +75,12 @@ constexpr JavaFeatures_NestInFileClassFeature::ParseTableT_ JavaFeatures_NestInF
       {::_pbi::TcParser::MiniParse, {}},
     }}, {{
       65535, 65535
-    }}, // no field_entries, or aux_entries
-    {{
+    }}, {{
+      // no field_entries
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -200,12 +204,11 @@ constexpr JavaFeatures::ParseTableT_ JavaFeatures::_Internal::GenerateParseTable
       {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.use_old_outer_classname_default_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(JavaFeatures, _impl_.nest_in_file_class_), _Internal::kHasBitsOffset + 4, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    }},
-    {{
-        {0, 2},
-        {0, 3},
-    }},
-    {{
+    }}, {{
+      {0, 2},
+      {0, 3},
+    }}, {{
+      // no field_names
     }},
   };
 }
