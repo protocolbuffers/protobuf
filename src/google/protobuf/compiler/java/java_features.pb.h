@@ -452,16 +452,21 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   // accessors -------------------------------------------------------
   enum : int {
     kUtf8ValidationFieldNumber = 2,
+    kNestInFileClassFieldNumber = 5,
     kLegacyClosedEnumFieldNumber = 1,
     kLargeEnumFieldNumber = 3,
     kUseOldOuterClassnameDefaultFieldNumber = 4,
-    kNestInFileClassFieldNumber = 5,
   };
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_utf8_validation() const;
   void clear_utf8_validation() ;
   [[nodiscard]] ::pb::JavaFeatures_Utf8Validation utf8_validation() const;
   void set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
+  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+  [[nodiscard]] bool has_nest_in_file_class() const;
+  void clear_nest_in_file_class() ;
+  [[nodiscard]] ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass nest_in_file_class() const;
+  void set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
@@ -477,11 +482,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   void clear_use_old_outer_classname_default() ;
   [[nodiscard]] bool use_old_outer_classname_default() const;
   void set_use_old_outer_classname_default(bool value);
-  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-  [[nodiscard]] bool has_nest_in_file_class() const;
-  void clear_nest_in_file_class() ;
-  [[nodiscard]] ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass nest_in_file_class() const;
-  void set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
   // @@protoc_insertion_point(class_scope:pb.JavaFeatures)
  private:
   class _Internal;
@@ -523,6 +523,9 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   // optional .pb.JavaFeatures.Utf8Validation utf8_validation = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   ::pb::JavaFeatures_Utf8Validation _internal_utf8_validation() const;
   void _internal_set_utf8_validation(::pb::JavaFeatures_Utf8Validation value);
+  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
+  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass _internal_nest_in_file_class() const;
+  void _internal_set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool _internal_legacy_closed_enum() const;
   void _internal_set_legacy_closed_enum(bool value);
@@ -532,9 +535,6 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
   // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool _internal_use_old_outer_classname_default() const;
   void _internal_set_use_old_outer_classname_default(bool value);
-  // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
-  ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass _internal_nest_in_file_class() const;
-  void _internal_set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value);
 
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -549,10 +549,10 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JavaFeatures final : 
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     int utf8_validation_;
+    int nest_in_file_class_;
     bool legacy_closed_enum_;
     bool large_enum_;
     bool use_old_outer_classname_default_;
-    int nest_in_file_class_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -584,13 +584,13 @@ PROTOC_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
 
 // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool JavaFeatures::has_legacy_closed_enum() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void JavaFeatures::clear_legacy_closed_enum() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline bool JavaFeatures::legacy_closed_enum() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.legacy_closed_enum)
@@ -598,7 +598,7 @@ inline bool JavaFeatures::legacy_closed_enum() const {
 }
 inline void JavaFeatures::set_legacy_closed_enum(bool value) {
   _internal_set_legacy_closed_enum(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.legacy_closed_enum)
 }
 inline bool JavaFeatures::_internal_legacy_closed_enum() const {
@@ -643,13 +643,13 @@ inline void JavaFeatures::_internal_set_utf8_validation(::pb::JavaFeatures_Utf8V
 
 // optional bool large_enum = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool JavaFeatures::has_large_enum() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;
 }
 inline void JavaFeatures::clear_large_enum() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.large_enum_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 inline bool JavaFeatures::large_enum() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.large_enum)
@@ -657,7 +657,7 @@ inline bool JavaFeatures::large_enum() const {
 }
 inline void JavaFeatures::set_large_enum(bool value) {
   _internal_set_large_enum(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.large_enum)
 }
 inline bool JavaFeatures::_internal_large_enum() const {
@@ -671,13 +671,13 @@ inline void JavaFeatures::_internal_set_large_enum(bool value) {
 
 // optional bool use_old_outer_classname_default = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool JavaFeatures::has_use_old_outer_classname_default() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
   return value;
 }
 inline void JavaFeatures::clear_use_old_outer_classname_default() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.use_old_outer_classname_default_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
 }
 inline bool JavaFeatures::use_old_outer_classname_default() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.use_old_outer_classname_default)
@@ -685,7 +685,7 @@ inline bool JavaFeatures::use_old_outer_classname_default() const {
 }
 inline void JavaFeatures::set_use_old_outer_classname_default(bool value) {
   _internal_set_use_old_outer_classname_default(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.use_old_outer_classname_default)
 }
 inline bool JavaFeatures::_internal_use_old_outer_classname_default() const {
@@ -699,13 +699,13 @@ inline void JavaFeatures::_internal_set_use_old_outer_classname_default(bool val
 
 // optional .pb.JavaFeatures.NestInFileClassFeature.NestInFileClass nest_in_file_class = 5 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_SERVICE, edition_defaults = {
 inline bool JavaFeatures::has_nest_in_file_class() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000010U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
 }
 inline void JavaFeatures::clear_nest_in_file_class() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.nest_in_file_class_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass JavaFeatures::nest_in_file_class() const {
   // @@protoc_insertion_point(field_get:pb.JavaFeatures.nest_in_file_class)
@@ -713,7 +713,7 @@ inline ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass JavaFeatures::n
 }
 inline void JavaFeatures::set_nest_in_file_class(::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass value) {
   _internal_set_nest_in_file_class(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000010U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_set:pb.JavaFeatures.nest_in_file_class)
 }
 inline ::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass JavaFeatures::_internal_nest_in_file_class() const {

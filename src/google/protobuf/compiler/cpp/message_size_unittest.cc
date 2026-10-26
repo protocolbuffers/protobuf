@@ -335,13 +335,12 @@ TEST(GeneratedMessageTest, TestMessageSize) {
     int cached_size;                               // 4 bytes
     void* m4;                                      // 8 bytes
     int64_t m2;                                    // 8 bytes
+    int64_t m6;                                    // 8 bytes
+    int m5;                                        // 4 bytes
     bool m1;                                       // 1 bytes
     bool m3;                                       // 1 bytes
-                                                   // + 2 bytes padding
-    int m5;                                        // 4 bytes
-    int64_t m6;                                    // 8 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-4 bytes
-                                                   // + 0-4 bytes padding
+    PROTOBUF_TSAN_DECLARE_MEMBER;                  // 0-1 bytes
+                                                   // + 2-1 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGenerated, 56);
 
@@ -350,13 +349,12 @@ TEST(GeneratedMessageTest, TestMessageSize) {
     int cached_size;                                            // 4 bytes
     std::string m4;                // sizeof(std::string)
     int64_t m2;                    // 8 bytes
+    int64_t m6;                    // 8 bytes
+    int m5;                        // 4 bytes
     bool m1;                       // 1 bytes
     bool m3;                       // 1 bytes
-                                   // + 2 bytes padding
-    int m5;                        // 4 bytes
-    int64_t m6;                    // 8 bytes
-    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-4 bytes
-                                   // + 0-4 bytes padding
+    PROTOBUF_TSAN_DECLARE_MEMBER;  // 0-1 bytes
+                                   // + 2-1 bytes padding
   };
   ABSL_CHECK_MESSAGE_SIZE(MockGeneratedInlinedString, 72);
 

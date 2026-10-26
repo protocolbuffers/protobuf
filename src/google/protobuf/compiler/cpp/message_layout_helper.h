@@ -36,7 +36,7 @@ class FieldGroup {
   }
 
   // A group with a single field.
-  FieldGroup(float preferred_location, const FieldDescriptor* field,
+  FieldGroup(double preferred_location, const FieldDescriptor* field,
              uint64_t num_accesses = 0)
       : fields_(1, field),
         preferred_location_(preferred_location),
@@ -52,6 +52,8 @@ class FieldGroup {
     return static_cast<size_t>(estimated_memory_size_);
   }
 
+  double preferred_location() const { return preferred_location_; }
+
   void SetPreferredLocation(double location) { preferred_location_ = location; }
 
   // Appends the fields in 'other' to this group. Access count is incremented.
@@ -64,15 +66,9 @@ class FieldGroup {
   bool UpdatePreferredLocationAndInsertOtherFields(const FieldGroup& other);
 
   std::vector<const FieldDescriptor*> fields_;
-  float preferred_location_;
-  // An estimate of the total memory size of the fields in this group, ignoring
-  // padding/alignment.
-  //
-  // Since fields are added to groups in descending size order, and the sizes
-  // are all powers of 2, this will be the true size of the group, ignoring the
-  // padding at the end. This padding at the end can be filled by other field
-  // groups so long as the size of the other group is at most
-  // `8 - EstimateMemorySize()`.
+  double preferred_location_;
+  // An estimate of the memory span of the fields in this group, including any
+  // internal alignment padding between fields (ignoring trailing padding).
   uint32_t estimated_memory_size_;
 };
 
@@ -220,6 +216,7 @@ class MessageLayoutHelper {
   // the order is based on `FieldFamily`, arranged in a way to maximize
   // contiguous spans of zero-initializable fields.
   FieldVector BuildFieldDescriptorOrder(FieldPartitionArray&& field_groups,
+                                        size_t initial_offset_mod_8,
                                         const Options& options) const;
 
   // Consolidate field groups that are aligned to `alignment` into groups that

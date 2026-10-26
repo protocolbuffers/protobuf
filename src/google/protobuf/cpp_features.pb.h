@@ -321,15 +321,20 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   // accessors -------------------------------------------------------
   enum : int {
     kStringTypeFieldNumber = 2,
+    kRepeatedTypeFieldNumber = 4,
     kLegacyClosedEnumFieldNumber = 1,
     kEnumNameUsesStringViewFieldNumber = 3,
-    kRepeatedTypeFieldNumber = 4,
   };
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_string_type() const;
   void clear_string_type() ;
   [[nodiscard]] ::pb::CppFeatures_StringType string_type() const;
   void set_string_type(::pb::CppFeatures_StringType value);
+  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  [[nodiscard]] bool has_repeated_type() const;
+  void clear_repeated_type() ;
+  [[nodiscard]] ::pb::CppFeatures_RepeatedType repeated_type() const;
+  void set_repeated_type(::pb::CppFeatures_RepeatedType value);
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   [[nodiscard]] bool has_legacy_closed_enum() const;
   void clear_legacy_closed_enum() ;
@@ -340,11 +345,6 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   void clear_enum_name_uses_string_view() ;
   [[nodiscard]] bool enum_name_uses_string_view() const;
   void set_enum_name_uses_string_view(bool value);
-  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  [[nodiscard]] bool has_repeated_type() const;
-  void clear_repeated_type() ;
-  [[nodiscard]] ::pb::CppFeatures_RepeatedType repeated_type() const;
-  void set_repeated_type(::pb::CppFeatures_RepeatedType value);
   // @@protoc_insertion_point(class_scope:pb.CppFeatures)
  private:
   class _Internal;
@@ -386,15 +386,15 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   ::pb::CppFeatures_StringType _internal_string_type() const;
   void _internal_set_string_type(::pb::CppFeatures_StringType value);
+  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
+  ::pb::CppFeatures_RepeatedType _internal_repeated_type() const;
+  void _internal_set_repeated_type(::pb::CppFeatures_RepeatedType value);
   // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool _internal_legacy_closed_enum() const;
   void _internal_set_legacy_closed_enum(bool value);
   // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
   bool _internal_enum_name_uses_string_view() const;
   void _internal_set_enum_name_uses_string_view(bool value);
-  // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
-  ::pb::CppFeatures_RepeatedType _internal_repeated_type() const;
-  void _internal_set_repeated_type(::pb::CppFeatures_RepeatedType value);
 
   struct Impl_ {
     inline explicit constexpr Impl_(::google::protobuf::internal::InternalVisibility visibility,
@@ -409,9 +409,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
     int string_type_;
+    int repeated_type_;
     bool legacy_closed_enum_;
     bool enum_name_uses_string_view_;
-    int repeated_type_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
   union { Impl_ _impl_; };
@@ -439,13 +439,13 @@ PROTOBUF_EXPORT extern ::google::protobuf::internal::ExtensionIdentifier<
 
 // optional bool legacy_closed_enum = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_legacy_closed_enum() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
   return value;
 }
 inline void CppFeatures::clear_legacy_closed_enum() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.legacy_closed_enum_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
 }
 inline bool CppFeatures::legacy_closed_enum() const {
   // @@protoc_insertion_point(field_get:pb.CppFeatures.legacy_closed_enum)
@@ -453,7 +453,7 @@ inline bool CppFeatures::legacy_closed_enum() const {
 }
 inline void CppFeatures::set_legacy_closed_enum(bool value) {
   _internal_set_legacy_closed_enum(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.legacy_closed_enum)
 }
 inline bool CppFeatures::_internal_legacy_closed_enum() const {
@@ -498,13 +498,13 @@ inline void CppFeatures::_internal_set_string_type(::pb::CppFeatures_StringType 
 
 // optional bool enum_name_uses_string_view = 3 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_enum_name_uses_string_view() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000004U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
   return value;
 }
 inline void CppFeatures::clear_enum_name_uses_string_view() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.enum_name_uses_string_view_ = false;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000004U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
 }
 inline bool CppFeatures::enum_name_uses_string_view() const {
   // @@protoc_insertion_point(field_get:pb.CppFeatures.enum_name_uses_string_view)
@@ -512,7 +512,7 @@ inline bool CppFeatures::enum_name_uses_string_view() const {
 }
 inline void CppFeatures::set_enum_name_uses_string_view(bool value) {
   _internal_set_enum_name_uses_string_view(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000004U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.enum_name_uses_string_view)
 }
 inline bool CppFeatures::_internal_enum_name_uses_string_view() const {
@@ -526,13 +526,13 @@ inline void CppFeatures::_internal_set_enum_name_uses_string_view(bool value) {
 
 // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
 inline bool CppFeatures::has_repeated_type() const {
-  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000008U);
+  bool value = CheckHasBit(_impl_._has_bits_[0], 0x00000002U);
   return value;
 }
 inline void CppFeatures::clear_repeated_type() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.repeated_type_ = 0;
-  ClearHasBit(_impl_._has_bits_[0], 0x00000008U);
+  ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 inline ::pb::CppFeatures_RepeatedType CppFeatures::repeated_type() const {
   // @@protoc_insertion_point(field_get:pb.CppFeatures.repeated_type)
@@ -540,7 +540,7 @@ inline ::pb::CppFeatures_RepeatedType CppFeatures::repeated_type() const {
 }
 inline void CppFeatures::set_repeated_type(::pb::CppFeatures_RepeatedType value) {
   _internal_set_repeated_type(value);
-  SetHasBit(_impl_._has_bits_[0], 0x00000008U);
+  SetHasBit(_impl_._has_bits_[0], 0x00000002U);
   // @@protoc_insertion_point(field_set:pb.CppFeatures.repeated_type)
 }
 inline ::pb::CppFeatures_RepeatedType CppFeatures::_internal_repeated_type() const {
