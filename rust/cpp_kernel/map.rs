@@ -371,7 +371,12 @@ where
 {
     type FfiKey;
 
-    fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self>;
+    /// Converts a key written by `iter_get` into a view.
+    ///
+    /// # Safety
+    /// - If `Self::FfiKey` borrows memory (e.g. `PtrAndLen`), that memory must be valid and
+    ///   immutable for the lifetime `'a`.
+    unsafe fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self>;
 
     unsafe fn insert(m: RawMap, key: View<'_, Self>, value: FfiMapValue) -> bool;
 
@@ -394,8 +399,12 @@ macro_rules! generate_map_key_impl {
             type FfiKey = $mutable_ffi_key;
 
             #[inline]
-            fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self> {
-                $from_ffi(key)
+            // `$from_ffi` is the safe `identity` for scalar keys.
+            #[allow(unused_unsafe)]
+            unsafe fn to_view<'a>(key: Self::FfiKey) -> View<'a, Self> {
+                // SAFETY: the caller guarantees that any memory borrowed by
+                // `key` is valid and immutable for `'a`.
+                unsafe { $from_ffi(key) }
             }
 
             #[inline]
@@ -547,6 +556,8 @@ where
         // - The thunk is safe to call as long as the iterator isn't at the end.
         // - The thunk always writes to key and value fields and does not read.
         // - The thunk does not increment the iterator.
+        // - The key and value written by the thunk borrow from the backing map, so `to_view` and
+        //   `from_map_value` can treat them as valid for 'a.
         unsafe {
             iter.as_raw_mut(Private).next_unchecked::<Key, Self, _, _>(
                 |iter, key, value| Key::iter_get(iter, key, value),
