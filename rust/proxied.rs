@@ -159,7 +159,7 @@ pub trait AsView: SealedInternal {
     fn as_view(&self) -> View<'_, Self::Proxied>;
 }
 
-impl<T: ProtoObject> AsView for &T {
+impl<T: AsView> AsView for &T {
     type Proxied = T::Proxied;
     fn as_view(&self) -> View<'_, Self::Proxied> {
         (**self).as_view()

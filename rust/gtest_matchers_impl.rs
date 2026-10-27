@@ -8,6 +8,8 @@
 use googletest::description::Description;
 use googletest::matcher::{Matcher, MatcherBase, MatcherResult};
 use protobuf::__internal::MatcherEq;
+use protobuf::{AsView, View};
+use std::fmt::Debug;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Matchers
@@ -47,43 +49,21 @@ pub struct MessageMatcher<T: MatcherEq> {
     partial: bool,
 }
 
-impl<T> Matcher<&T> for MessageMatcher<T>
+impl<T, ActualT> Matcher<ActualT> for MessageMatcher<T>
 where
-    T: MatcherEq,
+    T: MatcherEq + AsView,
+    ActualT: AsView<Proxied = T::Proxied> + Copy + Debug,
+    for<'a> View<'a, T::Proxied>: MatcherEq,
 {
-    fn matches(&self, actual: &T) -> MatcherResult {
+    fn matches(&self, actual: ActualT) -> MatcherResult {
+        // Compare views so that an owned, borrowed or view `expected` matches an owned, borrowed
+        // or view `actual` of the same message type (e.g. a submessage accessor's view).
+        let actual = actual.as_view();
+        let expected = self.expected.as_view();
         if self.partial {
-            actual.matches_partially(&self.expected).into()
+            actual.matches_partially(&expected).into()
         } else {
-            actual.matches(&self.expected).into()
-        }
-    }
-
-    fn describe(&self, matcher_result: MatcherResult) -> Description {
-        match (matcher_result, self.partial) {
-            (MatcherResult::Match, false) => format!("is equal to {:?}", self.expected).into(),
-            (MatcherResult::NoMatch, false) => {
-                format!("is not equal to {:?}", self.expected).into()
-            }
-            (MatcherResult::Match, true) => {
-                format!("is partially equal to {:?}", self.expected).into()
-            }
-            (MatcherResult::NoMatch, true) => {
-                format!("is not partially equal to {:?}", self.expected).into()
-            }
-        }
-    }
-}
-
-impl<T> Matcher<T> for MessageMatcher<T>
-where
-    T: MatcherEq + Copy,
-{
-    fn matches(&self, actual: T) -> MatcherResult {
-        if self.partial {
-            actual.matches_partially(&self.expected).into()
-        } else {
-            actual.matches(&self.expected).into()
+            actual.matches(&expected).into()
         }
     }
 
