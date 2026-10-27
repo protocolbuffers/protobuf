@@ -821,12 +821,14 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedFixed(
   }
   ptr += sizeof(TagType);
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  // Since ctx->ReadPackedFixed does not use TailCall<> or Return<>, sync any
-  // pending hasbits now:
-  SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<RepeatedField<LayoutType>>(msg, data.offset());
   int size = ReadSize(&ptr);
-  return ctx->ReadPackedFixed(*msg, ptr, size, &field);
+  ptr = ctx->ReadPackedFixed(*msg, ptr, size, &field);
+
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastF32P1(PROTOBUF_TC_PARAM_DECL) {
@@ -1206,11 +1208,8 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
   }
   ptr += sizeof(TagType);
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
-  // pending hasbits now:
-  SyncHasbits(msg, hasbits, table);
   auto& field = RefAt<RepeatedField<FieldType>>(msg, data.offset());
-  return ctx->ReadPackedVarintWithField(
+  ptr = ctx->ReadPackedVarintWithField(
       ptr, *msg,
       [](uint64_t varint) {
         FieldType val;
@@ -1226,6 +1225,11 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedVarint(
         return val;
       },
       field);
+
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastV8P1(PROTOBUF_TC_PARAM_DECL) {
@@ -1455,21 +1459,25 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnum(
   const auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   SetCachedHasBit(hasbits, data.hasbit_idx());
-  // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
-  // pending hasbits now:
-  SyncHasbits(msg, hasbits, table);
   auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
   SerialArena* arena = GetSerialArena(msg);
   const TcParseTableBase::FieldAux aux = *table->field_aux(data.aux_idx());
   PrefetchEnumData(xform_val, aux);
-  absl::Cleanup trim = [=] { field->TryShrinkToFit(arena); };
-  return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
-    if (!EnumIsValidAux(value, xform_val, aux)) {
-      AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), value);
-    } else {
-      field->AddWithArena(arena, value);
-    }
-  });
+  {
+    absl::Cleanup trim = [=] { field->TryShrinkToFit(arena); };
+    ptr = ctx->ReadPackedVarint(ptr, [=](int32_t value) {
+      if (!EnumIsValidAux(value, xform_val, aux)) {
+        AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), value);
+      } else {
+        field->AddWithArena(arena, value);
+      }
+    });
+  }
+
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastErR1(PROTOBUF_TC_PARAM_DECL) {
@@ -1604,10 +1612,6 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
 
   SetCachedHasBit(hasbits, data.hasbit_idx());
 
-  // Since ctx->ReadPackedVarint does not use TailCall or Return, sync any
-  // pending hasbits now:
-  SyncHasbits(msg, hasbits, table);
-
   const auto saved_tag = UnalignedLoad<TagType>(ptr);
   ptr += sizeof(TagType);
   auto* field = &RefAt<RepeatedField<int32_t>>(msg, data.offset());
@@ -1617,50 +1621,55 @@ PROTOBUF_ALWAYS_INLINE const char* TcParser::PackedEnumSmallRange(
   // This is cheaper than scanning.
   if (SerialArena* arena = GetSerialArena(msg); arena != nullptr) {
     absl::Cleanup trim = [=] { field->TryShrinkToFit(arena); };
-    return ctx->ReadPackedVarint(ptr, [=](int32_t v) {
+    ptr = ctx->ReadPackedVarint(ptr, [=](int32_t v) {
       if (ABSL_PREDICT_FALSE(min > v || v > max)) {
         AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
       } else {
         field->AddWithArena(arena, v);
       }
     });
+  } else {
+    ptr = ctx->ReadPackedVarint(
+        ptr,
+        [=](int32_t v) {
+          if (ABSL_PREDICT_FALSE(min > v || v > max)) {
+            AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
+          } else {
+            field->AddWithArena(nullptr, v);
+          }
+        },
+        /*size_callback=*/
+        [=](int32_t size_bytes) {
+          // For enums that fit in one varint byte, optimistically assume that
+          // all the values are one byte long (i.e. no large unknown values). If
+          // so, we know exactly how many values we're going to get.
+          //
+          // But! size_bytes might be much larger than the total size of the
+          // serialized proto (e.g. input corruption, or parsing msg1 as msg2).
+          // We don't want a small serialized proto to lead to giant memory
+          // allocations.
+          //
+          // Ideally we'd restrict size_bytes to the total size of the input,
+          // but we don't know that value.  The best we can do is to restrict it
+          // to the remaining bytes in the chunk, plus a "benefit of the doubt"
+          // factor if we're very close to the end of the chunk.
+          //
+          // Do these calculations in int64 because it's possible we overflow
+          // int32 (imgaine that field->size() and size_bytes are both large).
+          int64_t new_size =
+              int64_t{field->size()} +
+              std::min(size_bytes, std::max(1024, ctx->MaximumReadSize(ptr)));
+          field->ReserveWithArena(
+              nullptr,
+              static_cast<int32_t>(std::min(
+                  new_size, int64_t{std::numeric_limits<int32_t>::max()})));
+        });
   }
 
-  return ctx->ReadPackedVarint(
-      ptr,
-      [=](int32_t v) {
-        if (ABSL_PREDICT_FALSE(min > v || v > max)) {
-          AddUnknownEnum(msg, table, FastDecodeTag(saved_tag), v);
-        } else {
-          field->AddWithArena(nullptr, v);
-        }
-      },
-      /*size_callback=*/
-      [=](int32_t size_bytes) {
-        // For enums that fit in one varint byte, optimistically assume that all
-        // the values are one byte long (i.e. no large unknown values).  If so,
-        // we know exactly how many values we're going to get.
-        //
-        // But! size_bytes might be much larger than the total size of the
-        // serialized proto (e.g. input corruption, or parsing msg1 as msg2).
-        // We don't want a small serialized proto to lead to giant memory
-        // allocations.
-        //
-        // Ideally we'd restrict size_bytes to the total size of the input, but
-        // we don't know that value.  The best we can do is to restrict it to
-        // the remaining bytes in the chunk, plus a "benefit of the doubt"
-        // factor if we're very close to the end of the chunk.
-        //
-        // Do these calculations in int64 because it's possible we overflow
-        // int32 (imgaine that field->size() and size_bytes are both large).
-        int64_t new_size =
-            int64_t{field->size()} +
-            std::min(size_bytes, std::max(1024, ctx->MaximumReadSize(ptr)));
-        field->ReserveWithArena(
-            nullptr,
-            static_cast<int32_t>(std::min(
-                new_size, int64_t{std::numeric_limits<int32_t>::max()})));
-      });
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 PROTOBUF_NOINLINE const char* TcParser::FastEr0P1(PROTOBUF_TC_PARAM_DECL) {
@@ -2438,28 +2447,35 @@ const char* TcParser::MpPackedVarintT(PROTOBUF_TC_PARAM_DECL) {
 
   auto* field = &MutableRepeatedField<FieldType, is_split>(msg, table, entry);
   SerialArena* arena = GetSerialArena(msg);
-  absl::Cleanup trim = [=] { field->TryShrinkToFit(arena); };
+  {
+    absl::Cleanup trim = [=] { field->TryShrinkToFit(arena); };
 
-  if (is_validated_enum) {
-    const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
-    PrefetchEnumData(xform_val, aux);
-    return ctx->ReadPackedVarint(ptr, [=](int32_t value) {
-      if (!EnumIsValidAux(value, xform_val, aux)) {
-        AddUnknownEnum(msg, table, data.tag(), value);
-      } else {
-        field->AddWithArena(arena, value);
-      }
-    });
-  } else {
-    return ctx->ReadPackedVarint(ptr, [=](uint64_t value) {
-      field->AddWithArena(
-          arena, is_zigzag ? (sizeof(FieldType) == 8
-                                  ? WireFormatLite::ZigZagDecode64(value)
-                                  : WireFormatLite::ZigZagDecode32(
-                                        static_cast<uint32_t>(value)))
-                           : value);
-    });
+    if (is_validated_enum) {
+      const TcParseTableBase::FieldAux aux = *table->field_aux(entry.aux_idx);
+      PrefetchEnumData(xform_val, aux);
+      ptr = ctx->ReadPackedVarint(ptr, [=](int32_t value) {
+        if (!EnumIsValidAux(value, xform_val, aux)) {
+          AddUnknownEnum(msg, table, data.tag(), value);
+        } else {
+          field->AddWithArena(arena, value);
+        }
+      });
+    } else {
+      ptr = ctx->ReadPackedVarint(ptr, [=](uint64_t value) {
+        field->AddWithArena(
+            arena, is_zigzag ? (sizeof(FieldType) == 8
+                                    ? WireFormatLite::ZigZagDecode64(value)
+                                    : WireFormatLite::ZigZagDecode32(
+                                          static_cast<uint32_t>(value)))
+                             : value);
+      });
+    }
   }
+
+  if (ABSL_PREDICT_FALSE(ptr == nullptr)) {
+    PROTOBUF_MUSTTAIL return Error(PROTOBUF_TC_PARAM_NO_DATA_PASS);
+  }
+  PROTOBUF_MUSTTAIL return ToTagDispatch(PROTOBUF_TC_PARAM_NO_DATA_PASS);
 }
 
 template <bool is_split>
@@ -2477,10 +2493,6 @@ PROTOBUF_NOINLINE const char* TcParser::MpPackedVarint(PROTOBUF_TC_PARAM_DECL) {
   // For split we avoid the duplicate code and have the impl reload the value.
   // Less code bloat for uncommon paths.
   const uint16_t xform_val = (type_card & field_layout::kTvMask);
-
-  // Since ctx->ReadPackedFixed does not use TailCall<> or Return<>, sync any
-  // pending hasbits now:
-  SyncHasbits(msg, hasbits, table);
 
   const uint16_t rep = type_card & field_layout::kRepMask;
 
