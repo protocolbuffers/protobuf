@@ -399,7 +399,7 @@ static str_t* unescape(upb_DefBuilder* ctx, const upb_FieldDef* f,
   str_t* ret = _upb_DefBuilder_Alloc(ctx, sizeof(*ret) + len);
   char* dst = &ret->str[0];
   const char* src = data;
-  const char* end = data + len;
+  const char* end = UPB_PTRADD(data, len);
 
   while (src < end) {
     if (*src == '\\') {
