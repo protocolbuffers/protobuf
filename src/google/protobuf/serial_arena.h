@@ -147,15 +147,17 @@ class PROTOBUF_EXPORT SerialArena {
   }
 
  public:
+  static constexpr size_t kMinimumReturnedArraySize = 16;
+
   // See comments on `cached_blocks_` member for details.
   void ReturnArrayMemory(void* p, size_t size) {
     // We only need to check for 32-bit platforms.
     // In 64-bit platforms the minimum allocation size from Repeated*Field will
     // be 16 guaranteed.
     if (sizeof(void*) < 8) {
-      if (ABSL_PREDICT_FALSE(size < 16)) return;
+      if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return;
     } else {
-      PROTOBUF_ASSUME(size >= 16);
+      PROTOBUF_ASSUME(size >= kMinimumReturnedArraySize);
     }
 
     // We round down to the next smaller block in case the memory doesn't match
