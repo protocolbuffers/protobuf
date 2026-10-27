@@ -185,7 +185,7 @@ TEST_P(MiniTableTest, OneofFieldIndexLargestAccepted) {
       e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
   ASSERT_NE(nullptr, table) << status.error_message();
   EXPECT_TRUE(status.ok());
-  EXPECT_EQ(kFieldCount, upb_MiniTable_FieldCount(table));
+  EXPECT_EQ(static_cast<int>(kFieldCount), upb_MiniTable_FieldCount(table));
   const upb_MiniTableField* first = upb_MiniTable_GetFieldByIndex(table, 0);
   const upb_MiniTableField* last =
       upb_MiniTable_GetFieldByIndex(table, kFieldCount - 1);
