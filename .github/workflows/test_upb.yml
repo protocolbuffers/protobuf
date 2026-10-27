@@ -168,9 +168,10 @@ jobs:
           # a single wheel. As a result we can just test the oldest and newest
           # supported Python versions and assume this gives us sufficient test
           # coverage.
-          - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'binary' }
+          # Pinned to ubuntu-24.04: setup-python no longer provides Python 3.8/3.9 builds for Ubuntu 26.04.
+          - { os: ubuntu-24.04, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: macos-14, python-version: "3.9", architecture: arm64, type: 'binary' }
-          - { os: ubuntu-latest, python-version: "3.9", architecture: x64, type: 'source'}
+          - { os: ubuntu-24.04, python-version: "3.9", architecture: x64, type: 'source'}
           - { os: macos-14, python-version: "3.9", architecture: arm64, type: 'source', continuous-only: true }
 
           # Windows uses the full API up until Python 3.10, so each of these
@@ -244,7 +245,7 @@ jobs:
       fail-fast: false   # Don't cancel all jobs if one fails.
       matrix:
         python-version: ["3.8", "3.11"]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     if: ${{ github.event_name != 'pull_request_target' }}
     steps:
       - name: Download Wheels
