@@ -1405,6 +1405,21 @@ class MessageTest(unittest.TestCase):
     m1.MergeFromString(b'')  # field state should not change
     self.assertFalse(m1.HasField('optional_nested_message'))
 
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      "Currently broken in upb, will be fixed in the next breaking release"
+  )
+  def testMergeFromSelfRaises(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_int32.append(1)
+    m.optional_nested_message.bb = 2
+    with self.assertRaises(AssertionError):
+      m.MergeFrom(m)
+    with self.assertRaises(AssertionError):
+      m.optional_nested_message.MergeFrom(m.optional_nested_message)
+    self.assertEqual([1], m.repeated_int32)
+    self.assertEqual(2, m.optional_nested_message.bb)
+
   def testMergeFromStringDecodeErrorSync(self, message_module):
     m = message_module.NestedTestAllTypes()
     s1 = m.child
@@ -3265,6 +3280,26 @@ class Proto3Test(unittest.TestCase):
     self.assertFalse(222 in msg2.map_int32_foreign_message)
     with self.assertRaises(TypeError):
       del msg2.map_int32_foreign_message['']
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      "Currently broken in upb and pure Python, will be fixed in the next"
+      " breaking release"
+  )
+  def testMapMergeFromSelfRaises(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_int32[1] = 2
+    msg.map_int32_foreign_message[3].c = 4
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a map into itself'
+    ):
+      msg.map_int32_int32.MergeFrom(msg.map_int32_int32)
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a map into itself'
+    ):
+      msg.map_int32_foreign_message.MergeFrom(msg.map_int32_foreign_message)
+    self.assertEqual({1: 2}, dict(msg.map_int32_int32))
+    self.assertEqual(4, msg.map_int32_foreign_message[3].c)
 
   def testMapMergeFrom(self):
     msg = map_unittest_pb2.TestMap()

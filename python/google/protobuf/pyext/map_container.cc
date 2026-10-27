@@ -343,6 +343,14 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
       reflection->MutableMapData(message, self->parent_field_descriptor);
   const internal::MapFieldBase* other_field = other_reflection->GetMapData(
       *other_message, other_map->parent_field_descriptor);
+  if (field == other_field) {
+    // Self-merge is not supported (MapFieldBase::MergeFrom() would destroy
+    // entries of the map that it is iterating over). Raise AssertionError, as
+    // for message self-merge. This is checked after GetMutableMessage(), so
+    // that merging a frozen map into itself raises FrozenInstanceError.
+    PyErr_SetString(PyExc_AssertionError, "Cannot merge a map into itself.");
+    return nullptr;
+  }
   field->MergeFrom(message->GetArena(), *other_field);
   self->version++;
   Py_RETURN_NONE;
