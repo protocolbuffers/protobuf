@@ -87,7 +87,19 @@ jobs:
   bazel-tests-ubuntu:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.
-    name: Bazel Tests ubuntu
+      matrix:
+        # Runs on both profiles of the composite Linux image (`latest`: Bazel
+        # 9.2.0 by default, `floor`: Bazel 8.7.0 by default).
+        profile: [latest, floor]
+        include:
+          # Image per profile, pinned by digest. The digests are those of
+          # composite:latest-v5 and composite:floor-v5, built from
+          # protocolbuffers/build-support@383004c (test/linux/composite).
+          - profile: latest
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/composite@sha256:8c1582594164e79cdd713803f79352b12099ff16258de344440381e3f406758b
+          - profile: floor
+            image: us-docker.pkg.dev/protobuf-build/containers/test/linux/composite@sha256:a4a138ebf1221a641cbe7e0542a2169930f23ce3fca4ad741a17afadd4c3e889
+    name: Bazel Tests ubuntu${{ matrix.profile == 'floor' && ' (floor)' || '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout pending changes
@@ -97,10 +109,10 @@ jobs:
       - name: Run tests
         uses: protocolbuffers/protobuf-ci/bazel-docker@v7
         with:
-          image: us-docker.pkg.dev/protobuf-build/containers/common/linux/bazel:9.2.0-4d8e80ef93b0219fb907af9dd4596b92946995d8
+          image: ${{ matrix.image }}
           credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
           bazel-cache: "bazel-tests"
-          bazel: test //bazel/...
+          bash: bazel test //bazel/... $BAZEL_FLAGS
 
   bazel-tests-windows-macos:
     strategy:
