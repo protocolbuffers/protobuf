@@ -879,7 +879,7 @@ public class RubyMessage extends RubyObject {
   }
 
   protected DynamicMessage build(ThreadContext context, int depth, int recursionLimit) {
-    if (depth >= recursionLimit) {
+    if (depth > recursionLimit) {
       throw context.runtime.newRuntimeError("Recursion limit exceeded during encoding.");
     }
 

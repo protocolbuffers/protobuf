@@ -423,7 +423,7 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
       if (submsg == 0) {
         return ptr;
       }
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
                        kUpb_WireType_EndGroup);
       ptr = encode_message(ptr, e, submsg, subm, &size);
@@ -438,7 +438,7 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
       if (submsg == 0) {
         return ptr;
       }
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       ptr = encode_message(ptr, e, submsg, subm, &size);
       e->depth++;
       size_t max_size = UPB_PB_VARINT32_MAX_LEN + UPB_PB_VARINT32_MAX_LEN;
@@ -536,7 +536,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
       const upb_Message* const* start = upb_Array_DataPtr(arr);
       const upb_Message* const* arr_ptr = start + upb_Array_Size(arr);
       const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
         arr_ptr--;
@@ -553,7 +553,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
       const upb_Message* const* start = upb_Array_DataPtr(arr);
       const upb_Message* const* arr_ptr = start + upb_Array_Size(arr);
       const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
         arr_ptr--;

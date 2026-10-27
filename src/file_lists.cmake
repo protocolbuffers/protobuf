@@ -1338,7 +1338,6 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/retention_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_block_test.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/string_piece_field_support_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_view_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_fix_test.cc
@@ -1365,6 +1364,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_proto3_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/map_unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/abseil_flag_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_inlined_string.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/forced_micro_string.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/lazy_field_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/proto_with_many_options.proto
@@ -1372,6 +1372,7 @@ set(protobuf_test_protos_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_import_message.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_field_proxy_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/repeated_ptr_field_test.proto
+  ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/string_layouts_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/test_protos/tctable_long_name_test.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest.proto
   ${protobuf_SOURCE_DIR}/src/google/protobuf/unittest_arena.proto

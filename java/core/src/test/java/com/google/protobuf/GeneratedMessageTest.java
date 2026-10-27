@@ -2117,35 +2117,62 @@ public class GeneratedMessageTest {
     // And not again (only once per type).
     msg2.makeExtensionsImmutable();
     assertThat(logHandler.getStoredLogRecords()).hasSize(2);
+
+    // An ExtendableMessage also logs once for its type.
+    GeneratedMessage.ExtendableMessage<?> extendableMsg =
+        TestAllExtensions.newBuilder().build();
+    extendableMsg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(3);
+    extendableMsg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(3);
   }
 
   @Test
   public void extendableMessage_makeExtensionsImmutableShouldThrowWhenOptedIn() {
     System.setProperty("com.google.protobuf.error_on_unsafe_pre22_gencode", "true");
-    GeneratedMessage.loggedPre22TypeNames.clear();
+    try {
+      GeneratedMessage.loggedPre22TypeNames.clear();
 
-    class TestMessage3 extends TestMessageBaseForPre22WarningsTests {}
-    TestMessage3 msg = new TestMessage3();
-    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      class TestMessage3 extends TestMessageBaseForPre22WarningsTests {}
+      TestMessage3 msg = new TestMessage3();
+      UnsupportedOperationException e =
+          assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
 
-    // When opting into throwing, it should throw every time, not just the first time.
-    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
-    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      // When opting into throwing, it should throw every time, not just the first time.
+      assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
 
-    System.clearProperty("com.google.protobuf.error_on_unsafe_pre22_gencode");
+      GeneratedMessage.ExtendableMessage<?> extendableMsg =
+          TestAllExtensions.newBuilder().build();
+      UnsupportedOperationException extendableException =
+          assertThrows(UnsupportedOperationException.class, extendableMsg::makeExtensionsImmutable);
+      assertThat(extendableException)
+          .hasMessageThat()
+          .contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    } finally {
+      System.clearProperty("com.google.protobuf.error_on_unsafe_pre22_gencode");
+    }
   }
 
   @Test
   public void extendableMessage_makeExtensionsImmutableShouldBeSilentWhenOptedIn() {
     System.setProperty("com.google.protobuf.use_unsafe_pre22_gencode", "true");
-    TestUtil.TestLogHandler logHandler = setupLogger();
-    GeneratedMessage.loggedPre22TypeNames.clear();
+    try {
+      TestUtil.TestLogHandler logHandler = setupLogger();
+      GeneratedMessage.loggedPre22TypeNames.clear();
 
-    class TestMessage4 extends TestMessageBaseForPre22WarningsTests {}
-    TestMessage4 msg = new TestMessage4();
-    msg.makeExtensionsImmutable();
-    assertThat(logHandler.getStoredLogRecords()).isEmpty();
+      class TestMessage4 extends TestMessageBaseForPre22WarningsTests {}
+      TestMessage4 msg = new TestMessage4();
+      msg.makeExtensionsImmutable();
 
-    System.clearProperty("com.google.protobuf.use_unsafe_pre22_gencode");
+      GeneratedMessage.ExtendableMessage<?> extendableMsg =
+          TestAllExtensions.newBuilder().build();
+      extendableMsg.makeExtensionsImmutable();
+
+      assertThat(logHandler.getStoredLogRecords()).isEmpty();
+    } finally {
+      System.clearProperty("com.google.protobuf.use_unsafe_pre22_gencode");
+    }
   }
 }

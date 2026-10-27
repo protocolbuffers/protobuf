@@ -21,6 +21,7 @@
 
 #include <gtest/gtest.h>
 #include "absl/log/absl_check.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
@@ -30,6 +31,7 @@
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/testing/protobuf_test.h"
 #include "google/protobuf/unittest.pb.h"
 
 
@@ -229,6 +231,23 @@ TEST_F(MicroStringTest, ConstexprUnownedGlobal) {
   EXPECT_EQ("0123456789", global_instance.Get());
   EXPECT_EQ(static_cast<const void*>(payload.payload.payload),
             static_cast<const void*>(global_instance.Get().data()));
+}
+
+PB_TEST_F(MicroStringTest,
+          UnownedPayloadTaggedPtrIsConstexprAndTagsPayloadAddress) {
+  constexpr absl::string_view kInput = PB_TEST_CHOOSE_CONSTEXPR(
+      ("", "abc", "0123456789abcdefghijklmnopqrstuvwxyz"),
+      {"empty", "small", "large"});
+  static constexpr auto kPayload = MicroString::MakeUnownedPayload(kInput);
+  static constexpr const void* kTaggedPtr = kPayload.tagged_ptr();
+  static_assert(kTaggedPtr != nullptr);
+
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(kTaggedPtr) & 0x1, uintptr_t{1});
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(kTaggedPtr),
+            reinterpret_cast<uintptr_t>(&kPayload) | 0x1);
+  static constexpr MicroString kStr(kPayload);
+  EXPECT_EQ(kStr.Get(), kInput);
+  EXPECT_EQ(kStr.Get().data(), kPayload.get().data());
 }
 
 template <typename T>
@@ -1116,6 +1135,26 @@ TEST_F(MicroStringExtraTest, SetStringUsesInlineSpace) {
             arena()->SpaceUsed() - used);
   EXPECT_EQ(kLargeRepSize + sizeof(std::string) + used_in_string,
             str.SpaceUsedExcludingSelfLong());
+}
+
+TEST_F(MicroStringExtraTest, SetCordUsesInlineSpace) {
+  MicroStringExtra<23> str;
+  const size_t used = arena()->SpaceUsed();
+  absl::Cord fits("0123456789");
+  fits.Append(absl::MakeCordFromExternal("abcdefghijklm", [] {}));
+  ASSERT_EQ(fits.size(), 23);
+  str.Set(fits, arena_message());
+  EXPECT_EQ(str.Get(), fits);
+  EXPECT_EQ(used, arena()->SpaceUsed());
+  EXPECT_EQ(0, str.SpaceUsedExcludingSelfLong());
+
+  absl::Cord spills = fits;
+  spills.Append("x");
+  str.Set(spills, arena_message());
+  EXPECT_EQ(str.Get(), spills);
+  const size_t expected_use = ArenaAlignDefault::Ceil(kMicroRepSize + 24);
+  EXPECT_EQ(used + expected_use, arena()->SpaceUsed());
+  EXPECT_EQ(expected_use, str.SpaceUsedExcludingSelfLong());
 }
 
 TEST_F(MicroStringExtraTest, InternalSwap) {

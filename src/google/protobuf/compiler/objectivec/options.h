@@ -64,6 +64,7 @@ struct GenerationOptions {
       MultiSourceGenerationMode::kNone;
   bool experimental_strip_nonfunctional_codegen = false;
   bool experimental_global_extension_registry = false;
+  bool experimental_disable_file_extension_registry = false;
 
   // The name of the pragma that will be used to indicate the start of the
   // metadata annotations. Must be set (along with `annotation_guard_name`) for

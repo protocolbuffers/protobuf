@@ -116,6 +116,7 @@ class PROTOBUF_EXPORT InlinedStringField {
            const MessageLite& parent);
 
   void SetBytes(absl::string_view value, const MessageLite& parent);
+  void SetBytes(const absl::Cord& value, const MessageLite& parent);
 
   void SetBytes(std::string&& value, const MessageLite& parent);
 
@@ -351,6 +352,11 @@ inline void InlinedStringField::Set(const char* str, size_t size,
 }
 
 inline void InlinedStringField::SetBytes(absl::string_view value,
+                                         const MessageLite& parent) {
+  Set(value, parent);
+}
+
+inline void InlinedStringField::SetBytes(const absl::Cord& value,
                                          const MessageLite& parent) {
   Set(value, parent);
 }
