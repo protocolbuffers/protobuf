@@ -42,6 +42,7 @@
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/private_access.h"
 #include "google/protobuf/repeated_field.h"
 #include "google/protobuf/repeated_ptr_field.h"
 #include "google/protobuf/wire_format_lite.h"
@@ -59,6 +60,7 @@ namespace protobuf {
 
 class Arena;
 class Message;
+class UnknownFieldSet;
 
 namespace io {
 class CodedInputStream;
@@ -395,6 +397,18 @@ inline void AddToRepeatedPtrField(InternalVisibility visibility,
                                   BytesTag /*tag*/ = BytesTag{}) {
   dest.InternalAddWithArena(visibility, arena, std::move(value));
 }
+
+// Shared destructor code that only destroys _internal_metadata_.
+template <typename T>
+/* explicitly marked inline to allow inlining even with extern template */
+inline void SimpleSharedDtor(MessageLite& msg) {
+  PrivateAccess::GetInternalMetadata(msg).Delete<T>();
+}
+
+extern template PROTOBUF_EXPORT void SimpleSharedDtor<std::string>(
+    MessageLite& msg);
+extern template PROTOBUF_EXPORT void SimpleSharedDtor<UnknownFieldSet>(
+    MessageLite& msg);
 
 }  // namespace internal
 }  // namespace protobuf

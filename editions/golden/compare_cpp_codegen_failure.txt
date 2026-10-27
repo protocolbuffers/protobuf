@@ -83,7 +83,7 @@
    void clear_int32_field() ;
    [[nodiscard]] ::int32_t int32_field() const;
 @@ @@
-   static void SharedDtor(MessageLite& self);
+   void SharedCtor(::proto2::Arena* PROTOBUF_NULLABLE arena);
    void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
  
 -  // optional int32 int32_field = 1;
@@ -112,7 +112,7 @@
    void clear_int32_field() ;
    [[nodiscard]] ::int32_t int32_field() const;
 @@ @@
-   static void SharedDtor(MessageLite& self);
+   void SharedCtor(::proto2::Arena* PROTOBUF_NULLABLE arena);
    void InternalSwap(SimpleProto3* PROTOBUF_NONNULL other);
  
 -  // optional int32 int32_field = 1;

@@ -7926,16 +7926,6 @@ DescriptorProto_ReservedRange::~DescriptorProto_ReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.DescriptorProto.ReservedRange)
   SharedDtor(*this);
 }
-PROTOBUF_NO_CUSTOM_VTABLE_INLINE void DescriptorProto_ReservedRange::SharedDtor(
-    MessageLite& self) {
-  DescriptorProto_ReservedRange& this_ = static_cast<DescriptorProto_ReservedRange&>(self);
-  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
-    this_.CheckHasBitConsistency();
-  }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
-  this_._impl_.~Impl_();
-}
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL
 DescriptorProto_ReservedRange::GetClassData() const {
@@ -9967,16 +9957,6 @@ inline void EnumDescriptorProto_EnumReservedRange::SharedCtor(::_pb::Arena* PROT
 EnumDescriptorProto_EnumReservedRange::~EnumDescriptorProto_EnumReservedRange() {
   // @@protoc_insertion_point(destructor:google.protobuf.EnumDescriptorProto.EnumReservedRange)
   SharedDtor(*this);
-}
-PROTOBUF_NO_CUSTOM_VTABLE_INLINE void EnumDescriptorProto_EnumReservedRange::SharedDtor(
-    MessageLite& self) {
-  EnumDescriptorProto_EnumReservedRange& this_ = static_cast<EnumDescriptorProto_EnumReservedRange&>(self);
-  if constexpr (::_pbi::DebugHardenCheckHasBitConsistency()) {
-    this_.CheckHasBitConsistency();
-  }
-  this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
-  ABSL_DCHECK(!::_pbi::HasArena(this_));
-  this_._impl_.~Impl_();
 }
 
 PROTOBUF_ATTRIBUTE_WEAK const ::google::protobuf::internal::ClassData* PROTOBUF_NONNULL

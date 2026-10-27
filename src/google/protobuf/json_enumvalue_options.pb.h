@@ -227,8 +227,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED JsonEnumValueOption
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(JsonEnumValueOptions* PROTOBUF_NONNULL other);
 
   // string string = 1;

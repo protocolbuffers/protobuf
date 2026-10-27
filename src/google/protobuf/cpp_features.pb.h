@@ -379,8 +379,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CppFeatures final :
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+  static constexpr auto& SharedDtor =
+      ::google::protobuf::internal::SimpleSharedDtor<::google::protobuf::UnknownFieldSet>;
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
   void InternalSwap(CppFeatures* PROTOBUF_NONNULL other);
 
   // optional .pb.CppFeatures.StringType string_type = 2 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {

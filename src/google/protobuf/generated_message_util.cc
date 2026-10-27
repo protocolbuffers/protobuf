@@ -427,6 +427,8 @@ MessageLite* GetOwnedMessageInternal(Arena* message_arena,
   }
 }
 
+template void SimpleSharedDtor<std::string>(MessageLite& msg);
+
 }  // namespace internal
 }  // namespace protobuf
 }  // namespace google

@@ -892,6 +892,9 @@ inline bool HasSimpleBaseClasses(const FileDescriptor* file,
       });
 }
 
+// Returns true if the message only allocated memory via its unknown fields.
+bool HasSimpleDestructor(const Descriptor* desc, const Options& options);
+
 // Returns true if this message has a _tracker_ field.
 inline bool HasTracker(const Descriptor* desc, const Options& options) {
   return options.field_listener_options.inject_field_listener_events &&
