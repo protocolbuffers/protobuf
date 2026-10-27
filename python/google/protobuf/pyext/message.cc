@@ -3066,6 +3066,15 @@ CMessage* CMessage::MaybeReleaseSubMessage(const Message* sub_message) {
   return released;
 }
 
+void CMessage::DetachSubMessage(Message* sub_message) {
+  CMessage* released = MaybeReleaseSubMessage(sub_message);
+  if (released == nullptr) return;
+  // `released` is now a standalone message whose message is `sub_message`.
+  Message* new_message = sub_message->New();
+  sub_message->GetReflection()->Swap(sub_message, new_message);
+  released->message = new_message;
+}
+
 static CMessageClass _CMessage_Type = {{{
     PyVarObject_HEAD_INIT(&_CMessageClass_Type, 0) FULL_MODULE_NAME
     ".CMessage",                    // tp_name
