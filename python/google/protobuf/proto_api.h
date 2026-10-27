@@ -77,25 +77,6 @@ struct PyProto_API {
   virtual absl::StatusOr<PythonConstMessagePointer> GetConstMessagePointer(
       PyObject* msg) const = 0;
 
-  // If the passed object is a Python Message, returns its internal pointer.
-  // Otherwise, returns NULL with an exception set.
-  // TODO: Remove deprecated GetMessagePointer().
-  [[deprecated(
-      "GetMessagePointer() only work with Cpp Extension, "
-      "please migrate to GetConstMessagePointer().")]]
-  virtual const Message* GetMessagePointer(PyObject* msg) const = 0;
-
-  // If the passed object is a Python Message, returns a mutable pointer.
-  // Otherwise, returns NULL with an exception set.
-  // This function will succeed only if there are no other Python objects
-  // pointing to the message, like submessages or repeated containers.
-  // With the current implementation, only empty messages are in this case.
-  // TODO: Remove deprecated GetMutableMessagePointer().
-  [[deprecated(
-      "GetMutableMessagePointer() only work with Cpp Extension, "
-      "please migrate to GetClearedMessageMutator().")]]
-  virtual Message* GetMutableMessagePointer(PyObject* msg) const = 0;
-
   // If the passed object is a Python Message Descriptor, returns its internal
   // pointer.
   // Otherwise, returns NULL with an exception set.
@@ -138,27 +119,6 @@ struct PyProto_API {
   // python objects referencing the same C++ object.
   virtual PyObject* NewMessageOwnedExternally(
       Message* msg, PyObject* py_message_factory) const = 0;
-
-  // Returns a new reference for the given DescriptorPool.
-  // The returned object does not manage the C++ DescriptorPool: it is the
-  // responsibility of the caller to keep it alive.
-  // As long as the returned Python DescriptorPool object is kept alive,
-  // functions that process C++ descriptors or messages created from this pool
-  // can work and return their Python counterparts.
-  // On error, returns nullptr and sets a Python exception.
-  //
-  // Warning: This is a flawed and unsafe API because the returned Python object
-  // can be arbitrarily lifetime-extended beyond the C++ pool's lifetime. Prefer
-  // DescriptorPool_FromSharedPool() or DescriptorPool_FromPool() with
-  // unique_ptrs.
-  [[deprecated(
-      "DescriptorPool_FromPool() is unsafe because the returned Python object "
-      "can outlive the underlying C++ pool. "
-      "Prefer DescriptorPool_FromSharedPool(). or "
-      "DescriptorPool_FromPool() "
-      "with unique_ptrs.")]]
-  virtual PyObject* DescriptorPool_FromPool(
-      const google::protobuf::DescriptorPool* pool) const = 0;
 
   // Wraps a C++ descriptor pool (held by shared_ptr) in a Python object.
   // The Python object extends the lifetime of the C++ pool and optional
