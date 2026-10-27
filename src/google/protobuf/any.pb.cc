@@ -92,9 +92,9 @@ constexpr Any::ParseTableT_ Any::_Internal::GenerateParseTable(const ::_pbi::Cla
       {PROTOBUF_FIELD_OFFSET(Any, _impl_.type_url_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // bytes value = 2;
       {PROTOBUF_FIELD_OFFSET(Any, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\23\10\0\0\0\0\0\0"
       "google.protobuf.Any"
       "type_url"

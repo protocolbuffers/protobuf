@@ -88,11 +88,10 @@ constexpr ListValue::ParseTableT_ ListValue::_Internal::GenerateParseTable(const
     }}, {{
       // repeated .google.protobuf.Value values = 1;
       {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -202,13 +201,11 @@ constexpr Struct::ParseTableT_ Struct::_Internal::GenerateParseTable(const ::_pb
     }}, {{
       // map<string, .google.protobuf.Value> fields = 1;
       {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
-    }},
-    {{
-        {::_pbi::TcParser::GetMapAuxInfo(
-            1, 0, 9, 11, 0)},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::TcParser::GetMapAuxInfo(
+          1, 0, 9, 11, 0)},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
+    }}, {{
       "\26\6\0\0\0\0\0\0"
       "google.protobuf.Struct"
       "fields"
@@ -358,11 +355,9 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
       {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // .google.protobuf.Value value = 2;
       {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
+    }}, {{
       "\42\3\0\0\0\0\0\0"
       "google.protobuf.Struct.FieldsEntry"
       "key"
@@ -475,12 +470,10 @@ constexpr Value::ParseTableT_ Value::_Internal::GenerateParseTable(const ::_pbi:
       {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.struct_value_), _Internal::kOneofCaseOffset + 0, 0, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvClassData)},
       // .google.protobuf.ListValue list_value = 6;
       {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.list_value_), _Internal::kOneofCaseOffset + 0, 1, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Struct_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::ListValue_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Struct_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::ListValue_globals_},
+    }}, {{
       "\25\0\0\14\0\0\0\0"
       "google.protobuf.Value"
       "string_value"

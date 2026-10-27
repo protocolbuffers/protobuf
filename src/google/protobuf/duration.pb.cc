@@ -88,9 +88,10 @@ constexpr Duration::ParseTableT_ Duration::_Internal::GenerateParseTable(const :
       {PROTOBUF_FIELD_OFFSET(Duration, _impl_.seconds_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
       // int32 nanos = 2;
       {PROTOBUF_FIELD_OFFSET(Duration, _impl_.nanos_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }

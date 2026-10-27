@@ -74,8 +74,12 @@ constexpr Empty::ParseTableT_ Empty::_Internal::GenerateParseTable(const ::_pbi:
       {::_pbi::TcParser::MiniParse, {}},
     }}, {{
       65535, 65535
-    }}, // no field_entries, or aux_entries
-    {{
+    }}, {{
+      // no field_entries
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }

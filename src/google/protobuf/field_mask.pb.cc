@@ -82,9 +82,9 @@ constexpr FieldMask::ParseTableT_ FieldMask::_Internal::GenerateParseTable(const
     }}, {{
       // repeated string paths = 1;
       {PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kUtf8String | ::_fl::kRepSString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\31\5\0\0\0\0\0\0"
       "google.protobuf.FieldMask"
       "paths"

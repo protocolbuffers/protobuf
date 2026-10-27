@@ -96,11 +96,9 @@ constexpr Option::ParseTableT_ Option::_Internal::GenerateParseTable(const ::_pb
       {PROTOBUF_FIELD_OFFSET(Option, _impl_.name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // .google.protobuf.Any value = 2;
       {PROTOBUF_FIELD_OFFSET(Option, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Any_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Any_globals_},
+    }}, {{
       "\26\4\0\0\0\0\0\0"
       "google.protobuf.Option"
       "name"
@@ -270,11 +268,9 @@ constexpr Field::ParseTableT_ Field::_Internal::GenerateParseTable(const ::_pbi:
       {PROTOBUF_FIELD_OFFSET(Field, _impl_.json_name_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // string default_value = 11;
       {PROTOBUF_FIELD_OFFSET(Field, _impl_.default_value_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+    }}, {{
       "\25\0\0\0\4\10\0\0\0\11\15\0\0\0\0\0"
       "google.protobuf.Field"
       "name"
@@ -418,11 +414,9 @@ constexpr EnumValue::ParseTableT_ EnumValue::_Internal::GenerateParseTable(const
       {PROTOBUF_FIELD_OFFSET(EnumValue, _impl_.number_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // repeated .google.protobuf.Option options = 3;
       {PROTOBUF_FIELD_OFFSET(EnumValue, _impl_.options_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+    }}, {{
       "\31\4\0\0\0\0\0\0"
       "google.protobuf.EnumValue"
       "name"
@@ -574,13 +568,11 @@ constexpr Type::ParseTableT_ Type::_Internal::GenerateParseTable(const ::_pbi::C
       {PROTOBUF_FIELD_OFFSET(Type, _impl_.syntax_), _Internal::kHasBitsOffset + 6, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 7;
       {PROTOBUF_FIELD_OFFSET(Type, _impl_.edition_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Field_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Field_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
+    }}, {{
       "\24\4\0\6\0\0\0\7"
       "google.protobuf.Type"
       "name"
@@ -743,13 +735,11 @@ constexpr Enum::ParseTableT_ Enum::_Internal::GenerateParseTable(const ::_pbi::C
       {PROTOBUF_FIELD_OFFSET(Enum, _impl_.syntax_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 6;
       {PROTOBUF_FIELD_OFFSET(Enum, _impl_.edition_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValue_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValue_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
+    }}, {{
       "\24\4\0\0\0\0\7\0"
       "google.protobuf.Enum"
       "name"

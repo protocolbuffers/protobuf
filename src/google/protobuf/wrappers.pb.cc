@@ -98,9 +98,10 @@ constexpr UInt64Value::ParseTableT_ UInt64Value::_Internal::GenerateParseTable(c
     }}, {{
       // uint64 value = 1;
       {PROTOBUF_FIELD_OFFSET(UInt64Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt64)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -204,9 +205,10 @@ constexpr UInt32Value::ParseTableT_ UInt32Value::_Internal::GenerateParseTable(c
     }}, {{
       // uint32 value = 1;
       {PROTOBUF_FIELD_OFFSET(UInt32Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUInt32)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -310,9 +312,9 @@ constexpr StringValue::ParseTableT_ StringValue::_Internal::GenerateParseTable(c
     }}, {{
       // string value = 1;
       {PROTOBUF_FIELD_OFFSET(StringValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\33\5\0\0\0\0\0\0"
       "google.protobuf.StringValue"
       "value"
@@ -421,9 +423,10 @@ constexpr Int64Value::ParseTableT_ Int64Value::_Internal::GenerateParseTable(con
     }}, {{
       // int64 value = 1;
       {PROTOBUF_FIELD_OFFSET(Int64Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt64)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -527,9 +530,10 @@ constexpr Int32Value::ParseTableT_ Int32Value::_Internal::GenerateParseTable(con
     }}, {{
       // int32 value = 1;
       {PROTOBUF_FIELD_OFFSET(Int32Value, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -633,9 +637,10 @@ constexpr FloatValue::ParseTableT_ FloatValue::_Internal::GenerateParseTable(con
     }}, {{
       // float value = 1;
       {PROTOBUF_FIELD_OFFSET(FloatValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -739,9 +744,10 @@ constexpr DoubleValue::ParseTableT_ DoubleValue::_Internal::GenerateParseTable(c
     }}, {{
       // double value = 1;
       {PROTOBUF_FIELD_OFFSET(DoubleValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kDouble)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -845,9 +851,10 @@ constexpr BytesValue::ParseTableT_ BytesValue::_Internal::GenerateParseTable(con
     }}, {{
       // bytes value = 1;
       {PROTOBUF_FIELD_OFFSET(BytesValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -953,9 +960,10 @@ constexpr BoolValue::ParseTableT_ BoolValue::_Internal::GenerateParseTable(const
     }}, {{
       // bool value = 1;
       {PROTOBUF_FIELD_OFFSET(BoolValue, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }

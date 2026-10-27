@@ -92,9 +92,9 @@ constexpr Mixin::ParseTableT_ Mixin::_Internal::GenerateParseTable(const ::_pbi:
       {PROTOBUF_FIELD_OFFSET(Mixin, _impl_.name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // string root = 2;
       {PROTOBUF_FIELD_OFFSET(Mixin, _impl_.root_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\25\4\4\0\0\0\0\0"
       "google.protobuf.Mixin"
       "name"
@@ -249,11 +249,9 @@ constexpr Method::ParseTableT_ Method::_Internal::GenerateParseTable(const ::_pb
       {PROTOBUF_FIELD_OFFSET(Method, _impl_.syntax_), _Internal::kHasBitsOffset + 7, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 8 [deprecated = true];
       {PROTOBUF_FIELD_OFFSET(Method, _impl_.edition_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+    }}, {{
       "\26\4\20\0\21\0\0\0\7\0\0\0\0\0\0\0"
       "google.protobuf.Method"
       "name"
@@ -424,14 +422,12 @@ constexpr Api::ParseTableT_ Api::_Internal::GenerateParseTable(const ::_pbi::Cla
       {PROTOBUF_FIELD_OFFSET(Api, _impl_.syntax_), _Internal::kHasBitsOffset + 7, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 8;
       {PROTOBUF_FIELD_OFFSET(Api, _impl_.edition_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Method_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Mixin_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Method_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Mixin_globals_},
+    }}, {{
       "\23\4\0\0\7\0\0\0\7\0\0\0\0\0\0\0"
       "google.protobuf.Api"
       "name"

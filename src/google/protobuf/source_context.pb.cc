@@ -82,9 +82,9 @@ constexpr SourceContext::ParseTableT_ SourceContext::_Internal::GenerateParseTab
     }}, {{
       // string file_name = 1;
       {PROTOBUF_FIELD_OFFSET(SourceContext, _impl_.file_name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\35\11\0\0\0\0\0\0"
       "google.protobuf.SourceContext"
       "file_name"
