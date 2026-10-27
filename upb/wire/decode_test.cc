@@ -540,6 +540,75 @@ TEST(DecodeTest, EmptyMiniTableDecodedAsUnknown) {
   EXPECT_FALSE(upb_Message_NextUnknown2(msg, &data, &iter));
 }
 
+TEST(DecodeTest, DecodeLengthPrefixedValidControl) {
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+
+  // 1-byte length prefix (2) followed by field 1 = 42 ("\x08\x2a").
+  const std::string kValidMsg("\x02\x08\x2a", 3);
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+  size_t num_bytes_read = 0;
+  EXPECT_EQ(upb_DecodeLengthPrefixed(kValidMsg.data(), kValidMsg.size(), msg,
+                                     &num_bytes_read, mt, nullptr, 0,
+                                     msg_arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  EXPECT_EQ(num_bytes_read, 3u);
+  EXPECT_EQ(upb_Message_GetInt32(msg, field, 0), 42);
+
+  // Overlong 10-byte varint with 10th byte = 0x00 encoding length 0.
+  const std::string kOverlongZero("\x80\x80\x80\x80\x80\x80\x80\x80\x80\x00",
+                                  10);
+  upb_Message* empty_msg = upb_Message_New(mt, msg_arena.ptr());
+  num_bytes_read = 0;
+  EXPECT_EQ(upb_DecodeLengthPrefixed(kOverlongZero.data(), kOverlongZero.size(),
+                                     empty_msg, &num_bytes_read, mt, nullptr, 0,
+                                     msg_arena.ptr()),
+            kUpb_DecodeStatus_Ok);
+  EXPECT_EQ(num_bytes_read, 10u);
+}
+
+TEST(DecodeTest, DecodeLengthPrefixedRejectsOverflowingVarint) {
+  Arena mt_arena;
+  Arena msg_arena;
+
+  auto [mt, field] = MiniTable::MakeSingleFieldTable<field_types::Int32>(
+      1, kUpb_DecodeFast_Scalar, mt_arena.ptr());
+  upb_Message* msg = upb_Message_New(mt, msg_arena.ptr());
+
+  // 10-byte varint with 10th byte = 0x02 (2^64) must be rejected rather than
+  // shifting off the top of uint64_t to msg_len = 0.
+  const std::string kOverflow2Pow64("\x80\x80\x80\x80\x80\x80\x80\x80\x80\x02",
+                                    10);
+  size_t num_bytes_read = 0xdeadbeefULL;
+  EXPECT_EQ(upb_DecodeLengthPrefixed(
+                kOverflow2Pow64.data(), kOverflow2Pow64.size(), msg,
+                &num_bytes_read, mt, nullptr, 0, msg_arena.ptr()),
+            kUpb_DecodeStatus_Malformed);
+  EXPECT_EQ(num_bytes_read, 0xdeadbeefULL);
+
+  // 10-byte varint with 10th byte = 0x7f followed by payload bytes must also be
+  // rejected as malformed.
+  const std::string kOverflowMax10thByte(
+      "\x81\x80\x80\x80\x80\x80\x80\x80\x80\x7f\x08\x01", 12);
+  EXPECT_EQ(upb_DecodeLengthPrefixed(
+                kOverflowMax10thByte.data(), kOverflowMax10thByte.size(), msg,
+                &num_bytes_read, mt, nullptr, 0, msg_arena.ptr()),
+            kUpb_DecodeStatus_Malformed);
+  EXPECT_EQ(num_bytes_read, 0xdeadbeefULL);
+
+  // 10-byte varint encoding UINT64_MAX (10th byte = 0x01) must be rejected
+  // without wrapping size_t or mutating *num_bytes_read.
+  const std::string kUint64Max("\xff\xff\xff\xff\xff\xff\xff\xff\xff\x01", 10);
+  EXPECT_EQ(upb_DecodeLengthPrefixed(kUint64Max.data(), kUint64Max.size(), msg,
+                                     &num_bytes_read, mt, nullptr, 0,
+                                     msg_arena.ptr()),
+            kUpb_DecodeStatus_Malformed);
+  EXPECT_EQ(num_bytes_read, 0xdeadbeefULL);
+}
+
 TEST(DecodeTest, ConsecutiveUnknownFieldsWithoutAlias) {
   char trace_buf[64];
   Arena mt_arena;
