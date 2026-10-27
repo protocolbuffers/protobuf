@@ -1338,7 +1338,6 @@ set(protobuf_test_files
   ${protobuf_SOURCE_DIR}/src/google/protobuf/repeated_ptr_field_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/retention_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_block_test.cc
-  ${protobuf_SOURCE_DIR}/src/google/protobuf/string_piece_field_support_unittest.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/string_view_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/symbol_checker_test.cc
   ${protobuf_SOURCE_DIR}/src/google/protobuf/text_format_fix_test.cc
