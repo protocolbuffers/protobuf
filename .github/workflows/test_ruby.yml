@@ -45,7 +45,7 @@ jobs:
 
   linux-32bit:
     name: Linux 32-bit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v2

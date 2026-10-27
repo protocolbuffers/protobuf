@@ -67,7 +67,7 @@ jobs:
 
   protobuf-bom:
     name: Protobuf Maven BOM
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
     - name: Checkout pending changes
       uses: protocolbuffers/protobuf-ci/checkout@v2

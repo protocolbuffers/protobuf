@@ -14,7 +14,7 @@ permissions:
 jobs:
   package:
     name: Package
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: protocolbuffers/protobuf-ci/checkout@v2
