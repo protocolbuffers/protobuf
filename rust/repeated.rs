@@ -283,6 +283,13 @@ impl<'msg, T> RepeatedMut<'msg, T> {
     }
 }
 
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn repeated_set_oob(index: usize, len: usize) -> ! {
+    panic!("index {index} >= repeated len {len}");
+}
+
 impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     /// Gets the length of the repeated field.
     #[inline]
@@ -365,10 +372,11 @@ impl<'msg, T: Singular> RepeatedMut<'msg, T> {
     /// # Panics
     /// Panics if `index >= len`.
     #[inline]
+    #[track_caller]
     pub fn set(&mut self, index: usize, val: impl IntoProxied<T>) {
         let len = self.len();
         if index >= len {
-            panic!("index {index} >= repeated len {len}");
+            repeated_set_oob(index, len);
         }
         unsafe { self.set_unchecked(index, val) }
     }
