@@ -319,9 +319,7 @@ static const char* _upb_Decoder_DecodeEnumPacked(
     ptr = upb_WireReader_ReadVarint(ptr, &elem.uint64_val, EPS(d));
     if (!upb_MiniTableEnum_CheckValue(e, elem.uint64_val)) {
       upb_Message* unknown_msg =
-          field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension
-              ? d->original_msg
-              : msg;
+          upb_MiniTableField_IsExtension(field) ? d->original_msg : msg;
       if (!_upb_Encoder_AddEnumValueToUnknown(unknown_msg,
                                               field->UPB_PRIVATE(number),
                                               elem.uint64_val, &d->arena)) {
@@ -796,7 +794,7 @@ UPB_FORCEINLINE
 void _upb_Decoder_CheckUnlinked(upb_Decoder* d, const upb_MiniTable* mt,
                                 const upb_MiniTableField* field, int* op) {
   // If sub-message is not linked, treat as unknown.
-  if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) return;
+  if (upb_MiniTableField_IsExtension(field)) return;
   const upb_MiniTable* mt_sub = upb_MiniTable_GetSubMessageTable(field);
   if (mt_sub != NULL) return;  // Normal case, sub-message is linked.
   _upb_Decoder_VerifyOneofUnlinked(mt, field);
@@ -945,7 +943,7 @@ const char* _upb_Decoder_DecodeKnownField(upb_Decoder* d, const char* ptr,
                                           int op, wireval* val) {
   uint8_t mode = field->UPB_PRIVATE(mode);
 
-  if (UPB_UNLIKELY(mode & kUpb_LabelFlags_IsExtension)) {
+  if (UPB_UNLIKELY(upb_MiniTableField_IsExtension(field))) {
     const upb_MiniTableExtension* ext_layout =
         (const upb_MiniTableExtension*)field;
     upb_Extension* ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(

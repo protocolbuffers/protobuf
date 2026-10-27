@@ -73,10 +73,6 @@ std::string GetModeInit(const upb_MiniTableField* field32,
     absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsPacked");
   }
 
-  if (mode32 & kUpb_LabelFlags_IsExtension) {
-    absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsExtension");
-  }
-
   if (mode32 & kUpb_LabelFlags_IsAlternate) {
     absl::StrAppend(&ret, " | (int)kUpb_LabelFlags_IsAlternate");
   }
