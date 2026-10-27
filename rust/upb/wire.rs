@@ -58,6 +58,8 @@ pub fn byte_size<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> usize {
 ///
 /// # Safety
 /// - `msg` must be mutable.
+/// - `extreg` must be null or point to a valid `upb_ExtensionRegistry` that is not mutated during
+///   the call, and every extension in it must outlive `msg`.
 #[allow(unused)] // Not used yet.
 pub unsafe fn decode<T: AssociatedMiniTable>(
     buf: &[u8],
@@ -67,6 +69,8 @@ pub unsafe fn decode<T: AssociatedMiniTable>(
 ) -> Result<(), DecodeStatus> {
     // SAFETY:
     // - `msg` is mutable and is associated with `mini_table`.
+    // - `extreg` is null or a valid registry whose extensions outlive `msg`, guaranteed by the
+    //   caller.
     // - `decode_options::CHECK_REQUIRED` is a valid decode option.
     unsafe { decode_with_options(buf, msg, extreg, arena, decode_options::CHECK_REQUIRED) }
 }
@@ -76,6 +80,8 @@ pub unsafe fn decode<T: AssociatedMiniTable>(
 ///
 /// # Safety
 /// - `msg` must be mutable.
+/// - `extreg` must be null or point to a valid `upb_ExtensionRegistry` that is not mutated during
+///   the call, and every extension in it must outlive `msg`.
 /// - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module.
 pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     buf: &[u8],
@@ -90,7 +96,8 @@ pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
     // - `buf` is legally readable for at least `buf_size` bytes.
-    // - `extreg` is null.
+    // - `extreg` is null or a valid registry whose extensions outlive `msg`, guaranteed by the
+    //   caller.
     // - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module.
     let status = unsafe {
         upb_Decode(

@@ -36,7 +36,7 @@ typedef NS_OPTIONS(uint16_t, GPBFieldFlags) {
   GPBFieldHasEnumDescriptor = 1 << 7,
 
   // These are not standard protobuf concepts, they are specific to the
-  // Objective C runtime.
+  // Objective-C runtime.
 
   // These bits are used to mark the field as a map and what the key
   // type is.
@@ -105,7 +105,7 @@ typedef struct GPBMessageFieldDescription {
   //   = GPBNoHasBit(INT32_MAX): no storage used.
   //   < 0: in a oneOf, use a full int32 to record the field active.
   int32_t hasIndex;
-  // Offset of the variable into it's structure struct.
+  // Offset of the variable into its structure struct.
   uint32_t offset;
   // Field flags. Use accessor functions below.
   GPBFieldFlags flags;
@@ -324,6 +324,135 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
   return (description->options & GPBExtensionPacked) != 0;
 }
 
+// Mach-O section-based extension registration (inspired by upb's linker-array
+// UPB_LINKARR design).
+//
+// When generated with the `experimental_global_extension_registry` generator
+// option (`extension_generation_mode=c_function`), each generated C-function
+// extension descriptor accessor places a two-pointer GPBExtensionSectionEntry
+// struct (`{description, descriptor}`) into the custom Mach-O section in the
+// "__DATA" segment, and delegates descriptor creation to
+// GPBResolveExtensionSectionEntry().
+//
+// Interaction with linker dead-stripping (-dead_strip):
+// - When an object file (.o) from a static archive (.a) is NOT pulled into the
+//   final binary by the linker (because neither the extension C function nor
+//   any co-located message class in that object file is referenced), the
+//   entire object file—including its GPBExtensionSectionEntry—is omitted.
+// - When an object file IS pulled into the binary, __attribute__((used))
+//   retains the GPBExtensionSectionEntry within that translation unit, and
+//   pointer-sized alignment ensures the linker packs all surviving entries into
+//   a contiguous array in the section with zero inter-element padding.
+//
+// Lazy indexing & descriptor resolution:
+// - Calling +[GPBExtensionRegistry globalExtensionRegistry] only allocates the
+//   lightweight registry wrapper. Its first -extensionForDescriptor:fieldNumber:
+//   call registers a dyld add-image callback
+//   (_dyld_register_func_for_add_image), which synchronously indexes the
+//   section of every already-loaded Mach-O image via getsectiondata() (and any
+//   images dynamically loaded later) into a map of
+//   (extended Class -> fieldNumber -> GPBExtensionSectionEntry *).
+// - Indexing only records raw GPBExtensionSectionEntry pointers without
+//   allocating GPBExtensionDescriptor objects or sending Objective-C messages.
+// - A GPBExtensionDescriptor is lazily allocated on first use by
+//   GPBResolveExtensionSectionEntry() via an atomic compare-and-exchange on
+//   `entry->descriptor`. Both direct calls to the generated C extension
+//   function and dynamic lookups through +[GPBExtensionRegistry
+//   globalExtensionRegistry] (via
+//   GPBResolveExtensionSectionEntryForGlobalRegistry()) share that resolution,
+//   eliminating per-extension `dispatch_once_t` storage and block descriptors
+//   from generated `.pbobjc.m` files while sharing a single cached descriptor
+//   instance.
+// - The first lookup registers the dyld callback without holding any lock, and
+//   lookups that run while that registration is in progress scan the loaded
+//   images directly instead of waiting for it, because dyld holds its locks
+//   while it runs image initializers inside dlopen() (and an initializer may
+//   do a lookup). See GPBStartIndexingExtensionSections().
+//
+// Limitations:
+// - Extensions in an image loaded with dlopen() after a message was parsed
+//   with the global registry are not applied retroactively: those fields stay
+//   in the message's unknown fields. Parse the data again after the image is
+//   loaded if those extensions are needed.
+// - There is no dyld remove-image handler: the indexes keep pointing into
+//   every image they indexed. This relies on images that contain Objective-C
+//   classes (which every image with generated extensions does) never being
+//   unloaded by dyld; dlclose() of such an image is a no-op.
+#define GPB_EXTENSION_SECTION_SEGMENT "__DATA"
+
+// SDKs that embed a copy of the runtime may override GPB_EXTENSION_SECTION_NAME
+// to isolate their extension section from other copies linked into the same
+// process.
+#if !defined(GPB_EXTENSION_SECTION_NAME)
+#define GPB_EXTENSION_SECTION_NAME "__gpb_objc_ext"
+#endif
+
+#define GPB_EXTENSION_REGISTRY_SECTION_ATTR     \
+  __attribute__((used, aligned(sizeof(void *)), \
+                 section(GPB_EXTENSION_SECTION_SEGMENT "," GPB_EXTENSION_SECTION_NAME)))
+
+// A single entry in the extension registration Mach-O section.
+// - `description`: Static pointer to the extension's compile-time
+//   GPBExtensionDescription metadata (extended class, payload class, field
+//   number, data type, options).
+// - `descriptor`: Lazily initialized GPBExtensionDescriptor singleton,
+//   populated atomically on first access via GPBResolveExtensionSectionEntry().
+//   Marked GPB_UNSAFE_UNRETAINED so this struct can live in a static C section
+//   even when this header is included under ARC;
+//   GPBResolveExtensionSectionEntry() allocates the descriptor with +alloc/-init
+//   (+1 retain count) and intentionally keeps that reference alive for the
+//   lifetime of the process when the atomic compare-and-exchange succeeds (or
+//   releases the contender if another thread won the race).
+typedef struct GPBExtensionSectionEntry {
+  GPBExtensionDescription *description;
+  GPB_UNSAFE_UNRETAINED GPBExtensionDescriptor *descriptor;
+} GPBExtensionSectionEntry;
+
+// Lazily allocates and caches the GPBExtensionDescriptor instance for `entry`
+// in a thread-safe manner (see block comment above for full details).
+GPBExtensionDescriptor *GPBResolveExtensionSectionEntry(GPBExtensionSectionEntry *entry,
+                                                        const int32_t *runtimeSupport);
+
+// Like GPBResolveExtensionSectionEntry(), for +[GPBExtensionRegistry
+// globalExtensionRegistry], which has no runtime support pointer of the
+// generated code. No runtime support check is needed: an entry is only linked
+// along with its generated extension function in the same object file, and
+// that function references the generated code's
+// GOOGLE_PROTOBUF_OBJC_EXPECTED_GENCODE_VERSION_* symbol, which only links if
+// this runtime supports that version. The generated function still passes its
+// pointer and is checked when it creates the descriptor.
+GPBExtensionDescriptor *GPBResolveExtensionSectionEntryForGlobalRegistry(
+    GPBExtensionSectionEntry *entry);
+
+// Returns YES once the registry returned by
+// +[GPBExtensionRegistry globalExtensionRegistry] has started reading the
+// extension sections of the loaded images, which happens on its first
+// -extensionForDescriptor:fieldNumber: call. Exposed for unit tests.
+BOOL GPBGlobalExtensionRegistryHasStartedIndexing(void);
+
+// The list of per-image extension section indexes that backs
+// +[GPBExtensionRegistry globalExtensionRegistry]. The functions below operate
+// on separate lists with the same code as the global registry, so unit tests
+// can exercise appends and lookups (including concurrent ones) without dyld.
+// For unit tests only.
+typedef struct GPBExtensionSectionIndexList GPBExtensionSectionIndexList;
+// Returns a new empty list.
+GPBExtensionSectionIndexList *GPBExtensionSectionIndexListCreateForTesting(void);
+// Indexes `entries` like the section of one image and appends the index to the
+// list (nothing is appended if no entry is valid). Safe to call concurrently
+// with itself and with lookups on the same list.
+void GPBExtensionSectionIndexListAppendForTesting(GPBExtensionSectionIndexList *list,
+                                                  GPBExtensionSectionEntry *entries,
+                                                  size_t entryCount);
+// Looks up (extended class, field number); the earliest appended index wins.
+// Safe to call concurrently with appends.
+GPBExtensionSectionEntry *GPBExtensionSectionIndexListFindForTesting(
+    GPBExtensionSectionIndexList *list, Class extendedClass, ssize_t fieldNumber);
+// Returns the number of image indexes in the list.
+size_t GPBExtensionSectionIndexListCountForTesting(GPBExtensionSectionIndexList *list);
+// Frees the list. Must not be called concurrently with any other use of it.
+void GPBExtensionSectionIndexListDestroyForTesting(GPBExtensionSectionIndexList *list);
+
 // Helper for compile time assets.
 #ifndef GPBInternalCompileAssert
 #define GPBInternalCompileAssert(test, msg) _Static_assert((test), #msg)
@@ -334,6 +463,17 @@ GPB_INLINE BOOL GPBExtensionIsPacked(GPBExtensionDescription *description) {
 GPBInternalCompileAssert(sizeof(GPBMessageFieldDescriptionWithDefault) ==
                              (sizeof(GPBGenericValue) + sizeof(GPBMessageFieldDescription)),
                          DescriptionsWithDefault_different_size_than_expected);
+
+// Ensure GPBExtensionSectionEntry has no internal or trailing padding so that
+// contiguous section entries can be indexed as a flat C array by
+// getsectiondata().
+GPBInternalCompileAssert(sizeof(GPBExtensionSectionEntry) == 2 * sizeof(void *),
+                         ExtensionSectionEntry_different_size_than_expected);
+
+// Mach-O section names are limited to 16 characters (plus the NUL terminator
+// in the C string literal).
+GPBInternalCompileAssert(sizeof(GPB_EXTENSION_SECTION_NAME) <= 17,
+                         ExtensionSectionName_exceeds_macho_16_char_limit);
 
 // Sanity check that the file description structures old and new work.
 GPBInternalCompileAssert(offsetof(GPBFilePackageAndPrefix, package) ==

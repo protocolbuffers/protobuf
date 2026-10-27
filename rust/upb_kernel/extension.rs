@@ -12,6 +12,13 @@ use crate::extension::{ExtAccess, ExtClear, ExtGetMut, ExtHas};
 use crate::{ExtensionId, IntoMut, IntoView, MessageViewInterop, Proxied};
 use std::sync::LazyLock;
 
+#[cold]
+#[inline(never)]
+#[track_caller]
+fn set_extension_failed() -> ! {
+    panic!("upb_Message_SetExtension failed (alloc should be infallible)");
+}
+
 pub struct InnerExtensionId {
     mini_table: &'static LazyLock<MiniTableExtensionInitPtr>,
 }
@@ -40,7 +47,9 @@ impl<Extendee, T: Proxied> ExtensionId<Extendee, T> {
 #[linkme::distributed_slice]
 pub static EXTENSIONS: [LazyLock<MiniTableExtensionInitPtr>];
 
-#[cfg(all(target_family = "unix", not(target_os = "macos")))]
+// The sentinel sections use ELF-only directives, so skip every Apple (Mach-O) target, not just
+// macOS.
+#[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSIONS,"awR",@progbits
@@ -119,12 +128,14 @@ impl<Extendee: Message, V: Message> ExtAccess<Extendee, V, MessageTag>
         msg_mut.get_arena(Private).fuse(child.get_arena(Private));
 
         unsafe {
-            assert!(upb_Message_SetExtensionMessage(
+            if !upb_Message_SetExtensionMessage(
                 msg_mut.get_ptr_mut(Private).raw(),
                 self.inner.mini_table().as_ptr(),
                 child_ptr.raw(),
                 msg_mut.get_arena(Private).raw(),
-            ));
+            ) {
+                set_extension_failed();
+            }
         }
     }
 }
@@ -267,12 +278,14 @@ macro_rules! impl_upb_scalar_extension {
                 fn set(&self, _private: Private, mut msg: impl AsMut<MutProxied = Extendee>, value: impl IntoProxied<$t>) {
                     let mut msg_mut = msg.as_mut();
                     unsafe {
-                        assert!($set(
+                        if !$set(
                             msg_mut.get_ptr_mut(Private).raw(),
                             self.inner.mini_table().as_ptr(),
                             value.into_proxied(Private),
                             msg_mut.get_arena(Private).raw(),
-                        ));
+                        ) {
+                            set_extension_failed();
+                        }
                     }
                 }
             }
@@ -320,12 +333,14 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoString, PrimitiveTag>
         let mut msg_mut = msg.as_mut();
         msg_mut.get_arena(Private).fuse(&arena);
         unsafe {
-            assert!(upb_Message_SetExtensionString(
+            if !upb_Message_SetExtensionString(
                 msg_mut.get_ptr_mut(Private).raw(),
                 self.inner.mini_table().as_ptr(),
                 view,
                 msg_mut.get_arena(Private).raw(),
-            ));
+            ) {
+                set_extension_failed();
+            }
         }
     }
 }
@@ -360,12 +375,14 @@ impl<Extendee: Message> ExtAccess<Extendee, ProtoBytes, PrimitiveTag>
         let mut msg_mut = msg.as_mut();
         msg_mut.get_arena(Private).fuse(&arena);
         unsafe {
-            assert!(upb_Message_SetExtensionString(
+            if !upb_Message_SetExtensionString(
                 msg_mut.get_ptr_mut(Private).raw(),
                 self.inner.mini_table().as_ptr(),
                 view,
                 msg_mut.get_arena(Private).raw(),
-            ));
+            ) {
+                set_extension_failed();
+            }
         }
     }
 }
@@ -416,12 +433,14 @@ where
     ) {
         let mut msg_mut = msg.as_mut();
         unsafe {
-            assert!(upb_Message_SetExtensionInt32(
+            if !upb_Message_SetExtensionInt32(
                 msg_mut.get_ptr_mut(Private).raw(),
                 self.inner.mini_table().as_ptr(),
                 value.into_proxied(Private).into(),
                 msg_mut.get_arena(Private).raw(),
-            ));
+            ) {
+                set_extension_failed();
+            }
         }
     }
 }

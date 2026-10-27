@@ -446,7 +446,7 @@ TEST(MapFieldTest, ConstInit) {
   // This tests that `MapField` and all its base classes can be constant
   // initialized.
   PROTOBUF_CONSTINIT static MyMapField field;  // NOLINT
-  EXPECT_EQ(field.size(), 0);
+  EXPECT_EQ(field.GetMap().size(), 0);
 }
 
 TEST(MapFieldTest, MutableMapDoesNotAllocatePayload) {

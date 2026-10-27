@@ -91,4 +91,24 @@ def py_extension_with_bundled_deps(name, deps = [], **kwargs):
         # Replace (don't extend) deps: each library must be linked under exactly one owner.
         deps = [":" + name + "_deps"]
 
-    py_extension(name = name, deps = deps, **kwargs)
+    py_extension(
+        name = name,
+        deps = deps,
+        # TODO: Upstream these Windows MinGW linker flags to rules_python.
+        linkopts = select({
+            "//python/dist:windows_x86_32": ["-static-libgcc"],
+            "//conditions:default": [],
+        }) + select({
+            "//python/dist:windows_x86_64_mingw": [
+                "-Wl,--dynamicbase",
+                "-Wl,--nxcompat",
+                "-Wl,--high-entropy-va",
+            ],
+            "//python/dist:windows_x86_32_mingw": [
+                "-Wl,--dynamicbase",
+                "-Wl,--nxcompat",
+            ],
+            "//conditions:default": [],
+        }),
+        **kwargs
+    )

@@ -159,11 +159,13 @@ class PROTOBUF_EXPORT UnknownFieldSet {
   // Similar to above, but this function will destroy the contents of other.
   void MergeFromAndDestroy(UnknownFieldSet* other);
 
+#if !defined(PROTOBUF_FUTURE_DELETE_UFS_MERGE_TO_MESSAGE)
   // Merge the contents an UnknownFieldSet with the UnknownFieldSet in
   // *metadata, if there is one.  If *metadata doesn't have an UnknownFieldSet
   // then add one to it and make it be a copy of the first arg.
-  static void MergeToInternalMetadata(MessageLite& message,
-                                      const UnknownFieldSet& other);
+  [[deprecated]] static void MergeToInternalMetadata(
+      MessageLite& message, const UnknownFieldSet& other);
+#endif
 
   // Swaps the contents of some other UnknownFieldSet with this one.
   void Swap(UnknownFieldSet* x);

@@ -53,6 +53,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "google/protobuf/arenastring.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/descriptor.pb.h"
 #include "google/protobuf/extension_set.h"
@@ -335,10 +336,10 @@ class DynamicMessage final : public Message {
 
   bool is_prototype() const;
 
-  inline void* OffsetToPointer(int offset) {
+  void* OffsetToPointer(int offset) {
     return reinterpret_cast<uint8_t*>(this) + offset;
   }
-  inline const void* OffsetToPointer(int offset) const {
+  const void* OffsetToPointer(int offset) const {
     return reinterpret_cast<const uint8_t*>(this) + offset;
   }
 
@@ -978,6 +979,9 @@ const Message* DynamicMessageFactory::GetPrototypeNoLock(
 
     size += kMaxOneofUnionSize;
   }
+
+  // Align size to the alignment of the whole message.
+  size = AlignOffset(size);
 
   // Construct the reflection object.
 

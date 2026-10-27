@@ -820,11 +820,26 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
   }
 
   // Convert unknown fields.
+  // If the destination has no fields and is not extendable, decoding the
+  // unknown data into it would only skip over every field and re-add the same
+  // bytes as unknown data (see _upb_Decoder_DecodeEmptyMessage), so add the
+  // bytes directly.
+  const bool dst_is_empty = upb_MiniTable_FieldCount(dst_mt) == 0 &&
+                            UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(dst_mt) ==
+                                kUpb_ExtMode_NonExtendable;
   upb_MessageUnknown unknown;
   uintptr_t iter = kUpb_Message_UnknownBegin;
   while (upb_Message_NextUnknown2(src, &unknown, &iter)) {
     if (unknown.type == kUpb_MessageUnknownType_StringView) {
       upb_StringView data = unknown.value.bytes;
+      if (dst_is_empty) {
+        if (data.size > 0 &&
+            !UPB_PRIVATE(_upb_Message_AddUnknown)(
+                dst, data.data, data.size, c->arena, kUpb_AddUnknown_Alias)) {
+          upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+        }
+        continue;
+      }
       int decode_options = upb_Decode_LimitDepth(
           c->decode_options | kUpb_DecodeOption_AliasString, depth);
 

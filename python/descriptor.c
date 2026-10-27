@@ -55,6 +55,10 @@ typedef struct {
   PyObject* message_meta;            // We own a ref.
 } PyUpb_DescriptorBase;
 
+static PyObject* PyUpb_DescriptorBase_AsPyObj(PyUpb_DescriptorBase* base) {
+  return &base->ob_base;
+}
+
 PyObject* PyUpb_AnyDescriptor_GetPool(PyObject* desc) {
   PyUpb_DescriptorBase* base = (void*)desc;
   return base->pool;
@@ -282,7 +286,8 @@ static void PyUpb_DescriptorBase_Dealloc(PyUpb_DescriptorBase* base) {
   // methods) at any time. This also means we *must* stop GC from tracking
   // instances of them before we start destructing the object. In Python
   // 3.11, failing to do so would raise a runtime warning.
-  if (PyType_HasFeature(Py_TYPE(base), Py_TPFLAGS_HAVE_GC)) {
+  if (PyType_HasFeature(Py_TYPE(PyUpb_DescriptorBase_AsPyObj(base)),
+                        Py_TPFLAGS_HAVE_GC)) {
     PyObject_GC_UnTrack(base);
   }
   PyUpb_DescriptorPool_CacheEraseIfEqual(base->pool, base->def,

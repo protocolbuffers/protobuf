@@ -385,9 +385,10 @@ inline ::std::string* PROTOBUF_NULLABLE Any::release_type_url() {
     return nullptr;
   }
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  auto* released = _impl_.type_url_.Release();
+  auto& f = _impl_.type_url_;
+  auto* released = f.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.type_url_.Set("", *this);
+    f.Set("", *this);
   }
   return released;
 }
@@ -398,9 +399,10 @@ inline void Any::set_allocated_type_url(::std::string* PROTOBUF_NULLABLE value) 
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.type_url_.SetAllocated(value, *this);
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.type_url_.IsDefault()) {
-    _impl_.type_url_.Set("", *this);
+  auto& f = _impl_.type_url_;
+  f.SetAllocated(value, *this);
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && f.IsDefault()) {
+    f.Set("", *this);
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.type_url)
 }
@@ -449,9 +451,10 @@ inline ::std::string* PROTOBUF_NULLABLE Any::release_value() {
     return nullptr;
   }
   ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
-  auto* released = _impl_.value_.Release();
+  auto& f = _impl_.value_;
+  auto* released = f.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.value_.Set("", *this);
+    f.Set("", *this);
   }
   return released;
 }
@@ -462,9 +465,10 @@ inline void Any::set_allocated_value(::std::string* PROTOBUF_NULLABLE value) {
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
   }
-  _impl_.value_.SetAllocated(value, *this);
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.value_.IsDefault()) {
-    _impl_.value_.Set("", *this);
+  auto& f = _impl_.value_;
+  f.SetAllocated(value, *this);
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && f.IsDefault()) {
+    f.Set("", *this);
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.Any.value)
 }

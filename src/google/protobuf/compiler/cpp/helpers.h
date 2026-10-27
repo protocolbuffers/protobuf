@@ -390,8 +390,8 @@ PROTOC_EXPORT bool IsRarelyPresent(const FieldDescriptor* field,
 // Returns true if `field` is likely to be present based on PDProto profile.
 bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
-absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
-                                             const Options& options);
+PROTOC_EXPORT absl::optional<float> GetPresenceProbability(
+    const FieldDescriptor* field, const Options& options);
 
 // GetFieldGroupPresenceProbability computes presence probability for a group of
 // fields. It uses the absence probability (easier to compute)

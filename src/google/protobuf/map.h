@@ -7,9 +7,9 @@
 
 // This file defines the map container and its helpers to support protobuf maps.
 //
-// The Map and MapIterator types are provided by this header file.
+// The Map type is provided by this header file.
 // Please avoid using other types defined here, unless they are public
-// types within Map or MapIterator, such as Map::value_type.
+// types within Map, such as Map::value_type.
 
 #ifndef GOOGLE_PROTOBUF_MAP_H__
 #define GOOGLE_PROTOBUF_MAP_H__
@@ -58,7 +58,8 @@ namespace protobuf {
 template <typename Key, typename T>
 class Map;
 
-class MapIterator;
+class ABSL_ATTRIBUTE_VIEW GenericMapRef;
+class ABSL_ATTRIBUTE_VIEW GenericConstMapRef;
 
 template <typename Enum>
 struct is_proto_enum;
@@ -411,6 +412,7 @@ class PROTOBUF_EXPORT UntypedMapBase {
   friend struct MapBenchmarkPeer;
   friend class UntypedMapIterator;
   friend class RustMapHelper;
+  friend GenericMapRef;
 
   // Calls `f(type_t)` where `type_t` is an unspecified type that has a `::type`
   // typedef in it representing the dynamic type of key/value of the node.
@@ -610,7 +612,7 @@ inline void UntypedMapIterator::PlusPlus() {
 // code, since that would bring in Message too.
 class MapFieldBaseForParse {
  public:
-  const UntypedMapBase& GetMap() const {
+  const UntypedMapBase& GetMap() const ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
@@ -619,7 +621,7 @@ class MapFieldBaseForParse {
     return GetMapRaw();
   }
 
-  UntypedMapBase* MutableMap() {
+  UntypedMapBase* MutableMap() ABSL_ATTRIBUTE_LIFETIME_BOUND {
     const void* p = globals_or_payload_.load(std::memory_order_acquire);
     // If this instance has a payload, then it might need sync'n.
     if (ABSL_PREDICT_FALSE(IsPayload(p))) {
@@ -731,6 +733,8 @@ class KeyMapBase : public UntypedMapBase {
   friend struct MapTestPeer;
   friend struct MapBenchmarkPeer;
   friend class RustMapHelper;
+  friend GenericMapRef;
+  friend GenericConstMapRef;
 
   Key* GetKey(NodeBase* node) const {
     return UntypedMapBase::GetKey<Key>(node);
