@@ -73,6 +73,9 @@ enum RefMode { kConcrete = 0, kAbstract = 1 };
 
 class RepeatedPtrFieldTest : public testing::Test {
  public:
+  static constexpr size_t kMinNonSsoCapacity =
+      RepeatedPtrFieldBase::kMinNonSsoCapacity;
+
   template <typename T>
   static int ClearedCount(RepeatedPtrField<T>& field) {
     return field.ClearedCount();
@@ -96,6 +99,12 @@ class RepeatedPtrFieldTest : public testing::Test {
   static void SetFakeSizeOnly(RepeatedPtrField<T>* field, int size) {
     RepeatedPtrFieldBase* base = field;
     base->current_size_ = size;
+  }
+
+  template <typename T>
+  static void TryShrinkToFit(RepeatedPtrField<T>& field, SerialArena* arena) {
+    RepeatedPtrFieldBase* base = &field;
+    base->TryShrinkToFit(arena);
   }
 };
 
@@ -511,6 +520,50 @@ TEST_F(RepeatedPtrFieldTest,
   // expected.
   EXPECT_THAT(arena.SpaceUsed() - dummy_alloc,
               AllOf(Ge(expected), Le(1.02 * expected)));
+}
+
+TEST_F(RepeatedPtrFieldTest, TryShrinkToFitRespectsMinimumCapacityWhenEmpty) {
+  Arena arena;
+  internal::SerialArena* serial_arena = GetSerialArena(&arena);
+  auto* field = Arena::Create<RepeatedPtrField<std::string>>(&arena);
+
+  field->Reserve(10);
+  ASSERT_EQ(field->size(), 0);
+  ASSERT_GT(field->Capacity(), 1);
+
+  TryShrinkToFit(*field, serial_arena);
+
+  EXPECT_EQ(field->Capacity(), kMinNonSsoCapacity);
+
+  // Move arena tail so in-place growth is impossible.
+  (void)arena.AllocateAligned(64);
+
+  // Re-extend: returning old Rep to the arena must not trigger
+  // ReturnArrayMemory assertions or corrupt the arena freelist.
+  const void* old_data = field->data();
+  field->Reserve(20);
+  ASSERT_NE(field->data(), old_data);
+  EXPECT_GE(field->Capacity(), 20);
+
+  // Also verify for a non-SSO field emptied via UnsafeArenaReleaseLast.
+  auto* emptied_field = Arena::Create<RepeatedPtrField<std::string>>(&arena);
+  for (int i = 0; i < 5; ++i) {
+    emptied_field->Add("elem");
+  }
+  ASSERT_GT(emptied_field->Capacity(), 1);
+  for (int i = 0; i < 5; ++i) {
+    emptied_field->UnsafeArenaReleaseLast();
+  }
+  ASSERT_EQ(emptied_field->size(), 0);
+
+  TryShrinkToFit(*emptied_field, serial_arena);
+  EXPECT_EQ(emptied_field->Capacity(), kMinNonSsoCapacity);
+
+  (void)arena.AllocateAligned(64);
+  const void* old_emptied_data = emptied_field->data();
+  emptied_field->Reserve(20);
+  ASSERT_NE(emptied_field->data(), old_emptied_data);
+  EXPECT_GE(emptied_field->Capacity(), 20);
 }
 
 TEST_F(RepeatedPtrFieldTest, AddAndAssignRanges) {
