@@ -160,7 +160,7 @@ class alignas(8) HeapRep {
 // Note that SOO is disabled on 32-bit platforms due to alignment limitations.
 
 // SOO data is stored in the same space as the size/capacity ints.
-enum { kSooCapacityBytes = 2 * sizeof(int) };
+inline constexpr size_t kSooCapacityBytes = 2 * sizeof(int);
 
 inline constexpr uint32_t kNotSooBit = 0x1;
 // The number of bits at the start of the `InternalMetadataResolver` offset to
@@ -208,7 +208,7 @@ class SooRep {
     return res;
   }
   void set_size(int size) {
-    ABSL_DCHECK(!is_soo() || size <= kSooCapacityBytes);
+    ABSL_DCHECK(!is_soo() || size <= static_cast<int64_t>(kSooCapacityBytes));
     size_ = size;
   }
   int capacity() const {
