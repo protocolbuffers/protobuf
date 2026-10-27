@@ -159,9 +159,10 @@ constexpr UninterpretedOption_NamePart::ParseTableT_ UninterpretedOption_NamePar
       {PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_.name_part_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // required bool is_extension = 2;
       {PROTOBUF_FIELD_OFFSET(UninterpretedOption_NamePart, _impl_.is_extension_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -306,9 +307,10 @@ constexpr SourceCodeInfo_Location::ParseTableT_ SourceCodeInfo_Location::_Intern
       {PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.trailing_comments_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // repeated string leading_detached_comments = 6;
       {PROTOBUF_FIELD_OFFSET(SourceCodeInfo_Location, _impl_.leading_detached_comments_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcRepeated | ::_fl::kBytes | ::_fl::kRepSString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -470,11 +472,10 @@ constexpr GeneratedCodeInfo_Annotation::ParseTableT_ GeneratedCodeInfo_Annotatio
       {PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.end_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // optional .google.protobuf.GeneratedCodeInfo.Annotation.Semantic semantic = 5;
       {PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo_Annotation, _impl_.semantic_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    }},
-    {{
-        {0, 2},
-    }},
-    {{
+    }}, {{
+      {0, 2},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -626,13 +627,12 @@ constexpr FieldOptions_FeatureSupport::ParseTableT_ FieldOptions_FeatureSupport:
       {PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.edition_removed_), _Internal::kHasBitsOffset + 4, 2, (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
       // optional string removal_error = 5;
       {PROTOBUF_FIELD_OFFSET(FieldOptions_FeatureSupport, _impl_.removal_error_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -761,11 +761,10 @@ constexpr FieldOptions_EditionDefault::ParseTableT_ FieldOptions_EditionDefault:
       {PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_.value_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // optional .google.protobuf.Edition edition = 3;
       {PROTOBUF_FIELD_OFFSET(FieldOptions_EditionDefault, _impl_.edition_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-    }},
-    {{
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -875,8 +874,12 @@ constexpr FeatureSet_VisibilityFeature::ParseTableT_ FeatureSet_VisibilityFeatur
       {::_pbi::TcParser::MiniParse, {}},
     }}, {{
       65535, 65535
-    }}, // no field_entries, or aux_entries
-    {{
+    }}, {{
+      // no field_entries
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -976,8 +979,12 @@ constexpr FeatureSet_ProtoLimitsFeature::ParseTableT_ FeatureSet_ProtoLimitsFeat
       {::_pbi::TcParser::MiniParse, {}},
     }}, {{
       65535, 65535
-    }}, // no field_entries, or aux_entries
-    {{
+    }}, {{
+      // no field_entries
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -1140,19 +1147,18 @@ constexpr FeatureSet::ParseTableT_ FeatureSet::_Internal::GenerateParseTable(con
       {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.default_symbol_visibility_), _Internal::kHasBitsOffset + 7, 7, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
       // optional .google.protobuf.FeatureSet.ProtoLimitsFeature.EnforceProtoLimits enforce_proto_limits = 9 [retention = RETENTION_SOURCE, targets = TARGET_TYPE_ENUM, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_ONEOF, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(FeatureSet, _impl_.enforce_proto_limits_), _Internal::kHasBitsOffset + 8, 8, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    }},
-    {{
-        {0, 3},
-        {0, 2},
-        {0, 2},
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_},
-        {0, 2},
-        {0, 2},
-        {0, 3},
-        {0, 4},
-        {0, 2},
-    }},
-    {{
+    }}, {{
+      {0, 3},
+      {0, 2},
+      {0, 2},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::FeatureSet_Utf8Validation_internal_data_},
+      {0, 2},
+      {0, 2},
+      {0, 3},
+      {0, 4},
+      {0, 2},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -1302,9 +1308,10 @@ constexpr ExtensionRangeOptions_Declaration::ParseTableT_ ExtensionRangeOptions_
       {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_.reserved_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional bool repeated = 6;
       {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions_Declaration, _impl_.repeated_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -1433,9 +1440,10 @@ constexpr EnumDescriptorProto_EnumReservedRange::ParseTableT_ EnumDescriptorProt
       {PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_.start_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // optional int32 end = 2;
       {PROTOBUF_FIELD_OFFSET(EnumDescriptorProto_EnumReservedRange, _impl_.end_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -1557,9 +1565,10 @@ constexpr DescriptorProto_ReservedRange::ParseTableT_ DescriptorProto_ReservedRa
       {PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_.start_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // optional int32 end = 2;
       {PROTOBUF_FIELD_OFFSET(DescriptorProto_ReservedRange, _impl_.end_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -1712,11 +1721,10 @@ constexpr UninterpretedOption::ParseTableT_ UninterpretedOption::_Internal::Gene
       {PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_.string_value_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // optional string aggregate_value = 8;
       {PROTOBUF_FIELD_OFFSET(UninterpretedOption, _impl_.aggregate_value_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_NamePart_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_NamePart_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -1847,11 +1855,10 @@ constexpr SourceCodeInfo::ParseTableT_ SourceCodeInfo::_Internal::GenerateParseT
     }}, {{
       // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
       {PROTOBUF_FIELD_OFFSET(SourceCodeInfo, _impl_.location_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceCodeInfo_Location_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceCodeInfo_Location_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -1970,11 +1977,10 @@ constexpr GeneratedCodeInfo::ParseTableT_ GeneratedCodeInfo::_Internal::Generate
     }}, {{
       // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
       {PROTOBUF_FIELD_OFFSET(GeneratedCodeInfo, _impl_.annotation_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::GeneratedCodeInfo_Annotation_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::GeneratedCodeInfo_Annotation_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -2106,13 +2112,12 @@ constexpr FeatureSetDefaults_FeatureSetEditionDefault::ParseTableT_ FeatureSetDe
       {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.overridable_features_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // optional .google.protobuf.FeatureSet fixed_features = 5;
       {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults_FeatureSetEditionDefault, _impl_.fixed_features_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -2246,12 +2251,11 @@ constexpr ServiceOptions::ParseTableT_ ServiceOptions::_Internal::GenerateParseT
       {PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_.features_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(ServiceOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 0, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -2382,12 +2386,11 @@ constexpr OneofOptions::ParseTableT_ OneofOptions::_Internal::GenerateParseTable
       {PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_.features_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(OneofOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 0, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -2533,13 +2536,12 @@ constexpr MethodOptions::ParseTableT_ MethodOptions::_Internal::GenerateParseTab
       {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.features_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(MethodOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 0, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-        {0, 2},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+      {0, 2},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -2694,12 +2696,11 @@ constexpr MessageOptions::ParseTableT_ MessageOptions::_Internal::GenerateParseT
       {PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(MessageOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 6, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -2947,13 +2948,12 @@ constexpr FileOptions::ParseTableT_ FileOptions::_Internal::GenerateParseTable(c
       {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.features_), _Internal::kHasBitsOffset + 10, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(FileOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 20, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-        {1, 3},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+      {1, 3},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -3182,18 +3182,17 @@ constexpr FieldOptions::ParseTableT_ FieldOptions::_Internal::GenerateParseTable
       {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.feature_support_), _Internal::kHasBitsOffset + 3, 2, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(FieldOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 1, 3, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_EditionDefault_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_FeatureSupport_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-        {0, 2},
-        {0, 2},
-        {0, 2},
-        {0, 9},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_EditionDefault_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_FeatureSupport_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+      {0, 2},
+      {0, 2},
+      {0, 2},
+      {0, 9},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -3341,13 +3340,12 @@ constexpr FeatureSetDefaults::ParseTableT_ FeatureSetDefaults::_Internal::Genera
       {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_.minimum_edition_), _Internal::kHasBitsOffset + 1, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
       // optional .google.protobuf.Edition maximum_edition = 5;
       {PROTOBUF_FIELD_OFFSET(FeatureSetDefaults, _impl_.maximum_edition_), _Internal::kHasBitsOffset + 2, 2, (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault_globals_},
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault_globals_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -3491,14 +3489,13 @@ constexpr ExtensionRangeOptions::ParseTableT_ ExtensionRangeOptions::_Internal::
       {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.features_), _Internal::kHasBitsOffset + 2, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(ExtensionRangeOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 1, 2, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::ExtensionRangeOptions_Declaration_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-        {0, 1},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::ExtensionRangeOptions_Declaration_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+      {0, 1},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -3653,13 +3650,12 @@ constexpr EnumValueOptions::ParseTableT_ EnumValueOptions::_Internal::GeneratePa
       {PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.feature_support_), _Internal::kHasBitsOffset + 2, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(EnumValueOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 0, 2, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_FeatureSupport_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_FeatureSupport_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -3808,12 +3804,11 @@ constexpr EnumOptions::ParseTableT_ EnumOptions::_Internal::GenerateParseTable(c
       {PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.features_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
       // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
       {PROTOBUF_FIELD_OFFSET(EnumOptions, _impl_.uninterpreted_option_), _Internal::kHasBitsOffset + 4, 1, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FeatureSet_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::UninterpretedOption_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -3942,11 +3937,10 @@ constexpr OneofDescriptorProto::ParseTableT_ OneofDescriptorProto::_Internal::Ge
       {PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_.name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // optional .google.protobuf.OneofOptions options = 2;
       {PROTOBUF_FIELD_OFFSET(OneofDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::OneofOptions_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::OneofOptions_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -4096,11 +4090,10 @@ constexpr MethodDescriptorProto::ParseTableT_ MethodDescriptorProto::_Internal::
       {PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_.client_streaming_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional bool server_streaming = 6 [default = false];
       {PROTOBUF_FIELD_OFFSET(MethodDescriptorProto, _impl_.server_streaming_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::MethodOptions_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::MethodOptions_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -4288,13 +4281,12 @@ constexpr FieldDescriptorProto::ParseTableT_ FieldDescriptorProto::_Internal::Ge
       {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.json_name_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kBytes | ::_fl::kRepAString)},
       // optional bool proto3_optional = 17;
       {PROTOBUF_FIELD_OFFSET(FieldDescriptorProto, _impl_.proto3_optional_), _Internal::kHasBitsOffset + 8, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_globals_},
-        {1, 3},
-        {1, 18},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldOptions_globals_},
+      {1, 3},
+      {1, 18},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -4442,11 +4434,10 @@ constexpr EnumValueDescriptorProto::ParseTableT_ EnumValueDescriptorProto::_Inte
       {PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_.number_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // optional .google.protobuf.EnumValueOptions options = 3;
       {PROTOBUF_FIELD_OFFSET(EnumValueDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValueOptions_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValueOptions_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -4578,11 +4569,10 @@ constexpr DescriptorProto_ExtensionRange::ParseTableT_ DescriptorProto_Extension
       {PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_.end_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // optional .google.protobuf.ExtensionRangeOptions options = 3;
       {PROTOBUF_FIELD_OFFSET(DescriptorProto_ExtensionRange, _impl_.options_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::ExtensionRangeOptions_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::ExtensionRangeOptions_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -4712,12 +4702,11 @@ constexpr ServiceDescriptorProto::ParseTableT_ ServiceDescriptorProto::_Internal
       {PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_.method_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
       // optional .google.protobuf.ServiceOptions options = 3;
       {PROTOBUF_FIELD_OFFSET(ServiceDescriptorProto, _impl_.options_), _Internal::kHasBitsOffset + 2, 1, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::MethodDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::ServiceOptions_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::MethodDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::ServiceOptions_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -4872,14 +4861,13 @@ constexpr EnumDescriptorProto::ParseTableT_ EnumDescriptorProto::_Internal::Gene
       {PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.reserved_name_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcRepeated | ::_fl::kBytes | ::_fl::kRepSString)},
       // optional .google.protobuf.SymbolVisibility visibility = 6;
       {PROTOBUF_FIELD_OFFSET(EnumDescriptorProto, _impl_.visibility_), _Internal::kHasBitsOffset + 5, 3, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValueDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumOptions_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumDescriptorProto_EnumReservedRange_globals_},
-        {0, 2},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValueDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumOptions_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumDescriptorProto_EnumReservedRange_globals_},
+      {0, 2},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -5078,19 +5066,18 @@ constexpr DescriptorProto::ParseTableT_ DescriptorProto::_Internal::GeneratePars
       {PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.reserved_name_), _Internal::kHasBitsOffset + 7, 0, (0 | ::_fl::kFcRepeated | ::_fl::kBytes | ::_fl::kRepSString)},
       // optional .google.protobuf.SymbolVisibility visibility = 11;
       {PROTOBUF_FIELD_OFFSET(DescriptorProto, _impl_.visibility_), _Internal::kHasBitsOffset + 10, 8, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_ExtensionRange_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::MessageOptions_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::OneofDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_ReservedRange_globals_},
-        {0, 2},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_ExtensionRange_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::MessageOptions_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::OneofDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_ReservedRange_globals_},
+      {0, 2},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -5329,17 +5316,16 @@ constexpr FileDescriptorProto::ParseTableT_ FileDescriptorProto::_Internal::Gene
       {PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.edition_), _Internal::kHasBitsOffset + 13, 6, (0 | ::_fl::kFcOptional | ::_fl::kEnum)},
       // repeated string option_dependency = 15;
       {PROTOBUF_FIELD_OFFSET(FileDescriptorProto, _impl_.option_dependency_), _Internal::kHasBitsOffset + 7, 0, (0 | ::_fl::kFcRepeated | ::_fl::kBytes | ::_fl::kRepSString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::ServiceDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldDescriptorProto_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FileOptions_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceCodeInfo_globals_},
-        {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::DescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::ServiceDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FieldDescriptorProto_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FileOptions_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceCodeInfo_globals_},
+      {::_pbi::FieldAuxEnumData{}, ::google::protobuf::Edition_internal_data_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -5505,11 +5491,10 @@ constexpr FileDescriptorSet::ParseTableT_ FileDescriptorSet::_Internal::Generate
     }}, {{
       // repeated .google.protobuf.FileDescriptorProto file = 1;
       {PROTOBUF_FIELD_OFFSET(FileDescriptorSet, _impl_.file_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::FileDescriptorProto_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::FileDescriptorProto_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }

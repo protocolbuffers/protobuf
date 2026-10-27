@@ -82,9 +82,9 @@ constexpr CppFileOptions::ParseTableT_ CppFileOptions::_Internal::GenerateParseT
     }}, {{
       // string namespace = 1;
       {PROTOBUF_FIELD_OFFSET(CppFileOptions, _impl_.namespace__), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\26\11\0\0\0\0\0\0"
       "pb.file.CppFileOptions"
       "namespace"

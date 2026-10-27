@@ -82,9 +82,9 @@ constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::_Internal::Ge
     }}, {{
       // string string = 1;
       {PROTOBUF_FIELD_OFFSET(JsonEnumValueOptions, _impl_.string_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\41\6\0\0\0\0\0\0"
       "pb.enumvalue.JsonEnumValueOptions"
       "string"
