@@ -385,7 +385,10 @@ jobs:
 
   linux-cmake-32-bit:
     name: Linux CMake 32-bit
-    runs-on: ubuntu-latest
+    # Pinned to ubuntu-24.04: Docker 29.4.2's seccomp profile on Ubuntu 26.04
+    # blocks socketcall(2) in i386 glibc containers, breaking networking.
+    # https://github.com/actions/runner-images/issues/14790
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout pending changes
         uses: protocolbuffers/protobuf-ci/checkout@v5
