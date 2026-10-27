@@ -108,3 +108,33 @@ impl fmt::Display for SerializeError {
         write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
 }
+
+/// Options for [`Serialize::serialize_with_options`].
+///
+/// The default options produce the same output as [`Serialize::serialize`].
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct SerializeOptions {
+    pub(crate) deterministic: bool,
+}
+
+impl SerializeOptions {
+    /// Returns the default options.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Enables deterministic serialization: within a single binary, messages with equal contents
+    /// serialize to the same bytes, regardless of the order in which their map fields were
+    /// populated.
+    ///
+    /// Do not use it to compare or fingerprint serialized messages produced by
+    /// different binaries.
+    /// See <https://protobuf.dev/programming-guides/serialization-not-canonical/>.
+    ///
+    /// False by default.
+    #[must_use]
+    pub fn deterministic(mut self, deterministic: bool) -> Self {
+        self.deterministic = deterministic;
+        self
+    }
+}
