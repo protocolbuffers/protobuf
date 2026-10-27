@@ -743,6 +743,13 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   upb_MtDecoder_ParseMessage(d, data, len);
   upb_MtDecoder_AssignHasbits(d);
 
+  // Map entries are never extendable, but the map encoding shares the message
+  // parser, which accepts the extendable message modifier.
+  if (UPB_UNLIKELY(UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(&d->table) !=
+                   kUpb_ExtMode_NonExtendable)) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Map entry cannot be extendable");
+  }
+
   if (UPB_UNLIKELY(d->table.UPB_PRIVATE(field_count) != 2)) {
     upb_MdDecoder_ErrorJmp(&d->base, "%hu fields in map",
                            d->table.UPB_PRIVATE(field_count));
@@ -830,7 +837,10 @@ done:
   upb_DecodeFast_TableEntry fasttable[32];
   int fasttable_size = 0;
   if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
-    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    // The table is not linked yet, so map fields cannot be identified; they
+    // are updated when linked (see upb_MiniTable_SetSubMessage()).
+    fasttable_size =
+        upb_DecodeFast_BuildTable(&decoder->table, NULL, fasttable);
     mt_size += fasttable_size * sizeof(fasttable[0]);
   }
 #endif

@@ -333,6 +333,23 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first ==
+               "experimental_disable_file_extension_registry") {
+      // This is an experimental option, and could be removed or change at any
+      // time; it is not documented in the README.md for that reason.
+      //
+      // When enabled, the per-file GPBExtensionRegistry C function
+      // (`<File>_Registry(void)`) is not generated. Requires
+      // `extension_generation_mode=c_function`. Default is "no".
+      if (!StringToBool(options[i].second,
+                        &generation_options
+                             .experimental_disable_file_extension_registry)) {
+        *error = absl::StrCat(
+            "error: Unknown value for "
+            "experimental_disable_file_extension_registry: ",
+            options[i].second);
+        return false;
+      }
     } else if (options[i].first == "annotation_pragma_name") {
       generation_options.annotation_pragma_name = options[i].second;
     } else if (options[i].first == "annotation_guard_name") {
@@ -396,6 +413,15 @@ bool ObjectiveCGenerator::GenerateAll(
         ExtensionGenerationMode::kCFunction) {
       *error =
           "error: experimental_global_extension_registry requires "
+          "extension_generation_mode=c_function.";
+      return false;
+    }
+  }
+  if (generation_options.experimental_disable_file_extension_registry) {
+    if (generation_options.extension_generation_mode !=
+        ExtensionGenerationMode::kCFunction) {
+      *error =
+          "error: experimental_disable_file_extension_registry requires "
           "extension_generation_mode=c_function.";
       return false;
     }
@@ -553,7 +579,8 @@ bool ObjectiveCGenerator::GenerateAll(
           // that referencing a message or enum of the file does not also pull
           // in the registry (and through it every extension of the file and of
           // its imports).
-          {
+          if (!generation_options
+                   .experimental_disable_file_extension_registry) {
             std::unique_ptr<io::ZeroCopyOutputStream> output(
                 context->Open(NumberedObjCMFileName(filepath, file_number++)));
             io::Printer printer(output.get());
