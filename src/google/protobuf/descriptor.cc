@@ -8259,13 +8259,15 @@ void internal::DescriptorBuilder::ValidateFieldFeatures(
   }
 }
 
+
 void internal::DescriptorBuilder::ValidateOptions(
     const EnumDescriptor* enm, const EnumDescriptorProto& proto) {
   CheckEnumValueUniqueness(proto, enm);
   CheckEnumCustomStringUniqueness(proto, enm);
 
   if (!enm->is_closed() && enm->value_count() > 0 &&
-      enm->value(0)->number() != 0) {
+      enm->value(0)->number() != 0
+  ) {
     AddError(enm->full_name(), proto.value(0),
              DescriptorPool::ErrorCollector::NUMBER,
              "The first enum value must be zero for open enums.");

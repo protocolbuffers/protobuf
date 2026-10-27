@@ -17,9 +17,12 @@
 #include "upb/hash/int_table.h"
 #include "upb/hash/str_table.h"
 #include "upb/mem/arena.h"
+#include "upb/message/internal/message.h"
+#include "upb/message/message.h"
 #include "upb/mini_descriptor/decode.h"
 #include "upb/mini_descriptor/internal/encode.h"
 #include "upb/mini_table/enum.h"
+#include "upb/mini_table/extension.h"
 #include "upb/mini_table/file.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/def_type.h"
@@ -336,7 +339,9 @@ static void create_enumdef(upb_DefBuilder* ctx, const char* prefix,
   // We rely on the fact that the proto compiler will have already ensured that
   // implicit presence fields do not use closed enums, even if we are treating
   // them as open.
-  if (!upb_EnumDef_IsSpecifiedAsClosed(e) && e->defaultval != 0) {
+  if (!upb_EnumDef_IsSpecifiedAsClosed(e) &&
+      e->defaultval != 0
+  ) {
     _upb_DefBuilder_Errf(ctx,
                          "for open enums, the first value must be zero (%s)",
                          upb_EnumDef_FullName(e));

@@ -14402,6 +14402,7 @@ TEST_F(FeaturesTest, InvalidOpenEnumNonZeroFirstValue) {
       "enums.\n");
 }
 
+
 TEST_F(FeaturesTest, InvalidUseFeaturesInSameFile) {
   BuildDescriptorMessagesInTestPool();
   ParseAndBuildFileWithErrors("foo.proto", R"schema(
