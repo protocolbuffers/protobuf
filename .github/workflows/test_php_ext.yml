@@ -14,6 +14,7 @@ permissions:
 jobs:
   package:
     name: Package
+    # Pinned to ubuntu-24.04: host Bazel build of 25.x fails with GCC 15 / Python 3.14 on Ubuntu 26.04.
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout

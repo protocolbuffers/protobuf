@@ -168,6 +168,7 @@ jobs:
           # a single wheel. As a result we can just test the oldest and newest
           # supported Python versions and assume this gives us sufficient test
           # coverage.
+          # Pinned to ubuntu-24.04: setup-python no longer provides Python 3.8/3.9 builds for Ubuntu 26.04.
           - { os: ubuntu-24.04, python-version: "3.9", architecture: x64, type: 'binary' }
           - { os: macos-14, python-version: "3.9", architecture: arm64, type: 'binary' }
           - { os: ubuntu-24.04, python-version: "3.9", architecture: x64, type: 'source'}

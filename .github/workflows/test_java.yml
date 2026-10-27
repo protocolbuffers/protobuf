@@ -67,6 +67,7 @@ jobs:
 
   protobuf-bom:
     name: Protobuf Maven BOM
+    # Pinned to ubuntu-24.04: 25.x pom.xml targets Java 7, which is unsupported by the host JDK on Ubuntu 26.04.
     runs-on: ubuntu-24.04
     steps:
     - name: Checkout pending changes
