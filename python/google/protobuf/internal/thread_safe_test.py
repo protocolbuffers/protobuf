@@ -7,6 +7,7 @@
 
 """Unittest for thread safe"""
 
+from concurrent import futures
 import sys
 import threading
 import time
@@ -261,6 +262,39 @@ class ThreadSafeTest(unittest.TestCase):
       thread.start()
     for thread in threads:
       thread.join()
+
+  def testConcurrentExtensionWrapperIdentityAndRetirement(self):
+    msg = unittest_pb2.TestAllExtensions()
+    msg.Extensions[unittest_pb2.optional_int32_extension] = 42
+    barrier = threading.Barrier(8)
+    # Only upb caches the Extensions wrapper; cpp and pure Python return a new
+    # one on every access.
+    expect_same = api_implementation.Type() == 'upb'
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        ext1 = msg.Extensions
+        ext2 = msg.Extensions
+        same = ext1 is ext2
+        val = ext1[unittest_pb2.optional_int32_extension]
+        del ext1, ext2
+        if expect_same:
+          self.assertTrue(same)
+        self.assertEqual(val, 42)
+
+    # Future.result() re-raises any exception from the worker thread.
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      results = [executor.submit(Worker) for _ in range(8)]
+    for result in results:
+      result.result()
+
+  def testExtensionWrapperOwnsMessage(self):
+    msg = unittest_pb2.TestAllExtensions()
+    msg.Extensions[unittest_pb2.optional_int32_extension] = 99
+    ext = msg.Extensions
+    del msg
+    self.assertEqual(ext[unittest_pb2.optional_int32_extension], 99)
 
 
 class FreeThreadingTest(unittest.TestCase):
