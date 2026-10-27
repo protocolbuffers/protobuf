@@ -611,6 +611,52 @@ class FreeThreadingTest(unittest.TestCase):
       thread1.join()
       thread2.join()
 
+  def testConcurrentMergeFromAndSubObjectAccessRace(self):
+    """Tests snapshot iteration of unset_subobj_map during MergeFrom reification."""
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='weakmap_race.proto')
+    file_proto.message_type.add(name='RaceMessage')
+    pool.Add(file_proto)
+
+    source = unittest_proto3_pb2.TestAllTypes(
+        optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
+            bb=42
+        ),
+        repeated_int32=[1, 2, 3],
+    )
+
+    def MergeMsg(msg, barrier):
+      barrier.wait()
+      msg.MergeFrom(source)
+      if hasattr(pool, '_obj_cache_count'):
+        _ = pool._obj_cache_count
+
+    def DropAndReaccessSub(stubs, barrier):
+      barrier.wait()
+      stubs.clear()
+      d = pool.FindMessageTypeByName('RaceMessage')
+      del d
+
+    for _ in range(500):
+      msg = unittest_proto3_pb2.TestAllTypes()
+      stubs = [
+          msg.optional_nested_message,
+          msg.optional_foreign_message,
+          msg.repeated_int32,
+      ]
+      barrier = threading.Barrier(2)
+
+      thread1 = threading.Thread(target=MergeMsg, args=(msg, barrier))
+      thread2 = threading.Thread(
+          target=DropAndReaccessSub, args=(stubs, barrier)
+      )
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
+      self.assertEqual(msg.optional_nested_message.bb, 42)
+      self.assertEqual(list(msg.repeated_int32), [1, 2, 3])
+
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):
     """Benchmarks concurrent GetOptions calls."""
