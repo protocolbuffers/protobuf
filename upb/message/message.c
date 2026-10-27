@@ -178,11 +178,11 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return 0;
-  const upb_MiniTableExtension* ext;
+  const upb_MiniTableField* f;
   upb_MessageValue val;
   uintptr_t iter = kUpb_Message_ExtensionBegin;
   size_t count = 0;
-  while (upb_Message_NextExtension(msg, &ext, &val, &iter)) {
+  while (upb_Message_NextExtensionField(msg, &f, &val, &iter)) {
     count++;
   }
   return count;
