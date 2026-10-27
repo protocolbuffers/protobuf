@@ -1141,30 +1141,13 @@ class [[nodiscard]] ABSL_ATTRIBUTE_TRIVIAL_ABI Arena::Ptr final
 template <typename T>
 PROTOBUF_NOINLINE void* PROTOBUF_NONNULL
 Arena::DefaultConstruct(Arena* PROTOBUF_NULLABLE arena) {
-  if constexpr (internal::FieldHasArenaOffset<T>()) {
-    if (arena != nullptr) {
-      using ArenaRepT = typename internal::FieldArenaRep<T>::Type;
-      static_assert(is_destructor_skippable<ArenaRepT>::value);
-
-      void* mem = arena->AllocateAligned(sizeof(ArenaRepT));
-      ArenaRepT* arena_rep = new (mem) ArenaRepT(arena);
-      return internal::FieldArenaRep<T>::Get(arena_rep);
-    } else {
-      static_assert(is_destructor_skippable<T>::value);
-      // Fields which use arena offsets don't have constructors that take an
-      // arena pointer. Since the arena is nullptr, it is safe to default
-      // construct the object.
-      return new (internal::Allocate(sizeof(T))) T();
-    }
+  static_assert(is_destructor_skippable<T>::value);
+  void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
+                               : internal::Allocate(sizeof(T));
+  if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
+    return new (mem) T(internal::InternalVisibility(), arena);
   } else {
-    static_assert(is_destructor_skippable<T>::value);
-    void* mem = arena != nullptr ? arena->AllocateAligned(sizeof(T))
-                                 : internal::Allocate(sizeof(T));
-    if constexpr (internal::HasDeprecatedArenaConstructor<T>()) {
-      return new (mem) T(internal::InternalVisibility(), arena);
-    } else {
-      return new (mem) T(arena);
-    }
+    return new (mem) T(arena);
   }
 }
 
