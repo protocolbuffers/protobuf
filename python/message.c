@@ -236,9 +236,11 @@ const upb_FieldDef* PyUpb_Message_GetFieldDef(PyUpb_Message* msg) {
 }
 
 static const upb_MessageDef* _PyUpb_Message_GetMsgdef(PyUpb_Message* msg) {
-  return PyUpb_Message_IsStub(msg)
-             ? upb_FieldDef_MessageSubDef(PyUpb_Message_GetFieldDef(msg))
-             : (void*)msg->def;
+  // The Python class carries the immutable MessageDef for both reified
+  // messages and unset submessage stubs; reading msg->def can race with stub
+  // reification flipping the tag bit.
+  return PyUpb_MessageMeta_GetMsgdef(
+      (PyObject*)Py_TYPE(PyUpb_Message_AsPyObj(msg)));
 }
 
 const upb_MessageDef* PyUpb_Message_GetMsgdef(PyObject* self) {

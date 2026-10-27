@@ -592,17 +592,8 @@ static PyObject* PyUpb_Descriptor_GetNestedTypesByName(PyObject* _self,
 
 static PyObject* PyUpb_Descriptor_GetContainingType(PyObject* _self,
                                                     void* closure) {
-  // upb does not natively store the lexical parent of a message type, but we
-  // can derive it with some string manipulation and a lookup.
   PyUpb_DescriptorBase* self = (void*)_self;
-  const upb_MessageDef* m = self->def;
-  const upb_FileDef* file = upb_MessageDef_File(m);
-  const upb_DefPool* symtab = upb_FileDef_Pool(file);
-  const char* full_name = upb_MessageDef_FullName(m);
-  const char* last_dot = strrchr(full_name, '.');
-  if (!last_dot) Py_RETURN_NONE;
-  const upb_MessageDef* parent = upb_DefPool_FindMessageByNameWithSize(
-      symtab, full_name, last_dot - full_name);
+  const upb_MessageDef* parent = upb_MessageDef_ContainingType(self->def);
   if (!parent) Py_RETURN_NONE;
   return PyUpb_Descriptor_Get(self->pool, parent);
 }

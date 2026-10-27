@@ -296,6 +296,85 @@ class ThreadSafeTest(unittest.TestCase):
     del msg
     self.assertEqual(ext[unittest_pb2.optional_int32_extension], 99)
 
+  def testStubMetadataDuringReification(self):
+    source = unittest_pb2.TestAllTypes()
+    source.optional_nested_message.bb = 7
+
+    def RunOnce():
+      parent = unittest_pb2.TestAllTypes()
+      stub = parent.optional_nested_message
+      barrier = threading.Barrier(4)
+
+      def Mutator():
+        barrier.wait()
+        parent.MergeFrom(source)
+
+      def Inspector():
+        barrier.wait()
+        for _ in range(200):
+          self.assertFalse(hasattr(stub, 'Extensions'))
+          self.assertFalse(hasattr(stub, 'nonexistent_field'))
+          self.assertIs(
+              stub.DESCRIPTOR,
+              unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
+          )
+          self.assertIs(
+              stub.DESCRIPTOR.containing_type,
+              unittest_pb2.TestAllTypes.DESCRIPTOR,
+          )
+
+      # Future.result() re-raises any exception from the worker thread.
+      with futures.ThreadPoolExecutor(max_workers=4) as executor:
+        results = [executor.submit(Mutator)] + [
+            executor.submit(Inspector) for _ in range(3)
+        ]
+      for result in results:
+        result.result()
+      self.assertEqual(stub.bb, 7)
+
+    for _ in range(50):
+      RunOnce()
+
+  def testConcurrentContainingTypeAccess(self):
+    pool = descriptor_pool.DescriptorPool()
+    base_proto = descriptor_pb2.FileDescriptorProto(
+        name='containing_type_base.proto', package='pkg'
+    )
+    outer = base_proto.message_type.add(name='OuterMessage')
+    outer.nested_type.add(name='NestedMessage')
+    pool.Add(base_proto)
+    top_desc = pool.FindMessageTypeByName('pkg.OuterMessage')
+    nested_desc = pool.FindMessageTypeByName('pkg.OuterMessage.NestedMessage')
+
+    dynamic_files = []
+    for i in range(200):
+      f_proto = descriptor_pb2.FileDescriptorProto(
+          name=f'containing_type_dyn_{i}.proto', package='pkg'
+      )
+      f_proto.message_type.add(name=f'DynMessage_{i}')
+      dynamic_files.append(f_proto)
+
+    barrier = threading.Barrier(5)
+
+    def Adder():
+      barrier.wait()
+      for f_proto in dynamic_files:
+        pool.Add(f_proto)
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        self.assertIs(nested_desc.containing_type, top_desc)
+        self.assertIsNone(top_desc.containing_type)
+
+    # Future.result() re-raises any exception from the worker thread.
+    with futures.ThreadPoolExecutor(max_workers=5) as executor:
+      results = [executor.submit(Adder)] + [
+          executor.submit(Worker) for _ in range(4)
+      ]
+    for result in results:
+      result.result()
+
 
 class FreeThreadingTest(unittest.TestCase):
 
