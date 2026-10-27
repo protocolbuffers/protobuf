@@ -338,6 +338,7 @@ bool upb_DecodeFast_TryFillMapEntry(const upb_MiniTableField* field,
 UPB_NODISCARD
 static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
                                         const upb_MiniTableField* field,
+                                        const upb_MiniTable* map_entry,
                                         bool* out_supported_tag_size,
                                         upb_DecodeFast_TableEntry* entry) {
   UPB_ASSERT(!upb_MiniTableField_IsExtension(field));
@@ -347,15 +348,15 @@ static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
       upb_DecodeFast_GetEncodedTag(field, &tag, &tag_size);
   if (!*out_supported_tag_size) return false;
 
-  if (upb_MiniTableField_IsMap(field)) {
+  if (map_entry) {
     // Map fields use specialized fast decoder functions:
     // 4 specialized routines for integer and string keys with 1-byte and 2-byte
     // tags, decoding full map entries and handling consecutive entries inline.
+    //
+    // The map entry is passed in rather than read from `m`'s sub, since `m`
+    // may not be linked, and may not be laid out for the host platform.
     uint64_t subofs = upb_DecodeFast_GetSubofs(m, field);
-    const upb_MiniTableSubInternal* sub = UPB_PTR_AT(
-        m->UPB_ONLYBITS(fields), subofs * 8, upb_MiniTableSubInternal);
-    const upb_MiniTable* map_sub = sub->UPB_PRIVATE(submsg);
-    return upb_DecodeFast_TryFillMapEntry(field, map_sub, tag, subofs, entry);
+    return upb_DecodeFast_TryFillMapEntry(field, map_entry, tag, subofs, entry);
   }
 
   return upb_DecodeFast_GetFunctionIndex(m, field, tag_size,
@@ -368,6 +369,7 @@ static bool upb_DecodeFast_TryFillEntry(const upb_MiniTable* m,
 }
 
 int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
+                              const upb_MiniTable* const* map_entries,
                               upb_DecodeFast_TableEntry table[32]) {
   if (m->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) return 0;
 
@@ -390,7 +392,9 @@ int upb_DecodeFast_BuildTable(const upb_MiniTable* m,
     const upb_MiniTableField* field = upb_MiniTable_GetFieldByIndex(m, i);
     bool supported_tag_size;
     upb_DecodeFast_TableEntry entry;
-    if (!upb_DecodeFast_TryFillEntry(m, field, &supported_tag_size, &entry)) {
+    const upb_MiniTable* map_entry = map_entries ? map_entries[i] : NULL;
+    if (!upb_DecodeFast_TryFillEntry(m, field, map_entry, &supported_tag_size,
+                                     &entry)) {
       if (supported_tag_size) {
         // Check if this tag collides
         all_supported_tag_size_fields_compatible_with_fast_decode = false;

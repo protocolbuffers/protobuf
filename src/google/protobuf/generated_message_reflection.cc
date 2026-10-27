@@ -1905,9 +1905,20 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   const int field_count = descriptor.field_count();
   for (int i = 0; i < field_count; ++i) {
     const FieldDescriptor* field = descriptor.field(i);
-    // Taken once per oneof rather than once per member (see below), so this is
-    // the rare branch for almost every message.
-    if (ABSL_PREDICT_FALSE(schema_.InRealOneof(field))) {
+    if (uint32_t hasbit_index = schema_.HasBitIndex(field, /*field_index=*/i);
+        ABSL_PREDICT_TRUE(hasbit_index != static_cast<uint32_t>(kNoHasbit))) {
+      ABSL_DCHECK(!schema_.InRealOneof(field));
+      // Equivalent to: HasFieldSingular(message, field). Check the compact
+      // hasbits bitmap before touching FieldDescriptor metadata.
+      const bool hasbit_set = IsIndexInHasBitSet(has_bits, hasbit_index);
+      if ((kForIsEmpty ? ABSL_PREDICT_FALSE(hasbit_set) : hasbit_set) &&
+          (field->has_presence() || IsMapEntry(field) ||
+           IsImplicitPresenceFieldNonEmpty(message, field))) {
+        PROTO_REFLECTION_APPEND_OR_RETURN(field);
+      }
+    } else if (ABSL_PREDICT_FALSE(schema_.InRealOneof(field))) {
+      // Taken once per oneof rather than once per member (see below), so this
+      // is the rare branch for almost every message.
       const OneofDescriptor* containing_oneof = field->containing_oneof();
       // Members of a oneof are declared consecutively, so this is the first
       // member, and at most one member can be set. Rather than checking each
@@ -1920,13 +1931,6 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
         // Equivalent to: GetOneofFieldDescriptor(message, containing_oneof)
         PROTO_REFLECTION_APPEND_OR_RETURN(
             descriptor.FindFieldByNumber(oneof_case));
-      }
-    } else if (uint32_t hasbit_index =
-                   schema_.HasBitIndex(field, /*field_index=*/i);
-               hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
-      // Equivalent to: HasFieldSingular(message, field)
-      if (IsFieldPresentGivenHasbits(message, field, has_bits, hasbit_index)) {
-        PROTO_REFLECTION_APPEND_OR_RETURN(field);
       }
     } else if (HasFieldWithHasbits(message, field)) {
       PROTO_REFLECTION_APPEND_OR_RETURN(field);

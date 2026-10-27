@@ -28,23 +28,21 @@
 #include "upb/message/convert_test.upbdefs.h"
 #include "upb/message/copy.h"
 #include "upb/message/internal/accessors.h"
-#include "upb/message/internal/message.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/message/unknown_fields.h"
-#include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/reflection/def.h"
 #include "upb/reflection/internal/def_pool.h"
 #include "upb/wire/decode.h"
+#include "upb/wire/encode.h"
 #include "upb/wire/encode_extension.h"
 
 // Must be last to ensure UPB_PRIVATE is defined.
 #include "upb/port/def.inc"
-#include "upb/wire/encode.h"
 
 // We use the generated upb_MiniTables from test_messages_proto3.
 #define TEST_MT &protobuf_0test_0messages__proto3__TestAllTypesProto3_msg_init
@@ -143,6 +141,53 @@ TEST(ConvertTest, UnknownPromotion) {
   EXPECT_EQ(
       789,
       protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(dst));
+}
+
+TEST(ConvertTest, UnknownsToEmptyMessageAreAliased) {
+  upb::Arena arena;
+
+  // Unknown fields: field 1 = 789 (varint), field 2 = "ab" (length-delimited),
+  // and a group 3 { field 4 = 5 }.
+  const char buf[] = {8,   (char)0x95, 0x06, 0x12, 0x02, 'a',
+                      'b', 0x1b,       0x20, 0x05, 0x1c};
+  const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;
+  upb_Message* src = upb_Message_New(empty_mt, arena.ptr());
+  ASSERT_EQ(kUpb_DecodeStatus_Ok,
+            upb_Decode(buf, sizeof(buf), src, empty_mt, nullptr,
+                       kUpb_DecodeOption_AliasString, arena.ptr()));
+
+  // A distinct (but equally empty) MiniTable, so that the conversion isn't the
+  // identity.
+  const upb_MiniTable other_empty_mt = upb_0test__EmptyMessage_msg_init;
+  const upb_Message* dst = upb_Message_Convert(src, empty_mt, &other_empty_mt,
+                                               nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(dst, nullptr);
+  ASSERT_NE(dst, src);
+
+  size_t src_iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown src_unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(src, &src_unknown, &src_iter));
+
+  size_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_EQ(
+      std::string_view(unknown.value.bytes.data, unknown.value.bytes.size),
+      std::string_view(buf, sizeof(buf)));
+  // The unknown data is aliased rather than copied.
+  EXPECT_EQ(unknown.value.bytes.data, src_unknown.value.bytes.data);
+  EXPECT_FALSE(upb_Message_NextUnknown2(dst, &unknown, &iter));
+
+  // Converting back recovers field 1. Fields 2 and 3 don't match the wire types
+  // of TestAllTypesProto3's fields 2 and 3, so they remain unknown.
+  const upb_Message* back = upb_Message_Convert(dst, &other_empty_mt, TEST_MT,
+                                                nullptr, 0, 0, arena.ptr());
+  ASSERT_NE(back, nullptr);
+  const auto* rt =
+      (const protobuf_test_messages_proto3_TestAllTypesProto3*)back;
+  EXPECT_EQ(
+      789, protobuf_test_messages_proto3_TestAllTypesProto3_optional_int32(rt));
 }
 
 TEST(ConvertTest, Demotion) {
@@ -2765,8 +2810,8 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
   // Set recursive_message (field 27) with a submessage that:
   // 1) Has a large repeated_string (field 44, encoded first) forcing
   //    upb_BackAlloc to allocate a standalone block.
-  // 2) Has another recursive_message (field 27, encoded after field 44)
-  //    that exceeds the max depth limit during _upb_Encode_Field.
+  // 2) Has two more levels of recursive_message (field 27, encoded after
+  //    field 44) that exceed the max depth limit during _upb_Encode_Field.
   TestMsg* sub =
       protobuf_test_messages_proto3_TestAllTypesProto3_new(src_arena.ptr());
   protobuf_test_messages_proto3_TestAllTypesProto3_set_recursive_message(msg,
@@ -2775,8 +2820,11 @@ TEST(ConvertTest, EncodeFieldAsUnknownAbortOnError) {
   protobuf_test_messages_proto3_TestAllTypesProto3_add_repeated_string(
       sub, upb_StringView_FromDataAndSize(large_str.data(), large_str.size()),
       src_arena.ptr());
+  TestMsg* sub2 =
+      protobuf_test_messages_proto3_TestAllTypesProto3_mutable_recursive_message(
+          sub, src_arena.ptr());
   protobuf_test_messages_proto3_TestAllTypesProto3_mutable_recursive_message(
-      sub, src_arena.ptr());
+      sub2, src_arena.ptr());
 
   upb::Arena dst_arena;
   const upb_MiniTable* empty_mt = &upb_0test__EmptyMessage_msg_init;

@@ -1,15 +1,14 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2022 Google Inc.  All rights reserved.
-// https://developers.google.com/protocol-buffers/
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
 //
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // ! THIS FILE ONLY APPROACHING IN-TREE PHP EXTENSION BUILD !
 // ! DOES NOT USE NORMALLY.                                 !
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
 #ifndef PHP_PROTOBUF_H
 #define PHP_PROTOBUF_H
 
