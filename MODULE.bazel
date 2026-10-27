@@ -143,9 +143,15 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
 [
     pip.parse(
         hub_name = "protobuf_pip_deps",
-        python_interpreter_target = "@system_python//:interpreter",
         python_version = python_version,
         requirements_lock = "//python:requirements.txt",
+        target_platforms = [
+            "linux_x86_64",
+            "linux_aarch64",
+            "osx_aarch64",
+            "osx_x86_64",
+            "windows_x86_64",
+        ],
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
@@ -189,7 +195,7 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python", 
 
 [
     python.toolchain(
-        is_default = (python_version == "3.10"),
+        is_default = (python_version == "3.11"),
         python_version = python_version,
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
