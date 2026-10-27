@@ -936,6 +936,22 @@ TEST(ArenaTest, ArenaOwnerFreedFirst) {
   upb_Arena_Free(arena2);
 }
 
+TEST(ArenaTest, FreeLongRefChainDoesNotOverflowStack) {
+  constexpr int kChainLength = 200000;
+  std::vector<upb_Arena*> arenas(kChainLength);
+  for (int i = 0; i < kChainLength; ++i) {
+    arenas[i] = upb_Arena_New();
+    ASSERT_NE(arenas[i], nullptr);
+  }
+  for (int i = 0; i + 1 < kChainLength; ++i) {
+    ASSERT_TRUE(upb_Arena_RefArena(arenas[i], arenas[i + 1]));
+  }
+  for (int i = kChainLength - 1; i >= 1; --i) {
+    upb_Arena_Free(arenas[i]);
+  }
+  upb_Arena_Free(arenas[0]);
+}
+
 #ifndef UPB_ENABLE_REF_CYCLE_CHECKS
 
 TEST(ArenaDeathTest, ArenaRefCycle) {

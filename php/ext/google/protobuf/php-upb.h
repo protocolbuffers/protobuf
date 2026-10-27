@@ -1003,6 +1003,7 @@ UPB_INLINE int upb_StringView_Compare(upb_StringView a, upb_StringView b) {
 
 #include <stddef.h>
 
+
 #ifndef GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
 #define GOOGLE_UPB_UPB_MEM_INTERNAL_ALLOC_H__
 
@@ -7887,6 +7888,7 @@ extern const upb_MiniTableFile google_protobuf_descriptor_proto_upb_file_layout;
 
 #ifndef UPB_REFLECTION_COMMON_H_
 #define UPB_REFLECTION_COMMON_H_
+
 
 #ifndef GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
 #define GOOGLE_UPB_UPB_REFLECTION_DESCRIPTOR_BOOTSTRAP_H__
@@ -19425,6 +19427,7 @@ UPB_NODISCARD UPB_API bool upb_Message_ShallowCopy(upb_Message* dst,
 
 
 #endif  // UPB_MESSAGE_COPY_H_
+
 #ifndef GOOGLE_UPB_UPB_MESSAGE_MERGE_H__
 #define GOOGLE_UPB_UPB_MESSAGE_MERGE_H__
 
@@ -20226,6 +20229,7 @@ char* upb_strdup2(const char* s, size_t len, upb_Arena* a);
 
 
 #endif /* UPB_REFLECTION_INTERNAL_STRDUP2_H_ */
+
 #ifndef GOOGLE_UPB_UPB_REFLECTION_JSON_ENUMVALUE_OPTIONS_BOOTSTRAP_H__
 #define GOOGLE_UPB_UPB_REFLECTION_JSON_ENUMVALUE_OPTIONS_BOOTSTRAP_H__
 
@@ -20844,6 +20848,7 @@ UPB_INLINE uint64_t _upb_Decoder_ZigZagDecode64(uint64_t n) {
 
 
 #endif /* UPB_WIRE_INTERNAL_DECODER_H_ */
+
 #ifndef GOOGLE_UPB_UPB_WIRE_WRITER_H__
 #define GOOGLE_UPB_UPB_WIRE_WRITER_H__
 

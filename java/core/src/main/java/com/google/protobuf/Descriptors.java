@@ -1126,6 +1126,26 @@ public final class Descriptors {
     }
 
     /**
+     * Finds a oneof by name.
+     *
+     * @param name The unqualified name of the oneof (e.g. "foo"). For protocol buffer messages that
+     *     follow <a
+     *     href=https://developers.google.com/protocol-buffers/docs/style#message_and_field_names>Google's
+     *     guidance on naming</a> this will be a snake case string, such as
+     *     <pre>song_name</pre>
+     *     .
+     * @return The oneof's descriptor, or {@code null} if not found.
+     */
+    public OneofDescriptor findOneofByName(final String name) {
+      final GenericDescriptor result = getFile().tables.findSymbol(fullName + '.' + name);
+      if (result instanceof OneofDescriptor) {
+        return (OneofDescriptor) result;
+      } else {
+        return null;
+      }
+    }
+
+    /**
      * Finds a field by field number.
      *
      * @param number The field number within this message type.
@@ -3757,12 +3777,7 @@ public final class Descriptors {
       containingType = parent;
       fieldCount = 0;
 
-      if (parent.getFile().tables.findSymbol(fullName) != null) {
-        logger.warning(
-            "Oneof "
-                + fullName
-                + " collides with another symbol. This will become an error in 2027.");
-      }
+      parent.getFile().tables.addSymbol(this);
     }
 
     private final int index;
