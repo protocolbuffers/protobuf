@@ -7,6 +7,7 @@
 
 #include "upb/message/internal/extension.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/mem/arena.h"
@@ -19,8 +20,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
-    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
+const upb_Extension* UPB_PRIVATE(_upb_Message_GetextByField)(
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return NULL;
 
@@ -29,13 +30,19 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       const upb_Extension* ext =
           upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-      if (upb_Extension_MiniTableExtension(ext) == e) {
+      if (upb_Extension_MiniTableField(ext) == f) {
         return ext;
       }
     }
   }
 
   return NULL;
+}
+
+const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_Message_GetextByField)(
+      msg, upb_MiniTableExtension_ToField(e));
 }
 
 upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(

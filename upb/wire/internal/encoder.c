@@ -664,33 +664,31 @@ static char* encode_field(char* ptr, upb_encstate* e, const upb_Message* msg,
 }
 
 static char* encode_msgset_item(char* ptr, upb_encstate* e,
-                                const upb_MiniTableExtension* ext,
+                                const upb_MiniTableField* f,
                                 const upb_MessageValue ext_val) {
   // MessageSet items are always singular submessages. This holds for canonical
   // extensions of a MessageSet, but must also hold for any non-canonical
   // extension that is encoded as a MessageSet item.
-  UPB_ASSERT(upb_MiniTableField_IsScalar(upb_MiniTableExtension_ToField(ext)));
-  UPB_ASSERT(upb_MiniTableExtension_CType(ext) == kUpb_CType_Message);
+  UPB_ASSERT(upb_MiniTableField_IsScalar(f));
+  UPB_ASSERT(upb_MiniTableField_CType(f) == kUpb_CType_Message);
   size_t size;
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_EndGroup);
-  ptr = encode_message(ptr, e, ext_val.msg_val,
-                       upb_MiniTableExtension_GetSubMessage(ext), &size);
+  ptr = encode_message(ptr, e, ext_val.msg_val, upb_MiniTable_SubMessage(f),
+                       &size);
   ptr = encode_varint(ptr, e, size);
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Message, kUpb_WireType_Delimited);
-  ptr = encode_varint(ptr, e, upb_MiniTableExtension_Number(ext));
+  ptr = encode_varint(ptr, e, upb_MiniTableField_Number(f));
   ptr = encode_tag(ptr, e, kUpb_MsgSet_TypeId, kUpb_WireType_Varint);
   ptr = encode_tag(ptr, e, kUpb_MsgSet_Item, kUpb_WireType_StartGroup);
   return ptr;
 }
 
-static char* encode_ext(char* ptr, upb_encstate* e,
-                        const upb_MiniTableExtension* ext,
+static char* encode_ext(char* ptr, upb_encstate* e, const upb_MiniTableField* f,
                         upb_MessageValue ext_val, bool is_message_set) {
   if (UPB_UNLIKELY(is_message_set)) {
-    ptr = encode_msgset_item(ptr, e, ext, ext_val);
+    ptr = encode_msgset_item(ptr, e, f, ext_val);
   } else {
-    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val),
-                       &ext->UPB_PRIVATE(field));
+    ptr = encode_field(ptr, e, &ext_val.UPB_PRIVATE(ext_msg_val), f);
   }
   return ptr;
 }
@@ -707,10 +705,10 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
    * keep these in field number order relative to normal fields or even to each
    * other. */
   uintptr_t iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext;
+  const upb_MiniTableField* f;
   upb_MessageValue ext_val;
-  if (!UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
-                                                      &iter)) {
+  if (!UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(msg, &f, &ext_val,
+                                                           &iter)) {
     // Message has no extensions.
     return ptr;
   }
@@ -722,7 +720,7 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     }
     const upb_Extension* ext;
     while (_upb_sortedmap_nextext(&e->sorter, &sorted, &ext)) {
-      ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+      ptr = encode_ext(ptr, e, upb_Extension_MiniTableField(ext),
                        upb_Extension_GetValue(ext),
                        UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                            kUpb_ExtMode_IsMessageSet);
@@ -730,10 +728,10 @@ static char* encode_exts(char* ptr, upb_encstate* e, const upb_MiniTable* m,
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   } else {
     do {
-      ptr = encode_ext(ptr, e, ext, ext_val,
+      ptr = encode_ext(ptr, e, f, ext_val,
                        m->UPB_PRIVATE(ext) == kUpb_ExtMode_IsMessageSet);
-    } while (UPB_PRIVATE(_upb_Message_NextExtensionReverse)(msg, &ext, &ext_val,
-                                                            &iter));
+    } while (UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(
+        msg, &f, &ext_val, &iter));
   }
   return ptr;
 }
@@ -767,7 +765,7 @@ char* encode_message(char* ptr, upb_encstate* e, const upb_Message* msg,
       } else if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
         const upb_Extension* ext =
             upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
-        ptr = encode_ext(ptr, e, upb_Extension_MiniTableExtension(ext),
+        ptr = encode_ext(ptr, e, upb_Extension_MiniTableField(ext),
                          upb_Extension_GetValue(ext),
                          UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(m) ==
                              kUpb_ExtMode_IsMessageSet);
@@ -866,7 +864,8 @@ upb_EncodeStatus UPB_PRIVATE(_upb_Encode_Extension)(
   e->options = options;
   e->depth = upb_EncodeOptions_GetEffectiveMaxDepth(options);
   char* ptr = *buf;
-  ptr = encode_ext(ptr, e, ext, ext_val, is_message_set);
+  ptr = encode_ext(ptr, e, upb_MiniTableExtension_ToField(ext), ext_val,
+                   is_message_set);
   *size = upb_BackAlloc_Finish(&e->alloc, ptr);
   *buf = ptr;
   return e->status;

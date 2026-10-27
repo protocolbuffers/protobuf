@@ -31,7 +31,7 @@ static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
     char* buf = ptr;
     size_t size = 0;
     UPB_PRIVATE(_upb_Encode_Extension)(
-        encoder, upb_Extension_MiniTableExtension(ext),
+        encoder, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext),
         upb_Extension_GetValue(ext), is_message_set, &buf, &size,
         encode_options);
     view->data = buf;
@@ -49,8 +49,8 @@ static upb_EncodeStatus upb_DoEncodeExtension(upb_encstate* encoder, char* ptr,
 upb_EncodeStatus upb_EncodeExtension(const struct upb_Extension* ext,
                                      struct upb_Arena* arena,
                                      upb_StringView* view, int encode_options) {
-  const upb_MiniTable* extendee =
-      upb_MiniTableExtension_Extendee(upb_Extension_MiniTableExtension(ext));
+  const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(
+      UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext));
   bool is_message_set =
       extendee != NULL && upb_MiniTable_IsMessageSet(extendee);
   upb_encstate e;

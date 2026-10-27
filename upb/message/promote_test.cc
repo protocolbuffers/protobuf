@@ -595,15 +595,15 @@ TEST(GeneratedCode, PromoteNonCanonicalExtension) {
 
   EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
 
-  // 7. Verify that upb_Message_NextExtension works and iterates over the
+  // 7. Verify that upb_Message_NextExtensionField works and iterates over the
   // promoted extension!
   uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext_out = nullptr;
+  const upb_MiniTableField* ext_out = nullptr;
   upb_MessageValue val_out;
-  EXPECT_TRUE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                        &ext_iter));
+  EXPECT_TRUE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                             &val_out, &ext_iter));
   EXPECT_EQ(
-      upb_MiniTableExtension_Number(ext_out),
+      upb_MiniTableField_Number(ext_out),
       upb_MiniTableExtension_Number(upb_test_ModelExtension1_model_ext_ext));
 
   upb_test_ModelExtension1* ext_msg_iter =
@@ -611,8 +611,8 @@ TEST(GeneratedCode, PromoteNonCanonicalExtension) {
   upb_StringView field_iter = upb_test_ModelExtension1_str(ext_msg_iter);
   EXPECT_EQ(absl::string_view(field_iter.data, field_iter.size), "World");
 
-  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                         &ext_iter));
+  EXPECT_FALSE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                              &val_out, &ext_iter));
 
   // 8. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
@@ -646,12 +646,12 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithSameMinitable) {
   EXPECT_EQ(absl::string_view(field.data, field.size), "World");
   EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
   uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext_out = nullptr;
+  const upb_MiniTableField* ext_out = nullptr;
   upb_MessageValue val_out;
-  EXPECT_TRUE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                        &ext_iter));
-  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                         &ext_iter));
+  EXPECT_TRUE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                             &val_out, &ext_iter));
+  EXPECT_FALSE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                              &val_out, &ext_iter));
   UPB_IGNORE_DEPRECATION_START
   upb_FindUnknownRet found = upb_Message_FindUnknown(UPB_UPCAST(msg), 1547, 0);
   UPB_IGNORE_DEPRECATION_STOP
@@ -738,21 +738,21 @@ TEST(GeneratedCode, PromoteNonCanonicalExtensionWithDifferentMinitable) {
 
   EXPECT_EQ(1, upb_Message_ExtensionCount(UPB_UPCAST(msg)));
 
-  // 10. Verify that upb_Message_NextExtension successfully works and returns
-  // true!
+  // 10. Verify that upb_Message_NextExtensionField successfully works and
+  // returns true!
   uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext_out = nullptr;
+  const upb_MiniTableField* ext_out = nullptr;
   upb_MessageValue val_out;
-  EXPECT_TRUE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                        &ext_iter));
-  EXPECT_EQ(upb_MiniTableExtension_Number(ext_out), 1547);
+  EXPECT_TRUE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                             &val_out, &ext_iter));
+  EXPECT_EQ(upb_MiniTableField_Number(ext_out), 1547);
 
   upb_Message* ext_msg_iter = (upb_Message*)val_out.msg_val;
   int32_t promoted_value_iter = upb_Message_GetInt32(ext_msg_iter, base_f, 0);
   EXPECT_EQ(promoted_value_iter, 42);
 
-  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                         &ext_iter));
+  EXPECT_FALSE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                              &val_out, &ext_iter));
 
   // 11. Verify that the promoted non-canonical extension is indeed no longer
   // present in unknowns
