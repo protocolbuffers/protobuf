@@ -729,10 +729,10 @@ TEST(DecodeTest, DecodeNonCanonicalExtensionAsUnknown) {
   // Verify extension APIs: there are zero canonical extensions.
   EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
   uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext_out = nullptr;
+  const upb_MiniTableField* ext_out = nullptr;
   upb_MessageValue val_out;
-  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                         &ext_iter));
+  EXPECT_FALSE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                              &val_out, &ext_iter));
 }
 
 TEST(DecodeTest, DecodeExtensionAsUnknownWithPreexistingUnknown) {
@@ -800,10 +800,10 @@ TEST(DecodeTest, DecodeExtensionAsUnknownWithPreexistingUnknown) {
   // Verify extension APIs: there are zero canonical extensions.
   EXPECT_EQ((int)upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0);
   uintptr_t ext_iter = kUpb_Message_ExtensionBegin;
-  const upb_MiniTableExtension* ext_out = nullptr;
+  const upb_MiniTableField* ext_out = nullptr;
   upb_MessageValue val_out;
-  EXPECT_FALSE(upb_Message_NextExtension(UPB_UPCAST(msg), &ext_out, &val_out,
-                                         &ext_iter));
+  EXPECT_FALSE(upb_Message_NextExtensionField(UPB_UPCAST(msg), &ext_out,
+                                              &val_out, &ext_iter));
 }
 
 TEST(DecodeTest, MismatchedMessageSlotDoesNotConsumeDepth) {
