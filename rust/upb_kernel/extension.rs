@@ -47,7 +47,9 @@ impl<Extendee, T: Proxied> ExtensionId<Extendee, T> {
 #[linkme::distributed_slice]
 pub static EXTENSIONS: [LazyLock<MiniTableExtensionInitPtr>];
 
-#[cfg(all(target_family = "unix", not(target_os = "macos")))]
+// The sentinel sections use ELF-only directives, so skip every Apple (Mach-O) target, not just
+// macOS.
+#[cfg(all(target_family = "unix", not(target_vendor = "apple")))]
 core::arch::global_asm!(
     r#"
     .section linkme_EXTENSIONS,"awR",@progbits

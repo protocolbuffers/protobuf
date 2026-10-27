@@ -59,20 +59,14 @@ impl<T: Message> OwnedMessageInner<T> {
 /// Since UPB expects runtimes to manage their own arenas, this needs to have
 /// access to an `Arena`.
 ///
-/// This has two possible designs:
-/// - Store two pointers here, `RawMessage` and `&'msg Arena`. This doesn't place any restriction on
-///   the layout of generated messages and their mutators. This makes a vtable-based mutator three
-///   pointers, which can no longer be returned in registers on most platforms.
-/// - Store one pointer here, `&'msg OwnedMessageInner`, where `OwnedMessageInner` stores a
-///   `RawMessage` and an `Arena`. This would require all generated messages to store
-///   `OwnedMessageInner`, and since their mutators need to be able to generate `BytesMut`, would
-///   also require `BytesMut` to store a `&'msg OwnedMessageInner` since they can't store an owned
-///   `Arena`.
-///
 /// The following invariants must be upheld:
 ///
-/// - No concurrent mutation for any two fields in a message: this means mutators cannot be `Send`
-///   but are `Sync`.
+/// - No concurrent mutation for any two fields in a message. Like `&mut T`, a `Mut` has exclusive
+///   access to its message for `'msg`, guaranteed by the `&'msg mut` borrow it was created from.
+///   This type holds a raw pointer and a `&'msg Arena` (`Arena` is not `Sync`), so it is neither
+///   `Send` nor `Sync` by itself. The generated `Mut` types opt into both `Send` and `Sync` (as
+///   `MessageMut` requires); that relies on the API never letting two threads hold `Mut`s that
+///   share an arena.
 /// - If there are multiple accessible `Mut` to a single message at a time, they must be different
 ///   fields, and not be in the same oneof. As such, a `Mut` cannot be `Clone` but *can* reborrow
 ///   itself with `.as_mut()`, which converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.

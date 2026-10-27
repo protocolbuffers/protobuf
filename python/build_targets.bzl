@@ -527,7 +527,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "python"},
         failure_list = "//conformance:failure_list_python.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),
@@ -542,7 +541,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "cpp"},
         failure_list = "//conformance:failure_list_python_cpp.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": [],
             "//conditions:default": ["@platforms//:incompatible"],
         }),
@@ -556,7 +554,6 @@ def build_targets(name):
         env = {"PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION": "upb"},
         failure_list = "//conformance:failure_list_python_upb.txt",
         target_compatible_with = select({
-            "@system_python//:none": ["@platforms//:incompatible"],
             ":use_fast_cpp_protos": ["@platforms//:incompatible"],
             "//conditions:default": [],
         }),

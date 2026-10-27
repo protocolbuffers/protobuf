@@ -55,19 +55,6 @@ static absl::flat_hash_map<const DescriptorPool*, PyDescriptorPool*>*
 
 static FreeThreadingMutex descriptor_pool_map_mutex(absl::kConstInit);
 
-// Create a shared_ptr to the pool, with a custom deleter that does nothing.
-//
-// This shared pointer does not truly share ownership with the raw pointer:
-// when it's deallocated it will NOT delete the actual pool because of the empty
-// deleter. Furthermore, we cannot guarantee that the underlying raw pointer
-// will outlive surviving copies of this shared_ptr. We only do this to strictly
-// fit the PyDescriptorPool structure without behavior changes.
-static std::shared_ptr<const DescriptorPool> UnsafeSharedPointerFromRaw(
-    const DescriptorPool* ptr) {
-  return std::shared_ptr<const DescriptorPool>(ptr,
-                                               [](const DescriptorPool*) {});
-}
-
 namespace cdescriptor_pool {
 
 // Collects errors that occur during proto file building to allow them to be
@@ -767,36 +754,6 @@ PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool) {
     return nullptr;
   }
   return it->second;
-}
-
-PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool) {
-  PyDescriptorPool* existing_pool = GetDescriptorPool_FromPool(pool);
-  if (existing_pool != nullptr) {
-    Py_INCREF(existing_pool);
-    return reinterpret_cast<PyObject*>(existing_pool);
-  } else {
-    PyErr_Clear();
-  }
-
-  PyDescriptorPool* cpool = cdescriptor_pool::_CreateDescriptorPool();
-  if (cpool == nullptr) {
-    return nullptr;
-  }
-  cpool->pool = new std::shared_ptr<const DescriptorPool>(
-      UnsafeSharedPointerFromRaw(pool));
-  cpool->is_mutable = false;
-  cpool->underlay = nullptr;
-  {
-    FreeThreadingLockGuard lock(descriptor_pool_map_mutex);
-    if (!descriptor_pool_map->insert(std::make_pair(cpool->pool->get(), cpool))
-             .second) {
-      // Should never happen -- We already checked the existence above.
-      PyErr_SetString(PyExc_ValueError, "DescriptorPool already registered");
-      return nullptr;
-    }
-  }
-
-  return reinterpret_cast<PyObject*>(cpool);
 }
 
 PyObject* PyDescriptorPool_FromSharedPool(

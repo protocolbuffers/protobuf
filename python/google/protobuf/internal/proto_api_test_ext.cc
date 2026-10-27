@@ -73,18 +73,19 @@ auto ReprDynamicMessage(int value) {
   const PyProto_API* api = GetProtoApi();
 
   // Create a descriptor pool which copies everything from the linked protos.
-  DescriptorPool pool(DescriptorPool::internal_generated_database());
+  auto pool = std::make_unique<DescriptorPool>(
+      DescriptorPool::internal_generated_database());
   // FileDescriptorProto file_descriptor;
   // TestAllTypes::descriptor()->file()->CopyTo(&file_descriptor);
   // if (!pool.BuildFile(file_descriptor)) {
   //   throw std::runtime_error("Failed to build file descriptor");
   // }
   const Descriptor* descriptor =
-      pool.FindMessageTypeByName("proto2_unittest.TestAllTypes");
+      pool->FindMessageTypeByName("proto2_unittest.TestAllTypes");
   if (!descriptor) {
     throw std::runtime_error("Failed to find file descriptor");
   }
-  DynamicMessageFactory factory(&pool);
+  DynamicMessageFactory factory(pool.get());
   const Message* prototype = factory.GetPrototype(descriptor);
   if (!prototype) {
     throw std::runtime_error("Failed to get prototype for descriptor");
@@ -112,8 +113,8 @@ auto ReprDynamicMessage(int value) {
   }
 
   // Create the Python DescriptorPool...
-  auto py_pool =
-      py::reinterpret_steal<py::object>(api->DescriptorPool_FromPool(&pool));
+  auto py_pool = py::reinterpret_steal<py::object>(
+      api->DescriptorPool_FromPool(std::move(pool), nullptr));
   if (!py_pool) {
     throw py::error_already_set();
   }
@@ -135,16 +136,8 @@ auto ReprDynamicMessage(int value) {
     result_string = py::repr(py_msg);
   }
 
-  // The code above is dangerous! It relies on the C++ DescriptorPool being
-  // alive for whole duration of the test.
-  // At this point, there are no external references to the Python Message
-  // classes, but they always form a reference cycle with their Python
-  // MessageFactory.
-  // So it is necessary to run the garbage collector.
-  py::exec("import gc; gc.collect()");
-  // Now the Python MessageFactory has been deleted, and it is safe to destroy
-  // the C++ DescriptorPool.
-
+  // This is safe: the Python object keeps a reference to the Python
+  // DescriptorPool, which owns the C++ DescriptorPool.
   return result_string;
 }
 
@@ -297,14 +290,16 @@ py::object CreateDynamicPoolMessage() {
   if (!py_msg) {
     throw py::error_already_set();
   }
-  Message* msg = api->GetMutableMessagePointer(py_msg.ptr());
-  if (!msg) {
-    throw py::error_already_set();
-  }
+  {
+    auto mutator = api->GetClearedMessageMutator(py_msg.ptr());
+    if (!mutator.ok()) {
+      throw std::runtime_error(mutator.status().ToString());
+    }
 
-  // Populate the message, and return it.
-  if (!google::protobuf::TextFormat::ParseFromString("my_field: 42", msg)) {
-    throw std::runtime_error("Failed to parse message");
+    // Populate the message, and return it.
+    if (!google::protobuf::TextFormat::ParseFromString("my_field: 42", mutator->get())) {
+      throw std::runtime_error("Failed to parse message");
+    }
   }
   // This is safe: the Python object keeps a reference to the Python
   // DescriptorPool, which owns the C++ DescriptorPool.
