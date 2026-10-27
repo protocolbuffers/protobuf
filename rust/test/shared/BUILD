@@ -365,6 +365,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
+        "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
@@ -385,6 +386,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
+        "//rust/test:map_unittest_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
         "//rust/test:unittest_proto3_cpp_rust_proto",
         "//rust/test:unittest_proto3_optional_cpp_rust_proto",
