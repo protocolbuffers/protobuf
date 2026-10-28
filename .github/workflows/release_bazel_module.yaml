@@ -1,34 +1,99 @@
-# Prepare a release specifically for Bazel users, including a pre-built protoc.
+# Prepare a release specifically for Bazel users, including a pre-built protoc,
+# and publish via OSS Exit Gate (D9: protobuf/githubreleases b/576683923 & D8: protobuf/bcr b/576685645).
 name: Bazel Release
 on:
-  # Can be triggered from the GitHub Actions ui, using the "Run workflow" button on
+  # Can be triggered from the GitHub Actions UI, using the "Run workflow" button on
   # https://github.com/protocolbuffers/protobuf/actions/workflows/release_bazel_module.yaml
-  # TODO: consider automating the trigger from a new release being created
   workflow_dispatch:
     inputs:
       tag_name:
         description: git tag that has the protoc release artifact
         required: true
         type: string
-permissions:
-  id-token: write
-  attestations: write
-  contents: write
+
+permissions: read-all
+
 jobs:
-  release:
-    uses: bazel-contrib/.github/.github/workflows/release_ruleset.yaml@v7.7.0
-    with:
-      release_files: protobuf-*.bazel.tar.gz
-      prerelease: ${{ contains(inputs.tag_name, '-rc') }}
-      generate_release_notes: false
-      tag_name: ${{ inputs.tag_name }}
-      # The release was already created by Google-internal mechanism,
-      # so there aren't any useful assertions to make here.
-      bazel_test_command: 'true'
+  release_via_exit_gate:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      WIF_PROVIDER: 'projects/305452601764/locations/global/workloadIdentityPools/builders/providers/github'
+      EXIT_GATE_GHR_REPO: 'protobuf--githubreleases'
+      EXIT_GATE_GHR_MANIFEST_GCS: 'gs://oss-exit-gate-prod-projects-bucket/protobuf/githubreleases/manifests'
+    steps:
+      - name: Checkout repository at tag
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.tag_name }}
+          submodules: recursive
+
+      - name: Build Bazel release archive
+        id: build_archive
+        env:
+          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+        run: |
+          set -euo pipefail
+          VERSION="${INPUT_TAG_NAME#v}"
+          ARCHIVE="protobuf-${VERSION}.bazel.tar.gz"
+          git archive --format=tar.gz --prefix="protobuf-${VERSION}/" -o "${ARCHIVE}" HEAD
+          echo "archive=${ARCHIVE}" >> "$GITHUB_OUTPUT"
+
+      - name: Authenticate to Google Cloud (OSS Exit Gate WIF)
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@aa5489c8933f4cc7a4f7d45035b3b1440c9c10db # v3.0.1
+
+      - name: Stage Bazel release archive to OSS Exit Gate (protobuf/githubreleases)
+        env:
+          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+          ARCHIVE_PATH: ${{ steps.build_archive.outputs.archive }}
+        run: |
+          set -euo pipefail
+          gcloud artifacts generic upload \
+            --project=oss-exit-gate-prod \
+            --location=us \
+            --repository="${EXIT_GATE_GHR_REPO}" \
+            --package="protobuf" \
+            --version="${INPUT_TAG_NAME}" \
+            --source="${ARCHIVE_PATH}"
+
+      - name: Trigger OSS Exit Gate GitHub Releases pipeline
+        env:
+          INPUT_TAG_NAME: ${{ inputs.tag_name }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          cat << EOF > manifest.json
+          {
+            "publish_all": false,
+            "publishing_groups": [
+              {
+                "packages": [
+                  {
+                    "name": "protobuf",
+                    "version": "${INPUT_TAG_NAME}"
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          gcloud storage cp manifest.json \
+            "${EXIT_GATE_GHR_MANIFEST_GCS}/manifest-${RUN_ID}-${RUN_ATTEMPT}.json"
+
   publish:
-    needs: release
+    needs: release_via_exit_gate
+    permissions:
+      contents: read
+      id-token: write
     uses: ./.github/workflows/publish_to_bcr.yaml
     with:
       tag_name: ${{ inputs.tag_name }}
-    secrets:
-      BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
