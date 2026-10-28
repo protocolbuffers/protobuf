@@ -20,13 +20,18 @@
 // `WithWrite()`, it can be used to access all of them with zero additional
 // atomic operations.
 //
-// For pointer types, `Guarded<U*>` propagates constness to the pointee:
+// For pointer-like types (`U*` or `std::unique_ptr<U>`), `Guarded<T>`
+// propagates constness to the pointee:
 //
 //   * `Get(const ReadAccess&)`  returns `const U*`.
 //   * `Get(const WriteAccess&)` returns `U*`.
 //
 // so that the referent of a guarded pointer is protected along with the
-// pointer value itself.
+// pointer value itself. `Guarded<std::unique_ptr<U>>` owns its pointee.
+//
+// `Guarded<T>` is neither copyable nor movable, since copying would access the
+// value without a token. Initialize it in place (e.g. with placement new in a
+// Python object's constructor) or with SetQuiescent().
 //
 // Example:
 //
@@ -64,6 +69,7 @@
 #ifndef GOOGLE_PROTOBUF_PYEXT_FREE_THREADING_GUARDED_H__
 #define GOOGLE_PROTOBUF_PYEXT_FREE_THREADING_GUARDED_H__
 
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -75,42 +81,82 @@ namespace google {
 namespace protobuf {
 namespace python {
 
+namespace free_threading_internal {
+
+// Raw pointers and std::unique_ptr are "pointer-like": Guarded<T> propagates
+// constness through them to the pointee.
 template <typename T>
-class ABSL_ATTRIBUTE_TRIVIAL_ABI Guarded {
-  static_assert(std::is_trivially_copyable_v<T>,
-                "Guarded<T> is intended for small trivially copyable values "
-                "(pointers, enums, flags).");
+inline constexpr bool kIsPointerLike = std::is_pointer_v<T>;
+template <typename U, typename D>
+inline constexpr bool kIsPointerLike<std::unique_ptr<U, D>> = true;
+
+// The raw pointer held by a pointer-like value.
+template <typename U>
+U* RawPointer(U* ptr) {
+  return ptr;
+}
+template <typename U, typename D>
+U* RawPointer(const std::unique_ptr<U, D>& ptr) {
+  return ptr.get();
+}
+
+template <typename T, bool = kIsPointerLike<T>>
+struct GuardedTypes {
+  using ReadType = const T&;
+  using WriteType = void;  // Unused: Get(WriteAccess) requires a pointer-like.
+};
+
+template <typename T>
+struct GuardedTypes<T, true> {
+  using Element = typename std::pointer_traits<T>::element_type;
+  using ReadType = const Element*;
+  using WriteType = Element*;
+};
+
+}  // namespace free_threading_internal
+
+template <typename T>
+class Guarded {
+  static constexpr bool kIsPointerLike =
+      free_threading_internal::kIsPointerLike<T>;
+  using Types = free_threading_internal::GuardedTypes<T>;
 
  public:
-  // The type returned by read access: `const U*` for T = U*, else `const T&`.
-  using ReadType =
-      std::conditional_t<std::is_pointer_v<T>, const std::remove_pointer_t<T>*,
-                         const T&>;
+  // The type returned by read access: `const U*` if T is a pointer-like
+  // (`U*` or `std::unique_ptr<U>`), else `const T&`.
+  using ReadType = typename Types::ReadType;
 
   Guarded() = default;
   Guarded(T value, const AccessGuard& guard)
-      : value_(value), debug_guard_(&guard) {}
+      : value_(std::move(value)), debug_guard_(&guard) {}
 
-  Guarded(const Guarded&) = default;
-  Guarded& operator=(const Guarded&) = default;
+  // Guarded values are neither copyable nor movable: a copy would read or
+  // write the value without a token.
+  Guarded(const Guarded&) = delete;
+  Guarded& operator=(const Guarded&) = delete;
 
   // Guarded::Get()
   //
   // Reads the value using read (or write) access to the protecting guard. For
-  // T = U*, returns `const U*`.
+  // pointer-like T, returns `const U*`.
   ReadType Get(const ReadAccess& access ABSL_ATTRIBUTE_LIFETIME_BOUND) const {
     debug_guard_.CheckMatches(access.guard());
-    return value_;
+    if constexpr (kIsPointerLike) {
+      return Raw();
+    } else {
+      return value_;
+    }
   }
 
-  // For T = U*, write access yields the mutable pointee `U*`. (For non-pointer
-  // T, a WriteAccess binds to the ReadAccess overload above; use Set() to
+  // For pointer-like T, write access yields the mutable pointee `U*`. (For
+  // other T, a WriteAccess binds to the ReadAccess overload above; use Set() to
   // modify the value.)
-  T Get(const WriteAccess& access ABSL_ATTRIBUTE_LIFETIME_BOUND) const
-    requires std::is_pointer_v<T>
+  auto Get(const WriteAccess& access ABSL_ATTRIBUTE_LIFETIME_BOUND) const ->
+      typename Types::WriteType
+    requires kIsPointerLike
   {
     debug_guard_.CheckMatches(access.guard());
-    return value_;
+    return Raw();
   }
 
   // Guarded::Set()
@@ -118,7 +164,7 @@ class ABSL_ATTRIBUTE_TRIVIAL_ABI Guarded {
   // Replaces the value using write access to the protecting guard.
   void Set(T value, const WriteAccess& access) {
     debug_guard_.CheckMatches(access.guard());
-    value_ = value;
+    value_ = std::move(value);
   }
 
   // Guarded::UpdateGuard()
@@ -133,24 +179,31 @@ class ABSL_ATTRIBUTE_TRIVIAL_ABI Guarded {
     debug_guard_.Set(new_access.guard());
   }
 
-  // Guarded::GetQuiescent()
+  // Guarded::GetQuiescent() / SetQuiescent() / TakeQuiescent()
   //
-  // Returns the value without a token. Must ONLY be called when concurrent
-  // access is otherwise ruled out: during single-threaded initialization, when
-  // the owning object is uniquely referenced by the calling thread, or inside
-  // tp_dealloc.
-  T GetQuiescent() const { return value_; }
+  // Read, replace, or take (return and reset to T{}) the value without a
+  // token. Must ONLY be used when concurrent access is otherwise ruled out:
+  // during single-threaded initialization, when the owning object is uniquely
+  // referenced by the calling thread, or inside tp_dealloc.
+  const T& GetQuiescent() const { return value_; }
+  void SetQuiescent(T value) { value_ = std::move(value); }
+  T TakeQuiescent() { return std::exchange(value_, T{}); }
 
-  // Guarded::SetQuiescent() / Guarded::BindQuiescent()
+  // Guarded::BindQuiescent()
   //
-  // Replace the value, or rebind the protecting guard (used for debug checks),
-  // without a token. Same restrictions as GetQuiescent(): for objects that are
-  // not yet (or no longer) reachable from other threads, such as a newly
-  // created object being attached to an existing tree.
-  void SetQuiescent(T value) { value_ = value; }
+  // Rebinds the protecting guard (used for debug checks) without a token. Same
+  // restrictions as GetQuiescent(): for objects that are not yet (or no longer)
+  // reachable from other threads, such as a newly created object being
+  // attached to an existing tree.
   void BindQuiescent(const AccessGuard& guard) { debug_guard_.Set(&guard); }
 
  private:
+  auto Raw() const
+    requires kIsPointerLike
+  {
+    return free_threading_internal::RawPointer(value_);
+  }
+
   T value_{};
   ABSL_ATTRIBUTE_NO_UNIQUE_ADDRESS
   free_threading_internal::DebugGuardTracker debug_guard_;

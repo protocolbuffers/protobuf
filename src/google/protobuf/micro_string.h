@@ -156,9 +156,10 @@ class PROTOBUF_EXPORT MicroString {
 
     // To match the LazyString API.
     auto get() const { return payload.view(); }
+
+    [[nodiscard]] constexpr const void* tagged_ptr() const;
   };
-  constexpr MicroString(const UnownedPayload& unowned_input)  // NOLINT
-      : rep_(const_cast<char*>(unowned_input.for_tag + kIsLargeRepTag)) {}
+  constexpr MicroString(const UnownedPayload& unowned_input);  // NOLINT
 
   // Like the constructor above, but for DynamicMessage where we don't have a
   // generated UnownedPayload to pass.
@@ -215,11 +216,18 @@ class PROTOBUF_EXPORT MicroString {
   }
 
   void Set(const absl::Cord& value, const MessageLite& parent) {
-    SetInChunks(value.size(), parent, [&value](auto append) {
-      for (absl::string_view chunk : value.Chunks()) {
-        append(chunk);
-      }
-    });
+    Set(value, parent, kInlineCapacity);
+  }
+  void Set(const absl::Cord& value, const MessageLite& parent,
+           size_t inline_capacity) {
+    SetInChunks(
+        value.size(), parent,
+        [&value](auto append) {
+          for (absl::string_view chunk : value.Chunks()) {
+            append(chunk);
+          }
+        },
+        inline_capacity);
   }
   void Set(absl::string_view data, const MessageLite& parent,
            size_t inline_capacity) {
@@ -497,6 +505,13 @@ class PROTOBUF_EXPORT MicroString {
   void* rep_;
 };
 
+constexpr const void* MicroString::UnownedPayload::tagged_ptr() const {
+  return for_tag + kIsLargeRepTag;
+}
+
+constexpr MicroString::MicroString(const UnownedPayload& unowned_input)
+    : rep_(const_cast<void*>(unowned_input.tagged_ptr())) {}
+
 template <typename F>
 void MicroString::SetInChunks(size_t size, const MessageLite& parent, F setter,
                               size_t inline_capacity) {
@@ -629,6 +644,9 @@ class MicroStringExtraImpl : private MicroString {
   }
   void Set(absl::string_view data, const MessageLite& parent) {
     SetMaybeConstant(*this, data, parent);
+  }
+  void Set(const absl::Cord& value, const MessageLite& parent) {
+    MicroString::Set(value, parent, kInlineCapacity);
   }
   void Set(const std::string& data, const MessageLite& parent) {
     Set(absl::string_view(data), parent);

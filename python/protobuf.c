@@ -12,7 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "google/protobuf/breaking_changes.h"
 #include "python/descriptor.h"
 #include "python/descriptor_containers.h"
 #include "python/descriptor_pool.h"
@@ -159,7 +158,6 @@ typedef struct {
   // clang-format on
   PyObject* pool;
   PyUpb_WeakMap* obj_cache;
-  bool frozen;
 } PyUpb_Arena;
 
 #ifdef __GLIBC__
@@ -227,7 +225,6 @@ PyObject* PyUpb_Arena_New(PyObject* pool) {
   }
   arena->pool = pool;
   Py_INCREF(pool);
-  arena->frozen = false;
   return &arena->ob_base;
 }
 
@@ -252,14 +249,6 @@ static void PyUpb_Arena_Dealloc(PyObject* self) {
 
 upb_Arena* PyUpb_Arena_Get(PyObject* arena) {
   return ((PyUpb_Arena*)arena)->arena;
-}
-
-bool PyUpb_Arena_IsFrozen(PyObject* arena) {
-  return ((PyUpb_Arena*)arena)->frozen;
-}
-
-void PyUpb_Arena_SetFrozen(PyObject* arena, bool frozen) {
-  ((PyUpb_Arena*)arena)->frozen = frozen;
 }
 
 bool PyUpb_Arena_CacheAdd(PyObject* _arena, const void* key,
@@ -433,22 +422,10 @@ PyObject* PyUpb_SetFrozenError(void) {
   return PyUpb_SetFrozenErrorWithMsg("Message is immutable.");
 }
 
-int PyUpb_WarnFrozen(void) {
-  return PyErr_WarnEx(
-      PyExc_FutureWarning,
-      "Mutating messages or containers returned by GetOptions() is deprecated"
-      " and will raise an exception in a future release.",
-      3);
-}
-
 bool PyUpb_CheckFrozen(bool is_frozen, const char* error_msg) {
   if (is_frozen) {
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
     PyUpb_SetFrozenErrorWithMsg(error_msg);
     return false;
-#else
-    return PyUpb_WarnFrozen() >= 0;
-#endif
   }
   return true;
 }

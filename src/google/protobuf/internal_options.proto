@@ -31,6 +31,11 @@ message InternalFieldOptionsCpp {
     int32 sso_size = 2;
   }
   MicroString micro_string = 1;
+
+  message InlinedString {
+    InternalOptionsForce.Enum force = 1;
+  }
+  InlinedString inlined_string = 2;
 }
 
 message InternalFieldOptions {

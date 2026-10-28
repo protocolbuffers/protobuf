@@ -456,3 +456,23 @@ TEST(MiniTableTest, ExtensionSubOffsetIsPlatformSpecific) {
   EXPECT_EQ(actual, sizeof(upb_MiniTableExtension));
   EXPECT_EQ(upb_MiniTableExtension_GetSubMessage(ext), extendee);
 }
+
+// MiniDescriptors for an int32->int32 map entry, without and with the
+// extendable message modifier ('P'). The map encoder never emits a modifier,
+// but the map parser shares the message parser, which accepts one.
+constexpr std::string_view kMapEntry = "%((";
+constexpr std::string_view kExtendableMapEntry = "%P((";
+
+TEST(MiniTableTest, MapEntryCannotBeExtendable) {
+  upb::Arena arena;
+  upb::Status status;
+  EXPECT_NE(nullptr, upb_MiniTable_Build(kMapEntry.data(), kMapEntry.size(),
+                                         arena.ptr(), status.ptr()))
+      << status.error_message();
+
+  status.Clear();
+  EXPECT_EQ(nullptr, upb_MiniTable_Build(kExtendableMapEntry.data(),
+                                         kExtendableMapEntry.size(),
+                                         arena.ptr(), status.ptr()));
+  EXPECT_FALSE(status.ok());
+}

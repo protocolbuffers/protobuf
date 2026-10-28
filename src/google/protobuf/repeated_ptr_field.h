@@ -473,7 +473,8 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   void TryShrinkToFit(internal::SerialArena* arena) {
     if (using_sso() || arena == nullptr) return;
     auto* r = rep();
-    size_t desired_capacity = r->allocated_size;
+    size_t desired_capacity =
+        std::max<size_t>(r->allocated_size, kMinNonSsoCapacity);
     if constexpr (ArenaAlignDefault::Ceil(sizeof(void*)) != sizeof(void*)) {
       desired_capacity =
           ArenaAlignDefault::Ceil(desired_capacity * sizeof(void*)) /
@@ -784,6 +785,9 @@ class PROTOBUF_EXPORT RepeatedPtrFieldBase {
   };
 
   static constexpr size_t kRepHeaderSize = offsetof(Rep, elements);
+  static constexpr size_t kMinNonSsoCapacity =
+      (internal::SerialArena::kMinimumReturnedArraySize - kRepHeaderSize) /
+      sizeof(void*);
 
   // Replaces current_size_ with new_size and returns the previous value of
   // current_size_. This function is intended to be the only place where

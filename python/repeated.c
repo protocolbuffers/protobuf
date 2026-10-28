@@ -13,7 +13,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "google/protobuf/breaking_changes.h"
 #include "python/buffer_convert.h"
 #include "python/convert.h"
 #include "python/descriptor.h"
@@ -138,8 +137,7 @@ bool PyUpb_RepeatedContainer_IsFrozen(PyUpb_RepeatedContainer* self) {
   if (PyUpb_RepeatedContainer_IsStub(self)) {
     return PyUpb_Message_IsFrozen(self->ptr.parent);
   } else {
-    return upb_Array_IsFrozen(self->ptr.arr) ||
-           PyUpb_Arena_IsFrozen(self->arena);
+    return upb_Array_IsFrozen(self->ptr.arr);
   }
 }
 
@@ -959,13 +957,6 @@ static PyObject* PyUpb_RepeatedContainer_Pop(PyObject* _self, PyObject* args) {
   if (!arr) return NULL;
   size_t size = upb_Array_Size(arr);
   if (index < 0) index += size;
-#if PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
-#else
-  if (index >= size) {
-    PyErr_WarnEx(PyExc_FutureWarning, "pop index out of range", 1);
-    index = size - 1;
-  }
-#endif  // PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP
   PyObject* ret = PyUpb_RepeatedContainer_Item(_self, index);
   if (!ret) return NULL;
   upb_Array_Delete(self->ptr.arr, index, 1);

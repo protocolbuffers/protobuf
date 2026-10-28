@@ -21,6 +21,7 @@
 #include "absl/base/casts.h"
 #include "absl/base/config.h"
 #include "absl/base/prefetch.h"
+#include "absl/cleanup/cleanup.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
 #include "absl/strings/cord.h"
@@ -291,7 +292,8 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   template <typename Convert, typename T>
   static const char* ReadPackedVarintArrayWithField(const char* ptr,
                                                     const char* end,
-                                                    Arena* arena, Convert conv,
+                                                    SerialArena* arena,
+                                                    Convert conv,
                                                     RepeatedField<T>& out);
   template <typename Add>
   [[nodiscard]] const char* ReadPackedVarint(const char* ptr, Add add) {
@@ -303,7 +305,7 @@ class PROTOBUF_EXPORT EpsCopyInputStream {
   // Same as above, but pass the field directly , so we can preallocate.
   template <typename Convert, typename T>
   [[nodiscard]] const char* ReadPackedVarintWithField(const char* ptr,
-                                                      Arena* arena,
+                                                      const MessageLite& parent,
                                                       Convert conv,
                                                       RepeatedField<T>& out);
 
@@ -1528,13 +1530,15 @@ template <typename T>
 const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
                                                 const char* ptr, int size,
                                                 RepeatedField<T>* out) {
+  auto* arena = GetSerialArena(&parent);
+  absl::Cleanup trim = [&] { out->TryShrinkToFit(arena); };
   ABSL_DCHECK_EQ(parent.GetArena(), out->GetArena());
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int nbytes = BytesAvailable(ptr);
   while (size > nbytes) {
     int num = nbytes / sizeof(T);
     int old_entries = out->size();
-    out->ReserveWithArena(&parent, old_entries + num);
+    out->ReserveWithArena(arena, old_entries + num);
     int block_size = num * sizeof(T);
     auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
@@ -1554,7 +1558,7 @@ const char* EpsCopyInputStream::ReadPackedFixed(const MessageLite& parent,
   int block_size = num * sizeof(T);
   if (num == 0) return size == block_size ? ptr : nullptr;
   int old_entries = out->size();
-  out->ReserveWithArena(&parent, old_entries + num);
+  out->ReserveWithArena(arena, old_entries + num);
   auto dst = out->AddNAlreadyReserved(num);
 #ifdef ABSL_IS_LITTLE_ENDIAN
   ABSL_CHECK(dst != nullptr) << out << "," << num;
@@ -1582,9 +1586,9 @@ const char* EpsCopyInputStream::ReadPackedVarintArray(const char* ptr,
 
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
-    const char* ptr, const char* end, Arena* arena, Convert conv,
+    const char* ptr, const char* end, SerialArena* arena, Convert conv,
     RepeatedField<T>& out) {
-  ABSL_DCHECK_EQ(arena, out.GetArena());
+  ABSL_DCHECK_EQ(arena, GetSerialArena(out.GetArena()));
 
   // If we have enough bytes, we will spend more cpu cycles growing repeated
   // field, than parsing, so count the number of ints first and preallocate.
@@ -1643,8 +1647,12 @@ const char* EpsCopyInputStream::ReadPackedVarintArrayWithField(
 
 template <typename Convert, typename T>
 const char* EpsCopyInputStream::ReadPackedVarintWithField(
-    const char* ptr, Arena* arena, Convert conv, RepeatedField<T>& out) {
+    const char* ptr, const MessageLite& parent, Convert conv,
+    RepeatedField<T>& out) {
   int size = ReadSize(&ptr);
+
+  auto* arena = GetSerialArena(&parent);
+  absl::Cleanup trim = [&] { out.TryShrinkToFit(arena); };
 
   GOOGLE_PROTOBUF_PARSER_ASSERT(ptr);
   int chunk_size = static_cast<int>(buffer_end_ - ptr);

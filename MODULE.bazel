@@ -36,7 +36,7 @@ bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "2.3.20")
 bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-bazel_dep(name = "rules_python", version = "2.3.0")
+bazel_dep(name = "rules_python", version = "2.3.4")
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
@@ -122,7 +122,6 @@ register_toolchains("//bazel/private/oss/toolchains/prebuilt:all")
 register_toolchains("//bazel/private/oss/toolchains:all")
 
 SUPPORTED_PYTHON_VERSIONS = [
-    "3.10",
     "3.11",
     "3.12",
     "3.13",
@@ -144,9 +143,15 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
 [
     pip.parse(
         hub_name = "protobuf_pip_deps",
-        python_interpreter_target = "@system_python//:interpreter",
         python_version = python_version,
         requirements_lock = "//python:requirements.txt",
+        target_platforms = [
+            "linux_x86_64",
+            "linux_aarch64",
+            "osx_aarch64",
+            "osx_x86_64",
+            "windows_x86_64",
+        ],
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
@@ -174,12 +179,27 @@ local_runtime_toolchains_repo(
     name = "local_toolchains",
     dev_dependency = True,
     runtimes = ["local_python3"],
+    target_settings = {
+        "local_python3": ["@//python:is_system_python"],
+    },
 )
 
 register_toolchains(
     "@local_toolchains//:all",
     dev_dependency = True,
 )
+
+# register python toolchains from rules_python for the versions we support.
+# Used only by tests, doesn't affect downstream consumers of protobuf.
+python = use_extension("@rules_python//python/extensions:python.bzl", "python", dev_dependency = True)
+
+[
+    python.toolchain(
+        is_default = (python_version == "3.11"),
+        python_version = python_version,
+    )
+    for python_version in SUPPORTED_PYTHON_VERSIONS
+]
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
 
@@ -325,24 +345,24 @@ register_toolchains(
 # Python headers for release
 python_headers = use_extension("//python/dist:python_downloads.bzl", "python_headers", dev_dependency = True)
 python_headers.source_archive(
-    sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
-    version = "3.10.0",
+    sha256 = "64424e96e2457abbac899b90f9530985b51eef2905951febd935f0e73414caeb",
+    version = "3.11.0",
 )
 python_headers.nuget_package(
     cpu = "i686",
-    sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
-    version = "3.10.0",
+    sha256 = "c5ceeef9556d6aa85fac5d6567d35418a978e9b349f2c71818ddc03f14dd5a6d",
+    version = "3.11.0",
 )
 python_headers.nuget_package(
     cpu = "x86-64",
-    sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
-    version = "3.10.0",
+    sha256 = "e1236188a5841cfb9d14f7aac8b1fbdea10f82260d7f63610cc6260db76062a5",
+    version = "3.11.0",
 )
 use_repo(
     python_headers,
-    "nuget_python_i686_3.10.0",
-    "nuget_python_x86-64_3.10.0",
-    "python-3.10.0",
+    "nuget_python_i686_3.11.0",
+    "nuget_python_x86-64_3.11.0",
+    "python-3.11.0",
 )
 
 bazel_dep(name = "jq.bzl", version = "0.6.1", dev_dependency = True)

@@ -114,19 +114,13 @@ inline constexpr bool kTrackGuards = false;
 // presented for it refer to that guard. Atomics use relaxed ordering: these are
 // only identity checks and must not add happens-before edges that would hide
 // races from TSan.
-class ABSL_ATTRIBUTE_TRIVIAL_ABI GuardTracker {
+class GuardTracker {
  public:
   GuardTracker() = default;
   explicit GuardTracker(const AccessGuard* guard) : guard_(guard) {}
 
-  GuardTracker(const GuardTracker& other)
-      : guard_(other.guard_.load(std::memory_order_relaxed)) {}
-
-  GuardTracker& operator=(const GuardTracker& other) {
-    guard_.store(other.guard_.load(std::memory_order_relaxed),
-                 std::memory_order_relaxed);
-    return *this;
-  }
+  GuardTracker(const GuardTracker&) = delete;
+  GuardTracker& operator=(const GuardTracker&) = delete;
 
   void Set(const AccessGuard* guard) {
     guard_.store(guard, std::memory_order_relaxed);

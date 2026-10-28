@@ -493,7 +493,7 @@ class Environment {
   }
 
   std::shared_ptr<const upb::Arena> IndexedNonNullArena(size_t index) {
-    absl::MutexLock lock(&mutex_);
+    absl::MutexLock lock(mutex_);
     std::shared_ptr<const upb::Arena>& ret = arenas_[index];
     if (!ret) ret = std::make_shared<const upb::Arena>();
     return ret;
@@ -522,7 +522,7 @@ class Environment {
   void SwapRandomArena(absl::BitGen& gen, std::shared_ptr<const upb::Arena>& a,
                        size_t min_index) {
     size_t i = RandomIndex(gen, min_index);
-    absl::MutexLock lock(&mutex_);
+    absl::MutexLock lock(mutex_);
     arenas_[i].swap(a);
   }
 
@@ -969,6 +969,22 @@ TEST(ArenaTest, ArenaOwnerFreedFirst) {
 
   // Now when we free arena2, it is actually freed.
   upb_Arena_Free(arena2);
+}
+
+TEST(ArenaTest, FreeLongRefChainDoesNotOverflowStack) {
+  constexpr int kChainLength = 200000;
+  std::vector<upb_Arena*> arenas(kChainLength);
+  for (int i = 0; i < kChainLength; ++i) {
+    arenas[i] = upb_Arena_New();
+    ASSERT_NE(arenas[i], nullptr);
+  }
+  for (int i = 0; i + 1 < kChainLength; ++i) {
+    ASSERT_TRUE(upb_Arena_RefArena(arenas[i], arenas[i + 1]));
+  }
+  for (int i = kChainLength - 1; i >= 1; --i) {
+    upb_Arena_Free(arenas[i]);
+  }
+  upb_Arena_Free(arenas[0]);
 }
 
 #ifndef UPB_ENABLE_REF_CYCLE_CHECKS

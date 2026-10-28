@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """
 Internal helpers for building the Python protobuf runtime.
 """
@@ -153,9 +160,5 @@ def internal_py_test(deps = [], **kwargs):
             "//python:python_test_lib",
             "@com_google_absl_py//absl/testing:parameterized",
         ],
-        target_compatible_with = select({
-            "@system_python//:supported": [],
-            "//conditions:default": ["@platforms//:incompatible"],
-        }),
         **kwargs
     )

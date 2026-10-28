@@ -21,6 +21,9 @@ import proto2_unittest.NestedExtension.MyNestedExtension;
 import proto2_unittest.NonNestedExtension;
 import proto2_unittest.NonNestedExtension.MessageToBeExtended;
 import proto2_unittest.NonNestedExtension.MyNonNestedExtension;
+import proto2_unittest.NonNestedExtensionLite;
+import proto2_unittest.NonNestedExtensionLite.MessageLiteToBeExtended;
+import proto2_unittest.NonNestedExtensionLite.MyNonNestedExtensionLite;
 import proto2_unittest.OuterClassNameTest2OuterClass;
 import proto2_unittest.OuterClassNameTest3OuterClass;
 import proto2_unittest.OuterClassNameTestOuterClass;
@@ -1038,6 +1041,47 @@ public class GeneratedMessageTest {
     ObjectInputStream in = new ObjectInputStream(bais);
     TestAllTypes actual = (TestAllTypes) in.readObject();
     assertThat(actual).isEqualTo(expected);
+  }
+
+  @Test
+  public void testSerializationWithExtension() throws Exception {
+    MessageLiteToBeExtended messageWithExtension =
+        MessageLiteToBeExtended.newBuilder()
+            .setExtension(
+                NonNestedExtensionLite.nonNestedExtensionLite,
+                MyNonNestedExtensionLite.getDefaultInstance())
+            .build();
+
+    byte[] serializedMessage = serializeMessage(messageWithExtension);
+    MessageLiteToBeExtended deserializedMessage =
+        deserializeMessage(MessageLiteToBeExtended.class, serializedMessage);
+
+    ExtensionRegistryLite registry = ExtensionRegistryLite.newInstance();
+    NonNestedExtensionLite.registerAllExtensions(registry);
+    assertThat(MessageLiteToBeExtended.parseFrom(deserializedMessage.toByteString(), registry))
+        .isEqualTo(messageWithExtension);
+  }
+
+  private static <T extends MessageLite> T deserializeMessage(
+      Class<T> clazz, byte[] serializedMessage) {
+    try (ByteArrayInputStream inByteArrayStream = new ByteArrayInputStream(serializedMessage);
+        ObjectInputStream inStream = new ObjectInputStream(inByteArrayStream)) {
+      return clazz.cast(inStream.readObject());
+    } catch (IOException | ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static byte[] serializeMessage(MessageLite message) {
+    byte[] serializedMessage;
+    try (ByteArrayOutputStream outByteArrayStream = new ByteArrayOutputStream();
+        ObjectOutputStream outStream = new ObjectOutputStream(outByteArrayStream)) {
+      outStream.writeObject(message);
+      serializedMessage = outByteArrayStream.toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return serializedMessage;
   }
 
   @Test
@@ -2073,35 +2117,62 @@ public class GeneratedMessageTest {
     // And not again (only once per type).
     msg2.makeExtensionsImmutable();
     assertThat(logHandler.getStoredLogRecords()).hasSize(2);
+
+    // An ExtendableMessage also logs once for its type.
+    GeneratedMessage.ExtendableMessage<?> extendableMsg =
+        TestAllExtensions.newBuilder().build();
+    extendableMsg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(3);
+    extendableMsg.makeExtensionsImmutable();
+    assertThat(logHandler.getStoredLogRecords()).hasSize(3);
   }
 
   @Test
   public void extendableMessage_makeExtensionsImmutableShouldThrowWhenOptedIn() {
     System.setProperty("com.google.protobuf.error_on_unsafe_pre22_gencode", "true");
-    GeneratedMessage.loggedPre22TypeNames.clear();
+    try {
+      GeneratedMessage.loggedPre22TypeNames.clear();
 
-    class TestMessage3 extends TestMessageBaseForPre22WarningsTests {}
-    TestMessage3 msg = new TestMessage3();
-    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      class TestMessage3 extends TestMessageBaseForPre22WarningsTests {}
+      TestMessage3 msg = new TestMessage3();
+      UnsupportedOperationException e =
+          assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      assertThat(e).hasMessageThat().contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
 
-    // When opting into throwing, it should throw every time, not just the first time.
-    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
-    assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      // When opting into throwing, it should throw every time, not just the first time.
+      assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
+      assertThrows(UnsupportedOperationException.class, msg::makeExtensionsImmutable);
 
-    System.clearProperty("com.google.protobuf.error_on_unsafe_pre22_gencode");
+      GeneratedMessage.ExtendableMessage<?> extendableMsg =
+          TestAllExtensions.newBuilder().build();
+      UnsupportedOperationException extendableException =
+          assertThrows(UnsupportedOperationException.class, extendableMsg::makeExtensionsImmutable);
+      assertThat(extendableException)
+          .hasMessageThat()
+          .contains(GeneratedMessage.PRE22_GENCODE_VULNERABILITY_MESSAGE);
+    } finally {
+      System.clearProperty("com.google.protobuf.error_on_unsafe_pre22_gencode");
+    }
   }
 
   @Test
   public void extendableMessage_makeExtensionsImmutableShouldBeSilentWhenOptedIn() {
     System.setProperty("com.google.protobuf.use_unsafe_pre22_gencode", "true");
-    TestUtil.TestLogHandler logHandler = setupLogger();
-    GeneratedMessage.loggedPre22TypeNames.clear();
+    try {
+      TestUtil.TestLogHandler logHandler = setupLogger();
+      GeneratedMessage.loggedPre22TypeNames.clear();
 
-    class TestMessage4 extends TestMessageBaseForPre22WarningsTests {}
-    TestMessage4 msg = new TestMessage4();
-    msg.makeExtensionsImmutable();
-    assertThat(logHandler.getStoredLogRecords()).isEmpty();
+      class TestMessage4 extends TestMessageBaseForPre22WarningsTests {}
+      TestMessage4 msg = new TestMessage4();
+      msg.makeExtensionsImmutable();
 
-    System.clearProperty("com.google.protobuf.use_unsafe_pre22_gencode");
+      GeneratedMessage.ExtendableMessage<?> extendableMsg =
+          TestAllExtensions.newBuilder().build();
+      extendableMsg.makeExtensionsImmutable();
+
+      assertThat(logHandler.getStoredLogRecords()).isEmpty();
+    } finally {
+      System.clearProperty("com.google.protobuf.use_unsafe_pre22_gencode");
+    }
   }
 }
