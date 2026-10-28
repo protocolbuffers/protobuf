@@ -3292,6 +3292,10 @@ uint32_t* Reflection::MutableHasBits(Message* message) const {
 uint32_t Reflection::GetOneofCase(
     const Message& message, const OneofDescriptor* oneof_descriptor) const {
   ABSL_DCHECK(!oneof_descriptor->is_synthetic());
+  ABSL_DCHECK_EQ(oneof_descriptor->containing_type(), descriptor_)
+      << "OneofDescriptor does not match message type.";
+  ABSL_DCHECK_LT(oneof_descriptor->index(),
+                  descriptor_->real_oneof_decl_count());
   return internal::GetConstRefAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
@@ -3299,6 +3303,10 @@ uint32_t Reflection::GetOneofCase(
 uint32_t* Reflection::MutableOneofCase(
     Message* message, const OneofDescriptor* oneof_descriptor) const {
   ABSL_DCHECK(!oneof_descriptor->is_synthetic());
+  ABSL_DCHECK_EQ(oneof_descriptor->containing_type(), descriptor_)
+      << "OneofDescriptor does not match message type.";
+  ABSL_DCHECK_LT(oneof_descriptor->index(),
+                  descriptor_->real_oneof_decl_count());
   return GetPointerAtOffset<uint32_t>(
       message, schema_.GetOneofCaseOffset(oneof_descriptor));
 }
