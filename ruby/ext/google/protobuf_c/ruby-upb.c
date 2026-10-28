@@ -7736,6 +7736,24 @@ const upb_MiniTableExtension* upb_Message_FindExtensionByNumber(
   return NULL;
 }
 
+bool upb_Message_NextExtensionFieldReverse(const upb_Message* msg,
+                                           const upb_MiniTableField** result,
+                                           uintptr_t* iter) {
+  upb_MessageValue val;
+  return UPB_PRIVATE(_upb_Message_NextExtensionFieldReverse)(msg, result, &val,
+                                                             iter);
+}
+
+const upb_MiniTableField* upb_Message_FindExtensionFieldByNumber(
+    const upb_Message* msg, uint32_t field_number) {
+  uintptr_t iter = kUpb_Message_ExtensionBegin;
+  const upb_MiniTableField* result;
+  while (upb_Message_NextExtensionFieldReverse(msg, &result, &iter)) {
+    if (upb_MiniTableField_Number(result) == field_number) return result;
+  }
+  return NULL;
+}
+
 
 #include <stdint.h>
 #include <string.h>
@@ -8245,11 +8263,11 @@ void _upb_Message_DiscardUnknown_shallow(upb_Message* msg) {
 size_t upb_Message_ExtensionCount(const upb_Message* msg) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return 0;
-  const upb_MiniTableExtension* ext;
+  const upb_MiniTableField* f;
   upb_MessageValue val;
   uintptr_t iter = kUpb_Message_ExtensionBegin;
   size_t count = 0;
-  while (upb_Message_NextExtension(msg, &ext, &val, &iter)) {
+  while (upb_Message_NextExtensionField(msg, &f, &val, &iter)) {
     count++;
   }
   return count;
