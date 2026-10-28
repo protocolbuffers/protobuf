@@ -491,9 +491,14 @@ Reflection::Reflection(const Descriptor* descriptor,
       schema_(schema) {}
 
 Reflection::~Reflection() {
-  // No need to use sized delete. This code path is uncommon and it would not be
-  // worth saving or recalculating the size.
-  ::operator delete(const_cast<internal::TcParseTableBase*>(tcparse_table_));
+  static_assert(std::is_trivially_destructible_v<internal::TcParseTable<0>>,
+                "Parse tables must be trivially destructible since we don't "
+                "call their destructor below.");
+  if (tcparse_table_ != nullptr) {
+    internal::SizedDelete(
+        const_cast<internal::TcParseTableBase*>(tcparse_table_),
+        tcparse_table_->sizeof_self);
+  }
 }
 
 const UnknownFieldSet& Reflection::GetUnknownFields(
@@ -1905,9 +1910,20 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
   const int field_count = descriptor.field_count();
   for (int i = 0; i < field_count; ++i) {
     const FieldDescriptor* field = descriptor.field(i);
-    // Taken once per oneof rather than once per member (see below), so this is
-    // the rare branch for almost every message.
-    if (ABSL_PREDICT_FALSE(schema_.InRealOneof(field))) {
+    if (uint32_t hasbit_index = schema_.HasBitIndex(field, /*field_index=*/i);
+        ABSL_PREDICT_TRUE(hasbit_index != static_cast<uint32_t>(kNoHasbit))) {
+      ABSL_DCHECK(!schema_.InRealOneof(field));
+      // Equivalent to: HasFieldSingular(message, field). Check the compact
+      // hasbits bitmap before touching FieldDescriptor metadata.
+      const bool hasbit_set = IsIndexInHasBitSet(has_bits, hasbit_index);
+      if ((kForIsEmpty ? ABSL_PREDICT_FALSE(hasbit_set) : hasbit_set) &&
+          (field->has_presence() || IsMapEntry(field) ||
+           IsImplicitPresenceFieldNonEmpty(message, field))) {
+        PROTO_REFLECTION_APPEND_OR_RETURN(field);
+      }
+    } else if (ABSL_PREDICT_FALSE(schema_.InRealOneof(field))) {
+      // Taken once per oneof rather than once per member (see below), so this
+      // is the rare branch for almost every message.
       const OneofDescriptor* containing_oneof = field->containing_oneof();
       // Members of a oneof are declared consecutively, so this is the first
       // member, and at most one member can be set. Rather than checking each
@@ -1920,13 +1936,6 @@ inline int32_t Reflection::IsEmptyOrCollectSetFields(
         // Equivalent to: GetOneofFieldDescriptor(message, containing_oneof)
         PROTO_REFLECTION_APPEND_OR_RETURN(
             descriptor.FindFieldByNumber(oneof_case));
-      }
-    } else if (uint32_t hasbit_index =
-                   schema_.HasBitIndex(field, /*field_index=*/i);
-               hasbit_index != static_cast<uint32_t>(kNoHasbit)) {
-      // Equivalent to: HasFieldSingular(message, field)
-      if (IsFieldPresentGivenHasbits(message, field, has_bits, hasbit_index)) {
-        PROTO_REFLECTION_APPEND_OR_RETURN(field);
       }
     } else if (HasFieldWithHasbits(message, field)) {
       PROTO_REFLECTION_APPEND_OR_RETURN(field);
@@ -3950,6 +3959,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(fields.size()),
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
+      /*sizeof_self=*/static_cast<uint32_t>(byte_size),
       internal::GetClassData(*schema_.default_instance()),
       nullptr,
       GetFastParseFunction(table_info.fallback_function)};

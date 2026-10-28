@@ -192,7 +192,19 @@ pub(crate) mod read {
     use super::SealedInternal;
 
     pub trait Serialize: SealedInternal {
-        fn serialize(&self) -> Result<Vec<u8>, crate::SerializeError>;
+        /// Serializes the message to the Protobuf binary wire format.
+        ///
+        /// Equivalent to `serialize_with_options(SerializeOptions::default())`.
+        fn serialize(&self) -> Result<Vec<u8>, crate::SerializeError> {
+            self.serialize_with_options(crate::SerializeOptions::default())
+        }
+
+        /// Serializes the message to the Protobuf binary wire format, configured by `options`.
+        fn serialize_with_options(
+            &self,
+            options: crate::SerializeOptions,
+        ) -> Result<Vec<u8>, crate::SerializeError>;
+
         fn serialized_len(&self) -> usize;
     }
 }

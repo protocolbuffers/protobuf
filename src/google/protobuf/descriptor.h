@@ -52,7 +52,6 @@
 #include "absl/functional/function_ref.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
-#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/mutex.h"
 #include "google/protobuf/class_data.h"
@@ -384,7 +383,7 @@ struct NameLimits {
 // Provide an Abseil formatter for edition names.
 template <typename Sink>
 void AbslStringify(Sink& sink, Edition edition) {
-  absl::Format(&sink, "%v", internal::ShortEditionName(edition));
+  sink.Append(internal::ShortEditionName(edition));
 }
 
 // Describes a type of protocol message, or a particular group within a
@@ -450,7 +449,7 @@ class PROTOBUF_EXPORT Descriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const Descriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Returns true if this is a placeholder for an unknown type. This will
@@ -1167,7 +1166,7 @@ class PROTOBUF_EXPORT FieldDescriptor : private internal::SymbolBase,
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const FieldDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Helper method to get the CppType for a particular Type.
@@ -1419,7 +1418,7 @@ class PROTOBUF_EXPORT OneofDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const OneofDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -1546,7 +1545,7 @@ class PROTOBUF_EXPORT EnumDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const EnumDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Returns true if this is a placeholder for an unknown enum. This will
@@ -1764,7 +1763,7 @@ class PROTOBUF_EXPORT EnumValueDescriptor : private internal::SymbolBaseN<0>,
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const EnumValueDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -1877,7 +1876,7 @@ class PROTOBUF_EXPORT ServiceDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const ServiceDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -1989,7 +1988,7 @@ class PROTOBUF_EXPORT MethodDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const MethodDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Source Location ---------------------------------------------------
@@ -2194,7 +2193,7 @@ class PROTOBUF_EXPORT FileDescriptor : private internal::SymbolBase {
   // Allows formatting with absl and gtest.
   template <typename Sink>
   friend void AbslStringify(Sink& sink, const FileDescriptor& d) {
-    absl::Format(&sink, "%s", d.DebugString());
+    sink.Append(d.DebugString());
   }
 
   // Returns true if this is a placeholder for an unknown file. This will

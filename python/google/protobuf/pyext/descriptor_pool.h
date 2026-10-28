@@ -114,10 +114,6 @@ PyDescriptorPool* GetDefaultDescriptorPool();
 // Returns a *borrowed* reference.
 PyDescriptorPool* GetDescriptorPool_FromPool(const DescriptorPool* pool);
 
-// Wraps a C++ descriptor pool in a Python object, creates it if necessary.
-// Returns a new reference.
-PyObject* PyDescriptorPool_FromPool(const DescriptorPool* pool);
-
 // Wraps a C++ descriptor pool (held by shared_ptr) in a Python object.
 // The Python object extends the lifetime of the C++ pool and optional database.
 PyObject* PyDescriptorPool_FromSharedPool(

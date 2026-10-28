@@ -452,7 +452,6 @@ static absl::StatusOr<Stats> AnalyzeProfileProto(
   if (options.print_unused_threshold) {
     stream << "Unlikely Used Threshold = " << analyzer.UnlikelyUsedThreshold()
            << "\n"
-           << "See http://go/pdlazy for more information\n"
            << "-----------------------------------------\n";
   }
 

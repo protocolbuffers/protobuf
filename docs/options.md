@@ -47,7 +47,7 @@ about your project (name and website) so we can add an entry for you.
 
 1.  Unix Domain RPC code generator plugin
 
-    *   Website: http://go/udrpc
+    *   Website: ???
     *   Extensions: 1006
 
 1.  Object-C generator plugin (Plausible Labs)

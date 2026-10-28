@@ -3244,11 +3244,9 @@ TEST(GeneratedMapFieldTest, MessagesMustMerge) {
   (*map_message.mutable_map_field())[0] = with_dummy5;
   EXPECT_FALSE(map_message.IsInitialized());
 
-  // The wire format of MapEntry is straightforward (*) and can be manually
+  // The wire format of MapEntry is straightforward and can be manually
   // constructed to force merging of two uninitialized messages that would
   // result in an initialized message.
-  //
-  // (*) http://google3/net/proto2/internal/map_test.cc?l=2433&rcl=310012028
   std::string dummy4_s = with_dummy4.SerializePartialAsString();
   std::string dummy5_s = with_dummy5.SerializePartialAsString();
   int payload_size = dummy4_s.size() + dummy5_s.size();
