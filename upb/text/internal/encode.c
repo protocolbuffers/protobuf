@@ -47,13 +47,10 @@
 
 static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
                                   const upb_MiniTableField* f,
-                                  const upb_MiniTable* mt, const char* label,
-                                  const upb_MiniTableExtension* ext);
+                                  const char* label);
 
 static void _upb_ArrayDebugString(txtenc* e, const upb_Array* arr,
-                                  const upb_MiniTableField* f,
-                                  const upb_MiniTable* mt,
-                                  const upb_MiniTableExtension* ext);
+                                  const upb_MiniTableField* f);
 
 /*
  * Unknown fields are printed by number.
@@ -180,12 +177,11 @@ void UPB_PRIVATE(_upb_TextEncode_ParseUnknown)(txtenc* e,
           upb_Extension_MiniTableExtension(ext_struct);
       upb_MessageValue val_ext = upb_Extension_GetValue(ext_struct);
       const upb_MiniTableField* f = upb_MiniTableExtension_ToField(ext);
-      const upb_MiniTable* mt = upb_MiniTableExtension_Extendee(ext);
       UPB_ASSERT(!upb_MiniTableField_IsMap(f));
       if (upb_MiniTableField_IsArray(f)) {
-        _upb_ArrayDebugString(e, val_ext.array_val, f, mt, ext);
+        _upb_ArrayDebugString(e, val_ext.array_val, f);
       } else {
-        _upb_FieldDebugString(e, val_ext, f, mt, NULL, ext);
+        _upb_FieldDebugString(e, val_ext, f, NULL);
       }
     }
   }
@@ -238,8 +234,7 @@ void UPB_PRIVATE(_upb_TextEncode_Scalar)(txtenc* e, upb_MessageValue val,
 
 static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
                                   const upb_MiniTableField* f,
-                                  const upb_MiniTable* mt, const char* label,
-                                  const upb_MiniTableExtension* ext) {
+                                  const char* label) {
   UPB_PRIVATE(_upb_TextEncode_Indent)(e);
   const upb_CType ctype = upb_MiniTableField_CType(f);
   const bool is_ext = upb_MiniTableField_IsExtension(f);
@@ -259,8 +254,7 @@ static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
     UPB_PRIVATE(_upb_TextEncode_Printf)(e, " {");
     UPB_PRIVATE(_upb_TextEncode_EndField)(e);
     e->indent_depth++;
-    const upb_MiniTable* subm = ext ? upb_MiniTableExtension_GetSubMessage(ext)
-                                    : upb_MiniTable_SubMessage(f);
+    const upb_MiniTable* subm = upb_MiniTable_SubMessage(f);
     UPB_PRIVATE(_upb_MessageDebugString)(e, val.msg_val, subm);
     e->indent_depth--;
     UPB_PRIVATE(_upb_TextEncode_Indent)(e);
@@ -290,18 +284,15 @@ static void _upb_FieldDebugString(txtenc* e, upb_MessageValue val,
  *    5: 3
  */
 static void _upb_ArrayDebugString(txtenc* e, const upb_Array* arr,
-                                  const upb_MiniTableField* f,
-                                  const upb_MiniTable* mt,
-                                  const upb_MiniTableExtension* ext) {
+                                  const upb_MiniTableField* f) {
   for (size_t i = 0, n = upb_Array_Size(arr); i < n; i++) {
-    _upb_FieldDebugString(e, upb_Array_Get(arr, i), f, mt, NULL, ext);
+    _upb_FieldDebugString(e, upb_Array_Get(arr, i), f, NULL);
   }
 }
 
 static void _upb_MapEntryDebugString(txtenc* e, upb_MessageValue key,
                                      upb_MessageValue val,
-                                     const upb_MiniTableField* f,
-                                     const upb_MiniTable* mt) {
+                                     const upb_MiniTableField* f) {
   const upb_MiniTable* entry = upb_MiniTable_SubMessage(f);
   const upb_MiniTableField* key_f = upb_MiniTable_MapKey(entry);
   const upb_MiniTableField* val_f = upb_MiniTable_MapValue(entry);
@@ -311,8 +302,8 @@ static void _upb_MapEntryDebugString(txtenc* e, upb_MessageValue key,
   UPB_PRIVATE(_upb_TextEncode_EndField)(e);
   e->indent_depth++;
 
-  _upb_FieldDebugString(e, key, key_f, entry, "key", NULL);
-  _upb_FieldDebugString(e, val, val_f, entry, "value", NULL);
+  _upb_FieldDebugString(e, key, key_f, "key");
+  _upb_FieldDebugString(e, val, val_f, "value");
 
   e->indent_depth--;
   UPB_PRIVATE(_upb_TextEncode_Indent)(e);
@@ -333,13 +324,12 @@ static void _upb_MapEntryDebugString(txtenc* e, upb_MessageValue key,
  *    }
  */
 static void _upb_MapDebugString(txtenc* e, const upb_Map* map,
-                                const upb_MiniTableField* f,
-                                const upb_MiniTable* mt) {
+                                const upb_MiniTableField* f) {
   if (e->options & UPB_TXTENC_NOSORT) {
     size_t iter = kUpb_Map_Begin;
     upb_MessageValue key, val;
     while (upb_Map_Next(map, &key, &val, &iter)) {
-      _upb_MapEntryDebugString(e, key, val, f, mt);
+      _upb_MapEntryDebugString(e, key, val, f);
     }
   } else {
     if (upb_Map_Size(map) == 0) return;
@@ -355,7 +345,7 @@ static void _upb_MapDebugString(txtenc* e, const upb_Map* map,
       upb_MessageValue key, val;
       memcpy(&key, &ent.k, sizeof(key));
       memcpy(&val, &ent.v, sizeof(val));
-      _upb_MapEntryDebugString(e, key, val, f, mt);
+      _upb_MapEntryDebugString(e, key, val, f);
     }
     _upb_mapsorter_popmap(&e->sorter, &sorted);
   }
@@ -372,32 +362,27 @@ void UPB_PRIVATE(_upb_MessageDebugString)(txtenc* e, const upb_Message* msg,
 
   while (UPB_PRIVATE(_upb_Message_NextBaseField)(msg, mt, &f, &val, &iter)) {
     if (upb_MiniTableField_IsMap(f)) {
-      _upb_MapDebugString(e, val.map_val, f, mt);
+      _upb_MapDebugString(e, val.map_val, f);
     } else if (upb_MiniTableField_IsArray(f)) {
-      // ext set to NULL as we're not dealing with extensions yet
-      _upb_ArrayDebugString(e, val.array_val, f, mt, NULL);
+      _upb_ArrayDebugString(e, val.array_val, f);
     } else {
-      // ext set to NULL as we're not dealing with extensions yet
       // label set to NULL as we're not currently working with a MapEntry
-      _upb_FieldDebugString(e, val, f, mt, NULL, NULL);
+      _upb_FieldDebugString(e, val, f, NULL);
     }
   }
 
-  const upb_MiniTableExtension* ext;
   upb_MessageValue val_ext;
   iter = kUpb_Message_ExtensionBegin;
-  while (upb_Message_NextExtension(msg, &ext, &val_ext, &iter)) {
-    const upb_MiniTableField* f = &ext->UPB_PRIVATE(field);
-    // It is not sufficient to only pass |f| as we lose valuable information
-    // about sub-messages. It is required that we pass |ext|.
+  while (upb_Message_NextExtensionField(msg, &f, &val_ext, &iter)) {
+    // The extension's field is sufficient to find its sub-message, if any.
     if (upb_MiniTableField_IsMap(f)) {
       UPB_UNREACHABLE();
       break;
     } else if (upb_MiniTableField_IsArray(f)) {
-      _upb_ArrayDebugString(e, val_ext.array_val, f, mt, ext);
+      _upb_ArrayDebugString(e, val_ext.array_val, f);
     } else {
       // label set to NULL as we're not currently working with a MapEntry
-      _upb_FieldDebugString(e, val_ext, f, mt, NULL, ext);
+      _upb_FieldDebugString(e, val_ext, f, NULL);
     }
   }
 

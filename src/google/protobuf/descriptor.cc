@@ -1486,7 +1486,7 @@ class DescriptorPool::Tables {
 
   // Roll back the Tables to the state of the checkpoint at the top of the
   // stack, removing everything that was added after that point.
-  void RollbackToLastCheckpoint(DeferredValidation& deferred_validation);
+  void RollbackToLastCheckpoint();
 
   class ScopedBuildState;
 
@@ -1511,6 +1511,9 @@ class DescriptorPool::Tables {
   void PopPendingFile() {
     ABSL_DCHECK(!build_state().pending_files.empty());
     build_state().pending_files.pop_back();
+  }
+  DeferredValidation& deferred_validation() {
+    return build_state().deferred_validation;
   }
 
   // The set of descriptors for which we've already loaded the full
@@ -1621,7 +1624,13 @@ class DescriptorPool::Tables {
     int pending_files_before_checkpoint;
     int pending_extensions_before_checkpoint;
   };
+
   struct BuildState {
+    explicit BuildState(DeferredValidation& deferred_validation)
+        : deferred_validation(deferred_validation) {}
+
+    DeferredValidation& deferred_validation;
+
     std::vector<CheckPoint> checkpoints;
     std::vector<Symbol> symbols_after_checkpoint;
     std::vector<const FileDescriptor*> files_after_checkpoint;
@@ -1651,12 +1660,15 @@ class DescriptorPool::Tables {
     ABSL_DCHECK(build_state_ != nullptr);
     return *build_state_;
   }
+
   BuildState* build_state_ = nullptr;
 };
 
 class DescriptorPool::Tables::ScopedBuildState {
  public:
-  explicit ScopedBuildState(Tables& tables) : tables_(tables) {
+  explicit ScopedBuildState(Tables& tables,
+                            DeferredValidation& deferred_validation)
+      : tables_(tables), state_(deferred_validation) {
     ABSL_DCHECK(tables_.build_state_ == nullptr);
     tables_.build_state_ = &state_;
   }
@@ -1717,8 +1729,7 @@ void DescriptorPool::Tables::ClearLastCheckpoint() {
   }
 }
 
-void DescriptorPool::Tables::RollbackToLastCheckpoint(
-    DeferredValidation& deferred_validation) {
+void DescriptorPool::Tables::RollbackToLastCheckpoint() {
   BuildState& state = build_state();
   ABSL_DCHECK(!state.checkpoints.empty());
   const CheckPoint& checkpoint = state.checkpoints.back();
@@ -1729,7 +1740,7 @@ void DescriptorPool::Tables::RollbackToLastCheckpoint(
   }
   for (size_t i = checkpoint.pending_files_before_checkpoint;
        i < state.files_after_checkpoint.size(); i++) {
-    deferred_validation.RollbackFile(state.files_after_checkpoint[i]);
+    state.deferred_validation.RollbackFile(state.files_after_checkpoint[i]);
     files_by_name_.erase(state.files_after_checkpoint[i]);
   }
   for (size_t i = checkpoint.pending_extensions_before_checkpoint;
@@ -1786,8 +1797,8 @@ Symbol DescriptorPool::Tables::FindByNameHelper(const DescriptorPool* pool,
 
     if (result.IsNull() && pool->fallback_database_ != nullptr) {
       // Symbol still not found, so check fallback database.
-      ScopedBuildState build_state(*this);
-      if (pool->TryFindSymbolInFallbackDatabase(name, deferred_validation)) {
+      ScopedBuildState build_state(*this, deferred_validation);
+      if (pool->TryFindSymbolInFallbackDatabase(name)) {
         result = FindSymbol(name);
       }
     }
@@ -2350,8 +2361,8 @@ const FileDescriptor* DescriptorPool::FindFileByName(
       if (result != nullptr) return result;
     }
     if (fallback_database_ != nullptr) {
-      Tables::ScopedBuildState build_state(*tables_);
-      if (TryFindFileInFallbackDatabase(name, deferred_validation)) {
+      Tables::ScopedBuildState build_state(*tables_, deferred_validation);
+      if (TryFindFileInFallbackDatabase(name)) {
         result = tables_->FindFile(name);
       }
     }
@@ -2375,8 +2386,8 @@ const FileDescriptor* DescriptorPool::FindFileContainingSymbol(
       if (file_result != nullptr) return file_result;
     }
     if (fallback_database_ != nullptr) {
-      Tables::ScopedBuildState build_state(*tables_);
-      if (TryFindSymbolInFallbackDatabase(symbol_name, deferred_validation)) {
+      Tables::ScopedBuildState build_state(*tables_, deferred_validation);
+      if (TryFindSymbolInFallbackDatabase(symbol_name)) {
         result = tables_->FindSymbol(symbol_name);
         if (!result.IsNull()) file_result = result.GetFile();
       }
@@ -2465,9 +2476,8 @@ const FieldDescriptor* DescriptorPool::FindExtensionByNumber(
       if (result != nullptr) return result;
     }
     if (fallback_database_ != nullptr) {
-      Tables::ScopedBuildState build_state(*tables_);
-      if (TryFindExtensionInFallbackDatabase(extendee, number,
-                                             deferred_validation)) {
+      Tables::ScopedBuildState build_state(*tables_, deferred_validation);
+      if (TryFindExtensionInFallbackDatabase(extendee, number)) {
         result = tables_->FindExtension(extendee, number);
       }
     }
@@ -2538,11 +2548,10 @@ void DescriptorPool::FindAllExtensions(
       std::vector<int> numbers;
       if (fallback_database_->FindAllExtensionNumbers(
               std::string(extendee->full_name()), &numbers)) {
-        Tables::ScopedBuildState build_state(*tables_);
+        Tables::ScopedBuildState build_state(*tables_, deferred_validation);
         for (int number : numbers) {
           if (tables_->FindExtension(extendee, number) == nullptr) {
-            TryFindExtensionInFallbackDatabase(extendee, number,
-                                               deferred_validation);
+            TryFindExtensionInFallbackDatabase(extendee, number);
           }
         }
         tables_->extensions_loaded_from_db_.insert(extendee);
@@ -2793,7 +2802,7 @@ EnumDescriptor::FindReservedRangeContainingNumber(int number) const {
 // -------------------------------------------------------------------
 
 bool DescriptorPool::TryFindFileInFallbackDatabase(
-    absl::string_view name, DeferredValidation& deferred_validation) const {
+    absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
   if (tables_->IsKnownBadFile(name)) return false;
@@ -2805,9 +2814,9 @@ bool DescriptorPool::TryFindFileInFallbackDatabase(
     return database.FindFileByName(std::string(filename), &output);
   };
 
-  auto& file_proto = deferred_validation.CreateProto();
+  auto& file_proto = tables_->deferred_validation().CreateProto();
   if (!find_file(*fallback_database_, name, file_proto) ||
-      BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
+      BuildFileFromDatabase(file_proto) == nullptr) {
     tables_->AddKnownBadFile(name);
     return false;
   }
@@ -2836,12 +2845,12 @@ bool DescriptorPool::IsSubSymbolOfBuiltType(absl::string_view name) const {
 }
 
 bool DescriptorPool::TryFindSymbolInFallbackDatabase(
-    absl::string_view name, DeferredValidation& deferred_validation) const {
+    absl::string_view name) const {
   if (fallback_database_ == nullptr) return false;
 
   if (tables_->IsKnownBadSymbol(name)) return false;
 
-  auto& file_proto = deferred_validation.CreateProto();
+  auto& file_proto = tables_->deferred_validation().CreateProto();
   if (  // We skip looking in the fallback database if the name is a sub-symbol
         // of any descriptor that already exists in the descriptor pool (except
         // for package descriptors).  This is valid because all symbols except
@@ -2869,7 +2878,7 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
       || tables_->FindFile(file_proto.name()) != nullptr
 
       // Build the file.
-      || BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
+      || BuildFileFromDatabase(file_proto) == nullptr) {
     tables_->AddKnownBadSymbol(name);
     return false;
   }
@@ -2878,11 +2887,10 @@ bool DescriptorPool::TryFindSymbolInFallbackDatabase(
 }
 
 bool DescriptorPool::TryFindExtensionInFallbackDatabase(
-    const Descriptor* containing_type, int field_number,
-    DeferredValidation& deferred_validation) const {
+    const Descriptor* containing_type, int field_number) const {
   if (fallback_database_ == nullptr) return false;
 
-  auto& file_proto = deferred_validation.CreateProto();
+  auto& file_proto = tables_->deferred_validation().CreateProto();
   if (!fallback_database_->FindFileContainingExtension(
           std::string(containing_type->full_name()), field_number,
           &file_proto)) {
@@ -2896,7 +2904,7 @@ bool DescriptorPool::TryFindExtensionInFallbackDatabase(
     return false;
   }
 
-  if (BuildFileFromDatabase(file_proto, deferred_validation) == nullptr) {
+  if (BuildFileFromDatabase(file_proto) == nullptr) {
     return false;
   }
 
@@ -4307,10 +4315,10 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
   DeferredValidation deferred_validation(this, error_collector);
   const FileDescriptor* file;
   {
-    Tables::ScopedBuildState build_state(*tables_);
-    file = internal::DescriptorBuilder::New(
-               this, tables_.get(), deferred_validation, error_collector)
-               ->BuildFile(proto);
+    Tables::ScopedBuildState build_state(*tables_, deferred_validation);
+    file =
+        internal::DescriptorBuilder::New(this, tables_.get(), error_collector)
+            ->BuildFile(proto);
   }
   if (deferred_validation.Validate()) {
     return file;
@@ -4319,8 +4327,7 @@ const FileDescriptor* DescriptorPool::BuildFileCollectingErrors(
 }
 
 const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
-    const FileDescriptorProto& proto,
-    DeferredValidation& deferred_validation) const {
+    const FileDescriptorProto& proto) const {
   mutex_->AssertHeld();
   build_started_ = true;
   if (tables_->IsKnownBadFile(proto.name())) {
@@ -4328,10 +4335,9 @@ const FileDescriptor* DescriptorPool::BuildFileFromDatabase(
   }
   const FileDescriptor* result;
   const auto build_file = [&] {
-    result =
-        internal::DescriptorBuilder::New(
-            this, tables_.get(), deferred_validation, default_error_collector_)
-            ->BuildFile(proto);
+    result = internal::DescriptorBuilder::New(this, tables_.get(),
+                                              default_error_collector_)
+                 ->BuildFile(proto);
   };
   if (dispatcher_ != nullptr) {
     (*dispatcher_)(build_file);
@@ -4421,11 +4427,9 @@ bool DescriptorPool::ResolvesFeaturesForImpl(int extension_number) const {
 
 internal::DescriptorBuilder::DescriptorBuilder(
     const DescriptorPool* pool, DescriptorPool::Tables* tables,
-    DescriptorPool::DeferredValidation& deferred_validation,
     DescriptorPool::ErrorCollector* error_collector)
     : pool_(pool),
       tables_(tables),
-      deferred_validation_(deferred_validation),
       error_collector_(error_collector),
       possible_undeclared_dependency_(nullptr),
       undefine_resolved_name_("") {}
@@ -4576,9 +4580,9 @@ Symbol internal::DescriptorBuilder::FindSymbolNotEnforcingDepsHelper(
       if (pool != pool_) {
         underlay_build_state =
             std::make_unique<DescriptorPool::Tables::ScopedBuildState>(
-                *pool->tables_);
+                *pool->tables_, tables_->deferred_validation());
       }
-      if (pool->TryFindSymbolInFallbackDatabase(name, deferred_validation_)) {
+      if (pool->TryFindSymbolInFallbackDatabase(name)) {
         result = pool->tables_->FindSymbol(name);
       }
     }
@@ -5577,7 +5581,7 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
              pool_->underlay_->FindFileByName(name) == nullptr)) {
           // We don't care what this returns since we'll find out below anyway.
           internal::ScopedFallbackDatabaseErrorSuppressor suppressor;
-          pool_->TryFindFileInFallbackDatabase(name, deferred_validation_);
+          pool_->TryFindFileInFallbackDatabase(name);
         }
       }
       tables_->PopPendingFile();
@@ -5603,7 +5607,7 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
     result->finished_building_ = true;
     alloc->ExpectConsumed();
   } else {
-    tables_->RollbackToLastCheckpoint(deferred_validation_);
+    tables_->RollbackToLastCheckpoint();
   }
 
   return result;
@@ -5980,13 +5984,13 @@ PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     internal::VisitDescriptors(
         *result, proto, [&](const auto& descriptor, const auto& desc_proto) {
           if (!IsDefaultInstance(*descriptor.proto_features_)) {
-            deferred_validation_.ValidateFeatureLifetimes(
+            tables_->deferred_validation().ValidateFeatureLifetimes(
                 GetFile(descriptor), {descriptor.proto_features_, &desc_proto,
                                       GetFullName(descriptor), proto.name()});
           }
           if (!IsDefaultInstance(*descriptor.options_) &&
               descriptor.options_->ByteSizeLong() != 0) {
-            deferred_validation_.ValidateFeatureLifetimes(
+            tables_->deferred_validation().ValidateFeatureLifetimes(
                 GetFile(descriptor), {descriptor.options_, &desc_proto,
                                       GetFullName(descriptor), proto.name()});
           }
