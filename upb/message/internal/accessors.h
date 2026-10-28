@@ -903,12 +903,13 @@ UPB_API_INLINE void upb_Message_ClearExtension(
   UPB_ASSERT(!upb_Message_IsFrozen(msg));
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return;
+  const upb_MiniTableField* f = upb_MiniTableExtension_ToField(e);
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
     if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       const upb_Extension* ext =
           upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-      if (upb_Extension_MiniTableExtension(ext) == e) {
+      if (upb_Extension_MiniTableField(ext) == f) {
         in->aux_data[i] = upb_TaggedAuxPtr_Null();
         return;
       }
