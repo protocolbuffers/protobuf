@@ -68,6 +68,7 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
       4,  // num_field_entries
       2,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -99,12 +100,11 @@ constexpr CppFeatures::ParseTableT_ CppFeatures::_Internal::GenerateParseTable(c
       {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.enum_name_uses_string_view_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
       // optional .pb.CppFeatures.RepeatedType repeated_type = 4 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(CppFeatures, _impl_.repeated_type_), _Internal::kHasBitsOffset + 3, 1, (0 | ::_fl::kFcOptional | ::_fl::kEnumRange)},
-    }},
-    {{
-        {0, 3},
-        {0, 2},
-    }},
-    {{
+    }}, {{
+      {0, 3},
+      {0, 2},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -166,6 +166,8 @@ struct CppFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(CppFeaturesGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(CppFeaturesGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFeaturesGlobalsTypeInternal CppFeatures_globals_

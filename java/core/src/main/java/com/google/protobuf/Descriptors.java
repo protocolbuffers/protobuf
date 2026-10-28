@@ -1982,8 +1982,7 @@ public final class Descriptors {
         if (ch == '_') {
           isNextUpperCase = true;
         } else if (isNextUpperCase) {
-          // This closely matches the logic for ASCII characters in:
-          // http://google3/google/protobuf/descriptor.cc?l=249-251&rcl=228891689
+          // This closely matches the logic for ASCII characters in descriptor.cc.
           if ('a' <= ch && ch <= 'z') {
             ch = (char) (ch - 'a' + 'A');
           }

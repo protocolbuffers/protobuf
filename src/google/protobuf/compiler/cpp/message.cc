@@ -5372,8 +5372,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
            [&] {
              if (!use_implicit_weak_descriptor) return;
              p->Emit({{"index", index_in_file_messages_}}, R"cc(
-               ::_pbi::WeakDescriptorDefaultTail tail = {
-                   file_message_globals + $index$, sizeof($globals_type$)};
+               ::_pbi::WeakDescriptorDefaultTail tail = {file_message_globals +
+                                                         $index$};
              )cc");
            }},
           Sub({"SECTION",
@@ -5425,6 +5425,8 @@ void MessageGenerator::GenerateSourceDefaultInstance(io::Printer* p) {
         };
         static_assert(PROTOBUF_FIELD_OFFSET($globals_type$, _default) ==
                       ::_pbi::MessageGlobalsBase::OffsetToDefault());
+        static_assert(alignof($globals_type$) ==
+                      ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
         PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT$ dllexport_decl$
             PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 $const $$globals_type$ $globals$

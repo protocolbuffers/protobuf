@@ -298,8 +298,7 @@ void LeftoverBuffer::remove_prefix(uint32_t pos) {
 }
 
 // Returns true if "fragment" potentially prefixed with "leftover" is valid
-// UTF8. Copied from `CordIsValid()`:
-// http://google3/util/utf8/internal/unilib.cc;l=85;rcl=740640507
+// UTF8.
 bool IsViewValidUTF8WithLeftover(absl::string_view fragment,
                                  LeftoverBuffer& leftover) {
   if (size_t leftover_size = leftover.size; leftover_size > 0) {

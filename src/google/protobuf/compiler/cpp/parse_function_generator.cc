@@ -248,6 +248,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         $num_field_entries$,  // num_field_entries
         $num_aux_entries$,  // num_aux_entries
         $aux_offset$,
+        sizeof(ParseTableT_),
         class_data,
         $post_loop_handler$,
         $fallback$,  // fallback
@@ -381,7 +382,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
           // The last entry of the skipmap are all 1's.
           p->Emit("65535, 65535\n");
         }},
-       {"field_and_aux_entries",
+       {"field_entries",
         [&] {
           if (ordered_fields_.empty() &&
               !descriptor_->options().message_set_wire_format()) {
@@ -389,41 +390,21 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                 << "Invalid message: " << descriptor_->full_name() << " has "
                 << tc_table_info_->aux_entries.size()
                 << " auxiliary field entries, but no fields";
-            p->Emit("// no field_entries, or aux_entries\n");
+            p->Emit(R"cc(
+              // no field_entries
+            )cc");
             return;
           }
 
-          p->Emit(
-              {
-                  {"field_entries", [&] { GenerateFieldEntries(p); }},
-                  {"aux_entries",
-                   [&] {
-                     if (tc_table_info_->aux_entries.empty()) {
-                       p->Emit("// no aux_entries\n");
-                     } else {
-                       p->Emit(
-                           {
-                               {"aux_entries_list", GenerateAuxEntries},
-                           },
-                           // clang-format off
-                              R"cc(
-                                {{
-                                    $aux_entries_list$
-                                }},
-                              )cc"
-                           // clang-format on
-                       );
-                     }
-                   }},
-              },
-              // clang-format off
-                 R"cc(
-                 {{
-                   $field_entries$,
-                 }},
-                 $aux_entries$)cc"
-              // clang-format on
-          );
+          GenerateFieldEntries(p);
+        }},
+       {"aux_entries",
+        [&] {
+          if (tc_table_info_->aux_entries.empty()) {
+            p->Emit("// no aux_entries\n");
+          } else {
+            GenerateAuxEntries();
+          }
         }},
        {"field_names", [&] { GenerateFieldNames(p); }}},
       // Disable clang-format, as we want to generate a denser table
@@ -439,9 +420,12 @@ constexpr $Msg$::ParseTableT_ $Msg$::_Internal::GenerateParseTable(const ::_pbi:
       $fast_entries$
     }}, {{
       $field_lookup_table$
-    }}, $field_and_aux_entries$,
-    {{
-      $field_names$,
+    }}, {{
+      $field_entries$
+    }}, {{
+      $aux_entries$
+    }}, {{
+      $field_names$
     }},
   };
 }
@@ -579,7 +563,9 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
 
 void ParseFunctionGenerator::GenerateFieldNames(io::Printer* p) {
   if (tc_table_info_->field_name_data.empty()) {
-    // No names to output.
+    p->Emit(R"cc(
+      // no field_names
+    )cc");
     return;
   }
 

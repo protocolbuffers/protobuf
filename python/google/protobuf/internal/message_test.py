@@ -78,9 +78,11 @@ class MessageTest(unittest.TestCase):
       msg2 = message_module.TestAllTypes()
       msg2.ParseFromString(serialized)
       msg3 = message_module.TestAllTypes()
-      _ = msg3.optional_nested_message
-      _ = msg3.optional_import_message
+      nested3 = msg3.optional_nested_message
+      imp3 = msg3.optional_import_message
+      rep3 = msg3.repeated_nested_message
       msg3.MergeFrom(msg2)
+      del nested3, imp3, rep3
       _ = msg3.optional_string
       _ = msg3.optional_bytes
       _ = msg3.ByteSize()
@@ -91,8 +93,10 @@ class MessageTest(unittest.TestCase):
 
       msg4 = message_module.TestAllTypes()
       msg4.CopyFrom(msg3)
-      _ = msg4.optional_nested_message
+      nested4 = msg4.optional_nested_message
+      rep4 = msg4.repeated_nested_message
       msg4.Clear()
+      del nested4, rep4
 
       # Try deepcopy
       _ = copy.deepcopy(msg3)

@@ -93,7 +93,7 @@ static PyObject* PyUpb_ExtensionDict_FindExtensionByNumber(PyObject* _self,
 }
 
 static void PyUpb_ExtensionDict_Dealloc(PyUpb_ExtensionDict* self) {
-  PyUpb_Message_ClearExtensionDict(self->msg);
+  PyUpb_Message_ClearExtensionDict(self->msg, (PyObject*)self);
   Py_DECREF(self->msg);
   PyUpb_Dealloc(self);
 }

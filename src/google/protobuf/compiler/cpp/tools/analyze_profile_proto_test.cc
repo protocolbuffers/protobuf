@@ -46,7 +46,6 @@ TEST(AnalyzeProfileProtoTest, EmptyProfileToText) {
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
                "Unlikely Used Threshold = 0\n"
-               "See http://go/pdlazy for more information\n"
                "-----------------------------------------\n");
 }
 

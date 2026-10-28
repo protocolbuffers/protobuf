@@ -7,6 +7,7 @@
 
 """Unittest for thread safe"""
 
+from concurrent import futures
 import sys
 import threading
 import time
@@ -261,6 +262,118 @@ class ThreadSafeTest(unittest.TestCase):
       thread.start()
     for thread in threads:
       thread.join()
+
+  def testConcurrentExtensionWrapperIdentityAndRetirement(self):
+    msg = unittest_pb2.TestAllExtensions()
+    msg.Extensions[unittest_pb2.optional_int32_extension] = 42
+    barrier = threading.Barrier(8)
+    # Only upb caches the Extensions wrapper; cpp and pure Python return a new
+    # one on every access.
+    expect_same = api_implementation.Type() == 'upb'
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        ext1 = msg.Extensions
+        ext2 = msg.Extensions
+        same = ext1 is ext2
+        val = ext1[unittest_pb2.optional_int32_extension]
+        del ext1, ext2
+        if expect_same:
+          self.assertTrue(same)
+        self.assertEqual(val, 42)
+
+    # Future.result() re-raises any exception from the worker thread.
+    with futures.ThreadPoolExecutor(max_workers=8) as executor:
+      results = [executor.submit(Worker) for _ in range(8)]
+    for result in results:
+      result.result()
+
+  def testExtensionWrapperOwnsMessage(self):
+    msg = unittest_pb2.TestAllExtensions()
+    msg.Extensions[unittest_pb2.optional_int32_extension] = 99
+    ext = msg.Extensions
+    del msg
+    self.assertEqual(ext[unittest_pb2.optional_int32_extension], 99)
+
+  def testStubMetadataDuringReification(self):
+    source = unittest_pb2.TestAllTypes()
+    source.optional_nested_message.bb = 7
+
+    def RunOnce():
+      parent = unittest_pb2.TestAllTypes()
+      stub = parent.optional_nested_message
+      barrier = threading.Barrier(4)
+
+      def Mutator():
+        barrier.wait()
+        parent.MergeFrom(source)
+
+      def Inspector():
+        barrier.wait()
+        for _ in range(200):
+          self.assertFalse(hasattr(stub, 'Extensions'))
+          self.assertFalse(hasattr(stub, 'nonexistent_field'))
+          self.assertIs(
+              stub.DESCRIPTOR,
+              unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
+          )
+          self.assertIs(
+              stub.DESCRIPTOR.containing_type,
+              unittest_pb2.TestAllTypes.DESCRIPTOR,
+          )
+
+      # Future.result() re-raises any exception from the worker thread.
+      with futures.ThreadPoolExecutor(max_workers=4) as executor:
+        results = [executor.submit(Mutator)] + [
+            executor.submit(Inspector) for _ in range(3)
+        ]
+      for result in results:
+        result.result()
+      self.assertEqual(stub.bb, 7)
+
+    for _ in range(50):
+      RunOnce()
+
+  def testConcurrentContainingTypeAccess(self):
+    pool = descriptor_pool.DescriptorPool()
+    base_proto = descriptor_pb2.FileDescriptorProto(
+        name='containing_type_base.proto', package='pkg'
+    )
+    outer = base_proto.message_type.add(name='OuterMessage')
+    outer.nested_type.add(name='NestedMessage')
+    pool.Add(base_proto)
+    top_desc = pool.FindMessageTypeByName('pkg.OuterMessage')
+    nested_desc = pool.FindMessageTypeByName('pkg.OuterMessage.NestedMessage')
+
+    dynamic_files = []
+    for i in range(200):
+      f_proto = descriptor_pb2.FileDescriptorProto(
+          name=f'containing_type_dyn_{i}.proto', package='pkg'
+      )
+      f_proto.message_type.add(name=f'DynMessage_{i}')
+      dynamic_files.append(f_proto)
+
+    barrier = threading.Barrier(5)
+
+    def Adder():
+      barrier.wait()
+      for f_proto in dynamic_files:
+        pool.Add(f_proto)
+
+    def Worker():
+      barrier.wait()
+      for _ in range(500):
+        self.assertIs(nested_desc.containing_type, top_desc)
+        self.assertIsNone(top_desc.containing_type)
+
+    # Future.result() re-raises any exception from the worker thread.
+    with futures.ThreadPoolExecutor(max_workers=5) as executor:
+      results = [executor.submit(Adder)] + [
+          executor.submit(Worker) for _ in range(4)
+      ]
+    for result in results:
+      result.result()
 
 
 class FreeThreadingTest(unittest.TestCase):
@@ -610,6 +723,52 @@ class FreeThreadingTest(unittest.TestCase):
       thread2.start()
       thread1.join()
       thread2.join()
+
+  def testConcurrentMergeFromAndSubObjectAccessRace(self):
+    """Tests snapshot iteration of unset_subobj_map during MergeFrom reification."""
+    pool = descriptor_pool.DescriptorPool()
+    file_proto = descriptor_pb2.FileDescriptorProto(name='weakmap_race.proto')
+    file_proto.message_type.add(name='RaceMessage')
+    pool.Add(file_proto)
+
+    source = unittest_proto3_pb2.TestAllTypes(
+        optional_nested_message=unittest_proto3_pb2.TestAllTypes.NestedMessage(
+            bb=42
+        ),
+        repeated_int32=[1, 2, 3],
+    )
+
+    def MergeMsg(msg, barrier):
+      barrier.wait()
+      msg.MergeFrom(source)
+      if hasattr(pool, '_obj_cache_count'):
+        _ = pool._obj_cache_count
+
+    def DropAndReaccessSub(stubs, barrier):
+      barrier.wait()
+      stubs.clear()
+      d = pool.FindMessageTypeByName('RaceMessage')
+      del d
+
+    for _ in range(500):
+      msg = unittest_proto3_pb2.TestAllTypes()
+      stubs = [
+          msg.optional_nested_message,
+          msg.optional_foreign_message,
+          msg.repeated_int32,
+      ]
+      barrier = threading.Barrier(2)
+
+      thread1 = threading.Thread(target=MergeMsg, args=(msg, barrier))
+      thread2 = threading.Thread(
+          target=DropAndReaccessSub, args=(stubs, barrier)
+      )
+      thread1.start()
+      thread2.start()
+      thread1.join()
+      thread2.join()
+      self.assertEqual(msg.optional_nested_message.bb, 42)
+      self.assertEqual(list(msg.repeated_int32), [1, 2, 3])
 
   @unittest.skipIf(not ALSO_RUN_BENCHMARKS, 'Benchmarks are disabled.')
   def testConcurrentGetOptionsBenchmark(self):

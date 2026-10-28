@@ -491,9 +491,14 @@ Reflection::Reflection(const Descriptor* descriptor,
       schema_(schema) {}
 
 Reflection::~Reflection() {
-  // No need to use sized delete. This code path is uncommon and it would not be
-  // worth saving or recalculating the size.
-  ::operator delete(const_cast<internal::TcParseTableBase*>(tcparse_table_));
+  static_assert(std::is_trivially_destructible_v<internal::TcParseTable<0>>,
+                "Parse tables must be trivially destructible since we don't "
+                "call their destructor below.");
+  if (tcparse_table_ != nullptr) {
+    internal::SizedDelete(
+        const_cast<internal::TcParseTableBase*>(tcparse_table_),
+        tcparse_table_->sizeof_self);
+  }
 }
 
 const UnknownFieldSet& Reflection::GetUnknownFields(
@@ -3954,6 +3959,7 @@ const internal::TcParseTableBase* Reflection::CreateTcParseTable() const {
       static_cast<uint16_t>(fields.size()),
       static_cast<uint16_t>(table_info.aux_entries.size()),
       aux_offset,
+      /*sizeof_self=*/static_cast<uint32_t>(byte_size),
       internal::GetClassData(*schema_.default_instance()),
       nullptr,
       GetFastParseFunction(table_info.fallback_function)};
