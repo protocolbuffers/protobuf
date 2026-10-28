@@ -14,26 +14,15 @@
 
 #ifdef PROTOBUF_PY_FUTURE_BREAKING_CHANGES
 
-// Removes non-standard clamping behavior in RepeatedContainer.pop()
-// Owner: runze@
-#define PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP 1
-
-// Fix PyProto C++ and upb implementations to return NotImplemented in
-// descriptor container equality checks for unrecognized types.
-// Owner: runze@
-#define PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 1
-
-// Make GetOptions() return immutable options.
-// Owner: runze@
-#define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 1
+// Raise AssertionError on message and map self-merge (msg.MergeFrom(msg) and
+// msg.map_field.MergeFrom(msg.map_field)) in upb, like the C++ implementation,
+// instead of merging from a copy (messages) or doing nothing (maps).
+// Owner: haberman@
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 1
 
 #else
 
-#define PROTOBUF_PY_FUTURE_REMOVE_POP_CLAMP 0
-
-#define PROTOBUF_PY_FUTURE_CONTAINER_EQ_RETURNS_NOTIMPLEMENTED 0
-
-#define PROTOBUF_PY_FUTURE_FREEZE_OPTIONS 0
+#define PROTOBUF_PY_FUTURE_SELF_MERGE_RAISES 0
 
 #endif
 

@@ -390,8 +390,8 @@ PROTOC_EXPORT bool IsRarelyPresent(const FieldDescriptor* field,
 // Returns true if `field` is likely to be present based on PDProto profile.
 bool IsLikelyPresent(const FieldDescriptor* field, const Options& options);
 
-absl::optional<float> GetPresenceProbability(const FieldDescriptor* field,
-                                             const Options& options);
+PROTOC_EXPORT absl::optional<float> GetPresenceProbability(
+    const FieldDescriptor* field, const Options& options);
 
 // GetFieldGroupPresenceProbability computes presence probability for a group of
 // fields. It uses the absence probability (easier to compute)
@@ -1077,9 +1077,10 @@ std::string FieldComment(const T* field, const Options& options) {
 }
 
 template <class T>
-void PrintFieldComment(const Formatter& format, const T* field,
-                       const Options& options) {
-  format("// $1$\n", FieldComment(field, options));
+void PrintFieldComment(io::Printer* p, const T* field, const Options& options) {
+  p->Emit({{"comment", FieldComment(field, options)}}, R"cc(
+    // $comment$
+  )cc");
 }
 
 class PROTOC_EXPORT NamespaceOpener {

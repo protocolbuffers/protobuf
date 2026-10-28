@@ -32,7 +32,6 @@ from io import BytesIO
 import math
 import struct
 import sys
-import warnings
 import weakref
 
 from google.protobuf import descriptor as descriptor_mod
@@ -1606,12 +1605,7 @@ def _SetFrozen(self):
 
 def _AssureWritable(self):
   if self._frozen:
-    warnings.warn(
-        'Mutating messages or containers returned by GetOptions() is'
-        ' deprecated and will raise an exception in a future release.',
-        category=FutureWarning,
-        stacklevel=3,
-    )
+    raise message_mod.FrozenInstanceError('Message is immutable')
   return self
 
 

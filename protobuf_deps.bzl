@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 """Load dependencies needed to compile the protobuf library as a 3rd-party consumer.
 
 The consumers should use the following WORKSPACE snippet, which loads dependencies
@@ -32,7 +39,6 @@ py_repositories()
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//bazel/private/oss:proto_bazel_features.bzl", "proto_bazel_features")  # buildifier: disable=bzl-visibility
 load("//python/dist:python_downloads.bzl", "python_nuget_package", "python_source_archive")
-load("//python/dist:system_python.bzl", "system_python")
 
 PROTOBUF_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
@@ -136,12 +142,6 @@ def protobuf_deps():
             url = "https://github.com/bazel-contrib/rules_python/releases/download/2.3.0/rules_python-2.3.0.tar.gz",
         )
 
-    if not native.existing_rule("system_python"):
-        system_python(
-            name = "system_python",
-            minimum_python_version = "3.10",
-        )
-
     if not native.existing_rule("rules_jvm_external"):
         http_archive(
             name = "rules_jvm_external",
@@ -186,17 +186,17 @@ def protobuf_deps():
 
     # Python Downloads
     python_source_archive(
-        version = "3.10.0",
-        sha256 = "c4e0cbad57c90690cb813fb4663ef670b4d0f587d8171e2c42bd4c9245bd2758",
+        version = "3.11.0",
+        sha256 = "64424e96e2457abbac899b90f9530985b51eef2905951febd935f0e73414caeb",
     )
     python_nuget_package(
-        version = "3.10.0",
+        version = "3.11.0",
         cpu = "i686",
-        sha256 = "e115e102eb90ce160ab0ef7506b750a8d7ecc385bde0a496f02a54337a8bc333",
+        sha256 = "c5ceeef9556d6aa85fac5d6567d35418a978e9b349f2c71818ddc03f14dd5a6d",
     )
     python_nuget_package(
-        version = "3.10.0",
+        version = "3.11.0",
         cpu = "x86-64",
-        sha256 = "4474c83c25625d93e772e926f95f4cd398a0abbb52793625fa30f39af3d2cc00",
+        sha256 = "e1236188a5841cfb9d14f7aac8b1fbdea10f82260d7f63610cc6260db76062a5",
     )
     native.register_toolchains("//bazel/private/oss/toolchains:all")

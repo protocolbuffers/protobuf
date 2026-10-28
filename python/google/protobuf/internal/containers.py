@@ -19,12 +19,12 @@ are:
 import collections.abc
 import copy
 import pickle
-import warnings
 from typing import (
     Any,
     Iterable,
     Iterator,
     List,
+    Mapping,
     MutableMapping,
     MutableSequence,
     NoReturn,
@@ -45,9 +45,15 @@ from google.protobuf import message
 
 def _CheckFrozen(is_frozen: bool, msg: str) -> None:
   if is_frozen:
+    raise message.FrozenInstanceError(msg)
+
+
+def _CheckNotSelfMerge(container: Any, other: Any) -> None:
+  """Raises AssertionError for a map self-merge, like for message self-merge."""
+  if other is container:
     warnings.warn(
-        'Mutating messages or containers returned by GetOptions() is'
-        ' deprecated and will raise an exception in a future release.',
+        'Merging a map into itself will raise AssertionError in a future'
+        ' release.',
         category=FutureWarning,
         stacklevel=3,
     )
@@ -525,6 +531,7 @@ class ScalarMap(MutableMapping[_K, _V]):
 
   def MergeFrom(self, other: 'ScalarMap[_K, _V]') -> None:
     self._AssureWritable()
+    _CheckNotSelfMerge(self, other)
     self._values.update(other._values)
     self._message_listener.Modified()
 
@@ -667,6 +674,7 @@ class MessageMap(MutableMapping[_K, _V]):
 
   def MergeFrom(self, other: 'MessageMap[_K, _V]') -> None:
     self._AssureWritable()
+    _CheckNotSelfMerge(self, other)
     # pylint: disable=protected-access
     for key in other._values:
       # According to documentation: "When parsing from the wire or when merging,

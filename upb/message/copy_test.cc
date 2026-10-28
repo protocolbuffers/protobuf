@@ -33,6 +33,7 @@
 #include "upb/message/map.h"
 #include "upb/message/message.h"
 #include "upb/message/unknown_fields.h"
+#include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/message.h"
 #include "upb/test/test.upb.h"
@@ -644,22 +645,33 @@ TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
   upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString("Mutated"));
   upb_Arena_Free(source_arena);
 
-  // Check if clone has the non-canonical extension and it's unmodified
+  // A non-canonical extension's minitable may belong to a schema that does not
+  // outlive the clone, so deep clone serializes it into unknown bytes instead
+  // of keeping a typed non-canonical extension.
   upb_MessageUnknown data;
   uintptr_t iter = kUpb_Message_UnknownBegin;
-  bool has_non_canonical = false;
-  const upb_Extension* ext_found = nullptr;
-  while (upb_Message_NextUnknown2(UPB_UPCAST(clone), &data, &iter)) {
-    if (data.type == kUpb_MessageUnknownType_NonCanonicalExtension) {
-      has_non_canonical = true;
-      ext_found = (const upb_Extension*)data.value.extension;
-    }
-  }
-  EXPECT_TRUE(has_non_canonical);
-  ASSERT_NE(ext_found, nullptr);
+  ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(clone), &data, &iter));
+  EXPECT_EQ(data.type, kUpb_MessageUnknownType_StringView);
+  EXPECT_FALSE(upb_Message_NextUnknown2(UPB_UPCAST(clone), &data, &iter));
 
+  // Round-trip with a registry to verify the cloned value is unmodified.
+  char* buf;
+  size_t size;
+  ASSERT_EQ(
+      upb_Encode(UPB_UPCAST(clone), &upb_0test__ModelWithExtensions_msg_init, 0,
+                 arena, &buf, &size),
+      kUpb_EncodeStatus_Ok);
+  upb_ExtensionRegistry* extreg = upb_ExtensionRegistry_New(arena);
+  ASSERT_NE(extreg, nullptr);
+  ASSERT_EQ(
+      upb_ExtensionRegistry_Add(extreg, upb_test_ModelExtension1_model_ext_ext),
+      kUpb_ExtensionRegistryStatus_Ok);
+  upb_test_ModelWithExtensions* parsed =
+      upb_test_ModelWithExtensions_parse_ex(buf, size, extreg, 0, arena);
+  ASSERT_NE(parsed, nullptr);
+  ASSERT_TRUE(upb_test_ModelExtension1_has_model_ext(parsed));
   const upb_test_ModelExtension1* cloned_ext =
-      (const upb_test_ModelExtension1*)upb_Extension_GetMessage(ext_found);
+      upb_test_ModelExtension1_model_ext(parsed);
   EXPECT_TRUE(
       upb_StringView_IsEqual(upb_test_ModelExtension1_str(cloned_ext),
                              upb_StringView_FromString("LifecycleValue")));

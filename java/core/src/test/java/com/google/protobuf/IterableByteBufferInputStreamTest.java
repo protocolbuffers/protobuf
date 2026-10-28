@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2025 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 package com.google.protobuf;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -109,6 +116,35 @@ public class IterableByteBufferInputStreamTest {
       assertThat(output[4]).isEqualTo((byte) 5);
       assertThat(output[5]).isEqualTo((byte) 6);
 
+      assertThat(in.read()).isEqualTo(-1);
+    }
+  }
+
+  @Test
+  public void testAvailable() throws Exception {
+    ByteBuffer buf1 = ByteBuffer.allocateDirect(3);
+    buf1.put(new byte[] {1, 2, 3}).flip();
+    ByteBuffer buf2 = ByteBuffer.wrap(new byte[0]);
+    ByteBuffer buf3 = ByteBuffer.wrap(new byte[] {4, 5, 6, 7});
+
+    try (InputStream in = new IterableByteBufferInputStream(Arrays.asList(buf1, buf2, buf3))) {
+      assertThat(in.available()).isEqualTo(7);
+
+      assertThat(in.read()).isEqualTo(1);
+      assertThat(in.available()).isEqualTo(6);
+
+      byte[] output = new byte[4];
+      int read = in.read(output, 0, 4);
+      assertThat(read).isEqualTo(2);
+      assertThat(in.available()).isEqualTo(4);
+
+      long skipped = in.skip(2);
+      assertThat(skipped).isEqualTo(2);
+      assertThat(in.available()).isEqualTo(2);
+
+      read = in.read(output, 0, 4);
+      assertThat(read).isEqualTo(2);
+      assertThat(in.available()).isEqualTo(0);
       assertThat(in.read()).isEqualTo(-1);
     }
   }

@@ -6961,7 +6961,7 @@ static void jsonenc_wrapper(jsonenc* e, const upb_Message* msg,
 static const upb_MessageDef* jsonenc_getanymsg(jsonenc* e,
                                                upb_StringView type_url) {
   /* Find last '/', if any. */
-  const char* end = type_url.data + type_url.size;
+  const char* end = UPB_PTRADD(type_url.data, type_url.size);
   const char* ptr = end;
   const upb_MessageDef* ret;
 
@@ -7040,7 +7040,7 @@ static void jsonenc_putsep(jsonenc* e, const char* str, bool* first) {
 
 static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
   const char* ptr = path.data;
-  const char* end = ptr + path.size;
+  const char* end = UPB_PTRADD(ptr, path.size);
 
   while (ptr < end) {
     char ch = *ptr;
@@ -8248,8 +8248,11 @@ upb_Arena* upb_Arena_Init(void* mem, size_t n, upb_alloc* alloc) {
   return &a->head;
 }
 
+static upb_ArenaInternal* _upb_Arena_DecRef(const upb_Arena* a);
+
 static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
   UPB_ASSERT(_upb_Arena_RefCountFromTagged(ai->parent_or_count) == 1);
+  upb_ArenaInternal* roots_to_free = NULL;
   while (ai != NULL) {
     UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(ai));
     // Load first since arena itself is likely from one of its blocks. Relaxed
@@ -8271,7 +8274,19 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
         // If the block is an arena ref, then we need to release our ref on the
         // referenced arena.
         upb_ArenaRef* ref = (upb_ArenaRef*)block;
-        upb_Arena_DecRefFor((upb_Arena*)ref->arena, ai);
+        upb_ArenaInternal* to_free = _upb_Arena_DecRef(ref->arena);
+        if (to_free != NULL) {
+          // The arena is ready to be freed, but we want to avoid a recursive
+          // free to avoid stack overflow in the case of long ref chains.
+          // To that end, we prepend it to a linked list for later processing.
+          // We pick an arbitrary member `previous_or_tail` as the "next"
+          // pointer -- any member would work as long as it is not read during
+          // deletion.
+          UPB_PRIVATE(upb_Xsan_AccessReadWrite)(UPB_XSAN(to_free));
+          upb_Atomic_Store(&to_free->previous_or_tail, (uintptr_t)roots_to_free,
+                           memory_order_relaxed);
+          roots_to_free = to_free;
+        }
       } else {
         upb_free_sized(block_alloc, block, block->size);
       }
@@ -8280,11 +8295,23 @@ static void _upb_Arena_DoFree(upb_ArenaInternal* ai) {
     if (block_alloc && block_alloc->cleanup != NULL) {
       block_alloc->cleanup(block_alloc);
     }
+    if (next_arena == NULL && roots_to_free != NULL) {
+      next_arena = roots_to_free;
+      roots_to_free = (upb_ArenaInternal*)upb_Atomic_Load(
+          &next_arena->previous_or_tail, memory_order_relaxed);
+    }
     ai = next_arena;
   }
 }
 
 void upb_Arena_Free(upb_Arena* a) {
+  upb_ArenaInternal* ai = _upb_Arena_DecRef(a);
+  if (ai != NULL) {
+    _upb_Arena_DoFree(ai);
+  }
+}
+
+static upb_ArenaInternal* _upb_Arena_DecRef(const upb_Arena* a) {
   upb_ArenaInternal* ai = upb_Arena_Internal(a);
   // Cannot be replaced with _upb_Arena_FindRoot, as that provides only a
   // relaxed read of the refcount if ai is already the root.
@@ -8303,8 +8330,7 @@ retry:
 #ifdef UPB_TRACING_ENABLED
     upb_Arena_LogFree(a);
 #endif
-    _upb_Arena_DoFree(ai);
-    return;
+    return ai;
   }
 
   if (upb_Atomic_CompareExchangeWeak(
@@ -8312,7 +8338,7 @@ retry:
           _upb_Arena_TaggedFromRefcount(_upb_Arena_RefCountFromTagged(poc) - 1),
           memory_order_release, memory_order_acquire)) {
     // We were >1 and we decremented it successfully, so we are done.
-    return;
+    return NULL;
   }
 
   // We failed our update, so someone has done something, retry the whole
@@ -10660,14 +10686,31 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
 
   for (size_t i = 0; i < in->size; i++) {
     upb_TaggedAuxPtr tagged_ptr = in->aux_data[i];
-    if (upb_TaggedAuxPtr_IsExtension(tagged_ptr)) {
-      // Clone a canonical or non-canonical upb_Extension*.
-      const upb_Extension* msg_ext = upb_TaggedAuxPtr_Extension(tagged_ptr);
+    if (upb_TaggedAuxPtr_IsNonCanonicalExtension(tagged_ptr)) {
+      // A non-canonical extension references a `upb_MiniTableExtension` (and
+      // possibly its extendee and sub-message/enum tables) that belongs to a
+      // foreign schema, e.g. the source schema of a `upb_Message_Convert()`.
+      // That schema is not guaranteed to outlive the clone, so we must not
+      // copy the pointer. Instead, serialize the extension into the
+      // destination arena and store it as unknown bytes, preserving order.
+      const upb_Extension* msg_ext =
+          upb_TaggedAuxPtr_NonCanonicalExtension(tagged_ptr);
+      upb_StringView encoded;
+      if (upb_EncodeExtension(msg_ext, arena, &encoded, /*encode_options=*/0) !=
+          kUpb_EncodeStatus_Ok) {
+        goto err;
+      }
+      if (encoded.size != 0 &&
+          !UPB_PRIVATE(_upb_Message_AddUnknown)(dst, encoded.data, encoded.size,
+                                                arena, kUpb_AddUnknown_Alias)) {
+        goto err;
+      }
+    } else if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
+      const upb_Extension* msg_ext =
+          upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       const upb_MiniTableField* field = upb_Extension_MiniTableField(msg_ext);
-      upb_Extension* dst_ext =
-          UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
-              dst, upb_Extension_MiniTableExtension(msg_ext), arena,
-              upb_TaggedAuxPtr_Type(tagged_ptr));
+      upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
+          dst, upb_Extension_MiniTableExtension(msg_ext), arena);
       if (!dst_ext) goto err;
 
       if (upb_MiniTableField_IsScalar(field)) {
@@ -10675,7 +10718,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           goto err;
         }
       } else {
-        // Extensions (canonical or non-canonical) cannot be maps.
+        // Canonical extensions cannot be maps.
         UPB_ASSERT(upb_MiniTableField_IsArray(field));
         const upb_Array* msg_array = upb_Extension_GetArray(msg_ext);
         UPB_ASSERT(msg_array);
@@ -10738,6 +10781,7 @@ upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
   if (!upb_Message_ShallowCopy(clone, msg, m, arena)) return NULL;
   return clone;
 }
+
 
 #include "stddef.h"
 
@@ -11878,6 +11922,13 @@ static void upb_MtDecoder_ParseMap(upb_MtDecoder* d, const char* data,
   upb_MtDecoder_ParseMessage(d, data, len);
   upb_MtDecoder_AssignHasbits(d);
 
+  // Map entries are never extendable, but the map encoding shares the message
+  // parser, which accepts the extendable message modifier.
+  if (UPB_UNLIKELY(UPB_PRIVATE(_upb_MiniTable_ExtModeBase)(&d->table) !=
+                   kUpb_ExtMode_NonExtendable)) {
+    upb_MdDecoder_ErrorJmp(&d->base, "Map entry cannot be extendable");
+  }
+
   if (UPB_UNLIKELY(d->table.UPB_PRIVATE(field_count) != 2)) {
     upb_MdDecoder_ErrorJmp(&d->base, "%hu fields in map",
                            d->table.UPB_PRIVATE(field_count));
@@ -11965,7 +12016,10 @@ done:
   upb_DecodeFast_TableEntry fasttable[32];
   int fasttable_size = 0;
   if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
-    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    // The table is not linked yet, so map fields cannot be identified; they
+    // are updated when linked (see upb_MiniTable_SetSubMessage()).
+    fasttable_size =
+        upb_DecodeFast_BuildTable(&decoder->table, NULL, fasttable);
     mt_size += fasttable_size * sizeof(fasttable[0]);
   }
 #endif
@@ -14593,7 +14647,7 @@ static str_t* unescape(upb_DefBuilder* ctx, const upb_FieldDef* f,
   str_t* ret = _upb_DefBuilder_Alloc(ctx, sizeof(*ret) + len);
   char* dst = &ret->str[0];
   const char* src = data;
-  const char* end = data + len;
+  const char* end = UPB_PTRADD(data, len);
 
   while (src < end) {
     if (*src == '\\') {
@@ -19550,7 +19604,7 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
       if (submsg == 0) {
         return ptr;
       }
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       ptr = encode_tag(ptr, e, upb_MiniTableField_Number(f),
                        kUpb_WireType_EndGroup);
       ptr = encode_message(ptr, e, submsg, subm, &size);
@@ -19565,7 +19619,7 @@ static char* encode_scalar(char* ptr, upb_encstate* e, const void* field_mem,
       if (submsg == 0) {
         return ptr;
       }
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       ptr = encode_message(ptr, e, submsg, subm, &size);
       e->depth++;
       size_t max_size = UPB_PB_VARINT32_MAX_LEN + UPB_PB_VARINT32_MAX_LEN;
@@ -19663,7 +19717,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
       const upb_Message* const* start = upb_Array_DataPtr(arr);
       const upb_Message* const* arr_ptr = start + upb_Array_Size(arr);
       const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
         arr_ptr--;
@@ -19680,7 +19734,7 @@ static char* encode_array(char* ptr, upb_encstate* e, const upb_Message* msg,
       const upb_Message* const* start = upb_Array_DataPtr(arr);
       const upb_Message* const* arr_ptr = start + upb_Array_Size(arr);
       const upb_MiniTable* subm = upb_MiniTable_GetSubMessageTable(f);
-      if (--e->depth == 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
+      if (--e->depth < 0) encode_err(e, kUpb_EncodeStatus_MaxDepthExceeded);
       do {
         size_t size;
         arr_ptr--;

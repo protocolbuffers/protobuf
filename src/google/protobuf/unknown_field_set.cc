@@ -66,12 +66,14 @@ void UnknownFieldSet::MergeFromAndDestroy(UnknownFieldSet* other) {
   }
 }
 
+#if !defined(PROTOBUF_FUTURE_DELETE_UFS_MERGE_TO_MESSAGE)
 void UnknownFieldSet::MergeToInternalMetadata(MessageLite& message,
                                               const UnknownFieldSet& other) {
   internal::PrivateAccess::GetInternalMetadata(message)
       .mutable_unknown_fields<UnknownFieldSet>()
       ->MergeFrom(other);
 }
+#endif
 
 size_t UnknownFieldSet::SpaceUsedExcludingSelfLong() const {
   auto& fields = this->fields();

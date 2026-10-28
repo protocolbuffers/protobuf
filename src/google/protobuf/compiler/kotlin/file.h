@@ -41,9 +41,6 @@ namespace protobuf {
 namespace compiler {
 namespace kotlin {
 
-// TODO: b/366047913 - Move away from these generator classes and more towards
-// the "Context" model that the Kotlin Native & Rust code generators use:
-// http://google3/third_party/kotlin/protobuf/generator/native/file.cc;l=149-170;rcl=642292300
 class FileGenerator {
  public:
   FileGenerator(const FileDescriptor* file, const java::Options& options);

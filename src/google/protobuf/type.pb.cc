@@ -77,6 +77,7 @@ constexpr Option::ParseTableT_ Option::_Internal::GenerateParseTable(const ::_pb
       2,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -96,11 +97,9 @@ constexpr Option::ParseTableT_ Option::_Internal::GenerateParseTable(const ::_pb
       {PROTOBUF_FIELD_OFFSET(Option, _impl_.name_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // .google.protobuf.Any value = 2;
       {PROTOBUF_FIELD_OFFSET(Option, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Any_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Any_globals_},
+    }}, {{
       "\26\4\0\0\0\0\0\0"
       "google.protobuf.Option"
       "name"
@@ -165,6 +164,8 @@ struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(OptionGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(OptionGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const OptionGlobalsTypeInternal Option_globals_
@@ -197,6 +198,7 @@ constexpr Field::ParseTableT_ Field::_Internal::GenerateParseTable(const ::_pbi:
       10,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -270,11 +272,9 @@ constexpr Field::ParseTableT_ Field::_Internal::GenerateParseTable(const ::_pbi:
       {PROTOBUF_FIELD_OFFSET(Field, _impl_.json_name_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // string default_value = 11;
       {PROTOBUF_FIELD_OFFSET(Field, _impl_.default_value_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+    }}, {{
       "\25\0\0\0\4\10\0\0\0\11\15\0\0\0\0\0"
       "google.protobuf.Field"
       "name"
@@ -360,6 +360,8 @@ struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(FieldGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(FieldGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldGlobalsTypeInternal Field_globals_
@@ -392,6 +394,7 @@ constexpr EnumValue::ParseTableT_ EnumValue::_Internal::GenerateParseTable(const
       3,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -418,11 +421,9 @@ constexpr EnumValue::ParseTableT_ EnumValue::_Internal::GenerateParseTable(const
       {PROTOBUF_FIELD_OFFSET(EnumValue, _impl_.number_), _Internal::kHasBitsOffset + 2, 0, (0 | ::_fl::kFcOptional | ::_fl::kInt32)},
       // repeated .google.protobuf.Option options = 3;
       {PROTOBUF_FIELD_OFFSET(EnumValue, _impl_.options_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+    }}, {{
       "\31\4\0\0\0\0\0\0"
       "google.protobuf.EnumValue"
       "name"
@@ -492,6 +493,8 @@ struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(EnumValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(EnumValueGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumValueGlobalsTypeInternal EnumValue_globals_
@@ -524,6 +527,7 @@ constexpr Type::ParseTableT_ Type::_Internal::GenerateParseTable(const ::_pbi::C
       7,  // num_field_entries
       3,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -574,13 +578,11 @@ constexpr Type::ParseTableT_ Type::_Internal::GenerateParseTable(const ::_pbi::C
       {PROTOBUF_FIELD_OFFSET(Type, _impl_.syntax_), _Internal::kHasBitsOffset + 6, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 7;
       {PROTOBUF_FIELD_OFFSET(Type, _impl_.edition_), _Internal::kHasBitsOffset + 4, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Field_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Field_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
+    }}, {{
       "\24\4\0\6\0\0\0\7"
       "google.protobuf.Type"
       "name"
@@ -666,6 +668,8 @@ struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(TypeGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(TypeGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const TypeGlobalsTypeInternal Type_globals_
@@ -698,6 +702,7 @@ constexpr Enum::ParseTableT_ Enum::_Internal::GenerateParseTable(const ::_pbi::C
       6,  // num_field_entries
       3,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -743,13 +748,11 @@ constexpr Enum::ParseTableT_ Enum::_Internal::GenerateParseTable(const ::_pbi::C
       {PROTOBUF_FIELD_OFFSET(Enum, _impl_.syntax_), _Internal::kHasBitsOffset + 5, 0, (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
       // string edition = 6;
       {PROTOBUF_FIELD_OFFSET(Enum, _impl_.edition_), _Internal::kHasBitsOffset + 3, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValue_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::EnumValue_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Option_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::SourceContext_globals_},
+    }}, {{
       "\24\4\0\0\0\0\7\0"
       "google.protobuf.Enum"
       "name"
@@ -829,6 +832,8 @@ struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(EnumGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(EnumGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumGlobalsTypeInternal Enum_globals_
@@ -1025,7 +1030,7 @@ PROTOBUF_CONSTINIT const uint32_t Syntax_internal_data_[] = {
 
 void Type::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
+  if (auto* sub = _impl_.source_context_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000020U);
 }
 Type::Type(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -1910,7 +1915,7 @@ void Field::InternalSwap(Field* PROTOBUF_RESTRICT PROTOBUF_NONNULL other) {
 
 void Enum::clear_source_context() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.source_context_ != nullptr) _impl_.source_context_->Clear();
+  if (auto* sub = _impl_.source_context_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000010U);
 }
 Enum::Enum(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
@@ -2559,7 +2564,7 @@ void EnumValue::InternalSwap(EnumValue* PROTOBUF_RESTRICT PROTOBUF_NONNULL other
 
 void Option::clear_value() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
-  if (_impl_.value_ != nullptr) _impl_.value_->Clear();
+  if (auto* sub = _impl_.value_) sub->Clear();
   ClearHasBit(_impl_._has_bits_[0], 0x00000002U);
 }
 Option::Option(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)

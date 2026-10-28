@@ -69,6 +69,7 @@ constexpr FieldMask::ParseTableT_ FieldMask::_Internal::GenerateParseTable(const
       1,  // num_field_entries
       0,  // num_aux_entries
       offsetof(ParseTableT_, field_names),  // no aux_entries
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -82,9 +83,9 @@ constexpr FieldMask::ParseTableT_ FieldMask::_Internal::GenerateParseTable(const
     }}, {{
       // repeated string paths = 1;
       {PROTOBUF_FIELD_OFFSET(FieldMask, _impl_.paths_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kUtf8String | ::_fl::kRepSString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\31\5\0\0\0\0\0\0"
       "google.protobuf.FieldMask"
       "paths"
@@ -150,6 +151,8 @@ struct FieldMaskGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(FieldMaskGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(FieldMaskGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldMaskGlobalsTypeInternal FieldMask_globals_

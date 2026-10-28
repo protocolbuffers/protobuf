@@ -20,6 +20,7 @@
 #include "absl/log/absl_log.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
 #include "absl/types/span.h"
@@ -247,6 +248,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         $num_field_entries$,  // num_field_entries
         $num_aux_entries$,  // num_aux_entries
         $aux_offset$,
+        sizeof(ParseTableT_),
         class_data,
         $post_loop_handler$,
         $fallback$,  // fallback
@@ -380,7 +382,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
           // The last entry of the skipmap are all 1's.
           p->Emit("65535, 65535\n");
         }},
-       {"field_and_aux_entries",
+       {"field_entries",
         [&] {
           if (ordered_fields_.empty() &&
               !descriptor_->options().message_set_wire_format()) {
@@ -388,47 +390,23 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
                 << "Invalid message: " << descriptor_->full_name() << " has "
                 << tc_table_info_->aux_entries.size()
                 << " auxiliary field entries, but no fields";
-            p->Emit("// no field_entries, or aux_entries\n");
+            p->Emit(R"cc(
+              // no field_entries
+            )cc");
             return;
           }
 
-          p->Emit(
-              {
-                  {"field_entries", [&] { GenerateFieldEntries(p); }},
-                  {"aux_entries",
-                   [&] {
-                     if (tc_table_info_->aux_entries.empty()) {
-                       p->Emit("// no aux_entries\n");
-                     } else {
-                       p->Emit(
-                           {
-                               {"aux_entries_list", GenerateAuxEntries},
-                           },
-                           // clang-format off
-                              R"cc(
-                                {{
-                                    $aux_entries_list$
-                                }},
-                              )cc"
-                           // clang-format on
-                       );
-                     }
-                   }},
-              },
-              // clang-format off
-                 R"cc(
-                 {{
-                   $field_entries$,
-                 }},
-                 $aux_entries$)cc"
-              // clang-format on
-          );
+          GenerateFieldEntries(p);
         }},
-       {"field_names",
+       {"aux_entries",
         [&] {
-          Formatter format(p, variables_);
-          GenerateFieldNames(format);
-        }}},
+          if (tc_table_info_->aux_entries.empty()) {
+            p->Emit("// no aux_entries\n");
+          } else {
+            GenerateAuxEntries();
+          }
+        }},
+       {"field_names", [&] { GenerateFieldNames(p); }}},
       // Disable clang-format, as we want to generate a denser table
       // representation than what clang-format typically wants. clang would
       // insert a newline at every brace, whereas we prefer {{ ... }} here.
@@ -442,9 +420,12 @@ constexpr $Msg$::ParseTableT_ $Msg$::_Internal::GenerateParseTable(const ::_pbi:
       $fast_entries$
     }}, {{
       $field_lookup_table$
-    }}, $field_and_aux_entries$,
-    {{
-      $field_names$,
+    }}, {{
+      $field_entries$
+    }}, {{
+      $aux_entries$
+    }}, {{
+      $field_names$
     }},
   };
 }
@@ -464,16 +445,14 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                 {$target$, {$coded_tag$, ::uint16_t{$nonfield_info$}}},
               )cc");
     } else if (auto* mp_field = info.AsMpField()) {
-      {
-        // TODO: refactor this to use Emit.
-        Formatter format(p, variables_);
-        PrintFieldComment(format, mp_field->field, options_);
-      }
-      p->Emit({{"target", TcParseFunctionName(mp_field->func)},
+      p->Emit({{"comment",
+                [&] { PrintFieldComment(p, mp_field->field, options_); }},
+               {"target", TcParseFunctionName(mp_field->func)},
                {"coded_tag", mp_field->coded_tag},
                {"function_index", mp_field->function_index},
                {"index", mp_field->field_index}},
               R"cc(
+                $comment$;
                 {$target$,
                  {$coded_tag$, ::uint8_t{$function_index$},
                   ::uint32_t{
@@ -481,11 +460,6 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
                       sizeof(_pbi::TcParseTableBase::FieldEntry) * $index$}}},
               )cc");
     } else if (auto* as_field = info.AsField()) {
-      {
-        // TODO: refactor this to use Emit.
-        Formatter format(p, variables_);
-        PrintFieldComment(format, as_field->field, options_);
-      }
       ABSL_CHECK(!ShouldSplit(as_field->field, options_));
 
       std::string func_name = TcParseFunctionName(as_field->func);
@@ -514,6 +488,8 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
 
       p->Emit(
           {
+              {"comment",
+               [&] { PrintFieldComment(p, as_field->field, options_); }},
               {"target", func_name},
               {"coded_tag", as_field->coded_tag},
               {"hasbit_idx", as_field->hasbit_idx},
@@ -521,6 +497,7 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
               {"field_name", FieldMemberName(as_field->field, /*split=*/false)},
           },
           R"cc(
+            $comment$;
             {$target$,
              {$coded_tag$, $hasbit_idx$, $aux_idx$,
               PROTOBUF_FIELD_OFFSET($Msg$, $field_name$)}},
@@ -537,9 +514,6 @@ void ParseFunctionGenerator::GenerateFastFieldEntries(io::Printer* p) {
 void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
   for (const auto& entry : tc_table_info_->field_entries) {
     const FieldDescriptor* field = entry.field;
-    // TODO: refactor this to use Emit.
-    Formatter format(p, variables_);
-    PrintFieldComment(format, field, options_);
 
     bool weak = IsWeak(field, options_);
     bool split = ShouldSplit(field, options_);
@@ -549,7 +523,8 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
         {{"field_name", FieldName(field)},
          {"field_member_name", FieldMemberName(field, /*split=*/false)}});
 
-    p->Emit({{"offset",
+    p->Emit({{"comment", [&] { PrintFieldComment(p, field, options_); }},
+             {"offset",
               [&] {
                 if (weak) {
                   p->Emit("/* weak */ 0,");
@@ -580,14 +555,17 @@ void ParseFunctionGenerator::GenerateFieldEntries(io::Printer* p) {
             // Use `0|` prefix to eagerly convert the enums to int to avoid
             // enum-enum operations. They are deprecated in C++20.
             R"cc(
+              $comment$;
               {$offset$, $has_idx$, $aux_idx$, (0 | $type_card$)},
             )cc");
   }
 }
 
-void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
+void ParseFunctionGenerator::GenerateFieldNames(io::Printer* p) {
   if (tc_table_info_->field_name_data.empty()) {
-    // No names to output.
+    p->Emit(R"cc(
+      // no field_names
+    )cc");
     return;
   }
 
@@ -597,24 +575,31 @@ void ParseFunctionGenerator::GenerateFieldNames(Formatter& format) {
 
   const int total_sizes =
       static_cast<int>(((tc_table_info_->field_entries.size() + 1) + 7) & ~7u);
-  const uint8_t* p = tc_table_info_->field_name_data.data();
-  const uint8_t* sizes = p;
+  const uint8_t* data = tc_table_info_->field_name_data.data();
+  const uint8_t* sizes = data;
   const uint8_t* sizes_end = sizes + total_sizes;
 
   // First print all the sizes as octal
-  format("\"");
-  for (int i = 0; i < total_sizes; ++i) {
-    int size = *p++;
-    int octal_size = ((size >> 6) & 3) * 100 +  //
-                     ((size >> 3) & 7) * 10 +   //
-                     ((size >> 0) & 7);
-    format("\\$1$", octal_size);
-  }
-  format("\"\n");
+  p->Emit({{"octal_sizes",
+            [&] {
+              for (int i = 0; i < total_sizes; ++i) {
+                int size = *data++;
+                p->Emit({{"octal_size", absl::StrFormat("\\%o", size)}},
+                        R"cc($octal_size$)cc");
+              }
+            }}},
+          R"cc(
+            "$octal_sizes$"
+          )cc");
 
   // Then print each name in a line of its own
-  for (; sizes < sizes_end; p += *sizes++) {
-    if (*sizes != 0) format("\"$1$\"\n", std::string(p, p + *sizes));
+  for (; sizes < sizes_end; data += *sizes++) {
+    if (*sizes == 0) continue;
+    absl::string_view name(reinterpret_cast<const char*>(data),
+                           static_cast<size_t>(*sizes));
+    p->Emit({{"name", name}}, R"cc(
+      "$name$"
+    )cc");
   }
 }
 
