@@ -19,14 +19,12 @@
 #include "upb/message/internal/iterator.h"
 #include "upb/message/map.h"
 #include "upb/message/message.h"
-#include "upb/mini_table/extension.h"
 #include "upb/mini_table/field.h"
 #include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/message.h"
 
 // Must be last.
 #include "upb/port/def.inc"
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -193,23 +191,21 @@ static bool _upb_Message_ExtensionsAreEqual(const upb_Message* msg1,
                                             const upb_Message* msg2,
                                             const upb_MiniTable* m,
                                             int options) {
-  const upb_MiniTableExtension* e;
+  const upb_MiniTableField* f;
   upb_MessageValue val2;
 
   // Iterate over all extensions for msg2, and search msg1 for each extension.
   size_t count1 = 0;
   size_t iter2 = kUpb_Message_ExtensionBegin;
-  while (upb_Message_NextExtension(msg2, &e, &val2, &iter2)) {
-    const upb_Extension* ext1 = UPB_PRIVATE(_upb_Message_Getext)(msg1, e);
+  while (upb_Message_NextExtensionField(msg2, &f, &val2, &iter2)) {
+    const upb_Extension* ext1 = UPB_PRIVATE(_upb_Message_GetExtension)(msg1, f);
     if (!ext1) return false;
 
     count1++;
 
     const upb_MessageValue val1 = upb_Extension_GetValue(ext1);
-    const upb_MiniTableField* f = &e->UPB_PRIVATE(field);
-    const upb_MiniTable* subm = upb_MiniTableField_IsSubMessage(f)
-                                    ? upb_MiniTableExtension_GetSubMessage(e)
-                                    : NULL;
+    const upb_MiniTable* subm =
+        upb_MiniTableField_IsSubMessage(f) ? upb_MiniTable_SubMessage(f) : NULL;
     const upb_CType ctype = upb_MiniTableField_CType(f);
 
     bool eq;

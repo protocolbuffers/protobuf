@@ -345,10 +345,15 @@ UPB_NODISCARD upb_Extension* UPB_PRIVATE(
                                               const upb_MiniTableExtension* ext,
                                               upb_Arena* arena);
 
-// Returns an extension for a message with a given mini table,
-// or NULL if no extension exists with this mini table.
+// Returns the canonical extension of `msg` that is described by `ext`, or NULL
+// if there is no such extension.
 const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     const struct upb_Message* msg, const upb_MiniTableExtension* ext);
+
+// Same as _upb_Message_Getext(), but finds the canonical extension by the
+// upb_MiniTableField that describes it.
+const upb_Extension* UPB_PRIVATE(_upb_Message_GetExtension)(
+    const struct upb_Message* msg, const upb_MiniTableField* f);
 
 UPB_INLINE bool UPB_PRIVATE(_upb_Extension_IsEmpty)(const upb_Extension* ext) {
   const upb_MiniTableField* f = upb_Extension_MiniTableField(ext);
