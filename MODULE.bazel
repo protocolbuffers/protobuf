@@ -40,6 +40,59 @@ bazel_dep(name = "rules_python", version = "2.3.4")
 bazel_dep(name = "rules_rust", version = "0.69.0")
 
 bazel_dep(name = "rules_ruby", version = "0.20.1", dev_dependency = True)
+bazel_dep(name = "rules_multitool", version = "1.11.1", dev_dependency = True)
+bazel_dep(name = "rules_nodejs", version = "6.7.7", dev_dependency = True)
+
+multitool = use_extension("@rules_multitool//multitool:extension.bzl", "multitool", dev_dependency = True)
+multitool.hub(
+    hub_name = "pyi_test_tools",
+    lockfile = "//python/pyi_test:multitool.lock.json",
+)
+use_repo(multitool, "multitool", "pyi_test_tools")
+
+register_toolchains(
+    "@pyi_test_tools//toolchains:all",
+    dev_dependency = True,
+)
+
+node = use_extension("@rules_nodejs//nodejs:extensions.bzl", "node", dev_dependency = True)
+node.toolchain(
+    # Pin archives until rules_nodejs includes this release's checksums.
+    node_repositories = {
+        "26.12.1-darwin_amd64": [
+            "node-v26.12.1-darwin-x64.tar.gz",
+            "node-v26.12.1-darwin-x64",
+            "b85c2ea4420ad0bc4abf2dc6cf1f55130ed681f1cabf60cf3f526e4c9e2712ff",
+        ],
+        "26.12.1-darwin_arm64": [
+            "node-v26.12.1-darwin-arm64.tar.gz",
+            "node-v26.12.1-darwin-arm64",
+            "1901d539912c02afa10d1cc126943a8855a7eedebe830119463470db5e6c59e8",
+        ],
+        "26.12.1-linux_amd64": [
+            "node-v26.12.1-linux-x64.tar.xz",
+            "node-v26.12.1-linux-x64",
+            "6170b2d474e1c626f43cff3adc118df9fe3b573258a4fc3d850c8dbc6b079bbd",
+        ],
+        "26.12.1-linux_arm64": [
+            "node-v26.12.1-linux-arm64.tar.xz",
+            "node-v26.12.1-linux-arm64",
+            "42aa04922591ee5d4dbc7740d452621acf28508239daa512f5ee8c47ee224fdb",
+        ],
+    },
+    node_version = "26.12.1",
+)
+
+http_archive = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "pyright",
+    build_file_content = 'exports_files(["index.js"], visibility = ["//visibility:public"])\nfilegroup(name = "dist", srcs = glob(["dist/**"], exclude = ["dist/typeshed-fallback/stubs/**"]), visibility = ["//visibility:public"])',
+    dev_dependency = True,
+    sha256 = "bf5f473f6167c0d14175492c3263d783b4489a6956e1c06c18e15228e3a3fa42",
+    strip_prefix = "package",
+    urls = ["https://registry.npmjs.org/pyright/-/pyright-1.1.414.tgz"],
+)
 
 # Workaround for https://github.com/bazelbuild/bazel-central-registry/issues/4230
 # rules_fuzzing 0.5.3 is not yet available in BCR.
@@ -156,7 +209,18 @@ pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip", dev_depen
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
 
-use_repo(pip, "protobuf_pip_deps")
+pip.parse(
+    hub_name = "pyi_test_pip_deps",
+    python_version = "3.11",
+    requirements_lock = "//python/pyi_test:requirements.txt",
+    target_platforms = [
+        "linux_aarch64",
+        "linux_x86_64",
+        "osx_aarch64",
+        "osx_x86_64",
+    ],
+)
+use_repo(pip, "protobuf_pip_deps", "pyi_test_pip_deps")
 
 local_runtime_repo = use_repo_rule(
     "@rules_python//python/local_toolchains:repos.bzl",
@@ -200,6 +264,8 @@ python = use_extension("@rules_python//python/extensions:python.bzl", "python", 
     )
     for python_version in SUPPORTED_PYTHON_VERSIONS
 ]
+
+use_repo(python, "pythons_hub")
 
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust", dev_dependency = True)
 
