@@ -7,6 +7,7 @@
 
 #include "google/protobuf/compiler/rust/enum.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -47,6 +48,16 @@ std::vector<EnumValueInput> EnumValuesInput(const EnumDescriptor& desc) {
   }
 
   return result;
+}
+
+// Whether the generated enum gets `name()`, `from_name()` and `EnumNames`. As
+// with `HasReflectionSupport()` in message.cc, they are omitted for
+// `optimize_for = LITE_RUNTIME` files and under `force_lite_runtime`, so that
+// Lite and mobile builds don't embed the value names and code that needs them
+// fails to compile there.
+bool HasEnumNames(Context& ctx, const EnumDescriptor& desc) {
+  return !ctx.opts().force_lite_runtime &&
+         desc.file()->options().optimize_for() != FileOptions::LITE_RUNTIME;
 }
 
 void TypeConversions(Context& ctx, const EnumDescriptor& desc) {
@@ -195,6 +206,85 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
                 }
               )rs");
            }},
+          {"proto_name_fns",
+           [&] {
+             if (!HasEnumNames(ctx, desc)) return;
+             // Uses the names as written in the .proto file, including
+             // aliases, rather than the Rust constant names.
+             auto name_cases = [&] {
+               for (int i = 0; i < desc.value_count(); ++i) {
+                 ctx.Emit({{"proto_name", desc.value(i)->name()},
+                           {"number", absl::StrCat(desc.value(i)->number())}},
+                          R"rs(
+                   $number$ => "$proto_name$",
+                 )rs");
+               }
+             };
+             // The table `from_name()` binary-searches: every name, including
+             // aliases, with its number, sorted at codegen time. `std::string`
+             // compares bytes as unsigned, as Rust's `str` does.
+             std::vector<std::pair<std::string, int>> names_by_name;
+             names_by_name.reserve(static_cast<size_t>(desc.value_count()));
+             for (int i = 0; i < desc.value_count(); ++i) {
+               names_by_name.emplace_back(desc.value(i)->name(),
+                                          desc.value(i)->number());
+             }
+             std::sort(names_by_name.begin(), names_by_name.end());
+             auto names_by_name_entries = [&] {
+               for (const auto& [proto_name, number] : names_by_name) {
+                 ctx.Emit({{"proto_name", proto_name},
+                           {"number", absl::StrCat(number)}},
+                          R"rs(
+                   ("$proto_name$", $number$),
+                 )rs");
+               }
+             };
+             ctx.Emit({{"name_cases", name_cases},
+                       {"names_by_name_entries", names_by_name_entries}},
+                      R"rs(
+                /// Returns the name of this value as written in the .proto
+                /// file (e.g. `"FOO_BAR"`), or `None` for a number that has
+                /// no declared value.
+                ///
+                /// If several names share this number (`allow_alias`), returns
+                /// the first one declared.
+                pub const fn name(self) -> $Option$<&'static str> {
+                  #[allow(unreachable_patterns)] // Aliases: the first declared name matches.
+                  Some(match self.0 {
+                    $name_cases$
+                    _ => return None
+                  })
+                }
+
+                /// Returns the value with the given name as written in the
+                /// .proto file (e.g. `"FOO_BAR"`), or `None` if no value has
+                /// that name. Accepts every alias.
+                pub fn from_name(name: &str) -> $Option$<Self> {
+                  // Sorted by name, for a binary search.
+                  const NAMES_BY_NAME: &[(&str, i32)] = &[
+                    $names_by_name_entries$
+                  ];
+                  $pbi$::enum_value_from_name(NAMES_BY_NAME, name).map(Self)
+                }
+              )rs");
+           }},
+          {"enum_names_impl",
+           [&] {
+             if (!HasEnumNames(ctx, desc)) return;
+             ctx.Emit(R"rs(
+               impl $pbi$::EnumNames for $name$ {
+                 fn name(self) -> $Option$<&'static str> {
+                   // The inherent `const fn`, which takes precedence over this
+                   // method.
+                   $name$::name(self)
+                 }
+
+                 fn from_name(name: &str) -> $Option$<Self> {
+                   $name$::from_name(name)
+                 }
+               }
+             )rs");
+           }},
           // The default value of an enum is the first listed value.
           // The compiler checks that this is equal to 0 for open enums.
           {"default_int_value", absl::StrCat(desc.value(0)->number())},
@@ -243,6 +333,8 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
         $variants$
 
         $constant_name_fn$
+
+        $proto_name_fns$
 
         /// Returns the numeric value of this enum value, as declared in the
         /// .proto file.
@@ -312,6 +404,8 @@ void GenerateEnumDefinition(Context& ctx, const EnumDescriptor& desc,
           matches!(value, $known_values_pattern$)
         }
       }
+
+      $enum_names_impl$
 
       $type_conversions_impl$
 
