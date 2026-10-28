@@ -240,12 +240,15 @@ UPB_FORCEINLINE void _upb_Message_GetNonExtensionField(
   (field, val, UPB_PRIVATE(_upb_Message_DataPtr)(msg, field));
 }
 
-UPB_INLINE void _upb_Message_GetExtensionField(
-    const struct upb_Message* msg, const upb_MiniTableExtension* mt_ext,
-    const void* default_val, void* val) {
-  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_Getext)(msg, mt_ext);
-  const upb_MiniTableField* f = &mt_ext->UPB_PRIVATE(field);
+// `f` is the upb_MiniTableField that describes the extension, e.g. as returned
+// by upb_MiniTableExtension_ToField(), upb_Message_NextExtensionField() or
+// upb_Message_FindExtensionFieldByNumber().
+UPB_INLINE void _upb_Message_GetExtensionField(const struct upb_Message* msg,
+                                               const upb_MiniTableField* f,
+                                               const void* default_val,
+                                               void* val) {
   UPB_ASSUME(upb_MiniTableField_IsExtension(f));
+  const upb_Extension* ext = UPB_PRIVATE(_upb_Message_GetExtension)(msg, f);
 
   if (ext) {
     upb_Extension_GetField(ext, val);
@@ -264,8 +267,7 @@ UPB_API_INLINE upb_MessageValue upb_Message_GetField(
     upb_MessageValue default_val) {
   upb_MessageValue ret;
   if (upb_MiniTableField_IsExtension(field)) {
-    _upb_Message_GetExtensionField(msg, (upb_MiniTableExtension*)field,
-                                   &default_val, &ret);
+    _upb_Message_GetExtensionField(msg, field, &default_val, &ret);
   } else {
     _upb_Message_GetNonExtensionField(msg, field, &default_val, &ret);
   }
