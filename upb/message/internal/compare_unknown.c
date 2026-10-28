@@ -297,17 +297,11 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
       ctx->encoder.status = kUpb_EncodeStatus_Ok;
       // Encode non-canonical extension to buffer.
       const upb_Extension* ext = (const upb_Extension*)data.value.extension;
-      bool is_message_set = false;
-      const upb_MiniTableExtension* ext_mt =
-          upb_Extension_MiniTableExtension(ext);
-      const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext_mt);
-      if (extendee) {
-        is_message_set = upb_MiniTable_IsMessageSet(extendee);
-      }
-      UPB_PRIVATE(_upb_Encode_Extension)(&ctx->encoder, ext_mt,
-                                         upb_Extension_GetValue(ext),
-                                         is_message_set, &enc_buf, &size,
-                                         /*options=*/0);
+      UPB_PRIVATE(_upb_Encode_Extension)(
+          &ctx->encoder, upb_Extension_MiniTableField(ext),
+          upb_Extension_GetValue(ext),
+          UPB_PRIVATE(_upb_Extension_IsMessageSetItem)(ext), &enc_buf, &size,
+          /*options=*/0);
       ptr = enc_buf;
     }
 

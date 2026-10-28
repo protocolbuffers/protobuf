@@ -329,7 +329,7 @@ upb_Message* _upb_Message_Copy(upb_Message* dst, const upb_Message* src,
           upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
       const upb_MiniTableField* field = upb_Extension_MiniTableField(msg_ext);
       upb_Extension* dst_ext = UPB_PRIVATE(_upb_Message_GetOrCreateExtension)(
-          dst, upb_Extension_MiniTableExtension(msg_ext), arena);
+          dst, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(msg_ext), arena);
       if (!dst_ext) goto err;
 
       if (upb_MiniTableField_IsScalar(field)) {

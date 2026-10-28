@@ -174,3 +174,13 @@ message SrcWithoutOneof {
   optional int32 oneof_int32 = 1;
   optional string oneof_string = 2;
 }
+
+// A MessageSet that declares no extensions, so that converting a
+// upb_test.TestMessageSet to it (without an extension registry) keeps the
+// source's extensions as non-canonical extensions.
+message MessageSetClone {
+  option message_set_wire_format = true;
+
+  extensions 4 to max
+  [verification = UNVERIFIED];
+}
