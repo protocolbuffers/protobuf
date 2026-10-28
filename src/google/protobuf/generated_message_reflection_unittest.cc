@@ -69,6 +69,14 @@ namespace protobuf {
 
 class GeneratedMessageReflectionTestHelper {
  public:
+  static void SwapField(Message* lhs, Message* rhs,
+                        const FieldDescriptor* field) {
+    lhs->GetReflection()->SwapField(lhs, rhs, field);
+  }
+  static void UnsafeShallowSwapField(Message* lhs, Message* rhs,
+                                    const FieldDescriptor* field) {
+    lhs->GetReflection()->UnsafeShallowSwapField(lhs, rhs, field);
+  }
   static void UnsafeShallowSwapFields(
       Message* lhs, Message* rhs,
       const std::vector<const FieldDescriptor*>& fields) {
@@ -1587,6 +1595,32 @@ TEST(GeneratedMessageReflectionTest, SwapFieldsForeignFieldCheck) {
   std::vector<const FieldDescriptor*> fields = {foreign_field};
   EXPECT_DEATH(reflection->SwapFields(&message1, &message2, fields),
                "Field does not match message type");
+}
+
+TEST(GeneratedMessageReflectionTest, SwapFieldForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+
+  // The private SwapField helper must reject fields from another message type.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  EXPECT_DEATH(
+      GeneratedMessageReflectionTestHelper::SwapField(&message1, &message2,
+                                                      foreign_field),
+      "Field does not match message type");
+}
+
+TEST(GeneratedMessageReflectionTest, UnsafeShallowSwapFieldForeignFieldCheck) {
+  unittest::TestAllTypes message1;
+  unittest::TestAllTypes message2;
+
+  // The private UnsafeShallowSwapField helper must also reject foreign fields.
+  const FieldDescriptor* foreign_field =
+      unittest::ForeignMessage::descriptor()->FindFieldByName("c");
+  EXPECT_DEATH(
+      GeneratedMessageReflectionTestHelper::UnsafeShallowSwapField(
+          &message1, &message2, foreign_field),
+      "Field does not match message type");
 }
 
 #endif  // GTEST_HAS_DEATH_TEST
