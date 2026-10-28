@@ -334,6 +334,21 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
     return nullptr;
   }
   MapContainer* other_map = GetMap(arg);
+  // MapFieldBase::MergeFrom() requires both maps to have the same key and value
+  // types.
+  const Descriptor* self_entry = self->parent_field_descriptor->message_type();
+  const Descriptor* other_entry =
+      other_map->parent_field_descriptor->message_type();
+  if (self_entry->map_key()->cpp_type() != other_entry->map_key()->cpp_type() ||
+      self_entry->map_value()->cpp_type() !=
+          other_entry->map_value()->cpp_type() ||
+      self_entry->map_value()->message_type() !=
+          other_entry->map_value()->message_type() ||
+      self_entry->map_value()->enum_type() !=
+          other_entry->map_value()->enum_type()) {
+    PyErr_SetString(PyExc_AttributeError, "Map fields have incompatible types");
+    return nullptr;
+  }
   Message* message = self->GetMutableMessage();
   if (message == nullptr) return nullptr;
   const Message* other_message = other_map->parent->message;
@@ -343,6 +358,40 @@ PyObject* MapReflectionFriend::MergeFrom(PyObject* _self, PyObject* arg) {
       reflection->MutableMapData(message, self->parent_field_descriptor);
   const internal::MapFieldBase* other_field = other_reflection->GetMapData(
       *other_message, other_map->parent_field_descriptor);
+  if (field == other_field) {
+    // Self-merge is not supported (MapFieldBase::MergeFrom() would destroy
+    // entries of the map that it is iterating over). Raise AssertionError, as
+    // for message self-merge. This is checked after GetMutableMessage(), so
+    // that merging a frozen map into itself raises FrozenInstanceError.
+    PyErr_SetString(PyExc_AssertionError, "Cannot merge a map into itself.");
+    return nullptr;
+  }
+  // Merging replaces (and destroys) the value of every key present in both
+  // maps. Detach any live Python wrappers for those values first (as
+  // __delitem__ does), so that they keep the old values instead of pointing at
+  // freed memory.
+  if (CMessage::SubMessagesMap* subs = self->parent->child_submessages.TryGet();
+      subs != nullptr && !subs->IsEmpty() &&
+      self_entry->map_value()->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE) {
+    auto other_entries = other_reflection->GetMap(
+        *other_message, other_map->parent_field_descriptor);
+    if (!other_entries.ok()) {
+      PyErr_SetString(PyExc_SystemError,
+                      other_entries.status().ToString().c_str());
+      return nullptr;
+    }
+    auto entries =
+        reflection->MutableMap(message, self->parent_field_descriptor);
+    if (!entries.ok()) {
+      PyErr_SetString(PyExc_SystemError, entries.status().ToString().c_str());
+      return nullptr;
+    }
+    for (auto entry : *other_entries) {
+      if (auto it = entries->find(entry.key()); it != entries->end()) {
+        self->parent->DetachSubMessage(it->value().MutableMessageValue());
+      }
+    }
+  }
   field->MergeFrom(message->GetArena(), *other_field);
   self->version++;
   Py_RETURN_NONE;
@@ -675,14 +724,7 @@ int MapReflectionFriend::MessageMapSetItem(PyObject* _self, PyObject* key,
     Message* sub_message = it->value().MutableMessageValue();
     // If there is a living weak reference to an item, we "Release" it,
     // otherwise we just discard the C++ value.
-    if (CMessage* released =
-            self->parent->MaybeReleaseSubMessage(sub_message)) {
-      Message* msg = cmessage::AssureWritable(released);
-      if (msg == nullptr) return 0;
-      Message* new_msg = msg->New();
-      released->message = new_msg;
-      msg->GetReflection()->Swap(msg, new_msg);
-    }
+    self->parent->DetachSubMessage(sub_message);
 
     // Delete key from map.
     map->erase(map_key);

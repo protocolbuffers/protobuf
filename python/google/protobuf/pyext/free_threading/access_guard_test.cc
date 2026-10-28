@@ -11,6 +11,7 @@
 #include <Python.h>
 
 #include <atomic>
+#include <memory>
 #include <thread>  // NOLINT
 #include <type_traits>
 #include <utility>
@@ -74,6 +75,21 @@ static_assert(std::is_same_v<decltype(std::declval<const Guarded<int>&>().Get(
                                  std::declval<const WriteAccess&>())),
                              const int&>);
 
+// Guarded<T> is neither copyable nor movable.
+static_assert(!std::is_copy_constructible_v<Guarded<int*>>);
+static_assert(!std::is_move_constructible_v<Guarded<int*>>);
+static_assert(!std::is_copy_assignable_v<Guarded<int*>>);
+
+// std::unique_ptr<U> is pointer-like, just like U*.
+static_assert(
+    std::is_same_v<decltype(std::declval<const Guarded<std::unique_ptr<int>>&>()
+                                .Get(std::declval<const ReadAccess&>())),
+                   const int*>);
+static_assert(
+    std::is_same_v<decltype(std::declval<const Guarded<std::unique_ptr<int>>&>()
+                                .Get(std::declval<const WriteAccess&>())),
+                   int*>);
+
 // Set() requires write access.
 template <typename G, typename A>
 constexpr bool kCanSet = requires(G g, const A& a) { g.Set({}, a); };
@@ -110,6 +126,25 @@ TEST(AccessTokenTest, WithReadAndWrite) {
   // A WriteAccess can be passed wherever a ReadAccess is expected.
   auto read_value = [&](const ReadAccess& r) { return *ptr.Get(r); };
   EXPECT_EQ(guard.WithWrite(-1, read_value), 5);
+}
+
+TEST(AccessTokenTest, GuardedUniquePtrOwnsPointee) {
+  ScopedPyThreadState py_thread;
+  AccessGuard guard;
+  Guarded<std::unique_ptr<int>> ptr(std::make_unique<int>(1), guard);
+
+  EXPECT_TRUE(guard.WithWrite([&](const WriteAccess& w) {
+    *ptr.Get(w) += 1;
+    ptr.Set(std::make_unique<int>(*ptr.Get(w) * 10), w);
+  }));
+  EXPECT_EQ(
+      guard.WithRead(-1, [&](const ReadAccess& r) { return *ptr.Get(r); }), 20);
+  EXPECT_EQ(*ptr.GetQuiescent(), 20);
+
+  std::unique_ptr<int> taken = ptr.TakeQuiescent();
+  ASSERT_NE(taken, nullptr);
+  EXPECT_EQ(*taken, 20);
+  EXPECT_EQ(ptr.GetQuiescent(), nullptr);
 }
 
 TEST(AccessTokenTest, GuardedPointerIsNullable) {

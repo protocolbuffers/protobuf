@@ -78,9 +78,11 @@ class MessageTest(unittest.TestCase):
       msg2 = message_module.TestAllTypes()
       msg2.ParseFromString(serialized)
       msg3 = message_module.TestAllTypes()
-      _ = msg3.optional_nested_message
-      _ = msg3.optional_import_message
+      nested3 = msg3.optional_nested_message
+      imp3 = msg3.optional_import_message
+      rep3 = msg3.repeated_nested_message
       msg3.MergeFrom(msg2)
+      del nested3, imp3, rep3
       _ = msg3.optional_string
       _ = msg3.optional_bytes
       _ = msg3.ByteSize()
@@ -91,8 +93,10 @@ class MessageTest(unittest.TestCase):
 
       msg4 = message_module.TestAllTypes()
       msg4.CopyFrom(msg3)
-      _ = msg4.optional_nested_message
+      nested4 = msg4.optional_nested_message
+      rep4 = msg4.repeated_nested_message
       msg4.Clear()
+      del nested4, rep4
 
       # Try deepcopy
       _ = copy.deepcopy(msg3)
@@ -1404,6 +1408,21 @@ class MessageTest(unittest.TestCase):
     # Make sure the sub message is still immutable after merge from empty.
     m1.MergeFromString(b'')  # field state should not change
     self.assertFalse(m1.HasField('optional_nested_message'))
+
+  @unittest.skipIf(
+      api_implementation.Type() == 'upb',
+      "Currently broken in upb, will be fixed in the next breaking release"
+  )
+  def testMergeFromSelfRaises(self, message_module):
+    m = message_module.TestAllTypes()
+    m.repeated_int32.append(1)
+    m.optional_nested_message.bb = 2
+    with self.assertRaises(AssertionError):
+      m.MergeFrom(m)
+    with self.assertRaises(AssertionError):
+      m.optional_nested_message.MergeFrom(m.optional_nested_message)
+    self.assertEqual([1], m.repeated_int32)
+    self.assertEqual(2, m.optional_nested_message.bb)
 
   def testMergeFromStringDecodeErrorSync(self, message_module):
     m = message_module.NestedTestAllTypes()
@@ -3266,6 +3285,26 @@ class Proto3Test(unittest.TestCase):
     with self.assertRaises(TypeError):
       del msg2.map_int32_foreign_message['']
 
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      "Currently broken in upb and pure Python, will be fixed in the next"
+      " breaking release"
+  )
+  def testMapMergeFromSelfRaises(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_int32[1] = 2
+    msg.map_int32_foreign_message[3].c = 4
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a map into itself'
+    ):
+      msg.map_int32_int32.MergeFrom(msg.map_int32_int32)
+    with self.assertRaisesRegex(
+        AssertionError, 'Cannot merge a map into itself'
+    ):
+      msg.map_int32_foreign_message.MergeFrom(msg.map_int32_foreign_message)
+    self.assertEqual({1: 2}, dict(msg.map_int32_int32))
+    self.assertEqual(4, msg.map_int32_foreign_message[3].c)
+
   def testMapMergeFrom(self):
     msg = map_unittest_pb2.TestMap()
     msg.map_int32_int32[12] = 34
@@ -3326,6 +3365,72 @@ class Proto3Test(unittest.TestCase):
       m1.map_int32_all_types.MergeFrom(
           {1: unittest_proto3_arena_pb2.TestAllTypes()}
       )
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testMapMergeFromKeepsHeldOverwrittenValues(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_int32_foreign_message[1].c = 5
+    held = msg.map_int32_foreign_message[1]
+    other = map_unittest_pb2.TestMap()
+    other.map_int32_foreign_message[1].d = 7
+
+    msg.map_int32_foreign_message.MergeFrom(other.map_int32_foreign_message)
+
+    # The merge replaces the value; the held wrapper keeps the old one.
+    self.assertEqual(5, held.c)
+    self.assertFalse(held.HasField('d'))
+    self.assertEqual(7, msg.map_int32_foreign_message[1].d)
+    self.assertFalse(msg.map_int32_foreign_message[1].HasField('c'))
+
+  @unittest.skipIf(
+      api_implementation.Type() != 'cpp',
+      'Testing C++ implementation only',
+  )
+  def testMapMergeFromIncompatibleTypes(self):
+    msg = map_unittest_pb2.TestMap()
+    msg.map_string_string['a'] = 'b'
+    msg.map_string_foreign_message['a'].c = 1
+    with self.assertRaises(AttributeError):
+      msg.map_int32_int32.MergeFrom(msg.map_string_string)
+    with self.assertRaises(AttributeError):
+      msg.map_int32_foreign_message.MergeFrom(msg.map_string_foreign_message)
+    with self.assertRaises(AttributeError):
+      msg.map_int32_all_types.MergeFrom(msg.map_int32_foreign_message)
+    self.assertEqual(0, len(msg.map_int32_int32))
+    self.assertEqual(0, len(msg.map_int32_foreign_message))
+    self.assertEqual(0, len(msg.map_int32_all_types))
+
+  def testMapMergeFromLeavesSourceValuesIntact(self):
+    src = map_unittest_pb2.TestMap()
+    src.map_int32_foreign_message[1].c = 5
+    src.map_int32_foreign_message[2].c = 6
+    held_src_1 = src.map_int32_foreign_message[1]
+    held_src_2 = src.map_int32_foreign_message[2]
+    dst = map_unittest_pb2.TestMap()
+    dst.map_int32_foreign_message[1].c = 7  # Overwritten by the merge.
+
+    dst.map_int32_foreign_message.MergeFrom(src.map_int32_foreign_message)
+
+    # Merging copies the source values: references to them still refer to the
+    # source map, and are independent of the merged copies.
+    self.assertEqual(5, held_src_1.c)
+    self.assertEqual(6, held_src_2.c)
+    held_src_1.c = 50
+    held_src_2.c = 60
+    self.assertEqual(50, src.map_int32_foreign_message[1].c)
+    self.assertEqual(60, src.map_int32_foreign_message[2].c)
+    self.assertEqual(5, dst.map_int32_foreign_message[1].c)
+    self.assertEqual(6, dst.map_int32_foreign_message[2].c)
+    dst.map_int32_foreign_message[2].c = 600
+    self.assertEqual(60, held_src_2.c)
+
+    # The merged copies outlive the source.
+    del src, held_src_1, held_src_2
+    self.assertEqual(5, dst.map_int32_foreign_message[1].c)
+    self.assertEqual(600, dst.map_int32_foreign_message[2].c)
 
   def testMergeFromBadType(self):
     msg = map_unittest_pb2.TestMap()

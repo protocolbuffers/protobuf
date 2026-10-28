@@ -5609,7 +5609,7 @@ const FileDescriptor* internal::DescriptorBuilder::BuildFile(
   return result;
 }
 
-FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
+PROTOBUF_NOINLINE FileDescriptor* internal::DescriptorBuilder::BuildFileImpl(
     const FileDescriptorProto& proto, internal::FlatAllocator& alloc) {
   FileDescriptor* result = alloc.AllocateArray<FileDescriptor>(1);
   file_ = result;

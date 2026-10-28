@@ -183,6 +183,15 @@ typedef struct CMessage : public ContainerBase {
                                        CMessageClass* message_class,
                                        MessageMutabilityState state);
   CMessage* MaybeReleaseSubMessage(const Message* sub_message);
+
+  // Detaches the live Python wrapper (if any) for `sub_message`, a message
+  // value in one of this message's map fields that is about to be overwritten
+  // or deleted: the wrapper becomes a standalone message that owns the value's
+  // current contents, which are moved into a new message.
+  //
+  // Note that ClearField() cannot call this, because it also must handle
+  // repeated and map fields, and their wrappers always need a parent message.
+  void DetachSubMessage(Message* sub_message);
 } CMessage;
 
 // The (meta) type of all Messages classes.

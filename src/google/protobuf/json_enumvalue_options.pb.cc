@@ -69,6 +69,7 @@ constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::_Internal::Ge
       1,  // num_field_entries
       0,  // num_aux_entries
       offsetof(ParseTableT_, field_names),  // no aux_entries
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -82,9 +83,9 @@ constexpr JsonEnumValueOptions::ParseTableT_ JsonEnumValueOptions::_Internal::Ge
     }}, {{
       // string string = 1;
       {PROTOBUF_FIELD_OFFSET(JsonEnumValueOptions, _impl_.string_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\41\6\0\0\0\0\0\0"
       "pb.enumvalue.JsonEnumValueOptions"
       "string"
@@ -148,6 +149,8 @@ struct JsonEnumValueOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(JsonEnumValueOptionsGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(JsonEnumValueOptionsGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const JsonEnumValueOptionsGlobalsTypeInternal JsonEnumValueOptions_globals_

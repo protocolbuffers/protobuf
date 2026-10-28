@@ -1246,6 +1246,8 @@ public class DescriptorsTest {
       FieldDescriptor field = messageType.findFieldByName("oneof_nested_message");
       OneofDescriptor oneofDescriptor = field.getContainingOneof();
       assertThat(oneofDescriptor).isNotNull();
+      assertThat(messageType.findOneofByName("oneof_field")).isSameInstanceAs(oneofDescriptor);
+      assertThat(messageType.findOneofByName("oneof_nested_message")).isNull();
       assertThat(messageType.getOneofs().get(0)).isSameInstanceAs(oneofDescriptor);
       assertThat(oneofDescriptor.getName()).isEqualTo("oneof_field");
 
@@ -1254,6 +1256,36 @@ public class DescriptorsTest {
 
       assertThat(oneofDescriptor.getFields()).hasSize(7);
       assertThat(field).isEqualTo(oneofDescriptor.getFields().get(1));
+    }
+
+    @Test
+    public void testOneofDescriptorFieldCollision() throws Exception {
+      DescriptorValidationException exception =
+          assertThrows(
+              DescriptorValidationException.class,
+              () ->
+                  FileDescriptor.buildFrom(
+                      FileDescriptorProto.newBuilder()
+                          .setName("foo.proto")
+                          .setPackage("foo")
+                          .setSyntax("proto2")
+                          .addMessageType(
+                              DescriptorProto.newBuilder()
+                                  .setName("Bar")
+                                  .addField(
+                                      FieldDescriptorProto.newBuilder()
+                                          .setName("field1")
+                                          .setNumber(1)
+                                          .setOneofIndex(0)
+                                          .setType(FieldDescriptorProto.Type.TYPE_INT32)
+                                          .setLabel(FieldDescriptorProto.Label.LABEL_OPTIONAL)
+                                          .build())
+                                  .addOneofDecl(
+                                      OneofDescriptorProto.newBuilder().setName("field1").build())
+                                  .build())
+                          .build(),
+                      new FileDescriptor[0]));
+      assertThat(exception.getMessage()).contains("\"field1\" is already defined in \"foo.Bar\"");
     }
 
     @Test

@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use super::*;
 
 unsafe extern "C" {
@@ -6,7 +13,11 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_parse(m: RawMessage, input: PtrAndLen) -> bool;
     pub fn proto2_rust_Message_parse_dont_enforce_required(m: RawMessage, input: PtrAndLen)
         -> bool;
-    pub fn proto2_rust_Message_serialize(m: RawMessage, output: &mut SerializedData) -> bool;
+    pub fn proto2_rust_Message_serialize(
+        m: RawMessage,
+        output: &mut SerializedData,
+        deterministic: bool,
+    ) -> bool;
     pub fn proto2_rust_Message_serialized_len(m: RawMessage) -> usize;
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
@@ -57,8 +68,11 @@ impl<T: Message> OwnedMessageInner<T> {
 ///
 /// The following invariants must be upheld:
 ///
-/// - No concurrent mutation for any two fields in a message: this means mutators cannot be `Send`
-///   but are `Sync`.
+/// - No concurrent mutation for any two fields in a message. Like `&mut T`, a `Mut` has exclusive
+///   access to its message for `'msg`, guaranteed by the `&'msg mut` borrow it was created from.
+///   This type holds a raw pointer and so is neither `Send` nor `Sync` by itself; the generated
+///   `Mut` types opt into both `Send` and `Sync` (as `MessageMut` requires) on the basis of that
+///   exclusivity.
 /// - If there are multiple accessible `Mut` to a single message at a time, they must be different
 ///   fields, and not be in the same oneof. As such, a `Mut` cannot be `Clone` but *can* reborrow
 ///   itself with `.as_mut()`, which converts `&'b mut Mut<'a, T>` to `Mut<'b, T>`.
@@ -319,10 +333,14 @@ impl<T: CppGetRawMessageMut> ClearAndParse for T {
 }
 
 impl<T: CppGetRawMessage> Serialize for T {
-    fn serialize(&self) -> Result<Vec<u8>, SerializeError> {
+    fn serialize_with_options(&self, options: SerializeOptions) -> Result<Vec<u8>, SerializeError> {
         let mut serialized_data = SerializedData::new();
         let success = unsafe {
-            proto2_rust_Message_serialize(self.get_raw_message(Private), &mut serialized_data)
+            proto2_rust_Message_serialize(
+                self.get_raw_message(Private),
+                &mut serialized_data,
+                options.deterministic,
+            )
         };
         if success {
             Ok(serialized_data.into_vec())
