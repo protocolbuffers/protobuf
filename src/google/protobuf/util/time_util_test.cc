@@ -7,13 +7,15 @@
 
 #include "google/protobuf/util/time_util.h"
 
+#include <gtest/gtest.h>
+
 #include <cstdint>
 #include <ctime>
+#include <limits>
 
 #include "google/protobuf/duration.pb.h"
-#include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/testing/googletest.h"
-#include <gtest/gtest.h>
+#include "google/protobuf/timestamp.pb.h"
 #include "google/protobuf/util/internal_timeval.h"  // IWYU pragma: keep for timeval
 
 namespace google {
@@ -548,6 +550,97 @@ TEST(TimeUtilTest, FromStringRejectsMalformedTimestamp) {
   // Valid inputs still work
   EXPECT_TRUE(TimeUtil::FromString("0001-01-01T00:00:00Z", &t));
   EXPECT_TRUE(TimeUtil::FromString("9999-12-31T23:59:59Z", &t));
+}
+
+TEST(TimeUtilTest, FromStringRejectsDurationSignWhitespaceAndEmptyParts) {
+  Duration d;
+  ASSERT_TRUE(TimeUtil::FromString("0s", &d));
+  EXPECT_EQ(0, d.seconds());
+  EXPECT_EQ(0, d.nanos());
+  ASSERT_TRUE(TimeUtil::FromString("-0s", &d));
+  EXPECT_EQ(0, d.seconds());
+  EXPECT_EQ(0, d.nanos());
+  ASSERT_TRUE(TimeUtil::FromString("-0.5s", &d));
+  EXPECT_EQ(0, d.seconds());
+  EXPECT_EQ(-500000000, d.nanos());
+
+  const char* const invalid_inputs[] = {
+      "--5s",
+      "--5.0s",
+      "--0.5s",
+      "--9223372036854775808s",
+      "- -9223372036854775808s",
+      " 5s",
+      " -5s",
+      " -0.5s",
+      "- 5s",
+      "5 s",
+      "+5s",
+      "-+5s",
+      "+-5s",
+      "1.+5s",
+      "0.-5s",
+      "-0.-5s",
+      "1. 5s",
+      "1.\t5s",
+      "-s",
+      ".s",
+      "-.s",
+      "1.s",
+      ".5s",
+      "1.2.3s",
+      "9223372036854775808s",
+      "-9223372036854775808s",
+  };
+  for (const char* input : invalid_inputs) {
+    SCOPED_TRACE(input);
+    d.set_seconds(42);
+    d.set_nanos(123);
+    EXPECT_FALSE(TimeUtil::FromString(input, &d));
+    EXPECT_EQ(42, d.seconds());
+    EXPECT_EQ(123, d.nanos());
+  }
+}
+
+TEST(TimeUtilTest, TimestampToNanosecondsHandlesInt64MinWindow) {
+  const int64_t cases[] = {
+      std::numeric_limits<int64_t>::min(),
+      std::numeric_limits<int64_t>::min() + 1,
+      int64_t{-9223372036000000001},
+      int64_t{-9223372036000000000},
+      std::numeric_limits<int64_t>::max(),
+  };
+  for (int64_t nanos : cases) {
+    SCOPED_TRACE(nanos);
+    Timestamp ts = TimeUtil::NanosecondsToTimestamp(nanos);
+    ASSERT_TRUE(TimeUtil::IsTimestampValid(ts));
+    EXPECT_EQ(nanos, TimeUtil::TimestampToNanoseconds(ts));
+  }
+}
+
+TEST(TimeUtilTest, DurationOperatorsHandleInt64MinBoundaries) {
+  constexpr int64_t kInt64Min = std::numeric_limits<int64_t>::min();
+  constexpr int64_t kInt64Max = std::numeric_limits<int64_t>::max();
+
+  EXPECT_EQ(TimeUtil::SecondsToDuration(0),
+            TimeUtil::SecondsToDuration(0) * kInt64Min);
+  EXPECT_EQ(TimeUtil::SecondsToDuration(0),
+            kInt64Min * TimeUtil::SecondsToDuration(0));
+  EXPECT_EQ(TimeUtil::SecondsToDuration(0),
+            TimeUtil::SecondsToDuration(100) / kInt64Min);
+  EXPECT_EQ(TimeUtil::SecondsToDuration(0),
+            TimeUtil::SecondsToDuration(-100) / kInt64Min);
+  EXPECT_EQ(
+      TimeUtil::NanosecondsToDuration(-34),
+      TimeUtil::SecondsToDuration(TimeUtil::kDurationMaxSeconds) / kInt64Min);
+
+  Duration min_nanos = TimeUtil::NanosecondsToDuration(kInt64Min);
+  Duration pos_two_pow_63 = TimeUtil::NanosecondsToDuration(kInt64Max) +
+                            TimeUtil::NanosecondsToDuration(1);
+  ASSERT_TRUE(TimeUtil::IsDurationValid(min_nanos));
+  ASSERT_TRUE(TimeUtil::IsDurationValid(pos_two_pow_63));
+  EXPECT_EQ(kInt64Min, min_nanos / TimeUtil::NanosecondsToDuration(1));
+  EXPECT_EQ(kInt64Min, pos_two_pow_63 / TimeUtil::NanosecondsToDuration(-1));
 }
 
 }  // namespace
