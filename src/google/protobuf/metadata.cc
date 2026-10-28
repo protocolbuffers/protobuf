@@ -1,3 +1,4 @@
+#include "google/protobuf/generated_message_util.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/unknown_field_set.h"
 
@@ -10,6 +11,7 @@ template void InternalMetadata::DoMergeFrom<UnknownFieldSet>(
     const UnknownFieldSet& other);
 template void InternalMetadata::DoSwap<UnknownFieldSet>(UnknownFieldSet* other);
 template void InternalMetadata::DeleteOutOfLineHelper<UnknownFieldSet>();
+template void SimpleSharedDtor<UnknownFieldSet>(MessageLite& msg);
 
 }  // namespace internal
 }  // namespace protobuf

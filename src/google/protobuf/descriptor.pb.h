@@ -1255,8 +1255,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(UninterpretedOption_NamePart* PROTOBUF_NONNULL other);
 
   // required string name_part = 1;
@@ -1500,8 +1500,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo_Loca
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(SourceCodeInfo_Location* PROTOBUF_NONNULL other);
 
   // repeated int32 path = 1 [packed = true];
@@ -1765,8 +1765,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo_A
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(GeneratedCodeInfo_Annotation* PROTOBUF_NONNULL other);
 
   // repeated int32 path = 1 [packed = true];
@@ -2005,8 +2005,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Featur
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FieldOptions_FeatureSupport* PROTOBUF_NONNULL other);
 
   // optional string deprecation_warning = 3;
@@ -2222,8 +2222,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions_Editio
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FieldOptions_EditionDefault* PROTOBUF_NONNULL other);
 
   // optional string value = 2;
@@ -3101,8 +3101,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSet final : 
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FeatureSet* PROTOBUF_NONNULL other);
 
   // optional .google.protobuf.FeatureSet.FieldPresence field_presence = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_FILE, edition_defaults = {
@@ -3355,8 +3355,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(ExtensionRangeOptions_Declaration* PROTOBUF_NONNULL other);
 
   // optional string full_name = 2;
@@ -3568,8 +3568,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+  static constexpr auto& SharedDtor =
+      ::google::protobuf::internal::SimpleSharedDtor<::google::protobuf::UnknownFieldSet>;
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
   void InternalSwap(EnumDescriptorProto_EnumReservedRange* PROTOBUF_NONNULL other);
 
   // optional int32 start = 1;
@@ -3767,8 +3768,9 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Res
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
+  static constexpr auto& SharedDtor =
+      ::google::protobuf::internal::SimpleSharedDtor<::google::protobuf::UnknownFieldSet>;
   void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
-  static void SharedDtor(MessageLite& self);
   void InternalSwap(DescriptorProto_ReservedRange* PROTOBUF_NONNULL other);
 
   // optional int32 start = 1;
@@ -4015,8 +4017,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED UninterpretedOption
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(UninterpretedOption* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.UninterpretedOption.NamePart name = 2;
@@ -4428,8 +4430,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED SourceCodeInfo fina
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(SourceCodeInfo* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.SourceCodeInfo.Location location = 1;
@@ -4625,8 +4627,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED GeneratedCodeInfo f
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(GeneratedCodeInfo* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.GeneratedCodeInfo.Annotation annotation = 1;
@@ -4836,8 +4838,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults_
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FeatureSetDefaults_FeatureSetEditionDefault* PROTOBUF_NONNULL other);
 
   // optional .google.protobuf.FeatureSet overridable_features = 4;
@@ -5244,8 +5246,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceOptions fina
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(ServiceOptions* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -5648,8 +5650,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofOptions final 
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(OneofOptions* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -6081,8 +6083,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodOptions final
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(MethodOptions* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -6519,8 +6521,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MessageOptions fina
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(MessageOptions* PROTOBUF_NONNULL other);
 
   // optional .google.protobuf.FeatureSet features = 12;
@@ -7114,8 +7116,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileOptions final :
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FileOptions* PROTOBUF_NONNULL other);
 
   // optional string java_package = 1;
@@ -7778,8 +7780,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldOptions final 
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FieldOptions* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.FieldOptions.EditionDefault edition_defaults = 20;
@@ -8042,8 +8044,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FeatureSetDefaults 
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FeatureSetDefaults* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.FeatureSetDefaults.FeatureSetEditionDefault defaults = 1;
@@ -8483,8 +8485,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ExtensionRangeOptio
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(ExtensionRangeOptions* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.ExtensionRangeOptions.Declaration declaration = 2 [retention = RETENTION_SOURCE];
@@ -8914,8 +8916,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueOptions fi
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(EnumValueOptions* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.UninterpretedOption uninterpreted_option = 999;
@@ -9344,8 +9346,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumOptions final :
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(EnumOptions* PROTOBUF_NONNULL other);
 
   // optional .google.protobuf.FeatureSet features = 7;
@@ -9566,8 +9568,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED OneofDescriptorProt
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(OneofDescriptorProto* PROTOBUF_NONNULL other);
 
   // optional string name = 1;
@@ -9807,8 +9809,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED MethodDescriptorPro
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(MethodDescriptorProto* PROTOBUF_NONNULL other);
 
   // optional string name = 1;
@@ -10161,8 +10163,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FieldDescriptorProt
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FieldDescriptorProto* PROTOBUF_NONNULL other);
 
   // optional string name = 1;
@@ -10416,8 +10418,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumValueDescriptor
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(EnumValueDescriptorProto* PROTOBUF_NONNULL other);
 
   // optional string name = 1;
@@ -10631,8 +10633,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto_Ext
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(DescriptorProto_ExtensionRange* PROTOBUF_NONNULL other);
 
   // optional .google.protobuf.ExtensionRangeOptions options = 3;
@@ -10854,8 +10856,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED ServiceDescriptorPr
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(ServiceDescriptorProto* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.MethodDescriptorProto method = 2;
@@ -11114,8 +11116,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED EnumDescriptorProto
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(EnumDescriptorProto* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.EnumValueDescriptorProto value = 2;
@@ -11444,8 +11446,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED DescriptorProto fin
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(DescriptorProto* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.FieldDescriptorProto field = 2;
@@ -11831,8 +11833,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorProto
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FileDescriptorProto* PROTOBUF_NONNULL other);
 
   // repeated string dependency = 3;
@@ -12278,8 +12280,8 @@ class PROTOBUF_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED FileDescriptorSet f
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(FileDescriptorSet* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.FileDescriptorProto file = 1;

@@ -307,8 +307,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED Version final : publi
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(Version* PROTOBUF_NONNULL other);
 
   // optional string suffix = 4;
@@ -543,8 +543,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(CodeGeneratorResponse_File* PROTOBUF_NONNULL other);
 
   // optional string name = 1;
@@ -802,8 +802,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorResponse
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(CodeGeneratorResponse* PROTOBUF_NONNULL other);
 
   // repeated .google.protobuf.compiler.CodeGeneratorResponse.File file = 15;
@@ -1063,8 +1063,8 @@ class PROTOC_EXPORT  PROTOBUF_FUTURE_ADD_EARLY_WARN_UNUSED CodeGeneratorRequest 
   [[nodiscard]] static ::uint8_t* PROTOBUF_NULLABLE _InternalSerialize(
       const ::google::protobuf::MessageLite& msg, ::uint8_t* PROTOBUF_NULLABLE target,
       ::google::protobuf::io::EpsCopyOutputStream* PROTOBUF_NONNULL stream);
-  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   static void SharedDtor(MessageLite& self);
+  void SharedCtor(::google::protobuf::Arena* PROTOBUF_NULLABLE arena);
   void InternalSwap(CodeGeneratorRequest* PROTOBUF_NONNULL other);
 
   // repeated string file_to_generate = 1;

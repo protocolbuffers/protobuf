@@ -421,6 +421,21 @@ bool CanClearByZeroing(const FieldDescriptor* field) {
   }
 }
 
+bool HasSimpleDestructor(const Descriptor* desc, const Options& options) {
+  if (HasSimpleBaseClass(desc, options)) return true;
+
+  if (ShouldSplit(desc, options)) return false;
+  if (desc->extension_range_count() != 0) return false;
+
+  for (auto* f : FieldRange(desc)) {
+    if (f->is_repeated()) return false;
+    if (f->cpp_type() == f->CPPTYPE_STRING) return false;
+    if (f->cpp_type() == f->CPPTYPE_MESSAGE) return false;
+  }
+
+  return true;
+}
+
 // Determines if swap can be implemented via memcpy.
 bool HasTrivialSwap(const FieldDescriptor* field, const Options& options) {
   if (field->is_repeated() || field->is_extension()) return false;

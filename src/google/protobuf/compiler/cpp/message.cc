@@ -1662,9 +1662,18 @@ void MessageGenerator::GeneratePrivateHelpers(io::Printer* p) {
           {"decl_non_simple_base",
            [&] {
              if (HasSimpleBaseClass(descriptor_, options_)) return;
+             if (HasSimpleDestructor(descriptor_, options_)) {
+               p->Emit(R"cc(
+                 static constexpr auto& SharedDtor =
+                     $pbi$::SimpleSharedDtor<$unknown_fields_type$>;
+               )cc");
+             } else {
+               p->Emit(R"cc(
+                 static void SharedDtor(MessageLite& self);
+               )cc");
+             }
              p->Emit(R"cc(
                void SharedCtor($pb$::Arena* $nullable$ arena);
-               static void SharedDtor(MessageLite& self);
                void InternalSwap($Msg$* $nonnull$ other);
              )cc");
            }},
@@ -2711,7 +2720,7 @@ void MessageGenerator::GenerateInitDefaultSplitInstance(io::Printer* p) {
 }
 
 void MessageGenerator::GenerateSharedDestructorCode(io::Printer* p) {
-  if (HasSimpleBaseClass(descriptor_, options_)) return;
+  if (HasSimpleDestructor(descriptor_, options_)) return;
   p->Emit(
       {
           {"has_bit_consistency",
