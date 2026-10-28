@@ -22,6 +22,7 @@
 #ifndef GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 #define GOOGLE_PROTOBUF_MESSAGE_LITE_H__
 
+#include <algorithm>
 #include <atomic>
 #include <climits>
 #include <cstddef>
@@ -38,6 +39,7 @@
 #include "absl/base/attributes.h"
 #include "absl/base/macros.h"
 #include "absl/log/absl_check.h"
+#include "absl/numeric/bits.h"
 #include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/arena.h"
@@ -47,6 +49,7 @@
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
 #include "google/protobuf/port.h"
+#include "google/protobuf/raw_ptr.h"
 #include "google/protobuf/type_id.h"
 
 
@@ -249,11 +252,13 @@ PROTOBUF_EXPORT inline const std::string& GetEmptyStringAlreadyInited() {
 
 // TODO: Remove unnecessary members, or move into ClassData.
 struct MessageGlobalsBase {
+  static const size_t kMessageGlobalsAlignment;
+
   template <size_t R, size_t KnownAlignment = 0>
   static constexpr size_t RoundUpTo(size_t n) {
     static_assert(absl::has_single_bit(R), "Must be power of two");
     if constexpr (KnownAlignment != 0) {
-      assert(n % KnownAlignment == 0);
+      ABSL_DCHECK_EQ(n % KnownAlignment, 0u);
     }
     if constexpr (KnownAlignment >= R) {
       return n;
@@ -289,17 +294,27 @@ struct MessageGlobalsBase {
   explicit constexpr MessageGlobalsBase(ClassData class_data)
       : class_data(class_data) {}
 
+  size_t OffsetToParseTable() const {
+    return OffsetToDefault() +
+           RoundUpTo<8, alignof(void*)>(class_data.allocation_size());
+  }
   static const TcParseTableBase* ToParseTableBase(const void* g) {
     const auto* globals = static_cast<const MessageGlobalsBase*>(g);
     ABSL_DCHECK_NE(globals, nullptr);
     ABSL_DCHECK(!globals->class_data.is_dynamic);
     return reinterpret_cast<const TcParseTableBase*>(
-        ToDefaultInstance<char>(g) +
-        RoundUpTo<8, alignof(void*)>(globals->class_data.allocation_size()));
+        reinterpret_cast<const char*>(globals) + globals->OffsetToParseTable());
   }
+
+  // Defined in generated_message_tctable_decl.h
+  size_t SizeOfSelf() const;
 
   ClassData class_data;
 };
+
+inline constexpr const size_t MessageGlobalsBase::kMessageGlobalsAlignment =
+    std::max(alignof(MessageGlobalsBase),
+             static_cast<size_t>(kMaxMessageAlignment));
 
 template <const auto* kGlobals>
 struct GeneratedMessageTraitsT {
@@ -751,6 +766,50 @@ class PROTOBUF_EXPORT MessageLite {
   // Message implementations require access to internally visible API.
   static constexpr internal::InternalVisibility internal_visibility() {
     return internal::InternalVisibility{};
+  }
+
+  // Split helpers
+  template <typename Msg, typename T, typename Split>
+  static PROTOBUF_ALWAYS_INLINE decltype(auto) GetSplitField(
+      const Msg& self, T Split::* address) {
+    const auto& split = *self._impl_._split_;
+    if constexpr (internal::kIsRawPtr<T>) {
+      return *(split.*address);
+    } else if constexpr (std::is_pointer_v<T>) {
+      using SubT = std::remove_pointer_t<T>;
+      return static_cast<const SubT*>(split.*address);
+    } else {
+      return std::as_const(split.*address);
+    }
+  }
+
+  template <typename Msg, typename T, typename Split>
+  static PROTOBUF_ALWAYS_INLINE auto* TryMutableSplitField(Msg& self,
+                                                           T Split::* address) {
+    auto* split = self._impl_._split_;
+    if constexpr (internal::kIsRawPtr<T>) {
+      auto& raw = split->*address;
+      return raw.IsDefault() ? nullptr : &*raw;
+    } else {
+      return self.IsSplitMessageDefault() ? nullptr : &(split->*address);
+    }
+  }
+
+  template <typename Msg, typename T, typename Split>
+  static PROTOBUF_ALWAYS_INLINE auto& MutableSplitField(Msg& self,
+                                                        T Split::* address) {
+    ABSL_DCHECK_NE(&self, &self.default_instance());
+    self.PrepareSplitMessageForWrite();
+    auto* split = self._impl_._split_;
+    if constexpr (internal::kIsRawPtr<T>) {
+      auto& raw = split->*address;
+      if (raw.IsDefault()) {
+        raw.Set(Arena::Create<typename T::value_type>(self.GetArena()));
+      }
+      return *raw;
+    } else {
+      return split->*address;
+    }
   }
 
   template <typename T>

@@ -12,8 +12,9 @@ use protos::*;
 
 use googletest::prelude::*;
 use protobuf::prelude::*;
-use protobuf::View;
+use protobuf::{SerializeOptions, View};
 
+use map_unittest_rust_proto::{TestMap, TestMapSubmessage};
 use paste::paste;
 use unittest_proto3_optional_rust_proto::TestProto3Optional;
 use unittest_proto3_rust_proto::TestAllTypes as TestAllTypesProto3;
@@ -34,6 +35,35 @@ macro_rules! generate_parameterized_serialization_test {
 
                 let serialized = msg.as_mut().serialize().unwrap();
                 assert_that!(serialized.len(), eq(0));
+            }
+
+            #[gtest]
+            fn [< deterministic_serialization_zero_length_ $name_ext >]() {
+                let mut msg = [< $type >]::new();
+                let options = SerializeOptions::new().deterministic(true);
+
+                let serialized = msg.serialize_with_options(options).unwrap();
+                expect_that!(serialized.len(), eq(0));
+
+                let serialized = msg.as_view().serialize_with_options(options).unwrap();
+                expect_that!(serialized.len(), eq(0));
+
+                let serialized = msg.as_mut().serialize_with_options(options).unwrap();
+                expect_that!(serialized.len(), eq(0));
+            }
+
+            #[gtest]
+            fn [< serialize_with_default_options_matches_serialize_ $name_ext >]() {
+                let mut msg = [< $type >]::new();
+                msg.set_optional_int64(42);
+                msg.set_optional_bool(true);
+                msg.set_optional_bytes(b"serialize deserialize test");
+
+                let serialized = msg.serialize().unwrap();
+                expect_that!(
+                    msg.serialize_with_options(SerializeOptions::default()).unwrap(),
+                    eq(&serialized)
+                );
             }
 
             #[gtest]
@@ -223,4 +253,51 @@ fn test_clear_and_parse_clears_on_error_oneof_partial() {
     expect_that!(msg.oneof_uint32_opt(), eq(None));
     expect_that!(msg.oneof_bytes_opt(), eq(None));
     expect_that!(msg.oneof_string_opt(), eq(None));
+}
+
+/// Returns a `TestMap` whose map fields are populated by inserting `keys` in the given order.
+fn test_map_with_keys(keys: impl IntoIterator<Item = i32>) -> TestMap {
+    let mut msg = TestMap::new();
+    for key in keys {
+        msg.map_int32_int32_mut().insert(key, key * 10);
+        msg.map_string_string_mut()
+            .insert(format!("key{key}").as_str(), format!("value{key}").as_str());
+        let mut value = TestAllTypes::new();
+        value.set_optional_int32(key);
+        msg.map_int32_all_types_mut().insert(key, value);
+    }
+    msg
+}
+
+#[gtest]
+fn deterministic_serialization_ignores_map_insertion_order() {
+    let options = SerializeOptions::new().deterministic(true);
+    let ascending = test_map_with_keys(-16..16);
+    let mut descending = test_map_with_keys((-16..16).rev());
+
+    let expected = ascending.serialize_with_options(options).unwrap();
+    expect_that!(descending.serialize_with_options(options).unwrap(), eq(&expected));
+    expect_that!(descending.as_view().serialize_with_options(options).unwrap(), eq(&expected));
+    expect_that!(descending.as_mut().serialize_with_options(options).unwrap(), eq(&expected));
+
+    // The output is regular wire format that parses back to the same contents.
+    let parsed = TestMap::parse(&expected).unwrap();
+    expect_that!(parsed.map_int32_int32().len(), eq(32));
+    expect_that!(parsed.map_string_string().len(), eq(32));
+    expect_that!(parsed.map_int32_all_types().len(), eq(32));
+    expect_that!(parsed.serialize_with_options(options).unwrap(), eq(&expected));
+}
+
+#[gtest]
+fn deterministic_serialization_applies_to_nested_maps() {
+    let options = SerializeOptions::new().deterministic(true);
+    let mut ascending = TestMapSubmessage::new();
+    ascending.set_test_map(test_map_with_keys(-16..16));
+    let mut descending = TestMapSubmessage::new();
+    descending.set_test_map(test_map_with_keys((-16..16).rev()));
+
+    expect_that!(
+        descending.serialize_with_options(options).unwrap(),
+        eq(&ascending.serialize_with_options(options).unwrap())
+    );
 }

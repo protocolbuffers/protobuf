@@ -279,10 +279,12 @@ cc_test(
     srcs = ["field_chunk_test.cc"],
     deps = [
         ":cpp",
+        ":names_internal",
         "//:protobuf",
         "//src/google/protobuf",
         "//src/google/protobuf:cc_test_protos",
         "//src/google/protobuf:protobuf_lite",
+        "@abseil-cpp//absl/algorithm:container",
         "@abseil-cpp//absl/log:absl_check",
         "@abseil-cpp//absl/strings:string_view",
         "@abseil-cpp//absl/types:span",

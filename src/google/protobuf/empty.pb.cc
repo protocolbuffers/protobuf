@@ -67,6 +67,7 @@ constexpr Empty::ParseTableT_ Empty::_Internal::GenerateParseTable(const ::_pbi:
       0,  // num_field_entries
       0,  // num_aux_entries
       offsetof(ParseTableT_, field_names),  // no aux_entries
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -74,8 +75,12 @@ constexpr Empty::ParseTableT_ Empty::_Internal::GenerateParseTable(const ::_pbi:
       {::_pbi::TcParser::MiniParse, {}},
     }}, {{
       65535, 65535
-    }}, // no field_entries, or aux_entries
-    {{
+    }}, {{
+      // no field_entries
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -127,6 +132,8 @@ struct EmptyGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(EmptyGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(EmptyGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EmptyGlobalsTypeInternal Empty_globals_

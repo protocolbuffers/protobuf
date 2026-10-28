@@ -18,7 +18,9 @@
 #include "absl/functional/any_invocable.h"
 #include "absl/log/absl_check.h"
 #include "absl/log/absl_log.h"
+#include "absl/strings/cord.h"
 #include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
 #include "absl/strings/str_replace.h"
 #include "absl/strings/string_view.h"
 #include "absl/types/optional.h"
@@ -126,9 +128,10 @@ TEST(FastVarints, NameHere) {
           offsetof(decltype(parse_table), field_lookup_table),
           0xFFFFFFFF - 1,  // skipmap
           offsetof(decltype(parse_table), field_entries),
-          1,                                             // num_field_entries
-          0,                                             // num_aux_entries
-          offsetof(decltype(parse_table), field_names),  // no aux_entries
+          1,                              // num_field_entries
+          0,                              // num_aux_entries
+          0,                              // no aux_entries
+          sizeof(decltype(parse_table)),  // sizeof_self
           &class_data,
           nullptr,           // post_loop_handler
           FastParserGaveUp,  // fallback
@@ -148,7 +151,7 @@ TEST(FastVarints, NameHere) {
           {kFieldOffset, kHasBitsOffset + 0, 0, (field_layout::kFkNone)},
       }},
       // no aux_entries
-      {{}},
+      // no field_names
   };
   uint8_t serialize_buffer[64];
 
@@ -316,13 +319,14 @@ TEST(IsEntryForFieldNumTest, Matcher) {
           0,     // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
-          0xFFFFFFFF - 7,  // 7 = fields 1, 2, and 3.
-          offsetof(decltype(table), field_names),
-          0,           // num_field_entries
-          0, 0,        // num_aux_entries, aux_offset,
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          nullptr,     // fallback function
+          0xFFFFFFFF - 7,           // 7 = fields 1, 2, and 3.
+          0,                        // no field_entries
+          0,                        // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          nullptr,                  // fallback function
       }};
   // clang-format on
   int table_field_numbers[] = {1, 2, 3};
@@ -422,11 +426,12 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
           0xFFFFFFFF - (1 << 1) - (1 << 2)   // fields 2, 3
                      - (1 << 3) - (1 << 4),  // fields 4, 5
           offsetof(decltype(table), field_entries),
-          5,           // num_field_entries
-          0, 0,        // num_aux_entries, aux_offset,
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          {},          // fallback function
+          5,                        // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          {},                       // fallback function
       },
       {},  // fast_entries
       // field_lookup_table for 2, 3, 4, 5, 111:
@@ -463,11 +468,12 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF - (1<<0) - (1<<2) - (1<<3) - (1<<4) - (1<<6),  // 1,3-5,7
           offsetof(decltype(table), field_entries),
-          6,           // num_field_entries
-          0, 0,        // num_aux_entries, aux_offset,
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          {},          // fallback function
+          6,                        // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          {},                       // fallback function
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 7, 111:
@@ -512,11 +518,12 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
                      - (1<<5) - (1<<7) - (1<<8) - (1<<10)  // 8, 9, 11, 12
                      - (1<<11),
           offsetof(decltype(table), field_entries),
-          10,          // num_field_entries
-          0, 0,        // num_aux_entries, aux_offset,
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          {},          // fallback function
+          10,                       // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          {},                       // fallback function
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 6, 8, 9, 11, 12, 70
@@ -547,37 +554,42 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
 
 TEST_F(FindFieldEntryTest, OutOfRange) {
   // Look up tags that are larger than the maximum in the message.
-  // clang-format off
   TcParseTable<0, 3, 0, 15, 2> table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
-          3,     // max_field_number
-          0,     // fast_idx_mask,
+          0,  // has_bits_offset
+          0,  // extension_offset
+          3,  // max_field_number
+          0,  // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
-          0xFFFFFFFF - (1<<0) - (1<<1) - (1<<2),  // fields 1, 2, 3
+          0xFFFFFFFF - (1 << 0) - (1 << 1) - (1 << 2),  // fields 1, 2, 3
           offsetof(decltype(table), field_entries),
-          3,           // num_field_entries
-          0,           // num_aux_entries
+          3,                                       // num_field_entries
+          0,                                       // num_aux_entries
           offsetof(decltype(table), field_names),  // no aux_entries
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          {},          // fallback function
+          sizeof(decltype(table)),                 // sizeof_self
+          nullptr,                                 // class_data
+          nullptr,                                 // post_loop_handler
+          {},                                      // fallback function
       },
       {},  // fast_entries
-      {{// field lookup table
-        65535, 65535                       // end of table
+      {{
+          // field lookup table
+          65535, 65535  // end of table
       }},
-    {},  // "mini" table
-    // auxiliary entries (none in this test)
-    {{  // name lengths
-        "\0\1\2\3\0\0\0\0"
+      {},  // "mini" table
+      {{
+          // auxiliary entries (none in this test)
+      }},
+      {{
+          // name lengths
+          "\0\1\2\3\0\0\0\0"
           // names
-        "1"
-        "02"
-        "003"}},
+          "1"
+          "02"
+          "003",
+      }},
   };
-  // clang-format on
   int table_field_numbers[] = {1, 2, 3};
 
   for (int field_num : table_field_numbers) {
@@ -586,9 +598,7 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
                 IsEntryForFieldNum(&table, field_num, table_field_numbers));
 
     absl::string_view name = FieldName(table, entry);
-    EXPECT_EQ(name.length(), field_num);
-    while (name[0] == '0') name.remove_prefix(1);  // strip leading zeores
-    EXPECT_EQ(name, absl::StrCat(field_num));
+    EXPECT_EQ(name, absl::StrFormat("%0*d", field_num, field_num));
   }
   for (int field_num : {0, 4, 112, 500000000}) {
     EXPECT_THAT(FindFieldEntry(table, field_num), Eq(nullptr));
@@ -598,33 +608,41 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
 TEST_F(FindFieldEntryTest, EmptyMessage) {
   // Ensure that tables with no fields are handled correctly.
   using TableType = TcParseTable<0, 0, 0, 20, 2>;
-  // clang-format off
   TableType table = {
       // header:
       {
-          0, 0,  // has_bits_offset, extensions
-          0,     // max_field_number
-          0,     // fast_idx_mask,
+          0,  // has_bits_offset
+          0,  // extension_offset
+          0,  // max_field_number
+          0,  // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
-          0xFFFFFFFF,       // no fields
+          0xFFFFFFFF,                              // no fields
           offsetof(decltype(table), field_names),  // no field_entries
-          0,           // num_field_entries
-          0,           // num_aux_entries
+          0,                                       // num_field_entries
+          0,                                       // num_aux_entries
           offsetof(TableType, field_names),
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          nullptr,     // fallback function
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          nullptr,                  // fallback function
       },
       {},  // fast_entries
-      {{// empty field lookup table
-        65535, 65535
+      {{
+          // empty field lookup table
+          65535,
+          65535,
+      }},
+      {{
+          // No field entries
+      }},
+      {{
+          // No aux entries
       }},
       {{
           "\13\0\0\0\0\0\0\0"
-          "MessageName"
+          "MessageName",
       }},
   };
-  // clang-format on
 
   for (int i : {0, 4, 112, 500000000}) {
     EXPECT_THAT(FindFieldEntry(table, i), Eq(nullptr));
@@ -662,9 +680,10 @@ const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
         135,         // num_field_entries
         5,           // num_aux_entries
         offsetof(decltype(test_all_types_table), aux_entries),
-        nullptr,     // default instance
-        nullptr,     // post_loop_handler
-        nullptr,     // fallback function
+        sizeof(decltype(test_all_types_table)),  // sizeof_self
+        nullptr,                                 // default instance
+        nullptr,                                 // post_loop_handler
+        nullptr,                                 // fallback function
     },
     {{
         // tail-call table
@@ -1248,6 +1267,337 @@ TEST(GeneratedMessageTctableLiteTest,
   for (int i = 0; i < 5; ++i) {
     EXPECT_EQ(arena_proto->mini_string(i), absl::StrCat("full_", i));
   }
+}
+
+// RepeatedField allocates power-of-two byte sizes for its backing storage:
+// HeapRep header (std::max(8, sizeof(Element)) bytes) +
+// sizeof(Element) * capacity.
+// Power-of-two allocations (32B, 64B, 128B, 256B, 512B, ...) correspond to
+// capacities of:
+//   - 1B elements (bool): 8 (SOO), 24, 56, ...
+//   - 4B elements (int32, fixed32, enum): 2 (SOO), 6, 14, 30, ...
+//   - 8B elements (int64, fixed64): 1 (SOO), 3, 7, 15, 31, ...
+//   - 16B elements (Cord): 0 (SOO), 1, 3, 7, 15, 31, ...
+// We choose 25 elements because it is above the minimum heap allocation clamp
+// for all element sizes (including 24 for 1B bool), falls strictly between
+// capacity boundaries (24 < 25 < 56, 14 < 25 < 30, 15 < 25 < 31), and is not
+// 8-byte aligned for 1B (25 -> 32) or 4B (25 -> 26).
+// When trimmed on an arena, the unused tail space is returned in place down
+// to the next 8-byte alignment boundary:
+//   - 1B elements: 32
+//   - 4B elements: 26
+//   - 8B elements: 25
+//   - 16B elements: 25
+proto2_unittest::RepeatedFieldTrim MakeRepeatedFieldTrimTestProto(int count) {
+  proto2_unittest::RepeatedFieldTrim source;
+  for (int i = 0; i < count; ++i) {
+    source.add_fast_fixed32(i);
+    source.add_fast_bool(i % 2 == 0);
+    source.add_fast_enum(proto2_unittest::RepeatedFieldTrim::LARGE_TEN);
+    source.add_fast_packed_enum(proto2_unittest::RepeatedFieldTrim::LARGE_TEN);
+    source.add_fast_small_enum(proto2_unittest::RepeatedFieldTrim::SMALL_ONE);
+    source.add_fast_packed_small_enum(
+        proto2_unittest::RepeatedFieldTrim::SMALL_ONE);
+    source.add_fast_packed_fixed32(i);
+    source.add_fast_packed_int32(i);
+
+    source.add_mini_fixed32(i);
+    source.add_mini_fixed64(i);
+    source.add_mini_int64(i);
+    source.add_mini_packed_int32(i);
+    source.add_mini_packed_fixed32(i);
+  }
+  return source;
+}
+
+enum class PrescanMode {
+  kNever,
+  kFastOnly,
+  kAlways,
+};
+
+template <typename T>
+int ExpectedHeapCapacity(int count, PrescanMode prescan = PrescanMode::kNever) {
+  RepeatedField<T> field;
+  // When PROTOBUF_FORCE_SPLIT is enabled, all fields are split and use
+  // MiniParse instead of the fast path, so kFastOnly fields do not pre-scan.
+  if (prescan == PrescanMode::kAlways ||
+      (prescan == PrescanMode::kFastOnly &&
+       !internal::ForceSplitFieldsInProtoc())) {
+    field.Reserve(count);
+  } else {
+    while (field.Capacity() < count) {
+      field.Reserve(field.Capacity() + 1);
+    }
+  }
+  return field.Capacity();
+}
+
+TEST(GeneratedMessageTctableLiteTest, RepeatedFieldTrimmedOnArena) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  const std::string serialized =
+      MakeRepeatedFieldTrimTestProto(25).SerializeAsString();
+
+  // On the heap (no arena), capacity is not trimmed. Fields that do not
+  // pre-scan grow by doubling, while fields that pre-scan on the heap
+  // reserve 25 elements directly.
+  proto2_unittest::RepeatedFieldTrim heap_proto;
+  ASSERT_TRUE(heap_proto.ParseFromString(serialized));
+  EXPECT_EQ(heap_proto.fast_fixed32().Capacity(),
+            ExpectedHeapCapacity<uint32_t>(25));
+  EXPECT_EQ(heap_proto.fast_bool().Capacity(),
+            ExpectedHeapCapacity<bool>(25, PrescanMode::kFastOnly));
+  EXPECT_EQ(heap_proto.fast_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+  EXPECT_EQ(heap_proto.fast_packed_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+  EXPECT_EQ(heap_proto.fast_small_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+  EXPECT_EQ(heap_proto.fast_packed_small_enum().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25, PrescanMode::kFastOnly));
+  EXPECT_EQ(heap_proto.fast_packed_fixed32().Capacity(),
+            ExpectedHeapCapacity<uint32_t>(25, PrescanMode::kAlways));
+  EXPECT_EQ(heap_proto.fast_packed_int32().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25, PrescanMode::kFastOnly));
+  EXPECT_EQ(heap_proto.mini_fixed32().Capacity(),
+            ExpectedHeapCapacity<uint32_t>(25));
+  EXPECT_EQ(heap_proto.mini_fixed64().Capacity(),
+            ExpectedHeapCapacity<uint64_t>(25));
+  EXPECT_EQ(heap_proto.mini_int64().Capacity(),
+            ExpectedHeapCapacity<int64_t>(25));
+  EXPECT_EQ(heap_proto.mini_packed_int32().Capacity(),
+            ExpectedHeapCapacity<int32_t>(25));
+  EXPECT_EQ(heap_proto.mini_packed_fixed32().Capacity(),
+            ExpectedHeapCapacity<uint32_t>(25, PrescanMode::kAlways));
+
+  // On an arena, capacity is trimmed down to the 8-byte aligned number of
+  // elements. Use a large enough initial block so that no field overflows an
+  // arena block mid-growth and populates the arena's cached_blocks_ freelist
+  // (allocations served from cached_blocks_ are not at the tail of the arena
+  // and cannot be trimmed).
+  ArenaOptions options;
+  options.start_block_size = 4096;
+  Arena arena(options);
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+  ASSERT_TRUE(arena_proto->ParseFromString(serialized));
+  EXPECT_EQ(arena_proto->fast_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_bool().Capacity(), 32);
+  EXPECT_EQ(arena_proto->fast_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_int32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_packed_int32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_packed_fixed32().Capacity(), 26);
+
+  // Also test with 3 elements: for 4-byte elements, 3 exceeds SOO (2), and the
+  // initial heap allocation is clamped to 32 bytes (capacity 6) even when
+  // pre-reserved (or for packed varints < 16 bytes, grown via AddWithArena to
+  // capacity 6). On an arena, TryShrinkToFit must trim capacity from 6 down to
+  // 4 (24 bytes).
+  auto* small_arena_proto =
+      Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+  ASSERT_TRUE(small_arena_proto->ParseFromString(
+      MakeRepeatedFieldTrimTestProto(/*count=*/3).SerializeAsString()));
+  EXPECT_EQ(small_arena_proto->fast_fixed32().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->fast_enum().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->fast_packed_enum().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->fast_small_enum().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->fast_packed_small_enum().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->fast_packed_fixed32().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->fast_packed_int32().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->mini_fixed32().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->mini_packed_int32().Capacity(), 4);
+  EXPECT_EQ(small_arena_proto->mini_packed_fixed32().Capacity(), 4);
+}
+
+TEST(GeneratedMessageTctableLiteTest,
+     RepeatedFieldTrimmedOnArenaFragmentedInput) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  proto2_unittest::RepeatedFieldTrim source =
+      MakeRepeatedFieldTrimTestProto(25);
+
+  ArenaOptions options;
+  options.start_block_size = 4096;
+  Arena arena(options);
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+
+  // We use an intrusive input stream to verify the repeated field at every step
+  // of the way.
+  // We want to make sure the capacity is not shrunk prematurely. If it is, it
+  // means we didn't loop in the parser until we saw the whole input for the
+  // field.
+  IntrusiveTestZeroCopyInputStream stream(source.SerializeAsString(), [&] {
+    EXPECT_THAT(arena_proto->fast_fixed32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_bool().Capacity(), AnyOf(8, 24, 32, 56));
+    EXPECT_THAT(arena_proto->fast_enum().Capacity(), AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_packed_enum().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_small_enum().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_packed_small_enum().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_packed_fixed32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->fast_packed_int32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->mini_fixed32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->mini_fixed64().Capacity(),
+                AnyOf(1, 3, 7, 15, 25, 31));
+    EXPECT_THAT(arena_proto->mini_int64().Capacity(),
+                AnyOf(1, 3, 7, 15, 25, 31));
+    EXPECT_THAT(arena_proto->mini_packed_int32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+    EXPECT_THAT(arena_proto->mini_packed_fixed32().Capacity(),
+                AnyOf(2, 6, 14, 26, 30));
+  });
+
+  // On an arena, capacity is trimmed down to the 8-byte aligned number of
+  // elements.
+  ASSERT_TRUE(arena_proto->ParseFromZeroCopyStream(&stream));
+  EXPECT_EQ(arena_proto->fast_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_bool().Capacity(), 32);
+  EXPECT_EQ(arena_proto->fast_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_small_enum().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->fast_packed_int32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_fixed64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 25);
+  EXPECT_EQ(arena_proto->mini_packed_int32().Capacity(), 26);
+  EXPECT_EQ(arena_proto->mini_packed_fixed32().Capacity(), 26);
+}
+
+TEST(GeneratedMessageTctableLiteTest,
+     RepeatedFieldTrimmedDiscontiguousChunksOnArena) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  Arena arena;
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+
+  // Serialize fields out of order so that mini_int64 arrives in two chunks.
+  // Chunk 1 has 5 elements, which requires a 64-byte allocation (capacity 7)
+  // and is trimmed down to 5 elements (48 bytes, a non-power-of-two size).
+  // Chunk 2 has a single int, so no allocations needed. Because no arena
+  // allocation occurred for chunk 2, chunk 1's non-power-of-two allocation
+  // remains at the tail of the arena. When chunk 3 arrives, TryGrowTail
+  // succeeds in growing chunk 1's allocation in place, which is then trimmed to
+  // the final size (6 elements).
+
+  proto2_unittest::RepeatedFieldTrim chunk1;
+  for (int i = 0; i < 5; ++i) {
+    chunk1.add_mini_int64(i);
+  }
+  ASSERT_TRUE(arena_proto->ParseFromString(chunk1.SerializeAsString()));
+
+  EXPECT_EQ(arena_proto->mini_int64().size(), 5);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 5);
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
+  const void* buf = arena_proto->mini_int64().data();
+
+  proto2_unittest::RepeatedFieldTrim chunk2;
+  chunk2.set_i32(7);
+  proto2_unittest::RepeatedFieldTrim chunk3;
+  chunk3.add_mini_int64(5);
+  ASSERT_TRUE(arena_proto->MergeFromString(
+      absl::StrCat(chunk2.SerializeAsString(), chunk3.SerializeAsString())));
+
+  // Verify that we grew in place.
+  EXPECT_EQ(buf, arena_proto->mini_int64().data());
+
+  EXPECT_EQ(arena_proto->i32(), 7);
+  EXPECT_EQ(arena_proto->mini_int64().size(), 6);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 6);
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
+}
+
+TEST(GeneratedMessageTctableLiteTest,
+     RepeatedFieldTrimmedDiscontiguousChunksWithInterveningAllocationOnArena) {
+  if (sizeof(void*) == 4) {
+    GTEST_SKIP() << "Calculations are only valid in 64-bit";
+  }
+  Arena arena;
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+
+  proto2_unittest::RepeatedFieldTrim chunk1;
+  for (int i = 0; i < 5; ++i) {
+    chunk1.add_mini_int64(i);
+  }
+  ASSERT_TRUE(arena_proto->ParseFromString(chunk1.SerializeAsString()));
+
+  EXPECT_EQ(arena_proto->mini_int64().size(), 5);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 5);
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
+  const void* buf = arena_proto->mini_int64().data();
+
+  // Chunk 1 parses 5 elements for mini_int64, which trims down to 5 elements
+  // (48 bytes, non-power-of-two).
+  // Chunk 2 parses a message field, which causes an allocation on the arena.
+  // When chunk 3 arrives with another mini_int64 element, chunk 1's allocation
+  // is no longer at the arena tail, so TryGrowTail fails. mini_int64 must
+  // allocate a new buffer on the arena, copy the previous elements, and then
+  // trim the new buffer at the tail down to 6 elements.
+  proto2_unittest::RepeatedFieldTrim chunk2;
+  chunk2.mutable_msg()->set_i32(7);
+  proto2_unittest::RepeatedFieldTrim chunk3;
+  chunk3.add_mini_int64(5);
+  ASSERT_TRUE(arena_proto->MergeFromString(
+      absl::StrCat(chunk2.SerializeAsString(), chunk3.SerializeAsString())));
+
+  // Verify that it had to reallocate.
+  EXPECT_NE(buf, arena_proto->mini_int64().data());
+
+  EXPECT_TRUE(arena_proto->has_msg());
+  EXPECT_EQ(arena_proto->mini_int64().size(), 6);
+  EXPECT_EQ(arena_proto->mini_int64().Capacity(), 6);
+  for (int i = 0; i < 6; ++i) {
+    EXPECT_EQ(arena_proto->mini_int64(i), i);
+  }
+}
+
+TEST(GeneratedMessageTctableLiteTest,
+     RepeatedFieldTrimmedEmptyPayloadOnReusedMessageOnArena) {
+  Arena arena;
+  auto* arena_proto = Arena::Create<proto2_unittest::RepeatedFieldTrim>(&arena);
+
+  for (int i = 0; i < 5; ++i) {
+    arena_proto->add_fast_packed_enum(
+        proto2_unittest::RepeatedFieldTrim::LARGE_TEN);
+  }
+  EXPECT_GT(arena_proto->fast_packed_enum().Capacity(), 2);
+
+  // Reuse the message by parsing an empty packed payload for field 4
+  // (fast_packed_enum: tag = (4 << 3) | 2 = 0x22, length = 0).
+  ASSERT_TRUE(arena_proto->ParseFromString(absl::string_view("\x22\x00", 2)));
+  EXPECT_EQ(arena_proto->fast_packed_enum().size(), 0);
+  EXPECT_GT(arena_proto->fast_packed_enum().Capacity(), 0);
+  EXPECT_GT(arena_proto->fast_packed_enum().SpaceUsedExcludingSelfLong(), 0);
+
+  // Allocate on the arena to move the tail past fast_packed_enum's buffer, then
+  // grow fast_packed_enum so the old buffer is returned to the arena.
+  arena_proto->mutable_msg()->set_i32(7);
+  arena_proto->add_fast_packed_enum(
+      proto2_unittest::RepeatedFieldTrim::LARGE_TEN);
+  EXPECT_EQ(arena_proto->fast_packed_enum().size(), 1);
 }
 
 

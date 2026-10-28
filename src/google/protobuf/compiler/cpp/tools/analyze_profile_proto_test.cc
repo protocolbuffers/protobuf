@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 #include "google/protobuf/compiler/cpp/tools/analyze_profile_proto.h"
 
 #include <sstream>
@@ -39,7 +46,6 @@ TEST(AnalyzeProfileProtoTest, EmptyProfileToText) {
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
                "Unlikely Used Threshold = 0\n"
-               "See http://go/pdlazy for more information\n"
                "-----------------------------------------\n");
 }
 

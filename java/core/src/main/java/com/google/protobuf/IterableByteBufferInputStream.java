@@ -46,12 +46,18 @@ final class IterableByteBufferInputStream extends InputStream {
   /** Current ByteBuffer's array offset */
   private int currentArrayOffset;
 
+  /** Remaining bytes across all ByteBuffers in the input data. */
+  private long remaining;
+
   IterableByteBufferInputStream(Iterable<ByteBuffer> data) {
     iterator = data.iterator();
     dataSize = 0;
-    for (ByteBuffer unused : data) {
+    long totalRemaining = 0;
+    for (ByteBuffer buffer : data) {
       dataSize++;
+      totalRemaining += buffer.remaining();
     }
+    remaining = totalRemaining;
     currentIndex = -1;
 
     if (!getNextByteBuffer()) {
@@ -84,9 +90,15 @@ final class IterableByteBufferInputStream extends InputStream {
 
   private void updateCurrentByteBufferPos(int numberOfBytesRead) {
     currentByteBufferPos += numberOfBytesRead;
+    remaining -= numberOfBytesRead;
     if (currentByteBufferPos == currentByteBuffer.limit()) {
       getNextByteBuffer();
     }
+  }
+
+  @Override
+  public int available() {
+    return (int) Math.min(remaining, Integer.MAX_VALUE);
   }
 
   @Override

@@ -312,9 +312,10 @@ inline ::std::string* PROTOBUF_NULLABLE SourceContext::release_file_name() {
     return nullptr;
   }
   ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
-  auto* released = _impl_.file_name_.Release();
+  auto& f = _impl_.file_name_;
+  auto* released = f.Release();
   if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
-    _impl_.file_name_.Set("", *this);
+    f.Set("", *this);
   }
   return released;
 }
@@ -325,9 +326,10 @@ inline void SourceContext::set_allocated_file_name(::std::string* PROTOBUF_NULLA
   } else {
     ClearHasBit(_impl_._has_bits_[0], 0x00000001U);
   }
-  _impl_.file_name_.SetAllocated(value, *this);
-  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.file_name_.IsDefault()) {
-    _impl_.file_name_.Set("", *this);
+  auto& f = _impl_.file_name_;
+  f.SetAllocated(value, *this);
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && f.IsDefault()) {
+    f.Set("", *this);
   }
   // @@protoc_insertion_point(field_set_allocated:google.protobuf.SourceContext.file_name)
 }

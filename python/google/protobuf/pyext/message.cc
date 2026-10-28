@@ -30,7 +30,6 @@
 #include "absl/log/absl_check.h"
 #include "absl/strings/match.h"
 #include "absl/strings/str_cat.h"
-#include "google/protobuf/breaking_changes.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 
 #ifndef PyVarObject_HEAD_INIT
@@ -91,12 +90,6 @@ class MessageReflectionFriend {
       Message* lhs, Message* rhs,
       const std::vector<const FieldDescriptor*>& fields) {
     lhs->GetReflection()->UnsafeShallowSwapFields(lhs, rhs, fields);
-  }
-  static bool ContainsMapKey(const Reflection* reflection,
-                             const Message& message,
-                             const FieldDescriptor* field,
-                             const MapKey& map_key) {
-    return reflection->ContainsMapKey(message, field, map_key);
   }
 
   static void SetString(absl::string_view value, Message* message,
@@ -491,22 +484,10 @@ PyObject* SetMessageFrozenError() {
   return SetFrozenError("Message is immutable.");
 }
 
-int WarnMessageFrozen() {
-  return PyErr_WarnEx(
-      PyExc_FutureWarning,
-      "Mutating messages or containers returned by GetOptions() is deprecated"
-      " and will raise an exception in a future release.",
-      3);
-}
-
 int CheckFrozen(CMessage* parent, const char* error_msg) {
   if (parent->state == MESSAGE_FROZEN) {
-#if PROTOBUF_PY_FUTURE_FREEZE_OPTIONS
     SetFrozenError(error_msg);
     return -1;
-#else
-    return WarnMessageFrozen();
-#endif
   }
   return 0;
 }
@@ -2090,6 +2071,13 @@ PyObject* MergeFrom(CMessage* self, PyObject* arg) {
             .c_str());
     return nullptr;
   }
+  if (other_message == self) {
+    // Self-merge is not supported (Message::MergeFrom() CHECK-fails). Raise
+    // AssertionError, like the pure-Python implementation.
+    PyErr_SetString(PyExc_AssertionError,
+                    "Cannot merge a message into itself.");
+    return nullptr;
+  }
   Message* message = AssureWritable(self);
   if (message == nullptr) return nullptr;
 
@@ -2729,8 +2717,8 @@ PyObject* Contains(CMessage* self, PyObject* arg) {
       }
       map_key.SetStringValue(*key_string);
 
-      return PyBool_FromLong(MessageReflectionFriend::ContainsMapKey(
-          reflection, *message, map_field, map_key));
+      auto map = reflection->GetMap(*message, map_field);
+      return PyBool_FromLong(map.ok() && map->contains(map_key));
     }
     case Descriptor::WELLKNOWNTYPE_LISTVALUE: {
       // For WKT ListValue, check if the key is in the items.
@@ -3076,6 +3064,15 @@ CMessage* CMessage::MaybeReleaseSubMessage(const Message* sub_message) {
   // child_submessages->Get returned a new reference.
   Py_DECREF(released);
   return released;
+}
+
+void CMessage::DetachSubMessage(Message* sub_message) {
+  CMessage* released = MaybeReleaseSubMessage(sub_message);
+  if (released == nullptr) return;
+  // `released` is now a standalone message whose message is `sub_message`.
+  Message* new_message = sub_message->New();
+  sub_message->GetReflection()->Swap(sub_message, new_message);
+  released->message = new_message;
 }
 
 static CMessageClass _CMessage_Type = {{{

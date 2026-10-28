@@ -20,8 +20,22 @@ pub mod decode_options {
     // LINT.ThenChange()
 }
 
-/// If Err, then EncodeStatus != Ok.
-pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, EncodeStatus> {
+/// Contains the encode options that can be passed to `encode_with_options`.
+/// Only deterministic encoding is currently supported in Rust.
+#[allow(unused)] // FFI constants.
+pub mod encode_options {
+    pub const DETERMINISTIC: i32 = 1;
+    pub const SKIP_UNKNOWN: i32 = 2;
+    pub const CHECK_REQUIRED: i32 = 4;
+}
+
+/// Encodes the message with the given options. If Err, then EncodeStatus != Ok.
+///
+/// `encode_options_bitmask` is a bitmask of constants from the `encode_options` module.
+pub fn encode_with_options<T: AssociatedMiniTable>(
+    msg: MessagePtr<T>,
+    encode_options_bitmask: i32,
+) -> Result<Vec<u8>, EncodeStatus> {
     let arena = Arena::new();
     let mut buf: *mut u8 = core::ptr::null_mut();
     let mut len = 0usize;
@@ -29,8 +43,16 @@ pub fn encode<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> Result<Vec<u8>, Enc
     // SAFETY:
     // - `T::mini_table()` is the one associated with `msg`.
     // - `buf` and `buf_size` are legally writable.
-    let status =
-        unsafe { upb_Encode(msg.raw(), T::mini_table(), 0, arena.raw(), &mut buf, &mut len) };
+    let status = unsafe {
+        upb_Encode(
+            msg.raw(),
+            T::mini_table(),
+            encode_options_bitmask,
+            arena.raw(),
+            &mut buf,
+            &mut len,
+        )
+    };
 
     if status == EncodeStatus::Ok {
         assert!(!buf.is_null()); // EncodeStatus Ok should never return NULL data, even for len=0.
@@ -58,6 +80,8 @@ pub fn byte_size<T: AssociatedMiniTable>(msg: MessagePtr<T>) -> usize {
 ///
 /// # Safety
 /// - `msg` must be mutable.
+/// - `extreg` must be null or point to a valid `upb_ExtensionRegistry` that is not mutated during
+///   the call, and every extension in it must outlive `msg`.
 #[allow(unused)] // Not used yet.
 pub unsafe fn decode<T: AssociatedMiniTable>(
     buf: &[u8],
@@ -67,6 +91,8 @@ pub unsafe fn decode<T: AssociatedMiniTable>(
 ) -> Result<(), DecodeStatus> {
     // SAFETY:
     // - `msg` is mutable and is associated with `mini_table`.
+    // - `extreg` is null or a valid registry whose extensions outlive `msg`, guaranteed by the
+    //   caller.
     // - `decode_options::CHECK_REQUIRED` is a valid decode option.
     unsafe { decode_with_options(buf, msg, extreg, arena, decode_options::CHECK_REQUIRED) }
 }
@@ -76,6 +102,8 @@ pub unsafe fn decode<T: AssociatedMiniTable>(
 ///
 /// # Safety
 /// - `msg` must be mutable.
+/// - `extreg` must be null or point to a valid `upb_ExtensionRegistry` that is not mutated during
+///   the call, and every extension in it must outlive `msg`.
 /// - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module.
 pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     buf: &[u8],
@@ -90,7 +118,8 @@ pub unsafe fn decode_with_options<T: AssociatedMiniTable>(
     // SAFETY:
     // - `mini_table` is the one associated with `msg`
     // - `buf` is legally readable for at least `buf_size` bytes.
-    // - `extreg` is null.
+    // - `extreg` is null or a valid registry whose extensions outlive `msg`, guaranteed by the
+    //   caller.
     // - `decode_options_bitmask` is a bitmask of constants from the `decode_options` module.
     let status = unsafe {
         upb_Decode(

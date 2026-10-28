@@ -206,10 +206,10 @@ class EncodeDecodeTest < Test::Unit::TestCase
     assert_match msg.to_json, msg_out.to_json
 
     assert_raises RuntimeError do
-      A::B::C::TestMessage.encode(msg, { recursion_limit: 5 })
+      A::B::C::TestMessage.encode(msg, { recursion_limit: 4 })
     end
 
-    msg_encoded = A::B::C::TestMessage.encode(msg, { recursion_limit: 6 })
+    msg_encoded = A::B::C::TestMessage.encode(msg, { recursion_limit: 5 })
     msg_out = A::B::C::TestMessage.decode(msg_encoded)
     assert_match msg.to_json, msg_out.to_json
   end

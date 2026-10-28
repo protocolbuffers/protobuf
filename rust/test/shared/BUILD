@@ -1,3 +1,10 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2026 Google LLC
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
 # Tests that are exercising and should pass with both kernels.
 #
 # All the tests under this package should ignore
@@ -358,6 +365,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_upb_export",
+        "//rust/test:map_unittest_upb_rust_proto",
         "//rust/test:unittest_proto3_optional_upb_rust_proto",
         "//rust/test:unittest_proto3_upb_rust_proto",
         "//rust/test:unittest_upb_rust_proto",
@@ -378,6 +386,7 @@ rust_test(
     rustc_flags = ["--cfg=bzl"],
     deps = [
         "//rust:protobuf_cpp_export",
+        "//rust/test:map_unittest_cpp_rust_proto",
         "//rust/test:unittest_cpp_rust_proto",
         "//rust/test:unittest_proto3_cpp_rust_proto",
         "//rust/test:unittest_proto3_optional_cpp_rust_proto",
