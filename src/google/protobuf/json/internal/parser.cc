@@ -852,7 +852,7 @@ absl::Status ParseTimestamp(JsonLexer& lex, const Desc<Traits>& desc,
     if (!day.has_value() || *day == 0) {
       return str->loc.Invalid("bad day in timestamp");
     }
-    constexpr uint32_t kDaysPerMonth[] = {0,  31, 28, 31, 30, 31, 30,
+    static constexpr uint32_t kDaysPerMonth[] = {0,  31, 28, 31, 30, 31, 30,
                                           31, 31, 30, 31, 30, 31};
     uint32_t max_day = kDaysPerMonth[*mon];
     if (*mon == 2 &&
