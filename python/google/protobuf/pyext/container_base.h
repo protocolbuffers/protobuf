@@ -19,6 +19,7 @@
 #include <type_traits>
 
 #include "absl/base/optimization.h"
+#include "absl/log/absl_check.h"
 #include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/message_tree.h"
 
@@ -130,6 +131,25 @@ struct TreeLockable : public ContainerBase {
   // yields Message*.
   const Message* TargetMessage(const ReadAccess& access) const;
   Message* TargetMessage(const WriteAccess& access);
+
+  // Sets this object's tree and binds all of its Guarded<T> fields to the
+  // tree's guard. Only for objects not reachable from other threads (newly
+  // created, or being attached while quiescent).
+  void InitTreeQuiescent(MessageTree* t);
+
+  // Moves this object (and any child wrappers) from the tree guarded by
+  // old_access to new_tree, whose guard is held by new_access, rebinding all
+  // Guarded<T> fields. Used when detaching or reparenting a subtree.
+  void MoveToTree(MessageTree* new_tree, const WriteAccess& old_access,
+                  const WriteAccess& new_access);
+
+ protected:
+  // CRTP hooks for Derived classes with additional Guarded<T> fields or
+  // child wrappers (such as CMessage).
+  void BindDerivedFieldsQuiescent(const AccessGuard&) {}
+  void UpdateDerivedFieldsGuard(const WriteAccess&, const WriteAccess&) {}
+  void UpdateSubtreeChildrenTree(MessageTree*, const WriteAccess&,
+                                 const WriteAccess&) {}
 
  private:
   // Acquires this object's tree guard in the mode given by Access (ReadAccess
@@ -292,6 +312,23 @@ const Message* TreeLockable<Derived>::TargetMessage(
 template <typename Derived>
 Message* TreeLockable<Derived>::TargetMessage(const WriteAccess& access) {
   return derived()->Owner(access)->message.Get(access);
+}
+
+template <typename Derived>
+void TreeLockable<Derived>::InitTreeQuiescent(MessageTree* t) {
+  SetTree(t);
+  if (t == nullptr) return;
+  derived()->BindDerivedFieldsQuiescent(t->guard());
+}
+
+template <typename Derived>
+void TreeLockable<Derived>::MoveToTree(MessageTree* new_tree,
+                                       const WriteAccess& old_access,
+                                       const WriteAccess& new_access) {
+  ABSL_DCHECK_EQ(new_access.guard(), &new_tree->guard());
+  derived()->UpdateDerivedFieldsGuard(old_access, new_access);
+  SetTree(new_tree);
+  derived()->UpdateSubtreeChildrenTree(new_tree, old_access, new_access);
 }
 
 }  // namespace python
