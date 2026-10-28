@@ -161,6 +161,42 @@ TEST(AnalyzeProfileProtoTest, ChildLikelyPresentAndRarelyUsed) {
   options.pool = DescriptorPool::generated_pool();
   EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
                "Message google::protobuf::compiler::tools::AnalyzeThis\n"
+               "  AnalyzeChild optional_child: LAZY\n"
+               "  Nested nested: LAZY\n");
+}
+
+TEST(AnalyzeProfileProtoTest, RareStringInNestedMakesItTrivial) {
+  if (google::protobuf::internal::ForceInlineStringInProtoc()) {
+    GTEST_SKIP() << "Forced layout invalidates the test.";
+  }
+  // When AnalyzeThis_Nested.optional_string is rare (0/100), it does not
+  // trigger the out-of-line allocation check and expected inline size (1.0 * 4B
+  // + 0.0 * 8B = 4B) is < kMinInlineBytes (8B), so Nested is trivial to parse
+  // and not marked LAZY.
+  AccessInfo info = ParseTextOrDie(R"pb(
+    language: "cpp"
+    message {
+      name: "google::protobuf::compiler::tools::AnalyzeThis"
+      count: 100
+      field { name: "id" getters_count: 1 configs_count: 100 }
+      field { name: "optional_string" getters_count: 1 configs_count: 100 }
+      field { name: "optional_child" getters_count: 100 configs_count: 1 }
+      field { name: "repeated_string" getters_count: 100 configs_count: 100 }
+      field { name: "repeated_child" getters_count: 100 configs_count: 100 }
+      field { name: "nested" getters_count: 100 configs_count: 1 }
+    }
+    message {
+      name: "google::protobuf::compiler::tools::AnalyzeThis_Nested"
+      count: 100
+      field { name: "nexted_id" getters_count: 100 configs_count: 100 }
+      field { name: "optional_string" getters_count: 0 configs_count: 0 }
+    }
+  )pb");
+  AnalyzeProfileProtoOptions options;
+  options.print_unused_threshold = false;
+  options.pool = DescriptorPool::generated_pool();
+  EXPECT_STREQ(AnalyzeToText(info, options).c_str(),
+               "Message google::protobuf::compiler::tools::AnalyzeThis\n"
                "  AnalyzeChild optional_child: LAZY\n");
 }
 
@@ -218,21 +254,21 @@ TEST(AnalyzeProfileProtoTest, PrintStatistics) {
   string[] repeated_string: LIKELY_PRESENT(100.00%) RARELY_USED(100) NUM_ELEMS_HISTO[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] NUM_ELEMS_MEAN=66.1 NUM_ELEMS_STDDEV=1.5
   AnalyzeChild optional_child: LIKELY_PRESENT(100.00%) RARELY_USED(1) LAZY
   AnalyzeChild[] repeated_child: LIKELY_PRESENT(100.00%) RARELY_USED(100)
-  Nested nested: RARELY_USED(100)
+  Nested nested: RARELY_USED(100) LAZY
 ========
-singular_lazy_num=1
+singular_lazy_num=2
 singular_lazy_0usage_num=0
 repeated_lazy_num=0
 singular_total_pcount=101
 repeated_total_pcount=100
-singular_lazy_pcount=100
+singular_lazy_pcount=101
 singular_lazy_0usage_pcount=0
 repeated_lazy_pcount=0
 max_pcount=100
 max_ucount=100
 repeated_lazy_num/singular_lazy_num=0
 repeated_lazy_pcount/singular_lazy_pcount=0
-singular_lazy_pcount/singular_total_pcount=0.990099
+singular_lazy_pcount/singular_total_pcount=1
 singular_lazy_0usage_pcount/singular_total_pcount=0
 repeated_lazy_pcount/repeated_total_pcount=0
 repeated_num_elements_histogram=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
@@ -271,21 +307,21 @@ TEST(AnalyzeProfileProtoTest, PrintStatisticsAll) {
   string[] repeated_string: LIKELY_PRESENT(100.00%) RARELY_USED(100)
   AnalyzeChild optional_child: LIKELY_PRESENT(100.00%) RARELY_USED(1) LAZY
   AnalyzeChild[] repeated_child: LIKELY_PRESENT(100.00%) RARELY_USED(100)
-  Nested nested: DEFAULT_PRESENT(1.00%) RARELY_USED(100)
+  Nested nested: DEFAULT_PRESENT(1.00%) RARELY_USED(100) LAZY
 ========
-singular_lazy_num=1
+singular_lazy_num=2
 singular_lazy_0usage_num=0
 repeated_lazy_num=0
 singular_total_pcount=101
 repeated_total_pcount=100
-singular_lazy_pcount=100
+singular_lazy_pcount=101
 singular_lazy_0usage_pcount=0
 repeated_lazy_pcount=0
 max_pcount=100
 max_ucount=100
 repeated_lazy_num/singular_lazy_num=0
 repeated_lazy_pcount/singular_lazy_pcount=0
-singular_lazy_pcount/singular_total_pcount=0.990099
+singular_lazy_pcount/singular_total_pcount=1
 singular_lazy_0usage_pcount/singular_total_pcount=0
 repeated_lazy_pcount/repeated_total_pcount=0
 repeated_num_elements_histogram=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
