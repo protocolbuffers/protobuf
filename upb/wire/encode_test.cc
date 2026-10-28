@@ -57,8 +57,8 @@ static void DoEncodeExtensionMaxDepthExceeded(jmp_buf err, upb_encstate& e,
                                               upb_MessageValue ext_val,
                                               char*& buf, size_t& size) {
   if (UPB_SETJMP(err) == 0) {
-    UPB_PRIVATE(_upb_Encode_Extension)(&e, ext, ext_val, false, &buf, &size,
-                                       e.options);
+    UPB_PRIVATE(_upb_Encode_Extension)(&e, upb_MiniTableExtension_ToField(ext),
+                                       ext_val, false, &buf, &size, e.options);
     FAIL() << "Should have jumped";
   } else {
     upb_BackAlloc_Abort(&e.alloc);
@@ -222,7 +222,8 @@ TEST(EncodeTest, EncodeExtensionSuccess) {
   char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
-      &e, ext, ext_val, false, &buf, &size, e.options);
+      &e, upb_MiniTableExtension_ToField(ext), ext_val, false, &buf, &size,
+      e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
   EXPECT_GT(size, 0u);
 
@@ -259,7 +260,8 @@ TEST(EncodeTest, EncodeExtensionSuccessEmptyMessage) {
   char* buf = e.alloc.limit;
   size_t size;
   upb_EncodeStatus status = UPB_PRIVATE(_upb_Encode_Extension)(
-      &e, ext, ext_val, false, &buf, &size, e.options);
+      &e, upb_MiniTableExtension_ToField(ext), ext_val, false, &buf, &size,
+      e.options);
   EXPECT_EQ(status, kUpb_EncodeStatus_Ok);
   EXPECT_GT(size, 0u);
 

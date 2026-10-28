@@ -596,21 +596,25 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
   }
 }
 
+// Converts the extension entry `src_ext` of the source, canonical or
+// non-canonical. Its field may be an extension field or a freestanding field
+// (see upb_Extension_MiniTableField()).
 static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
                                          const upb_MiniTable* dst_mt,
-                                         const upb_MiniTableExtension* ext,
-                                         upb_MessageValue val,
+                                         const upb_Extension* src_ext,
                                          const upb_ExtensionRegistry* extreg,
                                          int depth) {
-  const upb_MiniTableField* dst_f = upb_MiniTable_FindFieldByNumber(
-      dst_mt, upb_MiniTableExtension_Number(ext));
+  const upb_MiniTableField* src_f = upb_Extension_MiniTableField(src_ext);
+  const upb_MessageValue val = upb_Extension_GetValue(src_ext);
+  const uint32_t number = upb_MiniTableField_Number(src_f);
+  const upb_MiniTableField* dst_f =
+      upb_MiniTable_FindFieldByNumber(dst_mt, number);
   const upb_MiniTableExtension* dst_ext = NULL;
   if (!dst_f) {
     // Source extension not found in the destination schema. Check the
     // extension registry.
     if (extreg != NULL) {
-      dst_ext = upb_ExtensionRegistry_Lookup(
-          extreg, dst_mt, upb_MiniTableExtension_Number(ext));
+      dst_ext = upb_ExtensionRegistry_Lookup(extreg, dst_mt, number);
       if (dst_ext) {
         dst_f = upb_MiniTableExtension_ToField(dst_ext);
       }
@@ -620,16 +624,21 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
   if (dst_f == NULL) {
     // Since this extension is not known in the destination schema, convert it
     // to a non-canonical extension.
-    upb_Extension* msg_ext = UPB_PRIVATE(
-        _upb_Message_CreateNonCanonicalExtension)(dst, ext, c->arena);
+    // An actual extension keeps its upb_MiniTableExtension (and so its
+    // extendee); only a freestanding field is added by its field.
+    upb_Extension* msg_ext =
+        upb_MiniTableField_IsExtension(src_f)
+            ? UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+                  dst, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(src_ext),
+                  c->arena)
+            : UPB_PRIVATE(_upb_Message_CreateNonCanonicalField)(dst, src_f,
+                                                                c->arena);
     if (!msg_ext) {
       upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
     }
     upb_Extension_SetValue(msg_ext, val);
     return;
   }
-
-  const upb_MiniTableField* src_f = upb_MiniTableExtension_ToField(ext);
 
   UPB_ASSERT(!upb_MiniTableField_IsMap(src_f));
   if (UPB_UNLIKELY(!_upb_MiniTableField_IsExtensionCompatible(src_f, dst_f))) {
@@ -641,12 +650,12 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
     // If the destination is an extension in the registry (dst_ext), we must use
     // upb_MiniTableExtension_GetSubMessage() since extensions store submessage
     // layouts directly. Otherwise, it is a normal field declared in the target
-    // MiniTable, and we use upb_MiniTable_SubMessage(). Similarly, the source
-    // ext behaves as an extension.
+    // MiniTable, and we use upb_MiniTable_SubMessage(). The source field
+    // stores its sub-message the same way either way.
     const upb_MiniTable* dst_sub_mt =
         dst_ext ? upb_MiniTableExtension_GetSubMessage(dst_ext)
                 : upb_MiniTable_SubMessage(dst_f);
-    const upb_MiniTable* src_sub_mt = upb_MiniTableExtension_GetSubMessage(ext);
+    const upb_MiniTable* src_sub_mt = upb_MiniTable_SubMessage(src_f);
 
     if (upb_MiniTableField_IsArray(dst_f)) {
       if (dst_sub_mt != src_sub_mt) {
@@ -734,11 +743,10 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
                                           const upb_MiniTable* dst_mt,
                                           const upb_ExtensionRegistry* extreg,
                                           int depth) {
-  const upb_MiniTableExtension* ext;
-  upb_MessageValue val;
+  const upb_Extension* ext;
   uintptr_t iter = kUpb_Message_ExtensionBegin;
-  while (upb_Message_NextExtension(src, &ext, &val, &iter)) {
-    upb_Message_ConvertExtension(c, dst, dst_mt, ext, val, extreg, depth);
+  while (UPB_PRIVATE(_upb_Message_NextExtensionEntry)(src, &ext, &iter)) {
+    upb_Message_ConvertExtension(c, dst, dst_mt, ext, extreg, depth);
   }
 }
 
@@ -853,10 +861,8 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
       UPB_ASSERT(d->end_group == DECODE_NOGROUP);
     } else {
       UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
-      const upb_Extension* ext = unknown.value.extension;
-      upb_Message_ConvertExtension(c, dst, dst_mt,
-                                   upb_Extension_MiniTableExtension(ext),
-                                   upb_Extension_GetValue(ext), extreg, depth);
+      upb_Message_ConvertExtension(c, dst, dst_mt, unknown.value.extension,
+                                   extreg, depth);
     }
   }
 }
