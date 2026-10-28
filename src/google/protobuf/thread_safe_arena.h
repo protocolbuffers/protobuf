@@ -127,13 +127,6 @@ class PROTOBUF_EXPORT ThreadSafeArena {
                                                SerialArena* serial);
   static SerialArenaChunk* SentrySerialArenaChunk();
 
-  // Returns the first ArenaBlock* for the first SerialArena. If users provide
-  // one, use it if it's acceptable. Otherwise returns a sentry block.
-  ArenaBlock* FirstBlock(void* buf, size_t size);
-  // Same as the above but returns a valid block if "policy" is not default.
-  ArenaBlock* FirstBlock(void* buf, size_t size,
-                         const AllocationPolicy& policy);
-
   // Adds SerialArena to the chunked list. May create a new chunk.
   void AddSerialArena(void* id, SerialArena* serial);
 

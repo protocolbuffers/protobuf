@@ -23,6 +23,7 @@
 #include "absl/log/absl_check.h"
 #include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
+#include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/port.h"
 #include "google/protobuf/string_block.h"
@@ -306,9 +307,8 @@ class PROTOBUF_EXPORT SerialArena {
   // Constructor is private as only New() should be used.
   inline SerialArena(ArenaBlock* b, ThreadSafeArena& parent);
 
-  // Constructors to handle the first SerialArena.
-  inline explicit SerialArena(ThreadSafeArena& parent);
-  inline SerialArena(FirstSerialArena, ArenaBlock* b, ThreadSafeArena& parent);
+  inline SerialArena(FirstSerialArena, SizedPtr mem,
+                     const AllocationPolicy& policy, ThreadSafeArena& parent);
 
   bool MaybeAllocateString(void*& p);
   ABSL_ATTRIBUTE_RETURNS_NONNULL void* AllocateFromStringBlockFallback();
