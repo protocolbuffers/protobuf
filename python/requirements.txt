@@ -1,4 +1,4 @@
 numpy==2.2.6; python_version < '3.14'
 numpy==2.5.3; python_version >= '3.14'
-setuptools==78.1.1
+setuptools==84.1.0
 absl-py==2.1.0
