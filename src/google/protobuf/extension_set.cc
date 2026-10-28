@@ -23,6 +23,7 @@
 #include <utility>
 
 #include "absl/base/attributes.h"
+#include "absl/base/config.h"
 #include "absl/base/optimization.h"
 #include "absl/container/btree_map.h"
 #include "absl/container/flat_hash_set.h"
@@ -1567,11 +1568,30 @@ const ExtensionSet::Extension* ExtensionSet::FindOrNull(int key) const {
   if (IsCompletelyEmpty()) {
     return nullptr;
   } else if (ABSL_PREDICT_TRUE(!is_large())) {
-    for (auto it = flat_begin(), end = flat_end();
-         it != end && it->first <= key; ++it) {
-      if (it->first == key) return &it->second;
+    const FlatItem* base = flat_begin();
+    uint16_t len = flat_size();
+    if (len <= 8) {
+#ifdef __clang__
+      // NOLINTNEXTLINE(google3-runtime-pragma-loop-hint): b/315043579
+#pragma clang loop unroll(disable)
+#endif
+      for (const FlatItem* end = base + len; base != end && base->first <= key;
+           ++base) {
+        if (base->first == key) return &base->second;
+      }
+      return nullptr;
     }
-    return nullptr;
+    while (len > 1) {
+      const uint16_t half = len >> 1;
+      const FlatItem* mid = base + half;
+#if ABSL_HAVE_BUILTIN(__builtin_unpredictable)
+      base = __builtin_unpredictable(mid->first <= key) ? mid : base;
+#else
+      base = (mid->first <= key) ? mid : base;
+#endif
+      len -= half;
+    }
+    return (base->first == key) ? &base->second : nullptr;
   } else {
     return FindOrNullInLargeMap(key);
   }
