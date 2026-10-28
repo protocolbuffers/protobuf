@@ -12,7 +12,10 @@
 //! the message and the def to upb.
 
 use super::upb::TextEncodeOptions;
-use super::{message_def, upb_reflection, UpbGetMessagePtr, UpbWithReflection};
+use super::{
+    load_all_extensions, message_def, read_global_def_pool, upb_reflection, UpbGetMessagePtr,
+    UpbWithReflection,
+};
 use crate::__internal::Private;
 use crate::WithReflection;
 
@@ -36,10 +39,17 @@ pub fn print_to_text_format<T: WithReflection>(
     let ptr = msg.get_ptr(Private);
     let def = message_def::<T>();
     let options = TextEncodeOptions { single_line, skip_unknown: hide_unknown_fields };
+
+    // upb looks up every extension set in `msg` in `ext_pool`, so the pool must hold every
+    // extension linked into the binary. This loading is a one-time cost paid by the first
+    // `text_format::print` call.
+    load_all_extensions();
+
+    let ext_pool = read_global_def_pool();
+
     // SAFETY:
     // - `ptr` points to a live message that `msg` keeps alive for the duration of the call.
-    // - `def` describes `T`, and `WithReflection` guarantees `kernelWithReflection`, which
-    //   guarantees `UpbGetMessagePtr<Msg = T>, therefore `ptr` is a `MessagePtr<T>`.
-    // TODO: Pass the global DefPool as `ext_pool` so that extensions are printed.
-    unsafe { upb_reflection::text_encode(ptr, def, None, options) }
+    // - `def` describes `T`, and `WithReflection` guarantees `KernelWithReflection`, which
+    //   guarantees `UpbGetMessagePtr<Msg = T>`, therefore `ptr` is a `MessagePtr<T>`.
+    unsafe { upb_reflection::text_encode(ptr, def, Some(&ext_pool.0), options) }
 }

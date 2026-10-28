@@ -6,9 +6,12 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 use super::upb_reflection::{self, DefPool, DefPoolInitPtr, MessageDef};
-use super::{MiniTableEnumPtr, MiniTableExtensionPtr, MiniTablePtr, THREAD_LOCAL_ARENA};
+use super::{
+    MiniTableEnumPtr, MiniTableExtensionPtr, MiniTablePtr, EXTENSION_MINI_TABLE_TO_DEF_INITS,
+    THREAD_LOCAL_ARENA,
+};
 use std::ffi::CStr;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Once, OnceLock, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 #[derive(Clone, Copy)]
 pub struct DefPoolInit(DefPoolInitPtr);
@@ -26,10 +29,26 @@ impl MessageDefCached {
     }
 }
 
-struct GlobalDefPool(DefPool);
+pub(super) struct GlobalDefPool(pub(super) DefPool);
 unsafe impl Send for GlobalDefPool {}
-// There is only one global, singleton DefPool, protected by a Mutex.
-static POOL: OnceLock<Mutex<GlobalDefPool>> = OnceLock::new();
+unsafe impl Sync for GlobalDefPool {}
+
+// There is only one global, singleton DefPool, protected by a RwLock.
+static POOL: OnceLock<RwLock<GlobalDefPool>> = OnceLock::new();
+
+fn global_def_pool() -> &'static RwLock<GlobalDefPool> {
+    POOL.get_or_init(|| RwLock::new(GlobalDefPool(DefPool::new())))
+}
+
+// Returns a read lock on the global DefPool.
+pub(super) fn read_global_def_pool() -> RwLockReadGuard<'static, GlobalDefPool> {
+    global_def_pool().read().expect("global DefPool lock should not be poisoned")
+}
+
+// Returns a write lock on the global DefPool.
+fn write_global_def_pool() -> RwLockWriteGuard<'static, GlobalDefPool> {
+    global_def_pool().write().expect("global DefPool lock should not be poisoned")
+}
 
 /// A message of which a MessageDef and DefPoolInit can be looked up. This trait must be
 /// implemented in Rust gencode for every message that needs reflection support.
@@ -82,10 +101,7 @@ pub fn message_def<T: UpbWithReflection>() -> MessageDef<'static> {
         // Eventually calls `build_def_init` emitted for `T`.
         let init = T::def_init();
 
-        let mut pool = POOL
-            .get_or_init(|| Mutex::new(GlobalDefPool(DefPool::new())))
-            .lock()
-            .expect("global DefPool mutex should not be poisoned");
+        let mut pool = write_global_def_pool();
 
         // Load the descriptor into the global DefPool. If it was already loaded, this would be a
         // no-op.
@@ -102,4 +118,24 @@ pub fn message_def<T: UpbWithReflection>() -> MessageDef<'static> {
         // SAFETY: `def` was allocated by the global pool, which is never freed.
         unsafe { MessageDef::from_raw(def.raw()) }
     }))
+}
+
+/// Loads the file of every extension linked into the binary into the global DefPool.
+pub(super) fn load_all_extensions() {
+    static LOADED: Once = Once::new();
+    LOADED.call_once(|| {
+        // Like `message_def`, build the inits before taking the lock.
+        let inits: Vec<DefPoolInit> =
+            EXTENSION_MINI_TABLE_TO_DEF_INITS.iter().map(|ext| (ext.def_init)()).collect();
+
+        let mut pool = write_global_def_pool();
+        for init in inits {
+            // Many extensions share a file, which is only loaded the first time; loading it again
+            // is a no-op.
+            //
+            // SAFETY: `init` was only built for the file that declares the extension.
+            let loaded = unsafe { pool.0.load_def_init(init.0.as_ptr()) };
+            assert!(loaded, "failed to load a generated descriptor into the global DefPool");
+        }
+    });
 }
