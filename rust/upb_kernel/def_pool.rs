@@ -10,6 +10,7 @@ use super::{
     MiniTableEnumPtr, MiniTableExtensionPtr, MiniTablePtr, EXTENSION_MINI_TABLE_TO_DEF_INITS,
     THREAD_LOCAL_ARENA,
 };
+use std::collections::HashSet;
 use std::ffi::CStr;
 use std::sync::{Once, OnceLock, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -18,14 +19,19 @@ pub struct DefPoolInit(DefPoolInitPtr);
 unsafe impl Send for DefPoolInit {}
 unsafe impl Sync for DefPoolInit {}
 
-/// Holds the MessageDef of one message once `message_def` has looked it up.
+/// Holds what is computed around a message, once it has been looked up.
 #[derive(Default)]
-pub struct MessageDefCached(OnceLock<MessageDef<'static>>);
+pub struct MessageDefCached {
+    // The message's MessageDef.
+    def: OnceLock<MessageDef<'static>>,
+    // Whether the message may contain extensions.
+    may_contain_extensions: OnceLock<bool>,
+}
 unsafe impl Sync for MessageDefCached {}
 
 impl MessageDefCached {
     pub const fn new() -> Self {
-        Self(OnceLock::new())
+        Self { def: OnceLock::new(), may_contain_extensions: OnceLock::new() }
     }
 }
 
@@ -97,7 +103,7 @@ pub unsafe fn build_def_init(
 
 /// Returns the MessageDef of T.
 pub fn message_def<T: UpbWithReflection>() -> MessageDef<'static> {
-    *(T::message_def_cached().0.get_or_init(|| {
+    *(T::message_def_cached().def.get_or_init(|| {
         // Eventually calls `build_def_init` emitted for `T`.
         let init = T::def_init();
 
@@ -118,6 +124,40 @@ pub fn message_def<T: UpbWithReflection>() -> MessageDef<'static> {
         // SAFETY: `def` was allocated by the global pool, which is never freed.
         unsafe { MessageDef::from_raw(def.raw()) }
     }))
+}
+
+/// Returns whether a message of type T may contain extensions. The result is cached.
+///
+/// "contain" here means that the message is either itself extendable, or it can reach a submessage
+/// that is extendable. Whether the message is actually extended is not required for this to
+/// be true.
+pub fn may_contain_extensions<T: UpbWithReflection>() -> bool {
+    *T::message_def_cached()
+        .may_contain_extensions
+        .get_or_init(|| reaches_extendable_message_from_message_def(message_def::<T>()))
+}
+
+// Returns whether `msg_def`, or any message type reachable from its fields, declares an extension
+// range.
+fn reaches_extendable_message_from_message_def(msg_def: MessageDef<'_>) -> bool {
+    let mut visited = HashSet::from([msg_def.raw()]);
+    let mut stack = vec![msg_def];
+    // Perform a non-recursive DFS in case of deeply-nested schemas.
+    while let Some(msg_def) = stack.pop() {
+        // If the message declares an extension range, then it **could** be extended.
+        if msg_def.extension_range_count() > 0 {
+            return true;
+        }
+        for i in 0..msg_def.field_count() {
+            let Some(sub_msg_def) = msg_def.field(i).message_sub_def() else {
+                continue;
+            };
+            if visited.insert(sub_msg_def.raw()) {
+                stack.push(sub_msg_def);
+            }
+        }
+    }
+    false
 }
 
 /// Loads the file of every extension linked into the binary into the global DefPool.

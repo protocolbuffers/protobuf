@@ -11,6 +11,7 @@
 use super::super::sys;
 
 pub mod def_pool;
+pub mod field_def;
 pub mod message_def;
 
 mod opaque_pointee;
