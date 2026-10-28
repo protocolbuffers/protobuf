@@ -21,12 +21,16 @@
 #include "upb/base/string_view.h"
 #include "upb/base/upcast.h"
 #include "upb/mem/arena.h"
+#include "upb/mem/arena.hpp"
+#include "upb/message/array.h"
 #include "upb/message/internal/accessors.h"
 #include "upb/message/internal/message.h"
 #include "upb/message/message.h"
 #include "upb/message/test.upb.h"
 #include "upb/message/test.upb_minitable.h"
 #include "upb/mini_table/extension.h"
+#include "upb/mini_table/field.h"
+#include "upb/mini_table/message.h"
 #include "upb/port/sanitizers.h"
 #include "upb/test/test.upb.h"
 #include "upb/test/test.upb_minitable.h"
@@ -303,6 +307,56 @@ TEST(GeneratedCode, MessageUnknown_Encode_NonCanonicalMessageSetExtension) {
   EXPECT_GT(view.size, 0);
 
   upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, NonCanonicalFreestandingField) {
+  upb::Arena arena;
+
+  // A freestanding copy of a regular field of another message, with no offset
+  // or presence, like upb_Message_Convert() synthesizes for a dropped field.
+  const upb_MiniTableField* src_f =
+      upb_MiniTable_FindFieldByNumber(&upb_0test__MessageSetMember_msg_init, 1);
+  ASSERT_NE(src_f, nullptr);
+  ASSERT_FALSE(upb_MiniTableField_IsExtension(src_f));
+  upb_MiniTableField f = *src_f;
+  f.UPB_PRIVATE(offset) = 0;
+  f.presence = 0;
+
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(arena.ptr());
+  upb_Extension* ext = UPB_PRIVATE(_upb_Message_CreateNonCanonicalField)(
+      UPB_UPCAST(msg), &f, arena.ptr());
+  ASSERT_NE(ext, nullptr);
+  upb_MessageValue val;
+  val.int32_val = 42;
+  upb_Extension_SetValue(ext, val);
+
+  // It is an unknown field described by the freestanding field.
+  uintptr_t iter = kUpb_Message_UnknownBegin;
+  upb_MessageUnknown unknown;
+  ASSERT_TRUE(upb_Message_NextUnknown2(UPB_UPCAST(msg), &unknown, &iter));
+  EXPECT_EQ(unknown.type, kUpb_MessageUnknownType_NonCanonicalExtension);
+  const upb_Extension* unknown_ext = unknown.value.extension;
+  EXPECT_EQ(unknown_ext, ext);
+  EXPECT_EQ(upb_Extension_MiniTableField(unknown_ext), &f);
+  EXPECT_FALSE(upb_Message_NextUnknown2(UPB_UPCAST(msg), &unknown, &iter));
+  EXPECT_EQ(upb_Message_ExtensionCount(UPB_UPCAST(msg)), 0u);
+
+  // It is encoded as a regular field: tag 1 (varint), value 42.
+  const std::string expected("\x08\x2a");
+  char* buf;
+  size_t size;
+  ASSERT_EQ(
+      upb_Encode(UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, 0,
+                 arena.ptr(), &buf, &size),
+      kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(std::string(buf, size), expected);
+
+  upb_StringView view;
+  ASSERT_EQ(upb_EncodeExtension(unknown_ext, arena.ptr(), &view,
+                                /*encode_options=*/0),
+            kUpb_EncodeStatus_Ok);
+  EXPECT_EQ(std::string(view.data, view.size), expected);
 }
 
 TEST(GeneratedCode, NextWireFormatUnknown) {

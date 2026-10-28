@@ -7,6 +7,7 @@
 
 #include "upb/message/convert.h"
 
+#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -31,7 +32,9 @@
 #include "upb/mini_table/extension.h"
 #include "upb/mini_table/extension_registry.h"
 #include "upb/mini_table/field.h"
+#include "upb/mini_table/internal/field.h"
 #include "upb/mini_table/internal/message.h"
+#include "upb/mini_table/internal/sub.h"
 #include "upb/mini_table/message.h"
 #include "upb/port/overflow.h"
 #include "upb/wire/decode.h"
@@ -110,6 +113,66 @@ static void upb_Message_FlushUnknownChunk(upb_Converter* c, upb_Message* dst,
   }
 }
 
+// Returns a freestanding copy of `src_field`, allocated on the converter's
+// arena, that describes `src_field` when it is kept as a non-canonical entry of
+// the destination (see upb_Message_DropFieldAsNonCanonical()).
+//
+// The copy has `offset` and `presence` cleared, like an extension field: the
+// value lives in the upb_Extension rather than at an offset in a message, and
+// the entry is present iff it exists. It is not flagged as an extension
+// (upb_MiniTableField_IsExtension() is false), so it has no extendee. If the
+// field has a sub-message or closed enum (ie. `submsg_ofs != kUpb_NoSub`), a
+// copy of the source's sub is allocated right after the field and `submsg_ofs`
+// points at it.
+static const upb_MiniTableField* upb_Converter_SynthesizeFreestandingField(
+    upb_Converter* c, const upb_MiniTableField* src_field) {
+  enum {
+    kSubOffset = UPB_ALIGN_UP(sizeof(upb_MiniTableField),
+                              UPB_ALIGN_OF(upb_MiniTableSubInternal)),
+  };
+  UPB_STATIC_ASSERT(kSubOffset % kUpb_SubmsgOffsetBytes == 0,
+                    "sub must be addressable by submsg_ofs");
+  UPB_ASSERT(!upb_MiniTableField_IsExtension(src_field));
+  const bool has_sub = src_field->UPB_PRIVATE(submsg_ofs) != kUpb_NoSub;
+  upb_MiniTableField* f = (upb_MiniTableField*)upb_Arena_Malloc(
+      c->arena, has_sub ? kSubOffset + sizeof(upb_MiniTableSubInternal)
+                        : sizeof(upb_MiniTableField));
+  if (!f) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+  }
+  *f = *src_field;
+  f->UPB_PRIVATE(offset) = 0;
+  f->presence = 0;
+  if (has_sub) {
+    *UPB_PTR_AT(f, kSubOffset, upb_MiniTableSubInternal) =
+        *UPB_PRIVATE(_upb_MiniTableField_Sub)(src_field);
+    f->UPB_PRIVATE(submsg_ofs) = kSubOffset / kUpb_SubmsgOffsetBytes;
+  }
+  return f;
+}
+
+// Stores the value of `src_field` in `src` as a non-canonical entry of `dst`
+// that is described by a freestanding copy of `src_field` (see
+// upb_Converter_SynthesizeFreestandingField()). The value (string data, array,
+// or sub-message) is aliased from `src`, not copied.
+static void upb_Message_DropFieldAsNonCanonical(
+    upb_Converter* c, upb_Message* dst, const upb_Message* src,
+    const upb_MiniTableField* src_field) {
+  UPB_ASSERT(!upb_MiniTableField_IsMap(src_field));
+  const void* src_data = UPB_PRIVATE(_upb_Message_DataPtr)(src, src_field);
+  upb_MessageValue val;
+  UPB_PRIVATE(_upb_MiniTableField_DataCopy)(src_field, &val, src_data);
+
+  const upb_MiniTableField* f =
+      upb_Converter_SynthesizeFreestandingField(c, src_field);
+  upb_Extension* ext =
+      UPB_PRIVATE(_upb_Message_CreateNonCanonicalField)(dst, f, c->arena);
+  if (!ext) {
+    upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
+  }
+  upb_Extension_SetValue(ext, val);
+}
+
 // Returns an estimate of the number of bytes needed to encode `f`, used to
 // decide whether the field fits in the current unknown field chunk. For
 // non-message scalars and strings this is an upper bound. For submessages,
@@ -159,13 +222,35 @@ bool upb_Message_FieldHasWireData(const upb_Message* msg,
   return true;
 }
 
+// Returns true if `f`, which is set in `msg` but absent from the destination
+// schema, should be kept in parsed form as a non-canonical extension rather
+// than encoded into unknown fields. Composite fields and strings at least as
+// large as a upb_MiniTableField are cheaper to keep than to re-serialize.
+// Maps are always encoded, since extensions (canonical or non-canonical) are
+// never maps.
+UPB_FORCEINLINE
+bool upb_Message_ShouldDropAsNonCanonical(const upb_Message* msg,
+                                          const upb_MiniTableField* f) {
+  if (upb_MiniTableField_IsMap(f)) return false;
+  if (upb_MiniTableField_IsArray(f)) return true;
+  upb_CType ctype = upb_MiniTableField_CType(f);
+  if (ctype == kUpb_CType_Message) return true;
+  if (ctype == kUpb_CType_String || ctype == kUpb_CType_Bytes) {
+    upb_StringView sv;
+    UPB_PRIVATE(_upb_MiniTableField_DataCopy)
+    (f, &sv, UPB_PRIVATE(_upb_Message_DataPtr)(msg, f));
+    return sv.size >= sizeof(upb_MiniTableField);
+  }
+  return false;
+}
+
+// Encodes `f`, which has wire data in `src`, into the current unknown field
+// chunk `ptr`, starting a new chunk if needed. Returns the new chunk pointer.
 UPB_FORCEINLINE
 char* upb_Message_EncodeUnknownField(upb_Converter* c, upb_Message* dst,
                                      const upb_Message* src,
                                      const upb_MiniTableField* f, char* ptr,
                                      int depth) {
-  if (!upb_Message_FieldHasWireData(src, f)) return ptr;
-
   upb_encstate* e = &c->encoder;
   if (ptr) {
     // Start a new chunk if the field may not fit in the current one, or if the
@@ -189,11 +274,29 @@ char* upb_Message_EncodeUnknownField(upb_Converter* c, upb_Message* dst,
   return UPB_PRIVATE(_upb_Encode_FieldToBuffer)(ptr, e, src, f);
 }
 
-static void upb_Message_EncodeUnknownFields(upb_Converter* c, upb_Message* dst,
-                                            const upb_Message* src,
-                                            const upb_MiniTable* dst_mt,
-                                            const upb_MiniTable* src_mt,
-                                            int depth) {
+// Adds `f`, which is set in `src` but absent from the destination schema, to
+// `dst`: either kept in parsed form as a non-canonical extension, or encoded
+// into the current unknown field chunk `ptr`. Returns the new chunk pointer.
+UPB_FORCEINLINE
+char* upb_Message_AddDroppedField(upb_Converter* c, upb_Message* dst,
+                                  const upb_Message* src,
+                                  const upb_MiniTableField* f, char* ptr,
+                                  int depth) {
+  if (!upb_Message_FieldHasWireData(src, f)) return ptr;
+  if (upb_Message_ShouldDropAsNonCanonical(src, f)) {
+    // Flush first to preserve the relative order of unknown fields.
+    if (ptr) upb_Message_FlushUnknownChunk(c, dst, ptr);
+    upb_Message_DropFieldAsNonCanonical(c, dst, src, f);
+    return NULL;
+  }
+  return upb_Message_EncodeUnknownField(c, dst, src, f, ptr, depth);
+}
+
+static void upb_Message_AddDroppedFields(upb_Converter* c, upb_Message* dst,
+                                         const upb_Message* src,
+                                         const upb_MiniTable* dst_mt,
+                                         const upb_MiniTable* src_mt,
+                                         int depth) {
   if (dst_mt == src_mt || upb_MiniTable_FieldCount(src_mt) == 0) return;
 
   const upb_MiniTableField* dst_first =
@@ -210,10 +313,10 @@ static void upb_Message_EncodeUnknownFields(upb_Converter* c, upb_Message* dst,
 
   char* ptr = NULL;
 
-  // Second pass: walk fields in descending order to encode the fields that
-  // are absent from dst_mt as unknown fields. Because the encoder writes
-  // backwards, encoding fields in descending order produces ascending
-  // canonical wire order.
+  // Second pass: walk fields in descending order to add the fields that are
+  // absent from dst_mt as non-canonical extensions or unknown fields. Because
+  // the encoder writes backwards, encoding fields in descending order produces
+  // ascending canonical wire order.
   while (dst_f != dst_first && src_f != src_first) {
     uint32_t src_nr = upb_MiniTableField_Number(src_f - 1);
     uint32_t dst_nr = upb_MiniTableField_Number(dst_f - 1);
@@ -225,12 +328,12 @@ static void upb_Message_EncodeUnknownFields(upb_Converter* c, upb_Message* dst,
       src_f--;
     } else {
       // src_nr > dst_nr: Field is present in src_mt but absent in dst_mt.
-      ptr = upb_Message_EncodeUnknownField(c, dst, src, --src_f, ptr, depth);
+      ptr = upb_Message_AddDroppedField(c, dst, src, --src_f, ptr, depth);
     }
   }
 
   while (src_f != src_first) {
-    ptr = upb_Message_EncodeUnknownField(c, dst, src, --src_f, ptr, depth);
+    ptr = upb_Message_AddDroppedField(c, dst, src, --src_f, ptr, depth);
   }
 
   if (ptr) {
@@ -596,21 +699,31 @@ static void upb_Message_ConvertField(upb_Converter* c, upb_Message* dst,
   }
 }
 
-static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
-                                         const upb_MiniTable* dst_mt,
-                                         const upb_MiniTableExtension* ext,
-                                         upb_MessageValue val,
-                                         const upb_ExtensionRegistry* extreg,
-                                         int depth) {
-  const upb_MiniTableField* dst_f = upb_MiniTable_FindFieldByNumber(
-      dst_mt, upb_MiniTableExtension_Number(ext));
+// Converts the extension entry `src_ext` of the source: a canonical
+// extension, or a non-canonical entry. Its field may be an extension field or
+// a freestanding field, e.g. a regular field of another message that a
+// previous conversion kept as a non-canonical entry (see
+// upb_Extension_MiniTableField()).
+//
+// Like decoding the entry's wire data with `dst_mt` and `extreg` would, this
+// sets the field of `dst_mt` or the extension in `extreg` with the same number
+// (failing if the types differ), or keeps the entry as a non-canonical entry
+// otherwise.
+static void upb_Message_ConvertExtensionOrNonCanonical(
+    upb_Converter* c, upb_Message* dst, const upb_MiniTable* dst_mt,
+    const upb_Extension* src_ext, const upb_ExtensionRegistry* extreg,
+    int depth) {
+  const upb_MiniTableField* src_f = upb_Extension_MiniTableField(src_ext);
+  const upb_MessageValue val = upb_Extension_GetValue(src_ext);
+  const uint32_t number = upb_MiniTableField_Number(src_f);
+  const upb_MiniTableField* dst_f =
+      upb_MiniTable_FindFieldByNumber(dst_mt, number);
   const upb_MiniTableExtension* dst_ext = NULL;
   if (!dst_f) {
-    // Source extension not found in the destination schema. Check the
-    // extension registry.
+    // The field is not in the destination schema. Check the extension
+    // registry.
     if (extreg != NULL) {
-      dst_ext = upb_ExtensionRegistry_Lookup(
-          extreg, dst_mt, upb_MiniTableExtension_Number(ext));
+      dst_ext = upb_ExtensionRegistry_Lookup(extreg, dst_mt, number);
       if (dst_ext) {
         dst_f = upb_MiniTableExtension_ToField(dst_ext);
       }
@@ -618,18 +731,23 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
   }
 
   if (dst_f == NULL) {
-    // Since this extension is not known in the destination schema, convert it
-    // to a non-canonical extension.
-    upb_Extension* msg_ext = UPB_PRIVATE(
-        _upb_Message_CreateNonCanonicalExtension)(dst, ext, c->arena);
+    // The field is not known to the destination, so keep it as a
+    // non-canonical entry. An actual extension keeps its
+    // upb_MiniTableExtension (and so its extendee); a freestanding field is
+    // added by its field (which is shared with the source).
+    upb_Extension* msg_ext =
+        upb_MiniTableField_IsExtension(src_f)
+            ? UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
+                  dst, UPB_PRIVATE(_upb_Extension_MiniTableExtension)(src_ext),
+                  c->arena)
+            : UPB_PRIVATE(_upb_Message_CreateNonCanonicalField)(dst, src_f,
+                                                                c->arena);
     if (!msg_ext) {
       upb_ErrorHandler_ThrowError(&c->err, kUpb_ErrorCode_OutOfMemory);
     }
     upb_Extension_SetValue(msg_ext, val);
     return;
   }
-
-  const upb_MiniTableField* src_f = upb_MiniTableExtension_ToField(ext);
 
   UPB_ASSERT(!upb_MiniTableField_IsMap(src_f));
   if (UPB_UNLIKELY(!_upb_MiniTableField_IsExtensionCompatible(src_f, dst_f))) {
@@ -641,12 +759,12 @@ static void upb_Message_ConvertExtension(upb_Converter* c, upb_Message* dst,
     // If the destination is an extension in the registry (dst_ext), we must use
     // upb_MiniTableExtension_GetSubMessage() since extensions store submessage
     // layouts directly. Otherwise, it is a normal field declared in the target
-    // MiniTable, and we use upb_MiniTable_SubMessage(). Similarly, the source
-    // ext behaves as an extension.
+    // MiniTable, and we use upb_MiniTable_SubMessage(). The source field
+    // stores its sub-message the same way either way.
     const upb_MiniTable* dst_sub_mt =
         dst_ext ? upb_MiniTableExtension_GetSubMessage(dst_ext)
                 : upb_MiniTable_SubMessage(dst_f);
-    const upb_MiniTable* src_sub_mt = upb_MiniTableExtension_GetSubMessage(ext);
+    const upb_MiniTable* src_sub_mt = upb_MiniTable_SubMessage(src_f);
 
     if (upb_MiniTableField_IsArray(dst_f)) {
       if (dst_sub_mt != src_sub_mt) {
@@ -734,11 +852,11 @@ static void upb_Message_ConvertExtensions(upb_Converter* c, upb_Message* dst,
                                           const upb_MiniTable* dst_mt,
                                           const upb_ExtensionRegistry* extreg,
                                           int depth) {
-  const upb_MiniTableExtension* ext;
-  upb_MessageValue val;
+  const upb_Extension* ext;
   uintptr_t iter = kUpb_Message_ExtensionBegin;
-  while (upb_Message_NextExtension(src, &ext, &val, &iter)) {
-    upb_Message_ConvertExtension(c, dst, dst_mt, ext, val, extreg, depth);
+  while (UPB_PRIVATE(_upb_Message_NextExtensionEntry)(src, &ext, &iter)) {
+    upb_Message_ConvertExtensionOrNonCanonical(c, dst, dst_mt, ext, extreg,
+                                               depth);
   }
 }
 
@@ -811,7 +929,7 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
   }
 
   if (has_unknowns) {
-    upb_Message_EncodeUnknownFields(c, dst, src, dst_mt, src_mt, depth);
+    upb_Message_AddDroppedFields(c, dst, src, dst_mt, src_mt, depth);
   }
 
   // Convert extensions.
@@ -853,10 +971,8 @@ static void upb_Message_ConvertInternal(upb_Converter* c, upb_Message* dst,
       UPB_ASSERT(d->end_group == DECODE_NOGROUP);
     } else {
       UPB_ASSERT(unknown.type == kUpb_MessageUnknownType_NonCanonicalExtension);
-      const upb_Extension* ext = unknown.value.extension;
-      upb_Message_ConvertExtension(c, dst, dst_mt,
-                                   upb_Extension_MiniTableExtension(ext),
-                                   upb_Extension_GetValue(ext), extreg, depth);
+      upb_Message_ConvertExtensionOrNonCanonical(
+          c, dst, dst_mt, unknown.value.extension, extreg, depth);
     }
   }
 }

@@ -7,6 +7,7 @@
 
 #include "upb/message/internal/extension.h"
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "upb/mem/arena.h"
@@ -19,8 +20,8 @@
 // Must be last.
 #include "upb/port/def.inc"
 
-const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
-    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
+const upb_Extension* UPB_PRIVATE(_upb_Message_GetextByField)(
+    const struct upb_Message* msg, const upb_MiniTableField* f) {
   upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
   if (!in) return NULL;
 
@@ -29,13 +30,19 @@ const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
     if (upb_TaggedAuxPtr_IsCanonicalExtension(tagged_ptr)) {
       const upb_Extension* ext =
           upb_TaggedAuxPtr_CanonicalExtension(tagged_ptr);
-      if (upb_Extension_MiniTableExtension(ext) == e) {
+      if (upb_Extension_MiniTableField(ext) == f) {
         return ext;
       }
     }
   }
 
   return NULL;
+}
+
+const upb_Extension* UPB_PRIVATE(_upb_Message_Getext)(
+    const struct upb_Message* msg, const upb_MiniTableExtension* e) {
+  return UPB_PRIVATE(_upb_Message_GetextByField)(
+      msg, upb_MiniTableExtension_ToField(e));
 }
 
 upb_Extension* UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
@@ -73,4 +80,24 @@ upb_Extension* UPB_PRIVATE(_upb_Message_CreateNonCanonicalExtension)(
     struct upb_Message* msg, const upb_MiniTableExtension* e, upb_Arena* a) {
   return UPB_PRIVATE(_upb_Message_GetOrCreateExtensionWithTag)(
       msg, e, a, kUpb_TaggedAuxType_NonCanonicalExtension);
+}
+
+upb_Extension* UPB_PRIVATE(_upb_Message_CreateNonCanonicalField)(
+    struct upb_Message* msg, const upb_MiniTableField* f, upb_Arena* a) {
+  UPB_ASSERT(!upb_Message_IsFrozen(msg));
+  // Non-canonical entries are never maps.
+  UPB_ASSERT(!upb_MiniTableField_IsMap(f));
+  // Like for an extension field, the value lives in the upb_Extension and the
+  // entry is present iff it exists, so the field has no offset or presence.
+  UPB_ASSERT(UPB_PRIVATE(_upb_MiniTableField_Offset)(f) == 0);
+  UPB_ASSERT(f->presence == 0);
+  // Like unknown fields, non-canonical entries accumulate; an existing entry
+  // for the same field is never reused.
+  if (!UPB_PRIVATE(_upb_Message_ReserveSlot)(msg, a)) return NULL;
+  upb_Message_Internal* in = UPB_PRIVATE(_upb_Message_GetInternal)(msg);
+  upb_Extension* ext = UPB_PRIVATE(_upb_Extension_NewFromField)(f, a);
+  if (!ext) return NULL;
+  in->aux_data[in->size++] = upb_TaggedAuxPtr_MakeExtension(
+      ext, kUpb_TaggedAuxType_NonCanonicalExtension);
+  return ext;
 }

@@ -324,6 +324,7 @@ cc_test(
         "//upb/test:test_upb_proto",
         "//upb/wire",
         "//upb/wire:encode_extension",
+        "//upb/wire:reader",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],

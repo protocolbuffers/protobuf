@@ -31,6 +31,17 @@ typedef enum {
 
 // Represents an unknown field in a message, whether it's in a serialized
 // (upb_StringView) or parsed non-canonical extension (upb_Extension*) format.
+//
+// A non-canonical extension is described by the upb_MiniTableField returned by
+// upb_Extension_MiniTableField(), which is either an extension field of some
+// other message, or a freestanding field, e.g. a copy of a regular field of
+// another message (see upb_Message_Convert()). upb_MiniTableField_IsExtension()
+// tells them apart. Like for an extension field, a freestanding field has no
+// offset or presence, and is never a map.
+//
+// Since the field is not a field of the containing message, never use it with
+// that message (e.g. upb_Message_GetField()); read the value with
+// upb_Extension_GetValue() instead.
 typedef struct upb_MessageUnknown {
   uint8_t type;
   union {
