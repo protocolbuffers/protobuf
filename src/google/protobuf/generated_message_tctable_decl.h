@@ -302,6 +302,9 @@ struct alignas(uint64_t) TcParseTableBase {
   uint16_t num_aux_entries;
   uint32_t aux_offset;
 
+  // The size of the whole parse table.
+  uint32_t sizeof_self;
+
   const ClassData* class_data;
   using PostLoopHandler = const char* (*)(MessageLite* msg, const char* ptr,
                                           ParseContext* ctx);
@@ -324,7 +327,7 @@ struct alignas(uint64_t) TcParseTableBase {
                              uint32_t field_entries_offset,
                              uint16_t num_field_entries,
                              uint16_t num_aux_entries, uint32_t aux_offset,
-                             const ClassData* class_data,
+                             size_t sizeof_self, const ClassData* class_data,
                              PostLoopHandler post_loop_handler,
                              TailCallParseFunc fallback)
       : has_bits_offset(has_bits_offset),
@@ -338,9 +341,13 @@ struct alignas(uint64_t) TcParseTableBase {
         num_field_entries(num_field_entries),
         num_aux_entries(num_aux_entries),
         aux_offset(aux_offset),
+        sizeof_self(static_cast<uint32_t>(sizeof_self)),
         class_data(class_data),
         post_loop_handler(post_loop_handler),
-        fallback(fallback) {}
+        fallback(fallback) {
+    // Check that the size of the table fits in a uint32_t.
+    ABSL_DCHECK_EQ(static_cast<size_t>(this->sizeof_self), sizeof_self);
+  }
 
   // Table entry for fast-path tailcall dispatch handling.
   struct FastFieldEntry {
@@ -597,22 +604,32 @@ constexpr TcParseTable<0> CreateStubTcParseTable(
     TcParseTableBase::PostLoopHandler post_loop_handler = nullptr) {
   return {
       {
-          0,                  // has_bits_offset
-          0,                  // extension_offset
-          0,                  // max_field_number
-          0,                  // fast_idx_mask
-          0,                  // lookup_table_offset
-          0,                  // skipmap32
-          0,                  // field_entries_offset
-          0,                  // num_field_entries
-          0,                  // num_aux_entries
-          0,                  // aux_offset
-          class_data,         //
-          post_loop_handler,  //
-          nullptr,            // fallback
+          0,                        // has_bits_offset
+          0,                        // extension_offset
+          0,                        // max_field_number
+          0,                        // fast_idx_mask
+          0,                        // lookup_table_offset
+          0,                        // skipmap32
+          0,                        // field_entries_offset
+          0,                        // num_field_entries
+          0,                        // num_aux_entries
+          0,                        // aux_offset
+          sizeof(TcParseTable<0>),  // sizeof_self
+          class_data,               //
+          post_loop_handler,        //
+          nullptr,                  // fallback
       },
       {{{StubParseImpl<T, func>, {}}}},
   };
+}
+
+inline size_t MessageGlobalsBase::SizeOfSelf() const {
+  static_assert(alignof(TcParseTable<0>) <= kMaxMessageAlignment);
+
+  const TcParseTableBase* parse_table = ToParseTableBase(this);
+  size_t sizeof_parse_table = parse_table->sizeof_self;
+  ABSL_CHECK(sizeof_parse_table != 0);
+  return OffsetToParseTable() + sizeof_parse_table;
 }
 
 }  // namespace internal

@@ -128,9 +128,10 @@ TEST(FastVarints, NameHere) {
           offsetof(decltype(parse_table), field_lookup_table),
           0xFFFFFFFF - 1,  // skipmap
           offsetof(decltype(parse_table), field_entries),
-          1,  // num_field_entries
-          0,  // num_aux_entries
-          0,  // no aux_entries
+          1,                              // num_field_entries
+          0,                              // num_aux_entries
+          0,                              // no aux_entries
+          sizeof(decltype(parse_table)),  // sizeof_self
           &class_data,
           nullptr,           // post_loop_handler
           FastParserGaveUp,  // fallback
@@ -318,13 +319,14 @@ TEST(IsEntryForFieldNumTest, Matcher) {
           0,     // max_field_number
           0,     // fast_idx_mask,
           offsetof(decltype(table), field_lookup_table),
-          0xFFFFFFFF - 7,  // 7 = fields 1, 2, and 3.
-          0,               // no field_entries
-          0,               // num_field_entries
-          0, 0,            // num_aux_entries, aux_offset,
-          nullptr,         // default instance
-          nullptr,         // post_loop_handler
-          nullptr,         // fallback function
+          0xFFFFFFFF - 7,           // 7 = fields 1, 2, and 3.
+          0,                        // no field_entries
+          0,                        // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          nullptr,                  // fallback function
       }};
   // clang-format on
   int table_field_numbers[] = {1, 2, 3};
@@ -424,11 +426,12 @@ TEST_F(FindFieldEntryTest, SequentialFieldRange) {
           0xFFFFFFFF - (1 << 1) - (1 << 2)   // fields 2, 3
                      - (1 << 3) - (1 << 4),  // fields 4, 5
           offsetof(decltype(table), field_entries),
-          5,           // num_field_entries
-          0, 0,        // num_aux_entries, aux_offset,
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          {},          // fallback function
+          5,                        // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          {},                       // fallback function
       },
       {},  // fast_entries
       // field_lookup_table for 2, 3, 4, 5, 111:
@@ -465,11 +468,12 @@ TEST_F(FindFieldEntryTest, SmallScanRange) {
           offsetof(decltype(table), field_lookup_table),
           0xFFFFFFFF - (1<<0) - (1<<2) - (1<<3) - (1<<4) - (1<<6),  // 1,3-5,7
           offsetof(decltype(table), field_entries),
-          6,           // num_field_entries
-          0, 0,        // num_aux_entries, aux_offset,
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          {},          // fallback function
+          6,                        // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          {},                       // fallback function
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 7, 111:
@@ -514,11 +518,12 @@ TEST_F(FindFieldEntryTest, BinarySearchRange) {
                      - (1<<5) - (1<<7) - (1<<8) - (1<<10)  // 8, 9, 11, 12
                      - (1<<11),
           offsetof(decltype(table), field_entries),
-          10,          // num_field_entries
-          0, 0,        // num_aux_entries, aux_offset,
-          nullptr,     // default instance
-          nullptr,     // post_loop_handler
-          {},          // fallback function
+          10,                       // num_field_entries
+          0, 0,                     // num_aux_entries, aux_offset,
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          {},                       // fallback function
       },
       {},  // fast_entries
       // field_lookup_table for 1, 3, 4, 5, 6, 8, 9, 11, 12, 70
@@ -562,6 +567,7 @@ TEST_F(FindFieldEntryTest, OutOfRange) {
           3,                                       // num_field_entries
           0,                                       // num_aux_entries
           offsetof(decltype(table), field_names),  // no aux_entries
+          sizeof(decltype(table)),                 // sizeof_self
           nullptr,                                 // class_data
           nullptr,                                 // post_loop_handler
           {},                                      // fallback function
@@ -615,9 +621,10 @@ TEST_F(FindFieldEntryTest, EmptyMessage) {
           0,                                       // num_field_entries
           0,                                       // num_aux_entries
           offsetof(TableType, field_names),
-          nullptr,  // default instance
-          nullptr,  // post_loop_handler
-          nullptr,  // fallback function
+          sizeof(decltype(table)),  // sizeof_self
+          nullptr,                  // default instance
+          nullptr,                  // post_loop_handler
+          nullptr,                  // fallback function
       },
       {},  // fast_entries
       {{
@@ -673,9 +680,10 @@ const TcParseTable<5, 134, 5, 2176, 55> test_all_types_table = {
         135,         // num_field_entries
         5,           // num_aux_entries
         offsetof(decltype(test_all_types_table), aux_entries),
-        nullptr,     // default instance
-        nullptr,     // post_loop_handler
-        nullptr,     // fallback function
+        sizeof(decltype(test_all_types_table)),  // sizeof_self
+        nullptr,                                 // default instance
+        nullptr,                                 // post_loop_handler
+        nullptr,                                 // fallback function
     },
     {{
         // tail-call table

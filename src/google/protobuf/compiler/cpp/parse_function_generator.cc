@@ -248,6 +248,7 @@ void ParseFunctionGenerator::GenerateParseTableHelperDefinition(
         $num_field_entries$,  // num_field_entries
         $num_aux_entries$,  // num_aux_entries
         $aux_offset$,
+        sizeof(ParseTableT_),
         class_data,
         $post_loop_handler$,
         $fallback$,  // fallback
