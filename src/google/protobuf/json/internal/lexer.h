@@ -19,11 +19,11 @@
 #include "absl/strings/match.h"
 #include "absl/strings/str_format.h"
 #include "absl/strings/string_view.h"
+#include "third_party/gloop/util/status/status_macros.h"
 #include "google/protobuf/descriptor.h"
 #include "google/protobuf/io/zero_copy_stream.h"
 #include "google/protobuf/json/internal/message_path.h"
 #include "google/protobuf/json/internal/zero_copy_buffered_stream.h"
-#include "google/protobuf/stubs/status_macros.h"
 
 
 // Must be included last.
