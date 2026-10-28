@@ -2290,4 +2290,44 @@ public class TextFormatTest {
       assertThat(e).hasMessageThat().contains("too deep");
     }
   }
+
+  private static UnknownFieldSet makeNestedUnknownLengthDelimited(int depth) {
+    UnknownFieldSet current =
+        UnknownFieldSet.newBuilder()
+            .addField(1, UnknownFieldSet.Field.newBuilder().addVarint(42L).build())
+            .build();
+    for (int i = 0; i < depth; i++) {
+      current =
+          UnknownFieldSet.newBuilder()
+              .addField(
+                  1,
+                  UnknownFieldSet.Field.newBuilder()
+                      .addLengthDelimited(current.toByteString())
+                      .build())
+              .build();
+    }
+    return current;
+  }
+
+  @Test
+  public void testPrintUnknownFieldsRecursionLimit() throws Exception {
+    // 10 nested length-delimited unknown fields are unpacked as embedded messages.
+    UnknownFieldSet depth10 = makeNestedUnknownLengthDelimited(10);
+    String printedDepth10 = TextFormat.printer().printToString(depth10);
+    assertThat(printedDepth10).contains("1: 42");
+    assertThat(printedDepth10).doesNotContain("\"");
+
+    // The 11th nested length-delimited unknown field is printed as an escaped byte string.
+    UnknownFieldSet depth11 = makeNestedUnknownLengthDelimited(11);
+    String printedDepth11 = TextFormat.printer().printToString(depth11);
+    assertThat(printedDepth11).doesNotContain("1: 42");
+    assertThat(printedDepth11).contains("\"\\b*\"");
+
+    // Also verify when printing a Message containing deep unknown fields.
+    TestEmptyMessage messageWithDeepUnknowns =
+        TestEmptyMessage.newBuilder().setUnknownFields(makeNestedUnknownLengthDelimited(11)).build();
+    String printedMsg = TextFormat.printer().printToString(messageWithDeepUnknowns);
+    assertThat(printedMsg).doesNotContain("1: 42");
+    assertThat(printedMsg).contains("\"\\b*\"");
+  }
 }
