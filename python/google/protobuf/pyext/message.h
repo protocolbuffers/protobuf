@@ -20,6 +20,7 @@
 
 #include "absl/log/absl_check.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/pyext/container_base.h"
 #include "google/protobuf/pyext/free_threading/access_guard.h"
 #include "google/protobuf/pyext/lazy_unique_ptr.h"
 #include "google/protobuf/pyext/message_tree.h"
@@ -74,46 +75,6 @@ enum MessageMutabilityState : uint8_t {
   // Permanently read-only (e.g., Descriptor Options).
   // Any attempt to mutate will raise a Python FrozenInstanceError.
   MESSAGE_FROZEN = 2,
-};
-
-struct ContainerBase {
-  // clang-format off
-  PyObject_HEAD
-
-  // Shared pointer to the message tree containing the AccessGuard for the
-  // root of this hierarchy. Never null for an initialized CMessage or
-  // container. Atomic because a sub-message's or container's tree pointer is
-  // updated when it is detached or reparented from its parent.
-  std::atomic<MessageTree*> tree;
-
-  // Strong reference to a parent message object. For a CMessage there are three
-  // cases:
-  // - For a top-level message, this pointer is NULL.
-  // - For a sub-message, this points to the parent message.
-  // - For a message managed externally, this is a owned reference to Py_None.
-  //
-  // For all other types: repeated containers, maps, it always point to a
-  // valid parent CMessage.
-  struct CMessage* parent;
-  // clang-format on
-
-  MessageTree* GetTree() const { return tree.load(std::memory_order_acquire); }
-  void SetTree(MessageTree* t) { tree.store(t, std::memory_order_release); }
-
-  // If this object belongs to a parent message, describes which field it comes
-  // from.
-  // The pointer is owned by the DescriptorPool (which is kept alive
-  // through the message's Python class)
-  const FieldDescriptor* parent_field_descriptor;
-
-  PyObject* AsPyObject() { return reinterpret_cast<PyObject*>(this); }
-
-  // The Three methods below are only used by Repeated containers, and Maps.
-
-  // This implementation works for all containers which have a parent.
-  PyObject* DeepCopy();
-  // Delete this container object from its parent. Does not work for messages.
-  void RemoveFromParentCache();
 };
 
 typedef struct CMessage : public ContainerBase {
