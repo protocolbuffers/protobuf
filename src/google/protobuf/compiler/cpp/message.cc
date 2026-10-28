@@ -3046,17 +3046,41 @@ void MessageGenerator::GenerateCopyInitFields(io::Printer* p) const {
 
 void MessageGenerator::GenerateArenaEnabledCopyConstructor(io::Printer* p) {
   if (!HasSimpleBaseClass(descriptor_, options_)) {
-    // Generate Impl_::Imp_(visibility, Arena*, const& from);
-    p->Emit(
-        {{"init", [&] { GenerateImplMemberInit(p, InitType::kArenaCopy); }}},
-        R"cc(
-          PROTOBUF_NDEBUG_INLINE $Msg$::Impl_::Impl_(
-              [[maybe_unused]] $pbi$::InternalVisibility visibility,
-              [[maybe_unused]] $pb$::Arena* $nullable$ arena, const Impl_& from,
-              [[maybe_unused]] const $classtype$& from_msg)
-              //~
-              $init$ {}
+    auto clear_default_hint_hasbits = [&] {
+      // Implicit-presence strings left at the static default string must not
+      // keep a copied hint has-bit set, because Clear() assumes a set hint bit
+      // implies a non-default pointer.
+      for (const auto* field : field_layout_.optimized_order()) {
+        if (ShouldSplit(field, options_) || field->is_repeated() ||
+            field->cpp_type() != FieldDescriptor::CPPTYPE_STRING ||
+            !IsArenaStringPtr(field, options_) ||
+            IsStringInlined(field, options_) ||
+            GetFieldHasbitMode(field, options_) != HasbitMode::kHintHasbit) {
+          continue;
+        }
+        auto v = p->WithVars(FieldVars(field, options_));
+        auto hv = p->WithVars(HasBitVars(field));
+        p->Emit(R"cc(
+          if ($name$_.IsDefault()) {
+            ClearHasBit(_has_bits_[$has_array_index$], $has_mask$);
+          }
         )cc");
+      }
+    };
+    // Generate Impl_::Imp_(visibility, Arena*, const& from);
+    p->Emit({{"init", [&] { GenerateImplMemberInit(p, InitType::kArenaCopy); }},
+             {"clear_default_hint_hasbits", clear_default_hint_hasbits}},
+            R"cc(
+              PROTOBUF_NDEBUG_INLINE $Msg$::Impl_::Impl_(
+                  [[maybe_unused]] $pbi$::InternalVisibility visibility,
+                  [[maybe_unused]] $pb$::Arena* $nullable$ arena,
+                  const Impl_& from,
+                  [[maybe_unused]] const $classtype$& from_msg)
+                  //~
+                  $init$ {
+                $clear_default_hint_hasbits$;
+              }
+            )cc");
     p->Emit("\n");
   }
 

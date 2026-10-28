@@ -6755,7 +6755,8 @@ FileDescriptorSet::FileDescriptorSet(::google::protobuf::Arena* PROTOBUF_NULLABL
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FileDescriptorSet& from_msg)
       : _extensions_ {}
         ,
@@ -6766,7 +6767,8 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorSet::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileDescriptorSet, _impl_.file_)>()
           , arena, from.file_
         }
-     {}
+     {
+}
 
 FileDescriptorSet::FileDescriptorSet(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -6981,7 +6983,8 @@ FileDescriptorProto::FileDescriptorProto(::google::protobuf::Arena* PROTOBUF_NUL
 }
 PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FileDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         dependency_ {
@@ -7040,9 +7043,10 @@ PROTOBUF_NDEBUG_INLINE FileDescriptorProto::Impl_::Impl_(
           , arena, from.option_dependency_
         }
         ,
-        name_(arena, from.name_),
-        package_(arena, from.package_),
-        syntax_(arena, from.syntax_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000100U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        package_(CheckHasBit(from._has_bits_[0], 0x00000200U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.package_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        syntax_(CheckHasBit(from._has_bits_[0], 0x00000400U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.syntax_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 FileDescriptorProto::FileDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -7637,9 +7641,11 @@ DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(::google::protobu
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto_ExtensionRange::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::DescriptorProto_ExtensionRange& from_msg)
-      : _has_bits_{from._has_bits_} {}
+      : _has_bits_{from._has_bits_} {
+}
 
 DescriptorProto_ExtensionRange::DescriptorProto_ExtensionRange(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -8099,7 +8105,8 @@ DescriptorProto::DescriptorProto(::google::protobuf::Arena* PROTOBUF_NULLABLE ar
 }
 PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::DescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         field_ {
@@ -8158,7 +8165,8 @@ PROTOBUF_NDEBUG_INLINE DescriptorProto::Impl_::Impl_(
           , arena, from.reserved_name_
         }
         ,
-        name_(arena, from.name_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000100U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 DescriptorProto::DescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -8685,11 +8693,13 @@ ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(::google::p
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions_Declaration::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ExtensionRangeOptions_Declaration& from_msg)
       : _has_bits_{from._has_bits_},
-        full_name_(arena, from.full_name_),
-        type_(arena, from.type_) {}
+        full_name_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.full_name_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        type_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.type_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 ExtensionRangeOptions_Declaration::ExtensionRangeOptions_Declaration(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -8955,7 +8965,8 @@ ExtensionRangeOptions::ExtensionRangeOptions(::google::protobuf::Arena* PROTOBUF
 }
 PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ExtensionRangeOptions& from_msg)
       : _extensions_ {}
         ,
@@ -8973,7 +8984,8 @@ PROTOBUF_NDEBUG_INLINE ExtensionRangeOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::ExtensionRangeOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 ExtensionRangeOptions::ExtensionRangeOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -9291,14 +9303,16 @@ FieldDescriptorProto::FieldDescriptorProto(::google::protobuf::Arena* PROTOBUF_N
 }
 PROTOBUF_NDEBUG_INLINE FieldDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        name_(arena, from.name_),
-        extendee_(arena, from.extendee_),
-        type_name_(arena, from.type_name_),
-        default_value_(arena, from.default_value_),
-        json_name_(arena, from.json_name_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        extendee_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.extendee_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        type_name_(CheckHasBit(from._has_bits_[0], 0x00000004U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.type_name_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        default_value_(CheckHasBit(from._has_bits_[0], 0x00000008U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.default_value_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        json_name_(CheckHasBit(from._has_bits_[0], 0x00000010U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.json_name_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 FieldDescriptorProto::FieldDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -9706,10 +9720,12 @@ OneofDescriptorProto::OneofDescriptorProto(::google::protobuf::Arena* PROTOBUF_N
 }
 PROTOBUF_NDEBUG_INLINE OneofDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::OneofDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        name_(arena, from.name_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 OneofDescriptorProto::OneofDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -10141,7 +10157,8 @@ EnumDescriptorProto::EnumDescriptorProto(::google::protobuf::Arena* PROTOBUF_NUL
 }
 PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::EnumDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         value_ {
@@ -10165,7 +10182,8 @@ PROTOBUF_NDEBUG_INLINE EnumDescriptorProto::Impl_::Impl_(
           , arena, from.reserved_name_
         }
         ,
-        name_(arena, from.name_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000008U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 EnumDescriptorProto::EnumDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -10522,10 +10540,12 @@ EnumValueDescriptorProto::EnumValueDescriptorProto(::google::protobuf::Arena* PR
 }
 PROTOBUF_NDEBUG_INLINE EnumValueDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::EnumValueDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        name_(arena, from.name_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 EnumValueDescriptorProto::EnumValueDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -10784,7 +10804,8 @@ ServiceDescriptorProto::ServiceDescriptorProto(::google::protobuf::Arena* PROTOB
 }
 PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ServiceDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
         method_ {
@@ -10794,7 +10815,8 @@ PROTOBUF_NDEBUG_INLINE ServiceDescriptorProto::Impl_::Impl_(
           , arena, from.method_
         }
         ,
-        name_(arena, from.name_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 ServiceDescriptorProto::ServiceDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -11060,12 +11082,14 @@ MethodDescriptorProto::MethodDescriptorProto(::google::protobuf::Arena* PROTOBUF
 }
 PROTOBUF_NDEBUG_INLINE MethodDescriptorProto::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::MethodDescriptorProto& from_msg)
       : _has_bits_{from._has_bits_},
-        name_(arena, from.name_),
-        input_type_(arena, from.input_type_),
-        output_type_(arena, from.output_type_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        input_type_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.input_type_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        output_type_(CheckHasBit(from._has_bits_[0], 0x00000004U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.output_type_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 MethodDescriptorProto::MethodDescriptorProto(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -11379,28 +11403,30 @@ FileOptions::FileOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 }
 PROTOBUF_NDEBUG_INLINE FileOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FileOptions& from_msg)
       : _extensions_ {}
         ,
         _has_bits_{from._has_bits_},
-        java_package_(arena, from.java_package_),
-        java_outer_classname_(arena, from.java_outer_classname_),
-        go_package_(arena, from.go_package_),
-        objc_class_prefix_(arena, from.objc_class_prefix_),
-        csharp_namespace_(arena, from.csharp_namespace_),
-        swift_prefix_(arena, from.swift_prefix_),
-        php_class_prefix_(arena, from.php_class_prefix_),
-        php_namespace_(arena, from.php_namespace_),
-        php_metadata_namespace_(arena, from.php_metadata_namespace_),
-        ruby_package_(arena, from.ruby_package_),
+        java_package_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.java_package_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        java_outer_classname_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.java_outer_classname_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        go_package_(CheckHasBit(from._has_bits_[0], 0x00000004U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.go_package_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        objc_class_prefix_(CheckHasBit(from._has_bits_[0], 0x00000008U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.objc_class_prefix_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        csharp_namespace_(CheckHasBit(from._has_bits_[0], 0x00000010U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.csharp_namespace_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        swift_prefix_(CheckHasBit(from._has_bits_[0], 0x00000020U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.swift_prefix_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        php_class_prefix_(CheckHasBit(from._has_bits_[0], 0x00000040U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.php_class_prefix_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        php_namespace_(CheckHasBit(from._has_bits_[0], 0x00000080U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.php_namespace_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        php_metadata_namespace_(CheckHasBit(from._has_bits_[0], 0x00000100U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.php_metadata_namespace_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        ruby_package_(CheckHasBit(from._has_bits_[0], 0x00000200U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.ruby_package_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
         uninterpreted_option_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::FileOptions,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FileOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 FileOptions::FileOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -11987,7 +12013,8 @@ MessageOptions::MessageOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 }
 PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::MessageOptions& from_msg)
       : _extensions_ {}
         ,
@@ -11998,7 +12025,8 @@ PROTOBUF_NDEBUG_INLINE MessageOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::MessageOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 MessageOptions::MessageOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -12333,10 +12361,12 @@ FieldOptions_EditionDefault::FieldOptions_EditionDefault(::google::protobuf::Are
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_EditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldOptions_EditionDefault& from_msg)
       : _has_bits_{from._has_bits_},
-        value_(arena, from.value_) {}
+        value_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.value_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 FieldOptions_EditionDefault::FieldOptions_EditionDefault(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -12540,11 +12570,13 @@ FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(::google::protobuf::Are
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions_FeatureSupport::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldOptions_FeatureSupport& from_msg)
       : _has_bits_{from._has_bits_},
-        deprecation_warning_(arena, from.deprecation_warning_),
-        removal_error_(arena, from.removal_error_) {}
+        deprecation_warning_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.deprecation_warning_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        removal_error_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.removal_error_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 FieldOptions_FeatureSupport::FieldOptions_FeatureSupport(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -12819,7 +12851,8 @@ FieldOptions::FieldOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 }
 PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FieldOptions& from_msg)
       : _extensions_ {}
         ,
@@ -12844,7 +12877,8 @@ PROTOBUF_NDEBUG_INLINE FieldOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FieldOptions, _impl_.targets_)>()
           , arena, from.targets_
         }
-     {}
+     {
+}
 
 FieldOptions::FieldOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -13329,7 +13363,8 @@ OneofOptions::OneofOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 }
 PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::OneofOptions& from_msg)
       : _extensions_ {}
         ,
@@ -13340,7 +13375,8 @@ PROTOBUF_NDEBUG_INLINE OneofOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::OneofOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 OneofOptions::OneofOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -13601,7 +13637,8 @@ EnumOptions::EnumOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 }
 PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::EnumOptions& from_msg)
       : _extensions_ {}
         ,
@@ -13612,7 +13649,8 @@ PROTOBUF_NDEBUG_INLINE EnumOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 EnumOptions::EnumOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -13927,7 +13965,8 @@ EnumValueOptions::EnumValueOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE 
 }
 PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::EnumValueOptions& from_msg)
       : _extensions_ {}
         ,
@@ -13938,7 +13977,8 @@ PROTOBUF_NDEBUG_INLINE EnumValueOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::EnumValueOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 EnumValueOptions::EnumValueOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -14276,7 +14316,8 @@ ServiceOptions::ServiceOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 }
 PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::ServiceOptions& from_msg)
       : _extensions_ {}
         ,
@@ -14287,7 +14328,8 @@ PROTOBUF_NDEBUG_INLINE ServiceOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::ServiceOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 ServiceOptions::ServiceOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -14573,7 +14615,8 @@ MethodOptions::MethodOptions(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 }
 PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::MethodOptions& from_msg)
       : _extensions_ {}
         ,
@@ -14584,7 +14627,8 @@ PROTOBUF_NDEBUG_INLINE MethodOptions::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::MethodOptions, _impl_.uninterpreted_option_)>()
           , arena, from.uninterpreted_option_
         }
-     {}
+     {
+}
 
 MethodOptions::MethodOptions(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -14894,10 +14938,12 @@ UninterpretedOption_NamePart::UninterpretedOption_NamePart(::google::protobuf::A
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption_NamePart::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::UninterpretedOption_NamePart& from_msg)
       : _has_bits_{from._has_bits_},
-        name_part_(arena, from.name_part_) {}
+        name_part_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_part_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 UninterpretedOption_NamePart::UninterpretedOption_NamePart(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -15105,7 +15151,8 @@ UninterpretedOption::UninterpretedOption(::google::protobuf::Arena* PROTOBUF_NUL
 }
 PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::UninterpretedOption& from_msg)
       : _has_bits_{from._has_bits_},
         name_ {
@@ -15115,9 +15162,10 @@ PROTOBUF_NDEBUG_INLINE UninterpretedOption::Impl_::Impl_(
           , arena, from.name_
         }
         ,
-        identifier_value_(arena, from.identifier_value_),
-        string_value_(arena, from.string_value_),
-        aggregate_value_(arena, from.aggregate_value_) {}
+        identifier_value_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.identifier_value_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        string_value_(CheckHasBit(from._has_bits_[0], 0x00000004U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.string_value_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        aggregate_value_(CheckHasBit(from._has_bits_[0], 0x00000008U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.aggregate_value_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 UninterpretedOption::UninterpretedOption(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -15534,11 +15582,13 @@ FeatureSet::FeatureSet(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 }
 PROTOBUF_NDEBUG_INLINE FeatureSet::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FeatureSet& from_msg)
       : _extensions_ {}
         ,
-        _has_bits_{from._has_bits_} {}
+        _has_bits_{from._has_bits_} {
+}
 
 FeatureSet::FeatureSet(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -15880,9 +15930,11 @@ FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditio
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults_FeatureSetEditionDefault::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault& from_msg)
-      : _has_bits_{from._has_bits_} {}
+      : _has_bits_{from._has_bits_} {
+}
 
 FeatureSetDefaults_FeatureSetEditionDefault::FeatureSetDefaults_FeatureSetEditionDefault(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -16156,7 +16208,8 @@ FeatureSetDefaults::FeatureSetDefaults(::google::protobuf::Arena* PROTOBUF_NULLA
 }
 PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::FeatureSetDefaults& from_msg)
       : _has_bits_{from._has_bits_},
         defaults_ {
@@ -16165,7 +16218,8 @@ PROTOBUF_NDEBUG_INLINE FeatureSetDefaults::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::FeatureSetDefaults, _impl_.defaults_)>()
           , arena, from.defaults_
         }
-     {}
+     {
+}
 
 FeatureSetDefaults::FeatureSetDefaults(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -16421,7 +16475,8 @@ SourceCodeInfo_Location::SourceCodeInfo_Location(::google::protobuf::Arena* PROT
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::SourceCodeInfo_Location& from_msg)
       : _has_bits_{from._has_bits_},
         path_ {
@@ -16445,8 +16500,9 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo_Location::Impl_::Impl_(
           , arena, from.leading_detached_comments_
         }
         ,
-        leading_comments_(arena, from.leading_comments_),
-        trailing_comments_(arena, from.trailing_comments_) {}
+        leading_comments_(CheckHasBit(from._has_bits_[0], 0x00000008U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.leading_comments_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        trailing_comments_(CheckHasBit(from._has_bits_[0], 0x00000010U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.trailing_comments_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 SourceCodeInfo_Location::SourceCodeInfo_Location(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -16748,7 +16804,8 @@ SourceCodeInfo::SourceCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABLE aren
 }
 PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::SourceCodeInfo& from_msg)
       : _extensions_ {}
         ,
@@ -16759,7 +16816,8 @@ PROTOBUF_NDEBUG_INLINE SourceCodeInfo::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::SourceCodeInfo, _impl_.location_)>()
           , arena, from.location_
         }
-     {}
+     {
+}
 
 SourceCodeInfo::SourceCodeInfo(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -16972,7 +17030,8 @@ GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(::google::protobuf::A
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::GeneratedCodeInfo_Annotation& from_msg)
       : _has_bits_{from._has_bits_},
         path_ {
@@ -16982,7 +17041,8 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo_Annotation::Impl_::Impl_(
           , arena, from.path_
         }
         ,
-        source_file_(arena, from.source_file_) {}
+        source_file_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.source_file_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 GeneratedCodeInfo_Annotation::GeneratedCodeInfo_Annotation(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -17268,7 +17328,8 @@ GeneratedCodeInfo::GeneratedCodeInfo(::google::protobuf::Arena* PROTOBUF_NULLABL
 }
 PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::GeneratedCodeInfo& from_msg)
       : _has_bits_{from._has_bits_},
         annotation_ {
@@ -17277,7 +17338,8 @@ PROTOBUF_NDEBUG_INLINE GeneratedCodeInfo::Impl_::Impl_(
               PROTOBUF_FIELD_OFFSET(::google::protobuf::GeneratedCodeInfo, _impl_.annotation_)>()
           , arena, from.annotation_
         }
-     {}
+     {
+}
 
 GeneratedCodeInfo::GeneratedCodeInfo(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,

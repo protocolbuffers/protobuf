@@ -764,10 +764,12 @@ Version::Version(::google::protobuf::Arena* PROTOBUF_NULLABLE arena)
 }
 PROTOBUF_NDEBUG_INLINE Version::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::Version& from_msg)
       : _has_bits_{from._has_bits_},
-        suffix_(arena, from.suffix_) {}
+        suffix_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.suffix_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 Version::Version(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -1030,7 +1032,8 @@ CodeGeneratorRequest::CodeGeneratorRequest(::google::protobuf::Arena* PROTOBUF_N
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorRequest& from_msg)
       : _has_bits_{from._has_bits_},
         file_to_generate_ {
@@ -1047,14 +1050,15 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorRequest::Impl_::Impl_(
           , arena, from.proto_file_
         }
         ,
-        parameter_(arena, from.parameter_),
+        parameter_(CheckHasBit(from._has_bits_[0], 0x00000004U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.parameter_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
         source_file_descriptors_ {
           visibility, ::_pbi::InternalMetadataOffset::Build<
               ::google::protobuf::compiler::CodeGeneratorRequest,
               PROTOBUF_FIELD_OFFSET(::google::protobuf::compiler::CodeGeneratorRequest, _impl_.source_file_descriptors_)>()
           , arena, from.source_file_descriptors_
         }
-     {}
+     {
+}
 
 CodeGeneratorRequest::CodeGeneratorRequest(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -1388,12 +1392,14 @@ CodeGeneratorResponse_File::CodeGeneratorResponse_File(::google::protobuf::Arena
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse_File::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorResponse_File& from_msg)
       : _has_bits_{from._has_bits_},
-        name_(arena, from.name_),
-        insertion_point_(arena, from.insertion_point_),
-        content_(arena, from.content_) {}
+        name_(CheckHasBit(from._has_bits_[0], 0x00000001U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.name_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        insertion_point_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.insertion_point_) : ::google::protobuf::internal::ArenaStringPtr(arena)),
+        content_(CheckHasBit(from._has_bits_[0], 0x00000004U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.content_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 CodeGeneratorResponse_File::CodeGeneratorResponse_File(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
@@ -1657,7 +1663,8 @@ CodeGeneratorResponse::CodeGeneratorResponse(::google::protobuf::Arena* PROTOBUF
 }
 PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
     [[maybe_unused]] ::google::protobuf::internal::InternalVisibility visibility,
-    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena, const Impl_& from,
+    [[maybe_unused]] ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,
+    const Impl_& from,
     [[maybe_unused]] const ::google::protobuf::compiler::CodeGeneratorResponse& from_msg)
       : _has_bits_{from._has_bits_},
         file_ {
@@ -1667,7 +1674,8 @@ PROTOBUF_NDEBUG_INLINE CodeGeneratorResponse::Impl_::Impl_(
           , arena, from.file_
         }
         ,
-        error_(arena, from.error_) {}
+        error_(CheckHasBit(from._has_bits_[0], 0x00000002U) ? ::google::protobuf::internal::ArenaStringPtr(arena, from.error_) : ::google::protobuf::internal::ArenaStringPtr(arena)) {
+}
 
 CodeGeneratorResponse::CodeGeneratorResponse(
     ::google::protobuf::Arena* PROTOBUF_NULLABLE arena,

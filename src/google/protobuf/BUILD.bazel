@@ -1805,6 +1805,7 @@ cc_test(
     name = "string_view_test",
     srcs = ["string_view_test.cc"],
     deps = [
+        ":arena",
         ":port",
         ":protobuf",
         ":unittest_string_view_cc_proto",

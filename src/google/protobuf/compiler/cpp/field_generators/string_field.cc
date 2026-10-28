@@ -147,10 +147,37 @@ class SingularString : public FieldGeneratorBase {
   }
 
   void GenerateMemberCopyConstructor(io::Printer* p) const override {
-    if (is_inlined() || EmptyDefault()) {
+    if (is_inlined()) {
       p->Emit("$name$_(arena, from.$name$_)");
+      return;
+    }
+    // Cleared fields retain an allocated empty std::string in from; leave the
+    // copy at the static default string unless the field is present or
+    // non-empty.
+    if (GetFieldHasbitMode(field_, *opts_) ==
+        internal::cpp::HasbitMode::kTrueHasbit) {
+      if (EmptyDefault()) {
+        p->Emit(
+            "$name$_($from_has_hasbit$"
+            " ? $pbi$::ArenaStringPtr(arena, from.$name$_)"
+            " : $pbi$::ArenaStringPtr(arena))");
+      } else {
+        p->Emit(
+            "$name$_($from_has_hasbit$"
+            " ? $pbi$::ArenaStringPtr(arena, from.$name$_,"
+            " $default_variable_name$)"
+            " : $pbi$::ArenaStringPtr(arena, $default_variable_name$))");
+      }
+    } else if (HasHasbit(field_, *opts_)) {
+      p->Emit(
+          "$name$_($from_has_hasbit$ && !from.$name$_.Get().empty()"
+          " ? $pbi$::ArenaStringPtr(arena, from.$name$_)"
+          " : $pbi$::ArenaStringPtr(arena))");
     } else {
-      p->Emit("$name$_(arena, from.$name$_, $default_variable_name$)");
+      p->Emit(
+          "$name$_(!from.$name$_.Get().empty()"
+          " ? $pbi$::ArenaStringPtr(arena, from.$name$_)"
+          " : $pbi$::ArenaStringPtr(arena))");
     }
   }
 
