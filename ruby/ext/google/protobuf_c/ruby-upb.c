@@ -5710,7 +5710,7 @@ static void jsonenc_wrapper(jsonenc* e, const upb_Message* msg,
 static const upb_MessageDef* jsonenc_getanymsg(jsonenc* e,
                                                upb_StringView type_url) {
   /* Find last '/', if any. */
-  const char* end = type_url.data + type_url.size;
+  const char* end = UPB_PTRADD(type_url.data, type_url.size);
   const char* ptr = end;
   const upb_MessageDef* ret;
 
@@ -5789,7 +5789,7 @@ static void jsonenc_putsep(jsonenc* e, const char* str, bool* first) {
 
 static void jsonenc_fieldpath(jsonenc* e, upb_StringView path) {
   const char* ptr = path.data;
-  const char* end = ptr + path.size;
+  const char* end = UPB_PTRADD(ptr, path.size);
 
   while (ptr < end) {
     char ch = *ptr;
@@ -9531,6 +9531,7 @@ upb_Message* upb_Message_ShallowClone(const upb_Message* msg,
   return clone;
 }
 
+
 #include "stddef.h"
 
 // Must be last.
@@ -10764,7 +10765,10 @@ done:
   upb_DecodeFast_TableEntry fasttable[32];
   int fasttable_size = 0;
   if (decoder->platform == kUpb_MiniTablePlatform_64Bit) {
-    fasttable_size = upb_DecodeFast_BuildTable(&decoder->table, fasttable);
+    // The table is not linked yet, so map fields cannot be identified; they
+    // are updated when linked (see upb_MiniTable_SetSubMessage()).
+    fasttable_size =
+        upb_DecodeFast_BuildTable(&decoder->table, NULL, fasttable);
     mt_size += fasttable_size * sizeof(fasttable[0]);
   }
 #endif
@@ -13392,7 +13396,7 @@ static str_t* unescape(upb_DefBuilder* ctx, const upb_FieldDef* f,
   str_t* ret = _upb_DefBuilder_Alloc(ctx, sizeof(*ret) + len);
   char* dst = &ret->str[0];
   const char* src = data;
-  const char* end = data + len;
+  const char* end = UPB_PTRADD(data, len);
 
   while (src < end) {
     if (*src == '\\') {

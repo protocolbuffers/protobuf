@@ -870,6 +870,17 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
     ctx.Emit({{"Msg", MessageRsName(msg)}},
              R"rs(
       impl<'a> $Msg$Mut<'a> {
+        /// Wraps a pointer to a C++ message as a `$Msg$Mut`.
+        ///
+        /// # Panics
+        ///
+        /// Panics if `*msg` is null.
+        ///
+        /// # Safety
+        ///
+        /// `*msg` must point to a live C++ message of exactly this type that
+        /// outlives `'a` and is not accessed through any other pointer or
+        /// reference during `'a`.
         pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
             msg: &'a mut *mut $std$::ffi::c_void) -> Self {
           let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
@@ -882,7 +893,17 @@ void GenerateRs(Context& ctx, const Descriptor& msg, const upb::DefPool& pool) {
       }
 
       impl<'a> $Msg$View<'a> {
-        pub fn __unstable_wrap_cpp_grant_permission_to_break(
+        /// Wraps a pointer to a C++ message as a `$Msg$View`.
+        ///
+        /// # Panics
+        ///
+        /// Panics if `*msg` is null.
+        ///
+        /// # Safety
+        ///
+        /// `*msg` must point to a live C++ message of exactly this type that
+        /// outlives `'a` and is not mutated during `'a`.
+        pub unsafe fn __unstable_wrap_cpp_grant_permission_to_break(
           msg: &'a *const $std$::ffi::c_void) -> Self {
           let raw = $pbr$::RawMessage::new(*msg as *mut _).unwrap();
           let inner = unsafe { $pbr$::MessageViewInner::wrap_raw(raw) };

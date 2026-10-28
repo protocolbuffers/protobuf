@@ -331,9 +331,8 @@ class MapSorterPtr {
   std::unique_ptr<storage_type[]> items_;
 };
 
-struct WeakDescriptorDefaultTail {
+struct alignas(kMaxMessageAlignment) WeakDescriptorDefaultTail {
   const MessageGlobalsBase** target;
-  size_t size;
 };
 
 // Tag to distinguish overloads below:

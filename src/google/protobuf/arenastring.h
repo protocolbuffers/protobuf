@@ -348,8 +348,8 @@ class PROTOBUF_EXPORT ArenaStringPtr {
 
   // Returns a pointer to the stored contents for this instance.
   // This method is for internal debugging and tracking purposes only.
-  PROTOBUF_NDEBUG_INLINE const std::string* UnsafeGetPointer() const
-      ABSL_ATTRIBUTE_RETURNS_NONNULL {
+  ABSL_ATTRIBUTE_RETURNS_NONNULL PROTOBUF_NDEBUG_INLINE const std::string*
+  UnsafeGetPointer() const {
     return tagged_ptr_.Get();
   }
 
@@ -396,7 +396,7 @@ class PROTOBUF_EXPORT ArenaStringPtr {
   // Generated code only! An optimization, in certain cases the generated
   // code is certain we can obtain a std::string with no default checks and
   // tag tests.
-  std::string* UnsafeMutablePointer() ABSL_ATTRIBUTE_RETURNS_NONNULL;
+  ABSL_ATTRIBUTE_RETURNS_NONNULL std::string* UnsafeMutablePointer();
 
   // Returns true if this instances holds an immutable default value.
   bool IsDefault() const { return tagged_ptr_.IsDefault(); }

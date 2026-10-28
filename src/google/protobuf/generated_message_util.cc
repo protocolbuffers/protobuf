@@ -11,8 +11,10 @@
 
 #include "google/protobuf/generated_message_util.h"
 
+#include <algorithm>
 #include <atomic>
 #include <climits>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -22,6 +24,7 @@
 #include "google/protobuf/arenastring.h"
 #include "google/protobuf/class_data.h"
 #include "google/protobuf/extension_set.h"
+#include "google/protobuf/generated_message_tctable_decl.h"
 #include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
@@ -54,12 +57,11 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 #if defined(PROTOBUF_DESCRIPTOR_WEAK_MESSAGES_ALLOWED)
 
 // We add a single dummy entry to guarantee the section is never empty.
-struct DummyWeakDefault {
-  const MessageGlobalsBase* m;
-  WeakDescriptorDefaultTail tail;
+struct alignas(MessageGlobalsBase::kMessageGlobalsAlignment) DummyWeakDefault {
+  [[maybe_unused]] uint64_t dummy;
 };
-DummyWeakDefault dummy_weak_default __attribute__((section("pb_defaults"))) = {
-    nullptr, {&dummy_weak_default.m, sizeof(dummy_weak_default)}};
+DummyWeakDefault dummy_weak_default
+    __attribute__((section("pb_defaults"))) = {0};
 
 extern "C" {
 // When using --descriptor_implicit_weak_messages we expect the default instance
@@ -71,6 +73,9 @@ extern const char __start_pb_defaults;
 extern const char __stop_pb_defaults;
 }
 static void InitWeakDefaults() {
+  static_assert(alignof(WeakDescriptorDefaultTail) ==
+                MessageGlobalsBase::kMessageGlobalsAlignment);
+
   // force link the dummy entry.
   StrongPointer<DummyWeakDefault*, &dummy_weak_default>();
   // We don't know the size of each object, but we know the layout of the tail.
@@ -79,10 +84,17 @@ static void InitWeakDefaults() {
   const char* start = &__start_pb_defaults;
   const char* end = &__stop_pb_defaults;
   while (start != end) {
-    auto* tail = reinterpret_cast<const WeakDescriptorDefaultTail*>(end) - 1;
-    end -= tail->size;
+    if (start == reinterpret_cast<const char*>(&dummy_weak_default)) {
+      start += sizeof(DummyWeakDefault);
+      continue;
+    }
+
     const MessageGlobalsBase* instance =
-        reinterpret_cast<const MessageGlobalsBase*>(end);
+        reinterpret_cast<const MessageGlobalsBase*>(start);
+    start += instance->SizeOfSelf();
+    auto* tail = reinterpret_cast<const WeakDescriptorDefaultTail*>(start);
+    start += sizeof(WeakDescriptorDefaultTail);
+
     *tail->target = instance;
   }
 }

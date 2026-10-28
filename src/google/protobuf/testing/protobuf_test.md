@@ -5,7 +5,7 @@
 freshness: { owner: 'sbenza' reviewed: '2026-10-14' }
 *-->
 
-[third_party/protobuf/testing/protobuf_test.h](http://google3/third_party/protobuf/testing/protobuf_test.h)
+[`protobuf_test.h`](https://github.com/protocolbuffers/protobuf/blob/main/src/google/protobuf/testing/protobuf_test.h)
 provides inline value-, `constexpr`-, and type-parameterized test macros built
 on top of GoogleTest (`PB_TEST`, `PB_TEST_F`, `PB_TEST_CHOOSE_VALUE`,
 `PB_TEST_CHOOSE_CONSTEXPR`, and `PB_TEST_CHOOSE_TYPE`).

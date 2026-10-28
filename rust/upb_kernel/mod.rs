@@ -34,8 +34,8 @@ use crate::__internal::{EntityType, MatcherEq, Private, SealedInternal};
 use crate::{
     AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
     MapView, MergeFrom, Message, MessageMut, MessageView, Mut, ParseError, ProtoBytes, ProtoStr,
-    ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, Singular,
-    TakeFrom, View,
+    ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
+    SerializeOptions, Singular, TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;

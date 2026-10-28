@@ -69,6 +69,7 @@ constexpr CppFileOptions::ParseTableT_ CppFileOptions::_Internal::GenerateParseT
       1,  // num_field_entries
       0,  // num_aux_entries
       offsetof(ParseTableT_, field_names),  // no aux_entries
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -82,9 +83,9 @@ constexpr CppFileOptions::ParseTableT_ CppFileOptions::_Internal::GenerateParseT
     }}, {{
       // string namespace = 1;
       {PROTOBUF_FIELD_OFFSET(CppFileOptions, _impl_.namespace__), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
       "\26\11\0\0\0\0\0\0"
       "pb.file.CppFileOptions"
       "namespace"
@@ -148,6 +149,8 @@ struct CppFileOptionsGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(CppFileOptionsGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(CppFileOptionsGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CppFileOptionsGlobalsTypeInternal CppFileOptions_globals_

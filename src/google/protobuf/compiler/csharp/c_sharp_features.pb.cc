@@ -68,6 +68,7 @@ constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseT
       1,  // num_field_entries
       0,  // num_aux_entries
       offsetof(ParseTableT_, field_names),  // no aux_entries
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -81,9 +82,10 @@ constexpr CSharpFeatures::ParseTableT_ CSharpFeatures::_Internal::GenerateParseT
     }}, {{
       // optional bool nullable_reference_types = 1 [retention = RETENTION_RUNTIME, targets = TARGET_TYPE_FIELD, targets = TARGET_TYPE_MESSAGE, targets = TARGET_TYPE_FILE, edition_defaults = {
       {PROTOBUF_FIELD_OFFSET(CSharpFeatures, _impl_.nullable_reference_types_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kBool)},
-    }},
-    // no aux_entries
-    {{
+    }}, {{
+      // no aux_entries
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -142,6 +144,8 @@ struct CSharpFeaturesGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(CSharpFeaturesGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(CSharpFeaturesGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOC_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const CSharpFeaturesGlobalsTypeInternal CSharpFeatures_globals_

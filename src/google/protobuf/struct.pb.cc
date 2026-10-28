@@ -75,6 +75,7 @@ constexpr ListValue::ParseTableT_ ListValue::_Internal::GenerateParseTable(const
       1,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -88,11 +89,10 @@ constexpr ListValue::ParseTableT_ ListValue::_Internal::GenerateParseTable(const
     }}, {{
       // repeated .google.protobuf.Value values = 1;
       {PROTOBUF_FIELD_OFFSET(ListValue, _impl_.values_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
+    }}, {{
+      // no field_names
     }},
   };
 }
@@ -155,6 +155,8 @@ struct ListValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(ListValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(ListValueGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ListValueGlobalsTypeInternal ListValue_globals_
@@ -187,6 +189,7 @@ constexpr Struct::ParseTableT_ Struct::_Internal::GenerateParseTable(const ::_pb
       1,  // num_field_entries
       2,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -202,13 +205,11 @@ constexpr Struct::ParseTableT_ Struct::_Internal::GenerateParseTable(const ::_pb
     }}, {{
       // map<string, .google.protobuf.Value> fields = 1;
       {PROTOBUF_FIELD_OFFSET(Struct, _impl_.fields_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcRepeated | ::_fl::kMap)},
-    }},
-    {{
-        {::_pbi::TcParser::GetMapAuxInfo(
-            1, 0, 9, 11, 0)},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::TcParser::GetMapAuxInfo(
+          1, 0, 9, 11, 0)},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
+    }}, {{
       "\26\6\0\0\0\0\0\0"
       "google.protobuf.Struct"
       "fields"
@@ -274,6 +275,8 @@ struct StructGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(StructGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(StructGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const StructGlobalsTypeInternal Struct_globals_
@@ -339,6 +342,7 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
       2,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::DiscardEverythingFallback,  // fallback
@@ -358,11 +362,9 @@ constexpr Struct_FieldsEntry_DoNotUse::ParseTableT_ Struct_FieldsEntry_DoNotUse:
       {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.key_), _Internal::kHasBitsOffset + 0, 0, (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
       // .google.protobuf.Value value = 2;
       {PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUse, _impl_.value_), _Internal::kHasBitsOffset + 1, 0, (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Value_globals_},
+    }}, {{
       "\42\3\0\0\0\0\0\0"
       "google.protobuf.Struct.FieldsEntry"
       "key"
@@ -418,6 +420,8 @@ struct Struct_FieldsEntry_DoNotUseGlobalsTypeInternal : ::_pbi::MessageGlobalsBa
 };
 static_assert(PROTOBUF_FIELD_OFFSET(Struct_FieldsEntry_DoNotUseGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(Struct_FieldsEntry_DoNotUseGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const Struct_FieldsEntry_DoNotUseGlobalsTypeInternal Struct_FieldsEntry_DoNotUse_globals_
@@ -450,6 +454,7 @@ constexpr Value::ParseTableT_ Value::_Internal::GenerateParseTable(const ::_pbi:
       6,  // num_field_entries
       2,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -475,12 +480,10 @@ constexpr Value::ParseTableT_ Value::_Internal::GenerateParseTable(const ::_pbi:
       {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.struct_value_), _Internal::kOneofCaseOffset + 0, 0, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvClassData)},
       // .google.protobuf.ListValue list_value = 6;
       {PROTOBUF_FIELD_OFFSET(Value, _impl_.kind_.list_value_), _Internal::kOneofCaseOffset + 0, 1, (0 | ::_fl::kFcOneof | ::_fl::kMessage | ::_fl::kTvClassData)},
-    }},
-    {{
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::Struct_globals_},
-        {::_pbi::FieldAuxClassData(), &::google::protobuf::ListValue_globals_},
-    }},
-    {{
+    }}, {{
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::Struct_globals_},
+      {::_pbi::FieldAuxClassData(), &::google::protobuf::ListValue_globals_},
+    }}, {{
       "\25\0\0\14\0\0\0\0"
       "google.protobuf.Value"
       "string_value"
@@ -543,6 +546,8 @@ struct ValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(ValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(ValueGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ValueGlobalsTypeInternal Value_globals_

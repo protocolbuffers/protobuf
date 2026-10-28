@@ -74,9 +74,8 @@ const upb_FieldDef* PyUpb_Message_GetExtensionDef(PyObject* _self,
 // Clears the given field in this message.
 bool PyUpb_Message_DoClearField(PyObject* _self, const upb_FieldDef* f);
 
-// Clears the ExtensionDict from the message.  The message must have an
-// ExtensionDict set.
-void PyUpb_Message_ClearExtensionDict(PyObject* _self);
+// Removes the extension wrapper only if it is still the cached instance.
+void PyUpb_Message_ClearExtensionDict(PyObject* _self, PyObject* wrapper);
 
 // Implements the equivalent of getattr(msg, field), once `field` has
 // already been resolved to a `upb_FieldDef*`.

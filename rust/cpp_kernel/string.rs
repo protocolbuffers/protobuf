@@ -1,3 +1,10 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2026 Google LLC
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
 use super::*;
 
 unsafe extern "C" {
@@ -238,9 +245,12 @@ pub fn str_to_ptrlen<'msg>(val: impl Into<&'msg ProtoStr>) -> PtrAndLen {
     val.into().as_bytes().into()
 }
 
-// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
-// call.
-pub fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
+/// Converts a `PtrAndLen` borrowed from C++ into a `&ProtoStr`.
+///
+/// # Safety
+/// - `val` must satisfy the safety requirements of [`PtrAndLen::as_ref`] for the lifetime `'msg`.
+pub unsafe fn ptrlen_to_str<'msg>(val: PtrAndLen) -> &'msg ProtoStr {
+    // SAFETY: the caller upholds the requirements of `PtrAndLen::as_ref`.
     ProtoStr::from_utf8_unchecked(unsafe { val.as_ref() })
 }
 
@@ -252,9 +262,12 @@ pub fn protobytes_into_cppstdstring(val: ProtoBytes) -> CppStdString {
     val.into_inner(Private).into_raw()
 }
 
-// Warning: this function is unsound on its own! `val.as_ref()` must be safe to
-// call.
-pub fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
+/// Converts a `PtrAndLen` borrowed from C++ into a `&[u8]`.
+///
+/// # Safety
+/// - `val` must satisfy the safety requirements of [`PtrAndLen::as_ref`] for the lifetime `'msg`.
+pub unsafe fn ptrlen_to_bytes<'msg>(val: PtrAndLen) -> &'msg [u8] {
+    // SAFETY: the caller upholds the requirements of `PtrAndLen::as_ref`.
     unsafe { val.as_ref() }
 }
 
