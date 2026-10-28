@@ -1131,6 +1131,12 @@ def _ConvertInteger(value):
   if isinstance(value, str) and value.find(' ') != -1:
     raise ParseError('Couldn\'t parse integer: "{0}"'.format(value))
 
+  # Python's int() accepts spellings that no other implementation accepts:
+  # unicode digits (e.g. "\u0661\u0662\u0663") and digit separators ("1_000").
+  # JSON numbers are ASCII only, so reject such strings here.
+  if isinstance(value, str) and ('_' in value or not value.isascii()):
+    raise ParseError('Couldn\'t parse integer: "{0}"'.format(value))
+
   if isinstance(value, bool):
     raise ParseError(
         'Bool value {0} is not acceptable for integer field'.format(value)
@@ -1154,6 +1160,11 @@ def _ConvertInteger(value):
 
 def _ConvertFloat(value, field):
   """Convert an floating point number."""
+  # Like int(), float() accepts unicode digits (e.g. "\u0661\u0662\u0663")
+  # and digit separators ("1_000") that no other implementation accepts;
+  # JSON numbers are ASCII only.
+  if isinstance(value, str) and ('_' in value or not value.isascii()):
+    raise ParseError("Couldn't parse float: {0}".format(value))
   if isinstance(value, float):
     if math.isnan(value):
       raise ParseError('Couldn\'t parse NaN, use quoted "NaN" instead')
