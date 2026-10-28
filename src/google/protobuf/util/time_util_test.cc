@@ -604,11 +604,11 @@ TEST(TimeUtilTest, FromStringRejectsDurationSignWhitespaceAndEmptyParts) {
 
 TEST(TimeUtilTest, TimestampToNanosecondsHandlesInt64MinWindow) {
   const int64_t cases[] = {
-      std::numeric_limits<int64_t>::min(),
-      std::numeric_limits<int64_t>::min() + 1,
+      (std::numeric_limits<int64_t>::min)(),
+      (std::numeric_limits<int64_t>::min)() + 1,
       int64_t{-9223372036000000001},
       int64_t{-9223372036000000000},
-      std::numeric_limits<int64_t>::max(),
+      (std::numeric_limits<int64_t>::max)(),
   };
   for (int64_t nanos : cases) {
     SCOPED_TRACE(nanos);
@@ -619,8 +619,8 @@ TEST(TimeUtilTest, TimestampToNanosecondsHandlesInt64MinWindow) {
 }
 
 TEST(TimeUtilTest, DurationOperatorsHandleInt64MinBoundaries) {
-  constexpr int64_t kInt64Min = std::numeric_limits<int64_t>::min();
-  constexpr int64_t kInt64Max = std::numeric_limits<int64_t>::max();
+  constexpr int64_t kInt64Min = (std::numeric_limits<int64_t>::min)();
+  constexpr int64_t kInt64Max = (std::numeric_limits<int64_t>::max)();
 
   EXPECT_EQ(TimeUtil::SecondsToDuration(0),
             TimeUtil::SecondsToDuration(0) * kInt64Min);
