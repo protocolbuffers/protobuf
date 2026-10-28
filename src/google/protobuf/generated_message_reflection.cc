@@ -3516,6 +3516,10 @@ void Reflection::ClearOneof(Message* message,
   uint32_t oneof_case = GetOneofCase(*message, oneof_descriptor);
   if (oneof_case > 0) {
     const FieldDescriptor* field = descriptor_->FindFieldByNumber(oneof_case);
+    if (field == nullptr) {
+      *MutableOneofCase(message, oneof_descriptor) = 0;
+      return;
+    }
     if (!internal::HasArena(*message)) {
       switch (field->cpp_type()) {
         case FieldDescriptor::CPPTYPE_STRING: {
