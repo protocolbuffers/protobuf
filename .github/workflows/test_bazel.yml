@@ -29,11 +29,13 @@ jobs:
         bazelversion: [ '8.7.0', '9.2.0' ]
         bzlmod: [ true, false ]
         toolchain_resolution:
-          # Default flags, uses from prebuilt protoc
+          # Default flags (uses prebuilt protoc on release tags, or falls back to source on -dev)
           - ""
-          # Still uses prebuilt protoc
+          # Locally populates tool_integrity.bzl and strictly requires prebuilt protoc.
+          - "--@com_google_protobuf//bazel/flags:internal_do_not_use_require_prebuilt_protoc=true"
+          # Legacy proto_compiler flag path (uses protoc from source)
           - "--incompatible_enable_proto_toolchain_resolution=false"
-          # Uses protoc from source.
+          # Uses protoc from source via toolchain resolution.
           - "--@com_google_protobuf//bazel/flags:prefer_prebuilt_protoc=false"
         include:
           - runner: macos
@@ -41,6 +43,8 @@ jobs:
         exclude:
           - bazelversion: '9.2.0'
             bzlmod: false
+          - bzlmod: false
+            toolchain_resolution: "--@com_google_protobuf//bazel/flags:internal_do_not_use_require_prebuilt_protoc=true"
     runs-on: ${{ matrix.runner }}-latest
     name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Examples ${{ matrix.runner }} ${{ matrix.bazelversion }}${{ matrix.bzlmod && ' (bzlmod)' || '' }} ${{ matrix.toolchain_resolution && ' (toolchain resolution)' || '' }}
     steps:
@@ -63,15 +67,26 @@ jobs:
 
       - name: Windows startup flags
         if: ${{ runner.os == 'Windows' && (!matrix.continuous-only || inputs.continuous-run) }}
-        working-directory: examples
         shell: bash
-        run: echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
+        run: |
+          echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> .bazelrc
+          echo "startup --output_user_root=C:/ --windows_enable_symlinks" >> examples/.bazelrc
 
       - name: Configure Bazel version
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
-        working-directory: examples
         shell: bash
-        run: echo "${{ matrix.bazelversion }}" > .bazelversion
+        run: |
+          echo "${{ matrix.bazelversion }}" > .bazelversion
+          echo "${{ matrix.bazelversion }}" > examples/.bazelversion
+
+      - name: Update prebuilts
+        if: ${{ (!matrix.continuous-only || inputs.continuous-run) && contains(matrix.toolchain_resolution, 'internal_do_not_use_require_prebuilt_protoc=true') }}
+        uses: protocolbuffers/protobuf-ci/bazel@v7
+        with:
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: examples-${{ matrix.bazelversion }}-${{ matrix.bzlmod }}-${{ matrix.toolchain_resolution }}
+          version: ${{ matrix.bazelversion }}
+          bazel: run :update_prebuilts
 
       - name: Run tests
         if: ${{ !matrix.continuous-only || inputs.continuous-run }}
@@ -82,7 +97,7 @@ jobs:
           version: ${{ matrix.bazelversion }}
           bash: >
             cd examples;
-            bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} ${{ matrix.toolchain_resolution }};
+            bazel build //... @com_google_protobuf-examples-with-hyphen//... $BAZEL_FLAGS --enable_bzlmod=${{ matrix.bzlmod }} --enable_workspace=${{ !matrix.bzlmod }} --incompatible_enable_proto_toolchain_resolution=true ${{ matrix.toolchain_resolution }};
 
   bazel-tests-ubuntu:
     strategy:

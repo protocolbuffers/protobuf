@@ -11,6 +11,7 @@ See go/life-of-a-featureset for more information.
 """
 
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
+load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 def _compile_edition_defaults_impl(ctx):
     out_file = ctx.actions.declare_file(ctx.outputs.output.basename)
@@ -29,10 +30,21 @@ def _compile_edition_defaults_impl(ctx):
         args.add("--proto_path", p)
     for source in sources:
         args.add(source)
+
+    if ctx.executable.protoc:
+        protoc = ctx.executable.protoc
+    elif toolchains.INCOMPATIBLE_ENABLE_PROTO_TOOLCHAIN_RESOLUTION:
+        toolchain = ctx.toolchains[toolchains.PROTO_TOOLCHAIN]
+        if not toolchain:
+            fail("Protocol compiler toolchain could not be resolved.")
+        protoc = toolchain.proto.proto_compiler
+    else:
+        protoc = ctx.executable._protoc_minimal
+
     ctx.actions.run(
         outputs = [out_file],
         inputs = sources,
-        executable = ctx.executable.protoc or ctx.executable._protoc_minimal,
+        executable = protoc,
         arguments = [args],
         mnemonic = "ProtobufCompileEditionDefaults",
         progress_message = "Generating edition defaults",
@@ -52,16 +64,18 @@ compile_edition_defaults = rule(
             executable = True,
             cfg = "exec",
         ),
+    } | toolchains.if_legacy_toolchain({
         "_protoc_minimal": attr.label(
             default = "//src/google/protobuf/compiler/release:protoc_minimal",
             executable = True,
             cfg = "exec",
         ),
-    },
+    }),
     implementation = _compile_edition_defaults_impl,
     outputs = {
         "output": "%{name}.binpb",
     },
+    toolchains = toolchains.use_toolchain(toolchains.PROTO_TOOLCHAIN),
 )
 
 def _embed_edition_defaults_impl(ctx):

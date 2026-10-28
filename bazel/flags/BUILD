@@ -76,6 +76,21 @@ config_setting(
     visibility = ["//bazel/private/oss/toolchains/prebuilt:__pkg__"],
 )
 
+# Internal-only flag used by CI to assert that prebuilt protoc is used and
+# that protoc is never built from source. Users must not depend on this flag.
+bool_flag(
+    name = "internal_do_not_use_require_prebuilt_protoc",
+    build_setting_default = False,
+    scope = "universal",  # propagate from host to exec configuration
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "internal_do_not_use_require_prebuilt_protoc.flag_set",
+    flag_values = {":internal_do_not_use_require_prebuilt_protoc": "true"},
+    visibility = ["//src/google/protobuf/compiler:__pkg__"],
+)
+
 # TODO: deprecate this flag.
 compat_bool_flag(
     name = "strict_proto_deps",

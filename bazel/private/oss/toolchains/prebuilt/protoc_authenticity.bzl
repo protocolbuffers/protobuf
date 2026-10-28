@@ -75,3 +75,13 @@ protoc_authenticity = rule(
     }),
     toolchains = toolchains.use_toolchain(toolchains.PROTO_TOOLCHAIN),
 )
+
+def _fail_if_analyzed_impl(ctx):
+    fail(ctx.attr.message)
+
+fail_if_analyzed = rule(
+    implementation = _fail_if_analyzed_impl,
+    attrs = {
+        "message": attr.string(mandatory = True),
+    },
+)
