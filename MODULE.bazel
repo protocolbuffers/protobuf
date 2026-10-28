@@ -340,6 +340,7 @@ register_toolchains(
     "//toolchain:win32-toolchain",
     "//toolchain:win64-toolchain",
     "//toolchain:k8-toolchain",
+    dev_dependency = True,
 )
 
 # Python headers for release
