@@ -419,7 +419,9 @@ void GenerateExtensionInHeader(Context& c, upb::FieldDefPtr ext) {
                            &ext->UPB_PRIVATE(field)) == $rep$);
             $ctype_const$ default_val = $default$;
             $ctype_const$ ret;
-            _upb_Message_GetExtensionField((upb_Message*)msg, ext, &default_val, &ret);
+            _upb_Message_GetExtensionField((upb_Message*)msg,
+                                           &ext->UPB_PRIVATE(field),
+                                           &default_val, &ret);
             return ret;
           }
 

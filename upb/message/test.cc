@@ -347,6 +347,23 @@ TEST(MessageTest, NextExtensionField) {
                 msg, upb_MiniTableField_Number(msg_f)),
             msg_f);
   EXPECT_EQ(upb_Message_FindExtensionFieldByNumber(msg, 1), nullptr);
+
+  // Get by field.
+  int32_t int32_val = 0;
+  const int32_t int32_default = -1;
+  _upb_Message_GetExtensionField(msg, int32_f, &int32_default, &int32_val);
+  EXPECT_EQ(int32_val, 123);
+  const upb_Message* msg_val = nullptr;
+  const upb_Message* msg_default = nullptr;
+  _upb_Message_GetExtensionField(msg, msg_f, &msg_default, &msg_val);
+  EXPECT_EQ(msg_val, UPB_UPCAST(submsg));
+
+  // Absent extensions return the default.
+  upb_test_TestExtensions* empty = upb_test_TestExtensions_new(arena.ptr());
+  int32_val = 0;
+  _upb_Message_GetExtensionField(UPB_UPCAST(empty), int32_f, &int32_default,
+                                 &int32_val);
+  EXPECT_EQ(int32_val, -1);
 }
 
 TEST(MessageTest, MessageSet) {
