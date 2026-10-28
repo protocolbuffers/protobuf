@@ -26,6 +26,21 @@ function check_symbol() {
       target_file="$TEST_TMPDIR/treeshaking_app.wasm"
       echo "New target file: $target_file"
     fi
+  elif [[ "$PLATFORM" == "ios" ]]; then
+    local ipa_file=""
+    if [[ "$BINARY_PATH" == *.ipa ]]; then
+      ipa_file="$BINARY_PATH"
+    elif [[ -f "${BINARY_PATH}.ipa" ]]; then
+      ipa_file="${BINARY_PATH}.ipa"
+    fi
+    if [[ -n "$ipa_file" ]]; then
+      local extract_dir
+      extract_dir=$(mktemp -d -p "$TEST_TMPDIR")
+      unzip -q "$ipa_file" -d "$extract_dir"
+      local app_name
+      app_name=$(basename "$ipa_file" .ipa)
+      target_file="$extract_dir/Payload/${app_name}.app/${app_name}"
+    fi
   fi
 
   # Use the provided nm tool

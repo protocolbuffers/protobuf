@@ -8,6 +8,7 @@
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//bazel:proto_library.bzl", "proto_library")
 load("//rust:defs.bzl", "rust_proto_library")
+load("//tools/build_defs/apple:ios.bzl", "ios_application")
 
 package(
     default_applicable_licenses = ["//:license"],
