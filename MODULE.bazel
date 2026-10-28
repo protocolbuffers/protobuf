@@ -211,33 +211,11 @@ rust.toolchain(
     versions = ["1.85.0"],
 )
 
-crate = use_extension("@rules_rust//crate_universe:extensions.bzl", "crate")
-crate.spec(
-    package = "googletest",
-    version = "0.14.2",
-)
-crate.spec(
-    package = "linkme",
-    version = "0.3.35",
-)
-crate.spec(
-    package = "paste",
-    version = "1.0.15",
-)
-crate.spec(
-    package = "quote",
-    version = "1.0.38",
-)
-crate.spec(
-    features = ["full"],
-    package = "syn",
-    version = ">=2, <3",
-)
-crate.from_specs(
-    cargo_lockfile = "//rust:Cargo.lock",
-    lockfile = "//rust:Cargo.Bazel.lock",
-)
-use_repo(crate, crate_index = "crates")
+# The crates are rendered by //rust/crates_vendor:crates_vendor, so that modules
+# depending on protobuf don't have to download cargo and rustc to evaluate
+# crate_universe.
+crates = use_extension("//rust/crates_vendor:extension.bzl", "crates")
+use_repo(crates, "crate_index")
 
 # Keep this list minimal; these dependencies will be part of the common `maven` install and could affect end-user projects.
 PROTOBUF_MAVEN_ARTIFACTS = [
