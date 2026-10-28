@@ -299,7 +299,7 @@ static upb_UnknownFields* upb_UnknownFields_Build(upb_UnknownField_Context* ctx,
       const upb_Extension* ext = (const upb_Extension*)data.value.extension;
       bool is_message_set = false;
       const upb_MiniTableExtension* ext_mt =
-          upb_Extension_MiniTableExtension(ext);
+          UPB_PRIVATE(_upb_Extension_MiniTableExtension)(ext);
       const upb_MiniTable* extendee = upb_MiniTableExtension_Extendee(ext_mt);
       if (extendee) {
         is_message_set = upb_MiniTable_IsMessageSet(extendee);
