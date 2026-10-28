@@ -88,19 +88,6 @@
 #define UPB_HAS_BUILTIN(x) 0
 #endif
 
-// UPB_MEMCPY_INLINE(dst, src, n): memcpy() of a compile-time constant number
-// of bytes `n`, which the compiler never turns into a call to the library
-// memcpy(). A plain memcpy() of a constant size is usually inlined as loads and
-// stores too, but the compiler can merge such copies of different sizes (e.g.
-// the cases of a switch on the size) into one copy of a variable size, which
-// it then can't inline; the merge can even happen before the compiler uses the
-// UPB_ASSUME()s about the size.
-#if UPB_HAS_BUILTIN(__builtin_memcpy_inline)
-#define UPB_MEMCPY_INLINE(dst, src, n) __builtin_memcpy_inline(dst, src, n)
-#else
-#define UPB_MEMCPY_INLINE(dst, src, n) memcpy(dst, src, n)
-#endif
-
 #ifdef __has_extension
 #define UPB_HAS_EXTENSION(x) __has_extension(x)
 #else
@@ -111,6 +98,26 @@
 #define UPB_HAS_FEATURE(x) __has_feature(x)
 #else
 #define UPB_HAS_FEATURE(x) 0
+#endif
+
+// UPB_MEMCPY_INLINE(dst, src, n): memcpy() of a compile-time constant number
+// of bytes `n`, which the compiler never turns into a call to the library
+// memcpy(). A plain memcpy() of a constant size is usually inlined as loads and
+// stores too, but the compiler can merge such copies of different sizes (e.g.
+// the cases of a switch on the size) into one copy of a variable size, which
+// it then can't inline; the merge can even happen before the compiler uses the
+// UPB_ASSUME()s about the size.
+//
+// MemorySanitizer in LLVM < 16 does not instrument __builtin_memcpy_inline: the
+// bytes are copied but the destination's shadow is left poisoned, so every
+// value read through UPB_MEMCPY_INLINE is reported as uninitialized. Fall back
+// to memcpy() (which MSan intercepts) on those compilers.
+#if UPB_HAS_BUILTIN(__builtin_memcpy_inline) &&                        \
+    !(UPB_HAS_FEATURE(memory_sanitizer) && defined(__clang_major__) && \
+      __clang_major__ < 16)
+#define UPB_MEMCPY_INLINE(dst, src, n) __builtin_memcpy_inline(dst, src, n)
+#else
+#define UPB_MEMCPY_INLINE(dst, src, n) memcpy(dst, src, n)
 #endif
 
 #include <assert.h>
