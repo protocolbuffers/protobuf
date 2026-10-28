@@ -77,6 +77,7 @@ constexpr Option::ParseTableT_ Option::_Internal::GenerateParseTable(const ::_pb
       2,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -163,6 +164,8 @@ struct OptionGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(OptionGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(OptionGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const OptionGlobalsTypeInternal Option_globals_
@@ -195,6 +198,7 @@ constexpr Field::ParseTableT_ Field::_Internal::GenerateParseTable(const ::_pbi:
       10,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -356,6 +360,8 @@ struct FieldGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(FieldGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(FieldGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const FieldGlobalsTypeInternal Field_globals_
@@ -388,6 +394,7 @@ constexpr EnumValue::ParseTableT_ EnumValue::_Internal::GenerateParseTable(const
       3,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -486,6 +493,8 @@ struct EnumValueGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(EnumValueGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(EnumValueGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumValueGlobalsTypeInternal EnumValue_globals_
@@ -518,6 +527,7 @@ constexpr Type::ParseTableT_ Type::_Internal::GenerateParseTable(const ::_pbi::C
       7,  // num_field_entries
       3,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -658,6 +668,8 @@ struct TypeGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(TypeGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(TypeGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const TypeGlobalsTypeInternal Type_globals_
@@ -690,6 +702,7 @@ constexpr Enum::ParseTableT_ Enum::_Internal::GenerateParseTable(const ::_pbi::C
       6,  // num_field_entries
       3,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -819,6 +832,8 @@ struct EnumGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(EnumGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(EnumGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const EnumGlobalsTypeInternal Enum_globals_

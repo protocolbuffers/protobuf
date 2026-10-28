@@ -73,6 +73,7 @@ constexpr Mixin::ParseTableT_ Mixin::_Internal::GenerateParseTable(const ::_pbi:
       2,  // num_field_entries
       0,  // num_aux_entries
       offsetof(ParseTableT_, field_names),  // no aux_entries
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -162,6 +163,8 @@ struct MixinGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(MixinGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(MixinGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MixinGlobalsTypeInternal Mixin_globals_
@@ -194,6 +197,7 @@ constexpr Method::ParseTableT_ Method::_Internal::GenerateParseTable(const ::_pb
       8,  // num_field_entries
       1,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -335,6 +339,8 @@ struct MethodGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(MethodGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(MethodGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const MethodGlobalsTypeInternal Method_globals_
@@ -367,6 +373,7 @@ constexpr Api::ParseTableT_ Api::_Internal::GenerateParseTable(const ::_pbi::Cla
       8,  // num_field_entries
       4,  // num_aux_entries
       offsetof(ParseTableT_, aux_entries),
+      sizeof(ParseTableT_),
       class_data,
       nullptr,  // post_loop_handler
       ::_pbi::TcParser::MpUnknownFields,  // fallback
@@ -516,6 +523,8 @@ struct ApiGlobalsTypeInternal : ::_pbi::MessageGlobalsBase {
 };
 static_assert(PROTOBUF_FIELD_OFFSET(ApiGlobalsTypeInternal, _default) ==
               ::_pbi::MessageGlobalsBase::OffsetToDefault());
+static_assert(alignof(ApiGlobalsTypeInternal) ==
+              ::_pbi::MessageGlobalsBase::kMessageGlobalsAlignment);
 
 PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT PROTOBUF_EXPORT
     PROTOBUF_ATTRIBUTE_INIT_PRIORITY1 const ApiGlobalsTypeInternal Api_globals_
