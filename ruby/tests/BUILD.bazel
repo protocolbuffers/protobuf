@@ -255,6 +255,20 @@ rb_test(
     ],
 )
 
+rb_test(
+    name = "descriptor_pool_test",
+    srcs = ["descriptor_pool_test.rb"],
+    args = [
+        "-Iruby/lib:ruby",
+        "ruby/tests/descriptor_pool_test.rb",
+    ],
+    deps = [
+        ":test_ruby_protos",
+        "//ruby:protobuf",
+        "@protobuf_bundle",
+    ],
+)
+
 pkg_files(
     name = "dist_files",
     srcs = glob([

@@ -203,6 +203,7 @@ module Google
       # Generic
       attach_function :memcmp, [:pointer, :pointer, :size_t], :int
       attach_function :memcpy, [:pointer, :pointer, :size_t], :int
+      attach_function :free, [:pointer], :void
 
       # Alternatives to pre-processor macros
       def self.decode_max_depth(i)
