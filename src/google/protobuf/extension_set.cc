@@ -36,6 +36,7 @@
 #include "google/protobuf/extension_set_inl.h"  // IWYU pragma: keep
 #include "google/protobuf/internal_visibility.h"
 #include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/lazy_field.h"
 #include "google/protobuf/message_lite.h"
 #include "google/protobuf/message_traits.h"
 #include "google/protobuf/metadata_lite.h"
@@ -1989,7 +1990,6 @@ LazyEagerVerifyFnType FindExtensionLazyEagerVerifyFn(
   }
   return nullptr;
 }
-
 
 }  // namespace internal
 }  // namespace protobuf
