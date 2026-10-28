@@ -41,3 +41,113 @@ impl From<&[u8]> for InnerProtoString {
         InnerProtoString(unsafe { OwnedArenaBox::new(Into::into(in_arena_copy), arena) })
     }
 }
+
+#[derive(Copy, Clone)]
+#[doc(hidden)]
+pub struct InnerProtoCord<'msg>(&'msg [u8]);
+
+impl<'msg> InnerProtoCord<'msg> {
+    pub const fn empty() -> Self {
+        Self(b"")
+    }
+
+    pub const fn from_slice(bytes: &'msg [u8]) -> Self {
+        Self(bytes)
+    }
+
+    pub const fn as_slice(&self) -> &'msg [u8] {
+        self.0
+    }
+
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    pub fn try_flat(&self) -> Option<&'msg [u8]> {
+        Some(self.0)
+    }
+
+    pub fn chunks(&self) -> InnerProtoCordChunks<'msg> {
+        InnerProtoCordChunks(if self.0.is_empty() { None } else { Some(self.0) })
+    }
+
+    pub fn copy_to_slice(&self, dst: &mut [u8]) {
+        assert_eq!(
+            self.0.len(),
+            dst.len(),
+            "destination slice length ({}) does not match cord length ({})",
+            dst.len(),
+            self.0.len()
+        );
+        dst.copy_from_slice(self.0);
+    }
+
+    pub fn to_vec(&self) -> Vec<u8> {
+        self.0.to_vec()
+    }
+
+    pub fn eq_cord(&self, other: &InnerProtoCord<'_>) -> bool {
+        self.0 == other.0
+    }
+
+    pub fn eq_bytes(&self, other: &[u8]) -> bool {
+        self.0 == other
+    }
+
+    pub fn to_owned_cord(&self) -> InnerOwnedProtoCord {
+        InnerOwnedProtoCord::Vec(self.0.to_vec())
+    }
+}
+
+#[derive(Clone)]
+#[doc(hidden)]
+pub struct InnerProtoCordChunks<'msg>(Option<&'msg [u8]>);
+
+impl<'msg> Iterator for InnerProtoCordChunks<'msg> {
+    type Item = &'msg [u8];
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.take()
+    }
+}
+
+#[derive(Clone)]
+#[doc(hidden)]
+pub enum InnerOwnedProtoCord {
+    Static(&'static [u8]),
+    Vec(Vec<u8>),
+}
+
+impl InnerOwnedProtoCord {
+    pub const fn new() -> Self {
+        Self::Static(b"")
+    }
+
+    pub const fn from_static(bytes: &'static [u8]) -> Self {
+        Self::Static(bytes)
+    }
+
+    pub fn from_input(val: impl IntoProtoCord) -> Self {
+        val.with_cord_value(Private, |value| match value {
+            ProtoCordValue::BorrowedSlice(s) => Self::Vec(s.to_vec()),
+            ProtoCordValue::BorrowedCord(c) => Self::Vec(c.inner.0.to_vec()),
+            ProtoCordValue::OwnedCord(o) => o.into_inner(Private),
+            ProtoCordValue::OwnedVec(v) => Self::Vec(v),
+            ProtoCordValue::OwnedProtoString(s) => Self::Vec(s.as_bytes().to_vec()),
+        })
+    }
+
+    pub fn as_view(&self) -> InnerProtoCord<'_> {
+        match self {
+            Self::Static(s) => InnerProtoCord(s),
+            Self::Vec(v) => InnerProtoCord(v.as_slice()),
+        }
+    }
+
+    pub fn into_vec(self) -> Vec<u8> {
+        match self {
+            Self::Static(s) => s.to_vec(),
+            Self::Vec(v) => v,
+        }
+    }
+}

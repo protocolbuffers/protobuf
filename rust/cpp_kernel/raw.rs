@@ -60,6 +60,28 @@ pub mod _opaque_pointees {
         _data: [u8; 0],
         _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
     }
+
+    /// Opaque pointee for [`RawCord`]
+    ///
+    /// This type is not meant to be dereferenced in Rust code.
+    /// It is only meant to provide type safety for raw pointers
+    /// which are manipulated behind FFI.
+    #[repr(C)]
+    pub struct RawCordData {
+        _data: [u8; 0],
+        _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+    }
+
+    /// Opaque pointee for [`RawCordChunkIter`]
+    ///
+    /// This type is not meant to be dereferenced in Rust code.
+    /// It is only meant to provide type safety for raw pointers
+    /// which are manipulated behind FFI.
+    #[repr(C)]
+    pub struct RawCordChunkIterData {
+        _data: [u8; 0],
+        _marker: std::marker::PhantomData<(*mut u8, ::std::marker::PhantomPinned)>,
+    }
 }
 
 /// A raw pointer to the underlying message for this runtime.
@@ -77,5 +99,13 @@ pub type RawMap = NonNull<_opaque_pointees::RawMapData>;
 /// A raw pointer to a std::string.
 #[doc(hidden)]
 pub type CppStdString = NonNull<_opaque_pointees::CppStdStringData>;
+
+/// A raw pointer to an `absl::Cord`.
+#[doc(hidden)]
+pub type RawCord = NonNull<_opaque_pointees::RawCordData>;
+
+/// A raw pointer to a heap-allocated `proto2::rust::CordChunkIter`.
+#[doc(hidden)]
+pub type RawCordChunkIter = NonNull<_opaque_pointees::RawCordChunkIterData>;
 
 pub type RawMapIter = UntypedMapIterator;

@@ -166,6 +166,12 @@ pub(crate) mod create {
     pub trait Parse: SealedInternal + Sized {
         fn parse(serialized: &[u8]) -> Result<Self, crate::ParseError>;
         fn parse_dont_enforce_required(serialized: &[u8]) -> Result<Self, crate::ParseError>;
+        fn parse_from_cord(
+            serialized: impl crate::IntoProtoCord,
+        ) -> Result<Self, crate::ParseError>;
+        fn parse_from_cord_dont_enforce_required(
+            serialized: impl crate::IntoProtoCord,
+        ) -> Result<Self, crate::ParseError>;
     }
 
     impl<T> Parse for T
@@ -180,6 +186,21 @@ pub(crate) mod create {
         fn parse_dont_enforce_required(serialized: &[u8]) -> Result<Self, crate::ParseError> {
             let mut msg = Self::default();
             crate::ClearAndParse::clear_and_parse_dont_enforce_required(&mut msg, serialized)
+                .map(|_| msg)
+        }
+
+        fn parse_from_cord(
+            serialized: impl crate::IntoProtoCord,
+        ) -> Result<Self, crate::ParseError> {
+            let mut msg = Self::default();
+            crate::ClearAndParse::clear_and_parse_cord(&mut msg, serialized).map(|_| msg)
+        }
+
+        fn parse_from_cord_dont_enforce_required(
+            serialized: impl crate::IntoProtoCord,
+        ) -> Result<Self, crate::ParseError> {
+            let mut msg = Self::default();
+            crate::ClearAndParse::clear_and_parse_cord_dont_enforce_required(&mut msg, serialized)
                 .map(|_| msg)
         }
     }
@@ -205,6 +226,21 @@ pub(crate) mod read {
             options: crate::SerializeOptions,
         ) -> Result<Vec<u8>, crate::SerializeError>;
 
+        /// Serializes the message to an [`OwnedProtoCord`](crate::OwnedProtoCord).
+        ///
+        /// On the C++ kernel, large `[ctype = CORD]` fields inside the message can be
+        /// shared by reference in the returned cord instead of copied.
+        fn serialize_to_cord(&self) -> Result<crate::OwnedProtoCord, crate::SerializeError> {
+            self.serialize_to_cord_with_options(crate::SerializeOptions::default())
+        }
+
+        /// Serializes the message to an [`OwnedProtoCord`](crate::OwnedProtoCord), configured by
+        /// `options`.
+        fn serialize_to_cord_with_options(
+            &self,
+            options: crate::SerializeOptions,
+        ) -> Result<crate::OwnedProtoCord, crate::SerializeError>;
+
         fn serialized_len(&self) -> usize;
     }
 }
@@ -225,6 +261,14 @@ pub(crate) mod write {
         fn clear_and_parse_dont_enforce_required(
             &mut self,
             data: &[u8],
+        ) -> Result<(), crate::ParseError>;
+        fn clear_and_parse_cord(
+            &mut self,
+            data: impl crate::IntoProtoCord,
+        ) -> Result<(), crate::ParseError>;
+        fn clear_and_parse_cord_dont_enforce_required(
+            &mut self,
+            data: impl crate::IntoProtoCord,
         ) -> Result<(), crate::ParseError>;
     }
 

@@ -26,7 +26,9 @@ pub use crate::codegen_traits::{
     write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom},
     Message, MessageMut, MessageType, MessageView,
 };
-pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
+pub use crate::cord::{
+    IntoProtoCord, OwnedProtoCord, ProtoBytesCow, ProtoCord, ProtoCordChunks, ProtoStringCow,
+};
 pub use crate::extension::ExtensionId;
 pub use crate::map::{Map, MapIter, MapKey, MapMut, MapValue, MapView};
 

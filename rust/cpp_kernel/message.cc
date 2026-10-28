@@ -7,9 +7,16 @@
 
 #include "google/protobuf/message.h"
 
+#include <climits>
 #include <cstddef>
 #include <limits>
+#include <utility>
 
+#include "absl/log/absl_check.h"
+#include "absl/log/absl_log.h"
+#include "absl/strings/cord.h"
+#include "google/protobuf/io/coded_stream.h"
+#include "google/protobuf/io/zero_copy_stream_impl_lite.h"
 #include "google/protobuf/message_lite.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
@@ -32,10 +39,50 @@ bool proto2_rust_Message_parse_dont_enforce_required(
   return m->ParsePartialFromString(input.AsStringView());
 }
 
+bool proto2_rust_Message_parse_cord(google::protobuf::MessageLite* m,
+                                    const absl::Cord* input) {
+  return m->ParseFromString(*input);
+}
+
+bool proto2_rust_Message_parse_cord_dont_enforce_required(
+    google::protobuf::MessageLite* m, const absl::Cord* input) {
+  return m->ParsePartialFromString(*input);
+}
+
 bool proto2_rust_Message_serialize(const google::protobuf::MessageLite* m,
                                    google::protobuf::rust::SerializedData* output,
                                    bool deterministic) {
   return google::protobuf::rust::SerializeMsg(m, output, deterministic);
+}
+
+absl::Cord* proto2_rust_Message_serialize_to_cord(const google::protobuf::MessageLite* m,
+                                                  bool deterministic) {
+  if (!deterministic) {
+    absl::Cord output;
+    if (!m->SerializeToString(&output)) {
+      return nullptr;
+    }
+    return new absl::Cord(std::move(output));
+  }
+
+  ABSL_DCHECK(m->IsInitialized());
+  size_t len = m->ByteSizeLong();
+  if (len > INT_MAX) {
+    ABSL_LOG(ERROR) << m->GetTypeName()
+                    << " exceeded maximum protobuf size of 2GB: " << len;
+    return nullptr;
+  }
+  google::protobuf::io::CordOutputStream cord_stream(len);
+  {
+    google::protobuf::io::CodedOutputStream coded_stream(&cord_stream);
+    coded_stream.SetSerializationDeterministic(true);
+    m->SerializeWithCachedSizes(&coded_stream);
+    if (coded_stream.HadError()) {
+      return nullptr;
+    }
+    ABSL_DCHECK_EQ(static_cast<size_t>(coded_stream.ByteCount()), len);
+  }
+  return new absl::Cord(cord_stream.Consume());
 }
 
 size_t proto2_rust_Message_serialized_len(const google::protobuf::MessageLite* m) {

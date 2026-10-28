@@ -399,6 +399,29 @@ where
     })
 }
 
+fn clear_and_parse_cord_upb<T>(
+    msg: &mut T,
+    data: impl IntoProtoCord,
+    decode_options: i32,
+) -> Result<(), ParseError>
+where
+    T: UpbGetMessagePtrMut + UpbGetArena,
+{
+    data.with_cord_value(Private, |value| match value {
+        ProtoCordValue::BorrowedSlice(s) => clear_and_parse_helper(msg, s, decode_options),
+        ProtoCordValue::BorrowedCord(c) => {
+            clear_and_parse_helper(msg, c.inner.as_slice(), decode_options)
+        }
+        ProtoCordValue::OwnedCord(o) => {
+            clear_and_parse_helper(msg, o.as_view().inner.as_slice(), decode_options)
+        }
+        ProtoCordValue::OwnedVec(v) => clear_and_parse_helper(msg, &v, decode_options),
+        ProtoCordValue::OwnedProtoString(s) => {
+            clear_and_parse_helper(msg, s.as_bytes(), decode_options)
+        }
+    })
+}
+
 impl<T> ClearAndParse for T
 where
     Self: UpbGetMessagePtrMut + UpbGetArena,
@@ -409,6 +432,17 @@ where
 
     fn clear_and_parse_dont_enforce_required(&mut self, data: &[u8]) -> Result<(), ParseError> {
         clear_and_parse_helper(self, data, 0)
+    }
+
+    fn clear_and_parse_cord(&mut self, data: impl IntoProtoCord) -> Result<(), ParseError> {
+        clear_and_parse_cord_upb(self, data, upb::wire::decode_options::CHECK_REQUIRED)
+    }
+
+    fn clear_and_parse_cord_dont_enforce_required(
+        &mut self,
+        data: impl IntoProtoCord,
+    ) -> Result<(), ParseError> {
+        clear_and_parse_cord_upb(self, data, 0)
     }
 }
 
@@ -425,6 +459,13 @@ where
         //~ of the failure, we should try to keep it instead.
         upb::wire::encode_with_options(self.get_ptr(Private), encode_options)
             .map_err(|_| SerializeError)
+    }
+
+    fn serialize_to_cord_with_options(
+        &self,
+        options: SerializeOptions,
+    ) -> Result<OwnedProtoCord, SerializeError> {
+        self.serialize_with_options(options).map(OwnedProtoCord::from)
     }
 
     fn serialized_len(&self) -> usize {
@@ -566,6 +607,40 @@ pub unsafe fn message_set_bytes_field<'msg, P: Message + AssociatedMiniTable>(
         // - The string's arena has been fused into the parent's arena above.
         parent.ptr.set_base_field_string_at_index(index, view);
     }
+}
+
+/// # Safety
+/// - The field at `index` must be a string or bytes field.
+pub unsafe fn message_set_cord_field<'msg, P: Message + AssociatedMiniTable>(
+    parent: MessageMutInner<'msg, P>,
+    index: u32,
+    val: impl IntoProtoCord,
+) {
+    val.with_cord_value(Private, |value| {
+        let view: PtrAndLen = match value {
+            ProtoCordValue::BorrowedSlice(s) => parent.arena().copy_slice_in(s).unwrap().into(),
+            ProtoCordValue::BorrowedCord(c) => {
+                parent.arena().copy_slice_in(c.inner.as_slice()).unwrap().into()
+            }
+            ProtoCordValue::OwnedCord(o) => match o.into_inner(Private) {
+                InnerOwnedProtoCord::Static(s) => s.into(),
+                InnerOwnedProtoCord::Vec(v) => parent.arena().copy_slice_in(&v).unwrap().into(),
+            },
+            ProtoCordValue::OwnedVec(v) => parent.arena().copy_slice_in(&v).unwrap().into(),
+            ProtoCordValue::OwnedProtoString(s) => {
+                let (view, arena) = s.into_raw_parts();
+                parent.arena().fuse(&arena);
+                view
+            }
+        };
+        // SAFETY:
+        // - `parent.ptr` is valid as it comes from a `MessageMutInner`.
+        // - The caller guarantees that `index` refers to a valid string or bytes field.
+        // - `view` points to `'static` memory or memory owned by `parent.arena()`.
+        unsafe {
+            parent.ptr.set_base_field_string_at_index(index, view);
+        }
+    });
 }
 
 /// # Safety

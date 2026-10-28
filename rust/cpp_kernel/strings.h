@@ -9,9 +9,11 @@
 #define GOOGLE_PROTOBUF_RUST_CPP_KERNEL_STRINGS_H__
 
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 #include <string>
 
+#include "absl/strings/cord.h"
 #include "absl/strings/string_view.h"
 
 namespace google {
@@ -57,6 +59,33 @@ struct RustStringRawParts {
   explicit RustStringRawParts(std::string src);
 };
 
+// Tagged FFI payload describing any Rust `IntoProtoCord` value passed into C++.
+//
+enum class RawCordInputKind : uint8_t {
+  kBorrowedSlice = 0,
+  kStaticSlice = 1,
+  kBorrowedCord = 2,
+  kOwnedCord = 3,
+  kRustVec = 4,
+  kCppStdString = 5,
+};
+
+struct RawCordInput {
+  RawCordInputKind kind;
+  const void* ptr;
+  size_t len;
+  size_t cap;
+};
+
+// Consumes `input` and materializes an `absl::Cord`, transferring ownership or
+// sharing reference counts without copying whenever supported by `input.kind`.
+absl::Cord TakeCordInput(RawCordInput input);
+
+struct CordChunkIter {
+  absl::Cord::ChunkIterator current;
+  absl::Cord::ChunkIterator end;
+};
+
 }  // namespace rust
 }  // namespace protobuf
 }  // namespace google
@@ -71,6 +100,27 @@ void proto2_rust_cpp_delete_string(std::string* str);
 
 // Obtain a PtrAndLen, the FFI-safe view type, from a std::string.
 google::protobuf::rust::PtrAndLen proto2_rust_cpp_string_to_view(std::string* str);
+
+size_t proto2_rust_cord_len(const absl::Cord* cord);
+bool proto2_rust_cord_try_flat(const absl::Cord* cord,
+                               google::protobuf::rust::PtrAndLen* out);
+void proto2_rust_cord_copy_to_bytes(const absl::Cord* cord, uint8_t* dst);
+bool proto2_rust_cord_eq(const absl::Cord* lhs, const absl::Cord* rhs);
+bool proto2_rust_cord_eq_bytes(const absl::Cord* lhs,
+                               google::protobuf::rust::PtrAndLen rhs);
+
+google::protobuf::rust::CordChunkIter* proto2_rust_cord_iter_new(const absl::Cord* cord);
+bool proto2_rust_cord_iter_next(google::protobuf::rust::CordChunkIter* iter,
+                                google::protobuf::rust::PtrAndLen* out);
+google::protobuf::rust::CordChunkIter* proto2_rust_cord_iter_clone(
+    const google::protobuf::rust::CordChunkIter* iter);
+void proto2_rust_cord_iter_delete(google::protobuf::rust::CordChunkIter* iter);
+
+absl::Cord* proto2_rust_cord_new_empty();
+absl::Cord* proto2_rust_cord_new_from_input(google::protobuf::rust::RawCordInput input);
+absl::Cord* proto2_rust_cord_clone(const absl::Cord* cord);
+void proto2_rust_cord_swap(absl::Cord* lhs, absl::Cord* rhs);
+void proto2_rust_cord_delete(absl::Cord* cord);
 }
 
 #endif  // GOOGLE_PROTOBUF_RUST_CPP_KERNEL_STRINGS_H__
