@@ -7,6 +7,7 @@
 
 #include "upb/json/decode.h"
 
+#include <cstdint>
 #include <cstring>
 #include <string>
 #include <vector>
@@ -14,6 +15,8 @@
 #include <gtest/gtest.h>
 #include "google/protobuf/json/json_enumval_custom_string.upb.h"
 #include "google/protobuf/json/json_enumval_custom_string.upbdefs.h"
+#include "google/protobuf/timestamp.upb.h"
+#include "google/protobuf/timestamp.upbdefs.h"
 #include "upb/base/status.hpp"
 #include "upb/base/upcast.h"
 #include "upb/json/test.upb.h"
@@ -436,5 +439,58 @@ TEST(JsonTest, Utf8ValidationLevels) {
         valid_json.data(), valid_json.size(), UPB_UPCAST(box), m, defpool.ptr(),
         upb_JsonDecode_ValidateUtf8_Enforce, arena.ptr(), status.ptr());
     EXPECT_TRUE(ok) << status.error_message();
+  }
+}
+
+// Valid UTC endpoints include timezone-normalized representations.
+TEST(JsonTest, AcceptsTimestampBounds) {
+  const struct {
+    const char* json;
+    int64_t seconds;
+    int32_t nanos;
+  } cases[] = {
+      {R"("9999-12-31T23:59:59Z")", 253402300799, 0},
+      {R"("9999-12-31T23:59:59.999999999Z")", 253402300799, 999999999},
+      {R"("9999-12-31T22:59:59-01:00")", 253402300799, 0},
+      {R"("0001-01-01T00:00:00Z")", -62135596800, 0},
+      {R"("0001-01-01T01:00:00+01:00")", -62135596800, 0},
+  };
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.json);
+    upb::Arena arena;
+    upb::DefPool pool;
+    upb::Status status;
+    google_protobuf_Timestamp* message =
+        google_protobuf_Timestamp_new(arena.ptr());
+    const upb_MessageDef* def = google_protobuf_Timestamp_getmsgdef(pool.ptr());
+    ASSERT_NE(message, nullptr);
+    ASSERT_NE(def, nullptr);
+    ASSERT_TRUE(upb_JsonDecode(test.json, strlen(test.json),
+                               UPB_UPCAST(message), def, pool.ptr(), 0,
+                               arena.ptr(), status.ptr()));
+    EXPECT_TRUE(status.ok());
+    EXPECT_EQ(google_protobuf_Timestamp_seconds(message), test.seconds);
+    EXPECT_EQ(google_protobuf_Timestamp_nanos(message), test.nanos);
+  }
+}
+
+TEST(JsonTest, RejectsTimestampOutsideNormalizedBounds) {
+  for (const char* json :
+       {R"("9999-12-31T23:59:59-00:01")", R"("0001-01-01T00:00:00+00:01")"}) {
+    SCOPED_TRACE(json);
+    upb::Arena arena;
+    upb::DefPool pool;
+    upb::Status status;
+    google_protobuf_Timestamp* message =
+        google_protobuf_Timestamp_new(arena.ptr());
+    const upb_MessageDef* def = google_protobuf_Timestamp_getmsgdef(pool.ptr());
+    ASSERT_NE(message, nullptr);
+    ASSERT_NE(def, nullptr);
+    EXPECT_FALSE(upb_JsonDecode(json, strlen(json), UPB_UPCAST(message), def,
+                                pool.ptr(), 0, arena.ptr(), status.ptr()));
+    EXPECT_FALSE(status.ok());
+    EXPECT_NE(
+        std::string(status.error_message()).find("Timestamp out of range"),
+        std::string::npos);
   }
 }
