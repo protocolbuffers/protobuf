@@ -1005,6 +1005,38 @@ class StructTest(unittest.TestCase):
     msg.optional_list_value = list_value
     self.assertEqual(msg.optional_list_value, list_value)
 
+  def testStructNotEqualSameContent(self):
+    dictionary = {'key1': 5.0, 'key2': 'abc', 'key3': {'subkey': 11.0}}
+    msg = well_known_types_test_pb2.WKTMessage(optional_struct=dictionary)
+    self.assertTrue(msg.optional_struct == dictionary)
+    self.assertFalse(msg.optional_struct != dictionary)
+    self.assertFalse(dictionary != msg.optional_struct)
+
+  def testStructNotEqualDifferentContent(self):
+    dictionary = {'key1': 5.0, 'key2': 'abc', 'key3': {'subkey': 11.0}}
+    msg = well_known_types_test_pb2.WKTMessage(optional_struct=dictionary)
+    different = {'key1': 5.0, 'key2': 'abc', 'key3': {'subkey': 12.0}}
+    self.assertFalse(msg.optional_struct == different)
+    self.assertTrue(msg.optional_struct != different)
+    self.assertTrue(different != msg.optional_struct)
+    self.assertTrue(msg.optional_struct != {})
+
+  def testListValueNotEqualSameContent(self):
+    list_value = [6.0, 'seven', True, None, {'key': 1.0}]
+    msg = well_known_types_test_pb2.WKTMessage(optional_list_value=list_value)
+    self.assertTrue(msg.optional_list_value == list_value)
+    self.assertFalse(msg.optional_list_value != list_value)
+    self.assertFalse(list_value != msg.optional_list_value)
+
+  def testListValueNotEqualDifferentContent(self):
+    list_value = [6.0, 'seven', True, None, {'key': 1.0}]
+    msg = well_known_types_test_pb2.WKTMessage(optional_list_value=list_value)
+    different = [6.0, 'seven', True, None, {'key': 2.0}]
+    self.assertFalse(msg.optional_list_value == different)
+    self.assertTrue(msg.optional_list_value != different)
+    self.assertTrue(different != msg.optional_list_value)
+    self.assertTrue(msg.optional_list_value != [])
+
   def testStructConstruction(self):
     dictionary = {
         'key1': 5.0,

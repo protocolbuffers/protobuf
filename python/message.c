@@ -976,7 +976,13 @@ static PyObject* PyUpb_Message_RichCompare(PyObject* _self, PyObject* other,
   upb_WellKnown wkt = upb_MessageDef_WellKnownType(msgdef);
   if ((wkt == kUpb_WellKnown_ListValue && PyList_Check(other)) ||
       (wkt == kUpb_WellKnown_Struct && PyDict_Check(other))) {
-    return PyObject_CallMethod(_self, "_internal_compare", "O", other);
+    PyObject* equal =
+        PyObject_CallMethod(_self, "_internal_compare", "O", other);
+    if (equal == NULL || opid == Py_EQ) return equal;
+    int is_equal = PyObject_IsTrue(equal);
+    Py_DECREF(equal);
+    if (is_equal < 0) return NULL;
+    return PyBool_FromLong(!is_equal);
   }
 
   if (!PyObject_TypeCheck(other, Py_TYPE(PyUpb_Message_AsPyObj(self)))) {

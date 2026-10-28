@@ -2412,8 +2412,12 @@ static PyObject* RichCompare(CMessage* self, PyObject* other, int opid) {
   Descriptor::WellKnownType wkt = self_descriptor->well_known_type();
   if ((wkt == Descriptor::WELLKNOWNTYPE_LISTVALUE && PyList_Check(other)) ||
       (wkt == Descriptor::WELLKNOWNTYPE_STRUCT && PyDict_Check(other))) {
-    return PyObject_CallMethod(reinterpret_cast<PyObject*>(self),
-                               "_internal_compare", "O", other);
+    ScopedPyObjectPtr equal(PyObject_CallMethod(
+        reinterpret_cast<PyObject*>(self), "_internal_compare", "O", other));
+    if (equal == nullptr || opid == Py_EQ) return equal.release();
+    int is_equal = PyObject_IsTrue(equal.get());
+    if (is_equal < 0) return nullptr;
+    return PyBool_FromLong(!is_equal);
   }
 
   // If other is not a message, this implementation doesn't know how to perform
