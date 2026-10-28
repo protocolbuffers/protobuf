@@ -74,8 +74,7 @@ std::unique_ptr<AccessorGenerator> AccessorGeneratorFor(
       return std::make_unique<SingularScalar>();
     case RustFieldType::BYTES:
     case RustFieldType::STRING:
-      if (ctx.is_cpp() &&
-          field.cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
+      if (field.cpp_string_type() == FieldDescriptor::CppStringType::kCord) {
         return std::make_unique<SingularCord>();
       }
       return std::make_unique<SingularString>();

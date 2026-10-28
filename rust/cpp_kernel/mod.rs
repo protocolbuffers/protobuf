@@ -28,11 +28,12 @@ pub use repeated::*;
 pub use string::*;
 
 use crate::__internal::{Enum, MatcherEq, Private, SealedInternal};
+use crate::cord::ProtoCordValue;
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
-    MapView, MergeFrom, Message, Mut, MutProxied, ParseError, ProtoBytes, ProtoStr, ProtoString,
-    Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError, SerializeOptions,
-    Singular, TakeFrom, View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProtoCord, IntoProxied, Map, MapIter,
+    MapMut, MapValue, MapView, MergeFrom, Message, Mut, MutProxied, OwnedProtoCord, ParseError,
+    ProtoBytes, ProtoStr, ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize,
+    SerializeError, SerializeOptions, Singular, TakeFrom, View,
 };
 use core::fmt::Debug;
 use paste::paste;

@@ -47,6 +47,12 @@ fn test_collision_in_accessors() {
     m.clear_x_7();
     assert_that!(m.has_x(), eq(true));
     assert_that!(m.has_clear_x_7(), eq(false));
+
+    m.set_cord_collide_8_cord(b"cord_val");
+    m.set_cord_collide_cord(b"plain_val");
+    assert_that!(m.cord_collide_8_cord() == b"cord_val", eq(true));
+    assert_that!(m.cord_collide_8_cord_opt().is_some(), eq(true));
+    assert_that!(m.cord_collide_cord(), eq("plain_val".as_bytes()));
 }
 
 #[gtest]

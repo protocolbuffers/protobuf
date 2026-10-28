@@ -31,11 +31,12 @@ pub use string::*;
 
 use crate::__internal::entity_tag::*;
 use crate::__internal::{EntityType, MatcherEq, Private, SealedInternal};
+use crate::cord::ProtoCordValue;
 use crate::{
-    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProxied, Map, MapIter, MapMut, MapValue,
-    MapView, MergeFrom, Message, MessageMut, MessageView, Mut, ParseError, ProtoBytes, ProtoStr,
-    ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView, Serialize, SerializeError,
-    SerializeOptions, Singular, TakeFrom, View,
+    AsMut, AsView, Clear, ClearAndParse, CopyFrom, IntoProtoCord, IntoProxied, Map, MapIter,
+    MapMut, MapValue, MapView, MergeFrom, Message, MessageMut, MessageView, Mut, OwnedProtoCord,
+    ParseError, ProtoBytes, ProtoStr, ProtoString, Proxied, Repeated, RepeatedMut, RepeatedView,
+    Serialize, SerializeError, SerializeOptions, Singular, TakeFrom, View,
 };
 use std::fmt::Debug;
 use std::marker::PhantomData;

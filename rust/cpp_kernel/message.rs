@@ -13,11 +13,20 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_parse(m: RawMessage, input: PtrAndLen) -> bool;
     pub fn proto2_rust_Message_parse_dont_enforce_required(m: RawMessage, input: PtrAndLen)
         -> bool;
+    pub fn proto2_rust_Message_parse_cord(m: RawMessage, input: RawCord) -> bool;
+    pub fn proto2_rust_Message_parse_cord_dont_enforce_required(
+        m: RawMessage,
+        input: RawCord,
+    ) -> bool;
     pub fn proto2_rust_Message_serialize(
         m: RawMessage,
         output: &mut SerializedData,
         deterministic: bool,
     ) -> bool;
+    pub fn proto2_rust_Message_serialize_to_cord(
+        m: RawMessage,
+        deterministic: bool,
+    ) -> Option<RawCord>;
     pub fn proto2_rust_Message_serialized_len(m: RawMessage) -> usize;
     pub fn proto2_rust_Message_copy_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
@@ -306,6 +315,49 @@ impl<T: CppGetRawMessageMut> Clear for T {
     }
 }
 
+fn clear_and_parse_cord_helper<T: CppGetRawMessageMut>(
+    msg: &mut T,
+    data: impl IntoProtoCord,
+    enforce_required: bool,
+) -> Result<(), ParseError> {
+    let raw_msg = msg.get_raw_message_mut(Private);
+    let parse_slice = |slice: &[u8]| -> bool {
+        if enforce_required {
+            // SAFETY: `raw_msg` is a valid mutable message and `slice` is valid for this call.
+            unsafe { proto2_rust_Message_parse(raw_msg, slice.into()) }
+        } else {
+            // SAFETY: `raw_msg` is a valid mutable message and `slice` is valid for this call.
+            unsafe { proto2_rust_Message_parse_dont_enforce_required(raw_msg, slice.into()) }
+        }
+    };
+    let parse_raw_cord = |raw_cord: RawCord| -> bool {
+        if enforce_required {
+            // SAFETY: `raw_msg` is a valid mutable message and `raw_cord` is a valid `absl::Cord*`.
+            unsafe { proto2_rust_Message_parse_cord(raw_msg, raw_cord) }
+        } else {
+            // SAFETY: `raw_msg` is a valid mutable message and `raw_cord` is a valid `absl::Cord*`.
+            unsafe { proto2_rust_Message_parse_cord_dont_enforce_required(raw_msg, raw_cord) }
+        }
+    };
+
+    let success = data.with_cord_value(Private, |value| match value {
+        ProtoCordValue::BorrowedSlice(s) => parse_slice(s),
+        ProtoCordValue::BorrowedCord(cord) => match cord.inner {
+            InnerProtoCord::Slice(s) => parse_slice(s),
+            InnerProtoCord::Cord(raw, _) => parse_raw_cord(raw),
+        },
+        ProtoCordValue::OwnedCord(owned) => parse_raw_cord(owned.as_inner(Private).raw()),
+        ProtoCordValue::OwnedVec(vec) => parse_slice(&vec),
+        ProtoCordValue::OwnedProtoString(s) => parse_slice(s.as_bytes()),
+    });
+
+    if !success {
+        Clear::clear(msg);
+        return Err(ParseError);
+    }
+    Ok(())
+}
+
 impl<T: CppGetRawMessageMut> ClearAndParse for T {
     fn clear_and_parse(&mut self, data: &[u8]) -> Result<(), ParseError> {
         let success =
@@ -330,6 +382,17 @@ impl<T: CppGetRawMessageMut> ClearAndParse for T {
         }
         Ok(())
     }
+
+    fn clear_and_parse_cord(&mut self, data: impl IntoProtoCord) -> Result<(), ParseError> {
+        clear_and_parse_cord_helper(self, data, true)
+    }
+
+    fn clear_and_parse_cord_dont_enforce_required(
+        &mut self,
+        data: impl IntoProtoCord,
+    ) -> Result<(), ParseError> {
+        clear_and_parse_cord_helper(self, data, false)
+    }
 }
 
 impl<T: CppGetRawMessage> Serialize for T {
@@ -346,6 +409,26 @@ impl<T: CppGetRawMessage> Serialize for T {
             Ok(serialized_data.into_vec())
         } else {
             Err(SerializeError)
+        }
+    }
+
+    fn serialize_to_cord_with_options(
+        &self,
+        options: SerializeOptions,
+    ) -> Result<OwnedProtoCord, SerializeError> {
+        // SAFETY: `self.get_raw_message(Private)` is a valid `const MessageLite*`.
+        let raw_cord = unsafe {
+            proto2_rust_Message_serialize_to_cord(
+                self.get_raw_message(Private),
+                options.deterministic,
+            )
+        };
+        match raw_cord {
+            // SAFETY: `raw` is a newly heap-allocated `absl::Cord*` returned from C++.
+            Some(raw) => Ok(OwnedProtoCord::from_inner(Private, unsafe {
+                InnerOwnedProtoCord::from_raw(raw)
+            })),
+            None => Err(SerializeError),
         }
     }
 
