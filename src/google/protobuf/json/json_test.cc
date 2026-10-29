@@ -1422,6 +1422,41 @@ TEST_P(JsonTest, TestTimestamp) {
   EXPECT_EQ(m2->value().nanos(), 5);
 }
 
+TEST_P(JsonTest, TestTimestampRejectsInvalidComponents) {
+  for (absl::string_view value : {
+           "00001-01-01T00:00:00Z",
+           "1970-1-01T00:00:00Z",
+           "1970-1-01T00:00:00.0Z",
+           "1970-13-01T00:00:00Z",
+           "1970-01-32T00:00:00Z",
+           "2001-02-29T00:00:00Z",
+           "1970-01-01T24:00:00Z",
+           "1970-01-01T00:60:00Z",
+           "1970-01-01T00:00:60Z",
+           "1970-01-01T00:00:00+24:00",
+           "1970-01-01T00:00:00+00:60",
+           "0001-01-01T00:00:00+00:01",
+           "9999-12-31T23:59:59-00:01",
+       }) {
+    EXPECT_THAT(
+        ToProto<google::protobuf::Timestamp>(absl::StrCat("\"", value, "\"")),
+        StatusIs(absl::StatusCode::kInvalidArgument))
+        << value;
+  }
+}
+
+TEST_P(JsonTest, TestTimestampAcceptsValidBoundaries) {
+  // Positive controls cover a leap day and timezone-adjusted range edges.
+  for (absl::string_view value : {
+           "2000-02-29T00:00:00Z",
+           "0001-01-01T00:00:00-00:01",
+           "9999-12-31T23:59:59+00:01",
+       }) {
+    EXPECT_OK(
+        ToProto<google::protobuf::Timestamp>(absl::StrCat("\"", value, "\"")));
+  }
+}
+
 // This test case comes from Envoy's tests. They like to parse a Value out of
 // YAML, turn it into JSON, and then parse it as a different proto. This means
 // we must be extremely careful with integer fields, because they need to
