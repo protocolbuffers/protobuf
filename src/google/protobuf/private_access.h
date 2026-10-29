@@ -47,6 +47,7 @@ struct PrivateAccess {
     return msg._impl_._extensions_;
   }
 
+  // Defined in extension_set.cc
   static ExtensionSet* GetExtensionSet(MessageLite& msg);
   static const ExtensionSet* GetExtensionSet(const MessageLite& msg);
 

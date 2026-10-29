@@ -738,7 +738,6 @@ cc_library(
         "micro_string.cc",
         "offset_ptr.cc",
         "parse_context.cc",
-        "private_access.cc",
         "raw_ptr.cc",
         "repeated_field.cc",
         "repeated_ptr_field.cc",
