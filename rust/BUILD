@@ -292,6 +292,7 @@ cc_library(
     deps = [
         ":rust_alloc_for_cpp_api",  # buildcleaner: keep
         "//src/google/protobuf",
+        "//src/google/protobuf:class_data",
         "//src/google/protobuf:message_traits",
         "//src/google/protobuf:protobuf_lite",
         "//src/google/protobuf/io",
