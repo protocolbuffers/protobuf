@@ -6,8 +6,6 @@
 # https://developers.google.com/open-source/licenses/bsd
 """Encoding related utilities."""
 
-import re
-
 
 def _AsciiIsPrint(i):
   return i >= 32 and i < 127
@@ -78,7 +76,45 @@ def CEscape(text, as_utf8) -> str:
     return ''.join([_byte_escapes[c] for c in text])
 
 
-_CUNESCAPE_HEX = re.compile(r'(\\+)x([0-9a-fA-F])(?![0-9a-fA-F])')
+_HEX_DIGITS = frozenset('0123456789abcdefABCDEF')
+
+
+def _ReplaceSingleDigitHexEscapes(text: str) -> str:
+  """Rewrites single-digit hex escapes to two digits, in linear time.
+
+  Semantically identical to substituting the regex ``(\\+)x([0-9a-fA-F])
+  (?![0-9a-fA-F])`` with ``\\1x0\\2`` when the run of backslashes is odd and
+  with the match unchanged otherwise, but without a backtracking regex.
+  The old pattern paired a greedy, unbounded ``(\\+)`` with a required
+  ``x``: for a run of N backslashes not followed by ``x`` the engine retried
+  every prefix of the run at every offset, i.e. Theta(N^2) steps.
+  """
+  i = text.find('\\')
+  if i < 0:
+    return text
+  n = len(text)
+  chunks = []
+  start = 0
+  while i >= 0:
+    j = i
+    while j < n and text[j] == '\\':
+      j += 1
+    run = j - i
+    if (j + 1 < n and text[j] == 'x' and text[j + 1] in _HEX_DIGITS
+        and (j + 2 >= n or text[j + 2] not in _HEX_DIGITS)):
+      chunks.append(text[start:i])
+      if run & 1:
+        chunks.append(text[i:j])
+        chunks.append('x0')
+        chunks.append(text[j + 1])
+      else:
+        chunks.append(text[i:j + 2])
+      start = j + 2
+      i = text.find('\\', j + 2)
+    else:
+      i = text.find('\\', j)
+  chunks.append(text[start:])
+  return ''.join(chunks)
 
 
 def CUnescape(text: str) -> bytes:
@@ -91,16 +127,9 @@ def CUnescape(text: str) -> bytes:
     A byte string.
   """
 
-  def ReplaceHex(m):
-    # Only replace the match if the number of leading back slashes is odd. i.e.
-    # the slash itself is not escaped.
-    if len(m.group(1)) & 1:
-      return m.group(1) + 'x0' + m.group(2)
-    return m.group(0)
-
   # This is required because the 'string_escape' encoding doesn't
   # allow single-digit hex escapes (like '\xf').
-  result = _CUNESCAPE_HEX.sub(ReplaceHex, text)
+  result = _ReplaceSingleDigitHexEscapes(text)
 
   # Replaces Unicode escape sequences with their character equivalents.
   result = result.encode('raw_unicode_escape').decode('raw_unicode_escape')
