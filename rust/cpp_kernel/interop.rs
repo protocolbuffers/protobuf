@@ -36,6 +36,65 @@ pub trait OwnedMessageInterop: SealedInternal {
     ///   - The pointer passed in must not be used by the caller after being passed here (must not
     ///     be read, written, or deleted)
     unsafe fn __unstable_take_ownership_of_raw_message(raw_message: *mut std::ffi::c_void) -> Self;
+
+    /// Constructs a new default-initialized C++ message of type `Self` in-place at `dst`
+    /// (with `arena = nullptr`).
+    ///
+    /// Aborts the process if `dst` is null or if `expected_size` or `expected_align` does not
+    /// match the C++ `ClassData` size and alignment for `Self`.
+    ///
+    /// # Safety
+    ///   - `dst` must be non-null, properly aligned for `Self`'s underlying C++ message class, and
+    ///     valid for writes of `expected_size` bytes.
+    #[doc(hidden)]
+    unsafe fn __unstable_placement_new(
+        dst: *mut std::ffi::c_void,
+        expected_size: usize,
+        expected_align: usize,
+    ) where
+        Self: Message,
+    {
+        let default_view = <Self::MessageView<'static> as Default>::default();
+        let default_raw = RawMessage::new(
+            <Self::MessageView<'static> as MessageViewInterop<'static>>::__unstable_as_raw_message(
+                &default_view,
+            )
+            .cast_mut()
+            .cast(),
+        )
+        .unwrap();
+        let dst = NonNull::new(dst).unwrap();
+        // SAFETY: `default_raw` points to the static default instance of `Self`'s C++ message
+        // class, and the caller guarantees `dst` is valid for writes of `expected_size` bytes
+        // with `expected_align` alignment.
+        unsafe {
+            proto2_rust_Message_placement_new(
+                default_raw,
+                dst.as_ptr(),
+                expected_size,
+                expected_align,
+            );
+        }
+    }
+
+    /// Runs the C++ message destructor in-place on `raw_message` without freeing its backing
+    /// storage.
+    ///
+    /// Aborts the process if `raw_message` is null or arena-allocated.
+    ///
+    /// # Safety
+    ///   - `raw_message` must point to a valid, initialized, non-arena-allocated C++ message of the
+    ///     same type as `Self`.
+    ///   - `raw_message` must not be read or mutated as an initialized message after this call.
+    #[doc(hidden)]
+    unsafe fn __unstable_destroy_in_place(raw_message: *mut std::ffi::c_void) {
+        let raw = RawMessage::new(raw_message.cast()).unwrap();
+        // SAFETY: The caller guarantees `raw` points to a valid, initialized, non-arena-allocated
+        // C++ message of type `Self`.
+        unsafe {
+            proto2_rust_Message_destroy_in_place(raw);
+        }
+    }
 }
 
 /// Methods for converting to and from a raw C++ message view pointer.

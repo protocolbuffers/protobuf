@@ -10,7 +10,11 @@
 #include <cstddef>
 #include <limits>
 
+#include "absl/log/absl_check.h"
+#include "google/protobuf/class_data.h"
 #include "google/protobuf/message_lite.h"
+#include "google/protobuf/message_traits.h"
+#include "google/protobuf/private_access.h"
 #include "rust/cpp_kernel/serialized_data.h"
 #include "rust/cpp_kernel/strings.h"
 
@@ -89,6 +93,25 @@ const void* proto2_rust_Message_get_descriptor(const google::protobuf::MessageLi
     return msg->GetDescriptor();
   }
   return nullptr;
+}
+
+void proto2_rust_Message_placement_new(
+    const google::protobuf::MessageLite* default_instance, void* dst,
+    size_t expected_size, size_t expected_align) {
+  ABSL_CHECK_NE(default_instance, nullptr);
+  ABSL_CHECK_NE(dst, nullptr);
+  const google::protobuf::internal::ClassData* data =
+      google::protobuf::internal::GetClassData(*default_instance);
+  ABSL_CHECK_NE(data, nullptr);
+  ABSL_CHECK_EQ(expected_size, size_t{data->allocation_size()});
+  ABSL_CHECK_EQ(expected_align, size_t{data->alignment()});
+  data->PlacementNew(dst, /*arena=*/nullptr);
+}
+
+void proto2_rust_Message_destroy_in_place(google::protobuf::MessageLite* m) {
+  ABSL_CHECK_NE(m, nullptr);
+  ABSL_CHECK_EQ(m->GetArena(), nullptr);
+  google::protobuf::internal::PrivateAccess::DestroyInstance(*m);
 }
 
 }  // extern "C"

@@ -53,6 +53,12 @@ struct PrivateAccess {
   static ExtensionSet* GetExtensionSet(MessageLite& msg);
   static const ExtensionSet* GetExtensionSet(const MessageLite& msg);
 
+  // Runs the destructor of `msg` in place without freeing its storage.
+  template <typename MessageLiteT>
+  static void DestroyInstance(MessageLiteT& msg) {
+    msg.DestroyInstance();
+  }
+
   template <typename T>
   static void TrackerOnGetMetadata() {
     T::Impl_::TrackerOnGetMetadata();

@@ -1066,6 +1066,9 @@ cc_library(
     name = "class_data",
     hdrs = ["class_data.h"],
     strip_include_prefix = "/src",
+    visibility = [
+        "//:__subpackages__",
+    ],
     deps = [
         ":port",
         "@abseil-cpp//absl/log:absl_check",

@@ -69,3 +69,11 @@ extern "C" const void* GetConstStaticInteropTestMessage() {
 extern "C" bool IsExpectedDescriptor(const google::protobuf::Descriptor* descriptor) {
   return descriptor == InteropTestMessage::GetDescriptor();
 }
+
+extern "C" size_t SizeOfInteropTestMessage() {
+  return sizeof(InteropTestMessage);
+}
+
+extern "C" size_t AlignOfInteropTestMessage() {
+  return alignof(InteropTestMessage);
+}

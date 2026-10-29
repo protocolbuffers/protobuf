@@ -23,6 +23,13 @@ unsafe extern "C" {
     pub fn proto2_rust_Message_merge_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_take_from(dst: RawMessage, src: RawMessage);
     pub fn proto2_rust_Message_get_descriptor(m: RawMessage) -> *const std::ffi::c_void;
+    pub fn proto2_rust_Message_placement_new(
+        default_instance: RawMessage,
+        dst: *mut std::ffi::c_void,
+        expected_size: usize,
+        expected_align: usize,
+    );
+    pub fn proto2_rust_Message_destroy_in_place(m: RawMessage);
 }
 
 unsafe extern "C" {

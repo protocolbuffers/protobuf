@@ -44,6 +44,9 @@ unsafe extern "C" {
     fn GetConstStaticInteropTestMessage() -> *const c_void;
 
     fn IsExpectedDescriptor(provided: *const c_void) -> bool;
+
+    fn SizeOfInteropTestMessage() -> usize;
+    fn AlignOfInteropTestMessage() -> usize;
 }
 
 #[gtest]
@@ -165,4 +168,40 @@ fn descriptor_interop() {
     let descriptor = InteropTestMessage::__unstable_get_descriptor();
     let result = unsafe { IsExpectedDescriptor(descriptor) };
     assert!(result);
+}
+
+#[gtest]
+fn placement_new_and_destroy_in_place() {
+    let size = unsafe { SizeOfInteropTestMessage() };
+    let align = unsafe { AlignOfInteropTestMessage() };
+    let layout = std::alloc::Layout::from_size_align(size, align).unwrap();
+    let ptr = unsafe { std::alloc::alloc(layout) };
+    assert!(!ptr.is_null());
+
+    let mut raw_msg = ptr.cast::<c_void>();
+    unsafe {
+        InteropTestMessage::__unstable_placement_new(raw_msg, size, align);
+    }
+
+    let payload = [b'x'; 256];
+    {
+        let mut msg_mut =
+            unsafe { InteropTestMessageMut::__unstable_wrap_raw_message_mut(&mut raw_msg) };
+        assert_eq!(msg_mut.i64(), 0);
+        assert_eq!(msg_mut.default_int32(), 41);
+        msg_mut.set_i64(12345);
+        msg_mut.set_bytes(&payload);
+    }
+
+    {
+        let const_msg = raw_msg.cast_const();
+        let msg_view = unsafe { InteropTestMessageView::__unstable_wrap_raw_message(&const_msg) };
+        assert_eq!(msg_view.i64(), 12345);
+        assert_eq!(msg_view.bytes(), &payload);
+    }
+
+    unsafe {
+        InteropTestMessage::__unstable_destroy_in_place(raw_msg);
+        std::alloc::dealloc(ptr, layout);
+    }
 }
