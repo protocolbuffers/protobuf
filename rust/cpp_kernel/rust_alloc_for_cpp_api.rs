@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-use std::alloc::{alloc, Layout};
+use std::alloc::{alloc, handle_alloc_error, Layout};
 
 #[unsafe(no_mangle)]
 unsafe extern "C" fn proto2_rust_alloc(size: usize, align: usize) -> *mut u8 {
@@ -15,6 +15,12 @@ unsafe extern "C" fn proto2_rust_alloc(size: usize, align: usize) -> *mut u8 {
         std::ptr::null_mut::<u8>().wrapping_add(align)
     } else {
         let layout = Layout::from_size_align(size, align).unwrap();
-        unsafe { alloc(layout) }
+        // SAFETY: `layout` has a non-zero size.
+        let ptr = unsafe { alloc(layout) };
+        if ptr.is_null() {
+            // C++ callers write into the result without checking it, so never return null.
+            handle_alloc_error(layout);
+        }
+        ptr
     }
 }
