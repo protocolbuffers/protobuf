@@ -194,7 +194,7 @@ static void upb_MiniTablePrinter_PrintField(upb_MiniTablePrinter* p,
   if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsPacked) {
     upb_MiniTablePrinter_Printf(p, " | Packed");
   }
-  if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsExtension) {
+  if (upb_MiniTableField_IsExtension(field)) {
     upb_MiniTablePrinter_Printf(p, " | Extension");
   }
   if (field->UPB_PRIVATE(mode) & kUpb_LabelFlags_IsAlternate) {

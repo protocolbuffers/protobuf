@@ -942,8 +942,7 @@ static const char* upb_MtDecoder_DoBuildMiniTableExtension(
                            "Extension overlaps with a known field");
   }
 
-  f->UPB_PRIVATE(mode) |= kUpb_LabelFlags_IsExtension;
-  f->UPB_PRIVATE(offset) = 0;
+  f->UPB_PRIVATE(offset) = kUpb_MiniTableField_ExtensionOffset;
   f->presence = 0;
 
   if (UPB_PRIVATE(_upb_MiniTableField_HasSub)(f)) {

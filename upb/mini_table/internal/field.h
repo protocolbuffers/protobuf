@@ -35,6 +35,11 @@ struct upb_MiniTableField {
 };
 
 #define kUpb_NoSub ((uint16_t)-1)
+
+// The offset of every extension field, which identifies a field as an
+// extension. No regular field can have this offset, since every message starts
+// with its upb_Message header.
+#define kUpb_MiniTableField_ExtensionOffset 0
 #define kUpb_SubmsgOffsetBytes 4
 
 typedef enum {
@@ -49,7 +54,8 @@ typedef enum {
 // Extra flags on the mode field.
 typedef enum {
   kUpb_LabelFlags_IsPacked = 4,
-  kUpb_LabelFlags_IsExtension = 8,
+  // 8 is unused: extensions are identified by their offset (see
+  // kUpb_MiniTableField_ExtensionOffset).
   // Indicates that this descriptor type is an "alternate type":
   //   - for Int32, this indicates that the actual type is Enum (but was
   //     rewritten to Int32 because it is an open enum that requires no check).
@@ -108,7 +114,7 @@ UPB_INLINE bool UPB_PRIVATE(_upb_MiniTableField_IsAlternate)(
 
 UPB_API_INLINE bool upb_MiniTableField_IsExtension(
     const struct upb_MiniTableField* f) {
-  return (f->UPB_ONLYBITS(mode) & kUpb_LabelFlags_IsExtension) != 0;
+  return f->UPB_ONLYBITS(offset) == kUpb_MiniTableField_ExtensionOffset;
 }
 
 UPB_API_INLINE bool upb_MiniTableField_IsPacked(
