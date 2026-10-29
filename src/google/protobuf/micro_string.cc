@@ -279,6 +279,19 @@ void MicroString::SetAlias(absl::string_view data, const MessageLite& parent,
     return Set(data, parent, inline_capacity);
   }
 
+  if (parent.GetArena() == nullptr) {
+    const absl::string_view current = Get();
+    const uintptr_t current_begin =
+        reinterpret_cast<uintptr_t>(current.data());
+    const uintptr_t current_end = current_begin + current.size();
+    const uintptr_t data_begin = reinterpret_cast<uintptr_t>(data.data());
+    const uintptr_t data_end = data_begin + data.size();
+    if (!current.empty() && data_begin < current_end &&
+        current_begin < data_end) {
+      return Set(data, parent, inline_capacity);
+    }
+  }
+
   LargeRep* h;
   if (!is_large_rep() || large_rep_kind() != kAlias) {
     Arena* arena = parent.GetArena();
