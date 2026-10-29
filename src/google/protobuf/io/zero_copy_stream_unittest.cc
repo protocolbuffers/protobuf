@@ -24,6 +24,7 @@
 //   implementations.
 
 #ifndef _WIN32
+#include <sys/mman.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #endif
@@ -36,6 +37,7 @@
 #include <algorithm>
 #include <chrono>
 #include <iterator>
+#include <limits>
 #include <memory>
 #include <sstream>
 #include <thread>
@@ -1183,6 +1185,109 @@ TEST(CordInputStreamTest, HugeCordNodes) {
     expected_next += size;
     size_to_go -= size;
   }
+}
+
+class RecordingCopyingOutputStream final : public CopyingOutputStream {
+ public:
+  bool Write(const void* buffer, int size) override {
+    if (buffer == nullptr || size <= 0) {
+      saw_invalid_write = true;
+      return false;
+    }
+    if (capture_bytes) {
+      captured.append(static_cast<const char*>(buffer),
+                      static_cast<size_t>(size));
+    }
+    if (first_write_ptr == nullptr) {
+      first_write_ptr = buffer;
+    }
+    call_sizes.push_back(size);
+    total_bytes += static_cast<size_t>(size);
+    return true;
+  }
+
+  bool capture_bytes = false;
+  bool saw_invalid_write = false;
+  const void* first_write_ptr = nullptr;
+  std::string captured;
+  std::vector<int> call_sizes;
+  size_t total_bytes = 0;
+};
+
+TEST(CopyingOutputStreamAdaptorTest, WriteCordSmallAndMultiChunk) {
+  RecordingCopyingOutputStream sink;
+  sink.capture_bytes = true;
+  CopyingOutputStreamAdaptor adaptor(&sink, 64);
+
+  void* prefix_buf = nullptr;
+  int prefix_size = 0;
+  ASSERT_TRUE(adaptor.Next(&prefix_buf, &prefix_size));
+  ASSERT_GE(prefix_size, 7);
+  memcpy(prefix_buf, "prefix:", 7);
+  adaptor.BackUp(prefix_size - 7);
+
+  const std::string small_part(20, 'a');
+  const std::string large_part(150, 'b');
+  absl::Cord cord;
+  cord.Append(absl::MakeCordFromExternal(small_part, [](auto) {}));
+  cord.Append(absl::MakeCordFromExternal(large_part, [](auto) {}));
+
+  ASSERT_TRUE(adaptor.WriteCord(cord));
+  ASSERT_TRUE(adaptor.Flush());
+  EXPECT_FALSE(sink.saw_invalid_write);
+  EXPECT_EQ(adaptor.ByteCount(), 7 + 20 + 150);
+  EXPECT_EQ(sink.captured, "prefix:" + small_part + large_part);
+}
+
+TEST(CopyingOutputStreamAdaptorTest, WriteCordHugeChunkSplitsWithoutOverflow) {
+  if constexpr (sizeof(size_t) <= sizeof(int)) {
+    GTEST_SKIP() << "Requires 64-bit size_t.";
+  }
+
+  constexpr size_t kMaxInt =
+      static_cast<size_t>((std::numeric_limits<int>::max)());
+  constexpr size_t kChunkSize = kMaxInt + 123;
+
+#ifndef _WIN32
+#ifndef MAP_ANONYMOUS
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+  void* mapped = mmap(nullptr, kChunkSize, PROT_READ,
+                      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (mapped == MAP_FAILED) {
+    GTEST_SKIP() << "Unable to reserve virtual address range for huge Cord.";
+  }
+  const char* base_ptr = static_cast<const char*>(mapped);
+  absl::Cord source = absl::MakeCordFromExternal(
+      absl::string_view(base_ptr, kChunkSize),
+      [mapped](absl::string_view) { munmap(mapped, kChunkSize); });
+#else
+  if (!google::protobuf::internal::RunLargeMemoryTests()) {
+    GTEST_SKIP() << "Not enough memory for this test.";
+  }
+  std::string input_str;
+  PROTOBUF_IGNORE_DEPRECATION_START
+  absl::strings_internal::STLStringResizeUninitializedAmortized(&input_str,
+                                                                kChunkSize);
+  PROTOBUF_IGNORE_DEPRECATION_STOP
+  const char* base_ptr = input_str.data();
+  absl::Cord source = absl::MakeCordFromExternal(input_str, [](auto) {});
+#endif
+
+  ASSERT_EQ(source.Chunks().begin()->size(), kChunkSize);
+
+  RecordingCopyingOutputStream sink;
+  CopyingOutputStreamAdaptor adaptor(&sink, 8192);
+  ASSERT_TRUE(adaptor.WriteCord(source));
+  ASSERT_TRUE(adaptor.Flush());
+
+  EXPECT_FALSE(sink.saw_invalid_write);
+  EXPECT_EQ(sink.first_write_ptr, static_cast<const void*>(base_ptr));
+  EXPECT_EQ(sink.total_bytes, kChunkSize);
+  EXPECT_EQ(adaptor.ByteCount(), static_cast<int64_t>(kChunkSize));
+  ASSERT_EQ(sink.call_sizes.size(), 2u);
+  EXPECT_EQ(sink.call_sizes[0], (std::numeric_limits<int>::max)());
+  EXPECT_EQ(sink.call_sizes[1], 123);
 }
 
 TEST_F(IoTest, CordIo) {
