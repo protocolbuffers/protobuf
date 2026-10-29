@@ -355,8 +355,9 @@ using FixtureBasesOf =
    public:                                                                     \
     using InternalParent_ = parent_class;                                      \
     using InternalSelf_ = self_class;                                          \
-    auto InternalFixtureBases_() -> decltype(InternalFixtureBaseProbe_(        \
-        ::google::protobuf::internal::ADLImporter{}));                                   \
+    auto InternalFixtureBases_()                                               \
+        -> decltype(adl_detail::InternalFixtureBaseProbe_(                     \
+            ::google::protobuf::internal::ADLImporter{}));                               \
                                                                                \
     template <typename Indices>                                                \
     explicit self_class(Indices*, size_t idx)                                  \
