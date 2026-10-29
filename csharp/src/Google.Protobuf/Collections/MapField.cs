@@ -94,7 +94,7 @@ namespace Google.Protobuf.Collections
             // Validation of arguments happens in ContainsKey and the indexer
             if (ContainsKey(key))
             {
-                throw new ArgumentException("Key already exists in map", nameof(key));
+                throw new ArgumentException($"Key already exists in map: {key}", nameof(key));
             }
             this[key] = value;
         }

@@ -1,4 +1,4 @@
-﻿#region Copyright notice and license
+#region Copyright notice and license
 // Protocol Buffers - Google's data interchange format
 // Copyright 2015 Google Inc.  All rights reserved.
 //
@@ -175,7 +175,18 @@ namespace Google.Protobuf.Collections
         public void Add_KeyAlreadyExists()
         {
             var map = new MapField<string, string> { { "foo", "bar" } };
-            Assert.Throws<ArgumentException>(() => map.Add("foo", "baz"));
+            var ex = Assert.Throws<ArgumentException>(() => map.Add("foo", "baz"));
+            StringAssert.Contains("foo", ex.Message);
+            Assert.AreEqual("key", ex.ParamName);
+        }
+
+        [Test]
+        public void Add_KeyAlreadyExists_IntKey()
+        {
+            var map = new MapField<int, string> { { 5, "x" } };
+            var ex = Assert.Throws<ArgumentException>(() => map.Add(5, "y"));
+            StringAssert.Contains("5", ex.Message);
+            Assert.AreEqual("key", ex.ParamName);
         }
 
         [Test]
