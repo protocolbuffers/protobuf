@@ -39,6 +39,7 @@
 #include "absl/strings/string_view.h"
 #include "absl/synchronization/barrier.h"
 #include "absl/types/optional.h"
+#include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
 #include "google/protobuf/arena_test_util.h"

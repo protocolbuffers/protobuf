@@ -37,7 +37,7 @@ namespace internal {
 
 // Arena blocks are variable length malloc-ed objects.  The following structure
 // describes the common header for all blocks.
-struct ArenaBlock {
+struct alignas(ArenaAlignDefault::align) ArenaBlock {
   // For the sentry block with zero-size where ptr_/limit_ both point to `this`.
   constexpr ArenaBlock() : next(nullptr), size(0) {}
 

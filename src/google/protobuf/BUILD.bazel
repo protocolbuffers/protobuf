@@ -1969,6 +1969,7 @@ cc_test(
     }),
     deps = [
         ":arena",
+        ":arena_align",
         ":arena_allocation_policy",
         ":arena_cleanup",
         ":cc_test_protos",
