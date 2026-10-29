@@ -56,6 +56,11 @@ class ExtensionFunctions(object):
   def nuget_package(self, *args, **kwargs):
     pass
 
+  def __getattr__(self, name):
+    # Module extensions define arbitrary tag classes (e.g. rules_foreign_cc's
+    # `tools.cmake(...)`); none of them affect CMake dependency versions.
+    return empty_func
+
 
 def empty_func(*args, **kwargs):
   pass
