@@ -78,28 +78,6 @@ config_setting(
 
 # TODO: deprecate this flag.
 compat_bool_flag(
-    name = "strict_proto_deps",
-    build_setting_default = True,
-    fragment_field = "strict_proto_deps",
-    scope = "universal",
-    values = {
-        False: [
-            "off",
-            "OFF",
-        ],
-        True: [
-            "warn",
-            "WARN",
-            "error",
-            "ERROR",
-            "strict",
-            "STRICT",
-        ],
-    },
-)
-
-# TODO: deprecate this flag.
-compat_bool_flag(
     name = "strict_public_imports",
     build_setting_default = False,
     fragment_field = "strict_public_imports",
