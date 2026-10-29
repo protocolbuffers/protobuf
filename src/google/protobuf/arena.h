@@ -25,6 +25,7 @@
 #include "absl/base/nullability.h"
 #include "absl/types/optional.h"
 #include "google/protobuf/internal_visibility.h"
+#include "google/protobuf/private_access.h"
 #if defined(_MSC_VER) && !defined(_LIBCPP_STD_VER) && !_HAS_EXCEPTIONS
 // Work around bugs in MSVC <typeinfo> header when _HAS_EXCEPTIONS=0.
 #include <exception>
@@ -77,7 +78,6 @@ struct ArenaTestPeer;        // defined in arena_test_util.h
 class InternalMetadata;      // defined in metadata_lite.h
 template <typename MessageType>
 class ByTemplate;            // defined in static_message_factory.h
-class EpsCopyInputStream;    // defined in parse_context.h
 class UntypedMapBase;        // defined in map.h
 class RepeatedPtrFieldBase;  // defined in repeated_ptr_field.h
 class TcParser;              // defined in generated_message_tctable_impl.h
@@ -843,18 +843,16 @@ class PROTOBUF_EXPORT PROTOBUF_ALIGNAS(8)
   friend class internal::InternalMetadata;    // For user_arena().
   template <typename>
   friend class internal::ByTemplate;          // For DefaultConstruct.
-  friend class internal::EpsCopyInputStream;  // For parser performance
   friend class internal::TcParser;            // For parser performance
   friend class MessageLite;
   template <typename Key, typename T>
   friend class Map;
+  friend internal::PrivateAccess;
   template <typename>
   friend class RepeatedField;                   // For ReturnArrayMemory
   friend class internal::RepeatedPtrFieldBase;  // For ReturnArrayMemory
   friend class internal::UntypedMapBase;        // For ReturnArrayMemory
   friend class internal::ExtensionSet;          // For ReturnArrayMemory
-  friend internal::SerialArena* PROTOBUF_NULLABLE
-  internal::GetSerialArena(Arena* PROTOBUF_NULLABLE);
 
   friend struct internal::ArenaTestPeer;
 };
@@ -1196,7 +1194,7 @@ GetSerialArena(SerialArena* PROTOBUF_NULLABLE arena) {
 inline SerialArena* PROTOBUF_NULLABLE
 GetSerialArena(Arena* PROTOBUF_NULLABLE arena) {
   if (arena == nullptr) return nullptr;
-  SerialArena* res = arena->impl_.GetSerialArena();
+  SerialArena* res = PrivateAccess::GetThreadSafeArena(*arena).GetSerialArena();
   PROTOBUF_ASSUME(res != nullptr);
   return res;
 }
@@ -1223,6 +1221,10 @@ inline Arena* PROTOBUF_NULLABLE
 GetArena(const MessageLite* PROTOBUF_NONNULL elem) {
   const auto* dependent_elem = (delay, ..., elem);
   return dependent_elem->GetArena();
+}
+
+constexpr ThreadSafeArena& PrivateAccess::GetThreadSafeArena(Arena& arena) {
+  return arena.impl_;
 }
 
 // This class is used to define `DestructorSkippable_` for some containing type
