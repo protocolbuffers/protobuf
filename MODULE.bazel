@@ -420,8 +420,3 @@ flag_alias(
     name = "cc_proto_library_header_suffixes",
     starlark_flag = "@//bazel/flags/cc:cc_proto_library_header_suffixes",
 )
-
-flag_alias(
-    name = "cc_proto_library_source_suffixes",
-    starlark_flag = "@//bazel/flags/cc:cc_proto_library_source_suffixes",
-)

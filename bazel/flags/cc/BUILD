@@ -34,10 +34,3 @@ compat_string_list_flag(
     fragment_field = "cc_proto_library_header_suffixes",
     scope = "universal",
 )
-
-compat_string_list_flag(
-    name = "cc_proto_library_source_suffixes",
-    build_setting_default = [".pb.cc"],
-    fragment_field = "cc_proto_library_source_suffixes",
-    scope = "universal",
-)
