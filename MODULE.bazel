@@ -300,6 +300,163 @@ bazel_dep(
 cc_configure = use_extension("@rules_cc//cc:extensions.bzl", "cc_configure_extension")
 use_repo(cc_configure, "local_config_cc")
 
+################################################################################
+# CMake-under-Bazel CI (see //cmake:BUILD.bazel).
+#
+# Everything in this section is dev-only so that downstream Bazel consumers of
+# protobuf never pick up rules_foreign_cc or its transitive dependencies.
+################################################################################
+bazel_dep(name = "rules_foreign_cc", version = "0.16.0", dev_dependency = True)
+
+# Hermetic cmake/ninja binaries, so the CMake build does not depend on what is
+# installed on the host.
+foreign_cc_tools = use_extension(
+    "@rules_foreign_cc//foreign_cc:extensions.bzl",
+    "tools",
+    dev_dependency = True,
+)
+foreign_cc_tools.cmake(
+    mode = "binary",
+    version = "3.31.x",
+)
+foreign_cc_tools.ninja(
+    mode = "binary",
+    version = "1.13.x",
+)
+use_repo(foreign_cc_tools, "rules_foreign_cc_toolchains")
+
+register_toolchains(
+    "@rules_foreign_cc_toolchains//:all",
+    dev_dependency = True,
+)
+
+# The CMake dependencies are built from the module repos already pinned by the
+# bazel_dep() declarations above (which are also what
+# cmake/dependencies_generator.py turns into cmake/dependencies.cmake), so there
+# is a single version pin and a single download per dependency.
+#
+# abseil-cpp ships its own CMake build for Bazel consumers (@abseil-cpp//CMake:
+# the //CMake:absl and //CMake:googletest targets, backed by a rules_foreign_cc
+# dependency and a repository rule exposing each module's CMake source tree).
+# Those targets are proposed upstream from
+# https://github.com/karenwuz/abseil-cpp/tree/cmake-rules-foreign-cc. Until an
+# Abseil release that ships them is picked up, the override below pins that
+# branch's commit. archive_override is root-module-only, so downstream
+# consumers are unaffected, but NOTE: the branch is based on Abseil master, so
+# this moves every Bazel build of protobuf itself (not just the CMake targets)
+# to Abseil HEAD and to the newer googletest that it pulls in. Delete the
+# override on the corresponding version bump.
+archive_override(
+    module_name = "abseil-cpp",
+    integrity = "sha256-VsdHON8TKOFrgc0R5G5rCD6mY+c4lOvIXm8zM2Xoj+0=",
+    strip_prefix = "abseil-cpp-93f4a2ba154e35c3407092372f6d7f556c5e7f84",
+    urls = ["https://github.com/karenwuz/abseil-cpp/archive/93f4a2ba154e35c3407092372f6d7f556c5e7f84.tar.gz"],
+)
+
+# CMake source trees staged into external repositories, see
+# cmake/cmake_source_repo.bzl.
+#
+# Protobuf's own: rules_foreign_cc cannot build a project whose CMakeLists.txt
+# sits at the workspace root, and the per-package BUILD files under src/ would
+# otherwise prevent a single filegroup from spanning the tree.
+cmake_source_repo = use_repo_rule("//cmake:cmake_source_repo.bzl", "cmake_source_repo")
+
+cmake_source_repo(
+    name = "protobuf-cmake-src",
+    dev_dependency = True,
+    dirs = [
+        "cmake",
+        "conformance",
+        "editions",
+        "java/core/src/main/resources",
+        "src",
+        "third_party/utf8_range",
+        "upb",
+        "upb_generator",
+    ],
+    # Staged but not inputs of the CMake build: files CMake never reads, so
+    # that editing them does not rebuild protobuf. (Bazel package markers are
+    # skipped by the rule itself; examples/ is not staged at all since
+    # protobuf_BUILD_EXAMPLES and protobuf_INSTALL_EXAMPLES are off.)
+    exclude = [
+        "**/*.md",
+        "cmake/*.bzl",
+        "cmake/*.py",
+        "cmake/*.sh",
+        "cmake/installed_*_golden.txt",
+    ],
+    # `lib_srcs` is the view read by the library build in cmake/BUILD.bazel
+    # (protobuf_BUILD_TESTS=OFF, protobuf_BUILD_CONFORMANCE=OFF): the tree
+    # minus tests, test utilities, test data and conformance, so that
+    # test-only edits do not rebuild the libraries. Checked against
+    # src/file_lists.cmake: none of the libprotobuf*/libprotoc/libupb/protoc
+    # file lists match these patterns. The test build reads the full `srcs`.
+    #
+    # `test_data` is what the test executables read at run time (they run from
+    # the source tree root, see cmake/run_cmake_test.sh): test data and .proto
+    # files under src/, the conformance failure lists, editions goldens and
+    # upb test inputs. Keeping cmake/, upb_generator/, third_party/ and the
+    # root files out of the tests' runfiles means a change there re-runs the
+    # tests only if it actually changed the test executables.
+    filegroups = {
+        "lib_srcs": [
+            "**",
+            "-cmake/conformance.cmake",
+            "-cmake/gtest.cmake",
+            "-cmake/tests.cmake",
+            "-conformance/**",
+            "-editions/**",
+            "-**/test/**",
+            "-**/testdata/**",
+            "-**/testing/**",
+            "-**/*_test.cc",
+            "-**/*_test.h",
+            "-**/*_test.inc",
+            "-**/*_unittest.cc",
+            "-**/*_unittest.h",
+            "-**/*_unittest.inc",
+            "-**/*_unittest*.proto",
+            "-**/unittest*",
+            "-**/*test_util*",
+            "-**/test_*.proto",
+            "-**/mock_*",
+        ],
+        "test_data": [
+            "conformance/**",
+            "editions/**",
+            "src/**",
+            "upb/**",
+        ],
+    },
+    files = [
+        "CMakeLists.txt",
+        "LICENSE",
+        "version.json",
+    ],
+)
+
+# jsoncpp (needed by protobuf_BUILD_CONFORMANCE): the @jsoncpp module repo
+# exposes no target spanning its CMake sources, so mirror them the same way.
+cmake_source_repo(
+    name = "jsoncpp-cmake-src",
+    dev_dependency = True,
+    dirs = [
+        "cmake",
+        "example",
+        "include",
+        "pkg-config",
+        "src",
+    ],
+    files = [
+        "CMakeLists.txt",
+        "CTestConfig.cmake",
+        "jsoncpp-namespaced-targets.cmake",
+        "jsoncppConfig.cmake.in",
+        "version.in",
+    ],
+    root = "@jsoncpp//:CMakeLists.txt",
+)
+
 # For the Lua upb implementation
 bazel_dep(name = "lua", version = "5.4.6", dev_dependency = True)
 

@@ -226,6 +226,80 @@ jobs:
             /test.sh ${{ matrix.flags}} ${{ env.SCCACHE_CMAKE_FLAGS }}
             -Dprotobuf_BUILD_TESTS=ON ${{ matrix.package_flags }}
 
+  # The `linux-cmake` configurations, built and run as Bazel targets instead
+  # of /test.sh: //cmake:protobuf_cmake<suffix> builds and installs the
+  # libraries, //cmake:protobuf_cmake<suffix>_tests builds the test executables
+  # against that install, and //cmake:all_cmake<suffix>_tests runs the ctest
+  # entries as Bazel tests. Runs alongside linux-cmake while the Bazel path is
+  # proven out; see cmake/BUILD.bazel and go/protobuf-bazelification. Not
+  # covered (yet): the Fetch entry and protobuf_BUILD_EXAMPLES.
+  linux-cmake-bazel:
+    strategy:
+      fail-fast: false   # Don't cancel all jobs if one fails.
+      matrix:
+        include:
+          # linux-cmake default / Package / Ninja: C++17, static libraries.
+          - suffix: ""
+          - name: C++20
+            suffix: _cxx20
+          - name: Shared
+            suffix: _shared
+            continuous-only: true
+
+    name: ${{ matrix.continuous-only && inputs.continuous-prefix || '' }} Linux CMake (Bazel) ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout pending changes
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/checkout@v7
+        with:
+          ref: ${{ inputs.safe-checkout }}
+
+      - name: Setup sccache
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/sccache@v7
+        with:
+          cache-prefix: linux-cmake-bazel
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+
+      # install_sccache.sh is a stopgap until the image ships sccache.
+      # `sccache -z` also starts the sccache server, outside Bazel, with the
+      # cache configuration from the step above; --//cmake:sccache makes
+      # the CMake builds inside Bazel's sandbox compile through it (see
+      # cmake/BUILD.bazel). Build and test are separate steps with identical
+      # Bazel flags and cache key, so the test step finds the cmake() actions
+      # in the Bazel cache and only runs the tests. One cache key for all
+      # configurations: the dependency builds are shared between them.
+      - name: Build with CMake under Bazel
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v7
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic@sha256:76504fd115bd939b9c15c175245af1f6aa57c61316376171d8b53ef520d487df
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/cmake
+          bash: >-
+            set -ex;
+            cd /workspace;
+            .github/scripts/install_sccache.sh;
+            sccache -z;
+            bazel build --//cmake:sccache $BAZEL_FLAGS //cmake:protobuf_cmake${{ matrix.suffix }} //cmake:protobuf_cmake${{ matrix.suffix }}_tests;
+            sccache -s
+
+      - name: Run CMake tests
+        if: ${{ !matrix.continuous-only || inputs.continuous-run }}
+        uses: protocolbuffers/protobuf-ci/bazel-docker@v7
+        with:
+          image: us-docker.pkg.dev/protobuf-build/containers/test/linux/monolithic@sha256:76504fd115bd939b9c15c175245af1f6aa57c61316376171d8b53ef520d487df
+          credentials: ${{ secrets.GAR_SERVICE_ACCOUNT }}
+          bazel-cache: cpp_linux/cmake
+          bash: >-
+            set -ex;
+            cd /workspace;
+            .github/scripts/install_sccache.sh;
+            sccache -z;
+            bazel test --//cmake:sccache $BAZEL_FLAGS //cmake:all_cmake${{ matrix.suffix }}_tests;
+            sccache -s
+
   linux-cmake-install:
     strategy:
       fail-fast: false   # Don't cancel all jobs if one fails.

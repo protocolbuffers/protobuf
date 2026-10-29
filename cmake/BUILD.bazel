@@ -1,5 +1,8 @@
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
+load("@rules_foreign_cc//foreign_cc:defs.bzl", "cmake")
 load("@rules_python//python:defs.bzl", "py_binary")
 load("//upb/cmake:build_defs.bzl", "staleness_test")
+load(":protobuf_cmake.bzl", "CMAKE_TAGS", "COMMON_CACHE_ENTRIES", "SCCACHE_CACHE_ENTRIES", "protobuf_cmake")
 
 py_binary(
     name = "dependencies_generator",
@@ -22,4 +25,99 @@ staleness_test(
     ],
     generated_pattern = "generated-in/%s",
     tags = ["manual"],
+)
+
+################################################################################
+# CMake build under Bazel (rules_foreign_cc).
+#
+# These targets replicate the `linux-cmake*` GitHub Actions jobs as Bazel
+# targets: each dependency is built and installed once with CMake, protobuf is
+# then configured against those install prefixes (exercising the
+# `find_package(... CONFIG)` code paths that downstream CMake users rely on),
+# and the resulting test executables are run as ordinary `bazel test` targets.
+# See protobuf_cmake.bzl for the targets one configuration consists of.
+#
+# Everything here is tagged `manual` while the migration is in progress; run
+# with `bazel test //cmake:all_cmake_tests` (or the other `all_cmake_*_tests`
+# suites below).
+################################################################################
+
+# Compiler cache for the CMake builds below.
+#
+# Each cmake() target is a single Bazel action, so a change to any of its
+# inputs rebuilds it from scratch. With --//cmake:sccache the CMake builds
+# compile through sccache via CMAKE_<LANG>_COMPILER_LAUNCHER -- the same
+# mechanism as the SCCACHE_CMAKE_FLAGS of the current CI jobs -- so an
+# incremental rebuild only pays for configure, code generation, linking and
+# the changed translation units; unchanged ones are fetched from the sccache
+# cache.
+#
+# Only the sccache *client* runs inside Bazel's sandbox. Start the server
+# before invoking Bazel (`sccache --start-server`) with the cache backend
+# configured in its environment (e.g. SCCACHE_GCS_BUCKET and friends); the
+# sandboxed clients reach it over localhost, so nothing backend-specific enters
+# the Bazel action key, and `sccache -s` afterwards reports the hit rate.
+# `sccache` must be on PATH. Use identical flags for every invocation that
+# shares the cmake() outputs (e.g. the build and the test step of a CI job);
+# a different flag set is a different action to Bazel and rebuilds.
+bool_flag(
+    name = "sccache",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "with_sccache",
+    flag_values = {":sccache": "true"},
+)
+
+# jsoncpp, for protobuf_BUILD_CONFORMANCE. Mirrors cmake/conformance.cmake.
+# Shared by every protobuf configuration below.
+cmake(
+    name = "jsoncpp_cmake",
+    cache_entries = COMMON_CACHE_ENTRIES | {
+        "BUILD_OBJECT_LIBS": "OFF",
+        "BUILD_SHARED_LIBS": "OFF",
+        "BUILD_STATIC_LIBS": "ON",
+        "JSONCPP_WITH_CMAKE_PACKAGE": "ON",
+        "JSONCPP_WITH_PKGCONFIG_SUPPORT": "OFF",
+        "JSONCPP_WITH_POST_BUILD_UNITTEST": "OFF",
+        "JSONCPP_WITH_TESTS": "OFF",
+    } | SCCACHE_CACHE_ENTRIES,
+    generate_args = ["-GNinja"],
+    # The @jsoncpp module's CMake sources, staged by MODULE.bazel.
+    lib_source = "@jsoncpp-cmake-src//:srcs",
+    # Consumed through CMAKE_PREFIX_PATH only; no need to enumerate libraries.
+    out_headers_only = True,
+    # Keep compile command lines free of the sandbox path so sccache can hit.
+    set_file_prefix_map = True,
+    tags = CMAKE_TAGS,
+)
+
+# The configurations of the `linux-cmake` matrix in
+# .github/workflows/test_cpp.yml. Not covered here: `Fetch`
+# (protobuf_FORCE_FETCH_DEPENDENCIES downloads the dependencies at configure
+# time, which a hermetic Bazel action cannot do) and `protobuf_BUILD_EXAMPLES`
+# (an ExternalProject against the build tree; the dedicated linux-cmake-examples
+# job keeps covering it).
+
+# `linux-cmake` default / Package / Ninja: C++17, static libraries, tests and
+# conformance, dependencies from installed packages only.
+protobuf_cmake(
+    name = "protobuf_cmake",
+    test_prefix = "cmake",
+)
+
+# `linux-cmake` C++20.
+protobuf_cmake(
+    name = "protobuf_cmake_cxx20",
+    cache_entries = {"CMAKE_CXX_STANDARD": "20"},
+    test_prefix = "cmake_cxx20",
+)
+
+# `linux-cmake` Shared: shared libraries, tests built against the installed
+# shared libraries and run with them on LD_LIBRARY_PATH.
+protobuf_cmake(
+    name = "protobuf_cmake_shared",
+    shared = True,
+    test_prefix = "cmake_shared",
 )
