@@ -20,7 +20,11 @@ use reflection::def_pool::{
     upb_DefPool_FindMessageByNameWithSize, upb_DefPool_Free, upb_DefPool_Init_New,
     upb_DefPool_LoadDefInit, upb_DefPool_New, upb_MiniTableFile_New, RawDefPool,
 };
-use reflection::message_def::RawMessageDef;
+use reflection::field_def::{upb_FieldDef_MessageSubDef, RawFieldDef};
+use reflection::message_def::{
+    upb_MessageDef_ExtensionRangeCount, upb_MessageDef_Field, upb_MessageDef_FieldCount,
+    RawMessageDef,
+};
 use reflection::upb_TextEncode;
 
 use upb::{
@@ -117,6 +121,63 @@ impl<'pool> MessageDef<'pool> {
     #[inline]
     pub fn raw(&self) -> RawMessageDef {
         self.raw
+    }
+
+    /// Returns the number of fields of the message.
+    pub fn field_count(&self) -> usize {
+        // SAFETY: `self.raw` was allocated by the pool.
+        let count = unsafe { upb_MessageDef_FieldCount(self.raw) };
+        usize::try_from(count).expect("field count should not be negative")
+    }
+
+    /// Returns the field at index `i`, in declaration order.
+    ///
+    /// # Panics
+    /// Panics if `i >= self.field_count()`.
+    pub fn field(&self, i: usize) -> FieldDef<'pool> {
+        assert!(i < self.field_count(), "field index out of range");
+        // SAFETY:
+        // - `self.raw` was allocated by the pool.
+        // - `i` is in `0..upb_MessageDef_FieldCount(self.raw)`, so it also fits in a `c_int`.
+        let field = unsafe { upb_MessageDef_Field(self.raw, i as c_int) };
+        // SAFETY: A message's fields are allocated by the same pool as the message.
+        unsafe { FieldDef::from_raw(field) }
+    }
+
+    /// Returns the number of extension ranges the message declares. Only a message that declares
+    /// at least one can be extended.
+    pub fn extension_range_count(&self) -> usize {
+        // SAFETY: `self.raw` was allocated by the pool.
+        let count = unsafe { upb_MessageDef_ExtensionRangeCount(self.raw) };
+        usize::try_from(count).expect("extension range count should not be negative")
+    }
+}
+
+/// A borrowed field descriptor tied to the lifetime of a DefPool. No drop implementation is
+/// provided because this is not an owning type and cannot be individually freed.
+///
+/// Similar to how `MessageDef` is a wrapper around `RawMessageDef`, this is a wrapper around
+/// `RawFieldDef`.
+#[derive(Copy, Clone)]
+pub struct FieldDef<'pool> {
+    raw: RawFieldDef,
+    _marker: PhantomData<&'pool DefPool>,
+}
+
+impl<'pool> FieldDef<'pool> {
+    /// # Safety
+    /// The caller must guarantee `raw` was allocated by the pool providing the `'pool` lifetime.
+    unsafe fn from_raw(raw: RawFieldDef) -> Self {
+        Self { raw, _marker: PhantomData }
+    }
+
+    /// Returns the message type of a message or group field, which for a map field is its entry
+    /// message, and `None` for any other field.
+    pub fn message_sub_def(&self) -> Option<MessageDef<'pool>> {
+        // SAFETY: `self.raw` was allocated by the pool.
+        let raw = unsafe { upb_FieldDef_MessageSubDef(self.raw) }?;
+        // SAFETY: A field's message type is allocated by the same pool as the field.
+        Some(unsafe { MessageDef::from_raw(raw) })
     }
 }
 

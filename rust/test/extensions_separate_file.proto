@@ -17,6 +17,10 @@ message SeparateFileSubmessage {
   extensions 1 to max;
 }
 
+message SeparateFileSubmessageMap {
+  map<int32, SeparateFileSubmessage> submessages = 1;
+}
+
 extend TestExtensions {
   int32 i32_extension_separate_file = 1000;
   SeparateFileSubmessage submessage_extension_separate_file = 1002;

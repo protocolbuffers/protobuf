@@ -45,6 +45,7 @@ rust_library(
     name = "reflection",
     srcs = [
         "reflection/def_pool.rs",
+        "reflection/field_def.rs",
         "reflection/message_def.rs",
         "reflection/mod.rs",
         "reflection/opaque_pointee.rs",
