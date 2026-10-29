@@ -728,6 +728,13 @@ static void create_msgdef(upb_DefBuilder* ctx, const char* prefix,
     }
   }
 
+  if (UPB_UNLIKELY(google_protobuf_MessageOptions_map_entry(m->opts))) {
+    if (UPB_UNLIKELY(n_oneof > 0)) {
+      _upb_DefBuilder_Errf(ctx, "map_entry cannot have oneofs (%s)",
+                           m->full_name);
+    }
+  }
+
   m->ext_range_count = n_ext_range;
   m->ext_ranges = _upb_ExtensionRanges_New(ctx, n_ext_range, ext_ranges,
                                            m->resolved_features, m);
