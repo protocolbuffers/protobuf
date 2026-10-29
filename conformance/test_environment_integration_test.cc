@@ -42,16 +42,21 @@ namespace conformance {
 namespace {
 
 using ::testing::AllOf;
+using ::testing::ContainsRegex;
 using ::testing::HasSubstr;
 using ::testing::Not;
 
 // The names of the sample tests, as they appear in failure lists.
+constexpr absl::string_view kPass =
+    "Required.Proto3.ProtobufInput.SamplePass.ProtobufOutput";
 constexpr absl::string_view kDeliberateFailure =
     "Required.Proto3.ProtobufInput.SampleDeliberateFailure.ProtobufOutput";
 constexpr absl::string_view kP1Failure =
     "Recommended.Proto3.ProtobufInput.SampleP1Failure.ProtobufOutput";
 constexpr absl::string_view kNeverRuns =
     "Required.Proto3.ProtobufInput.SampleNeverRuns.ProtobufOutput";
+constexpr absl::string_view kUncheckedResult =
+    "Required.Proto3.ProtobufInput.SampleUncheckedResult.ProtobufOutput";
 constexpr absl::string_view kFailureMessage =
     "Should have failed to parse, but didn't.";
 
@@ -89,14 +94,17 @@ const std::string& TesteeBinary() {
   return *path;
 }
 
-// The --failure_list flag for sample_failure_list_<name>.txt, a data
-// dependency from the sample test's package.
-std::string FailureListFlag(absl::string_view name) {
+// The path of sample_failure_list_<name>.txt, a data dependency from the
+// sample test's package.
+std::string FailureListPath(absl::string_view name) {
   std::string package = RunfilesPathFromEnvironment("SAMPLE_TEST");
   package.erase(package.rfind('/'));
-  return absl::StrCat(
-      "--failure_list=",
-      Rlocation(absl::StrCat(package, "/sample_failure_list_", name, ".txt")));
+  return Rlocation(
+      absl::StrCat(package, "/sample_failure_list_", name, ".txt"));
+}
+
+std::string FailureListFlag(absl::string_view name) {
+  return absl::StrCat("--failure_list=", FailureListPath(name));
 }
 
 std::string TmpPath(absl::string_view name) {
@@ -197,6 +205,24 @@ std::string XmlTestRun(const std::string& report) {
   return XmlScope(report, "<testsuites", {"<testsuite "});
 }
 
+// Sets `name` to `value` in this process's environment, which the binaries
+// the tests run inherit.  The MSVC CRT has no setenv()/unsetenv().
+void SetEnvironmentVariable(const char* name, const char* value) {
+#ifdef _WIN32
+  ABSL_CHECK_EQ(_putenv_s(name, value), 0);
+#else
+  ABSL_CHECK_EQ(setenv(name, value, /*overwrite=*/1), 0);
+#endif
+}
+
+void UnsetEnvironmentVariable(const char* name) {
+#ifdef _WIN32
+  ABSL_CHECK_EQ(_putenv_s(name, ""), 0);  // An empty value removes it.
+#else
+  ABSL_CHECK_EQ(unsetenv(name), 0);
+#endif
+}
+
 class TestEnvironmentIntegrationTest : public testing::Test {
  protected:
   static void SetUpTestSuite() {
@@ -209,11 +235,7 @@ class TestEnvironmentIntegrationTest : public testing::Test {
           "TEST_WARNINGS_OUTPUT_FILE", "TEST_TOTAL_SHARDS", "TEST_SHARD_INDEX",
           "TEST_SHARD_STATUS_FILE", "GTEST_TOTAL_SHARDS", "GTEST_SHARD_INDEX",
           "GTEST_SHARD_STATUS_FILE"}) {
-#ifdef _WIN32
-      _putenv_s(name, "");  // An empty value removes the variable.
-#else
-      unsetenv(name);
-#endif
+      UnsetEnvironmentVariable(name);
     }
   }
 };
@@ -236,6 +258,66 @@ TEST_F(TestEnvironmentIntegrationTest, FailsWithAnEmptyFailureList) {
               AllOf(HasSubstr("[  FAILED  ] "
                               "SampleConformanceTest.SampleDeliberateFailure"),
                     HasSubstr(kDeliberateFailure), HasSubstr(kFailureMessage)));
+}
+
+TEST_F(TestEnvironmentIntegrationTest, AListedTestThatPassesFailsTheRun) {
+  // The list also expects the test that passes to fail.
+  std::string list = WriteFile(
+      "pass_listed.txt", absl::StrCat(ReadFile(FailureListPath("ok")), kPass,
+                                      " # Should have failed to parse\n"));
+  RunResult run = RunSample({absl::StrCat("--failure_list=", list)});
+  EXPECT_NE(run.exit_code, 0);
+  EXPECT_THAT(run.output,
+              AllOf(HasSubstr("[  FAILED  ] SampleConformanceTest.SamplePass"),
+                    HasSubstr("is in the failure list, but test succeeded"),
+                    HasSubstr("[       OK ] "
+                              "SampleConformanceTest.SampleDeliberateFailure"),
+                    HasSubstr("[       OK ] "
+                              "SampleConformanceTest.SampleP1Failure")));
+}
+
+TEST_F(TestEnvironmentIntegrationTest, EnforcementLevelToleratesP1Failures) {
+  // Only the P0 failure is listed.
+  std::string list =
+      WriteFile("p0_only.txt",
+                absl::StrCat(kDeliberateFailure, " # ", kFailureMessage, "\n"));
+  std::string xml = TmpPath("tolerated.xml");
+  RunResult run =
+      RunSample({absl::StrCat("--failure_list=", list), "--enforcement_level=0",
+                 absl::StrCat(kGtestFlag, "output=xml:", xml)});
+  EXPECT_EQ(run.exit_code, 0) << run.output;
+  EXPECT_THAT(run.output,
+              HasSubstr("[       OK ] SampleConformanceTest.SampleP1Failure"));
+  EXPECT_THAT(XmlTestCase(ReadFile(xml), "SampleP1Failure"),
+              HasSubstr("name=\"tolerated_failures\" value=\"1\""));
+
+  // Every priority is enforced by default.
+  run = RunSample({absl::StrCat("--failure_list=", list)});
+  EXPECT_NE(run.exit_code, 0);
+  EXPECT_THAT(
+      run.output,
+      AllOf(HasSubstr("[  FAILED  ] SampleConformanceTest.SampleP1Failure"),
+            HasSubstr(
+                absl::StrCat("Unexpected failure for test: ", kP1Failure))));
+}
+
+TEST_F(TestEnvironmentIntegrationTest, AResultThatIsNeverCheckedFailsItsTest) {
+  // The sample test that forgets Yields() is disabled, so that the other runs
+  // stay clean; this run asks for it by name.
+  RunResult run =
+      RunSample({absl::StrCat(kGtestFlag, "also_run_disabled_tests"),
+                 absl::StrCat(kGtestFlag, "filter=*SampleUncheckedResult")});
+  EXPECT_NE(run.exit_code, 0);
+  EXPECT_THAT(
+      run.output,
+      AllOf(HasSubstr("[  FAILED  ] "
+                      "SampleConformanceTest.DISABLED_SampleUncheckedResult"),
+            // The failure points at the test, not at the environment (gtest
+            // prints "file(line)" on MSVC and "file:line" elsewhere).
+            ContainsRegex("sample_conformance_test\\.cc[:(][0-9]+"),
+            HasSubstr(absl::StrCat(
+                "TestResult for ", kUncheckedResult,
+                " was never checked; wrap the matcher in Yields()"))));
 }
 
 TEST_F(TestEnvironmentIntegrationTest, ListsTestsWithoutATestee) {
@@ -272,6 +354,25 @@ TEST_F(TestEnvironmentIntegrationTest, UnseenExpectedFailuresPassAFilteredRun) {
                               "filter=SampleConformanceTest.Sample*Failure")});
   EXPECT_EQ(run.exit_code, 0) << run.output;
   EXPECT_THAT(run.output, Not(HasSubstr("were not seen")));
+}
+
+TEST_F(TestEnvironmentIntegrationTest, UnseenExpectedFailuresPassAShardedRun) {
+  // gtest takes the shard from the environment: TEST_* in Google's internal
+  // build, GTEST_* in open source.
+  for (const char* name : {"TEST_TOTAL_SHARDS", "GTEST_TOTAL_SHARDS"}) {
+    SetEnvironmentVariable(name, "2");
+  }
+  for (const char* name : {"TEST_SHARD_INDEX", "GTEST_SHARD_INDEX"}) {
+    SetEnvironmentVariable(name, "0");
+  }
+  RunResult run = RunSample({FailureListFlag("unseen")});
+  for (const char* name : {"TEST_TOTAL_SHARDS", "GTEST_TOTAL_SHARDS",
+                           "TEST_SHARD_INDEX", "GTEST_SHARD_INDEX"}) {
+    UnsetEnvironmentVariable(name);
+  }
+  EXPECT_EQ(run.exit_code, 0) << run.output;
+  EXPECT_THAT(run.output, AllOf(HasSubstr("Note: This is test shard 1 of 2"),
+                                Not(HasSubstr("were not seen"))));
 }
 
 TEST_F(TestEnvironmentIntegrationTest, AnEarlyStopUnderFailFastIsAPartialRun) {
