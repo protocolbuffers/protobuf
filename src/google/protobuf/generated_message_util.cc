@@ -60,7 +60,7 @@ PROTOBUF_ATTRIBUTE_NO_DESTROY PROTOBUF_CONSTINIT const EmptyCord empty_cord_;
 struct alignas(MessageGlobalsBase::kMessageGlobalsAlignment) DummyWeakDefault {
   [[maybe_unused]] uint64_t dummy;
 };
-DummyWeakDefault dummy_weak_default
+static DummyWeakDefault dummy_weak_default
     __attribute__((section("pb_defaults"))) = {0};
 
 extern "C" {
@@ -69,8 +69,8 @@ extern "C" {
 // __start/__end symbols provided by the linker.
 // Each object is its own type and size, so we use a `char` to load them
 // appropriately.
-extern const char __start_pb_defaults;
-extern const char __stop_pb_defaults;
+extern const char __start_pb_defaults __attribute__((visibility("hidden")));
+extern const char __stop_pb_defaults __attribute__((visibility("hidden")));
 }
 static void InitWeakDefaults() {
   static_assert(alignof(WeakDescriptorDefaultTail) ==
