@@ -16110,6 +16110,18 @@ static void _upb_FieldDef_Create(upb_DefBuilder* ctx, const char* prefix,
                          f->label_);
   }
 
+  // A repeated field cannot be required.  protoc and the C++ DescriptorPool
+  // reject this ("Repeated fields can't specify field presence"), but it can
+  // still be expressed in a raw descriptor by setting
+  // features.field_presence = LEGACY_REQUIRED on a repeated field.  Such a
+  // field would be both required and repeated, which violates the invariant
+  // (relied on elsewhere in upb) that every required field has presence, so we
+  // reject it here rather than build an inconsistent def.
+  if (upb_FieldDef_IsRepeated(f) && upb_FieldDef_IsRequired(f)) {
+    _upb_DefBuilder_Errf(ctx, "repeated field %s cannot be required",
+                         f->full_name);
+  }
+
   /* We can't resolve the subdef or (in the case of extensions) the containing
    * message yet, because it may not have been defined yet.  We stash a pointer
    * to the field_proto until later when we can properly resolve it. */
