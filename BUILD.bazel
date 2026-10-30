@@ -1,5 +1,8 @@
 # Bazel (https://bazel.build/) BUILD file for Protobuf.
 
+load("@package_metadata//licenses/rules:license.bzl", package_metadata_license = "license")
+load("@package_metadata//purl:purl.bzl", "purl")
+load("@package_metadata//rules:package_metadata.bzl", "package_metadata")
 load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library")
 load("@rules_license//rules:license.bzl", "license")
 load("//bazel:cc_proto_library.bzl", "cc_proto_library")
@@ -21,6 +24,23 @@ license(
     name = "license",
     package_name = "protobuf",
     license_text = ":LICENSE",
+)
+
+package_metadata_license(
+    name = "package_metadata_license",
+    kind = "@package_metadata//licenses/spdx:BSD-3-Clause",
+    text = "LICENSE",
+    visibility = ["//visibility:public"],
+)
+
+package_metadata(
+    name = "package_metadata",
+    attributes = [":package_metadata_license"],
+    purl = purl.bazel(
+        "protobuf",
+        module_version(),
+    ),
+    visibility = ["//visibility:public"],
 )
 
 exports_files(

@@ -12,7 +12,7 @@ load("//bazel:proto_library.bzl", "proto_library")
 load("//bazel/tests:proto_bzl_test_suite.bzl", "bzl_test_suite")
 load(":tests.bzl", "TESTS", "TESTS_NO_DYNAMIC_LINKER")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 proto_library(
     name = "baz_proto",

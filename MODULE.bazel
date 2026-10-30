@@ -31,6 +31,7 @@ proto_bazel_features(name = "proto_bazel_features")
 
 bazel_dep(name = "bazel_skylib", version = "1.9.0")
 bazel_dep(name = "jsoncpp", version = "1.9.6.bcr.2")
+bazel_dep(name = "package_metadata", version = "0.0.13")
 bazel_dep(name = "rules_java", version = "8.6.1")
 bazel_dep(name = "rules_jvm_external", version = "6.7")
 bazel_dep(name = "rules_kotlin", version = "2.3.20")
