@@ -3089,10 +3089,7 @@ namespace UnitTest.Issues.TestProtos {
             break;
           }
           case 18: {
-            global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested subBuilder = new global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested();
-            if (valueCase_ == ValueOneofCase.Nested) {
-              subBuilder.MergeFrom(Nested);
-            }
+            global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested subBuilder = Nested ?? new global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested();
             input.ReadMessage(subBuilder);
             Nested = subBuilder;
             break;
@@ -3121,10 +3118,7 @@ namespace UnitTest.Issues.TestProtos {
             break;
           }
           case 18: {
-            global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested subBuilder = new global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested();
-            if (valueCase_ == ValueOneofCase.Nested) {
-              subBuilder.MergeFrom(Nested);
-            }
+            global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested subBuilder = Nested ?? new global::UnitTest.Issues.TestProtos.OneofMerging.Types.Nested();
             input.ReadMessage(subBuilder);
             Nested = subBuilder;
             break;

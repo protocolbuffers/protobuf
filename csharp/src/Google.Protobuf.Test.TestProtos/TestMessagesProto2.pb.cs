@@ -5193,10 +5193,7 @@ namespace ProtobufTestMessages.Proto2 {
             break;
           }
           case 898: {
-            global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage subBuilder = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;
@@ -5829,10 +5826,7 @@ namespace ProtobufTestMessages.Proto2 {
             break;
           }
           case 898: {
-            global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage subBuilder = new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::ProtobufTestMessages.Proto2.TestAllTypesProto2.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;
@@ -13693,46 +13687,31 @@ namespace ProtobufTestMessages.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1();
-            if (largeOneofCase_ == LargeOneofOneofCase.A1) {
-              subBuilder.MergeFrom(A1);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1 subBuilder = A1 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1();
             input.ReadMessage(subBuilder);
             A1 = subBuilder;
             break;
           }
           case 18: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2();
-            if (largeOneofCase_ == LargeOneofOneofCase.A2) {
-              subBuilder.MergeFrom(A2);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2 subBuilder = A2 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2();
             input.ReadMessage(subBuilder);
             A2 = subBuilder;
             break;
           }
           case 26: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3();
-            if (largeOneofCase_ == LargeOneofOneofCase.A3) {
-              subBuilder.MergeFrom(A3);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3 subBuilder = A3 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3();
             input.ReadMessage(subBuilder);
             A3 = subBuilder;
             break;
           }
           case 34: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4();
-            if (largeOneofCase_ == LargeOneofOneofCase.A4) {
-              subBuilder.MergeFrom(A4);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4 subBuilder = A4 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4();
             input.ReadMessage(subBuilder);
             A4 = subBuilder;
             break;
           }
           case 42: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5();
-            if (largeOneofCase_ == LargeOneofOneofCase.A5) {
-              subBuilder.MergeFrom(A5);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5 subBuilder = A5 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5();
             input.ReadMessage(subBuilder);
             A5 = subBuilder;
             break;
@@ -13757,46 +13736,31 @@ namespace ProtobufTestMessages.Proto2 {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1();
-            if (largeOneofCase_ == LargeOneofOneofCase.A1) {
-              subBuilder.MergeFrom(A1);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1 subBuilder = A1 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A1();
             input.ReadMessage(subBuilder);
             A1 = subBuilder;
             break;
           }
           case 18: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2();
-            if (largeOneofCase_ == LargeOneofOneofCase.A2) {
-              subBuilder.MergeFrom(A2);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2 subBuilder = A2 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A2();
             input.ReadMessage(subBuilder);
             A2 = subBuilder;
             break;
           }
           case 26: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3();
-            if (largeOneofCase_ == LargeOneofOneofCase.A3) {
-              subBuilder.MergeFrom(A3);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3 subBuilder = A3 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A3();
             input.ReadMessage(subBuilder);
             A3 = subBuilder;
             break;
           }
           case 34: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4();
-            if (largeOneofCase_ == LargeOneofOneofCase.A4) {
-              subBuilder.MergeFrom(A4);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4 subBuilder = A4 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A4();
             input.ReadMessage(subBuilder);
             A4 = subBuilder;
             break;
           }
           case 42: {
-            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5 subBuilder = new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5();
-            if (largeOneofCase_ == LargeOneofOneofCase.A5) {
-              subBuilder.MergeFrom(A5);
-            }
+            global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5 subBuilder = A5 ?? new global::ProtobufTestMessages.Proto2.TestLargeOneof.Types.A5();
             input.ReadMessage(subBuilder);
             A5 = subBuilder;
             break;

@@ -762,19 +762,13 @@ namespace Google.Protobuf.WellKnownTypes {
             break;
           }
           case 42: {
-            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = new global::Google.Protobuf.WellKnownTypes.Struct();
-            if (kindCase_ == KindOneofCase.StructValue) {
-              subBuilder.MergeFrom(StructValue);
-            }
+            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = StructValue ?? new global::Google.Protobuf.WellKnownTypes.Struct();
             input.ReadMessage(subBuilder);
             StructValue = subBuilder;
             break;
           }
           case 50: {
-            global::Google.Protobuf.WellKnownTypes.ListValue subBuilder = new global::Google.Protobuf.WellKnownTypes.ListValue();
-            if (kindCase_ == KindOneofCase.ListValue) {
-              subBuilder.MergeFrom(ListValue);
-            }
+            global::Google.Protobuf.WellKnownTypes.ListValue subBuilder = ListValue ?? new global::Google.Protobuf.WellKnownTypes.ListValue();
             input.ReadMessage(subBuilder);
             ListValue = subBuilder;
             break;
@@ -816,19 +810,13 @@ namespace Google.Protobuf.WellKnownTypes {
             break;
           }
           case 42: {
-            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = new global::Google.Protobuf.WellKnownTypes.Struct();
-            if (kindCase_ == KindOneofCase.StructValue) {
-              subBuilder.MergeFrom(StructValue);
-            }
+            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = StructValue ?? new global::Google.Protobuf.WellKnownTypes.Struct();
             input.ReadMessage(subBuilder);
             StructValue = subBuilder;
             break;
           }
           case 50: {
-            global::Google.Protobuf.WellKnownTypes.ListValue subBuilder = new global::Google.Protobuf.WellKnownTypes.ListValue();
-            if (kindCase_ == KindOneofCase.ListValue) {
-              subBuilder.MergeFrom(ListValue);
-            }
+            global::Google.Protobuf.WellKnownTypes.ListValue subBuilder = ListValue ?? new global::Google.Protobuf.WellKnownTypes.ListValue();
             input.ReadMessage(subBuilder);
             ListValue = subBuilder;
             break;

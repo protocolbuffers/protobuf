@@ -4617,10 +4617,7 @@ namespace ProtobufTestMessages.Editions.Proto3 {
             break;
           }
           case 898: {
-            global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage subBuilder = new global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;
@@ -5355,10 +5352,7 @@ namespace ProtobufTestMessages.Editions.Proto3 {
             break;
           }
           case 898: {
-            global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage subBuilder = new global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::ProtobufTestMessages.Editions.Proto3.TestAllTypesProto3.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;

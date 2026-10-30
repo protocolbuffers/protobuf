@@ -4223,10 +4223,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 898: {
-            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;
@@ -4581,10 +4578,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 898: {
-            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;
@@ -21374,19 +21368,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 26: {
-            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
           }
           case 35: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup();
-            if (HasFooGroup) {
-              subBuilder.MergeFrom(FooGroup);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup subBuilder = FooGroup ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup();
             input.ReadGroup(subBuilder);
             FooGroup = subBuilder;
             break;
@@ -21419,19 +21407,13 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 26: {
-            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
           }
           case 35: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup();
-            if (HasFooGroup) {
-              subBuilder.MergeFrom(FooGroup);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup subBuilder = FooGroup ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof.Types.FooGroup();
             input.ReadGroup(subBuilder);
             FooGroup = subBuilder;
             break;
@@ -23340,28 +23322,19 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 58: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
           }
           case 67: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup();
-            if (HasFooGroup) {
-              subBuilder.MergeFrom(FooGroup);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup subBuilder = FooGroup ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup();
             input.ReadGroup(subBuilder);
             FooGroup = subBuilder;
             break;
           }
           case 90: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
-            if (fooCase_ == FooOneofCase.FooLazyMessage) {
-              subBuilder.MergeFrom(FooLazyMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = FooLazyMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             FooLazyMessage = subBuilder;
             break;
@@ -23444,28 +23417,19 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 58: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
           }
           case 67: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup();
-            if (HasFooGroup) {
-              subBuilder.MergeFrom(FooGroup);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup subBuilder = FooGroup ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.FooGroup();
             input.ReadGroup(subBuilder);
             FooGroup = subBuilder;
             break;
           }
           case 90: {
-            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
-            if (fooCase_ == FooOneofCase.FooLazyMessage) {
-              subBuilder.MergeFrom(FooLazyMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage subBuilder = FooLazyMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestOneof2.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             FooLazyMessage = subBuilder;
             break;
@@ -24331,10 +24295,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 26: {
-            global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
@@ -24367,10 +24328,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 26: {
-            global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.Proto2.TestRequiredOneof.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
@@ -31639,10 +31597,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 4294960098: {
-            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
-              subBuilder.MergeFrom(OneofTestAllTypes);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = OneofTestAllTypes ?? new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             input.ReadMessage(subBuilder);
             OneofTestAllTypes = subBuilder;
             break;
@@ -31729,10 +31684,7 @@ namespace Google.Protobuf.TestProtos.Proto2 {
             break;
           }
           case 4294960098: {
-            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofTestAllTypes) {
-              subBuilder.MergeFrom(OneofTestAllTypes);
-            }
+            global::Google.Protobuf.TestProtos.Proto2.TestAllTypes subBuilder = OneofTestAllTypes ?? new global::Google.Protobuf.TestProtos.Proto2.TestAllTypes();
             input.ReadMessage(subBuilder);
             OneofTestAllTypes = subBuilder;
             break;

@@ -2607,82 +2607,55 @@ namespace Google.Protobuf.TestProtos {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, input);
             break;
           case 10: {
-            global::Google.Protobuf.WellKnownTypes.Any subBuilder = new global::Google.Protobuf.WellKnownTypes.Any();
-            if (oneofFieldCase_ == OneofFieldOneofCase.AnyField) {
-              subBuilder.MergeFrom(AnyField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Any subBuilder = AnyField ?? new global::Google.Protobuf.WellKnownTypes.Any();
             input.ReadMessage(subBuilder);
             AnyField = subBuilder;
             break;
           }
           case 18: {
-            global::Google.Protobuf.WellKnownTypes.Api subBuilder = new global::Google.Protobuf.WellKnownTypes.Api();
-            if (oneofFieldCase_ == OneofFieldOneofCase.ApiField) {
-              subBuilder.MergeFrom(ApiField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Api subBuilder = ApiField ?? new global::Google.Protobuf.WellKnownTypes.Api();
             input.ReadMessage(subBuilder);
             ApiField = subBuilder;
             break;
           }
           case 26: {
-            global::Google.Protobuf.WellKnownTypes.Duration subBuilder = new global::Google.Protobuf.WellKnownTypes.Duration();
-            if (oneofFieldCase_ == OneofFieldOneofCase.DurationField) {
-              subBuilder.MergeFrom(DurationField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Duration subBuilder = DurationField ?? new global::Google.Protobuf.WellKnownTypes.Duration();
             input.ReadMessage(subBuilder);
             DurationField = subBuilder;
             break;
           }
           case 34: {
-            global::Google.Protobuf.WellKnownTypes.Empty subBuilder = new global::Google.Protobuf.WellKnownTypes.Empty();
-            if (oneofFieldCase_ == OneofFieldOneofCase.EmptyField) {
-              subBuilder.MergeFrom(EmptyField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Empty subBuilder = EmptyField ?? new global::Google.Protobuf.WellKnownTypes.Empty();
             input.ReadMessage(subBuilder);
             EmptyField = subBuilder;
             break;
           }
           case 42: {
-            global::Google.Protobuf.WellKnownTypes.FieldMask subBuilder = new global::Google.Protobuf.WellKnownTypes.FieldMask();
-            if (oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField) {
-              subBuilder.MergeFrom(FieldMaskField);
-            }
+            global::Google.Protobuf.WellKnownTypes.FieldMask subBuilder = FieldMaskField ?? new global::Google.Protobuf.WellKnownTypes.FieldMask();
             input.ReadMessage(subBuilder);
             FieldMaskField = subBuilder;
             break;
           }
           case 50: {
-            global::Google.Protobuf.WellKnownTypes.SourceContext subBuilder = new global::Google.Protobuf.WellKnownTypes.SourceContext();
-            if (oneofFieldCase_ == OneofFieldOneofCase.SourceContextField) {
-              subBuilder.MergeFrom(SourceContextField);
-            }
+            global::Google.Protobuf.WellKnownTypes.SourceContext subBuilder = SourceContextField ?? new global::Google.Protobuf.WellKnownTypes.SourceContext();
             input.ReadMessage(subBuilder);
             SourceContextField = subBuilder;
             break;
           }
           case 58: {
-            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = new global::Google.Protobuf.WellKnownTypes.Struct();
-            if (oneofFieldCase_ == OneofFieldOneofCase.StructField) {
-              subBuilder.MergeFrom(StructField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = StructField ?? new global::Google.Protobuf.WellKnownTypes.Struct();
             input.ReadMessage(subBuilder);
             StructField = subBuilder;
             break;
           }
           case 66: {
-            global::Google.Protobuf.WellKnownTypes.Timestamp subBuilder = new global::Google.Protobuf.WellKnownTypes.Timestamp();
-            if (oneofFieldCase_ == OneofFieldOneofCase.TimestampField) {
-              subBuilder.MergeFrom(TimestampField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Timestamp subBuilder = TimestampField ?? new global::Google.Protobuf.WellKnownTypes.Timestamp();
             input.ReadMessage(subBuilder);
             TimestampField = subBuilder;
             break;
           }
           case 74: {
-            global::Google.Protobuf.WellKnownTypes.Type subBuilder = new global::Google.Protobuf.WellKnownTypes.Type();
-            if (oneofFieldCase_ == OneofFieldOneofCase.TypeField) {
-              subBuilder.MergeFrom(TypeField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Type subBuilder = TypeField ?? new global::Google.Protobuf.WellKnownTypes.Type();
             input.ReadMessage(subBuilder);
             TypeField = subBuilder;
             break;
@@ -2743,82 +2716,55 @@ namespace Google.Protobuf.TestProtos {
             _unknownFields = pb::UnknownFieldSet.MergeFieldFrom(_unknownFields, ref input);
             break;
           case 10: {
-            global::Google.Protobuf.WellKnownTypes.Any subBuilder = new global::Google.Protobuf.WellKnownTypes.Any();
-            if (oneofFieldCase_ == OneofFieldOneofCase.AnyField) {
-              subBuilder.MergeFrom(AnyField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Any subBuilder = AnyField ?? new global::Google.Protobuf.WellKnownTypes.Any();
             input.ReadMessage(subBuilder);
             AnyField = subBuilder;
             break;
           }
           case 18: {
-            global::Google.Protobuf.WellKnownTypes.Api subBuilder = new global::Google.Protobuf.WellKnownTypes.Api();
-            if (oneofFieldCase_ == OneofFieldOneofCase.ApiField) {
-              subBuilder.MergeFrom(ApiField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Api subBuilder = ApiField ?? new global::Google.Protobuf.WellKnownTypes.Api();
             input.ReadMessage(subBuilder);
             ApiField = subBuilder;
             break;
           }
           case 26: {
-            global::Google.Protobuf.WellKnownTypes.Duration subBuilder = new global::Google.Protobuf.WellKnownTypes.Duration();
-            if (oneofFieldCase_ == OneofFieldOneofCase.DurationField) {
-              subBuilder.MergeFrom(DurationField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Duration subBuilder = DurationField ?? new global::Google.Protobuf.WellKnownTypes.Duration();
             input.ReadMessage(subBuilder);
             DurationField = subBuilder;
             break;
           }
           case 34: {
-            global::Google.Protobuf.WellKnownTypes.Empty subBuilder = new global::Google.Protobuf.WellKnownTypes.Empty();
-            if (oneofFieldCase_ == OneofFieldOneofCase.EmptyField) {
-              subBuilder.MergeFrom(EmptyField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Empty subBuilder = EmptyField ?? new global::Google.Protobuf.WellKnownTypes.Empty();
             input.ReadMessage(subBuilder);
             EmptyField = subBuilder;
             break;
           }
           case 42: {
-            global::Google.Protobuf.WellKnownTypes.FieldMask subBuilder = new global::Google.Protobuf.WellKnownTypes.FieldMask();
-            if (oneofFieldCase_ == OneofFieldOneofCase.FieldMaskField) {
-              subBuilder.MergeFrom(FieldMaskField);
-            }
+            global::Google.Protobuf.WellKnownTypes.FieldMask subBuilder = FieldMaskField ?? new global::Google.Protobuf.WellKnownTypes.FieldMask();
             input.ReadMessage(subBuilder);
             FieldMaskField = subBuilder;
             break;
           }
           case 50: {
-            global::Google.Protobuf.WellKnownTypes.SourceContext subBuilder = new global::Google.Protobuf.WellKnownTypes.SourceContext();
-            if (oneofFieldCase_ == OneofFieldOneofCase.SourceContextField) {
-              subBuilder.MergeFrom(SourceContextField);
-            }
+            global::Google.Protobuf.WellKnownTypes.SourceContext subBuilder = SourceContextField ?? new global::Google.Protobuf.WellKnownTypes.SourceContext();
             input.ReadMessage(subBuilder);
             SourceContextField = subBuilder;
             break;
           }
           case 58: {
-            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = new global::Google.Protobuf.WellKnownTypes.Struct();
-            if (oneofFieldCase_ == OneofFieldOneofCase.StructField) {
-              subBuilder.MergeFrom(StructField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Struct subBuilder = StructField ?? new global::Google.Protobuf.WellKnownTypes.Struct();
             input.ReadMessage(subBuilder);
             StructField = subBuilder;
             break;
           }
           case 66: {
-            global::Google.Protobuf.WellKnownTypes.Timestamp subBuilder = new global::Google.Protobuf.WellKnownTypes.Timestamp();
-            if (oneofFieldCase_ == OneofFieldOneofCase.TimestampField) {
-              subBuilder.MergeFrom(TimestampField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Timestamp subBuilder = TimestampField ?? new global::Google.Protobuf.WellKnownTypes.Timestamp();
             input.ReadMessage(subBuilder);
             TimestampField = subBuilder;
             break;
           }
           case 74: {
-            global::Google.Protobuf.WellKnownTypes.Type subBuilder = new global::Google.Protobuf.WellKnownTypes.Type();
-            if (oneofFieldCase_ == OneofFieldOneofCase.TypeField) {
-              subBuilder.MergeFrom(TypeField);
-            }
+            global::Google.Protobuf.WellKnownTypes.Type subBuilder = TypeField ?? new global::Google.Protobuf.WellKnownTypes.Type();
             input.ReadMessage(subBuilder);
             TypeField = subBuilder;
             break;

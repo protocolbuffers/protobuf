@@ -1877,10 +1877,7 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 898: {
-            global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;
@@ -2121,10 +2118,7 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 898: {
-            global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage subBuilder = new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
-            if (oneofFieldCase_ == OneofFieldOneofCase.OneofNestedMessage) {
-              subBuilder.MergeFrom(OneofNestedMessage);
-            }
+            global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage subBuilder = OneofNestedMessage ?? new global::Google.Protobuf.TestProtos.TestAllTypes.Types.NestedMessage();
             input.ReadMessage(subBuilder);
             OneofNestedMessage = subBuilder;
             break;
@@ -7862,10 +7856,7 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 26: {
-            global::Google.Protobuf.TestProtos.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.TestAllTypes();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.TestAllTypes subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.TestAllTypes();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
@@ -7898,10 +7889,7 @@ namespace Google.Protobuf.TestProtos {
             break;
           }
           case 26: {
-            global::Google.Protobuf.TestProtos.TestAllTypes subBuilder = new global::Google.Protobuf.TestProtos.TestAllTypes();
-            if (fooCase_ == FooOneofCase.FooMessage) {
-              subBuilder.MergeFrom(FooMessage);
-            }
+            global::Google.Protobuf.TestProtos.TestAllTypes subBuilder = FooMessage ?? new global::Google.Protobuf.TestProtos.TestAllTypes();
             input.ReadMessage(subBuilder);
             FooMessage = subBuilder;
             break;
