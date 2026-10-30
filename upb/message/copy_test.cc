@@ -621,6 +621,116 @@ TEST(GeneratedCode, ShallowCloneMessage) {
   upb_Arena_Free(arena);
 }
 
+TEST(GeneratedCode, ShallowCloneFrozenMessage) {
+  upb_Arena* source_arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* msg =
+      protobuf_test_messages_proto2_TestAllTypesProto2_new(source_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(
+      msg, kTestInt32);
+
+  const upb_MiniTableField* nested_message_field =
+      find_proto2_field(kFieldOptionalNestedMessage);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage* nested =
+      protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_new(
+          source_arena);
+  protobuf_test_messages_proto2_TestAllTypesProto2_NestedMessage_set_a(
+      nested, kTestNestedInt32);
+  upb_Message_SetMessage(UPB_UPCAST(msg), nested_message_field,
+                         UPB_UPCAST(nested));
+
+  upb_Message_Freeze(
+      UPB_UPCAST(msg),
+      &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init);
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(nested)));
+
+  upb_Arena* arena = upb_Arena_New();
+  protobuf_test_messages_proto2_TestAllTypesProto2* clone =
+      (protobuf_test_messages_proto2_TestAllTypesProto2*)
+          upb_Message_ShallowClone(
+              UPB_UPCAST(msg),
+              &protobuf_0test_0messages__proto2__TestAllTypesProto2_msg_init,
+              arena);
+  ASSERT_NE(clone, nullptr);
+
+  // The shallow clone of a frozen message must be unfrozen and mutable.
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(clone)));
+
+  // Scalar fields can be mutated without affecting the frozen source.
+  protobuf_test_messages_proto2_TestAllTypesProto2_set_optional_int32(clone,
+                                                                      999);
+  EXPECT_EQ(
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(clone),
+      999);
+  EXPECT_EQ(
+      protobuf_test_messages_proto2_TestAllTypesProto2_optional_int32(msg),
+      kTestInt32);
+
+  // Submessages are shallow-copied and remain frozen.
+  const upb_Message* clone_nested =
+      upb_Message_GetMessage(UPB_UPCAST(clone), nested_message_field);
+  EXPECT_EQ(clone_nested, UPB_UPCAST(nested));
+  EXPECT_TRUE(upb_Message_IsFrozen(clone_nested));
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
+TEST(GeneratedCode, ShallowCopyFrozenMessageWithExtensions) {
+  upb_Arena* source_arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_test_ModelExtension1* ext1 = upb_test_ModelExtension1_new(source_arena);
+  upb_test_ModelExtension1_set_str(ext1, upb_StringView_FromString(kTestStr1));
+  upb_test_ModelExtension1_set_model_ext(msg, ext1, source_arena);
+
+  upb_Message_Freeze(UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init);
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(msg)));
+
+  upb_Arena* arena = upb_Arena_New();
+  upb_test_ModelWithExtensions* clone =
+      (upb_test_ModelWithExtensions*)upb_Message_ShallowClone(
+          UPB_UPCAST(msg), &upb_0test__ModelWithExtensions_msg_init, arena);
+  ASSERT_NE(clone, nullptr);
+
+  // Clone is unfrozen and has the cloned extension.
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(clone)));
+  const upb_test_ModelExtension1* clone_ext =
+      upb_test_ModelExtension1_model_ext(clone);
+  ASSERT_NE(clone_ext, nullptr);
+  EXPECT_TRUE(upb_StringView_IsEqual(upb_test_ModelExtension1_str(clone_ext),
+                                     upb_StringView_FromString(kTestStr1)));
+
+  // Can mutate/overwrite extension on clone without affecting frozen source.
+  upb_test_ModelExtension1* new_ext = upb_test_ModelExtension1_new(arena);
+  upb_test_ModelExtension1_set_str(new_ext,
+                                   upb_StringView_FromString(kTestStr2));
+  upb_test_ModelExtension1_set_model_ext(clone, new_ext, arena);
+  EXPECT_TRUE(upb_StringView_IsEqual(
+      upb_test_ModelExtension1_str(upb_test_ModelExtension1_model_ext(clone)),
+      upb_StringView_FromString(kTestStr2)));
+  EXPECT_TRUE(upb_StringView_IsEqual(
+      upb_test_ModelExtension1_str(upb_test_ModelExtension1_model_ext(msg)),
+      upb_StringView_FromString(kTestStr1)));
+
+  // ShallowCopy from a frozen message without extensions into a destination
+  // with extensions clears the destination's extensions and leaves it unfrozen.
+  upb_test_ModelWithExtensions* empty_msg =
+      upb_test_ModelWithExtensions_new(source_arena);
+  upb_Message_Freeze(UPB_UPCAST(empty_msg),
+                     &upb_0test__ModelWithExtensions_msg_init);
+  EXPECT_TRUE(upb_Message_IsFrozen(UPB_UPCAST(empty_msg)));
+
+  EXPECT_TRUE(upb_Message_ShallowCopy(UPB_UPCAST(clone), UPB_UPCAST(empty_msg),
+                                      &upb_0test__ModelWithExtensions_msg_init,
+                                      arena));
+  EXPECT_FALSE(upb_Message_IsFrozen(UPB_UPCAST(clone)));
+  EXPECT_EQ(upb_test_ModelExtension1_model_ext(clone), nullptr);
+
+  upb_Arena_Free(source_arena);
+  upb_Arena_Free(arena);
+}
+
 TEST(GeneratedCode, DeepCloneMessageNonCanonicalExtensions) {
   upb_Arena* source_arena = upb_Arena_New();
   upb_test_ModelWithExtensions* msg =
