@@ -2801,6 +2801,12 @@ class PROTOBUF_EXPORT DescriptorPool {
   bool TryFindExtensionInFallbackDatabase(const Descriptor* containing_type,
                                           int field_number) const;
 
+  template <typename FindInTable, typename FindInUnderlay,
+            typename TryFindInFallbackDb>
+  auto LookupWithFallback(FindInTable find_in_table,
+                          FindInUnderlay find_in_underlay,
+                          TryFindInFallbackDb try_find_in_fallback_db) const;
+
   // This internal find extension method only check with its table and underlay
   // descriptor_pool's table. It does not check with fallback DB and no
   // additional proto file will be build in this method.

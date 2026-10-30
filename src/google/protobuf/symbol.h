@@ -119,6 +119,15 @@ class Symbol {
   // Returns true if this Symbol does not point to any valid descriptor.
   bool IsNull() const { return type() == NULL_SYMBOL; }
 
+  friend bool operator==(const Symbol& s, std::nullptr_t) { return s.IsNull(); }
+  friend bool operator==(std::nullptr_t, const Symbol& s) { return s.IsNull(); }
+  friend bool operator!=(const Symbol& s, std::nullptr_t) {
+    return !s.IsNull();
+  }
+  friend bool operator!=(std::nullptr_t, const Symbol& s) {
+    return !s.IsNull();
+  }
+
   // Returns true if this Symbol represents a type definition (Message or Enum).
   bool IsType() const { return type() == MESSAGE || type() == ENUM; }
 
