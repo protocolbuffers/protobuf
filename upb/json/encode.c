@@ -148,6 +148,8 @@ static void jsonenc_timestamp(jsonenc* e, const upb_Message* msg,
     jsonenc_err(e,
                 "error formatting timestamp as JSON: maximum acceptable value "
                 "is 9999-12-31T23:59:59Z");
+  } else if (nanos < 0 || nanos > 999999999) {
+    jsonenc_err(e, "error formatting timestamp as JSON: nanos out of range");
   }
 
   /* Julian Day -> Y/M/D, Algorithm from:
@@ -184,6 +186,7 @@ static void jsonenc_duration(jsonenc* e, const upb_Message* msg,
   bool negative = false;
 
   if (seconds > 315576000000 || seconds < -315576000000 ||
+      nanos > 999999999 || nanos < -999999999 ||
       (seconds != 0 && nanos != 0 && (seconds < 0) != (nanos < 0))) {
     jsonenc_err(e, "bad duration");
   }
@@ -793,7 +796,10 @@ static size_t upb_JsonEncoder_Encode(jsonenc* const e,
                                      const upb_Message* const msg,
                                      const upb_MessageDef* const m,
                                      const size_t size) {
-  if (UPB_SETJMP(e->err) != 0) return -1;
+  if (UPB_SETJMP(e->err) != 0) {
+    if (e->arena) upb_Arena_Free(e->arena);
+    return -1;
+  }
 
   jsonenc_msgfield(e, msg, m);
   if (e->arena) upb_Arena_Free(e->arena);
