@@ -55,8 +55,12 @@ struct upb_DefPool {
 };
 
 void upb_DefPool_Free(upb_DefPool* s) {
-  upb_GeneratedRegistry_Release(s->generated_extreg);
-  upb_Arena_Free(s->arena);
+  if (s->generated_extreg) {
+    upb_GeneratedRegistry_Release(s->generated_extreg);
+  }
+  if (s->arena) {
+    upb_Arena_Free(s->arena);
+  }
   upb_gfree(s->scratch_data);
   upb_gfree(s);
 }
@@ -66,13 +70,22 @@ static const char serialized_defaults[] = UPB_INTERNAL_UPB_EDITION_DEFAULTS;
 upb_DefPool* upb_DefPool_New(void) {
   upb_DefPool* s = upb_gmalloc(sizeof(*s));
   if (!s) return NULL;
-
-  s->arena = upb_Arena_New();
+  s->syms = (upb_strtable){0};
+  s->files = (upb_strtable){0};
+  s->exts = (upb_inttable){0};
+  s->extreg = NULL;
+  s->generated_extreg = NULL;
+  s->feature_set_defaults = NULL;
+  s->platform = kUpb_MiniTablePlatform_Native;
+  s->scratch_data = NULL;
+  s->scratch_size = 240;
   s->bytes_loaded = 0;
   s->disable_closed_enum_checking = false;
   s->disable_implicit_field_presence = false;
 
-  s->scratch_size = 240;
+  s->arena = upb_Arena_New();
+  if (!s->arena) goto err;
+
   s->scratch_data = upb_gmalloc(s->scratch_size);
   if (!s->scratch_data) goto err;
 
@@ -85,8 +98,6 @@ upb_DefPool* upb_DefPool_New(void) {
 
   s->generated_extreg = upb_GeneratedRegistry_Load();
   if (!s->generated_extreg) goto err;
-
-  s->platform = kUpb_MiniTablePlatform_Native;
 
   upb_Status status;
   if (!upb_DefPool_SetFeatureSetDefaults(
@@ -495,6 +506,7 @@ bool _upb_DefPool_LoadDefInitEx(upb_DefPool* s, const _upb_DefPool_Init* init,
   }
 
   arena = upb_Arena_New();
+  if (!arena) return false;
 
   for (; *deps; deps++) {
     if (!_upb_DefPool_LoadDefInitEx(s, *deps, rebuild_minitable)) goto err;
