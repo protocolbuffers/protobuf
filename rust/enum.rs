@@ -21,7 +21,7 @@ use crate::{Proxied, Singular};
 /// # Safety
 /// - A `RepeatedView<Self>` or `RepeatedMut<Self>` must have the same internal
 ///   representation as erased enums in the runtime.
-///   - For C++, this is `proto2::RepeatedField<c_int>`
+///   - For C++, this is `google::protobuf::RepeatedField<c_int>`
 ///   - For UPB, this is an array compatible with `int32`
 pub unsafe trait Enum:
     TryFrom<i32>

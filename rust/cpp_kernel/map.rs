@@ -60,7 +60,7 @@ impl<'msg> InnerMapMut<'msg> {
 
 /// An untyped iterator in a map, produced via `.cbegin()` on a typed map.
 ///
-/// This struct is ABI-compatible with `proto2::internal::UntypedMapIterator`.
+/// This struct is ABI-compatible with `google::protobuf::internal::UntypedMapIterator`.
 /// It is trivially constructible and destructible.
 #[repr(C)]
 #[doc(hidden)]
@@ -119,7 +119,7 @@ impl UntypedMapIterator {
         // SAFETY:
         // - The backing map is alive as promised by the caller.
         // - `self.at_end()` is false and the `get` does not change that.
-        // - `UntypedMapIterator` has the same ABI as `proto2::internal::UntypedMapIterator`. It is
+        // - `UntypedMapIterator` has the same ABI as `google::protobuf::internal::UntypedMapIterator`. It is
         //   statically checked to be:
         //   - Trivially copyable.
         //   - Trivially destructible.

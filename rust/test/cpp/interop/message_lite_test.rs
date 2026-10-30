@@ -5,7 +5,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-//! Tests for borrowing messages as a C++ `proto2::MessageLite`.
+//! Tests for borrowing messages as a C++ `google::protobuf::MessageLite`.
 
 use googletest::matchers::eq;
 use googletest::{expect_that, gtest};
@@ -15,18 +15,18 @@ use std::ffi::c_void;
 use std::marker::PhantomPinned;
 use std::pin::Pin;
 
-/// Stands in for the Crubit binding of `proto2::MessageLite`.
+/// Stands in for the Crubit binding of `google::protobuf::MessageLite`.
 struct FakeMessageLite {
     _pinned: PhantomPinned,
 }
 
 // SAFETY: `FakeMessageLite` is zero-sized with an alignment of 1, so it is no
-// larger or more strictly aligned than `proto2::MessageLite` and has no bytes
+// larger or more strictly aligned than `google::protobuf::MessageLite` and has no bytes
 // outside of an `UnsafeCell`. It is `!Unpin` because of `PhantomPinned`.
 unsafe impl CppMessageLiteType for FakeMessageLite {}
 
 // These take the binding type as a parameter, like the Crubit bindings of C++
-// functions taking a `proto2::MessageLite`, so that callers don't need to
+// functions taking a `google::protobuf::MessageLite`, so that callers don't need to
 // specify it.
 fn address_of(lite: &FakeMessageLite) -> *const c_void {
     std::ptr::from_ref(lite).cast()

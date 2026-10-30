@@ -67,7 +67,7 @@ message CppFeatures {
 
   enum RepeatedType {
     REPEATED_TYPE_UNKNOWN = 0;
-    // The repeated field will be backed by proto2::Repeated(Ptr)Field, and
+    // The repeated field will be backed by google::protobuf::Repeated(Ptr)Field, and
     // accessors will return a reference/pointer to this type.
     LEGACY = 1;
     // The repeated field has an opaque backing type, and accessors will return

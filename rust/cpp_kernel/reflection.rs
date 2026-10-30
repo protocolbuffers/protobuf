@@ -29,7 +29,7 @@ unsafe extern "C" {
     /// From reflection.cc
     ///
     /// # Safety
-    /// - `desc` points to a valid `proto2::Descriptor`.
+    /// - `desc` points to a valid `google::protobuf::Descriptor`.
     fn proto2_rust_Descriptor_full_name(desc: *const std::ffi::c_void) -> PtrAndLen;
 
     /// From reflection.cc

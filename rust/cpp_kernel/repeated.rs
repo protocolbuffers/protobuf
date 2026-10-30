@@ -54,7 +54,7 @@ impl InnerRepeated {
     }
 
     /// # Safety
-    /// - `raw` must be a valid `proto2::RepeatedField*` or `proto2::RepeatedPtrField*`.
+    /// - `raw` must be a valid `google::protobuf::RepeatedField*` or `google::protobuf::RepeatedPtrField*`.
     pub unsafe fn from_raw(raw: RawRepeatedField) -> Self {
         Self { raw }
     }
@@ -62,7 +62,7 @@ impl InnerRepeated {
 
 /// The raw type-erased pointer version of `RepeatedMut`.
 ///
-/// Contains a `proto2::RepeatedField*` or `proto2::RepeatedPtrField*`.
+/// Contains a `google::protobuf::RepeatedField*` or `google::protobuf::RepeatedPtrField*`.
 #[derive(Clone, Copy, Debug)]
 #[doc(hidden)]
 pub struct InnerRepeatedMut<'msg> {
@@ -374,7 +374,7 @@ impl_repeated_primitives!(i32, u32, i64, u64, f32, f64, bool, ProtoString, Proto
 /// Cast a `RepeatedView<SomeEnum>` to `RepeatedView<c_int>`.
 pub fn cast_enum_repeated_view<E: Enum>(repeated: RepeatedView<E>) -> RepeatedView<c_int> {
     // SAFETY: the implementer of `Enum` has promised that this
-    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    // raw repeated is a type-erased `google::protobuf::RepeatedField<int>*`.
     unsafe { RepeatedView::from_raw(Private, repeated.as_raw(Private)) }
 }
 
@@ -384,7 +384,7 @@ pub fn cast_enum_repeated_view<E: Enum>(repeated: RepeatedView<E>) -> RepeatedVi
 /// are representationally open.
 pub fn cast_enum_repeated_mut<E: Enum>(mut repeated: RepeatedMut<E>) -> RepeatedMut<c_int> {
     // SAFETY: the implementer of `Enum` has promised that this
-    // raw repeated is a type-erased `proto2::RepeatedField<int>*`.
+    // raw repeated is a type-erased `google::protobuf::RepeatedField<int>*`.
     unsafe {
         RepeatedMut::from_inner(
             Private,
