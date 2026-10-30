@@ -11,7 +11,7 @@ load("//bazel:py_proto_library.bzl", "py_proto_library")
 load("//bazel/tests:proto_bzl_test_suite.bzl", "bzl_test_suite")
 load(":tests.bzl", "TESTS")
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 proto_library(
     name = "b_proto",

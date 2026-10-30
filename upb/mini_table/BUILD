@@ -24,7 +24,7 @@ load(
     "staleness_test",
 )
 
-package(default_applicable_licenses = ["//:license"])
+package(default_applicable_licenses = ["//:license", "//:package_metadata"])
 
 cc_library(
     name = "mini_table",
