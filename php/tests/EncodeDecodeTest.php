@@ -668,6 +668,31 @@ class EncodeDecodeTest extends TestBase
         $this->assertSame(5, $m2->getLargeFieldNumber());
     }
 
+    public function testLargeFieldNumberUnknown()
+    {
+        $m = new TestLargeFieldNumber(['large_field_number' => 5]);
+        $data = $m->serializeToString();
+        $m2 = new TestMessage();
+        $m2->mergeFromString($data);
+        $this->assertSame($data, $m2->serializeToString());
+    }
+
+    public function testDecodeInvalidTruncatedTag()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('80'));
+    }
+
+    public function testDecodeInvalidZeroTag()
+    {
+        $this->expectException(Exception::class);
+
+        $m = new TestMessage();
+        $m->mergeFromString(hex2bin('00'));
+    }
+
     public function testDecodeInvalidInt32()
     {
         $this->expectException(Exception::class);
