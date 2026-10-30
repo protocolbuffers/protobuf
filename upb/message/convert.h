@@ -56,6 +56,17 @@ const upb_Message* upb_Message_Convert(const upb_Message* src,
                                        int decode_options, int encode_options,
                                        upb_Arena* arena);
 
+// Converts `src` directly into `dst` on `arena`, performing a deep copy of all
+// submessages, arrays, maps, strings, and unknown fields so that `dst` does not
+// alias any memory owned by `src` or `src_mt`. Unknown extensions not present
+// in `extreg` are serialized into `dst`'s unknown wire bytes on `arena`.
+bool upb_Message_DeepConvert(const upb_Message* src,
+                             const upb_MiniTable* src_mt, upb_Message* dst,
+                             const upb_MiniTable* dst_mt,
+                             const upb_ExtensionRegistry* extreg,
+                             int decode_options, int encode_options,
+                             upb_Arena* arena);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif
