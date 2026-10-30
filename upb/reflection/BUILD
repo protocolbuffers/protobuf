@@ -267,6 +267,23 @@ cc_test(
 )
 
 cc_test(
+    name = "oneof_def_test",
+    srcs = [
+        "oneof_def_test.cc",
+    ],
+    deps = [
+        ":descriptor_upb_proto",
+        ":reflection",
+        "//upb/base",
+        "//upb/mem",
+        "@abseil-cpp//absl/cleanup",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "reflection_test",
     srcs = [
         "reflection_test.cc",
