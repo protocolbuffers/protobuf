@@ -61,6 +61,11 @@ class TestMessageExtension(unittest.TestCase):
     test_slice(11, 3, -2)
     test_slice(11, 3, -3)
     test_slice(10, 25, 4)
+    test_slice(5, 5, 2)
+    test_slice(0, 0, 2)
+    test_slice(20, 20, 2)
+    test_slice(3, 3, -2)
+    test_slice(10, 20, -2)
 
   def testExtensionsErrors(self):
     msg = unittest_pb2.TestAllTypes()

@@ -1053,7 +1053,13 @@ int DeleteRepeatedField(CMessage* self, const FieldDescriptor* field_descriptor,
 
   if (PySlice_Check(slice)) {
     from = to = step = slice_length = 0;
-    PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slice_length);
+    if (PySlice_GetIndicesEx(slice, length, &from, &to, &step, &slice_length) ==
+        -1) {
+      return -1;
+    }
+    if (slice_length == 0) {
+      return 0;
+    }
     if (from < to) {
       min = from;
       max = to - 1;
