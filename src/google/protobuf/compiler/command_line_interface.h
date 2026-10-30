@@ -228,6 +228,12 @@ class PROTOC_EXPORT CommandLineInterface {
   bool EnforceProtocEditionsSupport(
       const std::vector<const FileDescriptor*>& parsed_files) const;
 
+  // Remaps each file in allowed_public_dependencies_ so that it is relative
+  // to one of the directories in proto_path_.  Returns false if an error
+  // occurred.
+  bool MakeAllowedPublicDependenciesBeProtoPathRelative(
+      DiskSourceTree* source_tree, DescriptorDatabase* fallback_database);
+
 
   // Return status for ParseArguments() and InterpretArgument().
   enum ParseArgumentStatus {
@@ -513,6 +519,12 @@ class PROTOC_EXPORT CommandLineInterface {
   // If --dependency_out was given, this is the path to the file where the
   // dependency file will be written. Otherwise, empty.
   std::string dependency_out_name_;
+
+  // Names of proto files allowed in public imports.
+  absl::flat_hash_set<std::string> allowed_public_imports_;
+
+  // True iff --allowed_public_imports flag was set on the compilation.
+  bool has_allowed_public_imports_ = false;
 
   bool experimental_editions_ = false;
 

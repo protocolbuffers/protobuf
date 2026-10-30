@@ -79,8 +79,7 @@ config_setting(
 # TODO: deprecate this flag.
 compat_bool_flag(
     name = "strict_public_imports",
-    build_setting_default = False,
-    fragment_field = "strict_public_imports",
+    build_setting_default = True,
     scope = "universal",
     values = {
         False: [
