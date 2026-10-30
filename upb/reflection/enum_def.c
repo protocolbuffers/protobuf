@@ -30,6 +30,7 @@
 #include "upb/reflection/internal/enum_value_def.h"
 #include "upb/reflection/internal/file_def.h"
 #include "upb/reflection/internal/strdup2.h"
+#include "upb/reflection/json_enumvalue_options_bootstrap.h"
 
 // Must be last.
 #include "upb/port/def.inc"
@@ -55,12 +56,12 @@ struct upb_EnumDef {
 };
 
 // We store both regular proto enum names and custom JSON enum names in the
-// same strtable (ntoi). This is safe because protoc enforces that custom JSON
-// enum names never conflict with default enum names across different enum
-// values (or are identical, in which case we leave the entry untagged). Because
-// upb_EnumValueDef pointers are arena-aligned to at least 4 bytes (bit 0 is
-// always 0 for untagged pointers), we set bit 0 to tag custom JSON-only names
-// so that regular name lookups can ignore them.
+// same strtable (ntoi). Custom JSON names can overlap with declared names only
+// for aliases of the same number. Declared names always use an untagged entry
+// pointing to their own enum value, even if a JSON-only name was inserted
+// first. Because upb_EnumValueDef pointers are arena-aligned to at least 4
+// bytes (bit 0 is always 0 for untagged pointers), we set bit 0 to tag custom
+// JSON-only names so that regular name lookups can ignore them.
 static const uintptr_t kUpb_EnumDef_JsonOnlyTag = 1ULL;
 
 static upb_value _upb_EnumDef_TagJsonOnly(upb_value v) {
@@ -84,18 +85,73 @@ const upb_MiniTableEnum* _upb_EnumDef_MiniTable(const upb_EnumDef* e) {
   return e->layout;
 }
 
+static bool upb_EnumDef_GetCustomJsonName(const upb_EnumValueDef* v,
+                                          upb_StringView* name) {
+  if (!upb_EnumValueDef_HasOptions(v)) return false;
+  const google_protobuf_EnumValueOptions* opts = upb_EnumValueDef_Options(v);
+  if (!pb_enumvalue_has_json(opts)) return false;
+  const pb_enumvalue_JsonEnumValueOptions* json_opts = pb_enumvalue_json(opts);
+  if (!json_opts || !pb_enumvalue_JsonEnumValueOptions_has_string(json_opts)) {
+    return false;
+  }
+  *name = pb_enumvalue_JsonEnumValueOptions_string(json_opts);
+  return true;
+}
+
 void _upb_EnumDef_Insert(upb_DefBuilder* ctx, upb_EnumDef* e,
                          upb_EnumValueDef* v) {
   const char* name = upb_EnumValueDef_Name(v);
+  const size_t name_len = strlen(name);
+  const int number = upb_EnumValueDef_Number(v);
   const upb_value val = upb_value_constptr(v);
-  bool ok = upb_strtable_insert(&e->ntoi, name, strlen(name), val, ctx->arena);
+  upb_value existing_value;
+  const bool number_exists =
+      upb_inttable_lookup(&e->iton, number, &existing_value);
+  if (number_exists) {
+    const upb_EnumValueDef* primary = upb_value_getconstptr(existing_value);
+    if (!google_protobuf_EnumOptions_allow_alias(e->opts)) {
+      _upb_DefBuilder_Errf(
+          ctx,
+          "\"%s\" uses the same enum value as \"%s\". If this is intended, set "
+          "'option allow_alias = true;' to the enum definition.",
+          upb_EnumValueDef_FullName(v), upb_EnumValueDef_FullName(primary));
+    }
+    upb_StringView primary_json, current_json;
+    const bool primary_has_json =
+        upb_EnumDef_GetCustomJsonName(primary, &primary_json);
+    const bool current_has_json =
+        upb_EnumDef_GetCustomJsonName(v, &current_json);
+    if (primary_has_json != current_has_json ||
+        (primary_has_json &&
+         !upb_StringView_IsEqual(primary_json, current_json))) {
+      _upb_DefBuilder_Errf(
+          ctx,
+          "aliases for number %d must have the same custom JSON string (%s)",
+          number, upb_EnumDef_FullName(e));
+    }
+  }
+
+  if (upb_strtable_lookup2(&e->ntoi, name, name_len, &existing_value)) {
+    if (!_upb_EnumDef_IsJsonOnly(existing_value)) {
+      _upb_DefBuilder_Errf(ctx, "duplicate enum value name (%s) in enum (%s)",
+                           name, upb_EnumDef_FullName(e));
+    }
+    const upb_EnumValueDef* enumval = _upb_EnumDef_Untag(existing_value);
+    if (upb_EnumValueDef_Number(enumval) != number) {
+      _upb_DefBuilder_Errf(ctx, "duplicate custom json_name (%s) in enum (%s)",
+                           name, upb_EnumDef_FullName(e));
+    }
+    // Replace an alias's JSON-only entry with the actual declared value so that
+    // FindValueByName() can find it.
+    upb_strtable_remove2(&e->ntoi, name, name_len, NULL);
+  }
+  bool ok = upb_strtable_insert(&e->ntoi, name, name_len, val, ctx->arena);
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 
   // Aliased enum values can share the same custom JSON name, first one wins.
   const char* json_name = upb_EnumValueDef_JsonName(v);
   size_t json_len = strlen(json_name);
   if (strcmp(json_name, name) != 0) {
-    upb_value existing_value;
     if (upb_strtable_lookup2(&e->ntoi, json_name, json_len, &existing_value)) {
       const upb_EnumValueDef* enumval = _upb_EnumDef_Untag(existing_value);
       if (upb_EnumValueDef_Number(enumval) != upb_EnumValueDef_Number(v)) {
@@ -115,8 +171,7 @@ void _upb_EnumDef_Insert(upb_DefBuilder* ctx, upb_EnumDef* e,
   }
 
   // Multiple enum values can have the same number, first one wins.
-  const int number = upb_EnumValueDef_Number(v);
-  if (!upb_inttable_lookup(&e->iton, number, NULL)) {
+  if (!number_exists) {
     if (!upb_inttable_insert(&e->iton, number, val, ctx->arena)) {
       _upb_DefBuilder_OomErr(ctx);
     }
