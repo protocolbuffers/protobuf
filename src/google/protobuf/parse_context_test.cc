@@ -12,6 +12,8 @@
 #include <cstdint>
 #include <limits>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -20,9 +22,16 @@
 #include "absl/strings/str_cat.h"
 #include "absl/strings/str_join.h"
 #include "absl/strings/string_view.h"
+#include "google/protobuf/arena.h"
+#include "google/protobuf/arena_align.h"
+#include "google/protobuf/io/coded_stream.h"
 #include "google/protobuf/io/test_zero_copy_stream.h"
 #include "google/protobuf/io/zero_copy_stream_impl_lite.h"
+#include "google/protobuf/message_lite.h"
+#include "google/protobuf/port.h"
+#include "google/protobuf/repeated_field.h"
 #include "google/protobuf/unittest.pb.h"
+#include "google/protobuf/wire_format_lite.h"
 #include "utf8_validity.h"
 
 namespace google {
@@ -391,6 +400,409 @@ TEST(VerifyUTF8AndFlush, IncompleteUtf8) {
 TEST(VerifyUTF8AndFlush, InvalidSeparatelyButValidTogether) {
   ASSERT_TRUE(utf8_range::IsStructurallyValid("\xf0\x9f\x98\x80"));
   VerifyUTF8AndCopy({std::string("\xf0"), std::string("\x9f\x98\x80")});
+}
+
+
+template <typename T>
+RepeatedField<T>* MutablePackedFixedField(
+    proto2_unittest::TestPackedTypes* msg) {
+  if constexpr (std::is_same_v<T, uint32_t>) {
+    return msg->mutable_packed_fixed32();
+  } else {
+    static_assert(std::is_same_v<T, uint64_t>);
+    return msg->mutable_packed_fixed64();
+  }
+}
+
+template <typename T>
+std::vector<T> MakeTestValues(size_t count, uint64_t seed = 0) {
+  std::vector<T> values(count);
+  for (size_t i = 0; i < count; ++i) {
+    values[i] = static_cast<T>((i + seed) * 2654435761ULL + 17ULL);
+  }
+  return values;
+}
+
+template <typename T>
+std::string MakePackedFixedPayload(const std::vector<T>& values) {
+  std::string payload(values.size() * sizeof(T), '\0');
+  uint8_t* dst = reinterpret_cast<uint8_t*>(payload.data());
+  for (T v : values) {
+    if constexpr (sizeof(T) == 4) {
+      dst = io::CodedOutputStream::WriteLittleEndian32ToArray(
+          static_cast<uint32_t>(v), dst);
+    } else {
+      static_assert(sizeof(T) == 8);
+      dst = io::CodedOutputStream::WriteLittleEndian64ToArray(
+          static_cast<uint64_t>(v), dst);
+    }
+  }
+  return payload;
+}
+
+template <typename T>
+class ReadPackedFixedTest : public ::testing::Test {};
+
+using PackedFixedTypes = ::testing::Types<uint32_t, uint64_t>;
+TYPED_TEST_SUITE(ReadPackedFixedTest, PackedFixedTypes);
+
+TYPED_TEST(ReadPackedFixedTest,
+           MultiChunkMatchesSingleChunkAndSinglePassArenaAllocation) {
+  constexpr size_t kNumElements = 1024;
+  const std::vector<TypeParam> expected =
+      MakeTestValues<TypeParam>(kNumElements);
+  const std::string payload = MakePackedFixedPayload(expected);
+  const int payload_bytes = static_cast<int>(payload.size());
+
+  // Single-chunk baseline on Heap.
+  proto2_unittest::TestPackedTypes single_heap_msg;
+  RepeatedField<TypeParam>* single_heap_out =
+      MutablePackedFixedField<TypeParam>(&single_heap_msg);
+  {
+    io::ArrayInputStream ais(payload.data(), payload_bytes);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr = ctx.ReadPackedFixed(single_heap_msg, ptr, payload_bytes,
+                              single_heap_out);
+    ASSERT_NE(ptr, nullptr);
+  }
+  ASSERT_EQ(
+      std::vector<TypeParam>(single_heap_out->begin(), single_heap_out->end()),
+      expected);
+
+  // Single-chunk baseline on Arena.
+  Arena single_arena;
+  auto* single_arena_msg =
+      Arena::Create<proto2_unittest::TestPackedTypes>(&single_arena);
+  RepeatedField<TypeParam>* single_arena_out =
+      MutablePackedFixedField<TypeParam>(single_arena_msg);
+  {
+    io::ArrayInputStream ais(payload.data(), payload_bytes);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr = ctx.ReadPackedFixed(*single_arena_msg, ptr, payload_bytes,
+                              single_arena_out);
+    ASSERT_NE(ptr, nullptr);
+  }
+  ASSERT_EQ(std::vector<TypeParam>(single_arena_out->begin(),
+                                   single_arena_out->end()),
+            expected);
+
+  // Multi-chunk ArrayInputStream across various block sizes (including
+  // unaligned block_size = 7).
+  for (int block_size : {7, 16, 64, 256}) {
+    proto2_unittest::TestPackedTypes multi_heap_msg;
+    RepeatedField<TypeParam>* multi_heap_out =
+        MutablePackedFixedField<TypeParam>(&multi_heap_msg);
+    {
+      io::ArrayInputStream ais(payload.data(), payload_bytes, block_size);
+      const char* ptr = nullptr;
+      ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+      ptr = ctx.ReadPackedFixed(multi_heap_msg, ptr, payload_bytes,
+                                multi_heap_out);
+      ASSERT_NE(ptr, nullptr) << "block_size=" << block_size;
+    }
+    EXPECT_EQ(
+        std::vector<TypeParam>(multi_heap_out->begin(), multi_heap_out->end()),
+        expected)
+        << "block_size=" << block_size;
+    EXPECT_EQ(multi_heap_out->Capacity(), single_heap_out->Capacity())
+        << "block_size=" << block_size;
+
+    Arena multi_arena;
+    auto* multi_arena_msg =
+        Arena::Create<proto2_unittest::TestPackedTypes>(&multi_arena);
+    RepeatedField<TypeParam>* multi_arena_out =
+        MutablePackedFixedField<TypeParam>(multi_arena_msg);
+    {
+      io::ArrayInputStream ais(payload.data(), payload_bytes, block_size);
+      const char* ptr = nullptr;
+      ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+      ptr = ctx.ReadPackedFixed(*multi_arena_msg, ptr, payload_bytes,
+                                multi_arena_out);
+      ASSERT_NE(ptr, nullptr) << "block_size=" << block_size;
+    }
+    EXPECT_EQ(std::vector<TypeParam>(multi_arena_out->begin(),
+                                     multi_arena_out->end()),
+              expected)
+        << "block_size=" << block_size;
+    EXPECT_EQ(multi_arena_out->Capacity(), single_arena_out->Capacity())
+        << "block_size=" << block_size;
+    EXPECT_EQ(multi_arena.SpaceUsed(), single_arena.SpaceUsed())
+        << "block_size=" << block_size;
+  }
+
+  // Multi-chunk TestZeroCopyInputStream with empty fragments interleaved.
+  std::vector<std::string> fragments = {""};
+  for (size_t offset = 0; offset < payload.size();) {
+    size_t step = std::min<size_t>(23, payload.size() - offset);
+    fragments.emplace_back(payload.substr(offset, step));
+    fragments.emplace_back("");
+    offset += step;
+  }
+  Arena frag_arena;
+  auto* frag_msg = Arena::Create<proto2_unittest::TestPackedTypes>(&frag_arena);
+  RepeatedField<TypeParam>* frag_out =
+      MutablePackedFixedField<TypeParam>(frag_msg);
+  {
+    io::internal::TestZeroCopyInputStream stream(fragments);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &stream);
+    ptr = ctx.ReadPackedFixed(*frag_msg, ptr, payload_bytes, frag_out);
+    ASSERT_NE(ptr, nullptr);
+  }
+  EXPECT_EQ(std::vector<TypeParam>(frag_out->begin(), frag_out->end()),
+            expected);
+  EXPECT_EQ(frag_out->Capacity(), single_arena_out->Capacity());
+  EXPECT_EQ(frag_arena.SpaceUsed(), single_arena.SpaceUsed());
+
+  // End-to-end ParseFromZeroCopyStream on TestPackedTypes.
+  const std::string wire = single_heap_msg.SerializeAsString();
+  Arena single_e2e_arena;
+  auto* single_e2e_msg =
+      Arena::Create<proto2_unittest::TestPackedTypes>(&single_e2e_arena);
+  io::ArrayInputStream single_e2e_ais(wire.data(),
+                                      static_cast<int>(wire.size()));
+  ASSERT_TRUE(single_e2e_msg->ParseFromZeroCopyStream(&single_e2e_ais));
+
+  Arena multi_e2e_arena;
+  auto* multi_e2e_msg =
+      Arena::Create<proto2_unittest::TestPackedTypes>(&multi_e2e_arena);
+  io::ArrayInputStream multi_e2e_ais(wire.data(), static_cast<int>(wire.size()),
+                                     64);
+  ASSERT_TRUE(multi_e2e_msg->ParseFromZeroCopyStream(&multi_e2e_ais));
+  RepeatedField<TypeParam>* multi_e2e_out =
+      MutablePackedFixedField<TypeParam>(multi_e2e_msg);
+  EXPECT_EQ(
+      std::vector<TypeParam>(multi_e2e_out->begin(), multi_e2e_out->end()),
+      expected);
+  EXPECT_EQ(multi_e2e_arena.SpaceUsed(), single_e2e_arena.SpaceUsed());
+}
+
+TYPED_TEST(ReadPackedFixedTest, AppendToNonEmptyFieldAcrossChunks) {
+  constexpr size_t kInitialElements = 37;
+  constexpr size_t kAppendedElements = 500;
+  constexpr size_t kTotalElements = kInitialElements + kAppendedElements;
+  const std::vector<TypeParam> initial_values =
+      MakeTestValues<TypeParam>(kInitialElements, /*seed=*/100);
+  const std::vector<TypeParam> appended_values =
+      MakeTestValues<TypeParam>(kAppendedElements, /*seed=*/1000);
+  std::vector<TypeParam> expected_all = initial_values;
+  expected_all.insert(expected_all.end(), appended_values.begin(),
+                      appended_values.end());
+
+  const std::string payload = MakePackedFixedPayload(appended_values);
+  const int payload_bytes = static_cast<int>(payload.size());
+
+  auto populate_initial = [&](RepeatedField<TypeParam>* field) {
+    for (TypeParam v : initial_values) {
+      field->Add(v);
+    }
+  };
+
+  // Single-chunk reference on Arena and Heap.
+  Arena single_arena;
+  auto* single_arena_msg =
+      Arena::Create<proto2_unittest::TestPackedTypes>(&single_arena);
+  RepeatedField<TypeParam>* single_arena_out =
+      MutablePackedFixedField<TypeParam>(single_arena_msg);
+  populate_initial(single_arena_out);
+  {
+    io::ArrayInputStream ais(payload.data(), payload_bytes);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr = ctx.ReadPackedFixed(*single_arena_msg, ptr, payload_bytes,
+                              single_arena_out);
+    ASSERT_NE(ptr, nullptr);
+  }
+
+  proto2_unittest::TestPackedTypes single_heap_msg;
+  RepeatedField<TypeParam>* single_heap_out =
+      MutablePackedFixedField<TypeParam>(&single_heap_msg);
+  populate_initial(single_heap_out);
+  {
+    io::ArrayInputStream ais(payload.data(), payload_bytes);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr = ctx.ReadPackedFixed(single_heap_msg, ptr, payload_bytes,
+                              single_heap_out);
+    ASSERT_NE(ptr, nullptr);
+  }
+
+  // Multi-chunk append on Arena.
+  Arena multi_arena;
+  auto* multi_arena_msg =
+      Arena::Create<proto2_unittest::TestPackedTypes>(&multi_arena);
+  RepeatedField<TypeParam>* multi_arena_out =
+      MutablePackedFixedField<TypeParam>(multi_arena_msg);
+  populate_initial(multi_arena_out);
+  {
+    io::ArrayInputStream ais(payload.data(), payload_bytes, /*block_size=*/64);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr = ctx.ReadPackedFixed(*multi_arena_msg, ptr, payload_bytes,
+                              multi_arena_out);
+    ASSERT_NE(ptr, nullptr);
+  }
+  EXPECT_EQ(
+      std::vector<TypeParam>(multi_arena_out->begin(), multi_arena_out->end()),
+      expected_all);
+  EXPECT_EQ(multi_arena_out->Capacity(), single_arena_out->Capacity());
+  EXPECT_EQ(multi_arena.SpaceUsed(), single_arena.SpaceUsed());
+  // On Arena, capacity is exact kTotalElements (or kTotalElements + 1 when
+  // 4-byte elements are rounded up to 8-byte alignment).
+  constexpr int kExpectedArenaCapacity =
+      static_cast<int>((internal::ArenaAlignDefault::Ceil(
+                            8 + kTotalElements * sizeof(TypeParam)) -
+                        8) /
+                       sizeof(TypeParam));
+  EXPECT_EQ(multi_arena_out->Capacity(), kExpectedArenaCapacity);
+
+  // Multi-chunk append on Heap.
+  proto2_unittest::TestPackedTypes multi_heap_msg;
+  RepeatedField<TypeParam>* multi_heap_out =
+      MutablePackedFixedField<TypeParam>(&multi_heap_msg);
+  populate_initial(multi_heap_out);
+  {
+    io::ArrayInputStream ais(payload.data(), payload_bytes, /*block_size=*/64);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr =
+        ctx.ReadPackedFixed(multi_heap_msg, ptr, payload_bytes, multi_heap_out);
+    ASSERT_NE(ptr, nullptr);
+  }
+  EXPECT_EQ(
+      std::vector<TypeParam>(multi_heap_out->begin(), multi_heap_out->end()),
+      expected_all);
+  EXPECT_EQ(multi_heap_out->Capacity(), single_heap_out->Capacity());
+}
+
+TYPED_TEST(ReadPackedFixedTest, MalformedOrTruncatedSizeGuardsUpfrontReserve) {
+  const std::string small_payload(128, '\x01');
+
+  // 1a. Unaligned size across multiple chunks on a short stream must not
+  // pre-reserve the forged size before failing on stream EOF.
+  {
+    Arena arena;
+    auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+    RepeatedField<TypeParam>* out = MutablePackedFixedField<TypeParam>(msg);
+    io::ArrayInputStream ais(small_payload.data(), 64, /*block_size=*/32);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    const int unaligned_huge_size =
+        100000 * static_cast<int>(sizeof(TypeParam)) + 1;
+    ptr = ctx.ReadPackedFixed(*msg, ptr, unaligned_huge_size, out);
+    EXPECT_EQ(ptr, nullptr);
+    EXPECT_LT(out->Capacity(), 100);
+  }
+
+  // 1b. Unaligned size across multiple chunks where stream has enough bytes
+  // still fails at the tail check without pre-reserving upfront.
+  {
+    Arena arena;
+    auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+    RepeatedField<TypeParam>* out = MutablePackedFixedField<TypeParam>(msg);
+    io::ArrayInputStream ais(small_payload.data(),
+                             static_cast<int>(small_payload.size()),
+                             /*block_size=*/32);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    const int unaligned_size = 12 * static_cast<int>(sizeof(TypeParam)) + 1;
+    ptr = ctx.ReadPackedFixed(*msg, ptr, unaligned_size, out);
+    EXPECT_EQ(ptr, nullptr);
+    EXPECT_LT(out->Capacity(), 100);
+  }
+
+  // 1c. Unaligned size within a single chunk returns nullptr.
+  for (int unaligned_size : {1, 5 * static_cast<int>(sizeof(TypeParam)) + 1}) {
+    proto2_unittest::TestPackedTypes msg;
+    RepeatedField<TypeParam>* out = MutablePackedFixedField<TypeParam>(&msg);
+    io::ArrayInputStream ais(small_payload.data(),
+                             static_cast<int>(small_payload.size()));
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr = ctx.ReadPackedFixed(msg, ptr, unaligned_size, out);
+    EXPECT_EQ(ptr, nullptr);
+    EXPECT_LT(out->Capacity(), 100);
+  }
+
+  // 2a. Limit-exceeding size via PushLimit(ptr, 64) fails HasEnoughTillLimit
+  // and avoids upfront reservation.
+  {
+    Arena arena;
+    auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+    RepeatedField<TypeParam>* out = MutablePackedFixedField<TypeParam>(msg);
+    io::ArrayInputStream ais(small_payload.data(),
+                             static_cast<int>(small_payload.size()),
+                             /*block_size=*/32);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    auto limit_token = ctx.PushLimit(ptr, 64);
+    ptr = ctx.ReadPackedFixed(*msg, ptr, 10'000'000, out);
+    EXPECT_EQ(ptr, nullptr);
+    EXPECT_LT(arena.SpaceUsed(), 1024);
+    (void)ctx.PopLimit(std::move(limit_token));
+  }
+
+  // 2b. Limit-exceeding size via BoundedZCIS{&stream, 64} fails
+  // HasEnoughTillLimit and avoids upfront reservation.
+  {
+    Arena arena;
+    auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+    RepeatedField<TypeParam>* out = MutablePackedFixedField<TypeParam>(msg);
+    io::ArrayInputStream ais(small_payload.data(),
+                             static_cast<int>(small_payload.size()),
+                             /*block_size=*/32);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, BoundedZCIS{&ais, 64});
+    ptr = ctx.ReadPackedFixed(*msg, ptr, 10'000'000, out);
+    EXPECT_EQ(ptr, nullptr);
+    EXPECT_LT(arena.SpaceUsed(), 1024);
+  }
+
+  // 3. Truncated unbounded stream with forged huge size (> kSafeStringSize)
+  // caps upfront reservation at kSafeStringSize and fails cleanly on EOF.
+  for (int forged_size : {std::numeric_limits<int>::max() - 32,
+                          std::numeric_limits<int>::max() - 31}) {
+    Arena arena;
+    auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+    RepeatedField<TypeParam>* out = MutablePackedFixedField<TypeParam>(msg);
+    io::ArrayInputStream ais(small_payload.data(), 64, /*block_size=*/32);
+    const char* ptr = nullptr;
+    ParseContext ctx(kMaxLimit, false, &ptr, &ais);
+    ptr = ctx.ReadPackedFixed(*msg, ptr, forged_size, out);
+    EXPECT_EQ(ptr, nullptr);
+    EXPECT_LE(static_cast<size_t>(out->Capacity()) * sizeof(TypeParam),
+              kSafeStringSize + 1024);
+    EXPECT_LE(arena.SpaceUsed(), kSafeStringSize + 4096);
+  }
+
+  // End-to-end ParseFromZeroCopyStream with forged huge length prefix on a
+  // truncated multi-chunk stream returns false without OOM.
+  {
+    constexpr int kFieldNumber =
+        std::is_same_v<TypeParam, uint32_t>
+            ? proto2_unittest::TestPackedTypes::kPackedFixed32FieldNumber
+            : proto2_unittest::TestPackedTypes::kPackedFixed64FieldNumber;
+    uint8_t header_buf[20];
+    uint8_t* p = io::CodedOutputStream::WriteVarint32ToArray(
+        WireFormatLite::MakeTag(kFieldNumber,
+                                WireFormatLite::WIRETYPE_LENGTH_DELIMITED),
+        header_buf);
+    p = io::CodedOutputStream::WriteVarint32ToArray(
+        static_cast<uint32_t>(std::numeric_limits<int>::max() - 31), p);
+    std::string malformed_wire(reinterpret_cast<const char*>(header_buf),
+                               static_cast<size_t>(p - header_buf));
+    malformed_wire.append(64, '\x01');
+
+    Arena arena;
+    auto* msg = Arena::Create<proto2_unittest::TestPackedTypes>(&arena);
+    io::ArrayInputStream ais(malformed_wire.data(),
+                             static_cast<int>(malformed_wire.size()),
+                             /*block_size=*/16);
+    EXPECT_FALSE(msg->ParseFromZeroCopyStream(&ais));
+    EXPECT_LE(arena.SpaceUsed(), kSafeStringSize + 4096);
+  }
 }
 
 
