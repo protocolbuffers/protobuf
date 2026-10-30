@@ -2690,9 +2690,10 @@ class MapEntryMessageComparator {
         return first < second;
       }
       case FieldDescriptor::CPPTYPE_STRING: {
-        std::string first = reflection->GetString(*a, field_);
-        std::string second = reflection->GetString(*b, field_);
-        return first < second;
+        Reflection::ScratchSpace scratch_a;
+        Reflection::ScratchSpace scratch_b;
+        return reflection->GetStringView(*a, field_, scratch_a) <
+               reflection->GetStringView(*b, field_, scratch_b);
       }
       default:
         ABSL_DLOG(FATAL) << "Invalid key for map field.";

@@ -19,6 +19,7 @@
 
 #include "google/protobuf/dynamic_message.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -549,6 +550,56 @@ TEST_P(DynamicMessageTest, Proto3) {
 INSTANTIATE_TEST_SUITE_P(UseArena, DynamicMessageTest,
                          ::testing::Combine(::testing::Bool(),
                                             ::testing::Bool()));
+
+TEST(DynamicMessageMapSorterTest, StringKeysSortedOrder) {
+  DescriptorPool pool;
+  AddUnittestDescriptors(pool);
+  DynamicMessageFactory factory(&pool);
+
+  for (absl::string_view type_name :
+       {"proto2_unittest.TestHugeFieldNumbers",
+        "edition_unittest.TestHugeFieldNumbers"}) {
+    const Descriptor* desc = pool.FindMessageTypeByName(type_name);
+    ASSERT_NE(desc, nullptr) << type_name;
+    const FieldDescriptor* map_field =
+        desc->FindFieldByName("string_string_map");
+    ASSERT_NE(map_field, nullptr);
+    const FieldDescriptor* key_field = map_field->message_type()->field(0);
+    const FieldDescriptor* val_field = map_field->message_type()->field(1);
+
+    std::unique_ptr<Message> msg(factory.GetPrototype(desc)->New());
+    const Reflection* refl = msg->GetReflection();
+
+    const std::string long_prefix(40, 'x');
+    const std::vector<std::string> unsorted_keys = {
+        long_prefix + "_zzz",
+        "short_b",
+        std::string("nul\0b", 5),
+        "",
+        long_prefix + "_aaa",
+        std::string("nul\0a", 5),
+        "short_a",
+    };
+    for (size_t i = 0; i < unsorted_keys.size(); ++i) {
+      Message* entry = refl->AddMessage(msg.get(), map_field);
+      const Reflection* entry_refl = entry->GetReflection();
+      entry_refl->SetString(entry, key_field, unsorted_keys[i]);
+      entry_refl->SetString(entry, val_field, absl::StrCat("v", i));
+    }
+
+    std::vector<const Message*> sorted = DynamicMapSorter::Sort(
+        *msg, static_cast<int>(unsorted_keys.size()), refl, map_field);
+    ASSERT_EQ(sorted.size(), unsorted_keys.size());
+
+    std::vector<std::string> expected = unsorted_keys;
+    std::sort(expected.begin(), expected.end());
+    for (size_t i = 0; i < sorted.size(); ++i) {
+      EXPECT_EQ(sorted[i]->GetReflection()->GetString(*sorted[i], key_field),
+                expected[i])
+          << type_name << " index " << i;
+    }
+  }
+}
 
 
 }  // namespace
