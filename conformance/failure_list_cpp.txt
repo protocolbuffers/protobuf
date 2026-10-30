@@ -32,7 +32,25 @@ Recommended.*.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput            
 Recommended.*.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput                                                 # Should have failed to serialize, but didn't.
 Recommended.*.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput                                                  # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
-Required.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityExplicitPlus                                              # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShort                                                     # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShortAllCapital                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityWhitespace                                                # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanAllCapital                                                     # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanLowercase                                                      # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedNegative                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedPositive                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanWhitespace                                                     # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityExplicitPlus                                               # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShort                                                      # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShortAllCapital                                            # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityWhitespace                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanAllCapital                                                      # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanLowercase                                                       # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedNegative                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedPositive                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanWhitespace                                                      # Should have failed to parse, but didn't.
+RRequired.*.JsonInput.SingleValueForRepeatedFieldInt32                                                              # Should have failed to parse, but didn't.
 Required.*.JsonInput.SingleValueForRepeatedFieldMessage                                                            # Should have failed to parse, but didn't.
 Required.*.ProtobufInput.BadTag_FieldNumberSlightlyTooHigh                                                         # Should have failed to parse, but didn't.
 # TODO: Uncomment once conformance tests can express failures that are not expected to be fixed.

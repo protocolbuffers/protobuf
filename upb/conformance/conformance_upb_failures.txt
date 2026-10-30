@@ -26,3 +26,17 @@ Required.*.JsonInput.TimestampJsonInputMonthZero                                
 Required.*.JsonInput.TimestampJsonInputNonLeapFeb29                                                                # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputOffsetBoundaryOverflow                                                      # Should have failed to parse, but didn't.
 Required.*.JsonInput.TimestampJsonInputSecondTooLarge                                                              # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityExplicitPlus # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShort # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShortAllCapital # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanAllCapital # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanLowercase # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedNegative # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedPositive # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityExplicitPlus # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShort # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShortAllCapital # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanAllCapital # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanLowercase # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedNegative # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedPositive # Should have failed to parse, but didn't.

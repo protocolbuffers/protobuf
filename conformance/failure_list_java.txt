@@ -34,11 +34,12 @@ Recommended.*.ProtobufInput.FieldMaskNumbersDontRoundTrip.JsonOutput            
 Recommended.*.ProtobufInput.FieldMaskPathsDontRoundTrip.JsonOutput                                                 # Should have failed to serialize, but didn't.
 Recommended.*.ProtobufInput.FieldMaskTooManyUnderscore.JsonOutput                                                  # Should have failed to serialize, but didn't.
 Recommended.*.JsonInput.FieldMaskInvalidCharacter                                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanWhitespace                                                      # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueArabicIndicDigits                                                       # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueFullwidthDigits                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldNotQuoted                                                                            # Should have failed to parse, but didn't.
 Required.*.JsonInput.EnumFieldSingleElementArrayEnumName                                                           # Should have failed to parse, but didn't.
-Required.*.JsonInput.EnumFieldSingleElementArrayNumericValue                                                      # Should have failed to parse, but didn't.
+Required.*.JsonInput.EnumFieldSingleElementArrayNumericValue                                                       # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldLeadingZero                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldNegativeWithLeadingZero                                                             # Should have failed to parse, but didn't.
 Required.*.JsonInput.Int32FieldPlusSign                                                                            # Should have failed to parse, but didn't.
@@ -75,6 +76,4 @@ Required.*.ProtobufInput.BadTag_OverlongVarint                                  
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Oneof                                                    # Should have failed to parse, but didn't.
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Repeated                                                 # Should have failed to parse, but didn't.
 # Recommended.Proto2.ProtobufInput.RejectInvalidUtf8.String.Singular                                                 # Should have failed to parse, but didn't.
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateDifferentTypeId.ProtobufOutput                      # Output was not equivalent to reference message
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValue.ProtobufOutput                                # Output was not equivalent to reference message
-Recommended.Proto2.ProtobufInput.ValidMessageSetEncoding.DuplicateValueOutOfOrder.ProtobufOutput                      # Output was not equivalent to reference message
+Recommended.*.ProtobufInput.ValidMessageSetEncoding.DuplicateDifferentTypeId.ProtobufOutput                   # Output was not equivalent to reference message

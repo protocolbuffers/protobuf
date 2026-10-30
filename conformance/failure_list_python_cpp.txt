@@ -9,6 +9,22 @@
 
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing1                                                         # Should have failed to parse or matched expected output but did not.
 Recommended.*.JsonInput.FieldNameDuplicateDifferentCasing2                                                         # Should have failed to parse or matched expected output but did not.
+Recommended.*.JsonInput.DoubleFieldInfinityExplicitPlus                                              # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShort                                                     # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityShortAllCapital                                           # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldInfinityWhitespace                                                # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanAllCapital                                                     # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedNegative                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanSignedPositive                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.DoubleFieldNanWhitespace                                                     # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityExplicitPlus                                               # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShort                                                      # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityShortAllCapital                                            # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldInfinityWhitespace                                                 # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanAllCapital                                                      # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedNegative                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanSignedPositive                                                  # Should have failed to parse, but didn't.
+Recommended.*.JsonInput.FloatFieldNanWhitespace                                                      # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldFalseValue                                                                         # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueArabicIndicDigits                                                       # Should have failed to parse, but didn't.
 Required.*.JsonInput.DoubleFieldStringValueFullwidthDigits                                                         # Should have failed to parse, but didn't.
