@@ -416,7 +416,7 @@ class Message
             case GPBType::MESSAGE:
                 if ($field->isMap()) {
                     $value = new MapEntry($field->getMessageType());
-                } else {
+                } elseif (is_null($value)) {
                     $klass = $field->getMessageType()->getClass();
                     $value = new $klass;
                 }
@@ -500,6 +500,12 @@ class Message
             $this->skipField($input, $tag);
             return;
         } elseif ($value_format === GPBWire::NORMAL_FORMAT) {
+            if ($field->getType() === GPBType::MESSAGE &&
+                !$field->isRepeated() &&
+                $this->existField($field)) {
+                $getter = $field->getGetter();
+                $value = $this->$getter();
+            }
             self::parseFieldFromStreamNoTag($input, $field, $value);
         } elseif ($value_format === GPBWire::PACKED_FORMAT) {
             $length = 0;
