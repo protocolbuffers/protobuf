@@ -542,7 +542,18 @@ TEST(Memswap, VerifyWithSmallAndLargeSizes) {
   // Arbitrary sizes
   TestMemswap<0>();
   TestMemswap<1>();
+  TestMemswap<2>();
+  TestMemswap<3>();
+  TestMemswap<4>();
+  TestMemswap<7>();
   TestMemswap<10>();
+  TestMemswap<12>();
+  TestMemswap<15>();
+  TestMemswap<16>();
+  TestMemswap<63>();
+  TestMemswap<64>();
+  TestMemswap<65>();
+  TestMemswap<71>();
   TestMemswap<100>();
   TestMemswap<1000>();
   TestMemswap<10000>();

@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <iterator>
 #include <limits>
@@ -91,12 +92,43 @@ class RepeatedPtrFieldTest;
 template <typename Element>
 auto ConvertToPtrIterator(RepeatedPtrIterator<Element> it);
 
+// Swaps two non-overlapping 8-byte words.
+inline void MemswapWord(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
+  uint64_t ta, tb;
+  std::memcpy(&ta, a, sizeof(ta));
+  std::memcpy(&tb, b, sizeof(tb));
+  std::memcpy(a, &tb, sizeof(tb));
+  std::memcpy(b, &ta, sizeof(ta));
+}
+
+// Out-of-line version of `memswap` for large blocks, shared across all sizes
+// to avoid per-`N` code bloat.
+PROTOBUF_EXPORT void MemswapLarge(char* PROTOBUF_RESTRICT a,
+                                  char* PROTOBUF_RESTRICT b, size_t n);
+
 // Swaps two non-overlapping blocks of memory of size `N`
 template <size_t N>
 inline void memswap(char* PROTOBUF_RESTRICT a, char* PROTOBUF_RESTRICT b) {
-  // `PROTOBUF_RESTRICT` tells compiler that blocks do not overlapping which
-  // allows it to generate optimized code for swap_ranges.
-  std::swap_ranges(a, a + N, b);
+  // Swap 8-byte words rather than calling `std::swap_ranges(a, a + N, b)` on
+  // the whole block: under `-fsanitize=address` + `-fsanitize=pointer-overflow`
+  // the per-byte checks on each `char*` increment prevent LLVM from coalescing
+  // the byte loop, so pointers get swapped one byte at a time. A pointer that
+  // is half-swapped exists in neither block nor in any register, so
+  // LeakSanitizer misses it as a root if another thread runs a leak check
+  // mid-swap (e.g. at process exit).
+  constexpr size_t kMaxInlineSize = 64;
+  if constexpr (N > kMaxInlineSize) {
+    MemswapLarge(a, b, N);
+  } else {
+    constexpr size_t kWordBytes = N / 8 * 8;
+    for (size_t i = 0; i < kWordBytes; i += 8) {
+      MemswapWord(a + i, b + i);
+    }
+    if constexpr (kWordBytes != N) {
+      // The tail is shorter than a word, so it cannot hold a whole pointer.
+      std::swap_ranges(a + kWordBytes, a + N, b + kWordBytes);
+    }
+  }
 }
 
 // A trait that tells offset of `T::resolver_`.
