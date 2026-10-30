@@ -642,15 +642,25 @@ TEST(ReflectionTest, DefPoolNewAllocationFailure) {
   size_t total_allocations = upb_AllocationCount_Get();
   upb_DefPool_Free(s);
   ASSERT_GT(total_allocations, 0);
+  RecordProperty("allocation_failure_cases", std::to_string(total_allocations));
 
   for (size_t i = 0; i < total_allocations; ++i) {
+    SCOPED_TRACE(i);
     upb_AllocationCount_Reset();
     upb_AllocationCount_FailOn(i);
     s = upb_DefPool_New();
+    size_t attempted_allocations = upb_AllocationCount_Get();
     upb_AllocationCount_Reset();
+    EXPECT_GT(attempted_allocations, i);
     EXPECT_EQ(s, nullptr) << "upb_DefPool_New() unexpectedly succeeded when "
                           << "allocation number " << i << " was failed.";
     if (s) upb_DefPool_Free(s);
+
+    // Cleanup must leave the generated registry usable by the next pool.
+    s = upb_DefPool_New();
+    ASSERT_NE(s, nullptr);
+    EXPECT_NE(upb_DefPool_FeatureSetDefaults(s), nullptr);
+    upb_DefPool_Free(s);
   }
   upb_AllocationCount_Reset();
 }
