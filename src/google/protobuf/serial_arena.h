@@ -21,7 +21,6 @@
 #include "absl/base/optimization.h"
 #include "absl/base/prefetch.h"
 #include "absl/log/absl_check.h"
-#include "absl/numeric/bits.h"
 #include "google/protobuf/arena_align.h"
 #include "google/protobuf/arena_allocation_policy.h"
 #include "google/protobuf/arena_cleanup.h"
@@ -90,21 +89,7 @@ class PROTOBUF_EXPORT SerialArena {
   uint64_t SpaceUsed() const;
 
   // See comments on `cached_blocks_` member for details.
-  PROTOBUF_ALWAYS_INLINE void* TryAllocateFromCachedBlock(size_t size) {
-    if (ABSL_PREDICT_FALSE(size < 16)) return nullptr;
-    // We round up to the next larger block in case the memory doesn't match
-    // the pattern we are looking for.
-    const size_t index = absl::bit_width(size - 1) - 4;
-
-    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) return nullptr;
-    auto& cached_head = cached_blocks_[index];
-    if (cached_head == nullptr) return nullptr;
-
-    void* ret = cached_head;
-    internal::UnpoisonMemoryRegion(ret, size);
-    cached_head = cached_head->next;
-    return ret;
-  }
+  void* TryAllocateFromCachedBlock(size_t size);
 
   // In kArray mode we look through cached blocks.
   // We do not do this by default because most non-array allocations will not
@@ -114,107 +99,15 @@ class PROTOBUF_EXPORT SerialArena {
   // the right size. We can statically know if the allocation size can benefit
   // from it.
   template <AllocationClient alloc_client = AllocationClient::kDefault>
-  void* AllocateAligned(size_t n) {
-    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    ABSL_DCHECK_GE(limit_, ptr());
+  void* AllocateAligned(size_t n);
 
-    if (alloc_client == AllocationClient::kArray) {
-      if (void* res = TryAllocateFromCachedBlock(n)) {
-        return res;
-      }
-    }
-
-    void* ptr;
-    if (ABSL_PREDICT_TRUE(MaybeAllocateAligned(n, &ptr))) {
-      return ptr;
-    }
-    return AllocateAlignedFallback(n);
-  }
-
- private:
-  static PROTOBUF_ALWAYS_INLINE constexpr size_t AlignUpTo(size_t n, size_t a) {
-    // We are wasting space by over allocating align - 8 bytes. Compared to a
-    // dedicated function that takes current alignment in consideration.  Such a
-    // scheme would only waste (align - 8)/2 bytes on average, but requires a
-    // dedicated function in the outline arena allocation functions. Possibly
-    // re-evaluate tradeoffs later.
-    return a <= 8 ? ArenaAlignDefault::Ceil(n) : ArenaAlignAs(a).Padded(n);
-  }
-
-  static PROTOBUF_ALWAYS_INLINE void* AlignTo(void* p, size_t a) {
-    return (a <= ArenaAlignDefault::align)
-               ? ArenaAlignDefault::CeilDefaultAligned(p)
-               : ArenaAlignAs(a).CeilDefaultAligned(p);
-  }
-
- public:
   static constexpr size_t kMinimumReturnedArraySize = 16;
 
   // See comments on `cached_blocks_` member for details.
-  void ReturnArrayMemory(void* p, size_t size) {
-    // We only need to check for 32-bit platforms.
-    // In 64-bit platforms the minimum allocation size from Repeated*Field will
-    // be 16 guaranteed.
-    if (sizeof(void*) < 8) {
-      if (ABSL_PREDICT_FALSE(size < kMinimumReturnedArraySize)) return;
-    } else {
-      PROTOBUF_ASSUME(size >= kMinimumReturnedArraySize);
-    }
-
-    // We round down to the next smaller block in case the memory doesn't match
-    // the pattern we are looking for. eg, someone might have called Reserve()
-    // on the repeated field.
-    const size_t index = absl::bit_width(size) - 5;
-
-    if (ABSL_PREDICT_FALSE(index >= cached_block_length_)) {
-      // We can't put this object on the freelist so make this object the
-      // freelist. It is guaranteed it is larger than the one we have, and
-      // large enough to hold another allocation of `size`.
-      CachedBlock** new_list = static_cast<CachedBlock**>(p);
-      size_t new_size = size / sizeof(CachedBlock*);
-
-      std::copy(cached_blocks_, cached_blocks_ + cached_block_length_,
-                new_list);
-
-      // We need to unpoison this memory before filling it in case it has been
-      // poisoned by another sanitizer client.
-      internal::UnpoisonMemoryRegion(
-          new_list + cached_block_length_,
-          (new_size - cached_block_length_) * sizeof(CachedBlock*));
-
-      std::fill(new_list + cached_block_length_, new_list + new_size, nullptr);
-
-      cached_blocks_ = new_list;
-      // Make the size fit in uint8_t. This is the power of two, so we don't
-      // need anything larger.
-      cached_block_length_ =
-          static_cast<uint8_t>(std::min(size_t{64}, new_size));
-
-      return;
-    }
-
-    auto& cached_head = cached_blocks_[index];
-    auto* new_node = static_cast<CachedBlock*>(p);
-    new_node->next = cached_head;
-    cached_head = new_node;
-    internal::PoisonMemoryRegion(p, size);
-  }
+  void ReturnArrayMemory(void* p, size_t size);
 
   // Allocate space if the current region provides enough space.
-  bool MaybeAllocateAligned(size_t n, void** out) {
-    ABSL_DCHECK(internal::ArenaAlignDefault::IsAligned(n));
-    ABSL_DCHECK_GE(limit_, ptr());
-    char* ret = ptr();
-    if (ABSL_PREDICT_FALSE(static_cast<size_t>(limit_ - ret) < n)) {
-      return false;
-    }
-    internal::UnpoisonMemoryRegion(ret, n);
-    *out = ret;
-    char* next = ret + n;
-    set_ptr(next);
-    MaybePrefetchData(next);
-    return true;
-  }
+  bool MaybeAllocateAligned(size_t n, void** out);
 
   // If there is enough space in the current block, allocate space for one
   // std::string object and register for destruction. The object has not been
@@ -460,6 +353,11 @@ class PROTOBUF_EXPORT SerialArena {
 
   std::atomic<size_t> space_used_{0};  // Necessary for metrics.
 };
+
+extern template void* SerialArena::AllocateAligned<AllocationClient::kDefault>(
+    size_t n);
+extern template void* SerialArena::AllocateAligned<AllocationClient::kArray>(
+    size_t n);
 
 PROTOBUF_ALWAYS_INLINE bool SerialArena::MaybeAllocateString(void*& p) {
   // Check how many unused instances are in the current block.
