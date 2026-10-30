@@ -1354,23 +1354,19 @@ upb_DecodeStatus upb_DecodeLengthPrefixed(const char* buf, size_t size,
     if (i >= size || i > 9) {
       return kUpb_DecodeStatus_Malformed;
     }
-    uint64_t b = *buf;
+    uint64_t b = (uint8_t)*buf;
     buf++;
+    if (i == 9 && (b & 0x7f) > 1) {
+      return kUpb_DecodeStatus_Malformed;
+    }
     msg_len += (b & 0x7f) << (i * 7);
     if ((b & 0x80) == 0) {
-      *num_bytes_read = i + 1 + msg_len;
+      if (msg_len > INT32_MAX || msg_len > size - (i + 1)) {
+        return kUpb_DecodeStatus_Malformed;
+      }
+      *num_bytes_read = i + 1 + (size_t)msg_len;
       break;
     }
-  }
-
-  // If the total number of bytes we would read (= the bytes from the varint
-  // plus however many bytes that varint says we should read) is larger then the
-  // input buffer then error as malformed.
-  if (*num_bytes_read > size) {
-    return kUpb_DecodeStatus_Malformed;
-  }
-  if (msg_len > INT32_MAX) {
-    return kUpb_DecodeStatus_Malformed;
   }
 
   return upb_Decode(buf, msg_len, msg, mt, extreg, options, arena);
