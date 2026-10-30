@@ -447,7 +447,196 @@ void _upb_MessageDef_InsertField(upb_DefBuilder* ctx, upb_MessageDef* m,
   if (!ok) _upb_DefBuilder_OomErr(ctx);
 }
 
+static bool check_wkt_field(const upb_MessageDef* m, uint32_t num,
+                            const char* name, upb_FieldType type,
+                            bool repeated) {
+  const upb_FieldDef* f = upb_MessageDef_FindFieldByNumber(m, num);
+  if (f == NULL) return false;
+  if (strcmp(upb_FieldDef_Name(f), name) != 0) return false;
+  if (upb_FieldDef_Type(f) != type) return false;
+  if (upb_FieldDef_IsRepeated(f) != repeated) return false;
+  if (upb_FieldDef_IsMap(f) || upb_FieldDef_IsRequired(f)) return false;
+  if (upb_FieldDef_ContainingOneof(f) != NULL) return false;
+  return true;
+}
+
+static bool check_wkt_wrapper(const upb_MessageDef* m, upb_FieldType type) {
+  if (upb_MessageDef_IsMapEntry(m)) return false;
+  if (upb_MessageDef_FieldCount(m) != 1 || upb_MessageDef_OneofCount(m) != 0) {
+    return false;
+  }
+  return check_wkt_field(m, 1, "value", type, false);
+}
+
+static const upb_MessageDef* check_wkt_struct_local(const upb_MessageDef* m) {
+  if (m == NULL || upb_MessageDef_IsMapEntry(m)) return NULL;
+  if (strcmp(upb_MessageDef_FullName(m), "google.protobuf.Struct") != 0) {
+    return NULL;
+  }
+  if (upb_MessageDef_FieldCount(m) != 1 || upb_MessageDef_OneofCount(m) != 0) {
+    return NULL;
+  }
+  const upb_FieldDef* fields_f = upb_MessageDef_FindFieldByNumber(m, 1);
+  if (fields_f == NULL || strcmp(upb_FieldDef_Name(fields_f), "fields") != 0) {
+    return NULL;
+  }
+  if (!upb_FieldDef_IsMap(fields_f)) return NULL;
+  const upb_MessageDef* entry_m = upb_FieldDef_MessageSubDef(fields_f);
+  if (entry_m == NULL || !upb_MessageDef_IsMapEntry(entry_m)) return NULL;
+  if (upb_MessageDef_FieldCount(entry_m) != 2 ||
+      upb_MessageDef_OneofCount(entry_m) != 0) {
+    return NULL;
+  }
+  if (!check_wkt_field(entry_m, 1, "key", kUpb_FieldType_String, false)) {
+    return NULL;
+  }
+  if (!check_wkt_field(entry_m, 2, "value", kUpb_FieldType_Message, false)) {
+    return NULL;
+  }
+  return upb_FieldDef_MessageSubDef(upb_MessageDef_FindFieldByNumber(entry_m, 2));
+}
+
+static const upb_MessageDef* check_wkt_list_local(const upb_MessageDef* m) {
+  if (m == NULL || upb_MessageDef_IsMapEntry(m)) return NULL;
+  if (strcmp(upb_MessageDef_FullName(m), "google.protobuf.ListValue") != 0) {
+    return NULL;
+  }
+  if (upb_MessageDef_FieldCount(m) != 1 || upb_MessageDef_OneofCount(m) != 0) {
+    return NULL;
+  }
+  if (!check_wkt_field(m, 1, "values", kUpb_FieldType_Message, true)) {
+    return NULL;
+  }
+  return upb_FieldDef_MessageSubDef(upb_MessageDef_FindFieldByNumber(m, 1));
+}
+
+static bool check_wkt_oneof_field(const upb_MessageDef* m,
+                                  const upb_OneofDef* kind_o, uint32_t num,
+                                  const char* name, upb_FieldType type,
+                                  const upb_FieldDef** out_f) {
+  const upb_FieldDef* f = upb_MessageDef_FindFieldByNumber(m, num);
+  if (f == NULL || strcmp(upb_FieldDef_Name(f), name) != 0) return false;
+  if (upb_FieldDef_Type(f) != type) return false;
+  if (upb_FieldDef_IsRepeated(f) || upb_FieldDef_IsRequired(f)) return false;
+  if (upb_FieldDef_ContainingOneof(f) != kind_o) return false;
+  if (out_f != NULL) *out_f = f;
+  return true;
+}
+
+static bool check_wkt_value_local(const upb_MessageDef* m,
+                                  const upb_MessageDef** out_struct,
+                                  const upb_MessageDef** out_list) {
+  if (m == NULL || upb_MessageDef_IsMapEntry(m)) return false;
+  if (strcmp(upb_MessageDef_FullName(m), "google.protobuf.Value") != 0) {
+    return false;
+  }
+  if (upb_MessageDef_FieldCount(m) != 6 ||
+      upb_MessageDef_OneofCount(m) != 1 ||
+      upb_MessageDef_RealOneofCount(m) != 1) {
+    return false;
+  }
+  const upb_OneofDef* kind_o = upb_MessageDef_Oneof(m, 0);
+  if (kind_o == NULL || strcmp(upb_OneofDef_Name(kind_o), "kind") != 0 ||
+      upb_OneofDef_FieldCount(kind_o) != 6) {
+    return false;
+  }
+  const upb_FieldDef* null_f = NULL;
+  const upb_FieldDef* struct_f = NULL;
+  const upb_FieldDef* list_f = NULL;
+  if (!check_wkt_oneof_field(m, kind_o, 1, "null_value", kUpb_FieldType_Enum,
+                             &null_f) ||
+      !check_wkt_oneof_field(m, kind_o, 2, "number_value",
+                             kUpb_FieldType_Double, NULL) ||
+      !check_wkt_oneof_field(m, kind_o, 3, "string_value",
+                             kUpb_FieldType_String, NULL) ||
+      !check_wkt_oneof_field(m, kind_o, 4, "bool_value", kUpb_FieldType_Bool,
+                             NULL) ||
+      !check_wkt_oneof_field(m, kind_o, 5, "struct_value",
+                             kUpb_FieldType_Message, &struct_f) ||
+      !check_wkt_oneof_field(m, kind_o, 6, "list_value", kUpb_FieldType_Message,
+                             &list_f)) {
+    return false;
+  }
+  const upb_EnumDef* null_e = upb_FieldDef_EnumSubDef(null_f);
+  if (null_e == NULL ||
+      strcmp(upb_EnumDef_FullName(null_e), "google.protobuf.NullValue") != 0 ||
+      upb_EnumDef_FindValueByNumber(null_e, 0) == NULL) {
+    return false;
+  }
+  *out_struct = upb_FieldDef_MessageSubDef(struct_f);
+  *out_list = upb_FieldDef_MessageSubDef(list_f);
+  return *out_struct != NULL && *out_list != NULL;
+}
+
+static bool validate_msg_wellknowntype(const upb_MessageDef* m) {
+  switch (m->well_known_type) {
+    case kUpb_WellKnown_Unspecified:
+      return true;
+    case kUpb_WellKnown_Any:
+      return !upb_MessageDef_IsMapEntry(m) &&
+             upb_MessageDef_FieldCount(m) == 2 &&
+             upb_MessageDef_OneofCount(m) == 0 &&
+             check_wkt_field(m, 1, "type_url", kUpb_FieldType_String, false) &&
+             check_wkt_field(m, 2, "value", kUpb_FieldType_Bytes, false);
+    case kUpb_WellKnown_FieldMask:
+      return !upb_MessageDef_IsMapEntry(m) &&
+             upb_MessageDef_FieldCount(m) == 1 &&
+             upb_MessageDef_OneofCount(m) == 0 &&
+             check_wkt_field(m, 1, "paths", kUpb_FieldType_String, true);
+    case kUpb_WellKnown_Duration:
+    case kUpb_WellKnown_Timestamp:
+      return !upb_MessageDef_IsMapEntry(m) &&
+             upb_MessageDef_FieldCount(m) == 2 &&
+             upb_MessageDef_OneofCount(m) == 0 &&
+             check_wkt_field(m, 1, "seconds", kUpb_FieldType_Int64, false) &&
+             check_wkt_field(m, 2, "nanos", kUpb_FieldType_Int32, false);
+    case kUpb_WellKnown_DoubleValue:
+      return check_wkt_wrapper(m, kUpb_FieldType_Double);
+    case kUpb_WellKnown_FloatValue:
+      return check_wkt_wrapper(m, kUpb_FieldType_Float);
+    case kUpb_WellKnown_Int64Value:
+      return check_wkt_wrapper(m, kUpb_FieldType_Int64);
+    case kUpb_WellKnown_UInt64Value:
+      return check_wkt_wrapper(m, kUpb_FieldType_UInt64);
+    case kUpb_WellKnown_Int32Value:
+      return check_wkt_wrapper(m, kUpb_FieldType_Int32);
+    case kUpb_WellKnown_UInt32Value:
+      return check_wkt_wrapper(m, kUpb_FieldType_UInt32);
+    case kUpb_WellKnown_BoolValue:
+      return check_wkt_wrapper(m, kUpb_FieldType_Bool);
+    case kUpb_WellKnown_StringValue:
+      return check_wkt_wrapper(m, kUpb_FieldType_String);
+    case kUpb_WellKnown_BytesValue:
+      return check_wkt_wrapper(m, kUpb_FieldType_Bytes);
+    case kUpb_WellKnown_Struct: {
+      const upb_MessageDef* val_m = check_wkt_struct_local(m);
+      const upb_MessageDef* s_m = NULL;
+      const upb_MessageDef* l_m = NULL;
+      return val_m != NULL && check_wkt_value_local(val_m, &s_m, &l_m) &&
+             s_m == m && check_wkt_list_local(l_m) == val_m;
+    }
+    case kUpb_WellKnown_ListValue: {
+      const upb_MessageDef* val_m = check_wkt_list_local(m);
+      const upb_MessageDef* s_m = NULL;
+      const upb_MessageDef* l_m = NULL;
+      return val_m != NULL && check_wkt_value_local(val_m, &s_m, &l_m) &&
+             l_m == m && check_wkt_struct_local(s_m) == val_m;
+    }
+    case kUpb_WellKnown_Value: {
+      const upb_MessageDef* s_m = NULL;
+      const upb_MessageDef* l_m = NULL;
+      return check_wkt_value_local(m, &s_m, &l_m) &&
+             check_wkt_struct_local(s_m) == m && check_wkt_list_local(l_m) == m;
+    }
+  }
+  return false;
+}
+
 void _upb_MessageDef_CreateMiniTable(upb_DefBuilder* ctx, upb_MessageDef* m) {
+  if (m->well_known_type != kUpb_WellKnown_Unspecified &&
+      !validate_msg_wellknowntype(m)) {
+    m->well_known_type = kUpb_WellKnown_Unspecified;
+  }
   if (ctx->layout == NULL) {
     m->layout = _upb_MessageDef_MakeMiniTable(ctx, m);
   } else {
