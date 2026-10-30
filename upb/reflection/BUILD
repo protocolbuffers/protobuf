@@ -242,6 +242,21 @@ cc_library(
 )
 
 cc_test(
+    name = "map_entry_def_test",
+    srcs = ["map_entry_def_test.cc"],
+    deps = [
+        ":descriptor_upb_proto",
+        ":reflection",
+        ":reflection_cc",
+        "//upb/base",
+        "//upb/json",
+        "//upb/mem",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "def_builder_test",
     srcs = [
         "common.h",
