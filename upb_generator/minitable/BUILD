@@ -20,7 +20,11 @@ licenses(["notice"])
 
 bootstrap_cc_library(
     name = "generator",
-    srcs = ["generator.cc"],
+    srcs = [
+        "generator.cc",
+        "layout_comment.cc",
+        "layout_comment.h",
+    ],
     hdrs = ["generator.h"],
     bootstrap_deps = [
         "//upb_generator:common",
@@ -33,6 +37,7 @@ bootstrap_cc_library(
     deps = [
         ":names",
         ":names_internal",
+        "//src/google/protobuf",
         "//src/google/protobuf/compiler:code_generator",
         "//src/google/protobuf/compiler:code_generator_lite",
         "//upb/base",

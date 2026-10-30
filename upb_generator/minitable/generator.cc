@@ -31,6 +31,7 @@
 #include "upb_generator/common.h"
 #include "upb_generator/common/names.h"
 #include "upb_generator/file_layout.h"
+#include "upb_generator/minitable/layout_comment.h"
 #include "upb_generator/minitable/names.h"
 #include "upb_generator/minitable/names_internal.h"
 
@@ -192,6 +193,11 @@ void WriteMessage(upb::MessageDefPtr message, const DefPoolPair& pools,
   }
 
   std::string struct_name = MessageVarName(message) + "_Fields";
+
+  if (!options.bootstrap && !options.strip_nonfunctional_codegen &&
+      !message.mapentry()) {
+    output("$0\n", MessageLayoutComment(pools, message));
+  }
 
   if (field_count > 0) {
     // Create a custom struct for the fields/subs, with arrays that are
