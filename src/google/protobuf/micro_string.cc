@@ -279,7 +279,9 @@ void MicroString::SetAlias(absl::string_view data, const MessageLite& parent,
     return Set(data, parent, inline_capacity);
   }
 
-  if (parent.GetArena() == nullptr) {
+  // Copy if replacing the representation would free storage referenced by
+  // `data`. Aliased and unowned payloads remain valid independently of us.
+  if (parent.GetArena() == nullptr && owns_payload()) {
     const absl::string_view current = Get();
     const uintptr_t current_begin =
         reinterpret_cast<uintptr_t>(current.data());

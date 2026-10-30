@@ -487,6 +487,20 @@ TEST_F(MicroStringTest, SetAliasExternalAndArenaBuffer) {
   EXPECT_EQ(arena_str.Get(), expected);
 }
 
+TEST_F(MicroStringTest, SetAliasFromOverlappingUnownedBuffer) {
+  static constexpr auto payload =
+      MicroString::MakeUnownedPayload("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789");
+  const absl::string_view input = payload.get().substr(5);
+  ASSERT_GT(input.size(), MicroString::kInlineCapacity);
+
+  MicroString str;
+  str.SetUnowned(payload, heap_message());
+  str.SetAlias(input, heap_message());
+  EXPECT_EQ(str.Get().data(), input.data());
+  EXPECT_EQ(str.Get(), input);
+  str.Destroy();
+}
+
 TEST_F(MicroStringTest, SetAliasFromOwnHeapBuffer) {
   // 1. Owned MicroRep (inline_capacity < size <= kMaxMicroRepCapacity)
   {
