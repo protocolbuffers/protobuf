@@ -1177,7 +1177,7 @@ static void jsondec_timestamp(jsondec* d, upb_Message* msg,
     }
   }
 
-  if (seconds.int64_val < -62135596800) {
+  if (seconds.int64_val < -62135596800 || seconds.int64_val > 253402300799) {
     jsondec_err(d, "Timestamp out of range");
   }
 
