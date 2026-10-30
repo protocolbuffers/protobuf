@@ -1712,6 +1712,28 @@ int CommandLineInterface::Run(int argc, const char* const argv[]) {
   }
 
 
+  if (has_allowed_public_imports_) {
+    for (auto fd : parsed_files) {
+      for (int i = 0; i < fd->public_dependency_count(); ++i) {
+        const absl::string_view public_dependency =
+            fd->public_dependency(i)->name();
+        if (allowed_public_imports_.find(public_dependency) ==
+            allowed_public_imports_.end()) {
+          std::cerr
+              << "The BUILD file does not export the proto_library() "
+                 "associated with the public import of \""
+              << public_dependency
+              << "\". Please remove the public import from the .proto file or "
+                 "add the associated proto_library() to the exports "
+                 "declaration "
+                 "in the BUILD file."
+              << std::endl;
+          return 1;
+        }
+      }
+    }
+  }
+
   if (validation_error) {
     return 1;
   }
@@ -1853,6 +1875,11 @@ bool CommandLineInterface::InitializeDiskSourceTree(
     return false;
   }
 
+  // Map allowed public dependencies to virtual paths if possible.
+  if (!MakeAllowedPublicDependenciesBeProtoPathRelative(source_tree,
+                                                        fallback_database)) {
+    return false;
+  }
   return true;
 }
 
@@ -2039,6 +2066,8 @@ void CommandLineInterface::Clear() {
   source_code_info_out_name_.clear();
   dependency_out_name_.clear();
 
+  allowed_public_imports_.clear();
+  has_allowed_public_imports_ = false;
   experimental_editions_ = false;
   edition_defaults_out_name_.clear();
   edition_defaults_minimum_ = EDITION_UNKNOWN;
@@ -2137,6 +2166,24 @@ bool CommandLineInterface::MakeInputsBeProtoPathRelative(
     }
   }
 
+  return true;
+}
+
+bool CommandLineInterface::MakeAllowedPublicDependenciesBeProtoPathRelative(
+    DiskSourceTree* source_tree, DescriptorDatabase* fallback_database) {
+  absl::flat_hash_set<std::string> normalized_public_imports;
+  for (auto local_value : allowed_public_imports_) {
+    if (!MakeProtoProtoPathRelative(source_tree, &local_value,
+                                    fallback_database)) {
+      return false;
+    }
+    normalized_public_imports.insert(local_value);
+  }
+  // input files are also reasonably publicly importable.
+  for (auto& input_file : input_files_) {
+    normalized_public_imports.insert(input_file);
+  }
+  allowed_public_imports_.swap(normalized_public_imports);
   return true;
 }
 
@@ -2752,6 +2799,14 @@ CommandLineInterface::InterpretArgument(const std::string& name,
 #else
     ::setenv(io::Printer::kProtocCodegenTrace.data(), "yes", 0);
 #endif
+  } else if (name == "--allowed_public_imports") {
+    has_allowed_public_imports_ = true;
+    std::vector<std::string> parts =
+        absl::StrSplit(value, ':', absl::SkipEmpty());
+
+    for (size_t i = 0; i < parts.size(); ++i) {
+      allowed_public_imports_.insert(parts[i]);
+    }
   } else if (name == "--notices") {
     std::cout << notices_text << std::endl;
     return PARSE_ARGUMENT_DONE_AND_EXIT;
@@ -2961,7 +3016,10 @@ Parse PROTO_FILES and generate output based on the options given:
                               declarations, when explictily provided.
   --option_dependencies       A colon delimited list of imports that are
                               allowed to be used in "import option"
-                              declarations, when explicitly provided.)";
+                              declarations, when explicitly provided.
+  --allowed_public_imports    A colon delimited list of imports that are
+                              allowed to be used in "import public"
+                              declarations.)";
 
   // TODO - Move --source_code_info_out back to primary block under
   // --descriptor_set_out for release v38.0.
