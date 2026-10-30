@@ -179,6 +179,33 @@ TEST_P(MiniTableTest, FieldCountOverflow) {
   EXPECT_EQ(nullptr, table);
 }
 
+TEST_P(MiniTableTest, RepresentationSlotCountOverflow) {
+  upb::Arena arena;
+  upb::MtDataEncoder e;
+  ASSERT_TRUE(e.StartMessage(0));
+  // Keep the oneof members at low indices and use no-presence fields for
+  // the remaining entries, so this tests representation slot accounting.
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, 1, 0));
+  ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, 2, 0));
+  for (uint32_t i = 3; i <= UINT16_MAX; ++i) {
+    ASSERT_TRUE(e.PutField(kUpb_FieldType_Int32, i,
+                          kUpb_FieldModifier_IsProto3Singular));
+  }
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(1));
+  ASSERT_TRUE(e.StartOneof());
+  ASSERT_TRUE(e.PutOneofField(2));
+  // Each oneof needs a data slot and a case slot: 65533 + 2 * 2 = 65537.
+  upb::Status status;
+  upb_MiniTable* table = _upb_MiniTable_Build(
+      e.data().data(), e.data().size(), GetParam(), arena.ptr(), status.ptr());
+  EXPECT_EQ(nullptr, table);
+  EXPECT_FALSE(status.ok());
+  EXPECT_NE(std::string_view(status.error_message()).find(
+                "Message size exceeded maximum size"),
+            std::string_view::npos);
+}
+
 TEST_P(MiniTableTest, SizeOverflow) {
   upb::Arena arena;
   upb::MtDataEncoder e;
