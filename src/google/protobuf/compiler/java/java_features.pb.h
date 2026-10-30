@@ -67,6 +67,12 @@ internal::EnumTraitsT<::pb::JavaFeatures_NestInFileClassFeature_NestInFileClass_
 template <>
 internal::EnumTraitsT<::pb::JavaFeatures_Utf8Validation_internal_data_>
     internal::EnumTraitsImpl::value<::pb::JavaFeatures_Utf8Validation>;
+template <>
+internal::GeneratedMessageTraitsT<&::pb::JavaFeatures_globals_>
+    internal::MessageTraitsImpl::value<::pb::JavaFeatures>;
+template <>
+internal::GeneratedMessageTraitsT<&::pb::JavaFeatures_NestInFileClassFeature_globals_>
+    internal::MessageTraitsImpl::value<::pb::JavaFeatures_NestInFileClassFeature>;
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::JavaFeatures>() {

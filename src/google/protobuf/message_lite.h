@@ -180,7 +180,7 @@ struct EnumTraitsImpl {
   // The `enable_if` is there to workaround some compilers/tools that complain
   // on the declaration even with no instantiations.
   template <typename T>
-  static std::enable_if_t<sizeof(T) != 0, Undefined> value;
+  static std::enable_if_t<std::is_void_v<T>, Undefined> value;
 };
 template <typename T>
 using EnumTraits = decltype(EnumTraitsImpl::value<T>);

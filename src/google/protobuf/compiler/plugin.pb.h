@@ -73,6 +73,18 @@ PROTOC_EXPORT extern const VersionGlobalsTypeInternal Version_globals_;
 template <>
 internal::EnumTraitsT<::google::protobuf::compiler::CodeGeneratorResponse_Feature_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::compiler::CodeGeneratorResponse_Feature>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::compiler::CodeGeneratorRequest_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::compiler::CodeGeneratorRequest>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::compiler::CodeGeneratorResponse_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::compiler::CodeGeneratorResponse>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::compiler::CodeGeneratorResponse_File_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::compiler::CodeGeneratorResponse_File>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::compiler::Version_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::compiler::Version>;
 }  // namespace protobuf
 }  // namespace google
 

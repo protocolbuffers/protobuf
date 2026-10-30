@@ -54,6 +54,9 @@ PROTOBUF_EXPORT extern const JsonEnumValueOptionsGlobalsTypeInternal JsonEnumVal
 }  // namespace pb
 namespace google {
 namespace protobuf {
+template <>
+internal::GeneratedMessageTraitsT<&::pb::enumvalue::JsonEnumValueOptions_globals_>
+    internal::MessageTraitsImpl::value<::pb::enumvalue::JsonEnumValueOptions>;
 }  // namespace protobuf
 }  // namespace google
 

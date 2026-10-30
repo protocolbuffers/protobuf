@@ -30,17 +30,6 @@ struct ClassData;
 template <typename MessageT>
 const ClassData* GetClassData(const MessageT& msg);
 
-template <typename T, typename Globals = MessageGlobalsBase>
-struct FallbackMessageTraits {
-  static const auto* class_data() {
-    return Globals::GetClassData(
-        Globals::FromDefaultInstance(&T::default_instance()));
-  }
-  // We can't make a constexpr pointer to the default, so use a function pointer
-  // instead.
-  static constexpr auto StrongPointer() { return &T::default_instance; }
-};
-
 // Traits for messages.
 // We use a class scope variable template, which can be specialized with a
 // different type in a non-defining declaration.
@@ -48,11 +37,16 @@ struct FallbackMessageTraits {
 // same trait specification on each dependent coming from different .proto.h
 // files.
 struct MessageTraitsImpl {
+  struct Undefined;
+  // We use an incomplete type to cause a compiler error if something tries to
+  // instantiate `value<T>` with a `T` that had no specialization.
+  // The `enable_if` is there to workaround some compilers/tools that complain
+  // on the declaration even with no instantiations.
   template <typename T>
-  static FallbackMessageTraits<T> value;
+  static std::enable_if_t<std::is_void_v<T>, Undefined> value;
 };
 template <typename T>
-using MessageTraits = decltype(MessageTraitsImpl::value<T>);
+using MessageTraits = decltype(MessageTraitsImpl::value<std::remove_cv_t<T>>);
 
 // Returns the ClassData for the given message. If the concrete message type is
 // known, this returns a compile-time constant. Otherwise, `ClassData` is loaded

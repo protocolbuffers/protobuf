@@ -258,6 +258,111 @@ internal::EnumTraitsT<::google::protobuf::MethodOptions_IdempotencyLevel_interna
 template <>
 internal::EnumTraitsT<::google::protobuf::SymbolVisibility_internal_data_>
     internal::EnumTraitsImpl::value<::google::protobuf::SymbolVisibility>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::DescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::DescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::DescriptorProto_ExtensionRange_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::DescriptorProto_ExtensionRange>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::DescriptorProto_ReservedRange_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::DescriptorProto_ReservedRange>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::EnumDescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::EnumDescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::EnumDescriptorProto_EnumReservedRange_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::EnumDescriptorProto_EnumReservedRange>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::EnumOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::EnumOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::EnumValueDescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::EnumValueDescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::EnumValueOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::EnumValueOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::ExtensionRangeOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::ExtensionRangeOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::ExtensionRangeOptions_Declaration_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::ExtensionRangeOptions_Declaration>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FeatureSet_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FeatureSet>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FeatureSetDefaults_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FeatureSetDefaults>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FeatureSetDefaults_FeatureSetEditionDefault>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FeatureSet_ProtoLimitsFeature_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FeatureSet_ProtoLimitsFeature>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FeatureSet_VisibilityFeature_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FeatureSet_VisibilityFeature>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FieldDescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FieldDescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FieldOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FieldOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FieldOptions_EditionDefault_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FieldOptions_EditionDefault>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FieldOptions_FeatureSupport_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FieldOptions_FeatureSupport>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FileDescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FileDescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FileDescriptorSet_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FileDescriptorSet>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::FileOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::FileOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::GeneratedCodeInfo_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::GeneratedCodeInfo>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::GeneratedCodeInfo_Annotation_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::GeneratedCodeInfo_Annotation>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::MessageOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::MessageOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::MethodDescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::MethodDescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::MethodOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::MethodOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::OneofDescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::OneofDescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::OneofOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::OneofOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::ServiceDescriptorProto_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::ServiceDescriptorProto>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::ServiceOptions_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::ServiceOptions>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::SourceCodeInfo_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::SourceCodeInfo>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::SourceCodeInfo_Location_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::SourceCodeInfo_Location>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::UninterpretedOption_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::UninterpretedOption>;
+template <>
+internal::GeneratedMessageTraitsT<&::google::protobuf::UninterpretedOption_NamePart_globals_>
+    internal::MessageTraitsImpl::value<::google::protobuf::UninterpretedOption_NamePart>;
 namespace internal {
 #if !defined(PROTOBUF_CONSTINIT_DEFAULT_INSTANCES)
 PROTOBUF_EXPORT void InitializeFileDescriptorDefaultInstancesSlow();

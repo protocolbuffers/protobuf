@@ -52,6 +52,9 @@ PROTOC_EXPORT extern const CSharpFeaturesGlobalsTypeInternal CSharpFeatures_glob
 }  // namespace pb
 namespace google {
 namespace protobuf {
+template <>
+internal::GeneratedMessageTraitsT<&::pb::CSharpFeatures_globals_>
+    internal::MessageTraitsImpl::value<::pb::CSharpFeatures>;
 namespace internal {
 template <>
 inline ::absl::string_view GetFeatureSetDefaultsData<::pb::CSharpFeatures>() {

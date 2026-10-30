@@ -1409,9 +1409,7 @@ class FileGenerator::ForwardDeclarations {
       for (const auto& c : classes_) {
         if (!ShouldGenerateClass(c.second, options)) continue;
         auto vars =
-            p->WithVars({{"class", QualifiedClassName(c.second, options)},
-                         {"default_name",
-                          QualifiedMsgGlobalsInstanceName(c.second, options)}});
+            p->WithVars({{"class", QualifiedClassName(c.second, options)}});
         // To reduce total linker input size in large binaries we make these
         // functions extern and define then in the pb.cc file. This avoids bloat
         // in callers by having duplicate definitions of the template.
@@ -1425,17 +1423,18 @@ class FileGenerator::ForwardDeclarations {
             extern template void* $nonnull$ Arena::CopyConstruct<$class$>(Arena* $nullable$, const void* $nonnull$);
           )");
         }
-        // We can't make a constexpr pointer to the global if we have DLL
-        // linkage so skip this.
-        // The fallback traits are slower, but correct.
-        if (options.dllexport_decl.empty()) {
-          p->Emit(R"cc(
-            template <>
-            internal::GeneratedMessageTraitsT<&$default_name$>
-                internal::MessageTraitsImpl::value<$class$>;
-          )cc");
-        }
       }
+    }
+    for (const auto& c : classes_) {
+      if (!ShouldGenerateClass(c.second, options)) continue;
+      auto vars = p->WithVars({{"class", QualifiedClassName(c.second, options)},
+                               {"default_name", QualifiedMsgGlobalsInstanceName(
+                                                    c.second, options)}});
+      p->Emit(R"cc(
+        template <>
+        internal::GeneratedMessageTraitsT<&$default_name$>
+            internal::MessageTraitsImpl::value<$class$>;
+      )cc");
     }
   }
 
